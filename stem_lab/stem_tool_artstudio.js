@@ -1367,39 +1367,39 @@ const d = labToolData.artStudio || {};
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: () => setStemLabTool(null), className: "transition-colors p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
+              React.createElement("button", { onClick: () => setStemLabTool(null), className: "transition-colors p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': t('stem.artstudio.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDFA8 Art & Design Studio"),
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, t('stem.artstudio.art_design_studio', "\uD83C\uDFA8 Art & Design Studio")),
 
               React.createElement("span", { className: "px-2 py-0.5 bg-pink-100 text-pink-700 text-[11px] font-bold rounded-full" }, "CREATIVE"),
 
-              React.createElement("button", { onClick: function () { setStemLabTool('archStudio'); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border border-amber-600 hover:from-amber-200 hover:to-orange-200 transition-all shadow-sm", title: "Launch 3D Architecture Studio" }, "\uD83C\uDFD7\uFE0F 3D Builder \u2192"),
+              React.createElement("button", { onClick: function () { setStemLabTool('archStudio'); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border border-amber-600 hover:from-amber-200 hover:to-orange-200 transition-all shadow-sm", title: t('stem.artstudio.launch_3d_architecture_studio', "Launch 3D Architecture Studio") }, t('stem.artstudio.3d_builder', "\uD83C\uDFD7\uFE0F 3D Builder \u2192")),
 
-              React.createElement("button", { onClick: function () { upd('showTour', !d.showTour); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.showTour ? "bg-pink-600 text-white" : "transition-colors bg-pink-50 text-pink-600 border border-pink-600 hover:bg-pink-100") + " transition-all shadow-sm", "aria-label": "Toggle studio tour" }, d.showTour ? "\u2716 Close Tour" : "\uD83C\uDFA8 Tour")
+              React.createElement("button", { onClick: function () { upd('showTour', !d.showTour); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.showTour ? "bg-pink-600 text-white" : "transition-colors bg-pink-50 text-pink-600 border border-pink-600 hover:bg-pink-100") + " transition-all shadow-sm", "aria-label": t('stem.artstudio.toggle_studio_tour', "Toggle studio tour") }, d.showTour ? "\u2716 Close Tour" : "\uD83C\uDFA8 Tour")
 
             ),
 
             /* ── Art Studio Tour/Welcome Panel ── */
             d.showTour && React.createElement("div", { className: "mb-4 bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 rounded-xl border-2 border-pink-200 p-4 animate-in fade-in duration-200" },
-              React.createElement("h4", { className: "text-sm font-black text-pink-800 mb-3 flex items-center gap-2" }, "\uD83C\uDFA8 Welcome to the Art & Design Studio!"),
-              React.createElement("p", { className: "text-xs text-slate-600 mb-3 leading-relaxed" }, "Explore 15 interactive tools that teach color theory, mathematical art, generative design, and visual accessibility. Each tab is a different creative canvas. Here\u2019s what you can create:"),
+              React.createElement("h4", { className: "text-sm font-black text-pink-800 mb-3 flex items-center gap-2" }, t('stem.artstudio.welcome_to_the_art_design_studio', "\uD83C\uDFA8 Welcome to the Art & Design Studio!")),
+              React.createElement("p", { className: "text-xs text-slate-600 mb-3 leading-relaxed" }, t('stem.artstudio.explore_15_interactive_tools_that_teac', "Explore 15 interactive tools that teach color theory, mathematical art, generative design, and visual accessibility. Each tab is a different creative canvas. Here\u2019s what you can create:")),
               React.createElement("div", { className: "grid grid-cols-3 sm:grid-cols-5 gap-2 mb-3" },
                 [
-                  { icon: '\uD83C\uDFA8', name: 'Color Wheel', desc: 'Explore HSL color space interactively' },
-                  { icon: '\uD83E\uDDEA', name: 'Color Mixer', desc: 'Mix paints with subtractive color theory' },
-                  { icon: '\uD83D\uDDBC', name: 'Pixel Art', desc: 'Create pixel art on a grid canvas' },
-                  { icon: '\u2728', name: 'Symmetry', desc: 'Draw with rotational & reflective symmetry' },
-                  { icon: '\uD83C\uDF00', name: 'Spirograph', desc: 'Mathematical spiral patterns (hypotrochoids)' },
-                  { icon: '\uD83C\uDF86', name: 'Generative', desc: 'Flow fields, particles, starfields, aurora' },
-                  { icon: '\uD83C\uDF00', name: 'Spin Art', desc: 'Virtual spin painting with physics' },
-                  { icon: '\uD83D\uDD78', name: 'String Art', desc: 'Geometric string patterns on pegs' },
-                  { icon: '\uD83D\uDC41', name: 'Op Art', desc: 'Optical illusions and visual tricks' },
-                  { icon: '\uD83D\uDD37', name: 'Tessellation', desc: 'Repeating tile patterns like M.C. Escher' },
-                  { icon: '\uD83D\uDD2E', name: 'Fractals', desc: 'Mandelbrot, Julia sets, Sierpinski triangle' },
-                  { icon: '\uD83C\uDF08', name: 'Gradient', desc: 'Design and export CSS gradient patterns' },
-                  { icon: '\uD83D\uDC53', name: 'Stereogram', desc: 'Hidden 3D images (Magic Eye style)' },
-                  { icon: '\uD83E\uDDEC', name: 'Game of Life', desc: 'Conway\u2019s cellular automaton \u2014 emergent complexity' },
-                  { icon: '\u267F', name: 'Contrast', desc: 'WCAG contrast checker for accessibility' },
+                  { icon: '\uD83C\uDFA8', name: t('stem.artstudio.color_wheel', 'Color Wheel'), desc: t('stem.artstudio.explore_hsl_color_space_interactively', 'Explore HSL color space interactively') },
+                  { icon: '\uD83E\uDDEA', name: t('stem.artstudio.color_mixer', 'Color Mixer'), desc: t('stem.artstudio.mix_paints_with_subtractive_color_theo', 'Mix paints with subtractive color theory') },
+                  { icon: '\uD83D\uDDBC', name: t('stem.artstudio.pixel_art', 'Pixel Art'), desc: t('stem.artstudio.create_pixel_art_on_a_grid_canvas', 'Create pixel art on a grid canvas') },
+                  { icon: '\u2728', name: t('stem.artstudio.symmetry', 'Symmetry'), desc: t('stem.artstudio.draw_with_rotational_reflective_symmet', 'Draw with rotational & reflective symmetry') },
+                  { icon: '\uD83C\uDF00', name: t('stem.artstudio.spirograph', 'Spirograph'), desc: t('stem.artstudio.mathematical_spiral_patterns_hypotroch', 'Mathematical spiral patterns (hypotrochoids)') },
+                  { icon: '\uD83C\uDF86', name: t('stem.artstudio.generative', 'Generative'), desc: t('stem.artstudio.flow_fields_particles_starfields_auror', 'Flow fields, particles, starfields, aurora') },
+                  { icon: '\uD83C\uDF00', name: t('stem.artstudio.spin_art', 'Spin Art'), desc: t('stem.artstudio.virtual_spin_painting_with_physics', 'Virtual spin painting with physics') },
+                  { icon: '\uD83D\uDD78', name: t('stem.artstudio.string_art', 'String Art'), desc: t('stem.artstudio.geometric_string_patterns_on_pegs', 'Geometric string patterns on pegs') },
+                  { icon: '\uD83D\uDC41', name: t('stem.artstudio.op_art', 'Op Art'), desc: t('stem.artstudio.optical_illusions_and_visual_tricks', 'Optical illusions and visual tricks') },
+                  { icon: '\uD83D\uDD37', name: t('stem.artstudio.tessellation', 'Tessellation'), desc: t('stem.artstudio.repeating_tile_patterns_like_m_c_esche', 'Repeating tile patterns like M.C. Escher') },
+                  { icon: '\uD83D\uDD2E', name: t('stem.artstudio.fractals', 'Fractals'), desc: t('stem.artstudio.mandelbrot_julia_sets_sierpinski_trian', 'Mandelbrot, Julia sets, Sierpinski triangle') },
+                  { icon: '\uD83C\uDF08', name: t('stem.artstudio.gradient', 'Gradient'), desc: t('stem.artstudio.design_and_export_css_gradient_pattern', 'Design and export CSS gradient patterns') },
+                  { icon: '\uD83D\uDC53', name: t('stem.artstudio.stereogram', 'Stereogram'), desc: t('stem.artstudio.hidden_3d_images_magic_eye_style', 'Hidden 3D images (Magic Eye style)') },
+                  { icon: '\uD83E\uDDEC', name: t('stem.artstudio.game_of_life', 'Game of Life'), desc: t('stem.artstudio.conway_s_cellular_automaton_emergent_c', 'Conway\u2019s cellular automaton \u2014 emergent complexity') },
+                  { icon: '\u267F', name: t('stem.artstudio.contrast', 'Contrast'), desc: t('stem.artstudio.wcag_contrast_checker_for_accessibilit', 'WCAG contrast checker for accessibility') },
                 ].map(function(tool) {
                   return React.createElement("div", { key: tool.name, className: "bg-white rounded-lg p-2 border border-slate-100 text-center shadow-sm hover:shadow-md transition-shadow cursor-default" },
                     React.createElement("div", { className: "text-lg" }, tool.icon),
@@ -1409,17 +1409,17 @@ const d = labToolData.artStudio || {};
                 })
               ),
               React.createElement("div", { className: "bg-white rounded-lg p-3 border border-pink-100" },
-                React.createElement("h5", { className: "text-[11px] font-bold text-pink-700 uppercase mb-1" }, "\uD83D\uDCA1 Educational Concepts"),
+                React.createElement("h5", { className: "text-[11px] font-bold text-pink-700 uppercase mb-1" }, t('stem.artstudio.educational_concepts', "\uD83D\uDCA1 Educational Concepts")),
                 React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed" },
-                  "Color theory (additive vs subtractive mixing, complementary colors, HSL/RGB), mathematical curves (hypotrochoids, Lissajous), fractals & self-similarity, cellular automata & emergence, tessellation geometry, op art visual perception, WCAG accessibility standards, and computational art. Every tool teaches the math behind the beauty."
+                  t('stem.artstudio.color_theory_additive_vs_subtractive_m', "Color theory (additive vs subtractive mixing, complementary colors, HSL/RGB), mathematical curves (hypotrochoids, Lissajous), fractals & self-similarity, cellular automata & emergence, tessellation geometry, op art visual perception, WCAG accessibility standards, and computational art. Every tool teaches the math behind the beauty.")
                 )
               ),
-              React.createElement("button", { onClick: function () { upd('showTour', false); }, className: "mt-3 w-full py-2 bg-pink-600 text-white text-sm font-bold rounded-lg hover:bg-pink-700 transition-colors" }, "Got it \u2014 let\u2019s create! \uD83C\uDFA8")
+              React.createElement("button", { onClick: function () { upd('showTour', false); }, className: "mt-3 w-full py-2 bg-pink-600 text-white text-sm font-bold rounded-lg hover:bg-pink-700 transition-colors" }, t('stem.artstudio.got_it_let_s_create', "Got it \u2014 let\u2019s create! \uD83C\uDFA8"))
             ),
 
-            React.createElement("div", { className: "flex gap-1 mb-4 bg-slate-50 p-1 rounded-xl border border-slate-400", role: 'tablist', 'aria-label': 'Art Studio sections' },
+            React.createElement("div", { className: "flex gap-1 mb-4 bg-slate-50 p-1 rounded-xl border border-slate-400", role: 'tablist', 'aria-label': t('stem.artstudio.art_studio_sections', 'Art Studio sections') },
 
-              [{ id: 'colorWheel', icon: '\uD83C\uDFA8', label: 'Color Wheel' }, { id: 'mixer', icon: '\uD83E\uDDEA', label: 'Color Mixer' }, { id: 'pixel', icon: '\uD83D\uDDBC', label: 'Pixel Art' }, { id: 'symmetry', icon: '\u2728', label: 'Symmetry' }, { id: 'spirograph', icon: '\uD83C\uDF00', label: 'Spirograph' }, { id: 'generative', icon: '\uD83C\uDF86', label: 'Generative' }, { id: 'spinArt', icon: '\uD83C\uDF00', label: 'Spin Art' }, { id: 'stringArt', icon: '\uD83D\uDD78', label: 'String Art' }, { id: 'opArt', icon: '\uD83D\uDC41', label: 'Op Art' }, { id: 'tessellation', icon: '\uD83D\uDD37', label: 'Tessellation' }, { id: 'fractal', icon: '\uD83D\uDD2E', label: 'Fractals' }, { id: 'gradient', icon: '\uD83C\uDF08', label: 'Gradient' }, { id: 'stereogram', icon: '\uD83D\uDC53', label: 'Stereogram' }, { id: 'life', icon: '\uD83E\uDDEC', label: 'Game of Life' }, { id: 'contrast', icon: '\u267F', label: 'Contrast' }, { id: 'harmonyHunt', icon: '\uD83C\uDFB6', label: 'Harmony' }].map(function (tb) {
+              [{ id: 'colorWheel', icon: '\uD83C\uDFA8', label: t('stem.artstudio.color_wheel_2', 'Color Wheel') }, { id: 'mixer', icon: '\uD83E\uDDEA', label: t('stem.artstudio.color_mixer_2', 'Color Mixer') }, { id: 'pixel', icon: '\uD83D\uDDBC', label: t('stem.artstudio.pixel_art_2', 'Pixel Art') }, { id: 'symmetry', icon: '\u2728', label: t('stem.artstudio.symmetry_2', 'Symmetry') }, { id: 'spirograph', icon: '\uD83C\uDF00', label: t('stem.artstudio.spirograph_2', 'Spirograph') }, { id: 'generative', icon: '\uD83C\uDF86', label: t('stem.artstudio.generative_2', 'Generative') }, { id: 'spinArt', icon: '\uD83C\uDF00', label: t('stem.artstudio.spin_art_2', 'Spin Art') }, { id: 'stringArt', icon: '\uD83D\uDD78', label: t('stem.artstudio.string_art_2', 'String Art') }, { id: 'opArt', icon: '\uD83D\uDC41', label: t('stem.artstudio.op_art_2', 'Op Art') }, { id: 'tessellation', icon: '\uD83D\uDD37', label: t('stem.artstudio.tessellation_2', 'Tessellation') }, { id: 'fractal', icon: '\uD83D\uDD2E', label: t('stem.artstudio.fractals_2', 'Fractals') }, { id: 'gradient', icon: '\uD83C\uDF08', label: t('stem.artstudio.gradient_2', 'Gradient') }, { id: 'stereogram', icon: '\uD83D\uDC53', label: t('stem.artstudio.stereogram_2', 'Stereogram') }, { id: 'life', icon: '\uD83E\uDDEC', label: t('stem.artstudio.game_of_life_2', 'Game of Life') }, { id: 'contrast', icon: '\u267F', label: t('stem.artstudio.contrast_2', 'Contrast') }, { id: 'harmonyHunt', icon: '\uD83C\uDFB6', label: t('stem.artstudio.harmony', 'Harmony') }].map(function (tb) {
 
                 return React.createElement("button", { "aria-label": 'Switch to ' + tb.label + ' tab', key: tb.id, onClick: function () { upd('tab', tb.id); if (typeof canvasNarrate === 'function') canvasNarrate('artStudio', 'tabSwitch', 'Switched to ' + tb.label + ' canvas tool.', { debounce: 500 }); }, role: 'tab', 'aria-selected': tab === tb.id, className: "flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all " + (tab === tb.id ? 'bg-white shadow-md text-pink-700' : 'text-slate-600 hover:text-slate-700 hover:bg-white/50') }, tb.icon + ' ' + tb.label);
 
@@ -1430,21 +1430,21 @@ const d = labToolData.artStudio || {};
             // ── Topic-accent hero band per tab ──
             (function() {
               var TAB_META = {
-                colorWheel:   { accent: '#db2777', soft: 'rgba(219,39,119,0.10)', icon: '\uD83C\uDFA8', title: 'Color Wheel \u2014 HSL/HSV + complementary pairs',           hint: 'Hue (0-360 around the wheel), saturation (purity), lightness (brightness). Complementary across, analogous adjacent, triadic 120\u00b0 apart. Newton put the spectrum on a wheel in 1666.' },
-                mixer:        { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83E\uDDEA', title: 'Color Mixer \u2014 subtractive vs additive',                  hint: 'Paint and print = subtractive (CMY mixes to dark); light and screens = additive (RGB mixes to white). Same world, completely different math \u2014 a printer thinks in K plates, a TV thinks in Hz.' },
-                pixel:        { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDDBC',  title: 'Pixel Art \u2014 bitmap craft at 8\u00d78 to 32\u00d732',          hint: 'Each pixel is a deliberate decision. NES sprites famously fit a hero into 16\u00d716 with a 4-color palette. Bresenham\u2019s line algorithm draws diagonals without floats.' },
-                symmetry:     { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\u2728',         title: 'Symmetry \u2014 reflection, rotation, glide',                hint: 'Bilateral (mirror), rotational (n-fold), point. The 17 wallpaper groups classify every possible repeating 2D pattern \u2014 Escher\u2019s entire body of work.' },
-                spirograph:   { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83C\uDF00', title: 'Spirograph \u2014 hypotrochoid roulettes',                  hint: 'A small circle rolls inside a big one, pen offset from center. Ratio of radii determines petal count; offset sets thickness. Toy patented 1965, math from 1700s.' },
-                generative:   { accent: '#4f46e5', soft: 'rgba(79,70,229,0.10)',  icon: '\uD83C\uDF86', title: 'Generative \u2014 algorithm + randomness as artist',         hint: 'Sol LeWitt wrote instructions; the wall installer was the executor. Today: Processing, p5.js, Cinder. \u201CThe artist is the rule, not the result.\u201D' },
-                spinArt:      { accent: '#db2777', soft: 'rgba(219,39,119,0.10)', icon: '\uD83C\uDF00', title: 'Spin Art \u2014 centripetal physics in paint',               hint: 'Drop paint, spin, watch it fling outward in spirals. Damien Hirst made millions selling spin paintings. Same physics as a salad spinner; F = m\u03c9\u00b2r.' },
-                stringArt:    { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83D\uDD78', title: 'String Art \u2014 curves from straight lines',                hint: 'Connect every n-th nail; an envelope curve emerges. Mary Everest Boole introduced this as classroom math c. 1900. The straight-line cardioid is still hypnotic.' },
-                opArt:        { accent: '#475569', soft: 'rgba(71,85,105,0.10)',  icon: '\uD83D\uDC41', title: 'Op Art \u2014 fooling the visual system',                    hint: 'Bridget Riley\u2019s moir\u00e9 fields, Vasarely\u2019s grids. The brain\u2019s motion-detection edge cells over-fire on rapidly alternating contrast \u2014 the page appears to *vibrate*.' },
-                tessellation: { accent: '#059669', soft: 'rgba(5,150,105,0.10)',  icon: '\uD83D\uDD37', title: 'Tessellation \u2014 the 17 wallpaper groups',                hint: 'Every periodic 2D tiling fits one of 17 symmetry groups. Escher figured this out by visiting the Alhambra in 1936; he then spent 30 years exhausting the catalogue.' },
-                fractal:      { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDD2E', title: 'Fractal \u2014 self-similar at every scale',                  hint: 'Mandelbrot 1975. Cauliflower, coastlines, blood vessels, lightning, lung alveoli \u2014 all fractal. \u201CClouds are not spheres, mountains are not cones, bark is not smooth.\u201D' },
-                gradient:     { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '\uD83C\uDF08', title: 'Gradient \u2014 smooth color transitions',                    hint: 'CSS gives you linear, radial, and conic gradients. Real rainbows have continuous spectra (no discrete bands) \u2014 the 7 \u201Ccolors of the rainbow\u201D were Newton\u2019s arbitrary choice for musical reasons.' },
-                stereogram:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDC53', title: 'Stereogram \u2014 3D from a flat page',                       hint: '90s Magic Eye craze. Each eye sees a slightly shifted version; if you cross or diverge correctly, the brain fuses them into depth. ~5% of people genuinely can\u2019t \u2014 not their fault.' },
-                life:         { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83E\uDDEC', title: 'Game of Life \u2014 4 rules, infinite emergence',             hint: 'Conway, 1970. Born=3, survive=2-3, else die. Gliders glide, oscillators oscillate, glider guns shoot. Conway proved Life is Turing-complete \u2014 you can build a CPU in cells.' },
-                contrast:     { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\u267F',         title: 'Contrast \u2014 WCAG 4.5:1 / 3:1 / APCA',                   hint: 'WCAG 2.1: normal text 4.5:1, large 3:1. Why low contrast hurts low-vision readers, even if you can read it. APCA (the WCAG 3.0 successor) uses perceptual lightness, not raw luminance ratio.' }
+                colorWheel:   { accent: '#db2777', soft: 'rgba(219,39,119,0.10)', icon: '\uD83C\uDFA8', title: t('stem.artstudio.color_wheel_hsl_hsv_complementary_pair', 'Color Wheel \u2014 HSL/HSV + complementary pairs'),           hint: t('stem.artstudio.hue_0_360_around_the_wheel_saturation_', 'Hue (0-360 around the wheel), saturation (purity), lightness (brightness). Complementary across, analogous adjacent, triadic 120\u00b0 apart. Newton put the spectrum on a wheel in 1666.') },
+                mixer:        { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83E\uDDEA', title: t('stem.artstudio.color_mixer_subtractive_vs_additive', 'Color Mixer \u2014 subtractive vs additive'),                  hint: t('stem.artstudio.paint_and_print_subtractive_cmy_mixes_', 'Paint and print = subtractive (CMY mixes to dark); light and screens = additive (RGB mixes to white). Same world, completely different math \u2014 a printer thinks in K plates, a TV thinks in Hz.') },
+                pixel:        { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDDBC',  title: t('stem.artstudio.pixel_art_bitmap_craft_at_8_8_to_32_32', 'Pixel Art \u2014 bitmap craft at 8\u00d78 to 32\u00d732'),          hint: t('stem.artstudio.each_pixel_is_a_deliberate_decision_ne', 'Each pixel is a deliberate decision. NES sprites famously fit a hero into 16\u00d716 with a 4-color palette. Bresenham\u2019s line algorithm draws diagonals without floats.') },
+                symmetry:     { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\u2728',         title: t('stem.artstudio.symmetry_reflection_rotation_glide', 'Symmetry \u2014 reflection, rotation, glide'),                hint: t('stem.artstudio.bilateral_mirror_rotational_n_fold_poi', 'Bilateral (mirror), rotational (n-fold), point. The 17 wallpaper groups classify every possible repeating 2D pattern \u2014 Escher\u2019s entire body of work.') },
+                spirograph:   { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83C\uDF00', title: t('stem.artstudio.spirograph_hypotrochoid_roulettes', 'Spirograph \u2014 hypotrochoid roulettes'),                  hint: t('stem.artstudio.a_small_circle_rolls_inside_a_big_one_', 'A small circle rolls inside a big one, pen offset from center. Ratio of radii determines petal count; offset sets thickness. Toy patented 1965, math from 1700s.') },
+                generative:   { accent: '#4f46e5', soft: 'rgba(79,70,229,0.10)',  icon: '\uD83C\uDF86', title: t('stem.artstudio.generative_algorithm_randomness_as_art', 'Generative \u2014 algorithm + randomness as artist'),         hint: t('stem.artstudio.sol_lewitt_wrote_instructions_the_wall', 'Sol LeWitt wrote instructions; the wall installer was the executor. Today: Processing, p5.js, Cinder. \u201CThe artist is the rule, not the result.\u201D') },
+                spinArt:      { accent: '#db2777', soft: 'rgba(219,39,119,0.10)', icon: '\uD83C\uDF00', title: t('stem.artstudio.spin_art_centripetal_physics_in_paint', 'Spin Art \u2014 centripetal physics in paint'),               hint: t('stem.artstudio.drop_paint_spin_watch_it_fling_outward', 'Drop paint, spin, watch it fling outward in spirals. Damien Hirst made millions selling spin paintings. Same physics as a salad spinner; F = m\u03c9\u00b2r.') },
+                stringArt:    { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83D\uDD78', title: t('stem.artstudio.string_art_curves_from_straight_lines', 'String Art \u2014 curves from straight lines'),                hint: t('stem.artstudio.connect_every_n_th_nail_an_envelope_cu', 'Connect every n-th nail; an envelope curve emerges. Mary Everest Boole introduced this as classroom math c. 1900. The straight-line cardioid is still hypnotic.') },
+                opArt:        { accent: '#475569', soft: 'rgba(71,85,105,0.10)',  icon: '\uD83D\uDC41', title: t('stem.artstudio.op_art_fooling_the_visual_system', 'Op Art \u2014 fooling the visual system'),                    hint: t('stem.artstudio.bridget_riley_s_moir_fields_vasarely_s', 'Bridget Riley\u2019s moir\u00e9 fields, Vasarely\u2019s grids. The brain\u2019s motion-detection edge cells over-fire on rapidly alternating contrast \u2014 the page appears to *vibrate*.') },
+                tessellation: { accent: '#059669', soft: 'rgba(5,150,105,0.10)',  icon: '\uD83D\uDD37', title: t('stem.artstudio.tessellation_the_17_wallpaper_groups', 'Tessellation \u2014 the 17 wallpaper groups'),                hint: t('stem.artstudio.every_periodic_2d_tiling_fits_one_of_1', 'Every periodic 2D tiling fits one of 17 symmetry groups. Escher figured this out by visiting the Alhambra in 1936; he then spent 30 years exhausting the catalogue.') },
+                fractal:      { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDD2E', title: t('stem.artstudio.fractal_self_similar_at_every_scale', 'Fractal \u2014 self-similar at every scale'),                  hint: t('stem.artstudio.mandelbrot_1975_cauliflower_coastlines', 'Mandelbrot 1975. Cauliflower, coastlines, blood vessels, lightning, lung alveoli \u2014 all fractal. \u201CClouds are not spheres, mountains are not cones, bark is not smooth.\u201D') },
+                gradient:     { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '\uD83C\uDF08', title: t('stem.artstudio.gradient_smooth_color_transitions', 'Gradient \u2014 smooth color transitions'),                    hint: t('stem.artstudio.css_gives_you_linear_radial_and_conic_', 'CSS gives you linear, radial, and conic gradients. Real rainbows have continuous spectra (no discrete bands) \u2014 the 7 \u201Ccolors of the rainbow\u201D were Newton\u2019s arbitrary choice for musical reasons.') },
+                stereogram:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDC53', title: t('stem.artstudio.stereogram_3d_from_a_flat_page', 'Stereogram \u2014 3D from a flat page'),                       hint: t('stem.artstudio.90s_magic_eye_craze_each_eye_sees_a_sl', '90s Magic Eye craze. Each eye sees a slightly shifted version; if you cross or diverge correctly, the brain fuses them into depth. ~5% of people genuinely can\u2019t \u2014 not their fault.') },
+                life:         { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83E\uDDEC', title: t('stem.artstudio.game_of_life_4_rules_infinite_emergenc', 'Game of Life \u2014 4 rules, infinite emergence'),             hint: t('stem.artstudio.conway_1970_born_3_survive_2_3_else_di', 'Conway, 1970. Born=3, survive=2-3, else die. Gliders glide, oscillators oscillate, glider guns shoot. Conway proved Life is Turing-complete \u2014 you can build a CPU in cells.') },
+                contrast:     { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\u267F',         title: t('stem.artstudio.contrast_wcag_4_5_1_3_1_apca', 'Contrast \u2014 WCAG 4.5:1 / 3:1 / APCA'),                   hint: t('stem.artstudio.wcag_2_1_normal_text_4_5_1_large_3_1_w', 'WCAG 2.1: normal text 4.5:1, large 3:1. Why low contrast hurts low-vision readers, even if you can read it. APCA (the WCAG 3.0 successor) uses perceptual lightness, not raw luminance ratio.') }
               };
               var meta = TAB_META[tab] || TAB_META.colorWheel;
               return React.createElement('div', {
@@ -1470,13 +1470,13 @@ const d = labToolData.artStudio || {};
 
               React.createElement("div", { className: "flex gap-4", style: { alignItems: 'flex-start' } },
 
-                React.createElement("canvas", { ref: wheelRef, width: 320, height: 320, role: "img", 'aria-label': 'Interactive color wheel', className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair flex-shrink-0", style: { background: '#1e1e2e' } }),
+                React.createElement("canvas", { ref: wheelRef, width: 320, height: 320, role: "img", 'aria-label': t('stem.artstudio.interactive_color_wheel', 'Interactive color wheel'), className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair flex-shrink-0", style: { background: '#1e1e2e' } }),
 
                 React.createElement("div", { className: "flex-1 space-y-3" },
 
                   React.createElement("div", { className: "bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl p-4 border border-pink-200" },
 
-                    React.createElement("h4", { className: "text-xs font-bold text-pink-700 mb-2" }, "\uD83C\uDFAF Selected Color"),
+                    React.createElement("h4", { className: "text-xs font-bold text-pink-700 mb-2" }, t('stem.artstudio.selected_color', "\uD83C\uDFAF Selected Color")),
 
                     React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
@@ -1486,13 +1486,13 @@ const d = labToolData.artStudio || {};
 
                         React.createElement("p", { className: "text-sm font-bold text-slate-800" }, "HSL(" + (d.hue || 0) + ", " + (d.sat || 100) + "%, " + (d.lit || 50) + "%)"),
 
-                        React.createElement("p", { className: "text-[11px] text-slate-600" }, "Click the wheel to pick a hue")
+                        React.createElement("p", { className: "text-[11px] text-slate-600" }, t('stem.artstudio.click_the_wheel_to_pick_a_hue', "Click the wheel to pick a hue"))
 
                       )
 
                     ),
 
-                    [{ k: 'hue', label: 'Hue', min: 0, max: 360 }, { k: 'sat', label: 'Saturation %', min: 0, max: 100 }, { k: 'lit', label: 'Lightness %', min: 0, max: 100 }].map(function (s) {
+                    [{ k: 'hue', label: 'Hue', min: 0, max: 360 }, { k: 'sat', label: t('stem.artstudio.saturation', 'Saturation %'), min: 0, max: 100 }, { k: 'lit', label: t('stem.artstudio.lightness', 'Lightness %'), min: 0, max: 100 }].map(function (s) {
 
                       return React.createElement("div", { key: s.k, className: "mb-2" },
 
@@ -1508,7 +1508,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-white rounded-xl p-3 border border-pink-200" },
 
-                    React.createElement("p", { className: "text-[11px] font-bold text-pink-600 mb-2" }, "\uD83D\uDD17 Color Harmony"),
+                    React.createElement("p", { className: "text-[11px] font-bold text-pink-600 mb-2" }, t('stem.artstudio.color_harmony', "\uD83D\uDD17 Color Harmony")),
 
                     React.createElement("div", { className: "flex gap-1" },
 
@@ -1536,7 +1536,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { style: { width: 80, height: 80, borderRadius: '50%', margin: '0 auto 8px', background: 'hsl(' + mix1.h + ',' + mix1.s + '%,' + mix1.l + '%)', border: '3px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' } }),
 
-                  React.createElement("p", { className: "text-xs font-bold text-indigo-700 mb-2" }, "Color A"),
+                  React.createElement("p", { className: "text-xs font-bold text-indigo-700 mb-2" }, t('stem.artstudio.color_a', "Color A")),
 
                   [{ k: 'mix1H', max: 360, val: mix1.h }, { k: 'mix1S', max: 100, val: mix1.s }, { k: 'mix1L', max: 100, val: mix1.l }].map(function (s) {
 
@@ -1550,9 +1550,9 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { style: { width: 100, height: 100, borderRadius: '50%', margin: '0 auto 8px', background: 'hsl(' + mixed.h + ',' + mixed.s + '%,' + mixed.l + '%)', border: '4px solid white', boxShadow: '0 6px 20px rgba(0,0,0,0.2)' } }),
 
-                  React.createElement("p", { className: "text-xs font-bold text-slate-700 mb-2" }, "\uD83C\uDFAF Result"),
+                  React.createElement("p", { className: "text-xs font-bold text-slate-700 mb-2" }, t('stem.artstudio.result', "\uD83C\uDFAF Result")),
 
-                  React.createElement("input", { type: "range", min: 0, max: 100, value: Math.round(mixRatio * 100), 'aria-label': 'Color mix ratio', onChange: function (e) { upd('mixRatio', parseInt(e.target.value) / 100); }, className: "w-full accent-pink-500" }),
+                  React.createElement("input", { type: "range", min: 0, max: 100, value: Math.round(mixRatio * 100), 'aria-label': t('stem.artstudio.color_mix_ratio', 'Color mix ratio'), onChange: function (e) { upd('mixRatio', parseInt(e.target.value) / 100); }, className: "w-full accent-pink-500" }),
 
                   React.createElement("p", { className: "text-[11px] text-slate-600" }, Math.round((1 - mixRatio) * 100) + '% A + ' + Math.round(mixRatio * 100) + '% B')
 
@@ -1562,7 +1562,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { style: { width: 80, height: 80, borderRadius: '50%', margin: '0 auto 8px', background: 'hsl(' + mix2.h + ',' + mix2.s + '%,' + mix2.l + '%)', border: '3px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' } }),
 
-                  React.createElement("p", { className: "text-xs font-bold text-rose-700 mb-2" }, "Color B"),
+                  React.createElement("p", { className: "text-xs font-bold text-rose-700 mb-2" }, t('stem.artstudio.color_b', "Color B")),
 
                   [{ k: 'mix2H', max: 360, val: mix2.h }, { k: 'mix2S', max: 100, val: mix2.s }, { k: 'mix2L', max: 100, val: mix2.l }].map(function (s) {
 
@@ -1582,21 +1582,21 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("div", { style: { width: 28, height: 28, borderRadius: 6, background: 'hsl(' + (d.hue || 0) + ',' + (d.sat || 100) + '%,' + (d.lit || 50) + '%)', border: '2px solid #fff', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' } }),
 
-                React.createElement("span", { className: "text-[11px] font-bold text-slate-600" }, "Current color"),
+                React.createElement("span", { className: "text-[11px] font-bold text-slate-600" }, t('stem.artstudio.current_color', "Current color")),
 
                 React.createElement("div", { className: "ml-auto flex gap-1 flex-wrap" },
 
-                  [{ id: 'brush', icon: '\uD83D\uDD8C', label: 'Brush' }, { id: 'eraser', icon: '\uD83E\uDDFD', label: 'Eraser' }, { id: 'fill', icon: '\uD83E\uDEA3', label: 'Fill' }].map(function (t) {
+                  [{ id: 'brush', icon: '\uD83D\uDD8C', label: t('stem.artstudio.brush', 'Brush') }, { id: 'eraser', icon: '\uD83E\uDDFD', label: t('stem.artstudio.eraser', 'Eraser') }, { id: 'fill', icon: '\uD83E\uDEA3', label: t('stem.artstudio.fill', 'Fill') }].map(function (t) {
 
-                    return React.createElement("button", { "aria-label": "Clear", key: t.id, onClick: function () { upd('pixelTool', t.id); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.pixelTool || 'brush') === t.id ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, t.icon + ' ' + t.label);
+                    return React.createElement("button", { "aria-label": t('stem.artstudio.clear', "Clear"), key: t.id, onClick: function () { upd('pixelTool', t.id); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.pixelTool || 'brush') === t.id ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, t.icon + ' ' + t.label);
 
                   }),
 
-                  React.createElement("button", { onClick: function () { upd('pixelData', {}); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
+                  React.createElement("button", { onClick: function () { upd('pixelData', {}); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, t('stem.artstudio.clear_2', "\uD83D\uDDD1 Clear")),
 
-                  React.createElement("button", { onClick: function () { var c = document.querySelector('canvas[style*="pixelated"]'); if (!c) return; var link = document.createElement('a'); link.download = 'pixel-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, "\uD83D\uDCE5 Export PNG"),
+                  React.createElement("button", { onClick: function () { var c = document.querySelector('canvas[style*="pixelated"]'); if (!c) return; var link = document.createElement('a'); link.download = 'pixel-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, t('stem.artstudio.export_png', "\uD83D\uDCE5 Export PNG")),
 
-                  React.createElement("select", { 'aria-label': 'Grid size', value: typeof d.pixelGrid === 'number' ? d.pixelGrid : 16, onChange: function (e) { upd('pixelGrid', parseInt(e.target.value)); upd('pixelData', {}); }, className: "px-2 py-1 text-xs border border-slate-400 rounded-lg" },
+                  React.createElement("select", { 'aria-label': t('stem.artstudio.grid_size', 'Grid size'), value: typeof d.pixelGrid === 'number' ? d.pixelGrid : 16, onChange: function (e) { upd('pixelGrid', parseInt(e.target.value)); upd('pixelData', {}); }, className: "px-2 py-1 text-xs border border-slate-400 rounded-lg" },
 
                     [8, 16, 24, 32].map(function (s) { return React.createElement("option", { key: s, value: s }, s + 'x' + s); }))
 
@@ -1610,17 +1610,17 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("div", { className: "flex items-center gap-2 mb-1.5 flex-wrap" },
 
-                  React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, "\uD83C\uDFA8 Palettes"),
+                  React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, t('stem.artstudio.palettes', "\uD83C\uDFA8 Palettes")),
 
-                  [{ id: 'retro', label: '\uD83D\uDD79 Retro', colors: [[0,85,45],[30,90,55],[55,90,55],[120,60,40],[200,70,50],[240,60,35],[280,70,45],[0,0,15],[0,0,85],[30,20,70]] },
+                  [{ id: 'retro', label: t('stem.artstudio.retro', '\uD83D\uDD79 Retro'), colors: [[0,85,45],[30,90,55],[55,90,55],[120,60,40],[200,70,50],[240,60,35],[280,70,45],[0,0,15],[0,0,85],[30,20,70]] },
 
-                   { id: 'nature', label: '\uD83C\uDF3F Nature', colors: [[85,50,35],[100,40,45],[120,55,30],[140,60,40],[45,70,45],[30,60,35],[20,50,30],[195,50,50],[210,40,60],[40,30,70]] },
+                   { id: 'nature', label: t('stem.artstudio.nature', '\uD83C\uDF3F Nature'), colors: [[85,50,35],[100,40,45],[120,55,30],[140,60,40],[45,70,45],[30,60,35],[20,50,30],[195,50,50],[210,40,60],[40,30,70]] },
 
-                   { id: 'warm', label: '\uD83D\uDD25 Warm', colors: [[0,80,50],[10,85,55],[20,90,55],[35,95,55],[45,90,55],[350,70,45],[15,70,40],[40,80,65],[5,60,35],[25,50,70]] },
+                   { id: 'warm', label: t('stem.artstudio.warm', '\uD83D\uDD25 Warm'), colors: [[0,80,50],[10,85,55],[20,90,55],[35,95,55],[45,90,55],[350,70,45],[15,70,40],[40,80,65],[5,60,35],[25,50,70]] },
 
-                   { id: 'cool', label: '\u2744 Cool', colors: [[195,70,50],[210,65,55],[225,60,50],[240,55,45],[180,50,40],[200,80,60],[170,45,50],[260,50,55],[190,40,65],[220,30,70]] },
+                   { id: 'cool', label: t('stem.artstudio.cool', '\u2744 Cool'), colors: [[195,70,50],[210,65,55],[225,60,50],[240,55,45],[180,50,40],[200,80,60],[170,45,50],[260,50,55],[190,40,65],[220,30,70]] },
 
-                   { id: 'neon', label: '\uD83D\uDCA5 Neon', colors: [[330,100,55],[300,100,55],[280,100,60],[200,100,55],[170,100,50],[120,100,45],[60,100,50],[30,100,55],[0,100,50],[45,100,55]] }].map(function (pal) {
+                   { id: 'neon', label: t('stem.artstudio.neon', '\uD83D\uDCA5 Neon'), colors: [[330,100,55],[300,100,55],[280,100,60],[200,100,55],[170,100,50],[120,100,45],[60,100,50],[30,100,55],[0,100,50],[45,100,55]] }].map(function (pal) {
 
                     return React.createElement("button", { key: pal.id, onClick: function () { upd('activePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.activePalette || 'retro') === pal.id ? 'bg-pink-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-pink-50') }, pal.label);
 
@@ -1648,7 +1648,7 @@ const d = labToolData.artStudio || {};
 
               ),
 
-              React.createElement("canvas", { ref: pixelRef, width: 512, height: 512, role: "img", 'aria-label': 'Pixel art canvas', className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block", style: { maxWidth: '100%', imageRendering: 'pixelated' } })
+              React.createElement("canvas", { ref: pixelRef, width: 512, height: 512, role: "img", 'aria-label': t('stem.artstudio.pixel_art_canvas', 'Pixel art canvas'), className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block", style: { maxWidth: '100%', imageRendering: 'pixelated' } })
 
             ),
 
@@ -1656,7 +1656,7 @@ const d = labToolData.artStudio || {};
 
               React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" },
 
-                React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "\u2728 Folds:"),
+                React.createElement("span", { className: "text-xs font-bold text-slate-600" }, t('stem.artstudio.folds', "\u2728 Folds:")),
 
                 [4, 6, 8, 12, 16].map(function (f) {
 
@@ -1666,21 +1666,21 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-3" }, "Brush:"),
 
-                React.createElement("input", { type: "range", min: 1, max: 10, value: d.brushSize || 3, 'aria-label': 'Brush size', onChange: function (e) { upd('brushSize', parseInt(e.target.value)); }, className: "w-20 accent-pink-600" }),
+                React.createElement("input", { type: "range", min: 1, max: 10, value: d.brushSize || 3, 'aria-label': t('stem.artstudio.brush_size', 'Brush size'), onChange: function (e) { upd('brushSize', parseInt(e.target.value)); }, className: "w-20 accent-pink-600" }),
 
                 React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-2" }, "Mode:"),
 
-                React.createElement("button", { onClick: function () { upd('symBrushMode', 'solid'); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.symBrushMode || 'rainbow') === 'solid' ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, "\uD83D\uDD8C Solid"),
+                React.createElement("button", { onClick: function () { upd('symBrushMode', 'solid'); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.symBrushMode || 'rainbow') === 'solid' ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, t('stem.artstudio.solid', "\uD83D\uDD8C Solid")),
 
-                React.createElement("button", { onClick: function () { upd('symBrushMode', 'rainbow'); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.symBrushMode || 'rainbow') === 'rainbow' ? 'bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, "\uD83C\uDF08 Rainbow"),
+                React.createElement("button", { onClick: function () { upd('symBrushMode', 'rainbow'); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.symBrushMode || 'rainbow') === 'rainbow' ? 'bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, t('stem.artstudio.rainbow', "\uD83C\uDF08 Rainbow")),
 
                 React.createElement("button", { onClick: function () { upd('symMirrorOnly', !(d.symMirrorOnly)); upd('symmetryClear', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.symMirrorOnly ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-violet-50') }, d.symMirrorOnly ? '\uD83E\uDE9E Mirror \u2714' : '\uD83E\uDE9E Mirror'),
 
-                React.createElement("button", { onClick: function () { upd('symmetryClear', Date.now()); }, className: "transition-colors ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
+                React.createElement("button", { onClick: function () { upd('symmetryClear', Date.now()); }, className: "transition-colors ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, t('stem.artstudio.clear_3', "\uD83D\uDDD1 Clear")),
 
-                React.createElement("button", { onClick: function () { var c = document.getElementById('symmetryCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'symmetry-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, "\uD83D\uDCE5 Export PNG"),
+                React.createElement("button", { onClick: function () { var c = document.getElementById('symmetryCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'symmetry-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, t('stem.artstudio.export_png_2', "\uD83D\uDCE5 Export PNG")),
 
-                React.createElement("button", { "aria-label": "Fullscreen", onClick: function () { toggleFullscreen('symmetryCanvasContainer'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-white hover:bg-slate-700 transition-all" }, "\uD83D\uDD0D Fullscreen")
+                React.createElement("button", { "aria-label": t('stem.artstudio.fullscreen', "Fullscreen"), onClick: function () { toggleFullscreen('symmetryCanvasContainer'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-white hover:bg-slate-700 transition-all" }, t('stem.artstudio.fullscreen_2', "\uD83D\uDD0D Fullscreen"))
 
               ),
 
@@ -1690,9 +1690,9 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "flex items-center gap-2 mb-1.5 flex-wrap" },
 
-                  React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, "\uD83C\uDFA8 Palettes"),
+                  React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, t('stem.artstudio.palettes_2', "\uD83C\uDFA8 Palettes")),
 
-                  [{ id: 'retro', label: '\uD83D\uDD79 Retro' }, { id: 'nature', label: '\uD83C\uDF3F Nature' }, { id: 'warm', label: '\uD83D\uDD25 Warm' }, { id: 'cool', label: '\u2744 Cool' }, { id: 'neon', label: '\uD83D\uDCA5 Neon' }].map(function (pal) {
+                  [{ id: 'retro', label: t('stem.artstudio.retro_2', '\uD83D\uDD79 Retro') }, { id: 'nature', label: t('stem.artstudio.nature_2', '\uD83C\uDF3F Nature') }, { id: 'warm', label: t('stem.artstudio.warm_2', '\uD83D\uDD25 Warm') }, { id: 'cool', label: t('stem.artstudio.cool_2', '\u2744 Cool') }, { id: 'neon', label: t('stem.artstudio.neon_2', '\uD83D\uDCA5 Neon') }].map(function (pal) {
 
                     return React.createElement("button", { key: pal.id, onClick: function () { upd('activePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.activePalette || 'retro') === pal.id ? 'bg-pink-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-pink-50') }, pal.label);
 
@@ -1720,7 +1720,7 @@ const d = labToolData.artStudio || {};
 
               ),
 
-              React.createElement("canvas", { id: 'symmetryCanvas', ref: symmetryRef, width: 512, height: 512, role: "img", 'aria-label': 'Symmetry drawing canvas', key: 'sym-' + (d.symmetryFolds || 6) + '-' + (d.symmetryClear || 0) + '-' + (d.symMirrorOnly ? 'm' : 'r'), className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block mt-3 flex-shrink-0", style: { maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', background: 'var(--allo-stem-canvas, #0f172a)' } })
+              React.createElement("canvas", { id: 'symmetryCanvas', ref: symmetryRef, width: 512, height: 512, role: "img", 'aria-label': t('stem.artstudio.symmetry_drawing_canvas', 'Symmetry drawing canvas'), key: 'sym-' + (d.symmetryFolds || 6) + '-' + (d.symmetryClear || 0) + '-' + (d.symMirrorOnly ? 'm' : 'r'), className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block mt-3 flex-shrink-0", style: { maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', background: 'var(--allo-stem-canvas, #0f172a)' } })
 
               ), // end symmetryCanvasContainer
 
@@ -1728,7 +1728,7 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("button", { onClick: function () { upd('showSymInfo', !d.showSymInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-violet-700" },
 
-                  React.createElement("span", null, "\uD83D\uDD2E Learn About Symmetry"),
+                  React.createElement("span", null, t('stem.artstudio.learn_about_symmetry', "\uD83D\uDD2E Learn About Symmetry")),
 
                   React.createElement("span", null, d.showSymInfo ? '\u25B2' : '\u25BC')
 
@@ -1736,15 +1736,15 @@ const d = labToolData.artStudio || {};
 
                 d.showSymInfo && React.createElement("div", { className: "mt-3 space-y-2 text-xs text-slate-600 leading-relaxed" },
 
-                  React.createElement("p", null, "\uD83C\uDF3B ", React.createElement("strong", null, "Radial symmetry"), " repeats a pattern around a central point. In ", React.createElement("strong", null, "nature"), ", starfish (5-fold), snowflakes (6-fold), and flowers show this everywhere."),
+                  React.createElement("p", null, "\uD83C\uDF3B ", React.createElement("strong", null, t('stem.artstudio.radial_symmetry', "Radial symmetry")), t('stem.artstudio.repeats_a_pattern_around_a_central_poi', " repeats a pattern around a central point. In "), React.createElement("strong", null, "nature"), t('stem.artstudio.starfish_5_fold_snowflakes_6_fold_and_', ", starfish (5-fold), snowflakes (6-fold), and flowers show this everywhere.")),
 
-                  React.createElement("p", null, "\uD83D\uDD73 ", React.createElement("strong", null, "4-fold:"), " Tile patterns, quilts, floor mosaics. ", React.createElement("strong", null, "6-fold:"), " Snowflakes, honeycombs, Islamic star patterns. ", React.createElement("strong", null, "8-fold:"), " Mandala art, rose windows in cathedrals."),
+                  React.createElement("p", null, "\uD83D\uDD73 ", React.createElement("strong", null, "4-fold:"), t('stem.artstudio.tile_patterns_quilts_floor_mosaics', " Tile patterns, quilts, floor mosaics. "), React.createElement("strong", null, "6-fold:"), t('stem.artstudio.snowflakes_honeycombs_islamic_star_pat', " Snowflakes, honeycombs, Islamic star patterns. "), React.createElement("strong", null, "8-fold:"), t('stem.artstudio.mandala_art_rose_windows_in_cathedrals', " Mandala art, rose windows in cathedrals.")),
 
-                  React.createElement("p", null, "\uD83C\uDFDB ", React.createElement("strong", null, "Cultural connections:"), " Islamic geometric art uses radial symmetry extensively. Celtic knots, Navajo textiles, and Japanese family crests (\u201Cmon\u201D) all rely on rotational symmetry."),
+                  React.createElement("p", null, "\uD83C\uDFDB ", React.createElement("strong", null, t('stem.artstudio.cultural_connections', "Cultural connections:")), t('stem.artstudio.islamic_geometric_art_uses_radial_symm', " Islamic geometric art uses radial symmetry extensively. Celtic knots, Navajo textiles, and Japanese family crests (\u201Cmon\u201D) all rely on rotational symmetry.")),
 
-                  React.createElement("p", null, "\uD83E\uDE9E ", React.createElement("strong", null, "Mirror mode"), " uses bilateral (reflection) symmetry \u2014 the kind found in faces, butterflies, and leaves. It\u2019s the most common symmetry in the animal kingdom."),
+                  React.createElement("p", null, "\uD83E\uDE9E ", React.createElement("strong", null, t('stem.artstudio.mirror_mode', "Mirror mode")), t('stem.artstudio.uses_bilateral_reflection_symmetry_the', " uses bilateral (reflection) symmetry \u2014 the kind found in faces, butterflies, and leaves. It\u2019s the most common symmetry in the animal kingdom.")),
 
-                  React.createElement("p", null, "\uD83C\uDF08 ", React.createElement("strong", null, "Rainbow brush"), " cycles through the color spectrum as you draw, creating gradient-like mandala effects automatically.")
+                  React.createElement("p", null, "\uD83C\uDF08 ", React.createElement("strong", null, t('stem.artstudio.rainbow_brush', "Rainbow brush")), t('stem.artstudio.cycles_through_the_color_spectrum_as_y', " cycles through the color spectrum as you draw, creating gradient-like mandala effects automatically."))
 
                 )
 
@@ -1758,11 +1758,11 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-400" },
 
-                  React.createElement("h4", { className: "text-xs font-bold text-slate-600 mb-3" }, "Foreground (Text)"),
+                  React.createElement("h4", { className: "text-xs font-bold text-slate-600 mb-3" }, t('stem.artstudio.foreground_text', "Foreground (Text)")),
 
                   React.createElement("div", { style: { width: '100%', height: 50, borderRadius: 8, background: 'hsl(' + fgH + ',' + fgS + '%,' + fgL + '%)', marginBottom: 8 } }),
 
-                  [{ k: 'fgH', label: 'Hue', max: 360, val: fgH }, { k: 'fgS', label: 'Sat', max: 100, val: fgS }, { k: 'fgL', label: 'Light', max: 100, val: fgL }].map(function (s) {
+                  [{ k: 'fgH', label: 'Hue', max: 360, val: fgH }, { k: 'fgS', label: 'Sat', max: 100, val: fgS }, { k: 'fgL', label: t('stem.artstudio.light', 'Light'), max: 100, val: fgL }].map(function (s) {
 
                     return React.createElement("div", { key: s.k, className: "mb-1" },
 
@@ -1778,11 +1778,11 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-400" },
 
-                  React.createElement("h4", { className: "text-xs font-bold text-slate-600 mb-3" }, "Background"),
+                  React.createElement("h4", { className: "text-xs font-bold text-slate-600 mb-3" }, t('stem.artstudio.background', "Background")),
 
                   React.createElement("div", { style: { width: '100%', height: 50, borderRadius: 8, background: 'hsl(' + bgH + ',' + bgS + '%,' + bgL + '%)', marginBottom: 8 } }),
 
-                  [{ k: 'bgH', label: 'Hue', max: 360, val: bgH }, { k: 'bgS', label: 'Sat', max: 100, val: bgS }, { k: 'bgL', label: 'Light', max: 100, val: bgL }].map(function (s) {
+                  [{ k: 'bgH', label: 'Hue', max: 360, val: bgH }, { k: 'bgS', label: 'Sat', max: 100, val: bgS }, { k: 'bgL', label: t('stem.artstudio.light_2', 'Light'), max: 100, val: bgL }].map(function (s) {
 
                     return React.createElement("div", { key: s.k, className: "mb-1" },
 
@@ -1802,9 +1802,9 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("div", { className: "mb-3", style: { padding: 20, borderRadius: 12, background: 'hsl(' + bgH + ',' + bgS + '%,' + bgL + '%)' } },
 
-                  React.createElement("p", { style: { color: 'hsl(' + fgH + ',' + fgS + '%,' + fgL + '%)', fontSize: 24, fontWeight: 'bold' } }, "Sample Text"),
+                  React.createElement("p", { style: { color: 'hsl(' + fgH + ',' + fgS + '%,' + fgL + '%)', fontSize: 24, fontWeight: 'bold' } }, t('stem.artstudio.sample_text', "Sample Text")),
 
-                  React.createElement("p", { style: { color: 'hsl(' + fgH + ',' + fgS + '%,' + fgL + '%)', fontSize: 14 } }, "The quick brown fox jumps over the lazy dog")
+                  React.createElement("p", { style: { color: 'hsl(' + fgH + ',' + fgS + '%,' + fgL + '%)', fontSize: 14 } }, t('stem.artstudio.the_quick_brown_fox_jumps_over_the_laz', "The quick brown fox jumps over the lazy dog"))
 
                 ),
 
@@ -1845,20 +1845,20 @@ const d = labToolData.artStudio || {};
               else if (iq.paletteSize <= 6 && iq.satBlend < 30) harmonyType = 'analogous';
               else harmonyType = 'rainbow';
               var hMeta = {
-                complementary: { label: '⚫⚪ Complementary (2 opposites)', desc: 'Maximum contrast. Pop art, brand accents.' },
-                triadic:       { label: '🔺 Triadic (3 equidistant)', desc: 'Vibrant but balanced. Childrens books, cartoons.' },
-                tetradic:      { label: '◇ Tetradic (4 corners)', desc: 'Rich palette with two opposing pairs.' },
-                analogous:     { label: '🌅 Analogous (low saturation neighbors)', desc: 'Calm, harmonious — landscape painting.' },
-                rainbow:       { label: '🌈 Rainbow (many vivid hues)', desc: 'Energetic, playful — childrens design.' }
+                complementary: { label: t('stem.artstudio.complementary_2_opposites', '⚫⚪ Complementary (2 opposites)'), desc: t('stem.artstudio.maximum_contrast_pop_art_brand_accents', 'Maximum contrast. Pop art, brand accents.') },
+                triadic:       { label: t('stem.artstudio.triadic_3_equidistant', '🔺 Triadic (3 equidistant)'), desc: t('stem.artstudio.vibrant_but_balanced_childrens_books_c', 'Vibrant but balanced. Childrens books, cartoons.') },
+                tetradic:      { label: t('stem.artstudio.tetradic_4_corners', '◇ Tetradic (4 corners)'), desc: t('stem.artstudio.rich_palette_with_two_opposing_pairs', 'Rich palette with two opposing pairs.') },
+                analogous:     { label: t('stem.artstudio.analogous_low_saturation_neighbors', '🌅 Analogous (low saturation neighbors)'), desc: t('stem.artstudio.calm_harmonious_landscape_painting', 'Calm, harmonious — landscape painting.') },
+                rainbow:       { label: t('stem.artstudio.rainbow_many_vivid_hues', '🌈 Rainbow (many vivid hues)'), desc: t('stem.artstudio.energetic_playful_childrens_design', 'Energetic, playful — childrens design.') }
               }[harmonyType];
               function logObs() {
                 setIQ({ log: (iq.log || []).concat([{ h: iq.baseHue, s: iq.satBlend, l: iq.litVar, r: iq.rotation, n: iq.paletteSize, t: harmonyType }]).slice(-8) });
               }
               return React.createElement('div', { className: 'space-y-3' },
                 React.createElement('div', { className: 'p-4 rounded-xl bg-white border border-pink-300 shadow-sm space-y-3' },
-                  React.createElement('h3', { className: 'text-sm font-black text-pink-700' }, '🎶 Color harmony discovery'),
+                  React.createElement('h3', { className: 'text-sm font-black text-pink-700' }, t('stem.artstudio.color_harmony_discovery', '🎶 Color harmony discovery')),
                   React.createElement('p', { className: 'text-[12px] text-slate-700 leading-relaxed' },
-                    'Adjust base hue, saturation, lightness variation, rotation, and palette size. Widget renders a live harmony palette and classifies it into one of 5 discrete harmony types. No score, no reveal — sweep and notice which combinations produce which harmonies.'),
+                    t('stem.artstudio.adjust_base_hue_saturation_lightness_v', 'Adjust base hue, saturation, lightness variation, rotation, and palette size. Widget renders a live harmony palette and classifies it into one of 5 discrete harmony types. No score, no reveal — sweep and notice which combinations produce which harmonies.')),
                   // Classification badge
                   React.createElement('div', { className: 'p-3 rounded-lg text-center', style: { background: '#f5f3ff', border: '2px solid #c4b5fd' } },
                     React.createElement('div', { className: 'text-base font-black text-violet-700' }, hMeta.label),
@@ -1918,8 +1918,8 @@ const d = labToolData.artStudio || {};
                   ),
                   // Log + reset
                   React.createElement('div', { className: 'flex gap-2 items-center flex-wrap' },
-                    React.createElement('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
-                    React.createElement('button', { onClick: function() { setIQ({ baseHue: 200, satBlend: 70, litVar: 50, rotation: 0, paletteSize: 6, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset'),
+                    React.createElement('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, t('stem.artstudio.log', '📋 Log')),
+                    React.createElement('button', { onClick: function() { setIQ({ baseHue: 200, satBlend: 70, litVar: 50, rotation: 0, paletteSize: 6, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, t('stem.artstudio.reset', '↺ Reset')),
                     (iq.log || []).length > 0 && React.createElement('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
                   ),
                   // Log table
@@ -1938,26 +1938,26 @@ const d = labToolData.artStudio || {};
                       }))
                     )
                   ),
-                  React.createElement('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis (free text — no right answer): What makes a palette feel harmonious vs jarring?',
+                  React.createElement('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.artstudio.hypothesis_free_text_no_right_answer_w', 'Hypothesis (free text — no right answer): What makes a palette feel harmonious vs jarring?'),
                     className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
-                  !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts (no answers)'),
+                  !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, t('stem.artstudio.stuck_show_open_prompts_no_answers', '🤔 Stuck — show open prompts (no answers)')),
                   iq.stuckRevealed && React.createElement('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
-                    React.createElement('div', { className: 'font-bold text-amber-900 mb-1' }, 'Open prompts — investigate by manipulating:'),
+                    React.createElement('div', { className: 'font-bold text-amber-900 mb-1' }, t('stem.artstudio.open_prompts_investigate_by_manipulati', 'Open prompts — investigate by manipulating:')),
                     React.createElement('ul', { className: 'list-disc pl-5 space-y-1' },
                       React.createElement('ul', { className: 'list-disc pl-3' },
-                        React.createElement('li', null, 'Find the smallest palette that still feels "complete" to you.'),
-                        React.createElement('li', null, 'Real impressionists used analogous palettes. Why might that be?'),
-                        React.createElement('li', null, 'Some color schemes have proper names (complementary, split-complementary, triadic). Look those up and try to reproduce them.'),
-                        React.createElement('li', null, 'High saturation + many colors = busy. Try desaturating with the blend slider — what happens to "harmony"?')))),
+                        React.createElement('li', null, t('stem.artstudio.find_the_smallest_palette_that_still_f', 'Find the smallest palette that still feels "complete" to you.')),
+                        React.createElement('li', null, t('stem.artstudio.real_impressionists_used_analogous_pal', 'Real impressionists used analogous palettes. Why might that be?')),
+                        React.createElement('li', null, t('stem.artstudio.some_color_schemes_have_proper_names_c', 'Some color schemes have proper names (complementary, split-complementary, triadic). Look those up and try to reproduce them.')),
+                        React.createElement('li', null, t('stem.artstudio.high_saturation_many_colors_busy_try_d', 'High saturation + many colors = busy. Try desaturating with the blend slider — what happens to "harmony"?'))))),
                   React.createElement('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
                     React.createElement('div', { className: 'flex items-center gap-2 mb-2' },
                       React.createElement('input', { type: 'checkbox', id: 'hh-und', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                       React.createElement('label', { htmlFor: 'hh-und', className: 'text-[12px] font-bold text-emerald-900 cursor-pointer' },
-                        'I think I understand color harmony now — let me explain it in my own words')),
-                    iq.understood && React.createElement('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain in your own words: how do hue spacing, saturation, and palette size determine "harmony"?',
+                        t('stem.artstudio.i_think_i_understand_color_harmony_now', 'I think I understand color harmony now — let me explain it in my own words'))),
+                    iq.understood && React.createElement('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.artstudio.explain_in_your_own_words_how_do_hue_s', 'Explain in your own words: how do hue spacing, saturation, and palette size determine "harmony"?'),
                       className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug', rows: 4 })),
                   React.createElement('div', { className: 'mt-3 text-[10px] italic text-slate-500' },
-                    'Design note: discrete 5-state harmony marker; SVG wheel shows palette positions; no "good palette" score — by design.')
+                    t('stem.artstudio.design_note_discrete_5_state_harmony_m', 'Design note: discrete 5-state harmony marker; SVG wheel shows palette positions; no "good palette" score — by design.'))
                 )
               );
             })(),
@@ -1972,15 +1972,15 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-gradient-to-br from-indigo-50 to-violet-50 rounded-xl p-4 border border-indigo-200" },
 
-                    React.createElement("h4", { className: "text-xs font-bold text-indigo-700 mb-3" }, "\uD83C\uDF00 Spirograph Controls"),
+                    React.createElement("h4", { className: "text-xs font-bold text-indigo-700 mb-3" }, t('stem.artstudio.spirograph_controls', "\uD83C\uDF00 Spirograph Controls")),
 
-                    [{ k: 'spiroR', label: 'Outer Radius', min: 40, max: 200, def: 120 },
+                    [{ k: 'spiroR', label: t('stem.artstudio.outer_radius', 'Outer Radius'), min: 40, max: 200, def: 120 },
 
-                     { k: 'spiror', label: 'Inner Radius', min: 10, max: 100, def: 45 },
+                     { k: 'spiror', label: t('stem.artstudio.inner_radius', 'Inner Radius'), min: 10, max: 100, def: 45 },
 
-                     { k: 'spirop', label: 'Pen Offset', min: 5, max: 120, def: 55 },
+                     { k: 'spirop', label: t('stem.artstudio.pen_offset', 'Pen Offset'), min: 5, max: 120, def: 55 },
 
-                     { k: 'spiroSpeed', label: 'Draw Speed', min: 1, max: 20, def: 8 }].map(function (s) {
+                     { k: 'spiroSpeed', label: t('stem.artstudio.draw_speed', 'Draw Speed'), min: 1, max: 20, def: 8 }].map(function (s) {
 
                       var val = typeof d[s.k] === 'number' ? d[s.k] : s.def;
 
@@ -1996,9 +1996,9 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { onClick: function () { upd('spiroReset', Date.now()); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
+                      React.createElement("button", { onClick: function () { upd('spiroReset', Date.now()); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, t('stem.artstudio.clear_4', "\uD83D\uDDD1 Clear")),
 
-                      React.createElement("button", { onClick: function () { var c = document.getElementById('spiroCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'spirograph-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG"),
+                      React.createElement("button", { onClick: function () { var c = document.getElementById('spiroCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'spirograph-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, t('stem.artstudio.export_png_3', "\uD83D\uDCE5 Export PNG")),
 
                       React.createElement("button", { "aria-label": "Presets:", onClick: function () { upd('spiroRainbow', !(d.spiroRainbow)); upd('spiroReset', Date.now()); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.spiroRainbow ? 'bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, d.spiroRainbow ? '\uD83C\uDF08 Rainbow \u2714' : '\uD83C\uDF08 Rainbow')
 
@@ -2008,7 +2008,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("span", { className: "text-[11px] font-bold text-indigo-500 mr-1" }, "Presets:"),
 
-                      [{ label: 'Star', R: 120, r: 45, p: 55 }, { label: 'Flower', R: 150, r: 50, p: 25 }, { label: 'Lace', R: 100, r: 73, p: 80 }, { label: 'Atom', R: 180, r: 25, p: 90 }, { label: 'Spiral', R: 140, r: 91, p: 60 }].map(function (pr) {
+                      [{ label: t('stem.artstudio.star', 'Star'), R: 120, r: 45, p: 55 }, { label: t('stem.artstudio.flower', 'Flower'), R: 150, r: 50, p: 25 }, { label: t('stem.artstudio.lace', 'Lace'), R: 100, r: 73, p: 80 }, { label: t('stem.artstudio.atom', 'Atom'), R: 180, r: 25, p: 90 }, { label: t('stem.artstudio.spiral', 'Spiral'), R: 140, r: 91, p: 60 }].map(function (pr) {
 
                         return React.createElement("button", { key: pr.label, onClick: function () { upd('spiroR', pr.R); upd('spiror', pr.r); upd('spirop', pr.p); upd('spiroReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-indigo-600 border border-indigo-600 hover:bg-indigo-50 transition-all" }, pr.label);
 
@@ -2020,15 +2020,15 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-fuchsia-50 rounded-xl p-3 border border-violet-200" },
 
-                    React.createElement("p", { className: "text-[11px] font-bold text-violet-700 mb-1" }, "\uD83D\uDCDA Math Connection"),
+                    React.createElement("p", { className: "text-[11px] font-bold text-violet-700 mb-1" }, t('stem.artstudio.math_connection', "\uD83D\uDCDA Math Connection")),
 
-                    React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed" }, "Spirographs draw ", React.createElement("strong", null, "hypotrochoid curves"), " \u2014 the path traced by a point on a small circle rolling inside a larger one. The pattern depends on the ", React.createElement("strong", null, "GCD"), " (greatest common divisor) of the two radii. When R/r is a simple fraction, you get fewer petals; complex ratios create intricate, never-repeating paths.")
+                    React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed" }, t('stem.artstudio.spirographs_draw', "Spirographs draw "), React.createElement("strong", null, t('stem.artstudio.hypotrochoid_curves', "hypotrochoid curves")), t('stem.artstudio.the_path_traced_by_a_point_on_a_small_', " \u2014 the path traced by a point on a small circle rolling inside a larger one. The pattern depends on the "), React.createElement("strong", null, "GCD"), t('stem.artstudio.greatest_common_divisor_of_the_two_rad', " (greatest common divisor) of the two radii. When R/r is a simple fraction, you get fewer petals; complex ratios create intricate, never-repeating paths."))
 
                   )
 
                 ),
 
-                React.createElement("canvas", { id: 'spiroCanvas', key: 'spiro-' + (d.spiroReset || 0), width: 512, height: 512, role: "img", 'aria-label': 'Spirograph canvas', className: "rounded-xl border-2 border-indigo-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: 'var(--allo-stem-canvas, #0f172a)' },
+                React.createElement("canvas", { id: 'spiroCanvas', key: 'spiro-' + (d.spiroReset || 0), width: 512, height: 512, role: "img", 'aria-label': t('stem.artstudio.spirograph_canvas', 'Spirograph canvas'), className: "rounded-xl border-2 border-indigo-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: 'var(--allo-stem-canvas, #0f172a)' },
 
                   ref: function (canvas) {
 
@@ -2126,19 +2126,19 @@ const d = labToolData.artStudio || {};
 
               React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" },
 
-                React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "\uD83C\uDF86 Style:"),
+                React.createElement("span", { className: "text-xs font-bold text-slate-600" }, t('stem.artstudio.style', "\uD83C\uDF86 Style:")),
 
-                [{ id: 'flow', icon: '\uD83C\uDF0A', label: 'Flow Field' }, { id: 'rain', icon: '\uD83C\uDF27', label: 'Particle Rain' }, { id: 'stars', icon: '\u2728', label: 'Starfield' }, { id: 'aurora', icon: '\uD83C\uDF0C', label: 'Aurora' }].map(function (s) {
+                [{ id: 'flow', icon: '\uD83C\uDF0A', label: t('stem.artstudio.flow_field', 'Flow Field') }, { id: 'rain', icon: '\uD83C\uDF27', label: t('stem.artstudio.particle_rain', 'Particle Rain') }, { id: 'stars', icon: '\u2728', label: t('stem.artstudio.starfield', 'Starfield') }, { id: 'aurora', icon: '\uD83C\uDF0C', label: t('stem.artstudio.aurora', 'Aurora') }].map(function (s) {
 
-                  return React.createElement("button", { "aria-label": "Clear", key: s.id, onClick: function () { upd('genStyle', s.id); upd('genReset', Date.now()); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.genStyle || 'flow') === s.id ? 'bg-fuchsia-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-fuchsia-50') }, s.icon + ' ' + s.label);
+                  return React.createElement("button", { "aria-label": t('stem.artstudio.clear_5', "Clear"), key: s.id, onClick: function () { upd('genStyle', s.id); upd('genReset', Date.now()); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.genStyle || 'flow') === s.id ? 'bg-fuchsia-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-fuchsia-50') }, s.icon + ' ' + s.label);
 
                 }),
 
                 React.createElement("button", { onClick: function () { upd('genPaused', !d.genPaused); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.genPaused ? 'bg-amber-100 text-amber-700' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200') }, d.genPaused ? '\u25B6 Resume' : '\u23F8 Pause'),
 
-                React.createElement("button", { onClick: function () { upd('genReset', Date.now()); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
+                React.createElement("button", { onClick: function () { upd('genReset', Date.now()); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, t('stem.artstudio.clear_6', "\uD83D\uDDD1 Clear")),
 
-                React.createElement("button", { "aria-label": "Export PNG", onClick: function () { var c = document.getElementById('genCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'generative-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
+                React.createElement("button", { "aria-label": t('stem.artstudio.export_png_4', "Export PNG"), onClick: function () { var c = document.getElementById('genCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'generative-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, t('stem.artstudio.export_png_5', "\uD83D\uDCE5 Export PNG"))
 
               ),
 
@@ -2146,13 +2146,13 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("span", { className: "text-[11px] font-bold text-slate-600" }, "Density:"),
 
-                React.createElement("input", { type: "range", min: 20, max: 300, value: d.genDensity || 100, 'aria-label': 'Particle density', onChange: function (e) { upd('genDensity', parseInt(e.target.value)); upd('genReset', Date.now()); }, className: "w-32 accent-fuchsia-600" }),
+                React.createElement("input", { type: "range", min: 20, max: 300, value: d.genDensity || 100, 'aria-label': t('stem.artstudio.particle_density', 'Particle density'), onChange: function (e) { upd('genDensity', parseInt(e.target.value)); upd('genReset', Date.now()); }, className: "w-32 accent-fuchsia-600" }),
 
                 React.createElement("span", { className: "text-[11px] text-slate-600" }, (d.genDensity || 100) + ' particles')
 
               ),
 
-              React.createElement("canvas", { id: 'genCanvas', key: 'gen-' + (d.genStyle || 'flow') + '-' + (d.genReset || 0), width: 640, height: 480, role: "img", 'aria-label': 'Generative art canvas', className: "rounded-xl border-2 border-fuchsia-200 shadow-lg cursor-crosshair mx-auto block", style: { maxWidth: '100%', background: '#0a0a1a' },
+              React.createElement("canvas", { id: 'genCanvas', key: 'gen-' + (d.genStyle || 'flow') + '-' + (d.genReset || 0), width: 640, height: 480, role: "img", 'aria-label': t('stem.artstudio.generative_art_canvas', 'Generative art canvas'), className: "rounded-xl border-2 border-fuchsia-200 shadow-lg cursor-crosshair mx-auto block", style: { maxWidth: '100%', background: '#0a0a1a' },
 
                 ref: function (canvas) {
 
@@ -2388,7 +2388,7 @@ const d = labToolData.artStudio || {};
 
               }),
 
-              React.createElement("p", { className: "text-[11px] text-center text-slate-600 italic mt-1" }, "\uD83D\uDC46 Click or drag on the canvas to create particle bursts")
+              React.createElement("p", { className: "text-[11px] text-center text-slate-600 italic mt-1" }, t('stem.artstudio.click_or_drag_on_the_canvas_to_create_', "\uD83D\uDC46 Click or drag on the canvas to create particle bursts"))
 
             ),
 
@@ -2398,23 +2398,23 @@ const d = labToolData.artStudio || {};
 
               React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" },
 
-                React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "\uD83C\uDF00 RPM:"),
+                React.createElement("span", { className: "text-xs font-bold text-slate-600" }, t('stem.artstudio.rpm', "\uD83C\uDF00 RPM:")),
 
-                React.createElement("input", { type: "range", min: 20, max: 300, value: d.spinRPM || 120, 'aria-label': 'Spin speed RPM', onChange: function (e) { upd('spinRPM', parseInt(e.target.value)); }, className: "w-28 accent-orange-600" }),
+                React.createElement("input", { type: "range", min: 20, max: 300, value: d.spinRPM || 120, 'aria-label': t('stem.artstudio.spin_speed_rpm', 'Spin speed RPM'), onChange: function (e) { upd('spinRPM', parseInt(e.target.value)); }, className: "w-28 accent-orange-600" }),
 
                 React.createElement("span", { className: "text-[11px] text-slate-600 font-bold" }, (d.spinRPM || 120) + ' rpm'),
 
                 React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-2" }, "Brush:"),
 
-                React.createElement("input", { type: "range", min: 2, max: 20, value: d.spinBrush || 6, 'aria-label': 'Spin brush size', onChange: function (e) { upd('spinBrush', parseInt(e.target.value)); }, className: "w-20 accent-orange-600" }),
+                React.createElement("input", { type: "range", min: 2, max: 20, value: d.spinBrush || 6, 'aria-label': t('stem.artstudio.spin_brush_size', 'Spin brush size'), onChange: function (e) { upd('spinBrush', parseInt(e.target.value)); }, className: "w-20 accent-orange-600" }),
 
                 React.createElement("button", { onClick: function () { upd('spinSplatter', !d.spinSplatter); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.spinSplatter ? 'bg-orange-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-orange-50') }, d.spinSplatter ? '\uD83D\uDCA6 Splatter \u2714' : '\uD83D\uDCA6 Splatter'),
 
                 React.createElement("button", { onClick: function () { upd('spinDark', !d.spinDark); upd('spinReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.spinDark ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 border border-slate-400') }, d.spinDark ? '\uD83C\uDF11 Dark' : '\u2B1C Light'),
 
-                React.createElement("button", { onClick: function () { upd('spinReset', Date.now()); }, className: "transition-colors ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
+                React.createElement("button", { onClick: function () { upd('spinReset', Date.now()); }, className: "transition-colors ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, t('stem.artstudio.clear_7', "\uD83D\uDDD1 Clear")),
 
-                React.createElement("button", { "aria-label": "Export PNG", onClick: function () { var c = document.getElementById('spinCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'spin-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
+                React.createElement("button", { "aria-label": t('stem.artstudio.export_png_6', "Export PNG"), onClick: function () { var c = document.getElementById('spinCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'spin-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, t('stem.artstudio.export_png_7', "\uD83D\uDCE5 Export PNG"))
 
               ),
 
@@ -2422,9 +2422,9 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("div", { className: "flex items-center gap-2 mb-1.5 flex-wrap" },
 
-                  React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, "\uD83C\uDFA8 Palettes"),
+                  React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, t('stem.artstudio.palettes_3', "\uD83C\uDFA8 Palettes")),
 
-                  [{ id: 'retro', label: '\uD83D\uDD79 Retro' }, { id: 'nature', label: '\uD83C\uDF3F Nature' }, { id: 'warm', label: '\uD83D\uDD25 Warm' }, { id: 'cool', label: '\u2744 Cool' }, { id: 'neon', label: '\uD83D\uDCA5 Neon' }].map(function (pal) {
+                  [{ id: 'retro', label: t('stem.artstudio.retro_3', '\uD83D\uDD79 Retro') }, { id: 'nature', label: t('stem.artstudio.nature_3', '\uD83C\uDF3F Nature') }, { id: 'warm', label: t('stem.artstudio.warm_3', '\uD83D\uDD25 Warm') }, { id: 'cool', label: t('stem.artstudio.cool_3', '\u2744 Cool') }, { id: 'neon', label: t('stem.artstudio.neon_3', '\uD83D\uDCA5 Neon') }].map(function (pal) {
 
                     return React.createElement("button", { key: pal.id, onClick: function () { upd('activePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.activePalette || 'retro') === pal.id ? 'bg-orange-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-orange-50') }, pal.label);
 
@@ -2452,7 +2452,7 @@ const d = labToolData.artStudio || {};
 
               ),
 
-              React.createElement("canvas", { id: 'spinCanvas', key: 'spin-' + (d.spinReset || 0), width: 512, height: 512, role: "img", 'aria-label': 'Spin art canvas', className: "rounded-full border-4 border-orange-300 shadow-lg cursor-crosshair mx-auto block mt-3", style: { maxWidth: '100%', background: d.spinDark ? '#0f172a' : '#fefefe' },
+              React.createElement("canvas", { id: 'spinCanvas', key: 'spin-' + (d.spinReset || 0), width: 512, height: 512, role: "img", 'aria-label': t('stem.artstudio.spin_art_canvas', 'Spin art canvas'), className: "rounded-full border-4 border-orange-300 shadow-lg cursor-crosshair mx-auto block mt-3", style: { maxWidth: '100%', background: d.spinDark ? '#0f172a' : '#fefefe' },
 
                 ref: function (canvas) {
 
@@ -2611,13 +2611,13 @@ const d = labToolData.artStudio || {};
 
               }),
 
-              React.createElement("p", { className: "text-[11px] text-center text-slate-600 italic mt-1" }, "\uD83D\uDC46 Click and drag to drip paint on the spinning canvas"),
+              React.createElement("p", { className: "text-[11px] text-center text-slate-600 italic mt-1" }, t('stem.artstudio.click_and_drag_to_drip_paint_on_the_sp', "\uD83D\uDC46 Click and drag to drip paint on the spinning canvas")),
 
               React.createElement("div", { className: "mt-3 bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-4 border border-orange-200" },
 
                 React.createElement("button", { onClick: function () { upd('showSpinInfo', !d.showSpinInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-orange-700" },
 
-                  React.createElement("span", null, "\uD83C\uDF00 Physics of Spin Art"),
+                  React.createElement("span", null, t('stem.artstudio.physics_of_spin_art', "\uD83C\uDF00 Physics of Spin Art")),
 
                   React.createElement("span", null, d.showSpinInfo ? '\u25B2' : '\u25BC')
 
@@ -2625,11 +2625,11 @@ const d = labToolData.artStudio || {};
 
                 d.showSpinInfo && React.createElement("div", { className: "mt-3 space-y-2 text-xs text-slate-600 leading-relaxed" },
 
-                  React.createElement("p", null, "\uD83C\uDF00 ", React.createElement("strong", null, "Centrifugal effect:"), " In a spinning reference frame, objects experience an outward pseudo-force proportional to their distance from the center and the square of angular velocity (\u03C9\u00B2r)."),
+                  React.createElement("p", null, "\uD83C\uDF00 ", React.createElement("strong", null, t('stem.artstudio.centrifugal_effect', "Centrifugal effect:")), t('stem.artstudio.in_a_spinning_reference_frame_objects_', " In a spinning reference frame, objects experience an outward pseudo-force proportional to their distance from the center and the square of angular velocity (\u03C9\u00B2r).")),
 
-                  React.createElement("p", null, "\uD83D\uDCA7 ", React.createElement("strong", null, "Paint behavior:"), " Real spin art uses centripetal acceleration to spread paint. Thinner paint flies outward faster; thicker paint creates shorter, more controlled trails."),
+                  React.createElement("p", null, "\uD83D\uDCA7 ", React.createElement("strong", null, t('stem.artstudio.paint_behavior', "Paint behavior:")), t('stem.artstudio.real_spin_art_uses_centripetal_acceler', " Real spin art uses centripetal acceleration to spread paint. Thinner paint flies outward faster; thicker paint creates shorter, more controlled trails.")),
 
-                  React.createElement("p", null, "\uD83C\uDFA8 ", React.createElement("strong", null, "Why it\u2019s beautiful:"), " The combination of rotational motion and paint viscosity creates natural spirals and interference patterns. No two spin paintings are ever alike \u2014 it\u2019s a form of ", React.createElement("strong", null, "chaotic art"), ".")
+                  React.createElement("p", null, "\uD83C\uDFA8 ", React.createElement("strong", null, t('stem.artstudio.why_it_s_beautiful', "Why it\u2019s beautiful:")), t('stem.artstudio.the_combination_of_rotational_motion_a', " The combination of rotational motion and paint viscosity creates natural spirals and interference patterns. No two spin paintings are ever alike \u2014 it\u2019s a form of "), React.createElement("strong", null, t('stem.artstudio.chaotic_art', "chaotic art")), ".")
 
                 )
 
@@ -2647,15 +2647,15 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-gradient-to-br from-rose-50 to-pink-50 rounded-xl p-4 border border-rose-200" },
 
-                    React.createElement("h4", { className: "text-xs font-bold text-rose-700 mb-3" }, "\uD83D\uDD78 String Art Controls"),
+                    React.createElement("h4", { className: "text-xs font-bold text-rose-700 mb-3" }, t('stem.artstudio.string_art_controls', "\uD83D\uDD78 String Art Controls")),
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[11px] font-bold text-rose-600 block mb-1" }, "Shape"),
+                      React.createElement("label", { className: "text-[11px] font-bold text-rose-600 block mb-1" }, t('stem.artstudio.shape', "Shape")),
 
                       React.createElement("div", { className: "flex gap-1" },
 
-                        [{ id: 'circle', label: '\u25CB Circle' }, { id: 'square', label: '\u25A1 Square' }, { id: 'triangle', label: '\u25B3 Triangle' }, { id: 'star', label: '\u2606 Star' }].map(function (s) {
+                        [{ id: 'circle', label: t('stem.artstudio.circle', '\u25CB Circle') }, { id: 'square', label: t('stem.artstudio.square', '\u25A1 Square') }, { id: 'triangle', label: t('stem.artstudio.triangle', '\u25B3 Triangle') }, { id: 'star', label: t('stem.artstudio.star_2', '\u2606 Star') }].map(function (s) {
 
                           return React.createElement("button", { key: s.id, onClick: function () { upd('strShape', s.id); upd('strReset', Date.now()); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.strShape || 'circle') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-rose-50') }, s.label);
 
@@ -2665,11 +2665,11 @@ const d = labToolData.artStudio || {};
 
                     ),
 
-                    [{ k: 'strNails', label: 'Nail Count', min: 20, max: 200, def: 80 },
+                    [{ k: 'strNails', label: t('stem.artstudio.nail_count', 'Nail Count'), min: 20, max: 200, def: 80 },
 
-                     { k: 'strMult', label: 'Multiplier', min: 2, max: 99, def: 2 },
+                     { k: 'strMult', label: t('stem.artstudio.multiplier', 'Multiplier'), min: 2, max: 99, def: 2 },
 
-                     { k: 'strOpacity', label: 'Thread Opacity %', min: 5, max: 100, def: 30 }].map(function (s) {
+                     { k: 'strOpacity', label: t('stem.artstudio.thread_opacity', 'Thread Opacity %'), min: 5, max: 100, def: 30 }].map(function (s) {
 
                       var val = typeof d[s.k] === 'number' ? d[s.k] : s.def;
 
@@ -2685,9 +2685,9 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { onClick: function () { upd('strReset', Date.now()); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
+                      React.createElement("button", { onClick: function () { upd('strReset', Date.now()); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, t('stem.artstudio.clear_8', "\uD83D\uDDD1 Clear")),
 
-                      React.createElement("button", { onClick: function () { var c = document.getElementById('stringCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'string-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG"),
+                      React.createElement("button", { onClick: function () { var c = document.getElementById('stringCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'string-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, t('stem.artstudio.export_png_8', "\uD83D\uDCE5 Export PNG")),
 
                       React.createElement("button", { "aria-label": "Presets:", onClick: function () { upd('strRainbow', !(d.strRainbow)); upd('strReset', Date.now()); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.strRainbow ? 'bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, d.strRainbow ? '\uD83C\uDF08 Rainbow \u2714' : '\uD83C\uDF08 Rainbow')
 
@@ -2697,7 +2697,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("span", { className: "text-[11px] font-bold text-rose-500 mr-1" }, "Presets:"),
 
-                      [{ label: 'Cardioid', nails: 100, mult: 2 }, { label: 'Nephroid', nails: 100, mult: 3 }, { label: 'Star Burst', nails: 72, mult: 37 }, { label: 'Lace', nails: 150, mult: 71 }, { label: 'Weave', nails: 60, mult: 23 }].map(function (pr) {
+                      [{ label: t('stem.artstudio.cardioid', 'Cardioid'), nails: 100, mult: 2 }, { label: t('stem.artstudio.nephroid', 'Nephroid'), nails: 100, mult: 3 }, { label: t('stem.artstudio.star_burst', 'Star Burst'), nails: 72, mult: 37 }, { label: t('stem.artstudio.lace_2', 'Lace'), nails: 150, mult: 71 }, { label: t('stem.artstudio.weave', 'Weave'), nails: 60, mult: 23 }].map(function (pr) {
 
                         return React.createElement("button", { key: pr.label, onClick: function () { upd('strNails', pr.nails); upd('strMult', pr.mult); upd('strReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-rose-600 border border-rose-600 hover:bg-rose-50 transition-all" }, pr.label);
 
@@ -2709,15 +2709,15 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-gradient-to-br from-pink-50 to-fuchsia-50 rounded-xl p-3 border border-pink-200" },
 
-                    React.createElement("p", { className: "text-[11px] font-bold text-pink-700 mb-1" }, "\uD83D\uDCDA Math Connection"),
+                    React.createElement("p", { className: "text-[11px] font-bold text-pink-700 mb-1" }, t('stem.artstudio.math_connection_2', "\uD83D\uDCDA Math Connection")),
 
-                    React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed" }, "String art creates ", React.createElement("strong", null, "envelope curves"), " from straight lines. With a circle and multiplier of 2, you get a ", React.createElement("strong", null, "cardioid"), " \u2014 the heart-shaped curve seen in coffee cups. Multiplier 3 makes a ", React.createElement("strong", null, "nephroid"), ". Higher multipliers create intricate patterns governed by ", React.createElement("strong", null, "modular arithmetic"), ": nail N connects to nail (N \u00D7 M) mod total.")
+                    React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed" }, t('stem.artstudio.string_art_creates', "String art creates "), React.createElement("strong", null, t('stem.artstudio.envelope_curves', "envelope curves")), t('stem.artstudio.from_straight_lines_with_a_circle_and_', " from straight lines. With a circle and multiplier of 2, you get a "), React.createElement("strong", null, "cardioid"), t('stem.artstudio.the_heart_shaped_curve_seen_in_coffee_', " \u2014 the heart-shaped curve seen in coffee cups. Multiplier 3 makes a "), React.createElement("strong", null, "nephroid"), t('stem.artstudio.higher_multipliers_create_intricate_pa', ". Higher multipliers create intricate patterns governed by "), React.createElement("strong", null, t('stem.artstudio.modular_arithmetic', "modular arithmetic")), t('stem.artstudio.nail_n_connects_to_nail_n_m_mod_total', ": nail N connects to nail (N \u00D7 M) mod total."))
 
                   )
 
                 ),
 
-                React.createElement("canvas", { id: 'stringCanvas', key: 'str-' + (d.strReset || 0), width: 512, height: 512, role: "img", 'aria-label': 'String art canvas', className: "rounded-xl border-2 border-rose-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: 'var(--allo-stem-canvas, #0f172a)' },
+                React.createElement("canvas", { id: 'stringCanvas', key: 'str-' + (d.strReset || 0), width: 512, height: 512, role: "img", 'aria-label': t('stem.artstudio.string_art_canvas', 'String art canvas'), className: "rounded-xl border-2 border-rose-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: 'var(--allo-stem-canvas, #0f172a)' },
 
                   ref: function (canvas) {
 
@@ -2893,15 +2893,15 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-gradient-to-br from-fuchsia-50 to-purple-50 rounded-xl p-4 border border-fuchsia-200" },
 
-                    React.createElement("h4", { className: "text-xs font-bold text-fuchsia-700 mb-3" }, "\uD83D\uDC41 Op Art Controls"),
+                    React.createElement("h4", { className: "text-xs font-bold text-fuchsia-700 mb-3" }, t('stem.artstudio.op_art_controls', "\uD83D\uDC41 Op Art Controls")),
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[11px] font-bold text-fuchsia-600 block mb-1" }, "Style"),
+                      React.createElement("label", { className: "text-[11px] font-bold text-fuchsia-600 block mb-1" }, t('stem.artstudio.style_2', "Style")),
 
                       React.createElement("div", { className: "flex gap-1" },
 
-                        [{ id: 'concentric', label: '\u25CE Rings' }, { id: 'checkerboard', label: '\u2593 Checker' }, { id: 'moire', label: '\u2261 Moir\u00E9' }, { id: 'vibrating', label: '\u2248 Vibrate' }].map(function (s) {
+                        [{ id: 'concentric', label: t('stem.artstudio.rings', '\u25CE Rings') }, { id: 'checkerboard', label: t('stem.artstudio.checker', '\u2593 Checker') }, { id: 'moire', label: t('stem.artstudio.moir', '\u2261 Moir\u00E9') }, { id: 'vibrating', label: t('stem.artstudio.vibrate', '\u2248 Vibrate') }].map(function (s) {
 
                           return React.createElement("button", { key: s.id, onClick: function () { upd('opStyle', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.opStyle || 'concentric') === s.id ? 'bg-fuchsia-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-fuchsia-50') }, s.label);
 
@@ -2911,13 +2911,13 @@ const d = labToolData.artStudio || {};
 
                     ),
 
-                    [{ k: 'opSpeed', label: 'Speed', min: 1, max: 20, def: 5 },
+                    [{ k: 'opSpeed', label: t('stem.artstudio.speed', 'Speed'), min: 1, max: 20, def: 5 },
 
-                     { k: 'opDensity', label: 'Density', min: 3, max: 60, def: 20 },
+                     { k: 'opDensity', label: t('stem.artstudio.density', 'Density'), min: 3, max: 60, def: 20 },
 
-                     { k: 'opHueA', label: 'Color A Hue', min: 0, max: 360, def: 0 },
+                     { k: 'opHueA', label: t('stem.artstudio.color_a_hue', 'Color A Hue'), min: 0, max: 360, def: 0 },
 
-                     { k: 'opHueB', label: 'Color B Hue', min: 0, max: 360, def: 180 }].map(function (s) {
+                     { k: 'opHueB', label: t('stem.artstudio.color_b_hue', 'Color B Hue'), min: 0, max: 360, def: 180 }].map(function (s) {
 
                       var val = typeof d[s.k] === 'number' ? d[s.k] : s.def;
 
@@ -2935,7 +2935,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("button", { onClick: function () { upd('opPaused', !(d.opPaused)); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.opPaused ? 'bg-green-50 text-green-700 border border-green-600 hover:bg-green-100' : 'bg-amber-50 text-amber-700 border border-amber-600 hover:bg-amber-100') }, d.opPaused ? '\u25B6 Resume' : '\u23F8 Pause'),
 
-                      React.createElement("button", { "aria-label": "Export PNG", onClick: function () { var c = document.getElementById('opArtCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'op-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
+                      React.createElement("button", { "aria-label": t('stem.artstudio.export_png_9', "Export PNG"), onClick: function () { var c = document.getElementById('opArtCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'op-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, t('stem.artstudio.export_png_10', "\uD83D\uDCE5 Export PNG"))
 
                     ),
 
@@ -2943,13 +2943,13 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("span", { className: "text-[11px] font-bold text-fuchsia-500 mr-1" }, "Presets:"),
 
-                      [{ label: 'Classic B&W', style: 'concentric', hA: 0, hB: 0, density: 25, speed: 4 },
+                      [{ label: t('stem.artstudio.classic_b_w', 'Classic B&W'), style: 'concentric', hA: 0, hB: 0, density: 25, speed: 4 },
 
-                       { label: 'Neon Pulse', style: 'concentric', hA: 280, hB: 160, density: 15, speed: 8 },
+                       { label: t('stem.artstudio.neon_pulse', 'Neon Pulse'), style: 'concentric', hA: 280, hB: 160, density: 15, speed: 8 },
 
-                       { label: 'Spiral Vortex', style: 'moire', hA: 200, hB: 30, density: 40, speed: 6 },
+                       { label: t('stem.artstudio.spiral_vortex', 'Spiral Vortex'), style: 'moire', hA: 200, hB: 30, density: 40, speed: 6 },
 
-                       { label: 'Wave Grid', style: 'checkerboard', hA: 10, hB: 190, density: 20, speed: 5 }].map(function (pr) {
+                       { label: t('stem.artstudio.wave_grid', 'Wave Grid'), style: 'checkerboard', hA: 10, hB: 190, density: 20, speed: 5 }].map(function (pr) {
 
                         return React.createElement("button", { key: pr.label, onClick: function () { upd('opStyle', pr.style); upd('opHueA', pr.hA); upd('opHueB', pr.hB); upd('opDensity', pr.density); upd('opSpeed', pr.speed); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-fuchsia-600 border border-fuchsia-600 hover:bg-fuchsia-50 transition-all" }, pr.label);
 
@@ -2963,7 +2963,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("button", { onClick: function () { upd('showOpInfo', !d.showOpInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-purple-700" },
 
-                      React.createElement("span", null, "\uD83E\uDDE0 The Science of Op Art"),
+                      React.createElement("span", null, t('stem.artstudio.the_science_of_op_art', "\uD83E\uDDE0 The Science of Op Art")),
 
                       React.createElement("span", null, d.showOpInfo ? '\u25B2' : '\u25BC')
 
@@ -2971,13 +2971,13 @@ const d = labToolData.artStudio || {};
 
                     d.showOpInfo && React.createElement("div", { className: "mt-3 space-y-2 text-xs text-slate-600 leading-relaxed" },
 
-                      React.createElement("p", null, "\uD83D\uDC41 ", React.createElement("strong", null, "Op Art"), " (Optical Art) emerged in the 1960s, pioneered by ", React.createElement("strong", null, "Bridget Riley"), " and ", React.createElement("strong", null, "Victor Vasarely"), ". It exploits the mechanics of human vision to create illusions of movement, vibration, and depth on flat surfaces."),
+                      React.createElement("p", null, "\uD83D\uDC41 ", React.createElement("strong", null, t('stem.artstudio.op_art_3', "Op Art")), t('stem.artstudio.optical_art_emerged_in_the_1960s_pione', " (Optical Art) emerged in the 1960s, pioneered by "), React.createElement("strong", null, t('stem.artstudio.bridget_riley', "Bridget Riley")), " and ", React.createElement("strong", null, t('stem.artstudio.victor_vasarely', "Victor Vasarely")), t('stem.artstudio.it_exploits_the_mechanics_of_human_vis', ". It exploits the mechanics of human vision to create illusions of movement, vibration, and depth on flat surfaces.")),
 
-                      React.createElement("p", null, "\u2728 ", React.createElement("strong", null, "Moir\u00E9 patterns"), " appear when two regular grids overlap at slight angles. Your brain can\u2019t resolve the conflicting patterns, creating phantom curves and waves. This same effect causes the \u201Cscreen door\u201D shimmer on some fabrics."),
+                      React.createElement("p", null, "\u2728 ", React.createElement("strong", null, t('stem.artstudio.moir_patterns', "Moir\u00E9 patterns")), t('stem.artstudio.appear_when_two_regular_grids_overlap_', " appear when two regular grids overlap at slight angles. Your brain can\u2019t resolve the conflicting patterns, creating phantom curves and waves. This same effect causes the \u201Cscreen door\u201D shimmer on some fabrics.")),
 
-                      React.createElement("p", null, "\uD83C\uDF08 ", React.createElement("strong", null, "Vibrating colors"), " occur when highly saturated complementary colors sit side by side. Your eye\u2019s color receptors compete, creating a buzzing, unstable edge\u2014this is called ", React.createElement("strong", null, "chromatic vibration"), "."),
+                      React.createElement("p", null, "\uD83C\uDF08 ", React.createElement("strong", null, t('stem.artstudio.vibrating_colors', "Vibrating colors")), t('stem.artstudio.occur_when_highly_saturated_complement', " occur when highly saturated complementary colors sit side by side. Your eye\u2019s color receptors compete, creating a buzzing, unstable edge\u2014this is called "), React.createElement("strong", null, t('stem.artstudio.chromatic_vibration', "chromatic vibration")), "."),
 
-                      React.createElement("p", null, "\uD83E\uDDE0 ", React.createElement("strong", null, "Persistence of vision"), " and ", React.createElement("strong", null, "lateral inhibition"), " in the retina are the main perceptual mechanisms. Concentric ring patterns trigger involuntary eye saccades, making the artwork seem to breathe and pulse.")
+                      React.createElement("p", null, "\uD83E\uDDE0 ", React.createElement("strong", null, t('stem.artstudio.persistence_of_vision', "Persistence of vision")), " and ", React.createElement("strong", null, t('stem.artstudio.lateral_inhibition', "lateral inhibition")), t('stem.artstudio.in_the_retina_are_the_main_perceptual_', " in the retina are the main perceptual mechanisms. Concentric ring patterns trigger involuntary eye saccades, making the artwork seem to breathe and pulse."))
 
                     )
 
@@ -2985,7 +2985,7 @@ const d = labToolData.artStudio || {};
 
                 ),
 
-                React.createElement("canvas", { id: 'opArtCanvas', width: 512, height: 512, role: "img", 'aria-label': 'Op art canvas', className: "rounded-xl border-2 border-fuchsia-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: '#0a0a0a' },
+                React.createElement("canvas", { id: 'opArtCanvas', width: 512, height: 512, role: "img", 'aria-label': t('stem.artstudio.op_art_canvas', 'Op art canvas'), className: "rounded-xl border-2 border-fuchsia-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: '#0a0a0a' },
 
                   ref: function (canvas) {
 
@@ -3243,15 +3243,15 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-4 border border-teal-200" },
 
-                    React.createElement("h4", { className: "text-xs font-bold text-teal-700 mb-3" }, "\uD83D\uDD37 Tessellation Controls"),
+                    React.createElement("h4", { className: "text-xs font-bold text-teal-700 mb-3" }, t('stem.artstudio.tessellation_controls', "\uD83D\uDD37 Tessellation Controls")),
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[11px] font-bold text-teal-600 block mb-1" }, "Base Shape"),
+                      React.createElement("label", { className: "text-[11px] font-bold text-teal-600 block mb-1" }, t('stem.artstudio.base_shape', "Base Shape")),
 
                       React.createElement("div", { className: "flex gap-1" },
 
-                        [{ id: 'triangle', label: '\u25B3 Triangle' }, { id: 'square', label: '\u25A1 Square' }, { id: 'hexagon', label: '\u2B21 Hexagon' }].map(function (s) {
+                        [{ id: 'triangle', label: t('stem.artstudio.triangle_2', '\u25B3 Triangle') }, { id: 'square', label: t('stem.artstudio.square_2', '\u25A1 Square') }, { id: 'hexagon', label: t('stem.artstudio.hexagon', '\u2B21 Hexagon') }].map(function (s) {
 
                           return React.createElement("button", { key: s.id, onClick: function () { upd('tessShape', s.id); upd('tessClickData', {}); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.tessShape || 'hexagon') === s.id ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-teal-50') }, s.label);
 
@@ -3261,11 +3261,11 @@ const d = labToolData.artStudio || {};
 
                     ),
 
-                    [{ k: 'tessGrid', label: 'Grid Size', min: 2, max: 20, def: 6 },
+                    [{ k: 'tessGrid', label: t('stem.artstudio.grid_size_2', 'Grid Size'), min: 2, max: 20, def: 6 },
 
-                     { k: 'tessRotation', label: 'Rotation \u00B0', min: 0, max: 360, def: 0 },
+                     { k: 'tessRotation', label: t('stem.artstudio.rotation', 'Rotation \u00B0'), min: 0, max: 360, def: 0 },
 
-                     { k: 'tessWarpAmt', label: 'Escher Warp', min: 0, max: 50, def: 0 }].map(function (s) {
+                     { k: 'tessWarpAmt', label: t('stem.artstudio.escher_warp', 'Escher Warp'), min: 0, max: 50, def: 0 }].map(function (s) {
 
                       var val = typeof d[s.k] === 'number' ? d[s.k] : s.def;
 
@@ -3281,11 +3281,11 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[11px] font-bold text-teal-600 block mb-1" }, "Color Scheme"),
+                      React.createElement("label", { className: "text-[11px] font-bold text-teal-600 block mb-1" }, t('stem.artstudio.color_scheme', "Color Scheme")),
 
                       React.createElement("div", { className: "flex gap-1 flex-wrap" },
 
-                        [{ id: 'rainbow', label: '\uD83C\uDF08 Rainbow' }, { id: 'warm', label: '\uD83D\uDD25 Warm' }, { id: 'cool', label: '\u2744 Cool' }, { id: 'mono', label: '\u25AB Mono' }, { id: 'custom', label: '\uD83C\uDFA8 Custom' }].map(function (s) {
+                        [{ id: 'rainbow', label: t('stem.artstudio.rainbow_2', '\uD83C\uDF08 Rainbow') }, { id: 'warm', label: t('stem.artstudio.warm_4', '\uD83D\uDD25 Warm') }, { id: 'cool', label: t('stem.artstudio.cool_4', '\u2744 Cool') }, { id: 'mono', label: t('stem.artstudio.mono', '\u25AB Mono') }, { id: 'custom', label: t('stem.artstudio.custom', '\uD83C\uDFA8 Custom') }].map(function (s) {
 
                           return React.createElement("button", { key: s.id, onClick: function () { upd('tessScheme', s.id); upd('tessClickData', {}); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.tessScheme || 'rainbow') === s.id ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-teal-50') }, s.label);
 
@@ -3297,9 +3297,9 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { onClick: function () { upd('tessClickData', {}); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear Colors"),
+                      React.createElement("button", { onClick: function () { upd('tessClickData', {}); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, t('stem.artstudio.clear_colors', "\uD83D\uDDD1 Clear Colors")),
 
-                      React.createElement("button", { "aria-label": "Export PNG", onClick: function () { var c = document.getElementById('tessCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'tessellation-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
+                      React.createElement("button", { "aria-label": t('stem.artstudio.export_png_11', "Export PNG"), onClick: function () { var c = document.getElementById('tessCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'tessellation-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, t('stem.artstudio.export_png_12', "\uD83D\uDCE5 Export PNG"))
 
                     ),
 
@@ -3307,13 +3307,13 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("span", { className: "text-[11px] font-bold text-teal-500 mr-1" }, "Presets:"),
 
-                      [{ label: 'Honeycomb', shape: 'hexagon', grid: 6, rot: 0, warp: 0, scheme: 'warm' },
+                      [{ label: t('stem.artstudio.honeycomb', 'Honeycomb'), shape: 'hexagon', grid: 6, rot: 0, warp: 0, scheme: 'warm' },
 
-                       { label: 'Pinwheel', shape: 'triangle', grid: 8, rot: 30, warp: 0, scheme: 'rainbow' },
+                       { label: t('stem.artstudio.pinwheel', 'Pinwheel'), shape: 'triangle', grid: 8, rot: 30, warp: 0, scheme: 'rainbow' },
 
-                       { label: 'Islamic Star', shape: 'hexagon', grid: 5, rot: 15, warp: 10, scheme: 'cool' },
+                       { label: t('stem.artstudio.islamic_star', 'Islamic Star'), shape: 'hexagon', grid: 5, rot: 15, warp: 10, scheme: 'cool' },
 
-                       { label: 'Escher Fish', shape: 'square', grid: 6, rot: 0, warp: 35, scheme: 'rainbow' }].map(function (pr) {
+                       { label: t('stem.artstudio.escher_fish', 'Escher Fish'), shape: 'square', grid: 6, rot: 0, warp: 35, scheme: 'rainbow' }].map(function (pr) {
 
                         return React.createElement("button", { key: pr.label, onClick: function () { upd('tessShape', pr.shape); upd('tessGrid', pr.grid); upd('tessRotation', pr.rot); upd('tessWarpAmt', pr.warp); upd('tessScheme', pr.scheme); upd('tessClickData', {}); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-teal-600 border border-teal-600 hover:bg-teal-50 transition-all" }, pr.label);
 
@@ -3327,7 +3327,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("button", { onClick: function () { upd('showTessInfo', !d.showTessInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-cyan-700" },
 
-                      React.createElement("span", null, "\uD83D\uDCCF The Math of Tessellations"),
+                      React.createElement("span", null, t('stem.artstudio.the_math_of_tessellations', "\uD83D\uDCCF The Math of Tessellations")),
 
                       React.createElement("span", null, d.showTessInfo ? '\u25B2' : '\u25BC')
 
@@ -3335,23 +3335,23 @@ const d = labToolData.artStudio || {};
 
                     d.showTessInfo && React.createElement("div", { className: "mt-3 space-y-2 text-xs text-slate-600 leading-relaxed" },
 
-                      React.createElement("p", null, "\uD83D\uDD37 A ", React.createElement("strong", null, "tessellation"), " (or tiling) covers a plane with shapes that fit together without gaps or overlaps. Only three regular polygons tile by themselves: ", React.createElement("strong", null, "equilateral triangles"), " (60\u00B0 \u00D7 6 = 360\u00B0), ", React.createElement("strong", null, "squares"), " (90\u00B0 \u00D7 4 = 360\u00B0), and ", React.createElement("strong", null, "regular hexagons"), " (120\u00B0 \u00D7 3 = 360\u00B0)."),
+                      React.createElement("p", null, t('stem.artstudio.a', "\uD83D\uDD37 A "), React.createElement("strong", null, "tessellation"), t('stem.artstudio.or_tiling_covers_a_plane_with_shapes_t', " (or tiling) covers a plane with shapes that fit together without gaps or overlaps. Only three regular polygons tile by themselves: "), React.createElement("strong", null, t('stem.artstudio.equilateral_triangles', "equilateral triangles")), t('stem.artstudio.60_6_360', " (60\u00B0 \u00D7 6 = 360\u00B0), "), React.createElement("strong", null, "squares"), t('stem.artstudio.90_4_360_and', " (90\u00B0 \u00D7 4 = 360\u00B0), and "), React.createElement("strong", null, t('stem.artstudio.regular_hexagons', "regular hexagons")), t('stem.artstudio.120_3_360', " (120\u00B0 \u00D7 3 = 360\u00B0).")),
 
-                      React.createElement("p", null, "\uD83C\uDFA8 ", React.createElement("strong", null, "M.C. Escher"), " (1898\u20131972) transformed simple tilings into art by warping tile edges. His technique: deform one side of a shape and copy the deformation to the opposite side, so tiles still fit together perfectly. This is the basis of the ", React.createElement("strong", null, "Escher Warp"), " slider."),
+                      React.createElement("p", null, "\uD83C\uDFA8 ", React.createElement("strong", null, t('stem.artstudio.m_c_escher', "M.C. Escher")), t('stem.artstudio.1898_1972_transformed_simple_tilings_i', " (1898\u20131972) transformed simple tilings into art by warping tile edges. His technique: deform one side of a shape and copy the deformation to the opposite side, so tiles still fit together perfectly. This is the basis of the "), React.createElement("strong", null, t('stem.artstudio.escher_warp_2', "Escher Warp")), " slider."),
 
-                      React.createElement("p", null, "\uD83C\uDFDB ", React.createElement("strong", null, "Islamic geometric art"), " uses tessellations extensively\u2014combining stars, hexagons, and interlocking patterns seen in mosques like the Alhambra. These patterns follow strict mathematical rules while creating breathtaking visual complexity."),
+                      React.createElement("p", null, "\uD83C\uDFDB ", React.createElement("strong", null, t('stem.artstudio.islamic_geometric_art', "Islamic geometric art")), t('stem.artstudio.uses_tessellations_extensively_combini', " uses tessellations extensively\u2014combining stars, hexagons, and interlocking patterns seen in mosques like the Alhambra. These patterns follow strict mathematical rules while creating breathtaking visual complexity.")),
 
-                      React.createElement("p", null, "\uD83D\uDCCA ", React.createElement("strong", null, "Transformations:"), " Tessellations use three key operations\u2014", React.createElement("strong", null, "translation"), " (slide), ", React.createElement("strong", null, "rotation"), " (turn), and ", React.createElement("strong", null, "reflection"), " (flip). Every tessellation can be classified by which of these 17 'wallpaper groups' it belongs to.")
+                      React.createElement("p", null, "\uD83D\uDCCA ", React.createElement("strong", null, "Transformations:"), t('stem.artstudio.tessellations_use_three_key_operations', " Tessellations use three key operations\u2014"), React.createElement("strong", null, "translation"), " (slide), ", React.createElement("strong", null, "rotation"), t('stem.artstudio.turn_and', " (turn), and "), React.createElement("strong", null, "reflection"), t('stem.artstudio.flip_every_tessellation_can_be_classif', " (flip). Every tessellation can be classified by which of these 17 'wallpaper groups' it belongs to."))
 
                     )
 
                   ),
 
-                  React.createElement("p", { className: "text-[11px] text-center text-slate-600 italic" }, "\uD83D\uDC46 Click tiles to cycle their colors")
+                  React.createElement("p", { className: "text-[11px] text-center text-slate-600 italic" }, t('stem.artstudio.click_tiles_to_cycle_their_colors', "\uD83D\uDC46 Click tiles to cycle their colors"))
 
                 ),
 
-                React.createElement("canvas", { id: 'tessCanvas', width: 512, height: 512, role: "img", 'aria-label': 'Tessellation canvas', className: "rounded-xl border-2 border-teal-200 shadow-lg mx-auto block cursor-pointer", style: { maxWidth: '100%', background: 'var(--allo-stem-canvas, #0f172a)' },
+                React.createElement("canvas", { id: 'tessCanvas', width: 512, height: 512, role: "img", 'aria-label': t('stem.artstudio.tessellation_canvas', 'Tessellation canvas'), className: "rounded-xl border-2 border-teal-200 shadow-lg mx-auto block cursor-pointer", style: { maxWidth: '100%', background: 'var(--allo-stem-canvas, #0f172a)' },
 
                   key: 'tess-' + (d.tessShape || 'hexagon') + '-' + (d.tessGrid || 6) + '-' + (d.tessRotation || 0) + '-' + (d.tessWarpAmt || 0) + '-' + (d.tessScheme || 'rainbow'),
 
@@ -3681,15 +3681,15 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl p-4 border border-violet-200" },
 
-                    React.createElement("h4", { className: "text-xs font-bold text-violet-700 mb-3" }, "\uD83D\uDD2E Fractal Explorer"),
+                    React.createElement("h4", { className: "text-xs font-bold text-violet-700 mb-3" }, t('stem.artstudio.fractal_explorer', "\uD83D\uDD2E Fractal Explorer")),
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[11px] font-bold text-violet-600 block mb-1" }, "Fractal Type"),
+                      React.createElement("label", { className: "text-[11px] font-bold text-violet-600 block mb-1" }, t('stem.artstudio.fractal_type', "Fractal Type")),
 
                       React.createElement("div", { className: "flex gap-1" },
 
-                        [{ id: 'mandelbrot', label: '\uD83C\uDF00 Mandelbrot' }, { id: 'julia', label: '\u2728 Julia' }, { id: 'burningShip', label: '\uD83D\uDD25 Burning Ship' }, { id: 'sierpinski', label: '\u25B3 Sierpinski' }].map(function (s) {
+                        [{ id: 'mandelbrot', label: t('stem.artstudio.mandelbrot', '\uD83C\uDF00 Mandelbrot') }, { id: 'julia', label: t('stem.artstudio.julia', '\u2728 Julia') }, { id: 'burningShip', label: t('stem.artstudio.burning_ship', '\uD83D\uDD25 Burning Ship') }, { id: 'sierpinski', label: t('stem.artstudio.sierpinski', '\u25B3 Sierpinski') }].map(function (s) {
 
                           return React.createElement("button", { key: s.id, onClick: function () { upd('fractalType', s.id); upd('fractalZoom', 1); upd('fractalPanX', 0); upd('fractalPanY', 0); upd('fractalReset', Date.now()); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.fractalType || 'mandelbrot') === s.id ? 'bg-violet-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-violet-50') }, s.label);
 
@@ -3699,9 +3699,9 @@ const d = labToolData.artStudio || {};
 
                     ),
 
-                    [{ k: 'fractalIter', label: 'Max Iterations', min: 50, max: 500, def: 200 },
+                    [{ k: 'fractalIter', label: t('stem.artstudio.max_iterations', 'Max Iterations'), min: 50, max: 500, def: 200 },
 
-                     { k: 'fractalZoom', label: 'Zoom', min: 1, max: 500, def: 1 }].map(function (s) {
+                     { k: 'fractalZoom', label: t('stem.artstudio.zoom', 'Zoom'), min: 1, max: 500, def: 1 }].map(function (s) {
 
                       var val = typeof d[s.k] === 'number' ? d[s.k] : s.def;
 
@@ -3717,11 +3717,11 @@ const d = labToolData.artStudio || {};
 
                     (d.fractalType || 'mandelbrot') === 'julia' && React.createElement("div", { className: "space-y-2 mt-2 p-2 bg-violet-50 rounded-lg border border-violet-200" },
 
-                      React.createElement("p", { className: "text-[11px] font-bold text-violet-500" }, "Julia Constant (c)"),
+                      React.createElement("p", { className: "text-[11px] font-bold text-violet-500" }, t('stem.artstudio.julia_constant_c', "Julia Constant (c)")),
 
-                      [{ k: 'juliaReal', label: 'c real', min: -200, max: 200, def: -70 },
+                      [{ k: 'juliaReal', label: t('stem.artstudio.c_real', 'c real'), min: -200, max: 200, def: -70 },
 
-                       { k: 'juliaImag', label: 'c imaginary', min: -200, max: 200, def: 27 }].map(function (s) {
+                       { k: 'juliaImag', label: t('stem.artstudio.c_imaginary', 'c imaginary'), min: -200, max: 200, def: 27 }].map(function (s) {
 
                         var val = typeof d[s.k] === 'number' ? d[s.k] : s.def;
 
@@ -3739,11 +3739,11 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3 mt-2" },
 
-                      React.createElement("label", { className: "text-[11px] font-bold text-violet-600 block mb-1" }, "Color Scheme"),
+                      React.createElement("label", { className: "text-[11px] font-bold text-violet-600 block mb-1" }, t('stem.artstudio.color_scheme_2', "Color Scheme")),
 
                       React.createElement("div", { className: "flex gap-1 flex-wrap" },
 
-                        [{ id: 'classic', label: '\uD83C\uDF08 Classic' }, { id: 'fire', label: '\uD83D\uDD25 Fire' }, { id: 'ocean', label: '\uD83C\uDF0A Ocean' }, { id: 'psychedelic', label: '\uD83D\uDC9C Psychedelic' }, { id: 'grayscale', label: '\u25AB Grayscale' }].map(function (s) {
+                        [{ id: 'classic', label: t('stem.artstudio.classic', '\uD83C\uDF08 Classic') }, { id: 'fire', label: t('stem.artstudio.fire', '\uD83D\uDD25 Fire') }, { id: 'ocean', label: t('stem.artstudio.ocean', '\uD83C\uDF0A Ocean') }, { id: 'psychedelic', label: t('stem.artstudio.psychedelic', '\uD83D\uDC9C Psychedelic') }, { id: 'grayscale', label: t('stem.artstudio.grayscale', '\u25AB Grayscale') }].map(function (s) {
 
                           return React.createElement("button", { key: s.id, onClick: function () { upd('fractalColor', s.id); upd('fractalReset', Date.now()); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.fractalColor || 'classic') === s.id ? 'bg-violet-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-violet-50') }, s.label);
 
@@ -3755,9 +3755,9 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { onClick: function () { upd('fractalZoom', 1); upd('fractalPanX', 0); upd('fractalPanY', 0); upd('fractalReset', Date.now()); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\u21BA Reset View"),
+                      React.createElement("button", { onClick: function () { upd('fractalZoom', 1); upd('fractalPanX', 0); upd('fractalPanY', 0); upd('fractalReset', Date.now()); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, t('stem.artstudio.reset_view', "\u21BA Reset View")),
 
-                      React.createElement("button", { "aria-label": "Export PNG", onClick: function () { var c = document.getElementById('fractalCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'fractal-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
+                      React.createElement("button", { "aria-label": t('stem.artstudio.export_png_13', "Export PNG"), onClick: function () { var c = document.getElementById('fractalCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'fractal-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, t('stem.artstudio.export_png_14', "\uD83D\uDCE5 Export PNG"))
 
                     ),
 
@@ -3765,13 +3765,13 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("span", { className: "text-[11px] font-bold text-violet-500 mr-1" }, "Presets:"),
 
-                      [{ label: 'Seahorse Valley', type: 'mandelbrot', panX: 74, panY: -20, zoom: 120, iter: 350 },
+                      [{ label: t('stem.artstudio.seahorse_valley', 'Seahorse Valley'), type: 'mandelbrot', panX: 74, panY: -20, zoom: 120, iter: 350 },
 
-                       { label: 'Elephant Valley', type: 'mandelbrot', panX: 36, panY: -4, zoom: 80, iter: 300 },
+                       { label: t('stem.artstudio.elephant_valley', 'Elephant Valley'), type: 'mandelbrot', panX: 36, panY: -4, zoom: 80, iter: 300 },
 
-                       { label: 'Lightning', type: 'julia', panX: 0, panY: 0, zoom: 1, iter: 250, jr: -12, ji: 75 },
+                       { label: t('stem.artstudio.lightning', 'Lightning'), type: 'julia', panX: 0, panY: 0, zoom: 1, iter: 250, jr: -12, ji: 75 },
 
-                       { label: 'Spiral Arm', type: 'julia', panX: 0, panY: 0, zoom: 1, iter: 300, jr: 28, ji: 1 }].map(function (pr) {
+                       { label: t('stem.artstudio.spiral_arm', 'Spiral Arm'), type: 'julia', panX: 0, panY: 0, zoom: 1, iter: 300, jr: 28, ji: 1 }].map(function (pr) {
 
                         return React.createElement("button", { key: pr.label, onClick: function () { upd('fractalType', pr.type); upd('fractalPanX', pr.panX); upd('fractalPanY', pr.panY); upd('fractalZoom', pr.zoom); upd('fractalIter', pr.iter); if (pr.jr !== undefined) { upd('juliaReal', pr.jr); upd('juliaImag', pr.ji); } upd('fractalReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-violet-600 border border-violet-200 hover:bg-violet-50 transition-all" }, pr.label);
 
@@ -3785,7 +3785,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("button", { onClick: function () { upd('showFractalInfo', !d.showFractalInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-purple-700" },
 
-                      React.createElement("span", null, "\uD83D\uDD2C The Math of Fractals"),
+                      React.createElement("span", null, t('stem.artstudio.the_math_of_fractals', "\uD83D\uDD2C The Math of Fractals")),
 
                       React.createElement("span", null, d.showFractalInfo ? '\u25B2' : '\u25BC')
 
@@ -3793,15 +3793,15 @@ const d = labToolData.artStudio || {};
 
                     d.showFractalInfo && React.createElement("div", { className: "mt-3 space-y-2 text-xs text-slate-600 leading-relaxed" },
 
-                      React.createElement("p", null, "\uD83C\uDF00 ", React.createElement("strong", null, "The Mandelbrot set"), " is generated by iterating z = z\u00B2 + c for every point c in the complex plane. Points where |z| stays bounded (never exceeds 2) are 'in' the set. The boundary reveals ", React.createElement("strong", null, "infinite complexity"), " at every scale."),
+                      React.createElement("p", null, "\uD83C\uDF00 ", React.createElement("strong", null, t('stem.artstudio.the_mandelbrot_set', "The Mandelbrot set")), t('stem.artstudio.is_generated_by_iterating_z_z_c_for_ev', " is generated by iterating z = z\u00B2 + c for every point c in the complex plane. Points where |z| stays bounded (never exceeds 2) are 'in' the set. The boundary reveals "), React.createElement("strong", null, t('stem.artstudio.infinite_complexity', "infinite complexity")), t('stem.artstudio.at_every_scale', " at every scale.")),
 
-                      React.createElement("p", null, "\u2728 ", React.createElement("strong", null, "Julia sets"), " use the same formula but fix c and vary the starting z. Each Mandelbrot point generates a unique Julia set \u2014 points inside the Mandelbrot produce connected Julias; outside points produce dust-like 'Fatou sets'."),
+                      React.createElement("p", null, "\u2728 ", React.createElement("strong", null, t('stem.artstudio.julia_sets', "Julia sets")), t('stem.artstudio.use_the_same_formula_but_fix_c_and_var', " use the same formula but fix c and vary the starting z. Each Mandelbrot point generates a unique Julia set \u2014 points inside the Mandelbrot produce connected Julias; outside points produce dust-like 'Fatou sets'.")),
 
-                      React.createElement("p", null, "\uD83D\uDD25 The ", React.createElement("strong", null, "Burning Ship"), " fractal modifies the iteration to z = (|Re(z)| + i|Im(z)|)\u00B2 + c, creating an asymmetric shape resembling a flaming vessel. It was discovered by Michael Michelitsch and Otto R\u00F6ssler in 1992."),
+                      React.createElement("p", null, t('stem.artstudio.the', "\uD83D\uDD25 The "), React.createElement("strong", null, t('stem.artstudio.burning_ship_2', "Burning Ship")), t('stem.artstudio.fractal_modifies_the_iteration_to_z_re', " fractal modifies the iteration to z = (|Re(z)| + i|Im(z)|)\u00B2 + c, creating an asymmetric shape resembling a flaming vessel. It was discovered by Michael Michelitsch and Otto R\u00F6ssler in 1992.")),
 
-                      React.createElement("p", null, "\u25B3 The ", React.createElement("strong", null, "Sierpinski Triangle"), " is built by the 'chaos game': pick a random point, then repeatedly jump halfway toward a randomly chosen vertex. Remarkably, this random process produces a perfectly self-similar fractal."),
+                      React.createElement("p", null, t('stem.artstudio.the_2', "\u25B3 The "), React.createElement("strong", null, t('stem.artstudio.sierpinski_triangle', "Sierpinski Triangle")), t('stem.artstudio.is_built_by_the_chaos_game_pick_a_rand', " is built by the 'chaos game': pick a random point, then repeatedly jump halfway toward a randomly chosen vertex. Remarkably, this random process produces a perfectly self-similar fractal.")),
 
-                      React.createElement("p", null, "\uD83E\uDDE0 ", React.createElement("strong", null, "Benoit Mandelbrot"), " (1924\u20132010) coined the word 'fractal' from Latin 'fractus' (broken). He showed that coastlines, mountains, blood vessels, and stock markets all exhibit fractal geometry \u2014 ", React.createElement("strong", null, "nature is fractal"), ".")
+                      React.createElement("p", null, "\uD83E\uDDE0 ", React.createElement("strong", null, t('stem.artstudio.benoit_mandelbrot', "Benoit Mandelbrot")), t('stem.artstudio.1924_2010_coined_the_word_fractal_from', " (1924\u20132010) coined the word 'fractal' from Latin 'fractus' (broken). He showed that coastlines, mountains, blood vessels, and stock markets all exhibit fractal geometry \u2014 "), React.createElement("strong", null, t('stem.artstudio.nature_is_fractal', "nature is fractal")), ".")
 
                     )
 
@@ -3809,7 +3809,7 @@ const d = labToolData.artStudio || {};
 
                 ),
 
-                React.createElement("canvas", { id: 'fractalCanvas', width: 512, height: 512, role: "img", 'aria-label': 'Fractal art canvas', className: "rounded-xl border-2 border-violet-200 shadow-lg mx-auto block cursor-crosshair", style: { maxWidth: '100%', background: '#0a0a1a' },
+                React.createElement("canvas", { id: 'fractalCanvas', width: 512, height: 512, role: "img", 'aria-label': t('stem.artstudio.fractal_art_canvas', 'Fractal art canvas'), className: "rounded-xl border-2 border-violet-200 shadow-lg mx-auto block cursor-crosshair", style: { maxWidth: '100%', background: '#0a0a1a' },
 
                   key: 'frac-' + (d.fractalType || 'mandelbrot') + '-' + (d.fractalReset || 0),
 
@@ -4103,7 +4103,7 @@ const d = labToolData.artStudio || {};
 
               ),
 
-              React.createElement("p", { className: "text-[11px] text-center text-slate-600 italic mt-1" }, "\uD83D\uDC46 Double-click to zoom in \u2022 Scroll-wheel to zoom in/out")
+              React.createElement("p", { className: "text-[11px] text-center text-slate-600 italic mt-1" }, t('stem.artstudio.double_click_to_zoom_in_scroll_wheel_t', "\uD83D\uDC46 Double-click to zoom in \u2022 Scroll-wheel to zoom in/out"))
 
             ),
 
@@ -4117,15 +4117,15 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-gradient-to-br from-rose-50 to-orange-50 rounded-xl p-4 border border-rose-200" },
 
-                    React.createElement("h4", { className: "text-xs font-bold text-rose-700 mb-3" }, "\uD83C\uDF08 Gradient Lab"),
+                    React.createElement("h4", { className: "text-xs font-bold text-rose-700 mb-3" }, t('stem.artstudio.gradient_lab', "\uD83C\uDF08 Gradient Lab")),
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[11px] font-bold text-rose-600 block mb-1" }, "Gradient Type"),
+                      React.createElement("label", { className: "text-[11px] font-bold text-rose-600 block mb-1" }, t('stem.artstudio.gradient_type', "Gradient Type")),
 
                       React.createElement("div", { className: "flex gap-1" },
 
-                        [{ id: 'linear', label: '\u2194 Linear' }, { id: 'radial', label: '\u25CE Radial' }, { id: 'conic', label: '\uD83C\uDF00 Conic' }].map(function (s) {
+                        [{ id: 'linear', label: t('stem.artstudio.linear', '\u2194 Linear') }, { id: 'radial', label: t('stem.artstudio.radial', '\u25CE Radial') }, { id: 'conic', label: t('stem.artstudio.conic', '\uD83C\uDF00 Conic') }].map(function (s) {
 
                           return React.createElement("button", { key: s.id, onClick: function () { upd('gradType', s.id); }, className: "flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all " + ((d.gradType || 'linear') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-rose-50') }, s.label);
 
@@ -4139,17 +4139,17 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("label", { className: "text-[11px] font-bold text-rose-600 block mb-0.5" }, "Angle: " + (typeof d.gradAngle === 'number' ? d.gradAngle : 90) + '\u00B0'),
 
-                      React.createElement("input", { type: "range", min: 0, max: 360, value: typeof d.gradAngle === 'number' ? d.gradAngle : 90, 'aria-label': 'Gradient angle', onChange: function (e) { upd('gradAngle', parseInt(e.target.value)); }, className: "w-full accent-rose-600" })
+                      React.createElement("input", { type: "range", min: 0, max: 360, value: typeof d.gradAngle === 'number' ? d.gradAngle : 90, 'aria-label': t('stem.artstudio.gradient_angle', 'Gradient angle'), onChange: function (e) { upd('gradAngle', parseInt(e.target.value)); }, className: "w-full accent-rose-600" })
 
                     ),
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[11px] font-bold text-rose-600 block mb-1" }, "Blend Mode"),
+                      React.createElement("label", { className: "text-[11px] font-bold text-rose-600 block mb-1" }, t('stem.artstudio.blend_mode', "Blend Mode")),
 
                       React.createElement("div", { className: "flex gap-1" },
 
-                        [{ id: 'smooth', label: 'Smooth' }, { id: 'hard', label: 'Hard Edge' }].map(function (s) {
+                        [{ id: 'smooth', label: t('stem.artstudio.smooth', 'Smooth') }, { id: 'hard', label: t('stem.artstudio.hard_edge', 'Hard Edge') }].map(function (s) {
 
                           return React.createElement("button", { key: s.id, onClick: function () { upd('gradBlend', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.gradBlend || 'smooth') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-rose-50') }, s.label);
 
@@ -4165,9 +4165,9 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("div", { className: "flex items-center justify-between mb-1" },
 
-                        React.createElement("label", { className: "text-[11px] font-bold text-rose-600" }, "Color Stops"),
+                        React.createElement("label", { className: "text-[11px] font-bold text-rose-600" }, t('stem.artstudio.color_stops', "Color Stops")),
 
-                        React.createElement("button", { "aria-label": "+ Add Stop", onClick: function () {
+                        React.createElement("button", { "aria-label": t('stem.artstudio.add_stop', "+ Add Stop"), onClick: function () {
 
                           var stops = d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }];
 
@@ -4183,7 +4183,7 @@ const d = labToolData.artStudio || {};
 
                           }
 
-                        }, className: "transition-colors px-2 py-0.5 rounded text-[11px] font-bold bg-rose-100 text-rose-700 hover:bg-rose-200" }, "+ Add Stop")
+                        }, className: "transition-colors px-2 py-0.5 rounded text-[11px] font-bold bg-rose-100 text-rose-700 hover:bg-rose-200" }, t('stem.artstudio.add_stop_2', "+ Add Stop"))
 
                       ),
 
@@ -4249,7 +4249,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { "aria-label": "Export PNG", onClick: function () { var c = document.getElementById('gradientCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'gradient-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
+                      React.createElement("button", { "aria-label": t('stem.artstudio.export_png_15', "Export PNG"), onClick: function () { var c = document.getElementById('gradientCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'gradient-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, t('stem.artstudio.export_png_16', "\uD83D\uDCE5 Export PNG"))
 
                     ),
 
@@ -4257,15 +4257,15 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("span", { className: "text-[11px] font-bold text-rose-500 mr-1" }, "Presets:"),
 
-                      [{ label: 'Sunset', stops: [{ hue: 270, pos: 0 }, { hue: 330, pos: 30 }, { hue: 20, pos: 60 }, { hue: 45, pos: 100 }], type: 'linear', angle: 180 },
+                      [{ label: t('stem.artstudio.sunset', 'Sunset'), stops: [{ hue: 270, pos: 0 }, { hue: 330, pos: 30 }, { hue: 20, pos: 60 }, { hue: 45, pos: 100 }], type: 'linear', angle: 180 },
 
-                       { label: 'Northern Lights', stops: [{ hue: 160, pos: 0 }, { hue: 120, pos: 35 }, { hue: 180, pos: 65 }, { hue: 280, pos: 100 }], type: 'linear', angle: 0 },
+                       { label: t('stem.artstudio.northern_lights', 'Northern Lights'), stops: [{ hue: 160, pos: 0 }, { hue: 120, pos: 35 }, { hue: 180, pos: 65 }, { hue: 280, pos: 100 }], type: 'linear', angle: 0 },
 
-                       { label: 'Vaporwave', stops: [{ hue: 300, pos: 0 }, { hue: 270, pos: 40 }, { hue: 190, pos: 70 }, { hue: 330, pos: 100 }], type: 'radial', angle: 90 },
+                       { label: t('stem.artstudio.vaporwave', 'Vaporwave'), stops: [{ hue: 300, pos: 0 }, { hue: 270, pos: 40 }, { hue: 190, pos: 70 }, { hue: 330, pos: 100 }], type: 'radial', angle: 90 },
 
-                       { label: 'Golden Hour', stops: [{ hue: 40, pos: 0 }, { hue: 25, pos: 50 }, { hue: 10, pos: 100 }], type: 'linear', angle: 135 },
+                       { label: t('stem.artstudio.golden_hour', 'Golden Hour'), stops: [{ hue: 40, pos: 0 }, { hue: 25, pos: 50 }, { hue: 10, pos: 100 }], type: 'linear', angle: 135 },
 
-                       { label: 'Deep Space', stops: [{ hue: 260, pos: 0 }, { hue: 230, pos: 30 }, { hue: 200, pos: 60 }, { hue: 280, pos: 80 }, { hue: 0, pos: 100 }], type: 'radial', angle: 90 }].map(function (pr) {
+                       { label: t('stem.artstudio.deep_space', 'Deep Space'), stops: [{ hue: 260, pos: 0 }, { hue: 230, pos: 30 }, { hue: 200, pos: 60 }, { hue: 280, pos: 80 }, { hue: 0, pos: 100 }], type: 'radial', angle: 90 }].map(function (pr) {
 
                         return React.createElement("button", { key: pr.label, onClick: function () { upd('gradStops', pr.stops); upd('gradType', pr.type); upd('gradAngle', pr.angle); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-rose-600 border border-rose-600 hover:bg-rose-50 transition-all" }, pr.label);
 
@@ -4281,9 +4281,9 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex items-center justify-between mb-1" },
 
-                      React.createElement("span", { className: "text-[11px] font-bold text-slate-600" }, "\uD83D\uDCCB CSS Output"),
+                      React.createElement("span", { className: "text-[11px] font-bold text-slate-600" }, t('stem.artstudio.css_output', "\uD83D\uDCCB CSS Output")),
 
-                      React.createElement("button", { "aria-label": "Copy", onClick: function () {
+                      React.createElement("button", { "aria-label": t('stem.artstudio.copy', "Copy"), onClick: function () {
 
                         var stops = d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }];
 
@@ -4299,7 +4299,7 @@ const d = labToolData.artStudio || {};
 
                         navigator.clipboard.writeText(css).then(function () { if (typeof addToast === 'function') addToast('\u2705 CSS copied!', 'success'); });
 
-                      }, className: "transition-colors px-2 py-0.5 rounded text-[11px] font-bold bg-slate-700 text-slate-300 hover:bg-slate-600" }, "\uD83D\uDCCB Copy")
+                      }, className: "transition-colors px-2 py-0.5 rounded text-[11px] font-bold bg-slate-700 text-slate-300 hover:bg-slate-600" }, t('stem.artstudio.copy_2', "\uD83D\uDCCB Copy"))
 
                     ),
 
@@ -4323,7 +4323,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("button", { onClick: function () { upd('showGradInfo', !d.showGradInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-orange-700" },
 
-                      React.createElement("span", null, "\uD83C\uDFA8 The Science of Gradients"),
+                      React.createElement("span", null, t('stem.artstudio.the_science_of_gradients', "\uD83C\uDFA8 The Science of Gradients")),
 
                       React.createElement("span", null, d.showGradInfo ? '\u25B2' : '\u25BC')
 
@@ -4331,15 +4331,15 @@ const d = labToolData.artStudio || {};
 
                     d.showGradInfo && React.createElement("div", { className: "mt-3 space-y-2 text-xs text-slate-600 leading-relaxed" },
 
-                      React.createElement("p", null, "\uD83C\uDF08 Screens create gradients by mixing ", React.createElement("strong", null, "RGB sub-pixels"), ". Each pixel blends red, green, and blue light at different intensities. A gradient smoothly interpolates these values across space."),
+                      React.createElement("p", null, t('stem.artstudio.screens_create_gradients_by_mixing', "\uD83C\uDF08 Screens create gradients by mixing "), React.createElement("strong", null, t('stem.artstudio.rgb_sub_pixels', "RGB sub-pixels")), t('stem.artstudio.each_pixel_blends_red_green_and_blue_l', ". Each pixel blends red, green, and blue light at different intensities. A gradient smoothly interpolates these values across space.")),
 
-                      React.createElement("p", null, "\uD83C\uDFA8 ", React.createElement("strong", null, "HSL interpolation"), " produces more perceptually uniform gradients than RGB. Going from red to blue in RGB passes through muddy grays; in HSL, it sweeps through vivid purples \u2014 the way a painter would mix."),
+                      React.createElement("p", null, "\uD83C\uDFA8 ", React.createElement("strong", null, t('stem.artstudio.hsl_interpolation', "HSL interpolation")), t('stem.artstudio.produces_more_perceptually_uniform_gra', " produces more perceptually uniform gradients than RGB. Going from red to blue in RGB passes through muddy grays; in HSL, it sweeps through vivid purples \u2014 the way a painter would mix.")),
 
-                      React.createElement("p", null, "\uD83C\uDF05 ", React.createElement("strong", null, "Real-world gradients"), " are everywhere: sunsets (Rayleigh scattering separates wavelengths), rainbows (refraction sorts light by frequency), and ocean depths (water absorbs red first, leaving deep blue)."),
+                      React.createElement("p", null, "\uD83C\uDF05 ", React.createElement("strong", null, t('stem.artstudio.real_world_gradients', "Real-world gradients")), t('stem.artstudio.are_everywhere_sunsets_rayleigh_scatte', " are everywhere: sunsets (Rayleigh scattering separates wavelengths), rainbows (refraction sorts light by frequency), and ocean depths (water absorbs red first, leaving deep blue).")),
 
-                      React.createElement("p", null, "\uD83D\uDCCA ", React.createElement("strong", null, "Conic gradients"), " sweep color around a center point like a color wheel. They\u2019re used in pie charts, loading spinners, and data visualizations. CSS only added conic-gradient support in 2020!"),
+                      React.createElement("p", null, "\uD83D\uDCCA ", React.createElement("strong", null, t('stem.artstudio.conic_gradients', "Conic gradients")), t('stem.artstudio.sweep_color_around_a_center_point_like', " sweep color around a center point like a color wheel. They\u2019re used in pie charts, loading spinners, and data visualizations. CSS only added conic-gradient support in 2020!")),
 
-                      React.createElement("p", null, "\uD83D\uDEE0 ", React.createElement("strong", null, "Designers"), " use gradients to create depth, direct attention, and evoke emotion. Warm-to-cool gradients suggest depth (atmospheric perspective); light-to-dark suggests volume (chiaroscuro).")
+                      React.createElement("p", null, "\uD83D\uDEE0 ", React.createElement("strong", null, t('stem.artstudio.designers', "Designers")), t('stem.artstudio.use_gradients_to_create_depth_direct_a', " use gradients to create depth, direct attention, and evoke emotion. Warm-to-cool gradients suggest depth (atmospheric perspective); light-to-dark suggests volume (chiaroscuro)."))
 
                     )
 
@@ -4347,7 +4347,7 @@ const d = labToolData.artStudio || {};
 
                 ),
 
-                React.createElement("canvas", { id: 'gradientCanvas', width: 512, height: 512, role: "img", 'aria-label': 'Gradient designer canvas', className: "rounded-xl border-2 border-rose-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: '#1e1e2e' },
+                React.createElement("canvas", { id: 'gradientCanvas', width: 512, height: 512, role: "img", 'aria-label': t('stem.artstudio.gradient_designer_canvas', 'Gradient designer canvas'), className: "rounded-xl border-2 border-rose-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: '#1e1e2e' },
 
                   key: 'grad-' + (d.gradType || 'linear') + '-' + (d.gradAngle || 90) + '-' + (d.gradBlend || 'smooth') + '-' + JSON.stringify(d.gradStops || []),
 
@@ -4605,9 +4605,9 @@ const d = labToolData.artStudio || {};
 
               React.createElement("div", { className: "flex gap-1 p-1 bg-slate-100 rounded-xl border border-slate-400 mb-2" },
 
-                React.createElement("button", { onClick: function() { _stopStereoAnim(); upd('stereoAnimMode', 'static'); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all " + ((d.stereoAnimMode || 'static') === 'static' ? 'bg-white shadow-md text-cyan-700' : 'text-slate-600 hover:text-slate-700') }, "\uD83D\uDCF8 Static"),
+                React.createElement("button", { onClick: function() { _stopStereoAnim(); upd('stereoAnimMode', 'static'); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all " + ((d.stereoAnimMode || 'static') === 'static' ? 'bg-white shadow-md text-cyan-700' : 'text-slate-600 hover:text-slate-700') }, t('stem.artstudio.static', "\uD83D\uDCF8 Static")),
 
-                React.createElement("button", { "aria-label": "Animate", onClick: function() { upd('stereoAnimMode', 'animate'); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all " + ((d.stereoAnimMode || 'static') === 'animate' ? 'bg-white shadow-md text-purple-700' : 'text-slate-600 hover:text-slate-700') }, "\uD83C\uDFAC Animate")
+                React.createElement("button", { "aria-label": t('stem.artstudio.animate', "Animate"), onClick: function() { upd('stereoAnimMode', 'animate'); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all " + ((d.stereoAnimMode || 'static') === 'animate' ? 'bg-white shadow-md text-purple-700' : 'text-slate-600 hover:text-slate-700') }, t('stem.artstudio.animate_2', "\uD83C\uDFAC Animate"))
 
               ),
 
@@ -4619,15 +4619,15 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-gradient-to-br from-cyan-50 to-teal-50 rounded-xl p-4 border border-cyan-200" },
 
-                    React.createElement("h4", { className: "text-xs font-bold text-cyan-700 mb-3" }, "\uD83D\uDC53 Stereogram Generator"),
+                    React.createElement("h4", { className: "text-xs font-bold text-cyan-700 mb-3" }, t('stem.artstudio.stereogram_generator', "\uD83D\uDC53 Stereogram Generator")),
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[11px] font-bold text-cyan-600 block mb-1" }, "Depth Brush"),
+                      React.createElement("label", { className: "text-[11px] font-bold text-cyan-600 block mb-1" }, t('stem.artstudio.depth_brush', "Depth Brush")),
 
                       React.createElement("div", { className: "flex gap-1" },
 
-                        [{ id: 'near', label: '\u2B1C Near' }, { id: 'mid', label: '\uD83D\uDD18 Mid' }, { id: 'far', label: '\u2B1B Far' }, { id: 'erase', label: '\uD83E\uDDFD Erase' }].map(function (s) {
+                        [{ id: 'near', label: t('stem.artstudio.near', '\u2B1C Near') }, { id: 'mid', label: t('stem.artstudio.mid', '\uD83D\uDD18 Mid') }, { id: 'far', label: t('stem.artstudio.far', '\u2B1B Far') }, { id: 'erase', label: t('stem.artstudio.erase', '\uD83E\uDDFD Erase') }].map(function (s) {
 
                           return React.createElement("button", { key: s.id, onClick: function () { upd('stereoDepth', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoDepth || 'near') === s.id ? 'bg-cyan-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-cyan-50') }, s.label);
 
@@ -4641,17 +4641,17 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("label", { className: "text-[11px] font-bold text-cyan-600 block mb-0.5" }, "Brush Size: " + (typeof d.stereoBrush === 'number' ? d.stereoBrush : 20)),
 
-                      React.createElement("input", { type: "range", min: 5, max: 60, value: typeof d.stereoBrush === 'number' ? d.stereoBrush : 20, 'aria-label': 'Stereogram brush size', onChange: function (e) { upd('stereoBrush', parseInt(e.target.value)); }, className: "w-full accent-cyan-600" })
+                      React.createElement("input", { type: "range", min: 5, max: 60, value: typeof d.stereoBrush === 'number' ? d.stereoBrush : 20, 'aria-label': t('stem.artstudio.stereogram_brush_size', 'Stereogram brush size'), onChange: function (e) { upd('stereoBrush', parseInt(e.target.value)); }, className: "w-full accent-cyan-600" })
 
                     ),
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[11px] font-bold text-cyan-600 block mb-1" }, "Pattern Type"),
+                      React.createElement("label", { className: "text-[11px] font-bold text-cyan-600 block mb-1" }, t('stem.artstudio.pattern_type', "Pattern Type")),
 
                       React.createElement("div", { className: "flex gap-1" },
 
-                        [{ id: 'bw', label: '\u26AB B&W' }, { id: 'color', label: '\uD83C\uDFA8 Color' }, { id: 'noise', label: '\uD83D\uDCFA Noise' }, { id: 'ai', label: '\u2728 AI' }].map(function (s) {
+                        [{ id: 'bw', label: t('stem.artstudio.b_w', '\u26AB B&W') }, { id: 'color', label: t('stem.artstudio.color', '\uD83C\uDFA8 Color') }, { id: 'noise', label: t('stem.artstudio.noise', '\uD83D\uDCFA Noise') }, { id: 'ai', label: t('stem.artstudio.ai', '\u2728 AI') }].map(function (s) {
 
                           return React.createElement("button", { key: s.id, onClick: function () { upd('stereoPattern', s.id); if(s.id === 'ai' && !d.stereoAiPatternImg) { if(typeof addToast === 'function') addToast('Please generate an AI Pattern first!', 'warning'); } }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoPattern || 'bw') === s.id ? 'bg-cyan-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-cyan-50') }, s.label);
 
@@ -4661,9 +4661,9 @@ const d = labToolData.artStudio || {};
 
                     ),
 
-                    [{ k: 'stereoStrength', label: 'Depth Strength', min: 5, max: 30, def: 15 },
+                    [{ k: 'stereoStrength', label: t('stem.artstudio.depth_strength', 'Depth Strength'), min: 5, max: 30, def: 15 },
 
-                     { k: 'stereoDensity', label: 'Pattern Width', min: 60, max: 150, def: 100 }].map(function (s) {
+                     { k: 'stereoDensity', label: t('stem.artstudio.pattern_width', 'Pattern Width'), min: 60, max: 150, def: 100 }].map(function (s) {
 
                       var val = typeof d[s.k] === 'number' ? d[s.k] : s.def;
 
@@ -4685,7 +4685,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("div", { className: "flex justify-between items-center mb-2" },
 
-                        React.createElement("label", { className: "text-[11px] font-bold text-indigo-700" }, "\u2728 AI Stereogram Creator"),
+                        React.createElement("label", { className: "text-[11px] font-bold text-indigo-700" }, t('stem.artstudio.ai_stereogram_creator', "\u2728 AI Stereogram Creator")),
 
                         d.stereoAiGen && React.createElement("span", { className: "text-[11px] text-indigo-500 animate-pulse font-bold" }, "Generating " + d.stereoAiGen + "...")
 
@@ -4697,7 +4697,7 @@ const d = labToolData.artStudio || {};
 
                         onChange: function(e) { upd('stereoAiStr', e.target.value); },
 
-                        placeholder: "Describe an object for a depth map or a texture for a pattern...",
+                        placeholder: t('stem.artstudio.describe_an_object_for_a_depth_map_or_', "Describe an object for a depth map or a texture for a pattern..."),
 
                         className: "w-full text-xs p-2 rounded border border-indigo-600 focus:ring-2 focus:ring-indigo-400 mb-2 h-16 resize-none",
 
@@ -4707,7 +4707,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("div", { className: "flex gap-2" },
 
-                        React.createElement("button", { "aria-label": "Generate AI Depth Map", 
+                        React.createElement("button", { "aria-label": t('stem.artstudio.generate_ai_depth_map', "Generate AI Depth Map"), 
 
                           onClick: function() {
 
@@ -4757,9 +4757,9 @@ const d = labToolData.artStudio || {};
 
                           className: "flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 transition-all shadow-sm"
 
-                        }, "\u2B1C Generate Depth Map"),
+                        }, t('stem.artstudio.generate_depth_map', "\u2B1C Generate Depth Map")),
 
-                        React.createElement("button", { "aria-label": "Generate AI Pattern Tile", 
+                        React.createElement("button", { "aria-label": t('stem.artstudio.generate_ai_pattern_tile', "Generate AI Pattern Tile"), 
 
                           onClick: function() {
 
@@ -4807,7 +4807,7 @@ const d = labToolData.artStudio || {};
 
                           className: "flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-all shadow-sm"
 
-                        }, "\uD83C\uDFA8 Generate AI Base Tile")
+                        }, t('stem.artstudio.generate_ai_base_tile', "\uD83C\uDFA8 Generate AI Base Tile"))
 
                       )
 
@@ -4817,9 +4817,9 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-4" },
 
-                      React.createElement("button", { onClick: function () { upd('stereoGen', Date.now()); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-black bg-gradient-to-r from-cyan-500 to-teal-500 text-white hover:from-cyan-600 hover:to-teal-600 shadow-md transition-all" }, "\uD83D\uDC53 Render Stereogram"),
+                      React.createElement("button", { onClick: function () { upd('stereoGen', Date.now()); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-black bg-gradient-to-r from-cyan-500 to-teal-500 text-white hover:from-cyan-600 hover:to-teal-600 shadow-md transition-all" }, t('stem.artstudio.render_stereogram', "\uD83D\uDC53 Render Stereogram")),
 
-                      React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('stereoClear', Date.now()); upd('stereoPreset', null); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear")
+                      React.createElement("button", { "aria-label": t('stem.artstudio.clear_9', "Clear"), onClick: function () { upd('stereoClear', Date.now()); upd('stereoPreset', null); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, t('stem.artstudio.clear_10', "\uD83D\uDDD1 Clear"))
 
                     ),
 
@@ -4827,23 +4827,23 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("span", { className: "text-[11px] font-bold text-cyan-500 mr-1" }, "Presets:"),
 
-                      [{ label: 'Sphere', id: 'sphere' }, { label: 'Pyramid', id: 'pyramid' }, { label: 'Heart', id: 'heart' }, { label: 'HI Text', id: 'text' }, { label: 'Rings', id: 'rings' }].map(function (pr) {
+                      [{ label: t('stem.artstudio.sphere', 'Sphere'), id: 'sphere' }, { label: t('stem.artstudio.pyramid', 'Pyramid'), id: 'pyramid' }, { label: t('stem.artstudio.heart', 'Heart'), id: 'heart' }, { label: t('stem.artstudio.hi_text', 'HI Text'), id: 'text' }, { label: t('stem.artstudio.rings_2', 'Rings'), id: 'rings' }].map(function (pr) {
 
-                        return React.createElement("button", { "aria-label": "Export Stereogram", key: pr.id, onClick: function () { upd('stereoPreset', pr.id); upd('stereoClear', Date.now()); setTimeout(function () { upd('stereoGen', Date.now()); }, 150); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-cyan-600 border border-cyan-600 hover:bg-cyan-50 transition-all" }, pr.label);
+                        return React.createElement("button", { "aria-label": t('stem.artstudio.export_stereogram', "Export Stereogram"), key: pr.id, onClick: function () { upd('stereoPreset', pr.id); upd('stereoClear', Date.now()); setTimeout(function () { upd('stereoGen', Date.now()); }, 150); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-cyan-600 border border-cyan-600 hover:bg-cyan-50 transition-all" }, pr.label);
 
                       })
 
                     ),
 
-                    React.createElement("button", { "aria-label": "Export Stereogram", onClick: function () { var c = document.getElementById('stereoCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'stereogram-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "w-full mt-2 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, "\uD83D\uDCE5 Export Stereogram")
+                    React.createElement("button", { "aria-label": t('stem.artstudio.export_stereogram_2', "Export Stereogram"), onClick: function () { var c = document.getElementById('stereoCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'stereogram-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "w-full mt-2 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, t('stem.artstudio.export_stereogram_3', "\uD83D\uDCE5 Export Stereogram"))
 
                   ),
 
                   React.createElement("div", null,
 
-                    React.createElement("p", { className: "text-[11px] font-bold text-cyan-600 mb-1" }, "\uD83C\uDFA8 Depth Map Canvas"),
+                    React.createElement("p", { className: "text-[11px] font-bold text-cyan-600 mb-1" }, t('stem.artstudio.depth_map_canvas', "\uD83C\uDFA8 Depth Map Canvas")),
 
-                    React.createElement("p", { className: "text-[11px] text-slate-600 mb-1" }, "White = pops out \u2022 Gray = middle \u2022 Black = far"),
+                    React.createElement("p", { className: "text-[11px] text-slate-600 mb-1" }, t('stem.artstudio.white_pops_out_gray_middle_black_far', "White = pops out \u2022 Gray = middle \u2022 Black = far")),
 
                     React.createElement("canvas", { id: 'depthMapCanvas', width: 400, height: 400,
 
@@ -4971,7 +4971,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "flex gap-2 mt-2" },
 
-                    React.createElement("button", { "aria-label": "Save Depth Map PNG", onClick: function () { var c = document.getElementById('depthMapCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'depth-map-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 Depth map saved as PNG!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 border border-indigo-200 hover:from-indigo-100 hover:to-purple-100 transition-all" }, "\u2B07\uFE0F Save Depth Map PNG")
+                    React.createElement("button", { "aria-label": t('stem.artstudio.save_depth_map_png', "Save Depth Map PNG"), onClick: function () { var c = document.getElementById('depthMapCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'depth-map-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 Depth map saved as PNG!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 border border-indigo-200 hover:from-indigo-100 hover:to-purple-100 transition-all" }, t('stem.artstudio.save_depth_map_png_2', "\u2B07\uFE0F Save Depth Map PNG"))
 
                   ),
 
@@ -4979,7 +4979,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("button", { onClick: function () { upd('showStereoInfo', !d.showStereoInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-teal-700" },
 
-                      React.createElement("span", null, "\uD83E\uDDE0 The Science of Stereograms"),
+                      React.createElement("span", null, t('stem.artstudio.the_science_of_stereograms', "\uD83E\uDDE0 The Science of Stereograms")),
 
                       React.createElement("span", null, d.showStereoInfo ? '\u25B2' : '\u25BC')
 
@@ -4987,15 +4987,15 @@ const d = labToolData.artStudio || {};
 
                     d.showStereoInfo && React.createElement("div", { className: "mt-3 space-y-2 text-xs text-slate-600 leading-relaxed" },
 
-                      React.createElement("p", null, "\uD83D\uDC40 ", React.createElement("strong", null, "Your eyes are ~6 cm apart"), ", so each sees the world from a slightly different angle. Your brain fuses these two views to perceive ", React.createElement("strong", null, "depth"), " \u2014 this is called ", React.createElement("strong", null, "stereopsis"), "."),
+                      React.createElement("p", null, "\uD83D\uDC40 ", React.createElement("strong", null, t('stem.artstudio.your_eyes_are_6_cm_apart', "Your eyes are ~6 cm apart")), t('stem.artstudio.so_each_sees_the_world_from_a_slightly', ", so each sees the world from a slightly different angle. Your brain fuses these two views to perceive "), React.createElement("strong", null, "depth"), t('stem.artstudio.this_is_called', " \u2014 this is called "), React.createElement("strong", null, "stereopsis"), "."),
 
-                      React.createElement("p", null, "\uD83D\uDC53 ", React.createElement("strong", null, "Autostereograms"), " (Magic Eye\u2122 images) hide 3D shapes in a repeating pattern. The trick: where the hidden object is \u2018close,\u2019 the pattern repeats with a ", React.createElement("strong", null, "shorter period"), "; where it\u2019s \u2018far,\u2019 the period is longer. Your brain decodes these period differences as depth."),
+                      React.createElement("p", null, "\uD83D\uDC53 ", React.createElement("strong", null, t('stem.artstudio.autostereograms', "Autostereograms")), t('stem.artstudio.magic_eye_images_hide_3d_shapes_in_a_r', " (Magic Eye\u2122 images) hide 3D shapes in a repeating pattern. The trick: where the hidden object is \u2018close,\u2019 the pattern repeats with a "), React.createElement("strong", null, t('stem.artstudio.shorter_period', "shorter period")), t('stem.artstudio.where_it_s_far_the_period_is_longer_yo', "; where it\u2019s \u2018far,\u2019 the period is longer. Your brain decodes these period differences as depth.")),
 
-                      React.createElement("p", null, "\uD83D\uDCDA ", React.createElement("strong", null, "Magic Eye books"), " (1993\u201394) by Tom Baccei and Cheri Smith sold over 25 million copies worldwide. The underlying autostereogram technique was pioneered by Dr. Christopher Tyler in 1979."),
+                      React.createElement("p", null, "\uD83D\uDCDA ", React.createElement("strong", null, t('stem.artstudio.magic_eye_books', "Magic Eye books")), t('stem.artstudio.1993_94_by_tom_baccei_and_cheri_smith_', " (1993\u201394) by Tom Baccei and Cheri Smith sold over 25 million copies worldwide. The underlying autostereogram technique was pioneered by Dr. Christopher Tyler in 1979.")),
 
-                      React.createElement("p", null, "\uD83E\uDDE0 To see the image: hold your face close to the screen, relax your eyes as if looking \u2018through\u2019 the image at a distant wall, then slowly pull back. The 3D shape will \u2018pop\u2019 into view. This is called ", React.createElement("strong", null, "wall-eyed (parallel) viewing"), "."),
+                      React.createElement("p", null, t('stem.artstudio.to_see_the_image_hold_your_face_close_', "\uD83E\uDDE0 To see the image: hold your face close to the screen, relax your eyes as if looking \u2018through\u2019 the image at a distant wall, then slowly pull back. The 3D shape will \u2018pop\u2019 into view. This is called "), React.createElement("strong", null, t('stem.artstudio.wall_eyed_parallel_viewing', "wall-eyed (parallel) viewing")), "."),
 
-                      React.createElement("p", null, "\u26A0 About ", React.createElement("strong", null, "5\u201310% of people"), " have difficulty seeing stereograms due to conditions like amblyopia (lazy eye), strabismus (crossed eyes), or other binocular vision differences. This is completely normal!")
+                      React.createElement("p", null, t('stem.artstudio.about', "\u26A0 About "), React.createElement("strong", null, t('stem.artstudio.5_10_of_people', "5\u201310% of people")), t('stem.artstudio.have_difficulty_seeing_stereograms_due', " have difficulty seeing stereograms due to conditions like amblyopia (lazy eye), strabismus (crossed eyes), or other binocular vision differences. This is completely normal!"))
 
                     )
 
@@ -5005,9 +5005,9 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("div", { className: "space-y-2" },
 
-                  React.createElement("p", { className: "text-xs font-bold text-teal-700" }, "\uD83D\uDC53 Stereogram Output"),
+                  React.createElement("p", { className: "text-xs font-bold text-teal-700" }, t('stem.artstudio.stereogram_output', "\uD83D\uDC53 Stereogram Output")),
 
-                  React.createElement("p", { className: "text-[11px] text-slate-600 mb-1" }, "Relax your eyes and look \u2018through\u2019 the image to see 3D"),
+                  React.createElement("p", { className: "text-[11px] text-slate-600 mb-1" }, t('stem.artstudio.relax_your_eyes_and_look_through_the_i', "Relax your eyes and look \u2018through\u2019 the image to see 3D")),
 
                   React.createElement("canvas", { id: 'stereoCanvas', width: 512, height: 512,
 
@@ -5159,17 +5159,17 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-amber-50 rounded-xl p-3 border border-amber-200 mt-2" },
 
-                    React.createElement("p", { className: "text-[11px] font-bold text-amber-700 mb-1" }, "\uD83D\uDCA1 How to View"),
+                    React.createElement("p", { className: "text-[11px] font-bold text-amber-700 mb-1" }, t('stem.artstudio.how_to_view', "\uD83D\uDCA1 How to View")),
 
                     React.createElement("ol", { className: "text-[11px] text-slate-600 leading-relaxed list-decimal ml-4 space-y-0.5" },
 
-                      React.createElement("li", null, "Hold your face close to the screen"),
+                      React.createElement("li", null, t('stem.artstudio.hold_your_face_close_to_the_screen', "Hold your face close to the screen")),
 
-                      React.createElement("li", null, "Relax your eyes \u2014 try to look \u2018through\u2019 the image at a wall behind it"),
+                      React.createElement("li", null, t('stem.artstudio.relax_your_eyes_try_to_look_through_th', "Relax your eyes \u2014 try to look \u2018through\u2019 the image at a wall behind it")),
 
-                      React.createElement("li", null, "Slowly move back. A 3D shape will emerge!"),
+                      React.createElement("li", null, t('stem.artstudio.slowly_move_back_a_3d_shape_will_emerg', "Slowly move back. A 3D shape will emerge!")),
 
-                      React.createElement("li", null, "Tip: the two guide dots above should appear as three when your eyes are set correctly")
+                      React.createElement("li", null, t('stem.artstudio.tip_the_two_guide_dots_above_should_ap', "Tip: the two guide dots above should appear as three when your eyes are set correctly"))
 
                     )
 
@@ -5185,9 +5185,9 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("div", { className: "bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-4 border border-purple-200" },
 
-                  React.createElement("h4", { className: "text-xs font-bold text-purple-700 mb-3" }, "\uD83C\uDFAC Animated Stereogram Studio"),
+                  React.createElement("h4", { className: "text-xs font-bold text-purple-700 mb-3" }, t('stem.artstudio.animated_stereogram_studio', "\uD83C\uDFAC Animated Stereogram Studio")),
 
-                  React.createElement("p", { className: "text-[11px] text-slate-600 mb-3" }, "Create animated 3D stereograms from presets, custom drawings, uploaded images, transforms, or AI-generated depth maps!"),
+                  React.createElement("p", { className: "text-[11px] text-slate-600 mb-3" }, t('stem.artstudio.create_animated_3d_stereograms_from_pr', "Create animated 3D stereograms from presets, custom drawings, uploaded images, transforms, or AI-generated depth maps!")),
 
 
 
@@ -5195,11 +5195,11 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "mb-3" },
 
-                    React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block mb-1" }, "\uD83D\uDCE1 Animation Source"),
+                    React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block mb-1" }, t('stem.artstudio.animation_source', "\uD83D\uDCE1 Animation Source")),
 
                     React.createElement("div", { className: "grid grid-cols-5 gap-1" },
 
-                      [{ id: 'preset', icon: '\u2728', label: 'Preset' }, { id: 'draw', icon: '\u270F\uFE0F', label: 'Draw' }, { id: 'upload', icon: '\uD83D\uDCC2', label: 'Upload' }, { id: 'transform', icon: '\uD83D\uDD04', label: 'Transform' }, { id: 'ai', icon: '\uD83E\uDD16', label: 'AI Depth' }].map(function(s) {
+                      [{ id: 'preset', icon: '\u2728', label: t('stem.artstudio.preset', 'Preset') }, { id: 'draw', icon: '\u270F\uFE0F', label: t('stem.artstudio.draw', 'Draw') }, { id: 'upload', icon: '\uD83D\uDCC2', label: t('stem.artstudio.upload', 'Upload') }, { id: 'transform', icon: '\uD83D\uDD04', label: t('stem.artstudio.transform', 'Transform') }, { id: 'ai', icon: '\uD83E\uDD16', label: t('stem.artstudio.ai_depth', 'AI Depth') }].map(function(s) {
 
                         return React.createElement("button", { key: s.id, onClick: function() { upd('stereoAnimSource', s.id); },
 
@@ -5219,11 +5219,11 @@ const d = labToolData.artStudio || {};
 
                   (d.stereoAnimSource || 'preset') === 'preset' && React.createElement("div", { className: "mb-3" },
 
-                    React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block mb-1" }, "\u2728 Animation Presets"),
+                    React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block mb-1" }, t('stem.artstudio.animation_presets', "\u2728 Animation Presets")),
 
                     React.createElement("div", { className: "grid grid-cols-5 gap-1" },
 
-                      [{ id: 'pulseSphere', icon: '\uD83D\uDCAB', label: 'Pulse' }, { id: 'spinCube', icon: '\uD83D\uDD04', label: 'Spin Cube' }, { id: 'waveRipple', icon: '\uD83C\uDF0A', label: 'Wave' }, { id: 'morphHeart', icon: '\uD83D\uDC93', label: 'Heart' }, { id: 'floatText', icon: '\u2702\uFE0F', label: '3D Text' }].map(function(p) {
+                      [{ id: 'pulseSphere', icon: '\uD83D\uDCAB', label: t('stem.artstudio.pulse', 'Pulse') }, { id: 'spinCube', icon: '\uD83D\uDD04', label: t('stem.artstudio.spin_cube', 'Spin Cube') }, { id: 'waveRipple', icon: '\uD83C\uDF0A', label: t('stem.artstudio.wave', 'Wave') }, { id: 'morphHeart', icon: '\uD83D\uDC93', label: t('stem.artstudio.heart_2', 'Heart') }, { id: 'floatText', icon: '\u2702\uFE0F', label: t('stem.artstudio.3d_text', '3D Text') }].map(function(p) {
 
                         return React.createElement("button", { key: p.id, onClick: function() { upd('stereoAnimPreset', p.id); },
 
@@ -5243,13 +5243,13 @@ const d = labToolData.artStudio || {};
 
                   (d.stereoAnimSource) === 'draw' && React.createElement("div", { className: "mb-3 space-y-2" },
 
-                    React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block" }, "\u270F\uFE0F Draw Depth Keyframes"),
+                    React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block" }, t('stem.artstudio.draw_depth_keyframes', "\u270F\uFE0F Draw Depth Keyframes")),
 
-                    React.createElement("p", { className: "text-[11px] text-slate-600" }, "Draw a depth map, capture it as a keyframe, then draw the next. The animation will interpolate between them."),
+                    React.createElement("p", { className: "text-[11px] text-slate-600" }, t('stem.artstudio.draw_a_depth_map_capture_it_as_a_keyfr', "Draw a depth map, capture it as a keyframe, then draw the next. The animation will interpolate between them.")),
 
                     React.createElement("div", { className: "flex gap-1 mb-2" },
 
-                      [{ id: 'near', label: '\u2B1C Near', c: '#ffffff' }, { id: 'mid', label: '\uD83D\uDD18 Mid', c: '#888888' }, { id: 'far', label: '\u2B1B Far', c: '#222222' }, { id: 'erase', label: '\uD83E\uDDFD Erase', c: '#000000' }].map(function(s2) {
+                      [{ id: 'near', label: t('stem.artstudio.near_2', '\u2B1C Near'), c: '#ffffff' }, { id: 'mid', label: t('stem.artstudio.mid_2', '\uD83D\uDD18 Mid'), c: '#888888' }, { id: 'far', label: t('stem.artstudio.far_2', '\u2B1B Far'), c: '#222222' }, { id: 'erase', label: t('stem.artstudio.erase_2', '\uD83E\uDDFD Erase'), c: '#000000' }].map(function(s2) {
 
                         return React.createElement("button", { key: s2.id, onClick: function() { upd('stereoAnimDrawBrush', s2.id); },
 
@@ -5263,7 +5263,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("label", { className: "text-[11px] font-bold text-purple-600" }, "Brush: " + (d.stereoAnimDrawSize || 20)),
 
-                      React.createElement("input", { type: "range", min: 5, max: 60, value: d.stereoAnimDrawSize || 20, 'aria-label': 'Draw size', onChange: function(e) { upd('stereoAnimDrawSize', parseInt(e.target.value)); }, className: "flex-1 accent-purple-600" })
+                      React.createElement("input", { type: "range", min: 5, max: 60, value: d.stereoAnimDrawSize || 20, 'aria-label': t('stem.artstudio.draw_size', 'Draw size'), onChange: function(e) { upd('stereoAnimDrawSize', parseInt(e.target.value)); }, className: "flex-1 accent-purple-600" })
 
                     ),
 
@@ -5335,7 +5335,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-2" },
 
-                      React.createElement("button", { "aria-label": "Capture Keyframe", onClick: function() {
+                      React.createElement("button", { "aria-label": t('stem.artstudio.capture_keyframe', "Capture Keyframe"), onClick: function() {
 
                         var c = document.getElementById('stereoAnimDrawCanvas');
 
@@ -5351,21 +5351,21 @@ const d = labToolData.artStudio || {};
 
                         if (typeof addToast === 'function') addToast('\uD83D\uDCF8 Keyframe ' + kf.length + ' captured!', 'success');
 
-                      }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-bold bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600 shadow-sm" }, "\uD83D\uDCF8 Capture Keyframe"),
+                      }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-bold bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600 shadow-sm" }, t('stem.artstudio.capture_keyframe_2', "\uD83D\uDCF8 Capture Keyframe")),
 
-                      React.createElement("button", { "aria-label": "Clear Canvas", onClick: function() {
+                      React.createElement("button", { "aria-label": t('stem.artstudio.clear_canvas', "Clear Canvas"), onClick: function() {
 
                         var c = document.getElementById('stereoAnimDrawCanvas');
 
                         if (c) { var ctx = c.getContext('2d'); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, c.width, c.height); }
 
-                      }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200" }, "\uD83D\uDDD1 Clear Canvas"),
+                      }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200" }, t('stem.artstudio.clear_canvas_2', "\uD83D\uDDD1 Clear Canvas")),
 
-                      React.createElement("button", { onClick: function() { upd('stereoAnimKeyframes', []); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\u274C Clear All Frames"),
+                      React.createElement("button", { onClick: function() { upd('stereoAnimKeyframes', []); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, t('stem.artstudio.clear_all_frames', "\u274C Clear All Frames")),
 
-                      React.createElement("button", { onClick: function() { var c = document.getElementById('stereoAnimDrawCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'depth-drawing-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 Drawing saved as PNG!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 border border-indigo-600 hover:from-indigo-100 hover:to-purple-100 transition-all" }, "\u2B07\uFE0F Save Drawing PNG"),
+                      React.createElement("button", { onClick: function() { var c = document.getElementById('stereoAnimDrawCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'depth-drawing-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 Drawing saved as PNG!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 border border-indigo-600 hover:from-indigo-100 hover:to-purple-100 transition-all" }, t('stem.artstudio.save_drawing_png', "\u2B07\uFE0F Save Drawing PNG")),
 
-                      (d.stereoAnimKeyframes && d.stereoAnimKeyframes.length >= 2) && React.createElement("button", { "aria-label": "Export Depth Map GIF", onClick: function() {
+                      (d.stereoAnimKeyframes && d.stereoAnimKeyframes.length >= 2) && React.createElement("button", { "aria-label": t('stem.artstudio.export_depth_map_gif', "Export Depth Map GIF"), onClick: function() {
 
                         var kfs = d.stereoAnimKeyframes;
 
@@ -5399,7 +5399,7 @@ const d = labToolData.artStudio || {};
 
                         _exportStereoGif(canvasFrames, 8);
 
-                      }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border border-emerald-600 hover:from-emerald-100 hover:to-teal-100 transition-all" }, "\uD83C\uDFAC Export Depth GIF")
+                      }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border border-emerald-600 hover:from-emerald-100 hover:to-teal-100 transition-all" }, t('stem.artstudio.export_depth_gif', "\uD83C\uDFAC Export Depth GIF"))
 
                     ),
 
@@ -5453,13 +5453,13 @@ const d = labToolData.artStudio || {};
 
                   (d.stereoAnimSource) === 'upload' && React.createElement("div", { className: "mb-3 space-y-2" },
 
-                    React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block" }, "\uD83D\uDCC2 Upload Depth Map Image"),
+                    React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block" }, t('stem.artstudio.upload_depth_map_image', "\uD83D\uDCC2 Upload Depth Map Image")),
 
-                    React.createElement("p", { className: "text-[11px] text-slate-600" }, "Upload a grayscale image (white = near, black = far). It will be animated using the selected transform."),
+                    React.createElement("p", { className: "text-[11px] text-slate-600" }, t('stem.artstudio.upload_a_grayscale_image_white_near_bl', "Upload a grayscale image (white = near, black = far). It will be animated using the selected transform.")),
 
                     React.createElement("input", { type: "file", accept: "image/png,image/jpeg,image/webp",
 
-                      'aria-label': 'Upload depth map image',
+                      'aria-label': t('stem.artstudio.upload_depth_map_image_2', 'Upload depth map image'),
 
                       className: "text-xs file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-purple-100 file:text-purple-700 hover:file:bg-purple-200",
 
@@ -5523,17 +5523,17 @@ const d = labToolData.artStudio || {};
 
                       } }),
 
-                      React.createElement("span", { className: "text-[11px] text-green-600 font-bold" }, "\u2705 Depth map loaded (400\u00D7400)")
+                      React.createElement("span", { className: "text-[11px] text-green-600 font-bold" }, t('stem.artstudio.depth_map_loaded_400_400', "\u2705 Depth map loaded (400\u00D7400)"))
 
                     ),
 
                     React.createElement("div", { className: "mt-2" },
 
-                      React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block mb-1" }, "\uD83D\uDD04 Transform Type"),
+                      React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block mb-1" }, t('stem.artstudio.transform_type', "\uD83D\uDD04 Transform Type")),
 
                       React.createElement("div", { className: "flex gap-1" },
 
-                        [{ id: 'zoom', label: '\uD83D\uDD0D Zoom' }, { id: 'rotate', label: '\uD83D\uDD04 Rotate' }, { id: 'bounce', label: '\u26A1 Bounce' }, { id: 'slide', label: '\u21C6 Slide' }].map(function(t) {
+                        [{ id: 'zoom', label: t('stem.artstudio.zoom_2', '\uD83D\uDD0D Zoom') }, { id: 'rotate', label: t('stem.artstudio.rotate', '\uD83D\uDD04 Rotate') }, { id: 'bounce', label: t('stem.artstudio.bounce', '\u26A1 Bounce') }, { id: 'slide', label: t('stem.artstudio.slide', '\u21C6 Slide') }].map(function(t) {
 
                           return React.createElement("button", { key: t.id, onClick: function() { upd('stereoAnimTransform', t.id); },
 
@@ -5553,17 +5553,17 @@ const d = labToolData.artStudio || {};
 
                   (d.stereoAnimSource) === 'transform' && React.createElement("div", { className: "mb-3 space-y-2" },
 
-                    React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block" }, "\uD83D\uDD04 Transform Depth Map"),
+                    React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block" }, t('stem.artstudio.transform_depth_map', "\uD83D\uDD04 Transform Depth Map")),
 
-                    React.createElement("p", { className: "text-[11px] text-slate-600" }, "Animates the depth map from the Static tab using a chosen transform effect. Switch to Static mode first to draw your depth map."),
+                    React.createElement("p", { className: "text-[11px] text-slate-600" }, t('stem.artstudio.animates_the_depth_map_from_the_static', "Animates the depth map from the Static tab using a chosen transform effect. Switch to Static mode first to draw your depth map.")),
 
                     React.createElement("div", { className: "mt-2" },
 
-                      React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block mb-1" }, "\uD83D\uDD04 Transform Type"),
+                      React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block mb-1" }, t('stem.artstudio.transform_type_2', "\uD83D\uDD04 Transform Type")),
 
                       React.createElement("div", { className: "flex gap-1" },
 
-                        [{ id: 'zoom', label: '\uD83D\uDD0D Zoom' }, { id: 'rotate', label: '\uD83D\uDD04 Rotate' }, { id: 'bounce', label: '\u26A1 Bounce' }, { id: 'slide', label: '\u21C6 Slide' }].map(function(t) {
+                        [{ id: 'zoom', label: t('stem.artstudio.zoom_3', '\uD83D\uDD0D Zoom') }, { id: 'rotate', label: t('stem.artstudio.rotate_2', '\uD83D\uDD04 Rotate') }, { id: 'bounce', label: t('stem.artstudio.bounce_2', '\u26A1 Bounce') }, { id: 'slide', label: t('stem.artstudio.slide_2', '\u21C6 Slide') }].map(function(t) {
 
                           return React.createElement("button", { key: t.id, onClick: function() { upd('stereoAnimTransform', t.id); },
 
@@ -5577,7 +5577,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "bg-amber-50 rounded-lg p-2 mt-2 border border-amber-200" },
 
-                      React.createElement("p", { className: "text-[11px] text-amber-700" }, "\uD83D\uDCA1 Tip: Draw a depth map in the Static tab first, then come back here to animate it with a transform.")
+                      React.createElement("p", { className: "text-[11px] text-amber-700" }, t('stem.artstudio.tip_draw_a_depth_map_in_the_static_tab', "\uD83D\uDCA1 Tip: Draw a depth map in the Static tab first, then come back here to animate it with a transform."))
 
                     )
 
@@ -5589,9 +5589,9 @@ const d = labToolData.artStudio || {};
 
                   (d.stereoAnimSource) === 'ai' && React.createElement("div", { className: "mb-3 space-y-2" },
 
-                    React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block" }, "\uD83E\uDD16 AI-Generated Depth Map"),
+                    React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block" }, t('stem.artstudio.ai_generated_depth_map', "\uD83E\uDD16 AI-Generated Depth Map")),
 
-                    React.createElement("p", { className: "text-[11px] text-slate-600" }, "Describe a 3D scene and AI will generate a depth map, then animate it with a transform."),
+                    React.createElement("p", { className: "text-[11px] text-slate-600" }, t('stem.artstudio.describe_a_3d_scene_and_ai_will_genera', "Describe a 3D scene and AI will generate a depth map, then animate it with a transform.")),
 
                     callImagen ? React.createElement("div", null,
 
@@ -5601,7 +5601,7 @@ const d = labToolData.artStudio || {};
 
                         onChange: function(e) { upd('stereoAnimAiPrompt', e.target.value); },
 
-                        placeholder: "e.g. A glowing crystal orb floating in space...",
+                        placeholder: t('stem.artstudio.e_g_a_glowing_crystal_orb_floating_in_', "e.g. A glowing crystal orb floating in space..."),
 
                         className: "w-full text-xs p-2 rounded border border-purple-600 focus:ring-2 focus:ring-purple-400 mb-2 h-16 resize-none",
 
@@ -5609,7 +5609,7 @@ const d = labToolData.artStudio || {};
 
                       }),
 
-                      React.createElement("button", { "aria-label": "Generate AI Depth Map for Animation",
+                      React.createElement("button", { "aria-label": t('stem.artstudio.generate_ai_depth_map_for_animation', "Generate AI Depth Map for Animation"),
 
                         onClick: function() {
 
@@ -5679,17 +5679,17 @@ const d = labToolData.artStudio || {};
 
                         } }),
 
-                        React.createElement("span", { className: "text-[11px] text-green-600 font-bold" }, "\u2705 AI depth map ready!")
+                        React.createElement("span", { className: "text-[11px] text-green-600 font-bold" }, t('stem.artstudio.ai_depth_map_ready', "\u2705 AI depth map ready!"))
 
                       ),
 
                       React.createElement("div", { className: "mt-2" },
 
-                        React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block mb-1" }, "\uD83D\uDD04 Transform Type"),
+                        React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block mb-1" }, t('stem.artstudio.transform_type_3', "\uD83D\uDD04 Transform Type")),
 
                         React.createElement("div", { className: "grid grid-cols-5 gap-1" },
 
-                          [{ id: 'zoom', label: '\uD83D\uDD0D Zoom' }, { id: 'rotate', label: '\uD83D\uDD04 Rotate' }, { id: 'bounce', label: '\u26A1 Bounce' }, { id: 'slide', label: '\u21C6 Slide' }, { id: 'ai-motion', label: '\uD83C\uDFAD AI Motion' }].map(function(t) {
+                          [{ id: 'zoom', label: t('stem.artstudio.zoom_4', '\uD83D\uDD0D Zoom') }, { id: 'rotate', label: t('stem.artstudio.rotate_3', '\uD83D\uDD04 Rotate') }, { id: 'bounce', label: t('stem.artstudio.bounce_3', '\u26A1 Bounce') }, { id: 'slide', label: t('stem.artstudio.slide_3', '\u21C6 Slide') }, { id: 'ai-motion', label: t('stem.artstudio.ai_motion', '\uD83C\uDFAD AI Motion') }].map(function(t) {
 
                             return React.createElement("button", { key: t.id, onClick: function() {
 
@@ -5715,7 +5715,7 @@ const d = labToolData.artStudio || {};
 
                         (d.stereoAnimTransform === 'ai-motion') && React.createElement("p", { className: "text-[10px] text-purple-700 mt-1 italic" },
 
-                          "AI Motion calls Gemini to plan poses then Imagen to render each frame as its own depth map. ~5\u20137s per frame; rate-limit-safe."
+                          t('stem.artstudio.ai_motion_calls_gemini_to_plan_poses_t', "AI Motion calls Gemini to plan poses then Imagen to render each frame as its own depth map. ~5\u20137s per frame; rate-limit-safe.")
 
                         )
 
@@ -5723,7 +5723,7 @@ const d = labToolData.artStudio || {};
 
                     ) : React.createElement("div", { className: "bg-amber-50 rounded-lg p-3 border border-amber-200" },
 
-                      React.createElement("p", { className: "text-[11px] text-amber-700 font-bold" }, "\u26A0\uFE0F AI image generation is not available. Use the Preset, Draw, Upload, or Transform modes instead.")
+                      React.createElement("p", { className: "text-[11px] text-amber-700 font-bold" }, t('stem.artstudio.ai_image_generation_is_not_available_u', "\u26A0\uFE0F AI image generation is not available. Use the Preset, Draw, Upload, or Transform modes instead."))
 
                     )
 
@@ -5739,7 +5739,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block mb-0.5" }, "Frames: " + (d.stereoAnimFrameCount || 12)),
 
-                      React.createElement("input", { type: "range", min: 6, max: 30, value: d.stereoAnimFrameCount || 12, 'aria-label': 'Frame count', onChange: function(e) { upd('stereoAnimFrameCount', parseInt(e.target.value)); }, className: "w-full accent-purple-600" })
+                      React.createElement("input", { type: "range", min: 6, max: 30, value: d.stereoAnimFrameCount || 12, 'aria-label': t('stem.artstudio.frame_count', 'Frame count'), onChange: function(e) { upd('stereoAnimFrameCount', parseInt(e.target.value)); }, className: "w-full accent-purple-600" })
 
                     ),
 
@@ -5747,7 +5747,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block mb-0.5" }, "Speed: " + (d.stereoAnimSpeed || 8) + " FPS"),
 
-                      React.createElement("input", { type: "range", min: 2, max: 15, value: d.stereoAnimSpeed || 8, 'aria-label': 'Animation speed', onChange: function(e) { upd('stereoAnimSpeed', parseInt(e.target.value)); }, className: "w-full accent-purple-600" })
+                      React.createElement("input", { type: "range", min: 2, max: 15, value: d.stereoAnimSpeed || 8, 'aria-label': t('stem.artstudio.animation_speed', 'Animation speed'), onChange: function(e) { upd('stereoAnimSpeed', parseInt(e.target.value)); }, className: "w-full accent-purple-600" })
 
                     )
 
@@ -5755,11 +5755,11 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "mb-3" },
 
-                    React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block mb-1" }, "Pattern Type"),
+                    React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block mb-1" }, t('stem.artstudio.pattern_type_2', "Pattern Type")),
 
                     React.createElement("div", { className: "flex gap-1" },
 
-                      [{ id: 'bw', label: '\u26AB B&W' }, { id: 'color', label: '\uD83C\uDFA8 Color' }, { id: 'noise', label: '\uD83D\uDCFA Noise' }].map(function(s) {
+                      [{ id: 'bw', label: t('stem.artstudio.b_w_2', '\u26AB B&W') }, { id: 'color', label: t('stem.artstudio.color_2', '\uD83C\uDFA8 Color') }, { id: 'noise', label: t('stem.artstudio.noise_2', '\uD83D\uDCFA Noise') }].map(function(s) {
 
                         return React.createElement("button", { key: s.id, onClick: function() { upd('stereoPattern', s.id); },
 
@@ -5771,9 +5771,9 @@ const d = labToolData.artStudio || {};
 
                   ),
 
-                  [{ k: 'stereoStrength', label: 'Depth Strength', min: 5, max: 30, def: 15 },
+                  [{ k: 'stereoStrength', label: t('stem.artstudio.depth_strength_2', 'Depth Strength'), min: 5, max: 30, def: 15 },
 
-                   { k: 'stereoDensity', label: 'Pattern Width', min: 60, max: 150, def: 100 }].map(function(s) {
+                   { k: 'stereoDensity', label: t('stem.artstudio.pattern_width_2', 'Pattern Width'), min: 60, max: 150, def: 100 }].map(function(s) {
 
                     var val = typeof d[s.k] === 'number' ? d[s.k] : s.def;
 
@@ -5793,7 +5793,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                    React.createElement("button", { "aria-label": "Render Animated Stereogram",
+                    React.createElement("button", { "aria-label": t('stem.artstudio.render_animated_stereogram', "Render Animated Stereogram"),
 
                       onClick: function() {
 
@@ -6298,7 +6298,7 @@ const d = labToolData.artStudio || {};
 
                     }, d.stereoAnimRendering ? (d.stereoAnimAiMotionStatus ? ('\u23F3 ' + d.stereoAnimAiMotionStatus + ' ' + (d.stereoAnimProgress || 0) + '%') : ('\u23F3 Rendering... ' + (d.stereoAnimProgress || 0) + '%')) : '\uD83C\uDFAC Render Animation'),
 
-                    React.createElement("button", { "aria-label": "Reset stereogram animation",
+                    React.createElement("button", { "aria-label": t('stem.artstudio.reset_stereogram_animation', "Reset stereogram animation"),
 
                       onClick: function() {
 
@@ -6340,7 +6340,7 @@ const d = labToolData.artStudio || {};
 
                       className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100"
 
-                    }, "\u23F9 Reset")
+                    }, t('stem.artstudio.reset_2', "\u23F9 Reset"))
 
                   ),
 
@@ -6358,13 +6358,13 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "flex justify-between items-center mb-2" },
 
-                    React.createElement("p", { className: "text-xs font-bold text-purple-700" }, "\uD83D\uDC53 Animated Stereogram Output"),
+                    React.createElement("p", { className: "text-xs font-bold text-purple-700" }, t('stem.artstudio.animated_stereogram_output', "\uD83D\uDC53 Animated Stereogram Output")),
 
                     d.stereoAnimHasFrames && React.createElement("span", { className: "text-[11px] font-bold px-2 py-0.5 rounded-full " + (d.stereoAnimPlaying ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600') }, d.stereoAnimPlaying ? '\u25B6 Playing' : '\u23F8 Paused')
 
                   ),
 
-                  React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, "Relax your eyes and look \u2018through\u2019 the animation to see 3D shapes move"),
+                  React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, t('stem.artstudio.relax_your_eyes_and_look_through_the_a', "Relax your eyes and look \u2018through\u2019 the animation to see 3D shapes move")),
 
                   React.createElement("canvas", { id: 'stereoAnimCanvas', width: 512, height: 512,
 
@@ -6392,7 +6392,7 @@ const d = labToolData.artStudio || {};
 
                   d.stereoAnimHasFrames && React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                    React.createElement("button", { "aria-label": "_stop Stereo Anim",
+                    React.createElement("button", { "aria-label": t('stem.artstudio.stop_stereo_anim', "_stop Stereo Anim"),
 
                       onClick: function() {
 
@@ -6406,7 +6406,7 @@ const d = labToolData.artStudio || {};
 
                     }, d.stereoAnimPlaying ? '\u23F8 Pause' : '\u25B6 Play'),
 
-                    React.createElement("button", { "aria-label": "Export GIF",
+                    React.createElement("button", { "aria-label": t('stem.artstudio.export_gif', "Export GIF"),
 
                       onClick: function() {
 
@@ -6420,23 +6420,23 @@ const d = labToolData.artStudio || {};
 
                       className: "transition-colors flex-1 px-3 py-2 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-600 hover:bg-emerald-100"
 
-                    }, "\uD83D\uDCE5 Export GIF")
+                    }, t('stem.artstudio.export_gif_2', "\uD83D\uDCE5 Export GIF"))
 
                   ),
 
                   React.createElement("div", { className: "bg-amber-50 rounded-xl p-3 border border-amber-200 mt-3" },
 
-                    React.createElement("p", { className: "text-[11px] font-bold text-amber-700 mb-1" }, "\uD83D\uDCA1 Tips for Animated Stereograms"),
+                    React.createElement("p", { className: "text-[11px] font-bold text-amber-700 mb-1" }, t('stem.artstudio.tips_for_animated_stereograms', "\uD83D\uDCA1 Tips for Animated Stereograms")),
 
                     React.createElement("ul", { className: "text-[11px] text-slate-600 leading-relaxed list-disc ml-4 space-y-0.5" },
 
-                      React.createElement("li", null, "Lock your eyes into the 3D view before clicking Play"),
+                      React.createElement("li", null, t('stem.artstudio.lock_your_eyes_into_the_3d_view_before', "Lock your eyes into the 3D view before clicking Play")),
 
-                      React.createElement("li", null, "Slower speeds (4\u20136 FPS) are easier to maintain focus"),
+                      React.createElement("li", null, t('stem.artstudio.slower_speeds_4_6_fps_are_easier_to_ma', "Slower speeds (4\u20136 FPS) are easier to maintain focus")),
 
-                      React.createElement("li", null, "Pulse and Heart presets are the easiest to see in motion"),
+                      React.createElement("li", null, t('stem.artstudio.pulse_and_heart_presets_are_the_easies', "Pulse and Heart presets are the easiest to see in motion")),
 
-                      React.createElement("li", null, "The exported GIF can be printed frame-by-frame as a flipbook!")
+                      React.createElement("li", null, t('stem.artstudio.the_exported_gif_can_be_printed_frame_', "The exported GIF can be printed frame-by-frame as a flipbook!"))
 
                     )
 
@@ -6456,9 +6456,9 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex justify-between items-start mb-3" },
 
-                      React.createElement("h4", { className: "text-xs font-bold text-emerald-700" }, "\uD83E\uDDEC Conway's Game of Life"),
+                      React.createElement("h4", { className: "text-xs font-bold text-emerald-700" }, t('stem.artstudio.conway_s_game_of_life', "\uD83E\uDDEC Conway's Game of Life")),
 
-                      React.createElement("button", { "aria-label": "Fullscreen Mode", onClick: function () { toggleFullscreen('lifeFullscreenContainer'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-white hover:bg-slate-700 transition-all shadow-sm" }, "\uD83D\uDD0D Fullscreen Mode")
+                      React.createElement("button", { "aria-label": t('stem.artstudio.fullscreen_mode', "Fullscreen Mode"), onClick: function () { toggleFullscreen('lifeFullscreenContainer'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-white hover:bg-slate-700 transition-all shadow-sm" }, t('stem.artstudio.fullscreen_mode_2', "\uD83D\uDD0D Fullscreen Mode"))
 
                     ),
 
@@ -6468,9 +6468,9 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("button", { onClick: function () { upd('lifeRunning', !(d.lifeRunning)); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-black transition-all " + (d.lifeRunning ? 'bg-amber-700 text-white hover:bg-amber-600' : 'bg-gradient-to-r from-emerald-500 to-green-500 text-white hover:from-emerald-600 hover:to-green-600 shadow-md') }, d.lifeRunning ? '\u23F8 Pause' : '\u25B6 Run'),
 
-                      React.createElement("button", { onClick: function () { upd('lifeStep', (d.lifeStep || 0) + 1); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-700 hover:bg-emerald-200", disabled: d.lifeRunning }, '\u23ED Step'),
+                      React.createElement("button", { onClick: function () { upd('lifeStep', (d.lifeStep || 0) + 1); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-700 hover:bg-emerald-200", disabled: d.lifeRunning }, t('stem.artstudio.step', '\u23ED Step')),
 
-                      React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('lifeClear', Date.now()); upd('lifeRunning', false); upd('lifeGen', 0); upd('lifePop', 0); upd('lifeChallengeStatus', null); upd('lifeChallengeMsg', null); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, '\uD83D\uDDD1 Clear')
+                      React.createElement("button", { "aria-label": t('stem.artstudio.clear_11', "Clear"), onClick: function () { upd('lifeClear', Date.now()); upd('lifeRunning', false); upd('lifeGen', 0); upd('lifePop', 0); upd('lifeChallengeStatus', null); upd('lifeChallengeMsg', null); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, t('stem.artstudio.clear_12', '\uD83D\uDDD1 Clear'))
 
                     ),
 
@@ -6492,7 +6492,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("label", { className: "text-[11px] font-bold text-emerald-600 block mb-0.5" }, 'Speed: ' + (typeof d.lifeSpeed === 'number' ? d.lifeSpeed : 10) + ' fps'),
 
-                      React.createElement("input", { type: "range", min: 1, max: 30, value: typeof d.lifeSpeed === 'number' ? d.lifeSpeed : 10, 'aria-label': 'Simulation speed', onChange: function (e) { upd('lifeSpeed', parseInt(e.target.value)); }, className: "w-full accent-emerald-600" })
+                      React.createElement("input", { type: "range", min: 1, max: 30, value: typeof d.lifeSpeed === 'number' ? d.lifeSpeed : 10, 'aria-label': t('stem.artstudio.simulation_speed', 'Simulation speed'), onChange: function (e) { upd('lifeSpeed', parseInt(e.target.value)); }, className: "w-full accent-emerald-600" })
 
                     ),
 
@@ -6500,7 +6500,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[11px] font-bold text-emerald-600 block mb-1" }, 'Grid Size'),
+                      React.createElement("label", { className: "text-[11px] font-bold text-emerald-600 block mb-1" }, t('stem.artstudio.grid_size_3', 'Grid Size')),
 
                       React.createElement("div", { className: "flex gap-1" },
 
@@ -6518,11 +6518,11 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[11px] font-bold text-emerald-600 block mb-1" }, 'Draw Tool'),
+                      React.createElement("label", { className: "text-[11px] font-bold text-emerald-600 block mb-1" }, t('stem.artstudio.draw_tool', 'Draw Tool')),
 
                       React.createElement("div", { className: "flex gap-1" },
 
-                        [{ id: 'draw', label: '\u270F Draw' }, { id: 'erase', label: '\uD83E\uDDFD Erase' }].map(function (s) {
+                        [{ id: 'draw', label: t('stem.artstudio.draw_2', '\u270F Draw') }, { id: 'erase', label: t('stem.artstudio.erase_3', '\uD83E\uDDFD Erase') }].map(function (s) {
 
                           return React.createElement("button", { key: s.id, onClick: function () { upd('lifeTool', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.lifeTool || 'draw') === s.id ? 'bg-emerald-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-emerald-50') }, s.label);
 
@@ -6538,7 +6538,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("button", { onClick: function () { upd('lifeWrap', d.lifeWrap === false ? true : d.lifeWrap === true ? false : true); }, className: "px-3 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.lifeWrap !== false ? 'bg-emerald-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-emerald-50') }, (d.lifeWrap !== false ? '\u2705' : '\u2B1C') + ' Wrap Edges'),
 
-                      React.createElement("button", { "aria-label": "Random", onClick: function () {
+                      React.createElement("button", { "aria-label": t('stem.artstudio.random', "Random"), onClick: function () {
 
                         var sz = d.lifeSize || 60;
 
@@ -6548,7 +6548,7 @@ const d = labToolData.artStudio || {};
 
                         upd('lifeGrid', newGrid); upd('lifeSeed', Date.now()); upd('lifeGen', 0);
 
-                      }, className: "transition-colors px-3 py-1 rounded-lg text-[11px] font-bold bg-emerald-100 text-emerald-700 hover:bg-emerald-200" }, '\uD83C\uDFB2 Random')
+                      }, className: "transition-colors px-3 py-1 rounded-lg text-[11px] font-bold bg-emerald-100 text-emerald-700 hover:bg-emerald-200" }, t('stem.artstudio.random_2', '\uD83C\uDFB2 Random'))
 
                     ),
 
@@ -6556,11 +6556,11 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[11px] font-bold text-emerald-600 block mb-1" }, '\uD83D\uDD0D Visualization'),
+                      React.createElement("label", { className: "text-[11px] font-bold text-emerald-600 block mb-1" }, t('stem.artstudio.visualization', '\uD83D\uDD0D Visualization')),
 
                       React.createElement("div", { className: "flex gap-1" },
 
-                        [{ id: 'normal', label: '\uD83D\uDFE2 Normal' }, { id: 'heatmap', label: '\uD83C\uDF21 Age Map' }, { id: 'xray', label: '\uD83D\uDD2C X-Ray' }].map(function (v) {
+                        [{ id: 'normal', label: t('stem.artstudio.normal', '\uD83D\uDFE2 Normal') }, { id: 'heatmap', label: t('stem.artstudio.age_map', '\uD83C\uDF21 Age Map') }, { id: 'xray', label: t('stem.artstudio.x_ray', '\uD83D\uDD2C X-Ray') }].map(function (v) {
 
                           return React.createElement("button", { key: v.id, onClick: function () { upd('lifeVizMode', v.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.lifeVizMode || 'normal') === v.id ? 'bg-emerald-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-emerald-50') }, v.label);
 
@@ -6576,7 +6576,7 @@ const d = labToolData.artStudio || {};
 
                     (d.lifeVizMode || 'normal') === 'normal' && React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[11px] font-bold text-emerald-600 block mb-1" }, 'Cell Color'),
+                      React.createElement("label", { className: "text-[11px] font-bold text-emerald-600 block mb-1" }, t('stem.artstudio.cell_color', 'Cell Color')),
 
                       React.createElement("div", { className: "flex gap-1" },
 
@@ -6592,67 +6592,67 @@ const d = labToolData.artStudio || {};
 
                     // Export
 
-                    React.createElement("button", { "aria-label": "Export PNG", onClick: function () { var c = document.getElementById('lifeCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'game-of-life-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "w-full px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, '\uD83D\uDCE5 Export PNG'),
+                    React.createElement("button", { "aria-label": t('stem.artstudio.export_png_17', "Export PNG"), onClick: function () { var c = document.getElementById('lifeCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'game-of-life-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "w-full px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, t('stem.artstudio.export_png_18', '\uD83D\uDCE5 Export PNG')),
 
                     // ─── Expanded Preset Library ───
 
                     React.createElement("div", { className: "mt-3" },
 
-                      React.createElement("span", { className: "text-[11px] font-bold text-emerald-500 block mb-1" }, '\uD83D\uDCDA Pattern Library'),
+                      React.createElement("span", { className: "text-[11px] font-bold text-emerald-500 block mb-1" }, t('stem.artstudio.pattern_library', '\uD83D\uDCDA Pattern Library')),
 
                       [
 
                         { cat: 'Still Lifes', emoji: '\uD83E\uDDF1', items: [
 
-                          { label: 'Block', id: 'block', desc: 'Simplest still life \u2014 4 cells in a square' },
+                          { label: t('stem.artstudio.block', 'Block'), id: 'block', desc: t('stem.artstudio.simplest_still_life_4_cells_in_a_squar', 'Simplest still life \u2014 4 cells in a square') },
 
-                          { label: 'Beehive', id: 'beehive', desc: '6-cell still life shaped like a hexagon' },
+                          { label: t('stem.artstudio.beehive', 'Beehive'), id: 'beehive', desc: t('stem.artstudio.6_cell_still_life_shaped_like_a_hexago', '6-cell still life shaped like a hexagon') },
 
-                          { label: 'Loaf', id: 'loaf', desc: '7-cell asymmetric still life' },
+                          { label: t('stem.artstudio.loaf', 'Loaf'), id: 'loaf', desc: t('stem.artstudio.7_cell_asymmetric_still_life', '7-cell asymmetric still life') },
 
-                          { label: 'Boat', id: 'boat', desc: '5-cell still life' }
+                          { label: t('stem.artstudio.boat', 'Boat'), id: 'boat', desc: t('stem.artstudio.5_cell_still_life', '5-cell still life') }
 
                         ]},
 
                         { cat: 'Oscillators', emoji: '\uD83D\uDD04', items: [
 
-                          { label: 'Blinker', id: 'blinker', desc: 'Period 2 \u2014 the simplest oscillator' },
+                          { label: t('stem.artstudio.blinker', 'Blinker'), id: 'blinker', desc: t('stem.artstudio.period_2_the_simplest_oscillator', 'Period 2 \u2014 the simplest oscillator') },
 
-                          { label: 'Toad', id: 'toad', desc: 'Period 2 \u2014 6 cells that shift back and forth' },
+                          { label: t('stem.artstudio.toad', 'Toad'), id: 'toad', desc: t('stem.artstudio.period_2_6_cells_that_shift_back_and_f', 'Period 2 \u2014 6 cells that shift back and forth') },
 
-                          { label: 'Beacon', id: 'beacon', desc: 'Period 2 \u2014 two blocks that blink' },
+                          { label: t('stem.artstudio.beacon', 'Beacon'), id: 'beacon', desc: t('stem.artstudio.period_2_two_blocks_that_blink', 'Period 2 \u2014 two blocks that blink') },
 
-                          { label: 'Pulsar', id: 'pulsar', desc: 'Period 3 \u2014 beautiful rotational symmetry' }
+                          { label: t('stem.artstudio.pulsar', 'Pulsar'), id: 'pulsar', desc: t('stem.artstudio.period_3_beautiful_rotational_symmetry', 'Period 3 \u2014 beautiful rotational symmetry') }
 
                         ]},
 
                         { cat: 'Spaceships', emoji: '\uD83D\uDE80', items: [
 
-                          { label: 'Glider', id: 'glider', desc: 'Moves diagonally \u2014 discovered 1970' },
+                          { label: t('stem.artstudio.glider', 'Glider'), id: 'glider', desc: t('stem.artstudio.moves_diagonally_discovered_1970', 'Moves diagonally \u2014 discovered 1970') },
 
-                          { label: 'LWSS', id: 'lwss', desc: 'Lightweight spaceship \u2014 moves horizontally' },
+                          { label: 'LWSS', id: 'lwss', desc: t('stem.artstudio.lightweight_spaceship_moves_horizontal', 'Lightweight spaceship \u2014 moves horizontally') },
 
-                          { label: 'MWSS', id: 'mwss', desc: 'Middleweight spaceship \u2014 9 cells' },
+                          { label: 'MWSS', id: 'mwss', desc: t('stem.artstudio.middleweight_spaceship_9_cells', 'Middleweight spaceship \u2014 9 cells') },
 
-                          { label: 'HWSS', id: 'hwss', desc: 'Heavyweight spaceship \u2014 largest basic ship' }
+                          { label: 'HWSS', id: 'hwss', desc: t('stem.artstudio.heavyweight_spaceship_largest_basic_sh', 'Heavyweight spaceship \u2014 largest basic ship') }
 
                         ]},
 
                         { cat: 'Methuselahs', emoji: '\uD83C\uDF0B', items: [
 
-                          { label: 'R-pentomino', id: 'rpent', desc: '5 cells \u2192 1103 generations to stabilize!' },
+                          { label: 'R-pentomino', id: 'rpent', desc: t('stem.artstudio.5_cells_1103_generations_to_stabilize', '5 cells \u2192 1103 generations to stabilize!') },
 
-                          { label: 'Acorn', id: 'acorn', desc: '7 cells \u2192 takes 5206 generations!' },
+                          { label: t('stem.artstudio.acorn', 'Acorn'), id: 'acorn', desc: t('stem.artstudio.7_cells_takes_5206_generations', '7 cells \u2192 takes 5206 generations!') },
 
-                          { label: 'Diehard', id: 'diehard', desc: '7 cells \u2192 dies completely at gen 130' },
+                          { label: t('stem.artstudio.diehard', 'Diehard'), id: 'diehard', desc: t('stem.artstudio.7_cells_dies_completely_at_gen_130', '7 cells \u2192 dies completely at gen 130') },
 
-                          { label: 'Pi-heptomino', id: 'pihept', desc: '7 cells \u2192 stabilizes at gen 173' }
+                          { label: 'Pi-heptomino', id: 'pihept', desc: t('stem.artstudio.7_cells_stabilizes_at_gen_173', '7 cells \u2192 stabilizes at gen 173') }
 
                         ]},
 
                         { cat: 'Guns', emoji: '\u2694\uFE0F', items: [
 
-                          { label: 'Gosper Gun', id: 'gliderGun', desc: 'First gun found \u2014 shoots gliders endlessly' }
+                          { label: t('stem.artstudio.gosper_gun', 'Gosper Gun'), id: 'gliderGun', desc: t('stem.artstudio.first_gun_found_shoots_gliders_endless', 'First gun found \u2014 shoots gliders endlessly') }
 
                         ]}
 
@@ -6684,25 +6684,25 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-3 border border-purple-200" },
 
-                    React.createElement("h4", { className: "text-[11px] font-bold text-purple-700 mb-2" }, '\uD83E\uDDEC Rule Editor (B/S Notation)'),
+                    React.createElement("h4", { className: "text-[11px] font-bold text-purple-700 mb-2" }, t('stem.artstudio.rule_editor_b_s_notation', '\uD83E\uDDEC Rule Editor (B/S Notation)')),
 
-                    React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, 'Change the rules! B = counts that birth a cell. S = counts that keep it alive.'),
+                    React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, t('stem.artstudio.change_the_rules_b_counts_that_birth_a', 'Change the rules! B = counts that birth a cell. S = counts that keep it alive.')),
 
                     React.createElement("div", { className: "flex gap-2 mb-2" },
 
                       React.createElement("div", { className: "flex-1" },
 
-                        React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block" }, 'Birth (B)'),
+                        React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block" }, t('stem.artstudio.birth_b', 'Birth (B)')),
 
-                        React.createElement("input", { type: "text", value: d.lifeRuleB || '3', 'aria-label': 'Birth rule', onChange: function (e) { upd('lifeRuleB', e.target.value.replace(/[^0-8]/g, '')); }, className: "w-full px-2 py-1 text-xs font-mono border border-purple-600 rounded-lg", placeholder: '3' })
+                        React.createElement("input", { type: "text", value: d.lifeRuleB || '3', 'aria-label': t('stem.artstudio.birth_rule', 'Birth rule'), onChange: function (e) { upd('lifeRuleB', e.target.value.replace(/[^0-8]/g, '')); }, className: "w-full px-2 py-1 text-xs font-mono border border-purple-600 rounded-lg", placeholder: '3' })
 
                       ),
 
                       React.createElement("div", { className: "flex-1" },
 
-                        React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block" }, 'Survival (S)'),
+                        React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block" }, t('stem.artstudio.survival_s', 'Survival (S)')),
 
-                        React.createElement("input", { type: "text", value: d.lifeRuleS || '23', 'aria-label': 'Survival rule', onChange: function (e) { upd('lifeRuleS', e.target.value.replace(/[^0-8]/g, '')); }, className: "w-full px-2 py-1 text-xs font-mono border border-purple-600 rounded-lg", placeholder: '23' })
+                        React.createElement("input", { type: "text", value: d.lifeRuleS || '23', 'aria-label': t('stem.artstudio.survival_rule', 'Survival rule'), onChange: function (e) { upd('lifeRuleS', e.target.value.replace(/[^0-8]/g, '')); }, className: "w-full px-2 py-1 text-xs font-mono border border-purple-600 rounded-lg", placeholder: '23' })
 
                       )
 
@@ -6714,15 +6714,15 @@ const d = labToolData.artStudio || {};
 
                       [
 
-                        { label: 'Conway B3/S23', b: '3', s: '23', desc: 'The classic \u2014 balanced growth' },
+                        { label: t('stem.artstudio.conway_b3_s23', 'Conway B3/S23'), b: '3', s: '23', desc: t('stem.artstudio.the_classic_balanced_growth', 'The classic \u2014 balanced growth') },
 
-                        { label: 'Seeds B2/S', b: '2', s: '', desc: 'Explosive! Every cell dies immediately' },
+                        { label: t('stem.artstudio.seeds_b2_s', 'Seeds B2/S'), b: '2', s: '', desc: t('stem.artstudio.explosive_every_cell_dies_immediately', 'Explosive! Every cell dies immediately') },
 
-                        { label: 'Highlife B36/S23', b: '36', s: '23', desc: 'Like Conway but has a replicator!' },
+                        { label: t('stem.artstudio.highlife_b36_s23', 'Highlife B36/S23'), b: '36', s: '23', desc: t('stem.artstudio.like_conway_but_has_a_replicator', 'Like Conway but has a replicator!') },
 
-                        { label: 'Day&Night B3678/S34678', b: '3678', s: '34678', desc: 'Symmetric \u2014 dead/alive are interchangeable' },
+                        { label: t('stem.artstudio.day_night_b3678_s34678', 'Day&Night B3678/S34678'), b: '3678', s: '34678', desc: t('stem.artstudio.symmetric_dead_alive_are_interchangeab', 'Symmetric \u2014 dead/alive are interchangeable') },
 
-                        { label: 'Diamoeba B35678/S5678', b: '35678', s: '5678', desc: 'Creates diamond-shaped amoebas' }
+                        { label: t('stem.artstudio.diamoeba_b35678_s5678', 'Diamoeba B35678/S5678'), b: '35678', s: '5678', desc: t('stem.artstudio.creates_diamond_shaped_amoebas', 'Creates diamond-shaped amoebas') }
 
                       ].map(function (rp) {
 
@@ -6740,21 +6740,21 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl p-3 border border-amber-200" },
 
-                    React.createElement("h4", { className: "text-[11px] font-bold text-amber-700 mb-2" }, '\uD83C\uDFAF Pattern Challenges (+10 XP each)'),
+                    React.createElement("h4", { className: "text-[11px] font-bold text-amber-700 mb-2" }, t('stem.artstudio.pattern_challenges_10_xp_each', '\uD83C\uDFAF Pattern Challenges (+10 XP each)')),
 
                     React.createElement("div", { className: "flex gap-1 flex-wrap mb-2" },
 
                       [
 
-                        { id: 'still', label: '\uD83E\uDDF1 Still Life', desc: 'Draw a pattern that stays perfectly unchanged after 1 step' },
+                        { id: 'still', label: t('stem.artstudio.still_life', '\uD83E\uDDF1 Still Life'), desc: t('stem.artstudio.draw_a_pattern_that_stays_perfectly_un', 'Draw a pattern that stays perfectly unchanged after 1 step') },
 
-                        { id: 'oscillator', label: '\uD83D\uDD04 Oscillator', desc: 'Draw a pattern that repeats itself (comes back to initial state)' },
+                        { id: 'oscillator', label: t('stem.artstudio.oscillator', '\uD83D\uDD04 Oscillator'), desc: t('stem.artstudio.draw_a_pattern_that_repeats_itself_com', 'Draw a pattern that repeats itself (comes back to initial state)') },
 
-                        { id: 'extinction', label: '\uD83D\uDC80 Extinction', desc: 'Draw a pattern that completely dies out' },
+                        { id: 'extinction', label: t('stem.artstudio.extinction', '\uD83D\uDC80 Extinction'), desc: t('stem.artstudio.draw_a_pattern_that_completely_dies_ou', 'Draw a pattern that completely dies out') },
 
-                        { id: 'methuselah', label: '\uD83C\uDF0B Methuselah', desc: 'Use \u22645 cells to create a pattern that survives 50+ generations' },
+                        { id: 'methuselah', label: t('stem.artstudio.methuselah', '\uD83C\uDF0B Methuselah'), desc: t('stem.artstudio.use_5_cells_to_create_a_pattern_that_s', 'Use \u22645 cells to create a pattern that survives 50+ generations') },
 
-                        { id: 'maxpop', label: '\uD83D\uDCC8 Pop Boom', desc: 'Use exactly 5 cells \u2014 maximize population within 50 generations!' }
+                        { id: 'maxpop', label: t('stem.artstudio.pop_boom', '\uD83D\uDCC8 Pop Boom'), desc: t('stem.artstudio.use_exactly_5_cells_maximize_populatio', 'Use exactly 5 cells \u2014 maximize population within 50 generations!') }
 
                       ].map(function (ch) {
 
@@ -6782,7 +6782,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("p", { className: "text-[11px] text-amber-600 italic" }, d.lifeChallengeMsg || ''),
 
-                      React.createElement("p", { className: "text-[11px] text-slate-600" }, 'Draw your pattern, then press \u25B6 Run to test!'),
+                      React.createElement("p", { className: "text-[11px] text-slate-600" }, t('stem.artstudio.draw_your_pattern_then_press_run_to_te', 'Draw your pattern, then press \u25B6 Run to test!')),
 
                       (d.lifeChallenge === 'methuselah' || d.lifeChallenge === 'maxpop') && React.createElement("p", { className: "text-[11px] font-bold " + ((d.lifePop || 0) > 5 ? 'text-red-500' : 'text-green-600') }, 'Cells placed: ' + (d.lifePop || 0) + '/5')
 
@@ -6808,7 +6808,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("button", { onClick: function () { upd('showLifeInfo', d.showLifeInfo === undefined ? false : !d.showLifeInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-lime-700" },
 
-                      React.createElement("span", null, '\uD83E\uDDE0 The Science of Cellular Automata'),
+                      React.createElement("span", null, t('stem.artstudio.the_science_of_cellular_automata', '\uD83E\uDDE0 The Science of Cellular Automata')),
 
                       React.createElement("span", null, (d.showLifeInfo !== false) ? '\u25B2' : '\u25BC')
 
@@ -6816,57 +6816,57 @@ const d = labToolData.artStudio || {};
 
                     (d.showLifeInfo !== false) && React.createElement("div", { className: "mt-3 space-y-2 text-xs text-slate-600 leading-relaxed" },
 
-                      React.createElement("p", null, '\uD83E\uDDEC ', React.createElement("strong", null, "Conway\'s Game of Life"), ' was invented by mathematician John Horton Conway in 1970. Despite having only 4 simple rules, it can produce extraordinary complexity \u2014 it\'s actually ', React.createElement("strong", null, "Turing complete"), ', meaning it can compute anything a real computer can.'),
+                      React.createElement("p", null, '\uD83E\uDDEC ', React.createElement("strong", null, t('stem.artstudio.conway_s_game_of_life_2', "Conway\'s Game of Life")), t('stem.artstudio.was_invented_by_mathematician_john_hor', ' was invented by mathematician John Horton Conway in 1970. Despite having only 4 simple rules, it can produce extraordinary complexity \u2014 it\'s actually '), React.createElement("strong", null, t('stem.artstudio.turing_complete', "Turing complete")), t('stem.artstudio.meaning_it_can_compute_anything_a_real', ', meaning it can compute anything a real computer can.')),
 
                       React.createElement("div", { className: "bg-white rounded-lg p-2 border border-lime-200" },
 
-                        React.createElement("p", { className: "font-bold text-lime-700 mb-1" }, '\uD83D\uDCCF The Rules:'),
+                        React.createElement("p", { className: "font-bold text-lime-700 mb-1" }, t('stem.artstudio.the_rules', '\uD83D\uDCCF The Rules:')),
 
                         React.createElement("ol", { className: "list-decimal ml-4 space-y-0.5" },
 
-                          React.createElement("li", null, React.createElement("strong", null, "Survival:"), ' A live cell with 2\u20133 neighbors stays alive'),
+                          React.createElement("li", null, React.createElement("strong", null, "Survival:"), t('stem.artstudio.a_live_cell_with_2_3_neighbors_stays_a', ' A live cell with 2\u20133 neighbors stays alive')),
 
-                          React.createElement("li", null, React.createElement("strong", null, "Birth:"), ' A dead cell with exactly 3 neighbors becomes alive'),
+                          React.createElement("li", null, React.createElement("strong", null, "Birth:"), t('stem.artstudio.a_dead_cell_with_exactly_3_neighbors_b', ' A dead cell with exactly 3 neighbors becomes alive')),
 
-                          React.createElement("li", null, React.createElement("strong", null, "Death:"), ' All other live cells die (loneliness or overcrowding)')
+                          React.createElement("li", null, React.createElement("strong", null, "Death:"), t('stem.artstudio.all_other_live_cells_die_loneliness_or', ' All other live cells die (loneliness or overcrowding)'))
 
                         ),
 
-                        React.createElement("p", { className: "text-[11px] italic mt-1 text-slate-600" }, 'Use \uD83D\uDD2C X-Ray mode to see neighbor counts and understand why each cell lives or dies!')
+                        React.createElement("p", { className: "text-[11px] italic mt-1 text-slate-600" }, t('stem.artstudio.use_x_ray_mode_to_see_neighbor_counts_', 'Use \uD83D\uDD2C X-Ray mode to see neighbor counts and understand why each cell lives or dies!'))
 
                       ),
 
                       React.createElement("div", { className: "bg-white rounded-lg p-2 border border-lime-200" },
 
-                        React.createElement("p", { className: "font-bold text-lime-700 mb-1" }, '\uD83D\uDCDA Pattern Types:'),
+                        React.createElement("p", { className: "font-bold text-lime-700 mb-1" }, t('stem.artstudio.pattern_types', '\uD83D\uDCDA Pattern Types:')),
 
                         React.createElement("ul", { className: "list-disc ml-4 space-y-0.5" },
 
-                          React.createElement("li", null, React.createElement("strong", null, "Still Lifes"), ' \u2014 patterns that never change (every cell has 2\u20133 neighbors)'),
+                          React.createElement("li", null, React.createElement("strong", null, t('stem.artstudio.still_lifes', "Still Lifes")), t('stem.artstudio.patterns_that_never_change_every_cell_', ' \u2014 patterns that never change (every cell has 2\u20133 neighbors)')),
 
-                          React.createElement("li", null, React.createElement("strong", null, "Oscillators"), ' \u2014 patterns that cycle through states and repeat'),
+                          React.createElement("li", null, React.createElement("strong", null, t('stem.artstudio.oscillators', "Oscillators")), t('stem.artstudio.patterns_that_cycle_through_states_and', ' \u2014 patterns that cycle through states and repeat')),
 
-                          React.createElement("li", null, React.createElement("strong", null, "Spaceships"), ' \u2014 patterns that move across the grid'),
+                          React.createElement("li", null, React.createElement("strong", null, t('stem.artstudio.spaceships', "Spaceships")), t('stem.artstudio.patterns_that_move_across_the_grid', ' \u2014 patterns that move across the grid')),
 
-                          React.createElement("li", null, React.createElement("strong", null, "Methuselahs"), ' \u2014 small patterns that take very long to stabilize'),
+                          React.createElement("li", null, React.createElement("strong", null, t('stem.artstudio.methuselahs', "Methuselahs")), t('stem.artstudio.small_patterns_that_take_very_long_to_', ' \u2014 small patterns that take very long to stabilize')),
 
-                          React.createElement("li", null, React.createElement("strong", null, "Guns"), ' \u2014 patterns that emit spaceships forever')
+                          React.createElement("li", null, React.createElement("strong", null, t('stem.artstudio.guns', "Guns")), t('stem.artstudio.patterns_that_emit_spaceships_forever', ' \u2014 patterns that emit spaceships forever'))
 
                         )
 
                       ),
 
-                      React.createElement("p", null, '\uD83D\uDE80 ', React.createElement("strong", null, "Gliders"), ' are patterns that move across the grid. The ', React.createElement("strong", null, "Gosper Glider Gun"), ' (1970) was the first pattern proven to grow without bound.'),
+                      React.createElement("p", null, '\uD83D\uDE80 ', React.createElement("strong", null, t('stem.artstudio.gliders', "Gliders")), t('stem.artstudio.are_patterns_that_move_across_the_grid', ' are patterns that move across the grid. The '), React.createElement("strong", null, t('stem.artstudio.gosper_glider_gun', "Gosper Glider Gun")), t('stem.artstudio.1970_was_the_first_pattern_proven_to_g', ' (1970) was the first pattern proven to grow without bound.')),
 
-                      React.createElement("p", null, '\uD83C\uDF0D ', React.createElement("strong", null, "Emergence:"), ' The Game of Life demonstrates how complex, seemingly \u201Cintelligent\u201D behavior can arise from very simple rules with no central controller. This same principle appears in ant colonies, flocking birds, brain neurons, and even market economies.'),
+                      React.createElement("p", null, '\uD83C\uDF0D ', React.createElement("strong", null, "Emergence:"), t('stem.artstudio.the_game_of_life_demonstrates_how_comp', ' The Game of Life demonstrates how complex, seemingly \u201Cintelligent\u201D behavior can arise from very simple rules with no central controller. This same principle appears in ant colonies, flocking birds, brain neurons, and even market economies.')),
 
-                      React.createElement("p", null, '\u26A1 ', React.createElement("strong", null, "Self-replication:"), ' In 2010, Andrew Wade built a pattern called \u201CGemini\u201D that creates a complete copy of itself and then destroys the original \u2014 true self-replication from simple rules.')
+                      React.createElement("p", null, '\u26A1 ', React.createElement("strong", null, "Self-replication:"), t('stem.artstudio.in_2010_andrew_wade_built_a_pattern_ca', ' In 2010, Andrew Wade built a pattern called \u201CGemini\u201D that creates a complete copy of itself and then destroys the original \u2014 true self-replication from simple rules.'))
 
                     )
 
                   ),
 
-                  React.createElement("p", { className: "text-[11px] text-center text-slate-600 italic" }, '\uD83D\uDC46 Click/drag to draw \u2022 \u25B6 Run to simulate \u2022 \uD83D\uDD2C X-Ray to learn')
+                  React.createElement("p", { className: "text-[11px] text-center text-slate-600 italic" }, t('stem.artstudio.click_drag_to_draw_run_to_simulate_x_r', '\uD83D\uDC46 Click/drag to draw \u2022 \u25B6 Run to simulate \u2022 \uD83D\uDD2C X-Ray to learn'))
 
                 ),
 
@@ -6874,7 +6874,7 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("div", { id: "lifeCanvasContainer", className: "space-y-2 bg-slate-900 aspect-square flex flex-col items-center justify-center p-2 rounded-xl" },
 
-                  React.createElement("canvas", { id: 'lifeCanvas', width: 600, height: 600, role: "img", 'aria-label': 'Game of Life simulation canvas',
+                  React.createElement("canvas", { id: 'lifeCanvas', width: 600, height: 600, role: "img", 'aria-label': t('stem.artstudio.game_of_life_simulation_canvas', 'Game of Life simulation canvas'),
 
                     key: 'life-' + (d.lifeClear || 0) + '-' + (d.lifeSize || 60),
 
@@ -7698,7 +7698,7 @@ const d = labToolData.artStudio || {};
 
                   }),
 
-                  React.createElement("p", { className: "text-[11px] text-center text-slate-600" }, '\uD83D\uDCC8 Population over time')
+                  React.createElement("p", { className: "text-[11px] text-center text-slate-600" }, t('stem.artstudio.population_over_time', '\uD83D\uDCC8 Population over time'))
 
                 )
 
@@ -7740,7 +7740,7 @@ const d = labToolData.artStudio || {};
 
 
 
-            React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'art-' + Date.now(), tool: 'artStudio', label: 'Art Studio', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Art snapshot saved!', 'success'); }, className: "mt-4 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-pink-500 to-rose-500 rounded-full hover:from-pink-600 hover:to-rose-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+            React.createElement("button", { "aria-label": t('stem.artstudio.snapshot', "Snapshot"), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'art-' + Date.now(), tool: 'artStudio', label: t('stem.artstudio.art_studio', 'Art Studio'), data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Art snapshot saved!', 'success'); }, className: "mt-4 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-pink-500 to-rose-500 rounded-full hover:from-pink-600 hover:to-rose-600 shadow-md hover:shadow-lg transition-all" }, t('stem.artstudio.snapshot_2', "\uD83D\uDCF8 Snapshot"))
 
           );
       })();
