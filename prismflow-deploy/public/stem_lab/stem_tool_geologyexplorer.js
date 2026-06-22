@@ -60,6 +60,38 @@
     return { key: key, R: R, depthKm: depthKm, tempC: tempC, presMPa: presMPa };
   }
 
+  // Representative depth (voxel rows) for a rock picked from the list / cycle, so
+  // its temperature & pressure read sensibly even when not picked in the 3D block.
+  var DEPTH_GUESS = { soil: 0, sandstone: 2, shale: 4, limestone: 6, basement: 8, magma: 11, intrusion: 6, marble: 7, hornfels: 5 };
+
+  // ── The rock cycle as a graph ───────────────────────────────────────────────
+  // For each rock: the real geological processes that act on it and what it
+  // becomes. Lets a learner TRACE one rock around the cycle (it doesn't alter the
+  // ground — it's a conceptual "what happens to this rock next?").
+  var CYCLE = {
+    magma:     [{ proc: 'Cool & crystallise', icon: '❄️', to: 'basement',  note: 'Slow underground cooling grows big crystals → intrusive igneous rock.' }],
+    basement:  [{ proc: 'Uplift & weather',   icon: '💧', to: 'soil',      note: 'Exposed at the surface, it breaks down into loose sediment.' },
+                { proc: 'Heat + pressure',    icon: '🔥', to: 'hornfels',  note: 'Squeezed and baked without melting → metamorphic rock.' },
+                { proc: 'Melt',               icon: '🌋', to: 'magma',     note: 'Deeply buried or subducted → back to molten.' }],
+    intrusion: [{ proc: 'Uplift & weather',   icon: '💧', to: 'soil',      note: 'Exposed at the surface, it breaks down into loose sediment.' },
+                { proc: 'Heat + pressure',    icon: '🔥', to: 'hornfels',  note: 'Baked without melting → metamorphic rock.' },
+                { proc: 'Melt',               icon: '🌋', to: 'magma',     note: 'Deep heat melts it back to molten.' }],
+    soil:      [{ proc: 'Bury, compact & cement', icon: '🧱', to: 'sandstone', note: 'Sediment is squeezed and glued into solid rock (lithification).' }],
+    sandstone: [{ proc: 'Heat + pressure',    icon: '🔥', to: 'hornfels',  note: 'Recrystallises into a harder metamorphic rock.' },
+                { proc: 'Weather & erode',    icon: '💧', to: 'soil',      note: 'Broken back down into loose sediment.' },
+                { proc: 'Melt',               icon: '🌋', to: 'magma',     note: 'Deep heat melts it.' }],
+    shale:     [{ proc: 'Heat + pressure',    icon: '🔥', to: 'hornfels',  note: 'Bakes and squeezes into hornfels / schist.' },
+                { proc: 'Weather & erode',    icon: '💧', to: 'soil',      note: 'Broken back down into loose sediment.' },
+                { proc: 'Melt',               icon: '🌋', to: 'magma',     note: 'Deep heat melts it.' }],
+    limestone: [{ proc: 'Heat + pressure',    icon: '🔥', to: 'marble',    note: 'Recrystallises into marble.' },
+                { proc: 'Weather & erode',    icon: '💧', to: 'soil',      note: 'Dissolves / breaks back down into sediment.' },
+                { proc: 'Melt',               icon: '🌋', to: 'magma',     note: 'Deep heat melts it.' }],
+    marble:    [{ proc: 'Melt',               icon: '🌋', to: 'magma',     note: 'Deep heat melts it → molten.' },
+                { proc: 'Uplift & weather',   icon: '💧', to: 'soil',      note: 'Exposed and broken into sediment.' }],
+    hornfels:  [{ proc: 'Melt',               icon: '🌋', to: 'magma',     note: 'Deep heat melts it → molten.' },
+                { proc: 'Uplift & weather',   icon: '💧', to: 'soil',      note: 'Exposed and broken into sediment.' }]
+  };
+
   // ── three.js engine (imperative; lives on window[ENGINE_KEY]) ───────────────
   function initEngine(container, opts) {
     var THREE = window.THREE;
@@ -79,7 +111,7 @@
     scene.add(new THREE.AmbientLight(0xffffff, 0.55));
     var keyL = new THREE.DirectionalLight(0xfff1d0, 0.95); keyL.position.set(12, 20, 14); scene.add(keyL);
     var fillL = new THREE.DirectionalLight(0x90b4ff, 0.35); fillL.position.set(-14, 6, -10); scene.add(fillL);
-    var magmaGlow = new THREE.PointLight(0xff5522, 1.0, 30); magmaGlow.position.set(0, -NY * 0.5, 0); scene.add(magmaGlow);
+    var magmaGlow = new THREE.PointLight(0xff5522, 1.4, 34); magmaGlow.position.set(0, -NY * 0.5, 0); scene.add(magmaGlow);
 
     var voxels = [];
     for (var y = 0; y < NY; y++) for (var x = 0; x < NX; x++) for (var z = 0; z < NZ; z++) voxels.push({ x: x, y: y, z: z, key: rockKeyAt(x, y, z) });
@@ -92,9 +124,9 @@
     var mesh = new THREE.InstancedMesh(geo, mat, voxels.length);
     mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     scene.add(mesh);
-    var dummy = new THREE.Object3D(), col = new THREE.Color();
+    var dummy = new THREE.Object3D(), col = new THREE.Color(), WHITE = new THREE.Color(0xffffff);
     var instanceToVoxel = [];
-    var sliceZ = 0, excavate = false;
+    var sliceZ = 0, excavate = false, highlightKey = null;
 
     function visible(v) { return !removed[vkey(v)] && v.z >= sliceZ; }
     function rebuild() {
@@ -102,7 +134,12 @@
       for (var k = 0; k < voxels.length; k++) {
         var v = voxels[k]; if (!visible(v)) continue;
         var p = worldPos(v); dummy.position.set(p[0], p[1], p[2]); dummy.updateMatrix();
-        mesh.setMatrixAt(i, dummy.matrix); col.setHex(ROCKS[v.key].color); mesh.setColorAt(i, col);
+        mesh.setMatrixAt(i, dummy.matrix);
+        col.setHex(ROCKS[v.key].color);
+        // when a rock type is selected, make every voxel of that type glow and let
+        // the rest recede — so its distribution through the crust pops out.
+        if (highlightKey) { if (v.key === highlightKey) col.lerp(WHITE, 0.42); else col.multiplyScalar(0.5); }
+        mesh.setColorAt(i, col);
         instanceToVoxel[i] = v; i++;
       }
       mesh.count = i; mesh.instanceMatrix.needsUpdate = true; if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
@@ -138,11 +175,12 @@
     var ro = null; try { ro = new ResizeObserver(resize); ro.observe(container); } catch (e) {}
 
     var t = 0, raf = null;
-    function loop() { if (eng.disposed) return; raf = requestAnimationFrame(loop); t += 0.016; magmaGlow.intensity = 1.05 + Math.sin(t * 2) * 0.22; if (controls) controls.update(); renderer.render(scene, camera); }
+    function loop() { if (eng.disposed) return; raf = requestAnimationFrame(loop); t += 0.016; magmaGlow.intensity = 1.5 + Math.sin(t * 2) * 0.3; if (controls) controls.update(); renderer.render(scene, camera); }
     loop();
 
     eng.setSlice = function (z) { sliceZ = z | 0; rebuild(); };
     eng.setExcavate = function (b) { excavate = !!b; };
+    eng.setHighlight = function (k) { highlightKey = (k && ROCKS[k]) ? k : null; rebuild(); };
     eng.reset = function () { removed = {}; sliceZ = 0; rebuild(); };
     eng.dispose = function () {
       eng.disposed = true; if (raf) cancelAnimationFrame(raf);
@@ -180,12 +218,15 @@
       var ss = React.useState(null); var selected = ss[0], setSelected = ss[1];
       var slc = React.useState(0); var slice = slc[0], setSlice = slc[1];
       var exc = React.useState(false); var excavate = exc[0], setExcavate = exc[1];
+      var cph = React.useState([]); var cyclePath = cph[0], setCyclePath = cph[1];
       var threeReady = !!(ctx.toolData && ctx.toolData._threeLoaded) && !!window.THREE;
 
       function announce(msg) { try { var lr = document.getElementById('allo-live-geology'); if (lr) { lr.textContent = ''; setTimeout(function () { lr.textContent = String(msg || ''); }, 30); } } catch (e) {} }
-      function selectRock(facts) {
+      function selectRock(facts, viaCycle, msg) {
         setSelected(facts);
-        announce(facts.R.name + '. ' + facts.R.type + '. Depth about ' + facts.depthKm + ' kilometres. ' + facts.R.formation + ' ' + facts.R.age);
+        setCyclePath(function (prev) { return viaCycle ? prev.concat([facts.key]).slice(-6) : [facts.key]; });
+        try { if (window[ENGINE_KEY]) window[ENGINE_KEY].setHighlight(facts.key); } catch (e) {}
+        announce(msg || (facts.R.name + '. ' + facts.R.type + '. Depth about ' + facts.depthKm + ' kilometres. ' + facts.R.formation + ' ' + facts.R.age));
         var cur = identifiedRef.current || {}; if (!cur[facts.key]) { var id = Object.assign({}, cur); id[facts.key] = 1; upd('identified', id); }
       }
 
@@ -224,6 +265,36 @@
         );
       }
 
+      // ── interactive rock cycle: apply a real process and follow the rock ──
+      function cyclePanel() {
+        if (!selected) return null;
+        var procs = CYCLE[selected.key] || [];
+        if (!procs.length) return null;
+        var chipIdle = isDark ? 'bg-slate-800 border-slate-600 text-slate-100 hover:bg-slate-700 hover:border-amber-400' : 'bg-white border-slate-300 text-slate-700 hover:bg-amber-50 hover:border-amber-400';
+        return h('div', { className: 'p-3 rounded-xl border ' + cardBg, role: 'region', 'aria-label': 'Rock cycle — apply a process to the selected rock' },
+          h('div', { className: 'text-[12px] font-extrabold tracking-tight ' + ink }, '🔄 ' + t('stem.geology.cycle_title', 'Rock cycle — what happens next?')),
+          h('p', { className: 'text-[11px] mt-0.5 mb-2 ' + muted }, t('stem.geology.cycle_hint', 'Apply a real process and follow this rock around the cycle. (It traces the rock — it doesn’t change the ground.)')),
+          h('div', { className: 'flex flex-wrap gap-1.5' },
+            procs.map(function (p) {
+              var toR = ROCKS[p.to], toC = TYPE_COLOR[toR.type] || '#64748b';
+              return h('button', {
+                key: p.proc + '>' + p.to, type: 'button', title: p.note,
+                'aria-label': p.proc + ': turns ' + selected.R.name + ' into ' + toR.name + '. ' + p.note,
+                onClick: function () { selectRock(rockFacts(p.to, DEPTH_GUESS[p.to] || 4), true, 'Applied ' + p.proc + '. ' + selected.R.name + ' becomes ' + toR.name + '. ' + p.note); },
+                className: 'transition-colors active:scale-[0.97] inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1.5 rounded-lg border ' + chipIdle
+              },
+                h('span', null, p.icon + ' ' + p.proc),
+                h('span', { 'aria-hidden': 'true', style: { color: toC, fontWeight: 800 } }, '→ ' + toR.name)
+              );
+            })
+          ),
+          cyclePath.length > 1 ? h('div', { className: 'mt-2 pt-2 border-t text-[11px] ' + (isDark ? 'border-slate-700 ' : 'border-slate-200 ') + muted },
+            h('span', { className: 'font-bold ' + ink }, t('stem.geology.cycle_path', 'Your path: ')),
+            cyclePath.map(function (k, i) { return (i ? ' → ' : '') + ROCKS[k].name; }).join('')
+          ) : null
+        );
+      }
+
       // ── accessible cross-section: SVG diagram + keyboard strata list (the non-3D core) ──
       function crossSectionSVG() {
         var bands = ['soil', 'sandstone', 'shale', 'limestone', 'basement', 'magma'];
@@ -245,7 +316,7 @@
             var R = ROCKS[k];
             return h('button', {
               key: k, type: 'button',
-              onClick: function () { var depthGuess = { soil: 0, sandstone: 2, shale: 4, limestone: 6, basement: 8, magma: 11, intrusion: 6, marble: 7, hornfels: 5 }[k] || 4; selectRock(rockFacts(k, depthGuess)); },
+              onClick: function () { selectRock(rockFacts(k, DEPTH_GUESS[k] || 4)); },
               className: 'transition-colors active:scale-[0.97] flex items-center gap-2 text-left px-2 py-1.5 rounded-lg border text-[11.5px] ' + (selected && selected.key === k ? 'ring-2 ring-amber-400 ' : '') + cardBg + ' ' + ink + ' hover:border-amber-400'
             },
               h('span', { 'aria-hidden': 'true', className: 'w-3.5 h-3.5 rounded flex-none', style: { background: hex(R.color), boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.15)' } }),
@@ -297,7 +368,8 @@
               h('button', { type: 'button', disabled: !threeReady || webglError, onClick: function () { var nv = !excavate; setExcavate(nv); if (window[ENGINE_KEY]) window[ENGINE_KEY].setExcavate(nv); }, 'aria-pressed': excavate ? 'true' : 'false', className: btn + (excavate ? 'bg-amber-500 border-amber-400 text-amber-950' : btnIdle) }, '⛏️ ' + t('stem.geology.excavate', 'Excavate') + ': ' + (excavate ? t('stem.on', 'ON') : t('stem.off', 'OFF'))),
               h('button', { type: 'button', disabled: !threeReady || webglError, onClick: function () { setSlice(0); setExcavate(false); if (window[ENGINE_KEY]) { window[ENGINE_KEY].reset(); window[ENGINE_KEY].setExcavate(false); } }, className: btn + btnIdle }, '↺ ' + t('stem.geology.reset', 'Reset')),
               h('span', { className: 'text-[11px] ' + muted }, threeReady && !webglError ? t('stem.geology.tip', 'Drag to orbit · click a block to identify') : '')),
-            infoPanel()),
+            infoPanel(),
+            cyclePanel()),
           h('div', { className: 'space-y-2' },
             h('div', { className: 'flex items-start gap-3' },
               crossSectionSVG(),
