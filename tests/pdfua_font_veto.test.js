@@ -10,9 +10,9 @@ import { resolve } from 'node:path';
 
 const src = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
 
-// mirror of the shipped _uaDeclared gate
-function uaDeclared(crashed, fontsUnrepairable, reachable, orphans, ocrMethod) {
-  return !crashed && fontsUnrepairable === 0 &&
+// mirror of the shipped _uaDeclared gate (contentDropped added 2026-06-22 — typeset content-loss veto)
+function uaDeclared(crashed, fontsUnrepairable, reachable, orphans, ocrMethod, contentDropped) {
+  return !crashed && fontsUnrepairable === 0 && !contentDropped &&
     (reachable > 0 ? orphans === 0 : /tesseract|vision|ocr/i.test(String(ocrMethod || '')));
 }
 
@@ -34,8 +34,13 @@ describe('#1f PDF/UA part-1 claim is vetoed when fonts are not all embedded', ()
     expect(uaDeclared(true, 0, 100, 0, '')).toBe(false);
   });
 
-  it('anti-drift: the gate consults _fontsUnrepairable and the self-check is a hard fail', () => {
-    expect(src).toContain('_fontsUnrepairable.length === 0 && (_reachableLeafCountAtStamp > 0');
+  it('content-loss veto: a typeset PDF that dropped non-Latin text never declares UA-1', () => {
+    expect(uaDeclared(false, 0, 100, 0, '', true)).toBe(false);  // perfect tree + fonts, but content dropped
+    expect(uaDeclared(false, 0, 100, 0, '', false)).toBe(true);  // not dropped → declares as before
+  });
+
+  it('anti-drift: the gate consults _fontsUnrepairable + the content-drop veto and the self-check is a hard fail', () => {
+    expect(src).toContain('_fontsUnrepairable.length === 0 && !meta.contentDropped && (_reachableLeafCountAtStamp > 0');
     expect(src).toContain("_fontsUnrepairable.length > 0 ? 'fail'");
   });
 });
