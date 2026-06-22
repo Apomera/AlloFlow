@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Geology Explorer — voxel cross-section SPIKE</title>
+<!--
+  SPIKE / PROTOTYPE — value-validation only, NOT production.
+  Purpose: does an immersive voxel cross-section teach geology better than the 2D
+  rocks tool? Open this file in a browser and find out before anyone commits the
+  full build. Standalone on purpose: it loads three.js itself, so it needs NO edits
+  to the (concurrent-WIP) STEM Lab host or build wiring.
+  Reuses three patterns already in the repo:
+    * geometryworld's voxel/InstancedMesh + camera engine pattern,
+    * archaeology_engine.js's "dig top-down, law of superposition" model,
+    * the rocks tool's mineral/formation data.
+  Geology shown in one scene: a flat-lying sedimentary sequence (superposition),
+  an older igneous basement, a magma chamber, and a YOUNGER granite pluton that
+  cross-cuts the layers with a baked metamorphic aureole (contact metamorphism).
+  Production TODO (if valuable): React-wrap it as a separate registered tool,
+  add a non-3D fallback view + live-region narration for a11y, catalog/build/mirror.
+-->
+<style>
+  :root { --panel: rgba(15,23,42,0.86); --ink: #e2e8f0; --muted: #94a3b8; --accent: #38bdf8; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: #060913; color: var(--ink); }
+  #scene { position: fixed; inset: 0; }
+  .panel { position: fixed; background: var(--panel); backdrop-filter: blur(8px); border: 1px solid rgba(56,189,248,0.25); border-radius: 14px; padding: 14px 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.5); }
+  #title { top: 14px; left: 14px; max-width: 320px; }
+  #title h1 { margin: 0 0 4px; font-size: 17px; letter-spacing: -0.01em; }
+  #title .accent { height: 3px; width: 46px; border-radius: 999px; margin: 6px 0 8px; background: linear-gradient(90deg, #38bdf8, #a855f7); }
+  #title p { margin: 0; font-size: 12px; color: var(--muted); line-height: 1.5; }
+  #title .tag { display: inline-block; margin-top: 8px; font-size: 10px; font-weight: 700; color: #fcd34d; background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.35); border-radius: 999px; padding: 2px 8px; }
+  #controls { top: 14px; right: 14px; width: 260px; }
+  #controls h2 { margin: 0 0 8px; font-size: 12px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; }
+  .row { display: flex; align-items: center; gap: 8px; margin: 8px 0; font-size: 12px; }
+  .row label { flex: 1; color: var(--muted); }
+  input[type=range] { width: 120px; accent-color: var(--accent); }
+  button { font: inherit; font-size: 12px; font-weight: 700; color: var(--ink); background: rgba(56,189,248,0.12); border: 1px solid rgba(56,189,248,0.4); border-radius: 9px; padding: 7px 10px; cursor: pointer; transition: all 0.15s; }
+  button:hover { background: rgba(56,189,248,0.22); }
+  button.active { background: #f59e0b; color: #1f2937; border-color: #fbbf24; }
+  button:active { transform: scale(0.97); }
+  .hint { font-size: 11px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+  #info { bottom: 14px; left: 14px; width: 340px; transition: opacity 0.2s; }
+  #info h3 { margin: 0 0 2px; font-size: 16px; letter-spacing: -0.01em; }
+  #info .type { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; display: inline-block; margin-bottom: 8px; }
+  #info dl { margin: 0; display: grid; grid-template-columns: 70px 1fr; gap: 4px 10px; font-size: 12px; }
+  #info dt { color: var(--muted); }
+  #info dd { margin: 0; line-height: 1.45; }
+  #info .age { margin-top: 8px; font-size: 11.5px; color: #fcd34d; line-height: 1.45; }
+  #info.empty { color: var(--muted); font-size: 12px; }
+  #legend { bottom: 14px; right: 14px; width: 200px; }
+  #legend h2 { margin: 0 0 8px; font-size: 11px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; }
+  .leg { display: flex; align-items: center; gap: 8px; font-size: 11px; margin: 4px 0; }
+  .sw { width: 14px; height: 14px; border-radius: 3px; flex: none; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15); }
+  #note { position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%); font-size: 11px; color: #fcd34d; background: rgba(120,53,15,0.5); border: 1px solid rgba(251,191,36,0.4); border-radius: 9px; padding: 6px 12px; opacity: 0; transition: opacity 0.25s; pointer-events: none; }
+  #note.show { opacity: 1; }
+</style>
+</head>
+<body>
+  <canvas id="scene"></canvas>
+
+  <div id="title" class="panel">
+    <h1>Geology Explorer</h1>
+    <div class="accent"></div>
+    <p>A voxel cross-section of the crust. Drag to orbit, scroll to zoom. Click a block to identify it; slice or excavate to read the structure.</p>
+    <span class="tag">SPIKE — value test, not production</span>
+  </div>
+
+  <div id="controls" class="panel">
+    <h2>Explore</h2>
+    <div class="row"><label for="slice">Cross-section slice</label><input id="slice" type="range" min="0" max="13" value="0" /></div>
+    <div class="row"><button id="excavateBtn">⛏ Excavate mode: OFF</button></div>
+    <div class="row"><button id="resetBtn">↺ Reset block</button></div>
+    <div class="hint"><b>Identify</b> (default): click any block.<br/><b>Slice</b>: peel away the front to see the layers + intrusion in cross-section.<br/><b>Excavate</b>: dig top-down — you must remove the layers above first (law of superposition).</div>
+  </div>
+
+  <div id="info" class="panel empty">Click a block to identify the rock — its type, how it formed, its depth, and its age relationship to its neighbours.</div>
+
+  <div id="legend" class="panel"></div>
+  <div id="note"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script>
+  (function () {
+    'use strict';
+    var THREE = window.THREE;
+    if (!THREE) { document.getElementById('info').textContent = 'three.js failed to load (check network).'; return; }
+
+    // ── Geology data ──────────────────────────────────────────────────────────
+    // colours are an illustrative MODEL, not photographic. type drives the badge.
+    var ROCKS = {
+      soil:        { name: 'Soil / Regolith',        type: 'Surface',             color: 0x6b4f2a, formation: 'Weathered rock + organic matter at the very surface.',                                   minerals: 'Clay, quartz grains, organics',  age: 'Youngest — forming today.' },
+      sandstone:   { name: 'Sandstone',              type: 'Sedimentary',         color: 0xd9b27a, formation: 'Sand grains (rivers, dunes, beaches) buried, compacted, and cemented.',                  minerals: 'Quartz, feldspar',               age: 'Young: it sits on top, so it is the youngest sedimentary layer.' },
+      shale:       { name: 'Shale',                  type: 'Sedimentary',         color: 0x6e7681, formation: 'Mud and clay settled in calm water, then compacted into thin layers.',                  minerals: 'Clay minerals, mica',            age: 'Older than the sandstone above it (superposition).' },
+      limestone:   { name: 'Limestone',              type: 'Sedimentary',         color: 0xbcd4d6, formation: 'Shells and coral (calcium carbonate) built up in warm, shallow seas.',                 minerals: 'Calcite',                        age: 'Oldest sedimentary layer here — it was deposited first.' },
+      basement:    { name: 'Granite basement',       type: 'Igneous (intrusive)', color: 0xc99ab8, formation: 'Magma that cooled SLOWLY deep underground → large interlocking crystals.',             minerals: 'Quartz, feldspar, mica',         age: 'Ancient basement — older than every sediment resting on it.' },
+      intrusion:   { name: 'Granite pluton',         type: 'Igneous (intrusive)', color: 0xe75fb0, formation: 'A LATER pulse of magma forced up through the layers and froze in place.',              minerals: 'Quartz, feldspar, mica',         age: 'YOUNGER than the layers it cuts — the cross-cutting rule beats superposition here.' },
+      marble:      { name: 'Marble',                 type: 'Metamorphic',         color: 0xe8e8ee, formation: 'Limestone BAKED by the nearby pluton (contact metamorphism) → recrystallised.',      minerals: 'Recrystallised calcite',         age: 'Re-cooked the moment the intrusion arrived.' },
+      hornfels:    { name: 'Hornfels / Schist',      type: 'Metamorphic',         color: 0x8a5a8a, formation: 'Shale baked + squeezed beside the pluton → hard, sometimes garnet-bearing.',       minerals: 'Mica, garnet',                   age: 'Re-cooked the moment the intrusion arrived.' },
+      magma:       { name: 'Magma chamber',          type: 'Molten',              color: 0xff7a33, formation: 'Molten rock — the source. It cools into igneous rock and the cycle begins again.',     minerals: '—',                              age: 'Active now — the youngest "rock" of all, still forming.' }
+    };
+    var TYPE_COLOR = { 'Surface': '#92786a', 'Sedimentary': '#7dd3fc', 'Igneous (intrusive)': '#f472b6', 'Metamorphic': '#c4b5fd', 'Molten': '#fb923c' };
+
+    var NX = 14, NY = 12, NZ = 14, VS = 1;        // grid + voxel size
+    var KM_PER_VOXEL = 0.9;                         // ~10 km section
+
+    // Which rock is at grid cell (x,y,z)? y=0 surface, y grows downward.
+    function rockKeyAt(x, y, z) {
+      var cx = (NX - 1) / 2, cz = (NZ - 1) / 2;
+      var r = Math.hypot(x - cx, z - cz);
+      var intrusionR = 1.2 + (y / NY) * 2.6;        // conical pluton: wider at depth
+      if (y >= 3 && r < intrusionR) return 'intrusion';
+      if (y >= 3 && y < NY - 1 && r < intrusionR + 1.05) {   // baked aureole around it
+        return (y >= 6 && y <= 8) ? 'marble' : 'hornfels';
+      }
+      if (y === 0) return 'soil';
+      if (y <= 2) return 'sandstone';
+      if (y <= 4) return 'shale';
+      if (y <= 6) return 'limestone';
+      if (y <= 9) return 'basement';
+      return 'magma';
+    }
+
+    // ── Build the voxel field ──────────────────────────────────────────────────
+    var voxels = [];      // {x,y,z,key}
+    for (var y = 0; y < NY; y++)
+      for (var x = 0; x < NX; x++)
+        for (var z = 0; z < NZ; z++)
+          voxels.push({ x: x, y: y, z: z, key: rockKeyAt(x, y, z) });
+    var removed = new Set();                         // excavated voxel keys "x,y,z"
+    function vkey(v) { return v.x + ',' + v.y + ',' + v.z; }
+
+    // ── Three.js scene ──────────────────────────────────────────────────────────
+    var canvas = document.getElementById('scene');
+    var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    var scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x060913);
+    scene.fog = new THREE.Fog(0x060913, 28, 60);
+
+    var camera = new THREE.PerspectiveCamera(55, 1, 0.1, 200);
+    camera.position.set(NX * 1.15, NY * 1.1, NZ * 1.35);
+    var controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true; controls.dampingFactor = 0.08;
+    controls.target.set(0, -NY * 0.18, 0);
+    controls.minDistance = 8; controls.maxDistance = 55;
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+    var key = new THREE.DirectionalLight(0xfff1d0, 0.95); key.position.set(12, 20, 14); scene.add(key);
+    var fill = new THREE.DirectionalLight(0x90b4ff, 0.35); fill.position.set(-14, 6, -10); scene.add(fill);
+
+    var geo = new THREE.BoxGeometry(VS, VS, VS);
+    var mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.85, metalness: 0.05, vertexColors: false });
+    var mesh = new THREE.InstancedMesh(geo, mat, voxels.length);
+    mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    scene.add(mesh);
+    // soft glow plane under the magma so the chamber reads as hot
+    var magmaGlow = new THREE.PointLight(0xff5522, 0.0, 30); magmaGlow.position.set(0, -NY * 0.5, 0); scene.add(magmaGlow);
+
+    var dummy = new THREE.Object3D();
+    var col = new THREE.Color();
+    var instanceToVoxel = [];           // instanceId -> voxel
+    var sliceZ = 0;
+
+    function worldPos(v) {
+      return [ (v.x - (NX - 1) / 2) * VS, ((NY - 1) / 2 - v.y) * VS, (v.z - (NZ - 1) / 2) * VS ];
+    }
+    function visible(v) { return !removed.has(vkey(v)) && v.z >= sliceZ; }
+
+    function rebuild() {
+      var i = 0; instanceToVoxel.length = 0;
+      for (var k = 0; k < voxels.length; k++) {
+        var v = voxels[k];
+        if (!visible(v)) continue;
+        var p = worldPos(v);
+        dummy.position.set(p[0], p[1], p[2]); dummy.updateMatrix();
+        mesh.setMatrixAt(i, dummy.matrix);
+        col.setHex(ROCKS[v.key].color); mesh.setColorAt(i, col);
+        instanceToVoxel[i] = v; i++;
+      }
+      mesh.count = i;
+      mesh.instanceMatrix.needsUpdate = true;
+      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+    }
+    rebuild();
+
+    // ── Interaction ─────────────────────────────────────────────────────────────
+    var raycaster = new THREE.Raycaster();
+    var pointer = new THREE.Vector2();
+    var excavate = false;
+    var infoEl = document.getElementById('info');
+    var noteEl = document.getElementById('note'); var noteTimer = null;
+    function flash(msg) { noteEl.textContent = msg; noteEl.classList.add('show'); clearTimeout(noteTimer); noteTimer = setTimeout(function () { noteEl.classList.remove('show'); }, 2600); }
+
+    function shallowestAt(x, z) {              // top present voxel in a column (for superposition)
+      for (var yy = 0; yy < NY; yy++) { var key2 = x + ',' + yy + ',' + z; if (!removed.has(key2)) return yy; }
+      return null;
+    }
+
+    function showInfo(v) {
+      var R = ROCKS[v.key];
+      var depthKm = (v.y * KM_PER_VOXEL).toFixed(1);
+      var tempC = v.key === 'magma' ? '≈ 1000+' : Math.round(15 + v.y * KM_PER_VOXEL * 25);
+      var presMPa = Math.round(v.y * KM_PER_VOXEL * 27);
+      infoEl.className = 'panel';
+      infoEl.innerHTML =
+        '<h3>' + R.name + '</h3>' +
+        '<span class="type" style="background:' + (TYPE_COLOR[R.type] || '#475569') + '22;color:' + (TYPE_COLOR[R.type] || '#cbd5e1') + ';border:1px solid ' + (TYPE_COLOR[R.type] || '#475569') + '55">' + R.type + '</span>' +
+        '<dl>' +
+          '<dt>Depth</dt><dd>≈ ' + depthKm + ' km</dd>' +
+          '<dt>Temp</dt><dd>≈ ' + tempC + ' °C</dd>' +
+          '<dt>Pressure</dt><dd>≈ ' + presMPa + ' MPa</dd>' +
+          '<dt>Forms by</dt><dd>' + R.formation + '</dd>' +
+          '<dt>Minerals</dt><dd>' + R.minerals + '</dd>' +
+        '</dl>' +
+        '<div class="age">🕓 ' + R.age + '</div>';
+    }
+
+    function pick(ev, doExcavate) {
+      var rect = canvas.getBoundingClientRect();
+      pointer.x = ((ev.clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((ev.clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(pointer, camera);
+      var hits = raycaster.intersectObject(mesh);
+      if (!hits.length) return;
+      var v = instanceToVoxel[hits[0].instanceId];
+      if (!v) return;
+      if (doExcavate) {
+        var top = shallowestAt(v.x, v.z);
+        if (v.y !== top) { flash('Dig the layers above first — deeper = older (law of superposition).'); showInfo(v); return; }
+        removed.add(vkey(v)); rebuild(); flash('Excavated ' + ROCKS[v.key].name + '. Now the layer beneath is exposed.');
+        var below = shallowestAt(v.x, v.z); if (below != null) showInfo(voxels.find(function (q) { return q.x === v.x && q.y === below && q.z === v.z; }));
+      } else { showInfo(v); }
+    }
+
+    var down = null;
+    canvas.addEventListener('pointerdown', function (e) { down = { x: e.clientX, y: e.clientY }; });
+    canvas.addEventListener('pointerup', function (e) {
+      if (!down) return; var moved = Math.hypot(e.clientX - down.x, e.clientY - down.y); down = null;
+      if (moved < 5) pick(e, excavate);     // treat as a click, not an orbit drag
+    });
+
+    document.getElementById('slice').addEventListener('input', function (e) { sliceZ = +e.target.value; rebuild(); });
+    var exBtn = document.getElementById('excavateBtn');
+    exBtn.addEventListener('click', function () { excavate = !excavate; exBtn.textContent = '⛏ Excavate mode: ' + (excavate ? 'ON' : 'OFF'); exBtn.classList.toggle('active', excavate); });
+    document.getElementById('resetBtn').addEventListener('click', function () { removed.clear(); sliceZ = 0; document.getElementById('slice').value = 0; rebuild(); flash('Block reset.'); });
+
+    // legend
+    var legEl = document.getElementById('legend'); legEl.innerHTML = '<h2>Rock types</h2>';
+    var seen = {}; Object.keys(ROCKS).forEach(function (k) { var R = ROCKS[k]; if (seen[R.name]) return; seen[R.name] = 1;
+      var row = document.createElement('div'); row.className = 'leg';
+      row.innerHTML = '<span class="sw" style="background:#' + R.color.toString(16).padStart(6, '0') + '"></span>' + R.name;
+      legEl.appendChild(row);
+    });
+
+    // ── Resize + loop ───────────────────────────────────────────────────────────
+    function resize() { var w = window.innerWidth, h = window.innerHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+    window.addEventListener('resize', resize); resize();
+
+    var t = 0;
+    (function loop() {
+      requestAnimationFrame(loop); t += 0.016;
+      magmaGlow.intensity = 1.1 + Math.sin(t * 2.0) * 0.25;   // flicker
+      controls.update();
+      renderer.render(scene, camera);
+    })();
+  })();
+  </script>
+</body>
+</html>
