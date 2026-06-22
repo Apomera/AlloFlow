@@ -714,6 +714,8 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
     return r.link ? new d.ExternalHyperlink({ link: r.link, children: [tr] }) : tr;
   });
   const children = [];
+  const _lang = (spec.lang || 'en');
+  let _olCount = 0; // each <ol> gets its own numbering reference (allo-ol-N) so it restarts at 1
   for (const b of spec.blocks) {
     if (b.type === 'heading') {
       const hp = { heading: HEADING[b.level] || d.HeadingLevel.HEADING_6, children: runsTo(b.runs) };
@@ -734,10 +736,14 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
       children.push(new d.Paragraph(pp));
     }
     else if (b.type === 'list') {
+      // Each ordered list gets its OWN numbering reference (allo-ol-0, allo-ol-1, …)
+      // so a second <ol> restarts at 1 — a single shared 'allo-ol' reference made
+      // every ordered list continue one counter (4, 5, 6 …) in Word.
+      const _olRef = b.ordered ? ('allo-ol-' + (_olCount++)) : null;
       for (const it of b.items) {
         children.push(new d.Paragraph({
           children: runsTo(it.runs),
-          ...(b.ordered ? { numbering: { reference: 'allo-ol', level: Math.min(it.level || 0, 4) } } : { bullet: { level: Math.min(it.level || 0, 8) } }),
+          ...(b.ordered ? { numbering: { reference: _olRef, level: Math.min(it.level || 0, 4) } } : { bullet: { level: Math.min(it.level || 0, 8) } }),
         }));
       }
     } else if (b.type === 'table' && b.rows.length) {
@@ -782,7 +788,13 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
   const _docOpts = {
     title: spec.title,
     creator: 'AlloFlow',
-    numbering: { config: [{ reference: 'allo-ol', levels: [0, 1, 2, 3, 4].map((l) => ({ level: l, format: d.LevelFormat.DECIMAL, text: '%' + (l + 1) + '.', alignment: d.AlignmentType.START })) }] },
+    // One numbering definition per ordered list so each <ol> restarts (see _olCount
+    // above); falls back to a single unused definition when there are no <ol>s.
+    numbering: { config: Array.from({ length: Math.max(_olCount, 1) }, (_v, _i) => ({ reference: 'allo-ol-' + _i, levels: [0, 1, 2, 3, 4].map((l) => ({ level: l, format: d.LevelFormat.DECIMAL, text: '%' + (l + 1) + '.', alignment: d.AlignmentType.START })) })) },
+    // Document default language (w:lang in docDefaults) — Word's Accessibility
+    // Checker flags a .docx with no document language. Follows the CONTENT language
+    // (spec.lang, read from the source <html lang>), not the UI language.
+    styles: { default: { document: { run: { language: { value: _lang } } } } },
     sections: [{
       // Academic modes: 1-inch margins (1440 twips) — APA/MLA/Chicago standard.
       ...(academic ? { properties: { page: { margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 } } } } : {}),
@@ -810,7 +822,9 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
     const _acHead = { font: 'Times New Roman', size: 24, bold: true, color: '000000' };
     _docOpts.styles = { default: {
       document: {
-        run: { font: 'Times New Roman', size: 24 },
+        // academic mode replaces the whole styles block, so re-carry the document
+        // language (w:lang) here too — otherwise the academic path drops it.
+        run: { font: 'Times New Roman', size: 24, language: { value: _lang } },
         paragraph: { spacing: { line: 480, lineRule: (d.LineRuleType && d.LineRuleType.AUTO) || 'auto' } },
       },
       heading1: { run: _acHead }, heading2: { run: _acHead }, heading3: { run: _acHead },

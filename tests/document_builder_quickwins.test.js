@@ -106,3 +106,21 @@ describe('anti-drift: Document Builder block library ships literal aria-labels, 
     expect(audit).toContain('aria-label="Remove columns"');
   });
 });
+
+describe('anti-drift: DOCX export — per-<ol> numbering restart + document language', () => {
+  // Validated out-of-band against the real docx@8.5.0 (C:\tmp\docxtest): two <ol>s emit distinct
+  // abstractNum definitions (restart at 1), and docDefaults carries w:lang from spec.lang in both
+  // the standard and academic style paths. These assertions pin the source shape that produced it.
+  it('each ordered list gets its own numbering reference (no shared "allo-ol" counter)', () => {
+    expect(audit).toMatch(/'allo-ol-' \+ \(_olCount\+\+\)/);          // per-<ol> reference at use
+    expect(audit).toMatch(/'allo-ol-' \+ _i/);                        // one config entry per <ol>
+    expect(audit).not.toMatch(/reference: 'allo-ol', level/);          // old single shared ref gone
+    expect(audit).not.toMatch(/reference: 'allo-ol', levels/);
+  });
+  it('the document default language (w:lang) is wired from the CONTENT language (spec.lang)', () => {
+    expect(audit).toMatch(/const _lang = \(spec\.lang \|\| 'en'\);/);
+    // present in BOTH the base styles and the academic-override run (academic replaces styles)
+    const langWires = audit.match(/language: \{ value: _lang \}/g) || [];
+    expect(langWires.length).toBeGreaterThanOrEqual(2);
+  });
+});
