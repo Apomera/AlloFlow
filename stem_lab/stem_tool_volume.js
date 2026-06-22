@@ -214,6 +214,7 @@ window.StemLab = window.StemLab || {
       var announceToSR = ctx.announceToSR;
       var a11yClick = ctx.a11yClick;
       var t = ctx.t;
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var callGemini = ctx.callGemini;
 
       // ── State via toolData ──
@@ -329,11 +330,11 @@ window.StemLab = window.StemLab || {
       // just "8 cubic units." Each unit has a label and a conversion to liters
       // (a universal volume reference) for cross-unit comparison.
       var REAL_UNITS = [
-        { id: 'unit', short: 'unit', long: 'cubic unit',     toL: 1,         desc: t('stem.volume.abstract_units_default', 'Abstract units (default)') },
-        { id: 'cm',   short: 'cm³',  long: 'cubic cm',       toL: 0.001,     desc: t('stem.volume.centimeters_small_objects', 'Centimeters (small objects)') },
-        { id: 'in',   short: 'in³',  long: 'cubic inch',     toL: 0.01639,   desc: t('stem.volume.inches_us_customary', 'Inches (US customary)') },
-        { id: 'ft',   short: 'ft³',  long: 'cubic foot',     toL: 28.3168,   desc: t('stem.volume.feet_rooms_furniture', 'Feet (rooms, furniture)') },
-        { id: 'm',    short: 'm³',   long: 'cubic meter',    toL: 1000,      desc: t('stem.volume.meters_cars_pools', 'Meters (cars, pools)') }
+        { id: 'unit', short: 'unit', long: 'cubic unit',     toL: 1,         desc: __alloT('stem.volume.abstract_units_default', 'Abstract units (default)') },
+        { id: 'cm',   short: 'cm³',  long: 'cubic cm',       toL: 0.001,     desc: __alloT('stem.volume.centimeters_small_objects', 'Centimeters (small objects)') },
+        { id: 'in',   short: 'in³',  long: 'cubic inch',     toL: 0.01639,   desc: __alloT('stem.volume.inches_us_customary', 'Inches (US customary)') },
+        { id: 'ft',   short: 'ft³',  long: 'cubic foot',     toL: 28.3168,   desc: __alloT('stem.volume.feet_rooms_furniture', 'Feet (rooms, furniture)') },
+        { id: 'm',    short: 'm³',   long: 'cubic meter',    toL: 1000,      desc: __alloT('stem.volume.meters_cars_pools', 'Meters (cars, pools)') }
       ];
       var unitId = _v.unitId || 'unit';
       var unit = REAL_UNITS.find(function(u) { return u.id === unitId; }) || REAL_UNITS[0];
@@ -420,10 +421,10 @@ window.StemLab = window.StemLab || {
         return 2 * (l * w + l * h + w * h);
       }
       var SHAPES_META = [
-        { id: 'prism',    icon: '📦', label: t('stem.volume.rectangular_prism', 'Rectangular prism'), formula: 'V = l × w × h' },
-        { id: 'cylinder', icon: '🥫', label: t('stem.volume.cylinder', 'Cylinder'),          formula: 'V = π·r²·h' },
-        { id: 'cone',     icon: '🍦', label: t('stem.volume.cone', 'Cone'),              formula: 'V = ⅓·π·r²·h' },
-        { id: 'pyramid',  icon: '🔺', label: t('stem.volume.square_pyramid', 'Square pyramid'),    formula: 'V = ⅓·l·w·h' }
+        { id: 'prism',    icon: '📦', label: __alloT('stem.volume.rectangular_prism', 'Rectangular prism'), formula: 'V = l × w × h' },
+        { id: 'cylinder', icon: '🥫', label: __alloT('stem.volume.cylinder', 'Cylinder'),          formula: 'V = π·r²·h' },
+        { id: 'cone',     icon: '🍦', label: __alloT('stem.volume.cone', 'Cone'),              formula: 'V = ⅓·π·r²·h' },
+        { id: 'pyramid',  icon: '🔺', label: __alloT('stem.volume.square_pyramid', 'Square pyramid'),    formula: 'V = ⅓·l·w·h' }
       ];
 
       // ── Badge checker ──
@@ -744,20 +745,20 @@ window.StemLab = window.StemLab || {
       // (or not — see the desc); a pyramid has 1/3 the enclosing-prism V; etc.
       var BUILD_CHALLENGES = [
         {
-          id: 'staircase', icon: '🪜', label: t('stem.volume.staircase_4_steps', 'Staircase (4 steps)'),
-          desc: t('stem.volume.4_steps_of_decreasing_size_v_4_3_2_1_1', '4 steps of decreasing size. V = 4 + 3 + 2 + 1 = 10 cubes.'),
+          id: 'staircase', icon: '🪜', label: __alloT('stem.volume.staircase_4_steps', 'Staircase (4 steps)'),
+          desc: __alloT('stem.volume.4_steps_of_decreasing_size_v_4_3_2_1_1', '4 steps of decreasing size. V = 4 + 3 + 2 + 1 = 10 cubes.'),
           positions: ['0-0-0','1-0-0','2-0-0','3-0-0','0-1-0','1-1-0','2-1-0','3-1-0','0-0-1','1-0-1','2-0-1','0-1-1','1-1-1','2-1-1','0-0-2','1-0-2','0-1-2','1-1-2','0-0-3','0-1-3'],
           targetVolume: 20
         },
         {
-          id: 'pyramid', icon: '🔺', label: t('stem.volume.step_pyramid', 'Step pyramid'),
-          desc: t('stem.volume.a_3_tier_step_pyramid_v_9_4_1_14_cubes', 'A 3-tier step pyramid. V = 9 + 4 + 1 = 14 cubes.'),
+          id: 'pyramid', icon: '🔺', label: __alloT('stem.volume.step_pyramid', 'Step pyramid'),
+          desc: __alloT('stem.volume.a_3_tier_step_pyramid_v_9_4_1_14_cubes', 'A 3-tier step pyramid. V = 9 + 4 + 1 = 14 cubes.'),
           positions: ['0-0-0','1-0-0','2-0-0','0-1-0','1-1-0','2-1-0','0-2-0','1-2-0','2-2-0','0-0-1','1-0-1','0-1-1','1-1-1','0-0-2'],
           targetVolume: 14
         },
         {
-          id: 'fortress', icon: '🏰', label: t('stem.volume.hollow_fortress', 'Hollow fortress'),
-          desc: t('stem.volume.a_4_4_base_with_hollow_interior_wall_t', 'A 4×4 base with hollow interior — wall thickness 1. Counts the wall cubes only.'),
+          id: 'fortress', icon: '🏰', label: __alloT('stem.volume.hollow_fortress', 'Hollow fortress'),
+          desc: __alloT('stem.volume.a_4_4_base_with_hollow_interior_wall_t', 'A 4×4 base with hollow interior — wall thickness 1. Counts the wall cubes only.'),
           positions: (function() {
             var p = [];
             for (var x = 0; x < 4; x++) for (var y = 0; y < 4; y++)
@@ -769,14 +770,14 @@ window.StemLab = window.StemLab || {
           targetVolume: 36
         },
         {
-          id: 'bridge', icon: '🌉', label: t('stem.volume.bridge', 'Bridge'),
-          desc: t('stem.volume.two_pillars_connected_by_a_deck_v_6_6_', 'Two pillars connected by a deck — V = 6 + 6 + 5 = 17.'),
+          id: 'bridge', icon: '🌉', label: __alloT('stem.volume.bridge', 'Bridge'),
+          desc: __alloT('stem.volume.two_pillars_connected_by_a_deck_v_6_6_', 'Two pillars connected by a deck — V = 6 + 6 + 5 = 17.'),
           positions: ['0-0-0','0-1-0','0-0-1','0-1-1','0-0-2','0-1-2','4-0-0','4-1-0','4-0-1','4-1-1','4-0-2','4-1-2','0-0-3','1-0-3','2-0-3','3-0-3','4-0-3','0-1-3','1-1-3','2-1-3','3-1-3','4-1-3'],
           targetVolume: 22
         },
         {
-          id: 'tower', icon: '🗼', label: t('stem.volume.tower_eiffel_ish', 'Tower (Eiffel-ish)'),
-          desc: t('stem.volume.tapering_tower_each_level_smaller_than', 'Tapering tower. Each level smaller than the last.'),
+          id: 'tower', icon: '🗼', label: __alloT('stem.volume.tower_eiffel_ish', 'Tower (Eiffel-ish)'),
+          desc: __alloT('stem.volume.tapering_tower_each_level_smaller_than', 'Tapering tower. Each level smaller than the last.'),
           positions: (function() {
             var p = [];
             // Base 3x3
@@ -790,20 +791,20 @@ window.StemLab = window.StemLab || {
           targetVolume: 9 + 4 + 2
         },
         {
-          id: 'plus', icon: '➕', label: t('stem.volume.plus_sign', 'Plus sign'),
-          desc: t('stem.volume.5_cube_plus_shape_1_layer_v_5', '5-cube plus shape, 1 layer. V = 5.'),
+          id: 'plus', icon: '➕', label: __alloT('stem.volume.plus_sign', 'Plus sign'),
+          desc: __alloT('stem.volume.5_cube_plus_shape_1_layer_v_5', '5-cube plus shape, 1 layer. V = 5.'),
           positions: ['1-0-0','0-1-0','1-1-0','2-1-0','1-2-0'],
           targetVolume: 5
         },
         {
-          id: 'arch', icon: '🌈', label: t('stem.volume.archway', 'Archway'),
-          desc: t('stem.volume.a_simple_arch_over_an_opening', 'A simple arch over an opening.'),
+          id: 'arch', icon: '🌈', label: __alloT('stem.volume.archway', 'Archway'),
+          desc: __alloT('stem.volume.a_simple_arch_over_an_opening', 'A simple arch over an opening.'),
           positions: ['0-0-0','0-0-1','0-0-2','3-0-0','3-0-1','3-0-2','0-0-3','1-0-3','2-0-3','3-0-3'],
           targetVolume: 10
         },
         {
-          id: 'house', icon: '🏠', label: t('stem.volume.simple_house', 'Simple house'),
-          desc: t('stem.volume.walls_flat_roof_v_4_4_base_wall_roof', 'Walls + flat roof. V = 4×4 base wall + roof.'),
+          id: 'house', icon: '🏠', label: __alloT('stem.volume.simple_house', 'Simple house'),
+          desc: __alloT('stem.volume.walls_flat_roof_v_4_4_base_wall_roof', 'Walls + flat roof. V = 4×4 base wall + roof.'),
           positions: (function() {
             var p = [];
             // Walls (hollow 4x4, 2 high)
@@ -1017,25 +1018,25 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'bg-white rounded-xl border-2 border-emerald-200 p-3 space-y-2' },
           h('div', { className: 'flex items-center justify-between' },
             h('p', { className: 'text-[11px] font-bold text-emerald-700' },
-              t('stem.volume.interactive_net_drag_the_slider_to_fol', '🗺 Interactive net — drag the slider to fold the 2D net into a 3D prism')
+              __alloT('stem.volume.interactive_net_drag_the_slider_to_fol', '🗺 Interactive net — drag the slider to fold the 2D net into a 3D prism')
             ),
             h('button', {
               onClick: function() { playSound('place'); upd({ showNet: false }); },
-              'aria-label': t('stem.volume.hide_net', 'Hide net'),
+              'aria-label': __alloT('stem.volume.hide_net', 'Hide net'),
               className: 'text-[10px] font-bold text-emerald-700 hover:underline'
-            }, t('stem.volume.hide', 'Hide ×'))
+            }, __alloT('stem.volume.hide', 'Hide ×'))
           ),
           // Fold slider
           h('div', { className: 'flex items-center gap-2' },
-            h('span', { className: 'text-[11px] font-bold text-emerald-700' }, t('stem.volume.flat', 'Flat')),
+            h('span', { className: 'text-[11px] font-bold text-emerald-700' }, __alloT('stem.volume.flat', 'Flat')),
             h('input', {
               type: 'range', min: '0', max: '1', step: '0.02',
               value: netFold,
               onChange: function(e) { upd({ netFold: parseFloat(e.target.value) }); },
-              'aria-label': t('stem.volume.fold_the_net_from_flat_0_to_fully_fold', 'Fold the net from flat (0) to fully folded (1)'),
+              'aria-label': __alloT('stem.volume.fold_the_net_from_flat_0_to_fully_fold', 'Fold the net from flat (0) to fully folded (1)'),
               className: 'flex-1 h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-emerald-600'
             }),
-            h('span', { className: 'text-[11px] font-bold text-emerald-700' }, t('stem.volume.folded', 'Folded')),
+            h('span', { className: 'text-[11px] font-bold text-emerald-700' }, __alloT('stem.volume.folded', 'Folded')),
             h('button', {
               onClick: function() {
                 // Animate from 0 to 1 over ~1.5s
@@ -1052,10 +1053,10 @@ window.StemLab = window.StemLab || {
                 upd({ netFold: 0 });
                 requestAnimationFrame(step);
               },
-              'aria-label': t('stem.volume.animate_fold', 'Animate fold'),
-              title: t('stem.volume.watch_it_fold_automatically', 'Watch it fold automatically'),
+              'aria-label': __alloT('stem.volume.animate_fold', 'Animate fold'),
+              title: __alloT('stem.volume.watch_it_fold_automatically', 'Watch it fold automatically'),
               className: 'px-2 py-1 text-[11px] font-bold bg-emerald-700 text-white rounded hover:bg-emerald-800'
-            }, t('stem.volume.animate', '▶ Animate'))
+            }, __alloT('stem.volume.animate', '▶ Animate'))
           ),
           h('div', { style: { perspective: '1200px', minHeight: contH + 'px', display: 'flex', justifyContent: 'center' } },
             h('div', { style: { position: 'relative', width: contW + 'px', height: contH + 'px', transformStyle: 'preserve-3d' } },
@@ -1071,7 +1072,7 @@ window.StemLab = window.StemLab || {
             'Total SA = 2(' + l + '·' + w + ') + 2(' + l + '·' + hh + ') + 2(' + w + '·' + hh + ') = ' + sa + ' sq units'
           ),
           h('p', { className: 'text-[10px] text-emerald-700 italic text-center' },
-            t('stem.volume.when_the_net_folds_up_completely_you_c', 'When the net folds up completely, you can see the prism. Surface area is the area of all 6 faces — the wrapping paper.')
+            __alloT('stem.volume.when_the_net_folds_up_completely_you_c', 'When the net folds up completely, you can see the prism. Surface area is the area of all 6 faces — the wrapping paper.')
           )
         );
       };
@@ -1125,13 +1126,13 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'bg-white rounded-xl border-2 border-emerald-200 p-3' },
           h('div', { className: 'flex items-center justify-between mb-2' },
             h('p', { className: 'text-[11px] font-bold text-emerald-700' },
-              t('stem.volume.net_the_6_faces_unfolded_onto_a_2d_lay', '🗺 Net — the 6 faces unfolded onto a 2D layout')
+              __alloT('stem.volume.net_the_6_faces_unfolded_onto_a_2d_lay', '🗺 Net — the 6 faces unfolded onto a 2D layout')
             ),
             h('button', {
               onClick: function() { playSound('place'); upd({ showNet: false }); },
-              'aria-label': t('stem.volume.hide_net_2', 'Hide net'),
+              'aria-label': __alloT('stem.volume.hide_net_2', 'Hide net'),
               className: 'text-[10px] font-bold text-emerald-700 hover:underline'
-            }, t('stem.volume.hide_net_3', 'Hide net ×'))
+            }, __alloT('stem.volume.hide_net_3', 'Hide net ×'))
           ),
           h('div', { className: 'flex justify-center overflow-x-auto' },
             h('svg', {
@@ -1144,10 +1145,10 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-xs font-bold text-emerald-900 font-mono' },
               '2(' + (l*w) + ') + 2(' + (l*hh) + ') + 2(' + (w*hh) + ') = ',
               h('span', { className: 'text-base text-emerald-700 font-bold' }, totalSA),
-              t('stem.volume.square_units', ' square units')
+              __alloT('stem.volume.square_units', ' square units')
             ),
             h('p', { className: 'text-[10px] text-emerald-700 italic mt-0.5' },
-              t('stem.volume.fold_the_net_up_and_you_get_the_prism_', 'Fold the net up and you get the prism. Surface area is the total area of all 6 faces — the wrapping paper or paint you would need.')
+              __alloT('stem.volume.fold_the_net_up_and_you_get_the_prism_', 'Fold the net up and you get the prism. Surface area is the total area of all 6 faces — the wrapping paper or paint you would need.')
             )
           )
         );
@@ -1184,7 +1185,7 @@ window.StemLab = window.StemLab || {
         var allFactors = getFactorizations(V);
         if (allFactors.length === 0) {
           return h('div', { className: 'bg-white rounded-xl border-2 border-emerald-200 p-3 text-center text-xs text-slate-600' },
-            t('stem.volume.volume_out_of_range_for_comparison_try', 'Volume out of range for comparison. Try a smaller prism (V ≤ 1000).')
+            __alloT('stem.volume.volume_out_of_range_for_comparison_try', 'Volume out of range for comparison. Try a smaller prism (V ≤ 1000).')
           );
         }
         var allWithSA = allFactors.map(function(f) {
@@ -1203,11 +1204,11 @@ window.StemLab = window.StemLab || {
         }
         // Build display list: current + min + max, deduped
         var displayList = [];
-        if (curEntry) displayList.push({ entry: curEntry, label: t('stem.volume.current', 'Current'), accent: '#3b82f6' });
-        if (!curEntry || (curEntry.sa !== minE.sa)) displayList.push({ entry: minE, label: t('stem.volume.most_efficient', 'Most efficient ✓'), accent: '#16a34a' });
+        if (curEntry) displayList.push({ entry: curEntry, label: __alloT('stem.volume.current', 'Current'), accent: '#3b82f6' });
+        if (!curEntry || (curEntry.sa !== minE.sa)) displayList.push({ entry: minE, label: __alloT('stem.volume.most_efficient', 'Most efficient ✓'), accent: '#16a34a' });
         if (!curEntry || (curEntry.sa !== maxE.sa)) {
           if (!displayList.some(function(d) { return d.entry.sa === maxE.sa; })) {
-            displayList.push({ entry: maxE, label: t('stem.volume.least_efficient', 'Least efficient'), accent: '#dc2626' });
+            displayList.push({ entry: maxE, label: __alloT('stem.volume.least_efficient', 'Least efficient'), accent: '#dc2626' });
           }
         }
         var maxSAvalue = maxE.sa;
@@ -1218,9 +1219,9 @@ window.StemLab = window.StemLab || {
             ),
             h('button', {
               onClick: function() { playSound('place'); upd({ showCompare: false }); },
-              'aria-label': t('stem.volume.hide_compare_panel', 'Hide compare panel'),
+              'aria-label': __alloT('stem.volume.hide_compare_panel', 'Hide compare panel'),
               className: 'text-[10px] font-bold text-emerald-700 hover:underline'
-            }, t('stem.volume.hide_2', 'Hide ×'))
+            }, __alloT('stem.volume.hide_2', 'Hide ×'))
           ),
           h('div', { className: 'space-y-1.5' },
             displayList.map(function(d, idx) {
@@ -1253,14 +1254,14 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: 'mt-2 bg-emerald-50 rounded-lg p-2 border border-emerald-200' },
             h('p', { className: 'text-[11px] text-emerald-900' },
-              h('b', {}, t('stem.volume.square_cube_law', '💡 Square-cube law: ')),
-              t('stem.volume.volume_grows_as_the_cube_of_the_dimens', 'volume grows as the cube of the dimension; surface area grows as the square. Same V, very different SA. '),
-              t('stem.volume.a_cube_is_the_most_surface_efficient_p', 'A cube is the most surface-efficient prism shape. '),
-              t('stem.volume.it_is_why_elephants_need_thick_legs_vo', 'It is why elephants need thick legs (volume → mass scales faster than bone cross-section), '),
-              t('stem.volume.why_cells_stay_small_need_surface_area', 'why cells stay small (need surface area to absorb nutrients), and why insulation works (rounder shapes keep heat).')
+              h('b', {}, __alloT('stem.volume.square_cube_law', '💡 Square-cube law: ')),
+              __alloT('stem.volume.volume_grows_as_the_cube_of_the_dimens', 'volume grows as the cube of the dimension; surface area grows as the square. Same V, very different SA. '),
+              __alloT('stem.volume.a_cube_is_the_most_surface_efficient_p', 'A cube is the most surface-efficient prism shape. '),
+              __alloT('stem.volume.it_is_why_elephants_need_thick_legs_vo', 'It is why elephants need thick legs (volume → mass scales faster than bone cross-section), '),
+              __alloT('stem.volume.why_cells_stay_small_need_surface_area', 'why cells stay small (need surface area to absorb nutrients), and why insulation works (rounder shapes keep heat).')
             ),
             h('p', { className: 'text-[10px] text-emerald-700 italic mt-1' },
-              t('stem.volume.tap_any_row_above_to_swap_the_3d_prism', '👆 Tap any row above to swap the 3D prism to that shape — see the same volume in a different skin.')
+              __alloT('stem.volume.tap_any_row_above_to_swap_the_3d_prism', '👆 Tap any row above to swap the 3D prism to that shape — see the same volume in a different skin.')
             )
           )
         );
@@ -1275,49 +1276,49 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200 ' + bgClass },
         // Header
         h('div', { className: 'flex items-center gap-3 mb-2' },
-          h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': t('stem.volume.back', 'Back') },
+          h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': __alloT('stem.volume.back', 'Back') },
             h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
-          h('h3', { className: 'text-lg font-bold text-emerald-800' }, t('stem.volume.3d_volume_explorer', '\uD83D\uDCE6 3D Volume Explorer')),
+          h('h3', { className: 'text-lg font-bold text-emerald-800' }, __alloT('stem.volume.3d_volume_explorer', '\uD83D\uDCE6 3D Volume Explorer')),
           h('div', { className: 'flex items-center gap-2 ml-2' },
             h('div', { className: 'text-xs font-bold text-emerald-600' }, score.correct + '/' + score.total),
-            (_v.attemptHist && _v.attemptHist.length > 1) && h('div', { className: 'flex items-center gap-px', title: t('stem.volume.recent_attempts_newest_at_right', 'Recent attempts (newest at right)'), role: 'img', 'aria-label': _v.attemptHist.slice(-12).filter(function (x) { return x; }).length + ' correct of your last ' + Math.min(12, _v.attemptHist.length) + ' attempts' },
+            (_v.attemptHist && _v.attemptHist.length > 1) && h('div', { className: 'flex items-center gap-px', title: __alloT('stem.volume.recent_attempts_newest_at_right', 'Recent attempts (newest at right)'), role: 'img', 'aria-label': _v.attemptHist.slice(-12).filter(function (x) { return x; }).length + ' correct of your last ' + Math.min(12, _v.attemptHist.length) + ' attempts' },
               _v.attemptHist.slice(-12).map(function (v, i) { return h('span', { key: i, className: 'inline-block w-1 h-3.5 rounded-sm ' + (v ? 'bg-emerald-500' : 'bg-rose-400') }); })),
             streak >= 2 && h('div', {
               className: 'text-xs font-bold text-orange-800 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full animate-pulse'
             }, '\uD83D\uDD25 ' + streak + ' streak!'),
             earnedCount > 0 && h('button', { onClick: function() { upd({ showBadges: !showBadges }); },
               className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 border border-amber-600 text-amber-700 hover:bg-amber-100 transition-all',
-              title: t('stem.volume.view_badges_b', 'View badges (B)')
+              title: __alloT('stem.volume.view_badges_b', 'View badges (B)')
             }, '\uD83C\uDFC5 ' + earnedCount + '/' + BADGES.length),
             h('button', { onClick: askAI,
               className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-50 border border-purple-600 text-purple-600 hover:bg-purple-100 transition-all',
-              title: t('stem.volume.ai_tutor', 'AI Tutor (?)')
-            }, t('stem.volume.ai', '\uD83E\uDDE0 AI'))
+              title: __alloT('stem.volume.ai_tutor', 'AI Tutor (?)')
+            }, __alloT('stem.volume.ai', '\uD83E\uDDE0 AI'))
           ),
           h('div', { className: 'flex-1' }),
           // Mode toggle (now 3 options: Slider / Freeform / Word Problems)
-          h('div', { className: 'flex items-center gap-1 bg-emerald-50 rounded-lg p-1 border border-emerald-200', role: 'tablist', 'aria-label': t('stem.volume.volume_modes', 'Volume modes') },
-            h('button', { 'aria-label': t('stem.volume.slider_mode', 'Slider mode'),
+          h('div', { className: 'flex items-center gap-1 bg-emerald-50 rounded-lg p-1 border border-emerald-200', role: 'tablist', 'aria-label': __alloT('stem.volume.volume_modes', 'Volume modes') },
+            h('button', { 'aria-label': __alloT('stem.volume.slider_mode', 'Slider mode'),
               onClick: function() { upd({ mode: 'slider', builderChallenge: null, builderFeedback: null }); },
               role: 'tab', 'aria-selected': mode === 'slider',
               className: 'px-3 py-1 rounded-md text-xs font-bold transition-all ' + (mode === 'slider' ? 'bg-white text-emerald-700 shadow-sm' : 'text-emerald-500 hover:text-emerald-700'),
-              title: t('stem.volume.slider_mode_s', 'Slider mode (S)')
-            }, t('stem.volume.slider', '\uD83C\uDF9A\uFE0F Slider')),
-            h('button', { 'aria-label': t('stem.volume.freeform_mode', 'Freeform mode'),
+              title: __alloT('stem.volume.slider_mode_s', 'Slider mode (S)')
+            }, __alloT('stem.volume.slider', '\uD83C\uDF9A\uFE0F Slider')),
+            h('button', { 'aria-label': __alloT('stem.volume.freeform_mode', 'Freeform mode'),
               onClick: function() { upd({ mode: 'freeform', challenge: null, feedback: null }); },
               role: 'tab', 'aria-selected': isFreeform,
               className: 'px-3 py-1 rounded-md text-xs font-bold transition-all ' + (isFreeform ? 'bg-white text-indigo-700 shadow-sm' : 'text-emerald-500 hover:text-emerald-700'),
-              title: t('stem.volume.freeform_mode_f', 'Freeform mode (F)')
-            }, t('stem.volume.freeform', '\uD83E\uDDF1 Freeform')),
-            h('button', { 'aria-label': t('stem.volume.word_problems_mode', 'Word Problems mode'),
+              title: __alloT('stem.volume.freeform_mode_f', 'Freeform mode (F)')
+            }, __alloT('stem.volume.freeform', '\uD83E\uDDF1 Freeform')),
+            h('button', { 'aria-label': __alloT('stem.volume.word_problems_mode', 'Word Problems mode'),
               onClick: function() {
                 var ctx = WORD_CONTEXTS[wpCtxIdx % WORD_CONTEXTS.length];
                 upd({ mode: 'word', dims: ctx.defaults, challenge: null, feedback: null, builderChallenge: null, builderFeedback: null, wpFeedback: null });
               },
               role: 'tab', 'aria-selected': isWord,
               className: 'px-3 py-1 rounded-md text-xs font-bold transition-all ' + (isWord ? 'bg-white text-amber-700 shadow-sm' : 'text-emerald-500 hover:text-emerald-700'),
-              title: t('stem.volume.word_problems_mode_w', 'Word Problems mode (W)')
-            }, t('stem.volume.word', '\uD83D\uDCDD Word'))),
+              title: __alloT('stem.volume.word_problems_mode_w', 'Word Problems mode (W)')
+            }, __alloT('stem.volume.word', '\uD83D\uDCDD Word'))),
           // Mute toggle
           h('button', {
             onClick: function() {
@@ -1347,32 +1348,32 @@ window.StemLab = window.StemLab || {
               });
               announceToSR('Volume explorer reset');
             },
-            'aria-label': t('stem.volume.reset', 'Reset'),
-            title: t('stem.volume.reset_everything', 'Reset everything'),
+            'aria-label': __alloT('stem.volume.reset', 'Reset'),
+            title: __alloT('stem.volume.reset_everything', 'Reset everything'),
             className: 'text-[11px] font-bold px-2 py-0.5 ml-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition-all'
-          }, t('stem.volume.reset_2', '\u21BA Reset')),
+          }, __alloT('stem.volume.reset_2', '\u21BA Reset')),
           // Paint toggle
-          h('button', { 'aria-label': t('stem.volume.toggle_paint_p', 'Toggle paint (P)'),
+          h('button', { 'aria-label': __alloT('stem.volume.toggle_paint_p', 'Toggle paint (P)'),
             onClick: function() {
               upd({ paintSurfaceArea: !paintSurfaceArea });
               if (!badges.surfaceExplorer) checkBadges({ surfaceExplorer: true });
             },
             className: 'px-3 py-1 ml-2 rounded-lg text-xs font-bold transition-all border ' + (paintSurfaceArea ? 'bg-orange-100 text-orange-700 border-orange-600 shadow-inner' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'),
-            title: t('stem.volume.toggle_paint_p_2', 'Toggle paint (P)')
+            title: __alloT('stem.volume.toggle_paint_p_2', 'Toggle paint (P)')
           }, paintSurfaceArea ? '\uD83E\uDDFC Wash Paint' : '\uD83C\uDFA8 Paint Surface'),
           // Zoom
           h('div', { className: 'flex items-center gap-1' },
-            h('button', { 'aria-label': t('stem.volume.zoom_out', 'Zoom out'), onClick: function() { upd({ scale: Math.max(0.4, scale - 0.15) }); }, className: 'w-7 h-7 rounded-full bg-white border border-emerald-600 text-emerald-700 font-bold text-sm hover:bg-emerald-100 flex items-center justify-center' }, '\u2212'),
+            h('button', { 'aria-label': __alloT('stem.volume.zoom_out', 'Zoom out'), onClick: function() { upd({ scale: Math.max(0.4, scale - 0.15) }); }, className: 'w-7 h-7 rounded-full bg-white border border-emerald-600 text-emerald-700 font-bold text-sm hover:bg-emerald-100 flex items-center justify-center' }, '\u2212'),
             h('span', { className: 'text-[11px] text-emerald-600 font-mono w-10 text-center' }, Math.round(scale*100)+'%'),
-            h('button', { 'aria-label': t('stem.volume.zoom_in', 'Zoom in'), onClick: function() { upd({ scale: Math.min(2.5, scale + 0.15) }); }, className: 'w-7 h-7 rounded-full bg-white border border-emerald-600 text-emerald-700 font-bold text-sm hover:bg-emerald-100 flex items-center justify-center' }, '+'),
-            h('button', { 'aria-label': t('stem.volume.reset_3d_view_rotation_and_zoom', 'Reset 3D view rotation and zoom'), onClick: function() { upd({ rotation: { x: -25, y: -35 }, scale: 1.0 }); }, className: 'ml-1 px-2 py-1 rounded-md bg-white border border-emerald-600 text-emerald-700 font-bold text-[11px] hover:bg-emerald-100' }, '\u21BA'))
+            h('button', { 'aria-label': __alloT('stem.volume.zoom_in', 'Zoom in'), onClick: function() { upd({ scale: Math.min(2.5, scale + 0.15) }); }, className: 'w-7 h-7 rounded-full bg-white border border-emerald-600 text-emerald-700 font-bold text-sm hover:bg-emerald-100 flex items-center justify-center' }, '+'),
+            h('button', { 'aria-label': __alloT('stem.volume.reset_3d_view_rotation_and_zoom', 'Reset 3D view rotation and zoom'), onClick: function() { upd({ rotation: { x: -25, y: -35 }, scale: 1.0 }); }, className: 'ml-1 px-2 py-1 rounded-md bg-white border border-emerald-600 text-emerald-700 font-bold text-[11px] hover:bg-emerald-100' }, '\u21BA'))
         ),
 
         // ── Badge panel ──
         showBadges && h('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-3 border-2 border-amber-200' },
           h('div', { className: 'flex items-center justify-between mb-2' },
             h('p', { className: 'text-sm font-bold text-amber-800' }, '\uD83C\uDFC5 Badges (' + earnedCount + '/' + BADGES.length + ')'),
-            h('button', { 'aria-label': t('stem.volume.close_badges_panel', 'Close badges panel'), onClick: function() { upd({ showBadges: false }); }, className: 'text-xs text-slate-600 hover:text-slate-600' }, '\u2715')
+            h('button', { 'aria-label': __alloT('stem.volume.close_badges_panel', 'Close badges panel'), onClick: function() { upd({ showBadges: false }); }, className: 'text-xs text-slate-600 hover:text-slate-600' }, '\u2715')
           ),
           h('div', { className: 'grid grid-cols-3 sm:grid-cols-5 gap-2' },
             BADGES.map(function(badge) {
@@ -1393,7 +1394,7 @@ window.StemLab = window.StemLab || {
         // ── AI Tutor panel ──
         showAI && h('div', { className: 'bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-3 border-2 border-purple-200' },
           h('div', { className: 'flex items-center justify-between mb-2' },
-            h('p', { className: 'text-sm font-bold text-purple-800' }, t('stem.volume.ai_volume_tutor', '\uD83E\uDDE0 AI Volume Tutor')),
+            h('p', { className: 'text-sm font-bold text-purple-800' }, __alloT('stem.volume.ai_volume_tutor', '\uD83E\uDDE0 AI Volume Tutor')),
             h('button', { onClick: function() { upd({ showAI: false }); }, className: 'text-xs text-slate-600 hover:text-slate-600' }, '\u2715')
           ),
           aiLoading
@@ -1402,18 +1403,18 @@ window.StemLab = window.StemLab || {
                 h('span', { className: 'text-xs text-purple-600' }, 'Thinking...')
               )
             : h('p', { className: 'text-sm text-purple-700 whitespace-pre-wrap leading-relaxed' }, aiResponse),
-          !aiLoading && h('button', { 'aria-label': t('stem.volume.ask_again', 'Ask Again'),
+          !aiLoading && h('button', { 'aria-label': __alloT('stem.volume.ask_again', 'Ask Again'),
             onClick: askAI,
             className: 'mt-2 text-[11px] font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 border border-purple-600 transition-all'
-          }, t('stem.volume.ask_again_2', '\uD83D\uDD04 Ask Again'))
+          }, __alloT('stem.volume.ask_again_2', '\uD83D\uDD04 Ask Again'))
         ),
 
         // ── Topic-accent hero band per mode ──
         (function() {
           var MODE_META = {
-            slider:   { accent: '#059669', soft: 'rgba(5,150,105,0.10)',  icon: '\uD83C\uDF9A', title: t('stem.volume.slider_v_l_w_h_watch_it_grow', 'Slider \u2014 V = l \u00d7 w \u00d7 h, watch it grow'),     hint: t('stem.volume.sliders_snap_to_integer_dimensions_gre', 'Sliders snap to integer dimensions \u2014 great for the early visual: doubling each side multiplies volume by 8 (2\u00b3). Surface area scales as 2\u00b2; volume as 2\u00b3. The square-cube law explains why elephants have thick legs and shrews can fall safely.') },
-            freeform: { accent: '#4f46e5', soft: 'rgba(79,70,229,0.10)',  icon: '\uD83E\uDDF1', title: t('stem.volume.freeform_build_any_shape_count_cubes', 'Freeform \u2014 build any shape, count cubes'),         hint: t('stem.volume.l_blocks_hollow_shapes_irregular_prism', 'L-blocks, hollow shapes, irregular prisms. Volume = total cubes regardless of arrangement. CCSS 5.MD.5: relate volume of a right rectangular prism to multiplication and addition (V = b\u00d7h or as the sum of partial volumes).') },
-            word:     { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83D\uDCDD', title: t('stem.volume.word_problems_volume_in_the_real_world', 'Word Problems \u2014 volume in the real world'),        hint: t('stem.volume.a_fish_tank_with_5_3_4_60_cubes_of_wat', 'A fish tank with 5\u00d73\u00d74 = 60 cubes of water. A lunchbox of 4\u00d73\u00d72 = 24 sandwich cubes. Every multiplication of three dimensions is a real container with a real capacity. CCSS 5.MD.5b: solve real-world problems involving volume.') }
+            slider:   { accent: '#059669', soft: 'rgba(5,150,105,0.10)',  icon: '\uD83C\uDF9A', title: __alloT('stem.volume.slider_v_l_w_h_watch_it_grow', 'Slider \u2014 V = l \u00d7 w \u00d7 h, watch it grow'),     hint: __alloT('stem.volume.sliders_snap_to_integer_dimensions_gre', 'Sliders snap to integer dimensions \u2014 great for the early visual: doubling each side multiplies volume by 8 (2\u00b3). Surface area scales as 2\u00b2; volume as 2\u00b3. The square-cube law explains why elephants have thick legs and shrews can fall safely.') },
+            freeform: { accent: '#4f46e5', soft: 'rgba(79,70,229,0.10)',  icon: '\uD83E\uDDF1', title: __alloT('stem.volume.freeform_build_any_shape_count_cubes', 'Freeform \u2014 build any shape, count cubes'),         hint: __alloT('stem.volume.l_blocks_hollow_shapes_irregular_prism', 'L-blocks, hollow shapes, irregular prisms. Volume = total cubes regardless of arrangement. CCSS 5.MD.5: relate volume of a right rectangular prism to multiplication and addition (V = b\u00d7h or as the sum of partial volumes).') },
+            word:     { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83D\uDCDD', title: __alloT('stem.volume.word_problems_volume_in_the_real_world', 'Word Problems \u2014 volume in the real world'),        hint: __alloT('stem.volume.a_fish_tank_with_5_3_4_60_cubes_of_wat', 'A fish tank with 5\u00d73\u00d74 = 60 cubes of water. A lunchbox of 4\u00d73\u00d72 = 24 sandwich cubes. Every multiplication of three dimensions is a real container with a real capacity. CCSS 5.MD.5b: solve real-world problems involving volume.') }
           };
           var modeKey = isWord ? 'word' : (isFreeform ? 'freeform' : 'slider');
           var meta = MODE_META[modeKey];
@@ -1443,7 +1444,7 @@ window.StemLab = window.StemLab || {
           return h('div', { className: 'space-y-2' },
             // Context picker row
             h('div', { className: 'bg-amber-50 rounded-xl p-3 border border-amber-200' },
-              h('p', { className: 'text-[11px] font-bold text-amber-800 mb-2' }, t('stem.volume.pick_a_context_to_make_volume_real', '🌍 Pick a context to make volume real:')),
+              h('p', { className: 'text-[11px] font-bold text-amber-800 mb-2' }, __alloT('stem.volume.pick_a_context_to_make_volume_real', '🌍 Pick a context to make volume real:')),
               h('div', { className: 'flex flex-wrap gap-1.5' },
                 WORD_CONTEXTS.map(function(c, ci) {
                   var active = wpCtxIdx === ci;
@@ -1492,8 +1493,8 @@ window.StemLab = window.StemLab || {
                       }
                     }
                   },
-                  placeholder: t('stem.volume.v', 'V = ?'),
-                  'aria-label': t('stem.volume.volume_answer_for_word_problem', 'Volume answer for word problem'),
+                  placeholder: __alloT('stem.volume.v', 'V = ?'),
+                  'aria-label': __alloT('stem.volume.volume_answer_for_word_problem', 'Volume answer for word problem'),
                   className: 'flex-1 px-3 py-2 border-2 border-amber-600 rounded-lg text-base font-mono'
                 }),
                 h('span', { className: 'text-xs font-bold text-amber-700' }, ctx2.unit),
@@ -1520,19 +1521,19 @@ window.StemLab = window.StemLab || {
                     }
                   },
                   disabled: !wpAnswer,
-                  'aria-label': t('stem.volume.check_answer', 'Check answer'),
+                  'aria-label': __alloT('stem.volume.check_answer', 'Check answer'),
                   className: 'px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-600 disabled:opacity-40 transition-all'
-                }, t('stem.volume.check', 'Check'))
+                }, __alloT('stem.volume.check', 'Check'))
               ),
               wpFeedback && h('p', { className: 'text-sm font-bold mt-2 ' + (wpFeedback.correct ? 'text-green-700' : 'text-red-600'), 'aria-live': 'polite' }, wpFeedback.msg),
               wpFeedback && wpFeedback.correct && h('div', { className: 'mt-2 bg-amber-50 rounded-lg px-3 py-2 border border-amber-200' },
                 h('p', { className: 'text-[11px] text-amber-700' },
-                  t('stem.volume.the_rectangular_prism_above_shows_exac', '💡 The rectangular prism above shows exactly what the words describe. Volume is the count of unit cubes that fit inside.')
+                  __alloT('stem.volume.the_rectangular_prism_above_shows_exac', '💡 The rectangular prism above shows exactly what the words describe. Volume is the count of unit cubes that fit inside.')
                 )
               )
             ),
             h('p', { className: 'text-[10px] text-amber-700 italic text-center' },
-              t('stem.volume.adjust_the_sliders_below_to_match_the_', 'Adjust the sliders below to match the story — or try a new context. Solve 5 word problems to earn 📝 Word Wizard. Visit all 8 contexts for 🌍 Real-World Explorer.')
+              __alloT('stem.volume.adjust_the_sliders_below_to_match_the_', 'Adjust the sliders below to match the story — or try a new context. Solve 5 word problems to earn 📝 Word Wizard. Visit all 8 contexts for 🌍 Real-World Explorer.')
             )
           );
         })(),
@@ -1575,17 +1576,17 @@ window.StemLab = window.StemLab || {
 
         // Freeform instructions
         !isSlider && h('div', { className: 'flex items-center gap-2 bg-indigo-50 rounded-lg p-2 border border-indigo-100' },
-          h('p', { className: 'text-xs text-indigo-600 flex-1' }, t('stem.volume.click_grid_to_place_cubes_click_cube_t', '\uD83D\uDC49 Click grid to place cubes \u2022 Click cube to remove \u2022 Click above to stack')),
-          h('button', { 'aria-label': t('stem.volume.undo_last_placement_u', 'Undo last placement (U)'),
+          h('p', { className: 'text-xs text-indigo-600 flex-1' }, __alloT('stem.volume.click_grid_to_place_cubes_click_cube_t', '\uD83D\uDC49 Click grid to place cubes \u2022 Click cube to remove \u2022 Click above to stack')),
+          h('button', { 'aria-label': __alloT('stem.volume.undo_last_placement_u', 'Undo last placement (U)'),
             onClick: doUndo,
             disabled: !undoStack.length,
             title: 'Undo (U) \u2014 ' + undoStack.length + ' step' + (undoStack.length === 1 ? '' : 's') + ' available',
             className: 'px-3 py-1.5 text-xs font-bold bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 disabled:opacity-40 border border-amber-300'
           }, '\u21B6 Undo (' + undoStack.length + ')'),
-          h('button', { 'aria-label': t('stem.volume.clear_all', 'Clear All'),
+          h('button', { 'aria-label': __alloT('stem.volume.clear_all', 'Clear All'),
             onClick: function() { pushUndo(); upd({ positions: [], builderChallenge: null, builderFeedback: null }); announceToSR('Cleared all cubes'); },
             className: 'px-3 py-1.5 text-xs font-bold bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300'
-          }, t('stem.volume.clear_all_2', '\u21BA Clear All'))
+          }, __alloT('stem.volume.clear_all_2', '\u21BA Clear All'))
         ),
 
         // 3D viewport — pointer events (mouse + touch + pen), pinch-to-zoom,
@@ -1595,7 +1596,7 @@ window.StemLab = window.StemLab || {
           style: { minHeight: '350px', perspective: '900px', touchAction: 'none' },
           tabIndex: 0,
           role: 'application',
-          'aria-label': t('stem.volume.interactive_3d_viewport_drag_swipe_or_', 'Interactive 3D viewport. Drag, swipe, or use arrow keys to rotate. Pinch or +/- to zoom. R to reset view.'),
+          'aria-label': __alloT('stem.volume.interactive_3d_viewport_drag_swipe_or_', 'Interactive 3D viewport. Drag, swipe, or use arrow keys to rotate. Pinch or +/- to zoom. R to reset view.'),
           onPointerDown: handlePointerDown,
           onPointerMove: handlePointerMove,
           onPointerUp: handlePointerUp,
@@ -1615,14 +1616,14 @@ window.StemLab = window.StemLab || {
         isSlider && h('div', { className: 'flex items-center gap-2 bg-emerald-50 rounded-lg p-2 border border-emerald-100' },
           h('span', { className: 'text-xs font-bold text-emerald-700' }, 'Layers:'),
           h('input', {
-            type: 'range', 'aria-label': t('stem.volume.volume_slider', 'Volume slider'), min: '1', max: dims.h,
+            type: 'range', 'aria-label': __alloT('stem.volume.volume_slider', 'Volume slider'), min: '1', max: dims.h,
             value: showLayers != null ? showLayers : dims.h,
             onChange: function(e) {
               var lv = parseInt(e.target.value);
               upd({ showLayers: lv, layerUsed: true });
               if (!badges.layerMaster) checkBadges({ layerMaster: true });
             },
-            'aria-label': t('stem.volume.visible_layers', 'Visible layers'),
+            'aria-label': __alloT('stem.volume.visible_layers', 'Visible layers'),
             className: 'flex-1 h-1.5 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-emerald-600'
           }),
           h('span', { className: 'text-xs font-mono text-emerald-600' },
@@ -1631,8 +1632,8 @@ window.StemLab = window.StemLab || {
 
         // Shape selector (slider mode only) — prism / cylinder / cone / pyramid
         isSlider && h('div', { className: 'bg-white rounded-xl p-2 border border-emerald-200' },
-          h('div', { className: 'flex items-center gap-1 flex-wrap', role: 'radiogroup', 'aria-label': t('stem.volume.shape_selector', 'Shape selector') },
-            h('span', { className: 'text-[11px] font-bold text-emerald-700 mr-1' }, t('stem.volume.shape', '🔷 Shape:')),
+          h('div', { className: 'flex items-center gap-1 flex-wrap', role: 'radiogroup', 'aria-label': __alloT('stem.volume.shape_selector', 'Shape selector') },
+            h('span', { className: 'text-[11px] font-bold text-emerald-700 mr-1' }, __alloT('stem.volume.shape', '🔷 Shape:')),
             SHAPES_META.map(function(s) {
               var active = shape === s.id;
               return h('button', {
@@ -1651,9 +1652,9 @@ window.StemLab = window.StemLab || {
             })
           ),
           shape !== 'prism' && h('p', { className: 'mt-1.5 text-[10px] text-emerald-600 italic' },
-            t('stem.volume.visual_is_a_voxel_approximation_built_', '⚠ Visual is a voxel approximation (built from unit cubes). The formula '),
+            __alloT('stem.volume.visual_is_a_voxel_approximation_built_', '⚠ Visual is a voxel approximation (built from unit cubes). The formula '),
             h('span', { className: 'font-mono font-bold text-emerald-800' }, (SHAPES_META.find(function(m) { return m.id === shape; }) || {}).formula),
-            t('stem.volume.gives_the_exact_analytic_volume', ' gives the exact analytic volume = '),
+            __alloT('stem.volume.gives_the_exact_analytic_volume', ' gives the exact analytic volume = '),
             h('span', { className: 'font-bold text-emerald-800' }, formatVolumeWithUnit(analyticVolume(shape, dims.l, dims.w, dims.h)))
           ),
           // ── Formula breakdown: shows the formula with current dimensions plugged in ──
@@ -1687,14 +1688,14 @@ window.StemLab = window.StemLab || {
             return h('div', {
               className: 'mt-2 bg-emerald-50 border border-emerald-200 rounded-md px-2.5 py-1.5 font-mono text-[11px] text-emerald-900',
               role: 'note',
-              'aria-label': t('stem.volume.formula_with_dimensions_substituted', 'Formula with dimensions substituted')
+              'aria-label': __alloT('stem.volume.formula_with_dimensions_substituted', 'Formula with dimensions substituted')
             },
               h('span', { className: 'font-bold text-emerald-700 mr-2' }, sf.formula),
               h('span', { className: 'text-emerald-600' }, '→ '),
               h('span', { className: 'text-emerald-800' }, stepStr),
               h('span', { className: 'text-emerald-600 mx-1' }, '='),
               h('span', { className: 'font-extrabold text-emerald-900' }, resultStr),
-              h('span', { className: 'text-emerald-700 ml-1 not-italic' }, t('stem.volume.cubic_units', ' cubic units'))
+              h('span', { className: 'text-emerald-700 ml-1 not-italic' }, __alloT('stem.volume.cubic_units', ' cubic units'))
             );
           })()
         ),
@@ -1731,7 +1732,7 @@ window.StemLab = window.StemLab || {
             },
             'aria-pressed': showCrossSection,
             'aria-label': showCrossSection ? 'Hide cross-section slice' : 'Show cross-section slice',
-            title: t('stem.volume.slice_horizontally_to_see_the_area_tim', 'Slice horizontally to see the area-times-depth relationship'),
+            title: __alloT('stem.volume.slice_horizontally_to_see_the_area_tim', 'Slice horizontally to see the area-times-depth relationship'),
             className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ' +
               (showCrossSection ? 'bg-rose-700 text-white border-rose-700 shadow-inner' : 'bg-white text-rose-700 border-rose-300 hover:bg-rose-50')
           }, showCrossSection ? '✂ Hide cross-section' : '✂ Cross-section slice')
@@ -1739,7 +1740,7 @@ window.StemLab = window.StemLab || {
         // Cross-section slice slider
         isSlider && showCrossSection && h('div', { className: 'bg-rose-50 rounded-lg p-2 border border-rose-200' },
           h('div', { className: 'flex items-center gap-2' },
-            h('span', { className: 'text-[11px] font-bold text-rose-700' }, t('stem.volume.cut_at_layer', '✂ Cut at layer:')),
+            h('span', { className: 'text-[11px] font-bold text-rose-700' }, __alloT('stem.volume.cut_at_layer', '✂ Cut at layer:')),
             h('input', {
               type: 'range', min: '0', max: Math.max(0, Math.ceil(dims.h) - 1),
               value: Math.min(crossSectionLayer, Math.ceil(dims.h) - 1),
@@ -1748,7 +1749,7 @@ window.StemLab = window.StemLab || {
                 upd({ crossSectionLayer: v });
                 announceToSR('Cross-section at layer ' + v);
               },
-              'aria-label': t('stem.volume.cross_section_layer_position', 'Cross-section layer position'),
+              'aria-label': __alloT('stem.volume.cross_section_layer_position', 'Cross-section layer position'),
               className: 'flex-1 h-1.5 bg-rose-200 rounded-lg appearance-none cursor-pointer accent-rose-600'
             }),
             h('span', { className: 'text-xs font-mono text-rose-700 w-12 text-right' }, Math.min(crossSectionLayer, Math.ceil(dims.h) - 1) + ' / ' + (Math.ceil(dims.h) - 1))
@@ -1756,7 +1757,7 @@ window.StemLab = window.StemLab || {
           h('p', { className: 'mt-1 text-[10px] text-rose-700 italic' },
             '💡 The cut face at layer ' + Math.min(crossSectionLayer, Math.ceil(dims.h) - 1) + ' has area = ',
             h('span', { className: 'font-mono font-bold' }, (shape === 'prism' ? (dims.l * dims.w) : '~' + voxelizeShape(shape, dims.l, dims.w, dims.h).filter(function(v) { return v.z === Math.min(crossSectionLayer, Math.ceil(dims.h) - 1); }).length)),
-            t('stem.volume.square_units_volume_cross_section_area', ' square units. Volume = (cross-section area) × (depth) is the foundation of integral calculus.')
+            __alloT('stem.volume.square_units_volume_cross_section_area', ' square units. Volume = (cross-section area) × (depth) is the foundation of integral calculus.')
           )
         ),
         // When showNet is on AND the user has clicked "interactive", we render
@@ -1780,7 +1781,7 @@ window.StemLab = window.StemLab || {
         // Stats
         h('div', { className: 'grid grid-cols-2 gap-3' },
           h('div', { className: 'bg-white rounded-xl p-3 border border-emerald-100 text-center flex flex-col items-center justify-center' },
-            h('div', { className: 'text-xs font-bold text-emerald-600 uppercase mb-1' }, t('stem.volume.volume', 'Volume')),
+            h('div', { className: 'text-xs font-bold text-emerald-600 uppercase mb-1' }, __alloT('stem.volume.volume', 'Volume')),
             h('div', { className: 'text-xl font-bold text-emerald-800' },
               isSlider && !challenge ? h('div', { className: 'flex flex-col items-center gap-1' },
                 h('div', { className: 'text-xs bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200' },
@@ -1798,9 +1799,9 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'text-xs text-slate-600' }, volume + ' unit cube' + (volume !== 1 ? 's' : ''))
           ),
           h('div', { className: 'bg-white rounded-xl p-3 border border-teal-100 text-center' },
-            h('div', { className: 'text-xs font-bold text-teal-600 uppercase mb-1' }, t('stem.volume.surface_area', 'Surface Area')),
+            h('div', { className: 'text-xs font-bold text-teal-600 uppercase mb-1' }, __alloT('stem.volume.surface_area', 'Surface Area')),
             h('div', { className: 'text-xl font-bold text-teal-800' },
-              t('stem.volume.sa', 'SA = '), h('span', { className: 'text-2xl text-teal-600' },
+              __alloT('stem.volume.sa', 'SA = '), h('span', { className: 'text-2xl text-teal-600' },
                 (isSlider && challenge && !feedback) ? '?' :
                 (!isSlider && builderChallenge && builderChallenge.type === 'volume') ? '?' : surfaceArea)),
             isSlider && !challenge && h('div', { className: 'text-xs text-slate-600' },
@@ -1817,13 +1818,13 @@ window.StemLab = window.StemLab || {
           var diff = Math.abs(predicted - actual);
           var state = diff < 2 ? 'close' : (diff < 8 ? 'mid' : 'far');
           var sm = {
-            close: { label: t('stem.volume.close_match', '🎯 Close match'), color: '#059669', bg: '#ecfdf5', border: '#86efac' },
-            mid:   { label: t('stem.volume.in_the_ballpark', '🟡 In the ballpark'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
-            far:   { label: t('stem.volume.far_off', '🔴 Far off'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' }
+            close: { label: __alloT('stem.volume.close_match', '🎯 Close match'), color: '#059669', bg: '#ecfdf5', border: '#86efac' },
+            mid:   { label: __alloT('stem.volume.in_the_ballpark', '🟡 In the ballpark'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
+            far:   { label: __alloT('stem.volume.far_off', '🔴 Far off'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' }
           }[state];
           return h('div', { className: 'mt-3 mb-3 p-3 rounded-xl bg-white border border-indigo-200' },
-            h('h4', { className: 'text-sm font-black text-indigo-700 mb-1' }, t('stem.volume.volume_predictor_sense_check', '📊 Volume predictor — sense-check')),
-            h('p', { className: 'text-[11px] text-slate-700 mb-2 leading-relaxed' }, t('stem.volume.adjust_your_predicted_dimensions_compa', 'Adjust your PREDICTED dimensions, compare to actual prism. Discrete outcome: close/mid/far. No score, no reveal.')),
+            h('h4', { className: 'text-sm font-black text-indigo-700 mb-1' }, __alloT('stem.volume.volume_predictor_sense_check', '📊 Volume predictor — sense-check')),
+            h('p', { className: 'text-[11px] text-slate-700 mb-2 leading-relaxed' }, __alloT('stem.volume.adjust_your_predicted_dimensions_compa', 'Adjust your PREDICTED dimensions, compare to actual prism. Discrete outcome: close/mid/far. No score, no reveal.')),
             h('div', { className: 'mb-2 p-2 rounded text-center', style: { background: sm.bg, border: '1px solid ' + sm.border } },
               h('div', { className: 'text-sm font-black', style: { color: sm.color } }, sm.label),
               h('div', { className: 'text-[10px] text-slate-700 font-mono mt-1' }, 'Pred: ' + iq.lpred + '×' + iq.wpred + '×' + iq.hpred + ' = ' + predicted + '   |   Actual: ' + actual)
@@ -1838,81 +1839,81 @@ window.StemLab = window.StemLab || {
               })
             ),
             h('div', { className: 'flex gap-2 items-center flex-wrap mb-2' },
-              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ p: predicted, a: actual, st: state }]).slice(-8) }); }, className: 'px-2 py-0.5 rounded bg-slate-100 text-[10px] font-bold text-slate-700 border border-slate-300' }, t('stem.volume.log', '📋 Log')),
-              h('button', { onClick: function() { setIQ({ lpred: 3, wpred: 3, hpred: 3, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[10px] font-semibold text-slate-600 border border-slate-300' }, t('stem.volume.reset_3', '↺ Reset')),
+              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ p: predicted, a: actual, st: state }]).slice(-8) }); }, className: 'px-2 py-0.5 rounded bg-slate-100 text-[10px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.volume.log', '📋 Log')),
+              h('button', { onClick: function() { setIQ({ lpred: 3, wpred: 3, hpred: 3, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[10px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.volume.reset_3', '↺ Reset')),
               (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
             ),
-            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.volume.hypothesis_how_do_you_build_intuition_', 'Hypothesis: How do you build intuition for predicting volume?'),
+            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.volume.hypothesis_how_do_you_build_intuition_', 'Hypothesis: How do you build intuition for predicting volume?'),
               className: 'w-full text-[11px] border border-slate-300 rounded p-1 font-mono leading-snug mb-2', rows: 2 }),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[10px] font-bold text-amber-800 border border-amber-300 mb-2' }, t('stem.volume.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[10px] font-bold text-amber-800 border border-amber-300 mb-2' }, __alloT('stem.volume.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
             iq.stuckRevealed && h('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[10px] text-slate-700 leading-relaxed mb-2' },
               h('ul', { className: 'list-disc pl-4 space-y-0.5' },
-                h('li', null, t('stem.volume.which_dimension_affects_volume_the_mos', 'Which dimension affects volume the most?')),
-                h('li', null, t('stem.volume.try_halving_one_dimension_what_happens', 'Try halving one dimension — what happens to volume?')),
-                h('li', null, t('stem.volume.when_are_predictions_hardest_when_easi', 'When are predictions hardest? When easiest?')))),
+                h('li', null, __alloT('stem.volume.which_dimension_affects_volume_the_mos', 'Which dimension affects volume the most?')),
+                h('li', null, __alloT('stem.volume.try_halving_one_dimension_what_happens', 'Try halving one dimension — what happens to volume?')),
+                h('li', null, __alloT('stem.volume.when_are_predictions_hardest_when_easi', 'When are predictions hardest? When easiest?')))),
             h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-emerald-800 cursor-pointer' },
               h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
-              t('stem.volume.i_understand_explain_in_own_words', 'I understand — explain in own words')),
-            iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.volume.explain_how_each_dimension_contributes', 'Explain how each dimension contributes to total volume.'),
+              __alloT('stem.volume.i_understand_explain_in_own_words', 'I understand — explain in own words')),
+            iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.volume.explain_how_each_dimension_contributes', 'Explain how each dimension contributes to total volume.'),
               className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
-            h('div', { className: 'mt-2 text-[9px] italic text-slate-500' }, t('stem.volume.design_note_discrete_3_state_outcome_n', 'Design note: discrete 3-state outcome; no exact-volume score; no reveal — by design.'))
+            h('div', { className: 'mt-2 text-[9px] italic text-slate-500' }, __alloT('stem.volume.design_note_discrete_3_state_outcome_n', 'Design note: discrete 3-state outcome; no exact-volume score; no reveal — by design.'))
           );
         })(),
 
         // Challenge buttons (skip in word mode — it has its own challenge built in)
         !isWord && h('div', { className: 'flex gap-2 flex-wrap' },
           mode === 'slider' ? h(React.Fragment, null,
-            h('button', { 'aria-label': t('stem.volume.random_challenge', 'Random Challenge'),
+            h('button', { 'aria-label': __alloT('stem.volume.random_challenge', 'Random Challenge'),
               onClick: function() {
                 var l = Math.floor(Math.random()*8)+1, w = Math.floor(Math.random()*6)+1, hh = Math.floor(Math.random()*6)+1;
                 upd({ dims: {l:l,w:w,h:hh}, challenge: {l:l,w:w,h:hh,answer:l*w*hh}, answer: '', feedback: null, showLayers: null });
               },
               className: 'flex-1 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-lg text-sm hover:from-emerald-600 hover:to-teal-600 transition-all shadow-md',
-              title: t('stem.volume.new_challenge_n', 'New challenge (N)')
-            }, t('stem.volume.random_challenge_2', '\uD83C\uDFB2 Random Challenge')),
-            h('button', { 'aria-label': t('stem.volume.reset_4', 'Reset'),
+              title: __alloT('stem.volume.new_challenge_n', 'New challenge (N)')
+            }, __alloT('stem.volume.random_challenge_2', '\uD83C\uDFB2 Random Challenge')),
+            h('button', { 'aria-label': __alloT('stem.volume.reset_4', 'Reset'),
               onClick: function() { upd({ dims: {l:3,w:2,h:2}, challenge: null, feedback: null, showLayers: null, rotation: {x:-25,y:-35}, scale: 1.0 }); },
               className: 'px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300'
-            }, t('stem.volume.reset_5', '\u21BA Reset'))
+            }, __alloT('stem.volume.reset_5', '\u21BA Reset'))
           ) : h(React.Fragment, null,
-            h('button', { 'aria-label': t('stem.volume.build_prism', 'Build Prism'),
+            h('button', { 'aria-label': __alloT('stem.volume.build_prism', 'Build Prism'),
               onClick: function() {
                 var pl=2+Math.floor(Math.random()*4), pw=2+Math.floor(Math.random()*3), ph=1+Math.floor(Math.random()*3);
                 upd({ mode: 'freeform', positions: [], builderChallenge: {type:'prism',target:{l:pl,w:pw,h:ph},answer:pl*pw*ph}, builderFeedback: null, challenge: null, feedback: null });
               },
               className: 'flex-1 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold rounded-lg text-sm hover:from-blue-600 hover:to-indigo-600 transition-all shadow-md'
-            }, t('stem.volume.build_prism_2', '\uD83C\uDFD7\uFE0F Build Prism')),
-            h('button', { 'aria-label': t('stem.volume.l_block_vol', 'L-Block Vol'),
+            }, __alloT('stem.volume.build_prism_2', '\uD83C\uDFD7\uFE0F Build Prism')),
+            h('button', { 'aria-label': __alloT('stem.volume.l_block_vol', 'L-Block Vol'),
               onClick: function() {
                 var lb = generateLBlock();
                 upd({ mode: 'freeform', positions: lb.positions, builderChallenge: {type:'volume',answer:lb.volume,shape:'L-Block'}, builderFeedback: null, challenge: null, feedback: null });
               },
               className: 'flex-1 py-2 bg-gradient-to-r from-violet-500 to-purple-500 text-white font-bold rounded-lg text-sm hover:from-violet-600 hover:to-purple-600 transition-all shadow-md'
-            }, t('stem.volume.l_block_vol_2', '\uD83D\uDCD0 L-Block Vol')),
-            h('button', { 'aria-label': t('stem.volume.random_vol', 'Random Vol'),
+            }, __alloT('stem.volume.l_block_vol_2', '\uD83D\uDCD0 L-Block Vol')),
+            h('button', { 'aria-label': __alloT('stem.volume.random_vol', 'Random Vol'),
               onClick: function() {
                 var tv = 5+Math.floor(Math.random()*16);
                 upd({ mode: 'freeform', positions: [], builderChallenge: {type:'volume',answer:tv,shape:'any'}, builderFeedback: null, challenge: null, feedback: null });
               },
               className: 'flex-1 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-lg text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-md'
-            }, t('stem.volume.random_vol_2', '\uD83C\uDFB2 Random Vol')),
-            h('button', { 'aria-label': t('stem.volume.open_buildable_challenges_library', 'Open buildable challenges library'),
+            }, __alloT('stem.volume.random_vol_2', '\uD83C\uDFB2 Random Vol')),
+            h('button', { 'aria-label': __alloT('stem.volume.open_buildable_challenges_library', 'Open buildable challenges library'),
               onClick: function() { upd({ showBuildLibrary: !showBuildLibrary, mode: 'freeform' }); },
               'aria-expanded': showBuildLibrary,
-              title: t('stem.volume.browse_named_structures_to_build', 'Browse named structures to build'),
+              title: __alloT('stem.volume.browse_named_structures_to_build', 'Browse named structures to build'),
               className: 'flex-1 py-2 bg-gradient-to-r from-pink-500 to-fuchsia-500 text-white font-bold rounded-lg text-sm hover:from-pink-600 hover:to-fuchsia-600 transition-all shadow-md'
-            }, t('stem.volume.library', '\uD83D\uDCDA Library'))
+            }, __alloT('stem.volume.library', '\uD83D\uDCDA Library'))
           )
         ),
 
         // \u2500\u2500 Buildable challenge library panel \u2500\u2500
         !isWord && showBuildLibrary && h('div', { className: 'bg-gradient-to-br from-pink-50 to-fuchsia-50 rounded-xl p-3 border-2 border-pink-200 space-y-2' },
           h('div', { className: 'flex items-center justify-between' },
-            h('p', { className: 'text-sm font-bold text-pink-800' }, t('stem.volume.buildable_challenges_pick_a_structure_', '\uD83D\uDCDA Buildable challenges \u2014 pick a structure to try')),
-            h('button', { onClick: function() { upd({ showBuildLibrary: false }); }, 'aria-label': t('stem.volume.close_library', 'Close library'), className: 'text-xs text-pink-600 hover:text-pink-800' }, '\u00D7')
+            h('p', { className: 'text-sm font-bold text-pink-800' }, __alloT('stem.volume.buildable_challenges_pick_a_structure_', '\uD83D\uDCDA Buildable challenges \u2014 pick a structure to try')),
+            h('button', { onClick: function() { upd({ showBuildLibrary: false }); }, 'aria-label': __alloT('stem.volume.close_library', 'Close library'), className: 'text-xs text-pink-600 hover:text-pink-800' }, '\u00D7')
           ),
           h('p', { className: 'text-[11px] text-pink-700 italic' },
-            t('stem.volume.click_a_name_to_set_it_as_your_target_', 'Click a name to set it as your target \u2014 the cubes will appear as ghost outlines. Match the shape, then Check.')
+            __alloT('stem.volume.click_a_name_to_set_it_as_your_target_', 'Click a name to set it as your target \u2014 the cubes will appear as ghost outlines. Match the shape, then Check.')
           ),
           h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
             BUILD_CHALLENGES.map(function(ch) {
@@ -1950,8 +1951,8 @@ window.StemLab = window.StemLab || {
         // Show library-challenge hint when one is active
         !isSlider && builderChallenge && builderChallenge.library && h('div', { className: 'bg-pink-50 rounded-lg p-2 border border-pink-200' },
           h('p', { className: 'text-[11px] text-pink-800' },
-            t('stem.volume.building', '\uD83D\uDCDA Building: '), h('b', null, builderChallenge.shape),
-            t('stem.volume.target_v', ' \u00B7 Target V = '), h('b', null, builderChallenge.answer),
+            __alloT('stem.volume.building', '\uD83D\uDCDA Building: '), h('b', null, builderChallenge.shape),
+            __alloT('stem.volume.target_v', ' \u00B7 Target V = '), h('b', null, builderChallenge.answer),
             ' \u00B7 ', h('span', { className: 'italic' }, builderChallenge.libraryDesc),
             h('button', {
               onClick: function() {
@@ -1960,29 +1961,29 @@ window.StemLab = window.StemLab || {
                 upd({ positions: builderChallenge.libraryPositions.slice() });
                 announceToSR('Solution shown');
               },
-              title: t('stem.volume.reveal_the_solution_gives_up_no_badge', 'Reveal the solution (gives up \u2014 no badge)'),
+              title: __alloT('stem.volume.reveal_the_solution_gives_up_no_badge', 'Reveal the solution (gives up \u2014 no badge)'),
               className: 'ml-2 px-2 py-0.5 rounded text-[10px] font-bold bg-white text-pink-700 border border-pink-300 hover:bg-pink-100'
-            }, t('stem.volume.show_solution', '\uD83D\uDC40 Show solution'))
+            }, __alloT('stem.volume.show_solution', '\uD83D\uDC40 Show solution'))
           )
         ),
 
         // Challenge input (slider mode)
         isSlider && challenge && h('div', { className: 'bg-amber-50 rounded-lg p-3 border border-amber-200' },
-          h('p', { className: 'text-sm font-bold text-amber-800 mb-2' }, t('stem.volume.what_is_the_volume', '\uD83E\uDD14 What is the volume?')),
+          h('p', { className: 'text-sm font-bold text-amber-800 mb-2' }, __alloT('stem.volume.what_is_the_volume', '\uD83E\uDD14 What is the volume?')),
           h('div', { className: 'flex gap-2 items-center' },
             h('input', {
               type: 'number', value: answer,
               onChange: function(e) { upd({ answer: e.target.value }); },
               onKeyDown: function(e) { if (e.key === 'Enter' && answer) checkChallenge(); },
-              placeholder: t('stem.volume.v_2', 'V = ?'), 'aria-label': t('stem.volume.volume_answer', 'Volume answer'), className: 'flex-1 px-3 py-2 border border-amber-600 rounded-lg text-sm font-mono'
+              placeholder: __alloT('stem.volume.v_2', 'V = ?'), 'aria-label': __alloT('stem.volume.volume_answer', 'Volume answer'), className: 'flex-1 px-3 py-2 border border-amber-600 rounded-lg text-sm font-mono'
             }),
-            h('button', { 'aria-label': t('stem.volume.check_2', 'Check'),
+            h('button', { 'aria-label': __alloT('stem.volume.check_2', 'Check'),
               onClick: checkChallenge, disabled: !answer,
               className: 'px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm disabled:opacity-40'
-            }, t('stem.volume.check_3', 'Check')),
+            }, __alloT('stem.volume.check_3', 'Check')),
             h('button', { onClick: askAI,
               className: 'px-3 py-2 bg-purple-100 text-purple-600 font-bold rounded-lg hover:bg-purple-200 transition-all text-sm',
-              title: t('stem.volume.get_a_hint_from_ai', 'Get a hint from AI')
+              title: __alloT('stem.volume.get_a_hint_from_ai', 'Get a hint from AI')
             }, '\uD83E\uDDE0')
           ),
           feedback && h('p', { className: 'text-sm font-bold mt-2 ' + (feedback.correct ? 'text-green-600' : 'text-red-600') }, feedback.msg)
@@ -1998,13 +1999,13 @@ window.StemLab = window.StemLab || {
                 : '\uD83C\uDFB2 Build a shape with volume = '+builderChallenge.answer
           ),
           h('div', { className: 'flex gap-2 items-center' },
-            h('span', { className: 'text-xs text-indigo-600' }, t('stem.volume.cubes_placed', 'Cubes placed: '), h('span', { className: 'font-bold' }, posSet.size)),
-            h('button', { 'aria-label': t('stem.volume.hint', 'Hint'),
+            h('span', { className: 'text-xs text-indigo-600' }, __alloT('stem.volume.cubes_placed', 'Cubes placed: '), h('span', { className: 'font-bold' }, posSet.size)),
+            h('button', { 'aria-label': __alloT('stem.volume.hint', 'Hint'),
               onClick: askAI,
               className: 'px-3 py-1.5 bg-purple-100 text-purple-600 font-bold rounded-lg hover:bg-purple-200 transition-all text-xs',
-              title: t('stem.volume.get_a_hint_from_ai_2', 'Get a hint from AI')
-            }, t('stem.volume.hint_2', '\uD83E\uDDE0 Hint')),
-            h('button', { 'aria-label': t('stem.volume.check_4', 'Check'), onClick: checkChallenge, className: 'ml-auto px-4 py-1.5 bg-indigo-500 text-white font-bold rounded-lg text-sm hover:bg-indigo-600' }, t('stem.volume.check_5', '\u2714 Check'))
+              title: __alloT('stem.volume.get_a_hint_from_ai_2', 'Get a hint from AI')
+            }, __alloT('stem.volume.hint_2', '\uD83E\uDDE0 Hint')),
+            h('button', { 'aria-label': __alloT('stem.volume.check_4', 'Check'), onClick: checkChallenge, className: 'ml-auto px-4 py-1.5 bg-indigo-500 text-white font-bold rounded-lg text-sm hover:bg-indigo-600' }, __alloT('stem.volume.check_5', '\u2714 Check'))
           ),
           builderFeedback && h('p', { className: 'text-sm font-bold mt-2 ' + (builderFeedback.correct ? 'text-green-600' : 'text-red-600') }, builderFeedback.msg)
         ),
@@ -2013,14 +2014,14 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'bg-white rounded-xl p-3 border border-emerald-200 space-y-2' },
           h('div', { className: 'flex flex-wrap items-center gap-2' },
             // Real-world unit selector
-            h('label', { className: 'text-[11px] font-bold text-emerald-700 mr-1' }, t('stem.volume.display_as', '📏 Display as:')),
+            h('label', { className: 'text-[11px] font-bold text-emerald-700 mr-1' }, __alloT('stem.volume.display_as', '📏 Display as:')),
             h('select', {
               value: unitId,
               onChange: function(e) {
                 upd({ unitId: e.target.value });
                 announceToSR('Display unit changed to ' + (REAL_UNITS.find(function(u) { return u.id === e.target.value; }) || {}).long);
               },
-              'aria-label': t('stem.volume.real_world_unit_selector', 'Real-world unit selector'),
+              'aria-label': __alloT('stem.volume.real_world_unit_selector', 'Real-world unit selector'),
               className: 'text-[11px] px-2 py-1 rounded border border-emerald-300 bg-emerald-50 text-emerald-800 font-mono'
             }, REAL_UNITS.map(function(u) {
               return h('option', { key: u.id, value: u.id, title: u.desc }, u.short + ' — ' + u.long);
@@ -2035,10 +2036,10 @@ window.StemLab = window.StemLab || {
                   upd({ allowFractional: on });
                   announceToSR(on ? 'Fractional dimensions enabled, 0.5 increments' : 'Integer dimensions only');
                 },
-                'aria-label': t('stem.volume.allow_fractional_dimensions', 'Allow fractional dimensions'),
+                'aria-label': __alloT('stem.volume.allow_fractional_dimensions', 'Allow fractional dimensions'),
                 className: 'accent-emerald-600'
               }),
-              t('stem.volume.fractional_dims', '½ Fractional dims')
+              __alloT('stem.volume.fractional_dims', '½ Fractional dims')
             ),
             // Spacer
             h('div', { className: 'flex-1' }),
@@ -2049,15 +2050,15 @@ window.StemLab = window.StemLab || {
                 var name = window.prompt('Name this construction:', 'My build ' + new Date().toLocaleDateString());
                 if (name) saveCurrent(name);
               },
-              'aria-label': t('stem.volume.save_current_construction', 'Save current construction'),
-              title: t('stem.volume.save_current_dims_cubes_with_a_name', 'Save current dims + cubes with a name'),
+              'aria-label': __alloT('stem.volume.save_current_construction', 'Save current construction'),
+              title: __alloT('stem.volume.save_current_dims_cubes_with_a_name', 'Save current dims + cubes with a name'),
               className: 'px-2.5 py-1 rounded-md text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-300 hover:bg-blue-100'
-            }, t('stem.volume.save', '💾 Save')),
+            }, __alloT('stem.volume.save', '💾 Save')),
             // Toggle saved-list panel
             h('button', {
               onClick: function() { upd({ showSaved: !showSaved }); },
               'aria-expanded': showSaved,
-              'aria-label': t('stem.volume.show_saved_constructions', 'Show saved constructions'),
+              'aria-label': __alloT('stem.volume.show_saved_constructions', 'Show saved constructions'),
               title: 'Saved constructions (' + Object.keys(saved).length + ')',
               className: 'px-2.5 py-1 rounded-md text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-300 hover:bg-indigo-100'
             }, '📂 Load (' + Object.keys(saved).length + ')'),
@@ -2068,21 +2069,21 @@ window.StemLab = window.StemLab || {
                 // Pure JS, no html2canvas dependency. Downloads as PNG via a Blob URL.
                 exportConstructionPNG(positions, dims, isFreeform, unit, volume, surfaceArea);
               },
-              'aria-label': t('stem.volume.export_current_construction_as_png_ima', 'Export current construction as PNG image'),
-              title: t('stem.volume.download_a_png_snapshot_of_the_current', 'Download a PNG snapshot of the current build'),
+              'aria-label': __alloT('stem.volume.export_current_construction_as_png_ima', 'Export current construction as PNG image'),
+              title: __alloT('stem.volume.download_a_png_snapshot_of_the_current', 'Download a PNG snapshot of the current build'),
               className: 'px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100'
-            }, t('stem.volume.export_png', '🖼 Export PNG'))
+            }, __alloT('stem.volume.export_png', '🖼 Export PNG'))
           ),
           // Real-world unit display strip
           unitId !== 'unit' && h('div', { className: 'bg-emerald-50 rounded-md p-2 border border-emerald-200 text-[11px] text-emerald-800' },
-            t('stem.volume.in_real_world_units_volume', '🌍 In real-world units: Volume = '), h('b', null, formatVolumeWithUnit(volume)),
-            t('stem.volume.surface_area_2', ' · Surface area = '), h('b', null, formatVolumeWithUnit(surfaceArea).replace('cubic', 'square').replace('³', '²').replace('cm³', 'cm²').replace('in³', 'in²').replace('ft³', 'ft²').replace('m³', 'm²'))
+            __alloT('stem.volume.in_real_world_units_volume', '🌍 In real-world units: Volume = '), h('b', null, formatVolumeWithUnit(volume)),
+            __alloT('stem.volume.surface_area_2', ' · Surface area = '), h('b', null, formatVolumeWithUnit(surfaceArea).replace('cubic', 'square').replace('³', '²').replace('cm³', 'cm²').replace('in³', 'in²').replace('ft³', 'ft²').replace('m³', 'm²'))
           ),
           // Saved constructions list
           showSaved && h('div', { className: 'border-t border-emerald-100 pt-2' },
             h('p', { className: 'text-[11px] font-bold text-indigo-700 mb-1' }, '📂 Saved constructions (' + Object.keys(saved).length + '):'),
             Object.keys(saved).length === 0
-              ? h('p', { className: 'text-[11px] text-slate-500 italic' }, t('stem.volume.nothing_saved_yet_build_something_and_', 'Nothing saved yet. Build something and click 💾 Save.'))
+              ? h('p', { className: 'text-[11px] text-slate-500 italic' }, __alloT('stem.volume.nothing_saved_yet_build_something_and_', 'Nothing saved yet. Build something and click 💾 Save.'))
               : h('div', { className: 'space-y-1 max-h-48 overflow-y-auto' },
                   Object.keys(saved).sort(function(a, b) {
                     return (saved[b].createdAt || 0) - (saved[a].createdAt || 0);
@@ -2097,9 +2098,9 @@ window.StemLab = window.StemLab || {
                       h('button', {
                         onClick: function() { loadSaved(name); },
                         'aria-label': 'Load ' + name,
-                        title: t('stem.volume.load_this_construction', 'Load this construction'),
+                        title: __alloT('stem.volume.load_this_construction', 'Load this construction'),
                         className: 'px-2 py-0.5 rounded text-[10px] font-bold bg-white text-indigo-700 border border-indigo-300 hover:bg-indigo-100'
-                      }, t('stem.volume.load', 'Load')),
+                      }, __alloT('stem.volume.load', 'Load')),
                       h('button', {
                         onClick: function() {
                           if (typeof window !== 'undefined' && window.confirm && window.confirm('Delete "' + name + '"?')) {
@@ -2107,7 +2108,7 @@ window.StemLab = window.StemLab || {
                           }
                         },
                         'aria-label': 'Delete ' + name,
-                        title: t('stem.volume.delete_this_construction', 'Delete this construction'),
+                        title: __alloT('stem.volume.delete_this_construction', 'Delete this construction'),
                         className: 'px-2 py-0.5 rounded text-[10px] font-bold bg-white text-rose-700 border border-rose-300 hover:bg-rose-100'
                       }, '×')
                     );
@@ -2118,17 +2119,17 @@ window.StemLab = window.StemLab || {
 
         // ── Keyboard shortcuts legend ──
         h('div', { className: 'text-[11px] text-slate-600 text-center space-x-3' },
-          h('span', null, t('stem.volume.s_slider', 'S Slider')),
-          h('span', null, t('stem.volume.f_freeform', 'F Freeform')),
-          h('span', null, t('stem.volume.w_word', 'W Word')),
-          h('span', null, t('stem.volume.n_challenge', 'N Challenge')),
-          h('span', null, t('stem.volume.p_paint', 'P Paint')),
-          h('span', null, t('stem.volume.b_badges', 'B Badges')),
-          h('span', null, t('stem.volume.u_undo', 'U Undo')),
-          h('span', null, t('stem.volume.rotate', '↑↓←→ Rotate')),
-          h('span', null, t('stem.volume.zoom', '+/- Zoom')),
-          h('span', null, t('stem.volume.r_reset_view', 'R Reset view')),
-          h('span', null, t('stem.volume.ai_2', '? AI'))
+          h('span', null, __alloT('stem.volume.s_slider', 'S Slider')),
+          h('span', null, __alloT('stem.volume.f_freeform', 'F Freeform')),
+          h('span', null, __alloT('stem.volume.w_word', 'W Word')),
+          h('span', null, __alloT('stem.volume.n_challenge', 'N Challenge')),
+          h('span', null, __alloT('stem.volume.p_paint', 'P Paint')),
+          h('span', null, __alloT('stem.volume.b_badges', 'B Badges')),
+          h('span', null, __alloT('stem.volume.u_undo', 'U Undo')),
+          h('span', null, __alloT('stem.volume.rotate', '↑↓←→ Rotate')),
+          h('span', null, __alloT('stem.volume.zoom', '+/- Zoom')),
+          h('span', null, __alloT('stem.volume.r_reset_view', 'R Reset view')),
+          h('span', null, __alloT('stem.volume.ai_2', '? AI'))
         ),
 
         // ═══════════════════════════════════════════════════════
@@ -2138,9 +2139,9 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex items-center justify-between mb-2' },
             h('div', { className: 'flex items-center gap-2' },
               h('span', { className: 'text-lg' }, '📐'),
-              h('h4', { className: 'text-sm font-bold text-cyan-700' }, t('stem.volume.volume_formulas_in_motion', 'Volume Formulas in Motion'))
+              h('h4', { className: 'text-sm font-bold text-cyan-700' }, __alloT('stem.volume.volume_formulas_in_motion', 'Volume Formulas in Motion'))
             ),
-            h('span', { className: 'text-[10px] italic text-slate-600' }, t('stem.volume.6_solids_rotating_with_live_formulas', '6 solids rotating with live formulas'))
+            h('span', { className: 'text-[10px] italic text-slate-600' }, __alloT('stem.volume.6_solids_rotating_with_live_formulas', '6 solids rotating with live formulas'))
           ),
           h('div', { className: 'rounded-xl overflow-hidden border border-cyan-200', style: { background: '#020210', aspectRatio: '16/6' } },
             h('canvas', {
@@ -2159,12 +2160,12 @@ window.StemLab = window.StemLab || {
                   c2.fillStyle = '#020210';
                   c2.fillRect(0, 0, W, H);
                   var solids = [
-                    { name: t('stem.volume.cube', 'Cube'), formula: 'V = s³', vol: '64', s: 4, color: '#7dd3fc' },
-                    { name: t('stem.volume.sphere', 'Sphere'), formula: 'V = ⁴⁄₃πr³', vol: '113', s: 3, color: '#a78bfa' },
-                    { name: t('stem.volume.cylinder_2', 'Cylinder'), formula: 'V = πr²h', vol: '151', s: 3, color: '#f472b6' },
-                    { name: t('stem.volume.cone_2', 'Cone'), formula: 'V = ⅓πr²h', vol: '50', s: 3, color: '#fbbf24' },
-                    { name: t('stem.volume.pyramid', 'Pyramid'), formula: 'V = ⅓·b·h', vol: '32', s: 3, color: '#fb923c' },
-                    { name: t('stem.volume.prism', 'Prism'), formula: 'V = b·h', vol: '60', s: 3, color: '#10b981' }
+                    { name: __alloT('stem.volume.cube', 'Cube'), formula: 'V = s³', vol: '64', s: 4, color: '#7dd3fc' },
+                    { name: __alloT('stem.volume.sphere', 'Sphere'), formula: 'V = ⁴⁄₃πr³', vol: '113', s: 3, color: '#a78bfa' },
+                    { name: __alloT('stem.volume.cylinder_2', 'Cylinder'), formula: 'V = πr²h', vol: '151', s: 3, color: '#f472b6' },
+                    { name: __alloT('stem.volume.cone_2', 'Cone'), formula: 'V = ⅓πr²h', vol: '50', s: 3, color: '#fbbf24' },
+                    { name: __alloT('stem.volume.pyramid', 'Pyramid'), formula: 'V = ⅓·b·h', vol: '32', s: 3, color: '#fb923c' },
+                    { name: __alloT('stem.volume.prism', 'Prism'), formula: 'V = b·h', vol: '60', s: 3, color: '#10b981' }
                   ];
                   var cols = 3, rows = 2;
                   var cellW = W / cols, cellH = H / rows;

@@ -388,7 +388,7 @@
     ],
 
     render: function(ctx) {
-      var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -744,13 +744,13 @@
             h('details', { className: 'mt-6 rounded-xl bg-amber-50 border border-amber-200 p-4' },
               h('summary', { className: 'cursor-pointer font-bold text-amber-900 text-sm' }, '\uD83D\uDCD6 ' + tr('baking.leavening.science_title', 'The science')),
               h('div', { className: 'mt-3 text-sm text-slate-700 space-y-2' },
-                h('p', null, t('stem.bakingscience.baking_soda_is_sodium_bicarbonate_nahc', 'Baking soda is sodium bicarbonate (NaHCO\u2083). When it meets an acid, two things happen:')),
+                h('p', null, __alloT('stem.bakingscience.baking_soda_is_sodium_bicarbonate_nahc', 'Baking soda is sodium bicarbonate (NaHCO\u2083). When it meets an acid, two things happen:')),
                 h('ol', { className: 'list-decimal pl-5 space-y-1' },
-                  h('li', null, t('stem.bakingscience.the_acid_donates_a_proton_h_to_the_bic', 'The acid donates a proton (H\u207A) to the bicarbonate.')),
-                  h('li', null, t('stem.bakingscience.this_makes_carbonic_acid_h_co_which_in', 'This makes carbonic acid (H\u2082CO\u2083), which instantly falls apart into water and CO\u2082 gas.'))
+                  h('li', null, __alloT('stem.bakingscience.the_acid_donates_a_proton_h_to_the_bic', 'The acid donates a proton (H\u207A) to the bicarbonate.')),
+                  h('li', null, __alloT('stem.bakingscience.this_makes_carbonic_acid_h_co_which_in', 'This makes carbonic acid (H\u2082CO\u2083), which instantly falls apart into water and CO\u2082 gas.'))
                 ),
-                h('p', null, h('strong', null, t('stem.bakingscience.baking_powder', 'Baking powder')), t('stem.bakingscience.already_contains_an_acid_usually_cream', ' already contains an acid (usually cream of tartar or sodium aluminum sulfate), so it works without added acid. Many powders are "double-acting" \u2014 one burst of CO\u2082 when wet, another when heated.')),
-                h('p', null, h('strong', null, t('stem.bakingscience.yeast', 'Yeast')), t('stem.bakingscience.is_a_living_fungus_it_eats_sugars_and_', ' is a living fungus. It eats sugars and releases CO\u2082 and alcohol. Slower than chemical leaveners, but it also develops flavor \u2014 that\u2019s why sourdough tastes so different from quick bread.'))
+                h('p', null, h('strong', null, __alloT('stem.bakingscience.baking_powder', 'Baking powder')), __alloT('stem.bakingscience.already_contains_an_acid_usually_cream', ' already contains an acid (usually cream of tartar or sodium aluminum sulfate), so it works without added acid. Many powders are "double-acting" \u2014 one burst of CO\u2082 when wet, another when heated.')),
+                h('p', null, h('strong', null, __alloT('stem.bakingscience.yeast', 'Yeast')), __alloT('stem.bakingscience.is_a_living_fungus_it_eats_sugars_and_', ' is a living fungus. It eats sugars and releases CO\u2082 and alcohol. Slower than chemical leaveners, but it also develops flavor \u2014 that\u2019s why sourdough tastes so different from quick bread.'))
               )
             )
           );
@@ -885,9 +885,9 @@
             h('details', { className: 'mt-6 rounded-xl bg-yellow-50 border border-yellow-200 p-4' },
               h('summary', { className: 'cursor-pointer font-bold text-yellow-900 text-sm' }, '\uD83D\uDCD6 ' + tr('baking.emulsion.science_title', 'The science')),
               h('div', { className: 'mt-3 text-sm text-slate-700 space-y-2' },
-                h('p', null, t('stem.bakingscience.oil_is_hydrophobic_water_fearing_and_w', 'Oil is hydrophobic ("water-fearing") and water is hydrophilic. On their own, they separate because oil molecules are nonpolar and water molecules are polar.')),
-                h('p', null, h('strong', null, t('stem.bakingscience.emulsifiers', 'Emulsifiers')), t('stem.bakingscience.are_molecules_with_one_water_loving_en', ' are molecules with one water-loving end and one oil-loving end \u2014 like soap, but edible. Egg yolks are full of one called '), h('strong', null, 'lecithin'), t('stem.bakingscience.lecithin_coats_tiny_droplets_of_oil_an', '. Lecithin coats tiny droplets of oil and keeps them suspended in water.')),
-                h('p', null, t('stem.bakingscience.that_s_why_mayonnaise_hollandaise_and_', 'That\u2019s why mayonnaise, hollandaise, and even cake batter hold together: a web of emulsifier-coated droplets.'))
+                h('p', null, __alloT('stem.bakingscience.oil_is_hydrophobic_water_fearing_and_w', 'Oil is hydrophobic ("water-fearing") and water is hydrophilic. On their own, they separate because oil molecules are nonpolar and water molecules are polar.')),
+                h('p', null, h('strong', null, __alloT('stem.bakingscience.emulsifiers', 'Emulsifiers')), __alloT('stem.bakingscience.are_molecules_with_one_water_loving_en', ' are molecules with one water-loving end and one oil-loving end \u2014 like soap, but edible. Egg yolks are full of one called '), h('strong', null, 'lecithin'), __alloT('stem.bakingscience.lecithin_coats_tiny_droplets_of_oil_an', '. Lecithin coats tiny droplets of oil and keeps them suspended in water.')),
+                h('p', null, __alloT('stem.bakingscience.that_s_why_mayonnaise_hollandaise_and_', 'That\u2019s why mayonnaise, hollandaise, and even cake batter hold together: a web of emulsifier-coated droplets.'))
               )
             )
           );
@@ -1083,9 +1083,9 @@
             h('details', { className: 'mt-6 rounded-xl bg-orange-50 border border-orange-200 p-4' },
               h('summary', { className: 'cursor-pointer font-bold text-orange-900 text-sm' }, '\uD83D\uDCD6 ' + tr('baking.scaler.math_title', 'The math')),
               h('div', { className: 'mt-3 text-sm text-slate-700 space-y-2' },
-                h('p', null, h('strong', null, t('stem.bakingscience.baker_s_percentages', 'Baker\u2019s percentages')), t('stem.bakingscience.measure_every_ingredient_relative_to_t', ' measure every ingredient relative to the flour. If flour is 100%, water at 65% means 650g water per 1000g flour. Bakers use this so they can scale recipes up or down without recalculating ratios.')),
-                h('p', null, h('strong', null, t('stem.bakingscience.why_weight_beats_volume', 'Why weight beats volume')), t('stem.bakingscience.a_cup_of_flour_can_weigh_anywhere_from', ': a cup of flour can weigh anywhere from 100g to 150g depending on how you scoop it. Grams don\u2019t lie. Professional bakeries always use scales.')),
-                h('p', null, t('stem.bakingscience.doubling_a_recipe_doesn_t_always_doubl', 'Doubling a recipe doesn\u2019t always double the bake time. Larger loaves have more insulation \u2014 the outside browns while the center catches up. Expect 10-30% longer for a 2\u00D7 batch.'))
+                h('p', null, h('strong', null, __alloT('stem.bakingscience.baker_s_percentages', 'Baker\u2019s percentages')), __alloT('stem.bakingscience.measure_every_ingredient_relative_to_t', ' measure every ingredient relative to the flour. If flour is 100%, water at 65% means 650g water per 1000g flour. Bakers use this so they can scale recipes up or down without recalculating ratios.')),
+                h('p', null, h('strong', null, __alloT('stem.bakingscience.why_weight_beats_volume', 'Why weight beats volume')), __alloT('stem.bakingscience.a_cup_of_flour_can_weigh_anywhere_from', ': a cup of flour can weigh anywhere from 100g to 150g depending on how you scoop it. Grams don\u2019t lie. Professional bakeries always use scales.')),
+                h('p', null, __alloT('stem.bakingscience.doubling_a_recipe_doesn_t_always_doubl', 'Doubling a recipe doesn\u2019t always double the bake time. Larger loaves have more insulation \u2014 the outside browns while the center catches up. Expect 10-30% longer for a 2\u00D7 batch.'))
               )
             )
           );
@@ -1154,7 +1154,7 @@
               ),
               h('div', { className: 'flex items-center gap-2' },
                 // Unit toggle
-                h('div', { className: 'flex items-center gap-0.5 p-0.5 rounded-full bg-white border border-rose-200 shadow-sm', role: 'group', 'aria-label': t('stem.bakingscience.temperature_unit', 'Temperature unit') },
+                h('div', { className: 'flex items-center gap-0.5 p-0.5 rounded-full bg-white border border-rose-200 shadow-sm', role: 'group', 'aria-label': __alloT('stem.bakingscience.temperature_unit', 'Temperature unit') },
                   ['F', 'C'].map(function(u) {
                     var active = u === unit;
                     return h('button', {
@@ -1206,11 +1206,11 @@
                 })
               ),
               h('div', { className: 'flex justify-between text-[10px] text-rose-300/70 mt-1' },
-                h('span', null, t('stem.bakingscience.cold', 'Cold')),
-                h('span', null, t('stem.bakingscience.warm', 'Warm')),
-                h('span', null, t('stem.bakingscience.baking', 'Baking')),
-                h('span', null, t('stem.bakingscience.crust', 'Crust')),
-                h('span', null, t('stem.bakingscience.burn', 'Burn'))
+                h('span', null, __alloT('stem.bakingscience.cold', 'Cold')),
+                h('span', null, __alloT('stem.bakingscience.warm', 'Warm')),
+                h('span', null, __alloT('stem.bakingscience.baking', 'Baking')),
+                h('span', null, __alloT('stem.bakingscience.crust', 'Crust')),
+                h('span', null, __alloT('stem.bakingscience.burn', 'Burn'))
               ),
               // Zone legend
               h('div', { className: 'mt-3 flex flex-wrap gap-1.5' },
@@ -1232,7 +1232,7 @@
             (function() {
               var lo = 32, hi = 450, W = 320, H = 60, x0 = 10, x1 = 310, yBar = 30, hBar = 10;
               var sx = function(f) { return x0 + (Math.max(lo, Math.min(hi, f)) - lo) / (hi - lo) * (x1 - x0); };
-              var marks = [{ f: 212, label: t('stem.bakingscience.steam', 'Steam') }, { f: 310, label: t('stem.bakingscience.maillard', 'Maillard') }, { f: 340, label: t('stem.bakingscience.caramel', 'Caramel') }, { f: 400, label: t('stem.bakingscience.burn_2', 'Burn') }];
+              var marks = [{ f: 212, label: __alloT('stem.bakingscience.steam', 'Steam') }, { f: 310, label: __alloT('stem.bakingscience.maillard', 'Maillard') }, { f: 340, label: __alloT('stem.bakingscience.caramel', 'Caramel') }, { f: 400, label: __alloT('stem.bakingscience.burn_2', 'Burn') }];
               return h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', className: 'mt-3', role: 'img', 'aria-label': 'Reaction temperature scale. Current oven temperature ' + formatTemp(temp) + '. Thresholds: steam at ' + formatTemp(212) + ', Maillard browning at ' + formatTemp(310) + ', caramelization at ' + formatTemp(340) + ', burn at ' + formatTemp(400) + '.' },
                 h('defs', null,
                   h('linearGradient', { id: 'bakeTempGrad', x1: '0', y1: '0', x2: '1', y2: '0' },
@@ -1295,9 +1295,9 @@
             h('details', { className: 'mt-6 rounded-xl bg-rose-50 border border-rose-200 p-4' },
               h('summary', { className: 'cursor-pointer font-bold text-rose-900 text-sm' }, '\uD83D\uDCD6 ' + tr('baking.oven.science_title', 'The science')),
               h('div', { className: 'mt-3 text-sm text-slate-700 space-y-2' },
-                h('p', null, h('strong', null, t('stem.bakingscience.maillard_vs_caramelization', 'Maillard vs. caramelization')), t('stem.bakingscience.maillard_reactions_need_protein_amino_', ': Maillard reactions need protein (amino acids) + sugar + heat \u2014 that\u2019s why bread crust, seared meat, and toasted marshmallows all develop similar brown, complex flavors. Caramelization only needs sugar + heat, and happens a bit hotter.')),
-                h('p', null, h('strong', null, t('stem.bakingscience.oven_spring', 'Oven spring')), t('stem.bakingscience.in_the_first_few_minutes_steam_from_th', ': in the first few minutes, steam from the dough\u2019s water expands violently. This is why sourdough scoring matters \u2014 it gives the steam somewhere to go.')),
-                h('p', null, h('strong', null, t('stem.bakingscience.convection_vs_conduction', 'Convection vs. conduction')), t('stem.bakingscience.conventional_ovens_bake_mostly_by_radi', ': conventional ovens bake mostly by radiating heat from the walls. Convection ovens move hot air with a fan \u2014 about 25\u00B0F more effective, so recipes say "reduce temp by 25\u00B0F" for convection.'))
+                h('p', null, h('strong', null, __alloT('stem.bakingscience.maillard_vs_caramelization', 'Maillard vs. caramelization')), __alloT('stem.bakingscience.maillard_reactions_need_protein_amino_', ': Maillard reactions need protein (amino acids) + sugar + heat \u2014 that\u2019s why bread crust, seared meat, and toasted marshmallows all develop similar brown, complex flavors. Caramelization only needs sugar + heat, and happens a bit hotter.')),
+                h('p', null, h('strong', null, __alloT('stem.bakingscience.oven_spring', 'Oven spring')), __alloT('stem.bakingscience.in_the_first_few_minutes_steam_from_th', ': in the first few minutes, steam from the dough\u2019s water expands violently. This is why sourdough scoring matters \u2014 it gives the steam somewhere to go.')),
+                h('p', null, h('strong', null, __alloT('stem.bakingscience.convection_vs_conduction', 'Convection vs. conduction')), __alloT('stem.bakingscience.conventional_ovens_bake_mostly_by_radi', ': conventional ovens bake mostly by radiating heat from the walls. Convection ovens move hot air with a fan \u2014 about 25\u00B0F more effective, so recipes say "reduce temp by 25\u00B0F" for convection.'))
               )
             )
           );
@@ -1369,12 +1369,12 @@
 
           // Map a scenario tag to a colored accent and breadcrumb label
           var tagMeta = {
-            leavening: { color: 'amber',  label: t('stem.bakingscience.leavening', 'Leavening') },
-            emulsion:  { color: 'yellow', label: t('stem.bakingscience.emulsion', 'Emulsion') },
-            scaler:    { color: 'orange', label: t('stem.bakingscience.ratios', 'Ratios') },
-            oven:      { color: 'rose',   label: t('stem.bakingscience.oven_science', 'Oven science') }
+            leavening: { color: 'amber',  label: __alloT('stem.bakingscience.leavening', 'Leavening') },
+            emulsion:  { color: 'yellow', label: __alloT('stem.bakingscience.emulsion', 'Emulsion') },
+            scaler:    { color: 'orange', label: __alloT('stem.bakingscience.ratios', 'Ratios') },
+            oven:      { color: 'rose',   label: __alloT('stem.bakingscience.oven_science', 'Oven science') }
           };
-          var meta = tagMeta[scenario.tag] || { color: 'pink', label: t('stem.bakingscience.baking_2', 'Baking') };
+          var meta = tagMeta[scenario.tag] || { color: 'pink', label: __alloT('stem.bakingscience.baking_2', 'Baking') };
 
           var attempted = ext.diagnosesAttempted || 0;
           var correct = ext.diagnosesCorrect || 0;
@@ -1764,10 +1764,10 @@
             h('details', { className: 'mt-6 rounded-xl bg-teal-50 border border-teal-200 p-4' },
               h('summary', { className: 'cursor-pointer font-bold text-teal-900 text-sm' }, '\uD83D\uDCD6 ' + tr('baking.gluten.science_title', 'The science')),
               h('div', { className: 'mt-3 text-sm text-slate-700 space-y-2' },
-                h('p', null, h('strong', null, tr('baking.gluten.sci_proteins', 'Two proteins, one network')), t('stem.bakingscience.wheat_flour_has_two_proteins', ': wheat flour has two proteins \u2014 '), h('em', null, 'glutenin'), ' and ', h('em', null, 'gliadin'), t('stem.bakingscience.when_you_add_water_they_link_up_into_l', '. When you add water, they link up into long, elastic strands called '), h('strong', null, 'gluten'), t('stem.bakingscience.more_protein_in_the_flour_more_gluten_', '. More protein in the flour = more gluten potential.')),
-                h('p', null, h('strong', null, tr('baking.gluten.sci_hydration', 'Water is the switch')), t('stem.bakingscience.without_enough_water_the_proteins_can_', ': without enough water the proteins can\u2019t unfold and meet each other; too much water and they\u2019re diluted into a soup. The sweet spot for most breads is 60\u201375% hydration.')),
-                h('p', null, h('strong', null, tr('baking.gluten.sci_knead', 'Kneading aligns the strands')), t('stem.bakingscience.each_fold_and_stretch_aligns_the_prote', ': each fold and stretch aligns the proteins into parallel sheets. Early kneading builds rapidly; past about 10\u201315 minutes the network plateaus and eventually tears itself apart (over-kneading).')),
-                h('p', null, h('strong', null, tr('baking.gluten.sci_tender', 'Tenderness = less gluten')), t('stem.bakingscience.cakes_cookies_and_pie_crusts_use_low_p', ': cakes, cookies, and pie crusts use low-protein flour and minimal mixing. Fat also '), h('em', null, 'shortens'), t('stem.bakingscience.gluten_strands_that_s_why_butter_makes', ' gluten strands \u2014 that\u2019s why butter makes pastry flaky.'))
+                h('p', null, h('strong', null, tr('baking.gluten.sci_proteins', 'Two proteins, one network')), __alloT('stem.bakingscience.wheat_flour_has_two_proteins', ': wheat flour has two proteins \u2014 '), h('em', null, 'glutenin'), ' and ', h('em', null, 'gliadin'), __alloT('stem.bakingscience.when_you_add_water_they_link_up_into_l', '. When you add water, they link up into long, elastic strands called '), h('strong', null, 'gluten'), __alloT('stem.bakingscience.more_protein_in_the_flour_more_gluten_', '. More protein in the flour = more gluten potential.')),
+                h('p', null, h('strong', null, tr('baking.gluten.sci_hydration', 'Water is the switch')), __alloT('stem.bakingscience.without_enough_water_the_proteins_can_', ': without enough water the proteins can\u2019t unfold and meet each other; too much water and they\u2019re diluted into a soup. The sweet spot for most breads is 60\u201375% hydration.')),
+                h('p', null, h('strong', null, tr('baking.gluten.sci_knead', 'Kneading aligns the strands')), __alloT('stem.bakingscience.each_fold_and_stretch_aligns_the_prote', ': each fold and stretch aligns the proteins into parallel sheets. Early kneading builds rapidly; past about 10\u201315 minutes the network plateaus and eventually tears itself apart (over-kneading).')),
+                h('p', null, h('strong', null, tr('baking.gluten.sci_tender', 'Tenderness = less gluten')), __alloT('stem.bakingscience.cakes_cookies_and_pie_crusts_use_low_p', ': cakes, cookies, and pie crusts use low-protein flour and minimal mixing. Fat also '), h('em', null, 'shortens'), __alloT('stem.bakingscience.gluten_strands_that_s_why_butter_makes', ' gluten strands \u2014 that\u2019s why butter makes pastry flaky.'))
               )
             )
           );
@@ -1916,9 +1916,9 @@
                   }),
                   h('div', { className: 'mt-1 flex justify-between text-[10px] text-slate-500' },
                     h('span', null, '150'),
-                    h('span', null, t('stem.bakingscience.285_m', '285 M')),
-                    h('span', null, t('stem.bakingscience.320_c', '320 C')),
-                    h('span', null, t('stem.bakingscience.400_burn', '400+ burn'))
+                    h('span', null, __alloT('stem.bakingscience.285_m', '285 M')),
+                    h('span', null, __alloT('stem.bakingscience.320_c', '320 C')),
+                    h('span', null, __alloT('stem.bakingscience.400_burn', '400+ burn'))
                   )
                 ),
                 // Time
@@ -2029,10 +2029,10 @@
             h('details', { className: 'mt-6 rounded-xl bg-orange-50 border border-orange-200 p-4' },
               h('summary', { className: 'cursor-pointer font-bold text-orange-900 text-sm' }, '\uD83D\uDCD6 ' + tr('baking.browning.science_title', 'The science')),
               h('div', { className: 'mt-3 text-sm text-slate-700 space-y-2' },
-                h('p', null, h('strong', null, tr('baking.browning.sci_maillard_title', 'Maillard reaction')), t('stem.bakingscience.named_for_louis_camille_maillard_1912_', ': named for Louis-Camille Maillard (1912). Amino acids from proteins react with '), h('em', null, t('stem.bakingscience.reducing_sugars', 'reducing sugars')), t('stem.bakingscience.at_285_f_to_create_hundreds_of_new_fla', ' at ~285\u00B0F+ to create hundreds of new flavor and aroma compounds. Seared steak, toasted bread, roasted coffee, and browned butter all owe their flavor to Maillard.')),
-                h('p', null, h('strong', null, tr('baking.browning.sci_caramel_title', 'Caramelization')), t('stem.bakingscience.pure_sugars_melting_and_breaking_apart', ': pure sugars melting and breaking apart around 320\u00B0F+. No protein needed. Gives the pure sweet-amber character of caramel sauce, cr\u00E8me br\u00FBl\u00E9e tops, and roasted vegetables with high natural sugar.')),
-                h('p', null, h('strong', null, tr('baking.browning.sci_water', 'The water rule')), t('stem.bakingscience.neither_reaction_happens_below_212_f_b', ': neither reaction happens below 212\u00B0F because water caps the surface temperature. This is why patting chicken skin dry before searing is the difference between rubbery and crispy.')),
-                h('p', null, h('strong', null, tr('baking.browning.sci_past_400', 'Past the sweet spot')), t('stem.bakingscience.above_400_f_carbon_carbon_bonds_break_', ': above ~400\u00B0F, carbon-carbon bonds break into bitter, acrid pyrolysis products. You can smell it before you see it \u2014 burnt toast, scorched garlic, blackened coffee.'))
+                h('p', null, h('strong', null, tr('baking.browning.sci_maillard_title', 'Maillard reaction')), __alloT('stem.bakingscience.named_for_louis_camille_maillard_1912_', ': named for Louis-Camille Maillard (1912). Amino acids from proteins react with '), h('em', null, __alloT('stem.bakingscience.reducing_sugars', 'reducing sugars')), __alloT('stem.bakingscience.at_285_f_to_create_hundreds_of_new_fla', ' at ~285\u00B0F+ to create hundreds of new flavor and aroma compounds. Seared steak, toasted bread, roasted coffee, and browned butter all owe their flavor to Maillard.')),
+                h('p', null, h('strong', null, tr('baking.browning.sci_caramel_title', 'Caramelization')), __alloT('stem.bakingscience.pure_sugars_melting_and_breaking_apart', ': pure sugars melting and breaking apart around 320\u00B0F+. No protein needed. Gives the pure sweet-amber character of caramel sauce, cr\u00E8me br\u00FBl\u00E9e tops, and roasted vegetables with high natural sugar.')),
+                h('p', null, h('strong', null, tr('baking.browning.sci_water', 'The water rule')), __alloT('stem.bakingscience.neither_reaction_happens_below_212_f_b', ': neither reaction happens below 212\u00B0F because water caps the surface temperature. This is why patting chicken skin dry before searing is the difference between rubbery and crispy.')),
+                h('p', null, h('strong', null, tr('baking.browning.sci_past_400', 'Past the sweet spot')), __alloT('stem.bakingscience.above_400_f_carbon_carbon_bonds_break_', ': above ~400\u00B0F, carbon-carbon bonds break into bitter, acrid pyrolysis products. You can smell it before you see it \u2014 burnt toast, scorched garlic, blackened coffee.'))
               )
             )
           );
@@ -2069,9 +2069,9 @@
           var aiLoading = !!d.aiLoading;
           var aiError = d.aiError || '';
           var LEVELS = [
-            { id: 'plain', label: t('stem.bakingscience.plain', 'Plain'), hint: t('stem.bakingscience.using_simple_everyday_words_and_short_', 'using simple everyday words and short sentences') },
-            { id: 'grade5', label: t('stem.bakingscience.grade_5', 'Grade 5'), hint: t('stem.bakingscience.for_a_5th_grade_student_brief_and_frie', 'for a 5th grade student, brief and friendly') },
-            { id: 'hs', label: t('stem.bakingscience.high_school', 'High School'), hint: t('stem.bakingscience.for_a_high_school_chemistry_student_ac', 'for a high school chemistry student, accurate but accessible') }
+            { id: 'plain', label: __alloT('stem.bakingscience.plain', 'Plain'), hint: __alloT('stem.bakingscience.using_simple_everyday_words_and_short_', 'using simple everyday words and short sentences') },
+            { id: 'grade5', label: __alloT('stem.bakingscience.grade_5', 'Grade 5'), hint: __alloT('stem.bakingscience.for_a_5th_grade_student_brief_and_frie', 'for a 5th grade student, brief and friendly') },
+            { id: 'hs', label: __alloT('stem.bakingscience.high_school', 'High School'), hint: __alloT('stem.bakingscience.for_a_high_school_chemistry_student_ac', 'for a high school chemistry student, accurate but accessible') }
           ];
           var curSub = SUBTOOLS.find(function (s) { return s.id === subtool; });
           function explain() {
@@ -2100,11 +2100,11 @@
           }
           return h('div', {
             className: 'p-3 rounded-xl border-2 border-purple-200 bg-purple-50/60 mt-4',
-            role: 'region', 'aria-label': t('stem.bakingscience.ai_baking_tutor', 'AI baking tutor')
+            role: 'region', 'aria-label': __alloT('stem.bakingscience.ai_baking_tutor', 'AI baking tutor')
           },
             h('div', { className: 'flex items-center flex-wrap gap-2 mb-1.5' },
-              h('span', { className: 'text-sm font-bold text-purple-700' }, t('stem.bakingscience.explain_at_my_level', '\u2728 Explain at my level')),
-              h('div', { className: 'ml-auto flex gap-1', role: 'group', 'aria-label': t('stem.bakingscience.reading_level', 'Reading level') },
+              h('span', { className: 'text-sm font-bold text-purple-700' }, __alloT('stem.bakingscience.explain_at_my_level', '\u2728 Explain at my level')),
+              h('div', { className: 'ml-auto flex gap-1', role: 'group', 'aria-label': __alloT('stem.bakingscience.reading_level', 'Reading level') },
                 LEVELS.map(function (L) {
                   var active = aiLevel === L.id;
                   return h('button', {
@@ -2126,7 +2126,7 @@
             ),
             aiError && h('p', { className: 'text-[11px] text-rose-600', role: 'alert' }, aiError),
             aiText && h('p', { className: 'text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-2 border border-purple-100' }, aiText),
-            !aiText && !aiLoading && !aiError && h('p', { className: 'text-[11px] italic text-slate-500' }, t('stem.bakingscience.click_explain_for_an_ai_breakdown_of_t', 'Click \u201CExplain\u201D for an AI breakdown of the current activity at your chosen reading level.'))
+            !aiText && !aiLoading && !aiError && h('p', { className: 'text-[11px] italic text-slate-500' }, __alloT('stem.bakingscience.click_explain_for_an_ai_breakdown_of_t', 'Click \u201CExplain\u201D for an AI breakdown of the current activity at your chosen reading level.'))
           );
         }
 
@@ -2152,17 +2152,17 @@
           var thermalScore = Math.max(0, iq.temp - 320) * 0.018 * Math.sqrt(iq.time) * moistureMult;
           var stage = thermalScore < 0.3 ? 'raw' : (thermalScore < 1.0 ? 'light' : (thermalScore < 1.7 ? 'perfect' : 'burnt'));
           var stageMeta = {
-            raw:     { label: t('stem.bakingscience.raw_sugar', '⚪ Raw sugar'),      color: '#fbbf24', bg: '#fef3c7', border: '#fcd34d', desc: t('stem.bakingscience.below_caramelization_threshold_or_not_', 'Below caramelization threshold or not heated long enough.') },
-            light:   { label: t('stem.bakingscience.light_amber', '🟡 Light amber'),    color: '#d97706', bg: '#fef3c7', border: '#f59e0b', desc: t('stem.bakingscience.beginning_caramelization_color_and_fla', 'Beginning caramelization. Color and flavor still subtle.') },
-            perfect: { label: t('stem.bakingscience.perfect_caramel', '🟠 Perfect caramel'), color: '#9a3412', bg: '#ffedd5', border: '#fb923c', desc: t('stem.bakingscience.rich_amber_mahogany_full_caramel_flavo', 'Rich amber-mahogany, full caramel flavor compounds present.') },
-            burnt:   { label: t('stem.bakingscience.burnt_sugar', '⚫ Burnt sugar'),    color: '#3f3f46', bg: '#fef2f2', border: '#52525b', desc: t('stem.bakingscience.pyrolysis_dominates_bitter_acrid_sugar', 'Pyrolysis dominates — bitter, acrid; sugar molecules broken to char.') }
+            raw:     { label: __alloT('stem.bakingscience.raw_sugar', '⚪ Raw sugar'),      color: '#fbbf24', bg: '#fef3c7', border: '#fcd34d', desc: __alloT('stem.bakingscience.below_caramelization_threshold_or_not_', 'Below caramelization threshold or not heated long enough.') },
+            light:   { label: __alloT('stem.bakingscience.light_amber', '🟡 Light amber'),    color: '#d97706', bg: '#fef3c7', border: '#f59e0b', desc: __alloT('stem.bakingscience.beginning_caramelization_color_and_fla', 'Beginning caramelization. Color and flavor still subtle.') },
+            perfect: { label: __alloT('stem.bakingscience.perfect_caramel', '🟠 Perfect caramel'), color: '#9a3412', bg: '#ffedd5', border: '#fb923c', desc: __alloT('stem.bakingscience.rich_amber_mahogany_full_caramel_flavo', 'Rich amber-mahogany, full caramel flavor compounds present.') },
+            burnt:   { label: __alloT('stem.bakingscience.burnt_sugar', '⚫ Burnt sugar'),    color: '#3f3f46', bg: '#fef2f2', border: '#52525b', desc: __alloT('stem.bakingscience.pyrolysis_dominates_bitter_acrid_sugar', 'Pyrolysis dominates — bitter, acrid; sugar molecules broken to char.') }
           }[stage];
           function logObs() {
             var obs = { t: iq.temp, m: iq.time, w: iq.moisture, stage: stage };
             setIQ({ log: (iq.log || []).concat([obs]).slice(-8) });
           }
           return h('div', { className: 'p-4 rounded-xl bg-white border border-amber-200 shadow-sm' },
-            h('h3', { className: 'text-sm font-black text-amber-700 mb-1' }, t('stem.bakingscience.caramel_discovery', '🍯 Caramel discovery')),
+            h('h3', { className: 'text-sm font-black text-amber-700 mb-1' }, __alloT('stem.bakingscience.caramel_discovery', '🍯 Caramel discovery')),
             h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
               'You are heating sugar. Adjust temperature, time, and moisture. The pan will show you one of four discrete stages (raw / light / perfect / burnt). There is no right answer and no reveal. Sweep the sliders. Log observations. Type what you discover.'),
             // Discrete stage marker — large and prominent
@@ -2177,13 +2177,13 @@
                   'Temperature: ', h('span', { className: 'font-mono text-amber-700' }, iq.temp + ' °F')),
                 h('input', { id: 'ch-temp', type: 'range', min: 200, max: 400, step: 5, value: iq.temp,
                   onChange: function(e) { setIQ({ temp: parseInt(e.target.value, 10) }); },
-                  className: 'w-full', 'aria-label': t('stem.bakingscience.temperature', 'Temperature') })),
+                  className: 'w-full', 'aria-label': __alloT('stem.bakingscience.temperature', 'Temperature') })),
               h('div', null,
                 h('label', { htmlFor: 'ch-time', className: 'block text-[11px] font-bold text-slate-700 mb-1' },
                   'Time: ', h('span', { className: 'font-mono text-amber-700' }, iq.time + ' min')),
                 h('input', { id: 'ch-time', type: 'range', min: 0, max: 15, step: 1, value: iq.time,
                   onChange: function(e) { setIQ({ time: parseInt(e.target.value, 10) }); },
-                  className: 'w-full', 'aria-label': t('stem.bakingscience.time', 'Time') })),
+                  className: 'w-full', 'aria-label': __alloT('stem.bakingscience.time', 'Time') })),
               h('div', null,
                 h('div', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, 'Moisture:'),
                 h('div', { className: 'flex gap-1' },
@@ -2196,9 +2196,9 @@
             ),
             // Log + reset
             h('div', { className: 'flex gap-2 items-center mb-3 flex-wrap' },
-              h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 border border-slate-300' }, t('stem.bakingscience.log_observation', '📋 Log observation')),
+              h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.bakingscience.log_observation', '📋 Log observation')),
               h('button', { onClick: function() { setIQ({ temp: 280, time: 6, moisture: 'dry', log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
-                className: 'px-2 py-1 rounded bg-white hover:bg-slate-50 text-[11px] font-semibold text-slate-600 border border-slate-300' }, t('stem.bakingscience.reset', '↺ Reset')),
+                className: 'px-2 py-1 rounded bg-white hover:bg-slate-50 text-[11px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.bakingscience.reset', '↺ Reset')),
               (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
             ),
             (iq.log || []).length > 0 && h('div', { className: 'mb-3 overflow-x-auto' },
@@ -2217,42 +2217,42 @@
             ),
             // Free-text hypothesis
             h('div', { className: 'mb-3' },
-              h('label', { htmlFor: 'ch-hypo', className: 'block text-[11px] font-bold text-slate-700 mb-1' }, t('stem.bakingscience.your_hypothesis_free_text_no_right_ans', 'Your hypothesis (free text — no right answer):')),
+              h('label', { htmlFor: 'ch-hypo', className: 'block text-[11px] font-bold text-slate-700 mb-1' }, __alloT('stem.bakingscience.your_hypothesis_free_text_no_right_ans', 'Your hypothesis (free text — no right answer):')),
               h('textarea', { id: 'ch-hypo', value: iq.hypothesis || '',
                 onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
-                placeholder: t('stem.bakingscience.which_slider_matters_most_for_hitting_', 'Which slider matters most for hitting perfect caramel? Does moisture have a big effect or a small one?'),
+                placeholder: __alloT('stem.bakingscience.which_slider_matters_most_for_hitting_', 'Which slider matters most for hitting perfect caramel? Does moisture have a big effect or a small one?'),
                 className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 })
             ),
             // Opt-in open questions
             h('div', { className: 'mb-3' },
               !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
                 className: 'px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[11px] font-bold text-amber-800 border border-amber-300' },
-                t('stem.bakingscience.i_m_stuck_show_me_questions_to_think_a', '🤔 I\'m stuck — show me questions to think about (no answers)')),
+                __alloT('stem.bakingscience.i_m_stuck_show_me_questions_to_think_a', '🤔 I\'m stuck — show me questions to think about (no answers)')),
               iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
-                h('div', { className: 'font-bold text-amber-900 mb-1' }, t('stem.bakingscience.open_prompts_investigate_by_manipulati', 'Open prompts — investigate by manipulating:')),
+                h('div', { className: 'font-bold text-amber-900 mb-1' }, __alloT('stem.bakingscience.open_prompts_investigate_by_manipulati', 'Open prompts — investigate by manipulating:')),
                 h('ul', { className: 'list-disc pl-5 space-y-1' },
-                  h('li', null, t('stem.bakingscience.hold_two_sliders_steady_move_the_third', 'Hold two sliders steady. Move the third. Watch what happens.')),
-                  h('li', null, t('stem.bakingscience.log_observations_from_each_of_the_four', 'Log observations from each of the four stages. What patterns appear in the table?')),
-                  h('li', null, t('stem.bakingscience.find_two_different_settings_that_both_', 'Find two different settings that both produce the same stage. What do they share?')),
-                  h('li', null, t('stem.bakingscience.notice_where_a_small_change_flips_the_', 'Notice where a small change flips the stage versus where larger changes do nothing.')),
-                  h('li', null, t('stem.bakingscience.real_caramel_chefs_talk_about_controll', 'Real caramel chefs talk about "controlling the rate of Maillard." Investigate why moisture matters.'))),
-                h('div', { className: 'text-[10px] italic text-amber-700 mt-2' }, t('stem.bakingscience.no_answers_no_specific_values_investig', 'No answers, no specific values. Investigate.')))
+                  h('li', null, __alloT('stem.bakingscience.hold_two_sliders_steady_move_the_third', 'Hold two sliders steady. Move the third. Watch what happens.')),
+                  h('li', null, __alloT('stem.bakingscience.log_observations_from_each_of_the_four', 'Log observations from each of the four stages. What patterns appear in the table?')),
+                  h('li', null, __alloT('stem.bakingscience.find_two_different_settings_that_both_', 'Find two different settings that both produce the same stage. What do they share?')),
+                  h('li', null, __alloT('stem.bakingscience.notice_where_a_small_change_flips_the_', 'Notice where a small change flips the stage versus where larger changes do nothing.')),
+                  h('li', null, __alloT('stem.bakingscience.real_caramel_chefs_talk_about_controll', 'Real caramel chefs talk about "controlling the rate of Maillard." Investigate why moisture matters.'))),
+                h('div', { className: 'text-[10px] italic text-amber-700 mt-2' }, __alloT('stem.bakingscience.no_answers_no_specific_values_investig', 'No answers, no specific values. Investigate.')))
             ),
             // Self-mark
             h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
               h('div', { className: 'flex items-center gap-2 mb-2' },
                 h('input', { type: 'checkbox', id: 'ch-und', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                 h('label', { htmlFor: 'ch-und', className: 'text-[12px] font-bold text-emerald-800 cursor-pointer' },
-                  t('stem.bakingscience.i_think_i_understand_the_trade_offs_le', 'I think I understand the trade-offs — let me explain them in my own words'))),
+                  __alloT('stem.bakingscience.i_think_i_understand_the_trade_offs_le', 'I think I understand the trade-offs — let me explain them in my own words'))),
               iq.understood && h('textarea', { value: iq.explanation || '',
                 onChange: function(e) { setIQ({ explanation: e.target.value }); },
-                placeholder: t('stem.bakingscience.explain_in_your_own_words_how_do_tempe', 'Explain in your own words: how do temperature, time, and moisture interact? What makes perfect caramel hard?'),
+                placeholder: __alloT('stem.bakingscience.explain_in_your_own_words_how_do_tempe', 'Explain in your own words: how do temperature, time, and moisture interact? What makes perfect caramel hard?'),
                 className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug', rows: 4 }),
               iq.understood && (iq.explanation || '').trim().length >= 40 && h('div', { className: 'mt-2 text-[10px] italic text-emerald-700' },
-                t('stem.bakingscience.saved_notice_nobody_checked_your_answe', '✓ Saved. Notice — nobody checked your answer. That is what learner-driven inquiry looks like.'))
+                __alloT('stem.bakingscience.saved_notice_nobody_checked_your_answe', '✓ Saved. Notice — nobody checked your answer. That is what learner-driven inquiry looks like.'))
             ),
             h('div', { className: 'mt-3 p-2 rounded bg-slate-50 border border-slate-200 text-[10px] italic text-slate-600' },
-              t('stem.bakingscience.design_note_no_caramel_quality_score_n', 'Design note: no caramel-quality score, no reveal button. Stage is shown as a discrete 4-band marker, not a continuous gradient — by design, to discourage optimization-gaming behavior.'))
+              __alloT('stem.bakingscience.design_note_no_caramel_quality_score_n', 'Design note: no caramel-quality score, no reveal button. Stage is shown as a discrete 4-band marker, not a continuous gradient — by design, to discourage optimization-gaming behavior.'))
           );
         }
 

@@ -80,6 +80,7 @@ window.StemLab = window.StemLab || {
       var setToolSnapshots = ctx.setToolSnapshots;
       var addToast = ctx.addToast;
       var t = ctx.t;
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var ArrowLeft = ctx.icons.ArrowLeft;
       var Calculator = ctx.icons.Calculator;
       var Sparkles = ctx.icons.Sparkles;
@@ -360,7 +361,7 @@ window.StemLab = window.StemLab || {
           // ── Transformation labels ──
           var transformLabels = [];
           if (d.a !== 1 && d.a !== 0) {
-            if (d.a === -1) transformLabels.push({ text: t('stem.funcgrapher.reflected_over_x_axis', 'Reflected over x-axis'), color: 'text-rose-600 bg-rose-50 border-rose-200' });
+            if (d.a === -1) transformLabels.push({ text: __alloT('stem.funcgrapher.reflected_over_x_axis', 'Reflected over x-axis'), color: 'text-rose-600 bg-rose-50 border-rose-200' });
             else if (d.a < 0) transformLabels.push({ text: 'Reflected & scaled \u00D7' + Math.abs(d.a), color: 'text-rose-600 bg-rose-50 border-rose-200' });
             else if (Math.abs(d.a) > 1) transformLabels.push({ text: 'Vertical stretch \u00D7' + d.a, color: 'text-violet-600 bg-violet-50 border-violet-200' });
             else transformLabels.push({ text: 'Vertical compression \u00D7' + d.a, color: 'text-violet-600 bg-violet-50 border-violet-200' });
@@ -410,11 +411,11 @@ window.StemLab = window.StemLab || {
 
             { id: 'absolute', label: t('stem.func_grapher.absolute'), emoji: '\u22C0' },
 
-            { id: 'sqrt', label: t('stem.funcgrapher.square_root', 'Square Root'), emoji: '\u221A' },
+            { id: 'sqrt', label: __alloT('stem.funcgrapher.square_root', 'Square Root'), emoji: '\u221A' },
 
-            { id: 'log', label: t('stem.funcgrapher.logarithm', 'Logarithm'), emoji: 'ln' },
+            { id: 'log', label: __alloT('stem.funcgrapher.logarithm', 'Logarithm'), emoji: 'ln' },
 
-            { id: 'rational', label: t('stem.funcgrapher.rational', 'Rational'), emoji: '\u00F7' }
+            { id: 'rational', label: __alloT('stem.funcgrapher.rational', 'Rational'), emoji: '\u00F7' }
 
           ];
 
@@ -441,16 +442,16 @@ window.StemLab = window.StemLab || {
           return React.createElement("div", {
               className: "max-w-3xl mx-auto animate-in fade-in duration-200",
               role: "region",
-              "aria-label": t('stem.funcgrapher.function_grapher_keyboard_shortcuts_1_', "Function Grapher. Keyboard shortcuts: 1 through 6 pick a function type, D derivative, A area, T table, L learn."),
+              "aria-label": __alloT('stem.funcgrapher.function_grapher_keyboard_shortcuts_1_', "Function Grapher. Keyboard shortcuts: 1 through 6 pick a function type, D derivative, A area, T table, L learn."),
               tabIndex: 0,
               onKeyDown: onFgKey
             },
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': t('stem.funcgrapher.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
+              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': __alloT('stem.funcgrapher.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, t('stem.funcgrapher.function_grapher', "\uD83D\uDCC8 Function Grapher")),
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, __alloT('stem.funcgrapher.function_grapher', "\uD83D\uDCC8 Function Grapher")),
 
               React.createElement("span", { className: "px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[11px] font-bold rounded-full" }, "INTERACTIVE")
 
@@ -647,14 +648,14 @@ window.StemLab = window.StemLab || {
 
             // ── Zoom / Pan Controls ──
             React.createElement("div", { className: "flex items-center gap-1.5 mt-2 mb-1 flex-wrap" },
-              React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mr-1" }, t('stem.funcgrapher.view', "\uD83D\uDD0D View")),
-              React.createElement("button", { onClick: function() { var cx = (xR.xMin + xR.xMax) / 2, cy = (yR.yMin + yR.yMax) / 2, hw = (xR.xMax - xR.xMin) / 4, hh = (yR.yMax - yR.yMin) / 4; upd('range', { xMin: cx - hw, xMax: cx + hw, yMin: cy - hh, yMax: cy + hh }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': t('stem.funcgrapher.zoom_in', 'Zoom in') }, t('stem.funcgrapher.zoom_in_2', "\u2795 Zoom In")),
-              React.createElement("button", { onClick: function() { var cx = (xR.xMin + xR.xMax) / 2, cy = (yR.yMin + yR.yMax) / 2, hw = (xR.xMax - xR.xMin), hh = (yR.yMax - yR.yMin); upd('range', { xMin: cx - hw, xMax: cx + hw, yMin: cy - hh, yMax: cy + hh }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': t('stem.funcgrapher.zoom_out', 'Zoom out') }, t('stem.funcgrapher.zoom_out_2', "\u2796 Zoom Out")),
-              React.createElement("button", { onClick: function() { var dx = (xR.xMax - xR.xMin) * 0.25; upd('range', { xMin: xR.xMin - dx, xMax: xR.xMax - dx, yMin: yR.yMin, yMax: yR.yMax }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': t('stem.funcgrapher.pan_left', 'Pan left') }, "\u2B05"),
-              React.createElement("button", { onClick: function() { var dx = (xR.xMax - xR.xMin) * 0.25; upd('range', { xMin: xR.xMin + dx, xMax: xR.xMax + dx, yMin: yR.yMin, yMax: yR.yMax }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': t('stem.funcgrapher.pan_right', 'Pan right') }, "\u27A1"),
-              React.createElement("button", { onClick: function() { var dy = (yR.yMax - yR.yMin) * 0.25; upd('range', { xMin: xR.xMin, xMax: xR.xMax, yMin: yR.yMin + dy, yMax: yR.yMax + dy }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': t('stem.funcgrapher.pan_up', 'Pan up') }, "\u2B06"),
-              React.createElement("button", { onClick: function() { var dy = (yR.yMax - yR.yMin) * 0.25; upd('range', { xMin: xR.xMin, xMax: xR.xMax, yMin: yR.yMin - dy, yMax: yR.yMax - dy }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': t('stem.funcgrapher.pan_down', 'Pan down') }, "\u2B07"),
-              React.createElement("button", { onClick: function() { upd('range', { xMin: -10, xMax: 10, yMin: -10, yMax: 10 }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-600 transition-all", 'aria-label': t('stem.funcgrapher.reset_view', 'Reset view') }, t('stem.funcgrapher.reset', "\u21BA Reset")),
+              React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mr-1" }, __alloT('stem.funcgrapher.view', "\uD83D\uDD0D View")),
+              React.createElement("button", { onClick: function() { var cx = (xR.xMin + xR.xMax) / 2, cy = (yR.yMin + yR.yMax) / 2, hw = (xR.xMax - xR.xMin) / 4, hh = (yR.yMax - yR.yMin) / 4; upd('range', { xMin: cx - hw, xMax: cx + hw, yMin: cy - hh, yMax: cy + hh }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': __alloT('stem.funcgrapher.zoom_in', 'Zoom in') }, __alloT('stem.funcgrapher.zoom_in_2', "\u2795 Zoom In")),
+              React.createElement("button", { onClick: function() { var cx = (xR.xMin + xR.xMax) / 2, cy = (yR.yMin + yR.yMax) / 2, hw = (xR.xMax - xR.xMin), hh = (yR.yMax - yR.yMin); upd('range', { xMin: cx - hw, xMax: cx + hw, yMin: cy - hh, yMax: cy + hh }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': __alloT('stem.funcgrapher.zoom_out', 'Zoom out') }, __alloT('stem.funcgrapher.zoom_out_2', "\u2796 Zoom Out")),
+              React.createElement("button", { onClick: function() { var dx = (xR.xMax - xR.xMin) * 0.25; upd('range', { xMin: xR.xMin - dx, xMax: xR.xMax - dx, yMin: yR.yMin, yMax: yR.yMax }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': __alloT('stem.funcgrapher.pan_left', 'Pan left') }, "\u2B05"),
+              React.createElement("button", { onClick: function() { var dx = (xR.xMax - xR.xMin) * 0.25; upd('range', { xMin: xR.xMin + dx, xMax: xR.xMax + dx, yMin: yR.yMin, yMax: yR.yMax }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': __alloT('stem.funcgrapher.pan_right', 'Pan right') }, "\u27A1"),
+              React.createElement("button", { onClick: function() { var dy = (yR.yMax - yR.yMin) * 0.25; upd('range', { xMin: xR.xMin, xMax: xR.xMax, yMin: yR.yMin + dy, yMax: yR.yMax + dy }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': __alloT('stem.funcgrapher.pan_up', 'Pan up') }, "\u2B06"),
+              React.createElement("button", { onClick: function() { var dy = (yR.yMax - yR.yMin) * 0.25; upd('range', { xMin: xR.xMin, xMax: xR.xMax, yMin: yR.yMin - dy, yMax: yR.yMax - dy }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': __alloT('stem.funcgrapher.pan_down', 'Pan down') }, "\u2B07"),
+              React.createElement("button", { onClick: function() { upd('range', { xMin: -10, xMax: 10, yMin: -10, yMax: 10 }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-600 transition-all", 'aria-label': __alloT('stem.funcgrapher.reset_view', 'Reset view') }, __alloT('stem.funcgrapher.reset', "\u21BA Reset")),
               React.createElement("span", { className: "text-[11px] text-slate-600 ml-1" }, "x:[" + xR.xMin.toFixed(0) + "," + xR.xMax.toFixed(0) + "] y:[" + yR.yMin.toFixed(0) + "," + yR.yMax.toFixed(0) + "]")
             ),
 
@@ -689,16 +690,16 @@ window.StemLab = window.StemLab || {
             React.createElement("div", { className: "bg-pink-50 rounded-lg p-2 border border-pink-200 mt-1" },
               React.createElement("div", { className: "flex items-center gap-2" },
                 React.createElement("span", { className: "text-xs font-bold text-pink-600" }, "\uD83D\uDCCC Trace: x = " + traceX.toFixed(1)),
-                React.createElement("input", { type: "range", min: xR.xMin, max: xR.xMax, step: 0.1, value: traceX, onChange: e => upd('traceX', parseFloat(e.target.value)), className: "flex-1 accent-pink-500", 'aria-label': t('stem.funcgrapher.trace_x_position', 'Trace x position') }),
+                React.createElement("input", { type: "range", min: xR.xMin, max: xR.xMax, step: 0.1, value: traceX, onChange: e => upd('traceX', parseFloat(e.target.value)), className: "flex-1 accent-pink-500", 'aria-label': __alloT('stem.funcgrapher.trace_x_position', 'Trace x position') }),
                 tangentInRange && React.createElement("span", { className: "text-[11px] font-mono text-pink-700" }, "f(" + traceX.toFixed(1) + ") = " + traceY.toFixed(2) + ", slope = " + traceSlope.toFixed(2))
               )
             ),
 
             // ── Table of Values (collapsible) ──
             d.showTable && React.createElement("div", { className: "mt-2 bg-cyan-50 rounded-xl border border-cyan-200 p-3 overflow-x-auto" },
-              React.createElement("p", { className: "text-[11px] font-bold text-cyan-700 uppercase tracking-wider mb-2" }, t('stem.funcgrapher.table_of_values', "\uD83D\uDCCB Table of Values")),
+              React.createElement("p", { className: "text-[11px] font-bold text-cyan-700 uppercase tracking-wider mb-2" }, __alloT('stem.funcgrapher.table_of_values', "\uD83D\uDCCB Table of Values")),
               React.createElement("table", { className: "w-full text-xs" },
-                React.createElement("caption", { className: "sr-only" }, t('stem.funcgrapher.funcgrapher_data_table', "funcgrapher data table")), React.createElement("thead", null,
+                React.createElement("caption", { className: "sr-only" }, __alloT('stem.funcgrapher.funcgrapher_data_table', "funcgrapher data table")), React.createElement("thead", null,
                   React.createElement("tr", { className: "border-b border-cyan-200" },
                     React.createElement("th", { scope: "col", className: "px-2 py-1 text-left font-bold text-cyan-800" }, "x"),
                     React.createElement("th", { scope: "col", className: "px-2 py-1 text-left font-bold text-indigo-700" }, "f(x)"),
@@ -725,35 +726,35 @@ window.StemLab = window.StemLab || {
 
             // ── Educational Learn Panel (collapsible) ──
             d.showLearn && React.createElement("div", { className: "mt-2 bg-emerald-50 rounded-xl border border-emerald-200 p-4" },
-              React.createElement("h4", { className: "text-sm font-bold text-emerald-800 mb-2" }, t('stem.funcgrapher.understanding_functions', "\uD83D\uDCD6 Understanding Functions")),
+              React.createElement("h4", { className: "text-sm font-bold text-emerald-800 mb-2" }, __alloT('stem.funcgrapher.understanding_functions', "\uD83D\uDCD6 Understanding Functions")),
               React.createElement("div", { className: "grid grid-cols-1 gap-2 text-xs text-emerald-900" },
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
-                  React.createElement("span", { className: "font-bold text-red-600" }, t('stem.funcgrapher.roots_x_intercepts', "\uD83D\uDD34 Roots (x-intercepts): ")),
-                  t('stem.funcgrapher.where_the_function_crosses_the_x_axis_', "Where the function crosses the x-axis. At these points, f(x) = 0. Solving for the roots is essential in algebra and calculus.")
+                  React.createElement("span", { className: "font-bold text-red-600" }, __alloT('stem.funcgrapher.roots_x_intercepts', "\uD83D\uDD34 Roots (x-intercepts): ")),
+                  __alloT('stem.funcgrapher.where_the_function_crosses_the_x_axis_', "Where the function crosses the x-axis. At these points, f(x) = 0. Solving for the roots is essential in algebra and calculus.")
                 ),
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
-                  React.createElement("span", { className: "font-bold text-green-600" }, t('stem.funcgrapher.y_intercept', "\uD83D\uDFE2 Y-intercept: ")),
-                  t('stem.funcgrapher.where_the_function_crosses_the_y_axis_', "Where the function crosses the y-axis. This is the value of f(0) — simply plug in x = 0.")
+                  React.createElement("span", { className: "font-bold text-green-600" }, __alloT('stem.funcgrapher.y_intercept', "\uD83D\uDFE2 Y-intercept: ")),
+                  __alloT('stem.funcgrapher.where_the_function_crosses_the_y_axis_', "Where the function crosses the y-axis. This is the value of f(0) — simply plug in x = 0.")
                 ),
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
-                  React.createElement("span", { className: "font-bold text-pink-600" }, t('stem.funcgrapher.slope_tangent_line', "\uD83D\uDCCC Slope & Tangent Line: ")),
-                  t('stem.funcgrapher.the_slope_tells_you_how_steep_the_func', "The slope tells you how steep the function is at any point. The tangent line touches the curve at exactly one point. Use the trace slider to explore!")
+                  React.createElement("span", { className: "font-bold text-pink-600" }, __alloT('stem.funcgrapher.slope_tangent_line', "\uD83D\uDCCC Slope & Tangent Line: ")),
+                  __alloT('stem.funcgrapher.the_slope_tells_you_how_steep_the_func', "The slope tells you how steep the function is at any point. The tangent line touches the curve at exactly one point. Use the trace slider to explore!")
                 ),
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
-                  React.createElement("span", { className: "font-bold text-amber-600" }, t('stem.funcgrapher.derivative_f_x', "\uD83D\uDCC9 Derivative f\u2032(x): ")),
-                  t('stem.funcgrapher.the_derivative_measures_the_rate_of_ch', "The derivative measures the rate of change. Toggle it on to see how the slope varies across the function. Where f\u2032(x) = 0, the function has a local max or min.")
+                  React.createElement("span", { className: "font-bold text-amber-600" }, __alloT('stem.funcgrapher.derivative_f_x', "\uD83D\uDCC9 Derivative f\u2032(x): ")),
+                  __alloT('stem.funcgrapher.the_derivative_measures_the_rate_of_ch', "The derivative measures the rate of change. Toggle it on to see how the slope varies across the function. Where f\u2032(x) = 0, the function has a local max or min.")
                 ),
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
-                  React.createElement("span", { className: "font-bold text-indigo-600" }, t('stem.funcgrapher.area_under_the_curve', "\u222B Area Under the Curve: ")),
-                  t('stem.funcgrapher.the_shaded_area_represents_the_integra', "The shaded area represents the integral — the total \"accumulation\" of f(x). In real life, this could mean distance traveled, energy consumed, or probability.")
+                  React.createElement("span", { className: "font-bold text-indigo-600" }, __alloT('stem.funcgrapher.area_under_the_curve', "\u222B Area Under the Curve: ")),
+                  __alloT('stem.funcgrapher.the_shaded_area_represents_the_integra', "The shaded area represents the integral — the total \"accumulation\" of f(x). In real life, this could mean distance traveled, energy consumed, or probability.")
                 ),
                 d.type === 'quadratic' && React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
-                  React.createElement("span", { className: "font-bold text-purple-600" }, t('stem.funcgrapher.parabolas', "\u2229 Parabolas: ")),
-                  t('stem.funcgrapher.when_a_0_the_parabola_opens_up_when_a_', "When a > 0, the parabola opens up (\u23E3). When a < 0, it opens down (\u23E2). The vertex is the turning point. Try changing 'a' to see!")
+                  React.createElement("span", { className: "font-bold text-purple-600" }, __alloT('stem.funcgrapher.parabolas', "\u2229 Parabolas: ")),
+                  __alloT('stem.funcgrapher.when_a_0_the_parabola_opens_up_when_a_', "When a > 0, the parabola opens up (\u23E3). When a < 0, it opens down (\u23E2). The vertex is the turning point. Try changing 'a' to see!")
                 ),
                 d.type === 'trig' && React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
-                  React.createElement("span", { className: "font-bold text-purple-600" }, t('stem.funcgrapher.trig_functions', "\u223C Trig Functions: ")),
-                  t('stem.funcgrapher.amplitude_a_controls_the_height_freque', "Amplitude (a) controls the height, frequency (b) controls how many cycles, and phase shift (c) slides the wave left/right. Period = 2\u03C0/b.")
+                  React.createElement("span", { className: "font-bold text-purple-600" }, __alloT('stem.funcgrapher.trig_functions', "\u223C Trig Functions: ")),
+                  __alloT('stem.funcgrapher.amplitude_a_controls_the_height_freque', "Amplitude (a) controls the height, frequency (b) controls how many cycles, and phase shift (c) slides the wave left/right. Period = 2\u03C0/b.")
                 )
               )
             ),
@@ -817,7 +818,7 @@ window.StemLab = window.StemLab || {
               }, disabled: d.aiExplainLoading, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.aiExplainLoading ? 'bg-purple-300 text-white cursor-wait' : 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:from-purple-600 hover:to-indigo-600 shadow-md') }, d.aiExplainLoading ? '\u23F3 Thinking...' : '\u2728 Explain This Graph'),
               d.aiExplain && React.createElement("div", { className: "mt-2 p-3 bg-purple-50 rounded-xl border border-purple-200 text-xs text-purple-900 leading-relaxed" },
                 React.createElement("div", { className: "flex items-center gap-1.5 mb-1" },
-                  React.createElement("span", { className: "text-[11px] font-bold text-purple-600 uppercase tracking-wider" }, t('stem.funcgrapher.ai_explanation', "\uD83E\uDDE0 AI Explanation"))
+                  React.createElement("span", { className: "text-[11px] font-bold text-purple-600 uppercase tracking-wider" }, __alloT('stem.funcgrapher.ai_explanation', "\uD83E\uDDE0 AI Explanation"))
                 ),
                 d.aiExplain
               )
@@ -827,27 +828,27 @@ window.StemLab = window.StemLab || {
 
             React.createElement("div", { className: "mt-3 border-t border-slate-200 pt-3" },
 
-              React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2" }, t('stem.funcgrapher.quick_presets', "\u26A1 Quick Presets")),
+              React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2" }, __alloT('stem.funcgrapher.quick_presets', "\u26A1 Quick Presets")),
 
               React.createElement("div", { className: "flex flex-wrap gap-1.5" },
 
                 [
 
-                  { label: t('stem.funcgrapher.y_2x_1', 'y = 2x + 1'), type: 'linear', a: 2, b: 1, c: 0, tip: t('stem.funcgrapher.slope_2_y_intercept_1', 'Slope 2, y-intercept 1') },
+                  { label: __alloT('stem.funcgrapher.y_2x_1', 'y = 2x + 1'), type: 'linear', a: 2, b: 1, c: 0, tip: __alloT('stem.funcgrapher.slope_2_y_intercept_1', 'Slope 2, y-intercept 1') },
 
-                  { label: t('stem.funcgrapher.y_x', 'y = x\u00B2'), type: 'quadratic', a: 1, b: 0, c: 0, tip: t('stem.funcgrapher.standard_parabola', 'Standard parabola') },
+                  { label: __alloT('stem.funcgrapher.y_x', 'y = x\u00B2'), type: 'quadratic', a: 1, b: 0, c: 0, tip: __alloT('stem.funcgrapher.standard_parabola', 'Standard parabola') },
 
-                  { label: t('stem.funcgrapher.y_x_4', 'y = -x\u00B2 + 4'), type: 'quadratic', a: -1, b: 0, c: 4, tip: t('stem.funcgrapher.inverted_parabola_vertex_at_0_4', 'Inverted parabola, vertex at (0,4)') },
+                  { label: __alloT('stem.funcgrapher.y_x_4', 'y = -x\u00B2 + 4'), type: 'quadratic', a: -1, b: 0, c: 4, tip: __alloT('stem.funcgrapher.inverted_parabola_vertex_at_0_4', 'Inverted parabola, vertex at (0,4)') },
 
-                  { label: t('stem.funcgrapher.y_sin_x', 'y = sin(x)'), type: 'trig', a: 1, b: 1, c: 0, tip: t('stem.funcgrapher.standard_sine_wave', 'Standard sine wave') },
+                  { label: __alloT('stem.funcgrapher.y_sin_x', 'y = sin(x)'), type: 'trig', a: 1, b: 1, c: 0, tip: __alloT('stem.funcgrapher.standard_sine_wave', 'Standard sine wave') },
 
-                  { label: t('stem.funcgrapher.y_2sin_3x', 'y = 2sin(3x)'), type: 'trig', a: 2, b: 3, c: 0, tip: t('stem.funcgrapher.amplitude_2_period_2_3', 'Amplitude=2, period=2\u03C0/3') },
+                  { label: __alloT('stem.funcgrapher.y_2sin_3x', 'y = 2sin(3x)'), type: 'trig', a: 2, b: 3, c: 0, tip: __alloT('stem.funcgrapher.amplitude_2_period_2_3', 'Amplitude=2, period=2\u03C0/3') },
 
-                  { label: t('stem.funcgrapher.y_x_2', 'y = x\u00B3'), type: 'cubic', a: 1, b: 0, c: 0, tip: t('stem.funcgrapher.cubic_with_inflection_at_origin', 'Cubic with inflection at origin') },
+                  { label: __alloT('stem.funcgrapher.y_x_2', 'y = x\u00B3'), type: 'cubic', a: 1, b: 0, c: 0, tip: __alloT('stem.funcgrapher.cubic_with_inflection_at_origin', 'Cubic with inflection at origin') },
 
-                  { label: t('stem.funcgrapher.y_e_x', 'y = e^x'), type: 'exponential', a: 1, b: 1, c: 0, tip: t('stem.funcgrapher.natural_exponential_growth', 'Natural exponential growth') },
+                  { label: __alloT('stem.funcgrapher.y_e_x', 'y = e^x'), type: 'exponential', a: 1, b: 1, c: 0, tip: __alloT('stem.funcgrapher.natural_exponential_growth', 'Natural exponential growth') },
 
-                  { label: t('stem.funcgrapher.y_x_3', 'y = |x|'), type: 'absolute', a: 1, b: 0, c: 0, tip: t('stem.funcgrapher.v_shaped_absolute_value', 'V-shaped absolute value') },
+                  { label: __alloT('stem.funcgrapher.y_x_3', 'y = |x|'), type: 'absolute', a: 1, b: 0, c: 0, tip: __alloT('stem.funcgrapher.v_shaped_absolute_value', 'V-shaped absolute value') },
 
                 ].map(function (p) {
 
@@ -871,15 +872,15 @@ window.StemLab = window.StemLab || {
 
             React.createElement("div", { className: "mt-2 flex items-center gap-4 text-[11px] text-slate-600" },
 
-              React.createElement("span", null, t('stem.funcgrapher.f_x', "\u2014\u2014 f(x)")),
+              React.createElement("span", null, __alloT('stem.funcgrapher.f_x', "\u2014\u2014 f(x)")),
 
-              d.showDeriv && React.createElement("span", null, t('stem.funcgrapher.f_x_2', "- - - f\u2032(x)")),
+              d.showDeriv && React.createElement("span", null, __alloT('stem.funcgrapher.f_x_2', "- - - f\u2032(x)")),
 
-              d.compare && React.createElement("span", { style: { color: '#f97316' } }, t('stem.funcgrapher.g_x', "- \u2500 - g(x)")),
+              d.compare && React.createElement("span", { style: { color: '#f97316' } }, __alloT('stem.funcgrapher.g_x', "- \u2500 - g(x)")),
 
-              React.createElement("span", null, t('stem.funcgrapher.roots', "\uD83D\uDD34 Roots")),
+              React.createElement("span", null, __alloT('stem.funcgrapher.roots', "\uD83D\uDD34 Roots")),
 
-              React.createElement("span", null, t('stem.funcgrapher.y_intercept_2', "\uD83D\uDFE2 y-intercept"))
+              React.createElement("span", null, __alloT('stem.funcgrapher.y_intercept_2', "\uD83D\uDFE2 y-intercept"))
 
             ),
 
@@ -1055,11 +1056,11 @@ window.StemLab = window.StemLab || {
 
               var CHALLENGE_MODES = [
 
-                { id: 'name', label: t('stem.funcgrapher.name_that_graph', '🎯 Name That Graph'), color: 'violet' },
+                { id: 'name', label: __alloT('stem.funcgrapher.name_that_graph', '🎯 Name That Graph'), color: 'violet' },
 
-                { id: 'root', label: t('stem.funcgrapher.find_the_root', '📍 Find the Root'), color: 'red' },
+                { id: 'root', label: __alloT('stem.funcgrapher.find_the_root', '📍 Find the Root'), color: 'red' },
 
-                { id: 'yint', label: t('stem.funcgrapher.y_intercept_3', '🟢 Y-Intercept?'), color: 'emerald' }
+                { id: 'yint', label: __alloT('stem.funcgrapher.y_intercept_3', '🟢 Y-Intercept?'), color: 'emerald' }
 
               ];
 
@@ -1099,7 +1100,7 @@ window.StemLab = window.StemLab || {
 
                 // Start / New Challenge button
 
-                React.createElement("button", { "aria-label": t('stem.funcgrapher.start_challenge', "Start Challenge"),
+                React.createElement("button", { "aria-label": __alloT('stem.funcgrapher.start_challenge', "Start Challenge"),
 
                   onClick: startChallenge,
 
@@ -1181,7 +1182,7 @@ window.StemLab = window.StemLab || {
 
             })(),
 
-            React.createElement("button", { "aria-label": t('stem.funcgrapher.snapshot', "Snapshot"), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'fg-' + Date.now(), tool: 'funcGrapher', label: d.type + ': a=' + d.a + ' b=' + d.b, data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, t('stem.funcgrapher.snapshot_2', "\uD83D\uDCF8 Snapshot")),
+            React.createElement("button", { "aria-label": __alloT('stem.funcgrapher.snapshot', "Snapshot"), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'fg-' + Date.now(), tool: 'funcGrapher', label: d.type + ': a=' + d.a + ' b=' + d.b, data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, __alloT('stem.funcgrapher.snapshot_2', "\uD83D\uDCF8 Snapshot")),
 
             // ── AI Function Tutor (reading-level aware) ──
             (function () {
@@ -1190,9 +1191,9 @@ window.StemLab = window.StemLab || {
               var aiLoading = !!d.aiLoading;
               var aiError = d.aiError || '';
               var LEVELS = [
-                { id: 'plain', label: t('stem.funcgrapher.plain', 'Plain'), hint: t('stem.funcgrapher.using_simple_everyday_words_and_short_', 'using simple everyday words and short sentences, no jargon') },
-                { id: 'grade5', label: t('stem.funcgrapher.grade_5', 'Grade 5'), hint: t('stem.funcgrapher.for_a_5th_grade_student', 'for a 5th grade student') },
-                { id: 'hs', label: t('stem.funcgrapher.high_school', 'High School'), hint: t('stem.funcgrapher.for_a_high_school_algebra_or_pre_calc_', 'for a high school algebra or pre-calc student, including vocabulary like slope, intercept, vertex, period, amplitude') }
+                { id: 'plain', label: __alloT('stem.funcgrapher.plain', 'Plain'), hint: __alloT('stem.funcgrapher.using_simple_everyday_words_and_short_', 'using simple everyday words and short sentences, no jargon') },
+                { id: 'grade5', label: __alloT('stem.funcgrapher.grade_5', 'Grade 5'), hint: __alloT('stem.funcgrapher.for_a_5th_grade_student', 'for a 5th grade student') },
+                { id: 'hs', label: __alloT('stem.funcgrapher.high_school', 'High School'), hint: __alloT('stem.funcgrapher.for_a_high_school_algebra_or_pre_calc_', 'for a high school algebra or pre-calc student, including vocabulary like slope, intercept, vertex, period, amplitude') }
               ];
               function explain() {
                 if (typeof callGemini !== 'function') { upd('aiError', 'AI tutor not available.'); return; }
@@ -1217,8 +1218,8 @@ window.StemLab = window.StemLab || {
               }
               return React.createElement("div", { className: "mt-3 p-3 rounded-xl border-2 border-purple-200 bg-purple-50", role: "region", },
                 React.createElement("div", { className: "flex items-center flex-wrap gap-2 mb-1.5" },
-                  React.createElement("span", { className: "text-sm font-bold text-purple-700" }, t('stem.funcgrapher.explain_at_my_level', "\u2728 Explain at my level")),
-                  React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": t('stem.funcgrapher.reading_level', "Reading level") },
+                  React.createElement("span", { className: "text-sm font-bold text-purple-700" }, __alloT('stem.funcgrapher.explain_at_my_level', "\u2728 Explain at my level")),
+                  React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": __alloT('stem.funcgrapher.reading_level', "Reading level") },
                     LEVELS.map(function (L) {
                       var active = aiLevel === L.id;
                       return React.createElement("button", {
@@ -1239,7 +1240,7 @@ window.StemLab = window.StemLab || {
                 ),
                 aiError && React.createElement("p", { className: "text-[11px] text-rose-600", role: "alert" }, aiError),
                 aiText && React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-2 border border-purple-100" }, aiText),
-                !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-500" }, t('stem.funcgrapher.click_explain_for_the_ai_tutor_to_desc', "Click \u201CExplain\u201D for the AI tutor to describe this function at your chosen reading level."))
+                !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-500" }, __alloT('stem.funcgrapher.click_explain_for_the_ai_tutor_to_desc', "Click \u201CExplain\u201D for the AI tutor to describe this function at your chosen reading level."))
               );
             })(),
 
@@ -1247,7 +1248,7 @@ window.StemLab = window.StemLab || {
             React.createElement('div', { className: 'mt-5 rounded-2xl border border-indigo-300 bg-white p-3 shadow-sm' },
               React.createElement('div', { className: 'flex items-center gap-2 mb-2' },
                 React.createElement('span', { className: 'text-lg' }, '\uD83D\uDCCA'),
-                React.createElement('h4', { className: 'text-sm font-bold text-indigo-700' }, t('stem.funcgrapher.function_zoo_six_common_function_shape', 'Function Zoo \u2014 Six common function shapes'))
+                React.createElement('h4', { className: 'text-sm font-bold text-indigo-700' }, __alloT('stem.funcgrapher.function_zoo_six_common_function_shape', 'Function Zoo \u2014 Six common function shapes'))
               ),
               React.createElement('div', { className: 'rounded-xl overflow-hidden border border-indigo-200', style: { background: '#020210', aspectRatio: '16/6' } },
                 React.createElement('canvas', {
@@ -1266,12 +1267,12 @@ window.StemLab = window.StemLab || {
                       c2.fillStyle = '#020210';
                       c2.fillRect(0, 0, W, H);
                       var funcs = [
-                        { name: t('stem.funcgrapher.linear', 'Linear'), f: function(x) { return x; }, color: '#7dd3fc' },
-                        { name: t('stem.funcgrapher.quadratic', 'Quadratic'), f: function(x) { return x * x / 4; }, color: '#fbbf24' },
-                        { name: t('stem.funcgrapher.cubic', 'Cubic'), f: function(x) { return x * x * x / 16; }, color: '#10b981' },
-                        { name: t('stem.funcgrapher.exponential', 'Exponential'), f: function(x) { return Math.exp(x / 3) - 1; }, color: '#dc2626' },
+                        { name: __alloT('stem.funcgrapher.linear', 'Linear'), f: function(x) { return x; }, color: '#7dd3fc' },
+                        { name: __alloT('stem.funcgrapher.quadratic', 'Quadratic'), f: function(x) { return x * x / 4; }, color: '#fbbf24' },
+                        { name: __alloT('stem.funcgrapher.cubic', 'Cubic'), f: function(x) { return x * x * x / 16; }, color: '#10b981' },
+                        { name: __alloT('stem.funcgrapher.exponential', 'Exponential'), f: function(x) { return Math.exp(x / 3) - 1; }, color: '#dc2626' },
                         { name: 'Log', f: function(x) { return x > 0 ? Math.log(x + 1) * 2 : -Math.log(-x + 1) * 2; }, color: '#a78bfa' },
-                        { name: t('stem.funcgrapher.sine', 'Sine'), f: function(x) { return Math.sin(x); }, color: '#f472b6' }
+                        { name: __alloT('stem.funcgrapher.sine', 'Sine'), f: function(x) { return Math.sin(x); }, color: '#f472b6' }
                       ];
                       var cols = 3, rows = 2;
                       var cellW = W / cols, cellH = H / rows;
@@ -1338,15 +1339,15 @@ window.StemLab = window.StemLab || {
               else if (ampS === 'short') state = 'short';
               else state = 'normal';
               var sm = {
-                tallFast: { label: t('stem.funcgrapher.tall_fast_intense', '🌊 Tall + Fast (intense)'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
-                tall:     { label: t('stem.funcgrapher.tall_wave', '🗻 Tall wave'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
-                fast:     { label: t('stem.funcgrapher.fast_cycle', '⚡ Fast cycle'), color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd' },
-                short:    { label: t('stem.funcgrapher.short_wave', '〰️ Short wave'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9' },
-                normal:   { label: t('stem.funcgrapher.standard', '🟢 Standard'), color: '#059669', bg: '#ecfdf5', border: '#86efac' }
+                tallFast: { label: __alloT('stem.funcgrapher.tall_fast_intense', '🌊 Tall + Fast (intense)'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
+                tall:     { label: __alloT('stem.funcgrapher.tall_wave', '🗻 Tall wave'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
+                fast:     { label: __alloT('stem.funcgrapher.fast_cycle', '⚡ Fast cycle'), color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd' },
+                short:    { label: __alloT('stem.funcgrapher.short_wave', '〰️ Short wave'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9' },
+                normal:   { label: __alloT('stem.funcgrapher.standard', '🟢 Standard'), color: '#059669', bg: '#ecfdf5', border: '#86efac' }
               }[state];
               return h('div', { className: 'mt-3 p-3 rounded-xl bg-white border border-violet-300 space-y-2' },
-                h('h3', { className: 'text-sm font-black text-violet-700' }, t('stem.funcgrapher.wave_parameter_discovery', '🌊 Wave parameter discovery')),
-                h('p', { className: 'text-[11px] text-slate-700' }, t('stem.funcgrapher.sliders_for_amplitude_frequency_phase_', 'Sliders for amplitude, frequency, phase. Discrete 5-state classification. No score, no reveal.')),
+                h('h3', { className: 'text-sm font-black text-violet-700' }, __alloT('stem.funcgrapher.wave_parameter_discovery', '🌊 Wave parameter discovery')),
+                h('p', { className: 'text-[11px] text-slate-700' }, __alloT('stem.funcgrapher.sliders_for_amplitude_frequency_phase_', 'Sliders for amplitude, frequency, phase. Discrete 5-state classification. No score, no reveal.')),
                 h('div', { className: 'p-2 rounded text-center', style: { background: sm.bg, border: '1px solid ' + sm.border } },
                   h('div', { className: 'text-sm font-black', style: { color: sm.color } }, sm.label),
                   h('div', { className: 'text-[10px] text-slate-700 mt-1 font-mono' }, 'y = ' + iq.amp + ' sin(' + iq.freq + 'x + ' + iq.phase.toFixed(2) + ')')
@@ -1363,22 +1364,22 @@ window.StemLab = window.StemLab || {
                   })
                 ),
                 h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ a: iq.amp, f: iq.freq, p: iq.phase.toFixed(2), st: state }]).slice(-8) }); }, className: 'px-2 py-0.5 rounded bg-slate-100 text-[10px] font-bold text-slate-700 border border-slate-300' }, t('stem.funcgrapher.log', '📋 Log')),
-                  h('button', { onClick: function() { setIQ({ amp: 1, freq: 1, phase: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[10px] font-semibold text-slate-600 border border-slate-300' }, t('stem.funcgrapher.reset_2', '↺ Reset'))
+                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ a: iq.amp, f: iq.freq, p: iq.phase.toFixed(2), st: state }]).slice(-8) }); }, className: 'px-2 py-0.5 rounded bg-slate-100 text-[10px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.funcgrapher.log', '📋 Log')),
+                  h('button', { onClick: function() { setIQ({ amp: 1, freq: 1, phase: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[10px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.funcgrapher.reset_2', '↺ Reset'))
                 ),
-                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.funcgrapher.hypothesis_how_does_phase_shift_affect', 'Hypothesis: How does phase shift affect the visible wave?'),
+                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.funcgrapher.hypothesis_how_does_phase_shift_affect', 'Hypothesis: How does phase shift affect the visible wave?'),
                   className: 'w-full text-[11px] border border-slate-300 rounded p-1 font-mono leading-snug', rows: 2 }),
-                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[10px] font-bold text-amber-800 border border-amber-300' }, t('stem.funcgrapher.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[10px] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.funcgrapher.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
                 iq.stuckRevealed && h('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[10px] text-slate-700' },
                   h('ul', { className: 'list-disc pl-4 space-y-0.5' },
-                    h('li', null, t('stem.funcgrapher.find_two_settings_that_produce_visuall', 'Find two settings that produce visually identical waves.')),
-                    h('li', null, t('stem.funcgrapher.what_does_negative_amplitude_do', 'What does negative amplitude do?')))),
+                    h('li', null, __alloT('stem.funcgrapher.find_two_settings_that_produce_visuall', 'Find two settings that produce visually identical waves.')),
+                    h('li', null, __alloT('stem.funcgrapher.what_does_negative_amplitude_do', 'What does negative amplitude do?')))),
                 h('label', { className: 'flex items-center gap-1 text-[10px] font-bold text-emerald-800 cursor-pointer' },
                   h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
-                  t('stem.funcgrapher.i_understand_explain_in_own_words', 'I understand — explain in own words')),
-                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.funcgrapher.explain_how_each_parameter_shapes_a_si', 'Explain how each parameter shapes a sine wave.'),
+                  __alloT('stem.funcgrapher.i_understand_explain_in_own_words', 'I understand — explain in own words')),
+                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.funcgrapher.explain_how_each_parameter_shapes_a_si', 'Explain how each parameter shapes a sine wave.'),
                   className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
-                h('div', { className: 'text-[9px] italic text-slate-500' }, t('stem.funcgrapher.design_note_discrete_5_state_marker_no', 'Design note: discrete 5-state marker; no wave score; no reveal — by design.'))
+                h('div', { className: 'text-[9px] italic text-slate-500' }, __alloT('stem.funcgrapher.design_note_discrete_5_state_marker_no', 'Design note: discrete 5-state marker; no wave score; no reveal — by design.'))
               );
             })()
           )

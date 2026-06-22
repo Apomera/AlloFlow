@@ -3535,7 +3535,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     tags: ['auto-repair', 'mechanic', 'diy', 'career', 'safety', 'life-skills', 'maine', 'ase'],
 
     render: function(ctx) {
-      var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       try {
       var React = ctx.React;
       var h = React.createElement;
@@ -3617,16 +3617,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
 
       function backBar(title) {
         return h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid ' + T.border } },
-          h('button', { 'data-ar-focusable': true, 'aria-label': t('stem.autorepair.back_to_menu', 'Back to menu'),
-            onClick: function() { setView('menu'); }, style: btnGhost() }, t('stem.autorepair.menu', '← Menu')),
+          h('button', { 'data-ar-focusable': true, 'aria-label': __alloT('stem.autorepair.back_to_menu', 'Back to menu'),
+            onClick: function() { setView('menu'); }, style: btnGhost() }, __alloT('stem.autorepair.menu', '← Menu')),
           h('h1', { style: { margin: 0, fontSize: 18, color: T.text } }, title)
         );
       }
 
       function disclaimerFooter() {
-        return h('div', { role: 'note', 'aria-label': t('stem.autorepair.educational_disclaimer', 'Educational disclaimer'),
+        return h('div', { role: 'note', 'aria-label': __alloT('stem.autorepair.educational_disclaimer', 'Educational disclaimer'),
           style: { marginTop: 18, padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 11, color: T.dim, lineHeight: 1.5 } },
-          t('stem.autorepair.educational_only_always_cross_referenc', 'Educational only. Always cross-reference your vehicle\'s factory service manual for torque specs and procedures. Get hands-on training through Maine CTE programs, community college, or ASE-certified mentorship before attempting major repairs. Maine inspection stations certify safety-critical repairs.')
+          __alloT('stem.autorepair.educational_only_always_cross_referenc', 'Educational only. Always cross-reference your vehicle\'s factory service manual for torque specs and procedures. Get hands-on training through Maine CTE programs, community college, or ASE-certified mentorship before attempting major repairs. Maine inspection stations certify safety-critical repairs.')
         );
       }
 
@@ -3641,91 +3641,91 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       // ─────────────────────────────────────────
       function renderMenu() {
         var categories = [
-          { id: 'owning', icon: '🚗', name: t('stem.autorepair.owning_daily_use', 'Owning + daily use'),
-            desc: t('stem.autorepair.just_bought_it_drive_it_keep_it_health', 'Just bought it / drive it / keep it healthy.'),
+          { id: 'owning', icon: '🚗', name: __alloT('stem.autorepair.owning_daily_use', 'Owning + daily use'),
+            desc: __alloT('stem.autorepair.just_bought_it_drive_it_keep_it_health', 'Just bought it / drive it / keep it healthy.'),
             modules: [
-              { id: 'firstcar', icon: '🚗', label: t('stem.autorepair.first_car_start_here', 'First car? Start here'), desc: t('stem.autorepair.just_bought_your_first_car_30_day_week', 'Just bought your first car. 30-day week-by-week plan.') },
-              { id: 'walk', icon: '🚶', label: t('stem.autorepair.pre_drive_walk_around', 'Pre-drive walk-around'), desc: t('stem.autorepair.60_second_daily_check_the_professional', '60-second daily check. The professional habit.') },
-              { id: 'vin', icon: '🆔', label: t('stem.autorepair.vin_decoder', 'VIN decoder'), desc: t('stem.autorepair.17_character_vin_parse_free_recall_loo', '17-character VIN parse + free recall lookup.') },
-              { id: 'maint', icon: '📅', label: t('stem.autorepair.maintenance_schedule', 'Maintenance schedule'), desc: t('stem.autorepair.personalized_from_your_odometer', 'Personalized from your odometer.') },
-              { id: 'log', icon: '📓', label: t('stem.autorepair.service_log', 'Service log'), desc: t('stem.autorepair.record_your_own_maintenance_history', 'Record your own maintenance history.') },
-              { id: 'tires', icon: '🛞', label: t('stem.autorepair.tire_deep_dive', 'Tire deep dive'), desc: t('stem.autorepair.sizing_math_all_season_vs_winter_rotat', 'Sizing math, all-season vs winter, rotation patterns by drive type, when to replace.') },
-              { id: 'inspection', icon: '🌲', label: t('stem.autorepair.maine_inspection', 'Maine inspection'), desc: t('stem.autorepair.8_area_pre_walk_before_your_annual_sti', '8-area pre-walk before your annual sticker.') },
-              { id: 'cold', icon: '🌨️', label: t('stem.autorepair.cold_weather_prep', 'Cold-weather prep'), desc: t('stem.autorepair.maine_winter_october_april_checklist', 'Maine winter October-April checklist.') },
-              { id: 'roadside', icon: '🚨', label: t('stem.autorepair.roadside_emergency', 'Roadside emergency'), desc: t('stem.autorepair.trunk_kit_breakdown_protocol', 'Trunk kit + breakdown protocol.') }
+              { id: 'firstcar', icon: '🚗', label: __alloT('stem.autorepair.first_car_start_here', 'First car? Start here'), desc: __alloT('stem.autorepair.just_bought_your_first_car_30_day_week', 'Just bought your first car. 30-day week-by-week plan.') },
+              { id: 'walk', icon: '🚶', label: __alloT('stem.autorepair.pre_drive_walk_around', 'Pre-drive walk-around'), desc: __alloT('stem.autorepair.60_second_daily_check_the_professional', '60-second daily check. The professional habit.') },
+              { id: 'vin', icon: '🆔', label: __alloT('stem.autorepair.vin_decoder', 'VIN decoder'), desc: __alloT('stem.autorepair.17_character_vin_parse_free_recall_loo', '17-character VIN parse + free recall lookup.') },
+              { id: 'maint', icon: '📅', label: __alloT('stem.autorepair.maintenance_schedule', 'Maintenance schedule'), desc: __alloT('stem.autorepair.personalized_from_your_odometer', 'Personalized from your odometer.') },
+              { id: 'log', icon: '📓', label: __alloT('stem.autorepair.service_log', 'Service log'), desc: __alloT('stem.autorepair.record_your_own_maintenance_history', 'Record your own maintenance history.') },
+              { id: 'tires', icon: '🛞', label: __alloT('stem.autorepair.tire_deep_dive', 'Tire deep dive'), desc: __alloT('stem.autorepair.sizing_math_all_season_vs_winter_rotat', 'Sizing math, all-season vs winter, rotation patterns by drive type, when to replace.') },
+              { id: 'inspection', icon: '🌲', label: __alloT('stem.autorepair.maine_inspection', 'Maine inspection'), desc: __alloT('stem.autorepair.8_area_pre_walk_before_your_annual_sti', '8-area pre-walk before your annual sticker.') },
+              { id: 'cold', icon: '🌨️', label: __alloT('stem.autorepair.cold_weather_prep', 'Cold-weather prep'), desc: __alloT('stem.autorepair.maine_winter_october_april_checklist', 'Maine winter October-April checklist.') },
+              { id: 'roadside', icon: '🚨', label: __alloT('stem.autorepair.roadside_emergency', 'Roadside emergency'), desc: __alloT('stem.autorepair.trunk_kit_breakdown_protocol', 'Trunk kit + breakdown protocol.') }
             ]
           },
-          { id: 'diagnose-cat', icon: '🔍', name: t('stem.autorepair.diagnose_understand', 'Diagnose + understand'),
-            desc: t('stem.autorepair.what_s_wrong_why_how_to_find_out', 'What\'s wrong + why + how to find out.'),
+          { id: 'diagnose-cat', icon: '🔍', name: __alloT('stem.autorepair.diagnose_understand', 'Diagnose + understand'),
+            desc: __alloT('stem.autorepair.what_s_wrong_why_how_to_find_out', 'What\'s wrong + why + how to find out.'),
             modules: [
-              { id: 'diagnose', icon: '🔍', label: t('stem.autorepair.diagnose', 'Diagnose'), desc: t('stem.autorepair.obd_ii_listening_fluids_visual', 'OBD-II, listening, fluids, visual.') },
-              { id: 'tree', icon: '🌳', label: t('stem.autorepair.decision_tree', 'Decision tree'), desc: t('stem.autorepair.6_interactive_symptom_flowcharts', '6 interactive symptom flowcharts.') },
-              { id: 'lab', icon: '🧪', label: t('stem.autorepair.hands_on_lab_simulator', 'Hands-on lab simulator'), desc: t('stem.autorepair.6_graded_diagnostic_scenarios_with_let', '6 graded diagnostic scenarios with letter grades.') },
-              { id: 'damage', icon: '🔬', label: t('stem.autorepair.damage_id_game', 'Damage ID game'), desc: t('stem.autorepair.15_visual_pattern_cases_build_tech_eye', '15 visual-pattern cases. Build tech eye.') },
-              { id: 'glossary', icon: '📖', label: t('stem.autorepair.glossary', 'Glossary'), desc: t('stem.autorepair.50_essential_auto_terms', '50+ essential auto terms.') }
+              { id: 'diagnose', icon: '🔍', label: __alloT('stem.autorepair.diagnose', 'Diagnose'), desc: __alloT('stem.autorepair.obd_ii_listening_fluids_visual', 'OBD-II, listening, fluids, visual.') },
+              { id: 'tree', icon: '🌳', label: __alloT('stem.autorepair.decision_tree', 'Decision tree'), desc: __alloT('stem.autorepair.6_interactive_symptom_flowcharts', '6 interactive symptom flowcharts.') },
+              { id: 'lab', icon: '🧪', label: __alloT('stem.autorepair.hands_on_lab_simulator', 'Hands-on lab simulator'), desc: __alloT('stem.autorepair.6_graded_diagnostic_scenarios_with_let', '6 graded diagnostic scenarios with letter grades.') },
+              { id: 'damage', icon: '🔬', label: __alloT('stem.autorepair.damage_id_game', 'Damage ID game'), desc: __alloT('stem.autorepair.15_visual_pattern_cases_build_tech_eye', '15 visual-pattern cases. Build tech eye.') },
+              { id: 'glossary', icon: '📖', label: __alloT('stem.autorepair.glossary', 'Glossary'), desc: __alloT('stem.autorepair.50_essential_auto_terms', '50+ essential auto terms.') }
             ]
           },
-          { id: 'fix-cat', icon: '🔧', name: t('stem.autorepair.fix_it', 'Fix it'),
-            desc: t('stem.autorepair.step_by_step_repair_tool_safety', 'Step-by-step repair + tool + safety.'),
+          { id: 'fix-cat', icon: '🔧', name: __alloT('stem.autorepair.fix_it', 'Fix it'),
+            desc: __alloT('stem.autorepair.step_by_step_repair_tool_safety', 'Step-by-step repair + tool + safety.'),
             modules: [
-              { id: 'repair', icon: '🔧', label: t('stem.autorepair.repair_scenarios', 'Repair scenarios'), desc: t('stem.autorepair.12_step_by_step_jobs', '12 step-by-step jobs.') },
-              { id: 'tools', icon: '🧰', label: t('stem.autorepair.tool_selection', 'Tool selection'), desc: t('stem.autorepair.library_tool_pick_mini_game', 'Library + tool-pick mini-game.') },
-              { id: 'safety', icon: '🛡️', label: t('stem.autorepair.safety_modules', 'Safety modules'), desc: t('stem.autorepair.6_safety_areas_jack_stands_electrical_', '6 safety areas. Jack stands, electrical, refrigerant, more.') }
+              { id: 'repair', icon: '🔧', label: __alloT('stem.autorepair.repair_scenarios', 'Repair scenarios'), desc: __alloT('stem.autorepair.12_step_by_step_jobs', '12 step-by-step jobs.') },
+              { id: 'tools', icon: '🧰', label: __alloT('stem.autorepair.tool_selection', 'Tool selection'), desc: __alloT('stem.autorepair.library_tool_pick_mini_game', 'Library + tool-pick mini-game.') },
+              { id: 'safety', icon: '🛡️', label: __alloT('stem.autorepair.safety_modules', 'Safety modules'), desc: __alloT('stem.autorepair.6_safety_areas_jack_stands_electrical_', '6 safety areas. Jack stands, electrical, refrigerant, more.') }
             ]
           },
-          { id: 'consumer-cat', icon: '🛒', name: t('stem.autorepair.savvy_consumer', 'Savvy consumer'),
-            desc: t('stem.autorepair.buying_quoting_deciding_when_to_fix_vs', 'Buying, quoting, deciding when to fix vs sell.'),
+          { id: 'consumer-cat', icon: '🛒', name: __alloT('stem.autorepair.savvy_consumer', 'Savvy consumer'),
+            desc: __alloT('stem.autorepair.buying_quoting_deciding_when_to_fix_vs', 'Buying, quoting, deciding when to fix vs sell.'),
             modules: [
-              { id: 'usedcar', icon: '🛒', label: t('stem.autorepair.buying_a_used_car', 'Buying a used car'), desc: t('stem.autorepair.10_red_flags_9_step_walkaround', '10 red flags + 9-step walkaround.') },
-              { id: 'estimate', icon: '💵', label: t('stem.autorepair.estimate_decoder', 'Estimate decoder'), desc: t('stem.autorepair.21_line_items_standard_diy_upsell', '21 line items: standard, DIY, upsell.') },
-              { id: 'scams', icon: '🚩', label: t('stem.autorepair.common_scams', 'Common scams'), desc: t('stem.autorepair.12_known_shop_scams_how_to_push_back', '12 known shop scams + how to push back.') },
-              { id: 'roi', icon: '💰', label: t('stem.autorepair.repair_roi_calculator', 'Repair ROI calculator'), desc: t('stem.autorepair.should_i_fix_it_or_sell_it', 'Should I fix it or sell it?') }
+              { id: 'usedcar', icon: '🛒', label: __alloT('stem.autorepair.buying_a_used_car', 'Buying a used car'), desc: __alloT('stem.autorepair.10_red_flags_9_step_walkaround', '10 red flags + 9-step walkaround.') },
+              { id: 'estimate', icon: '💵', label: __alloT('stem.autorepair.estimate_decoder', 'Estimate decoder'), desc: __alloT('stem.autorepair.21_line_items_standard_diy_upsell', '21 line items: standard, DIY, upsell.') },
+              { id: 'scams', icon: '🚩', label: __alloT('stem.autorepair.common_scams', 'Common scams'), desc: __alloT('stem.autorepair.12_known_shop_scams_how_to_push_back', '12 known shop scams + how to push back.') },
+              { id: 'roi', icon: '💰', label: __alloT('stem.autorepair.repair_roi_calculator', 'Repair ROI calculator'), desc: __alloT('stem.autorepair.should_i_fix_it_or_sell_it', 'Should I fix it or sell it?') }
             ]
           },
-          { id: 'career-cat', icon: '🏅', name: t('stem.autorepair.career_paths', 'Career paths'),
-            desc: t('stem.autorepair.from_i_love_this_to_i_do_this_for_a_li', 'From "I love this" to "I do this for a living."'),
+          { id: 'career-cat', icon: '🏅', name: __alloT('stem.autorepair.career_paths', 'Career paths'),
+            desc: __alloT('stem.autorepair.from_i_love_this_to_i_do_this_for_a_li', 'From "I love this" to "I do this for a living."'),
             modules: [
-              { id: 'career', icon: '🏅', label: t('stem.autorepair.career_path', 'Career path'), desc: t('stem.autorepair.ase_maine_vocational_programs', 'ASE + Maine vocational programs.') },
-              { id: 'shopbiz', icon: '🏪', label: t('stem.autorepair.shop_business_basics', 'Shop business basics'), desc: t('stem.autorepair.mobile_mechanic_startup_insurance_pric', 'Mobile mechanic startup, insurance, pricing.') },
-              { id: 'race', icon: '🏁', label: t('stem.autorepair.race_mechanic_nascar', 'Race mechanic (NASCAR)'), desc: t('stem.autorepair.pit_crew_setup_radio_maine_short_track', 'Pit crew + setup + radio + Maine short-track.') },
-              { id: 'build', icon: '🏗️', label: t('stem.autorepair.project_car_build', 'Project car build'), desc: t('stem.autorepair.the_500_rust_bucket_capstone', 'The $500 rust-bucket capstone.') },
-              { id: 'diesel', icon: '🚜', label: t('stem.autorepair.diesel_heavy_equipment', 'Diesel & heavy equipment'), desc: t('stem.autorepair.log_trucks_plows_farm_marine_otr', 'Log trucks, plows, farm, marine, OTR.') },
-              { id: 'power', icon: '🛷', label: t('stem.autorepair.powersports_small_engine', 'Powersports + small engine'), desc: t('stem.autorepair.snowmobile_atv_lawn_outboard_generator', 'Snowmobile, ATV, lawn, outboard, generator.') },
-              { id: 'ev', icon: '⚡', label: t('stem.autorepair.ev_hybrid', 'EV / Hybrid'), desc: t('stem.autorepair.hv_safety_regen_braking_cold_weather_r', 'HV safety, regen braking, cold-weather range.') }
+              { id: 'career', icon: '🏅', label: __alloT('stem.autorepair.career_path', 'Career path'), desc: __alloT('stem.autorepair.ase_maine_vocational_programs', 'ASE + Maine vocational programs.') },
+              { id: 'shopbiz', icon: '🏪', label: __alloT('stem.autorepair.shop_business_basics', 'Shop business basics'), desc: __alloT('stem.autorepair.mobile_mechanic_startup_insurance_pric', 'Mobile mechanic startup, insurance, pricing.') },
+              { id: 'race', icon: '🏁', label: __alloT('stem.autorepair.race_mechanic_nascar', 'Race mechanic (NASCAR)'), desc: __alloT('stem.autorepair.pit_crew_setup_radio_maine_short_track', 'Pit crew + setup + radio + Maine short-track.') },
+              { id: 'build', icon: '🏗️', label: __alloT('stem.autorepair.project_car_build', 'Project car build'), desc: __alloT('stem.autorepair.the_500_rust_bucket_capstone', 'The $500 rust-bucket capstone.') },
+              { id: 'diesel', icon: '🚜', label: __alloT('stem.autorepair.diesel_heavy_equipment', 'Diesel & heavy equipment'), desc: __alloT('stem.autorepair.log_trucks_plows_farm_marine_otr', 'Log trucks, plows, farm, marine, OTR.') },
+              { id: 'power', icon: '🛷', label: __alloT('stem.autorepair.powersports_small_engine', 'Powersports + small engine'), desc: __alloT('stem.autorepair.snowmobile_atv_lawn_outboard_generator', 'Snowmobile, ATV, lawn, outboard, generator.') },
+              { id: 'ev', icon: '⚡', label: __alloT('stem.autorepair.ev_hybrid', 'EV / Hybrid'), desc: __alloT('stem.autorepair.hv_safety_regen_braking_cold_weather_r', 'HV safety, regen braking, cold-weather range.') }
             ]
           },
-          { id: 'progress-cat', icon: '📊', name: t('stem.autorepair.progress_reference', 'Progress + reference'),
-            desc: t('stem.autorepair.self_test_learning_path_achievements_c', 'Self-test, learning path, achievements, citations.'),
+          { id: 'progress-cat', icon: '📊', name: __alloT('stem.autorepair.progress_reference', 'Progress + reference'),
+            desc: __alloT('stem.autorepair.self_test_learning_path_achievements_c', 'Self-test, learning path, achievements, citations.'),
             modules: [
-              { id: 'path', icon: '🛤️', label: t('stem.autorepair.learning_path', 'Learning path'), desc: t('stem.autorepair.new_here_4_week_curated_walkthrough_of', 'New here? 4-week curated walkthrough of the modules in optimal order.') },
-              { id: 'quiz', icon: '🧪', label: t('stem.autorepair.knowledge_quiz', 'Knowledge quiz'), desc: t('stem.autorepair.55_questions_across_the_full_curriculu', '55 questions across the full curriculum.') },
-              { id: 'badges', icon: '🏆', label: t('stem.autorepair.badge_gallery', 'Badge gallery'), desc: t('stem.autorepair.all_earned_unlockable_badges_track_you', 'All earned + unlockable badges. Track your progress.') },
-              { id: 'resources', icon: '📚', label: t('stem.autorepair.resources', 'Resources'), desc: t('stem.autorepair.every_cited_org_with_working_url', 'Every cited org with working URL.') }
+              { id: 'path', icon: '🛤️', label: __alloT('stem.autorepair.learning_path', 'Learning path'), desc: __alloT('stem.autorepair.new_here_4_week_curated_walkthrough_of', 'New here? 4-week curated walkthrough of the modules in optimal order.') },
+              { id: 'quiz', icon: '🧪', label: __alloT('stem.autorepair.knowledge_quiz', 'Knowledge quiz'), desc: __alloT('stem.autorepair.55_questions_across_the_full_curriculu', '55 questions across the full curriculum.') },
+              { id: 'badges', icon: '🏆', label: __alloT('stem.autorepair.badge_gallery', 'Badge gallery'), desc: __alloT('stem.autorepair.all_earned_unlockable_badges_track_you', 'All earned + unlockable badges. Track your progress.') },
+              { id: 'resources', icon: '📚', label: __alloT('stem.autorepair.resources', 'Resources'), desc: __alloT('stem.autorepair.every_cited_org_with_working_url', 'Every cited org with working URL.') }
             ]
           }
         ];
         var badgeCount = Object.keys(badges).length;
         var collapsedCats = d.collapsedCats || {};
 
-        return h('div', { role: 'main', 'aria-label': t('stem.autorepair.auto_repair_shop_main_menu', 'Auto Repair Shop main menu'), style: { padding: 20, maxWidth: 1000, margin: '0 auto', color: T.text } },
+        return h('div', { role: 'main', 'aria-label': __alloT('stem.autorepair.auto_repair_shop_main_menu', 'Auto Repair Shop main menu'), style: { padding: 20, maxWidth: 1000, margin: '0 auto', color: T.text } },
           h('a', { href: '#ar-menu-categories', 'data-ar-focusable': true,
             style: { position: 'absolute', left: '-9999px', top: 'auto', width: 1, height: 1, overflow: 'hidden' },
             onFocus: function(e) { Object.assign(e.target.style, { position: 'static', left: 'auto', width: 'auto', height: 'auto', display: 'inline-block', padding: '6px 12px', background: T.accent, color: '#0f172a', textDecoration: 'none', fontWeight: 700, borderRadius: 6, marginBottom: 10 }); },
             onBlur: function(e) { Object.assign(e.target.style, { position: 'absolute', left: '-9999px', top: 'auto', width: '1px', height: '1px', overflow: 'hidden' }); }
-          }, t('stem.autorepair.skip_to_module_categories', 'Skip to module categories')),
+          }, __alloT('stem.autorepair.skip_to_module_categories', 'Skip to module categories')),
           h('div', { style: { marginBottom: 16, padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
             h('h1', { style: { margin: '0 0 6px', fontSize: 24, color: T.text } },
-              h('span', { 'aria-hidden': 'true' }, '🔧 '), t('stem.autorepair.auto_repair_shop', 'Auto Repair Shop')),
+              h('span', { 'aria-hidden': 'true' }, '🔧 '), __alloT('stem.autorepair.auto_repair_shop', 'Auto Repair Shop')),
             h('p', { style: { margin: 0, fontSize: 13, color: T.muted, lineHeight: 1.5 } },
-              t('stem.autorepair.diagnose_like_a_tech_repair_like_a_pro', 'Diagnose like a tech, repair like a pro, know when to stop and call a shop. Maine emphasis: oldest fleet in the country, salt + rust everywhere, rural distances. Pairs with '),
-              h('strong', { style: { color: T.accentHi } }, 'RoadReady'), t('stem.autorepair.you_drive_a_car_and_maintain_it', ' — you drive a car AND maintain it.'))
+              __alloT('stem.autorepair.diagnose_like_a_tech_repair_like_a_pro', 'Diagnose like a tech, repair like a pro, know when to stop and call a shop. Maine emphasis: oldest fleet in the country, salt + rust everywhere, rural distances. Pairs with '),
+              h('strong', { style: { color: T.accentHi } }, 'RoadReady'), __alloT('stem.autorepair.you_drive_a_car_and_maintain_it', ' — you drive a car AND maintain it.'))
           ),
           badgeCount > 0 && h('button', { 'data-ar-focusable': true,
             'aria-label': 'View badge gallery — ' + badgeCount + ' badges earned',
             onClick: function() { setView('badges'); },
             style: { width: '100%', marginBottom: 14, padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accent, fontSize: 12, color: T.muted, cursor: 'pointer', textAlign: 'left' } },
             h('span', { 'aria-hidden': 'true', className: 'ar-pulse-ring' }, '🏅 '),
-            h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.badges_earned', 'Badges earned: ')), String(badgeCount), t('stem.autorepair.tap_to_view_gallery', ' — tap to view gallery →')
+            h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.badges_earned', 'Badges earned: ')), String(badgeCount), __alloT('stem.autorepair.tap_to_view_gallery', ' — tap to view gallery →')
           ),
           h('div', { id: 'ar-menu-categories', tabIndex: -1 }),
           categories.map(function(cat) {
@@ -3764,7 +3764,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             );
           }),
           h('div', { style: { marginTop: 16, padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-            h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.maine_reality', '🌲 Maine reality: ')),
+            h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.maine_reality', '🌲 Maine reality: ')),
             MAINE_CONTEXT.fleetAge, ' ', MAINE_CONTEXT.salt
           ),
           disclaimerFooter()
@@ -3787,15 +3787,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         function dxOverview() {
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, t('stem.autorepair.four_diagnostic_channels', '🔍 Four diagnostic channels')),
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.four_diagnostic_channels', '🔍 Four diagnostic channels')),
               h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.5 } },
-                t('stem.autorepair.real_techs_use_4_senses_1_tool_each_fi', 'Real techs use 4 senses + 1 tool. Each finds different problems. Get fluent in all four.')),
+                __alloT('stem.autorepair.real_techs_use_4_senses_1_tool_each_fi', 'Real techs use 4 senses + 1 tool. Each finds different problems. Get fluent in all four.')),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } },
                 [
-                  { icon: '🔌', name: t('stem.autorepair.obd_ii_computer', 'OBD-II (computer)'), desc: t('stem.autorepair.plug_in_scanner_read_codes_catches_any', 'Plug in scanner. Read codes. Catches anything the engine computer flagged.') },
-                  { icon: '👂', name: t('stem.autorepair.listen', 'Listen'), desc: t('stem.autorepair.squeals_clicks_knocks_rattles_each_has', 'Squeals, clicks, knocks, rattles. Each has a story. Old-school but unbeatable.') },
-                  { icon: '🛢️', name: t('stem.autorepair.fluids', 'Fluids'), desc: t('stem.autorepair.color_smell_level_tells_you_about_cool', 'Color, smell, level. Tells you about cooling, lubrication, transmission, brakes.') },
-                  { icon: '👁️', name: t('stem.autorepair.visual', 'Visual'), desc: t('stem.autorepair.belts_hoses_leaks_lines_tires_maine_un', 'Belts, hoses, leaks, lines, tires. Maine: undercarriage rust above all.') }
+                  { icon: '🔌', name: __alloT('stem.autorepair.obd_ii_computer', 'OBD-II (computer)'), desc: __alloT('stem.autorepair.plug_in_scanner_read_codes_catches_any', 'Plug in scanner. Read codes. Catches anything the engine computer flagged.') },
+                  { icon: '👂', name: __alloT('stem.autorepair.listen', 'Listen'), desc: __alloT('stem.autorepair.squeals_clicks_knocks_rattles_each_has', 'Squeals, clicks, knocks, rattles. Each has a story. Old-school but unbeatable.') },
+                  { icon: '🛢️', name: __alloT('stem.autorepair.fluids', 'Fluids'), desc: __alloT('stem.autorepair.color_smell_level_tells_you_about_cool', 'Color, smell, level. Tells you about cooling, lubrication, transmission, brakes.') },
+                  { icon: '👁️', name: __alloT('stem.autorepair.visual', 'Visual'), desc: __alloT('stem.autorepair.belts_hoses_leaks_lines_tires_maine_un', 'Belts, hoses, leaks, lines, tires. Maine: undercarriage rust above all.') }
                 ].map(function(c) {
                   return h('div', { key: c.name, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
                     h('div', { style: { fontSize: 22, marginBottom: 4 } }, c.icon),
@@ -3806,7 +3806,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               )
             ),
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, t('stem.autorepair.maine_diagnostic_reality', '🌲 Maine diagnostic reality')),
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.maine_diagnostic_reality', '🌲 Maine diagnostic reality')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } }, MAINE_CONTEXT.salt, ' ', MAINE_CONTEXT.rust)
             )
           );
@@ -3817,11 +3817,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var pickedCode = picked ? OBD_CODES.find(function(c) { return c.code === picked; }) : null;
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.obd_ii_code_library', '🔌 OBD-II code library')),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.obd_ii_code_library', '🔌 OBD-II code library')),
               h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                t('stem.autorepair.tap_a_code_to_see_what_it_means_common', 'Tap a code to see what it means, common causes, and DIY-vs-shop verdict. '),
-                h('strong', null, t('stem.autorepair.free_service', 'Free service: ')),
-                t('stem.autorepair.napa_o_reilly_autozone_will_read_your_', 'NAPA / O\'Reilly / AutoZone will read your codes free.'))
+                __alloT('stem.autorepair.tap_a_code_to_see_what_it_means_common', 'Tap a code to see what it means, common causes, and DIY-vs-shop verdict. '),
+                h('strong', null, __alloT('stem.autorepair.free_service', 'Free service: ')),
+                __alloT('stem.autorepair.napa_o_reilly_autozone_will_read_your_', 'NAPA / O\'Reilly / AutoZone will read your codes free.'))
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8, marginBottom: 14 } },
               OBD_CODES.map(function(c) {
@@ -3849,13 +3849,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 severityBadge(pickedCode.severity)
               ),
               h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.what_it_means', 'What it means: ')), pickedCode.meaning),
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.what_it_means', 'What it means: ')), pickedCode.meaning),
               h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', { style: { color: T.text } }, t('stem.autorepair.common_causes', 'Common causes: ')), pickedCode.common),
+                h('strong', { style: { color: T.text } }, __alloT('stem.autorepair.common_causes', 'Common causes: ')), pickedCode.common),
               h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
                 h('strong', { style: { color: T.good } }, 'DIY: '), pickedCode.diy),
               h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', { style: { color: T.warn } }, t('stem.autorepair.take_to_shop_if', 'Take to shop if: ')), pickedCode.shop),
+                h('strong', { style: { color: T.warn } }, __alloT('stem.autorepair.take_to_shop_if', 'Take to shop if: ')), pickedCode.shop),
               h('p', { style: { margin: 0, color: T.dim, fontSize: 11, fontStyle: 'italic' } },
                 h('strong', null, 'Dashboard: '), pickedCode.illuminates)
             )
@@ -3867,9 +3867,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var pickedCue = picked ? LISTEN_CUES.find(function(c) { return c.id === picked; }) : null;
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.what_s_that_noise', '👂 What\'s that noise?')),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.what_s_that_noise', '👂 What\'s that noise?')),
               h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                t('stem.autorepair.pick_a_noise_you_might_hear_the_tool_t', 'Pick a noise you might hear. The tool tells you when it usually happens, what it usually is, and DIY-vs-shop verdict.'))
+                __alloT('stem.autorepair.pick_a_noise_you_might_hear_the_tool_t', 'Pick a noise you might hear. The tool tells you when it usually happens, what it usually is, and DIY-vs-shop verdict.'))
             ),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
               LISTEN_CUES.map(function(c) {
@@ -3895,7 +3895,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               h('p', { style: { margin: '0 0 6px', color: T.text, fontSize: 13, lineHeight: 1.5 } },
                 h('strong', null, 'When: '), pickedCue.when),
               h('p', { style: { margin: '0 0 6px', color: T.text, fontSize: 13, lineHeight: 1.5 } },
-                h('strong', { style: { color: T.warn } }, t('stem.autorepair.likely_cause', 'Likely cause: ')), pickedCue.cause),
+                h('strong', { style: { color: T.warn } }, __alloT('stem.autorepair.likely_cause', 'Likely cause: ')), pickedCue.cause),
               h('p', { style: { margin: '0 0 6px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
                 h('strong', { style: { color: T.good } }, 'DIY: '), pickedCue.diy),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
@@ -3973,9 +3973,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                               : ('Not quite. The answer was: ' + current.name))
                 ),
                 !isCorrect && h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.5, fontStyle: 'italic' } },
-                  t('stem.autorepair.you_picked', 'You picked: '), h('strong', { style: { color: T.text } }, pickedCue ? pickedCue.name : 'Unknown')),
+                  __alloT('stem.autorepair.you_picked', 'You picked: '), h('strong', { style: { color: T.text } }, pickedCue ? pickedCue.name : 'Unknown')),
                 h('p', { style: { margin: '0 0 6px', color: T.text, fontSize: 13, lineHeight: 1.5 } },
-                  h('strong', { style: { color: T.warn } }, t('stem.autorepair.likely_cause_2', 'Likely cause: ')), current.cause),
+                  h('strong', { style: { color: T.warn } }, __alloT('stem.autorepair.likely_cause_2', 'Likely cause: ')), current.cause),
                 h('p', { style: { margin: '0 0 6px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
                   h('strong', { style: { color: T.good } }, 'DIY: '), current.diy),
                 h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
@@ -3984,7 +3984,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               h('button', { 'data-ar-focusable': true,
                 onClick: startRound,
                 style: btnPrimary()
-              }, t('stem.autorepair.next_noise', '↻ Next noise →'))
+              }, __alloT('stem.autorepair.next_noise', '↻ Next noise →'))
             );
           }
           // Question UI
@@ -3998,22 +3998,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               attempts > 0 && h('button', { 'data-ar-focusable': true,
                 onClick: function() { upd({ dxQuizScore: 0, dxQuizAttempts: 0, dxQuizStreak: 0 }); },
                 style: Object.assign({}, btnSecondary(), { fontSize: 11 })
-              }, t('stem.autorepair.reset_score', '↺ Reset score'))
+              }, __alloT('stem.autorepair.reset_score', '↺ Reset score'))
             ),
             !current && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, textAlign: 'center' } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, t('stem.autorepair.diagnose_by_ear', '🎯 Diagnose by ear')),
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.diagnose_by_ear', '🎯 Diagnose by ear')),
               h('p', { style: { margin: '0 0 12px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
                 'You will get a noise + when it happens. Pick the most likely cause from 4 options. ' + LISTEN_CUES.length + ' real Maine-flavored cues in rotation.'),
-              h('button', { 'data-ar-focusable': true, onClick: startRound, style: btnPrimary() }, t('stem.autorepair.start', '🚗 Start'))
+              h('button', { 'data-ar-focusable': true, onClick: startRound, style: btnPrimary() }, __alloT('stem.autorepair.start', '🚗 Start'))
             ),
             current && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent, marginBottom: 10 } },
-              h('div', { style: { fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: T.accentHi, marginBottom: 6 } }, t('stem.autorepair.listen_what_do_you_hear', '👂 Listen — what do you hear?')),
+              h('div', { style: { fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: T.accentHi, marginBottom: 6 } }, __alloT('stem.autorepair.listen_what_do_you_hear', '👂 Listen — what do you hear?')),
               h('p', { style: { margin: '0 0 4px', color: T.text, fontSize: 14, lineHeight: 1.5 } },
                 h('strong', null, 'When: '), current.when),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5, fontStyle: 'italic' } },
-                t('stem.autorepair.pick_the_most_likely_cause', 'Pick the most likely cause:'))
+                __alloT('stem.autorepair.pick_the_most_likely_cause', 'Pick the most likely cause:'))
             ),
-            current && h('div', { role: 'radiogroup', 'aria-label': t('stem.autorepair.cause_choices', 'Cause choices'), style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+            current && h('div', { role: 'radiogroup', 'aria-label': __alloT('stem.autorepair.cause_choices', 'Cause choices'), style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               choices.map(function(cid) {
                 var c = LISTEN_CUES.find(function(x) { return x.id === cid; });
                 if (!c) return null;
@@ -4040,9 +4040,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var pickedFluid = picked ? FLUID_CHECKS.find(function(c) { return c.id === picked; }) : null;
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.fluid_analysis', '🛢️ Fluid analysis')),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.fluid_analysis', '🛢️ Fluid analysis')),
               h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                t('stem.autorepair.five_fluids_your_car_needs_you_to_look', 'Five fluids your car needs you to look at. Color + smell + level tells you almost everything.'))
+                __alloT('stem.autorepair.five_fluids_your_car_needs_you_to_look', 'Five fluids your car needs you to look at. Color + smell + level tells you almost everything.'))
             ),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
               FLUID_CHECKS.map(function(c) {
@@ -4062,15 +4062,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             pickedFluid && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent } },
               h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, pickedFluid.name),
               h('p', { style: { margin: '0 0 6px', color: T.text, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', null, t('stem.autorepair.where', '📍 Where: ')), pickedFluid.where),
+                h('strong', null, __alloT('stem.autorepair.where', '📍 Where: ')), pickedFluid.where),
               h('p', { style: { margin: '0 0 6px', color: T.good, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', null, t('stem.autorepair.healthy', '✅ Healthy: ')), pickedFluid.healthy),
+                h('strong', null, __alloT('stem.autorepair.healthy', '✅ Healthy: ')), pickedFluid.healthy),
               h('p', { style: { margin: '0 0 6px', color: T.bad, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', null, t('stem.autorepair.bad', '⚠️ Bad: ')), pickedFluid.bad),
+                h('strong', null, __alloT('stem.autorepair.bad', '⚠️ Bad: ')), pickedFluid.bad),
               h('p', { style: { margin: '0 0 6px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', null, t('stem.autorepair.smell', '👃 Smell: ')), pickedFluid.smell),
+                h('strong', null, __alloT('stem.autorepair.smell', '👃 Smell: ')), pickedFluid.smell),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', null, t('stem.autorepair.level', '📏 Level: ')), pickedFluid.level)
+                h('strong', null, __alloT('stem.autorepair.level', '📏 Level: ')), pickedFluid.level)
             )
           );
         }
@@ -4080,11 +4080,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var pickedItem = picked ? VISUAL_CHECKS.find(function(c) { return c.id === picked; }) : null;
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.visual_inspection', '👁️ Visual inspection')),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.visual_inspection', '👁️ Visual inspection')),
               h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                t('stem.autorepair.5_things_to_check_under_the_hood_5_thi', '5 things to check under the hood + 5 things to check underneath. Maine: spring undercarriage check is non-negotiable.'))
+                __alloT('stem.autorepair.5_things_to_check_under_the_hood_5_thi', '5 things to check under the hood + 5 things to check underneath. Maine: spring undercarriage check is non-negotiable.'))
             ),
-            h('h4', { style: { margin: '0 0 6px', fontSize: 13, color: T.accentHi } }, t('stem.autorepair.under_the_hood', 'Under the hood')),
+            h('h4', { style: { margin: '0 0 6px', fontSize: 13, color: T.accentHi } }, __alloT('stem.autorepair.under_the_hood', 'Under the hood')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, marginBottom: 14 } },
               VISUAL_CHECKS.filter(function(c) { return c.area === 'hood'; }).map(function(c) {
                 var sel = picked === c.id;
@@ -4101,7 +4101,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   }) }, c.name);
               })
             ),
-            h('h4', { style: { margin: '0 0 6px', fontSize: 13, color: T.accentHi } }, t('stem.autorepair.underneath_maine_spring_inspection', 'Underneath (Maine: spring inspection)')),
+            h('h4', { style: { margin: '0 0 6px', fontSize: 13, color: T.accentHi } }, __alloT('stem.autorepair.underneath_maine_spring_inspection', 'Underneath (Maine: spring inspection)')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, marginBottom: 14 } },
               VISUAL_CHECKS.filter(function(c) { return c.area === 'under'; }).map(function(c) {
                 var sel = picked === c.id;
@@ -4121,16 +4121,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             pickedItem && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent } },
               h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, pickedItem.name),
               h('p', { style: { margin: '0 0 6px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-                h('strong', null, t('stem.autorepair.look_for', '👁️ Look for: ')), pickedItem.look),
+                h('strong', null, __alloT('stem.autorepair.look_for', '👁️ Look for: ')), pickedItem.look),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', null, t('stem.autorepair.flag_if', '🚩 Flag if: ')), pickedItem.finding)
+                h('strong', null, __alloT('stem.autorepair.flag_if', '🚩 Flag if: ')), pickedItem.finding)
             )
           );
         }
 
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🔍 Diagnose'),
-          h('div', { role: 'tablist', 'aria-label': t('stem.autorepair.diagnose_sub_modes', 'Diagnose sub-modes'),
+          h('div', { role: 'tablist', 'aria-label': __alloT('stem.autorepair.diagnose_sub_modes', 'Diagnose sub-modes'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
             tabBtn('overview', 'Overview'),
             tabBtn('obd', '🔌 OBD codes'),
@@ -4168,23 +4168,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var pct = Math.round((doneSteps / totalSteps) * 100);
           return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid ' + T.border } },
-              h('button', { 'data-ar-focusable': true, 'aria-label': t('stem.autorepair.back_to_repair_list', 'Back to repair list'),
-                onClick: function() { upd('repairPicked', null); }, style: btnGhost() }, t('stem.autorepair.repair_list', '← Repair list')),
+              h('button', { 'data-ar-focusable': true, 'aria-label': __alloT('stem.autorepair.back_to_repair_list', 'Back to repair list'),
+                onClick: function() { upd('repairPicked', null); }, style: btnGhost() }, __alloT('stem.autorepair.repair_list', '← Repair list')),
               h('span', { style: { fontSize: 24 } }, pickedRepair.icon),
               h('h2', { style: { margin: 0, fontSize: 18, color: T.text } }, pickedRepair.name)
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8, marginBottom: 14 } },
               h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
-                h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 2 } }, t('stem.autorepair.difficulty', 'Difficulty')),
+                h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 2 } }, __alloT('stem.autorepair.difficulty', 'Difficulty')),
                 h('div', { style: { fontSize: 14, color: T.accentHi, fontWeight: 800 } }, diffStars(pickedRepair.difficulty))),
               h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
-                h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 2 } }, t('stem.autorepair.time', 'Time')),
+                h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 2 } }, __alloT('stem.autorepair.time', 'Time')),
                 h('div', { style: { fontSize: 14, color: T.text, fontWeight: 700 } }, pickedRepair.time)),
               h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
-                h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 2 } }, t('stem.autorepair.diy_cost', 'DIY cost')),
+                h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 2 } }, __alloT('stem.autorepair.diy_cost', 'DIY cost')),
                 h('div', { style: { fontSize: 14, color: T.good, fontWeight: 700 } }, pickedRepair.cost.diy)),
               h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
-                h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 2 } }, t('stem.autorepair.shop_cost', 'Shop cost')),
+                h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 2 } }, __alloT('stem.autorepair.shop_cost', 'Shop cost')),
                 h('div', { style: { fontSize: 14, color: T.warn, fontWeight: 700 } }, pickedRepair.cost.shop))
             ),
             // DIY vs shop cost — visualize the savings (midpoints parsed from the listed ranges).
@@ -4201,17 +4201,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   h('span', { style: { width: 52, textAlign: 'right', fontSize: 12, color: T.text, fontWeight: 800 } }, '$' + Math.round(val)));
               };
               return h('div', { style: { padding: 12, borderRadius: 8, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-                h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700 } }, t('stem.autorepair.diy_vs_shop_typical', 'DIY vs shop (typical)')),
+                h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700 } }, __alloT('stem.autorepair.diy_vs_shop_typical', 'DIY vs shop (typical)')),
                 bar('DIY', diy, T.good || '#22c55e'),
                 bar('Shop', shop, T.warn || '#f59e0b'),
                 save > 0 && h('div', { style: { marginTop: 4, fontSize: 12, color: T.good, fontWeight: 700 } }, '↓ Save ~$' + Math.round(save) + ' (' + savePct + '%) doing it yourself'),
-                h('div', { style: { marginTop: 2, fontSize: 10, color: T.muted, fontStyle: 'italic' } }, t('stem.autorepair.midpoints_of_the_listed_ranges_diy_cos', 'Midpoints of the listed ranges. DIY cost excludes your time + any tool investment.'))
+                h('div', { style: { marginTop: 2, fontSize: 10, color: T.muted, fontStyle: 'italic' } }, __alloT('stem.autorepair.midpoints_of_the_listed_ranges_diy_cos', 'Midpoints of the listed ranges. DIY cost excludes your time + any tool investment.'))
               );
             })(),
             h('div', { style: { padding: 12, borderRadius: 8, background: T.card, border: '1px solid ' + T.border, marginBottom: 14, fontSize: 13, color: T.muted, lineHeight: 1.5 } },
               h('strong', { style: { color: T.accentHi } }, '💡 '), pickedRepair.universal),
             h('div', { style: { padding: 12, borderRadius: 8, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h4', { style: { margin: '0 0 6px', fontSize: 13, color: T.accentHi } }, t('stem.autorepair.tools_needed', '🧰 Tools needed')),
+              h('h4', { style: { margin: '0 0 6px', fontSize: 13, color: T.accentHi } }, __alloT('stem.autorepair.tools_needed', '🧰 Tools needed')),
               h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.6 } },
                 pickedRepair.tools.map(function(tid, i) {
                   var t = TOOLS_LIBRARY.find(function(x) { return x.id === tid; });
@@ -4222,14 +4222,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 h('strong', { style: { color: T.text } }, 'Consumables: '), pickedRepair.consumables)
             ),
             h('div', { style: { padding: 12, borderRadius: 8, background: '#7c2d12', border: '1px solid #ea580c', marginBottom: 14 } },
-              h('h4', { style: { margin: '0 0 6px', fontSize: 13, color: '#fed7aa' } }, t('stem.autorepair.safety_prerequisites', '🛡️ Safety prerequisites')),
+              h('h4', { style: { margin: '0 0 6px', fontSize: 13, color: '#fed7aa' } }, __alloT('stem.autorepair.safety_prerequisites', '🛡️ Safety prerequisites')),
               h('ul', { style: { margin: 0, paddingLeft: 20, fontSize: 12, color: '#fed7aa', lineHeight: 1.6 } },
                 pickedRepair.safety.map(function(s, i) { return h('li', { key: i }, s.replace(/-/g, ' ')); })
               )
             ),
             h('div', { style: { padding: 12, borderRadius: 8, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
               h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
-                h('h4', { style: { margin: 0, fontSize: 14, color: T.accentHi } }, t('stem.autorepair.step_by_step', '📋 Step-by-step')),
+                h('h4', { style: { margin: 0, fontSize: 14, color: T.accentHi } }, __alloT('stem.autorepair.step_by_step', '📋 Step-by-step')),
                 h('span', { style: { fontSize: 11, color: T.muted, fontFamily: 'monospace' } }, doneSteps + ' / ' + totalSteps + ' viewed (' + pct + '%)')
               ),
               h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -4253,13 +4253,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               )
             ),
             pickedRepair.gotchas && h('div', { style: { padding: 12, borderRadius: 8, background: T.card, border: '1px solid ' + T.warn, marginBottom: 14 } },
-              h('h4', { style: { margin: '0 0 6px', fontSize: 13, color: T.warn } }, t('stem.autorepair.common_gotchas_maine', '⚠️ Common gotchas (Maine)')),
+              h('h4', { style: { margin: '0 0 6px', fontSize: 13, color: T.warn } }, __alloT('stem.autorepair.common_gotchas_maine', '⚠️ Common gotchas (Maine)')),
               h('ul', { style: { margin: 0, paddingLeft: 20, fontSize: 12, color: T.muted, lineHeight: 1.6 } },
                 pickedRepair.gotchas.map(function(g, i) { return h('li', { key: i }, g); })
               )
             ),
             h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accent } },
-              h('strong', { style: { color: T.accentHi, fontSize: 13 } }, t('stem.autorepair.verdict', '🎓 Verdict: ')),
+              h('strong', { style: { color: T.accentHi, fontSize: 13 } }, __alloT('stem.autorepair.verdict', '🎓 Verdict: ')),
               h('span', { style: { fontSize: 13, color: T.text, lineHeight: 1.5 } }, pickedRepair.verdict)
             ),
             disclaimerFooter()
@@ -4269,7 +4269,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🔧 Repair scenarios'),
           h('p', { style: { margin: '0 0 14px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-            t('stem.autorepair.pick_a_job_each_scenario_shows_tools_s', 'Pick a job. Each scenario shows tools, safety, step-by-step, gotchas, and a clear DIY-vs-shop verdict.')),
+            __alloT('stem.autorepair.pick_a_job_each_scenario_shows_tools_s', 'Pick a job. Each scenario shows tools, safety, step-by-step, gotchas, and a clear DIY-vs-shop verdict.')),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
             REPAIR_SCENARIOS.map(function(s) {
               return h('button', { key: s.id, 'data-ar-focusable': true,
@@ -4305,9 +4305,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var pickedTool = picked ? TOOLS_LIBRARY.find(function(t) { return t.id === picked; }) : null;
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.tool_library', '🧰 Tool library')),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.tool_library', '🧰 Tool library')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                t('stem.autorepair.tap_a_tool_to_see_what_it_is_when_you_', 'Tap a tool to see what it is, when you need it, and what it costs. Build a starter kit incrementally — you don\'t need everything to start.'))
+                __alloT('stem.autorepair.tap_a_tool_to_see_what_it_is_when_you_', 'Tap a tool to see what it is, when you need it, and what it costs. Build a starter kit incrementally — you don\'t need everything to start.'))
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 8, marginBottom: 14 } },
               TOOLS_LIBRARY.map(function(t) {
@@ -4335,11 +4335,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 h('h4', { style: { margin: 0, fontSize: 15, color: T.accentHi } }, pickedTool.name)
               ),
               h('p', { style: { margin: '0 0 6px', color: T.text, fontSize: 13, lineHeight: 1.5 } },
-                h('strong', null, t('stem.autorepair.what', '🔧 What: ')), pickedTool.what),
+                h('strong', null, __alloT('stem.autorepair.what', '🔧 What: ')), pickedTool.what),
               h('p', { style: { margin: '0 0 6px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', { style: { color: T.text } }, t('stem.autorepair.when', '🕐 When: ')), pickedTool.when),
+                h('strong', { style: { color: T.text } }, __alloT('stem.autorepair.when', '🕐 When: ')), pickedTool.when),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', { style: { color: T.good } }, t('stem.autorepair.buy', '💵 Buy: ')), pickedTool.buy)
+                h('strong', { style: { color: T.good } }, __alloT('stem.autorepair.buy', '💵 Buy: ')), pickedTool.buy)
             )
           );
         }
@@ -4349,11 +4349,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var question = TOOL_GAME[qIdx];
           if (!question) {
             return h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.tool_selection_complete', '🎉 Tool selection complete')),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.tool_selection_complete', '🎉 Tool selection complete')),
               h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.5 } },
-                t('stem.autorepair.you_ve_worked_through_every_scenario_r', 'You\'ve worked through every scenario. Ready to apply this in real life: practice on a non-running car at a junkyard, take a CTE class, or volunteer with someone\'s project.')),
+                __alloT('stem.autorepair.you_ve_worked_through_every_scenario_r', 'You\'ve worked through every scenario. Ready to apply this in real life: practice on a non-running car at a junkyard, take a CTE class, or volunteer with someone\'s project.')),
               h('button', { 'data-ar-focusable': true, onClick: function() { upd('toolGameIdx', 0); upd('toolGameAnswers', {}); },
-                style: btnPrimary() }, t('stem.autorepair.start_over', '🔄 Start over'))
+                style: btnPrimary() }, __alloT('stem.autorepair.start_over', '🔄 Start over'))
             );
           }
           var answers = d.toolGameAnswers || {};
@@ -4429,11 +4429,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               })
             ),
             !submitted && h('button', { 'data-ar-focusable': true,
-              'aria-label': t('stem.autorepair.submit_toolset_selection', 'Submit toolset selection'),
+              'aria-label': __alloT('stem.autorepair.submit_toolset_selection', 'Submit toolset selection'),
               disabled: picked.length === 0, onClick: submit,
-              style: Object.assign({}, btnPrimary(), { opacity: picked.length === 0 ? 0.5 : 1 }) }, t('stem.autorepair.lock_in_toolset', '✅ Lock in toolset')),
+              style: Object.assign({}, btnPrimary(), { opacity: picked.length === 0 ? 0.5 : 1 }) }, __alloT('stem.autorepair.lock_in_toolset', '✅ Lock in toolset')),
             submitted && h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accent, marginTop: 8 } },
-              h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.why_these_tools', '🎓 Why these tools: ')),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.why_these_tools', '🎓 Why these tools: ')),
               h('span', { style: { color: T.text, fontSize: 13, lineHeight: 1.5 } }, question.why),
               h('div', { style: { marginTop: 10 } },
                 h('button', { 'data-ar-focusable': true, onClick: next,
@@ -4445,7 +4445,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
 
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🧰 Tools'),
-          h('div', { role: 'tablist', 'aria-label': t('stem.autorepair.tool_sub_modes', 'Tool sub-modes'),
+          h('div', { role: 'tablist', 'aria-label': __alloT('stem.autorepair.tool_sub_modes', 'Tool sub-modes'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
             tabBtn('library', '📖 Library'),
             tabBtn('game', '🎮 Selection mini-game')
@@ -4465,7 +4465,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🛡️ Safety modules'),
           h('p', { style: { margin: '0 0 14px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-            t('stem.autorepair.six_safety_areas_skipping_any_of_these', 'Six safety areas. Skipping any of these can cost you a hand, an eye, or your life. Tap each module to see the rule + checklist.')),
+            __alloT('stem.autorepair.six_safety_areas_skipping_any_of_these', 'Six safety areas. Skipping any of these can cost you a hand, an eye, or your life. Tap each module to see the rule + checklist.')),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 14 } },
             SAFETY_MODULES.map(function(m) {
               var sel = picked === m.id;
@@ -4525,17 +4525,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           pickedMod && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent } },
             h('h3', { style: { margin: '0 0 8px', fontSize: 16, color: T.accentHi } }, pickedMod.icon + ' ' + pickedMod.name),
             h('div', { style: { padding: 10, borderRadius: 8, background: '#7c2d12', border: '1px solid #ea580c', marginBottom: 10 } },
-              h('strong', { style: { color: '#fed7aa', fontSize: 13 } }, t('stem.autorepair.key_rule', '⚠️ Key rule: ')),
+              h('strong', { style: { color: '#fed7aa', fontSize: 13 } }, __alloT('stem.autorepair.key_rule', '⚠️ Key rule: ')),
               h('span', { style: { color: '#fed7aa', fontSize: 13, lineHeight: 1.5 } }, pickedMod.keyRule)
             ),
             h('p', { style: { margin: '0 0 10px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
               h('strong', { style: { color: T.accentHi } }, 'Why: '), pickedMod.why),
-            h('h4', { style: { margin: '0 0 6px', fontSize: 13, color: T.text } }, t('stem.autorepair.checklist', '✓ Checklist')),
+            h('h4', { style: { margin: '0 0 6px', fontSize: 13, color: T.text } }, __alloT('stem.autorepair.checklist', '✓ Checklist')),
             h('ul', { role: 'list', style: { margin: 0, paddingLeft: 20, fontSize: 12, color: T.muted, lineHeight: 1.6 } },
               pickedMod.checklist.map(function(c, i) { return h('li', { key: i, role: 'listitem' }, c); })
             ),
             h('div', { style: { marginTop: 10, padding: 8, borderRadius: 6, background: T.cardAlt, fontSize: 11, color: T.bad, fontWeight: 700 } },
-              t('stem.autorepair.if_you_skip_this', '🛑 If you skip this: '), pickedMod.consequenceOfSkipping)
+              __alloT('stem.autorepair.if_you_skip_this', '🛑 If you skip this: '), pickedMod.consequenceOfSkipping)
           ),
           disclaimerFooter()
         );
@@ -4557,14 +4557,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         function overview() {
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, t('stem.autorepair.auto_repair_as_a_career', '🏅 Auto repair as a career')),
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.auto_repair_as_a_career', '🏅 Auto repair as a career')),
               h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.6 } }, CAREER_DATA.overview),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
                 [
                   { label: 'Entry-level', val: CAREER_DATA.entrySalary, color: T.muted },
                   { label: 'ASE-certified', val: CAREER_DATA.aseCertSalary, color: T.accentHi },
-                  { label: t('stem.autorepair.master_tech', 'Master Tech'), val: CAREER_DATA.masterTech, color: T.good },
-                  { label: t('stem.autorepair.specialist_ev_diesel', 'Specialist (EV/Diesel)'), val: CAREER_DATA.specialist, color: T.good }
+                  { label: __alloT('stem.autorepair.master_tech', 'Master Tech'), val: CAREER_DATA.masterTech, color: T.good },
+                  { label: __alloT('stem.autorepair.specialist_ev_diesel', 'Specialist (EV/Diesel)'), val: CAREER_DATA.specialist, color: T.good }
                 ].map(function(r) {
                   return h('div', { key: r.label, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
                     h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 4 } }, r.label),
@@ -4575,22 +4575,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               h('p', { style: { margin: '12px 0 0', color: T.muted, fontSize: 12, lineHeight: 1.5, fontStyle: 'italic' } }, CAREER_DATA.bigPicture)
             ),
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
-              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, t('stem.autorepair.maine_realities', '🌲 Maine realities')),
+              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.autorepair.maine_realities', '🌲 Maine realities')),
               h('ul', { style: { margin: 0, paddingLeft: 20, fontSize: 12, color: T.muted, lineHeight: 1.7 } },
                 CAREER_DATA.maineRealities.map(function(r, i) { return h('li', { key: i }, r); })
               ),
               h('p', { style: { margin: '10px 0 0', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', { style: { color: T.text } }, t('stem.autorepair.tool_investment', '🧰 Tool investment: ')), CAREER_DATA.toolInvestment)
+                h('strong', { style: { color: T.text } }, __alloT('stem.autorepair.tool_investment', '🧰 Tool investment: ')), CAREER_DATA.toolInvestment)
             )
           );
         }
 
         function ase() {
           return h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, t('stem.autorepair.ase_certification_areas', '🏅 ASE certification areas')),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.ase_certification_areas', '🏅 ASE certification areas')),
             h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-              t('stem.autorepair.each_area_60_test_fee_2_years_work_exp', 'Each area: $60 test fee, 2 years\' work experience required to certify. Recerts every 5 years. '),
-              h('strong', null, t('stem.autorepair.master_tech_2', 'Master Tech ')), t('stem.autorepair.all_8_of_a1_a8', '= all 8 of A1–A8.')),
+              __alloT('stem.autorepair.each_area_60_test_fee_2_years_work_exp', 'Each area: $60 test fee, 2 years\' work experience required to certify. Recerts every 5 years. '),
+              h('strong', null, __alloT('stem.autorepair.master_tech_2', 'Master Tech ')), __alloT('stem.autorepair.all_8_of_a1_a8', '= all 8 of A1–A8.')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
               CAREER_DATA.aseAreas.map(function(a) {
                 return h('div', { key: a.code, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
@@ -4607,7 +4607,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
 
         function pathway() {
           return h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, t('stem.autorepair.career_pathway_maine', '🛤️ Career pathway (Maine)')),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.career_pathway_maine', '🛤️ Career pathway (Maine)')),
             h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               CAREER_DATA.pathway.map(function(p) {
                 return h('div', { key: p.stage, role: 'listitem', style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, display: 'flex', gap: 10, alignItems: 'flex-start' } },
@@ -4624,7 +4624,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
 
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🏅 Career'),
-          h('div', { role: 'tablist', 'aria-label': t('stem.autorepair.career_sections', 'Career sections'),
+          h('div', { role: 'tablist', 'aria-label': __alloT('stem.autorepair.career_sections', 'Career sections'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
             tabBtn('overview', 'Overview'),
             tabBtn('ase', 'ASE areas'),
@@ -4664,7 +4664,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 pct >= 60 ? '👍 Good start. Review the diagnose + safety modules and re-test.' :
                 '📚 Worth another pass through the material — especially safety. No shame; this is hard.'),
               h('button', { 'data-ar-focusable': true, onClick: function() { upd('quizIdx', 0); upd('quizAnswers', {}); },
-                style: btnPrimary() }, t('stem.autorepair.retake_quiz', '🔄 Retake quiz'))
+                style: btnPrimary() }, __alloT('stem.autorepair.retake_quiz', '🔄 Retake quiz'))
             ),
             disclaimerFooter()
           );
@@ -4675,7 +4675,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
               h('span', { style: { fontSize: 24 } }, question.icon),
-              h('span', { style: { fontSize: 11, color: T.dim } }, 'Question ' + (qIdx + 1) + ' of ' + QUIZ.length, t('stem.autorepair.score', ' · Score: '), score)
+              h('span', { style: { fontSize: 11, color: T.dim } }, 'Question ' + (qIdx + 1) + ' of ' + QUIZ.length, __alloT('stem.autorepair.score', ' · Score: '), score)
             ),
             h('h3', { style: { margin: '0 0 12px', fontSize: 14, color: T.text, lineHeight: 1.5 } }, question.stem),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
@@ -4743,8 +4743,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('📚 Resources'),
           h('p', { style: { margin: '0 0 14px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-            t('stem.autorepair.every_org_cited_in_this_tool', 'Every org cited in this tool. '),
-            h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.maine_note', 'Maine note: ')),
+            __alloT('stem.autorepair.every_org_cited_in_this_tool', 'Every org cited in this tool. '),
+            h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.maine_note', 'Maine note: ')),
             MAINE_CONTEXT.distance, ' ', MAINE_CONTEXT.waitlists),
           section('🏅 Certification', RESOURCES.certification),
           section('🌲 Maine education + CTE', RESOURCES.maineEducation),
@@ -4752,7 +4752,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           section('🛡️ Consumer protection', RESOURCES.consumer),
           section('🔧 DIY libraries', RESOURCES.diy),
           h('div', { style: { marginTop: 8, padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-            h('div', { style: { fontWeight: 700, color: T.text, marginBottom: 6 } }, t('stem.autorepair.maine_reality_summary', '🌲 Maine reality summary')),
+            h('div', { style: { fontWeight: 700, color: T.text, marginBottom: 6 } }, __alloT('stem.autorepair.maine_reality_summary', '🌲 Maine reality summary')),
             h('div', { style: { marginBottom: 4 } }, MAINE_CONTEXT.fleetAge),
             h('div', { style: { marginBottom: 4 } }, MAINE_CONTEXT.salt),
             h('div', { style: { marginBottom: 4 } }, MAINE_CONTEXT.coldStart),
@@ -4795,9 +4795,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
             backBar('🌳 Decision tree'),
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.symptom_likely_cause', '🌳 Symptom → likely cause')),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.symptom_likely_cause', '🌳 Symptom → likely cause')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-                t('stem.autorepair.active_diagnostic_reasoning_pick_a_sym', 'Active diagnostic reasoning. Pick a symptom; answer 1–3 questions; get a likely cause + verify-it step + DIY/shop verdict. Practice the THINKING, not just the lookup.'))
+                __alloT('stem.autorepair.active_diagnostic_reasoning_pick_a_sym', 'Active diagnostic reasoning. Pick a symptom; answer 1–3 questions; get a likely cause + verify-it step + DIY/shop verdict. Practice the THINKING, not just the lookup.'))
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
               Object.keys(DECISION_TREES).map(function(k) {
@@ -4819,20 +4819,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         var node = tree.nodes[nodeId];
         if (!node) {
           return h('div', { style: { padding: 20, color: T.bad } }, 'Decision tree node not found: ' + nodeId,
-            h('button', { onClick: reset, style: btnPrimary() }, t('stem.autorepair.restart', '↺ Restart')));
+            h('button', { onClick: reset, style: btnPrimary() }, __alloT('stem.autorepair.restart', '↺ Restart')));
         }
 
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid ' + T.border, flexWrap: 'wrap' } },
-            h('button', { 'data-ar-focusable': true, 'aria-label': t('stem.autorepair.back_to_tree_list', 'Back to tree list'),
-              onClick: reset, style: btnGhost() }, t('stem.autorepair.trees', '← Trees')),
+            h('button', { 'data-ar-focusable': true, 'aria-label': __alloT('stem.autorepair.back_to_tree_list', 'Back to tree list'),
+              onClick: reset, style: btnGhost() }, __alloT('stem.autorepair.trees', '← Trees')),
             h('span', { style: { fontSize: 22 } }, tree.icon),
             h('h2', { style: { margin: 0, fontSize: 17, color: T.text } }, tree.name),
-            path.length > 0 && h('button', { 'data-ar-focusable': true, 'aria-label': t('stem.autorepair.back_one_step_in_tree', 'Back one step in tree'),
-              onClick: backOneStep, style: btnGhost({ marginLeft: 'auto' }) }, t('stem.autorepair.back_one_step', '↶ Back one step'))
+            path.length > 0 && h('button', { 'data-ar-focusable': true, 'aria-label': __alloT('stem.autorepair.back_one_step_in_tree', 'Back one step in tree'),
+              onClick: backOneStep, style: btnGhost({ marginLeft: 'auto' }) }, __alloT('stem.autorepair.back_one_step', '↶ Back one step'))
           ),
           path.length > 0 && h('div', { role: 'list', style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 14, fontSize: 12, color: T.muted } },
-            h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.your_path', '🛤️ Your path: ')),
+            h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.your_path', '🛤️ Your path: ')),
             path.map(function(p, i) {
               return h('span', { key: i, role: 'listitem' },
                 (i > 0 ? ' → ' : ''),
@@ -4842,20 +4842,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           ),
           node.verdict ? h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, t('stem.autorepair.most_likely_cause', '🎯 Most likely cause')),
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, __alloT('stem.autorepair.most_likely_cause', '🎯 Most likely cause')),
               h('p', { style: { margin: 0, color: T.text, fontSize: 14, fontWeight: 700, lineHeight: 1.5 } }, node.likely)
             ),
             h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 10, fontSize: 13, color: T.muted, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.text } }, t('stem.autorepair.why', '🧠 Why: ')), node.why),
+              h('strong', { style: { color: T.text } }, __alloT('stem.autorepair.why', '🧠 Why: ')), node.why),
             h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 10, fontSize: 13, color: T.muted, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.verify', '🔍 Verify: ')), node.verify),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.verify', '🔍 Verify: ')), node.verify),
             !node.terminal && h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.good, marginBottom: 10, fontSize: 13, color: T.muted, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.good } }, t('stem.autorepair.diy', '🔧 DIY: ')), node.diy),
+              h('strong', { style: { color: T.good } }, __alloT('stem.autorepair.diy', '🔧 DIY: ')), node.diy),
             !node.terminal && h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.warn, marginBottom: 14, fontSize: 13, color: T.muted, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.warn } }, t('stem.autorepair.shop', '🏪 Shop: ')), node.shop),
+              h('strong', { style: { color: T.warn } }, __alloT('stem.autorepair.shop', '🏪 Shop: ')), node.shop),
             h('div', { style: { display: 'flex', gap: 8 } },
-              h('button', { 'data-ar-focusable': true, onClick: backOneStep, style: btnSecondary() }, t('stem.autorepair.try_a_different_answer', '↶ Try a different answer')),
-              h('button', { 'data-ar-focusable': true, onClick: reset, style: btnPrimary() }, t('stem.autorepair.new_tree', '🌳 New tree'))
+              h('button', { 'data-ar-focusable': true, onClick: backOneStep, style: btnSecondary() }, __alloT('stem.autorepair.try_a_different_answer', '↶ Try a different answer')),
+              h('button', { 'data-ar-focusable': true, onClick: reset, style: btnPrimary() }, __alloT('stem.autorepair.new_tree', '🌳 New tree'))
             )
           ) : h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
@@ -4899,14 +4899,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('💵 Estimate decoder'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.read_a_shop_quote_like_a_pro', '💵 Read a shop quote like a pro')),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.read_a_shop_quote_like_a_pro', '💵 Read a shop quote like a pro')),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              t('stem.autorepair.tap_a_line_item_to_see_what_it_actuall', 'Tap a line item to see what it actually means, what fair pricing looks like, and whether it\'s legitimate, DIY-able, or a common upsell to push back on.')),
+              __alloT('stem.autorepair.tap_a_line_item_to_see_what_it_actuall', 'Tap a line item to see what it actually means, what fair pricing looks like, and whether it\'s legitimate, DIY-able, or a common upsell to push back on.')),
             h('div', { style: { display: 'flex', gap: 8, fontSize: 11, flexWrap: 'wrap' } },
-              h('span', { style: { padding: '4px 10px', borderRadius: 12, background: T.cardAlt, color: T.good, border: '1px solid ' + T.good, fontWeight: 700 } }, t('stem.autorepair.standard', '✅ Standard')),
-              h('span', { style: { padding: '4px 10px', borderRadius: 12, background: T.cardAlt, color: T.accentHi, border: '1px solid ' + T.accentHi, fontWeight: 700 } }, t('stem.autorepair.diy_2', '🔧 DIY')),
-              h('span', { style: { padding: '4px 10px', borderRadius: 12, background: T.cardAlt, color: T.warn, border: '1px solid ' + T.warn, fontWeight: 700 } }, t('stem.autorepair.depends', '⚠️ Depends')),
-              h('span', { style: { padding: '4px 10px', borderRadius: 12, background: T.cardAlt, color: T.bad, border: '1px solid ' + T.bad, fontWeight: 700 } }, t('stem.autorepair.often_upsell', '🚩 Often upsell'))
+              h('span', { style: { padding: '4px 10px', borderRadius: 12, background: T.cardAlt, color: T.good, border: '1px solid ' + T.good, fontWeight: 700 } }, __alloT('stem.autorepair.standard', '✅ Standard')),
+              h('span', { style: { padding: '4px 10px', borderRadius: 12, background: T.cardAlt, color: T.accentHi, border: '1px solid ' + T.accentHi, fontWeight: 700 } }, __alloT('stem.autorepair.diy_2', '🔧 DIY')),
+              h('span', { style: { padding: '4px 10px', borderRadius: 12, background: T.cardAlt, color: T.warn, border: '1px solid ' + T.warn, fontWeight: 700 } }, __alloT('stem.autorepair.depends', '⚠️ Depends')),
+              h('span', { style: { padding: '4px 10px', borderRadius: 12, background: T.cardAlt, color: T.bad, border: '1px solid ' + T.bad, fontWeight: 700 } }, __alloT('stem.autorepair.often_upsell', '🚩 Often upsell'))
             )
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8, marginBottom: 14 } },
@@ -4941,16 +4941,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 verdictLabel(pickedItem.verdict))
             ),
             h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.what_it_is', '📋 What it is: ')), pickedItem.what),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.what_it_is', '📋 What it is: ')), pickedItem.what),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-              h('strong', { style: { color: T.text } }, t('stem.autorepair.fair_price', '💵 Fair price: ')), pickedItem.fairPrice),
+              h('strong', { style: { color: T.text } }, __alloT('stem.autorepair.fair_price', '💵 Fair price: ')), pickedItem.fairPrice),
             h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + verdictColor(pickedItem.verdict), fontSize: 12, color: T.muted, lineHeight: 1.5 } },
-              h('strong', { style: { color: verdictColor(pickedItem.verdict) } }, t('stem.autorepair.what_to_know', '🎯 What to know: ')),
+              h('strong', { style: { color: verdictColor(pickedItem.verdict) } }, __alloT('stem.autorepair.what_to_know', '🎯 What to know: ')),
               pickedItem.flag)
           ),
           h('div', { style: { marginTop: 14, padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-            h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.consumer_rights_in_maine', '🛡️ Consumer rights in Maine: ')),
-            t('stem.autorepair.you_have_the_right_to_a_written_estima', 'You have the right to a written estimate before any work begins, the old parts back if you ask, and an itemized invoice. The shop cannot exceed the estimate by more than 10% without your re-authorization. Maine Attorney General\'s consumer protection: '),
+            h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.consumer_rights_in_maine', '🛡️ Consumer rights in Maine: ')),
+            __alloT('stem.autorepair.you_have_the_right_to_a_written_estima', 'You have the right to a written estimate before any work begins, the old parts back if you ask, and an itemized invoice. The shop cannot exceed the estimate by more than 10% without your re-authorization. Maine Attorney General\'s consumer protection: '),
             h('a', { href: 'https://www.maine.gov/ag/consumer', target: '_blank', rel: 'noopener', style: { color: T.link, textDecoration: 'underline' } }, 'maine.gov/ag/consumer')
           ),
           disclaimerFooter()
@@ -4971,13 +4971,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🌲 Maine inspection prep'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.maine_annual_safety_inspection', '🌲 Maine annual safety inspection')),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.maine_annual_safety_inspection', '🌲 Maine annual safety inspection')),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              t('stem.autorepair.maine_requires_annual_safety_inspectio', 'Maine requires annual safety inspection ($12.50 fee at any licensed station). Failed sticker = 60 days to repair + recertify, or you stop driving. '),
-              h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.pre_walk_your_car_using_this_8_area_ch', 'Pre-walk your car using this 8-area checklist BEFORE you drive in.')),
-              t('stem.autorepair.many_fails_are_5_minute_diy_fixes_bulb', ' Many fails are 5-minute DIY fixes — bulb, fuse, washer fluid.')),
+              __alloT('stem.autorepair.maine_requires_annual_safety_inspectio', 'Maine requires annual safety inspection ($12.50 fee at any licensed station). Failed sticker = 60 days to repair + recertify, or you stop driving. '),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.pre_walk_your_car_using_this_8_area_ch', 'Pre-walk your car using this 8-area checklist BEFORE you drive in.')),
+              __alloT('stem.autorepair.many_fails_are_5_minute_diy_fixes_bulb', ' Many fails are 5-minute DIY fixes — bulb, fuse, washer fluid.')),
             h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', fontSize: 12, color: T.muted, marginTop: 8 } },
-              h('span', { style: { color: T.accentHi, fontWeight: 700 } }, t('stem.autorepair.self_walk_progress', 'Self-walk progress:')),
+              h('span', { style: { color: T.accentHi, fontWeight: 700 } }, __alloT('stem.autorepair.self_walk_progress', 'Self-walk progress:')),
               h('span', { style: { fontFamily: 'monospace' } }, doneCount + ' / ' + totalCount + ' areas checked (' + pct + '%)')
             )
           ),
@@ -5004,15 +5004,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           pickedItem && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent, marginBottom: 14 } },
             h('h4', { style: { margin: '0 0 10px', fontSize: 15, color: T.accentHi } }, pickedItem.icon + ' ' + pickedItem.area),
             h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.what_they_check', '🔍 What they check: ')), pickedItem.whatTheyCheck),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.what_they_check', '🔍 What they check: ')), pickedItem.whatTheyCheck),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-              h('strong', { style: { color: T.bad } }, t('stem.autorepair.common_fails', '🚩 Common fails: ')), pickedItem.commonFails),
+              h('strong', { style: { color: T.bad } }, __alloT('stem.autorepair.common_fails', '🚩 Common fails: ')), pickedItem.commonFails),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-              h('strong', { style: { color: T.good } }, t('stem.autorepair.diy_3', '🔧 DIY: ')), pickedItem.diy),
+              h('strong', { style: { color: T.good } }, __alloT('stem.autorepair.diy_3', '🔧 DIY: ')), pickedItem.diy),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-              h('strong', { style: { color: T.warn } }, t('stem.autorepair.shop_2', '🏪 Shop: ')), pickedItem.shop),
+              h('strong', { style: { color: T.warn } }, __alloT('stem.autorepair.shop_2', '🏪 Shop: ')), pickedItem.shop),
             h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.5 } },
-              h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.pre_walk_tip', '💡 Pre-walk tip: ')), pickedItem.tip),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.pre_walk_tip', '💡 Pre-walk tip: ')), pickedItem.tip),
             h('div', { style: { marginTop: 10 } },
               h('button', { 'data-ar-focusable': true,
                 'aria-label': 'Mark ' + pickedItem.area + ' as self-checked',
@@ -5027,7 +5027,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             )
           ),
           h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-            h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.maine_reality_2', '🌲 Maine reality: ')), MAINE_CONTEXT.inspection, ' ', MAINE_CONTEXT.sticker),
+            h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.maine_reality_2', '🌲 Maine reality: ')), MAINE_CONTEXT.inspection, ' ', MAINE_CONTEXT.sticker),
           disclaimerFooter()
         );
       }
@@ -5048,18 +5048,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         function ucOverview() {
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.buying_a_used_car_in_maine', '🛒 Buying a used car in Maine')),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.buying_a_used_car_in_maine', '🛒 Buying a used car in Maine')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } }, USED_CAR_CHECK.intro)
             ),
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
-              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, t('stem.autorepair.best_practices', '✅ Best practices')),
+              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.autorepair.best_practices', '✅ Best practices')),
               h('ul', { style: { margin: 0, paddingLeft: 20, fontSize: 12, color: T.muted, lineHeight: 1.6 } },
-                h('li', null, t('stem.autorepair.run_a_carfax_nhtsa_recall_check_via_vi', 'Run a CarFax + NHTSA recall check via VIN BEFORE you go look. ($40 well spent.)')),
-                h('li', null, t('stem.autorepair.insist_on_a_cold_start_warm_engines_hi', 'Insist on a COLD start. Warm engines hide problems.')),
-                h('li', null, t('stem.autorepair.pay_for_a_80_150_pre_purchase_inspecti', 'Pay for a $80–150 pre-purchase inspection (PPI) at an independent shop on anything over $5,000.')),
-                h('li', null, t('stem.autorepair.get_the_title_and_registration_in_your', 'Get the title and registration in your name within 30 days (Maine requirement).')),
-                h('li', null, t('stem.autorepair.test_drive_30_minutes_including_highwa', 'Test drive 30+ minutes including highway, stop-and-go, and bumpy back-roads.')),
-                h('li', null, t('stem.autorepair.ask_for_service_records_the_owner_who_', 'Ask for service records. The owner who says "I don\'t have any" is selling a car someone else didn\'t care about.'))
+                h('li', null, __alloT('stem.autorepair.run_a_carfax_nhtsa_recall_check_via_vi', 'Run a CarFax + NHTSA recall check via VIN BEFORE you go look. ($40 well spent.)')),
+                h('li', null, __alloT('stem.autorepair.insist_on_a_cold_start_warm_engines_hi', 'Insist on a COLD start. Warm engines hide problems.')),
+                h('li', null, __alloT('stem.autorepair.pay_for_a_80_150_pre_purchase_inspecti', 'Pay for a $80–150 pre-purchase inspection (PPI) at an independent shop on anything over $5,000.')),
+                h('li', null, __alloT('stem.autorepair.get_the_title_and_registration_in_your', 'Get the title and registration in your name within 30 days (Maine requirement).')),
+                h('li', null, __alloT('stem.autorepair.test_drive_30_minutes_including_highwa', 'Test drive 30+ minutes including highway, stop-and-go, and bumpy back-roads.')),
+                h('li', null, __alloT('stem.autorepair.ask_for_service_records_the_owner_who_', 'Ask for service records. The owner who says "I don\'t have any" is selling a car someone else didn\'t care about.'))
               )
             )
           );
@@ -5070,9 +5070,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var pickedFlag = picked ? USED_CAR_CHECK.redFlags.find(function(f) { return f.id === picked; }) : null;
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.10_red_flags', '🚩 10 red flags')),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.10_red_flags', '🚩 10 red flags')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                t('stem.autorepair.if_you_see_any_of_these_slow_down_each', 'If you see any of these, slow down. Each one is negotiable. Each one tells you something the seller may or may not be telling you.'))
+                __alloT('stem.autorepair.if_you_see_any_of_these_slow_down_each', 'If you see any of these, slow down. Each one is negotiable. Each one tells you something the seller may or may not be telling you.'))
             ),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
               USED_CAR_CHECK.redFlags.map(function(f) {
@@ -5096,9 +5096,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             pickedFlag && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.bad } },
               h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.bad } }, '🚩 ' + pickedFlag.flag),
               h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.what_to_look_for', '🔍 What to look for: ')), pickedFlag.what),
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.what_to_look_for', '🔍 What to look for: ')), pickedFlag.what),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', { style: { color: T.warn } }, t('stem.autorepair.if_found', '🎯 If found: ')), pickedFlag.ifFound)
+                h('strong', { style: { color: T.warn } }, __alloT('stem.autorepair.if_found', '🎯 If found: ')), pickedFlag.ifFound)
             )
           );
         }
@@ -5110,9 +5110,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           if (done === total) awardBadge('used-car-buyer', 'Used Car Buyer');
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.9_step_walkaround', '🚶 9-step walkaround')),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.9_step_walkaround', '🚶 9-step walkaround')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                t('stem.autorepair.tap_each_step_to_mark_complete_practic', 'Tap each step to mark complete. Practice the routine on a friend\'s car BEFORE you go look at one to buy. '),
+                __alloT('stem.autorepair.tap_each_step_to_mark_complete_practic', 'Tap each step to mark complete. Practice the routine on a friend\'s car BEFORE you go look at one to buy. '),
                 h('strong', null, 'Done: '), done + ' / ' + total)
             ),
             h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -5136,7 +5136,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
 
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🛒 Used car buying'),
-          h('div', { role: 'tablist', 'aria-label': t('stem.autorepair.used_car_sub_modes', 'Used-car sub-modes'),
+          h('div', { role: 'tablist', 'aria-label': __alloT('stem.autorepair.used_car_sub_modes', 'Used-car sub-modes'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
             tabBtn('overview', 'Overview'),
             tabBtn('flags', '🚩 Red flags'),
@@ -5165,14 +5165,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         function evOverview() {
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, t('stem.autorepair.ev_hybrid_service_the_future_of_the_tr', '⚡ EV / hybrid service — the future of the trade')),
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.ev_hybrid_service_the_future_of_the_tr', '⚡ EV / hybrid service — the future of the trade')),
               h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.6 } }, EV_OVERVIEW.bigPicture),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 } },
                 [
-                  { label: t('stem.autorepair.industry_credential', '🏅 Industry credential'), val: EV_OVERVIEW.aseCert },
-                  { label: t('stem.autorepair.tool_investment_2', '🧰 Tool investment'), val: EV_OVERVIEW.tooling },
-                  { label: t('stem.autorepair.pay_differential', '💵 Pay differential'), val: EV_OVERVIEW.salaryDelta },
-                  { label: t('stem.autorepair.where_to_train_maine', '🌲 Where to train (Maine)'), val: EV_OVERVIEW.where }
+                  { label: __alloT('stem.autorepair.industry_credential', '🏅 Industry credential'), val: EV_OVERVIEW.aseCert },
+                  { label: __alloT('stem.autorepair.tool_investment_2', '🧰 Tool investment'), val: EV_OVERVIEW.tooling },
+                  { label: __alloT('stem.autorepair.pay_differential', '💵 Pay differential'), val: EV_OVERVIEW.salaryDelta },
+                  { label: __alloT('stem.autorepair.where_to_train_maine', '🌲 Where to train (Maine)'), val: EV_OVERVIEW.where }
                 ].map(function(r) {
                   return h('div', { key: r.label, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
                     h('div', { style: { fontSize: 11, color: T.accentHi, fontWeight: 700, marginBottom: 4 } }, r.label),
@@ -5182,11 +5182,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               )
             ),
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.warn } },
-              h('strong', { style: { color: T.warn } }, t('stem.autorepair.critical', '⚠️ Critical: ')),
+              h('strong', { style: { color: T.warn } }, __alloT('stem.autorepair.critical', '⚠️ Critical: ')),
               h('span', { style: { color: T.text, fontSize: 13, lineHeight: 1.5 } },
-                t('stem.autorepair.ev_high_voltage_work_is_regulated_spec', 'EV high-voltage work is regulated specialty work. Without proper training, insulated PPE, and the manufacturer\'s service procedure, '),
-                h('strong', null, t('stem.autorepair.do_not_service_hv_components', 'do not service HV components. ')),
-                t('stem.autorepair.a_400v_battery_system_can_kill_you_fas', 'A 400V battery system can kill you faster than you can let go. This module is overview-level for awareness, not a substitute for training.'))
+                __alloT('stem.autorepair.ev_high_voltage_work_is_regulated_spec', 'EV high-voltage work is regulated specialty work. Without proper training, insulated PPE, and the manufacturer\'s service procedure, '),
+                h('strong', null, __alloT('stem.autorepair.do_not_service_hv_components', 'do not service HV components. ')),
+                __alloT('stem.autorepair.a_400v_battery_system_can_kill_you_fas', 'A 400V battery system can kill you faster than you can let go. This module is overview-level for awareness, not a substitute for training.'))
             )
           );
         }
@@ -5196,9 +5196,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var pickedItem = picked ? EV_SAFETY.find(function(s) { return s.id === picked; }) : null;
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.ev_specific_safety', '⚠️ EV-specific safety')),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.ev_specific_safety', '⚠️ EV-specific safety')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                t('stem.autorepair.six_rules_that_override_your_general_t', 'Six rules that override your general-tech instinct on a hybrid or EV.'))
+                __alloT('stem.autorepair.six_rules_that_override_your_general_t', 'Six rules that override your general-tech instinct on a hybrid or EV.'))
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
               EV_SAFETY.map(function(s) {
@@ -5222,13 +5222,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             pickedItem && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.bad } },
               h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.bad } }, pickedItem.icon + ' ' + pickedItem.name),
               h('div', { style: { padding: 10, borderRadius: 8, background: '#7c2d12', border: '1px solid #ea580c', marginBottom: 10 } },
-                h('strong', { style: { color: '#fed7aa' } }, t('stem.autorepair.rule', '⚠️ Rule: ')),
+                h('strong', { style: { color: '#fed7aa' } }, __alloT('stem.autorepair.rule', '⚠️ Rule: ')),
                 h('span', { style: { color: '#fed7aa', fontSize: 13, lineHeight: 1.5 } }, pickedItem.rule)
               ),
               h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.detail', '🔬 Detail: ')), pickedItem.detail),
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.detail', '🔬 Detail: ')), pickedItem.detail),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', { style: { color: T.text } }, t('stem.autorepair.what_to_do', '🎯 What to do: ')), pickedItem.action)
+                h('strong', { style: { color: T.text } }, __alloT('stem.autorepair.what_to_do', '🎯 What to do: ')), pickedItem.action)
             )
           );
         }
@@ -5238,9 +5238,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var pickedItem = picked ? EV_KEY_DIFFERENCES[picked] : null;
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.what_changes_vs_ice_service', '🔄 What changes vs ICE service')),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.what_changes_vs_ice_service', '🔄 What changes vs ICE service')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                t('stem.autorepair.7_places_where_hybrid_ev_maintenance_d', '7 places where hybrid/EV maintenance diverges from gasoline service. Half are about what NOT to do.'))
+                __alloT('stem.autorepair.7_places_where_hybrid_ev_maintenance_d', '7 places where hybrid/EV maintenance diverges from gasoline service. Half are about what NOT to do.'))
             ),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
               EV_KEY_DIFFERENCES.map(function(d2, i) {
@@ -5260,16 +5260,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             pickedItem && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent } },
               h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, pickedItem.topic),
               h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-                h('strong', null, t('stem.autorepair.what_it_is_2', '🔍 What it is: ')), pickedItem.what),
+                h('strong', null, __alloT('stem.autorepair.what_it_is_2', '🔍 What it is: ')), pickedItem.what),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.maintenance_shift', '🔧 Maintenance shift: ')), pickedItem.maintenanceShift)
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.maintenance_shift', '🔧 Maintenance shift: ')), pickedItem.maintenanceShift)
             )
           );
         }
 
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('⚡ EV / Hybrid'),
-          h('div', { role: 'tablist', 'aria-label': t('stem.autorepair.ev_sections', 'EV sections'),
+          h('div', { role: 'tablist', 'aria-label': __alloT('stem.autorepair.ev_sections', 'EV sections'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
             tabBtn('overview', 'Overview'),
             tabBtn('safety', '⚠️ HV safety'),
@@ -5297,16 +5297,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('📖 Glossary'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.50_essential_auto_terms_2', '📖 50+ essential auto terms')),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.50_essential_auto_terms_2', '📖 50+ essential auto terms')),
             h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-              t('stem.autorepair.a_glossary_so_you_can_read_a_repair_ar', 'A glossary so you can read a repair article without getting stuck. Filter by category or search any word.')),
+              __alloT('stem.autorepair.a_glossary_so_you_can_read_a_repair_ar', 'A glossary so you can read a repair article without getting stuck. Filter by category or search any word.')),
             h('input', { type: 'search', 'data-ar-focusable': true,
-              'aria-label': t('stem.autorepair.search_glossary_terms', 'Search glossary terms'),
-              placeholder: t('stem.autorepair.search_terms_or_definitions', 'Search terms or definitions...'),
+              'aria-label': __alloT('stem.autorepair.search_glossary_terms', 'Search glossary terms'),
+              placeholder: __alloT('stem.autorepair.search_terms_or_definitions', 'Search terms or definitions...'),
               value: query,
               onChange: function(e) { upd('glossaryQuery', e.target.value); },
               style: { width: '100%', padding: 10, borderRadius: 8, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13, marginBottom: 10, boxSizing: 'border-box' } }),
-            h('div', { role: 'tablist', 'aria-label': t('stem.autorepair.filter_by_category', 'Filter by category'), style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+            h('div', { role: 'tablist', 'aria-label': __alloT('stem.autorepair.filter_by_category', 'Filter by category'), style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
               tags.map(function(t) {
                 var active = tagFilter === t;
                 return h('button', { key: t, 'data-ar-focusable': true, role: 'tab',
@@ -5331,7 +5331,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               );
             }),
             filtered.length === 0 && h('div', { style: { padding: 14, textAlign: 'center', color: T.dim, fontSize: 13 } },
-              t('stem.autorepair.no_terms_match_try_clearing_the_search', 'No terms match. Try clearing the search or picking "All".'))
+              __alloT('stem.autorepair.no_terms_match_try_clearing_the_search', 'No terms match. Try clearing the search or picking "All".'))
           ),
           disclaimerFooter()
         );
@@ -5350,9 +5350,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🌨️ Cold-weather prep'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.maine_winter_prep_october_through_apri', '🌨️ Maine winter prep — October through April')),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.maine_winter_prep_october_through_apri', '🌨️ Maine winter prep — October through April')),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              t('stem.autorepair.doing_this_in_october_november_means_f', 'Doing this in October–November means February doesn\'t strand you. Most items are 5–30 minute jobs. '),
+              __alloT('stem.autorepair.doing_this_in_october_november_means_f', 'Doing this in October–November means February doesn\'t strand you. Most items are 5–30 minute jobs. '),
               h('strong', { style: { color: T.accentHi } }, 'Progress: '), done + ' / ' + total + ' (' + pct + '%)')
           ),
           h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -5374,7 +5374,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 ),
                 h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5, marginBottom: 4 } }, item.detail),
                 h('div', { style: { fontSize: 12, color: isChecked ? '#a7f3d0' : T.text, lineHeight: 1.5 } },
-                  h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.action', '🎯 Action: ')), item.action)
+                  h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.action', '🎯 Action: ')), item.action)
               );
             })
           ),
@@ -5397,14 +5397,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
 
         function rsOverview() {
           return h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, t('stem.autorepair.if_you_break_down_on_a_maine_road', '🚨 If you break down on a Maine road...')),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.if_you_break_down_on_a_maine_road', '🚨 If you break down on a Maine road...')),
             h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-              t('stem.autorepair.maine_rural_breakdowns_can_become_surv', 'Maine rural breakdowns can become survival situations in winter. Below-zero temperatures + 30+ minute tow waits + sparse cell coverage = real risk. Two parts: '),
-              h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.what_s_in_your_trunk', 'what\'s in your trunk')), t('stem.autorepair.kit_tab_and', ' (Kit tab) and '),
-              h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.what_you_do', 'what you do')), t('stem.autorepair.protocol_tab', ' (Protocol tab).')),
+              __alloT('stem.autorepair.maine_rural_breakdowns_can_become_surv', 'Maine rural breakdowns can become survival situations in winter. Below-zero temperatures + 30+ minute tow waits + sparse cell coverage = real risk. Two parts: '),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.what_s_in_your_trunk', 'what\'s in your trunk')), __alloT('stem.autorepair.kit_tab_and', ' (Kit tab) and '),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.what_you_do', 'what you do')), __alloT('stem.autorepair.protocol_tab', ' (Protocol tab).')),
             h('div', { style: { padding: 10, borderRadius: 8, background: '#7c2d12', border: '1px solid #ea580c', fontSize: 13, color: '#fed7aa', lineHeight: 1.55 } },
-              h('strong', null, t('stem.autorepair.critical_maine_winter_rule', '⚠️ Critical Maine winter rule: ')),
-              t('stem.autorepair.if_your_exhaust_pipe_is_buried_in_snow', 'If your exhaust pipe is buried in snow, DO NOT idle the engine to stay warm. Carbon monoxide accumulates in the cabin in minutes. Clear the exhaust before idling, OR run engine 10 minutes per hour with a window cracked.'))
+              h('strong', null, __alloT('stem.autorepair.critical_maine_winter_rule', '⚠️ Critical Maine winter rule: ')),
+              __alloT('stem.autorepair.if_your_exhaust_pipe_is_buried_in_snow', 'If your exhaust pipe is buried in snow, DO NOT idle the engine to stay warm. Carbon monoxide accumulates in the cabin in minutes. Clear the exhaust before idling, OR run engine 10 minutes per hour with a window cracked.'))
           );
         }
 
@@ -5415,9 +5415,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           if (done === total) awardBadge('kit-packed', 'Trunk Kit Packed');
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.maine_winter_trunk_kit', '🎒 Maine winter trunk kit')),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.maine_winter_trunk_kit', '🎒 Maine winter trunk kit')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                t('stem.autorepair.tap_each_item_as_you_pack_it_total_kit', 'Tap each item as you pack it. Total kit cost: ~$300–$600. '),
+                __alloT('stem.autorepair.tap_each_item_as_you_pack_it_total_kit', 'Tap each item as you pack it. Total kit cost: ~$300–$600. '),
                 h('strong', null, 'Done: '), done + ' / ' + total)
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 } },
@@ -5453,9 +5453,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           };
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.breakdown_response_protocol', '🛣️ Breakdown response protocol')),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.breakdown_response_protocol', '🛣️ Breakdown response protocol')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                t('stem.autorepair.9_steps_in_4_phases_order_matters_get_', '9 steps in 4 phases. Order matters — get safe first, then assess.'))
+                __alloT('stem.autorepair.9_steps_in_4_phases_order_matters_get_', '9 steps in 4 phases. Order matters — get safe first, then assess.'))
             ),
             h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               BREAKDOWN_PROTOCOL.map(function(p) {
@@ -5467,9 +5467,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                     h('strong', { style: { fontSize: 14, color: T.text, flex: 1 } }, p.title)
                   ),
                   h('div', { style: { fontSize: 12, color: T.text, lineHeight: 1.5, marginBottom: 4 } },
-                    h('strong', { style: { color: T.good } }, t('stem.autorepair.do', '✅ Do: ')), p.do),
+                    h('strong', { style: { color: T.good } }, __alloT('stem.autorepair.do', '✅ Do: ')), p.do),
                   h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5 } },
-                    h('strong', { style: { color: T.bad } }, t('stem.autorepair.avoid', '❌ Avoid: ')), p.avoid)
+                    h('strong', { style: { color: T.bad } }, __alloT('stem.autorepair.avoid', '❌ Avoid: ')), p.avoid)
                 );
               })
             )
@@ -5478,7 +5478,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
 
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🚨 Roadside emergency'),
-          h('div', { role: 'tablist', 'aria-label': t('stem.autorepair.roadside_sub_modes', 'Roadside sub-modes'),
+          h('div', { role: 'tablist', 'aria-label': __alloT('stem.autorepair.roadside_sub_modes', 'Roadside sub-modes'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
             tabBtn('overview', 'Overview'),
             tabBtn('kit', '🎒 Trunk kit'),
@@ -5508,29 +5508,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var mp = SHOP_BUSINESS.mobilePath;
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, t('stem.autorepair.running_your_own_three_maine_paths', '🏪 Running your own — three Maine paths')),
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.running_your_own_three_maine_paths', '🏪 Running your own — three Maine paths')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } }, SHOP_BUSINESS.overview)
             ),
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent, marginBottom: 14 } },
               h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🚐 ' + mp.title),
               h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 } },
                 h('div', null,
-                  h('strong', { style: { color: T.good, fontSize: 12 } }, t('stem.autorepair.pros', '✅ Pros')),
+                  h('strong', { style: { color: T.good, fontSize: 12 } }, __alloT('stem.autorepair.pros', '✅ Pros')),
                   h('ul', { style: { margin: '4px 0 0', paddingLeft: 16, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
                     mp.pros.map(function(p, i) { return h('li', { key: i }, p); }))
                 ),
                 h('div', null,
-                  h('strong', { style: { color: T.bad, fontSize: 12 } }, t('stem.autorepair.cons', '❌ Cons')),
+                  h('strong', { style: { color: T.bad, fontSize: 12 } }, __alloT('stem.autorepair.cons', '❌ Cons')),
                   h('ul', { style: { margin: '4px 0 0', paddingLeft: 16, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
                     mp.cons.map(function(c, i) { return h('li', { key: i }, c); }))
                 )
               ),
               h('p', { style: { margin: '0 0 6px', fontSize: 12, color: T.muted } },
-                h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.startup_cost', '💵 Startup cost: ')), mp.startupCost),
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.startup_cost', '💵 Startup cost: ')), mp.startupCost),
               h('p', { style: { margin: '0 0 6px', fontSize: 12, color: T.muted } },
-                h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.revenue', '📈 Revenue: ')), mp.revenue),
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.revenue', '📈 Revenue: ')), mp.revenue),
               h('p', { style: { margin: 0, fontSize: 12, color: T.muted } },
-                h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.scaling', '⏫ Scaling: ')), mp.scaling)
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.scaling', '⏫ Scaling: ')), mp.scaling)
             )
           );
         }
@@ -5538,9 +5538,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         function sbInsurance() {
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.insurance_you_need', '🛡️ Insurance you need')),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.insurance_you_need', '🛡️ Insurance you need')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-                t('stem.autorepair.customer_cars_customer_property_employ', 'Customer cars + customer property + employees + your work vehicle. One missing policy = bankruptcy on a single claim.'))
+                __alloT('stem.autorepair.customer_cars_customer_property_employ', 'Customer cars + customer property + employees + your work vehicle. One missing policy = bankruptcy on a single claim.'))
             ),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               SHOP_BUSINESS.insurance.map(function(ins) {
@@ -5550,7 +5550,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                     h('span', { style: { fontSize: 12, color: T.good, fontWeight: 700 } }, ins.cost)
                   ),
                   h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5, marginBottom: 4 } },
-                    h('strong', { style: { color: T.text } }, t('stem.autorepair.who_needs', 'Who needs: ')), ins.who),
+                    h('strong', { style: { color: T.text } }, __alloT('stem.autorepair.who_needs', 'Who needs: ')), ins.who),
                   h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5 } },
                     h('strong', { style: { color: T.text } }, 'Why: '), ins.why)
                 );
@@ -5562,7 +5562,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         function sbTools() {
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.tool_truck_financing_reality', '🚚 Tool truck financing reality')),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.tool_truck_financing_reality', '🚚 Tool truck financing reality')),
               h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
                 SHOP_BUSINESS.toolFinancingWarning),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
@@ -5583,9 +5583,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         function sbPricing() {
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.pricing_your_work', '💵 Pricing your work')),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.pricing_your_work', '💵 Pricing your work')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                t('stem.autorepair.maine_2026_ranges_national_comparison_', 'Maine 2026 ranges + national comparison. Don\'t race to the bottom — pricing too low signals "low quality" and traps you under your costs.'))
+                __alloT('stem.autorepair.maine_2026_ranges_national_comparison_', 'Maine 2026 ranges + national comparison. Don\'t race to the bottom — pricing too low signals "low quality" and traps you under your costs.'))
             ),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
               SHOP_BUSINESS.pricing.map(function(p, i) {
@@ -5611,9 +5611,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           };
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.getting_customers', '📣 Getting customers')),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.getting_customers', '📣 Getting customers')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                t('stem.autorepair.customer_acquisition_channels_ranked_m', 'Customer-acquisition channels ranked. Maine small-town reality: word-of-mouth + Google reviews dominate. Don\'t spend on paid ads until the free channels are saturated.'))
+                __alloT('stem.autorepair.customer_acquisition_channels_ranked_m', 'Customer-acquisition channels ranked. Maine small-town reality: word-of-mouth + Google reviews dominate. Don\'t spend on paid ads until the free channels are saturated.'))
             ),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
               SHOP_BUSINESS.customerAcquisition.map(function(c, i) {
@@ -5628,7 +5628,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               })
             ),
             h('div', { style: { padding: 12, borderRadius: 8, background: '#7c2d12', border: '1px solid #ea580c', fontSize: 12, color: '#fed7aa' } },
-              h('strong', null, t('stem.autorepair.common_pitfalls', '⚠️ Common pitfalls: ')),
+              h('strong', null, __alloT('stem.autorepair.common_pitfalls', '⚠️ Common pitfalls: ')),
               h('ul', { style: { margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 } },
                 SHOP_BUSINESS.pitfalls.map(function(p, i) { return h('li', { key: i }, p); })
               )
@@ -5638,7 +5638,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
 
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🏪 Shop business'),
-          h('div', { role: 'tablist', 'aria-label': t('stem.autorepair.shop_business_sections', 'Shop business sections'),
+          h('div', { role: 'tablist', 'aria-label': __alloT('stem.autorepair.shop_business_sections', 'Shop business sections'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
             tabBtn('overview', 'Overview'),
             tabBtn('insurance', '🛡️ Insurance'),
@@ -5668,9 +5668,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🚗 First car — 30 day plan'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.just_bought_your_first_car', '🚗 Just bought your first car?')),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.just_bought_your_first_car', '🚗 Just bought your first car?')),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              t('stem.autorepair.week_by_week_30_day_plan_to_set_yourse', 'Week-by-week 30-day plan to set yourself up. Don\'t skip steps — Week 1 paperwork is non-negotiable Maine law. '),
+              __alloT('stem.autorepair.week_by_week_30_day_plan_to_set_yourse', 'Week-by-week 30-day plan to set yourself up. Don\'t skip steps — Week 1 paperwork is non-negotiable Maine law. '),
               h('strong', { style: { color: T.accentHi } }, 'Progress: '), doneCount + ' / ' + totalTasks + ' (' + pct + '%)')
           ),
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: 14 } },
@@ -5739,14 +5739,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
             backBar('🧪 Hands-on lab simulator'),
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.diagnostic_decision_making_scored', '🧪 Diagnostic decision-making, scored')),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.diagnostic_decision_making_scored', '🧪 Diagnostic decision-making, scored')),
               h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-                t('stem.autorepair.a_customer_car_arrives_with_symptoms_y', 'A "customer car" arrives with symptoms. You walk through diagnostic decision points. Each choice is scored on diagnostic efficiency: '),
-                h('strong', { style: { color: T.good } }, t('stem.autorepair.10_best_move', '+10 = best move')), ', ',
-                h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.5_ok', '+5 = OK')), ', ',
-                h('strong', { style: { color: T.bad } }, t('stem.autorepair.5_to_10_parts_cannon_or_harmful', '−5 to −10 = parts-cannon or harmful')), t('stem.autorepair.final_letter_grade_per_choice_feedback', '. Final letter grade + per-choice feedback.')),
+                __alloT('stem.autorepair.a_customer_car_arrives_with_symptoms_y', 'A "customer car" arrives with symptoms. You walk through diagnostic decision points. Each choice is scored on diagnostic efficiency: '),
+                h('strong', { style: { color: T.good } }, __alloT('stem.autorepair.10_best_move', '+10 = best move')), ', ',
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.5_ok', '+5 = OK')), ', ',
+                h('strong', { style: { color: T.bad } }, __alloT('stem.autorepair.5_to_10_parts_cannon_or_harmful', '−5 to −10 = parts-cannon or harmful')), __alloT('stem.autorepair.final_letter_grade_per_choice_feedback', '. Final letter grade + per-choice feedback.')),
               h('div', { style: { fontSize: 12, color: T.muted } },
-                h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.scenarios_completed', 'Scenarios completed: ')), labsCompleted + ' / ' + LAB_SCENARIOS.length)
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.scenarios_completed', 'Scenarios completed: ')), labsCompleted + ' / ' + LAB_SCENARIOS.length)
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 } },
               LAB_SCENARIOS.map(function(s) {
@@ -5757,7 +5757,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   style: { textAlign: 'left', padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + (done ? T.good : T.border), color: T.text, cursor: 'pointer' } },
                   h('div', { style: { fontSize: 28, marginBottom: 4 } }, s.icon),
                   h('div', { style: { fontWeight: 700, fontSize: 14, color: T.text, marginBottom: 4 } }, s.name, done && ' ✓'),
-                  h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6, fontFamily: 'monospace' } }, diffStars(s.difficulty), ' · ', s.steps.length, t('stem.autorepair.decision_points', ' decision points')),
+                  h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6, fontFamily: 'monospace' } }, diffStars(s.difficulty), ' · ', s.steps.length, __alloT('stem.autorepair.decision_points', ' decision points')),
                   h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5 } }, s.intro)
                 );
               })
@@ -5794,12 +5794,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
 
           return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid ' + T.border } },
-              h('button', { 'data-ar-focusable': true, onClick: reset, style: btnGhost() }, t('stem.autorepair.lab_list', '← Lab list')),
+              h('button', { 'data-ar-focusable': true, onClick: reset, style: btnGhost() }, __alloT('stem.autorepair.lab_list', '← Lab list')),
               h('span', { style: { fontSize: 24 } }, lab.icon),
               h('h2', { style: { margin: 0, fontSize: 17, color: T.text } }, lab.name + ' — Results')
             ),
             h('div', { style: { padding: 18, borderRadius: 10, background: T.card, border: '2px solid ' + gradeColor, marginBottom: 14, textAlign: 'center' } },
-              h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6 } }, t('stem.autorepair.final_score', 'Final score')),
+              h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6 } }, __alloT('stem.autorepair.final_score', 'Final score')),
               h('div', { style: { fontSize: 56, fontWeight: 900, color: gradeColor, lineHeight: 1, marginBottom: 6 } }, grade),
               h('div', { style: { fontSize: 18, color: T.text, fontWeight: 700 } }, totalScore + ' / ' + maxScore + ' (' + pct + '%)'),
               h('p', { style: { margin: '10px 0 0', fontSize: 13, color: T.muted, lineHeight: 1.55 } },
@@ -5809,7 +5809,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 pct >= 60 ? '🛠️ Hands need work. Practice the Decision Tree module before retrying.' :
                 '📚 Back to the books. Cost-cutters and parts-cannons leave customers angry.')
             ),
-            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.accentHi } }, t('stem.autorepair.step_by_step_feedback', '🔍 Step-by-step feedback')),
+            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.accentHi } }, __alloT('stem.autorepair.step_by_step_feedback', '🔍 Step-by-step feedback')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 } },
               lab.steps.map(function(step, i) {
                 var picked = answers[step.id];
@@ -5833,12 +5833,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               })
             ),
             h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 14 } },
-              h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.what_was_actually_wrong', '✅ What was actually wrong: ')),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.what_was_actually_wrong', '✅ What was actually wrong: ')),
               h('span', { style: { color: T.text, fontSize: 13, lineHeight: 1.55 } }, lab.truth)
             ),
             h('div', { style: { display: 'flex', gap: 8 } },
-              h('button', { 'data-ar-focusable': true, onClick: function() { pickLab(lab.id); }, style: btnSecondary() }, t('stem.autorepair.retry_scenario', '🔁 Retry scenario')),
-              h('button', { 'data-ar-focusable': true, onClick: reset, style: btnPrimary() }, t('stem.autorepair.pick_another', '🧪 Pick another'))
+              h('button', { 'data-ar-focusable': true, onClick: function() { pickLab(lab.id); }, style: btnSecondary() }, __alloT('stem.autorepair.retry_scenario', '🔁 Retry scenario')),
+              h('button', { 'data-ar-focusable': true, onClick: reset, style: btnPrimary() }, __alloT('stem.autorepair.pick_another', '🧪 Pick another'))
             ),
             disclaimerFooter()
           );
@@ -5847,13 +5847,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         var step = lab.steps[stepIdx];
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid ' + T.border, flexWrap: 'wrap' } },
-            h('button', { 'data-ar-focusable': true, onClick: reset, style: btnGhost() }, t('stem.autorepair.quit_scenario', '← Quit scenario')),
+            h('button', { 'data-ar-focusable': true, onClick: reset, style: btnGhost() }, __alloT('stem.autorepair.quit_scenario', '← Quit scenario')),
             h('span', { style: { fontSize: 24 } }, lab.icon),
             h('h2', { style: { margin: 0, fontSize: 17, color: T.text, flex: 1 } }, lab.name),
             h('span', { style: { fontSize: 11, color: T.muted, fontFamily: 'monospace' } }, 'Step ' + (stepIdx + 1) + ' / ' + totalSteps)
           ),
           stepIdx === 0 && h('div', { style: { padding: 12, borderRadius: 8, background: T.card, border: '1px solid ' + T.accent, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, t('stem.autorepair.customer_car', '🚗 Customer car')),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.autorepair.customer_car', '🚗 Customer car')),
             h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.6 } },
               h('div', null, h('strong', { style: { color: T.text } }, 'Vehicle: '), lab.car.year + ' ' + lab.car.make + ' ' + lab.car.model + ' · ' + lab.car.engine),
               h('div', null, h('strong', { style: { color: T.text } }, 'Mileage: '), lab.car.mileage.toLocaleString()),
@@ -5890,13 +5890,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🆔 VIN decoder'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.17_character_vin_decoder', '🆔 17-character VIN decoder')),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.17_character_vin_decoder', '🆔 17-character VIN decoder')),
             h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              t('stem.autorepair.enter_your_vin_driver_side_dash_door_j', 'Enter your VIN (driver-side dash, door jamb, title, registration, or insurance card) to decode country, manufacturer, model year, and link to free recall + history lookups.')),
+              __alloT('stem.autorepair.enter_your_vin_driver_side_dash_door_j', 'Enter your VIN (driver-side dash, door jamb, title, registration, or insurance card) to decode country, manufacturer, model year, and link to free recall + history lookups.')),
             h('input', { type: 'text', 'data-ar-focusable': true,
-              'aria-label': t('stem.autorepair.vin_input_17_characters', 'VIN input (17 characters)'),
+              'aria-label': __alloT('stem.autorepair.vin_input_17_characters', 'VIN input (17 characters)'),
               maxLength: 17,
-              placeholder: t('stem.autorepair.e_g_1hgcm82633a123456', 'e.g. 1HGCM82633A123456'),
+              placeholder: __alloT('stem.autorepair.e_g_1hgcm82633a123456', 'e.g. 1HGCM82633A123456'),
               value: input,
               onChange: function(e) { upd('vinInput', e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '')); },
               style: { width: '100%', padding: 12, borderRadius: 8, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 16, fontFamily: 'monospace', letterSpacing: 1, marginBottom: 6, boxSizing: 'border-box' } }),
@@ -5909,12 +5909,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               h('h4', { style: { margin: '0 0 10px', fontSize: 14, color: T.accentHi, fontFamily: 'monospace' } }, '🔍 ' + decoded.vin),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 } },
                 [
-                  { label: t('stem.autorepair.country_of_origin', '🌍 Country of origin'), val: decoded.country },
-                  { label: t('stem.autorepair.manufacturer', '🏭 Manufacturer'), val: decoded.maker },
-                  { label: t('stem.autorepair.model_year', '📅 Model year'), val: String(decoded.year) },
-                  { label: t('stem.autorepair.plant', '🏗️ Plant'), val: decoded.plant },
-                  { label: t('stem.autorepair.serial', '🔢 Serial'), val: decoded.serial },
-                  { label: t('stem.autorepair.check', '✅ Check'), val: decoded.check }
+                  { label: __alloT('stem.autorepair.country_of_origin', '🌍 Country of origin'), val: decoded.country },
+                  { label: __alloT('stem.autorepair.manufacturer', '🏭 Manufacturer'), val: decoded.maker },
+                  { label: __alloT('stem.autorepair.model_year', '📅 Model year'), val: String(decoded.year) },
+                  { label: __alloT('stem.autorepair.plant', '🏗️ Plant'), val: decoded.plant },
+                  { label: __alloT('stem.autorepair.serial', '🔢 Serial'), val: decoded.serial },
+                  { label: __alloT('stem.autorepair.check', '✅ Check'), val: decoded.check }
                 ].map(function(r) {
                   return h('div', { key: r.label, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
                     h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 4 } }, r.label),
@@ -5924,26 +5924,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               )
             ),
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h4', { style: { margin: '0 0 10px', fontSize: 14, color: T.accentHi } }, t('stem.autorepair.free_paid_lookups_for_this_vin', '🔗 Free + paid lookups for this VIN')),
+              h('h4', { style: { margin: '0 0 10px', fontSize: 14, color: T.accentHi } }, __alloT('stem.autorepair.free_paid_lookups_for_this_vin', '🔗 Free + paid lookups for this VIN')),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
                 h('a', { href: 'https://www.nhtsa.gov/recalls?vin=' + decoded.vin, target: '_blank', rel: 'noopener',
                   style: { display: 'block', padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.good, color: T.good, textDecoration: 'none', fontSize: 13 } },
                   '🛑 NHTSA Recalls (free) → nhtsa.gov/recalls?vin=' + decoded.vin),
                 h('a', { href: 'https://vpic.nhtsa.dot.gov/decoder/Decoder?vin=' + decoded.vin, target: '_blank', rel: 'noopener',
                   style: { display: 'block', padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.good, color: T.good, textDecoration: 'none', fontSize: 13 } },
-                  t('stem.autorepair.nhtsa_full_vpic_decoder_free_vpic_nhts', '📋 NHTSA full vPIC decoder (free) → vpic.nhtsa.dot.gov')),
+                  __alloT('stem.autorepair.nhtsa_full_vpic_decoder_free_vpic_nhts', '📋 NHTSA full vPIC decoder (free) → vpic.nhtsa.dot.gov')),
                 h('a', { href: 'https://www.carfax.com/vehicle/' + decoded.vin, target: '_blank', rel: 'noopener',
                   style: { display: 'block', padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.warn, color: T.warn, textDecoration: 'none', fontSize: 13 } },
-                  t('stem.autorepair.carfax_history_report_paid_40_carfax_c', '📋 CarFax history report (paid, ~$40) → carfax.com')),
+                  __alloT('stem.autorepair.carfax_history_report_paid_40_carfax_c', '📋 CarFax history report (paid, ~$40) → carfax.com')),
                 h('a', { href: 'https://www.iihs.org/ratings/vehicle/' + decoded.maker.split(' ')[0].toLowerCase(), target: '_blank', rel: 'noopener',
                   style: { display: 'block', padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accentHi, color: T.accentHi, textDecoration: 'none', fontSize: 13 } },
-                  t('stem.autorepair.iihs_crash_test_ratings_free_iihs_org', '🛡️ IIHS crash-test ratings (free) → iihs.org'))
+                  __alloT('stem.autorepair.iihs_crash_test_ratings_free_iihs_org', '🛡️ IIHS crash-test ratings (free) → iihs.org'))
               )
             )
           ),
           h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 11, color: T.muted, lineHeight: 1.55 } },
-            h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.privacy', '🔒 Privacy: ')),
-            t('stem.autorepair.this_decoder_runs_locally_your_vin_is_', 'This decoder runs locally — your VIN is not sent anywhere. The lookup links open in a new tab. NHTSA + CarFax handle their own privacy.')),
+            h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.privacy', '🔒 Privacy: ')),
+            __alloT('stem.autorepair.this_decoder_runs_locally_your_vin_is_', 'This decoder runs locally — your VIN is not sent anywhere. The lookup links open in a new tab. NHTSA + CarFax handle their own privacy.')),
           disclaimerFooter()
         );
       }
@@ -5972,14 +5972,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('📅 Maintenance schedule'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.personalized_maintenance_schedule', '📅 Personalized maintenance schedule')),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.personalized_maintenance_schedule', '📅 Personalized maintenance schedule')),
             h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              t('stem.autorepair.generic_oem_agnostic_intervals_always_', 'Generic OEM-agnostic intervals. Always cross-reference your owner\'s manual for vehicle-specific specs. Maine winter: shorten oil + brake-fluid intervals 20%.')),
+              __alloT('stem.autorepair.generic_oem_agnostic_intervals_always_', 'Generic OEM-agnostic intervals. Always cross-reference your owner\'s manual for vehicle-specific specs. Maine winter: shorten oil + brake-fluid intervals 20%.')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10 } },
               h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: T.text } },
-                h('span', { style: { fontWeight: 700 } }, t('stem.autorepair.current_odometer', '🚗 Current odometer')),
+                h('span', { style: { fontWeight: 700 } }, __alloT('stem.autorepair.current_odometer', '🚗 Current odometer')),
                 h('input', { type: 'number', 'data-ar-focusable': true,
-                  'aria-label': t('stem.autorepair.current_odometer_mileage', 'Current odometer mileage'),
+                  'aria-label': __alloT('stem.autorepair.current_odometer_mileage', 'Current odometer mileage'),
                   min: 0, max: 500000, step: 1000,
                   placeholder: '85000',
                   value: miles || '',
@@ -5987,9 +5987,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } })
               ),
               h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: T.text } },
-                h('span', { style: { fontWeight: 700 } }, t('stem.autorepair.months_since_last_service', '📅 Months since last service')),
+                h('span', { style: { fontWeight: 700 } }, __alloT('stem.autorepair.months_since_last_service', '📅 Months since last service')),
                 h('input', { type: 'number', 'data-ar-focusable': true,
-                  'aria-label': t('stem.autorepair.months_since_last_service_2', 'Months since last service'),
+                  'aria-label': __alloT('stem.autorepair.months_since_last_service_2', 'Months since last service'),
                   min: 0, max: 60, step: 1,
                   placeholder: '6',
                   value: monthsSince,
@@ -5997,9 +5997,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } })
               ),
               h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: T.text } },
-                h('span', { style: { fontWeight: 700 } }, t('stem.autorepair.vehicle_year_optional', '🏷️ Vehicle year (optional)')),
+                h('span', { style: { fontWeight: 700 } }, __alloT('stem.autorepair.vehicle_year_optional', '🏷️ Vehicle year (optional)')),
                 h('input', { type: 'number', 'data-ar-focusable': true,
-                  'aria-label': t('stem.autorepair.vehicle_model_year', 'Vehicle model year'),
+                  'aria-label': __alloT('stem.autorepair.vehicle_model_year', 'Vehicle model year'),
                   min: 1990, max: 2030, step: 1,
                   placeholder: '2015',
                   value: year || '',
@@ -6009,7 +6009,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             )
           ),
           schedule && h('div', null,
-            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.accentHi } }, t('stem.autorepair.items_to_plan', '🔧 Items to plan')),
+            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.accentHi } }, __alloT('stem.autorepair.items_to_plan', '🔧 Items to plan')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               schedule.sort(function(a, b) {
                 var order = { 'overdue-miles': 0, 'overdue-time': 1, 'soon-miles': 2, 'soon-time': 3, 'ok': 4 };
@@ -6031,7 +6031,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             )
           ),
           !schedule && h('div', { style: { padding: 16, textAlign: 'center', color: T.dim, fontSize: 13 } },
-            t('stem.autorepair.enter_your_odometer_mileage_above_to_s', 'Enter your odometer mileage above to see what\'s due soon.')),
+            __alloT('stem.autorepair.enter_your_odometer_mileage_above_to_s', 'Enter your odometer mileage above to see what\'s due soon.')),
           disclaimerFooter()
         );
       }
@@ -6045,12 +6045,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🚩 Common scams'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.12_shop_scams_to_recognize', '🚩 12 shop scams to recognize')),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.12_shop_scams_to_recognize', '🚩 12 shop scams to recognize')),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              t('stem.autorepair.most_shops_are_honest_a_few_aren_t_kno', 'Most shops are honest. A few aren\'t. Knowing the most common pitches makes you a savvier customer — and you can push back politely.')),
+              __alloT('stem.autorepair.most_shops_are_honest_a_few_aren_t_kno', 'Most shops are honest. A few aren\'t. Knowing the most common pitches makes you a savvier customer — and you can push back politely.')),
             h('p', { style: { margin: 0, color: T.dim, fontSize: 11, lineHeight: 1.5 } },
-              h('strong', null, t('stem.autorepair.maine_consumer_rights', '🛡️ Maine consumer rights: ')),
-              t('stem.autorepair.written_estimate_before_work_old_parts', 'written estimate before work, old parts on request, itemized invoice, can\'t exceed estimate by 10% without re-authorization. Maine AG: '),
+              h('strong', null, __alloT('stem.autorepair.maine_consumer_rights', '🛡️ Maine consumer rights: ')),
+              __alloT('stem.autorepair.written_estimate_before_work_old_parts', 'written estimate before work, old parts on request, itemized invoice, can\'t exceed estimate by 10% without re-authorization. Maine AG: '),
               h('a', { href: 'https://www.maine.gov/ag/consumer', target: '_blank', rel: 'noopener', style: { color: T.link } }, 'maine.gov/ag/consumer'))
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
@@ -6075,15 +6075,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           pickedScam && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.bad } },
             h('h4', { style: { margin: '0 0 10px', fontSize: 15, color: T.bad } }, pickedScam.icon + ' ' + pickedScam.name),
             h('div', { style: { padding: 10, borderRadius: 8, background: '#7c2d12', border: '1px solid #ea580c', marginBottom: 10 } },
-              h('strong', { style: { color: '#fed7aa' } }, t('stem.autorepair.the_pitch', '🎤 The pitch: ')),
+              h('strong', { style: { color: '#fed7aa' } }, __alloT('stem.autorepair.the_pitch', '🎤 The pitch: ')),
               h('em', { style: { color: '#fed7aa', fontSize: 13, lineHeight: 1.5 } }, pickedScam.pitch)
             ),
             h('p', { style: { margin: '0 0 10px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.the_truth', '✅ The truth: ')), pickedScam.truth),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.the_truth', '✅ The truth: ')), pickedScam.truth),
             h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-              h('strong', { style: { color: T.good } }, t('stem.autorepair.what_to_ask', '💬 What to ask: ')), pickedScam.askFor),
+              h('strong', { style: { color: T.good } }, __alloT('stem.autorepair.what_to_ask', '💬 What to ask: ')), pickedScam.askFor),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-              h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.what_to_do_now', '🎯 What to do now: ')), pickedScam.doNow)
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.what_to_do_now', '🎯 What to do now: ')), pickedScam.doNow)
           ),
           disclaimerFooter()
         );
@@ -6158,7 +6158,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               ),
               // Per-question result strip (3 chips per case: part / cause / severity)
               h('div', { style: { padding: '0 18px 8px' } },
-                h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: T.muted, marginBottom: 4 } }, t('stem.autorepair.per_question_results_part_cause_severi', 'Per-question results (part · cause · severity)')),
+                h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: T.muted, marginBottom: 4 } }, __alloT('stem.autorepair.per_question_results_part_cause_severi', 'Per-question results (part · cause · severity)')),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
                   perQ.map(function(q, qi) {
                     return h('div', { key: qi,
@@ -6174,9 +6174,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   })
                 )
               ),
-              pct >= 80 && h('div', { style: { padding: '8px 18px', fontSize: 13, color: T.good, fontWeight: 700, borderTop: '1px solid ' + T.border } }, t('stem.autorepair.badge_earned_damage_id_ace', '🏅 Badge earned: Damage ID Ace')),
+              pct >= 80 && h('div', { style: { padding: '8px 18px', fontSize: 13, color: T.good, fontWeight: 700, borderTop: '1px solid ' + T.border } }, __alloT('stem.autorepair.badge_earned_damage_id_ace', '🏅 Badge earned: Damage ID Ace')),
               h('div', { style: { padding: '12px 18px', borderTop: '1px solid ' + T.border } },
-                h('button', { 'data-ar-focusable': true, onClick: function() { updMulti({ damageIdx: 0, damageAnswers: {} }); }, style: btnPrimary() }, t('stem.autorepair.restart_2', '🔄 Restart'))
+                h('button', { 'data-ar-focusable': true, onClick: function() { updMulti({ damageIdx: 0, damageAnswers: {} }); }, style: btnPrimary() }, __alloT('stem.autorepair.restart_2', '🔄 Restart'))
               )
             ),
             disclaimerFooter()
@@ -6260,16 +6260,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('💵 Repair ROI calculator'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.should_i_fix_it_or_sell_it_2', '💵 Should I fix it or sell it?')),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.should_i_fix_it_or_sell_it_2', '💵 Should I fix it or sell it?')),
             h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              t('stem.autorepair.rule_of_thumb_when_repair_cost_exceeds', 'Rule of thumb: when repair cost exceeds 50% of vehicle value (or 70% with looming work added), the math typically favors selling. Inputs below.')),
+              __alloT('stem.autorepair.rule_of_thumb_when_repair_cost_exceeds', 'Rule of thumb: when repair cost exceeds 50% of vehicle value (or 70% with looming work added), the math typically favors selling. Inputs below.')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } },
               [
-                { id: 'roiVehVal', label: t('stem.autorepair.current_vehicle_value', '🚗 Current vehicle value ($)'), placeholder: '4000', val: vehVal, type: 'number' },
-                { id: 'roiRepCost', label: t('stem.autorepair.repair_cost_quoted', '🔧 Repair cost quoted ($)'), placeholder: '2500', val: repCost, type: 'number' },
-                { id: 'roiLooming', label: t('stem.autorepair.other_looming_work', '⏳ Other looming work ($)'), placeholder: '0', val: loomingCost, type: 'number' },
-                { id: 'roiAge', label: t('stem.autorepair.vehicle_age_years', '📅 Vehicle age (years)'), placeholder: '12', val: age, type: 'number' },
-                { id: 'roiMiles', label: t('stem.autorepair.mileage', '🛣️ Mileage'), placeholder: '180000', val: miles, type: 'number' }
+                { id: 'roiVehVal', label: __alloT('stem.autorepair.current_vehicle_value', '🚗 Current vehicle value ($)'), placeholder: '4000', val: vehVal, type: 'number' },
+                { id: 'roiRepCost', label: __alloT('stem.autorepair.repair_cost_quoted', '🔧 Repair cost quoted ($)'), placeholder: '2500', val: repCost, type: 'number' },
+                { id: 'roiLooming', label: __alloT('stem.autorepair.other_looming_work', '⏳ Other looming work ($)'), placeholder: '0', val: loomingCost, type: 'number' },
+                { id: 'roiAge', label: __alloT('stem.autorepair.vehicle_age_years', '📅 Vehicle age (years)'), placeholder: '12', val: age, type: 'number' },
+                { id: 'roiMiles', label: __alloT('stem.autorepair.mileage', '🛣️ Mileage'), placeholder: '180000', val: miles, type: 'number' }
               ].map(function(f) {
                 return h('label', { key: f.id, style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: T.text } },
                   h('span', { style: { fontWeight: 700 } }, f.label),
@@ -6282,37 +6282,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 );
               }),
               h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: T.text } },
-                h('span', { style: { fontWeight: 700 } }, t('stem.autorepair.emotional_attachment', '❤️ Emotional attachment')),
+                h('span', { style: { fontWeight: 700 } }, __alloT('stem.autorepair.emotional_attachment', '❤️ Emotional attachment')),
                 h('select', { 'data-ar-focusable': true,
-                  'aria-label': t('stem.autorepair.emotional_attachment_to_vehicle', 'Emotional attachment to vehicle'),
+                  'aria-label': __alloT('stem.autorepair.emotional_attachment_to_vehicle', 'Emotional attachment to vehicle'),
                   value: attachment,
                   onChange: function(e) { upd('roiAttach', e.target.value); },
                   style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } },
-                  h('option', { value: 'low' }, t('stem.autorepair.low_would_happily_upgrade', 'Low — would happily upgrade')),
-                  h('option', { value: 'medium' }, t('stem.autorepair.medium_fine_either_way', 'Medium — fine either way')),
-                  h('option', { value: 'high' }, t('stem.autorepair.high_sentimental_value', 'High — sentimental value'))
+                  h('option', { value: 'low' }, __alloT('stem.autorepair.low_would_happily_upgrade', 'Low — would happily upgrade')),
+                  h('option', { value: 'medium' }, __alloT('stem.autorepair.medium_fine_either_way', 'Medium — fine either way')),
+                  h('option', { value: 'high' }, __alloT('stem.autorepair.high_sentimental_value', 'High — sentimental value'))
                 )
               )
             )
           ),
           result && h('div', { style: { padding: 16, borderRadius: 10, background: T.card, border: '2px solid ' + verdictColor(result.verdict), marginBottom: 14 } },
-            h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 4 } }, t('stem.autorepair.recommendation', 'Recommendation')),
+            h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 4 } }, __alloT('stem.autorepair.recommendation', 'Recommendation')),
             h('div', { style: { fontSize: 22, fontWeight: 800, color: verdictColor(result.verdict), marginBottom: 8 } },
               verdictLabel(result.verdict)),
             h('p', { style: { margin: '0 0 12px', fontSize: 14, color: T.text, lineHeight: 1.55 } }, result.summary),
-            h('h4', { style: { margin: '0 0 6px', fontSize: 13, color: T.accentHi } }, t('stem.autorepair.reasoning', 'Reasoning')),
+            h('h4', { style: { margin: '0 0 6px', fontSize: 13, color: T.accentHi } }, __alloT('stem.autorepair.reasoning', 'Reasoning')),
             h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.7 } },
               result.reasons.map(function(r, i) { return h('li', { key: i }, r); })
             )
           ),
           !result && h('div', { style: { padding: 16, textAlign: 'center', color: T.dim, fontSize: 13 } },
-            t('stem.autorepair.enter_vehicle_value_repair_cost_to_see', 'Enter vehicle value + repair cost to see the recommendation.')),
+            __alloT('stem.autorepair.enter_vehicle_value_repair_cost_to_see', 'Enter vehicle value + repair cost to see the recommendation.')),
           h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 11, color: T.muted, lineHeight: 1.55 } },
-            h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.how_to_find_vehicle_value', '🎯 How to find vehicle value: ')),
-            h('a', { href: 'https://www.kbb.com/whats-my-car-worth/', target: '_blank', rel: 'noopener', style: { color: T.link } }, t('stem.autorepair.kelley_blue_book', 'Kelley Blue Book')),
+            h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.how_to_find_vehicle_value', '🎯 How to find vehicle value: ')),
+            h('a', { href: 'https://www.kbb.com/whats-my-car-worth/', target: '_blank', rel: 'noopener', style: { color: T.link } }, __alloT('stem.autorepair.kelley_blue_book', 'Kelley Blue Book')),
             ' or ',
-            h('a', { href: 'https://www.edmunds.com/appraisal/', target: '_blank', rel: 'noopener', style: { color: T.link } }, t('stem.autorepair.edmunds_appraisal', 'Edmunds appraisal')),
-            t('stem.autorepair.use_the_private_party_sale_or_trade_in', '. Use the "Private Party Sale" or "Trade-in" value, NOT the dealer-retail price (which inflates your input).')),
+            h('a', { href: 'https://www.edmunds.com/appraisal/', target: '_blank', rel: 'noopener', style: { color: T.link } }, __alloT('stem.autorepair.edmunds_appraisal', 'Edmunds appraisal')),
+            __alloT('stem.autorepair.use_the_private_party_sale_or_trade_in', '. Use the "Private Party Sale" or "Trade-in" value, NOT the dealer-retail price (which inflates your input).')),
           disclaimerFooter()
         );
       }
@@ -6372,32 +6372,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('📓 Service log'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.your_maintenance_history', '📓 Your maintenance history')),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.your_maintenance_history', '📓 Your maintenance history')),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              t('stem.autorepair.record_every_service_you_do_diy_or_sho', 'Record every service you do (DIY or shop) so future you (or the next buyer) has documentation. Saved automatically. '),
-              h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.total_tracked', 'Total tracked: ')), entries.length + ' entries · $' + totalSpent.toFixed(2))
+              __alloT('stem.autorepair.record_every_service_you_do_diy_or_sho', 'Record every service you do (DIY or shop) so future you (or the next buyer) has documentation. Saved automatically. '),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.total_tracked', 'Total tracked: ')), entries.length + ' entries · $' + totalSpent.toFixed(2))
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent, marginBottom: 14 } },
-            h('h4', { style: { margin: '0 0 10px', fontSize: 14, color: T.accentHi } }, t('stem.autorepair.add_service', '➕ Add service')),
+            h('h4', { style: { margin: '0 0 10px', fontSize: 14, color: T.accentHi } }, __alloT('stem.autorepair.add_service', '➕ Add service')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, marginBottom: 8 } },
               h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11, color: T.text } },
-                h('span', { style: { fontWeight: 700 } }, t('stem.autorepair.date', '📅 Date')),
-                h('input', { type: 'date', 'data-ar-focusable': true, 'aria-label': t('stem.autorepair.service_date', 'Service date'),
+                h('span', { style: { fontWeight: 700 } }, __alloT('stem.autorepair.date', '📅 Date')),
+                h('input', { type: 'date', 'data-ar-focusable': true, 'aria-label': __alloT('stem.autorepair.service_date', 'Service date'),
                   value: draft.date,
                   onChange: function(e) { updateDraft('date', e.target.value); },
                   style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } })
               ),
               h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11, color: T.text } },
-                h('span', { style: { fontWeight: 700 } }, t('stem.autorepair.odometer', '🛣️ Odometer')),
-                h('input', { type: 'number', 'data-ar-focusable': true, 'aria-label': t('stem.autorepair.odometer_mileage', 'Odometer mileage'),
+                h('span', { style: { fontWeight: 700 } }, __alloT('stem.autorepair.odometer', '🛣️ Odometer')),
+                h('input', { type: 'number', 'data-ar-focusable': true, 'aria-label': __alloT('stem.autorepair.odometer_mileage', 'Odometer mileage'),
                   placeholder: '85432',
                   value: draft.odo,
                   onChange: function(e) { updateDraft('odo', e.target.value); },
                   style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } })
               ),
               h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11, color: T.text } },
-                h('span', { style: { fontWeight: 700 } }, t('stem.autorepair.cost', '💵 Cost')),
-                h('input', { type: 'number', step: '0.01', 'data-ar-focusable': true, 'aria-label': t('stem.autorepair.cost_in_dollars', 'Cost in dollars'),
+                h('span', { style: { fontWeight: 700 } }, __alloT('stem.autorepair.cost', '💵 Cost')),
+                h('input', { type: 'number', step: '0.01', 'data-ar-focusable': true, 'aria-label': __alloT('stem.autorepair.cost_in_dollars', 'Cost in dollars'),
                   placeholder: '45.00',
                   value: draft.cost,
                   onChange: function(e) { updateDraft('cost', e.target.value); },
@@ -6405,9 +6405,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               )
             ),
             h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11, color: T.text, marginBottom: 8 } },
-              h('span', { style: { fontWeight: 700 } }, t('stem.autorepair.service', '🔧 Service')),
-              h('input', { type: 'text', 'data-ar-focusable': true, 'aria-label': t('stem.autorepair.service_description', 'Service description'), list: 'log-quick-services',
-                placeholder: t('stem.autorepair.oil_filter_change', 'Oil + filter change'),
+              h('span', { style: { fontWeight: 700 } }, __alloT('stem.autorepair.service', '🔧 Service')),
+              h('input', { type: 'text', 'data-ar-focusable': true, 'aria-label': __alloT('stem.autorepair.service_description', 'Service description'), list: 'log-quick-services',
+                placeholder: __alloT('stem.autorepair.oil_filter_change', 'Oil + filter change'),
                 value: draft.service,
                 onChange: function(e) { updateDraft('service', e.target.value); },
                 style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } }),
@@ -6415,23 +6415,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 quickServices.map(function(s, i) { return h('option', { key: i, value: s }); }))
             ),
             h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11, color: T.text, marginBottom: 8 } },
-              h('span', { style: { fontWeight: 700 } }, t('stem.autorepair.notes_oil_grade_parts_brand_shop_name_', '📝 Notes (oil grade, parts brand, shop name, etc.)')),
-              h('input', { type: 'text', 'data-ar-focusable': true, 'aria-label': t('stem.autorepair.service_notes', 'Service notes'),
-                placeholder: t('stem.autorepair.synthetic_0w_20_oem_filter_mike_s_auto', 'Synthetic 0W-20, OEM filter, Mike\'s Auto on Main St'),
+              h('span', { style: { fontWeight: 700 } }, __alloT('stem.autorepair.notes_oil_grade_parts_brand_shop_name_', '📝 Notes (oil grade, parts brand, shop name, etc.)')),
+              h('input', { type: 'text', 'data-ar-focusable': true, 'aria-label': __alloT('stem.autorepair.service_notes', 'Service notes'),
+                placeholder: __alloT('stem.autorepair.synthetic_0w_20_oem_filter_mike_s_auto', 'Synthetic 0W-20, OEM filter, Mike\'s Auto on Main St'),
                 value: draft.notes,
                 onChange: function(e) { updateDraft('notes', e.target.value); },
                 style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } })
             ),
             h('button', { 'data-ar-focusable': true,
-              'aria-label': t('stem.autorepair.save_service_log_entry', 'Save service log entry'),
+              'aria-label': __alloT('stem.autorepair.save_service_log_entry', 'Save service log entry'),
               onClick: saveEntry,
-              style: btnPrimary() }, t('stem.autorepair.save_entry', '💾 Save entry'))
+              style: btnPrimary() }, __alloT('stem.autorepair.save_entry', '💾 Save entry'))
           ),
           entries.length > 0 && h('div', null,
             h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 } },
-              h('h4', { style: { margin: 0, fontSize: 14, color: T.accentHi } }, t('stem.autorepair.entries_newest_first', '📋 Entries (newest first)')),
+              h('h4', { style: { margin: 0, fontSize: 14, color: T.accentHi } }, __alloT('stem.autorepair.entries_newest_first', '📋 Entries (newest first)')),
               h('button', { 'data-ar-focusable': true,
-                'aria-label': t('stem.autorepair.export_log_as_csv', 'Export log as CSV'), onClick: exportCSV, style: btnGhost() }, t('stem.autorepair.export_csv', '📤 Export CSV'))
+                'aria-label': __alloT('stem.autorepair.export_log_as_csv', 'Export log as CSV'), onClick: exportCSV, style: btnGhost() }, __alloT('stem.autorepair.export_csv', '📤 Export CSV'))
             ),
             h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               entries.map(function(e) {
@@ -6443,9 +6443,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                     h('span', { style: { fontSize: 11, color: T.muted } }, '🛣️ ' + (e.odo || '—').toLocaleString()),
                     h('span', { style: { fontSize: 11, color: T.good, fontWeight: 700 } }, '💵 $' + e.cost.toFixed(2)),
                     h('button', { 'data-ar-focusable': true,
-                      'aria-label': t('stem.autorepair.delete_this_entry', 'Delete this entry'),
+                      'aria-label': __alloT('stem.autorepair.delete_this_entry', 'Delete this entry'),
                       onClick: function() { deleteEntry(e.id); },
-                      style: Object.assign({}, btnGhost(), { marginLeft: 'auto', color: T.bad, fontSize: 10 }) }, t('stem.autorepair.delete', '🗑️ Delete'))
+                      style: Object.assign({}, btnGhost(), { marginLeft: 'auto', color: T.bad, fontSize: 10 }) }, __alloT('stem.autorepair.delete', '🗑️ Delete'))
                   ),
                   e.notes && h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5, marginTop: 2 } }, e.notes)
                 );
@@ -6453,7 +6453,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             )
           ),
           entries.length === 0 && h('div', { style: { padding: 16, textAlign: 'center', color: T.dim, fontSize: 13, marginTop: 14 } },
-            t('stem.autorepair.no_entries_yet_add_your_first_one_abov', 'No entries yet. Add your first one above.')),
+            __alloT('stem.autorepair.no_entries_yet_add_your_first_one_abov', 'No entries yet. Add your first one above.')),
           disclaimerFooter()
         );
       }
@@ -6474,14 +6474,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         function racOverview() {
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, t('stem.autorepair.race_day_mechanic_the_trade_at_speed', '🏁 Race-day mechanic — the trade at speed')),
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.race_day_mechanic_the_trade_at_speed', '🏁 Race-day mechanic — the trade at speed')),
               h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.6 } }, NASCAR_OVERVIEW.bigPicture),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 } },
                 [
-                  { label: t('stem.autorepair.entry_level_pay', '🔰 Entry-level pay'), val: NASCAR_OVERVIEW.pay.entry },
-                  { label: t('stem.autorepair.nascar_cup_pit_crew', '🏎️ NASCAR Cup pit crew'), val: NASCAR_OVERVIEW.pay.midNascar },
-                  { label: t('stem.autorepair.senior_crew_chief_race_engineer', '🎯 Senior (crew chief, race engineer)'), val: NASCAR_OVERVIEW.pay.seniorNascar },
-                  { label: t('stem.autorepair.schooling', '🏫 Schooling'), val: NASCAR_OVERVIEW.schooling }
+                  { label: __alloT('stem.autorepair.entry_level_pay', '🔰 Entry-level pay'), val: NASCAR_OVERVIEW.pay.entry },
+                  { label: __alloT('stem.autorepair.nascar_cup_pit_crew', '🏎️ NASCAR Cup pit crew'), val: NASCAR_OVERVIEW.pay.midNascar },
+                  { label: __alloT('stem.autorepair.senior_crew_chief_race_engineer', '🎯 Senior (crew chief, race engineer)'), val: NASCAR_OVERVIEW.pay.seniorNascar },
+                  { label: __alloT('stem.autorepair.schooling', '🏫 Schooling'), val: NASCAR_OVERVIEW.schooling }
                 ].map(function(r) {
                   return h('div', { key: r.label, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
                     h('div', { style: { fontSize: 11, color: T.accentHi, fontWeight: 700, marginBottom: 4 } }, r.label),
@@ -6491,7 +6491,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               )
             ),
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.warn } },
-              h('strong', { style: { color: T.warn } }, t('stem.autorepair.modern_reality', '💪 Modern reality: ')),
+              h('strong', { style: { color: T.warn } }, __alloT('stem.autorepair.modern_reality', '💪 Modern reality: ')),
               h('span', { style: { color: T.text, fontSize: 13, lineHeight: 1.55 } }, NASCAR_OVERVIEW.fitnessReality)
             )
           );
@@ -6502,9 +6502,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var pickedRole = picked ? PIT_CREW_ROLES.find(function(r) { return r.id === picked; }) : null;
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.pit_crew_race_team_roles', '👥 Pit crew + race team roles')),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.pit_crew_race_team_roles', '👥 Pit crew + race team roles')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                t('stem.autorepair.7_positions_on_a_modern_nascar_cup_tea', '7 positions on a modern NASCAR Cup team. Modern pit crew has a 5-person over-the-wall crew (NASCAR rule since 2018). Tap a role to see what they do, what training, what pay.'))
+                __alloT('stem.autorepair.7_positions_on_a_modern_nascar_cup_tea', '7 positions on a modern NASCAR Cup team. Modern pit crew has a 5-person over-the-wall crew (NASCAR rule since 2018). Tap a role to see what they do, what training, what pay.'))
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
               PIT_CREW_ROLES.map(function(r) {
@@ -6529,13 +6529,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               h('h4', { style: { margin: '0 0 10px', fontSize: 15, color: T.accentHi } }, pickedRole.icon + ' ' + pickedRole.name),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
                 [
-                  { label: t('stem.autorepair.what_they_do', '🎯 What they do'), val: pickedRole.what },
-                  { label: t('stem.autorepair.pit_stop_cycle', '⏱️ Pit-stop cycle'), val: pickedRole.cycle },
-                  { label: t('stem.autorepair.fitness_reality', '💪 Fitness reality'), val: pickedRole.fitness },
-                  { label: t('stem.autorepair.gear', '🧰 Gear'), val: pickedRole.gear },
-                  { label: t('stem.autorepair.training_pipeline', '🎓 Training pipeline'), val: pickedRole.training },
-                  { label: t('stem.autorepair.pay', '💵 Pay'), val: pickedRole.pay },
-                  { label: t('stem.autorepair.origin_path', '🛤️ Origin path'), val: pickedRole.origin }
+                  { label: __alloT('stem.autorepair.what_they_do', '🎯 What they do'), val: pickedRole.what },
+                  { label: __alloT('stem.autorepair.pit_stop_cycle', '⏱️ Pit-stop cycle'), val: pickedRole.cycle },
+                  { label: __alloT('stem.autorepair.fitness_reality', '💪 Fitness reality'), val: pickedRole.fitness },
+                  { label: __alloT('stem.autorepair.gear', '🧰 Gear'), val: pickedRole.gear },
+                  { label: __alloT('stem.autorepair.training_pipeline', '🎓 Training pipeline'), val: pickedRole.training },
+                  { label: __alloT('stem.autorepair.pay', '💵 Pay'), val: pickedRole.pay },
+                  { label: __alloT('stem.autorepair.origin_path', '🛤️ Origin path'), val: pickedRole.origin }
                 ].map(function(r) {
                   return h('div', { key: r.label, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
                     h('div', { style: { fontSize: 11, color: T.accentHi, fontWeight: 700, marginBottom: 4 } }, r.label),
@@ -6568,7 +6568,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             if (fullPct >= 80) awardBadge('pitstop-master', 'Pit Stop Master');
             return h('div', null,
               h('div', { style: { padding: 18, borderRadius: 10, background: T.card, border: '2px solid ' + (fullPct >= 80 ? T.good : fullPct >= 60 ? T.warn : T.bad), marginBottom: 14, textAlign: 'center' } },
-                h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6 } }, t('stem.autorepair.pit_stop_choreography', 'Pit stop choreography')),
+                h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6 } }, __alloT('stem.autorepair.pit_stop_choreography', 'Pit stop choreography')),
                 h('div', { style: { fontSize: 36, fontWeight: 900, color: fullPct >= 80 ? T.good : fullPct >= 60 ? T.warn : T.bad, marginBottom: 6 } }, correctness + ' / ' + PIT_STOP_STEPS.length),
                 h('div', { style: { fontSize: 14, color: T.text } }, 'You got ' + fullPct + '% of the steps in the right slot'),
                 h('p', { style: { margin: '10px 0 0', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
@@ -6576,7 +6576,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   fullPct >= 60 ? '🎓 Solid sequence understanding. Re-check the order vs the actual sequence below.' :
                   '📚 Watch real Cup pit stops on YouTube — slowed-down 0.25x reveals the parallelism.')
               ),
-              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, t('stem.autorepair.the_actual_nascar_cup_pit_stop_sequenc', '✅ The actual NASCAR Cup pit-stop sequence')),
+              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.autorepair.the_actual_nascar_cup_pit_stop_sequenc', '✅ The actual NASCAR Cup pit-stop sequence')),
               h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 } },
                 PIT_STOP_STEPS.map(function(s) {
                   return h('div', { key: s.n, role: 'listitem',
@@ -6587,19 +6587,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   );
                 })
               ),
-              h('button', { 'data-ar-focusable': true, onClick: reset, style: btnPrimary() }, t('stem.autorepair.reset_and_try_again', '🔁 Reset and try again'))
+              h('button', { 'data-ar-focusable': true, onClick: reset, style: btnPrimary() }, __alloT('stem.autorepair.reset_and_try_again', '🔁 Reset and try again'))
             );
           }
 
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.pit_stop_choreography_puzzle', '🏁 Pit stop choreography puzzle')),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.pit_stop_choreography_puzzle', '🏁 Pit stop choreography puzzle')),
               h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                t('stem.autorepair.put_the_16_pit_stop_steps_in_order_tap', 'Put the 16 pit-stop steps in order. Tap each step in the order it happens during a NASCAR Cup pit stop. '),
-                h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.your_accuracy_on_placed_steps_so_far', 'Your accuracy on placed steps so far: ')), pct + '%')
+                __alloT('stem.autorepair.put_the_16_pit_stop_steps_in_order_tap', 'Put the 16 pit-stop steps in order. Tap each step in the order it happens during a NASCAR Cup pit stop. '),
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.your_accuracy_on_placed_steps_so_far', 'Your accuracy on placed steps so far: ')), pct + '%')
             ),
             ordered.length > 0 && h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 14, fontSize: 12, color: T.muted } },
-              h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.your_sequence_so_far', '📍 Your sequence so far: ')),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.your_sequence_so_far', '📍 Your sequence so far: ')),
               ordered.map(function(n, i) {
                 var step = PIT_STOP_STEPS.find(function(s) { return s.n === n; });
                 var correct = n === (i + 1);
@@ -6607,7 +6607,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   (i + 1) + '. ' + (step ? step.action.substring(0, 30) + '...' : '?'));
               })
             ),
-            h('h4', { style: { margin: '0 0 8px', fontSize: 13, color: T.text } }, t('stem.autorepair.pick_the_next_step', 'Pick the next step:')),
+            h('h4', { style: { margin: '0 0 8px', fontSize: 13, color: T.text } }, __alloT('stem.autorepair.pick_the_next_step', 'Pick the next step:')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
               available.map(function(s) {
                 return h('button', { key: s.n, 'data-ar-focusable': true,
@@ -6620,7 +6620,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               })
             ),
             h('div', { style: { marginTop: 10, display: 'flex', gap: 8 } },
-              h('button', { 'data-ar-focusable': true, onClick: reset, style: btnGhost() }, t('stem.autorepair.reset', '🔁 Reset')))
+              h('button', { 'data-ar-focusable': true, onClick: reset, style: btnGhost() }, __alloT('stem.autorepair.reset', '🔁 Reset')))
           );
         }
 
@@ -6629,9 +6629,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var pickedAdj = picked ? SETUP_ADJUSTMENTS.find(function(a) { return a.id === picked; }) : null;
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.setup_tuning_chassis_adjustments', '⚖️ Setup tuning — chassis adjustments')),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.setup_tuning_chassis_adjustments', '⚖️ Setup tuning — chassis adjustments')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                t('stem.autorepair.8_levers_a_setup_engineer_pulls_to_bal', '8 levers a setup engineer pulls to balance the car. Some are pre-race only; some are mid-race adjustments at every pit stop.'))
+                __alloT('stem.autorepair.8_levers_a_setup_engineer_pulls_to_bal', '8 levers a setup engineer pulls to balance the car. Some are pre-race only; some are mid-race adjustments at every pit stop.'))
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
               SETUP_ADJUSTMENTS.map(function(a) {
@@ -6655,7 +6655,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             pickedAdj && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
               h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedAdj.icon + ' ' + pickedAdj.name),
               h('p', { style: { margin: '0 0 10px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.what_it_is_3', '🎯 What it is: ')), pickedAdj.what),
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.what_it_is_3', '🎯 What it is: ')), pickedAdj.what),
               h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 } },
                 Object.keys(pickedAdj).filter(function(k) { return k !== 'id' && k !== 'icon' && k !== 'name' && k !== 'what' && k !== 'whenToUse' && k !== 'cycle'; }).map(function(k) {
                   return h('div', { key: k, style: { padding: 8, borderRadius: 6, background: T.cardAlt, border: '1px solid ' + T.border } },
@@ -6665,9 +6665,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 })
               ),
               h('p', { style: { margin: '0 0 4px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', { style: { color: T.text } }, t('stem.autorepair.when_to_use', '🧪 When to use: ')), pickedAdj.whenToUse),
+                h('strong', { style: { color: T.text } }, __alloT('stem.autorepair.when_to_use', '🧪 When to use: ')), pickedAdj.whenToUse),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', { style: { color: T.text } }, t('stem.autorepair.adjustment_cycle', '🔄 Adjustment cycle: ')), pickedAdj.cycle)
+                h('strong', { style: { color: T.text } }, __alloT('stem.autorepair.adjustment_cycle', '🔄 Adjustment cycle: ')), pickedAdj.cycle)
             )
           );
         }
@@ -6677,9 +6677,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var pickedRpt = picked ? RACE_DIAGNOSTICS.find(function(r) { return r.id === picked; }) : null;
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.driver_radio_crew_chief_diagnosis', '📻 Driver radio → crew chief diagnosis')),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.driver_radio_crew_chief_diagnosis', '📻 Driver radio → crew chief diagnosis')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                t('stem.autorepair.pick_a_driver_radio_quote_see_what_it_', 'Pick a driver-radio quote. See what it means + likely cause + which adjustment lever to pull. This is the diagnostic vocabulary of every crew chief.'))
+                __alloT('stem.autorepair.pick_a_driver_radio_quote_see_what_it_', 'Pick a driver-radio quote. See what it means + likely cause + which adjustment lever to pull. This is the diagnostic vocabulary of every crew chief.'))
             ),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
               RACE_DIAGNOSTICS.map(function(r) {
@@ -6702,11 +6702,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               h('div', { style: { padding: 10, borderRadius: 8, background: '#1e3a8a', border: '1px solid #1e40af', color: '#dbeafe', marginBottom: 10, fontFamily: 'monospace', fontSize: 13 } },
                 '📻 ' + pickedRpt.driverSays),
               h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.meaning', '🔍 Meaning: ')), pickedRpt.meaning),
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.meaning', '🔍 Meaning: ')), pickedRpt.meaning),
               h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', { style: { color: T.warn } }, t('stem.autorepair.likely_causes', '🎯 Likely causes: ')), pickedRpt.causes),
+                h('strong', { style: { color: T.warn } }, __alloT('stem.autorepair.likely_causes', '🎯 Likely causes: ')), pickedRpt.causes),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', { style: { color: T.good } }, t('stem.autorepair.adjust', '🔧 Adjust: ')), pickedRpt.adjust)
+                h('strong', { style: { color: T.good } }, __alloT('stem.autorepair.adjust', '🔧 Adjust: ')), pickedRpt.adjust)
             )
           );
         }
@@ -6714,10 +6714,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         function racMaine() {
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.maine_northeast_racing', '🌲 Maine + Northeast racing')),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.maine_northeast_racing', '🌲 Maine + Northeast racing')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } }, NORTHEAST_RACING.intro)
             ),
-            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, t('stem.autorepair.active_short_tracks', '🏁 Active short tracks')),
+            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.autorepair.active_short_tracks', '🏁 Active short tracks')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
               NORTHEAST_RACING.tracks.map(function(t) {
                 return h('div', { key: t.name, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
@@ -6728,7 +6728,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                     style: { display: 'inline-block', marginTop: 6, fontSize: 11, color: T.link, textDecoration: 'underline' } }, '🔗 ' + t.url.replace(/^https?:\/\//, '')))
               })
             ),
-            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, t('stem.autorepair.major_series', '🏆 Major series')),
+            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.autorepair.major_series', '🏆 Major series')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 } },
               NORTHEAST_RACING.series.map(function(s) {
                 return h('div', { key: s.name, style: { padding: 8, borderRadius: 6, background: T.cardAlt, border: '1px solid ' + T.border } },
@@ -6736,7 +6736,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5 } }, s.desc));
               })
             ),
-            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, t('stem.autorepair.how_to_start_volunteering', '🚪 How to start volunteering')),
+            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.autorepair.how_to_start_volunteering', '🚪 How to start volunteering')),
             h('ol', { style: { margin: 0, paddingLeft: 20, fontSize: 12, color: T.text, lineHeight: 1.7 } },
               NORTHEAST_RACING.howToStart.map(function(s, i) {
                 return h('li', { key: i, style: { marginBottom: 4 } }, s);
@@ -6747,7 +6747,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
 
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🏁 Race mechanic'),
-          h('div', { role: 'tablist', 'aria-label': t('stem.autorepair.race_mechanic_sections', 'Race mechanic sections'),
+          h('div', { role: 'tablist', 'aria-label': __alloT('stem.autorepair.race_mechanic_sections', 'Race mechanic sections'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
             tabBtn('overview', 'Overview'),
             tabBtn('crew', '👥 Pit crew roles'),
@@ -6788,11 +6788,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           if (doneCount === totalTasks && totalTasks > 0) awardBadge('build-master', 'Project Car Master');
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.6_phases_triage_to_daily_driver', '🚗 6 phases — triage to daily-driver')),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.6_phases_triage_to_daily_driver', '🚗 6 phases — triage to daily-driver')),
               h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-                t('stem.autorepair.tap_a_phase_to_see_the_tasks_check_off', 'Tap a phase to see the tasks. Check off as you complete each. Total tasks: '),
+                __alloT('stem.autorepair.tap_a_phase_to_see_the_tasks_check_off', 'Tap a phase to see the tasks. Check off as you complete each. Total tasks: '),
                 h('strong', { style: { color: T.accentHi } }, totalTasks),
-                t('stem.autorepair.completed', ' · Completed: '),
+                __alloT('stem.autorepair.completed', ' · Completed: '),
                 h('strong', { style: { color: T.good } }, doneCount))
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
@@ -6821,7 +6821,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             pickedPhase && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
               h('h4', { style: { margin: '0 0 6px', fontSize: 15, color: T.accentHi } }, pickedPhase.icon + ' Phase ' + pickedPhase.n + ': ' + pickedPhase.name),
               h('p', { style: { margin: '0 0 10px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.goal', '🎯 Goal: ')), pickedPhase.goal),
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.goal', '🎯 Goal: ')), pickedPhase.goal),
               h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 6 } },
                 pickedPhase.tasks.map(function(t, i) {
                   var key = pickedPhase.id + '-' + i;
@@ -6849,9 +6849,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
 
         function rubricTab() {
           return h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.triage_scoring_rubric', '🎯 Triage scoring rubric')),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.triage_scoring_rubric', '🎯 Triage scoring rubric')),
             h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              t('stem.autorepair.score_the_candidate_before_you_commit_', 'Score the candidate before you commit. Two MUST-PASS items are deal-breakers regardless of score. Otherwise: total ≥80 = buy. 60-79 = negotiate hard. <60 = walk.')),
+              __alloT('stem.autorepair.score_the_candidate_before_you_commit_', 'Score the candidate before you commit. Two MUST-PASS items are deal-breakers regardless of score. Otherwise: total ≥80 = buy. 60-79 = negotiate hard. <60 = walk.')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               BUILD_TRIAGE_RUBRIC.map(function(it, i) {
                 var critical = it.critical;
@@ -6862,7 +6862,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                       critical ? '🚫 MUST-PASS' : ('+' + it.score + ' pts'))
                   ),
                   h('div', { style: { fontSize: 12, color: T.text, marginBottom: 4 } },
-                    h('strong', { style: { color: T.good } }, t('stem.autorepair.good', '✅ Good = ')), it.good),
+                    h('strong', { style: { color: T.good } }, __alloT('stem.autorepair.good', '✅ Good = ')), it.good),
                   h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5 } }, it.detail)
                 );
               })
@@ -6872,7 +6872,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
 
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🚗 Project car build'),
-          h('div', { role: 'tablist', 'aria-label': t('stem.autorepair.project_car_sections', 'Project car sections'),
+          h('div', { role: 'tablist', 'aria-label': __alloT('stem.autorepair.project_car_sections', 'Project car sections'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
             tabBtn('phases', '📋 6 phases'),
             tabBtn('rubric', '🎯 Triage rubric')
@@ -6899,14 +6899,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         function dOverview() {
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, t('stem.autorepair.diesel_heavy_equipment_maine_s_working', '🚜 Diesel + heavy equipment — Maine\'s working economy')),
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.diesel_heavy_equipment_maine_s_working', '🚜 Diesel + heavy equipment — Maine\'s working economy')),
               h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.6 } }, DIESEL_OVERVIEW.bigPicture),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
                 [
-                  { label: t('stem.autorepair.entry', '🔰 Entry'), val: DIESEL_OVERVIEW.pay.entry },
-                  { label: t('stem.autorepair.mid', '⚙️ Mid'), val: DIESEL_OVERVIEW.pay.mid },
-                  { label: t('stem.autorepair.senior', '🏆 Senior'), val: DIESEL_OVERVIEW.pay.senior },
-                  { label: t('stem.autorepair.specialist', '🎯 Specialist'), val: DIESEL_OVERVIEW.pay.specialist }
+                  { label: __alloT('stem.autorepair.entry', '🔰 Entry'), val: DIESEL_OVERVIEW.pay.entry },
+                  { label: __alloT('stem.autorepair.mid', '⚙️ Mid'), val: DIESEL_OVERVIEW.pay.mid },
+                  { label: __alloT('stem.autorepair.senior', '🏆 Senior'), val: DIESEL_OVERVIEW.pay.senior },
+                  { label: __alloT('stem.autorepair.specialist', '🎯 Specialist'), val: DIESEL_OVERVIEW.pay.specialist }
                 ].map(function(r) {
                   return h('div', { key: r.label, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
                     h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 4 } }, r.label),
@@ -6916,11 +6916,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               )
             ),
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
-              h('h4', { style: { margin: '0 0 6px', fontSize: 14, color: T.accentHi } }, t('stem.autorepair.ase_certifications', '🎓 ASE certifications')),
+              h('h4', { style: { margin: '0 0 6px', fontSize: 14, color: T.accentHi } }, __alloT('stem.autorepair.ase_certifications', '🎓 ASE certifications')),
               h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } }, DIESEL_OVERVIEW.aseDiesel),
-              h('h4', { style: { margin: '8px 0 6px', fontSize: 14, color: T.accentHi } }, t('stem.autorepair.maine_schools', '🏫 Maine schools')),
+              h('h4', { style: { margin: '8px 0 6px', fontSize: 14, color: T.accentHi } }, __alloT('stem.autorepair.maine_schools', '🏫 Maine schools')),
               h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } }, DIESEL_OVERVIEW.schooling),
-              h('h4', { style: { margin: '8px 0 6px', fontSize: 14, color: T.accentHi } }, t('stem.autorepair.where_the_work_is', '🌲 Where the work is')),
+              h('h4', { style: { margin: '8px 0 6px', fontSize: 14, color: T.accentHi } }, __alloT('stem.autorepair.where_the_work_is', '🌲 Where the work is')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55 } }, DIESEL_OVERVIEW.where)
             )
           );
@@ -6931,9 +6931,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var pickedItem = picked != null ? DIESEL_KEY_DIFFS[picked] : null;
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.what_s_different_from_gasoline', '🔄 What\'s different from gasoline')),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.what_s_different_from_gasoline', '🔄 What\'s different from gasoline')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                t('stem.autorepair.8_key_differences_a_tech_transitioning', '8 key differences a tech transitioning to diesel needs to know.'))
+                __alloT('stem.autorepair.8_key_differences_a_tech_transitioning', '8 key differences a tech transitioning to diesel needs to know.'))
             ),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
               DIESEL_KEY_DIFFS.map(function(it, i) {
@@ -6953,9 +6953,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             pickedItem && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
               h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, pickedItem.topic),
               h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.what_it_is_4', '🔍 What it is: ')), pickedItem.what),
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.what_it_is_4', '🔍 What it is: ')), pickedItem.what),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.warn } }, t('stem.autorepair.implication', '🎯 Implication: ')), pickedItem.implication)
+                h('strong', { style: { color: T.warn } }, __alloT('stem.autorepair.implication', '🎯 Implication: ')), pickedItem.implication)
             )
           );
         }
@@ -6965,9 +6965,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var pickedCode = picked ? DIESEL_CODES.find(function(c) { return c.code === picked; }) : null;
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.diesel_specific_obd_codes', '🔌 Diesel-specific OBD codes')),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.diesel_specific_obd_codes', '🔌 Diesel-specific OBD codes')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                t('stem.autorepair.codes_you_ll_see_on_diesel_pickups_hea', 'Codes you\'ll see on diesel pickups + heavy trucks. Most are emissions-related (DPF / DEF / SCR).'))
+                __alloT('stem.autorepair.codes_you_ll_see_on_diesel_pickups_hea', 'Codes you\'ll see on diesel pickups + heavy trucks. Most are emissions-related (DPF / DEF / SCR).'))
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, marginBottom: 14 } },
               DIESEL_CODES.map(function(c) {
@@ -6994,7 +6994,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
                 h('strong', { style: { color: T.accentHi } }, 'Meaning: '), pickedCode.meaning),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', { style: { color: T.good } }, t('stem.autorepair.fix', '🔧 Fix: ')), pickedCode.fix)
+                h('strong', { style: { color: T.good } }, __alloT('stem.autorepair.fix', '🔧 Fix: ')), pickedCode.fix)
             )
           );
         }
@@ -7004,9 +7004,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var pickedEq = picked ? HEAVY_EQUIPMENT.find(function(e) { return e.id === picked; }) : null;
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.maine_heavy_equipment_specialties', '🚛 Maine heavy-equipment specialties')),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.maine_heavy_equipment_specialties', '🚛 Maine heavy-equipment specialties')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                t('stem.autorepair.5_distinct_maine_career_paths_each_pay', '5 distinct Maine career paths. Each pays well + has more demand than supply of trained techs.'))
+                __alloT('stem.autorepair.5_distinct_maine_career_paths_each_pay', '5 distinct Maine career paths. Each pays well + has more demand than supply of trained techs.'))
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
               HEAVY_EQUIPMENT.map(function(e) {
@@ -7030,11 +7030,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             pickedEq && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
               h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, pickedEq.icon + ' ' + pickedEq.name),
               [
-                { label: t('stem.autorepair.what_it_is_5', 'What it is'), val: pickedEq.what },
-                { label: t('stem.autorepair.typical_equipment', 'Typical equipment'), val: pickedEq.typical },
-                { label: t('stem.autorepair.maintenance_focus', 'Maintenance focus'), val: pickedEq.maintenance },
-                { label: t('stem.autorepair.maine_pay', '🌲 Maine pay'), val: pickedEq.mainePay },
-                { label: t('stem.autorepair.schooling_2', '🎓 Schooling'), val: pickedEq.schooling }
+                { label: __alloT('stem.autorepair.what_it_is_5', 'What it is'), val: pickedEq.what },
+                { label: __alloT('stem.autorepair.typical_equipment', 'Typical equipment'), val: pickedEq.typical },
+                { label: __alloT('stem.autorepair.maintenance_focus', 'Maintenance focus'), val: pickedEq.maintenance },
+                { label: __alloT('stem.autorepair.maine_pay', '🌲 Maine pay'), val: pickedEq.mainePay },
+                { label: __alloT('stem.autorepair.schooling_2', '🎓 Schooling'), val: pickedEq.schooling }
               ].map(function(r, i) {
                 return h('p', { key: i, style: { margin: '0 0 6px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
                   h('strong', { style: { color: T.accentHi } }, r.label + ': '), r.val);
@@ -7045,7 +7045,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
 
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🚜 Diesel & heavy equipment'),
-          h('div', { role: 'tablist', 'aria-label': t('stem.autorepair.diesel_sections', 'Diesel sections'),
+          h('div', { role: 'tablist', 'aria-label': __alloT('stem.autorepair.diesel_sections', 'Diesel sections'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
             tabBtn('overview', 'Overview'),
             tabBtn('diffs', '🔄 vs gas'),
@@ -7076,18 +7076,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         function pOverview() {
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, t('stem.autorepair.small_engine_powersports_maine_s_recre', '🛷 Small engine + powersports — Maine\'s recreation economy')),
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.small_engine_powersports_maine_s_recre', '🛷 Small engine + powersports — Maine\'s recreation economy')),
               h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.6 } }, POWERSPORTS_OVERVIEW.bigPicture)
             ),
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent, marginBottom: 14 } },
-              h('h4', { style: { margin: '0 0 6px', fontSize: 14, color: T.accentHi } }, t('stem.autorepair.the_seasonal_stack', '📅 The seasonal stack')),
+              h('h4', { style: { margin: '0 0 6px', fontSize: 14, color: T.accentHi } }, __alloT('stem.autorepair.the_seasonal_stack', '📅 The seasonal stack')),
               h('p', { style: { margin: 0, color: T.text, fontSize: 13, lineHeight: 1.55 } }, POWERSPORTS_OVERVIEW.seasonal)
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 } },
               [
-                { label: t('stem.autorepair.entry_2', '🔰 Entry'), val: POWERSPORTS_OVERVIEW.pay.entry },
-                { label: t('stem.autorepair.mid_2', '⚙️ Mid'), val: POWERSPORTS_OVERVIEW.pay.mid },
-                { label: t('stem.autorepair.senior_2', '🏆 Senior'), val: POWERSPORTS_OVERVIEW.pay.senior }
+                { label: __alloT('stem.autorepair.entry_2', '🔰 Entry'), val: POWERSPORTS_OVERVIEW.pay.entry },
+                { label: __alloT('stem.autorepair.mid_2', '⚙️ Mid'), val: POWERSPORTS_OVERVIEW.pay.mid },
+                { label: __alloT('stem.autorepair.senior_2', '🏆 Senior'), val: POWERSPORTS_OVERVIEW.pay.senior }
               ].map(function(r) {
                 return h('div', { key: r.label, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
                   h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 4 } }, r.label),
@@ -7096,7 +7096,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               })
             ),
             h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.schooling_3', '🎓 Schooling: ')), POWERSPORTS_OVERVIEW.schooling)
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.schooling_3', '🎓 Schooling: ')), POWERSPORTS_OVERVIEW.schooling)
           );
         }
 
@@ -7105,9 +7105,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var pickedPl = picked ? POWERSPORTS_PLATFORMS.find(function(p) { return p.id === picked; }) : null;
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.6_powersport_platforms', '🏷️ 6 powersport platforms')),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.6_powersport_platforms', '🏷️ 6 powersport platforms')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                t('stem.autorepair.each_engine_type_key_annual_service_ma', 'Each: engine type, key annual service, Maine peak season, common failures, career path.'))
+                __alloT('stem.autorepair.each_engine_type_key_annual_service_ma', 'Each: engine type, key annual service, Maine peak season, common failures, career path.'))
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
               POWERSPORTS_PLATFORMS.map(function(pl) {
@@ -7131,11 +7131,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             pickedPl && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
               h('h4', { style: { margin: '0 0 10px', fontSize: 15, color: T.accentHi } }, pickedPl.icon + ' ' + pickedPl.name),
               [
-                { label: t('stem.autorepair.engine', '⚙️ Engine'), val: pickedPl.engine },
-                { label: t('stem.autorepair.key_annual_service', '🔧 Key annual service'), val: pickedPl.keyService },
-                { label: t('stem.autorepair.maine_peak_season', '📅 Maine peak season'), val: pickedPl.mainePeak },
-                { label: t('stem.autorepair.most_common_failures', '🚩 Most common failures'), val: pickedPl.common },
-                { label: t('stem.autorepair.career_path_2', '🎓 Career path'), val: pickedPl.careerPath }
+                { label: __alloT('stem.autorepair.engine', '⚙️ Engine'), val: pickedPl.engine },
+                { label: __alloT('stem.autorepair.key_annual_service', '🔧 Key annual service'), val: pickedPl.keyService },
+                { label: __alloT('stem.autorepair.maine_peak_season', '📅 Maine peak season'), val: pickedPl.mainePeak },
+                { label: __alloT('stem.autorepair.most_common_failures', '🚩 Most common failures'), val: pickedPl.common },
+                { label: __alloT('stem.autorepair.career_path_2', '🎓 Career path'), val: pickedPl.careerPath }
               ].map(function(r, i) {
                 return h('p', { key: i, style: { margin: '0 0 6px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
                   h('strong', { style: { color: T.accentHi } }, r.label + ': '), r.val);
@@ -7146,20 +7146,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
 
         function strokesTab() {
           return h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.2_stroke_vs_4_stroke_what_changes', '⚙️ 2-stroke vs 4-stroke — what changes')),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.2_stroke_vs_4_stroke_what_changes', '⚙️ 2-stroke vs 4-stroke — what changes')),
             h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              t('stem.autorepair.two_engine_architectures_with_very_dif', 'Two engine architectures with very different service realities. 2-strokes are simpler but less forgiving (no oil = seized engine in 30 sec).')),
+              __alloT('stem.autorepair.two_engine_architectures_with_very_dif', 'Two engine architectures with very different service realities. 2-strokes are simpler but less forgiving (no oil = seized engine in 30 sec).')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               TWO_STROKE_FOUR_STROKE.map(function(t, i) {
                 return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
                   h('strong', { style: { fontSize: 13, color: T.accentHi, display: 'block', marginBottom: 6 } }, t.topic),
                   h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
                     h('div', { style: { padding: 8, borderRadius: 6, background: T.bg, border: '1px solid ' + T.border } },
-                      h('div', { style: { fontSize: 11, color: T.warn, fontWeight: 700, marginBottom: 4 } }, t('stem.autorepair.2_stroke', '🔄 2-stroke')),
+                      h('div', { style: { fontSize: 11, color: T.warn, fontWeight: 700, marginBottom: 4 } }, __alloT('stem.autorepair.2_stroke', '🔄 2-stroke')),
                       h('div', { style: { fontSize: 11, color: T.text, lineHeight: 1.5 } }, t.twoStroke)
                     ),
                     h('div', { style: { padding: 8, borderRadius: 6, background: T.bg, border: '1px solid ' + T.border } },
-                      h('div', { style: { fontSize: 11, color: T.good, fontWeight: 700, marginBottom: 4 } }, t('stem.autorepair.4_stroke', '🔁 4-stroke')),
+                      h('div', { style: { fontSize: 11, color: T.good, fontWeight: 700, marginBottom: 4 } }, __alloT('stem.autorepair.4_stroke', '🔁 4-stroke')),
                       h('div', { style: { fontSize: 11, color: T.text, lineHeight: 1.5 } }, t.fourStroke)
                     )
                   )
@@ -7171,9 +7171,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
 
         function carbsTab() {
           return h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.carburetor_basics', '🔧 Carburetor basics')),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.carburetor_basics', '🔧 Carburetor basics')),
             h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              t('stem.autorepair.most_modern_cars_are_fuel_injected_but', 'Most modern cars are fuel-injected, but small engines are often still carbureted. Knowing carbs is core to small-engine + older-vehicle work. The #1 spring-failure cause: old fuel sitting in carb all winter.')),
+              __alloT('stem.autorepair.most_modern_cars_are_fuel_injected_but', 'Most modern cars are fuel-injected, but small engines are often still carbureted. Knowing carbs is core to small-engine + older-vehicle work. The #1 spring-failure cause: old fuel sitting in carb all winter.')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               CARB_BASICS.map(function(c, i) {
                 return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
@@ -7181,7 +7181,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   h('div', { style: { fontSize: 12, color: T.text, lineHeight: 1.5, marginBottom: 4 } },
                     h('strong', null, 'What: '), c.what),
                   h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5 } },
-                    h('strong', { style: { color: T.warn } }, t('stem.autorepair.tip', '💡 Tip: ')), c.tip)
+                    h('strong', { style: { color: T.warn } }, __alloT('stem.autorepair.tip', '💡 Tip: ')), c.tip)
                 );
               })
             )
@@ -7190,7 +7190,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
 
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🛷 Powersports + small engine'),
-          h('div', { role: 'tablist', 'aria-label': t('stem.autorepair.powersports_sections', 'Powersports sections'),
+          h('div', { role: 'tablist', 'aria-label': __alloT('stem.autorepair.powersports_sections', 'Powersports sections'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
             tabBtn('overview', 'Overview'),
             tabBtn('platforms', '🏷️ Platforms'),
@@ -7228,10 +7228,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🛤️ Recommended learning path'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.a_4_week_curated_walkthrough', '🛤️ A 4-week curated walkthrough')),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.a_4_week_curated_walkthrough', '🛤️ A 4-week curated walkthrough')),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              t('stem.autorepair.new_here_this_is_the_most_valuable_4_w', 'New here? This is the most valuable 4 weeks you can spend in this tool. '),
-              h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.each_week', 'Each week: ')), t('stem.autorepair.theme_3_6_target_modules_measurable_ou', 'theme + 3-6 target modules + measurable outcome. '),
+              __alloT('stem.autorepair.new_here_this_is_the_most_valuable_4_w', 'New here? This is the most valuable 4 weeks you can spend in this tool. '),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.each_week', 'Each week: ')), __alloT('stem.autorepair.theme_3_6_target_modules_measurable_ou', 'theme + 3-6 target modules + measurable outcome. '),
               h('strong', { style: { color: T.accentHi } }, 'Progress: '), doneCount + ' / ' + totalMods + ' modules (' + pct + '%)')
           ),
           LEARNING_PATH.map(function(w) {
@@ -7295,11 +7295,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         function sizingTab() {
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.decode_any_tire_size', '📏 Decode any tire size')),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.decode_any_tire_size', '📏 Decode any tire size')),
               h('p', { style: { margin: '0 0 12px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-                t('stem.autorepair.every_tire_has_a_label_like', 'Every tire has a label like '),
+                __alloT('stem.autorepair.every_tire_has_a_label_like', 'Every tire has a label like '),
                 h('strong', { style: { color: T.accentHi, fontFamily: 'monospace' } }, TIRE_SIZE_DECODER.example),
-                t('stem.autorepair.on_the_sidewall_each_piece_tells_you_s', ' on the sidewall. Each piece tells you something specific.')),
+                __alloT('stem.autorepair.on_the_sidewall_each_piece_tells_you_s', ' on the sidewall. Each piece tells you something specific.')),
               h('div', { style: { padding: 12, borderRadius: 8, background: T.bg, border: '1px solid ' + T.accent, marginBottom: 12, textAlign: 'center', fontFamily: 'monospace', fontSize: 22, fontWeight: 800, color: T.accentHi, letterSpacing: 2 } },
                 TIRE_SIZE_DECODER.example),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -7322,9 +7322,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var pickedT = picked ? TIRE_TYPES.find(function(t) { return t.type === picked; }) : null;
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.5_tire_types', '☀️❄️ 5 tire types')),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.5_tire_types', '☀️❄️ 5 tire types')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                t('stem.autorepair.different_rubber_compounds_tread_desig', 'Different rubber compounds + tread designs for different conditions. Each one has Maine-specific tradeoffs.'))
+                __alloT('stem.autorepair.different_rubber_compounds_tread_desig', 'Different rubber compounds + tread designs for different conditions. Each one has Maine-specific tradeoffs.'))
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, marginBottom: 14 } },
               TIRE_TYPES.map(function(t) {
@@ -7348,15 +7348,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             pickedT && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
               h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedT.icon + ' ' + pickedT.type),
               h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.best_for', '🎯 Best for: ')), pickedT.bestFor),
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.best_for', '🎯 Best for: ')), pickedT.bestFor),
               h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', { style: { color: T.good } }, t('stem.autorepair.maine_pros', '✅ Maine pros: ')), pickedT.mainePros),
+                h('strong', { style: { color: T.good } }, __alloT('stem.autorepair.maine_pros', '✅ Maine pros: ')), pickedT.mainePros),
               h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', { style: { color: T.bad } }, t('stem.autorepair.maine_cons', '❌ Maine cons: ')), pickedT.maineCons),
+                h('strong', { style: { color: T.bad } }, __alloT('stem.autorepair.maine_cons', '❌ Maine cons: ')), pickedT.maineCons),
               h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', { style: { color: T.text } }, t('stem.autorepair.treadwear', '📊 Treadwear: ')), pickedT.treadwear),
+                h('strong', { style: { color: T.text } }, __alloT('stem.autorepair.treadwear', '📊 Treadwear: ')), pickedT.treadwear),
               h('p', { style: { margin: 0, padding: 8, borderRadius: 6, background: T.cardAlt, color: T.text, fontSize: 13, lineHeight: 1.5 } },
-                h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.verdict_2', '🌲 Verdict: ')), pickedT.verdict)
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.verdict_2', '🌲 Verdict: ')), pickedT.verdict)
             )
           );
         }
@@ -7366,9 +7366,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var pickedR = picked ? TIRE_ROTATION_PATTERNS.find(function(r) { return r.drive === picked; }) : null;
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.rotation_patterns_by_drive_type', '🔄 Rotation patterns by drive type')),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.rotation_patterns_by_drive_type', '🔄 Rotation patterns by drive type')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                t('stem.autorepair.different_drive_systems_wear_tires_dif', 'Different drive systems wear tires differently. The pattern matters — wrong rotation = uneven wear + (on AWD) drivetrain damage.'))
+                __alloT('stem.autorepair.different_drive_systems_wear_tires_dif', 'Different drive systems wear tires differently. The pattern matters — wrong rotation = uneven wear + (on AWD) drivetrain damage.'))
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
               TIRE_ROTATION_PATTERNS.map(function(r) {
@@ -7392,20 +7392,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             pickedR && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
               h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedR.icon + ' ' + pickedR.drive),
               h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55, padding: 8, borderRadius: 6, background: T.bg, fontFamily: 'monospace' } },
-                h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.pattern', '↔️ Pattern: ')), pickedR.pattern),
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.pattern', '↔️ Pattern: ')), pickedR.pattern),
               h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.text } }, t('stem.autorepair.detail_2', '🔍 Detail: ')), pickedR.detail),
+                h('strong', { style: { color: T.text } }, __alloT('stem.autorepair.detail_2', '🔍 Detail: ')), pickedR.detail),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', { style: { color: T.warn } }, t('stem.autorepair.interval', '📅 Interval: ')), pickedR.interval)
+                h('strong', { style: { color: T.warn } }, __alloT('stem.autorepair.interval', '📅 Interval: ')), pickedR.interval)
             )
           );
         }
 
         function replaceTab() {
           return h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.when_to_replace', '🚩 When to replace')),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.when_to_replace', '🚩 When to replace')),
             h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              t('stem.autorepair.7_conditions_that_mean_replacement_any', '7 conditions that mean replacement. Any one of these = new tire. Multiple = often a full set.')),
+              __alloT('stem.autorepair.7_conditions_that_mean_replacement_any', '7 conditions that mean replacement. Any one of these = new tire. Multiple = often a full set.')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               TIRE_REPLACEMENT_RULES.map(function(r, i) {
                 return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
@@ -7422,7 +7422,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
 
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🛞 Tire deep dive'),
-          h('div', { role: 'tablist', 'aria-label': t('stem.autorepair.tire_sections', 'Tire sections'),
+          h('div', { role: 'tablist', 'aria-label': __alloT('stem.autorepair.tire_sections', 'Tire sections'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
             tabBtn('sizing', '📏 Sizing'),
             tabBtn('types', '☀️❄️ Types'),
@@ -7450,17 +7450,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🚶 Pre-drive walk-around'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, t('stem.autorepair.60_second_daily_check', '🚶 60-second daily check')),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.60_second_daily_check', '🚶 60-second daily check')),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              t('stem.autorepair.pro_drivers_truckers_walk_around_their', 'Pro drivers + truckers walk around their vehicles before EVERY drive. 60 seconds catches 90% of "I would have wished I noticed before driving" surprises. Especially valuable in Maine winter when problems hide.')),
+              __alloT('stem.autorepair.pro_drivers_truckers_walk_around_their', 'Pro drivers + truckers walk around their vehicles before EVERY drive. 60 seconds catches 90% of "I would have wished I noticed before driving" surprises. Especially valuable in Maine winter when problems hide.')),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.build_the_habit', 'Build the habit: ')), t('stem.autorepair.use_this_once_today_as_a_checklist_aft', 'use this once today as a checklist; after a week you\'ll do it from memory in under a minute. '),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.build_the_habit', 'Build the habit: ')), __alloT('stem.autorepair.use_this_once_today_as_a_checklist_aft', 'use this once today as a checklist; after a week you\'ll do it from memory in under a minute. '),
               h('strong', { style: { color: T.accentHi } }, 'Done: '), done + ' / ' + total + ' (' + pct + '%)'),
             done < total && h('button', { 'data-ar-focusable': true,
               style: Object.assign({}, btnGhost(), { marginTop: 8 }),
-              'aria-label': t('stem.autorepair.reset_walk_around', 'Reset walk-around'),
+              'aria-label': __alloT('stem.autorepair.reset_walk_around', 'Reset walk-around'),
               onClick: function() { upd('walkChecked', {}); }
-            }, t('stem.autorepair.reset_2', '↺ Reset'))
+            }, __alloT('stem.autorepair.reset_2', '↺ Reset'))
           ),
           h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
             WALK_AROUND_STEPS.map(function(s) {
@@ -7480,9 +7480,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   isChecked && h('span', { style: { fontSize: 16, color: T.good } }, '✓')
                 ),
                 h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.55, marginBottom: 4 } },
-                  h('strong', { style: { color: T.accentHi } }, t('stem.autorepair.check_2', '👀 Check: ')), s.check),
+                  h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.check_2', '👀 Check: ')), s.check),
                 h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5, padding: 6, borderRadius: 4, background: T.bg } },
-                  h('strong', { style: { color: T.warn } }, t('stem.autorepair.flag', '🚩 Flag: ')), s.flag)
+                  h('strong', { style: { color: T.warn } }, __alloT('stem.autorepair.flag', '🚩 Flag: ')), s.flag)
               );
             })
           ),
@@ -7498,48 +7498,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         // 'check' returns true if earned (looks at the badges object).
         var BADGE_CATALOG = [
           { group: '🚗 Owning + daily use', items: [
-            { id: 'first-log', icon: '📓', name: t('stem.autorepair.first_log_entry', 'First Log Entry'), how: 'Save your first service log entry.' },
-            { id: 'log-keeper', icon: '📓', name: t('stem.autorepair.log_keeper', 'Log Keeper'), how: 'Reach 10 service log entries.' },
-            { id: 'inspection-prep', icon: '🌲', name: t('stem.autorepair.inspection_self_walk', 'Inspection Self-Walk'), how: 'Complete all 8 Maine inspection self-checks.' },
-            { id: 'winter-prep', icon: '🌨️', name: t('stem.autorepair.maine_winter_prepped', 'Maine Winter Prepped'), how: 'Complete all 12 cold-weather prep items.' },
-            { id: 'kit-packed', icon: '🎒', name: t('stem.autorepair.trunk_kit_packed', 'Trunk Kit Packed'), how: 'Pack all 16 roadside-emergency kit items.' },
-            { id: 'first-car-30day', icon: '🚗', name: t('stem.autorepair.30_day_plan_complete', '30-Day Plan Complete'), how: 'Finish all 17 first-car-owner tasks.' },
-            { id: 'walkaround-pro', icon: '🚶', name: t('stem.autorepair.walk_around_pro', 'Walk-Around Pro'), how: 'Complete all 10 pre-drive walk-around steps.' },
-            { id: 'tire-pro', icon: '🛞', name: t('stem.autorepair.tire_pro', 'Tire Pro'), how: 'Tap any rotation pattern in the Tire Deep Dive.' }
+            { id: 'first-log', icon: '📓', name: __alloT('stem.autorepair.first_log_entry', 'First Log Entry'), how: 'Save your first service log entry.' },
+            { id: 'log-keeper', icon: '📓', name: __alloT('stem.autorepair.log_keeper', 'Log Keeper'), how: 'Reach 10 service log entries.' },
+            { id: 'inspection-prep', icon: '🌲', name: __alloT('stem.autorepair.inspection_self_walk', 'Inspection Self-Walk'), how: 'Complete all 8 Maine inspection self-checks.' },
+            { id: 'winter-prep', icon: '🌨️', name: __alloT('stem.autorepair.maine_winter_prepped', 'Maine Winter Prepped'), how: 'Complete all 12 cold-weather prep items.' },
+            { id: 'kit-packed', icon: '🎒', name: __alloT('stem.autorepair.trunk_kit_packed', 'Trunk Kit Packed'), how: 'Pack all 16 roadside-emergency kit items.' },
+            { id: 'first-car-30day', icon: '🚗', name: __alloT('stem.autorepair.30_day_plan_complete', '30-Day Plan Complete'), how: 'Finish all 17 first-car-owner tasks.' },
+            { id: 'walkaround-pro', icon: '🚶', name: __alloT('stem.autorepair.walk_around_pro', 'Walk-Around Pro'), how: 'Complete all 10 pre-drive walk-around steps.' },
+            { id: 'tire-pro', icon: '🛞', name: __alloT('stem.autorepair.tire_pro', 'Tire Pro'), how: 'Tap any rotation pattern in the Tire Deep Dive.' }
           ] },
           { group: '🔍 Diagnose + understand', items: [
-            { id: 'obd-explorer', icon: '🔌', name: t('stem.autorepair.obd_explorer', 'OBD Explorer'), how: 'Tap any OBD-II code in the Diagnose module.' },
-            { id: 'listener', icon: '👂', name: t('stem.autorepair.listener', 'Listener'), how: 'Tap any listening cue in Diagnose.' },
-            { id: 'fluid-reader', icon: '🛢️', name: t('stem.autorepair.fluid_reader', 'Fluid Reader'), how: 'Tap any fluid in the Diagnose / Fluids tab.' },
-            { id: 'visual-inspector', icon: '👁️', name: t('stem.autorepair.visual_inspector', 'Visual Inspector'), how: 'Tap any visual-inspection item.' },
-            { id: 'tree-explorer', icon: '🌳', name: t('stem.autorepair.decision_tree_explorer', 'Decision Tree Explorer'), how: 'Start any decision tree.' },
-            { id: 'lab-master', icon: '🏆', name: t('stem.autorepair.lab_master', 'Lab Master'), how: 'Complete all 6 lab simulator scenarios with 70%+.' },
-            { id: 'damage-id-ace', icon: '🔬', name: t('stem.autorepair.damage_id_ace', 'Damage ID Ace'), how: 'Score 80%+ on the 15-case Damage ID game.' }
+            { id: 'obd-explorer', icon: '🔌', name: __alloT('stem.autorepair.obd_explorer', 'OBD Explorer'), how: 'Tap any OBD-II code in the Diagnose module.' },
+            { id: 'listener', icon: '👂', name: __alloT('stem.autorepair.listener', 'Listener'), how: 'Tap any listening cue in Diagnose.' },
+            { id: 'fluid-reader', icon: '🛢️', name: __alloT('stem.autorepair.fluid_reader', 'Fluid Reader'), how: 'Tap any fluid in the Diagnose / Fluids tab.' },
+            { id: 'visual-inspector', icon: '👁️', name: __alloT('stem.autorepair.visual_inspector', 'Visual Inspector'), how: 'Tap any visual-inspection item.' },
+            { id: 'tree-explorer', icon: '🌳', name: __alloT('stem.autorepair.decision_tree_explorer', 'Decision Tree Explorer'), how: 'Start any decision tree.' },
+            { id: 'lab-master', icon: '🏆', name: __alloT('stem.autorepair.lab_master', 'Lab Master'), how: 'Complete all 6 lab simulator scenarios with 70%+.' },
+            { id: 'damage-id-ace', icon: '🔬', name: __alloT('stem.autorepair.damage_id_ace', 'Damage ID Ace'), how: 'Score 80%+ on the 15-case Damage ID game.' }
           ] },
           { group: '🔧 Fix it', items: [
-            { id: 'safety-jack-stands', icon: '🛡️', name: t('stem.autorepair.safety_jack_stands', 'Safety: Jack stands'), how: 'Tap the jack-stands safety module.' },
-            { id: 'safety-electrical', icon: '⚡', name: t('stem.autorepair.safety_electrical', 'Safety: Electrical'), how: 'Tap the electrical safety module.' },
-            { id: 'safety-refrigerant', icon: '🌬️', name: t('stem.autorepair.safety_refrigerant', 'Safety: Refrigerant'), how: 'Tap the refrigerant safety module.' },
-            { id: 'safety-hot-exhaust', icon: '🔥', name: t('stem.autorepair.safety_hot_exhaust', 'Safety: Hot exhaust'), how: 'Tap the hot-exhaust safety module.' },
-            { id: 'safety-spring-tension', icon: '💥', name: t('stem.autorepair.safety_spring_tension', 'Safety: Spring tension'), how: 'Tap the spring-tension safety module.' },
-            { id: 'safety-fluid-disposal', icon: '🌊', name: t('stem.autorepair.safety_fluid_disposal', 'Safety: Fluid disposal'), how: 'Tap the fluid-disposal safety module.' }
+            { id: 'safety-jack-stands', icon: '🛡️', name: __alloT('stem.autorepair.safety_jack_stands', 'Safety: Jack stands'), how: 'Tap the jack-stands safety module.' },
+            { id: 'safety-electrical', icon: '⚡', name: __alloT('stem.autorepair.safety_electrical', 'Safety: Electrical'), how: 'Tap the electrical safety module.' },
+            { id: 'safety-refrigerant', icon: '🌬️', name: __alloT('stem.autorepair.safety_refrigerant', 'Safety: Refrigerant'), how: 'Tap the refrigerant safety module.' },
+            { id: 'safety-hot-exhaust', icon: '🔥', name: __alloT('stem.autorepair.safety_hot_exhaust', 'Safety: Hot exhaust'), how: 'Tap the hot-exhaust safety module.' },
+            { id: 'safety-spring-tension', icon: '💥', name: __alloT('stem.autorepair.safety_spring_tension', 'Safety: Spring tension'), how: 'Tap the spring-tension safety module.' },
+            { id: 'safety-fluid-disposal', icon: '🌊', name: __alloT('stem.autorepair.safety_fluid_disposal', 'Safety: Fluid disposal'), how: 'Tap the fluid-disposal safety module.' }
           ] },
           { group: '🛒 Savvy consumer', items: [
-            { id: 'used-car-buyer', icon: '🛒', name: t('stem.autorepair.used_car_buyer', 'Used Car Buyer'), how: 'Complete all 9 used-car walkaround steps.' },
-            { id: 'estimate-decoder', icon: '💵', name: t('stem.autorepair.estimate_decoder_2', 'Estimate Decoder'), how: 'Tap any estimate-decoder line item.' },
-            { id: 'scam-aware', icon: '🚩', name: t('stem.autorepair.scam_aware', 'Scam Aware'), how: 'Tap any common-scam in the Scams module.' }
+            { id: 'used-car-buyer', icon: '🛒', name: __alloT('stem.autorepair.used_car_buyer', 'Used Car Buyer'), how: 'Complete all 9 used-car walkaround steps.' },
+            { id: 'estimate-decoder', icon: '💵', name: __alloT('stem.autorepair.estimate_decoder_2', 'Estimate Decoder'), how: 'Tap any estimate-decoder line item.' },
+            { id: 'scam-aware', icon: '🚩', name: __alloT('stem.autorepair.scam_aware', 'Scam Aware'), how: 'Tap any common-scam in the Scams module.' }
           ] },
           { group: '🏅 Career paths', items: [
-            { id: 'ev-safety-aware', icon: '⚡', name: t('stem.autorepair.ev_safety_aware', 'EV Safety Aware'), how: 'Tap any EV high-voltage safety rule.' },
-            { id: 'race-crew-explorer', icon: '🏁', name: t('stem.autorepair.race_crew_explorer', 'Race Crew Explorer'), how: 'Tap any pit-crew role in the Race Mechanic module.' },
-            { id: 'race-radio', icon: '📻', name: t('stem.autorepair.race_radio_decoded', 'Race Radio Decoded'), how: 'Tap any driver-radio quote in the Race module.' },
-            { id: 'pitstop-master', icon: '🏆', name: t('stem.autorepair.pit_stop_master', 'Pit Stop Master'), how: 'Score 80%+ on the pit-stop choreography puzzle.' },
-            { id: 'build-master', icon: '🏗️', name: t('stem.autorepair.project_car_master', 'Project Car Master'), how: 'Check off all 30+ project-car build tasks.' },
-            { id: 'diesel-aware', icon: '🚜', name: t('stem.autorepair.diesel_aware', 'Diesel Aware'), how: 'Tap any diesel key-difference in the Diesel module.' }
+            { id: 'ev-safety-aware', icon: '⚡', name: __alloT('stem.autorepair.ev_safety_aware', 'EV Safety Aware'), how: 'Tap any EV high-voltage safety rule.' },
+            { id: 'race-crew-explorer', icon: '🏁', name: __alloT('stem.autorepair.race_crew_explorer', 'Race Crew Explorer'), how: 'Tap any pit-crew role in the Race Mechanic module.' },
+            { id: 'race-radio', icon: '📻', name: __alloT('stem.autorepair.race_radio_decoded', 'Race Radio Decoded'), how: 'Tap any driver-radio quote in the Race module.' },
+            { id: 'pitstop-master', icon: '🏆', name: __alloT('stem.autorepair.pit_stop_master', 'Pit Stop Master'), how: 'Score 80%+ on the pit-stop choreography puzzle.' },
+            { id: 'build-master', icon: '🏗️', name: __alloT('stem.autorepair.project_car_master', 'Project Car Master'), how: 'Check off all 30+ project-car build tasks.' },
+            { id: 'diesel-aware', icon: '🚜', name: __alloT('stem.autorepair.diesel_aware', 'Diesel Aware'), how: 'Tap any diesel key-difference in the Diesel module.' }
           ] },
           { group: '🧪 Self-test + path', items: [
-            { id: 'quiz-passed', icon: '🧪', name: t('stem.autorepair.quiz_passed', 'Quiz Passed'), how: 'Score 80%+ on the 55-question knowledge quiz.' },
-            { id: 'path-graduate', icon: '🛤️', name: t('stem.autorepair.curriculum_path_graduate', 'Curriculum Path Graduate'), how: 'Mark all 18 Learning Path modules as visited.' }
+            { id: 'quiz-passed', icon: '🧪', name: __alloT('stem.autorepair.quiz_passed', 'Quiz Passed'), how: 'Score 80%+ on the 55-question knowledge quiz.' },
+            { id: 'path-graduate', icon: '🛤️', name: __alloT('stem.autorepair.curriculum_path_graduate', 'Curriculum Path Graduate'), how: 'Mark all 18 Learning Path modules as visited.' }
           ] }
         ];
 
@@ -7557,7 +7557,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         return h('div', { style: { padding: 20, maxWidth: 1000, margin: '0 auto', color: T.text } },
           backBar('🏆 Badge gallery'),
           h('div', { style: { padding: 18, borderRadius: 10, background: T.card, border: '2px solid ' + pctColor, marginBottom: 14, textAlign: 'center' } },
-            h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6 } }, t('stem.autorepair.curriculum_mastery', 'Curriculum mastery')),
+            h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6 } }, __alloT('stem.autorepair.curriculum_mastery', 'Curriculum mastery')),
             h('div', { style: { fontSize: 36, fontWeight: 900, color: pctColor, lineHeight: 1, marginBottom: 6 } }, earnedBadges + ' / ' + totalBadges),
             h('div', { style: { fontSize: 14, color: T.text, fontWeight: 700 } }, pct + '% complete'),
             h('p', { style: { margin: '10px 0 0', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
@@ -7640,10 +7640,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           else if (iq.advance >= 18 && iq.advance <= 30 && iq.overlap <= 40 && iq.compression <= 11) state = 'peak';
           else state = 'idle';
           var sm = {
-            knock:   { label: t('stem.autorepair.pre_ignition_knock', '💥 Pre-ignition / knock'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.autorepair.too_much_advance_high_compression_spon', 'Too much advance + high compression → spontaneous detonation. Engine damage.') },
-            misfire: { label: t('stem.autorepair.misfire', '⚠️ Misfire'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.autorepair.insufficient_timing_or_excessive_overl', 'Insufficient timing or excessive overlap → unstable combustion.') },
-            idle:    { label: t('stem.autorepair.smooth_idle', '🟢 Smooth idle'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: t('stem.autorepair.engine_runs_smoothly_but_not_at_peak_o', 'Engine runs smoothly but not at peak output.') },
-            peak:    { label: t('stem.autorepair.peak_performance', '🚀 Peak performance'), color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: t('stem.autorepair.sweet_spot_maximum_power_without_deton', 'Sweet spot. Maximum power without detonation.') }
+            knock:   { label: __alloT('stem.autorepair.pre_ignition_knock', '💥 Pre-ignition / knock'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.autorepair.too_much_advance_high_compression_spon', 'Too much advance + high compression → spontaneous detonation. Engine damage.') },
+            misfire: { label: __alloT('stem.autorepair.misfire', '⚠️ Misfire'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.autorepair.insufficient_timing_or_excessive_overl', 'Insufficient timing or excessive overlap → unstable combustion.') },
+            idle:    { label: __alloT('stem.autorepair.smooth_idle', '🟢 Smooth idle'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.autorepair.engine_runs_smoothly_but_not_at_peak_o', 'Engine runs smoothly but not at peak output.') },
+            peak:    { label: __alloT('stem.autorepair.peak_performance', '🚀 Peak performance'), color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: __alloT('stem.autorepair.sweet_spot_maximum_power_without_deton', 'Sweet spot. Maximum power without detonation.') }
           }[state];
           var H = ctx.React.createElement;
           return H('div', { style: { padding: 20, maxWidth: 900, margin: '0 auto' } },
@@ -7670,7 +7670,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 H('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ a: iq.advance, o: iq.overlap, c: iq.compression, st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#e2e8f0', color: '#475569', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
                 H('button', { onClick: function() { setIQ({ advance: 20, overlap: 30, compression: 10, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: '#fff', color: '#64748b', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset')
               ),
-              H('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.autorepair.hypothesis_what_combination_triggers_k', 'Hypothesis: What combination triggers knock?'),
+              H('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.autorepair.hypothesis_what_combination_triggers_k', 'Hypothesis: What combination triggers knock?'),
                 style: { width: '100%', minHeight: 50, padding: 6, border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 8 }, rows: 2 }),
               !iq.stuckRevealed && H('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: '#fef3c7', color: '#92400e', border: '1px solid #fcd34d', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, '🤔 Stuck — show open prompts'),
               iq.stuckRevealed && H('div', { style: { padding: 10, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 4, fontSize: 11, color: '#475569', marginBottom: 8 } },
@@ -7679,7 +7679,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   H('li', null, 'What does valve overlap do at idle vs at redline?'))),
               H('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#059669', cursor: 'pointer' } },
                 H('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand — explain in own words'),
-              iq.understood && H('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.autorepair.explain_why_timing_must_match_compress', 'Explain why timing must match compression and fuel.'),
+              iq.understood && H('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.autorepair.explain_why_timing_must_match_compress', 'Explain why timing must match compression and fuel.'),
                 style: { width: '100%', minHeight: 60, padding: 6, border: '1px solid #86efac', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 3 }),
               H('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: '#64748b' } }, 'Design note: discrete 4-state combustion marker; no horsepower score; no reveal — by design.')
             )
