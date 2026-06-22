@@ -970,7 +970,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       // ── Destination Select ──
       if (missionPhase === 'select') {
         var badgeCount = Object.keys(earnedBadges).length;
-        return h('div', { className: 'space-y-3 ' + animClass('animate-in fade-in duration-300'), role: 'main', 'aria-label': 'Space Explorer mission select' },
+        return h('div', { className: 'space-y-3 ' + animClass('animate-in fade-in duration-300'), role: 'main', 'aria-label': t('stem.spaceexplorer.space_explorer_mission_select', 'Space Explorer mission select') },
           // Header
           // \u2500\u2500 Pre-game brief: how a run works \u2500\u2500
           // Collapsible <details>. Auto-opens for first-timers
@@ -981,15 +981,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             open: completedMissions === 0,
             className: 'rounded-xl border border-purple-700/50 bg-gradient-to-br from-slate-900 to-purple-950'
           },
-            h('summary', { className: 'cursor-pointer text-xs font-bold px-3 py-2 select-none text-purple-200' }, '\uD83D\uDCDC How Space Explorer works (click to toggle)'),
+            h('summary', { className: 'cursor-pointer text-xs font-bold px-3 py-2 select-none text-purple-200' }, t('stem.spaceexplorer.how_space_explorer_works_click_to_togg', '\uD83D\uDCDC How Space Explorer works (click to toggle)')),
             h('div', { className: 'px-3 pb-3 space-y-3 text-[11px] text-slate-300' },
               h('div', null,
-                h('div', { className: 'font-black mb-1 text-purple-200' }, '\uD83C\uDFAF What a run is'),
+                h('div', { className: 'font-black mb-1 text-purple-200' }, t('stem.spaceexplorer.what_a_run_is', '\uD83C\uDFAF What a run is')),
                 h('p', { className: 'leading-relaxed' },
-                  'Pick a destination. Get 8-17 turns to survive its hazards while collecting science. Each turn you set power allocation, launch, an AI-generated event fires, and you choose how your crew responds. Win = survive all turns. Lose = O\u2082 or Hull hits zero.')
+                  t('stem.spaceexplorer.pick_a_destination_get_8_17_turns_to_s', 'Pick a destination. Get 8-17 turns to survive its hazards while collecting science. Each turn you set power allocation, launch, an AI-generated event fires, and you choose how your crew responds. Win = survive all turns. Lose = O\u2082 or Hull hits zero.'))
               ),
               h('div', null,
-                h('div', { className: 'font-black mb-1 text-purple-200' }, '\uD83D\uDE80 Your six resources'),
+                h('div', { className: 'font-black mb-1 text-purple-200' }, t('stem.spaceexplorer.your_six_resources', '\uD83D\uDE80 Your six resources')),
                 h('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-1.5 text-[10px]' },
                   [
                     { icon: '\uD83E\uDEC1', n: 'O\u2082',     d: 'Crew oxygen. Zero = mission ends.' },
@@ -1007,28 +1007,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 )
               ),
               h('div', null,
-                h('div', { className: 'font-black mb-1 text-purple-200' }, '\uD83E\uDDD1\u200D\uD83D\uDE80 Crew + Tech'),
+                h('div', { className: 'font-black mb-1 text-purple-200' }, t('stem.spaceexplorer.crew_tech', '\uD83E\uDDD1\u200D\uD83D\uDE80 Crew + Tech')),
                 h('ul', { className: 'list-disc list-inside space-y-1 leading-relaxed' },
-                  h('li', null, h('strong', null, 'Crew specialties'), ' (engineer, medic, scientist, etc.) unlock a hidden 4th choice when the event matches their skill. Tap a crew member during an event to consult.'),
-                  h('li', null, h('strong', null, 'Tech Shop'), ' opens once you have 50+ science. Permanent upgrades that reduce resource drain or unlock new options.'),
-                  h('li', null, h('strong', null, 'Power allocation'), ' (Life / Science / Shields / Comms) lets you bias resource drain each turn. Pre-launch decision.')
+                  h('li', null, h('strong', null, t('stem.spaceexplorer.crew_specialties', 'Crew specialties')), t('stem.spaceexplorer.engineer_medic_scientist_etc_unlock_a_', ' (engineer, medic, scientist, etc.) unlock a hidden 4th choice when the event matches their skill. Tap a crew member during an event to consult.')),
+                  h('li', null, h('strong', null, t('stem.spaceexplorer.tech_shop', 'Tech Shop')), t('stem.spaceexplorer.opens_once_you_have_50_science_permane', ' opens once you have 50+ science. Permanent upgrades that reduce resource drain or unlock new options.')),
+                  h('li', null, h('strong', null, t('stem.spaceexplorer.power_allocation', 'Power allocation')), t('stem.spaceexplorer.life_science_shields_comms_lets_you_bi', ' (Life / Science / Shields / Comms) lets you bias resource drain each turn. Pre-launch decision.'))
                 )
               ),
               h('div', { className: 'text-[10px] italic text-slate-400 pt-1 border-t border-purple-800/30' },
-                'Tip: harder destinations give more science. Mars + Moon are the safest starting points. Wins, best %, and total science track per destination below each tile.')
+                t('stem.spaceexplorer.tip_harder_destinations_give_more_scie', 'Tip: harder destinations give more science. Mars + Moon are the safest starting points. Wins, best %, and total science track per destination below each tile.'))
             )
           ),
           h('div', { className: 'bg-gradient-to-r from-purple-900 to-indigo-900 rounded-xl p-4 text-center' },
-            h('h2', { className: 'text-lg font-black text-white flex items-center justify-center gap-2' }, '\uD83C\uDF0C Space Explorer'),
-            h('p', { className: 'text-xs text-purple-200 mt-1' }, 'Roguelike missions across the solar system. Each run teaches new science.'),
-            completedMissions > 0 && h('div', { className: 'flex justify-center gap-3 mt-2 text-[11px] text-purple-200', 'aria-label': 'Mission statistics' },
+            h('h2', { className: 'text-lg font-black text-white flex items-center justify-center gap-2' }, t('stem.spaceexplorer.space_explorer', '\uD83C\uDF0C Space Explorer')),
+            h('p', { className: 'text-xs text-purple-200 mt-1' }, t('stem.spaceexplorer.roguelike_missions_across_the_solar_sy', 'Roguelike missions across the solar system. Each run teaches new science.')),
+            completedMissions > 0 && h('div', { className: 'flex justify-center gap-3 mt-2 text-[11px] text-purple-200', 'aria-label': t('stem.spaceexplorer.mission_statistics', 'Mission statistics') },
               h('span', null, '\uD83D\uDE80 ' + completedMissions + ' missions'),
               h('span', null, '\uD83D\uDD2C ' + totalScience + ' science'),
               h('span', null, '\u26A1 ' + unlockedTech.length + ' tech'),
               badgeCount > 0 && h('span', null, '\uD83C\uDFC5 ' + badgeCount + '/' + BADGES.length + ' badges')
             ),
             // Badge display
-            badgeCount > 0 && h('div', { className: 'flex justify-center gap-1 mt-2 flex-wrap', role: 'list', 'aria-label': 'Earned badges' },
+            badgeCount > 0 && h('div', { className: 'flex justify-center gap-1 mt-2 flex-wrap', role: 'list', 'aria-label': t('stem.spaceexplorer.earned_badges', 'Earned badges') },
               BADGES.map(function(b) {
                 var earned = !!earnedBadges[b.id];
                 return h('span', { key: b.id, role: 'listitem', title: b.name + (earned ? ' (earned)' : ' (locked)') + ' \u2014 ' + b.desc,
@@ -1043,7 +1043,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             className: 'w-full py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-xl text-xs font-bold text-cyan-300 hover:bg-cyan-500/20 transition-all focus:ring-2 focus:ring-cyan-400 focus:outline-none'
           }, '\uD83D\uDD2C Tech Shop \u2014 Spend science points (' + totalScience + ' pts available)'),
           // Destination grid
-          h('div', { className: 'grid grid-cols-2 gap-2', role: 'list', 'aria-label': 'Available mission destinations' },
+          h('div', { className: 'grid grid-cols-2 gap-2', role: 'list', 'aria-label': t('stem.spaceexplorer.available_mission_destinations', 'Available mission destinations') },
             DESTINATIONS.map(function(dest) {
               var locked = dest.unlockAt > completedMissions;
               return h('button', {
@@ -1086,10 +1086,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         return h('div', { className: 'space-y-3 animate-in fade-in duration-300' },
           h('div', { className: 'bg-gradient-to-r from-cyan-900 to-teal-900 rounded-xl p-4 flex justify-between items-center' },
             h('div', null,
-              h('h3', { className: 'text-sm font-black text-white' }, '\uD83D\uDD2C Tech Shop'),
+              h('h3', { className: 'text-sm font-black text-white' }, t('stem.spaceexplorer.tech_shop_2', '\uD83D\uDD2C Tech Shop')),
               h('p', { className: 'text-[11px] text-cyan-300' }, totalScience + ' science points available')
             ),
-            h('button', { onClick: function() { upd('missionPhase', 'select'); }, className: 'px-3 py-1.5 bg-white/10 rounded-lg text-xs font-bold text-white hover:bg-white/20' }, '\u2190 Back')
+            h('button', { onClick: function() { upd('missionPhase', 'select'); }, className: 'px-3 py-1.5 bg-white/10 rounded-lg text-xs font-bold text-white hover:bg-white/20' }, t('stem.spaceexplorer.back', '\u2190 Back'))
           ),
           h('div', { className: 'space-y-2' },
             TECH_TREE.map(function(tech) {
@@ -1181,7 +1181,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               ),
               // Crew roster
               crew.length > 0 && h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
-                h('p', { className: 'text-[11px] text-slate-400 font-bold mb-2' }, '\uD83D\uDC68\u200D\uD83D\uDE80 YOUR CREW'),
+                h('p', { className: 'text-[11px] text-slate-400 font-bold mb-2' }, t('stem.spaceexplorer.your_crew', '\uD83D\uDC68\u200D\uD83D\uDE80 YOUR CREW')),
                 h('div', { className: 'grid grid-cols-2 gap-1.5' },
                   crew.map(function(c) {
                     return h('div', { key: c.name, className: 'flex items-center gap-2 bg-white/5 rounded-lg p-2' },
@@ -1198,7 +1198,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               h('button', {
                 onClick: function() { updAll({ missionPhase: 'allocate' }); },
                 className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-lg transition-all'
-              }, '\uD83D\uDE80 Launch Mission')
+              }, t('stem.spaceexplorer.launch_mission', '\uD83D\uDE80 Launch Mission'))
             )
           )
         );
@@ -1223,25 +1223,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           upd('powerAllocation', next);
         };
         var allocSystems = [
-          { key: 'life',    emoji: '\uD83E\uDEE7', label: 'Life Support', color: '#38bdf8', hint: 'Each pip reduces O\u2082 drain by 1.' },
-          { key: 'science', emoji: '\uD83D\uDD2C', label: 'Science',      color: '#a78bfa', hint: 'Each pip adds +1 science at event resolution.' },
-          { key: 'shields', emoji: '\uD83D\uDEE1\uFE0F', label: 'Shields', color: '#22c55e', hint: 'Each pip mitigates 1 point of hull damage.' },
-          { key: 'comms',   emoji: '\uD83D\uDCE1', label: 'Comms',        color: '#f59e0b', hint: '3+ pips waives wrong-specialty consult penalty.' }
+          { key: 'life',    emoji: '\uD83E\uDEE7', label: t('stem.spaceexplorer.life_support', 'Life Support'), color: '#38bdf8', hint: t('stem.spaceexplorer.each_pip_reduces_o_drain_by_1', 'Each pip reduces O\u2082 drain by 1.') },
+          { key: 'science', emoji: '\uD83D\uDD2C', label: t('stem.spaceexplorer.science', 'Science'),      color: '#a78bfa', hint: t('stem.spaceexplorer.each_pip_adds_1_science_at_event_resol', 'Each pip adds +1 science at event resolution.') },
+          { key: 'shields', emoji: '\uD83D\uDEE1\uFE0F', label: t('stem.spaceexplorer.shields', 'Shields'), color: '#22c55e', hint: t('stem.spaceexplorer.each_pip_mitigates_1_point_of_hull_dam', 'Each pip mitigates 1 point of hull damage.') },
+          { key: 'comms',   emoji: '\uD83D\uDCE1', label: t('stem.spaceexplorer.comms', 'Comms'),        color: '#f59e0b', hint: t('stem.spaceexplorer.3_pips_waives_wrong_specialty_consult_', '3+ pips waives wrong-specialty consult penalty.') }
         ];
         var projectedDrain = applyTurnDrain(resources, destination, unlockedTech, powerAllocation);
-        return h('div', { className: 'space-y-3 animate-in fade-in duration-200', role: 'main', 'aria-label': 'Power allocation' },
+        return h('div', { className: 'space-y-3 animate-in fade-in duration-200', role: 'main', 'aria-label': t('stem.spaceexplorer.power_allocation_2', 'Power allocation') },
           h('div', { className: 'bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-xl p-4 border border-indigo-700/50' },
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('div', null,
-                h('h2', { className: 'text-sm font-black text-white' }, '\u26A1 Power Allocation'),
+                h('h2', { className: 'text-sm font-black text-white' }, t('stem.spaceexplorer.power_allocation_3', '\u26A1 Power Allocation')),
                 h('p', { className: 'text-[11px] text-slate-400' }, 'Distribute ' + allocPool + ' pips before Turn ' + (turn + 1) + '/' + maxTurns)
               ),
               h('div', { className: 'text-right' },
-                h('div', { className: 'text-[10px] text-slate-300 uppercase tracking-wide' }, 'Remaining'),
+                h('div', { className: 'text-[10px] text-slate-300 uppercase tracking-wide' }, t('stem.spaceexplorer.remaining', 'Remaining')),
                 h('div', { className: 'text-lg font-black ' + (allocRemaining === 0 ? 'text-green-400' : allocRemaining > 0 ? 'text-amber-400' : 'text-red-400') }, allocRemaining)
               )
             ),
-            h('div', { className: 'space-y-2', role: 'group', 'aria-label': 'Power systems' },
+            h('div', { className: 'space-y-2', role: 'group', 'aria-label': t('stem.spaceexplorer.power_systems', 'Power systems') },
               allocSystems.map(function(sys) {
                 var val = powerAllocation[sys.key] || 0;
                 return h('div', { key: sys.key, className: 'bg-white/5 rounded-lg p-2.5 border border-white/10' },
@@ -1279,7 +1279,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           ),
           // Projected drain preview
           h('div', { className: 'bg-white/5 rounded-xl p-2.5 border border-white/10', role: 'status' },
-            h('div', { className: 'text-[10px] text-slate-300 uppercase tracking-wide mb-1' }, 'Projected next turn'),
+            h('div', { className: 'text-[10px] text-slate-300 uppercase tracking-wide mb-1' }, t('stem.spaceexplorer.projected_next_turn', 'Projected next turn')),
             h('div', { className: 'flex flex-wrap gap-x-3 gap-y-1 text-[11px]' },
               Object.keys(RESOURCES).filter(function(k) { return RESOURCES[k].max !== 999; }).map(function(k) {
                 var before = resources[k] || 0;
@@ -1295,8 +1295,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           // helping this mission. Silent systems become visible — a student
           // who bought Recycler can now SEE it working ("O2 saves active").
           unlockedTech.length > 0 && h('div', { className: 'bg-white/5 rounded-xl p-2.5 border border-white/10' },
-            h('div', { className: 'text-[10px] text-slate-300 uppercase tracking-wide mb-1' }, 'Active Tech'),
-            h('div', { className: 'flex flex-wrap gap-1', role: 'list', 'aria-label': 'Active ship technologies' },
+            h('div', { className: 'text-[10px] text-slate-300 uppercase tracking-wide mb-1' }, t('stem.spaceexplorer.active_tech', 'Active Tech')),
+            h('div', { className: 'flex flex-wrap gap-1', role: 'list', 'aria-label': t('stem.spaceexplorer.active_ship_technologies', 'Active ship technologies') },
               TECH_TREE.filter(function(t) { return unlockedTech.indexOf(t.id) >= 0; }).map(function(t) {
                 return h('span', {
                   key: t.id, role: 'listitem', title: t.name + ' \u2014 ' + t.desc,
@@ -1343,7 +1343,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               ),
               h('span', { className: 'text-[11px] font-mono text-slate-200' }, 'Turn ' + turn + '/' + maxTurns)
             ),
-            h('div', { className: 'grid grid-cols-3 gap-1.5', role: 'group', 'aria-label': 'Ship resources' },
+            h('div', { className: 'grid grid-cols-3 gap-1.5', role: 'group', 'aria-label': t('stem.spaceexplorer.ship_resources', 'Ship resources') },
               Object.keys(RESOURCES).map(function(k) {
                 var r = RESOURCES[k];
                 var val = resources[k] || 0;
@@ -1462,11 +1462,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             // still unlocks. Never negative — stakes are pedagogical, not fail.
             minigamePending && h('div', {
               className: 'bg-gradient-to-br from-slate-900 to-indigo-950 rounded-xl p-3 border border-indigo-500/40 mb-3',
-              role: 'group', 'aria-label': 'Spectral analysis: identify the compound'
+              role: 'group', 'aria-label': t('stem.spaceexplorer.spectral_analysis_identify_the_compoun', 'Spectral analysis: identify the compound')
             },
               h('div', { className: 'flex items-center justify-between mb-2' },
                 h('div', null,
-                  h('div', { className: 'text-[11px] font-black text-indigo-300' }, '\uD83D\uDD2C SPECTRAL ANALYSIS'),
+                  h('div', { className: 'text-[11px] font-black text-indigo-300' }, t('stem.spaceexplorer.spectral_analysis', '\uD83D\uDD2C SPECTRAL ANALYSIS')),
                   h('div', { className: 'text-[10px] text-slate-400' }, minigameResult ? 'Analysis complete' : 'Identify the compound from its absorption bands')
                 ),
                 minigameResult && h('span', { className: 'text-[11px] font-bold ' + (minigameResult === 'correct' ? 'text-green-400' : 'text-amber-400') },
@@ -1564,9 +1564,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             // event. A matching specialty unlocks a hidden 4th choice; wrong
             // specialty costs 1 morale (waived if Comms pips >= 3). After
             // consulting, the crew's remark surfaces just below the row.
-            crew.length > 0 && h('div', { className: 'mb-3', role: 'group', 'aria-label': 'Consult a specialist about this event' },
+            crew.length > 0 && h('div', { className: 'mb-3', role: 'group', 'aria-label': t('stem.spaceexplorer.consult_a_specialist_about_this_event', 'Consult a specialist about this event') },
               h('div', { className: 'flex items-center justify-between mb-1' },
-                h('div', { className: 'text-[10px] font-bold text-amber-400/80 uppercase tracking-wide' }, '\uD83D\uDCAC Consult a specialist'),
+                h('div', { className: 'text-[10px] font-bold text-amber-400/80 uppercase tracking-wide' }, t('stem.spaceexplorer.consult_a_specialist', '\uD83D\uDCAC Consult a specialist')),
                 h('div', { className: 'text-[10px] text-slate-300' },
                   consultUsed ? 'Consulted' : 'One per event'
                 )
@@ -1599,7 +1599,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 h('span', null, d._consultLine.line)
               )
             ),
-            h('div', { className: 'space-y-2', role: 'group', 'aria-label': 'Choose your response. Press 1, 2, or 3 to select.' },
+            h('div', { className: 'space-y-2', role: 'group', 'aria-label': t('stem.spaceexplorer.choose_your_response_press_1_2_or_3_to', 'Choose your response. Press 1, 2, or 3 to select.') },
               // Merge the public choices with the hiddenOption if it's been
               // unlocked via a matching specialist consult. Hidden option
               // renders with a distinct yellow treatment so its origin reads.
@@ -1682,8 +1682,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               (eventOutcome.shieldsBlocked || 0) > 0 && h('span', { className: 'px-2 py-0.5 rounded bg-green-500/15 text-green-300 border border-green-500/30' }, '\uD83D\uDEE1\uFE0F Shields absorbed ' + eventOutcome.shieldsBlocked + ' hull'),
               (eventOutcome.sciBonus || 0) > 0 && h('span', { className: 'px-2 py-0.5 rounded bg-purple-500/15 text-purple-300 border border-purple-500/30' }, '\uD83D\uDD2C Science pips +' + eventOutcome.sciBonus)
             ),
-            turn >= maxTurns ? h('p', { className: 'text-xs text-green-300 font-bold text-center mb-2' }, '\uD83C\uDF89 Mission complete! Preparing debrief...') :
-            (resources.o2 <= 0 || resources.hull <= 0) ? h('p', { className: 'text-xs text-red-300 font-bold text-center mb-2' }, '\u26A0\uFE0F Critical failure! Mission ending...') :
+            turn >= maxTurns ? h('p', { className: 'text-xs text-green-300 font-bold text-center mb-2' }, t('stem.spaceexplorer.mission_complete_preparing_debrief', '\uD83C\uDF89 Mission complete! Preparing debrief...')) :
+            (resources.o2 <= 0 || resources.hull <= 0) ? h('p', { className: 'text-xs text-red-300 font-bold text-center mb-2' }, t('stem.spaceexplorer.critical_failure_mission_ending', '\u26A0\uFE0F Critical failure! Mission ending...')) :
             h('button', {
               onClick: function() { updAll({ eventOutcome: null, missionPhase: 'allocate' }); },
               ref: function(el) { if (el) setTimeout(function() { el.focus(); }, 100); },
@@ -1719,7 +1719,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             h('p', { className: 'text-xs text-slate-300 mt-1' }, destination.name + ' \u2022 Difficulty ' + destination.difficulty + '/5 \u2022 ' + turn + ' turns'),
             success && h('p', { className: 'text-xs text-cyan-300 mt-2' }, '\uD83D\uDD2C +' + (resources.science || 0) + ' science points earned!'),
             // Show earned badges in debrief
-            Object.keys(earnedBadges).length > 0 && h('div', { className: 'flex justify-center gap-1 mt-3 flex-wrap', role: 'list', 'aria-label': 'Badges earned' },
+            Object.keys(earnedBadges).length > 0 && h('div', { className: 'flex justify-center gap-1 mt-3 flex-wrap', role: 'list', 'aria-label': t('stem.spaceexplorer.badges_earned', 'Badges earned') },
               BADGES.filter(function(b) { return earnedBadges[b.id]; }).map(function(b) {
                 return h('span', { key: b.id, role: 'listitem', title: b.name + ' \u2014 ' + b.desc, className: 'text-lg' }, b.icon);
               })
@@ -1727,7 +1727,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           ),
           // Decision analysis
           decisionLog.length > 0 && h('div', { className: 'bg-white/5 rounded-xl p-3 border border-white/10' },
-            h('h3', { className: 'text-[11px] text-slate-300 font-bold mb-2' }, '\uD83D\uDCCA DECISION ANALYSIS'),
+            h('h3', { className: 'text-[11px] text-slate-300 font-bold mb-2' }, t('stem.spaceexplorer.decision_analysis', '\uD83D\uDCCA DECISION ANALYSIS')),
             decisionLog.map(function(dec, i) {
               return h('div', { key: i, className: 'bg-white/5 rounded-lg p-2.5 border border-white/10 mb-1.5' },
                 h('div', { className: 'flex justify-between items-center mb-1' },
@@ -1777,7 +1777,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
 
           // STEM Concepts Learned (science rewards from all decisions)
           decisionLog.length > 0 && decisionLog.some(function(dec2) { return dec2.scienceReward; }) && h('div', { className: 'bg-cyan-500/5 rounded-xl p-3 border border-cyan-500/15' },
-            h('h3', { className: 'text-[11px] text-cyan-300 font-bold mb-2' }, '\uD83D\uDD2C SCIENCE CONCEPTS LEARNED'),
+            h('h3', { className: 'text-[11px] text-cyan-300 font-bold mb-2' }, t('stem.spaceexplorer.science_concepts_learned', '\uD83D\uDD2C SCIENCE CONCEPTS LEARNED')),
             h('div', { className: 'space-y-1.5' },
               decisionLog.filter(function(dec2) { return dec2.scienceReward; }).map(function(dec2, i) {
                 return h('div', { key: i, className: 'bg-white/5 rounded-lg p-2 border-l-2 border-cyan-500/40' },
@@ -1789,8 +1789,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           ),
           // Resource survival chart
           resources && h('div', { className: 'bg-white/5 rounded-xl p-3 border border-white/10' },
-            h('h3', { className: 'text-[11px] text-slate-300 font-bold mb-2' }, '\uD83D\uDCCA FINAL RESOURCES'),
-            h('div', { className: 'grid grid-cols-3 gap-1.5', role: 'group', 'aria-label': 'Final resource levels' },
+            h('h3', { className: 'text-[11px] text-slate-300 font-bold mb-2' }, t('stem.spaceexplorer.final_resources', '\uD83D\uDCCA FINAL RESOURCES')),
+            h('div', { className: 'grid grid-cols-3 gap-1.5', role: 'group', 'aria-label': t('stem.spaceexplorer.final_resource_levels', 'Final resource levels') },
               Object.keys(RESOURCES).map(function(k) {
                 var r = RESOURCES[k]; var val = resources[k] || 0;
                 var col = val <= r.max * 0.15 ? '#ef4444' : val <= r.max * 0.3 ? '#f59e0b' : r.color;
@@ -1808,11 +1808,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               onClick: function() { updAll({ missionPhase: 'select', destination: null, resources: null, turn: 0, missionLog: [], activeEvent: null, eventOutcome: null, decisionLog: [], missionResult: null }); },
               ref: function(el) { if (el) setTimeout(function() { el.focus(); }, 200); },
               className: 'flex-1 py-3 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-md focus:ring-2 focus:ring-purple-400 focus:outline-none'
-            }, '\uD83C\uDF0C New Mission'),
+            }, t('stem.spaceexplorer.new_mission', '\uD83C\uDF0C New Mission')),
             success && totalScience >= 50 && h('button', {
               onClick: function() { updAll({ missionPhase: 'techshop', destination: null, resources: null, turn: 0, missionLog: [], activeEvent: null, eventOutcome: null, decisionLog: [], missionResult: null }); },
               className: 'flex-1 py-3 rounded-xl text-xs font-bold text-cyan-300 bg-cyan-500/10 border border-cyan-500/20 hover:bg-cyan-500/20 focus:ring-2 focus:ring-cyan-400 focus:outline-none'
-            }, '\uD83D\uDD2C Tech Shop')
+            }, t('stem.spaceexplorer.tech_shop_3', '\uD83D\uDD2C Tech Shop'))
           )
         );
       }
@@ -1829,15 +1829,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         else if (iqOh.ecc > 0.85) ohState = 'escape';
         else ohState = 'stable';
         var sm = {
-          stable: { label: '🟢 Stable orbit', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Spacecraft orbits indefinitely. Mission viable.' },
-          decay:  { label: '🟠 Orbital decay', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Atmospheric drag slowly lowers orbit.' },
-          escape: { label: '🚀 Escape trajectory', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Eccentricity too high — leaves system.' },
-          crash:  { label: '💥 Crash impact',  color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Perihelion inside surface.' }
+          stable: { label: t('stem.spaceexplorer.stable_orbit', '🟢 Stable orbit'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: t('stem.spaceexplorer.spacecraft_orbits_indefinitely_mission', 'Spacecraft orbits indefinitely. Mission viable.') },
+          decay:  { label: t('stem.spaceexplorer.orbital_decay', '🟠 Orbital decay'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.spaceexplorer.atmospheric_drag_slowly_lowers_orbit', 'Atmospheric drag slowly lowers orbit.') },
+          escape: { label: t('stem.spaceexplorer.escape_trajectory', '🚀 Escape trajectory'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: t('stem.spaceexplorer.eccentricity_too_high_leaves_system', 'Eccentricity too high — leaves system.') },
+          crash:  { label: t('stem.spaceexplorer.crash_impact', '💥 Crash impact'),  color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.spaceexplorer.perihelion_inside_surface', 'Perihelion inside surface.') }
         }[ohState];
         return h('div', { className: 'p-4 rounded-xl bg-slate-900 border border-purple-400 text-slate-100 space-y-3' },
-          h('button', { onClick: function() { updAll({ missionPhase: 'select' }); }, className: 'px-2 py-1 rounded bg-purple-700/30 text-[11px] font-bold text-purple-200 border border-purple-500' }, '← Back to missions'),
-          h('h3', { className: 'text-sm font-black text-purple-300' }, '🛰️ Orbital mechanics discovery'),
-          h('p', { className: 'text-[12px] text-slate-300 leading-relaxed' }, 'Adjust SMA, eccentricity, drag. Widget shows 4 discrete orbital outcomes. No score, no reveal.'),
+          h('button', { onClick: function() { updAll({ missionPhase: 'select' }); }, className: 'px-2 py-1 rounded bg-purple-700/30 text-[11px] font-bold text-purple-200 border border-purple-500' }, t('stem.spaceexplorer.back_to_missions', '← Back to missions')),
+          h('h3', { className: 'text-sm font-black text-purple-300' }, t('stem.spaceexplorer.orbital_mechanics_discovery', '🛰️ Orbital mechanics discovery')),
+          h('p', { className: 'text-[12px] text-slate-300 leading-relaxed' }, t('stem.spaceexplorer.adjust_sma_eccentricity_drag_widget_sh', 'Adjust SMA, eccentricity, drag. Widget shows 4 discrete orbital outcomes. No score, no reveal.')),
           h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
             h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
             h('div', { className: 'text-[11px] text-slate-700 mt-1' }, sm.desc),
@@ -1855,27 +1855,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             })
           ),
           h('div', { className: 'flex gap-2 items-center flex-wrap' },
-            h('button', { onClick: function() { setOh({ log: (iqOh.log || []).concat([{ s: iqOh.sma, e: iqOh.ecc, d: iqOh.drag, st: ohState }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-800 text-[11px] font-bold text-slate-200 border border-slate-600' }, '📋 Log'),
-            h('button', { onClick: function() { setOh({ sma: 2, ecc: 0.1, drag: 10, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-transparent text-[11px] font-semibold text-slate-400 border border-slate-600' }, '↺ Reset')
+            h('button', { onClick: function() { setOh({ log: (iqOh.log || []).concat([{ s: iqOh.sma, e: iqOh.ecc, d: iqOh.drag, st: ohState }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-800 text-[11px] font-bold text-slate-200 border border-slate-600' }, t('stem.spaceexplorer.log', '📋 Log')),
+            h('button', { onClick: function() { setOh({ sma: 2, ecc: 0.1, drag: 10, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-transparent text-[11px] font-semibold text-slate-400 border border-slate-600' }, t('stem.spaceexplorer.reset', '↺ Reset'))
           ),
-          h('textarea', { value: iqOh.hypothesis || '', onChange: function(e) { setOh({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: What combination produces escape?',
+          h('textarea', { value: iqOh.hypothesis || '', onChange: function(e) { setOh({ hypothesis: e.target.value }); }, placeholder: t('stem.spaceexplorer.hypothesis_what_combination_produces_e', 'Hypothesis: What combination produces escape?'),
             className: 'w-full text-[12px] bg-slate-800 text-slate-100 border border-slate-600 rounded p-2 font-mono leading-snug', rows: 3 }),
-          !iqOh.stuckRevealed && h('button', { onClick: function() { setOh({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-700/30 text-[11px] font-bold text-amber-300 border border-amber-700' }, '🤔 Stuck — show open prompts'),
+          !iqOh.stuckRevealed && h('button', { onClick: function() { setOh({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-700/30 text-[11px] font-bold text-amber-300 border border-amber-700' }, t('stem.spaceexplorer.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
           iqOh.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-900/20 border border-amber-700 text-[11px] text-slate-200 leading-relaxed' },
             h('ul', { className: 'list-disc pl-5 space-y-1' },
-              h('li', null, 'Find two stable orbits with very different SMA.'),
-              h('li', null, 'Why does increasing eccentricity at high SMA cause escape but not crash?'))),
+              h('li', null, t('stem.spaceexplorer.find_two_stable_orbits_with_very_diffe', 'Find two stable orbits with very different SMA.')),
+              h('li', null, t('stem.spaceexplorer.why_does_increasing_eccentricity_at_hi', 'Why does increasing eccentricity at high SMA cause escape but not crash?')))),
           h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-300 cursor-pointer' },
             h('input', { type: 'checkbox', checked: !!iqOh.understood, onChange: function(e) { setOh({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
-            'I understand — explain in own words'),
-          iqOh.understood && h('textarea', { value: iqOh.explanation || '', onChange: function(e) { setOh({ explanation: e.target.value }); }, placeholder: 'Explain how SMA, eccentricity, and drag jointly determine orbital fate.',
+            t('stem.spaceexplorer.i_understand_explain_in_own_words', 'I understand — explain in own words')),
+          iqOh.understood && h('textarea', { value: iqOh.explanation || '', onChange: function(e) { setOh({ explanation: e.target.value }); }, placeholder: t('stem.spaceexplorer.explain_how_sma_eccentricity_and_drag_', 'Explain how SMA, eccentricity, and drag jointly determine orbital fate.'),
             className: 'w-full text-[12px] bg-slate-800 text-slate-100 border border-emerald-700 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
-          h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 4-state orbital marker; no fuel-efficiency score; no reveal — by design.')
+          h('div', { className: 'text-[10px] italic text-slate-500' }, t('stem.spaceexplorer.design_note_discrete_4_state_orbital_m', 'Design note: discrete 4-state orbital marker; no fuel-efficiency score; no reveal — by design.'))
         );
       }
 
       // Fallback
-      return h('div', { className: 'text-center p-6 text-slate-400 text-xs' }, 'Loading Space Explorer...');
+      return h('div', { className: 'text-center p-6 text-slate-400 text-xs' }, t('stem.spaceexplorer.loading_space_explorer', 'Loading Space Explorer...'));
     }
   });
 

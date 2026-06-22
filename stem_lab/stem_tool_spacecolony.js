@@ -134,38 +134,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
 
           var fateTable = [
             { min: 1, max: 5, type: 'disaster', label: 'Catastrophe!', icon: '\uD83D\uDCA5', color: '#ef4444' },
-            { min: 6, max: 15, type: 'hazard', label: 'Hazard', icon: '\u26A0\uFE0F', color: '#f97316' },
-            { min: 16, max: 30, type: 'challenge', label: 'Challenge', icon: '\uD83C\uDFAF', color: '#eab308' },
-            { min: 31, max: 50, type: 'calm', label: 'Peaceful Day', icon: '\u2600\uFE0F', color: '#22c55e' },
+            { min: 6, max: 15, type: 'hazard', label: t('stem.spacecolony.hazard', 'Hazard'), icon: '\u26A0\uFE0F', color: '#f97316' },
+            { min: 16, max: 30, type: 'challenge', label: t('stem.spacecolony.challenge', 'Challenge'), icon: '\uD83C\uDFAF', color: '#eab308' },
+            { min: 31, max: 50, type: 'calm', label: t('stem.spacecolony.peaceful_day', 'Peaceful Day'), icon: '\u2600\uFE0F', color: '#22c55e' },
             { min: 51, max: 70, type: 'discovery', label: 'Discovery!', icon: '\uD83D\uDD0D', color: '#3b82f6' },
             { min: 71, max: 85, type: 'windfall', label: 'Windfall!', icon: '\uD83C\uDF81', color: '#8b5cf6' },
-            { min: 86, max: 95, type: 'settlers', label: 'New Arrivals!', icon: '\uD83D\uDE80', color: '#06b6d4' },
+            { min: 86, max: 95, type: 'settlers', label: t('stem.spacecolony.new_arrivals', 'New Arrivals!'), icon: '\uD83D\uDE80', color: '#06b6d4' },
             { min: 96, max: 100, type: 'jackpot', label: 'JACKPOT!', icon: '\u2B50', color: '#f59e0b' }
           ];
           var lootByTerrain = {
-            plains: { common: { res: 'food', amt: 3, label: '+3 Food' }, rare: { res: 'food', amt: 10, label: 'Seed Vault!' }, epic: { res: 'food', amt: 20, label: 'Fertile Oasis!' } },
-            mountain: { common: { res: 'materials', amt: 3, label: '+3 Materials' }, rare: { res: 'materials', amt: 8, label: 'Mineral Deposit!' }, epic: { res: 'materials', amt: 18, label: 'Ancient Mine!' } },
-            volcanic: { common: { res: 'energy', amt: 3, label: '+3 Energy' }, rare: { res: 'energy', amt: 8, label: 'Geothermal Vent!' }, epic: { res: 'energy', amt: 18, label: 'Lava Forge!' } },
-            ice: { common: { res: 'water', amt: 3, label: '+3 Water' }, rare: { res: 'water', amt: 8, label: 'Ice Cavern!' }, epic: { res: 'water', amt: 18, label: 'Cryo Reserve!' } },
-            desert: { common: { res: 'materials', amt: 3, label: '+3 Materials' }, rare: { res: 'science', amt: 6, label: 'Fossil Site!' }, epic: { res: 'science', amt: 15, label: 'Ancient Ruins!' } },
-            ocean: { common: { res: 'water', amt: 3, label: '+3 Water' }, rare: { res: 'food', amt: 8, label: 'Kelp Forest!' }, epic: { res: 'water', amt: 15, label: 'Underwater City!' } },
-            radiation: { common: { res: 'science', amt: 3, label: '+3 Science' }, rare: { res: 'science', amt: 8, label: 'Data Cache!' }, epic: { res: 'science', amt: 15, label: 'Alien Archive!' } }
+            plains: { common: { res: 'food', amt: 3, label: t('stem.spacecolony.3_food', '+3 Food') }, rare: { res: 'food', amt: 10, label: t('stem.spacecolony.seed_vault', 'Seed Vault!') }, epic: { res: 'food', amt: 20, label: t('stem.spacecolony.fertile_oasis', 'Fertile Oasis!') } },
+            mountain: { common: { res: 'materials', amt: 3, label: t('stem.spacecolony.3_materials', '+3 Materials') }, rare: { res: 'materials', amt: 8, label: t('stem.spacecolony.mineral_deposit', 'Mineral Deposit!') }, epic: { res: 'materials', amt: 18, label: t('stem.spacecolony.ancient_mine', 'Ancient Mine!') } },
+            volcanic: { common: { res: 'energy', amt: 3, label: t('stem.spacecolony.3_energy', '+3 Energy') }, rare: { res: 'energy', amt: 8, label: t('stem.spacecolony.geothermal_vent', 'Geothermal Vent!') }, epic: { res: 'energy', amt: 18, label: t('stem.spacecolony.lava_forge', 'Lava Forge!') } },
+            ice: { common: { res: 'water', amt: 3, label: t('stem.spacecolony.3_water', '+3 Water') }, rare: { res: 'water', amt: 8, label: t('stem.spacecolony.ice_cavern', 'Ice Cavern!') }, epic: { res: 'water', amt: 18, label: t('stem.spacecolony.cryo_reserve', 'Cryo Reserve!') } },
+            desert: { common: { res: 'materials', amt: 3, label: t('stem.spacecolony.3_materials_2', '+3 Materials') }, rare: { res: 'science', amt: 6, label: t('stem.spacecolony.fossil_site', 'Fossil Site!') }, epic: { res: 'science', amt: 15, label: t('stem.spacecolony.ancient_ruins', 'Ancient Ruins!') } },
+            ocean: { common: { res: 'water', amt: 3, label: t('stem.spacecolony.3_water_2', '+3 Water') }, rare: { res: 'food', amt: 8, label: t('stem.spacecolony.kelp_forest', 'Kelp Forest!') }, epic: { res: 'water', amt: 15, label: t('stem.spacecolony.underwater_city', 'Underwater City!') } },
+            radiation: { common: { res: 'science', amt: 3, label: t('stem.spacecolony.3_science', '+3 Science') }, rare: { res: 'science', amt: 8, label: t('stem.spacecolony.data_cache', 'Data Cache!') }, epic: { res: 'science', amt: 15, label: t('stem.spacecolony.alien_archive', 'Alien Archive!') } }
           };
           var tutorialGuide = [
-            { turn: 1, hint: 'Explore tiles around your colony to discover resources!', icon: '\uD83D\uDDFA' },
-            { turn: 2, hint: 'Build your first structure! Try Hydroponics for food.', icon: '\uD83C\uDFD7' },
+            { turn: 1, hint: t('stem.spacecolony.explore_tiles_around_your_colony_to_di', 'Explore tiles around your colony to discover resources!'), icon: '\uD83D\uDDFA' },
+            { turn: 2, hint: t('stem.spacecolony.build_your_first_structure_try_hydropo', 'Build your first structure! Try Hydroponics for food.'), icon: '\uD83C\uDFD7' },
             { turn: 3, hint: 'You have ' + maxAP + ' Action Points per turn. Plan wisely!', icon: '\u26A1' },
-            { turn: 5, hint: 'Research unlocks permanent bonuses!', icon: '\uD83E\uDDEC' },
-            { turn: 8, hint: 'Choose a governance policy to shape your colony.', icon: '\uD83C\uDFDB' }
+            { turn: 5, hint: t('stem.spacecolony.research_unlocks_permanent_bonuses', 'Research unlocks permanent bonuses!'), icon: '\uD83E\uDDEC' },
+            { turn: 8, hint: t('stem.spacecolony.choose_a_governance_policy_to_shape_yo', 'Choose a governance policy to shape your colony.'), icon: '\uD83C\uDFDB' }
           ];
           function getAdvisorMessage() {
             if (turn > 30) return null;
             if (resources.food <= 5 && buildings.indexOf('hydroponics') < 0)
-              return { settler: settlers[0] || { name: 'Dr. Vasquez', icon: '\uD83C\uDF31', role: 'Botanist' }, msg: 'Food critical! Build Hydroponics (15 mats, 5 energy) for +3 food/turn.', action: 'build' };
+              return { settler: settlers[0] || { name: t('stem.spacecolony.dr_vasquez', 'Dr. Vasquez'), icon: '\uD83C\uDF31', role: 'Botanist' }, msg: 'Food critical! Build Hydroponics (15 mats, 5 energy) for +3 food/turn.', action: 'build' };
             if (resources.energy <= 3 && buildings.indexOf('solar') < 0)
-              return { settler: settlers[4] || { name: 'Prof. Patel', icon: '\u269B', role: 'Physicist' }, msg: 'Energy critical! Build Solar Array for +3 energy/turn.', action: 'build' };
+              return { settler: settlers[4] || { name: t('stem.spacecolony.prof_patel', 'Prof. Patel'), icon: '\u269B', role: 'Physicist' }, msg: 'Energy critical! Build Solar Array for +3 energy/turn.', action: 'build' };
             if (buildings.length === 0 && turn >= 2)
-              return { settler: settlers[1] || { name: 'Cmdr. Chen', icon: '\u2699', role: 'Engineer' }, msg: 'We need our first building. Try Hydroponics or Solar Array.', action: 'build' };
+              return { settler: settlers[1] || { name: t('stem.spacecolony.cmdr_chen', 'Cmdr. Chen'), icon: '\u2699', role: 'Engineer' }, msg: 'We need our first building. Try Hydroponics or Solar Array.', action: 'build' };
             var guide = tutorialGuide.find(function(g) { return g.turn === turn; });
             if (guide) return { settler: settlers[Math.floor(Math.random() * Math.min(6, settlers.length))], msg: guide.hint };
             return null;
@@ -201,9 +201,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
           var rovers = d.colonyRovers || [];
           var selectedRover = d.selectedRover || null;
           var roverDefs = [
-            { type: 'scout', name: 'Scout Rover', icon: '\uD83D\uDE99', vision: 5, maxMoves: 6, maxFuel: 20, cost: { materials: 8, energy: 5 }, desc: 'Fast recon. 5-tile vision, 6 moves/turn.', color: '#22d3ee' },
-            { type: 'heavy', name: 'Heavy Rover', icon: '\uD83D\uDE9B', vision: 3, maxMoves: 2, maxFuel: 14, cost: { materials: 15, energy: 10 }, desc: 'Slow but can build outposts. 3-tile vision.', color: '#f97316' },
-            { type: 'science', name: 'Science Rover', icon: '\uD83D\uDD2C', vision: 4, maxMoves: 4, maxFuel: 16, cost: { materials: 12, science: 8 }, desc: 'Auto-collects +2 science/turn from terrain. 4-tile vision.', color: '#a78bfa' }
+            { type: 'scout', name: t('stem.spacecolony.scout_rover', 'Scout Rover'), icon: '\uD83D\uDE99', vision: 5, maxMoves: 6, maxFuel: 20, cost: { materials: 8, energy: 5 }, desc: t('stem.spacecolony.fast_recon_5_tile_vision_6_moves_turn', 'Fast recon. 5-tile vision, 6 moves/turn.'), color: '#22d3ee' },
+            { type: 'heavy', name: t('stem.spacecolony.heavy_rover', 'Heavy Rover'), icon: '\uD83D\uDE9B', vision: 3, maxMoves: 2, maxFuel: 14, cost: { materials: 15, energy: 10 }, desc: t('stem.spacecolony.slow_but_can_build_outposts_3_tile_vis', 'Slow but can build outposts. 3-tile vision.'), color: '#f97316' },
+            { type: 'science', name: t('stem.spacecolony.science_rover', 'Science Rover'), icon: '\uD83D\uDD2C', vision: 4, maxMoves: 4, maxFuel: 16, cost: { materials: 12, science: 8 }, desc: t('stem.spacecolony.auto_collects_2_science_turn_from_terr', 'Auto-collects +2 science/turn from terrain. 4-tile vision.'), color: '#a78bfa' }
           ];
           function getRoverDef(type) { return roverDefs.find(function (rd) { return rd.type === type; }) || roverDefs[0]; }
           function buildRover(type) {
@@ -299,51 +299,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
           // Civilization Mechanics
           var era = d.colonyEra || 'survival';
           var eraData = {
-            survival: { name: 'Survival', icon: '\u26A0\uFE0F', next: 'expansion', req: 'Build 3 buildings', color: '#ef4444' },
-            expansion: { name: 'Expansion', icon: '\uD83C\uDF10', next: 'prosperity', req: 'Build 6 buildings + 50% terraform', color: '#f59e0b' },
-            prosperity: { name: 'Prosperity', icon: '\uD83C\uDF1F', next: 'transcendence', req: 'All 10 buildings + 75% terraform', color: '#22c55e' },
-            transcendence: { name: 'Transcendence', icon: '\uD83D\uDE80', next: null, req: 'Victory!', color: '#8b5cf6' }
+            survival: { name: t('stem.spacecolony.survival', 'Survival'), icon: '\u26A0\uFE0F', next: 'expansion', req: 'Build 3 buildings', color: '#ef4444' },
+            expansion: { name: t('stem.spacecolony.expansion', 'Expansion'), icon: '\uD83C\uDF10', next: 'prosperity', req: 'Build 6 buildings + 50% terraform', color: '#f59e0b' },
+            prosperity: { name: t('stem.spacecolony.prosperity', 'Prosperity'), icon: '\uD83C\uDF1F', next: 'transcendence', req: 'All 10 buildings + 75% terraform', color: '#22c55e' },
+            transcendence: { name: t('stem.spacecolony.transcendence', 'Transcendence'), icon: '\uD83D\uDE80', next: null, req: 'Victory!', color: '#8b5cf6' }
           };
           var currentEra = eraData[era] || eraData.survival;
 
           var activePolicy = d.colonyPolicy || null;
           var policyDefs = [
-            { id: 'militarist', name: 'Frontier Expansion', icon: '\uD83D\uDEE1\uFE0F', desc: 'Exploration costs 0 energy. +1 materials/turn.', effect: { exploreFreeCost: true, materialBonus: 1 } },
-            { id: 'scientific', name: 'Knowledge First', icon: '\uD83E\uDDEC', desc: '+50% science production. +5 XP per question.', effect: { scienceMultiplier: 1.5, xpBonus: 5 } },
-            { id: 'agrarian', name: 'Colony Welfare', icon: '\uD83C\uDF3E', desc: '+2 food/turn. New settlers arrive 50% faster.', effect: { foodBonus: 2, popGrowthBonus: 0.5 } },
-            { id: 'industrial', name: 'Heavy Industry', icon: '\u2699\uFE0F', desc: 'Buildings cost 20% fewer materials. +2 energy/turn.', effect: { buildDiscount: 0.2, energyBonus: 2 } }
+            { id: 'militarist', name: t('stem.spacecolony.frontier_expansion', 'Frontier Expansion'), icon: '\uD83D\uDEE1\uFE0F', desc: t('stem.spacecolony.exploration_costs_0_energy_1_materials', 'Exploration costs 0 energy. +1 materials/turn.'), effect: { exploreFreeCost: true, materialBonus: 1 } },
+            { id: 'scientific', name: t('stem.spacecolony.knowledge_first', 'Knowledge First'), icon: '\uD83E\uDDEC', desc: t('stem.spacecolony.50_science_production_5_xp_per_questio', '+50% science production. +5 XP per question.'), effect: { scienceMultiplier: 1.5, xpBonus: 5 } },
+            { id: 'agrarian', name: t('stem.spacecolony.colony_welfare', 'Colony Welfare'), icon: '\uD83C\uDF3E', desc: t('stem.spacecolony.2_food_turn_new_settlers_arrive_50_fas', '+2 food/turn. New settlers arrive 50% faster.'), effect: { foodBonus: 2, popGrowthBonus: 0.5 } },
+            { id: 'industrial', name: t('stem.spacecolony.heavy_industry', 'Heavy Industry'), icon: '\u2699\uFE0F', desc: t('stem.spacecolony.buildings_cost_20_fewer_materials_2_en', 'Buildings cost 20% fewer materials. +2 energy/turn.'), effect: { buildDiscount: 0.2, energyBonus: 2 } }
           ];
 
           var researchQueue = d.colonyResearch || [];
           var researchDefs = [
-            { id: 'xenobiology', name: 'Xenobiology', icon: '\uD83E\uDDA0', cost: 15, desc: 'Study alien life. +3 food & water/turn.', bonus: { food: 3, water: 3 }, era: 'expansion', domain: 'biology' },
-            { id: 'gravimetrics', name: 'Gravimetrics', icon: '\uD83C\uDF0C', cost: 20, desc: 'Map gravity wells. All exploration reveals +1 tile radius.', bonus: { exploreRadius: 2 }, era: 'expansion', domain: 'physics' },
-            { id: 'nanotech', name: 'Nanotechnology', icon: '\uD83E\uDDF2', cost: 25, desc: 'Self-repairing buildings. Effectiveness never drops below 75%.', bonus: { minEfficiency: 75 }, era: 'prosperity', domain: 'chemistry' },
-            { id: 'terraAI', name: 'Terraform AI', icon: '\uD83E\uDD16', cost: 30, desc: 'AI-guided terraforming. +3% terraform/turn base.', bonus: { terraformBonus: 3 }, era: 'prosperity', domain: 'math' },
-            { id: 'warpComms', name: 'Subspace Comms', icon: '\uD83D\uDCE1', cost: 40, desc: 'FTL communication with Earth. +10 science/turn.', bonus: { science: 10 }, era: 'transcendence', domain: 'physics' },
-            { id: 'bioengine', name: 'Bioengineering', icon: '\uD83E\uDDEC', cost: 18, desc: 'Genetically adapted crops for alien soil. +5 food/turn.', bonus: { food: 5 }, era: 'expansion', domain: 'biology' },
-            { id: 'quantumComp', name: 'Quantum Computing', icon: '\uD83D\uDDA5\uFE0F', cost: 35, desc: 'Quantum processors for colony AI. +5 science/turn.', bonus: { science: 5 }, era: 'prosperity', domain: 'physics' },
-            { id: 'plasmaDrill', name: 'Plasma Mining', icon: '\u26CF\uFE0F', cost: 22, desc: 'Superheated plasma drills. +5 materials/turn.', bonus: { materials: 5 }, era: 'expansion', domain: 'chemistry' },
-            { id: 'cryonics', name: 'Cryogenic Storage', icon: '\u2744\uFE0F', cost: 28, desc: 'Preserve food indefinitely. +3 food, +3 water/turn.', bonus: { food: 3, water: 3 }, era: 'prosperity', domain: 'biology' },
-            { id: 'dysonSwarm', name: 'Dyson Swarm', icon: '\u2600\uFE0F', cost: 50, desc: 'Orbital solar collectors. +15 energy/turn.', bonus: { energy: 15 }, era: 'transcendence', domain: 'physics' }
+            { id: 'xenobiology', name: t('stem.spacecolony.xenobiology', 'Xenobiology'), icon: '\uD83E\uDDA0', cost: 15, desc: t('stem.spacecolony.study_alien_life_3_food_water_turn', 'Study alien life. +3 food & water/turn.'), bonus: { food: 3, water: 3 }, era: 'expansion', domain: 'biology' },
+            { id: 'gravimetrics', name: t('stem.spacecolony.gravimetrics', 'Gravimetrics'), icon: '\uD83C\uDF0C', cost: 20, desc: t('stem.spacecolony.map_gravity_wells_all_exploration_reve', 'Map gravity wells. All exploration reveals +1 tile radius.'), bonus: { exploreRadius: 2 }, era: 'expansion', domain: 'physics' },
+            { id: 'nanotech', name: t('stem.spacecolony.nanotechnology', 'Nanotechnology'), icon: '\uD83E\uDDF2', cost: 25, desc: t('stem.spacecolony.self_repairing_buildings_effectiveness', 'Self-repairing buildings. Effectiveness never drops below 75%.'), bonus: { minEfficiency: 75 }, era: 'prosperity', domain: 'chemistry' },
+            { id: 'terraAI', name: t('stem.spacecolony.terraform_ai', 'Terraform AI'), icon: '\uD83E\uDD16', cost: 30, desc: t('stem.spacecolony.ai_guided_terraforming_3_terraform_tur', 'AI-guided terraforming. +3% terraform/turn base.'), bonus: { terraformBonus: 3 }, era: 'prosperity', domain: 'math' },
+            { id: 'warpComms', name: t('stem.spacecolony.subspace_comms', 'Subspace Comms'), icon: '\uD83D\uDCE1', cost: 40, desc: t('stem.spacecolony.ftl_communication_with_earth_10_scienc', 'FTL communication with Earth. +10 science/turn.'), bonus: { science: 10 }, era: 'transcendence', domain: 'physics' },
+            { id: 'bioengine', name: t('stem.spacecolony.bioengineering', 'Bioengineering'), icon: '\uD83E\uDDEC', cost: 18, desc: t('stem.spacecolony.genetically_adapted_crops_for_alien_so', 'Genetically adapted crops for alien soil. +5 food/turn.'), bonus: { food: 5 }, era: 'expansion', domain: 'biology' },
+            { id: 'quantumComp', name: t('stem.spacecolony.quantum_computing', 'Quantum Computing'), icon: '\uD83D\uDDA5\uFE0F', cost: 35, desc: t('stem.spacecolony.quantum_processors_for_colony_ai_5_sci', 'Quantum processors for colony AI. +5 science/turn.'), bonus: { science: 5 }, era: 'prosperity', domain: 'physics' },
+            { id: 'plasmaDrill', name: t('stem.spacecolony.plasma_mining', 'Plasma Mining'), icon: '\u26CF\uFE0F', cost: 22, desc: t('stem.spacecolony.superheated_plasma_drills_5_materials_', 'Superheated plasma drills. +5 materials/turn.'), bonus: { materials: 5 }, era: 'expansion', domain: 'chemistry' },
+            { id: 'cryonics', name: t('stem.spacecolony.cryogenic_storage', 'Cryogenic Storage'), icon: '\u2744\uFE0F', cost: 28, desc: t('stem.spacecolony.preserve_food_indefinitely_3_food_3_wa', 'Preserve food indefinitely. +3 food, +3 water/turn.'), bonus: { food: 3, water: 3 }, era: 'prosperity', domain: 'biology' },
+            { id: 'dysonSwarm', name: t('stem.spacecolony.dyson_swarm', 'Dyson Swarm'), icon: '\u2600\uFE0F', cost: 50, desc: t('stem.spacecolony.orbital_solar_collectors_15_energy_tur', 'Orbital solar collectors. +15 energy/turn.'), bonus: { energy: 15 }, era: 'transcendence', domain: 'physics' }
           ];
 
           var greatScientists = d.colonyGreatSci || [];
           var greatSciDefs = [
-            { name: 'Marie Curie', icon: '\u2622\uFE0F', specialty: 'physics', bonus: 'energy', amount: 5, fact: 'Discovered radioactivity and won 2 Nobel Prizes in different sciences.' },
-            { name: 'Charles Darwin', icon: '\uD83E\uDD86', specialty: 'biology', bonus: 'science', amount: 5, fact: 'Theory of evolution by natural selection revolutionized biology.' },
-            { name: 'Nikola Tesla', icon: '\u26A1', specialty: 'physics', bonus: 'energy', amount: 8, fact: 'Pioneered alternating current (AC) electricity used worldwide today.' },
-            { name: 'Rosalind Franklin', icon: '\uD83E\uDDEC', specialty: 'chemistry', bonus: 'science', amount: 5, fact: 'Her X-ray crystallography was key to discovering DNA\'s structure.' },
-            { name: 'Ada Lovelace', icon: '\uD83D\uDCBB', specialty: 'math', bonus: 'science', amount: 8, fact: 'Wrote the world\'s first computer program in the 1840s.' },
-            { name: 'Galileo Galilei', icon: '\uD83D\uDD2D', specialty: 'physics', bonus: 'science', amount: 5, fact: 'Father of modern observational astronomy. Proved heliocentrism.' },
-            { name: 'Rachel Carson', icon: '\uD83C\uDF3F', specialty: 'biology', bonus: 'water', amount: 5, fact: 'Silent Spring launched the modern environmental movement in 1962.' },
-            { name: 'Albert Einstein', icon: '\uD83C\uDF0C', specialty: 'physics', bonus: 'energy', amount: 10, fact: 'E=mc\u00B2 showed mass and energy are interchangeable. Revolutionized physics forever.' },
-            { name: 'Mae Jemison', icon: '\uD83D\uDE80', specialty: 'biology', bonus: 'science', amount: 8, fact: 'First African-American woman in space (1992). Also a physician and engineer.' },
-            { name: 'Dmitri Mendeleev', icon: '\uD83E\uDDEA', specialty: 'chemistry', bonus: 'materials', amount: 8, fact: 'Created the Periodic Table, predicting undiscovered elements by their properties.' },
-            { name: 'Wangari Maathai', icon: '\uD83C\uDF33', specialty: 'biology', bonus: 'food', amount: 6, fact: 'Kenyan environmentalist who planted 51 million trees via the Green Belt Movement. First African woman to win the Nobel Peace Prize.' },
-            { name: 'Jagadish Chandra Bose', icon: '\uD83D\uDCE1', specialty: 'physics', bonus: 'science', amount: 8, fact: 'Indian polymath who proved plants have feelings, pioneered radio science, and invented the crescograph to measure plant growth.' },
-            { name: 'Maryam Mirzakhani', icon: '\uD83C\uDF00', specialty: 'math', bonus: 'science', amount: 10, fact: 'First woman and first Iranian to win the Fields Medal \u2014 the Nobel Prize of mathematics \u2014 for work on curved surfaces.' },
-            { name: 'Srinivasa Ramanujan', icon: '\u221E', specialty: 'math', bonus: 'science', amount: 8, fact: 'Self-taught Indian genius who discovered over 3,900 mathematical identities. His notebooks still yield new theorems today.' }
+            { name: t('stem.spacecolony.marie_curie', 'Marie Curie'), icon: '\u2622\uFE0F', specialty: 'physics', bonus: 'energy', amount: 5, fact: t('stem.spacecolony.discovered_radioactivity_and_won_2_nob', 'Discovered radioactivity and won 2 Nobel Prizes in different sciences.') },
+            { name: t('stem.spacecolony.charles_darwin', 'Charles Darwin'), icon: '\uD83E\uDD86', specialty: 'biology', bonus: 'science', amount: 5, fact: t('stem.spacecolony.theory_of_evolution_by_natural_selecti', 'Theory of evolution by natural selection revolutionized biology.') },
+            { name: t('stem.spacecolony.nikola_tesla', 'Nikola Tesla'), icon: '\u26A1', specialty: 'physics', bonus: 'energy', amount: 8, fact: t('stem.spacecolony.pioneered_alternating_current_ac_elect', 'Pioneered alternating current (AC) electricity used worldwide today.') },
+            { name: t('stem.spacecolony.rosalind_franklin', 'Rosalind Franklin'), icon: '\uD83E\uDDEC', specialty: 'chemistry', bonus: 'science', amount: 5, fact: t('stem.spacecolony.her_x_ray_crystallography_was_key_to_d', 'Her X-ray crystallography was key to discovering DNA\'s structure.') },
+            { name: t('stem.spacecolony.ada_lovelace', 'Ada Lovelace'), icon: '\uD83D\uDCBB', specialty: 'math', bonus: 'science', amount: 8, fact: t('stem.spacecolony.wrote_the_world_s_first_computer_progr', 'Wrote the world\'s first computer program in the 1840s.') },
+            { name: t('stem.spacecolony.galileo_galilei', 'Galileo Galilei'), icon: '\uD83D\uDD2D', specialty: 'physics', bonus: 'science', amount: 5, fact: t('stem.spacecolony.father_of_modern_observational_astrono', 'Father of modern observational astronomy. Proved heliocentrism.') },
+            { name: t('stem.spacecolony.rachel_carson', 'Rachel Carson'), icon: '\uD83C\uDF3F', specialty: 'biology', bonus: 'water', amount: 5, fact: t('stem.spacecolony.silent_spring_launched_the_modern_envi', 'Silent Spring launched the modern environmental movement in 1962.') },
+            { name: t('stem.spacecolony.albert_einstein', 'Albert Einstein'), icon: '\uD83C\uDF0C', specialty: 'physics', bonus: 'energy', amount: 10, fact: t('stem.spacecolony.e_mc_showed_mass_and_energy_are_interc', 'E=mc\u00B2 showed mass and energy are interchangeable. Revolutionized physics forever.') },
+            { name: t('stem.spacecolony.mae_jemison', 'Mae Jemison'), icon: '\uD83D\uDE80', specialty: 'biology', bonus: 'science', amount: 8, fact: t('stem.spacecolony.first_african_american_woman_in_space_', 'First African-American woman in space (1992). Also a physician and engineer.') },
+            { name: t('stem.spacecolony.dmitri_mendeleev', 'Dmitri Mendeleev'), icon: '\uD83E\uDDEA', specialty: 'chemistry', bonus: 'materials', amount: 8, fact: t('stem.spacecolony.created_the_periodic_table_predicting_', 'Created the Periodic Table, predicting undiscovered elements by their properties.') },
+            { name: t('stem.spacecolony.wangari_maathai', 'Wangari Maathai'), icon: '\uD83C\uDF33', specialty: 'biology', bonus: 'food', amount: 6, fact: t('stem.spacecolony.kenyan_environmentalist_who_planted_51', 'Kenyan environmentalist who planted 51 million trees via the Green Belt Movement. First African woman to win the Nobel Peace Prize.') },
+            { name: t('stem.spacecolony.jagadish_chandra_bose', 'Jagadish Chandra Bose'), icon: '\uD83D\uDCE1', specialty: 'physics', bonus: 'science', amount: 8, fact: t('stem.spacecolony.indian_polymath_who_proved_plants_have', 'Indian polymath who proved plants have feelings, pioneered radio science, and invented the crescograph to measure plant growth.') },
+            { name: t('stem.spacecolony.maryam_mirzakhani', 'Maryam Mirzakhani'), icon: '\uD83C\uDF00', specialty: 'math', bonus: 'science', amount: 10, fact: t('stem.spacecolony.first_woman_and_first_iranian_to_win_t', 'First woman and first Iranian to win the Fields Medal \u2014 the Nobel Prize of mathematics \u2014 for work on curved surfaces.') },
+            { name: t('stem.spacecolony.srinivasa_ramanujan', 'Srinivasa Ramanujan'), icon: '\u221E', specialty: 'math', bonus: 'science', amount: 8, fact: t('stem.spacecolony.self_taught_indian_genius_who_discover', 'Self-taught Indian genius who discovered over 3,900 mathematical identities. His notebooks still yield new theorems today.') }
           ];
 
           var popGrowthAccum = d.colonyPopGrowth || 0;
@@ -352,13 +352,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
           var alienContact = d.alienContact || null;
           var alienRelations = d.alienRelations || 0; // -100 to 100
           var alienDefs = {
-            name: 'The Keth\u2019ora',
+            name: t('stem.spacecolony.the_keth_ora', 'The Keth\u2019ora'),
             icon: '\uD83D\uDC7E',
-            desc: 'Silicon-based lifeforms indigenous to Kepler-442b. Communicate through bioluminescent patterns.',
+            desc: t('stem.spacecolony.silicon_based_lifeforms_indigenous_to_', 'Silicon-based lifeforms indigenous to Kepler-442b. Communicate through bioluminescent patterns.'),
             trades: [
-              { give: { materials: 10 }, get: { science: 8 }, name: 'Knowledge Exchange' },
-              { give: { food: 8 }, get: { materials: 12 }, name: 'Organic Trade' },
-              { give: { energy: 10 }, get: { water: 15 }, name: 'Ice Mining Rights' }
+              { give: { materials: 10 }, get: { science: 8 }, name: t('stem.spacecolony.knowledge_exchange', 'Knowledge Exchange') },
+              { give: { food: 8 }, get: { materials: 12 }, name: t('stem.spacecolony.organic_trade', 'Organic Trade') },
+              { give: { energy: 10 }, get: { water: 15 }, name: t('stem.spacecolony.ice_mining_rights', 'Ice Mining Rights') }
             ]
           };
           var colonyHappiness = d.colonyHappiness || 70;
@@ -367,18 +367,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
           var wonders = d.colonyWonders || {};
           var wonderDefs = [
             {
-              id: 'terraformEngine', name: 'Planetary Terraform Engine', icon: '\uD83C\uDF0D', challenges: 3, domain: 'chemistry',
-              desc: 'Planet-scale atmospheric converter. +5% terraform/turn permanently.', effect: { terraformBonus: 5 },
+              id: 'terraformEngine', name: t('stem.spacecolony.planetary_terraform_engine', 'Planetary Terraform Engine'), icon: '\uD83C\uDF0D', challenges: 3, domain: 'chemistry',
+              desc: t('stem.spacecolony.planet_scale_atmospheric_converter_5_t', 'Planet-scale atmospheric converter. +5% terraform/turn permanently.'), effect: { terraformBonus: 5 },
               cost: { materials: 80, energy: 50, science: 40, water: 30 }, era: 'prosperity'
             },
             {
-              id: 'arkVault', name: 'Genetic Ark Vault', icon: '\uD83E\uDDEC', challenges: 3, domain: 'biology',
-              desc: 'Preserves 10,000 species from Earth. +8 food, +5 science/turn.', effect: { food: 8, science: 5 },
+              id: 'arkVault', name: t('stem.spacecolony.genetic_ark_vault', 'Genetic Ark Vault'), icon: '\uD83E\uDDEC', challenges: 3, domain: 'biology',
+              desc: t('stem.spacecolony.preserves_10_000_species_from_earth_8_', 'Preserves 10,000 species from Earth. +8 food, +5 science/turn.'), effect: { food: 8, science: 5 },
               cost: { materials: 60, science: 50, water: 25, food: 20 }, era: 'prosperity'
             },
             {
-              id: 'quantumGate', name: 'Quantum Gate', icon: '\uD83D\uDD73\uFE0F', challenges: 3, domain: 'physics',
-              desc: 'Wormhole to Earth. Instant communication & settler transfer. +20 pop growth.', effect: { popBoost: true, science: 10 },
+              id: 'quantumGate', name: t('stem.spacecolony.quantum_gate', 'Quantum Gate'), icon: '\uD83D\uDD73\uFE0F', challenges: 3, domain: 'physics',
+              desc: t('stem.spacecolony.wormhole_to_earth_instant_communicatio', 'Wormhole to Earth. Instant communication & settler transfer. +20 pop growth.'), effect: { popBoost: true, science: 10 },
               cost: { materials: 100, energy: 80, science: 60 }, era: 'transcendence'
             }
           ];
@@ -410,65 +410,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
           // Achievements
           var achievements = d.colonyAchievements || {};
           var achievementDefs = [
-            { id: 'firstBuild', name: 'Foundation Stone', icon: '\uD83C\uDFD7\uFE0F', desc: 'Build your first structure.', check: function () { return buildings.length >= 1; } },
-            { id: 'fiveBuild', name: 'Growing Pains', icon: '\uD83C\uDFD8\uFE0F', desc: 'Build 5 structures.', check: function () { return buildings.length >= 5; } },
-            { id: 'tenBuild', name: 'City Planner', icon: '\uD83C\uDFD9\uFE0F', desc: 'Build 10 structures.', check: function () { return buildings.length >= 10; } },
-            { id: 'allBuild', name: 'Master Builder', icon: '\uD83C\uDFDF\uFE0F', desc: 'Build all 16 structures.', check: function () { return buildings.length >= 16; } },
-            { id: 'pop10', name: 'Small Town', icon: '\uD83D\uDC65', desc: 'Reach 10 settlers.', check: function () { return settlers.length >= 10; } },
-            { id: 'pop25', name: 'Borough', icon: '\uD83C\uDFD8\uFE0F', desc: 'Reach 25 settlers.', check: function () { return settlers.length >= 25; } },
-            { id: 'pop50', name: 'Metropolis', icon: '\uD83C\uDFD9\uFE0F', desc: 'Win by population!', check: function () { return settlers.length >= 50; } },
-            { id: 'tf25', name: 'Green Shoots', icon: '\uD83C\uDF31', desc: '25% terraformed.', check: function () { return terraform >= 25; } },
-            { id: 'tf50', name: 'Halfway Home', icon: '\uD83C\uDF0D', desc: '50% terraformed.', check: function () { return terraform >= 50; } },
-            { id: 'tf100', name: 'New Earth', icon: '\uD83C\uDF0E', desc: '100% terraformed! Victory!', check: function () { return terraform >= 100; } },
-            { id: 'res3', name: 'Curious Mind', icon: '\uD83D\uDD2C', desc: 'Complete 3 research techs.', check: function () { return researchQueue.length >= 3; } },
-            { id: 'res7', name: 'Renaissance', icon: '\uD83D\uDCDA', desc: 'Complete 7 research techs.', check: function () { return researchQueue.length >= 7; } },
-            { id: 'res10', name: 'Omniscient', icon: '\uD83E\uDDE0', desc: 'Complete all 10! Victory!', check: function () { return researchQueue.length >= 10; } },
-            { id: 'explore15', name: 'Cartographer', icon: '\uD83D\uDDFA\uFE0F', desc: 'Explore 15 tiles.', check: function () { return stats.tilesExplored >= 15; } },
-            { id: 'exploreAll', name: 'World Walker', icon: '\uD83C\uDF0F', desc: 'Explore all tiles.', check: function () { return stats.tilesExplored >= mapSize * mapSize; } },
-            { id: 'science100', name: 'Knowledge Hoard', icon: '\uD83D\uDCDA', desc: 'Accumulate 100+ science.', check: function () { return resources.science >= 100; } },
-            { id: 'journal10', name: 'Studious', icon: '\uD83D\uDCD6', desc: '10 science journal entries.', check: function () { return scienceJournal.length >= 10; } },
-            { id: 'journal25', name: 'Scholar', icon: '\uD83C\uDF93', desc: '25 science journal entries.', check: function () { return scienceJournal.length >= 25; } },
-            { id: 'tradition3', name: 'Cultural Mosaic', icon: '\uD83C\uDF10', desc: 'Adopt 3 cultural traditions.', check: function () { return traditions.length >= 3; } },
-            { id: 'equityHigh', name: 'Just Society', icon: '\u2696\uFE0F', desc: 'Maintain equity above 85%.', check: function () { return equity >= 85; } },
-            { id: 'happyMax', name: 'Utopia', icon: '\uD83D\uDE04', desc: 'Reach 100% happiness.', check: function () { return colonyHappiness >= 100; } },
-            { id: 'alienFriend', name: 'Diplomat', icon: '\uD83D\uDC7E', desc: 'Allied with the Keth\u2019ora.', check: function () { return alienRelations >= 50; } },
-            { id: 'wonder1', name: 'Wonderous', icon: '\uD83C\uDFDB\uFE0F', desc: 'Complete a Wonder.', check: function () { return wonders.terraformEngine || wonders.arkVault || wonders.quantumGate; } },
-            { id: 'mentor5', name: 'Awakener', icon: '\uD83E\uDD16', desc: 'Activate 5 Digital Mentors.', check: function () { return greatScientists.length >= 5; } },
-            { id: 'turn50', name: 'Endurance', icon: '\u23F0', desc: 'Survive 50 turns.', check: function () { return turn >= 50; } },
-            { id: 'perfect10', name: 'Perfect 10', icon: '\uD83C\uDFAF', desc: 'Answer 10 questions correctly in a row.', check: function () { return stats.streak >= 10; } }
+            { id: 'firstBuild', name: t('stem.spacecolony.foundation_stone', 'Foundation Stone'), icon: '\uD83C\uDFD7\uFE0F', desc: t('stem.spacecolony.build_your_first_structure', 'Build your first structure.'), check: function () { return buildings.length >= 1; } },
+            { id: 'fiveBuild', name: t('stem.spacecolony.growing_pains', 'Growing Pains'), icon: '\uD83C\uDFD8\uFE0F', desc: t('stem.spacecolony.build_5_structures', 'Build 5 structures.'), check: function () { return buildings.length >= 5; } },
+            { id: 'tenBuild', name: t('stem.spacecolony.city_planner', 'City Planner'), icon: '\uD83C\uDFD9\uFE0F', desc: t('stem.spacecolony.build_10_structures', 'Build 10 structures.'), check: function () { return buildings.length >= 10; } },
+            { id: 'allBuild', name: t('stem.spacecolony.master_builder', 'Master Builder'), icon: '\uD83C\uDFDF\uFE0F', desc: t('stem.spacecolony.build_all_16_structures', 'Build all 16 structures.'), check: function () { return buildings.length >= 16; } },
+            { id: 'pop10', name: t('stem.spacecolony.small_town', 'Small Town'), icon: '\uD83D\uDC65', desc: t('stem.spacecolony.reach_10_settlers', 'Reach 10 settlers.'), check: function () { return settlers.length >= 10; } },
+            { id: 'pop25', name: t('stem.spacecolony.borough', 'Borough'), icon: '\uD83C\uDFD8\uFE0F', desc: t('stem.spacecolony.reach_25_settlers', 'Reach 25 settlers.'), check: function () { return settlers.length >= 25; } },
+            { id: 'pop50', name: t('stem.spacecolony.metropolis', 'Metropolis'), icon: '\uD83C\uDFD9\uFE0F', desc: t('stem.spacecolony.win_by_population', 'Win by population!'), check: function () { return settlers.length >= 50; } },
+            { id: 'tf25', name: t('stem.spacecolony.green_shoots', 'Green Shoots'), icon: '\uD83C\uDF31', desc: t('stem.spacecolony.25_terraformed', '25% terraformed.'), check: function () { return terraform >= 25; } },
+            { id: 'tf50', name: t('stem.spacecolony.halfway_home', 'Halfway Home'), icon: '\uD83C\uDF0D', desc: t('stem.spacecolony.50_terraformed', '50% terraformed.'), check: function () { return terraform >= 50; } },
+            { id: 'tf100', name: t('stem.spacecolony.new_earth', 'New Earth'), icon: '\uD83C\uDF0E', desc: t('stem.spacecolony.100_terraformed_victory', '100% terraformed! Victory!'), check: function () { return terraform >= 100; } },
+            { id: 'res3', name: t('stem.spacecolony.curious_mind', 'Curious Mind'), icon: '\uD83D\uDD2C', desc: t('stem.spacecolony.complete_3_research_techs', 'Complete 3 research techs.'), check: function () { return researchQueue.length >= 3; } },
+            { id: 'res7', name: t('stem.spacecolony.renaissance', 'Renaissance'), icon: '\uD83D\uDCDA', desc: t('stem.spacecolony.complete_7_research_techs', 'Complete 7 research techs.'), check: function () { return researchQueue.length >= 7; } },
+            { id: 'res10', name: t('stem.spacecolony.omniscient', 'Omniscient'), icon: '\uD83E\uDDE0', desc: t('stem.spacecolony.complete_all_10_victory', 'Complete all 10! Victory!'), check: function () { return researchQueue.length >= 10; } },
+            { id: 'explore15', name: t('stem.spacecolony.cartographer', 'Cartographer'), icon: '\uD83D\uDDFA\uFE0F', desc: t('stem.spacecolony.explore_15_tiles', 'Explore 15 tiles.'), check: function () { return stats.tilesExplored >= 15; } },
+            { id: 'exploreAll', name: t('stem.spacecolony.world_walker', 'World Walker'), icon: '\uD83C\uDF0F', desc: t('stem.spacecolony.explore_all_tiles', 'Explore all tiles.'), check: function () { return stats.tilesExplored >= mapSize * mapSize; } },
+            { id: 'science100', name: t('stem.spacecolony.knowledge_hoard', 'Knowledge Hoard'), icon: '\uD83D\uDCDA', desc: t('stem.spacecolony.accumulate_100_science', 'Accumulate 100+ science.'), check: function () { return resources.science >= 100; } },
+            { id: 'journal10', name: t('stem.spacecolony.studious', 'Studious'), icon: '\uD83D\uDCD6', desc: t('stem.spacecolony.10_science_journal_entries', '10 science journal entries.'), check: function () { return scienceJournal.length >= 10; } },
+            { id: 'journal25', name: t('stem.spacecolony.scholar', 'Scholar'), icon: '\uD83C\uDF93', desc: t('stem.spacecolony.25_science_journal_entries', '25 science journal entries.'), check: function () { return scienceJournal.length >= 25; } },
+            { id: 'tradition3', name: t('stem.spacecolony.cultural_mosaic', 'Cultural Mosaic'), icon: '\uD83C\uDF10', desc: t('stem.spacecolony.adopt_3_cultural_traditions', 'Adopt 3 cultural traditions.'), check: function () { return traditions.length >= 3; } },
+            { id: 'equityHigh', name: t('stem.spacecolony.just_society', 'Just Society'), icon: '\u2696\uFE0F', desc: t('stem.spacecolony.maintain_equity_above_85', 'Maintain equity above 85%.'), check: function () { return equity >= 85; } },
+            { id: 'happyMax', name: t('stem.spacecolony.utopia', 'Utopia'), icon: '\uD83D\uDE04', desc: t('stem.spacecolony.reach_100_happiness', 'Reach 100% happiness.'), check: function () { return colonyHappiness >= 100; } },
+            { id: 'alienFriend', name: t('stem.spacecolony.diplomat', 'Diplomat'), icon: '\uD83D\uDC7E', desc: t('stem.spacecolony.allied_with_the_keth_ora', 'Allied with the Keth\u2019ora.'), check: function () { return alienRelations >= 50; } },
+            { id: 'wonder1', name: t('stem.spacecolony.wonderous', 'Wonderous'), icon: '\uD83C\uDFDB\uFE0F', desc: t('stem.spacecolony.complete_a_wonder', 'Complete a Wonder.'), check: function () { return wonders.terraformEngine || wonders.arkVault || wonders.quantumGate; } },
+            { id: 'mentor5', name: t('stem.spacecolony.awakener', 'Awakener'), icon: '\uD83E\uDD16', desc: t('stem.spacecolony.activate_5_digital_mentors', 'Activate 5 Digital Mentors.'), check: function () { return greatScientists.length >= 5; } },
+            { id: 'turn50', name: t('stem.spacecolony.endurance', 'Endurance'), icon: '\u23F0', desc: t('stem.spacecolony.survive_50_turns', 'Survive 50 turns.'), check: function () { return turn >= 50; } },
+            { id: 'perfect10', name: t('stem.spacecolony.perfect_10', 'Perfect 10'), icon: '\uD83C\uDFAF', desc: t('stem.spacecolony.answer_10_questions_correctly_in_a_row', 'Answer 10 questions correctly in a row.'), check: function () { return stats.streak >= 10; } }
           ];
           var traditionDefs = [
             {
-              id: 'ubuntu', name: 'Ubuntu Philosophy', origin: 'Southern African', icon: '\uD83E\uDD1D', desc: '"I am because we are." Community-centered decision making. +10 equity, +5 happiness.',
-              bonus: { equity: 10, happiness: 5 }, value: 'collectivism', fact: 'Ubuntu is a Nguni Bantu concept meaning shared humanity. Archbishop Desmond Tutu described it as knowing you belong in a greater whole.'
+              id: 'ubuntu', name: t('stem.spacecolony.ubuntu_philosophy', 'Ubuntu Philosophy'), origin: 'Southern African', icon: '\uD83E\uDD1D', desc: t('stem.spacecolony.i_am_because_we_are_community_centered', '"I am because we are." Community-centered decision making. +10 equity, +5 happiness.'),
+              bonus: { equity: 10, happiness: 5 }, value: 'collectivism', fact: t('stem.spacecolony.ubuntu_is_a_nguni_bantu_concept_meanin', 'Ubuntu is a Nguni Bantu concept meaning shared humanity. Archbishop Desmond Tutu described it as knowing you belong in a greater whole.')
             },
             {
-              id: 'kintsugi', name: 'Kintsugi Resilience', origin: 'Japanese', icon: '\uD83C\uDFFA', desc: 'Golden repair \u2014 finding strength in imperfection. Buildings regain 10% effectiveness each turn.',
-              bonus: { repair: 10 }, value: 'tradition', fact: 'Kintsugi is the Japanese art of repairing broken pottery with gold. It embraces flaws as part of history rather than something to hide.'
+              id: 'kintsugi', name: t('stem.spacecolony.kintsugi_resilience', 'Kintsugi Resilience'), origin: 'Japanese', icon: '\uD83C\uDFFA', desc: t('stem.spacecolony.golden_repair_finding_strength_in_impe', 'Golden repair \u2014 finding strength in imperfection. Buildings regain 10% effectiveness each turn.'),
+              bonus: { repair: 10 }, value: 'tradition', fact: t('stem.spacecolony.kintsugi_is_the_japanese_art_of_repair', 'Kintsugi is the Japanese art of repairing broken pottery with gold. It embraces flaws as part of history rather than something to hide.')
             },
             {
-              id: 'milpa', name: 'Three Sisters Agriculture', origin: 'Mesoamerican / Indigenous', icon: '\uD83C\uDF3D', desc: 'Corn, beans, squash companion planting. +6 food/turn, +2% terraform.',
-              bonus: { food: 6, terraform: 2 }, value: 'ecology', fact: 'The Three Sisters (corn, beans, squash) is an Indigenous agricultural system where each plant benefits the others \u2014 corn provides structure, beans fix nitrogen, squash shades soil.'
+              id: 'milpa', name: t('stem.spacecolony.three_sisters_agriculture', 'Three Sisters Agriculture'), origin: 'Mesoamerican / Indigenous', icon: '\uD83C\uDF3D', desc: t('stem.spacecolony.corn_beans_squash_companion_planting_6', 'Corn, beans, squash companion planting. +6 food/turn, +2% terraform.'),
+              bonus: { food: 6, terraform: 2 }, value: 'ecology', fact: t('stem.spacecolony.the_three_sisters_corn_beans_squash_is', 'The Three Sisters (corn, beans, squash) is an Indigenous agricultural system where each plant benefits the others \u2014 corn provides structure, beans fix nitrogen, squash shades soil.')
             },
             {
-              id: 'sankofa', name: 'Sankofa Wisdom', origin: 'Akan / West African', icon: '\uD83D\uDD4A\uFE0F', desc: '"Go back and get it." Learning from the past to build the future. +8 science/turn.',
-              bonus: { science: 8 }, value: 'tradition', fact: 'Sankofa is an Adinkra symbol meaning "it is not taboo to go back for what you forgot." It teaches that wisdom from the past is essential for progress.'
+              id: 'sankofa', name: t('stem.spacecolony.sankofa_wisdom', 'Sankofa Wisdom'), origin: 'Akan / West African', icon: '\uD83D\uDD4A\uFE0F', desc: t('stem.spacecolony.go_back_and_get_it_learning_from_the_p', '"Go back and get it." Learning from the past to build the future. +8 science/turn.'),
+              bonus: { science: 8 }, value: 'tradition', fact: t('stem.spacecolony.sankofa_is_an_adinkra_symbol_meaning_i', 'Sankofa is an Adinkra symbol meaning "it is not taboo to go back for what you forgot." It teaches that wisdom from the past is essential for progress.')
             },
             {
-              id: 'ayni', name: 'Ayni Reciprocity', origin: 'Andean / Quechua', icon: '\uD83C\uDFD4\uFE0F', desc: 'Sacred reciprocity with the land. +5 water, +5 materials, +3% terraform.',
-              bonus: { water: 5, materials: 5, terraform: 3 }, value: 'ecology', fact: 'Ayni is the Andean principle of reciprocity \u2014 every exchange with nature or community must be balanced. The Inca built their entire economy on this concept.'
+              id: 'ayni', name: t('stem.spacecolony.ayni_reciprocity', 'Ayni Reciprocity'), origin: 'Andean / Quechua', icon: '\uD83C\uDFD4\uFE0F', desc: t('stem.spacecolony.sacred_reciprocity_with_the_land_5_wat', 'Sacred reciprocity with the land. +5 water, +5 materials, +3% terraform.'),
+              bonus: { water: 5, materials: 5, terraform: 3 }, value: 'ecology', fact: t('stem.spacecolony.ayni_is_the_andean_principle_of_recipr', 'Ayni is the Andean principle of reciprocity \u2014 every exchange with nature or community must be balanced. The Inca built their entire economy on this concept.')
             },
             {
-              id: 'griot', name: 'Griot Oral Tradition', origin: 'West African', icon: '\uD83C\uDFB6', desc: 'Storytelling preserves knowledge across generations. +10 science, +5 happiness.',
-              bonus: { science: 10, happiness: 5 }, value: 'openness', fact: 'Griots are West African historians, storytellers, and musicians who preserve knowledge orally. Some griot lineages stretch back over 800 years.'
+              id: 'griot', name: t('stem.spacecolony.griot_oral_tradition', 'Griot Oral Tradition'), origin: 'West African', icon: '\uD83C\uDFB6', desc: t('stem.spacecolony.storytelling_preserves_knowledge_acros', 'Storytelling preserves knowledge across generations. +10 science, +5 happiness.'),
+              bonus: { science: 10, happiness: 5 }, value: 'openness', fact: t('stem.spacecolony.griots_are_west_african_historians_sto', 'Griots are West African historians, storytellers, and musicians who preserve knowledge orally. Some griot lineages stretch back over 800 years.')
             },
             {
-              id: 'whakapapa', name: 'Whakapapa Genealogy', origin: 'M\u0101ori / Polynesian', icon: '\uD83C\uDF0A', desc: 'Ancestral connection to land and sea. +5 water, +8 food, stronger settler bonds.',
-              bonus: { water: 5, food: 8 }, value: 'collectivism', fact: 'Whakapapa is the M\u0101ori concept of genealogical connection \u2014 linking people to ancestors, the land, and even the stars. It underpins Polynesian navigation.'
+              id: 'whakapapa', name: t('stem.spacecolony.whakapapa_genealogy', 'Whakapapa Genealogy'), origin: 'M\u0101ori / Polynesian', icon: '\uD83C\uDF0A', desc: t('stem.spacecolony.ancestral_connection_to_land_and_sea_5', 'Ancestral connection to land and sea. +5 water, +8 food, stronger settler bonds.'),
+              bonus: { water: 5, food: 8 }, value: 'collectivism', fact: t('stem.spacecolony.whakapapa_is_the_m_ori_concept_of_gene', 'Whakapapa is the M\u0101ori concept of genealogical connection \u2014 linking people to ancestors, the land, and even the stars. It underpins Polynesian navigation.')
             },
             {
-              id: 'dreamtime', name: 'Songlines Navigation', origin: 'Aboriginal Australian', icon: '\u2B50', desc: 'Ancient wayfinding through story and song. Expeditions complete 1 turn faster.',
-              bonus: { expeditionSpeed: 1 }, value: 'tradition', fact: 'Aboriginal Songlines are navigational paths across Australia encoded in songs, stories, and art. Some Songlines are over 10,000 years old \u2014 among the oldest knowledge systems on Earth.'
+              id: 'dreamtime', name: t('stem.spacecolony.songlines_navigation', 'Songlines Navigation'), origin: 'Aboriginal Australian', icon: '\u2B50', desc: t('stem.spacecolony.ancient_wayfinding_through_story_and_s', 'Ancient wayfinding through story and song. Expeditions complete 1 turn faster.'),
+              bonus: { expeditionSpeed: 1 }, value: 'tradition', fact: t('stem.spacecolony.aboriginal_songlines_are_navigational_', 'Aboriginal Songlines are navigational paths across Australia encoded in songs, stories, and art. Some Songlines are over 10,000 years old \u2014 among the oldest knowledge systems on Earth.')
             }
           ];
           var buildingEff = d.buildingEff || {}; // { buildingId: 100, ... } effectiveness %
@@ -478,10 +478,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
 
           // ── Planetary Seasons (4 seasons, each lasts 10 turns) ──
           var seasonDefs = [
-            { id: 'bloom', name: 'Bloom Season', icon: '\uD83C\uDF3C', desc: 'Alien flora flourishes. +2 food/turn.', effect: { food: 2 } },
-            { id: 'dry', name: 'Dry Season', icon: '\uD83C\uDF35', desc: 'Arid conditions. Energy production up, water down.', effect: { energy: 2, water: -1 } },
-            { id: 'storm', name: 'Storm Season', icon: '\u26C8\uFE0F', desc: 'Electromagnetic storms. Science surges, buildings at risk.', effect: { science: 3, damageRisk: true } },
-            { id: 'calm', name: 'Calm Season', icon: '\u2728', desc: 'Stable conditions. All production normal.', effect: {} }
+            { id: 'bloom', name: t('stem.spacecolony.bloom_season', 'Bloom Season'), icon: '\uD83C\uDF3C', desc: t('stem.spacecolony.alien_flora_flourishes_2_food_turn', 'Alien flora flourishes. +2 food/turn.'), effect: { food: 2 } },
+            { id: 'dry', name: t('stem.spacecolony.dry_season', 'Dry Season'), icon: '\uD83C\uDF35', desc: t('stem.spacecolony.arid_conditions_energy_production_up_w', 'Arid conditions. Energy production up, water down.'), effect: { energy: 2, water: -1 } },
+            { id: 'storm', name: t('stem.spacecolony.storm_season', 'Storm Season'), icon: '\u26C8\uFE0F', desc: t('stem.spacecolony.electromagnetic_storms_science_surges_', 'Electromagnetic storms. Science surges, buildings at risk.'), effect: { science: 3, damageRisk: true } },
+            { id: 'calm', name: t('stem.spacecolony.calm_season', 'Calm Season'), icon: '\u2728', desc: t('stem.spacecolony.stable_conditions_all_production_norma', 'Stable conditions. All production normal.'), effect: {} }
           ];
           var seasonIndex2 = Math.floor((turn % 40) / 10); // 4 seasons × 10 turns each = 40-turn cycle
           var seasonCycle = { id: seasonDefs[seasonIndex2].id, index: seasonIndex2, turnsLeft: 10 - (turn % 10) };
@@ -525,13 +525,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
           }
 
           var terrainTypes = [
-            { type: 'plains', color: '#4ade80', name: 'Fertile Plains', icon: '\uD83C\uDF3F', res: 'food' },
-            { type: 'mountain', color: '#94a3b8', name: 'Mountains', icon: '\uD83C\uDFD4\uFE0F', res: 'materials' },
-            { type: 'volcanic', color: '#f97316', name: 'Volcanic', icon: '\uD83C\uDF0B', res: 'energy' },
-            { type: 'ice', color: '#a5f3fc', name: 'Ice Fields', icon: '\u2744\uFE0F', res: 'water' },
-            { type: 'desert', color: '#fbbf24', name: 'Desert', icon: '\uD83C\uDFDC\uFE0F', res: 'materials' },
-            { type: 'ocean', color: '#3b82f6', name: 'Ocean', icon: '\uD83C\uDF0A', res: 'water' },
-            { type: 'radiation', color: '#a855f7', name: 'Radiation Zone', icon: '\u2622\uFE0F', res: 'science' }
+            { type: 'plains', color: '#4ade80', name: t('stem.spacecolony.fertile_plains', 'Fertile Plains'), icon: '\uD83C\uDF3F', res: 'food' },
+            { type: 'mountain', color: '#94a3b8', name: t('stem.spacecolony.mountains', 'Mountains'), icon: '\uD83C\uDFD4\uFE0F', res: 'materials' },
+            { type: 'volcanic', color: '#f97316', name: t('stem.spacecolony.volcanic', 'Volcanic'), icon: '\uD83C\uDF0B', res: 'energy' },
+            { type: 'ice', color: '#a5f3fc', name: t('stem.spacecolony.ice_fields', 'Ice Fields'), icon: '\u2744\uFE0F', res: 'water' },
+            { type: 'desert', color: '#fbbf24', name: t('stem.spacecolony.desert', 'Desert'), icon: '\uD83C\uDFDC\uFE0F', res: 'materials' },
+            { type: 'ocean', color: '#3b82f6', name: t('stem.spacecolony.ocean', 'Ocean'), icon: '\uD83C\uDF0A', res: 'water' },
+            { type: 'radiation', color: '#a855f7', name: t('stem.spacecolony.radiation_zone', 'Radiation Zone'), icon: '\u2622\uFE0F', res: 'science' }
           ];
 
           function generateMap() {
@@ -547,7 +547,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
               }
             }
             var cx = Math.floor(mapSize / 2); var cy = Math.floor(mapSize / 2);
-            tiles[cy * mapSize + cx] = { x: cx, y: cy, type: 'colony', color: '#f1f5f9', name: 'Colony Base', icon: '\uD83C\uDFE0', res: 'none', explored: true, hasAnomaly: false };
+            tiles[cy * mapSize + cx] = { x: cx, y: cy, type: 'colony', color: '#f1f5f9', name: t('stem.spacecolony.colony_base', 'Colony Base'), icon: '\uD83C\uDFE0', res: 'none', explored: true, hasAnomaly: false };
             for (var dy = -5; dy <= 5; dy++) for (var dx = -5; dx <= 5; dx++) {
               var ni = (cy + dy) * mapSize + (cx + dx);
               if (ni >= 0 && ni < tiles.length) tiles[ni].explored = true;
@@ -556,38 +556,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
           }
 
           var defaultSettlers = [
-            { name: 'Dr. Elena Vasquez', role: 'Botanist', icon: '\uD83C\uDF31', specialty: 'biology', morale: 80, health: 100 },
-            { name: 'Cmdr. James Chen', role: 'Engineer', icon: '\u2699\uFE0F', specialty: 'physics', morale: 85, health: 100 },
-            { name: 'Dr. Aisha Okafor', role: 'Geologist', icon: '\u26CF\uFE0F', specialty: 'geology', morale: 75, health: 100 },
-            { name: 'Dr. Yuki Tanaka', role: 'Medic', icon: '\uD83E\uDE7A', specialty: 'biology', morale: 90, health: 100 },
-            { name: 'Prof. Raj Patel', role: 'Physicist', icon: '\u269B\uFE0F', specialty: 'physics', morale: 70, health: 100 },
-            { name: 'Dr. Marta Schmidt', role: 'Chemist', icon: '\uD83E\uDDEA', specialty: 'chemistry', morale: 82, health: 100 }
+            { name: t('stem.spacecolony.dr_elena_vasquez', 'Dr. Elena Vasquez'), role: 'Botanist', icon: '\uD83C\uDF31', specialty: 'biology', morale: 80, health: 100 },
+            { name: t('stem.spacecolony.cmdr_james_chen', 'Cmdr. James Chen'), role: 'Engineer', icon: '\u2699\uFE0F', specialty: 'physics', morale: 85, health: 100 },
+            { name: t('stem.spacecolony.dr_aisha_okafor', 'Dr. Aisha Okafor'), role: 'Geologist', icon: '\u26CF\uFE0F', specialty: 'geology', morale: 75, health: 100 },
+            { name: t('stem.spacecolony.dr_yuki_tanaka', 'Dr. Yuki Tanaka'), role: 'Medic', icon: '\uD83E\uDE7A', specialty: 'biology', morale: 90, health: 100 },
+            { name: t('stem.spacecolony.prof_raj_patel', 'Prof. Raj Patel'), role: 'Physicist', icon: '\u269B\uFE0F', specialty: 'physics', morale: 70, health: 100 },
+            { name: t('stem.spacecolony.dr_marta_schmidt', 'Dr. Marta Schmidt'), role: 'Chemist', icon: '\uD83E\uDDEA', specialty: 'chemistry', morale: 82, health: 100 }
           ];
 
           var buildingDefs = [
             // Tier 1 — No prerequisites
-            { id: 'hydroponics', name: 'Hydroponics Bay', icon: '\uD83C\uDF31', tier: 1, requires: [], cost: { materials: 15, energy: 5 }, production: { food: 3 }, gate: 'biology', gateQ: 'What process do plants use to convert light energy into chemical energy?', gateA: 'photosynthesis', desc: 'Grows food using nutrient-rich water. Photosynthesis converts CO\u2082 and water into glucose using light.' },
-            { id: 'solar', name: 'Solar Array', icon: '\u2600\uFE0F', tier: 1, requires: [], cost: { materials: 10, science: 5 }, production: { energy: 3 }, gate: 'physics', gateQ: 'What particles of light does a solar panel absorb to generate electricity?', gateA: 'photon', desc: 'Converts stellar radiation into power via the photoelectric effect.' },
-            { id: 'waterReclaim', name: 'Water Reclaimer', icon: '\uD83D\uDCA7', tier: 1, requires: [], cost: { materials: 12, energy: 5 }, production: { water: 3 }, gate: 'chemistry', gateQ: 'What is the chemical formula for water?', gateA: 'h2o', desc: 'Extracts water from ice and atmosphere via distillation and filtration.' },
-            { id: 'mine', name: 'Mining Rig', icon: '\u26CF\uFE0F', tier: 1, requires: [], cost: { energy: 10, water: 5 }, production: { materials: 3 }, gate: 'geology', gateQ: 'Name one of the three main types of rocks (igneous, sedimentary, or metamorphic)', gateA: ['igneous', 'sedimentary', 'metamorphic'], desc: 'Drills into planetary crust to extract minerals and metals.' },
+            { id: 'hydroponics', name: t('stem.spacecolony.hydroponics_bay', 'Hydroponics Bay'), icon: '\uD83C\uDF31', tier: 1, requires: [], cost: { materials: 15, energy: 5 }, production: { food: 3 }, gate: 'biology', gateQ: 'What process do plants use to convert light energy into chemical energy?', gateA: 'photosynthesis', desc: t('stem.spacecolony.grows_food_using_nutrient_rich_water_p', 'Grows food using nutrient-rich water. Photosynthesis converts CO\u2082 and water into glucose using light.') },
+            { id: 'solar', name: t('stem.spacecolony.solar_array', 'Solar Array'), icon: '\u2600\uFE0F', tier: 1, requires: [], cost: { materials: 10, science: 5 }, production: { energy: 3 }, gate: 'physics', gateQ: 'What particles of light does a solar panel absorb to generate electricity?', gateA: 'photon', desc: t('stem.spacecolony.converts_stellar_radiation_into_power_', 'Converts stellar radiation into power via the photoelectric effect.') },
+            { id: 'waterReclaim', name: t('stem.spacecolony.water_reclaimer', 'Water Reclaimer'), icon: '\uD83D\uDCA7', tier: 1, requires: [], cost: { materials: 12, energy: 5 }, production: { water: 3 }, gate: 'chemistry', gateQ: 'What is the chemical formula for water?', gateA: 'h2o', desc: t('stem.spacecolony.extracts_water_from_ice_and_atmosphere', 'Extracts water from ice and atmosphere via distillation and filtration.') },
+            { id: 'mine', name: t('stem.spacecolony.mining_rig', 'Mining Rig'), icon: '\u26CF\uFE0F', tier: 1, requires: [], cost: { energy: 10, water: 5 }, production: { materials: 3 }, gate: 'geology', gateQ: 'Name one of the three main types of rocks (igneous, sedimentary, or metamorphic)', gateA: ['igneous', 'sedimentary', 'metamorphic'], desc: t('stem.spacecolony.drills_into_planetary_crust_to_extract', 'Drills into planetary crust to extract minerals and metals.') },
             // Tier 2 — Requires 2 Tier 1 buildings
-            { id: 'lab', name: 'Research Lab', icon: '\uD83D\uDD2C', tier: 2, requires: ['solar', 'mine'], cost: { materials: 20, energy: 10 }, production: { science: 3 }, gate: 'math', gateQ: 'What is the value of pi to 2 decimal places?', gateA: '3.14', desc: 'Conducts experiments and data analysis. Requires stable power and materials.' },
-            { id: 'medbay', name: 'Med Bay', icon: '\uD83C\uDFE5', tier: 2, requires: ['hydroponics', 'waterReclaim'], cost: { materials: 15, science: 10 }, production: {}, gate: 'biology', gateQ: 'What are the basic structural units of all living organisms?', gateA: 'cell', desc: 'Heals settlers (+10 health/turn). Needs food & water infrastructure first.' },
+            { id: 'lab', name: t('stem.spacecolony.research_lab', 'Research Lab'), icon: '\uD83D\uDD2C', tier: 2, requires: ['solar', 'mine'], cost: { materials: 20, energy: 10 }, production: { science: 3 }, gate: 'math', gateQ: 'What is the value of pi to 2 decimal places?', gateA: '3.14', desc: t('stem.spacecolony.conducts_experiments_and_data_analysis', 'Conducts experiments and data analysis. Requires stable power and materials.') },
+            { id: 'medbay', name: t('stem.spacecolony.med_bay', 'Med Bay'), icon: '\uD83C\uDFE5', tier: 2, requires: ['hydroponics', 'waterReclaim'], cost: { materials: 15, science: 10 }, production: {}, gate: 'biology', gateQ: 'What are the basic structural units of all living organisms?', gateA: 'cell', desc: t('stem.spacecolony.heals_settlers_10_health_turn_needs_fo', 'Heals settlers (+10 health/turn). Needs food & water infrastructure first.') },
             // Tier 3 — Requires Tier 2 buildings
-            { id: 'atmo', name: 'Atmospheric Processor', icon: '\uD83C\uDF2C\uFE0F', tier: 3, requires: ['lab', 'waterReclaim'], cost: { materials: 25, energy: 15, science: 10 }, production: { water: 1, food: 1 }, gate: 'chemistry', gateQ: 'What gas makes up about 78% of Earth\'s atmosphere?', gateA: 'nitrogen', desc: 'Converts alien atmosphere. +5% terraforming per turn.' },
-            { id: 'fusion', name: 'Fusion Reactor', icon: '\u2622\uFE0F', tier: 3, requires: ['lab', 'solar'], cost: { materials: 30, science: 20 }, production: { energy: 10 }, gate: 'physics', gateQ: 'In E=mc\u00B2, what does the \'m\' stand for?', gateA: 'mass', desc: 'Fuses hydrogen isotopes for massive energy. The ultimate power source.' },
+            { id: 'atmo', name: t('stem.spacecolony.atmospheric_processor', 'Atmospheric Processor'), icon: '\uD83C\uDF2C\uFE0F', tier: 3, requires: ['lab', 'waterReclaim'], cost: { materials: 25, energy: 15, science: 10 }, production: { water: 1, food: 1 }, gate: 'chemistry', gateQ: 'What gas makes up about 78% of Earth\'s atmosphere?', gateA: 'nitrogen', desc: t('stem.spacecolony.converts_alien_atmosphere_5_terraformi', 'Converts alien atmosphere. +5% terraforming per turn.') },
+            { id: 'fusion', name: t('stem.spacecolony.fusion_reactor', 'Fusion Reactor'), icon: '\u2622\uFE0F', tier: 3, requires: ['lab', 'solar'], cost: { materials: 30, science: 20 }, production: { energy: 10 }, gate: 'physics', gateQ: 'In E=mc\u00B2, what does the \'m\' stand for?', gateA: 'mass', desc: t('stem.spacecolony.fuses_hydrogen_isotopes_for_massive_en', 'Fuses hydrogen isotopes for massive energy. The ultimate power source.') },
             // Tier 4 — Victory building
-            { id: 'biodome', name: 'Biodome', icon: '\uD83C\uDF0D', tier: 4, requires: ['atmo', 'fusion', 'medbay'], cost: { materials: 50, energy: 30, science: 25, water: 20 }, production: { food: 5, water: 2 }, gate: 'ecology', gateQ: 'What is the term for a self-sustaining ecological system that recycles nutrients and energy?', gateA: ['ecosystem', 'biosphere', 'closed ecosystem'], desc: 'Self-sustaining biosphere. Build this to achieve COLONY VICTORY!' },
-            { id: 'comms', name: 'Deep Space Comms', icon: '\uD83D\uDCE1', tier: 4, requires: ['fusion', 'lab'], cost: { materials: 40, energy: 25, science: 30 }, production: { science: 5 }, gate: 'physics', gateQ: 'What is the speed of light in km/s (approximately)?', gateA: ['300000', '3e5', '300,000'], desc: 'Contacts Earth! Signal takes 1,206 years to arrive. Massive science boost.' },
+            { id: 'biodome', name: t('stem.spacecolony.biodome', 'Biodome'), icon: '\uD83C\uDF0D', tier: 4, requires: ['atmo', 'fusion', 'medbay'], cost: { materials: 50, energy: 30, science: 25, water: 20 }, production: { food: 5, water: 2 }, gate: 'ecology', gateQ: 'What is the term for a self-sustaining ecological system that recycles nutrients and energy?', gateA: ['ecosystem', 'biosphere', 'closed ecosystem'], desc: t('stem.spacecolony.self_sustaining_biosphere_build_this_t', 'Self-sustaining biosphere. Build this to achieve COLONY VICTORY!') },
+            { id: 'comms', name: t('stem.spacecolony.deep_space_comms', 'Deep Space Comms'), icon: '\uD83D\uDCE1', tier: 4, requires: ['fusion', 'lab'], cost: { materials: 40, energy: 25, science: 30 }, production: { science: 5 }, gate: 'physics', gateQ: 'What is the speed of light in km/s (approximately)?', gateA: ['300000', '3e5', '300,000'], desc: t('stem.spacecolony.contacts_earth_signal_takes_1_206_year', 'Contacts Earth! Signal takes 1,206 years to arrive. Massive science boost.') },
             // Tier 2 Additions
-            { id: 'greenhouse', name: 'Greenhouse Dome', icon: '\uD83C\uDFE1', tier: 2, requires: ['hydroponics', 'waterReclaim'], cost: { materials: 18, water: 10 }, production: { food: 4 }, gate: 'biology', gateQ: 'What is the greenhouse effect?', gateA: ['trap', 'heat', 'warm'], desc: 'Large-scale food production. +0.5% terraform/turn.' },
-            { id: 'refinery', name: 'Material Refinery', icon: '\uD83C\uDFED', tier: 2, requires: ['mine', 'solar'], cost: { energy: 15, materials: 10 }, production: { materials: 5 }, gate: 'chemistry', gateQ: 'What is smelting?', gateA: ['melt', 'extract', 'ore'], desc: 'Refines raw ore into construction-grade materials.' },
+            { id: 'greenhouse', name: t('stem.spacecolony.greenhouse_dome', 'Greenhouse Dome'), icon: '\uD83C\uDFE1', tier: 2, requires: ['hydroponics', 'waterReclaim'], cost: { materials: 18, water: 10 }, production: { food: 4 }, gate: 'biology', gateQ: 'What is the greenhouse effect?', gateA: ['trap', 'heat', 'warm'], desc: t('stem.spacecolony.large_scale_food_production_0_5_terraf', 'Large-scale food production. +0.5% terraform/turn.') },
+            { id: 'refinery', name: t('stem.spacecolony.material_refinery', 'Material Refinery'), icon: '\uD83C\uDFED', tier: 2, requires: ['mine', 'solar'], cost: { energy: 15, materials: 10 }, production: { materials: 5 }, gate: 'chemistry', gateQ: 'What is smelting?', gateA: ['melt', 'extract', 'ore'], desc: t('stem.spacecolony.refines_raw_ore_into_construction_grad', 'Refines raw ore into construction-grade materials.') },
             // Tier 3 Additions
-            { id: 'cloning', name: 'Cloning Lab', icon: '\uD83E\uDDEC', tier: 3, requires: ['medbay', 'lab'], cost: { materials: 30, science: 20, energy: 15 }, production: { food: 2 }, gate: 'biology', gateQ: 'What is the name of the first cloned mammal?', gateA: ['dolly'], desc: 'Accelerates population growth. Clones food organisms.' },
-            { id: 'shield', name: 'Planetary Shield', icon: '\uD83D\uDEE1\uFE0F', tier: 3, requires: ['fusion', 'atmo'], cost: { materials: 35, energy: 25, science: 15 }, production: { energy: 2 }, gate: 'physics', gateQ: 'What protects Earth from solar radiation?', gateA: ['magnetic', 'magnetosphere', 'field'], desc: 'Deflects solar flares & meteors. Reduces weather damage.' },
-            { id: 'oceanSeeder', name: 'Ocean Seeder', icon: '\uD83C\uDF0A', tier: 3, requires: ['waterReclaim', 'atmo'], cost: { materials: 25, water: 15, science: 10 }, production: { water: 4, food: 2 }, gate: 'biology', gateQ: 'What process do phytoplankton use to produce oxygen?', gateA: ['photosynthesis'], desc: 'Seeds alien oceans with microbes. +1.5% terraform/turn.' },
+            { id: 'cloning', name: t('stem.spacecolony.cloning_lab', 'Cloning Lab'), icon: '\uD83E\uDDEC', tier: 3, requires: ['medbay', 'lab'], cost: { materials: 30, science: 20, energy: 15 }, production: { food: 2 }, gate: 'biology', gateQ: 'What is the name of the first cloned mammal?', gateA: ['dolly'], desc: t('stem.spacecolony.accelerates_population_growth_clones_f', 'Accelerates population growth. Clones food organisms.') },
+            { id: 'shield', name: t('stem.spacecolony.planetary_shield', 'Planetary Shield'), icon: '\uD83D\uDEE1\uFE0F', tier: 3, requires: ['fusion', 'atmo'], cost: { materials: 35, energy: 25, science: 15 }, production: { energy: 2 }, gate: 'physics', gateQ: 'What protects Earth from solar radiation?', gateA: ['magnetic', 'magnetosphere', 'field'], desc: t('stem.spacecolony.deflects_solar_flares_meteors_reduces_', 'Deflects solar flares & meteors. Reduces weather damage.') },
+            { id: 'oceanSeeder', name: t('stem.spacecolony.ocean_seeder', 'Ocean Seeder'), icon: '\uD83C\uDF0A', tier: 3, requires: ['waterReclaim', 'atmo'], cost: { materials: 25, water: 15, science: 10 }, production: { water: 4, food: 2 }, gate: 'biology', gateQ: 'What process do phytoplankton use to produce oxygen?', gateA: ['photosynthesis'], desc: t('stem.spacecolony.seeds_alien_oceans_with_microbes_1_5_t', 'Seeds alien oceans with microbes. +1.5% terraform/turn.') },
             // Tier 4 Addition
-            { id: 'spaceport', name: 'Spaceport', icon: '\uD83D\uDE80', tier: 4, requires: ['comms', 'fusion', 'shield'], cost: { materials: 60, energy: 40, science: 35 }, production: { materials: 5, science: 3 }, gate: 'physics', gateQ: 'What is escape velocity from Earth in km/s (approximately)?', gateA: ['11', '11.2'], desc: 'Launches supply missions. Attracts settlers from other colonies.' }
+            { id: 'spaceport', name: t('stem.spacecolony.spaceport', 'Spaceport'), icon: '\uD83D\uDE80', tier: 4, requires: ['comms', 'fusion', 'shield'], cost: { materials: 60, energy: 40, science: 35 }, production: { materials: 5, science: 3 }, gate: 'physics', gateQ: 'What is escape velocity from Earth in km/s (approximately)?', gateA: ['11', '11.2'], desc: t('stem.spacecolony.launches_supply_missions_attracts_sett', 'Launches supply missions. Attracts settlers from other colonies.') }
           ];
 
           // Canvas Map Rendering (non-hook: using global ref to avoid conditional hook)
@@ -1082,8 +1082,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
             React.createElement('div', { className: 'flex items-center justify-between mb-4' },
               React.createElement('div', { className: 'flex items-center gap-2' },
                 React.createElement('button', { onClick: function () { upd('selectedTool', null); }, className: 'transition-colors text-slate-200 hover:text-white text-lg' }, '\u2190'),
-                React.createElement('h2', { className: 'text-xl font-bold text-white tracking-tight' }, '\uD83D\uDE80 Kepler Colony'),
-                React.createElement('span', { className: 'text-[11px] text-indigo-400 bg-indigo-900 px-2 py-0.5 rounded-full' }, 'Turn-Based Strategy')
+                React.createElement('h2', { className: 'text-xl font-bold text-white tracking-tight' }, t('stem.spacecolony.kepler_colony', '\uD83D\uDE80 Kepler Colony')),
+                React.createElement('span', { className: 'text-[11px] text-indigo-400 bg-indigo-900 px-2 py-0.5 rounded-full' }, t('stem.spacecolony.turn_based_strategy', 'Turn-Based Strategy'))
               ),
               colony && React.createElement('div', { className: 'flex gap-1 text-[11px] items-center flex-wrap' },
                 [
@@ -1112,9 +1112,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
             // SETUP
             colonyPhase === 'setup' && React.createElement('div', { className: 'text-center py-10' },
               React.createElement('div', { className: 'text-7xl mb-4', style: { animation: 'kp-float 3s ease-in-out infinite', filter: 'drop-shadow(0 0 20px rgba(99,102,241,0.4))' } }, '\uD83D\uDE80'),
-              React.createElement('h3', { className: 'text-3xl font-black mb-2 tracking-tight', style: { background: 'linear-gradient(135deg, #e0e7ff, #c4b5fd)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } }, 'Welcome to Kepler-442b'),
+              React.createElement('h3', { className: 'text-3xl font-black mb-2 tracking-tight', style: { background: 'linear-gradient(135deg, #e0e7ff, #c4b5fd)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } }, t('stem.spacecolony.welcome_to_kepler_442b', 'Welcome to Kepler-442b')),
               React.createElement('p', { className: 'text-slate-200 text-sm max-w-lg mx-auto mb-6' },
-                'You have arrived at a habitable exoplanet 1,206 light-years from Earth. Build a self-sustaining colony by mastering real science. Every building requires passing a science challenge. Every turn brings new surprises from the Fate Roll. Your 6 settlers are counting on you, Commander!'
+                t('stem.spacecolony.you_have_arrived_at_a_habitable_exopla', 'You have arrived at a habitable exoplanet 1,206 light-years from Earth. Build a self-sustaining colony by mastering real science. Every building requires passing a science challenge. Every turn brings new surprises from the Fate Roll. Your 6 settlers are counting on you, Commander!')
               ),
               React.createElement('div', { className: 'grid grid-cols-3 gap-3 max-w-md mx-auto mb-6 text-slate-300 text-[11px]' },
                 [['\uD83C\uDF0D', 'Explore', 'Reveal tiles, find loot & anomalies'], ['\u26A1', '3 Actions/Turn', 'Build, research, or explore each day'], ['\uD83C\uDFB2', 'Fate Roll', 'Random events every turn!']].map(function (item) {
@@ -1127,11 +1127,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
               ),
               // Difficulty Settings
               React.createElement('div', { className: 'bg-slate-800/80 rounded-xl p-4 border border-slate-700 max-w-md mx-auto mb-6' },
-                React.createElement('h4', { className: 'text-[11px] font-bold text-white mb-3 text-center' }, '\u2699\uFE0F Game Settings'),
+                React.createElement('h4', { className: 'text-[11px] font-bold text-white mb-3 text-center' }, t('stem.spacecolony.game_settings', '\u2699\uFE0F Game Settings')),
                 React.createElement('div', { className: 'grid grid-cols-3 gap-3' },
                   // Grade Level
                   React.createElement('div', null,
-                    React.createElement('div', { className: 'text-[11px] text-slate-200 mb-1' }, '\uD83C\uDF93 Grade Level'),
+                    React.createElement('div', { className: 'text-[11px] text-slate-200 mb-1' }, t('stem.spacecolony.grade_level', '\uD83C\uDF93 Grade Level')),
                     React.createElement('div', { className: 'flex flex-col gap-1' },
                       ['K-2', '3-5', '6-8', '9-12', 'College'].map(function (gl) {
                         return React.createElement('button', {
@@ -1142,28 +1142,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                         }, gl);
                       })
                     ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-600 mt-1' }, 'Adjusts question difficulty')
+                    React.createElement('div', { className: 'text-[11px] text-slate-600 mt-1' }, t('stem.spacecolony.adjusts_question_difficulty', 'Adjusts question difficulty'))
                   ),
                   React.createElement('div', null,
-                    React.createElement('div', { className: 'text-[11px] text-slate-200 mb-1' }, 'Science Challenge Mode'),
+                    React.createElement('div', { className: 'text-[11px] text-slate-200 mb-1' }, t('stem.spacecolony.science_challenge_mode', 'Science Challenge Mode')),
                     React.createElement('div', { className: 'flex gap-1' },
                       React.createElement('button', {
                         onClick: function () { upd('colonyMode', 'mcq'); },
                         className: 'flex-1 px-2 py-2 rounded-lg text-[11px] font-bold border-2 transition-all ' +
                           ((d.colonyMode || 'mcq') === 'mcq' ? 'border-indigo-400 bg-indigo-900 text-indigo-200' : 'border-slate-600 bg-slate-900 text-slate-200')
-                      }, '\uD83D\uDCCB MCQ'),
+                      }, t('stem.spacecolony.mcq', '\uD83D\uDCCB MCQ')),
                       React.createElement('button', {
                         onClick: function () { upd('colonyMode', 'freeResponse'); },
                         className: 'flex-1 px-2 py-2 rounded-lg text-[11px] font-bold border-2 transition-all ' +
                           ((d.colonyMode || 'mcq') === 'freeResponse' ? 'border-purple-400 bg-purple-900 text-purple-200' : 'border-slate-600 bg-slate-900 text-slate-200')
-                      }, '\u270D\uFE0F Free Response')
+                      }, t('stem.spacecolony.free_response', '\u270D\uFE0F Free Response'))
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-600 mt-1' },
                       (d.colonyMode || 'mcq') === 'mcq' ? 'Multiple choice \u2014 4 options, scaffolded learning' : 'Type your answer \u2014 harder but deeper understanding'
                     )
                   ),
                   React.createElement('div', null,
-                    React.createElement('div', { className: 'text-[11px] text-slate-200 mb-1' }, 'Audio Narration'),
+                    React.createElement('div', { className: 'text-[11px] text-slate-200 mb-1' }, t('stem.spacecolony.audio_narration', 'Audio Narration')),
                     React.createElement('div', { className: 'flex gap-1' },
                       React.createElement('button', {
                         onClick: function () { upd('colonyTTS', !(d.colonyTTS)); },
@@ -1171,7 +1171,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                           (d.colonyTTS ? 'border-green-400 bg-green-900 text-green-200' : 'border-slate-600 bg-slate-900 text-slate-200')
                       }, d.colonyTTS ? '\uD83D\uDD0A ON' : '\uD83D\uDD07 OFF')
                     ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-600 mt-1' }, 'Characters speak with TTS voices')
+                    React.createElement('div', { className: 'text-[11px] text-slate-600 mt-1' }, t('stem.spacecolony.characters_speak_with_tts_voices', 'Characters speak with TTS voices'))
                   )
                 )
               ),
@@ -1199,11 +1199,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                   if (typeof addXP === 'function') addXP(10, 'Kepler Colony: Mission launched');
                 },
                 className: 'px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-2xl text-lg font-bold hover:shadow-lg hover:shadow-indigo-500/30 transition-all tracking-tight'
-              }, '\uD83D\uDE80 Launch Colony Mission')
+              }, t('stem.spacecolony.launch_colony_mission', '\uD83D\uDE80 Launch Colony Mission'))
             ),
             // PLAYING
             colonyPhase === 'playing' && mapData && React.createElement('div', null,
-              React.createElement('style', null, '@keyframes kp-fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}@keyframes kp-pulse{0%,100%{opacity:1}50%{opacity:.6}}@keyframes kp-glow{0%,100%{box-shadow:0 0 5px rgba(99,102,241,.3)}50%{box-shadow:0 0 20px rgba(99,102,241,.6)}}@keyframes kp-fateRoll{0%{transform:scale(.5) rotate(0);opacity:0}50%{transform:scale(1.3) rotate(180deg);opacity:1}100%{transform:scale(1) rotate(360deg);opacity:1}}@keyframes kp-barFill{from{width:0}}@keyframes kp-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}@keyframes kp-slideDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}@keyframes kp-shake{0%,100%{transform:translateX(0)}10%,30%,50%,70%,90%{transform:translateX(-2px)}20%,40%,60%,80%{transform:translateX(2px)}}@keyframes kp-sparkle{0%,100%{opacity:0;transform:scale(0) rotate(0deg)}50%{opacity:1;transform:scale(1) rotate(180deg)}}@keyframes kp-breathe{0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.02);opacity:1}}'),
+              React.createElement('style', null, t('stem.spacecolony.keyframes_kp_fadein_from_opacity_0_tra', '@keyframes kp-fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}@keyframes kp-pulse{0%,100%{opacity:1}50%{opacity:.6}}@keyframes kp-glow{0%,100%{box-shadow:0 0 5px rgba(99,102,241,.3)}50%{box-shadow:0 0 20px rgba(99,102,241,.6)}}@keyframes kp-fateRoll{0%{transform:scale(.5) rotate(0);opacity:0}50%{transform:scale(1.3) rotate(180deg);opacity:1}100%{transform:scale(1) rotate(360deg);opacity:1}}@keyframes kp-barFill{from{width:0}}@keyframes kp-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}@keyframes kp-slideDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}@keyframes kp-shake{0%,100%{transform:translateX(0)}10%,30%,50%,70%,90%{transform:translateX(-2px)}20%,40%,60%,80%{transform:translateX(2px)}}@keyframes kp-sparkle{0%,100%{opacity:0;transform:scale(0) rotate(0deg)}50%{opacity:1;transform:scale(1) rotate(180deg)}}@keyframes kp-breathe{0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.02);opacity:1}}')),
               // ══ DAWN PHASE OVERLAY ══
               turnPhase === 'dawn' && React.createElement('div', {
                 className: 'relative mb-4 rounded-2xl overflow-hidden',
@@ -1219,11 +1219,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     ),
                     React.createElement('div', { className: 'text-right' },
                       React.createElement('div', { className: 'text-4xl font-black text-amber-300 tracking-tight', style: { textShadow: '0 0 20px rgba(245,158,11,0.4)' } }, '\u26A1 ' + maxAP),
-                      React.createElement('div', { className: 'text-[11px] text-amber-400' }, 'Action Points Today')
+                      React.createElement('div', { className: 'text-[11px] text-amber-400' }, t('stem.spacecolony.action_points_today', 'Action Points Today'))
                     )
                   ),
                   dawnData && !dawnData.isFirst && React.createElement('div', { className: 'bg-black/20 rounded-xl p-3 mb-3 border border-amber-900/30' },
-                    React.createElement('div', { className: 'text-[11px] font-bold text-amber-300/80 uppercase tracking-wider mb-2' }, '\uD83D\uDCCA Income This Turn'),
+                    React.createElement('div', { className: 'text-[11px] font-bold text-amber-300/80 uppercase tracking-wider mb-2' }, t('stem.spacecolony.income_this_turn', '\uD83D\uDCCA Income This Turn')),
                     React.createElement('div', { className: 'grid grid-cols-5 gap-2' },
                       [['\uD83C\uDF3E','Food',(dawnData.income||{}).food||0,'#4ade80'],['\u26A1','Energy',(dawnData.income||{}).energy||0,'#facc15'],['\uD83D\uDCA7','Water',(dawnData.income||{}).water||0,'#38bdf8'],['\uD83E\uDEA8','Mats',(dawnData.income||{}).materials||0,'#94a3b8'],['\uD83D\uDD2C','Sci',(dawnData.income||{}).science||0,'#a78bfa']].map(function(rd){return React.createElement('div',{key:rd[1],className:'text-center p-1.5 rounded-lg',style:{backgroundColor:rd[3]+'15',border:'1px solid '+rd[3]+'25'}},React.createElement('div',{className:'text-lg'},rd[0]),React.createElement('div',{className:'text-sm font-bold',style:{color:rd[3]}},(rd[2]>=0?'+':'')+rd[2]),React.createElement('div',{className:'text-[11px] text-slate-200'},rd[1]))})
                     )
@@ -1247,17 +1247,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
               ),
               React.createElement('div', { className: 'flex justify-between items-center mb-1' },
                 React.createElement('div', { className: 'flex gap-1 items-center' },
-                  React.createElement('button', { onClick: function () { upd('colonyCamX', Math.max(0, camX - 10)); }, className: 'transition-colors px-2 py-1 bg-slate-700 text-white rounded text-[11px] hover:bg-slate-600 active:scale-[0.97]', title: 'Scroll Left' }, '\u2190'),
-                  React.createElement('button', { onClick: function () { upd('colonyCamY', Math.max(0, camY - 10)); }, className: 'transition-colors px-2 py-1 bg-slate-700 text-white rounded text-[11px] hover:bg-slate-600 active:scale-[0.97]', title: 'Scroll Up' }, '\u2191'),
-                  React.createElement('button', { onClick: function () { upd('colonyCamY', camY + 10); }, className: 'transition-colors px-2 py-1 bg-slate-700 text-white rounded text-[11px] hover:bg-slate-600 active:scale-[0.97]', title: 'Scroll Down' }, '\u2193'),
-                  React.createElement('button', { onClick: function () { upd('colonyCamX', camX + 10); }, className: 'transition-colors px-2 py-1 bg-slate-700 text-white rounded text-[11px] hover:bg-slate-600 active:scale-[0.97]', title: 'Scroll Right' }, '\u2192'),
-                  React.createElement('button', { onClick: function () { upd('colonyCamX', Math.max(0, mapData.colonyPos.x - 6)); upd('colonyCamY', Math.max(0, mapData.colonyPos.y - 6)); }, className: 'transition-colors px-2 py-1 bg-indigo-700 text-white rounded text-[11px] hover:bg-indigo-600 active:scale-[0.97]', title: 'Center on Colony' }, '\uD83C\uDFE0'),
+                  React.createElement('button', { onClick: function () { upd('colonyCamX', Math.max(0, camX - 10)); }, className: 'transition-colors px-2 py-1 bg-slate-700 text-white rounded text-[11px] hover:bg-slate-600 active:scale-[0.97]', title: t('stem.spacecolony.scroll_left', 'Scroll Left') }, '\u2190'),
+                  React.createElement('button', { onClick: function () { upd('colonyCamY', Math.max(0, camY - 10)); }, className: 'transition-colors px-2 py-1 bg-slate-700 text-white rounded text-[11px] hover:bg-slate-600 active:scale-[0.97]', title: t('stem.spacecolony.scroll_up', 'Scroll Up') }, '\u2191'),
+                  React.createElement('button', { onClick: function () { upd('colonyCamY', camY + 10); }, className: 'transition-colors px-2 py-1 bg-slate-700 text-white rounded text-[11px] hover:bg-slate-600 active:scale-[0.97]', title: t('stem.spacecolony.scroll_down', 'Scroll Down') }, '\u2193'),
+                  React.createElement('button', { onClick: function () { upd('colonyCamX', camX + 10); }, className: 'transition-colors px-2 py-1 bg-slate-700 text-white rounded text-[11px] hover:bg-slate-600 active:scale-[0.97]', title: t('stem.spacecolony.scroll_right', 'Scroll Right') }, '\u2192'),
+                  React.createElement('button', { onClick: function () { upd('colonyCamX', Math.max(0, mapData.colonyPos.x - 6)); upd('colonyCamY', Math.max(0, mapData.colonyPos.y - 6)); }, className: 'transition-colors px-2 py-1 bg-indigo-700 text-white rounded text-[11px] hover:bg-indigo-600 active:scale-[0.97]', title: t('stem.spacecolony.center_on_colony', 'Center on Colony') }, '\uD83C\uDFE0'),
                   React.createElement('span', { className: 'text-slate-600 mx-1' }, '|'),
-                  React.createElement('button', { onClick: function () { upd('colonyZoom', Math.min(3.0, colonyZoom * 1.25)); }, className: 'transition-colors px-2 py-1 bg-slate-700 text-white rounded text-[11px] hover:bg-slate-600 font-bold active:scale-[0.97]', title: 'Zoom In' }, '+'),
-                  React.createElement('button', { onClick: function () { upd('colonyZoom', Math.max(0.4, colonyZoom * 0.8)); }, className: 'transition-colors px-2 py-1 bg-slate-700 text-white rounded text-[11px] hover:bg-slate-600 font-bold active:scale-[0.97]', title: 'Zoom Out' }, '\u2212'),
-                  React.createElement('button', { onClick: function () { upd('colonyZoom', 1.0); }, className: 'transition-colors px-1.5 py-1 bg-slate-700 text-white rounded text-[11px] hover:bg-slate-600 active:scale-[0.97]', title: 'Reset Zoom' }, '1:1'),
+                  React.createElement('button', { onClick: function () { upd('colonyZoom', Math.min(3.0, colonyZoom * 1.25)); }, className: 'transition-colors px-2 py-1 bg-slate-700 text-white rounded text-[11px] hover:bg-slate-600 font-bold active:scale-[0.97]', title: t('stem.spacecolony.zoom_in', 'Zoom In') }, '+'),
+                  React.createElement('button', { onClick: function () { upd('colonyZoom', Math.max(0.4, colonyZoom * 0.8)); }, className: 'transition-colors px-2 py-1 bg-slate-700 text-white rounded text-[11px] hover:bg-slate-600 font-bold active:scale-[0.97]', title: t('stem.spacecolony.zoom_out', 'Zoom Out') }, '\u2212'),
+                  React.createElement('button', { onClick: function () { upd('colonyZoom', 1.0); }, className: 'transition-colors px-1.5 py-1 bg-slate-700 text-white rounded text-[11px] hover:bg-slate-600 active:scale-[0.97]', title: t('stem.spacecolony.reset_zoom', 'Reset Zoom') }, '1:1'),
                   React.createElement('span', { className: 'text-[11px] text-slate-600 ml-1' }, Math.round(colonyZoom * 100) + '%'),
-                React.createElement('span', { className: 'text-[11px] text-slate-600 ml-2 hidden sm:inline' }, 'WASD pan \u2022 +/- zoom \u2022 Esc clear \u2022 H home')
+                React.createElement('span', { className: 'text-[11px] text-slate-600 ml-2 hidden sm:inline' }, t('stem.spacecolony.wasd_pan_zoom_esc_clear_h_home', 'WASD pan \u2022 +/- zoom \u2022 Esc clear \u2022 H home'))
                 ),
                 React.createElement('span', { className: 'text-[11px] text-slate-600' }, mapSize + '\u00D7' + mapSize + ' (' + camX + ',' + camY + ')')
               ),
@@ -1270,7 +1270,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                   ref: canvasRef,
                   tabIndex: 0,
                   role: 'application',
-                  'aria-label': 'Colony map. Keyboard: W A S D or arrow keys to pan, plus and minus to zoom, H to home (return to colony), Escape to clear selection. Mouse: click to select tile, drag to pan, scroll to zoom.',
+                  'aria-label': t('stem.spacecolony.colony_map_keyboard_w_a_s_d_or_arrow_k', 'Colony map. Keyboard: W A S D or arrow keys to pan, plus and minus to zoom, H to home (return to colony), Escape to clear selection. Mouse: click to select tile, drag to pan, scroll to zoom.'),
                   onClick: handleMapClick,
                   onMouseDown: handleMapMouseDown,
                   onMouseMove: handleMapMouseMove,
@@ -1282,8 +1282,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                   style: { maxHeight: '520px', cursor: dragState.dragging ? 'grabbing' : 'grab' }
                 }),
                 React.createElement('button', {
-                  'aria-label': 'Toggle fullscreen for the colony map',
-                  title: 'Fullscreen',
+                  'aria-label': t('stem.spacecolony.toggle_fullscreen_for_the_colony_map', 'Toggle fullscreen for the colony map'),
+                  title: t('stem.spacecolony.fullscreen', 'Fullscreen'),
                   onClick: function() {
                     var el = document.getElementById('spacecolony-fs-wrap');
                     if (!el) return;
@@ -1361,7 +1361,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                   },
                   className: 'rounded border border-slate-600 cursor-pointer',
                   style: { width: '120px', height: '120px', opacity: 0.85 },
-                  title: 'Click to navigate'
+                  title: t('stem.spacecolony.click_to_navigate', 'Click to navigate')
                 })
               ),
               // Selected tile
@@ -1430,7 +1430,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     },
                     className: 'px-3 py-1 rounded-lg text-[11px] font-bold text-white',
                     style: { background: 'linear-gradient(135deg, #4338ca, #6366f1)' }
-                  }, '\uD83D\uDDFA Explore (-1\u26A1)')
+                  }, t('stem.spacecolony.explore_1', '\uD83D\uDDFA Explore (-1\u26A1)'))
                 )
               ),
               // Anomaly Result
@@ -1441,7 +1441,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 ),
                 React.createElement('p', { className: 'text-xs text-purple-100 leading-relaxed' }, d.anomalyResult.description),
                 d.anomalyResult.lesson && React.createElement('div', { className: 'mt-2 bg-purple-950 rounded-lg px-3 py-2 text-[11px] text-purple-300 border border-purple-800' },
-                  React.createElement('span', { className: 'font-bold text-purple-200' }, '\uD83D\uDCDA Science: '), d.anomalyResult.lesson
+                  React.createElement('span', { className: 'font-bold text-purple-200' }, t('stem.spacecolony.science', '\uD83D\uDCDA Science: ')), d.anomalyResult.lesson
                 ),
                 React.createElement('div', { className: 'flex gap-2 mt-2 text-[11px] flex-wrap' },
                   Object.keys(d.anomalyResult.reward || {}).filter(function (k) { return d.anomalyResult.reward[k] > 0; }).map(function (k) {
@@ -1455,21 +1455,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
               turnPhase === 'day' && React.createElement('div', { className: 'mb-3 rounded-2xl overflow-hidden', style: { background: 'linear-gradient(135deg, #0f172a, #1e1b4b)', border: '1px solid #334155' } },
                 React.createElement('div', { className: 'px-3 pt-3 pb-2 flex items-center justify-between' },
                   React.createElement('div', { className: 'flex items-center gap-2' },
-                    React.createElement('span', { className: 'text-[11px] font-bold uppercase tracking-wider text-slate-600' }, 'Actions'),
+                    React.createElement('span', { className: 'text-[11px] font-bold uppercase tracking-wider text-slate-600' }, t('stem.spacecolony.actions', 'Actions')),
                     React.createElement('div', { className: 'flex gap-1' }, Array.from({length:maxAP},function(_,i){return React.createElement('div',{key:i,className:'w-4 h-4 rounded-full transition-all duration-300',style:{background:i<actionPoints?'linear-gradient(135deg,#818cf8,#6366f1)':'#1e293b',boxShadow:i<actionPoints?'0 0 8px rgba(99,102,241,0.5)':'none',border:i<actionPoints?'2px solid #a5b4fc':'2px solid #334155'}})})),
                     React.createElement('span', { className: 'text-xs font-bold', style: { color: actionPoints > 0 ? '#818cf8' : '#475569' } }, actionPoints + '/' + maxAP)
                   ),
-                  React.createElement('button', { onClick: function() { upd('turnPhase', 'dusk'); }, className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all hover:scale-105', style: { background: 'linear-gradient(135deg, #312e81, #4c1d95)', color: '#c4b5fd', border: '1px solid #6366f140' } }, '\uD83C\uDF19 End Day')
+                  React.createElement('button', { onClick: function() { upd('turnPhase', 'dusk'); }, className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all hover:scale-105', style: { background: 'linear-gradient(135deg, #312e81, #4c1d95)', color: '#c4b5fd', border: '1px solid #6366f140' } }, t('stem.spacecolony.end_day', '\uD83C\uDF19 End Day'))
                 ),
                 React.createElement('div', { className: 'px-3 pb-3 grid grid-cols-4 gap-1.5' },
-                  React.createElement('button', { onClick: function() { if(actionPoints<1){if(addToast)addToast('No AP!','error');return;} if(!selectedTile||selectedTile.tile.explored){if(addToast)addToast('Select an unexplored tile!','info');return;} spendAP(1); var nm=JSON.parse(JSON.stringify(mapData)); var er2=1+(researchQueue.indexOf('gravimetrics')>=0?1:0); for(var dy2=-er2;dy2<=er2;dy2++)for(var dx2=-er2;dx2<=er2;dx2++){var ni2=(selectedTile.y+dy2)*mapSize+(selectedTile.x+dx2);if(ni2>=0&&ni2<nm.tiles.length)nm.tiles[ni2].explored=true;} upd('colonyMap',nm); var nr=Object.assign({},resources); var ec2=(activePolicy==='militarist')?0:2; nr.energy=Math.max(0,nr.energy-ec2); var tb={plains:'food',mountain:'materials',volcanic:'energy',ice:'water',desert:'materials',ocean:'water',radiation:'science'}; var br=tb[selectedTile.tile.type]; if(br&&nr[br]!==undefined)nr[br]+=2; var pkK=selectedTile.x+','+selectedTile.y; var pkp=mapPickups[pkK]; if(pkp){nr[pkp.res]=(nr[pkp.res]||0)+pkp.amt;var npk=Object.assign({},mapPickups);delete npk[pkK];upd('mapPickups',npk);if(addToast)addToast((pkp.rarity==='epic'?'\u2B50 EPIC: ':pkp.rarity==='rare'?'\u2728 RARE: ':'')+pkp.label,'info');} upd('colonyRes',nr); if(addToast)addToast('Explored '+selectedTile.tile.name+'!'+(br?' +2 '+br:''),'info'); }, disabled: actionPoints<1||turnPhase!=='day', className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all '+(actionPoints>=1?'transition-colors hover:bg-indigo-900/50 hover:scale-105 active:scale-[0.97]':'opacity-40'), style:{background:'#1e293b',border:'1px solid #33415560'} }, React.createElement('span',{className:'text-lg'},'\uD83D\uDDFA\uFE0F'), React.createElement('span',{className:'text-[11px] font-bold text-slate-300'},'Explore'), React.createElement('span',{className:'text-[11px] text-indigo-400'},'1 AP')),
-                  React.createElement('button', { onClick: function() { if(builtThisTurn){if(addToast)addToast('1 build per turn!','info');return;} if(actionPoints<1){if(addToast)addToast('No AP!','error');return;} upd('showBuild',!d.showBuild); }, disabled: actionPoints<1||builtThisTurn, className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all '+(actionPoints>=1&&!builtThisTurn?'transition-colors hover:bg-amber-900/30 hover:scale-105 active:scale-[0.97]':'opacity-40'), style:{background:'#1e293b',border:'1px solid #92400e40'} }, React.createElement('span',{className:'text-lg'},'\uD83C\uDFD7\uFE0F'), React.createElement('span',{className:'text-[11px] font-bold text-amber-300'},'Build'), React.createElement('span',{className:'text-[11px] text-amber-500'},builtThisTurn?'Done':'1 AP'), React.createElement('span',{className:'text-[11px] text-slate-200'},buildings.length+'/'+buildingDefs.length)),
-                  React.createElement('button', { onClick: function() { if(actionPoints<1){if(addToast)addToast('No AP!','error');return;} upd('showResearch',!d.showResearch); }, disabled: actionPoints<1, className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all '+(actionPoints>=1?'transition-colors hover:bg-violet-900/30 hover:scale-105 active:scale-[0.97]':'opacity-40'), style:{background:'#1e293b',border:'1px solid #4c1d9540'} }, React.createElement('span',{className:'text-lg'},'\uD83E\uDDEC'), React.createElement('span',{className:'text-[11px] font-bold text-violet-300'},'Research'), React.createElement('span',{className:'text-[11px] text-violet-500'},'1 AP'), React.createElement('span',{className:'text-[11px] text-slate-200'},researchQueue.length+'/10')),
-                  React.createElement('button', { onClick: function() { upd('showSettlers',!d.showSettlers); }, className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all hover:bg-teal-900/30 hover:scale-105 active:scale-[0.97]', style:{background:'#1e293b',border:'1px solid #0d948440'} }, React.createElement('span',{className:'text-lg'},'\uD83D\uDC65'), React.createElement('span',{className:'text-[11px] font-bold text-teal-300'},'Crew'), React.createElement('span',{className:'text-[11px] text-teal-500'},'Free'), React.createElement('span',{className:'text-[11px] text-slate-200'},settlers.length+' pop')),
-                  (buildings.length>=2||activePolicy)&&React.createElement('button', { onClick: function() { upd('showPolicy',!d.showPolicy); }, className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all hover:bg-emerald-900/30 hover:scale-105 active:scale-[0.97]', style:{background:'#1e293b',border:'1px solid #16a34a40'} }, React.createElement('span',{className:'text-lg'},'\uD83C\uDFDB\uFE0F'), React.createElement('span',{className:'text-[11px] font-bold text-emerald-300'},'Gov'), React.createElement('span',{className:'text-[11px] text-emerald-500'},'Free')),
-                  (greatScientists.length>0||buildings.length>=5)&&React.createElement('button', { onClick: function() { upd('showGreatSci',!d.showGreatSci); }, className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all hover:bg-yellow-900/30 hover:scale-105 active:scale-[0.97]', style:{background:'#1e293b',border:'1px solid #ca8a0440'} }, React.createElement('span',{className:'text-lg'},'\uD83E\uDD16'), React.createElement('span',{className:'text-[11px] font-bold text-yellow-300'},'Mentors'), React.createElement('span',{className:'text-[11px] text-slate-200'},greatScientists.length+'/'+greatSciDefs.length)),
-                  (era!=='survival')&&React.createElement('button', { onClick: function() { if(actionPoints<2){if(addToast)addToast('Expeditions cost 2 AP!','error');return;} upd('showExpeditions',!d.showExpeditions); }, disabled:actionPoints<2, className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all '+(actionPoints>=2?'transition-colors hover:bg-cyan-900/30 hover:scale-105 active:scale-[0.97]':'opacity-40'), style:{background:'#1e293b',border:'1px solid #06b6d440'} }, React.createElement('span',{className:'text-lg'},'\u26F5'), React.createElement('span',{className:'text-[11px] font-bold text-cyan-300'},'Expedition'), React.createElement('span',{className:'text-[11px] text-cyan-500'},'2 AP')),
-                  (era!=='survival')&&React.createElement('button', { onClick: function() { upd('showWonders',!d.showWonders); }, className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all hover:bg-amber-900/30 hover:scale-105 active:scale-[0.97]', style:{background:'#1e293b',border:'1px solid #b4540040'} }, React.createElement('span',{className:'text-lg'},'\uD83C\uDFDB\uFE0F'), React.createElement('span',{className:'text-[11px] font-bold text-amber-200'},'Wonders'), React.createElement('span',{className:'text-[11px] text-amber-500'},'Free'))
+                  React.createElement('button', { onClick: function() { if(actionPoints<1){if(addToast)addToast('No AP!','error');return;} if(!selectedTile||selectedTile.tile.explored){if(addToast)addToast('Select an unexplored tile!','info');return;} spendAP(1); var nm=JSON.parse(JSON.stringify(mapData)); var er2=1+(researchQueue.indexOf('gravimetrics')>=0?1:0); for(var dy2=-er2;dy2<=er2;dy2++)for(var dx2=-er2;dx2<=er2;dx2++){var ni2=(selectedTile.y+dy2)*mapSize+(selectedTile.x+dx2);if(ni2>=0&&ni2<nm.tiles.length)nm.tiles[ni2].explored=true;} upd('colonyMap',nm); var nr=Object.assign({},resources); var ec2=(activePolicy==='militarist')?0:2; nr.energy=Math.max(0,nr.energy-ec2); var tb={plains:'food',mountain:'materials',volcanic:'energy',ice:'water',desert:'materials',ocean:'water',radiation:'science'}; var br=tb[selectedTile.tile.type]; if(br&&nr[br]!==undefined)nr[br]+=2; var pkK=selectedTile.x+','+selectedTile.y; var pkp=mapPickups[pkK]; if(pkp){nr[pkp.res]=(nr[pkp.res]||0)+pkp.amt;var npk=Object.assign({},mapPickups);delete npk[pkK];upd('mapPickups',npk);if(addToast)addToast((pkp.rarity==='epic'?'\u2B50 EPIC: ':pkp.rarity==='rare'?'\u2728 RARE: ':'')+pkp.label,'info');} upd('colonyRes',nr); if(addToast)addToast('Explored '+selectedTile.tile.name+'!'+(br?' +2 '+br:''),'info'); }, disabled: actionPoints<1||turnPhase!=='day', className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all '+(actionPoints>=1?'transition-colors hover:bg-indigo-900/50 hover:scale-105 active:scale-[0.97]':'opacity-40'), style:{background:'#1e293b',border:'1px solid #33415560'} }, React.createElement('span',{className:'text-lg'},'\uD83D\uDDFA\uFE0F'), React.createElement('span',{className:'text-[11px] font-bold text-slate-300'},t('stem.spacecolony.explore', 'Explore')), React.createElement('span',{className:'text-[11px] text-indigo-400'},t('stem.spacecolony.1_ap', '1 AP'))),
+                  React.createElement('button', { onClick: function() { if(builtThisTurn){if(addToast)addToast('1 build per turn!','info');return;} if(actionPoints<1){if(addToast)addToast('No AP!','error');return;} upd('showBuild',!d.showBuild); }, disabled: actionPoints<1||builtThisTurn, className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all '+(actionPoints>=1&&!builtThisTurn?'transition-colors hover:bg-amber-900/30 hover:scale-105 active:scale-[0.97]':'opacity-40'), style:{background:'#1e293b',border:'1px solid #92400e40'} }, React.createElement('span',{className:'text-lg'},'\uD83C\uDFD7\uFE0F'), React.createElement('span',{className:'text-[11px] font-bold text-amber-300'},t('stem.spacecolony.build', 'Build')), React.createElement('span',{className:'text-[11px] text-amber-500'},builtThisTurn?'Done':'1 AP'), React.createElement('span',{className:'text-[11px] text-slate-200'},buildings.length+'/'+buildingDefs.length)),
+                  React.createElement('button', { onClick: function() { if(actionPoints<1){if(addToast)addToast('No AP!','error');return;} upd('showResearch',!d.showResearch); }, disabled: actionPoints<1, className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all '+(actionPoints>=1?'transition-colors hover:bg-violet-900/30 hover:scale-105 active:scale-[0.97]':'opacity-40'), style:{background:'#1e293b',border:'1px solid #4c1d9540'} }, React.createElement('span',{className:'text-lg'},'\uD83E\uDDEC'), React.createElement('span',{className:'text-[11px] font-bold text-violet-300'},t('stem.spacecolony.research', 'Research')), React.createElement('span',{className:'text-[11px] text-violet-500'},t('stem.spacecolony.1_ap_2', '1 AP')), React.createElement('span',{className:'text-[11px] text-slate-200'},researchQueue.length+'/10')),
+                  React.createElement('button', { onClick: function() { upd('showSettlers',!d.showSettlers); }, className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all hover:bg-teal-900/30 hover:scale-105 active:scale-[0.97]', style:{background:'#1e293b',border:'1px solid #0d948440'} }, React.createElement('span',{className:'text-lg'},'\uD83D\uDC65'), React.createElement('span',{className:'text-[11px] font-bold text-teal-300'},t('stem.spacecolony.crew', 'Crew')), React.createElement('span',{className:'text-[11px] text-teal-500'},t('stem.spacecolony.free', 'Free')), React.createElement('span',{className:'text-[11px] text-slate-200'},settlers.length+' pop')),
+                  (buildings.length>=2||activePolicy)&&React.createElement('button', { onClick: function() { upd('showPolicy',!d.showPolicy); }, className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all hover:bg-emerald-900/30 hover:scale-105 active:scale-[0.97]', style:{background:'#1e293b',border:'1px solid #16a34a40'} }, React.createElement('span',{className:'text-lg'},'\uD83C\uDFDB\uFE0F'), React.createElement('span',{className:'text-[11px] font-bold text-emerald-300'},'Gov'), React.createElement('span',{className:'text-[11px] text-emerald-500'},t('stem.spacecolony.free_2', 'Free'))),
+                  (greatScientists.length>0||buildings.length>=5)&&React.createElement('button', { onClick: function() { upd('showGreatSci',!d.showGreatSci); }, className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all hover:bg-yellow-900/30 hover:scale-105 active:scale-[0.97]', style:{background:'#1e293b',border:'1px solid #ca8a0440'} }, React.createElement('span',{className:'text-lg'},'\uD83E\uDD16'), React.createElement('span',{className:'text-[11px] font-bold text-yellow-300'},t('stem.spacecolony.mentors', 'Mentors')), React.createElement('span',{className:'text-[11px] text-slate-200'},greatScientists.length+'/'+greatSciDefs.length)),
+                  (era!=='survival')&&React.createElement('button', { onClick: function() { if(actionPoints<2){if(addToast)addToast('Expeditions cost 2 AP!','error');return;} upd('showExpeditions',!d.showExpeditions); }, disabled:actionPoints<2, className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all '+(actionPoints>=2?'transition-colors hover:bg-cyan-900/30 hover:scale-105 active:scale-[0.97]':'opacity-40'), style:{background:'#1e293b',border:'1px solid #06b6d440'} }, React.createElement('span',{className:'text-lg'},'\u26F5'), React.createElement('span',{className:'text-[11px] font-bold text-cyan-300'},t('stem.spacecolony.expedition', 'Expedition')), React.createElement('span',{className:'text-[11px] text-cyan-500'},t('stem.spacecolony.2_ap', '2 AP'))),
+                  (era!=='survival')&&React.createElement('button', { onClick: function() { upd('showWonders',!d.showWonders); }, className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all hover:bg-amber-900/30 hover:scale-105 active:scale-[0.97]', style:{background:'#1e293b',border:'1px solid #b4540040'} }, React.createElement('span',{className:'text-lg'},'\uD83C\uDFDB\uFE0F'), React.createElement('span',{className:'text-[11px] font-bold text-amber-200'},t('stem.spacecolony.wonders', 'Wonders')), React.createElement('span',{className:'text-[11px] text-amber-500'},t('stem.spacecolony.free_3', 'Free')))
                 ),
                 React.createElement('div', { className: 'px-3 pb-2 flex gap-1.5 flex-wrap' },
                   React.createElement('button', { onClick: function() { upd('showAchievements',!d.showAchievements); }, className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all hover:scale-105', style: d.showAchievements ? { background: 'linear-gradient(135deg, #9f1239, #881337)', color: '#fda4af', border: '1px solid #f43f5e', boxShadow: '0 0 8px rgba(244,63,94,0.3)' } : { background: '#1e293b', color: '#fb7185', border: '1px solid #f43f5e30' } }, '\uD83C\uDFC5 ' + Object.keys(achievements).length + '/' + achievementDefs.length),
@@ -1483,11 +1483,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                   React.createElement('div', { className: 'text-center mb-4' },
                     React.createElement('div', { className: 'text-3xl mb-1' }, '\uD83C\uDF19'),
                     React.createElement('h2', { className: 'text-xl font-bold text-indigo-200 tracking-tight' }, 'Dusk \u2014 Turn ' + turn + ' Ending'),
-                    React.createElement('div', { className: 'text-[11px] text-indigo-400' }, 'The fate of your colony hangs in the balance...')
+                    React.createElement('div', { className: 'text-[11px] text-indigo-400' }, t('stem.spacecolony.the_fate_of_your_colony_hangs_in_the_b', 'The fate of your colony hangs in the balance...'))
                   ),
                   React.createElement('div', { className: 'bg-black/30 rounded-xl p-4 mb-4 text-center border border-indigo-800/30' },
-                    React.createElement('div', { className: 'text-[11px] font-bold text-indigo-400 uppercase tracking-wider mb-2' }, '\uD83C\uDFB2 Fate Roll'),
-                    !fateRoll && React.createElement('button', { onClick: function() { var roll=performFateRoll(); upd('fateAnimating',true); upd('fateRoll',roll); setTimeout(function(){upd('fateAnimating',false);},1500); }, className: 'px-6 py-3 rounded-xl text-sm font-bold text-white transition-all hover:scale-105', style: { background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', boxShadow: '0 4px 15px rgba(99,102,241,0.4)', animation: 'kp-pulse 2s infinite' } }, '\uD83C\uDFB2 Roll the Dice!'),
+                    React.createElement('div', { className: 'text-[11px] font-bold text-indigo-400 uppercase tracking-wider mb-2' }, t('stem.spacecolony.fate_roll', '\uD83C\uDFB2 Fate Roll')),
+                    !fateRoll && React.createElement('button', { onClick: function() { var roll=performFateRoll(); upd('fateAnimating',true); upd('fateRoll',roll); setTimeout(function(){upd('fateAnimating',false);},1500); }, className: 'px-6 py-3 rounded-xl text-sm font-bold text-white transition-all hover:scale-105', style: { background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', boxShadow: '0 4px 15px rgba(99,102,241,0.4)', animation: 'kp-pulse 2s infinite' } }, t('stem.spacecolony.roll_the_dice', '\uD83C\uDFB2 Roll the Dice!')),
                     fateRoll && React.createElement('div', { style: { animation: fateAnimating ? 'kp-fateRoll 1.5s ease-out' : 'none' } },
                       React.createElement('div', { className: 'text-5xl mb-2', style: { filter: fateAnimating ? 'blur(2px)' : 'none', transition: 'filter 0.5s' } }, fateRoll.result.icon),
                       React.createElement('div', { className: 'text-3xl font-black mb-1 tracking-tight', style: { color: fateRoll.result.color, textShadow: '0 0 20px ' + fateRoll.result.color + '60' } }, fateRoll.modified),
@@ -1531,9 +1531,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     }
                     // Weather hazard (random)
                     var weatherTypes = [null, null, null, null, // 4/7 = calm
-                      { name: 'Dust Storm', icon: '\uD83C\uDF2A\uFE0F', effect: 'Materials production halved', res: 'materials', penalty: -2 },
-                      { name: 'Solar Flare', icon: '\u2604\uFE0F', effect: 'Energy surge! Equipment overloaded', res: 'energy', penalty: -3 },
-                      { name: 'Ice Rain', icon: '\uD83C\uDF28\uFE0F', effect: 'Frozen pipes, water loss', res: 'water', penalty: -2 }
+                      { name: t('stem.spacecolony.dust_storm', 'Dust Storm'), icon: '\uD83C\uDF2A\uFE0F', effect: 'Materials production halved', res: 'materials', penalty: -2 },
+                      { name: t('stem.spacecolony.solar_flare', 'Solar Flare'), icon: '\u2604\uFE0F', effect: 'Energy surge! Equipment overloaded', res: 'energy', penalty: -3 },
+                      { name: t('stem.spacecolony.ice_rain', 'Ice Rain'), icon: '\uD83C\uDF28\uFE0F', effect: 'Frozen pipes, water loss', res: 'water', penalty: -2 }
                     ];
                     var wIdx = Math.floor(Math.random() * weatherTypes.length);
                     var wx = weatherTypes[wIdx];
@@ -1545,21 +1545,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     }
                     // Colony milestones
                     var milestones = [
-                      { id: 'first_build', check: buildings.length >= 1, text: '\uD83C\uDFD7 First Construction!', xp: 15 },
-                      { id: 'tier2', check: buildings.indexOf('lab') >= 0 || buildings.indexOf('medbay') >= 0, text: '\uD83D\uDD2C Tier 2 Unlocked!', xp: 25 },
-                      { id: 'tier3', check: buildings.indexOf('atmo') >= 0 || buildings.indexOf('fusion') >= 0, text: '\u2622\uFE0F Advanced Tech!', xp: 40 },
-                      { id: 'self_sustain', check: nr2.food >= 30 && nr2.energy >= 30 && nr2.water >= 30, text: '\uD83C\uDF3E Self-Sustaining!', xp: 30 },
-                      { id: 'full_colony', check: buildings.length >= 8, text: '\uD83C\uDFD9\uFE0F Full Colony!', xp: 50 },
-                      { id: 'pop20', check: settlers.length >= 20, text: '\uD83D\uDC65 20 Settlers!', xp: 40 },
-                      { id: 'pop35', check: settlers.length >= 35, text: '\uD83C\uDFD8\uFE0F Thriving Town!', xp: 60 },
-                      { id: 'pop50', check: settlers.length >= 50, text: '\uD83C\uDFD9\uFE0F Population Victory!', xp: 100 },
-                      { id: 'research5', check: researchQueue.length >= 5, text: '\uD83E\uDDEC Half Researched!', xp: 40 },
-                      { id: 'research10', check: researchQueue.length >= 10, text: '\uD83C\uDF1F Research Victory!', xp: 100 },
-                      { id: 'allbuildings', check: buildings.length >= 16, text: '\uD83C\uDFD7\uFE0F Master Builder!', xp: 80 },
-                      { id: 'terraform25', check: newTf >= 25, text: '\uD83C\uDF27\uFE0F First Clouds!', xp: 20 },
-                      { id: 'terraform50', check: newTf >= 50, text: '\uD83C\uDF31 Microorganisms!', xp: 30 },
-                      { id: 'terraform75', check: newTf >= 75, text: '\uD83C\uDF24\uFE0F Atmosphere Forming!', xp: 40 },
-                      { id: 'master', check: stats.questionsAnswered >= 10 && stats.correct / Math.max(1, stats.questionsAnswered) >= 0.8, text: '\uD83C\uDFAF Science Master!', xp: 50 }
+                      { id: 'first_build', check: buildings.length >= 1, text: t('stem.spacecolony.first_construction', '\uD83C\uDFD7 First Construction!'), xp: 15 },
+                      { id: 'tier2', check: buildings.indexOf('lab') >= 0 || buildings.indexOf('medbay') >= 0, text: t('stem.spacecolony.tier_2_unlocked', '\uD83D\uDD2C Tier 2 Unlocked!'), xp: 25 },
+                      { id: 'tier3', check: buildings.indexOf('atmo') >= 0 || buildings.indexOf('fusion') >= 0, text: t('stem.spacecolony.advanced_tech', '\u2622\uFE0F Advanced Tech!'), xp: 40 },
+                      { id: 'self_sustain', check: nr2.food >= 30 && nr2.energy >= 30 && nr2.water >= 30, text: t('stem.spacecolony.self_sustaining', '\uD83C\uDF3E Self-Sustaining!'), xp: 30 },
+                      { id: 'full_colony', check: buildings.length >= 8, text: t('stem.spacecolony.full_colony', '\uD83C\uDFD9\uFE0F Full Colony!'), xp: 50 },
+                      { id: 'pop20', check: settlers.length >= 20, text: t('stem.spacecolony.20_settlers', '\uD83D\uDC65 20 Settlers!'), xp: 40 },
+                      { id: 'pop35', check: settlers.length >= 35, text: t('stem.spacecolony.thriving_town', '\uD83C\uDFD8\uFE0F Thriving Town!'), xp: 60 },
+                      { id: 'pop50', check: settlers.length >= 50, text: t('stem.spacecolony.population_victory', '\uD83C\uDFD9\uFE0F Population Victory!'), xp: 100 },
+                      { id: 'research5', check: researchQueue.length >= 5, text: t('stem.spacecolony.half_researched', '\uD83E\uDDEC Half Researched!'), xp: 40 },
+                      { id: 'research10', check: researchQueue.length >= 10, text: t('stem.spacecolony.research_victory', '\uD83C\uDF1F Research Victory!'), xp: 100 },
+                      { id: 'allbuildings', check: buildings.length >= 16, text: t('stem.spacecolony.master_builder_2', '\uD83C\uDFD7\uFE0F Master Builder!'), xp: 80 },
+                      { id: 'terraform25', check: newTf >= 25, text: t('stem.spacecolony.first_clouds', '\uD83C\uDF27\uFE0F First Clouds!'), xp: 20 },
+                      { id: 'terraform50', check: newTf >= 50, text: t('stem.spacecolony.microorganisms', '\uD83C\uDF31 Microorganisms!'), xp: 30 },
+                      { id: 'terraform75', check: newTf >= 75, text: t('stem.spacecolony.atmosphere_forming', '\uD83C\uDF24\uFE0F Atmosphere Forming!'), xp: 40 },
+                      { id: 'master', check: stats.questionsAnswered >= 10 && stats.correct / Math.max(1, stats.questionsAnswered) >= 0.8, text: t('stem.spacecolony.science_master', '\uD83C\uDFAF Science Master!'), xp: 50 }
                     ];
                     var achieved = d.colonyMilestones || {};
                     milestones.forEach(function (ms) {
@@ -1639,11 +1639,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     // ══ Generate Dawn Data for Next Turn ══
                     var _incomeDeltas = { food: nr2.food - _preRes.food, energy: nr2.energy - _preRes.energy, water: nr2.water - _preRes.water, materials: nr2.materials - _preRes.materials, science: nr2.science - _preRes.science };
                     var _discovery = Math.random() < 0.2 ? [
-                      { icon: '\uD83D\uDD2D', label: 'Stellar Anomaly', desc: 'Telescopes detect unusual radiation patterns.' },
-                      { icon: '\uD83E\uDDA0', label: 'Microbe Colony', desc: 'Alien microorganisms found in soil samples!' },
-                      { icon: '\uD83D\uDC8E', label: 'Crystal Formation', desc: 'Energy-dense crystals detected underground.' },
-                      { icon: '\uD83C\uDF0B', label: 'Thermal Vent', desc: 'A geothermal hotspot for energy harvesting.' },
-                      { icon: '\uD83D\uDDFF', label: 'Ancient Marker', desc: 'A structure of unknown origin uncovered.' }
+                      { icon: '\uD83D\uDD2D', label: t('stem.spacecolony.stellar_anomaly', 'Stellar Anomaly'), desc: t('stem.spacecolony.telescopes_detect_unusual_radiation_pa', 'Telescopes detect unusual radiation patterns.') },
+                      { icon: '\uD83E\uDDA0', label: t('stem.spacecolony.microbe_colony', 'Microbe Colony'), desc: t('stem.spacecolony.alien_microorganisms_found_in_soil_sam', 'Alien microorganisms found in soil samples!') },
+                      { icon: '\uD83D\uDC8E', label: t('stem.spacecolony.crystal_formation', 'Crystal Formation'), desc: t('stem.spacecolony.energy_dense_crystals_detected_undergr', 'Energy-dense crystals detected underground.') },
+                      { icon: '\uD83C\uDF0B', label: t('stem.spacecolony.thermal_vent', 'Thermal Vent'), desc: t('stem.spacecolony.a_geothermal_hotspot_for_energy_harves', 'A geothermal hotspot for energy harvesting.') },
+                      { icon: '\uD83D\uDDFF', label: t('stem.spacecolony.ancient_marker', 'Ancient Marker'), desc: t('stem.spacecolony.a_structure_of_unknown_origin_uncovere', 'A structure of unknown origin uncovered.') }
                     ][Math.floor(Math.random() * 5)] : null;
                     upd('dawnData', { turn: nt, income: _incomeDeltas, weather: wx ? wx.name : null, discovery: _discovery, isFirst: false });
                     upd('turnPhase', 'dawn'); upd('actionPoints', maxAP); upd('builtThisTurn', false);
@@ -1698,30 +1698,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                       if (newPG >= 1.0 && settlers.length < 50) {
                         // New settler arrives!
                         var newRoles = [
-                          { name: 'Lt. Alex Rivera', role: 'Pilot', icon: '\u2708\uFE0F', specialty: 'physics' },
-                          { name: 'Dr. Sarah Kim', role: 'Xenobiologist', icon: '\uD83E\uDDA0', specialty: 'biology' },
-                          { name: 'Prof. Dimitri Volkov', role: 'Mathematician', icon: '\uD83D\uDCCA', specialty: 'math' },
-                          { name: 'Eng. Fatima Hassan', role: 'Architect', icon: '\uD83C\uDFD7\uFE0F', specialty: 'geology' },
-                          { name: 'Dr. Li Wei', role: 'Astronomer', icon: '\uD83D\uDD2D', specialty: 'physics' },
-                          { name: 'Dr. Amara Osei', role: 'Biochemist', icon: '\uD83E\uDDEA', specialty: 'chemistry' },
-                          { name: 'Sgt. Kofi Mensah', role: 'Security', icon: '\uD83D\uDEE1\uFE0F', specialty: 'geology' },
-                          { name: 'Dr. Lucia Torres', role: 'Physician', icon: '\u2695\uFE0F', specialty: 'biology' },
-                          { name: 'Dr. Hans Mueller', role: 'Climatologist', icon: '\uD83C\uDF0A', specialty: 'chemistry' },
-                          { name: 'Eng. Priya Nair', role: 'Roboticist', icon: '\uD83E\uDD16', specialty: 'physics' },
-                          { name: 'Dr. Jun Sato', role: 'Volcanologist', icon: '\uD83C\uDF0B', specialty: 'geology' },
-                          { name: 'Prof. Anya Petrov', role: 'Astrophysicist', icon: '\u2B50', specialty: 'physics' },
-                          { name: 'Dr. Maria Santos', role: 'Ecologist', icon: '\uD83C\uDF3F', specialty: 'biology' },
-                          { name: 'Eng. David Park', role: 'Structural Eng.', icon: '\uD83C\uDFD7\uFE0F', specialty: 'math' },
-                          { name: 'Dr. Fatou Diallo', role: 'Geneticist', icon: '\uD83E\uDDEC', specialty: 'biology' },
-                          { name: 'Lt. Ivan Kozlov', role: 'Navigator', icon: '\uD83E\uDDED', specialty: 'math' },
-                          { name: 'Dr. Aiko Tanabe', role: 'Microbiologist', icon: '\uD83E\uDDA0', specialty: 'biology' },
-                          { name: 'Eng. Omar Ali', role: 'Energy Eng.', icon: '\u26A1', specialty: 'physics' },
-                          { name: 'Dr. Elena Popova', role: 'Hydrologist', icon: '\uD83D\uDCA7', specialty: 'chemistry' },
-                          { name: 'Prof. Chen Guang', role: 'Seismologist', icon: '\uD83C\uDF0D', specialty: 'geology' },
-                          { name: 'Dr. Sofia Romano', role: 'Botanist II', icon: '\uD83C\uDF3A', specialty: 'biology' },
-                          { name: 'Eng. James Okafor', role: 'Systems Eng.', icon: '\u2699\uFE0F', specialty: 'math' },
-                          { name: 'Dr. Mei Lin', role: 'Pharmacologist', icon: '\uD83D\uDC8A', specialty: 'chemistry' },
-                          { name: 'Lt. Rosa Martinez', role: 'Comms Officer', icon: '\uD83D\uDCE1', specialty: 'physics' }
+                          { name: t('stem.spacecolony.lt_alex_rivera', 'Lt. Alex Rivera'), role: 'Pilot', icon: '\u2708\uFE0F', specialty: 'physics' },
+                          { name: t('stem.spacecolony.dr_sarah_kim', 'Dr. Sarah Kim'), role: 'Xenobiologist', icon: '\uD83E\uDDA0', specialty: 'biology' },
+                          { name: t('stem.spacecolony.prof_dimitri_volkov', 'Prof. Dimitri Volkov'), role: 'Mathematician', icon: '\uD83D\uDCCA', specialty: 'math' },
+                          { name: t('stem.spacecolony.eng_fatima_hassan', 'Eng. Fatima Hassan'), role: 'Architect', icon: '\uD83C\uDFD7\uFE0F', specialty: 'geology' },
+                          { name: t('stem.spacecolony.dr_li_wei', 'Dr. Li Wei'), role: 'Astronomer', icon: '\uD83D\uDD2D', specialty: 'physics' },
+                          { name: t('stem.spacecolony.dr_amara_osei', 'Dr. Amara Osei'), role: 'Biochemist', icon: '\uD83E\uDDEA', specialty: 'chemistry' },
+                          { name: t('stem.spacecolony.sgt_kofi_mensah', 'Sgt. Kofi Mensah'), role: 'Security', icon: '\uD83D\uDEE1\uFE0F', specialty: 'geology' },
+                          { name: t('stem.spacecolony.dr_lucia_torres', 'Dr. Lucia Torres'), role: 'Physician', icon: '\u2695\uFE0F', specialty: 'biology' },
+                          { name: t('stem.spacecolony.dr_hans_mueller', 'Dr. Hans Mueller'), role: 'Climatologist', icon: '\uD83C\uDF0A', specialty: 'chemistry' },
+                          { name: t('stem.spacecolony.eng_priya_nair', 'Eng. Priya Nair'), role: 'Roboticist', icon: '\uD83E\uDD16', specialty: 'physics' },
+                          { name: t('stem.spacecolony.dr_jun_sato', 'Dr. Jun Sato'), role: 'Volcanologist', icon: '\uD83C\uDF0B', specialty: 'geology' },
+                          { name: t('stem.spacecolony.prof_anya_petrov', 'Prof. Anya Petrov'), role: 'Astrophysicist', icon: '\u2B50', specialty: 'physics' },
+                          { name: t('stem.spacecolony.dr_maria_santos', 'Dr. Maria Santos'), role: 'Ecologist', icon: '\uD83C\uDF3F', specialty: 'biology' },
+                          { name: t('stem.spacecolony.eng_david_park', 'Eng. David Park'), role: 'Structural Eng.', icon: '\uD83C\uDFD7\uFE0F', specialty: 'math' },
+                          { name: t('stem.spacecolony.dr_fatou_diallo', 'Dr. Fatou Diallo'), role: 'Geneticist', icon: '\uD83E\uDDEC', specialty: 'biology' },
+                          { name: t('stem.spacecolony.lt_ivan_kozlov', 'Lt. Ivan Kozlov'), role: 'Navigator', icon: '\uD83E\uDDED', specialty: 'math' },
+                          { name: t('stem.spacecolony.dr_aiko_tanabe', 'Dr. Aiko Tanabe'), role: 'Microbiologist', icon: '\uD83E\uDDA0', specialty: 'biology' },
+                          { name: t('stem.spacecolony.eng_omar_ali', 'Eng. Omar Ali'), role: 'Energy Eng.', icon: '\u26A1', specialty: 'physics' },
+                          { name: t('stem.spacecolony.dr_elena_popova', 'Dr. Elena Popova'), role: 'Hydrologist', icon: '\uD83D\uDCA7', specialty: 'chemistry' },
+                          { name: t('stem.spacecolony.prof_chen_guang', 'Prof. Chen Guang'), role: 'Seismologist', icon: '\uD83C\uDF0D', specialty: 'geology' },
+                          { name: t('stem.spacecolony.dr_sofia_romano', 'Dr. Sofia Romano'), role: 'Botanist II', icon: '\uD83C\uDF3A', specialty: 'biology' },
+                          { name: t('stem.spacecolony.eng_james_okafor', 'Eng. James Okafor'), role: 'Systems Eng.', icon: '\u2699\uFE0F', specialty: 'math' },
+                          { name: t('stem.spacecolony.dr_mei_lin', 'Dr. Mei Lin'), role: 'Pharmacologist', icon: '\uD83D\uDC8A', specialty: 'chemistry' },
+                          { name: t('stem.spacecolony.lt_rosa_martinez', 'Lt. Rosa Martinez'), role: 'Comms Officer', icon: '\uD83D\uDCE1', specialty: 'physics' }
                         ];
                         var available = newRoles.filter(function (nr7) { return !settlers.some(function (s5) { return s5.name === nr7.name; }); });
                         if (available.length > 0) {
@@ -2043,7 +2043,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
               },
                 React.createElement('button', {
                   onClick: function () { upd('turnSummary', null); },
-                  className: 'transition-colors absolute top-1 right-2 text-slate-400 hover:text-white text-sm', title: 'Dismiss'
+                  className: 'transition-colors absolute top-1 right-2 text-slate-400 hover:text-white text-sm', title: t('stem.spacecolony.dismiss', 'Dismiss')
                 }, '\u2715'),
                 React.createElement('div', { className: 'text-[11px] font-bold text-indigo-300 mb-1.5' }, '\uD83D\uDCCB Turn ' + d.turnSummary.turn + ' Report'),
                 React.createElement('div', { className: 'grid grid-cols-5 gap-1 mb-1.5' },
@@ -2083,12 +2083,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                   },
                   disabled: !selectedTile || tileImprovements[selectedTile.x + ',' + selectedTile.y] || resources.materials < 8,
                   className: 'py-2 rounded-xl text-[11px] font-bold ' + (selectedTile && !tileImprovements[selectedTile.x + ',' + selectedTile.y] && resources.materials >= 8 ? 'bg-orange-700 text-orange-200' : 'bg-slate-700 text-slate-200')
-                }, '\uD83C\uDFD5\uFE0F Outpost (-8\uD83E\uDEA8)')
+                }, t('stem.spacecolony.outpost_8', '\uD83C\uDFD5\uFE0F Outpost (-8\uD83E\uDEA8)'))
               ),
               // Terraforming Progress
               React.createElement('div', { className: 'rounded-xl p-3 border mb-3 relative overflow-hidden', style: { background: 'linear-gradient(135deg, #064e3b, #134e4a, #0f172a)', borderColor: terraform >= 50 ? '#10b981' : '#065f46', animation: terraform >= 100 ? 'kp-glow 2s infinite' : 'none' } },
                 React.createElement('div', { className: 'flex justify-between items-center mb-1' },
-                  React.createElement('h4', { className: 'text-[11px] font-bold', style: { color: '#34d399' } }, '\uD83C\uDF0D Victory Progress'),
+                  React.createElement('h4', { className: 'text-[11px] font-bold', style: { color: '#34d399' } }, t('stem.spacecolony.victory_progress', '\uD83C\uDF0D Victory Progress')),
                   React.createElement('span', { className: 'text-xs font-black', style: { color: terraform >= 100 ? '#4ade80' : terraform >= 50 ? '#34d399' : '#6ee7b7', textShadow: '0 0 8px rgba(52,211,153,0.4)' } }, terraform + '%')
                 ),
                 React.createElement('div', { className: 'w-full rounded-full h-4 overflow-hidden', style: { background: '#1e293b', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)' } },
@@ -2115,7 +2115,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 ),
                 terraform >= 100 && React.createElement('div', { className: 'mt-2 text-center' },
                   React.createElement('div', { className: 'text-3xl mb-1' }, '\uD83C\uDF89\uD83C\uDF0D\uD83D\uDE80'),
-                  React.createElement('div', { className: 'text-sm font-bold text-green-400' }, 'COLONY VICTORY!'),
+                  React.createElement('div', { className: 'text-sm font-bold text-green-400' }, t('stem.spacecolony.colony_victory', 'COLONY VICTORY!')),
                   React.createElement('div', { className: 'text-[11px] text-green-300' }, 'Turn ' + turn + ' | ' + buildings.length + ' buildings | All ' + settlers.length + ' settlers survived')
                 )
               ),
@@ -2149,7 +2149,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 React.createElement('div', { className: 'absolute top-0 right-0 w-24 h-24 opacity-10 text-6xl flex items-center justify-center', style: { filter: 'blur(2px)' } }, colonyEvent.emoji || '\u2728'),
                 React.createElement('h3', { className: 'text-sm font-bold text-white mb-1', style: { textShadow: '0 0 10px rgba(99,102,241,0.5)' } }, (colonyEvent.emoji || '') + ' ' + colonyEvent.title),
                 React.createElement('p', { className: 'text-xs text-slate-300 leading-relaxed' }, colonyEvent.description),
-                colonyEvent.lesson && React.createElement('div', { className: 'mt-2 bg-indigo-950/80 rounded-lg px-3 py-2 text-[11px] text-indigo-300 border border-indigo-800/50 backdrop-blur-sm' }, React.createElement('span', { className: 'font-bold text-indigo-200' }, '\uD83D\uDCDA Science: '), colonyEvent.lesson),
+                colonyEvent.lesson && React.createElement('div', { className: 'mt-2 bg-indigo-950/80 rounded-lg px-3 py-2 text-[11px] text-indigo-300 border border-indigo-800/50 backdrop-blur-sm' }, React.createElement('span', { className: 'font-bold text-indigo-200' }, t('stem.spacecolony.science_2', '\uD83D\uDCDA Science: ')), colonyEvent.lesson),
                 React.createElement('div', { className: 'grid gap-2 mt-3' }, (colonyEvent.choices || []).map(function (ch, ci2) {
                   return React.createElement('button', {
                     key: ci2, onClick: function () {
@@ -2232,11 +2232,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     );
                   })
                 ),
-                React.createElement('div', { className: 'text-[11px] text-indigo-400 mt-2' }, '\uD83D\uDCA1 No wrong answers \u2014 your choices shape your colony\u2019s identity.')
+                React.createElement('div', { className: 'text-[11px] text-indigo-400 mt-2' }, t('stem.spacecolony.no_wrong_answers_your_choices_shape_yo', '\uD83D\uDCA1 No wrong answers \u2014 your choices shape your colony\u2019s identity.'))
               ),
               d.dilemmaResult && React.createElement('div', { className: 'bg-indigo-950 rounded-xl p-3 border border-indigo-700 mb-3' },
                 React.createElement('div', { className: 'flex justify-between items-center mb-1' },
-                  React.createElement('span', { className: 'text-[11px] font-bold text-indigo-300' }, '\uD83C\uDFDB\uFE0F Decision Made'),
+                  React.createElement('span', { className: 'text-[11px] font-bold text-indigo-300' }, t('stem.spacecolony.decision_made', '\uD83C\uDFDB\uFE0F Decision Made')),
                   React.createElement('button', { onClick: function () { upd('dilemmaResult', null); upd('dilemmaNarration', null); }, className: 'text-indigo-500 text-xs' }, '\u2715')
                 ),
                 React.createElement('p', { className: 'text-[11px] text-indigo-200 mb-1' }, d.dilemmaResult.outcome),
@@ -2253,14 +2253,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     '\u2696\uFE0F' + (d.dilemmaResult.equity > 0 ? '\u2191' : '\u2193'))
                 )
               ),
-              d.dilemmaLoading && React.createElement('div', { className: 'bg-indigo-900/50 rounded-xl p-3 border border-indigo-700 mb-3 text-center text-indigo-300 text-xs' }, '\uD83C\uDFDB\uFE0F Colony council deliberating...'),
+              d.dilemmaLoading && React.createElement('div', { className: 'bg-indigo-900/50 rounded-xl p-3 border border-indigo-700 mb-3 text-center text-indigo-300 text-xs' }, t('stem.spacecolony.colony_council_deliberating', '\uD83C\uDFDB\uFE0F Colony council deliberating...')),
               // Disaster Event
               d.activeDisaster && React.createElement('div', { className: 'rounded-xl p-4 border-2 mb-3 relative overflow-hidden', style: { background: 'linear-gradient(135deg, #7f1d1d, #991b1b, #451a03)', borderColor: '#ef4444', boxShadow: '0 0 25px rgba(239,68,68,0.3)', animation: 'kp-shake 0.5s ease-out, kp-fadeIn 0.5s ease-out' } },
                 React.createElement('div', { className: 'absolute -right-8 -top-8 text-7xl opacity-10', style: { filter: 'blur(3px)', animation: 'kp-pulse 2s infinite' } }, '\uD83D\uDCA5'),
                 React.createElement('h3', { className: 'text-sm font-bold text-red-200 mb-1' }, (d.activeDisaster.emoji || '\uD83D\uDCA5') + ' DISASTER: ' + d.activeDisaster.title),
                 React.createElement('p', { className: 'text-xs text-red-100 mb-2' }, d.activeDisaster.description),
                 d.activeDisaster.lesson && React.createElement('div', { className: 'bg-red-950 rounded-lg px-3 py-2 text-[11px] text-red-300 border border-red-800 mb-2' }, '\uD83D\uDCDA Science: ' + d.activeDisaster.lesson),
-                React.createElement('p', { className: 'text-[11px] text-amber-200 font-bold mb-2' }, '\u26A0\uFE0F Answer correctly to MITIGATE damage! Wrong answer = FULL damage!'),
+                React.createElement('p', { className: 'text-[11px] text-amber-200 font-bold mb-2' }, t('stem.spacecolony.answer_correctly_to_mitigate_damage_wr', '\u26A0\uFE0F Answer correctly to MITIGATE damage! Wrong answer = FULL damage!')),
                 React.createElement('p', { className: 'text-xs text-red-100 mb-2 font-bold' }, d.activeDisaster.question),
                 React.createElement('div', { className: 'grid grid-cols-3 gap-2' },
                   (d.activeDisaster.options || []).map(function (opt3, oi3) {
@@ -2298,7 +2298,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                   })
                 )
               ),
-              d.disasterLoading && React.createElement('div', { className: 'bg-red-900/50 rounded-xl p-3 border border-red-700 mb-3 text-center text-red-300 text-xs' }, '\uD83D\uDCA5 Disaster incoming...'),
+              d.disasterLoading && React.createElement('div', { className: 'bg-red-900/50 rounded-xl p-3 border border-red-700 mb-3 text-center text-red-300 text-xs' }, t('stem.spacecolony.disaster_incoming', '\uD83D\uDCA5 Disaster incoming...')),
               // Maintenance Challenge
               maintChallenge && React.createElement('div', { className: 'rounded-xl p-4 border-2 mb-3 relative overflow-hidden', style: { background: 'linear-gradient(135deg, #78350f, #92400e, #451a03)', borderColor: '#f59e0b', boxShadow: '0 0 20px rgba(245,158,11,0.2)', animation: 'kp-fadeIn 0.5s ease-out' } },
                 React.createElement('div', { className: 'absolute -right-8 -top-8 text-7xl opacity-5', style: { filter: 'blur(3px)' } }, '\uD83D\uDD27'),
@@ -2306,7 +2306,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                   React.createElement('span', { className: 'text-lg' }, maintChallenge.buildingIcon),
                   React.createElement('div', null,
                     React.createElement('h4', { className: 'text-sm font-bold text-amber-200' }, '\uD83D\uDD27 Maintenance Check: ' + maintChallenge.buildingName),
-                    React.createElement('span', { className: 'text-[11px] text-amber-400' }, 'Answer correctly to maintain 100% effectiveness!')
+                    React.createElement('span', { className: 'text-[11px] text-amber-400' }, t('stem.spacecolony.answer_correctly_to_maintain_100_effec', 'Answer correctly to maintain 100% effectiveness!'))
                   )
                 ),
                 React.createElement('p', { className: 'text-xs text-amber-100 mb-3' }, maintChallenge.question),
@@ -2349,10 +2349,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 !maintChallenge.options && React.createElement('div', { className: 'flex gap-2' },
                   React.createElement('input', {
                     type: 'text', value: d.maintInput || '',
-                    'aria-label': 'Your answer to the maintenance challenge',
+                    'aria-label': t('stem.spacecolony.your_answer_to_the_maintenance_challen', 'Your answer to the maintenance challenge'),
                     onChange: function (e) { upd('maintInput', e.target.value); },
                     onKeyDown: function (e) { if (e.key === 'Enter') document.getElementById('kepler-maint-btn').click(); },
-                    placeholder: 'Type your answer...',
+                    placeholder: t('stem.spacecolony.type_your_answer', 'Type your answer...'),
                     className: 'flex-1 px-3 py-2 bg-amber-950 border-2 border-amber-600 rounded-xl text-xs text-white focus:border-amber-400'
                   }),
                   React.createElement('button', {
@@ -2377,7 +2377,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                       upd('maintChallenge', null); upd('maintInput', '');
                     },
                     className: 'px-4 py-2 bg-amber-500 text-slate-900 rounded-xl text-xs font-bold'
-                  }, '\u2705 Submit')
+                  }, t('stem.spacecolony.submit', '\u2705 Submit'))
                 )
               ),
               // Maintenance explanation (after answering)
@@ -2390,12 +2390,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 ),
                 React.createElement('p', { className: 'text-[11px] text-slate-300 leading-relaxed' }, '\uD83D\uDCDA ' + d.maintExplanation.text)
               ),
-              d.maintChallengeLoading && React.createElement('div', { className: 'bg-amber-900/50 rounded-xl p-3 border border-amber-700 mb-3 text-center text-amber-300 text-xs' }, '\u23F3 Generating maintenance challenge...'),
+              d.maintChallengeLoading && React.createElement('div', { className: 'bg-amber-900/50 rounded-xl p-3 border border-amber-700 mb-3 text-center text-amber-300 text-xs' }, t('stem.spacecolony.generating_maintenance_challenge', '\u23F3 Generating maintenance challenge...')),
               // Build panel
               d.showBuild && React.createElement('div', { className: 'rounded-xl p-3 border mb-3', style: { background: 'linear-gradient(135deg, #1e1b4b, #0f172a)', borderColor: '#4338ca40', animation: 'kp-fadeIn 0.3s ease-out' } },
                 React.createElement('div', { className: 'flex items-center justify-between mb-2' },
-                  React.createElement('h4', { className: 'text-sm font-bold text-amber-400' }, '\uD83C\uDFD7 Buildings'),
-                  builtThisTurn && React.createElement('span', { className: 'text-[11px] px-2 py-0.5 rounded-full bg-amber-900/30 text-amber-400 border border-amber-700/30' }, '\u2705 Built this turn')
+                  React.createElement('h4', { className: 'text-sm font-bold text-amber-400' }, t('stem.spacecolony.buildings', '\uD83C\uDFD7 Buildings')),
+                  builtThisTurn && React.createElement('span', { className: 'text-[11px] px-2 py-0.5 rounded-full bg-amber-900/30 text-amber-400 border border-amber-700/30' }, t('stem.spacecolony.built_this_turn', '\u2705 Built this turn'))
                 ),
                 React.createElement('div', { className: 'grid grid-cols-2 gap-2' }, buildingDefs.map(function (bd) {
                   var isBuilt = buildings.indexOf(bd.id) >= 0;
@@ -2438,7 +2438,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                           }
                           upd('scienceGateInput', '');
                         }, className: 'px-2 py-1 bg-amber-500 text-slate-900 rounded-lg text-[11px] font-bold'
-                      }, '\uD83D\uDD13 Build')
+                      }, t('stem.spacecolony.build_2', '\uD83D\uDD13 Build'))
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-200 mt-1' }, bd.desc),
                     React.createElement('div', { className: 'flex gap-1 mt-1 text-[11px] flex-wrap' },
@@ -2452,7 +2452,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 }))
               ),
               // Science gate
-              d.scienceGateLoading && React.createElement('div', { className: 'bg-purple-900/50 rounded-xl p-3 border border-purple-700 mb-3 text-center text-purple-300 text-xs' }, '\u23F3 Generating science challenge...'),
+              d.scienceGateLoading && React.createElement('div', { className: 'bg-purple-900/50 rounded-xl p-3 border border-purple-700 mb-3 text-center text-purple-300 text-xs' }, t('stem.spacecolony.generating_science_challenge', '\u23F3 Generating science challenge...')),
               scienceGate && React.createElement('div', { className: 'rounded-xl p-4 border-2 mb-3 relative overflow-hidden', style: { background: 'linear-gradient(135deg, #581c87, #312e81, #1e1b4b)', borderColor: '#7c3aed', animation: 'kp-fadeIn 0.5s ease-out', boxShadow: '0 0 20px rgba(139,92,246,0.2)' } },
                 React.createElement('h4', { className: 'text-sm font-bold text-purple-200 mb-2' }, '\uD83D\uDD2C Science Challenge: ' + scienceGate.domain.toUpperCase()),
                 React.createElement('div', { className: 'text-[11px] text-purple-400 mb-1' }, scienceGate.mode === 'mcq' ? '\uD83D\uDCCB Multiple Choice \u2014 select the correct answer' : '\u270D\uFE0F Free Response \u2014 type your answer'),
@@ -2545,10 +2545,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 !scienceGate.options && React.createElement('div', { className: 'flex gap-2' },
                   React.createElement('input', {
                     type: 'text', value: d.scienceGateInput || '',
-                    'aria-label': 'Your answer to the science gate challenge',
+                    'aria-label': t('stem.spacecolony.your_answer_to_the_science_gate_challe', 'Your answer to the science gate challenge'),
                     onChange: function (e) { upd('scienceGateInput', e.target.value); },
                     onKeyDown: function (e) { if (e.key === 'Enter') document.getElementById('kepler-gate-btn').click(); },
-                    placeholder: 'Type your answer...', className: 'flex-1 px-3 py-2 bg-purple-950 border-2 border-purple-600 rounded-xl text-xs text-white focus:border-purple-400'
+                    placeholder: t('stem.spacecolony.type_your_answer_2', 'Type your answer...'), className: 'flex-1 px-3 py-2 bg-purple-950 border-2 border-purple-600 rounded-xl text-xs text-white focus:border-purple-400'
                   }),
                   React.createElement('button', {
                     id: 'kepler-gate-btn', onClick: function () {
@@ -2566,14 +2566,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                       } else { if (addToast) addToast('\u274C Incorrect! Study and try again.', 'error'); upd('scienceGateInput', ''); }
                       upd('scienceGate', null);
                     }, className: 'px-4 py-2 bg-purple-700 text-white rounded-xl text-xs font-bold'
-                  }, '\u2705 Submit'),
+                  }, t('stem.spacecolony.submit_2', '\u2705 Submit')),
                   React.createElement('button', { onClick: function () { upd('scienceGate', null); }, className: 'px-3 py-2 bg-slate-700 text-slate-300 rounded-xl text-xs' }, '\u2715')
                 ),
                 // Build narration
                 d.buildNarration && React.createElement('div', { className: 'rounded-xl p-3 border mb-3 relative overflow-hidden', style: { background: 'linear-gradient(135deg, #052e16, #064e3b)', borderColor: '#16a34a', boxShadow: '0 0 15px rgba(22,163,106,0.2)', animation: 'kp-fadeIn 0.5s ease-out' } },
                   React.createElement('div', { className: 'absolute -right-6 -top-6 text-5xl opacity-10', style: { filter: 'blur(3px)' } }, '\uD83C\uDFD7\uFE0F'),
                   React.createElement('div', { className: 'flex justify-between items-center mb-1' },
-                    React.createElement('span', { className: 'text-[11px] font-bold', style: { color: '#4ade80', textShadow: '0 0 8px rgba(74,222,128,0.3)' } }, '\uD83C\uDFD7\uFE0F Construction Report'),
+                    React.createElement('span', { className: 'text-[11px] font-bold', style: { color: '#4ade80', textShadow: '0 0 8px rgba(74,222,128,0.3)' } }, t('stem.spacecolony.construction_report', '\uD83C\uDFD7\uFE0F Construction Report')),
                     React.createElement('button', { onClick: function () { upd('buildNarration', null); }, className: 'text-green-500 text-xs hover:text-green-300 transition-colors' }, '\u2715')
                   ),
                   React.createElement('p', { className: 'text-[11px] text-green-100 italic leading-relaxed' }, '\uD83C\uDFA4 ' + d.buildNarration)
@@ -2583,7 +2583,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                   React.createElement('span', { className: 'font-bold' }, d.gateExplanation.correct ? '\u2705 Correct! ' : '\u274C Answer: ' + d.gateExplanation.answer + '. '),
                   d.gateExplanation.text
                 ),
-                React.createElement('div', { className: 'text-[11px] text-purple-300 mt-2' }, '\uD83D\uDCA1 This is real science! Research online if unsure.')
+                React.createElement('div', { className: 'text-[11px] text-purple-300 mt-2' }, t('stem.spacecolony.this_is_real_science_research_online_i', '\uD83D\uDCA1 This is real science! Research online if unsure.'))
               ),
               // ══ Achievements Panel ══
               d.showAchievements && React.createElement('div', { className: 'rounded-xl p-3 border mb-3 max-h-72 overflow-y-auto', style: { background: 'linear-gradient(135deg, #1c1917, #451a03, #0f172a)', borderColor: '#f43f5e30', animation: 'kp-fadeIn 0.3s ease-out' } },
@@ -2629,15 +2629,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                           }).catch(function () { upd('settlerChatLoading', false); });
                         },
                         className: 'transition-colors mt-1 col-span-2 px-2 py-0.5 rounded bg-indigo-800 text-indigo-300 text-[11px] hover:bg-indigo-700 active:scale-[0.97]'
-                      }, '\uD83D\uDCAC Talk')
+                      }, t('stem.spacecolony.talk', '\uD83D\uDCAC Talk'))
                     )
                   );
                 }))
               ),
               // Policy Panel (Civ-inspired social policies)
               d.showPolicy && React.createElement('div', { className: 'rounded-xl p-3 border mb-3', style: { background: 'linear-gradient(135deg, #064e3b, #0f172a, #1e1b4b)', borderColor: '#10b98130', animation: 'kp-fadeIn 0.3s ease-out' } },
-                React.createElement('h4', { className: 'text-sm font-bold mb-2', style: { color: '#34d399', textShadow: '0 0 10px rgba(52,211,153,0.3)' } }, '\uD83C\uDFDB\uFE0F Colony Governance'),
-                React.createElement('p', { className: 'text-[11px] text-emerald-300/60 mb-2' }, 'Choose a governing policy. Each provides unique bonuses. You may change policy once every 10 turns.'),
+                React.createElement('h4', { className: 'text-sm font-bold mb-2', style: { color: '#34d399', textShadow: '0 0 10px rgba(52,211,153,0.3)' } }, t('stem.spacecolony.colony_governance', '\uD83C\uDFDB\uFE0F Colony Governance')),
+                React.createElement('p', { className: 'text-[11px] text-emerald-300/60 mb-2' }, t('stem.spacecolony.choose_a_governing_policy_each_provide', 'Choose a governing policy. Each provides unique bonuses. You may change policy once every 10 turns.')),
                 React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
                   policyDefs.map(function (pol2) {
                     var isActive = activePolicy === pol2.id;
@@ -2657,7 +2657,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                       React.createElement('div', { className: 'flex items-center gap-1 mb-1' },
                         React.createElement('span', { className: 'text-lg' }, pol2.icon),
                         React.createElement('span', { className: 'text-[11px] font-bold text-white' }, pol2.name),
-                        isActive && React.createElement('span', { className: 'text-[11px] text-emerald-400 ml-auto' }, '\u2705 ACTIVE')
+                        isActive && React.createElement('span', { className: 'text-[11px] text-emerald-400 ml-auto' }, t('stem.spacecolony.active', '\u2705 ACTIVE'))
                       ),
                       React.createElement('div', { className: 'text-[11px] text-slate-600' }, pol2.desc)
                     );
@@ -2666,8 +2666,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
               ),
               // Cultural Traditions Panel
               d.showPolicy && React.createElement('div', { className: 'rounded-xl p-3 border mb-3', style: { background: 'linear-gradient(135deg, #451a03, #422006, #0f172a)', borderColor: '#ca8a0430', animation: 'kp-fadeIn 0.3s ease-out' } },
-                React.createElement('h4', { className: 'text-sm font-bold mb-2', style: { color: '#fbbf24', textShadow: '0 0 10px rgba(251,191,36,0.3)' } }, '\uD83C\uDF0D Cultural Knowledge Traditions'),
-                React.createElement('p', { className: 'text-[11px] text-amber-300/60 mb-2' }, 'Ancient wisdom from diverse civilizations. Each tradition provides permanent bonuses and a real cultural lesson.'),
+                React.createElement('h4', { className: 'text-sm font-bold mb-2', style: { color: '#fbbf24', textShadow: '0 0 10px rgba(251,191,36,0.3)' } }, t('stem.spacecolony.cultural_knowledge_traditions', '\uD83C\uDF0D Cultural Knowledge Traditions')),
+                React.createElement('p', { className: 'text-[11px] text-amber-300/60 mb-2' }, t('stem.spacecolony.ancient_wisdom_from_diverse_civilizati', 'Ancient wisdom from diverse civilizations. Each tradition provides permanent bonuses and a real cultural lesson.')),
                 React.createElement('div', { className: 'grid gap-2' },
                   traditionDefs.map(function (td3) {
                     var isAdopted = traditions.indexOf(td3.id) >= 0;
@@ -2715,7 +2715,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                         },
                         disabled: !canAdopt,
                         className: 'px-2 py-1 rounded-lg text-[11px] font-bold ml-2 ' + (canAdopt ? 'bg-amber-700 text-white' : 'bg-slate-700 text-slate-200')
-                      }, '\uD83D\uDD2C 10 sci')
+                      }, t('stem.spacecolony.10_sci', '\uD83D\uDD2C 10 sci'))
                     );
                   })
                 )
@@ -2724,7 +2724,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
               d.tradNarration && React.createElement('div', { className: 'rounded-xl p-3 border mb-3 relative overflow-hidden', style: { background: 'linear-gradient(135deg, #451a03, #422006)', borderColor: '#ca8a04', boxShadow: '0 0 15px rgba(202,138,4,0.2)', animation: 'kp-fadeIn 0.5s ease-out' } },
                 React.createElement('div', { className: 'absolute -right-6 -top-6 text-5xl opacity-10', style: { filter: 'blur(3px)' } }, '\uD83C\uDF0D'),
                 React.createElement('div', { className: 'flex justify-between items-center mb-1' },
-                  React.createElement('span', { className: 'text-[11px] font-bold', style: { color: '#fbbf24', textShadow: '0 0 8px rgba(251,191,36,0.3)' } }, '\uD83C\uDF0D Cultural Integration'),
+                  React.createElement('span', { className: 'text-[11px] font-bold', style: { color: '#fbbf24', textShadow: '0 0 8px rgba(251,191,36,0.3)' } }, t('stem.spacecolony.cultural_integration', '\uD83C\uDF0D Cultural Integration')),
                   React.createElement('button', { onClick: function () { upd('tradNarration', null); }, className: 'text-amber-500 text-xs hover:text-amber-300 transition-colors' }, '\u2715')
                 ),
                 React.createElement('p', { className: 'text-[11px] text-amber-100 italic leading-relaxed' }, '\uD83C\uDFA4 ' + d.tradNarration)
@@ -2732,10 +2732,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
               // Colony Values radar
               d.showPolicy && React.createElement('div', { className: 'rounded-xl p-3 border mb-3', style: { background: 'linear-gradient(135deg, #1e1b4b, #0f172a)', borderColor: '#6366f120' } },
                 d.colonyCharter && React.createElement('div', { className: 'bg-amber-950/30 rounded-lg p-2 mb-2 border border-amber-800' },
-                  React.createElement('h5', { className: 'text-[11px] font-bold text-amber-300 mb-1' }, '\uD83D\uDCDC Colony Charter'),
+                  React.createElement('h5', { className: 'text-[11px] font-bold text-amber-300 mb-1' }, t('stem.spacecolony.colony_charter', '\uD83D\uDCDC Colony Charter')),
                   React.createElement('p', { className: 'text-[11px] text-amber-200 italic leading-relaxed' }, d.colonyCharter)
                 ),
-                React.createElement('h4', { className: 'text-[11px] font-bold text-slate-300 mb-2' }, '\uD83C\uDFAD Colony Identity'),
+                React.createElement('h4', { className: 'text-[11px] font-bold text-slate-300 mb-2' }, t('stem.spacecolony.colony_identity', '\uD83C\uDFAD Colony Identity')),
                 React.createElement('div', { className: 'grid grid-cols-5 gap-1 text-center' },
                   Object.keys(colonyValues).map(function (vk3) {
                     var val = colonyValues[vk3];
@@ -2761,13 +2761,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
               // Research Panel
               d.showResearch && React.createElement('div', { className: 'rounded-xl p-3 border mb-3', style: { background: 'linear-gradient(135deg, #1e1b4b, #2e1065, #0f172a)', borderColor: '#7c3aed40', animation: 'kp-fadeIn 0.3s ease-out' } },
                 React.createElement('div', { className: 'flex items-center justify-between mb-2' },
-                  React.createElement('h4', { className: 'text-sm font-bold', style: { color: '#a78bfa', textShadow: '0 0 10px rgba(167,139,250,0.3)' } }, '\uD83E\uDDEC Research Tree'),
+                  React.createElement('h4', { className: 'text-sm font-bold', style: { color: '#a78bfa', textShadow: '0 0 10px rgba(167,139,250,0.3)' } }, t('stem.spacecolony.research_tree', '\uD83E\uDDEC Research Tree')),
                   React.createElement('div', { className: 'flex items-center gap-1.5' },
                     React.createElement('div', { className: 'w-16 h-2 rounded-full overflow-hidden', style: { background: '#1e293b' } }, React.createElement('div', { className: 'h-2 rounded-full', style: { width: (researchQueue.length * 10) + '%', background: 'linear-gradient(90deg, #7c3aed, #a78bfa)', animation: 'kp-barFill 1s ease-out' } })),
                     React.createElement('span', { className: 'text-[11px] font-bold text-violet-300' }, researchQueue.length + '/10')
                   )
                 ),
-                React.createElement('p', { className: 'text-[11px] text-violet-300/60 mb-2' }, 'Spend science to unlock permanent bonuses. Complete all 10 for Research Victory!'),
+                React.createElement('p', { className: 'text-[11px] text-violet-300/60 mb-2' }, t('stem.spacecolony.spend_science_to_unlock_permanent_bonu', 'Spend science to unlock permanent bonuses. Complete all 10 for Research Victory!')),
                 React.createElement('div', { className: 'grid grid-cols-1 gap-2' },
                   researchDefs.map(function (rd2) {
                     var isResearched = researchQueue.indexOf(rd2.id) >= 0;
@@ -2820,15 +2820,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
               ),
               // Great Scientists Panel
               d.showGreatSci && React.createElement('div', { className: 'rounded-xl p-3 border mb-3', style: { background: 'linear-gradient(135deg, #422006, #1c1917, #0f172a)', borderColor: '#ca8a0440', animation: 'kp-fadeIn 0.3s ease-out' } },
-                React.createElement('h4', { className: 'text-sm font-bold mb-2', style: { color: '#fbbf24', textShadow: '0 0 10px rgba(251,191,36,0.3)' } }, '\uD83E\uDD16 Digital Mentors \u2014 Earth Archive AI'),
-                React.createElement('p', { className: 'text-[11px] text-amber-300/60 mb-2' }, 'AI reconstructions of history\u2019s greatest minds, stored in the colony ship\u2019s quantum memory. Activated as your computing power grows. Click a mentor to consult them!'),
-                greatScientists.length === 0 && React.createElement('div', { className: 'text-center text-slate-600 text-[11px] py-4' }, 'No Great Scientists yet. Maintain high science reserves!'),
+                React.createElement('h4', { className: 'text-sm font-bold mb-2', style: { color: '#fbbf24', textShadow: '0 0 10px rgba(251,191,36,0.3)' } }, t('stem.spacecolony.digital_mentors_earth_archive_ai', '\uD83E\uDD16 Digital Mentors \u2014 Earth Archive AI')),
+                React.createElement('p', { className: 'text-[11px] text-amber-300/60 mb-2' }, t('stem.spacecolony.ai_reconstructions_of_history_s_greate', 'AI reconstructions of history\u2019s greatest minds, stored in the colony ship\u2019s quantum memory. Activated as your computing power grows. Click a mentor to consult them!')),
+                greatScientists.length === 0 && React.createElement('div', { className: 'text-center text-slate-600 text-[11px] py-4' }, t('stem.spacecolony.no_great_scientists_yet_maintain_high_', 'No Great Scientists yet. Maintain high science reserves!')),
                 React.createElement('div', { className: 'grid grid-cols-3 gap-2' },
                   greatScientists.map(function (gs4, gi) {
                     return React.createElement('div', { key: gi, className: 'rounded-xl p-2 text-center transition-all hover:scale-[1.03]', style: { background: 'linear-gradient(135deg, #451a03, #1c1917)', border: '1px solid #ca8a0440', boxShadow: '0 0 10px rgba(202,138,4,0.15)' } },
                       React.createElement('div', { className: 'text-2xl', style: { animation: 'kp-float 5s infinite' } }, gs4.icon),
                       React.createElement('div', { className: 'text-[11px] font-bold mt-1', style: { color: '#fde68a', textShadow: '0 0 6px rgba(253,230,138,0.3)' } }, gs4.name),
-                      React.createElement('div', { className: 'text-[11px] text-cyan-400' }, '\uD83E\uDD16 AI Simulation'),
+                      React.createElement('div', { className: 'text-[11px] text-cyan-400' }, t('stem.spacecolony.ai_simulation', '\uD83E\uDD16 AI Simulation')),
                       React.createElement('div', { className: 'text-[11px] text-yellow-400' }, '+' + gs4.amount + ' ' + gs4.bonus + '/turn'),
                       React.createElement('div', { className: 'text-[11px] text-slate-200 mt-1 italic' }, gs4.fact),
                       React.createElement('button', {
@@ -2860,7 +2860,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
               // ══ Science Journal ══
               d.showJournal && React.createElement('div', { className: 'rounded-xl p-3 border mb-3 max-h-72 overflow-y-auto', style: { background: 'linear-gradient(135deg, #0f172a, #1a2e05, #0f172a)', borderColor: '#16a34a30', animation: 'kp-fadeIn 0.3s ease-out' } },
                 React.createElement('h4', { className: 'text-sm font-bold mb-2', style: { color: '#4ade80', textShadow: '0 0 10px rgba(74,222,128,0.3)' } }, '\uD83D\uDCD6 Science Journal \u2014 ' + scienceJournal.length + ' Entries'),
-                scienceJournal.length === 0 && React.createElement('div', { className: 'text-center text-slate-600 text-[11px] py-4' }, 'No entries yet. Answer science gates and explore anomalies!'),
+                scienceJournal.length === 0 && React.createElement('div', { className: 'text-center text-slate-600 text-[11px] py-4' }, t('stem.spacecolony.no_entries_yet_answer_science_gates_an', 'No entries yet. Answer science gates and explore anomalies!')),
                 scienceJournal.slice().reverse().map(function (jEntry, ji) {
                   var domainColors = { biology: '#22c55e', physics: '#6366f1', chemistry: '#f59e0b', math: '#ef4444', geology: '#a78bfa', ecology: '#14b8a6' };
                   var dc = domainColors[(jEntry.source || '').split(':')[0].toLowerCase().trim()] || '#94a3b8';
@@ -2888,8 +2888,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
               // Resource Conversion
               React.createElement('div', { className: 'rounded-xl p-2 border mb-3', style: { background: 'linear-gradient(135deg, #0f172a, #1e293b)', borderColor: '#33415520' } },
                 React.createElement('div', { className: 'flex items-center justify-between mb-1' },
-                  React.createElement('h4', { className: 'text-[11px] font-bold uppercase', style: { color: '#94a3b8' } }, '\u267B Resource Converter'),
-                  React.createElement('span', { className: 'text-[11px]', style: { color: '#94a3b8' } }, 'Trade 5 of one for 3 of another')
+                  React.createElement('h4', { className: 'text-[11px] font-bold uppercase', style: { color: '#94a3b8' } }, t('stem.spacecolony.resource_converter', '\u267B Resource Converter')),
+                  React.createElement('span', { className: 'text-[11px]', style: { color: '#94a3b8' } }, t('stem.spacecolony.trade_5_of_one_for_3_of_another', 'Trade 5 of one for 3 of another'))
                 ),
                 React.createElement('div', { className: 'flex gap-1 flex-wrap' },
                   [['food', 'energy'], ['energy', 'materials'], ['materials', 'science'], ['water', 'food'], ['science', 'energy']].map(function (pair) {
@@ -2911,7 +2911,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
               ),
               // ══ Expeditions Panel ══
               d.showExpeditions && React.createElement('div', { className: 'rounded-xl p-3 border mb-3', style: { background: 'linear-gradient(135deg, #0c4a6e, #164e63, #0f172a)', borderColor: '#06b6d430', animation: 'kp-fadeIn 0.3s ease-out' } },
-                React.createElement('h4', { className: 'text-sm font-bold mb-2', style: { color: '#22d3ee', textShadow: '0 0 10px rgba(34,211,238,0.3)' } }, '\u26F5 Expeditions'),
+                React.createElement('h4', { className: 'text-sm font-bold mb-2', style: { color: '#22d3ee', textShadow: '0 0 10px rgba(34,211,238,0.3)' } }, t('stem.spacecolony.expeditions', '\u26F5 Expeditions')),
                 activeExpedition && React.createElement('div', { className: 'rounded-xl p-3 mb-3 relative overflow-hidden', style: { background: 'linear-gradient(135deg, #164e63, #0c4a6e)', border: '1px solid #06b6d4', boxShadow: '0 0 15px rgba(6,182,212,0.2)' } },
                   React.createElement('div', { className: 'flex items-center justify-between mb-2' },
                     React.createElement('span', { className: 'text-[11px] font-bold text-cyan-200' }, '\u26F5 ' + activeExpedition.type + ' in progress...'),
@@ -2920,14 +2920,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                   React.createElement('div', { className: 'w-full h-3 rounded-full overflow-hidden', style: { background: '#0f172a' } },
                     React.createElement('div', { className: 'h-3 rounded-full transition-all', style: { width: ((activeExpedition.totalTurns - activeExpedition.turnsLeft) / activeExpedition.totalTurns * 100) + '%', background: 'linear-gradient(90deg, #06b6d4, #22d3ee)', animation: 'kp-barFill 1s ease-out', boxShadow: '0 0 8px rgba(6,182,212,0.4)' } })
                   ),
-                  React.createElement('div', { className: 'mt-1 text-[11px] text-cyan-400/60' }, 'Crew is exploring... Results on completion.')
+                  React.createElement('div', { className: 'mt-1 text-[11px] text-cyan-400/60' }, t('stem.spacecolony.crew_is_exploring_results_on_completio', 'Crew is exploring... Results on completion.'))
                 ),
                 !activeExpedition && React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
                   [
-                    { type: 'Deep Sea Survey', icon: '\uD83C\uDF0A', desc: 'Explore alien oceans for resources & life.', cost: { energy: 8, science: 5 }, turns: 3, color: '#3b82f6' },
-                    { type: 'Highland Expedition', icon: '\u26F0\uFE0F', desc: 'Scale mountains for minerals & vantage points.', cost: { energy: 10, science: 5 }, turns: 4, color: '#a78bfa' },
-                    { type: 'Underground Survey', icon: '\uD83D\uDD73\uFE0F', desc: 'Map caverns for rare minerals & fossils.', cost: { energy: 12, science: 8 }, turns: 5, color: '#f59e0b' },
-                    { type: 'Orbital Scan', icon: '\uD83D\uDE80', desc: 'Launch satellite for planetary survey.', cost: { energy: 15, science: 10 }, turns: 4, color: '#06b6d4' }
+                    { type: 'Deep Sea Survey', icon: '\uD83C\uDF0A', desc: t('stem.spacecolony.explore_alien_oceans_for_resources_lif', 'Explore alien oceans for resources & life.'), cost: { energy: 8, science: 5 }, turns: 3, color: '#3b82f6' },
+                    { type: 'Highland Expedition', icon: '\u26F0\uFE0F', desc: t('stem.spacecolony.scale_mountains_for_minerals_vantage_p', 'Scale mountains for minerals & vantage points.'), cost: { energy: 10, science: 5 }, turns: 4, color: '#a78bfa' },
+                    { type: 'Underground Survey', icon: '\uD83D\uDD73\uFE0F', desc: t('stem.spacecolony.map_caverns_for_rare_minerals_fossils', 'Map caverns for rare minerals & fossils.'), cost: { energy: 12, science: 8 }, turns: 5, color: '#f59e0b' },
+                    { type: 'Orbital Scan', icon: '\uD83D\uDE80', desc: t('stem.spacecolony.launch_satellite_for_planetary_survey', 'Launch satellite for planetary survey.'), cost: { energy: 15, science: 10 }, turns: 4, color: '#06b6d4' }
                   ].map(function(exp) {
                     var canLaunch = Object.keys(exp.cost).every(function(k) { return resources[k] >= exp.cost[k]; }) && actionPoints >= 2;
                     return React.createElement('button', { key: exp.type, onClick: function() {
@@ -2961,8 +2961,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
               ),
               // ══ Wonders Panel ══
               d.showWonders && React.createElement('div', { className: 'rounded-xl p-3 border mb-3', style: { background: 'linear-gradient(135deg, #451a03, #78350f, #0f172a)', borderColor: '#f59e0b30', animation: 'kp-fadeIn 0.3s ease-out' } },
-                React.createElement('h4', { className: 'text-sm font-bold mb-2', style: { color: '#fbbf24', textShadow: '0 0 10px rgba(251,191,36,0.3)' } }, '\uD83C\uDFDB\uFE0F Wonders of Kepler'),
-                React.createElement('p', { className: 'text-[11px] text-amber-300/60 mb-2' }, 'Mega-structures requiring multiple science challenges to complete. Each provides powerful permanent bonuses.'),
+                React.createElement('h4', { className: 'text-sm font-bold mb-2', style: { color: '#fbbf24', textShadow: '0 0 10px rgba(251,191,36,0.3)' } }, t('stem.spacecolony.wonders_of_kepler', '\uD83C\uDFDB\uFE0F Wonders of Kepler')),
+                React.createElement('p', { className: 'text-[11px] text-amber-300/60 mb-2' }, t('stem.spacecolony.mega_structures_requiring_multiple_sci', 'Mega-structures requiring multiple science challenges to complete. Each provides powerful permanent bonuses.')),
                 React.createElement('div', { className: 'grid gap-2' },
                   wonderDefs.map(function(wd) {
                     var isComplete = wonders[wd.id];
@@ -2980,7 +2980,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                             React.createElement('div', { className: 'text-[11px]', style: { color: isComplete ? '#fcd34d' : '#71717a' } }, wd.desc)
                           )
                         ),
-                        isComplete ? React.createElement('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full', style: { background: '#f59e0b30', color: '#fbbf24', border: '1px solid #f59e0b' } }, '\u2728 COMPLETE') :
+                        isComplete ? React.createElement('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full', style: { background: '#f59e0b30', color: '#fbbf24', border: '1px solid #f59e0b' } }, t('stem.spacecolony.complete', '\u2728 COMPLETE')) :
                         canAfford ? React.createElement('button', {
                           onClick: function() {
                             // In-flight guard: scienceGate shared with research / building MCQ.
@@ -3017,8 +3017,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
               ),
               // ══ Rover Fleet HUD ══
               d.showRoverPanel && React.createElement('div', { className: 'rounded-xl p-3 border mb-3', style: { background: 'linear-gradient(135deg, #0f172a, #164e63, #0f172a)', borderColor: '#06b6d430', animation: 'kp-fadeIn 0.3s ease-out' } },
-                React.createElement('h4', { className: 'text-sm font-bold mb-2', style: { color: '#22d3ee', textShadow: '0 0 10px rgba(34,211,238,0.3)' } }, '\uD83D\uDE99 Rover Fleet'),
-                rovers.length === 0 && React.createElement('div', { className: 'text-center py-3 text-[11px] text-slate-600' }, 'No rovers deployed. Build one below!'),
+                React.createElement('h4', { className: 'text-sm font-bold mb-2', style: { color: '#22d3ee', textShadow: '0 0 10px rgba(34,211,238,0.3)' } }, t('stem.spacecolony.rover_fleet', '\uD83D\uDE99 Rover Fleet')),
+                rovers.length === 0 && React.createElement('div', { className: 'text-center py-3 text-[11px] text-slate-600' }, t('stem.spacecolony.no_rovers_deployed_build_one_below', 'No rovers deployed. Build one below!')),
                 rovers.length > 0 && React.createElement('div', { className: 'grid gap-2 mb-2' },
                   rovers.map(function (rv3, ri) {
                     var rvDef3 = getRoverDef(rv3.type);
@@ -3037,7 +3037,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                           React.createElement('span', { className: 'text-[11px] text-emerald-400' }, '\uD83D\uDC63 ' + rv3.movesLeft + '/' + rvDef3.maxMoves + ' moves')
                         )
                       ),
-                      React.createElement('button', { onClick: function(e) { e.stopPropagation(); refuelRover(rv3.id); }, className: 'px-1.5 py-0.5 rounded text-[11px] font-bold', style: { background: '#164e63', color: '#67e8f9', border: '1px solid #06b6d440' } }, '\u26FD +4')
+                      React.createElement('button', { onClick: function(e) { e.stopPropagation(); refuelRover(rv3.id); }, className: 'px-1.5 py-0.5 rounded text-[11px] font-bold', style: { background: '#164e63', color: '#67e8f9', border: '1px solid #06b6d440' } }, t('stem.spacecolony.4', '\u26FD +4'))
                     );
                   })
                 ),
@@ -3065,14 +3065,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
               ) : null; })(),
               // Log
               React.createElement('div', { className: 'rounded-xl p-2 border max-h-28 overflow-y-auto', style: { background: 'linear-gradient(135deg, #0f172a, #1e1b4b)', borderColor: '#94a3b8' } },
-                React.createElement('h4', { className: 'text-[11px] font-bold text-indigo-400 uppercase mb-1 flex items-center gap-1' }, '\uD83D\uDCDC Mission Log'),
+                React.createElement('h4', { className: 'text-[11px] font-bold text-indigo-400 uppercase mb-1 flex items-center gap-1' }, t('stem.spacecolony.mission_log', '\uD83D\uDCDC Mission Log')),
                 gameLog.slice(-8).reverse().map(function (log, li) { return React.createElement('div', { key: li, className: 'text-[11px] py-0.5 border-b border-slate-800/50', style: { color: li === 0 ? '#c4b5fd' : '#94a3b8', animation: li === 0 ? 'kp-fadeIn 0.5s ease-out' : 'none' } }, log); })
               ),
               React.createElement('button', {
                 onClick: function () { upd('colonyPhase', 'setup'); upd('colony', null); upd('colonyMap', null); upd('colonyTurn', 0); upd('colonyEvent', null); upd('scienceGate', null); upd('colonyLog', []); if (addToast) addToast('Colony reset', 'info'); },
                 className: 'mt-2 w-full py-2 rounded-xl text-[11px] font-bold transition-all hover:scale-[1.01]',
                 style: { background: 'linear-gradient(135deg, #1e293b, #0f172a)', color: '#94a3b8', border: '1px solid #334155', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }
-              }, '\u267B Abandon & Start New')
+              }, t('stem.spacecolony.abandon_start_new', '\u267B Abandon & Start New'))
             ),
 
             // === H7b'' RICH inquiry widget: life-support balance ===
@@ -3088,11 +3088,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
               else if (balanceScore >= 85) state = 'thriving';
               else state = 'optimal';
               var sm = {
-                critical:    { label: '\uD83D\uDEA8 Critical (settler health failing)', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Failure imminent. One subsystem in critical zone.' },
-                struggling:  { label: '\uD83D\uDD34 Struggling (low capacity)', color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: 'Multiple subsystems below adequate. Colony stressed.' },
-                stable:      { label: '\uD83D\uDFE1 Stable (adequate)', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: '2 good, 1 adequate. Limited margin for events.' },
-                optimal:     { label: '\uD83D\uDFE2 Optimal (3+ good)', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'All subsystems comfortable. Sustained growth possible.' },
-                thriving:    { label: '\uD83C\uDF1F Thriving (all optimized)', color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: 'Best-case scenario. Population growth bonus active.' }
+                critical:    { label: t('stem.spacecolony.critical_settler_health_failing', '\uD83D\uDEA8 Critical (settler health failing)'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.spacecolony.failure_imminent_one_subsystem_in_crit', 'Failure imminent. One subsystem in critical zone.') },
+                struggling:  { label: t('stem.spacecolony.struggling_low_capacity', '\uD83D\uDD34 Struggling (low capacity)'), color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: t('stem.spacecolony.multiple_subsystems_below_adequate_col', 'Multiple subsystems below adequate. Colony stressed.') },
+                stable:      { label: t('stem.spacecolony.stable_adequate', '\uD83D\uDFE1 Stable (adequate)'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.spacecolony.2_good_1_adequate_limited_margin_for_e', '2 good, 1 adequate. Limited margin for events.') },
+                optimal:     { label: t('stem.spacecolony.optimal_3_good', '\uD83D\uDFE2 Optimal (3+ good)'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: t('stem.spacecolony.all_subsystems_comfortable_sustained_g', 'All subsystems comfortable. Sustained growth possible.') },
+                thriving:    { label: t('stem.spacecolony.thriving_all_optimized', '\uD83C\uDF1F Thriving (all optimized)'), color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: t('stem.spacecolony.best_case_scenario_population_growth_b', 'Best-case scenario. Population growth bonus active.') }
               }[state];
               // SVG gauge visualization \u2014 5 circular gauges
               var systems = [
@@ -3103,9 +3103,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 { key: 'radiation', label: 'Rad', val: iq.radiation, color: '#fb923c' }
               ];
               return React.createElement('div', { className: 'mt-3 p-3 rounded-xl border', style: { background: '#0f172a', borderColor: '#7c3aed', color: '#e2e8f0' } },
-                React.createElement('h3', { style: { fontSize: 14, fontWeight: 800, color: '#a78bfa', margin: '0 0 6px 0' } }, '\uD83D\uDEF0\uFE0F Life-support balance discovery'),
+                React.createElement('h3', { style: { fontSize: 14, fontWeight: 800, color: '#a78bfa', margin: '0 0 6px 0' } }, t('stem.spacecolony.life_support_balance_discovery', '\uD83D\uDEF0\uFE0F Life-support balance discovery')),
                 React.createElement('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 10 } },
-                  'Five sliders allocate energy to each life-support subsystem. Widget classifies colony state into 5 discrete levels and renders animated gauge visualization. No score on tuning \u2014 find the equilibrium that lets settlers thrive.'),
+                  t('stem.spacecolony.five_sliders_allocate_energy_to_each_l', 'Five sliders allocate energy to each life-support subsystem. Widget classifies colony state into 5 discrete levels and renders animated gauge visualization. No score on tuning \u2014 find the equilibrium that lets settlers thrive.')),
                 // Discrete state badge
                 React.createElement('div', { style: { padding: 12, borderRadius: 8, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 12 } },
                   React.createElement('div', { style: { fontSize: 14, fontWeight: 900, color: sm.color } }, sm.label),
@@ -3137,7 +3137,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     })
                   ),
                   React.createElement('div', { style: { fontSize: 10, color: '#64748b', textAlign: 'center', fontStyle: 'italic', marginTop: 4 } },
-                    'Gauges fill from 0 to 100%. Any single gauge below 30% threatens colony.')
+                    t('stem.spacecolony.gauges_fill_from_0_to_100_any_single_g', 'Gauges fill from 0 to 100%. Any single gauge below 30% threatens colony.'))
                 ),
                 // Sliders
                 React.createElement('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 10 } },
@@ -3154,8 +3154,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                   })
                 ),
                 React.createElement('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 } },
-                  React.createElement('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ o: iq.o2, w: iq.water, c: iq.co2, h: iq.humidity, r: iq.radiation, b: balanceScore.toFixed(0), st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCCB Log'),
-                  React.createElement('button', { onClick: function() { setIQ({ o2: 80, water: 75, co2: 70, humidity: 50, radiation: 60, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '\u21BA Reset')
+                  React.createElement('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ o: iq.o2, w: iq.water, c: iq.co2, h: iq.humidity, r: iq.radiation, b: balanceScore.toFixed(0), st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, t('stem.spacecolony.log', '\uD83D\uDCCB Log')),
+                  React.createElement('button', { onClick: function() { setIQ({ o2: 80, water: 75, co2: 70, humidity: 50, radiation: 60, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, t('stem.spacecolony.reset', '\u21BA Reset'))
                 ),
                 (iq.log || []).length > 0 && React.createElement('table', { style: { fontSize: 10, width: '100%', borderCollapse: 'collapse', color: '#cbd5e1', marginBottom: 10 } },
                   React.createElement('thead', null, React.createElement('tr', { style: { background: '#1e293b' } },
@@ -3171,22 +3171,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                       React.createElement('td', { style: { padding: '4px 6px', border: '1px solid rgba(100,116,139,0.4)' } }, o.st));
                   }))
                 ),
-                React.createElement('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis (free text): Which subsystem is the bottleneck for thriving? Can you sacrifice one and still thrive?',
+                React.createElement('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.spacecolony.hypothesis_free_text_which_subsystem_i', 'Hypothesis (free text): Which subsystem is the bottleneck for thriving? Can you sacrifice one and still thrive?'),
                   style: { width: '100%', minHeight: 60, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 10 }, rows: 3 }),
-                !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 10 } }, '\uD83E\uDD14 Stuck \u2014 show open prompts'),
+                !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 10 } }, t('stem.spacecolony.stuck_show_open_prompts', '\uD83E\uDD14 Stuck \u2014 show open prompts')),
                 iq.stuckRevealed && React.createElement('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: '#cbd5e1', marginBottom: 10 } },
                   React.createElement('ul', { style: { margin: 0, paddingLeft: 18 } },
-                    React.createElement('li', null, 'Set one subsystem to 100% and the rest to 50%. Compare to all-uniform 60%.'),
-                    React.createElement('li', null, 'Real space habitats run O\u2082 at ~95%. Why so high?'),
-                    React.createElement('li', null, 'Find two settings that produce same state. What\'s the shared minimum?'),
-                    React.createElement('li', null, 'Can you reach "thriving" with one subsystem at 50%? What does that imply about balance vs peak?'))),
+                    React.createElement('li', null, t('stem.spacecolony.set_one_subsystem_to_100_and_the_rest_', 'Set one subsystem to 100% and the rest to 50%. Compare to all-uniform 60%.')),
+                    React.createElement('li', null, t('stem.spacecolony.real_space_habitats_run_o_at_95_why_so', 'Real space habitats run O\u2082 at ~95%. Why so high?')),
+                    React.createElement('li', null, t('stem.spacecolony.find_two_settings_that_produce_same_st', 'Find two settings that produce same state. What\'s the shared minimum?')),
+                    React.createElement('li', null, t('stem.spacecolony.can_you_reach_thriving_with_one_subsys', 'Can you reach "thriving" with one subsystem at 50%? What does that imply about balance vs peak?')))),
                 React.createElement('div', { style: { padding: 10, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4 } },
                   React.createElement('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
-                    React.createElement('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand life-support tradeoffs \u2014 explain in own words'),
-                  iq.understood && React.createElement('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how the 5 subsystems interact. What determines colony health: average or minimum?',
+                    React.createElement('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), t('stem.spacecolony.i_understand_life_support_tradeoffs_ex', 'I understand life-support tradeoffs \u2014 explain in own words')),
+                  iq.understood && React.createElement('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.spacecolony.explain_how_the_5_subsystems_interact_', 'Explain how the 5 subsystems interact. What determines colony health: average or minimum?'),
                     style: { width: '100%', minHeight: 80, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 4 })),
                 React.createElement('div', { style: { marginTop: 8, padding: 8, background: 'rgba(15,28,47,0.5)', borderRadius: 4, fontSize: 10, fontStyle: 'italic', color: '#64748b' } },
-                  'Design note: discrete 5-state colony marker; SVG gauges show real-time subsystem fill; no settler-survival score \u2014 by design.')
+                  t('stem.spacecolony.design_note_discrete_5_state_colony_ma', 'Design note: discrete 5-state colony marker; SVG gauges show real-time subsystem fill; no settler-survival score \u2014 by design.'))
               );
             })()
           );
