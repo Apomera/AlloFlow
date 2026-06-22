@@ -9750,6 +9750,78 @@ HTML section ${chunkNum}/${chunks.length}:
     }
   };
 
+  // ── DOMPurify (lazy-loaded) — robust sanitization for the rawhtml block ──
+  // The 'rawhtml' block carries model-supplied / imported HTML. A regex blocklist (kept
+  // below as the synchronous + SSR/node fallback) can't see mutation-XSS, entity-encoded
+  // schemes (e.g. javas&#99;ript:), or nested polyglots the way a real HTML parser can.
+  // When DOMPurify is loaded we prefer it; otherwise the regex baseline still runs — so
+  // nothing breaks in node tests or before the CDN load lands. Exports are distributed and
+  // open in recipients' NON-sandboxed browsers, so this hardens the shipped file, not just
+  // the Canvas preview. Mirror chain (each a published dompurify dist) so one blocked CDN
+  // host on a locked-down school network doesn't kill the upgrade.
+  var _domPurifyPromise = null;
+  const _DOMPURIFY_CDN_URLS = [
+    'https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js',
+    'https://unpkg.com/dompurify@3.1.7/dist/purify.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.7/purify.min.js',
+  ];
+  const _ensureDOMPurify = () => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') return Promise.resolve(null);
+    if (window.DOMPurify && window.DOMPurify.sanitize) return Promise.resolve(window.DOMPurify);
+    if (_domPurifyPromise) return _domPurifyPromise;
+    _domPurifyPromise = new Promise((resolve) => {
+      if (document.querySelector('script[data-dompurify]')) {
+        const wait = setInterval(() => { if (window.DOMPurify) { clearInterval(wait); resolve(window.DOMPurify); } }, 100);
+        setTimeout(() => { clearInterval(wait); resolve(window.DOMPurify || null); }, 10000);
+        return;
+      }
+      const tryAt = (i) => {
+        if (i >= _DOMPURIFY_CDN_URLS.length) { warnLog('[DOMPurify] all ' + _DOMPURIFY_CDN_URLS.length + ' CDN mirrors failed — rawhtml falls back to the regex sanitizer'); resolve(null); return; }
+        const s = document.createElement('script');
+        s.src = _DOMPURIFY_CDN_URLS[i];
+        s.setAttribute('data-dompurify', 'true');
+        s.onload = () => resolve(window.DOMPurify || null);
+        s.onerror = () => { try { s.remove(); } catch (_) {} tryAt(i + 1); };
+        document.head.appendChild(s);
+      };
+      tryAt(0);
+    });
+    return _domPurifyPromise;
+  };
+  // Allowed semantic HTML for a rawhtml block. Active-content tags (script/style/iframe/
+  // object/embed/svg/math/link/meta/base/form controls) are forbidden; DOMPurify strips
+  // event handlers and dangerous URL schemes by default and CSS-sanitizes the style attr.
+  const _RAWHTML_PURIFY_CFG = {
+    ALLOWED_TAGS: ['p','div','span','section','article','header','footer','h1','h2','h3','h4','h5','h6',
+      'ul','ol','li','dl','dt','dd','a','strong','em','b','i','u','s','small','mark','sub','sup','code','pre',
+      'blockquote','q','cite','table','thead','tbody','tfoot','tr','th','td','caption','colgroup','col',
+      'img','figure','figcaption','br','hr','abbr','time'],
+    ALLOWED_ATTR: ['href','src','alt','title','class','id','style','colspan','rowspan','scope','headers',
+      'width','height','lang','dir','aria-label','aria-describedby','aria-hidden','role','datetime'],
+    ALLOW_DATA_ATTR: true,
+    FORBID_TAGS: ['script','style','iframe','object','embed','svg','math','link','meta','base','form','input','button','textarea','select'],
+  };
+  // Synchronous: DOMPurify when loaded (and kicks off a load so the NEXT render upgrades),
+  // else the regex baseline. Never throws — a DOMPurify error falls through to the regex.
+  const _sanitizeRawHtmlBlock = (rawHtml) => {
+    const html = String(rawHtml || '');
+    try {
+      if (typeof window !== 'undefined' && window.DOMPurify && window.DOMPurify.sanitize) {
+        return window.DOMPurify.sanitize(html, _RAWHTML_PURIFY_CFG);
+      }
+    } catch (_) { /* fall through to the regex baseline */ }
+    try { _ensureDOMPurify(); } catch (_) {} // warm it up for the next render/export
+    return html
+      .replace(/<script[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[\s\S]*?<\/style>/gi, '')
+      .replace(/<\/?(?:iframe|object|embed|svg|math|link|meta|base)\b[^>]*>/gi, '')
+      .replace(/[\s/]on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+      .replace(/(?:javascript|vbscript|data\s*:\s*text\/html)\s*:/gi, '');
+  };
+  // Best-effort warm-up at module init (browser only; no-op in node) so the first export
+  // can already use DOMPurify rather than only the regex baseline.
+  try { _ensureDOMPurify(); } catch (_) {}
+
   // ── Typeset-then-tag (2026-06-10, item 8) ──
   // Office inputs (DOCX/PPTX) have no source-PDF bytes to inject tags into —
   // so generate a CLEAN typeset PDF from the accessible HTML (simple honest
@@ -14180,18 +14252,12 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                 + `</div>`;
             }
             case 'rawhtml': {
-              // Strip scripts/styles, dangerous embedding tags, event handlers, and
-              // dangerous URL schemes before trusting model-supplied HTML. The event-
-              // handler match accepts a leading whitespace OR '/' so <svg/onload=…> and
-              // <img/onerror=…> can't slip past, and we drop the tags that carry active
-              // content (iframe/object/embed/svg/math/link/meta/base).
-              const _rawHtml = String(block.html || '');
-              return _rawHtml
-                .replace(/<script[\s\S]*?<\/script>/gi, '')
-                .replace(/<style[\s\S]*?<\/style>/gi, '')
-                .replace(/<\/?(?:iframe|object|embed|svg|math|link|meta|base)\b[^>]*>/gi, '')
-                .replace(/[\s/]on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
-                .replace(/(?:javascript|vbscript|data\s*:\s*text\/html)\s*:/gi, '');
+              // Sanitize model-supplied / imported HTML before trusting it. Prefer DOMPurify
+              // (a real HTML parser — catches mutation-XSS, entity-encoded schemes, and nested
+              // polyglots) when it's loaded; otherwise fall through to the regex baseline, which
+              // strips scripts/styles, active-content tags (iframe/object/embed/svg/math/link/
+              // meta/base), event handlers, and dangerous URL schemes. See _sanitizeRawHtmlBlock.
+              return _sanitizeRawHtmlBlock(block.html);
             }
             default: {
               // Unknown block type — salvage any content field we recognize instead of silently dropping it,
