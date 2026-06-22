@@ -656,9 +656,9 @@ window.StemLab = window.StemLab || {
 
         // ── Header ──
         h('div', { className: 'flex items-center gap-3 mb-1' },
-          h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg transition-colors', 'aria-label': 'Back to tools' },
+          h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg transition-colors', 'aria-label': t('stem.angles.back_to_tools', 'Back to tools') },
             h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
-          h('h3', { className: 'text-lg font-bold text-purple-800' }, '\uD83D\uDCD0 Angle Explorer'),
+          h('h3', { className: 'text-lg font-bold text-purple-800' }, t('stem.angles.angle_explorer', '\uD83D\uDCD0 Angle Explorer')),
           // Score + streak
           h('div', { className: 'flex items-center gap-2 ml-1' },
             h('div', { className: 'text-xs font-bold text-emerald-600' }, '\u2714 ' + exploreScore.correct + '/' + exploreScore.total),
@@ -670,10 +670,10 @@ window.StemLab = window.StemLab || {
             h('button', { onClick: function() { upd('showBadges', !showBadges); }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border transition-all ' + (showBadges ? 'bg-amber-100 border-amber-600 text-amber-700' : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200') },
               '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + badgeDefs.length),
             // Sound toggle
-            h('button', { onClick: function() { upd('soundEnabled', !soundEnabled); }, className: 'text-sm px-1.5 py-0.5 rounded transition-colors hover:bg-slate-100', title: 'Sound effects' },
+            h('button', { onClick: function() { upd('soundEnabled', !soundEnabled); }, className: 'text-sm px-1.5 py-0.5 rounded transition-colors hover:bg-slate-100', title: t('stem.angles.sound_effects', 'Sound effects') },
               soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
             // Snapshot
-            h('button', { 'aria-label': 'Export S V G',
+            h('button', { 'aria-label': t('stem.angles.export_s_v_g', 'Export S V G'),
               onClick: function() {
                 var snap = { id: 'snap-' + Date.now(), tool: 'protractor', label: 'Angle: ' + angleValue + '\u00B0', data: { angle: angleValue }, timestamp: Date.now() };
                 setToolSnapshots(function(prev) { return prev.concat([snap]); });
@@ -684,13 +684,13 @@ window.StemLab = window.StemLab || {
             }, '\uD83D\uDCF8'),
             // SVG Export
             h('button', { 'aria-label': 'SVG', onClick: exportSVG, className: 'text-[11px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-400 rounded-full px-2 py-0.5 transition-all' },
-              '\uD83D\uDCE5 SVG')
+              t('stem.angles.svg', '\uD83D\uDCE5 SVG'))
           )
         ),
 
         // ── Badge Drawer ──
         showBadges && h('div', { className: 'bg-amber-50 rounded-xl p-3 border border-amber-200' },
-          h('div', { className: 'text-xs font-bold text-amber-700 uppercase mb-2' }, '\uD83C\uDFC5 Achievement Badges'),
+          h('div', { className: 'text-xs font-bold text-amber-700 uppercase mb-2' }, t('stem.angles.achievement_badges', '\uD83C\uDFC5 Achievement Badges')),
           h('div', { className: 'grid grid-cols-3 sm:grid-cols-4 gap-2' },
             badgeDefs.map(function(badge) {
               var earned = !!earnedBadges[badge.id];
@@ -706,7 +706,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── Tab Navigation ──
-        h('div', { className: 'flex gap-2 flex-wrap', role: 'tablist', 'aria-label': 'Angle Explorer sections' },
+        h('div', { className: 'flex gap-2 flex-wrap', role: 'tablist', 'aria-label': t('stem.angles.angle_explorer_sections', 'Angle Explorer sections') },
           tabBtn('explore', 'Explore', '\uD83D\uDCD0'),
           tabBtn('challenges', 'Challenges', '\uD83C\uDFAF'),
           tabBtn('reference', 'Learn', '\uD83D\uDCDA'),
@@ -716,10 +716,10 @@ window.StemLab = window.StemLab || {
         // ── Topic-accent hero band per tab ──
         (function() {
           var TAB_META = {
-            explore:    { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDCD0', title: 'Explore \u2014 drag the protractor, name the angle', hint: 'Acute < 90\u00b0, right = 90\u00b0, obtuse 90\u2013180\u00b0, straight = 180\u00b0, reflex > 180\u00b0. The protractor was invented around 1801; the half-circle version still runs every geometry class.' },
-            challenges: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83C\uDFAF', title: 'Challenges \u2014 estimate, classify, measure',     hint: 'Estimation builds spatial sense; precise measurement builds the protractor habit. Common Core 4.MD.5\u20137: angles as fractions of a full turn (1/360 of a rotation).' },
-            reference:  { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDCDA', title: 'Learn \u2014 the angle relationships',              hint: 'Complementary sum to 90\u00b0; supplementary to 180\u00b0; vertical pairs are equal; alternate interior angles match when lines are parallel. These four facts unlock most middle-school proofs.' },
-            tools:      { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83D\uDEE0',  title: 'Tools \u2014 bisector, second ray, calculator',     hint: 'Bisect = cut in half (the construction with compass + straightedge is in Euclid Book I, Proposition 9). Modern tools: protractor, miter saw, theodolite \u2014 all the same idea, calibrated.' }
+            explore:    { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDCD0', title: t('stem.angles.explore_drag_the_protractor_name_the_a', 'Explore \u2014 drag the protractor, name the angle'), hint: t('stem.angles.acute_90_right_90_obtuse_90_180_straig', 'Acute < 90\u00b0, right = 90\u00b0, obtuse 90\u2013180\u00b0, straight = 180\u00b0, reflex > 180\u00b0. The protractor was invented around 1801; the half-circle version still runs every geometry class.') },
+            challenges: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83C\uDFAF', title: t('stem.angles.challenges_estimate_classify_measure', 'Challenges \u2014 estimate, classify, measure'),     hint: t('stem.angles.estimation_builds_spatial_sense_precis', 'Estimation builds spatial sense; precise measurement builds the protractor habit. Common Core 4.MD.5\u20137: angles as fractions of a full turn (1/360 of a rotation).') },
+            reference:  { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDCDA', title: t('stem.angles.learn_the_angle_relationships', 'Learn \u2014 the angle relationships'),              hint: t('stem.angles.complementary_sum_to_90_supplementary_', 'Complementary sum to 90\u00b0; supplementary to 180\u00b0; vertical pairs are equal; alternate interior angles match when lines are parallel. These four facts unlock most middle-school proofs.') },
+            tools:      { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83D\uDEE0',  title: t('stem.angles.tools_bisector_second_ray_calculator', 'Tools \u2014 bisector, second ray, calculator'),     hint: t('stem.angles.bisect_cut_in_half_the_construction_wi', 'Bisect = cut in half (the construction with compass + straightedge is in Euclid Book I, Proposition 9). Modern tools: protractor, miter saw, theodolite \u2014 all the same idea, calibrated.') }
           };
           var meta = TAB_META[activeTab] || TAB_META.explore;
           return h('div', {
@@ -795,45 +795,45 @@ window.StemLab = window.StemLab || {
           // ── Controls row ──
           h('div', { className: 'grid grid-cols-4 gap-2' },
             h('div', { className: 'bg-white rounded-xl p-2.5 border border-purple-100 text-center' },
-              h('div', { className: 'text-[11px] font-bold text-purple-600 uppercase mb-0.5' }, 'Angle'),
+              h('div', { className: 'text-[11px] font-bold text-purple-600 uppercase mb-0.5' }, t('stem.angles.angle', 'Angle')),
               h('div', { className: 'text-xl font-bold text-purple-800' }, estimateActive ? '?' : convertedAngle)
             ),
             h('div', { className: 'bg-white rounded-xl p-2.5 border border-purple-100 text-center' },
-              h('div', { className: 'text-[11px] font-bold text-purple-600 uppercase mb-0.5' }, 'Type'),
+              h('div', { className: 'text-[11px] font-bold text-purple-600 uppercase mb-0.5' }, t('stem.angles.type', 'Type')),
               h('div', { className: 'text-base font-bold ' + cc.text }, angleClass)
             ),
             h('div', { className: 'bg-white rounded-xl p-2.5 border border-purple-100 text-center' },
-              h('div', { className: 'text-[11px] font-bold text-purple-600 uppercase mb-0.5' }, 'Explement'),
+              h('div', { className: 'text-[11px] font-bold text-purple-600 uppercase mb-0.5' }, t('stem.angles.explement', 'Explement')),
               h('div', { className: 'text-base font-bold text-slate-700' }, estimateActive ? '?' : explementary + '\u00B0')
             ),
             h('div', { className: 'bg-white rounded-xl p-2.5 border border-purple-100 text-center col-span-1' },
-              h('div', { className: 'text-[11px] font-bold text-purple-600 uppercase mb-0.5' }, 'Unit'),
-              h('select', { value: angleUnit, onChange: function(e) { upd('angleUnit', e.target.value); }, 'aria-label': 'Angle unit', className: 'text-xs font-bold text-purple-800 bg-transparent border-none outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 cursor-pointer w-full text-center' },
-                h('option', { value: 'deg' }, 'Degrees'),
-                h('option', { value: 'rad' }, 'Radians'),
-                h('option', { value: 'grad' }, 'Gradians'),
-                h('option', { value: 'turns' }, 'Turns')
+              h('div', { className: 'text-[11px] font-bold text-purple-600 uppercase mb-0.5' }, t('stem.angles.unit', 'Unit')),
+              h('select', { value: angleUnit, onChange: function(e) { upd('angleUnit', e.target.value); }, 'aria-label': t('stem.angles.angle_unit', 'Angle unit'), className: 'text-xs font-bold text-purple-800 bg-transparent border-none outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 cursor-pointer w-full text-center' },
+                h('option', { value: 'deg' }, t('stem.angles.degrees', 'Degrees')),
+                h('option', { value: 'rad' }, t('stem.angles.radians', 'Radians')),
+                h('option', { value: 'grad' }, t('stem.angles.gradians', 'Gradians')),
+                h('option', { value: 'turns' }, t('stem.angles.turns', 'Turns'))
               )
             )
           ),
 
           // Slider
           h('div', { className: 'bg-white rounded-xl p-3 border border-purple-100' },
-            h('input', { type: 'range', min: 0, max: 360, value: angleValue, onChange: function(e) { setAngleValue(snapAngle(parseInt(e.target.value))); setAngleFeedback(null); }, 'aria-label': 'Angle value slider', className: 'w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer accent-purple-600' }),
+            h('input', { type: 'range', min: 0, max: 360, value: angleValue, onChange: function(e) { setAngleValue(snapAngle(parseInt(e.target.value))); setAngleFeedback(null); }, 'aria-label': t('stem.angles.angle_value_slider', 'Angle value slider'), className: 'w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer accent-purple-600' }),
             h('div', { className: 'flex justify-between mt-1' },
               h('span', { className: 'text-[11px] text-slate-600' }, '0\u00B0'),
               h('div', { className: 'flex gap-2' },
                 h('label', { className: 'flex items-center gap-1 text-[11px] text-slate-600 cursor-pointer' },
                   h('input', { type: 'checkbox', checked: snapEnabled, onChange: function() { upd('snapEnabled', !snapEnabled); }, className: 'accent-purple-500' }),
-                  'Snap 15\u00B0'
+                  t('stem.angles.snap_15', 'Snap 15\u00B0')
                 ),
                 h('label', { className: 'flex items-center gap-1 text-[11px] text-slate-600 cursor-pointer' },
                   h('input', { type: 'checkbox', checked: showBisector, onChange: function() { upd('showBisector', !showBisector); }, className: 'accent-amber-500' }),
-                  'Bisector'
+                  t('stem.angles.bisector', 'Bisector')
                 ),
                 h('label', { className: 'flex items-center gap-1 text-[11px] text-slate-600 cursor-pointer' },
                   h('input', { type: 'checkbox', checked: showSecondRay, onChange: function() { upd('showSecondRay', !showSecondRay); }, className: 'accent-cyan-500' }),
-                  '2nd Ray'
+                  t('stem.angles.2nd_ray', '2nd Ray')
                 )
               ),
               h('span', { className: 'text-[11px] text-slate-600' }, '360\u00B0')
@@ -847,14 +847,14 @@ window.StemLab = window.StemLab || {
                 className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 ' + (angleValue === a ? 'bg-purple-700 text-white shadow' : 'bg-purple-50 text-purple-600 hover:bg-purple-100 border border-purple-600')
               }, a + '\u00B0');
             }),
-            h('button', { 'aria-label': 'Pin', onClick: pinAngle, className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-600 transition-all', title: 'Pin this angle on protractor' }, '\uD83D\uDCCC Pin')
+            h('button', { 'aria-label': 'Pin', onClick: pinAngle, className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-600 transition-all', title: t('stem.angles.pin_this_angle_on_protractor', 'Pin this angle on protractor') }, t('stem.angles.pin', '\uD83D\uDCCC Pin'))
           ),
 
           // Pinned angles
           anglePins.length > 0 && h('div', { className: 'flex gap-1.5 flex-wrap items-center' },
             h('span', { className: 'text-[11px] text-slate-600 font-bold' }, 'Pins:'),
             anglePins.map(function(pin, i) {
-              return h('button', { 'aria-label': 'Complementary', key: i, onClick: function() { removePin(i); }, className: 'px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-700 border border-amber-600 hover:bg-red-100 hover:text-red-600 hover:border-red-600 transition-all', title: 'Click to remove' },
+              return h('button', { 'aria-label': t('stem.angles.complementary', 'Complementary'), key: i, onClick: function() { removePin(i); }, className: 'px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-700 border border-amber-600 hover:bg-red-100 hover:text-red-600 hover:border-red-600 transition-all', title: t('stem.angles.click_to_remove', 'Click to remove') },
                 pin.deg + '\u00B0 \u2715'
               );
             })
@@ -863,19 +863,19 @@ window.StemLab = window.StemLab || {
           // ── Supplementary / Complementary / Relationships ──
           h('div', { className: 'flex gap-2 flex-wrap' },
             complementary != null && h('div', { className: 'flex-1 bg-blue-50 rounded-lg p-2 border border-blue-100 text-center min-w-[120px]' },
-              h('div', { className: 'text-[11px] font-bold text-blue-500 uppercase' }, 'Complementary'),
+              h('div', { className: 'text-[11px] font-bold text-blue-500 uppercase' }, t('stem.angles.complementary_2', 'Complementary')),
               h('div', { className: 'text-sm font-bold text-blue-700' }, complementary + '\u00B0'),
               h('div', { className: 'text-[11px] text-blue-400' }, angleValue + '\u00B0 + ' + complementary + '\u00B0 = 90\u00B0')
             ),
             supplementary != null && h('div', { className: 'flex-1 bg-teal-50 rounded-lg p-2 border border-teal-100 text-center min-w-[120px]' },
-              h('div', { className: 'text-[11px] font-bold text-teal-500 uppercase' }, 'Supplementary'),
+              h('div', { className: 'text-[11px] font-bold text-teal-500 uppercase' }, t('stem.angles.supplementary', 'Supplementary')),
               h('div', { className: 'text-sm font-bold text-teal-700' }, supplementary + '\u00B0'),
               h('div', { className: 'text-[11px] text-teal-700' }, angleValue + '\u00B0 + ' + supplementary + '\u00B0 = 180\u00B0')
             ),
             h('div', { className: 'flex-1 bg-indigo-50 rounded-lg p-2 border border-indigo-100 text-center min-w-[120px]' },
-              h('div', { className: 'text-[11px] font-bold text-indigo-500 uppercase' }, 'Vertical Angle'),
+              h('div', { className: 'text-[11px] font-bold text-indigo-500 uppercase' }, t('stem.angles.vertical_angle', 'Vertical Angle')),
               h('div', { className: 'text-sm font-bold text-indigo-700' }, verticalAngle + '\u00B0'),
-              h('div', { className: 'text-[11px] text-indigo-400' }, 'Vertical angles are equal!')
+              h('div', { className: 'text-[11px] text-indigo-400' }, t('stem.angles.vertical_angles_are_equal', 'Vertical angles are equal!'))
             )
           ),
 
@@ -895,13 +895,13 @@ window.StemLab = window.StemLab || {
           // ── AI Tutor ──
           callGemini && h('div', { className: 'bg-pink-50 rounded-xl p-3 border border-pink-200' },
             h('div', { className: 'flex items-center gap-2 mb-1.5' },
-              h('span', { className: 'text-[11px] font-bold text-pink-600 uppercase' }, '\uD83E\uDD16 AI Angle Tutor'),
-              h('button', { 'aria-label': 'Click to get personalized angle tips!', onClick: askAITutor, disabled: aiLoading, className: 'ml-auto px-3 py-1 text-[11px] font-bold rounded-full transition-all ' + (aiLoading ? 'bg-pink-200 text-pink-400 cursor-wait' : 'bg-pink-700 text-white hover:bg-pink-600 cursor-pointer') },
+              h('span', { className: 'text-[11px] font-bold text-pink-600 uppercase' }, t('stem.angles.ai_angle_tutor', '\uD83E\uDD16 AI Angle Tutor')),
+              h('button', { 'aria-label': t('stem.angles.click_to_get_personalized_angle_tips', 'Click to get personalized angle tips!'), onClick: askAITutor, disabled: aiLoading, className: 'ml-auto px-3 py-1 text-[11px] font-bold rounded-full transition-all ' + (aiLoading ? 'bg-pink-200 text-pink-400 cursor-wait' : 'bg-pink-700 text-white hover:bg-pink-600 cursor-pointer') },
                 aiLoading ? '\u23F3 Thinking...' : '\u2728 Ask for Tips')
             ),
             aiAdvice
               ? h('div', { className: 'text-xs text-slate-700 leading-relaxed whitespace-pre-line' }, aiAdvice)
-              : h('div', { className: 'text-xs text-pink-700' }, 'Click to get personalized angle tips!')
+              : h('div', { className: 'text-xs text-pink-700' }, t('stem.angles.click_to_get_personalized_angle_tips_2', 'Click to get personalized angle tips!'))
           )
         ),
 
@@ -920,37 +920,37 @@ window.StemLab = window.StemLab || {
 
           // ── Challenge buttons ──
           h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
-            h('button', { 'aria-label': 'Create',
+            h('button', { 'aria-label': t('stem.angles.create', 'Create'),
               onClick: function() {
                 var ta = targetAngles[Math.floor(Math.random() * targetAngles.length)];
                 setAngleChallenge({ type: 'create', target: ta }); setAngleValue(0); setAngleFeedback(null);
                 logAngle(ta, 'create_challenge');
               },
               className: 'py-2.5 bg-gradient-to-r from-purple-500 to-violet-500 text-white font-bold rounded-lg text-sm hover:from-purple-600 hover:to-violet-600 transition-all shadow-md'
-            }, '\uD83C\uDFAF Create'),
-            h('button', { 'aria-label': 'Classify',
+            }, t('stem.angles.create_2', '\uD83C\uDFAF Create')),
+            h('button', { 'aria-label': t('stem.angles.classify', 'Classify'),
               onClick: function() {
                 var ta = targetAngles[Math.floor(Math.random() * targetAngles.length)];
                 setAngleChallenge({ type: 'classify', target: ta }); setAngleValue(ta); setAngleFeedback(null);
                 logAngle(ta, 'classify_challenge');
               },
               className: 'py-2.5 bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-bold rounded-lg text-sm hover:from-indigo-600 hover:to-blue-600 transition-all shadow-md'
-            }, '\uD83E\uDDE0 Classify'),
-            h('button', { 'aria-label': 'Estimate',
+            }, t('stem.angles.classify_2', '\uD83E\uDDE0 Classify')),
+            h('button', { 'aria-label': t('stem.angles.estimate', 'Estimate'),
               onClick: startEstimate,
               className: 'py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-lg text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-md'
-            }, '\uD83D\uDC41\uFE0F Estimate'),
-            h('button', { 'aria-label': 'Speed Round',
+            }, t('stem.angles.estimate_2', '\uD83D\uDC41\uFE0F Estimate')),
+            h('button', { 'aria-label': t('stem.angles.speed_round', 'Speed Round'),
               onClick: startSpeedRound,
               disabled: speedActive,
               className: 'py-2.5 bg-gradient-to-r from-red-500 to-rose-500 text-white font-bold rounded-lg text-sm hover:from-red-600 hover:to-rose-600 transition-all shadow-md disabled:opacity-50'
-            }, '\u26A1 Speed Round')
+            }, t('stem.angles.speed_round_2', '\u26A1 Speed Round'))
           ),
 
           // ── Speed Round UI ──
           speedActive && h('div', { className: 'bg-red-50 rounded-xl p-4 border-2 border-red-300 animate-in fade-in' },
             h('div', { className: 'flex items-center justify-between mb-3' },
-              h('div', { className: 'text-sm font-bold text-red-700' }, '\u26A1 Speed Round'),
+              h('div', { className: 'text-sm font-bold text-red-700' }, t('stem.angles.speed_round_3', '\u26A1 Speed Round')),
               h('div', { className: 'flex gap-3' },
                 h('div', { className: 'text-lg font-bold text-red-600' }, '\u23F1 ' + speedTimeLeft + 's'),
                 h('div', { className: 'text-lg font-bold text-emerald-600' }, '\u2714 ' + speedScore)
@@ -959,11 +959,11 @@ window.StemLab = window.StemLab || {
             speedTarget && h('div', null,
               h('div', { className: 'text-center mb-2' },
                 h('div', { className: 'text-3xl font-bold text-red-800' }, speedTarget.angle + '\u00B0'),
-                h('div', { className: 'text-xs text-red-500' }, 'What type of angle is this?')
+                h('div', { className: 'text-xs text-red-500' }, t('stem.angles.what_type_of_angle_is_this', 'What type of angle is this?'))
               ),
               h('div', { className: 'flex gap-2 flex-wrap justify-center' },
                 ['Acute', t('stem.calculus.right') || 'Right', 'Obtuse', 'Straight', 'Reflex'].map(function(cls) {
-                  return h('button', { 'aria-label': 'Answer Speed', key: cls, onClick: function() { answerSpeed(cls); },
+                  return h('button', { 'aria-label': t('stem.angles.answer_speed', 'Answer Speed'), key: cls, onClick: function() { answerSpeed(cls); },
                     className: 'px-4 py-2 rounded-lg text-sm font-bold bg-white border-2 border-red-600 text-red-700 hover:bg-red-100 hover:border-red-400 transition-all cursor-pointer'
                   }, cls);
                 })
@@ -973,24 +973,24 @@ window.StemLab = window.StemLab || {
 
           // ── Estimate Mode UI ──
           estimateActive && h('div', { className: 'bg-amber-50 rounded-xl p-4 border-2 border-amber-300' },
-            h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, '\uD83D\uDC41\uFE0F Estimate the Angle!'),
-            h('div', { className: 'text-xs text-amber-600 mb-3' }, 'Look at the angle on the protractor (number hidden). How many degrees is it?'),
+            h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, t('stem.angles.estimate_the_angle', '\uD83D\uDC41\uFE0F Estimate the Angle!')),
+            h('div', { className: 'text-xs text-amber-600 mb-3' }, t('stem.angles.look_at_the_angle_on_the_protractor_nu', 'Look at the angle on the protractor (number hidden). How many degrees is it?')),
             h('div', { className: 'flex gap-2 items-center' },
-              h('input', { type: 'number', min: 0, max: 360, value: estimateGuess, placeholder: 'Your guess...',
+              h('input', { type: 'number', min: 0, max: 360, value: estimateGuess, placeholder: t('stem.angles.your_guess', 'Your guess...'),
                 onChange: function(e) { upd('estimateGuess', e.target.value); },
-                'aria-label': 'Angle estimate guess in degrees',
+                'aria-label': t('stem.angles.angle_estimate_guess_in_degrees', 'Angle estimate guess in degrees'),
                 className: 'flex-1 px-3 py-2 border-2 border-amber-600 rounded-lg text-sm font-bold text-amber-800 focus:border-amber-500'
               }),
               h('span', { className: 'text-sm text-amber-600' }, '\u00B0'),
-              h('button', { 'aria-label': 'Check', onClick: checkEstimate, className: 'px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-600 transition-all' }, '\u2714 Check')
+              h('button', { 'aria-label': t('stem.angles.check', 'Check'), onClick: checkEstimate, className: 'px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-600 transition-all' }, t('stem.angles.check_2', '\u2714 Check'))
             ),
             estimateResult && h('div', { className: 'mt-2 p-2 rounded-lg text-sm font-bold ' + (estimateResult.ok ? 'bg-green-100 text-green-700 border border-green-300' : 'bg-red-100 text-red-700 border border-red-300') },
               estimateResult.ok
                 ? (estimateResult.exact ? '\uD83C\uDFAF Perfect! Exactly ' + estimateResult.target + '\u00B0!' : '\u2705 Close! You guessed ' + estimateResult.guess + '\u00B0, actual was ' + estimateResult.target + '\u00B0 (off by ' + estimateResult.diff + '\u00B0)')
                 : '\u274C Off by ' + estimateResult.diff + '\u00B0. You guessed ' + estimateResult.guess + '\u00B0, actual was ' + estimateResult.target + '\u00B0.',
-              h('button', { 'aria-label': 'Next', onClick: startEstimate, className: 'ml-2 text-xs font-bold underline' }, '\u27A1 Next')
+              h('button', { 'aria-label': t('stem.angles.next', 'Next'), onClick: startEstimate, className: 'ml-2 text-xs font-bold underline' }, t('stem.angles.next_2', '\u27A1 Next'))
             ),
-            h('button', { 'aria-label': 'Exit Estimate Mode', onClick: function() { upd({ estimateActive: false, estimateResult: null }); setAngleValue(45); }, className: 'mt-2 text-xs text-amber-600 font-bold hover:underline' }, '\u2716 Exit Estimate Mode')
+            h('button', { 'aria-label': t('stem.angles.exit_estimate_mode', 'Exit Estimate Mode'), onClick: function() { upd({ estimateActive: false, estimateResult: null }); setAngleValue(45); }, className: 'mt-2 text-xs text-amber-600 font-bold hover:underline' }, t('stem.angles.exit_estimate_mode_2', '\u2716 Exit Estimate Mode'))
           ),
 
           // ── Create/Classify Challenge UI ──
@@ -1001,8 +1001,8 @@ window.StemLab = window.StemLab || {
                 : '\uD83E\uDDE0 What type of angle is ' + angleChallenge.target + '\u00B0?'
             ),
             angleChallenge.type === 'create' && h('div', { className: 'flex gap-2 items-center' },
-              h('span', { className: 'text-xs text-purple-600' }, 'Your angle: ', h('span', { className: 'font-bold text-purple-900' }, angleFeedback ? (angleValue + '\u00B0') : '\u2753')),
-              h('button', { 'aria-label': 'Check', onClick: checkAngle, className: 'ml-auto px-4 py-1.5 bg-purple-700 text-white font-bold rounded-lg text-sm hover:bg-purple-600 transition-all' }, '\u2714 Check')
+              h('span', { className: 'text-xs text-purple-600' }, t('stem.angles.your_angle', 'Your angle: '), h('span', { className: 'font-bold text-purple-900' }, angleFeedback ? (angleValue + '\u00B0') : '\u2753')),
+              h('button', { 'aria-label': t('stem.angles.check_3', 'Check'), onClick: checkAngle, className: 'ml-auto px-4 py-1.5 bg-purple-700 text-white font-bold rounded-lg text-sm hover:bg-purple-600 transition-all' }, t('stem.angles.check_4', '\u2714 Check'))
             ),
             angleChallenge.type === 'classify' && h('div', { className: 'flex gap-2 flex-wrap' },
               ['Acute', t('stem.calculus.right') || 'Right', 'Obtuse', 'Straight', 'Reflex'].map(function(cls) {
@@ -1025,7 +1025,7 @@ window.StemLab = window.StemLab || {
               })
             ),
             angleFeedback && h('p', { className: 'text-sm font-bold mt-2 ' + (angleFeedback.correct ? 'text-green-600' : 'text-red-600') }, angleFeedback.msg),
-            angleFeedback && h('button', { 'aria-label': 'Next Challenge',
+            angleFeedback && h('button', { 'aria-label': t('stem.angles.next_challenge', 'Next Challenge'),
               onClick: function() {
                 var ta = targetAngles[Math.floor(Math.random() * targetAngles.length)];
                 setAngleChallenge({ type: angleChallenge.type, target: ta });
@@ -1034,15 +1034,15 @@ window.StemLab = window.StemLab || {
                 setAngleFeedback(null);
               },
               className: 'mt-2 text-xs text-purple-600 font-bold hover:underline'
-            }, '\u27A1 Next Challenge')
+            }, t('stem.angles.next_challenge_2', '\u27A1 Next Challenge'))
           ),
 
           // Reset
           h('div', { className: 'flex gap-2' },
-            h('button', { 'aria-label': 'Reset',
+            h('button', { 'aria-label': t('stem.angles.reset', 'Reset'),
               onClick: function() { setAngleValue(45); setAngleChallenge(null); setAngleFeedback(null); upd({ estimateActive: false, speedActive: false, estimateResult: null }); },
               className: 'px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all'
-            }, '\u21BA Reset')
+            }, t('stem.angles.reset_2', '\u21BA Reset'))
           )
         ),
 
@@ -1053,7 +1053,7 @@ window.StemLab = window.StemLab || {
 
           // ── Angle Types Reference Chart ──
           h('div', { className: 'bg-white rounded-xl p-4 border border-purple-200' },
-            h('div', { className: 'text-xs font-bold text-purple-700 uppercase mb-3' }, '\uD83D\uDCD6 Angle Types Reference'),
+            h('div', { className: 'text-xs font-bold text-purple-700 uppercase mb-3' }, t('stem.angles.angle_types_reference', '\uD83D\uDCD6 Angle Types Reference')),
             h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 gap-3' },
               [
                 { type: 'Acute', range: '0\u00B0 < \u03B8 < 90\u00B0', icon: '\uD83D\uDD35', ex: '45\u00B0', color: 'blue' },
@@ -1080,13 +1080,13 @@ window.StemLab = window.StemLab || {
 
           // ── Angle Relationships ──
           h('div', { className: 'bg-white rounded-xl p-4 border border-indigo-200' },
-            h('div', { className: 'text-xs font-bold text-indigo-700 uppercase mb-3' }, '\uD83D\uDD17 Angle Relationships'),
+            h('div', { className: 'text-xs font-bold text-indigo-700 uppercase mb-3' }, t('stem.angles.angle_relationships', '\uD83D\uDD17 Angle Relationships')),
             h('div', { className: 'grid grid-cols-2 gap-3' },
               [
-                { name: 'Complementary', desc: 'Two angles that add to 90\u00B0', example: '30\u00B0 + 60\u00B0 = 90\u00B0', icon: '\uD83E\uDDE9', color: 'blue' },
-                { name: 'Supplementary', desc: 'Two angles that add to 180\u00B0', example: '60\u00B0 + 120\u00B0 = 180\u00B0', icon: '\u2696\uFE0F', color: 'teal' },
-                { name: 'Vertical', desc: 'Opposite angles formed by intersecting lines; always equal', example: '\u2220A = \u2220C', icon: '\u2716', color: 'purple' },
-                { name: 'Adjacent', desc: 'Angles that share a common vertex and side', example: '\u2220AOB + \u2220BOC', icon: '\uD83D\uDC49', color: 'green' }
+                { name: t('stem.angles.complementary_3', 'Complementary'), desc: t('stem.angles.two_angles_that_add_to_90', 'Two angles that add to 90\u00B0'), example: '30\u00B0 + 60\u00B0 = 90\u00B0', icon: '\uD83E\uDDE9', color: 'blue' },
+                { name: t('stem.angles.supplementary_2', 'Supplementary'), desc: t('stem.angles.two_angles_that_add_to_180', 'Two angles that add to 180\u00B0'), example: '60\u00B0 + 120\u00B0 = 180\u00B0', icon: '\u2696\uFE0F', color: 'teal' },
+                { name: t('stem.angles.vertical', 'Vertical'), desc: t('stem.angles.opposite_angles_formed_by_intersecting', 'Opposite angles formed by intersecting lines; always equal'), example: '\u2220A = \u2220C', icon: '\u2716', color: 'purple' },
+                { name: t('stem.angles.adjacent', 'Adjacent'), desc: t('stem.angles.angles_that_share_a_common_vertex_and_', 'Angles that share a common vertex and side'), example: '\u2220AOB + \u2220BOC', icon: '\uD83D\uDC49', color: 'green' }
               ].map(function(rel) {
                 return h('div', { key: rel.name, className: 'p-3 rounded-xl bg-' + rel.color + '-50 border border-' + rel.color + '-200' },
                   h('div', { className: 'flex items-center gap-2 mb-1' },
@@ -1102,7 +1102,7 @@ window.StemLab = window.StemLab || {
 
           // ── Triangle Angle Sum Demo ──
           h('div', { className: 'bg-white rounded-xl p-4 border border-emerald-200' },
-            h('div', { className: 'text-xs font-bold text-emerald-700 uppercase mb-3' }, '\uD83D\uDD3A Triangle Angle Sum (\u2220A + \u2220B + \u2220C = 180\u00B0)'),
+            h('div', { className: 'text-xs font-bold text-emerald-700 uppercase mb-3' }, t('stem.angles.triangle_angle_sum_a_b_c_180', '\uD83D\uDD3A Triangle Angle Sum (\u2220A + \u2220B + \u2220C = 180\u00B0)')),
             h('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
               h('div', null,
                 h('div', { className: 'text-[11px] font-bold text-emerald-600 mb-1' }, '\u2220A'),
@@ -1115,7 +1115,7 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'text-center text-sm font-bold text-emerald-800' }, triAngle2 + '\u00B0')
               ),
               h('div', null,
-                h('div', { className: 'text-[11px] font-bold text-emerald-600 mb-1' }, '\u2220C (computed)'),
+                h('div', { className: 'text-[11px] font-bold text-emerald-600 mb-1' }, t('stem.angles.c_computed', '\u2220C (computed)')),
                 h('div', { className: 'text-center text-2xl font-bold mt-1 ' + (triValid ? 'text-emerald-700' : 'text-red-600') }, triAngle3 + '\u00B0')
               )
             ),
@@ -1138,7 +1138,7 @@ window.StemLab = window.StemLab || {
 
           // ── Polygon Interior Angles ──
           h('div', { className: 'bg-white rounded-xl p-4 border border-violet-200' },
-            h('div', { className: 'text-xs font-bold text-violet-700 uppercase mb-3' }, '\u2B21 Polygon Interior Angles'),
+            h('div', { className: 'text-xs font-bold text-violet-700 uppercase mb-3' }, t('stem.angles.polygon_interior_angles', '\u2B21 Polygon Interior Angles')),
             h('div', { className: 'flex gap-2 flex-wrap mb-3' },
               polygonData.map(function(p) {
                 var active = selectedPolygon === p.sides;
@@ -1156,15 +1156,15 @@ window.StemLab = window.StemLab || {
             ),
             h('div', { className: 'grid grid-cols-3 gap-3' },
               h('div', { className: 'bg-violet-50 rounded-lg p-3 text-center' },
-                h('div', { className: 'text-[11px] font-bold text-violet-500 uppercase' }, 'Interior Angle'),
+                h('div', { className: 'text-[11px] font-bold text-violet-500 uppercase' }, t('stem.angles.interior_angle', 'Interior Angle')),
                 h('div', { className: 'text-xl font-bold text-violet-800' }, polyInterior(selectedPolygon).toFixed(1) + '\u00B0')
               ),
               h('div', { className: 'bg-violet-50 rounded-lg p-3 text-center' },
-                h('div', { className: 'text-[11px] font-bold text-violet-500 uppercase' }, 'Exterior Angle'),
+                h('div', { className: 'text-[11px] font-bold text-violet-500 uppercase' }, t('stem.angles.exterior_angle', 'Exterior Angle')),
                 h('div', { className: 'text-xl font-bold text-violet-800' }, polyExterior(selectedPolygon).toFixed(1) + '\u00B0')
               ),
               h('div', { className: 'bg-violet-50 rounded-lg p-3 text-center' },
-                h('div', { className: 'text-[11px] font-bold text-violet-500 uppercase' }, 'Angle Sum'),
+                h('div', { className: 'text-[11px] font-bold text-violet-500 uppercase' }, t('stem.angles.angle_sum', 'Angle Sum')),
                 h('div', { className: 'text-xl font-bold text-violet-800' }, polyAngleSum(selectedPolygon) + '\u00B0')
               )
             ),
@@ -1180,18 +1180,18 @@ window.StemLab = window.StemLab || {
 
           // ── Clock Angle Calculator ──
           h('div', { className: 'bg-white rounded-xl p-4 border border-sky-200' },
-            h('div', { className: 'text-xs font-bold text-sky-700 uppercase mb-3' }, '\uD83D\uDD52 Clock Angle Calculator'),
+            h('div', { className: 'text-xs font-bold text-sky-700 uppercase mb-3' }, t('stem.angles.clock_angle_calculator', '\uD83D\uDD52 Clock Angle Calculator')),
             h('div', { className: 'flex gap-4 items-center justify-center mb-3' },
               h('div', null,
-                h('div', { className: 'text-[11px] font-bold text-sky-600 mb-1' }, 'Hour'),
-                h('select', { value: clockHour, onChange: function(e) { upd('clockHour', parseInt(e.target.value)); }, 'aria-label': 'Clock hour', className: 'px-3 py-1.5 border-2 border-sky-500 rounded-lg text-sm font-bold text-sky-800 outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' },
+                h('div', { className: 'text-[11px] font-bold text-sky-600 mb-1' }, t('stem.angles.hour', 'Hour')),
+                h('select', { value: clockHour, onChange: function(e) { upd('clockHour', parseInt(e.target.value)); }, 'aria-label': t('stem.angles.clock_hour', 'Clock hour'), className: 'px-3 py-1.5 border-2 border-sky-500 rounded-lg text-sm font-bold text-sky-800 outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' },
                   [1,2,3,4,5,6,7,8,9,10,11,12].map(function(hr) { return h('option', { key: hr, value: hr }, hr); })
                 )
               ),
               h('span', { className: 'text-2xl font-bold text-sky-700' }, ':'),
               h('div', null,
-                h('div', { className: 'text-[11px] font-bold text-sky-600 mb-1' }, 'Minute'),
-                h('select', { value: clockMinute, onChange: function(e) { upd('clockMinute', parseInt(e.target.value)); }, 'aria-label': 'Clock minute', className: 'px-3 py-1.5 border-2 border-sky-500 rounded-lg text-sm font-bold text-sky-800 outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' },
+                h('div', { className: 'text-[11px] font-bold text-sky-600 mb-1' }, t('stem.angles.minute', 'Minute')),
+                h('select', { value: clockMinute, onChange: function(e) { upd('clockMinute', parseInt(e.target.value)); }, 'aria-label': t('stem.angles.clock_minute', 'Clock minute'), className: 'px-3 py-1.5 border-2 border-sky-500 rounded-lg text-sm font-bold text-sky-800 outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' },
                   [0,5,10,15,20,25,30,35,40,45,50,55].map(function(m) { return h('option', { key: m, value: m }, m < 10 ? '0' + m : m); })
                 )
               )
@@ -1222,46 +1222,46 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'text-2xl font-bold text-sky-800' }, clockAngle.toFixed(1) + '\u00B0'),
               h('div', { className: 'text-xs text-sky-500' }, 'Angle between hands at ' + clockHour + ':' + (clockMinute < 10 ? '0' : '') + clockMinute),
               h('div', { className: 'text-[11px] mt-1 font-bold ' + (classColors[classifyAngle(Math.round(clockAngle))] || classColors['Acute']).text }, classifyAngle(Math.round(clockAngle)) + ' angle'),
-              h('button', { 'aria-label': 'Show on protractor', onClick: function() { setAngleValue(Math.round(clockAngle)); upd('activeTab', 'explore'); }, className: 'mt-2 text-[11px] font-bold text-sky-600 underline' }, '\u2192 Show on protractor')
+              h('button', { 'aria-label': t('stem.angles.show_on_protractor', 'Show on protractor'), onClick: function() { setAngleValue(Math.round(clockAngle)); upd('activeTab', 'explore'); }, className: 'mt-2 text-[11px] font-bold text-sky-600 underline' }, t('stem.angles.show_on_protractor_2', '\u2192 Show on protractor'))
             )
           ),
 
           // ── Angle Unit Converter ──
           h('div', { className: 'bg-white rounded-xl p-4 border border-green-200' },
-            h('div', { className: 'text-xs font-bold text-green-700 uppercase mb-3' }, '\uD83D\uDD04 Angle Unit Converter'),
+            h('div', { className: 'text-xs font-bold text-green-700 uppercase mb-3' }, t('stem.angles.angle_unit_converter', '\uD83D\uDD04 Angle Unit Converter')),
             h('div', { className: 'grid grid-cols-4 gap-3' },
               h('div', { className: 'bg-green-50 rounded-lg p-3 text-center' },
-                h('div', { className: 'text-[11px] font-bold text-green-500 uppercase' }, 'Degrees'),
+                h('div', { className: 'text-[11px] font-bold text-green-500 uppercase' }, t('stem.angles.degrees_2', 'Degrees')),
                 h('div', { className: 'text-lg font-bold text-green-800' }, angleValue + '\u00B0')
               ),
               h('div', { className: 'bg-green-50 rounded-lg p-3 text-center' },
-                h('div', { className: 'text-[11px] font-bold text-green-500 uppercase' }, 'Radians'),
+                h('div', { className: 'text-[11px] font-bold text-green-500 uppercase' }, t('stem.angles.radians_2', 'Radians')),
                 h('div', { className: 'text-lg font-bold text-green-800' }, toRadians(angleValue))
               ),
               h('div', { className: 'bg-green-50 rounded-lg p-3 text-center' },
-                h('div', { className: 'text-[11px] font-bold text-green-500 uppercase' }, 'Gradians'),
+                h('div', { className: 'text-[11px] font-bold text-green-500 uppercase' }, t('stem.angles.gradians_2', 'Gradians')),
                 h('div', { className: 'text-lg font-bold text-green-800' }, toGradians(angleValue))
               ),
               h('div', { className: 'bg-green-50 rounded-lg p-3 text-center' },
-                h('div', { className: 'text-[11px] font-bold text-green-500 uppercase' }, 'Turns'),
+                h('div', { className: 'text-[11px] font-bold text-green-500 uppercase' }, t('stem.angles.turns_2', 'Turns')),
                 h('div', { className: 'text-lg font-bold text-green-800' }, toTurns(angleValue))
               )
             ),
             h('div', { className: 'mt-2 text-[11px] text-green-500 text-center' },
-              '\u03C0 rad = 180\u00B0 = 200 grad = 0.5 turns')
+              t('stem.angles.rad_180_200_grad_0_5_turns', '\u03C0 rad = 180\u00B0 = 200 grad = 0.5 turns'))
           ),
 
           // ── Angle History ──
           h('div', { className: 'bg-white rounded-xl p-4 border border-slate-400' },
             h('div', { className: 'flex items-center justify-between mb-2' },
-              h('div', { className: 'text-xs font-bold text-slate-700 uppercase' }, '\uD83D\uDCDC Recent Angles'),
-              angleHistory.length > 0 && h('button', { 'aria-label': 'Clear', onClick: function() { upd('angleHistory', []); }, className: 'text-[11px] text-slate-600 hover:text-red-400' }, 'Clear')
+              h('div', { className: 'text-xs font-bold text-slate-700 uppercase' }, t('stem.angles.recent_angles', '\uD83D\uDCDC Recent Angles')),
+              angleHistory.length > 0 && h('button', { 'aria-label': t('stem.angles.clear', 'Clear'), onClick: function() { upd('angleHistory', []); }, className: 'text-[11px] text-slate-600 hover:text-red-400' }, t('stem.angles.clear_2', 'Clear'))
             ),
             angleHistory.length === 0
-              ? h('div', { className: 'text-xs text-slate-600 text-center py-2' }, 'No angles explored yet')
+              ? h('div', { className: 'text-xs text-slate-600 text-center py-2' }, t('stem.angles.no_angles_explored_yet', 'No angles explored yet'))
               : h('div', { className: 'flex gap-1.5 flex-wrap' },
                   angleHistory.slice(0, 15).map(function(entry, i) {
-                    return h('button', { 'aria-label': 'Set Angle Value', key: i, onClick: function() { setAngleValue(entry.deg); upd('activeTab', 'explore'); },
+                    return h('button', { 'aria-label': t('stem.angles.set_angle_value', 'Set Angle Value'), key: i, onClick: function() { setAngleValue(entry.deg); upd('activeTab', 'explore'); },
                       className: 'px-2 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-purple-100 hover:text-purple-700 border border-slate-400 transition-all'
                     }, entry.deg + '\u00B0');
                   })
@@ -1299,38 +1299,38 @@ window.StemLab = window.StemLab || {
       }
 
       var ANGLE_TYPES = [
-        { name: 'Zero', range: '0\u00B0', icon: '\u2014', desc: 'Two rays overlap exactly. No rotation.' },
-        { name: 'Acute', range: '0\u00B0 < \u03B8 < 90\u00B0', icon: '<', desc: 'Less than a right angle. Pizza slice, "less than square".' },
-        { name: 'Right', range: '90\u00B0', icon: '\u2310', desc: 'Exactly 90\u00B0. Corner of a square. Perpendicular lines.' },
-        { name: 'Obtuse', range: '90\u00B0 < \u03B8 < 180\u00B0', icon: '>', desc: 'Between right and straight. Wider than square corner.' },
-        { name: 'Straight', range: '180\u00B0', icon: '\u2014', desc: 'Half rotation. The two rays form a straight line.' },
-        { name: 'Reflex', range: '180\u00B0 < \u03B8 < 360\u00B0', icon: '\u21BA', desc: 'Greater than a straight angle. Measure the "outside" of the angle.' },
-        { name: 'Full rotation', range: '360\u00B0', icon: '\u25CB', desc: 'Complete turn. The two rays overlap exactly (like 0\u00B0, but went all the way around).' }
+        { name: t('stem.angles.zero', 'Zero'), range: '0\u00B0', icon: '\u2014', desc: t('stem.angles.two_rays_overlap_exactly_no_rotation', 'Two rays overlap exactly. No rotation.') },
+        { name: t('stem.angles.acute', 'Acute'), range: '0\u00B0 < \u03B8 < 90\u00B0', icon: '<', desc: t('stem.angles.less_than_a_right_angle_pizza_slice_le', 'Less than a right angle. Pizza slice, "less than square".') },
+        { name: t('stem.angles.right', 'Right'), range: '90\u00B0', icon: '\u2310', desc: t('stem.angles.exactly_90_corner_of_a_square_perpendi', 'Exactly 90\u00B0. Corner of a square. Perpendicular lines.') },
+        { name: t('stem.angles.obtuse', 'Obtuse'), range: '90\u00B0 < \u03B8 < 180\u00B0', icon: '>', desc: t('stem.angles.between_right_and_straight_wider_than_', 'Between right and straight. Wider than square corner.') },
+        { name: t('stem.angles.straight', 'Straight'), range: '180\u00B0', icon: '\u2014', desc: t('stem.angles.half_rotation_the_two_rays_form_a_stra', 'Half rotation. The two rays form a straight line.') },
+        { name: t('stem.angles.reflex', 'Reflex'), range: '180\u00B0 < \u03B8 < 360\u00B0', icon: '\u21BA', desc: t('stem.angles.greater_than_a_straight_angle_measure_', 'Greater than a straight angle. Measure the "outside" of the angle.') },
+        { name: t('stem.angles.full_rotation', 'Full rotation'), range: '360\u00B0', icon: '\u25CB', desc: t('stem.angles.complete_turn_the_two_rays_overlap_exa', 'Complete turn. The two rays overlap exactly (like 0\u00B0, but went all the way around).') }
       ];
 
       var ANGLE_RELATIONSHIPS = [
-        { name: 'Complementary', condition: 'Sum to 90\u00B0', example: '30\u00B0 + 60\u00B0 = 90\u00B0', visual: 'Two angles fit together to make a right angle.' },
-        { name: 'Supplementary', condition: 'Sum to 180\u00B0', example: '110\u00B0 + 70\u00B0 = 180\u00B0', visual: 'Two angles fit together to make a straight line.' },
-        { name: 'Vertical (vertically opposite)', condition: 'Equal', example: 'X-shape: opposite angles are equal', visual: 'Two intersecting lines make 4 angles in 2 equal pairs.' },
-        { name: 'Adjacent', condition: 'Share a vertex + ray', example: 'No specific sum', visual: 'Two angles next to each other on either side of a common ray.' },
-        { name: 'Linear pair', condition: 'Adjacent + supplementary (sum 180\u00B0)', example: 'On a straight line', visual: 'Special case of adjacent + supplementary.' },
-        { name: 'Corresponding (parallel lines + transversal)', condition: 'Equal', example: 'Same position at each intersection', visual: 'Like-position angles when a line crosses two parallel lines.' },
-        { name: 'Alternate interior', condition: 'Equal', example: 'Z-pattern', visual: 'Between the parallel lines, on opposite sides of the transversal.' },
-        { name: 'Alternate exterior', condition: 'Equal', example: 'Outside the parallels', visual: 'Outside the parallel lines, on opposite sides of the transversal.' },
-        { name: 'Co-interior (consecutive interior)', condition: 'Supplementary (sum 180\u00B0)', example: 'C-pattern', visual: 'Between the parallels on the same side of the transversal.' }
+        { name: t('stem.angles.complementary_4', 'Complementary'), condition: 'Sum to 90\u00B0', example: '30\u00B0 + 60\u00B0 = 90\u00B0', visual: 'Two angles fit together to make a right angle.' },
+        { name: t('stem.angles.supplementary_3', 'Supplementary'), condition: 'Sum to 180\u00B0', example: '110\u00B0 + 70\u00B0 = 180\u00B0', visual: 'Two angles fit together to make a straight line.' },
+        { name: t('stem.angles.vertical_vertically_opposite', 'Vertical (vertically opposite)'), condition: 'Equal', example: 'X-shape: opposite angles are equal', visual: 'Two intersecting lines make 4 angles in 2 equal pairs.' },
+        { name: t('stem.angles.adjacent_2', 'Adjacent'), condition: 'Share a vertex + ray', example: 'No specific sum', visual: 'Two angles next to each other on either side of a common ray.' },
+        { name: t('stem.angles.linear_pair', 'Linear pair'), condition: 'Adjacent + supplementary (sum 180\u00B0)', example: 'On a straight line', visual: 'Special case of adjacent + supplementary.' },
+        { name: t('stem.angles.corresponding_parallel_lines_transvers', 'Corresponding (parallel lines + transversal)'), condition: 'Equal', example: 'Same position at each intersection', visual: 'Like-position angles when a line crosses two parallel lines.' },
+        { name: t('stem.angles.alternate_interior', 'Alternate interior'), condition: 'Equal', example: 'Z-pattern', visual: 'Between the parallel lines, on opposite sides of the transversal.' },
+        { name: t('stem.angles.alternate_exterior', 'Alternate exterior'), condition: 'Equal', example: 'Outside the parallels', visual: 'Outside the parallel lines, on opposite sides of the transversal.' },
+        { name: t('stem.angles.co_interior_consecutive_interior', 'Co-interior (consecutive interior)'), condition: 'Supplementary (sum 180\u00B0)', example: 'C-pattern', visual: 'Between the parallels on the same side of the transversal.' }
       ];
 
       var POLYGON_ANGLES = [
-        { sides: 3, name: 'Triangle', interiorSum: '180\u00B0', regularInterior: '60\u00B0', exteriorEach: '120\u00B0', notes: 'Sum is constant. Equilateral all 60\u00B0.' },
-        { sides: 4, name: 'Quadrilateral', interiorSum: '360\u00B0', regularInterior: '90\u00B0', exteriorEach: '90\u00B0', notes: 'Square (regular) has all 90\u00B0. Sum holds even for irregular shapes.' },
-        { sides: 5, name: 'Pentagon', interiorSum: '540\u00B0', regularInterior: '108\u00B0', exteriorEach: '72\u00B0', notes: 'Regular: ~108\u00B0 interior.' },
-        { sides: 6, name: 'Hexagon', interiorSum: '720\u00B0', regularInterior: '120\u00B0', exteriorEach: '60\u00B0', notes: 'Regular hexagons tile the plane perfectly (honeycomb).' },
-        { sides: 7, name: 'Heptagon', interiorSum: '900\u00B0', regularInterior: '~128.6\u00B0', exteriorEach: '~51.4\u00B0', notes: 'Cannot be constructed with compass + straightedge alone.' },
-        { sides: 8, name: 'Octagon', interiorSum: '1080\u00B0', regularInterior: '135\u00B0', exteriorEach: '45\u00B0', notes: 'STOP signs.' },
-        { sides: 9, name: 'Nonagon', interiorSum: '1260\u00B0', regularInterior: '140\u00B0', exteriorEach: '40\u00B0', notes: 'Also called enneagon.' },
-        { sides: 10, name: 'Decagon', interiorSum: '1440\u00B0', regularInterior: '144\u00B0', exteriorEach: '36\u00B0', notes: 'Regular decagons have 10-fold rotational symmetry.' },
-        { sides: 12, name: 'Dodecagon', interiorSum: '1800\u00B0', regularInterior: '150\u00B0', exteriorEach: '30\u00B0', notes: 'Some coins (UK \u00A31 since 2017).' },
-        { sides: 'n', name: 'n-gon (general)', interiorSum: '(n\u22122) \u00D7 180\u00B0', regularInterior: '(n\u22122) \u00D7 180\u00B0 / n', exteriorEach: '360\u00B0 / n', notes: 'As n \u2192 \u221E, the polygon approaches a circle.' }
+        { sides: 3, name: t('stem.angles.triangle', 'Triangle'), interiorSum: '180\u00B0', regularInterior: '60\u00B0', exteriorEach: '120\u00B0', notes: 'Sum is constant. Equilateral all 60\u00B0.' },
+        { sides: 4, name: t('stem.angles.quadrilateral', 'Quadrilateral'), interiorSum: '360\u00B0', regularInterior: '90\u00B0', exteriorEach: '90\u00B0', notes: 'Square (regular) has all 90\u00B0. Sum holds even for irregular shapes.' },
+        { sides: 5, name: t('stem.angles.pentagon', 'Pentagon'), interiorSum: '540\u00B0', regularInterior: '108\u00B0', exteriorEach: '72\u00B0', notes: 'Regular: ~108\u00B0 interior.' },
+        { sides: 6, name: t('stem.angles.hexagon', 'Hexagon'), interiorSum: '720\u00B0', regularInterior: '120\u00B0', exteriorEach: '60\u00B0', notes: 'Regular hexagons tile the plane perfectly (honeycomb).' },
+        { sides: 7, name: t('stem.angles.heptagon', 'Heptagon'), interiorSum: '900\u00B0', regularInterior: '~128.6\u00B0', exteriorEach: '~51.4\u00B0', notes: 'Cannot be constructed with compass + straightedge alone.' },
+        { sides: 8, name: t('stem.angles.octagon', 'Octagon'), interiorSum: '1080\u00B0', regularInterior: '135\u00B0', exteriorEach: '45\u00B0', notes: 'STOP signs.' },
+        { sides: 9, name: t('stem.angles.nonagon', 'Nonagon'), interiorSum: '1260\u00B0', regularInterior: '140\u00B0', exteriorEach: '40\u00B0', notes: 'Also called enneagon.' },
+        { sides: 10, name: t('stem.angles.decagon', 'Decagon'), interiorSum: '1440\u00B0', regularInterior: '144\u00B0', exteriorEach: '36\u00B0', notes: 'Regular decagons have 10-fold rotational symmetry.' },
+        { sides: 12, name: t('stem.angles.dodecagon', 'Dodecagon'), interiorSum: '1800\u00B0', regularInterior: '150\u00B0', exteriorEach: '30\u00B0', notes: 'Some coins (UK \u00A31 since 2017).' },
+        { sides: 'n', name: t('stem.angles.n_gon_general', 'n-gon (general)'), interiorSum: '(n\u22122) \u00D7 180\u00B0', regularInterior: '(n\u22122) \u00D7 180\u00B0 / n', exteriorEach: '360\u00B0 / n', notes: 'As n \u2192 \u221E, the polygon approaches a circle.' }
       ];
 
       var TRIG_REF = [
@@ -1424,13 +1424,13 @@ window.StemLab = window.StemLab || {
       function expHeader() {
         return h('div', { className: 'mt-6 mb-2 flex items-center justify-between flex-wrap gap-2 p-3 rounded-xl bg-gradient-to-r from-rose-50 to-pink-50 border-2 border-rose-200' },
           h('div', null,
-            h('h3', { className: 'text-base font-black text-rose-900' }, '\uD83D\uDCD0 Angles Reference Library'),
-            h('div', { className: 'text-[11px] text-rose-700 mt-0.5' }, 'Interactive geometry references \u2014 pick a topic.')
+            h('h3', { className: 'text-base font-black text-rose-900' }, t('stem.angles.angles_reference_library', '\uD83D\uDCD0 Angles Reference Library')),
+            h('div', { className: 'text-[11px] text-rose-700 mt-0.5' }, t('stem.angles.interactive_geometry_references_pick_a', 'Interactive geometry references \u2014 pick a topic.'))
           ),
           expSection && h('button', {
             onClick: function() { setExp({ expSection: null }); },
             className: 'px-3 py-1 rounded-md text-xs font-bold bg-white border border-rose-300 text-rose-700 hover:bg-rose-100'
-          }, '\u2715 Close section')
+          }, t('stem.angles.close_section', '\u2715 Close section'))
         );
       }
 
@@ -1439,66 +1439,66 @@ window.StemLab = window.StemLab || {
         // IDs preserved. Groups: Angles & Trig \u00B7 Shapes & Solids \u00B7 Coords
         // & Transforms \u00B7 Real World \u00B7 Math History \u00B7 Reference.
         var TAB_GROUPS = [
-          { id: 'angles', label: 'Angles & Trig', color: 'rose', tabs: [
-            { id: 'types', label: 'Types', icon: '<' },
-            { id: 'relationships', label: 'Relationships', icon: '\u2AEF' },
-            { id: 'special', label: 'Special angles', icon: '\u2605' },
-            { id: 'units', label: 'Angle units', icon: '\u00B0' },
-            { id: 'trig', label: 'Trig functions', icon: 'sin' },
-            { id: 'pythag', label: 'Pythagorean', icon: 'a\u00B2+b\u00B2' },
-            { id: 'theorems', label: 'Classic theorems', icon: '\u220E' },
-            { id: 'tricks', label: 'Shortcuts', icon: '\u26A1' }
+          { id: 'angles', label: t('stem.angles.angles_trig', 'Angles & Trig'), color: 'rose', tabs: [
+            { id: 'types', label: t('stem.angles.types', 'Types'), icon: '<' },
+            { id: 'relationships', label: t('stem.angles.relationships', 'Relationships'), icon: '\u2AEF' },
+            { id: 'special', label: t('stem.angles.special_angles', 'Special angles'), icon: '\u2605' },
+            { id: 'units', label: t('stem.angles.angle_units', 'Angle units'), icon: '\u00B0' },
+            { id: 'trig', label: t('stem.angles.trig_functions', 'Trig functions'), icon: 'sin' },
+            { id: 'pythag', label: t('stem.angles.pythagorean', 'Pythagorean'), icon: 'a\u00B2+b\u00B2' },
+            { id: 'theorems', label: t('stem.angles.classic_theorems', 'Classic theorems'), icon: '\u220E' },
+            { id: 'tricks', label: t('stem.angles.shortcuts', 'Shortcuts'), icon: '\u26A1' }
           ] },
-          { id: 'shapes', label: 'Shapes & Solids', color: 'amber', tabs: [
-            { id: 'triangles', label: 'Triangle types', icon: '\u25B3' },
-            { id: 'polygons', label: 'Polygon angles', icon: '\u2B21' },
-            { id: 'circle', label: 'Circle geometry', icon: '\u25EF' },
-            { id: 'conics', label: 'Conic sections', icon: '\u25C9' },
-            { id: 'solids', label: '3D solids', icon: '\u2B22' },
-            { id: 'platonic', label: 'Platonic solids', icon: '\u2B21' },
-            { id: 'curves', label: 'Famous curves', icon: '\u223F' },
-            { id: 'shapes_iq', label: 'Shape facts', icon: '\u25C7' }
+          { id: 'shapes', label: t('stem.angles.shapes_solids', 'Shapes & Solids'), color: 'amber', tabs: [
+            { id: 'triangles', label: t('stem.angles.triangle_types', 'Triangle types'), icon: '\u25B3' },
+            { id: 'polygons', label: t('stem.angles.polygon_angles', 'Polygon angles'), icon: '\u2B21' },
+            { id: 'circle', label: t('stem.angles.circle_geometry', 'Circle geometry'), icon: '\u25EF' },
+            { id: 'conics', label: t('stem.angles.conic_sections', 'Conic sections'), icon: '\u25C9' },
+            { id: 'solids', label: t('stem.angles.3d_solids', '3D solids'), icon: '\u2B22' },
+            { id: 'platonic', label: t('stem.angles.platonic_solids', 'Platonic solids'), icon: '\u2B21' },
+            { id: 'curves', label: t('stem.angles.famous_curves', 'Famous curves'), icon: '\u223F' },
+            { id: 'shapes_iq', label: t('stem.angles.shape_facts', 'Shape facts'), icon: '\u25C7' }
           ] },
-          { id: 'coords', label: 'Coords & Transforms', color: 'cyan', tabs: [
-            { id: 'coords', label: 'Coordinates', icon: '(x,y)' },
-            { id: 'vectors', label: 'Vectors', icon: '\u2192' },
-            { id: 'transform', label: 'Transformations', icon: '\u21BB' },
-            { id: 'symmetry', label: 'Symmetry', icon: '\u27C2' },
-            { id: 'tilings', label: 'Tessellations', icon: '\u2B21' },
-            { id: 'tessell2', label: 'Famous tilings', icon: '\u25C7' },
-            { id: 'fractals', label: 'Fractals', icon: '\u2744' },
+          { id: 'coords', label: t('stem.angles.coords_transforms', 'Coords & Transforms'), color: 'cyan', tabs: [
+            { id: 'coords', label: t('stem.angles.coordinates', 'Coordinates'), icon: '(x,y)' },
+            { id: 'vectors', label: t('stem.angles.vectors', 'Vectors'), icon: '\u2192' },
+            { id: 'transform', label: t('stem.angles.transformations', 'Transformations'), icon: '\u21BB' },
+            { id: 'symmetry', label: t('stem.angles.symmetry', 'Symmetry'), icon: '\u27C2' },
+            { id: 'tilings', label: t('stem.angles.tessellations', 'Tessellations'), icon: '\u2B21' },
+            { id: 'tessell2', label: t('stem.angles.famous_tilings', 'Famous tilings'), icon: '\u25C7' },
+            { id: 'fractals', label: t('stem.angles.fractals', 'Fractals'), icon: '\u2744' },
             { id: 'noneuclid', label: 'Non-Euclidean', icon: '\u2295' },
-            { id: 'goldenratio', label: 'Golden ratio', icon: '\u03C6' }
+            { id: 'goldenratio', label: t('stem.angles.golden_ratio', 'Golden ratio'), icon: '\u03C6' }
           ] },
-          { id: 'world', label: 'Real World', color: 'emerald', tabs: [
+          { id: 'world', label: t('stem.angles.real_world', 'Real World'), color: 'emerald', tabs: [
             { id: 'world', label: 'Real-world', icon: '\uD83C\uDF0D' },
-            { id: 'practical', label: 'Practical angles', icon: '\uD83D\uDEE0' },
-            { id: 'tools', label: 'Measuring tools', icon: '\uD83D\uDCCF' },
-            { id: 'compass', label: 'Compass', icon: '\uD83E\uDDED' },
-            { id: 'sundial', label: 'Sundials', icon: '\u263C' },
-            { id: 'sports', label: 'Angles in sports', icon: '\uD83C\uDFC6' },
-            { id: 'art', label: 'Angles in art', icon: '\uD83C\uDFA8' },
-            { id: 'origami', label: 'Origami geometry', icon: '\u2726' },
-            { id: 'building_angles', label: 'Roof + ramp pitch', icon: '\u25E2' },
-            { id: 'buildings', label: 'Famous structures', icon: '\uD83C\uDFDB' },
-            { id: 'flag_design', label: 'Flag geometry', icon: '\uD83D\uDEA9' },
-            { id: 'projection', label: 'Map projections', icon: '\uD83D\uDDFA' },
-            { id: 'rivers', label: 'Earth measurements', icon: '\uD83C\uDF0E' },
-            { id: 'cities', label: 'City coordinates', icon: '\uD83C\uDF06' },
-            { id: 'mountains', label: 'Mountains + peaks', icon: '\u26F0' },
-            { id: 'planets', label: 'Planet data', icon: '\uD83E\uDE90' }
+            { id: 'practical', label: t('stem.angles.practical_angles', 'Practical angles'), icon: '\uD83D\uDEE0' },
+            { id: 'tools', label: t('stem.angles.measuring_tools', 'Measuring tools'), icon: '\uD83D\uDCCF' },
+            { id: 'compass', label: t('stem.angles.compass', 'Compass'), icon: '\uD83E\uDDED' },
+            { id: 'sundial', label: t('stem.angles.sundials', 'Sundials'), icon: '\u263C' },
+            { id: 'sports', label: t('stem.angles.angles_in_sports', 'Angles in sports'), icon: '\uD83C\uDFC6' },
+            { id: 'art', label: t('stem.angles.angles_in_art', 'Angles in art'), icon: '\uD83C\uDFA8' },
+            { id: 'origami', label: t('stem.angles.origami_geometry', 'Origami geometry'), icon: '\u2726' },
+            { id: 'building_angles', label: t('stem.angles.roof_ramp_pitch', 'Roof + ramp pitch'), icon: '\u25E2' },
+            { id: 'buildings', label: t('stem.angles.famous_structures', 'Famous structures'), icon: '\uD83C\uDFDB' },
+            { id: 'flag_design', label: t('stem.angles.flag_geometry', 'Flag geometry'), icon: '\uD83D\uDEA9' },
+            { id: 'projection', label: t('stem.angles.map_projections', 'Map projections'), icon: '\uD83D\uDDFA' },
+            { id: 'rivers', label: t('stem.angles.earth_measurements', 'Earth measurements'), icon: '\uD83C\uDF0E' },
+            { id: 'cities', label: t('stem.angles.city_coordinates', 'City coordinates'), icon: '\uD83C\uDF06' },
+            { id: 'mountains', label: t('stem.angles.mountains_peaks', 'Mountains + peaks'), icon: '\u26F0' },
+            { id: 'planets', label: t('stem.angles.planet_data', 'Planet data'), icon: '\uD83E\uDE90' }
           ] },
-          { id: 'history', label: 'History & Careers', color: 'violet', tabs: [
-            { id: 'famous', label: 'History', icon: '\uD83D\uDD70' },
-            { id: 'mathematicians', label: 'Mathematicians', icon: '\uD83D\uDC68\u200D\uD83C\uDFEB' },
-            { id: 'careers', label: 'Careers using angles', icon: '\uD83D\uDCBC' }
+          { id: 'history', label: t('stem.angles.history_careers', 'History & Careers'), color: 'violet', tabs: [
+            { id: 'famous', label: t('stem.angles.history', 'History'), icon: '\uD83D\uDD70' },
+            { id: 'mathematicians', label: t('stem.angles.mathematicians', 'Mathematicians'), icon: '\uD83D\uDC68\u200D\uD83C\uDFEB' },
+            { id: 'careers', label: t('stem.angles.careers_using_angles', 'Careers using angles'), icon: '\uD83D\uDCBC' }
           ] },
-          { id: 'reference', label: 'Reference', color: 'slate', tabs: [
-            { id: 'constants', label: 'Math constants', icon: '\u03C0' },
-            { id: 'puzzles', label: 'Geometry puzzles', icon: '\uD83E\uDDE9' },
-            { id: 'glossary', label: 'Glossary', icon: '\uD83D\uDCD6' }
+          { id: 'reference', label: t('stem.angles.reference', 'Reference'), color: 'slate', tabs: [
+            { id: 'constants', label: t('stem.angles.math_constants', 'Math constants'), icon: '\u03C0' },
+            { id: 'puzzles', label: t('stem.angles.geometry_puzzles', 'Geometry puzzles'), icon: '\uD83E\uDDE9' },
+            { id: 'glossary', label: t('stem.angles.glossary', 'Glossary'), icon: '\uD83D\uDCD6' }
           ] }
-        , { id: 'pisaCross', label: 'Pisa: linked reps', icon: '\uD83D\uDDFC' }
+        , { id: 'pisaCross', label: t('stem.angles.pisa_linked_reps', 'Pisa: linked reps'), icon: '\uD83D\uDDFC' }
         ];
         function renderBtn(s, accent) {
           var active = expSection === s.id;
@@ -1524,7 +1524,7 @@ window.StemLab = window.StemLab || {
 
       function renderTypesSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '< Types of angles by size'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.types_of_angles_by_size', '< Types of angles by size')),
           h('div', { className: 'space-y-2' },
             ANGLE_TYPES.map(function(a, i) {
               return h('div', { key: 'a'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -1542,7 +1542,7 @@ window.StemLab = window.StemLab || {
 
       function renderRelationshipsSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '\u2AEF Angle pair relationships'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.angle_pair_relationships', '\u2AEF Angle pair relationships')),
           h('div', { className: 'space-y-2' },
             ANGLE_RELATIONSHIPS.map(function(r, i) {
               return h('div', { key: 'r'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -1560,8 +1560,8 @@ window.StemLab = window.StemLab || {
 
       function renderPolygonsSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '\u2B21 Polygon angle sums'),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Interior angle sum = (n \u2212 2) \u00D7 180\u00B0 for any n-sided polygon. Each exterior angle of a REGULAR polygon = 360\u00B0/n. Sum of exterior angles always = 360\u00B0.'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.polygon_angle_sums', '\u2B21 Polygon angle sums')),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.interior_angle_sum_n_2_180_for_any_n_s', 'Interior angle sum = (n \u2212 2) \u00D7 180\u00B0 for any n-sided polygon. Each exterior angle of a REGULAR polygon = 360\u00B0/n. Sum of exterior angles always = 360\u00B0.')),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
               h('thead', null,
@@ -1590,8 +1590,8 @@ window.StemLab = window.StemLab || {
 
       function renderTrigSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, 'sin Trigonometric functions'),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'SOH-CAH-TOA: Sine = Opp/Hyp, Cosine = Adj/Hyp, Tangent = Opp/Adj. The trig functions express ratios of right-triangle sides; extended to all angles via the unit circle.'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.sin_trigonometric_functions', 'sin Trigonometric functions')),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.soh_cah_toa_sine_opp_hyp_cosine_adj_hy', 'SOH-CAH-TOA: Sine = Opp/Hyp, Cosine = Adj/Hyp, Tangent = Opp/Adj. The trig functions express ratios of right-triangle sides; extended to all angles via the unit circle.')),
           h('div', { className: 'space-y-2' },
             TRIG_REF.map(function(t, i) {
               return h('div', { key: 't'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -1609,8 +1609,8 @@ window.StemLab = window.StemLab || {
 
       function renderSpecialSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '\u2605 Special angles (unit circle)'),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'These angles + their trig values are worth memorizing \u2014 they appear constantly in math, physics, and engineering.'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.special_angles_unit_circle', '\u2605 Special angles (unit circle)')),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.these_angles_their_trig_values_are_wor', 'These angles + their trig values are worth memorizing \u2014 they appear constantly in math, physics, and engineering.')),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
               h('thead', null,
@@ -1639,7 +1639,7 @@ window.StemLab = window.StemLab || {
 
       function renderUnitsSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '\u00B0 Angle units'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.angle_units_2', '\u00B0 Angle units')),
           h('div', { className: 'space-y-2' },
             ANGLE_UNITS.map(function(u, i) {
               return h('div', { key: 'u'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -1653,14 +1653,14 @@ window.StemLab = window.StemLab || {
             })
           ),
           h('div', { className: 'mt-3 p-2.5 rounded-md bg-amber-50 border border-amber-200 text-[11px] text-amber-900' },
-            h('strong', null, '\uD83D\uDD01 Conversions: '), '1 rad = 180/\u03C0 \u2248 57.296\u00B0. 1\u00B0 = \u03C0/180 \u2248 0.01745 rad. 1 gon = 0.9\u00B0. Most calculators have a degrees/radians mode toggle \u2014 make sure you\'re in the right mode!'
+            h('strong', null, t('stem.angles.conversions', '\uD83D\uDD01 Conversions: ')), t('stem.angles.1_rad_180_57_296_1_180_0_01745_rad_1_g', '1 rad = 180/\u03C0 \u2248 57.296\u00B0. 1\u00B0 = \u03C0/180 \u2248 0.01745 rad. 1 gon = 0.9\u00B0. Most calculators have a degrees/radians mode toggle \u2014 make sure you\'re in the right mode!')
           )
         );
       }
 
       function renderWorldSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '\uD83C\uDF0D Real-world angles'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.real_world_angles', '\uD83C\uDF0D Real-world angles')),
           h('div', { className: 'grid gap-2 grid-cols-1 md:grid-cols-2' },
             REAL_WORLD_ANGLES.map(function(r, i) {
               return h('div', { key: 'r'+i, className: 'p-2.5 rounded-lg bg-slate-50 border border-slate-200' },
@@ -1677,7 +1677,7 @@ window.StemLab = window.StemLab || {
 
       function renderTricksSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '\u26A1 Angle problem-solving shortcuts'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.angle_problem_solving_shortcuts', '\u26A1 Angle problem-solving shortcuts')),
           h('div', { className: 'space-y-2' },
             ANGLE_TRICKS.map(function(t, i) {
               return h('div', { key: 't'+i, className: 'p-2.5 rounded-lg bg-slate-50 border-l-4 border-l-rose-400 border border-slate-200' },
@@ -1691,8 +1691,8 @@ window.StemLab = window.StemLab || {
 
       function renderCompassSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '\uD83E\uDDED Compass bearings (16-point)'),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Bearings measured CLOCKWISE from north. Standard 16-point compass has 22.5\u00B0 between adjacent directions.'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.compass_bearings_16_point', '\uD83E\uDDED Compass bearings (16-point)')),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.bearings_measured_clockwise_from_north', 'Bearings measured CLOCKWISE from north. Standard 16-point compass has 22.5\u00B0 between adjacent directions.')),
           h('div', { className: 'grid grid-cols-4 gap-2' },
             COMPASS_BEARINGS.map(function(c, i) {
               return h('div', { key: 'c'+i, className: 'p-2 rounded-md bg-slate-50 border border-slate-200 text-center' },
@@ -1763,7 +1763,7 @@ window.StemLab = window.StemLab || {
             h('path', { d: 'M ' + cx + ',' + (baseY - 26) + ' A 26,26 0 0,1 ' + (cx + 26 * Math.sin(thetaRad)).toFixed(1) + ',' + (baseY - 26 * Math.cos(thetaRad)).toFixed(1), fill: 'none', stroke: '#7c3aed', strokeWidth: 2 }),
             h('text', { x: cx + 14, y: baseY - 30, fontSize: 10, fill: '#7c3aed', fontWeight: 'bold' }, 'θ = ' + theta.toFixed(1) + '°'),
             // Caption
-            h('text', { x: 130, y: 215, textAnchor: 'middle', fontSize: 9, fill: '#475569' }, 'Tower of Pisa — actual lean ≈ 4°')
+            h('text', { x: 130, y: 215, textAnchor: 'middle', fontSize: 9, fill: '#475569' }, t('stem.angles.tower_of_pisa_actual_lean_4', 'Tower of Pisa — actual lean ≈ 4°'))
           );
         }
         // ── SVG: extracted triangle ──
@@ -1787,7 +1787,7 @@ window.StemLab = window.StemLab || {
             // Right angle marker
             h('rect', { x: triLeft, y: triBase - 12, width: 12, height: 12, fill: 'none', stroke: '#475569', strokeWidth: 1.5 }),
             // Side labels
-            h('text', { x: (triLeft + rb_x)/2, y: triBase + 14, textAnchor: 'middle', fontSize: 10, fill: '#475569' }, 'adjacent (cos θ)'),
+            h('text', { x: (triLeft + rb_x)/2, y: triBase + 14, textAnchor: 'middle', fontSize: 10, fill: '#475569' }, t('stem.angles.adjacent_cos', 'adjacent (cos θ)')),
             h('text', { x: (triLeft + rb_x)/2, y: triBase + 26, textAnchor: 'middle', fontSize: 10, fill: '#0f766e', fontWeight: 'bold' }, adj.toFixed(2) + ' m'),
             h('text', { x: triLeft - 6, y: (triBase + rt_y)/2, textAnchor: 'end', fontSize: 10, fill: '#475569' }, 'opposite'),
             h('text', { x: triLeft - 6, y: (triBase + rt_y)/2 + 12, textAnchor: 'end', fontSize: 10, fill: '#dc2626', fontWeight: 'bold' }, opp.toFixed(2) + ' m'),
@@ -1813,37 +1813,37 @@ window.StemLab = window.StemLab || {
         var userAns = parseFloat(state.quizAns);
         var correct = currentQuiz && !isNaN(userAns) && Math.abs(userAns - currentQuiz.expected) <= currentQuiz.tolerance;
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, '🗼 Pisa: linked representations'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, t('stem.angles.pisa_linked_representations', '🗼 Pisa: linked representations')),
           h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
-            'Three views of the SAME trigonometric setup. Drag the angle (or tower height) slider — every representation updates simultaneously. Then take the inverse-problem quiz: solve a real measurement from only one representation.'),
+            t('stem.angles.three_views_of_the_same_trigonometric_', 'Three views of the SAME trigonometric setup. Drag the angle (or tower height) slider — every representation updates simultaneously. Then take the inverse-problem quiz: solve a real measurement from only one representation.')),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3 mb-3' },
             h('div', null,
-              h('div', { className: 'text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-1' }, '1. Phenomenon — the tower'),
+              h('div', { className: 'text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-1' }, t('stem.angles.1_phenomenon_the_tower', '1. Phenomenon — the tower')),
               towerSVG()
             ),
             h('div', null,
-              h('div', { className: 'text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-1' }, '2. Geometric decomposition'),
+              h('div', { className: 'text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-1' }, t('stem.angles.2_geometric_decomposition', '2. Geometric decomposition')),
               triangleSVG()
             )
           ),
           h('div', { className: 'mb-3 p-3 rounded-lg bg-rose-50 border border-rose-200' },
-            h('div', { className: 'text-[10px] uppercase font-bold text-rose-700 tracking-wider mb-1' }, '3. Equation'),
-            h('div', { className: 'font-mono text-[16px] text-rose-900 text-center my-2' }, 'tan(θ) = opposite / adjacent'),
+            h('div', { className: 'text-[10px] uppercase font-bold text-rose-700 tracking-wider mb-1' }, t('stem.angles.3_equation', '3. Equation')),
+            h('div', { className: 'font-mono text-[16px] text-rose-900 text-center my-2' }, t('stem.angles.tan_opposite_adjacent', 'tan(θ) = opposite / adjacent')),
             h('div', { className: 'font-mono text-[14px] text-rose-800 text-center' },
               'tan(' + theta.toFixed(1) + '°) = ' + opp.toFixed(2) + ' / ' + adj.toFixed(2) + ' = ' + tanVal.toFixed(4)
             ),
-            h('div', { className: 'text-[11px] text-rose-700 italic text-center mt-1' }, 'Change the angle and watch all three update together — this is what "the same idea, three representations" means.')
+            h('div', { className: 'text-[11px] text-rose-700 italic text-center mt-1' }, t('stem.angles.change_the_angle_and_watch_all_three_u', 'Change the angle and watch all three update together — this is what "the same idea, three representations" means.'))
           ),
           h('div', { className: 'p-3 rounded-lg bg-slate-50 border border-slate-200 mb-3' },
             h('label', { htmlFor: 'pisaAngle', className: 'block text-[11px] font-bold text-slate-700' }, 'Tilt angle θ: ' + theta.toFixed(1) + '°'),
-            h('input', { id: 'pisaAngle', type: 'range', min: 0, max: 30, step: 0.1, value: theta, onChange: function(e) { setPC({ angleDeg: parseFloat(e.target.value) }); }, className: 'w-full', 'aria-label': 'Tilt angle in degrees' }),
+            h('input', { id: 'pisaAngle', type: 'range', min: 0, max: 30, step: 0.1, value: theta, onChange: function(e) { setPC({ angleDeg: parseFloat(e.target.value) }); }, className: 'w-full', 'aria-label': t('stem.angles.tilt_angle_in_degrees', 'Tilt angle in degrees') }),
             h('label', { htmlFor: 'pisaHeight', className: 'block text-[11px] font-bold text-slate-700 mt-2' }, 'Tower height: ' + towerH + ' m'),
-            h('input', { id: 'pisaHeight', type: 'range', min: 20, max: 100, step: 1, value: towerH, onChange: function(e) { setPC({ towerHeight: parseInt(e.target.value, 10) }); }, className: 'w-full', 'aria-label': 'Tower height in meters' }),
-            h('p', { className: 'text-[10px] text-slate-500 italic mt-1' }, '(Pisa is roughly 56 m tall, leaning ≈ 4° today)')
+            h('input', { id: 'pisaHeight', type: 'range', min: 20, max: 100, step: 1, value: towerH, onChange: function(e) { setPC({ towerHeight: parseInt(e.target.value, 10) }); }, className: 'w-full', 'aria-label': t('stem.angles.tower_height_in_meters', 'Tower height in meters') }),
+            h('p', { className: 'text-[10px] text-slate-500 italic mt-1' }, t('stem.angles.pisa_is_roughly_56_m_tall_leaning_4_to', '(Pisa is roughly 56 m tall, leaning ≈ 4° today)'))
           ),
           h('div', { className: 'p-3 rounded-lg bg-amber-50 border border-amber-200' },
-            h('div', { className: 'text-[12px] font-black text-amber-900 mb-2' }, '🧩 Inverse-problem quiz'),
-            h('p', { className: 'text-[11px] text-amber-800 mb-2' }, 'Each quiz gives you partial info. Use the relationships you discovered above to compute the missing value.'),
+            h('div', { className: 'text-[12px] font-black text-amber-900 mb-2' }, t('stem.angles.inverse_problem_quiz', '🧩 Inverse-problem quiz')),
+            h('p', { className: 'text-[11px] text-amber-800 mb-2' }, t('stem.angles.each_quiz_gives_you_partial_info_use_t', 'Each quiz gives you partial info. Use the relationships you discovered above to compute the missing value.')),
             h('div', { className: 'flex flex-wrap gap-1 mb-2' },
               QUIZ_QS.map(function(q, i) {
                 return h('button', { key: q.id, onClick: function() { startQuiz(q); },
@@ -1855,11 +1855,11 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'text-[12px] text-slate-700 mb-1' }, h('strong', null, 'Given: '), currentQuiz.given + '; ' + currentQuiz.given2),
               h('div', { className: 'text-[12px] text-slate-700 mb-2' }, h('strong', null, 'Find: '), currentQuiz.ask),
               h('div', { className: 'flex items-center gap-2 flex-wrap' },
-                h('input', { type: 'number', step: 'any', value: state.quizAns, onChange: function(e) { setPC({ quizAns: e.target.value, quizRevealed: false }); }, placeholder: 'your answer', className: 'px-2 py-1 rounded border border-slate-300 text-[12px] w-32 focus:ring-2 focus:ring-amber-400 focus:outline-none', 'aria-label': 'Your answer' }),
-                h('button', { onClick: submitQuiz, disabled: state.quizAns === '', className: 'px-3 py-1 rounded text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-amber-400 focus:outline-none' }, 'Check'),
+                h('input', { type: 'number', step: 'any', value: state.quizAns, onChange: function(e) { setPC({ quizAns: e.target.value, quizRevealed: false }); }, placeholder: t('stem.angles.your_answer', 'your answer'), className: 'px-2 py-1 rounded border border-slate-300 text-[12px] w-32 focus:ring-2 focus:ring-amber-400 focus:outline-none', 'aria-label': t('stem.angles.your_answer_2', 'Your answer') }),
+                h('button', { onClick: submitQuiz, disabled: state.quizAns === '', className: 'px-3 py-1 rounded text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-amber-400 focus:outline-none' }, t('stem.angles.check_5', 'Check')),
                 state.quizRevealed && h('span', { className: 'text-[11px] font-bold ' + (correct ? 'text-green-700' : 'text-rose-700') }, correct ? '✓ Within tolerance' : '✗ Expected ≈ ' + currentQuiz.expected.toFixed(2))
               ),
-              state.quizRevealed && h('p', { className: 'text-[11px] text-slate-700 mt-1 italic' }, 'Tip: rearrange tan(θ) = opp/adj — if you know θ and one side, you can solve for the other. If you know both sides, take arctan.')
+              state.quizRevealed && h('p', { className: 'text-[11px] text-slate-700 mt-1 italic' }, t('stem.angles.tip_rearrange_tan_opp_adj_if_you_know_', 'Tip: rearrange tan(θ) = opp/adj — if you know θ and one side, you can solve for the other. If you know both sides, take arctan.'))
             )
           )
         );
@@ -1867,7 +1867,7 @@ window.StemLab = window.StemLab || {
 
       function renderGlossarySection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '\uD83D\uDCD6 Angles glossary'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.angles_glossary', '\uD83D\uDCD6 Angles glossary')),
           h('div', { className: 'space-y-1' },
             ANGLES_GLOSSARY.map(function(g, i) {
               return h('div', { key: 'g'+i, className: 'p-2 rounded-md bg-slate-50 border-l-4 border-l-rose-400 border border-slate-200' },
@@ -1911,106 +1911,106 @@ window.StemLab = window.StemLab || {
       ];
 
       var TRIANGLE_FORMULAS = [
-        { name: 'Area (base × height)', formula: 'A = ½·b·h', notes: 'Most common. b and h must be perpendicular.' },
-        { name: 'Area (Heron\'s formula)', formula: 'A = √[s(s−a)(s−b)(s−c)], s = (a+b+c)/2', notes: 'Uses three sides only. No angles needed.' },
-        { name: 'Area (two sides + included angle)', formula: 'A = ½·a·b·sin C', notes: 'When you know two sides and the angle between them.' },
-        { name: 'Law of Sines', formula: 'a/sin A = b/sin B = c/sin C = 2R', notes: 'R = circumradius. Useful when you know one side + opposite angle.' },
-        { name: 'Law of Cosines', formula: 'c² = a² + b² − 2ab·cos C', notes: 'Generalization of Pythagoras. Cos C = 0 (C=90°) → Pythagoras.' },
-        { name: 'Sum of angles', formula: 'A + B + C = 180°', notes: 'Euclidean (flat) triangles. Sum > 180° on sphere.' },
-        { name: 'Pythagorean theorem', formula: 'a² + b² = c²', notes: 'Right triangles only. c = hypotenuse.' },
-        { name: 'Triangle inequality', formula: 'a + b > c (and permutations)', notes: 'Sum of any two sides > third side.' },
-        { name: 'Centroid', formula: 'Intersection of medians', notes: 'Center of mass. Divides each median 2:1 from vertex.' },
-        { name: 'Circumcenter', formula: 'Intersection of perpendicular bisectors', notes: 'Center of circumscribed circle (passes through all 3 vertices).' },
-        { name: 'Incenter', formula: 'Intersection of angle bisectors', notes: 'Center of inscribed circle (tangent to all 3 sides).' },
-        { name: 'Orthocenter', formula: 'Intersection of altitudes', notes: 'Inside acute triangles, outside obtuse, at right-angle vertex of right triangles.' }
+        { name: t('stem.angles.area_base_height', 'Area (base × height)'), formula: 'A = ½·b·h', notes: 'Most common. b and h must be perpendicular.' },
+        { name: t('stem.angles.area_heron_s_formula', 'Area (Heron\'s formula)'), formula: 'A = √[s(s−a)(s−b)(s−c)], s = (a+b+c)/2', notes: 'Uses three sides only. No angles needed.' },
+        { name: t('stem.angles.area_two_sides_included_angle', 'Area (two sides + included angle)'), formula: 'A = ½·a·b·sin C', notes: 'When you know two sides and the angle between them.' },
+        { name: t('stem.angles.law_of_sines', 'Law of Sines'), formula: 'a/sin A = b/sin B = c/sin C = 2R', notes: 'R = circumradius. Useful when you know one side + opposite angle.' },
+        { name: t('stem.angles.law_of_cosines', 'Law of Cosines'), formula: 'c² = a² + b² − 2ab·cos C', notes: 'Generalization of Pythagoras. Cos C = 0 (C=90°) → Pythagoras.' },
+        { name: t('stem.angles.sum_of_angles', 'Sum of angles'), formula: 'A + B + C = 180°', notes: 'Euclidean (flat) triangles. Sum > 180° on sphere.' },
+        { name: t('stem.angles.pythagorean_theorem', 'Pythagorean theorem'), formula: 'a² + b² = c²', notes: 'Right triangles only. c = hypotenuse.' },
+        { name: t('stem.angles.triangle_inequality', 'Triangle inequality'), formula: 'a + b > c (and permutations)', notes: 'Sum of any two sides > third side.' },
+        { name: t('stem.angles.centroid', 'Centroid'), formula: 'Intersection of medians', notes: 'Center of mass. Divides each median 2:1 from vertex.' },
+        { name: t('stem.angles.circumcenter', 'Circumcenter'), formula: 'Intersection of perpendicular bisectors', notes: 'Center of circumscribed circle (passes through all 3 vertices).' },
+        { name: t('stem.angles.incenter', 'Incenter'), formula: 'Intersection of angle bisectors', notes: 'Center of inscribed circle (tangent to all 3 sides).' },
+        { name: t('stem.angles.orthocenter', 'Orthocenter'), formula: 'Intersection of altitudes', notes: 'Inside acute triangles, outside obtuse, at right-angle vertex of right triangles.' }
       ];
 
       var CIRCLE_FACTS = [
-        { name: 'Circumference', formula: 'C = 2πr = πd', notes: 'd = diameter. π ≈ 3.14159...' },
-        { name: 'Area', formula: 'A = πr²', notes: 'Maximum area for given perimeter (isoperimetric inequality).' },
-        { name: 'Arc length', formula: 's = r·θ (θ in radians)', notes: 'Or s = (θ°/360°)·2πr.' },
-        { name: 'Sector area', formula: 'A = ½·r²·θ (θ in radians)', notes: 'Or A = (θ°/360°)·πr².' },
-        { name: 'Chord length', formula: 'L = 2r·sin(θ/2)', notes: 'θ = central angle to the chord.' },
-        { name: 'Inscribed angle theorem', formula: 'Inscribed angle = ½ central angle', notes: 'Both subtend the same arc.' },
-        { name: 'Thales\' theorem', formula: 'Angle inscribed in semicircle = 90°', notes: 'Special case of inscribed angle theorem.' },
-        { name: 'Power of a point', formula: 'For two secants: PA·PB = PC·PD', notes: 'Holds for any two lines through P intersecting circle.' },
-        { name: 'Equation of circle (center h,k)', formula: '(x−h)² + (y−k)² = r²', notes: 'Standard form.' },
+        { name: t('stem.angles.circumference', 'Circumference'), formula: 'C = 2πr = πd', notes: 'd = diameter. π ≈ 3.14159...' },
+        { name: t('stem.angles.area', 'Area'), formula: 'A = πr²', notes: 'Maximum area for given perimeter (isoperimetric inequality).' },
+        { name: t('stem.angles.arc_length', 'Arc length'), formula: 's = r·θ (θ in radians)', notes: 'Or s = (θ°/360°)·2πr.' },
+        { name: t('stem.angles.sector_area', 'Sector area'), formula: 'A = ½·r²·θ (θ in radians)', notes: 'Or A = (θ°/360°)·πr².' },
+        { name: t('stem.angles.chord_length', 'Chord length'), formula: 'L = 2r·sin(θ/2)', notes: 'θ = central angle to the chord.' },
+        { name: t('stem.angles.inscribed_angle_theorem', 'Inscribed angle theorem'), formula: 'Inscribed angle = ½ central angle', notes: 'Both subtend the same arc.' },
+        { name: t('stem.angles.thales_theorem', 'Thales\' theorem'), formula: 'Angle inscribed in semicircle = 90°', notes: 'Special case of inscribed angle theorem.' },
+        { name: t('stem.angles.power_of_a_point', 'Power of a point'), formula: 'For two secants: PA·PB = PC·PD', notes: 'Holds for any two lines through P intersecting circle.' },
+        { name: t('stem.angles.equation_of_circle_center_h_k', 'Equation of circle (center h,k)'), formula: '(x−h)² + (y−k)² = r²', notes: 'Standard form.' },
         { name: 'Tangent-radius', formula: 'Tangent ⊥ radius at point of contact', notes: 'Right angle between radius and tangent line.' }
       ];
 
       var SOLID_VOLUMES = [
-        { name: 'Cube', V: 's³', SA: '6s²', notes: '6 faces, 12 edges, 8 vertices. All edges equal.' },
-        { name: 'Rectangular prism (box)', V: 'lwh', SA: '2(lw + lh + wh)', notes: '6 faces, 12 edges, 8 vertices.' },
-        { name: 'Sphere', V: '(4/3)πr³', SA: '4πr²', notes: 'Maximum volume for given surface area. Soap bubbles minimize surface area.' },
-        { name: 'Cylinder', V: 'πr²h', SA: '2πr² + 2πrh', notes: 'Like a prism but with circular ends.' },
-        { name: 'Cone', V: '(1/3)πr²h', SA: 'πr² + πr·ℓ (ℓ = slant)', notes: 'Volume = 1/3 of cylinder with same r and h.' },
-        { name: 'Square pyramid', V: '(1/3)s²h', SA: 's² + 2s·ℓ', notes: 'Egyptian pyramids. Volume = 1/3 of prism with same base + height.' },
-        { name: 'Triangular prism', V: '(1/2)bh·L', SA: 'sum of 5 faces', notes: 'Cross-section is triangle. Toblerone bar.' },
-        { name: 'Tetrahedron (regular)', V: 's³/(6√2)', SA: 's²·√3', notes: '4 triangular faces. Simplest 3D shape (just 4 vertices).' },
-        { name: 'Octahedron (regular)', V: '(√2/3)s³', SA: '2s²·√3', notes: '8 triangular faces. Diamond crystal shape.' },
-        { name: 'Dodecahedron (regular)', V: '(15+7√5)/4·s³', SA: '3·s²·√(25+10√5)', notes: '12 pentagonal faces. Plato linked to "the heavens".' },
-        { name: 'Icosahedron (regular)', V: '(5(3+√5)/12)·s³', SA: '5·s²·√3', notes: '20 triangular faces. Most spherelike Platonic solid.' }
+        { name: t('stem.angles.cube', 'Cube'), V: 's³', SA: '6s²', notes: '6 faces, 12 edges, 8 vertices. All edges equal.' },
+        { name: t('stem.angles.rectangular_prism_box', 'Rectangular prism (box)'), V: 'lwh', SA: '2(lw + lh + wh)', notes: '6 faces, 12 edges, 8 vertices.' },
+        { name: t('stem.angles.sphere', 'Sphere'), V: '(4/3)πr³', SA: '4πr²', notes: 'Maximum volume for given surface area. Soap bubbles minimize surface area.' },
+        { name: t('stem.angles.cylinder', 'Cylinder'), V: 'πr²h', SA: '2πr² + 2πrh', notes: 'Like a prism but with circular ends.' },
+        { name: t('stem.angles.cone', 'Cone'), V: '(1/3)πr²h', SA: 'πr² + πr·ℓ (ℓ = slant)', notes: 'Volume = 1/3 of cylinder with same r and h.' },
+        { name: t('stem.angles.square_pyramid', 'Square pyramid'), V: '(1/3)s²h', SA: 's² + 2s·ℓ', notes: 'Egyptian pyramids. Volume = 1/3 of prism with same base + height.' },
+        { name: t('stem.angles.triangular_prism', 'Triangular prism'), V: '(1/2)bh·L', SA: 'sum of 5 faces', notes: 'Cross-section is triangle. Toblerone bar.' },
+        { name: t('stem.angles.tetrahedron_regular', 'Tetrahedron (regular)'), V: 's³/(6√2)', SA: 's²·√3', notes: '4 triangular faces. Simplest 3D shape (just 4 vertices).' },
+        { name: t('stem.angles.octahedron_regular', 'Octahedron (regular)'), V: '(√2/3)s³', SA: '2s²·√3', notes: '8 triangular faces. Diamond crystal shape.' },
+        { name: t('stem.angles.dodecahedron_regular', 'Dodecahedron (regular)'), V: '(15+7√5)/4·s³', SA: '3·s²·√(25+10√5)', notes: '12 pentagonal faces. Plato linked to "the heavens".' },
+        { name: t('stem.angles.icosahedron_regular', 'Icosahedron (regular)'), V: '(5(3+√5)/12)·s³', SA: '5·s²·√3', notes: '20 triangular faces. Most spherelike Platonic solid.' }
       ];
 
       var TRANSFORMATIONS = [
-        { name: 'Translation', effect: 'Slides shape (no rotation, no reflection, no resize)', preserves: 'Size, shape, orientation', notes: 'Just adds a vector to every point. (x,y) → (x+a, y+b).' },
-        { name: 'Rotation', effect: 'Turns shape around a fixed point', preserves: 'Size, shape', notes: 'Specified by center + angle. Around origin: (x,y) → (x·cos θ − y·sin θ, x·sin θ + y·cos θ).' },
-        { name: 'Reflection', effect: 'Mirrors shape across a line', preserves: 'Size, shape (but reverses orientation/chirality)', notes: 'Across x-axis: (x,y) → (x,−y). Across y-axis: (x,y) → (−x,y). Across y=x: (x,y) → (y,x).' },
-        { name: 'Glide reflection', effect: 'Reflection + translation along the line of reflection', preserves: 'Size, shape (reverses orientation)', notes: 'Footprints in sand are a glide reflection pattern.' },
-        { name: 'Dilation (scaling)', effect: 'Stretches/shrinks shape from a center', preserves: 'Shape (similarity), but not size', notes: 'Factor k: (x,y) → (kx, ky). k > 1 = enlargement; 0 < k < 1 = reduction; k < 0 = reflection through center.' },
-        { name: 'Shear', effect: 'Skews shape — parallel lines stay parallel but slide', preserves: 'Area', notes: 'Horizontal shear: (x,y) → (x + k·y, y). Italic fonts are sheared.' },
-        { name: 'Identity', effect: 'Does nothing', preserves: 'Everything', notes: 'The trivial transformation.' },
-        { name: 'Composition', effect: 'Apply one after another', preserves: 'Depends on the composition', notes: 'Order matters! Rotate-then-translate ≠ translate-then-rotate (in general).' }
+        { name: t('stem.angles.translation', 'Translation'), effect: 'Slides shape (no rotation, no reflection, no resize)', preserves: 'Size, shape, orientation', notes: 'Just adds a vector to every point. (x,y) → (x+a, y+b).' },
+        { name: t('stem.angles.rotation', 'Rotation'), effect: 'Turns shape around a fixed point', preserves: 'Size, shape', notes: 'Specified by center + angle. Around origin: (x,y) → (x·cos θ − y·sin θ, x·sin θ + y·cos θ).' },
+        { name: t('stem.angles.reflection', 'Reflection'), effect: 'Mirrors shape across a line', preserves: 'Size, shape (but reverses orientation/chirality)', notes: 'Across x-axis: (x,y) → (x,−y). Across y-axis: (x,y) → (−x,y). Across y=x: (x,y) → (y,x).' },
+        { name: t('stem.angles.glide_reflection', 'Glide reflection'), effect: 'Reflection + translation along the line of reflection', preserves: 'Size, shape (reverses orientation)', notes: 'Footprints in sand are a glide reflection pattern.' },
+        { name: t('stem.angles.dilation_scaling', 'Dilation (scaling)'), effect: 'Stretches/shrinks shape from a center', preserves: 'Shape (similarity), but not size', notes: 'Factor k: (x,y) → (kx, ky). k > 1 = enlargement; 0 < k < 1 = reduction; k < 0 = reflection through center.' },
+        { name: t('stem.angles.shear', 'Shear'), effect: 'Skews shape — parallel lines stay parallel but slide', preserves: 'Area', notes: 'Horizontal shear: (x,y) → (x + k·y, y). Italic fonts are sheared.' },
+        { name: t('stem.angles.identity', 'Identity'), effect: 'Does nothing', preserves: 'Everything', notes: 'The trivial transformation.' },
+        { name: t('stem.angles.composition', 'Composition'), effect: 'Apply one after another', preserves: 'Depends on the composition', notes: 'Order matters! Rotate-then-translate ≠ translate-then-rotate (in general).' }
       ];
 
       var COORD_SYSTEMS = [
-        { name: 'Cartesian (rectangular) 2D', coords: '(x, y)', use: 'Most common. Standard graph paper.', notes: 'x-axis horizontal, y-axis vertical. Origin (0,0).' },
-        { name: 'Cartesian (rectangular) 3D', coords: '(x, y, z)', use: 'Standard for 3D graphics, physics.', notes: 'Right-handed: thumb x, index y, middle z.' },
-        { name: 'Polar 2D', coords: '(r, θ)', use: 'Circular/radial symmetry.', notes: 'r = distance from origin, θ = angle from +x axis. x = r cos θ, y = r sin θ.' },
-        { name: 'Cylindrical 3D', coords: '(r, θ, z)', use: 'Cylinders, helices, axial symmetry.', notes: 'Polar in plane + z height. Used for solenoids, pipe flow.' },
-        { name: 'Spherical 3D', coords: '(ρ, θ, φ)', use: 'Spheres, planetary motion, antennas.', notes: 'ρ = distance from origin; conventions vary on which angle is θ vs φ.' },
-        { name: 'Geographic (lat, lon)', coords: '(lat, lon)', use: 'Earth surface.', notes: 'Latitude: −90° (S pole) to +90° (N pole). Longitude: −180° to +180° from prime meridian.' },
-        { name: 'UTM (Universal Transverse Mercator)', coords: 'zone + (E, N)', use: 'Local-scale maps, surveys.', notes: 'Projects Earth onto cylinder. Less distortion at small scales than lat/lon.' },
-        { name: 'Homogeneous (projective)', coords: '(x, y, w) or (x, y, z, w)', use: 'Computer graphics, projective geometry.', notes: 'Adds a "weight" coordinate. Enables translations as matrix multiplication.' }
+        { name: t('stem.angles.cartesian_rectangular_2d', 'Cartesian (rectangular) 2D'), coords: '(x, y)', use: 'Most common. Standard graph paper.', notes: 'x-axis horizontal, y-axis vertical. Origin (0,0).' },
+        { name: t('stem.angles.cartesian_rectangular_3d', 'Cartesian (rectangular) 3D'), coords: '(x, y, z)', use: 'Standard for 3D graphics, physics.', notes: 'Right-handed: thumb x, index y, middle z.' },
+        { name: t('stem.angles.polar_2d', 'Polar 2D'), coords: '(r, θ)', use: 'Circular/radial symmetry.', notes: 'r = distance from origin, θ = angle from +x axis. x = r cos θ, y = r sin θ.' },
+        { name: t('stem.angles.cylindrical_3d', 'Cylindrical 3D'), coords: '(r, θ, z)', use: 'Cylinders, helices, axial symmetry.', notes: 'Polar in plane + z height. Used for solenoids, pipe flow.' },
+        { name: t('stem.angles.spherical_3d', 'Spherical 3D'), coords: '(ρ, θ, φ)', use: 'Spheres, planetary motion, antennas.', notes: 'ρ = distance from origin; conventions vary on which angle is θ vs φ.' },
+        { name: t('stem.angles.geographic_lat_lon', 'Geographic (lat, lon)'), coords: '(lat, lon)', use: 'Earth surface.', notes: 'Latitude: −90° (S pole) to +90° (N pole). Longitude: −180° to +180° from prime meridian.' },
+        { name: t('stem.angles.utm_universal_transverse_mercator', 'UTM (Universal Transverse Mercator)'), coords: 'zone + (E, N)', use: 'Local-scale maps, surveys.', notes: 'Projects Earth onto cylinder. Less distortion at small scales than lat/lon.' },
+        { name: t('stem.angles.homogeneous_projective', 'Homogeneous (projective)'), coords: '(x, y, w) or (x, y, z, w)', use: 'Computer graphics, projective geometry.', notes: 'Adds a "weight" coordinate. Enables translations as matrix multiplication.' }
       ];
 
       var VECTOR_NOTES = [
-        { topic: 'What is a vector', detail: 'Quantity with both magnitude AND direction. Drawn as arrow. Examples: velocity, force, displacement.' },
-        { topic: 'Scalar vs vector', detail: 'Scalar = just a number (mass, temperature, time). Vector = magnitude + direction.' },
-        { topic: 'Vector addition (head-to-tail)', detail: 'Place tail of second at head of first. Resultant = first tail to second head.' },
-        { topic: 'Vector addition (parallelogram)', detail: 'Place tails together. Diagonal of parallelogram = resultant.' },
-        { topic: 'Components', detail: 'Vector v at angle θ: vₓ = v·cos θ, v_y = v·sin θ.' },
-        { topic: 'Magnitude', detail: '|v| = √(vₓ² + v_y² + v_z²). Pythagoras in any dimension.' },
-        { topic: 'Unit vector', detail: 'Magnitude 1. v̂ = v / |v|. Often called the "direction" of v.' },
-        { topic: 'Dot product', detail: 'a·b = |a||b|cos θ. Gives scalar. Zero when perpendicular. Negative when angle > 90°.' },
-        { topic: 'Cross product (3D only)', detail: 'a×b = |a||b|sin θ · n̂. Gives vector PERPENDICULAR to both. Magnitude = area of parallelogram.' },
-        { topic: 'Right-hand rule (cross)', detail: 'Curl fingers from a to b. Thumb points in direction of a×b. (Right-handed coordinates.)' },
-        { topic: 'Linear combination', detail: 'c₁·a + c₂·b. Generates a plane (or line) of vectors.' },
-        { topic: 'Real-world: forces', detail: 'Newton\'s 2nd law: F = ma. Net force is vector sum of all forces.' },
-        { topic: 'Real-world: navigation', detail: 'Airplane heading + wind vector → ground velocity (vector sum).' }
+        { topic: 'What is a vector', detail: t('stem.angles.quantity_with_both_magnitude_and_direc', 'Quantity with both magnitude AND direction. Drawn as arrow. Examples: velocity, force, displacement.') },
+        { topic: 'Scalar vs vector', detail: t('stem.angles.scalar_just_a_number_mass_temperature_', 'Scalar = just a number (mass, temperature, time). Vector = magnitude + direction.') },
+        { topic: 'Vector addition (head-to-tail)', detail: t('stem.angles.place_tail_of_second_at_head_of_first_', 'Place tail of second at head of first. Resultant = first tail to second head.') },
+        { topic: 'Vector addition (parallelogram)', detail: t('stem.angles.place_tails_together_diagonal_of_paral', 'Place tails together. Diagonal of parallelogram = resultant.') },
+        { topic: 'Components', detail: t('stem.angles.vector_v_at_angle_v_v_cos_v_y_v_sin', 'Vector v at angle θ: vₓ = v·cos θ, v_y = v·sin θ.') },
+        { topic: 'Magnitude', detail: t('stem.angles.v_v_v_y_v_z_pythagoras_in_any_dimensio', '|v| = √(vₓ² + v_y² + v_z²). Pythagoras in any dimension.') },
+        { topic: 'Unit vector', detail: t('stem.angles.magnitude_1_v_v_v_often_called_the_dir', 'Magnitude 1. v̂ = v / |v|. Often called the "direction" of v.') },
+        { topic: 'Dot product', detail: t('stem.angles.a_b_a_b_cos_gives_scalar_zero_when_per', 'a·b = |a||b|cos θ. Gives scalar. Zero when perpendicular. Negative when angle > 90°.') },
+        { topic: 'Cross product (3D only)', detail: t('stem.angles.a_b_a_b_sin_n_gives_vector_perpendicul', 'a×b = |a||b|sin θ · n̂. Gives vector PERPENDICULAR to both. Magnitude = area of parallelogram.') },
+        { topic: 'Right-hand rule (cross)', detail: t('stem.angles.curl_fingers_from_a_to_b_thumb_points_', 'Curl fingers from a to b. Thumb points in direction of a×b. (Right-handed coordinates.)') },
+        { topic: 'Linear combination', detail: t('stem.angles.c_a_c_b_generates_a_plane_or_line_of_v', 'c₁·a + c₂·b. Generates a plane (or line) of vectors.') },
+        { topic: 'Real-world: forces', detail: t('stem.angles.newton_s_2nd_law_f_ma_net_force_is_vec', 'Newton\'s 2nd law: F = ma. Net force is vector sum of all forces.') },
+        { topic: 'Real-world: navigation', detail: t('stem.angles.airplane_heading_wind_vector_ground_ve', 'Airplane heading + wind vector → ground velocity (vector sum).') }
       ];
 
       var SYMMETRY_TYPES = [
-        { name: 'Reflection (mirror) symmetry', count: 'one or more axes', example: 'Butterfly (1 axis), snowflake (6 axes), letter A (1 axis vertical)', notes: 'Shape unchanged when reflected across the axis.' },
-        { name: 'Rotational symmetry', count: 'n-fold (rotation 360°/n)', example: 'Pinwheel (4-fold), starfish (5-fold), honeycomb cell (6-fold)', notes: 'Looks identical after rotating 360°/n.' },
-        { name: 'Translational symmetry', count: 'unlimited (along translation vector)', example: 'Wallpaper, brick wall, fence', notes: 'Pattern repeats by translation.' },
-        { name: 'Glide reflection', count: '—', example: 'Footprints, frieze patterns', notes: 'Reflect + translate combined.' },
-        { name: 'Point symmetry (centrosymmetric)', count: '2-fold rotation about a point', example: 'Letter S, letter Z, recycling logo', notes: 'Looks identical when rotated 180° about center.' },
-        { name: 'Bilateral symmetry', count: '1 mirror axis', example: 'Vertebrate animals (you!), most leaves', notes: 'Left/right halves are mirror images.' },
-        { name: 'Radial symmetry', count: 'rotational', example: 'Sea stars, daisies, jellyfish', notes: 'Multiple mirror lines through a center.' },
-        { name: 'Crystallographic groups', count: '17 wallpaper, 230 3D space groups', example: 'Crystals, M.C. Escher tilings', notes: 'Mathematically classified symmetry of repeating patterns.' }
+        { name: t('stem.angles.reflection_mirror_symmetry', 'Reflection (mirror) symmetry'), count: 'one or more axes', example: 'Butterfly (1 axis), snowflake (6 axes), letter A (1 axis vertical)', notes: 'Shape unchanged when reflected across the axis.' },
+        { name: t('stem.angles.rotational_symmetry', 'Rotational symmetry'), count: 'n-fold (rotation 360°/n)', example: 'Pinwheel (4-fold), starfish (5-fold), honeycomb cell (6-fold)', notes: 'Looks identical after rotating 360°/n.' },
+        { name: t('stem.angles.translational_symmetry', 'Translational symmetry'), count: 'unlimited (along translation vector)', example: 'Wallpaper, brick wall, fence', notes: 'Pattern repeats by translation.' },
+        { name: t('stem.angles.glide_reflection_2', 'Glide reflection'), count: '—', example: 'Footprints, frieze patterns', notes: 'Reflect + translate combined.' },
+        { name: t('stem.angles.point_symmetry_centrosymmetric', 'Point symmetry (centrosymmetric)'), count: '2-fold rotation about a point', example: 'Letter S, letter Z, recycling logo', notes: 'Looks identical when rotated 180° about center.' },
+        { name: t('stem.angles.bilateral_symmetry', 'Bilateral symmetry'), count: '1 mirror axis', example: 'Vertebrate animals (you!), most leaves', notes: 'Left/right halves are mirror images.' },
+        { name: t('stem.angles.radial_symmetry', 'Radial symmetry'), count: 'rotational', example: 'Sea stars, daisies, jellyfish', notes: 'Multiple mirror lines through a center.' },
+        { name: t('stem.angles.crystallographic_groups', 'Crystallographic groups'), count: '17 wallpaper, 230 3D space groups', example: 'Crystals, M.C. Escher tilings', notes: 'Mathematically classified symmetry of repeating patterns.' }
       ];
 
       var TILING_FACTS = [
-        { name: 'Regular tessellations (3 only)', detail: 'Equilateral triangle, square, regular hexagon. Only regular polygons that tile the plane.' },
-        { name: 'Why only 3?', detail: 'Interior angle must divide 360°. Triangle 60° (×6), square 90° (×4), hexagon 120° (×3). Pentagon 108° doesn\'t divide 360° → can\'t tile alone.' },
-        { name: 'Semiregular (Archimedean) tessellations', detail: '8 in total. Combine multiple regular polygons; same arrangement at each vertex.' },
-        { name: 'Penrose tilings (1974)', detail: 'Aperiodic tiling — never repeats exactly. 5-fold symmetry. Inspired discovery of quasicrystals.' },
-        { name: 'Honeycomb conjecture', detail: 'Hexagonal tiling minimizes total perimeter for given area. Proven by Hales (1999). Why bees use hexagons.' },
-        { name: 'Voronoi diagrams', detail: 'Each region = points closest to one "seed" point. Appears in nature (giraffe spots, mud cracks, cell organization).' },
-        { name: 'Hyperbolic tilings', detail: 'On a hyperbolic plane, regular pentagons (and many other shapes) CAN tile. M.C. Escher\'s "Circle Limit" series.' },
-        { name: 'Wang tiles (1961)', detail: 'Colored squares that must match neighbors on edges. Can simulate Turing machine → tiling problem is undecidable in general.' },
-        { name: '"Einstein" tile (2023)', detail: 'A single tile that aperiodically tiles the plane (the "hat" and "spectre" shapes). Major recent discovery.' }
+        { name: t('stem.angles.regular_tessellations_3_only', 'Regular tessellations (3 only)'), detail: t('stem.angles.equilateral_triangle_square_regular_he', 'Equilateral triangle, square, regular hexagon. Only regular polygons that tile the plane.') },
+        { name: t('stem.angles.why_only_3', 'Why only 3?'), detail: t('stem.angles.interior_angle_must_divide_360_triangl', 'Interior angle must divide 360°. Triangle 60° (×6), square 90° (×4), hexagon 120° (×3). Pentagon 108° doesn\'t divide 360° → can\'t tile alone.') },
+        { name: t('stem.angles.semiregular_archimedean_tessellations', 'Semiregular (Archimedean) tessellations'), detail: t('stem.angles.8_in_total_combine_multiple_regular_po', '8 in total. Combine multiple regular polygons; same arrangement at each vertex.') },
+        { name: t('stem.angles.penrose_tilings_1974', 'Penrose tilings (1974)'), detail: t('stem.angles.aperiodic_tiling_never_repeats_exactly', 'Aperiodic tiling — never repeats exactly. 5-fold symmetry. Inspired discovery of quasicrystals.') },
+        { name: t('stem.angles.honeycomb_conjecture', 'Honeycomb conjecture'), detail: t('stem.angles.hexagonal_tiling_minimizes_total_perim', 'Hexagonal tiling minimizes total perimeter for given area. Proven by Hales (1999). Why bees use hexagons.') },
+        { name: t('stem.angles.voronoi_diagrams', 'Voronoi diagrams'), detail: t('stem.angles.each_region_points_closest_to_one_seed', 'Each region = points closest to one "seed" point. Appears in nature (giraffe spots, mud cracks, cell organization).') },
+        { name: t('stem.angles.hyperbolic_tilings', 'Hyperbolic tilings'), detail: t('stem.angles.on_a_hyperbolic_plane_regular_pentagon', 'On a hyperbolic plane, regular pentagons (and many other shapes) CAN tile. M.C. Escher\'s "Circle Limit" series.') },
+        { name: t('stem.angles.wang_tiles_1961', 'Wang tiles (1961)'), detail: t('stem.angles.colored_squares_that_must_match_neighb', 'Colored squares that must match neighbors on edges. Can simulate Turing machine → tiling problem is undecidable in general.') },
+        { name: t('stem.angles.einstein_tile_2023', '"Einstein" tile (2023)'), detail: t('stem.angles.a_single_tile_that_aperiodically_tiles', 'A single tile that aperiodically tiles the plane (the "hat" and "spectre" shapes). Major recent discovery.') }
       ];
 
       var GEOMETRY_HISTORY = [
@@ -2049,8 +2049,8 @@ window.StemLab = window.StemLab || {
 
       function renderPythagSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, 'a²+b² Pythagorean theorem'),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'In a right triangle, a² + b² = c² where c is the hypotenuse. Sets of integers (a, b, c) that satisfy this are called Pythagorean triples. A "primitive" triple has no common factor.'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.a_b_pythagorean_theorem', 'a²+b² Pythagorean theorem')),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.in_a_right_triangle_a_b_c_where_c_is_t', 'In a right triangle, a² + b² = c² where c is the hypotenuse. Sets of integers (a, b, c) that satisfy this are called Pythagorean triples. A "primitive" triple has no common factor.')),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
               h('thead', null,
@@ -2073,16 +2073,16 @@ window.StemLab = window.StemLab || {
             )
           ),
           h('div', { className: 'mt-3 p-2.5 rounded bg-rose-50 border border-rose-200 text-[11px] text-rose-900' },
-            h('strong', null, 'Generating primitive triples: '), 'For positive integers m > n with no common factor and not both odd, a = m² − n², b = 2mn, c = m² + n². Tries m=2, n=1 → (3,4,5).'
+            h('strong', null, t('stem.angles.generating_primitive_triples', 'Generating primitive triples: ')), t('stem.angles.for_positive_integers_m_n_with_no_comm', 'For positive integers m > n with no common factor and not both odd, a = m² − n², b = 2mn, c = m² + n². Tries m=2, n=1 → (3,4,5).')
           )
         );
       }
 
       function renderTrianglesSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '△ Triangle types and formulas'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.triangle_types_and_formulas', '△ Triangle types and formulas')),
           h('div', { className: 'mb-3' },
-            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Classification'),
+            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.angles.classification', 'Classification')),
             h('div', { className: 'space-y-1' },
               TRIANGLE_TYPES.map(function(t, i) {
                 return h('div', { key: 't'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
@@ -2096,7 +2096,7 @@ window.StemLab = window.StemLab || {
               })
             )
           ),
-          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Key formulas'),
+          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.angles.key_formulas', 'Key formulas')),
           h('div', { className: 'space-y-1' },
             TRIANGLE_FORMULAS.map(function(f, i) {
               return h('div', { key: 'f'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
@@ -2113,7 +2113,7 @@ window.StemLab = window.StemLab || {
 
       function renderCircleSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '◯ Circle geometry'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.circle_geometry_2', '◯ Circle geometry')),
           h('div', { className: 'space-y-1' },
             CIRCLE_FACTS.map(function(c, i) {
               return h('div', { key: 'c'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
@@ -2130,7 +2130,7 @@ window.StemLab = window.StemLab || {
 
       function renderSolidsSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⬢ 3D solids — volumes and surface areas'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.3d_solids_volumes_and_surface_areas', '⬢ 3D solids — volumes and surface areas')),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
               h('thead', null,
@@ -2157,7 +2157,7 @@ window.StemLab = window.StemLab || {
 
       function renderTransformSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '↻ Geometric transformations'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.geometric_transformations', '↻ Geometric transformations')),
           h('div', { className: 'space-y-2' },
             TRANSFORMATIONS.map(function(t, i) {
               return h('div', { key: 't'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -2173,7 +2173,7 @@ window.StemLab = window.StemLab || {
 
       function renderCoordsSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '(x,y) Coordinate systems'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.x_y_coordinate_systems', '(x,y) Coordinate systems')),
           h('div', { className: 'space-y-2' },
             COORD_SYSTEMS.map(function(c, i) {
               return h('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -2191,7 +2191,7 @@ window.StemLab = window.StemLab || {
 
       function renderVectorsSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '→ Vectors'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.vectors_2', '→ Vectors')),
           h('div', { className: 'space-y-1' },
             VECTOR_NOTES.map(function(v, i) {
               return h('div', { key: 'v'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
@@ -2205,7 +2205,7 @@ window.StemLab = window.StemLab || {
 
       function renderSymmetrySection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⟂ Symmetry'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.symmetry_2', '⟂ Symmetry')),
           h('div', { className: 'space-y-2' },
             SYMMETRY_TYPES.map(function(s, i) {
               return h('div', { key: 's'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -2223,7 +2223,7 @@ window.StemLab = window.StemLab || {
 
       function renderTilingsSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⬡ Tessellations & tilings'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.tessellations_tilings', '⬡ Tessellations & tilings')),
           h('div', { className: 'space-y-2' },
             TILING_FACTS.map(function(t, i) {
               return h('div', { key: 't'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-rose-400 border border-slate-200' },
@@ -2237,7 +2237,7 @@ window.StemLab = window.StemLab || {
 
       function renderFamousSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🕰 History of geometry'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.history_of_geometry', '🕰 History of geometry')),
           h('div', { className: 'space-y-2' },
             GEOMETRY_HISTORY.map(function(g, i) {
               return h('div', { key: 'g'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-rose-400 border border-slate-200' },
@@ -2254,7 +2254,7 @@ window.StemLab = window.StemLab || {
 
       function renderCareersSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '💼 Careers that use angles every day'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.careers_that_use_angles_every_day', '💼 Careers that use angles every day')),
           h('div', { className: 'space-y-2' },
             ANGLE_CAREERS.map(function(c, i) {
               return h('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -2341,7 +2341,7 @@ window.StemLab = window.StemLab || {
 
       function renderTheoremsSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '∎ Classic mathematical theorems'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.classic_mathematical_theorems', '∎ Classic mathematical theorems')),
           h('div', { className: 'space-y-2' },
             CLASSIC_THEOREMS.map(function(t, i) {
               return h('div', { key: 't'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-rose-400 border border-slate-200' },
@@ -2355,35 +2355,35 @@ window.StemLab = window.StemLab || {
       }
 
       var SHAPE_FACTS = [
-        { fact: 'Circle has most area for a perimeter', detail: 'Isoperimetric inequality: 4πA ≤ P². Equality only for circles. Why soap bubbles + planets are round.' },
-        { fact: 'Sphere has most volume for a surface area', detail: '3D version of above. Single bubbles are spheres; merged bubbles meet at 120° angles.' },
-        { fact: 'Regular hexagons tile most efficiently', detail: 'Honeycomb conjecture (proven 1999 by Hales): hexagonal tiling has lowest total edge length per area among any partition.' },
-        { fact: 'Triangle is most rigid shape', detail: 'Cannot be deformed without changing side lengths. Why bridges + roof trusses use triangles.' },
-        { fact: 'Squares stack densely (100%)', detail: 'Square tiles fill the plane with no gaps. Same for rectangles + parallelograms.' },
-        { fact: 'Circles tile poorly', detail: 'Hexagonal packing of circles fills ~90.7% of plane (best possible). Square packing only ~78.5%.' },
-        { fact: 'Sphere packing in 3D', detail: 'FCC + HCP both achieve ~74% density (Kepler conjecture, proven 2014 by Hales).' },
-        { fact: 'Five regular polyhedra', detail: 'Only 5 in 3D: tetrahedron, cube, octahedron, dodecahedron, icosahedron. (Plato discussed.)' },
-        { fact: 'Tetrahedron is simplest', detail: '4 vertices, 6 edges, 4 faces. Minimum 3D shape.' },
-        { fact: 'Sphere/cube/cylinder volumes', detail: 'For sphere inscribed in cylinder (h = 2r): V_sphere = 2/3 × V_cylinder. (Archimedes\'s favorite result.)' },
-        { fact: '4D hypercube (tesseract)', detail: '16 vertices, 32 edges, 24 faces, 8 cells. Can be unfolded into 8 cubes (per Salvador Dalí).' },
-        { fact: 'Möbius strip', detail: 'Single-sided surface. Cut down middle → longer single loop. Cut at 1/3 → two interlocked rings (one Möbius).' },
-        { fact: 'Klein bottle', detail: 'Closed non-orientable surface. Inside = outside. Can be made in 3D only with self-intersection.' },
-        { fact: 'Reuleaux triangle', detail: 'Curve of constant width (not a circle!). Can roll a board on three Reuleaux rollers smoothly. Drill bits use it.' },
-        { fact: 'Antiprism', detail: 'Two parallel polygons rotated 360°/2n, connected by triangles. Tetrahedron is the simplest antiprism.' },
-        { fact: 'Snub cube', detail: 'Has chirality — left- + right-handed forms. One of two chiral Archimedean solids (other is snub dodecahedron).' },
-        { fact: 'Hyperbolic paraboloid (saddle)', detail: 'Equation z = xy. Straight lines lie on it in 2 families. Used in Pringles + some roofs.' },
-        { fact: 'Stable polyhedron count', detail: '"Gomboc" (2006) is first known mono-monostatic — one stable + one unstable equilibrium. Like a self-righting Weeble.' },
-        { fact: 'Egg shape (oval) tessellation', detail: 'Cannot tile plane alone — gaps. But 7 egg-shapes form a hex-like cluster.' },
-        { fact: 'Polyhedra in nature', detail: 'Common in crystals: cube (NaCl), octahedron (diamond, fluorite), dodecahedron (pyrite, garnet).' },
-        { fact: 'Buckyball (C₆₀)', detail: 'Truncated icosahedron. 60 carbons. Like soccer ball pattern. Discovered 1985.' },
-        { fact: 'DNA double helix', detail: 'Helical, ~10.5 base pairs per turn. Major + minor grooves. Constant diameter ~2 nm.' },
-        { fact: 'Honeycomb cells', detail: 'Hexagonal prisms with rhombic bottoms. Bees do not consciously calculate — biophysics naturally minimizes surface area.' },
-        { fact: '"Spaghetti theorem"', detail: 'Drop spaghetti at random — average number of intersections = (L/πd) × π × n. Used to estimate π in classroom.' }
+        { fact: t('stem.angles.circle_has_most_area_for_a_perimeter', 'Circle has most area for a perimeter'), detail: t('stem.angles.isoperimetric_inequality_4_a_p_equalit', 'Isoperimetric inequality: 4πA ≤ P². Equality only for circles. Why soap bubbles + planets are round.') },
+        { fact: t('stem.angles.sphere_has_most_volume_for_a_surface_a', 'Sphere has most volume for a surface area'), detail: t('stem.angles.3d_version_of_above_single_bubbles_are', '3D version of above. Single bubbles are spheres; merged bubbles meet at 120° angles.') },
+        { fact: t('stem.angles.regular_hexagons_tile_most_efficiently', 'Regular hexagons tile most efficiently'), detail: t('stem.angles.honeycomb_conjecture_proven_1999_by_ha', 'Honeycomb conjecture (proven 1999 by Hales): hexagonal tiling has lowest total edge length per area among any partition.') },
+        { fact: t('stem.angles.triangle_is_most_rigid_shape', 'Triangle is most rigid shape'), detail: t('stem.angles.cannot_be_deformed_without_changing_si', 'Cannot be deformed without changing side lengths. Why bridges + roof trusses use triangles.') },
+        { fact: t('stem.angles.squares_stack_densely_100', 'Squares stack densely (100%)'), detail: t('stem.angles.square_tiles_fill_the_plane_with_no_ga', 'Square tiles fill the plane with no gaps. Same for rectangles + parallelograms.') },
+        { fact: t('stem.angles.circles_tile_poorly', 'Circles tile poorly'), detail: t('stem.angles.hexagonal_packing_of_circles_fills_90_', 'Hexagonal packing of circles fills ~90.7% of plane (best possible). Square packing only ~78.5%.') },
+        { fact: t('stem.angles.sphere_packing_in_3d', 'Sphere packing in 3D'), detail: t('stem.angles.fcc_hcp_both_achieve_74_density_kepler', 'FCC + HCP both achieve ~74% density (Kepler conjecture, proven 2014 by Hales).') },
+        { fact: t('stem.angles.five_regular_polyhedra', 'Five regular polyhedra'), detail: t('stem.angles.only_5_in_3d_tetrahedron_cube_octahedr', 'Only 5 in 3D: tetrahedron, cube, octahedron, dodecahedron, icosahedron. (Plato discussed.)') },
+        { fact: t('stem.angles.tetrahedron_is_simplest', 'Tetrahedron is simplest'), detail: t('stem.angles.4_vertices_6_edges_4_faces_minimum_3d_', '4 vertices, 6 edges, 4 faces. Minimum 3D shape.') },
+        { fact: t('stem.angles.sphere_cube_cylinder_volumes', 'Sphere/cube/cylinder volumes'), detail: t('stem.angles.for_sphere_inscribed_in_cylinder_h_2r_', 'For sphere inscribed in cylinder (h = 2r): V_sphere = 2/3 × V_cylinder. (Archimedes\'s favorite result.)') },
+        { fact: t('stem.angles.4d_hypercube_tesseract', '4D hypercube (tesseract)'), detail: t('stem.angles.16_vertices_32_edges_24_faces_8_cells_', '16 vertices, 32 edges, 24 faces, 8 cells. Can be unfolded into 8 cubes (per Salvador Dalí).') },
+        { fact: t('stem.angles.m_bius_strip', 'Möbius strip'), detail: t('stem.angles.single_sided_surface_cut_down_middle_l', 'Single-sided surface. Cut down middle → longer single loop. Cut at 1/3 → two interlocked rings (one Möbius).') },
+        { fact: t('stem.angles.klein_bottle', 'Klein bottle'), detail: t('stem.angles.closed_non_orientable_surface_inside_o', 'Closed non-orientable surface. Inside = outside. Can be made in 3D only with self-intersection.') },
+        { fact: t('stem.angles.reuleaux_triangle', 'Reuleaux triangle'), detail: t('stem.angles.curve_of_constant_width_not_a_circle_c', 'Curve of constant width (not a circle!). Can roll a board on three Reuleaux rollers smoothly. Drill bits use it.') },
+        { fact: t('stem.angles.antiprism', 'Antiprism'), detail: t('stem.angles.two_parallel_polygons_rotated_360_2n_c', 'Two parallel polygons rotated 360°/2n, connected by triangles. Tetrahedron is the simplest antiprism.') },
+        { fact: t('stem.angles.snub_cube', 'Snub cube'), detail: t('stem.angles.has_chirality_left_right_handed_forms_', 'Has chirality — left- + right-handed forms. One of two chiral Archimedean solids (other is snub dodecahedron).') },
+        { fact: t('stem.angles.hyperbolic_paraboloid_saddle', 'Hyperbolic paraboloid (saddle)'), detail: t('stem.angles.equation_z_xy_straight_lines_lie_on_it', 'Equation z = xy. Straight lines lie on it in 2 families. Used in Pringles + some roofs.') },
+        { fact: t('stem.angles.stable_polyhedron_count', 'Stable polyhedron count'), detail: t('stem.angles.gomboc_2006_is_first_known_mono_monost', '"Gomboc" (2006) is first known mono-monostatic — one stable + one unstable equilibrium. Like a self-righting Weeble.') },
+        { fact: t('stem.angles.egg_shape_oval_tessellation', 'Egg shape (oval) tessellation'), detail: t('stem.angles.cannot_tile_plane_alone_gaps_but_7_egg', 'Cannot tile plane alone — gaps. But 7 egg-shapes form a hex-like cluster.') },
+        { fact: t('stem.angles.polyhedra_in_nature', 'Polyhedra in nature'), detail: t('stem.angles.common_in_crystals_cube_nacl_octahedro', 'Common in crystals: cube (NaCl), octahedron (diamond, fluorite), dodecahedron (pyrite, garnet).') },
+        { fact: t('stem.angles.buckyball_c', 'Buckyball (C₆₀)'), detail: t('stem.angles.truncated_icosahedron_60_carbons_like_', 'Truncated icosahedron. 60 carbons. Like soccer ball pattern. Discovered 1985.') },
+        { fact: t('stem.angles.dna_double_helix', 'DNA double helix'), detail: t('stem.angles.helical_10_5_base_pairs_per_turn_major', 'Helical, ~10.5 base pairs per turn. Major + minor grooves. Constant diameter ~2 nm.') },
+        { fact: t('stem.angles.honeycomb_cells', 'Honeycomb cells'), detail: t('stem.angles.hexagonal_prisms_with_rhombic_bottoms_', 'Hexagonal prisms with rhombic bottoms. Bees do not consciously calculate — biophysics naturally minimizes surface area.') },
+        { fact: t('stem.angles.spaghetti_theorem', '"Spaghetti theorem"'), detail: t('stem.angles.drop_spaghetti_at_random_average_numbe', 'Drop spaghetti at random — average number of intersections = (L/πd) × π × n. Used to estimate π in classroom.') }
       ];
 
       function renderShapesIqSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '◇ Surprising shape facts'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.surprising_shape_facts', '◇ Surprising shape facts')),
           h('div', { className: 'space-y-1' },
             SHAPE_FACTS.map(function(f, i) {
               return h('div', { key: 'f'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
@@ -2414,24 +2414,24 @@ window.StemLab = window.StemLab || {
       ];
 
       var FLAG_GEOMETRY_NOTES = [
-        { topic: 'Vexillology', detail: 'Study of flags. Comes from Latin vexillum (flag carried by Roman cavalry).' },
-        { topic: 'Good flag design principles (NAVA)', detail: 'Keep it simple (a child can draw from memory), use meaningful symbolism, 2-3 basic colors, no lettering or seals, be distinctive.' },
-        { topic: 'Aspect ratios', detail: 'Most common: 2:3 (e.g., France, Germany). US is 1:1.9. UK is 1:2. Some unusual: Switzerland 1:1, Nepal non-rectangular.' },
-        { topic: 'Charges', detail: 'Symbols added to flag (stars, crosses, animals). Heraldic vocabulary describes positioning.' },
-        { topic: 'Canton', detail: 'Upper-left rectangle (about 1/4 the flag). US stars go here. Australia, NZ also use canton design.' },
-        { topic: 'Field', detail: 'Background color/colors of flag.' },
-        { topic: 'Hoist + fly', detail: 'Hoist = side attached to pole. Fly = opposite (free) side.' },
-        { topic: 'Color symbolism (common)', detail: 'Red = courage, revolution, blood. Blue = ocean, sky, freedom. Green = land, nature, Islam. White = peace, purity. Yellow/Gold = wealth, sun.' },
-        { topic: 'Distress signals', detail: 'Flying flag upside-down (where asymmetric); flying flag at half-staff = mourning.' },
-        { topic: 'NATO + UN flags', detail: 'Light blue with map (UN) or compass (NATO). Intentionally avoid national/religious symbols.' }
+        { topic: 'Vexillology', detail: t('stem.angles.study_of_flags_comes_from_latin_vexill', 'Study of flags. Comes from Latin vexillum (flag carried by Roman cavalry).') },
+        { topic: 'Good flag design principles (NAVA)', detail: t('stem.angles.keep_it_simple_a_child_can_draw_from_m', 'Keep it simple (a child can draw from memory), use meaningful symbolism, 2-3 basic colors, no lettering or seals, be distinctive.') },
+        { topic: 'Aspect ratios', detail: t('stem.angles.most_common_2_3_e_g_france_germany_us_', 'Most common: 2:3 (e.g., France, Germany). US is 1:1.9. UK is 1:2. Some unusual: Switzerland 1:1, Nepal non-rectangular.') },
+        { topic: 'Charges', detail: t('stem.angles.symbols_added_to_flag_stars_crosses_an', 'Symbols added to flag (stars, crosses, animals). Heraldic vocabulary describes positioning.') },
+        { topic: 'Canton', detail: t('stem.angles.upper_left_rectangle_about_1_4_the_fla', 'Upper-left rectangle (about 1/4 the flag). US stars go here. Australia, NZ also use canton design.') },
+        { topic: 'Field', detail: t('stem.angles.background_color_colors_of_flag', 'Background color/colors of flag.') },
+        { topic: 'Hoist + fly', detail: t('stem.angles.hoist_side_attached_to_pole_fly_opposi', 'Hoist = side attached to pole. Fly = opposite (free) side.') },
+        { topic: 'Color symbolism (common)', detail: t('stem.angles.red_courage_revolution_blood_blue_ocea', 'Red = courage, revolution, blood. Blue = ocean, sky, freedom. Green = land, nature, Islam. White = peace, purity. Yellow/Gold = wealth, sun.') },
+        { topic: 'Distress signals', detail: t('stem.angles.flying_flag_upside_down_where_asymmetr', 'Flying flag upside-down (where asymmetric); flying flag at half-staff = mourning.') },
+        { topic: 'NATO + UN flags', detail: t('stem.angles.light_blue_with_map_un_or_compass_nato', 'Light blue with map (UN) or compass (NATO). Intentionally avoid national/religious symbols.') }
       ];
 
       function renderFlagDesignSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🚩 Flag geometry'),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Flags are codified geometry. Every national flag has precise specifications: aspect ratio, color codes, charge positions, star angles.'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.flag_geometry_2', '🚩 Flag geometry')),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.flags_are_codified_geometry_every_nati', 'Flags are codified geometry. Every national flag has precise specifications: aspect ratio, color codes, charge positions, star angles.')),
           h('div', { className: 'mb-3' },
-            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Selected national + organizational flags'),
+            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.angles.selected_national_organizational_flags', 'Selected national + organizational flags')),
             h('div', { className: 'space-y-2' },
               FLAG_GEOMETRY.map(function(f, i) {
                 return h('div', { key: 'f'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -2445,7 +2445,7 @@ window.StemLab = window.StemLab || {
               })
             )
           ),
-          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Flag design principles'),
+          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.angles.flag_design_principles', 'Flag design principles')),
           h('div', { className: 'space-y-1' },
             FLAG_GEOMETRY_NOTES.map(function(n, i) {
               return h('div', { key: 'n'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
@@ -2462,19 +2462,19 @@ window.StemLab = window.StemLab || {
       // ═════════════════════════════════════════════════════════════════════
 
       var ROOF_PITCHES = [
-        { name: '1:12 (flat-ish)', degrees: '4.76°', percent: '8.3%', notes: 'Membrane roofs only. Too shallow for shingles. Drainage barely works.' },
+        { name: t('stem.angles.1_12_flat_ish', '1:12 (flat-ish)'), degrees: '4.76°', percent: '8.3%', notes: 'Membrane roofs only. Too shallow for shingles. Drainage barely works.' },
         { name: '2:12', degrees: '9.46°', percent: '16.7%', notes: 'Low-slope. Some metal + membrane. Below shingle minimum.' },
         { name: '3:12', degrees: '14.04°', percent: '25.0%', notes: 'Minimum recommended for asphalt shingles.' },
         { name: '4:12', degrees: '18.43°', percent: '33.3%', notes: 'Common modern residential pitch.' },
         { name: '5:12', degrees: '22.62°', percent: '41.7%', notes: 'Typical residential.' },
-        { name: '6:12 (standard)', degrees: '26.57°', percent: '50.0%', notes: 'Very common. Good water/snow shed. Walkable with care.' },
+        { name: t('stem.angles.6_12_standard', '6:12 (standard)'), degrees: '26.57°', percent: '50.0%', notes: 'Very common. Good water/snow shed. Walkable with care.' },
         { name: '7:12', degrees: '30.26°', percent: '58.3%', notes: 'Steeper traditional. Requires safety gear to work on.' },
         { name: '8:12', degrees: '33.69°', percent: '66.7%', notes: 'Steep. Common in colder climates (sheds snow).' },
         { name: '9:12', degrees: '36.87°', percent: '75.0%', notes: 'Steep traditional. Cathedral ceilings.' },
         { name: '10:12', degrees: '39.81°', percent: '83.3%', notes: 'Very steep. Victorian + Tudor styles.' },
-        { name: '12:12 (45°)', degrees: '45.00°', percent: '100.0%', notes: 'A-frame. Strong shedding. Distinctive look.' },
+        { name: t('stem.angles.12_12_45', '12:12 (45°)'), degrees: '45.00°', percent: '100.0%', notes: 'A-frame. Strong shedding. Distinctive look.' },
         { name: '18:12', degrees: '56.31°', percent: '150.0%', notes: 'Extreme. Some chalets + churches. Steep enough to be dangerous to work on.' },
-        { name: '24:12 (steep)', degrees: '63.43°', percent: '200.0%', notes: 'Very rare in residential. Gothic + chalet styles.' }
+        { name: t('stem.angles.24_12_steep', '24:12 (steep)'), degrees: '63.43°', percent: '200.0%', notes: 'Very rare in residential. Gothic + chalet styles.' }
       ];
 
       var RAMP_GRADES = [
@@ -2498,10 +2498,10 @@ window.StemLab = window.StemLab || {
 
       function renderBuildingAnglesSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '◢ Roof pitch + ramp grade tables'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.roof_pitch_ramp_grade_tables', '◢ Roof pitch + ramp grade tables')),
           h('div', { className: 'mb-3' },
-            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Roof pitches (rise:run notation)'),
-            h('p', { className: 'text-[11px] text-slate-700 mb-2' }, 'X:12 means X inches rise per 12 inches of horizontal run.'),
+            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.angles.roof_pitches_rise_run_notation', 'Roof pitches (rise:run notation)')),
+            h('p', { className: 'text-[11px] text-slate-700 mb-2' }, t('stem.angles.x_12_means_x_inches_rise_per_12_inches', 'X:12 means X inches rise per 12 inches of horizontal run.')),
             h('div', { className: 'overflow-x-auto' },
               h('table', { className: 'min-w-full text-[11px] border-collapse' },
                 h('thead', null,
@@ -2524,7 +2524,7 @@ window.StemLab = window.StemLab || {
               )
             )
           ),
-          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Ramp grades + transportation slopes'),
+          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.angles.ramp_grades_transportation_slopes', 'Ramp grades + transportation slopes')),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
               h('thead', null,
@@ -2587,19 +2587,19 @@ window.StemLab = window.StemLab || {
       ];
 
       var SOLAR_SYSTEM_FACTS = [
-        { fact: 'Total solar system mass', detail: 'Sun = 99.86%. Jupiter = 0.095%. Everything else = 0.045%.' },
-        { fact: 'Astronomical Unit (AU)', detail: '149,597,870,700 m. Defined exactly. Light takes ~8.3 min to cross 1 AU.' },
-        { fact: 'Light-year', detail: '9.461×10¹⁵ m. Distance light travels in 1 Julian year.' },
-        { fact: 'Parsec', detail: '~3.26 light-years. Distance at which 1 AU subtends 1 arcsecond.' },
-        { fact: 'Voyager 1 distance', detail: '~165 AU (2024). Fastest human-made object leaving solar system. Still receiving data.' },
-        { fact: 'Sun mass', detail: '1.989×10³⁰ kg. ~333,000 Earth masses.' },
-        { fact: 'Sun fusion', detail: '~620 million tons of H → He every second. Loses ~4 million tons as energy (E = mc²).' },
-        { fact: 'Solar wind', detail: 'Stream of charged particles. ~400-800 km/s near Earth. Creates auroras + sculpts comet tails.' }
+        { fact: t('stem.angles.total_solar_system_mass', 'Total solar system mass'), detail: t('stem.angles.sun_99_86_jupiter_0_095_everything_els', 'Sun = 99.86%. Jupiter = 0.095%. Everything else = 0.045%.') },
+        { fact: t('stem.angles.astronomical_unit_au', 'Astronomical Unit (AU)'), detail: t('stem.angles.149_597_870_700_m_defined_exactly_ligh', '149,597,870,700 m. Defined exactly. Light takes ~8.3 min to cross 1 AU.') },
+        { fact: 'Light-year', detail: t('stem.angles.9_461_10_m_distance_light_travels_in_1', '9.461×10¹⁵ m. Distance light travels in 1 Julian year.') },
+        { fact: t('stem.angles.parsec', 'Parsec'), detail: t('stem.angles.3_26_light_years_distance_at_which_1_a', '~3.26 light-years. Distance at which 1 AU subtends 1 arcsecond.') },
+        { fact: t('stem.angles.voyager_1_distance', 'Voyager 1 distance'), detail: t('stem.angles.165_au_2024_fastest_human_made_object_', '~165 AU (2024). Fastest human-made object leaving solar system. Still receiving data.') },
+        { fact: t('stem.angles.sun_mass', 'Sun mass'), detail: t('stem.angles.1_989_10_kg_333_000_earth_masses', '1.989×10³⁰ kg. ~333,000 Earth masses.') },
+        { fact: t('stem.angles.sun_fusion', 'Sun fusion'), detail: t('stem.angles.620_million_tons_of_h_he_every_second_', '~620 million tons of H → He every second. Loses ~4 million tons as energy (E = mc²).') },
+        { fact: t('stem.angles.solar_wind', 'Solar wind'), detail: t('stem.angles.stream_of_charged_particles_400_800_km', 'Stream of charged particles. ~400-800 km/s near Earth. Creates auroras + sculpts comet tails.') }
       ];
 
       function renderMountainsSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⛰ Notable peaks + their slopes'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.notable_peaks_their_slopes', '⛰ Notable peaks + their slopes')),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
               h('thead', null,
@@ -2627,8 +2627,8 @@ window.StemLab = window.StemLab || {
 
       function renderPlanetsSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🪐 Solar system planets + dwarf planets'),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Axial tilt drives seasons. Tilt > 90° means retrograde rotation (Venus, Uranus, Pluto).'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.solar_system_planets_dwarf_planets', '🪐 Solar system planets + dwarf planets')),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.axial_tilt_drives_seasons_tilt_90_mean', 'Axial tilt drives seasons. Tilt > 90° means retrograde rotation (Venus, Uranus, Pluto).')),
           h('div', { className: 'overflow-x-auto mb-3' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
               h('thead', null,
@@ -2653,7 +2653,7 @@ window.StemLab = window.StemLab || {
               )
             )
           ),
-          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Solar system facts'),
+          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.angles.solar_system_facts', 'Solar system facts')),
           h('div', { className: 'space-y-1' },
             SOLAR_SYSTEM_FACTS.map(function(f, i) {
               return h('div', { key: 'f'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
@@ -2670,42 +2670,42 @@ window.StemLab = window.StemLab || {
       // ═════════════════════════════════════════════════════════════════════
 
       var GEOMETRY_PUZZLES = [
-        { name: 'Königsberg bridges', description: 'Can you cross each of the 7 bridges of Königsberg exactly once?', answer: 'No. Euler proved (1736) you need each node to have even degree, except possibly 2 odd-degree nodes. Königsberg had 4 odd-degree nodes. Founded graph theory.' },
-        { name: 'Squaring the circle', description: 'Using only compass + straightedge, construct a square with same area as a given circle.', answer: 'Impossible. π is transcendental (Lindemann 1882). Cannot be constructed with finite C+S operations.' },
-        { name: 'Doubling the cube', description: 'Construct a cube with twice the volume of a given cube using compass + straightedge.', answer: 'Impossible. Requires ∛2, which is algebraic of degree 3, but C+S only produces 2ⁿ-degree numbers.' },
-        { name: 'Trisecting an angle', description: 'Divide an arbitrary angle into 3 equal parts with compass + straightedge.', answer: 'Impossible in general. Some specific angles (e.g., 180°) can be. Origami CAN trisect arbitrary angles.' },
-        { name: 'Two-circle problem', description: 'Given two circles, how do they relate?', answer: '5 cases: separate, externally tangent, intersecting (2 points), internally tangent, one inside the other.' },
-        { name: 'Four color theorem', description: 'Can every planar map be colored with 4 colors so no adjacent regions share a color?', answer: 'Yes. Proven by Appel + Haken (1976) — first major theorem proved with computer assistance.' },
-        { name: 'Brachistochrone', description: 'What path from A to B (B lower) minimizes time of sliding object under gravity?', answer: 'Cycloid. Posed by Bernoulli (1696). Solved by Newton overnight + by 4 others including Leibniz.' },
-        { name: 'Pizza theorem', description: 'Cut a circular pizza into 8 sectors with cuts through one point (not necessarily center). Alternating pieces have equal area.', answer: 'True for any odd-multiple-of-4 sectors. Works for 8, 12, 16, ...' },
-        { name: 'Mrs. Miniver problem', description: 'For what radii of intersecting circles do the moon-shape ("lune") + lens have equal area?', answer: 'Ratio depends — solved analytically. Romantic geometry from a 1942 novel.' },
-        { name: 'Steinmetz solid', description: 'Intersection of two perpendicular cylinders of same radius.', answer: 'Has 4 vertices, looks like a 4-faced cushion. Volume = (16/3)r³.' },
-        { name: 'Buffon\'s needle', description: 'Drop a needle of length L onto parallel lines spaced d apart. What\'s the probability it crosses a line?', answer: '2L/(πd) for L ≤ d. Method to compute π by dropping needles!' },
-        { name: 'Tarski circle-squaring', description: 'Can you cut a circle into pieces + rearrange them into a square of equal area?', answer: 'Yes (Laczkovich 1990) — with ~10⁵⁰ pieces. Choice axiom required. Cannot use scissors-style cuts; pieces are bizarre.' },
-        { name: 'Banach-Tarski paradox', description: 'Can you cut a ball into pieces + rearrange them into two balls of the same size?', answer: 'Yes — requires axiom of choice + non-measurable pieces. Defies intuition but mathematically valid.' },
-        { name: 'Soap film minimal surface', description: 'Why do soap films take certain shapes?', answer: 'They minimize surface area. Catenoid (between rings), Plateau border (junctions). Yields beautiful geometry.' }
+        { name: t('stem.angles.k_nigsberg_bridges', 'Königsberg bridges'), description: t('stem.angles.can_you_cross_each_of_the_7_bridges_of', 'Can you cross each of the 7 bridges of Königsberg exactly once?'), answer: t('stem.angles.no_euler_proved_1736_you_need_each_nod', 'No. Euler proved (1736) you need each node to have even degree, except possibly 2 odd-degree nodes. Königsberg had 4 odd-degree nodes. Founded graph theory.') },
+        { name: t('stem.angles.squaring_the_circle', 'Squaring the circle'), description: t('stem.angles.using_only_compass_straightedge_constr', 'Using only compass + straightedge, construct a square with same area as a given circle.'), answer: t('stem.angles.impossible_is_transcendental_lindemann', 'Impossible. π is transcendental (Lindemann 1882). Cannot be constructed with finite C+S operations.') },
+        { name: t('stem.angles.doubling_the_cube', 'Doubling the cube'), description: t('stem.angles.construct_a_cube_with_twice_the_volume', 'Construct a cube with twice the volume of a given cube using compass + straightedge.'), answer: t('stem.angles.impossible_requires_2_which_is_algebra', 'Impossible. Requires ∛2, which is algebraic of degree 3, but C+S only produces 2ⁿ-degree numbers.') },
+        { name: t('stem.angles.trisecting_an_angle', 'Trisecting an angle'), description: t('stem.angles.divide_an_arbitrary_angle_into_3_equal', 'Divide an arbitrary angle into 3 equal parts with compass + straightedge.'), answer: t('stem.angles.impossible_in_general_some_specific_an', 'Impossible in general. Some specific angles (e.g., 180°) can be. Origami CAN trisect arbitrary angles.') },
+        { name: t('stem.angles.two_circle_problem', 'Two-circle problem'), description: t('stem.angles.given_two_circles_how_do_they_relate', 'Given two circles, how do they relate?'), answer: t('stem.angles.5_cases_separate_externally_tangent_in', '5 cases: separate, externally tangent, intersecting (2 points), internally tangent, one inside the other.') },
+        { name: t('stem.angles.four_color_theorem', 'Four color theorem'), description: t('stem.angles.can_every_planar_map_be_colored_with_4', 'Can every planar map be colored with 4 colors so no adjacent regions share a color?'), answer: t('stem.angles.yes_proven_by_appel_haken_1976_first_m', 'Yes. Proven by Appel + Haken (1976) — first major theorem proved with computer assistance.') },
+        { name: t('stem.angles.brachistochrone', 'Brachistochrone'), description: t('stem.angles.what_path_from_a_to_b_b_lower_minimize', 'What path from A to B (B lower) minimizes time of sliding object under gravity?'), answer: t('stem.angles.cycloid_posed_by_bernoulli_1696_solved', 'Cycloid. Posed by Bernoulli (1696). Solved by Newton overnight + by 4 others including Leibniz.') },
+        { name: t('stem.angles.pizza_theorem', 'Pizza theorem'), description: t('stem.angles.cut_a_circular_pizza_into_8_sectors_wi', 'Cut a circular pizza into 8 sectors with cuts through one point (not necessarily center). Alternating pieces have equal area.'), answer: t('stem.angles.true_for_any_odd_multiple_of_4_sectors', 'True for any odd-multiple-of-4 sectors. Works for 8, 12, 16, ...') },
+        { name: t('stem.angles.mrs_miniver_problem', 'Mrs. Miniver problem'), description: t('stem.angles.for_what_radii_of_intersecting_circles', 'For what radii of intersecting circles do the moon-shape ("lune") + lens have equal area?'), answer: t('stem.angles.ratio_depends_solved_analytically_roma', 'Ratio depends — solved analytically. Romantic geometry from a 1942 novel.') },
+        { name: t('stem.angles.steinmetz_solid', 'Steinmetz solid'), description: t('stem.angles.intersection_of_two_perpendicular_cyli', 'Intersection of two perpendicular cylinders of same radius.'), answer: t('stem.angles.has_4_vertices_looks_like_a_4_faced_cu', 'Has 4 vertices, looks like a 4-faced cushion. Volume = (16/3)r³.') },
+        { name: t('stem.angles.buffon_s_needle', 'Buffon\'s needle'), description: t('stem.angles.drop_a_needle_of_length_l_onto_paralle', 'Drop a needle of length L onto parallel lines spaced d apart. What\'s the probability it crosses a line?'), answer: t('stem.angles.2l_d_for_l_d_method_to_compute_by_drop', '2L/(πd) for L ≤ d. Method to compute π by dropping needles!') },
+        { name: t('stem.angles.tarski_circle_squaring', 'Tarski circle-squaring'), description: t('stem.angles.can_you_cut_a_circle_into_pieces_rearr', 'Can you cut a circle into pieces + rearrange them into a square of equal area?'), answer: t('stem.angles.yes_laczkovich_1990_with_10_pieces_cho', 'Yes (Laczkovich 1990) — with ~10⁵⁰ pieces. Choice axiom required. Cannot use scissors-style cuts; pieces are bizarre.') },
+        { name: t('stem.angles.banach_tarski_paradox', 'Banach-Tarski paradox'), description: t('stem.angles.can_you_cut_a_ball_into_pieces_rearran', 'Can you cut a ball into pieces + rearrange them into two balls of the same size?'), answer: t('stem.angles.yes_requires_axiom_of_choice_non_measu', 'Yes — requires axiom of choice + non-measurable pieces. Defies intuition but mathematically valid.') },
+        { name: t('stem.angles.soap_film_minimal_surface', 'Soap film minimal surface'), description: t('stem.angles.why_do_soap_films_take_certain_shapes', 'Why do soap films take certain shapes?'), answer: t('stem.angles.they_minimize_surface_area_catenoid_be', 'They minimize surface area. Catenoid (between rings), Plateau border (junctions). Yields beautiful geometry.') }
       ];
 
       var FAMOUS_TILINGS = [
-        { name: 'Square tiling', detail: 'Simplest regular tiling. Schläfli symbol {4,4}.' },
-        { name: 'Triangular tiling', detail: '6 triangles around each vertex. {3,6}.' },
-        { name: 'Hexagonal tiling', detail: '3 hexagons around each vertex. {6,3}. Honeycomb. Most efficient.' },
-        { name: 'Truncated square tiling', detail: 'Octagons + squares (4.8.8). Hispanic colonial tile patterns.' },
-        { name: 'Truncated hexagonal tiling', detail: 'Dodecagons + triangles (3.12.12). Some pavements.' },
-        { name: 'Snub square tiling', detail: 'Squares + triangles (3.3.4.3.4). Chiral — has handedness.' },
-        { name: 'Rhombic tiling', detail: 'Just rhombi. Can be combined to make Penrose tilings.' },
-        { name: 'Penrose tiling (P3)', detail: 'Two rhombi (fat + thin). Aperiodic — never repeats. 5-fold symmetry.' },
-        { name: 'Penrose tiling (P2)', detail: 'Kite + dart. Aperiodic with 5-fold symmetry.' },
-        { name: 'Pinwheel tiling', detail: 'Right triangles arranged in pinwheels. Aperiodic. Used in tiles at Federation Square (Melbourne).' },
-        { name: '"Hat" einstein tile (2023)', detail: 'Single polygon that tiles aperiodically. Major recent discovery by Smith, Myers, Kaplan, Goodman-Strauss.' },
-        { name: '"Spectre" einstein tile (2023)', detail: 'Improvement on hat — uses only direct (not reflected) tiles.' },
-        { name: 'Cairo pentagonal', detail: '5-sided tiles. Found in Cairo street paving. Each tile has 4 angles of ~120° + one of 90°.' },
-        { name: 'Demiregular tilings', detail: 'Use 2 vertex types. 14 distinct ones (some debate). More complex than Archimedean.' },
-        { name: 'Voronoi tessellation', detail: 'Divide plane into cells closest to each "seed" point. Appears in nature (giraffe spots, foam).' },
-        { name: 'Delaunay triangulation', detail: 'Triangle mesh with property that no point is inside any triangle\'s circumcircle. Dual of Voronoi.' },
-        { name: '15 pentagon types', detail: '15 distinct convex pentagon shapes can tile the plane. Last one found 2015 (Mann, McLoud, Von Derau). Marjorie Rice found 4 as amateur in 1970s.' },
-        { name: 'Hyperbolic {7,3} tiling', detail: 'Heptagons (impossible in Euclidean) tile hyperbolic plane with 3 around each vertex. Drawn by Escher.' },
-        { name: 'Truchet tiles', detail: 'Square tiles with curves or diagonals. Random orientation → maze-like patterns.' }
+        { name: t('stem.angles.square_tiling', 'Square tiling'), detail: t('stem.angles.simplest_regular_tiling_schl_fli_symbo', 'Simplest regular tiling. Schläfli symbol {4,4}.') },
+        { name: t('stem.angles.triangular_tiling', 'Triangular tiling'), detail: t('stem.angles.6_triangles_around_each_vertex_3_6', '6 triangles around each vertex. {3,6}.') },
+        { name: t('stem.angles.hexagonal_tiling', 'Hexagonal tiling'), detail: t('stem.angles.3_hexagons_around_each_vertex_6_3_hone', '3 hexagons around each vertex. {6,3}. Honeycomb. Most efficient.') },
+        { name: t('stem.angles.truncated_square_tiling', 'Truncated square tiling'), detail: t('stem.angles.octagons_squares_4_8_8_hispanic_coloni', 'Octagons + squares (4.8.8). Hispanic colonial tile patterns.') },
+        { name: t('stem.angles.truncated_hexagonal_tiling', 'Truncated hexagonal tiling'), detail: t('stem.angles.dodecagons_triangles_3_12_12_some_pave', 'Dodecagons + triangles (3.12.12). Some pavements.') },
+        { name: t('stem.angles.snub_square_tiling', 'Snub square tiling'), detail: t('stem.angles.squares_triangles_3_3_4_3_4_chiral_has', 'Squares + triangles (3.3.4.3.4). Chiral — has handedness.') },
+        { name: t('stem.angles.rhombic_tiling', 'Rhombic tiling'), detail: t('stem.angles.just_rhombi_can_be_combined_to_make_pe', 'Just rhombi. Can be combined to make Penrose tilings.') },
+        { name: t('stem.angles.penrose_tiling_p3', 'Penrose tiling (P3)'), detail: t('stem.angles.two_rhombi_fat_thin_aperiodic_never_re', 'Two rhombi (fat + thin). Aperiodic — never repeats. 5-fold symmetry.') },
+        { name: t('stem.angles.penrose_tiling_p2', 'Penrose tiling (P2)'), detail: t('stem.angles.kite_dart_aperiodic_with_5_fold_symmet', 'Kite + dart. Aperiodic with 5-fold symmetry.') },
+        { name: t('stem.angles.pinwheel_tiling', 'Pinwheel tiling'), detail: t('stem.angles.right_triangles_arranged_in_pinwheels_', 'Right triangles arranged in pinwheels. Aperiodic. Used in tiles at Federation Square (Melbourne).') },
+        { name: t('stem.angles.hat_einstein_tile_2023', '"Hat" einstein tile (2023)'), detail: t('stem.angles.single_polygon_that_tiles_aperiodicall', 'Single polygon that tiles aperiodically. Major recent discovery by Smith, Myers, Kaplan, Goodman-Strauss.') },
+        { name: t('stem.angles.spectre_einstein_tile_2023', '"Spectre" einstein tile (2023)'), detail: t('stem.angles.improvement_on_hat_uses_only_direct_no', 'Improvement on hat — uses only direct (not reflected) tiles.') },
+        { name: t('stem.angles.cairo_pentagonal', 'Cairo pentagonal'), detail: t('stem.angles.5_sided_tiles_found_in_cairo_street_pa', '5-sided tiles. Found in Cairo street paving. Each tile has 4 angles of ~120° + one of 90°.') },
+        { name: t('stem.angles.demiregular_tilings', 'Demiregular tilings'), detail: t('stem.angles.use_2_vertex_types_14_distinct_ones_so', 'Use 2 vertex types. 14 distinct ones (some debate). More complex than Archimedean.') },
+        { name: t('stem.angles.voronoi_tessellation', 'Voronoi tessellation'), detail: t('stem.angles.divide_plane_into_cells_closest_to_eac', 'Divide plane into cells closest to each "seed" point. Appears in nature (giraffe spots, foam).') },
+        { name: t('stem.angles.delaunay_triangulation', 'Delaunay triangulation'), detail: t('stem.angles.triangle_mesh_with_property_that_no_po', 'Triangle mesh with property that no point is inside any triangle\'s circumcircle. Dual of Voronoi.') },
+        { name: t('stem.angles.15_pentagon_types', '15 pentagon types'), detail: t('stem.angles.15_distinct_convex_pentagon_shapes_can', '15 distinct convex pentagon shapes can tile the plane. Last one found 2015 (Mann, McLoud, Von Derau). Marjorie Rice found 4 as amateur in 1970s.') },
+        { name: t('stem.angles.hyperbolic_7_3_tiling', 'Hyperbolic {7,3} tiling'), detail: t('stem.angles.heptagons_impossible_in_euclidean_tile', 'Heptagons (impossible in Euclidean) tile hyperbolic plane with 3 around each vertex. Drawn by Escher.') },
+        { name: t('stem.angles.truchet_tiles', 'Truchet tiles'), detail: t('stem.angles.square_tiles_with_curves_or_diagonals_', 'Square tiles with curves or diagonals. Random orientation → maze-like patterns.') }
       ];
 
       var WORLD_CITIES = [
@@ -2742,7 +2742,7 @@ window.StemLab = window.StemLab || {
 
       function renderPuzzlesSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🧩 Famous geometry puzzles'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.famous_geometry_puzzles', '🧩 Famous geometry puzzles')),
           h('div', { className: 'space-y-2' },
             GEOMETRY_PUZZLES.map(function(p, i) {
               return h('div', { key: 'p'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-rose-400 border border-slate-200' },
@@ -2757,7 +2757,7 @@ window.StemLab = window.StemLab || {
 
       function renderTessell2Section() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '◇ Famous tilings of the plane'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.famous_tilings_of_the_plane', '◇ Famous tilings of the plane')),
           h('div', { className: 'space-y-1' },
             FAMOUS_TILINGS.map(function(t, i) {
               return h('div', { key: 't'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
@@ -2771,8 +2771,8 @@ window.StemLab = window.StemLab || {
 
       function renderCitiesSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🌆 World city coordinates'),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Latitude + longitude in decimal degrees. Lat: 0° = equator, ±90° = poles. Lon: 0° = Greenwich, ±180° = international date line area.'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.world_city_coordinates', '🌆 World city coordinates')),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.latitude_longitude_in_decimal_degrees_', 'Latitude + longitude in decimal degrees. Lat: 0° = equator, ±90° = poles. Lon: 0° = Greenwich, ±180° = international date line area.')),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
               h('thead', null,
@@ -2866,53 +2866,53 @@ window.StemLab = window.StemLab || {
       ];
 
       var FAMOUS_CURVES = [
-        { name: 'Circle', equation: 'x² + y² = r²', notes: 'All points equidistant from center.' },
-        { name: 'Ellipse', equation: 'x²/a² + y²/b² = 1', notes: 'Sum of distances to two foci is constant. Planetary orbits.' },
-        { name: 'Parabola', equation: 'y = ax²', notes: 'All points equidistant from focus + directrix.' },
-        { name: 'Hyperbola', equation: 'x²/a² − y²/b² = 1', notes: 'Difference of distances to two foci is constant.' },
-        { name: 'Logarithmic spiral', equation: 'r = a·e^(bθ)', notes: 'Constant angle between radius + tangent. Nautilus shells, galaxies.' },
-        { name: 'Archimedean spiral', equation: 'r = a + bθ', notes: 'Equal spacing between coils. Vinyl records, springs.' },
-        { name: 'Catenary', equation: 'y = a·cosh(x/a)', notes: 'Shape of hanging chain. Different from parabola.' },
-        { name: 'Brachistochrone (cycloid)', equation: 'parametric: x = r(t − sin t), y = r(1 − cos t)', notes: 'Curve of fastest descent under gravity. Found by Bernoulli (1696).' },
-        { name: 'Tractrix', equation: 'parametric', notes: '"Dog curve" — path of object dragged behind moving point.' },
-        { name: 'Lissajous figures', equation: 'parametric sin/cos', notes: 'Closed curves from perpendicular oscillations at different frequencies. Oscilloscope art.' },
-        { name: 'Helix', equation: '3D parametric', notes: 'DNA backbone. Springs. Screw threads.' },
-        { name: 'Sine wave', equation: 'y = A sin(ωt + φ)', notes: 'Fundamental oscillation. Most natural-sounding tone.' },
-        { name: 'Cosine wave', equation: 'y = A cos(ωt + φ)', notes: 'Same as sine but 90° phase shifted.' },
-        { name: 'Bell curve (Gaussian)', equation: 'y = e^(−x²)', notes: 'Normal distribution shape.' },
-        { name: 'Heart curve (cardioid)', equation: 'r = a(1 + cos θ)', notes: 'Heart shape. Apple\'s logo + valentine.' },
-        { name: 'Trefoil knot', equation: '3D parametric', notes: 'Simplest nontrivial mathematical knot.' },
-        { name: 'Möbius strip', equation: 'Boundary parametric', notes: 'One-sided surface. Cut down middle → longer single loop.' },
-        { name: 'Klein bottle', equation: '4D — no inside/outside', notes: 'Non-orientable surface. Can be made in 3D only with self-intersection.' }
+        { name: t('stem.angles.circle', 'Circle'), equation: 'x² + y² = r²', notes: 'All points equidistant from center.' },
+        { name: t('stem.angles.ellipse', 'Ellipse'), equation: 'x²/a² + y²/b² = 1', notes: 'Sum of distances to two foci is constant. Planetary orbits.' },
+        { name: t('stem.angles.parabola', 'Parabola'), equation: 'y = ax²', notes: 'All points equidistant from focus + directrix.' },
+        { name: t('stem.angles.hyperbola', 'Hyperbola'), equation: 'x²/a² − y²/b² = 1', notes: 'Difference of distances to two foci is constant.' },
+        { name: t('stem.angles.logarithmic_spiral', 'Logarithmic spiral'), equation: 'r = a·e^(bθ)', notes: 'Constant angle between radius + tangent. Nautilus shells, galaxies.' },
+        { name: t('stem.angles.archimedean_spiral', 'Archimedean spiral'), equation: 'r = a + bθ', notes: 'Equal spacing between coils. Vinyl records, springs.' },
+        { name: t('stem.angles.catenary', 'Catenary'), equation: 'y = a·cosh(x/a)', notes: 'Shape of hanging chain. Different from parabola.' },
+        { name: t('stem.angles.brachistochrone_cycloid', 'Brachistochrone (cycloid)'), equation: 'parametric: x = r(t − sin t), y = r(1 − cos t)', notes: 'Curve of fastest descent under gravity. Found by Bernoulli (1696).' },
+        { name: t('stem.angles.tractrix', 'Tractrix'), equation: 'parametric', notes: '"Dog curve" — path of object dragged behind moving point.' },
+        { name: t('stem.angles.lissajous_figures', 'Lissajous figures'), equation: 'parametric sin/cos', notes: 'Closed curves from perpendicular oscillations at different frequencies. Oscilloscope art.' },
+        { name: t('stem.angles.helix', 'Helix'), equation: '3D parametric', notes: 'DNA backbone. Springs. Screw threads.' },
+        { name: t('stem.angles.sine_wave', 'Sine wave'), equation: 'y = A sin(ωt + φ)', notes: 'Fundamental oscillation. Most natural-sounding tone.' },
+        { name: t('stem.angles.cosine_wave', 'Cosine wave'), equation: 'y = A cos(ωt + φ)', notes: 'Same as sine but 90° phase shifted.' },
+        { name: t('stem.angles.bell_curve_gaussian', 'Bell curve (Gaussian)'), equation: 'y = e^(−x²)', notes: 'Normal distribution shape.' },
+        { name: t('stem.angles.heart_curve_cardioid', 'Heart curve (cardioid)'), equation: 'r = a(1 + cos θ)', notes: 'Heart shape. Apple\'s logo + valentine.' },
+        { name: t('stem.angles.trefoil_knot', 'Trefoil knot'), equation: '3D parametric', notes: 'Simplest nontrivial mathematical knot.' },
+        { name: t('stem.angles.m_bius_strip_2', 'Möbius strip'), equation: 'Boundary parametric', notes: 'One-sided surface. Cut down middle → longer single loop.' },
+        { name: t('stem.angles.klein_bottle_2', 'Klein bottle'), equation: '4D — no inside/outside', notes: 'Non-orientable surface. Can be made in 3D only with self-intersection.' }
       ];
 
       var GREAT_MATHEMATICIANS = [
-        { name: 'Pythagoras', year: '~570-495 BCE', contrib: 'Pythagorean theorem. Founded mystical mathematical brotherhood. May not have personally proved the theorem named for him.' },
-        { name: 'Euclid', year: '~325-265 BCE', contrib: '"Elements" — 13 books axiomatizing geometry. Most influential math textbook ever.' },
-        { name: 'Archimedes', year: '~287-212 BCE', contrib: 'Pi to several digits. Lever, screw, war machines. "Eureka!" displacement principle.' },
-        { name: 'Hypatia', year: '~370-415 CE', contrib: 'Alexandrian mathematician + astronomer + philosopher. One of first known female mathematicians.' },
+        { name: t('stem.angles.pythagoras', 'Pythagoras'), year: '~570-495 BCE', contrib: 'Pythagorean theorem. Founded mystical mathematical brotherhood. May not have personally proved the theorem named for him.' },
+        { name: t('stem.angles.euclid', 'Euclid'), year: '~325-265 BCE', contrib: '"Elements" — 13 books axiomatizing geometry. Most influential math textbook ever.' },
+        { name: t('stem.angles.archimedes', 'Archimedes'), year: '~287-212 BCE', contrib: 'Pi to several digits. Lever, screw, war machines. "Eureka!" displacement principle.' },
+        { name: t('stem.angles.hypatia', 'Hypatia'), year: '~370-415 CE', contrib: 'Alexandrian mathematician + astronomer + philosopher. One of first known female mathematicians.' },
         { name: 'al-Khwarizmi', year: '~780-850', contrib: 'Founded algebra ("al-jabr"). "Algorithm" comes from his Latinized name.' },
-        { name: 'Fibonacci (Leonardo of Pisa)', year: '~1170-1250', contrib: 'Introduced Hindu-Arabic numerals to Europe. Fibonacci sequence (from a rabbit-population problem).' },
-        { name: 'René Descartes', year: '1596-1650', contrib: 'Analytic geometry (Cartesian coordinates linking algebra to geometry). "I think, therefore I am."' },
-        { name: 'Pierre de Fermat', year: '1601-1665', contrib: 'Number theory. Famous Last Theorem (unproved for 358 years!). Probability with Pascal.' },
-        { name: 'Blaise Pascal', year: '1623-1662', contrib: 'Probability theory. Pascal\'s triangle. Mechanical calculator. Pascal\'s wager.' },
-        { name: 'Isaac Newton', year: '1643-1727', contrib: 'Calculus (independent of Leibniz). Laws of motion + gravitation. Optics.' },
-        { name: 'Gottfried Leibniz', year: '1646-1716', contrib: 'Calculus (with modern notation). Binary number system. Concept of momentum.' },
-        { name: 'Leonhard Euler', year: '1707-1783', contrib: 'Most prolific mathematician ever. Notation (f(x), e, i, π, Σ, sin, cos). Euler\'s identity e^(iπ) + 1 = 0.' },
-        { name: 'Carl Friedrich Gauss', year: '1777-1855', contrib: 'Prince of mathematicians. Number theory, statistics, geometry, electromagnetism, geodesy.' },
-        { name: 'Évariste Galois', year: '1811-1832', contrib: 'Founded group theory + Galois theory. Wrote his theories the night before dying in a duel at age 20.' },
-        { name: 'Bernhard Riemann', year: '1826-1866', contrib: 'Riemann sums (integration). Riemann hypothesis ($1M Millennium Prize). Curved geometry (basis of relativity).' },
-        { name: 'Sofia Kovalevskaya', year: '1850-1891', contrib: 'First woman to earn a doctorate in mathematics. Partial differential equations. Rotation of bodies.' },
-        { name: 'Georg Cantor', year: '1845-1918', contrib: 'Set theory. Different sizes of infinity. Diagonal argument.' },
-        { name: 'Henri Poincaré', year: '1854-1912', contrib: 'Topology founder. Chaos theory (three-body problem). Poincaré conjecture (solved 2003 by Perelman).' },
-        { name: 'David Hilbert', year: '1862-1943', contrib: 'Hilbert\'s 23 problems shaped 20th c math. Foundations of mathematics. Quantum mechanics.' },
-        { name: 'Emmy Noether', year: '1882-1935', contrib: 'Abstract algebra. Noether\'s theorem (every symmetry → conservation law) — foundational in physics.' },
-        { name: 'Srinivasa Ramanujan', year: '1887-1920', contrib: 'Self-taught Indian genius. Discovered thousands of identities, many proved decades later. Died at 32.' },
-        { name: 'Alan Turing', year: '1912-1954', contrib: 'Theoretical computer science. Turing machine, Turing test. Broke Enigma in WWII.' },
-        { name: 'John von Neumann', year: '1903-1957', contrib: 'Game theory, computer architecture (von Neumann architecture). Manhattan Project. Quantum mechanics formalism.' },
-        { name: 'Paul Erdős', year: '1913-1996', contrib: 'Most prolific 20th c mathematician (~1500 papers). Itinerant life. Erdős number = collaboration distance to him.' },
-        { name: 'Andrew Wiles', year: '1953-', contrib: 'Proved Fermat\'s Last Theorem (1994), 358 years after Fermat\'s famous margin.' },
-        { name: 'Maryam Mirzakhani', year: '1977-2017', contrib: 'First woman to win Fields Medal (2014). Riemann surfaces + their moduli. Died at 40 of cancer.' }
+        { name: t('stem.angles.fibonacci_leonardo_of_pisa', 'Fibonacci (Leonardo of Pisa)'), year: '~1170-1250', contrib: 'Introduced Hindu-Arabic numerals to Europe. Fibonacci sequence (from a rabbit-population problem).' },
+        { name: t('stem.angles.ren_descartes', 'René Descartes'), year: '1596-1650', contrib: 'Analytic geometry (Cartesian coordinates linking algebra to geometry). "I think, therefore I am."' },
+        { name: t('stem.angles.pierre_de_fermat', 'Pierre de Fermat'), year: '1601-1665', contrib: 'Number theory. Famous Last Theorem (unproved for 358 years!). Probability with Pascal.' },
+        { name: t('stem.angles.blaise_pascal', 'Blaise Pascal'), year: '1623-1662', contrib: 'Probability theory. Pascal\'s triangle. Mechanical calculator. Pascal\'s wager.' },
+        { name: t('stem.angles.isaac_newton', 'Isaac Newton'), year: '1643-1727', contrib: 'Calculus (independent of Leibniz). Laws of motion + gravitation. Optics.' },
+        { name: t('stem.angles.gottfried_leibniz', 'Gottfried Leibniz'), year: '1646-1716', contrib: 'Calculus (with modern notation). Binary number system. Concept of momentum.' },
+        { name: t('stem.angles.leonhard_euler', 'Leonhard Euler'), year: '1707-1783', contrib: 'Most prolific mathematician ever. Notation (f(x), e, i, π, Σ, sin, cos). Euler\'s identity e^(iπ) + 1 = 0.' },
+        { name: t('stem.angles.carl_friedrich_gauss', 'Carl Friedrich Gauss'), year: '1777-1855', contrib: 'Prince of mathematicians. Number theory, statistics, geometry, electromagnetism, geodesy.' },
+        { name: t('stem.angles.variste_galois', 'Évariste Galois'), year: '1811-1832', contrib: 'Founded group theory + Galois theory. Wrote his theories the night before dying in a duel at age 20.' },
+        { name: t('stem.angles.bernhard_riemann', 'Bernhard Riemann'), year: '1826-1866', contrib: 'Riemann sums (integration). Riemann hypothesis ($1M Millennium Prize). Curved geometry (basis of relativity).' },
+        { name: t('stem.angles.sofia_kovalevskaya', 'Sofia Kovalevskaya'), year: '1850-1891', contrib: 'First woman to earn a doctorate in mathematics. Partial differential equations. Rotation of bodies.' },
+        { name: t('stem.angles.georg_cantor', 'Georg Cantor'), year: '1845-1918', contrib: 'Set theory. Different sizes of infinity. Diagonal argument.' },
+        { name: t('stem.angles.henri_poincar', 'Henri Poincaré'), year: '1854-1912', contrib: 'Topology founder. Chaos theory (three-body problem). Poincaré conjecture (solved 2003 by Perelman).' },
+        { name: t('stem.angles.david_hilbert', 'David Hilbert'), year: '1862-1943', contrib: 'Hilbert\'s 23 problems shaped 20th c math. Foundations of mathematics. Quantum mechanics.' },
+        { name: t('stem.angles.emmy_noether', 'Emmy Noether'), year: '1882-1935', contrib: 'Abstract algebra. Noether\'s theorem (every symmetry → conservation law) — foundational in physics.' },
+        { name: t('stem.angles.srinivasa_ramanujan', 'Srinivasa Ramanujan'), year: '1887-1920', contrib: 'Self-taught Indian genius. Discovered thousands of identities, many proved decades later. Died at 32.' },
+        { name: t('stem.angles.alan_turing', 'Alan Turing'), year: '1912-1954', contrib: 'Theoretical computer science. Turing machine, Turing test. Broke Enigma in WWII.' },
+        { name: t('stem.angles.john_von_neumann', 'John von Neumann'), year: '1903-1957', contrib: 'Game theory, computer architecture (von Neumann architecture). Manhattan Project. Quantum mechanics formalism.' },
+        { name: t('stem.angles.paul_erd_s', 'Paul Erdős'), year: '1913-1996', contrib: 'Most prolific 20th c mathematician (~1500 papers). Itinerant life. Erdős number = collaboration distance to him.' },
+        { name: t('stem.angles.andrew_wiles', 'Andrew Wiles'), year: '1953-', contrib: 'Proved Fermat\'s Last Theorem (1994), 358 years after Fermat\'s famous margin.' },
+        { name: t('stem.angles.maryam_mirzakhani', 'Maryam Mirzakhani'), year: '1977-2017', contrib: 'First woman to win Fields Medal (2014). Riemann surfaces + their moduli. Died at 40 of cancer.' }
       ];
 
       var PRACTICAL_ANGLES = [
@@ -2940,7 +2940,7 @@ window.StemLab = window.StemLab || {
 
       function renderConstantsSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, 'π Mathematical + physical constants'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.mathematical_physical_constants', 'π Mathematical + physical constants')),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
               h('thead', null,
@@ -2966,7 +2966,7 @@ window.StemLab = window.StemLab || {
 
       function renderRiversSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🌎 Earth measurements'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.earth_measurements_2', '🌎 Earth measurements')),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
               h('thead', null,
@@ -2992,7 +2992,7 @@ window.StemLab = window.StemLab || {
 
       function renderBuildingsSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🏛 Famous structures + their angles'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.famous_structures_their_angles', '🏛 Famous structures + their angles')),
           h('div', { className: 'space-y-2' },
             FAMOUS_BUILDINGS.map(function(b, i) {
               return h('div', { key: 'b'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -3013,7 +3013,7 @@ window.StemLab = window.StemLab || {
 
       function renderCurvesSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '∿ Famous mathematical curves'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.famous_mathematical_curves', '∿ Famous mathematical curves')),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
               h('thead', null,
@@ -3039,7 +3039,7 @@ window.StemLab = window.StemLab || {
 
       function renderMathematiciansSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '👨‍🏫 Great mathematicians'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.great_mathematicians', '👨‍🏫 Great mathematicians')),
           h('div', { className: 'space-y-2' },
             GREAT_MATHEMATICIANS.map(function(m, i) {
               return h('div', { key: 'm'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-rose-400 border border-slate-200' },
@@ -3056,7 +3056,7 @@ window.StemLab = window.StemLab || {
 
       function renderPracticalSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🛠 Practical angle standards'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.practical_angle_standards', '🛠 Practical angle standards')),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
               h('thead', null,
@@ -3085,106 +3085,106 @@ window.StemLab = window.StemLab || {
       // ═════════════════════════════════════════════════════════════════════
 
       var CONIC_SECTIONS = [
-        { name: 'Circle', eccentricity: 'e = 0', equation: 'x² + y² = r²', cut: 'Plane perpendicular to cone axis', use: 'Wheels, gears, orbits (almost — most planetary orbits are slightly elliptical).' },
-        { name: 'Ellipse', eccentricity: '0 < e < 1', equation: 'x²/a² + y²/b² = 1', cut: 'Oblique plane through cone (both nappes uncut)', use: 'Planetary orbits (Kepler\'s 1st law). Whispering galleries (St. Paul\'s Cathedral).' },
-        { name: 'Parabola', eccentricity: 'e = 1', equation: 'y² = 4ax', cut: 'Plane parallel to cone\'s slant side', use: 'Satellite dishes (parallel rays focus to one point). Projectile motion (in vacuum). Suspension bridge cables.' },
-        { name: 'Hyperbola', eccentricity: 'e > 1', equation: 'x²/a² − y²/b² = 1', cut: 'Plane parallel to axis (cuts both nappes)', use: 'Sundials. Hyperbolic mirrors. Comet orbits (some). Long-baseline navigation (LORAN).' },
-        { name: 'Degenerate (point)', eccentricity: '—', equation: 'x² + y² = 0', cut: 'Plane through apex perpendicular to axis', use: '—' },
-        { name: 'Degenerate (line)', eccentricity: '—', equation: 'y² = 0 (and y = 0)', cut: 'Plane through apex along slant', use: '—' },
-        { name: 'Degenerate (two lines)', eccentricity: '—', equation: 'x² − y² = 0', cut: 'Plane through apex through both nappes', use: '—' }
+        { name: t('stem.angles.circle_2', 'Circle'), eccentricity: 'e = 0', equation: 'x² + y² = r²', cut: 'Plane perpendicular to cone axis', use: 'Wheels, gears, orbits (almost — most planetary orbits are slightly elliptical).' },
+        { name: t('stem.angles.ellipse_2', 'Ellipse'), eccentricity: '0 < e < 1', equation: 'x²/a² + y²/b² = 1', cut: 'Oblique plane through cone (both nappes uncut)', use: 'Planetary orbits (Kepler\'s 1st law). Whispering galleries (St. Paul\'s Cathedral).' },
+        { name: t('stem.angles.parabola_2', 'Parabola'), eccentricity: 'e = 1', equation: 'y² = 4ax', cut: 'Plane parallel to cone\'s slant side', use: 'Satellite dishes (parallel rays focus to one point). Projectile motion (in vacuum). Suspension bridge cables.' },
+        { name: t('stem.angles.hyperbola_2', 'Hyperbola'), eccentricity: 'e > 1', equation: 'x²/a² − y²/b² = 1', cut: 'Plane parallel to axis (cuts both nappes)', use: 'Sundials. Hyperbolic mirrors. Comet orbits (some). Long-baseline navigation (LORAN).' },
+        { name: t('stem.angles.degenerate_point', 'Degenerate (point)'), eccentricity: '—', equation: 'x² + y² = 0', cut: 'Plane through apex perpendicular to axis', use: '—' },
+        { name: t('stem.angles.degenerate_line', 'Degenerate (line)'), eccentricity: '—', equation: 'y² = 0 (and y = 0)', cut: 'Plane through apex along slant', use: '—' },
+        { name: t('stem.angles.degenerate_two_lines', 'Degenerate (two lines)'), eccentricity: '—', equation: 'x² − y² = 0', cut: 'Plane through apex through both nappes', use: '—' }
       ];
 
       var PLATONIC_SOLIDS = [
-        { name: 'Tetrahedron', faces: '4 triangles', vertices: 4, edges: 6, dual: 'self-dual', notes: 'Simplest 3D shape. Vertex angle ~70.5°.' },
-        { name: 'Cube (hexahedron)', faces: '6 squares', vertices: 8, edges: 12, dual: 'octahedron', notes: 'Most familiar. All angles 90°.' },
-        { name: 'Octahedron', faces: '8 triangles', vertices: 6, edges: 12, dual: 'cube', notes: 'Diamond crystals. Two pyramids base-to-base.' },
-        { name: 'Dodecahedron', faces: '12 pentagons', vertices: 20, edges: 30, dual: 'icosahedron', notes: 'Plato associated with "the heavens" (5th element).' },
-        { name: 'Icosahedron', faces: '20 triangles', vertices: 12, edges: 30, dual: 'dodecahedron', notes: 'Most spherelike Platonic solid. D20 die in tabletop games.' }
+        { name: t('stem.angles.tetrahedron', 'Tetrahedron'), faces: '4 triangles', vertices: 4, edges: 6, dual: 'self-dual', notes: 'Simplest 3D shape. Vertex angle ~70.5°.' },
+        { name: t('stem.angles.cube_hexahedron', 'Cube (hexahedron)'), faces: '6 squares', vertices: 8, edges: 12, dual: 'octahedron', notes: 'Most familiar. All angles 90°.' },
+        { name: t('stem.angles.octahedron', 'Octahedron'), faces: '8 triangles', vertices: 6, edges: 12, dual: 'cube', notes: 'Diamond crystals. Two pyramids base-to-base.' },
+        { name: t('stem.angles.dodecahedron', 'Dodecahedron'), faces: '12 pentagons', vertices: 20, edges: 30, dual: 'icosahedron', notes: 'Plato associated with "the heavens" (5th element).' },
+        { name: t('stem.angles.icosahedron', 'Icosahedron'), faces: '20 triangles', vertices: 12, edges: 30, dual: 'dodecahedron', notes: 'Most spherelike Platonic solid. D20 die in tabletop games.' }
       ];
 
       var PLATONIC_NOTES = [
-        { note: 'Why only 5?', detail: 'At each vertex, you need 3+ polygons whose angle sum is < 360° (else flat or impossible). Only 5 combinations work for regular polygons.' },
-        { note: 'Euler\'s formula', detail: 'V − E + F = 2 holds for every convex polyhedron (including all 5 Platonic solids).' },
-        { note: 'Duality', detail: 'Connecting face centers of a Platonic solid gives its "dual". Cube ↔ octahedron; dodecahedron ↔ icosahedron; tetrahedron ↔ itself.' },
-        { note: 'Archimedean solids', detail: '13 semi-regular solids — same arrangement at each vertex, but multiple polygon types. Includes truncated icosahedron (soccer ball pattern).' },
-        { note: 'Kepler-Poinsot polyhedra', detail: '4 regular star polyhedra with pentagram faces or vertices. Non-convex.' }
+        { note: t('stem.angles.why_only_5', 'Why only 5?'), detail: t('stem.angles.at_each_vertex_you_need_3_polygons_who', 'At each vertex, you need 3+ polygons whose angle sum is < 360° (else flat or impossible). Only 5 combinations work for regular polygons.') },
+        { note: t('stem.angles.euler_s_formula', 'Euler\'s formula'), detail: t('stem.angles.v_e_f_2_holds_for_every_convex_polyhed', 'V − E + F = 2 holds for every convex polyhedron (including all 5 Platonic solids).') },
+        { note: t('stem.angles.duality', 'Duality'), detail: t('stem.angles.connecting_face_centers_of_a_platonic_', 'Connecting face centers of a Platonic solid gives its "dual". Cube ↔ octahedron; dodecahedron ↔ icosahedron; tetrahedron ↔ itself.') },
+        { note: t('stem.angles.archimedean_solids', 'Archimedean solids'), detail: t('stem.angles.13_semi_regular_solids_same_arrangemen', '13 semi-regular solids — same arrangement at each vertex, but multiple polygon types. Includes truncated icosahedron (soccer ball pattern).') },
+        { note: t('stem.angles.kepler_poinsot_polyhedra', 'Kepler-Poinsot polyhedra'), detail: t('stem.angles.4_regular_star_polyhedra_with_pentagra', '4 regular star polyhedra with pentagram faces or vertices. Non-convex.') }
       ];
 
       var FRACTAL_NOTES = [
-        { name: 'Koch snowflake', detail: 'Start with triangle. On each side, replace middle third with two sides of a smaller triangle. Repeat. Infinite perimeter, finite area.' },
-        { name: 'Sierpinski triangle', detail: 'Start with triangle. Remove middle (smaller) triangle. Repeat on each remaining triangle. Hausdorff dimension log(3)/log(2) ≈ 1.585.' },
-        { name: 'Cantor set', detail: 'Remove middle third of segment. Repeat on each remaining segment. Uncountably infinite but total length zero.' },
-        { name: 'Mandelbrot set', detail: 'Points c where iterating z = z² + c stays bounded. Infinite detail at any zoom. Discovered 1980.' },
-        { name: 'Julia set', detail: 'For each c, points z where iterating z = z² + c stays bounded. Each c gives a different Julia set; together they tile the Mandelbrot set.' },
-        { name: 'Dragon curve', detail: 'Fold a strip of paper in half repeatedly; unfold each fold at 90°. Or recursive replacement of segments.' },
-        { name: 'Barnsley fern', detail: 'Iterated function system. Random selection of 4 affine maps produces a fern shape.' },
-        { name: 'Hausdorff dimension', detail: 'Fractional dimension. Coastline ~1.2-1.3 depending on country. Captures "roughness" beyond integer dimensions.' },
-        { name: 'Self-similarity', detail: 'Defining property. Strict self-similarity (Koch) or statistical (coastlines).' },
-        { name: 'Real-world fractals', detail: 'Coastlines, trees, lungs (bronchi), blood vessels, river networks, mountain ranges, clouds, lightning.' }
+        { name: t('stem.angles.koch_snowflake', 'Koch snowflake'), detail: t('stem.angles.start_with_triangle_on_each_side_repla', 'Start with triangle. On each side, replace middle third with two sides of a smaller triangle. Repeat. Infinite perimeter, finite area.') },
+        { name: t('stem.angles.sierpinski_triangle', 'Sierpinski triangle'), detail: t('stem.angles.start_with_triangle_remove_middle_smal', 'Start with triangle. Remove middle (smaller) triangle. Repeat on each remaining triangle. Hausdorff dimension log(3)/log(2) ≈ 1.585.') },
+        { name: t('stem.angles.cantor_set', 'Cantor set'), detail: t('stem.angles.remove_middle_third_of_segment_repeat_', 'Remove middle third of segment. Repeat on each remaining segment. Uncountably infinite but total length zero.') },
+        { name: t('stem.angles.mandelbrot_set', 'Mandelbrot set'), detail: t('stem.angles.points_c_where_iterating_z_z_c_stays_b', 'Points c where iterating z = z² + c stays bounded. Infinite detail at any zoom. Discovered 1980.') },
+        { name: t('stem.angles.julia_set', 'Julia set'), detail: t('stem.angles.for_each_c_points_z_where_iterating_z_', 'For each c, points z where iterating z = z² + c stays bounded. Each c gives a different Julia set; together they tile the Mandelbrot set.') },
+        { name: t('stem.angles.dragon_curve', 'Dragon curve'), detail: t('stem.angles.fold_a_strip_of_paper_in_half_repeated', 'Fold a strip of paper in half repeatedly; unfold each fold at 90°. Or recursive replacement of segments.') },
+        { name: t('stem.angles.barnsley_fern', 'Barnsley fern'), detail: t('stem.angles.iterated_function_system_random_select', 'Iterated function system. Random selection of 4 affine maps produces a fern shape.') },
+        { name: t('stem.angles.hausdorff_dimension', 'Hausdorff dimension'), detail: t('stem.angles.fractional_dimension_coastline_1_2_1_3', 'Fractional dimension. Coastline ~1.2-1.3 depending on country. Captures "roughness" beyond integer dimensions.') },
+        { name: 'Self-similarity', detail: t('stem.angles.defining_property_strict_self_similari', 'Defining property. Strict self-similarity (Koch) or statistical (coastlines).') },
+        { name: t('stem.angles.real_world_fractals', 'Real-world fractals'), detail: t('stem.angles.coastlines_trees_lungs_bronchi_blood_v', 'Coastlines, trees, lungs (bronchi), blood vessels, river networks, mountain ranges, clouds, lightning.') }
       ];
 
       var NONEUCLID_FACTS = [
-        { topic: 'Euclidean geometry', detail: 'Flat plane. Parallel postulate holds. Angles in triangle sum to exactly 180°.' },
-        { topic: 'Spherical geometry', detail: 'Surface of sphere. Triangle angles sum to MORE than 180°. Excess proportional to area. Used in navigation.' },
-        { topic: 'Hyperbolic geometry', detail: 'Saddle-shaped surface. Triangle angles sum to LESS than 180°. Many parallels through a point not on a line.' },
-        { topic: 'Geodesics', detail: 'Shortest paths on a surface. Straight lines (Euclidean); great circles (sphere); hyperbolic lines.' },
-        { topic: 'Great circles', detail: 'Largest circles on a sphere. Equator + meridians. Plane flights follow great-circle paths.' },
-        { topic: 'Curvature', detail: 'Euclidean = 0. Spherical = positive. Hyperbolic = negative. Curvature determines geometry.' },
-        { topic: 'Sum of angles excess', detail: 'On sphere of radius R, triangle area = R² × (angle sum − π).' },
-        { topic: 'Real-world spherical: GPS', detail: 'Positions on Earth\'s surface use spherical (or more precisely, ellipsoidal) geometry.' },
-        { topic: 'Real-world spherical: airplane routes', detail: 'NYC to Tokyo is shortest via the Arctic, not straight east — that\'s the great circle.' },
-        { topic: 'General relativity', detail: 'Spacetime is curved by mass-energy. Geodesics through curved spacetime ARE the paths of free-falling objects.' }
+        { topic: 'Euclidean geometry', detail: t('stem.angles.flat_plane_parallel_postulate_holds_an', 'Flat plane. Parallel postulate holds. Angles in triangle sum to exactly 180°.') },
+        { topic: 'Spherical geometry', detail: t('stem.angles.surface_of_sphere_triangle_angles_sum_', 'Surface of sphere. Triangle angles sum to MORE than 180°. Excess proportional to area. Used in navigation.') },
+        { topic: 'Hyperbolic geometry', detail: t('stem.angles.saddle_shaped_surface_triangle_angles_', 'Saddle-shaped surface. Triangle angles sum to LESS than 180°. Many parallels through a point not on a line.') },
+        { topic: 'Geodesics', detail: t('stem.angles.shortest_paths_on_a_surface_straight_l', 'Shortest paths on a surface. Straight lines (Euclidean); great circles (sphere); hyperbolic lines.') },
+        { topic: 'Great circles', detail: t('stem.angles.largest_circles_on_a_sphere_equator_me', 'Largest circles on a sphere. Equator + meridians. Plane flights follow great-circle paths.') },
+        { topic: 'Curvature', detail: t('stem.angles.euclidean_0_spherical_positive_hyperbo', 'Euclidean = 0. Spherical = positive. Hyperbolic = negative. Curvature determines geometry.') },
+        { topic: 'Sum of angles excess', detail: t('stem.angles.on_sphere_of_radius_r_triangle_area_r_', 'On sphere of radius R, triangle area = R² × (angle sum − π).') },
+        { topic: 'Real-world spherical: GPS', detail: t('stem.angles.positions_on_earth_s_surface_use_spher', 'Positions on Earth\'s surface use spherical (or more precisely, ellipsoidal) geometry.') },
+        { topic: 'Real-world spherical: airplane routes', detail: t('stem.angles.nyc_to_tokyo_is_shortest_via_the_arcti', 'NYC to Tokyo is shortest via the Arctic, not straight east — that\'s the great circle.') },
+        { topic: 'General relativity', detail: t('stem.angles.spacetime_is_curved_by_mass_energy_geo', 'Spacetime is curved by mass-energy. Geodesics through curved spacetime ARE the paths of free-falling objects.') }
       ];
 
       var MAP_PROJECTIONS = [
-        { name: 'Mercator', preserves: 'Angles (conformal)', distorts: 'Areas (massively near poles)', use: 'Marine navigation — straight lines on map = constant compass bearing.' },
+        { name: t('stem.angles.mercator', 'Mercator'), preserves: 'Angles (conformal)', distorts: 'Areas (massively near poles)', use: 'Marine navigation — straight lines on map = constant compass bearing.' },
         { name: 'Gall-Peters', preserves: 'Areas', distorts: 'Shapes (elongated)', use: 'Equal-area focus. Used to challenge Mercator\'s "Europe is bigger" distortion.' },
-        { name: 'Robinson', preserves: 'Neither perfectly', distorts: 'Some of both', use: 'Compromise. National Geographic used 1988-1998.' },
-        { name: 'Winkel tripel', preserves: 'Neither perfectly', distorts: 'Minimizes total', use: 'National Geographic since 1998.' },
-        { name: 'Mollweide', preserves: 'Areas', distorts: 'Shapes near edges', use: 'Equal-area. Used for global thematic maps.' },
-        { name: 'Sinusoidal', preserves: 'Areas, distances along equator + meridians', distorts: 'Shapes', use: 'Old projection. Variant: interrupted to reduce distortion.' },
-        { name: 'Albers conic', preserves: 'Areas', distorts: 'Shapes', use: 'Conic projection. Common for continental US maps.' },
-        { name: 'Lambert conformal conic', preserves: 'Angles + shapes (locally)', distorts: 'Areas', use: 'Aeronautical charts. FAA sectionals.' },
-        { name: 'Azimuthal equidistant', preserves: 'Distances from center point', distorts: 'Areas + shapes far from center', use: 'UN logo. Useful for showing distances + bearings from one location.' },
-        { name: 'Goode\'s homolosine', preserves: 'Areas', distorts: 'Splits continents', use: 'Interrupted to keep continent shapes accurate.' }
+        { name: t('stem.angles.robinson', 'Robinson'), preserves: 'Neither perfectly', distorts: 'Some of both', use: 'Compromise. National Geographic used 1988-1998.' },
+        { name: t('stem.angles.winkel_tripel', 'Winkel tripel'), preserves: 'Neither perfectly', distorts: 'Minimizes total', use: 'National Geographic since 1998.' },
+        { name: t('stem.angles.mollweide', 'Mollweide'), preserves: 'Areas', distorts: 'Shapes near edges', use: 'Equal-area. Used for global thematic maps.' },
+        { name: t('stem.angles.sinusoidal', 'Sinusoidal'), preserves: 'Areas, distances along equator + meridians', distorts: 'Shapes', use: 'Old projection. Variant: interrupted to reduce distortion.' },
+        { name: t('stem.angles.albers_conic', 'Albers conic'), preserves: 'Areas', distorts: 'Shapes', use: 'Conic projection. Common for continental US maps.' },
+        { name: t('stem.angles.lambert_conformal_conic', 'Lambert conformal conic'), preserves: 'Angles + shapes (locally)', distorts: 'Areas', use: 'Aeronautical charts. FAA sectionals.' },
+        { name: t('stem.angles.azimuthal_equidistant', 'Azimuthal equidistant'), preserves: 'Distances from center point', distorts: 'Areas + shapes far from center', use: 'UN logo. Useful for showing distances + bearings from one location.' },
+        { name: t('stem.angles.goode_s_homolosine', 'Goode\'s homolosine'), preserves: 'Areas', distorts: 'Splits continents', use: 'Interrupted to keep continent shapes accurate.' }
       ];
 
       var SUNDIAL_NOTES = [
-        { topic: 'How they work', detail: 'A vertical or angled "gnomon" casts a shadow. As Earth rotates, shadow moves across markings.' },
-        { topic: 'Gnomon angle', detail: 'For accuracy, gnomon must be parallel to Earth\'s axis — angle to horizontal = local latitude.' },
-        { topic: 'Equatorial sundial', detail: 'Dial plate perpendicular to gnomon (parallel to equator). Hour lines evenly spaced 15° apart.' },
-        { topic: 'Horizontal sundial', detail: 'Dial plate parallel to ground. Hour lines NOT evenly spaced — formula: tan(hour line angle) = sin(latitude) × tan(hour angle).' },
-        { topic: 'Vertical sundial', detail: 'Dial on a wall. Hour lines depend on wall\'s azimuth + latitude.' },
-        { topic: 'Equation of time', detail: 'Sundial time differs from clock time by up to ~16 minutes through the year. Due to Earth\'s elliptical orbit + axial tilt.' },
-        { topic: 'Analemma', detail: 'Figure-8 trace of sun\'s position at same clock time each day for a year. Shown on some advanced sundials.' },
-        { topic: 'Time zones complication', detail: 'Sundial shows LOCAL apparent solar time. Differs from civil time by longitude offset within timezone + DST.' },
-        { topic: 'Heliochronometer', detail: 'Very precise sundials with corrections for equation of time + longitude. Accurate to seconds.' }
+        { topic: 'How they work', detail: t('stem.angles.a_vertical_or_angled_gnomon_casts_a_sh', 'A vertical or angled "gnomon" casts a shadow. As Earth rotates, shadow moves across markings.') },
+        { topic: 'Gnomon angle', detail: t('stem.angles.for_accuracy_gnomon_must_be_parallel_t', 'For accuracy, gnomon must be parallel to Earth\'s axis — angle to horizontal = local latitude.') },
+        { topic: 'Equatorial sundial', detail: t('stem.angles.dial_plate_perpendicular_to_gnomon_par', 'Dial plate perpendicular to gnomon (parallel to equator). Hour lines evenly spaced 15° apart.') },
+        { topic: 'Horizontal sundial', detail: t('stem.angles.dial_plate_parallel_to_ground_hour_lin', 'Dial plate parallel to ground. Hour lines NOT evenly spaced — formula: tan(hour line angle) = sin(latitude) × tan(hour angle).') },
+        { topic: 'Vertical sundial', detail: t('stem.angles.dial_on_a_wall_hour_lines_depend_on_wa', 'Dial on a wall. Hour lines depend on wall\'s azimuth + latitude.') },
+        { topic: 'Equation of time', detail: t('stem.angles.sundial_time_differs_from_clock_time_b', 'Sundial time differs from clock time by up to ~16 minutes through the year. Due to Earth\'s elliptical orbit + axial tilt.') },
+        { topic: 'Analemma', detail: t('stem.angles.figure_8_trace_of_sun_s_position_at_sa', 'Figure-8 trace of sun\'s position at same clock time each day for a year. Shown on some advanced sundials.') },
+        { topic: 'Time zones complication', detail: t('stem.angles.sundial_shows_local_apparent_solar_tim', 'Sundial shows LOCAL apparent solar time. Differs from civil time by longitude offset within timezone + DST.') },
+        { topic: 'Heliochronometer', detail: t('stem.angles.very_precise_sundials_with_corrections', 'Very precise sundials with corrections for equation of time + longitude. Accurate to seconds.') }
       ];
 
       var GOLDEN_RATIO = [
-        { fact: 'Value', detail: 'φ (phi) ≈ 1.61803398874989... Irrational. Roots of x² = x + 1.' },
-        { fact: 'Algebraic definition', detail: 'A line divided so that whole : larger = larger : smaller. (a+b)/a = a/b = φ.' },
-        { fact: 'Fibonacci connection', detail: 'Ratio of consecutive Fibonacci numbers approaches φ: 1, 1, 2, 3, 5, 8, 13, 21 → 21/13 ≈ 1.615.' },
-        { fact: 'Golden rectangle', detail: 'Long side / short side = φ. Remove a square → remaining rectangle is also golden.' },
-        { fact: 'Golden spiral', detail: 'Logarithmic spiral with growth factor φ per quarter turn. Approximated by Fibonacci squares + arcs.' },
-        { fact: 'Pentagram', detail: 'Ratios of pentagram diagonals to sides = φ. Pythagoras knew this.' },
-        { fact: 'In nature', detail: 'Spiral arrangements in sunflowers, pinecones, nautilus shells. Reflects optimal packing for growing meristems.' },
-        { fact: 'In art (overstated)', detail: 'Often claimed in Parthenon, Mona Lisa, etc. — most claims unsupported. Real golden ratio art: 20th-century deliberate use (Le Corbusier, Dali).' },
-        { fact: '"Aesthetic" claim', detail: 'Long believed humans find golden ratio most beautiful. Robust evidence weaker than popular accounts suggest.' },
-        { fact: 'Continued fraction', detail: 'φ = 1 + 1/(1 + 1/(1 + 1/(...))). Most irrational number — slowest converging continued fraction.' }
+        { fact: t('stem.angles.value', 'Value'), detail: t('stem.angles.phi_1_61803398874989_irrational_roots_', 'φ (phi) ≈ 1.61803398874989... Irrational. Roots of x² = x + 1.') },
+        { fact: t('stem.angles.algebraic_definition', 'Algebraic definition'), detail: t('stem.angles.a_line_divided_so_that_whole_larger_la', 'A line divided so that whole : larger = larger : smaller. (a+b)/a = a/b = φ.') },
+        { fact: t('stem.angles.fibonacci_connection', 'Fibonacci connection'), detail: t('stem.angles.ratio_of_consecutive_fibonacci_numbers', 'Ratio of consecutive Fibonacci numbers approaches φ: 1, 1, 2, 3, 5, 8, 13, 21 → 21/13 ≈ 1.615.') },
+        { fact: t('stem.angles.golden_rectangle', 'Golden rectangle'), detail: t('stem.angles.long_side_short_side_remove_a_square_r', 'Long side / short side = φ. Remove a square → remaining rectangle is also golden.') },
+        { fact: t('stem.angles.golden_spiral', 'Golden spiral'), detail: t('stem.angles.logarithmic_spiral_with_growth_factor_', 'Logarithmic spiral with growth factor φ per quarter turn. Approximated by Fibonacci squares + arcs.') },
+        { fact: t('stem.angles.pentagram', 'Pentagram'), detail: t('stem.angles.ratios_of_pentagram_diagonals_to_sides', 'Ratios of pentagram diagonals to sides = φ. Pythagoras knew this.') },
+        { fact: t('stem.angles.in_nature', 'In nature'), detail: t('stem.angles.spiral_arrangements_in_sunflowers_pine', 'Spiral arrangements in sunflowers, pinecones, nautilus shells. Reflects optimal packing for growing meristems.') },
+        { fact: t('stem.angles.in_art_overstated', 'In art (overstated)'), detail: t('stem.angles.often_claimed_in_parthenon_mona_lisa_e', 'Often claimed in Parthenon, Mona Lisa, etc. — most claims unsupported. Real golden ratio art: 20th-century deliberate use (Le Corbusier, Dali).') },
+        { fact: t('stem.angles.aesthetic_claim', '"Aesthetic" claim'), detail: t('stem.angles.long_believed_humans_find_golden_ratio', 'Long believed humans find golden ratio most beautiful. Robust evidence weaker than popular accounts suggest.') },
+        { fact: t('stem.angles.continued_fraction', 'Continued fraction'), detail: t('stem.angles.1_1_1_1_1_1_most_irrational_number_slo', 'φ = 1 + 1/(1 + 1/(1 + 1/(...))). Most irrational number — slowest converging continued fraction.') }
       ];
 
       var ORIGAMI_FACTS = [
-        { fact: 'Mathematical origami', detail: 'Active research area. Can solve cubic equations (impossible with compass + straightedge alone). Connect to algebra.' },
-        { fact: 'Maekawa\'s theorem', detail: 'At any flat-foldable vertex, |# mountain folds − # valley folds| = 2.' },
-        { fact: 'Kawasaki\'s theorem', detail: 'At a flat-foldable vertex, alternating angles around the vertex sum to 180°.' },
-        { fact: '7-fold limit (paper)', detail: 'Standard paper can be folded in half ~7 times. Each fold doubles thickness. After 7, paper is too stiff. Record (with special equipment + huge paper): 12 folds.' },
-        { fact: 'Crease pattern → 3D', detail: 'Flat sheet can fold into virtually any 3D shape with enough creases. Modern origami extremely complex.' },
-        { fact: 'Real-world: space telescopes', detail: 'James Webb Space Telescope sunshield folded for launch (origami principles), unfolded in space.' },
-        { fact: 'Real-world: airbags', detail: 'Folded efficiently to fit in compartment, unfold rapidly.' },
-        { fact: 'Real-world: stents', detail: 'Origami-inspired medical stents fold tiny for insertion, expand in artery.' },
-        { fact: 'Miura fold', detail: 'Parallelogram-based fold lets large surface (solar panel) deploy from compact bundle via single pull.' },
-        { fact: 'Kirigami', detail: 'Cuts allowed in addition to folds. Used for pop-up books + scientific structures.' }
+        { fact: t('stem.angles.mathematical_origami', 'Mathematical origami'), detail: t('stem.angles.active_research_area_can_solve_cubic_e', 'Active research area. Can solve cubic equations (impossible with compass + straightedge alone). Connect to algebra.') },
+        { fact: t('stem.angles.maekawa_s_theorem', 'Maekawa\'s theorem'), detail: t('stem.angles.at_any_flat_foldable_vertex_mountain_f', 'At any flat-foldable vertex, |# mountain folds − # valley folds| = 2.') },
+        { fact: t('stem.angles.kawasaki_s_theorem', 'Kawasaki\'s theorem'), detail: t('stem.angles.at_a_flat_foldable_vertex_alternating_', 'At a flat-foldable vertex, alternating angles around the vertex sum to 180°.') },
+        { fact: t('stem.angles.7_fold_limit_paper', '7-fold limit (paper)'), detail: t('stem.angles.standard_paper_can_be_folded_in_half_7', 'Standard paper can be folded in half ~7 times. Each fold doubles thickness. After 7, paper is too stiff. Record (with special equipment + huge paper): 12 folds.') },
+        { fact: t('stem.angles.crease_pattern_3d', 'Crease pattern → 3D'), detail: t('stem.angles.flat_sheet_can_fold_into_virtually_any', 'Flat sheet can fold into virtually any 3D shape with enough creases. Modern origami extremely complex.') },
+        { fact: t('stem.angles.real_world_space_telescopes', 'Real-world: space telescopes'), detail: t('stem.angles.james_webb_space_telescope_sunshield_f', 'James Webb Space Telescope sunshield folded for launch (origami principles), unfolded in space.') },
+        { fact: t('stem.angles.real_world_airbags', 'Real-world: airbags'), detail: t('stem.angles.folded_efficiently_to_fit_in_compartme', 'Folded efficiently to fit in compartment, unfold rapidly.') },
+        { fact: t('stem.angles.real_world_stents', 'Real-world: stents'), detail: t('stem.angles.origami_inspired_medical_stents_fold_t', 'Origami-inspired medical stents fold tiny for insertion, expand in artery.') },
+        { fact: t('stem.angles.miura_fold', 'Miura fold'), detail: t('stem.angles.parallelogram_based_fold_lets_large_su', 'Parallelogram-based fold lets large surface (solar panel) deploy from compact bundle via single pull.') },
+        { fact: t('stem.angles.kirigami', 'Kirigami'), detail: t('stem.angles.cuts_allowed_in_addition_to_folds_used', 'Cuts allowed in addition to folds. Used for pop-up books + scientific structures.') }
       ];
 
       var SPORTS_ANGLES = [
@@ -3203,18 +3203,18 @@ window.StemLab = window.StemLab || {
       ];
 
       var ART_ANGLES = [
-        { topic: 'Linear perspective', detail: 'Parallel lines converge to vanishing points. 1-point (looking down a road), 2-point (corner of building), 3-point (looking up at a tower).' },
-        { topic: 'Vanishing point', detail: 'Where parallel lines appear to meet on horizon. Determined by viewer\'s position + line direction.' },
-        { topic: 'Eye level / horizon', detail: 'Horizontal line at viewer\'s eye height. All vanishing points lie on it (for lines parallel to ground).' },
-        { topic: 'Foreshortening', detail: 'Objects pointing at viewer appear compressed. Drawing a hand pointed at viewer = challenge.' },
-        { topic: 'Rule of thirds', detail: 'Divide canvas/photo into 9 equal sections. Place subjects on intersections for dynamic composition.' },
-        { topic: 'Dutch angle (camera tilt)', detail: 'Camera tilted off-horizontal creates unease, instability, dynamism.' },
-        { topic: 'Angle of light', detail: 'Sun angle determines shadow length + direction. Low angle (golden hour) = long shadows + warm color.' },
-        { topic: 'Renaissance perspective', detail: 'Brunelleschi (~1413) demonstrated mathematical linear perspective. Alberti formalized it (1435).' },
-        { topic: 'Atmospheric perspective', detail: 'Distant objects appear bluer + less distinct due to atmospheric scattering.' },
-        { topic: 'Sacred geometry in art', detail: 'Some traditions use specific angles + ratios (Islamic geometric patterns, Indian mandalas, gothic cathedrals).' },
-        { topic: 'M.C. Escher', detail: 'Mathematical artist. Impossible objects (Penrose triangles), tessellations, hyperbolic geometry.' },
-        { topic: 'Origami art', detail: 'Folding angles + crease patterns produce 3D sculptures from flat paper.' }
+        { topic: 'Linear perspective', detail: t('stem.angles.parallel_lines_converge_to_vanishing_p', 'Parallel lines converge to vanishing points. 1-point (looking down a road), 2-point (corner of building), 3-point (looking up at a tower).') },
+        { topic: 'Vanishing point', detail: t('stem.angles.where_parallel_lines_appear_to_meet_on', 'Where parallel lines appear to meet on horizon. Determined by viewer\'s position + line direction.') },
+        { topic: 'Eye level / horizon', detail: t('stem.angles.horizontal_line_at_viewer_s_eye_height', 'Horizontal line at viewer\'s eye height. All vanishing points lie on it (for lines parallel to ground).') },
+        { topic: 'Foreshortening', detail: t('stem.angles.objects_pointing_at_viewer_appear_comp', 'Objects pointing at viewer appear compressed. Drawing a hand pointed at viewer = challenge.') },
+        { topic: 'Rule of thirds', detail: t('stem.angles.divide_canvas_photo_into_9_equal_secti', 'Divide canvas/photo into 9 equal sections. Place subjects on intersections for dynamic composition.') },
+        { topic: 'Dutch angle (camera tilt)', detail: t('stem.angles.camera_tilted_off_horizontal_creates_u', 'Camera tilted off-horizontal creates unease, instability, dynamism.') },
+        { topic: 'Angle of light', detail: t('stem.angles.sun_angle_determines_shadow_length_dir', 'Sun angle determines shadow length + direction. Low angle (golden hour) = long shadows + warm color.') },
+        { topic: 'Renaissance perspective', detail: t('stem.angles.brunelleschi_1413_demonstrated_mathema', 'Brunelleschi (~1413) demonstrated mathematical linear perspective. Alberti formalized it (1435).') },
+        { topic: 'Atmospheric perspective', detail: t('stem.angles.distant_objects_appear_bluer_less_dist', 'Distant objects appear bluer + less distinct due to atmospheric scattering.') },
+        { topic: 'Sacred geometry in art', detail: t('stem.angles.some_traditions_use_specific_angles_ra', 'Some traditions use specific angles + ratios (Islamic geometric patterns, Indian mandalas, gothic cathedrals).') },
+        { topic: 'M.C. Escher', detail: t('stem.angles.mathematical_artist_impossible_objects', 'Mathematical artist. Impossible objects (Penrose triangles), tessellations, hyperbolic geometry.') },
+        { topic: 'Origami art', detail: t('stem.angles.folding_angles_crease_patterns_produce', 'Folding angles + crease patterns produce 3D sculptures from flat paper.') }
       ];
 
       var MEASURING_TOOLS = [
@@ -3236,8 +3236,8 @@ window.StemLab = window.StemLab || {
 
       function renderConicsSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '◉ Conic sections'),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Curves formed when a plane intersects a (double) cone. The angle of the plane to the cone\'s axis determines the curve type.'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.conic_sections_2', '◉ Conic sections')),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.curves_formed_when_a_plane_intersects_', 'Curves formed when a plane intersects a (double) cone. The angle of the plane to the cone\'s axis determines the curve type.')),
           h('div', { className: 'space-y-2' },
             CONIC_SECTIONS.map(function(c, i) {
               return h('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -3256,8 +3256,8 @@ window.StemLab = window.StemLab || {
 
       function renderPlatonicSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⬡ Platonic solids'),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'The only 5 convex regular polyhedra. All faces are congruent regular polygons, same number meeting at each vertex.'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.platonic_solids_2', '⬡ Platonic solids')),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.the_only_5_convex_regular_polyhedra_al', 'The only 5 convex regular polyhedra. All faces are congruent regular polygons, same number meeting at each vertex.')),
           h('div', { className: 'overflow-x-auto mb-3' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
               h('thead', null,
@@ -3294,8 +3294,8 @@ window.StemLab = window.StemLab || {
 
       function renderFractalsSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '❄ Fractals'),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Shapes that exhibit self-similarity at every scale. Coined by Benoit Mandelbrot (1975) from Latin fractus, "broken".'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.fractals_2', '❄ Fractals')),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.shapes_that_exhibit_self_similarity_at', 'Shapes that exhibit self-similarity at every scale. Coined by Benoit Mandelbrot (1975) from Latin fractus, "broken".')),
           h('div', { className: 'space-y-2' },
             FRACTAL_NOTES.map(function(f, i) {
               return h('div', { key: 'f'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-rose-400 border border-slate-200' },
@@ -3309,8 +3309,8 @@ window.StemLab = window.StemLab || {
 
       function renderNoneuclidSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⊕ Non-Euclidean geometry'),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Geometries on curved surfaces. Euclid\'s parallel postulate doesn\'t hold. Discovered 1820s (Lobachevsky, Bolyai, Gauss).'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.non_euclidean_geometry', '⊕ Non-Euclidean geometry')),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.geometries_on_curved_surfaces_euclid_s', 'Geometries on curved surfaces. Euclid\'s parallel postulate doesn\'t hold. Discovered 1820s (Lobachevsky, Bolyai, Gauss).')),
           h('div', { className: 'space-y-1' },
             NONEUCLID_FACTS.map(function(n, i) {
               return h('div', { key: 'n'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
@@ -3324,8 +3324,8 @@ window.StemLab = window.StemLab || {
 
       function renderProjectionSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🗺 Map projections'),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Projecting curved Earth onto a flat map ALWAYS distorts something — angles, areas, distances, or shapes. Each projection optimizes for different uses.'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.map_projections_2', '🗺 Map projections')),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.projecting_curved_earth_onto_a_flat_ma', 'Projecting curved Earth onto a flat map ALWAYS distorts something — angles, areas, distances, or shapes. Each projection optimizes for different uses.')),
           h('div', { className: 'space-y-2' },
             MAP_PROJECTIONS.map(function(m, i) {
               return h('div', { key: 'm'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -3341,7 +3341,7 @@ window.StemLab = window.StemLab || {
 
       function renderSundialSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '☼ Sundials'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.sundials_2', '☼ Sundials')),
           h('div', { className: 'space-y-1' },
             SUNDIAL_NOTES.map(function(s, i) {
               return h('div', { key: 's'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
@@ -3355,9 +3355,9 @@ window.StemLab = window.StemLab || {
 
       function renderGoldenRatioSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, 'φ Golden ratio'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.golden_ratio_2', 'φ Golden ratio')),
           h('div', { className: 'p-2.5 rounded bg-amber-50 border border-amber-200 text-[11px] text-amber-900 mb-3' },
-            h('strong', null, '⚠ Reality check: '), 'Many popular claims about the golden ratio in art, architecture, and "beauty" are unsupported or invented retroactively. The mathematical properties are real + beautiful; the cultural claims often aren\'t.'
+            h('strong', null, t('stem.angles.reality_check', '⚠ Reality check: ')), t('stem.angles.many_popular_claims_about_the_golden_r', 'Many popular claims about the golden ratio in art, architecture, and "beauty" are unsupported or invented retroactively. The mathematical properties are real + beautiful; the cultural claims often aren\'t.')
           ),
           h('div', { className: 'space-y-1' },
             GOLDEN_RATIO.map(function(g, i) {
@@ -3372,8 +3372,8 @@ window.StemLab = window.StemLab || {
 
       function renderOrigamiSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '✦ Origami geometry'),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Origami connects geometry to engineering, biology, and design. Mathematical theorems govern what folds are possible.'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.origami_geometry_2', '✦ Origami geometry')),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.origami_connects_geometry_to_engineeri', 'Origami connects geometry to engineering, biology, and design. Mathematical theorems govern what folds are possible.')),
           h('div', { className: 'space-y-1' },
             ORIGAMI_FACTS.map(function(o, i) {
               return h('div', { key: 'o'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
@@ -3387,8 +3387,8 @@ window.StemLab = window.StemLab || {
 
       function renderSportsSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🏆 Angles in sports'),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Many athletic skills depend on launch angles. The classic "45° is optimal" is true only for projectiles launched + landing at the same height (without air resistance).'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.angles_in_sports_2', '🏆 Angles in sports')),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.many_athletic_skills_depend_on_launch_', 'Many athletic skills depend on launch angles. The classic "45° is optimal" is true only for projectiles launched + landing at the same height (without air resistance).')),
           h('div', { className: 'space-y-2' },
             SPORTS_ANGLES.map(function(s, i) {
               return h('div', { key: 's'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -3405,7 +3405,7 @@ window.StemLab = window.StemLab || {
 
       function renderArtSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎨 Angles in art + perspective'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.angles_in_art_perspective', '🎨 Angles in art + perspective')),
           h('div', { className: 'space-y-1' },
             ART_ANGLES.map(function(a, i) {
               return h('div', { key: 'a'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
@@ -3419,7 +3419,7 @@ window.StemLab = window.StemLab || {
 
       function renderToolsSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📏 Angle-measuring tools'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.angle_measuring_tools', '📏 Angle-measuring tools')),
           h('div', { className: 'space-y-2' },
             MEASURING_TOOLS.map(function(t, i) {
               return h('div', { key: 't'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },

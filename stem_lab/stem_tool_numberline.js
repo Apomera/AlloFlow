@@ -194,18 +194,18 @@ window.StemLab = window.StemLab || {
 
           // ═══ BADGE SYSTEM ═══
           var BADGES = [
-            { id: 'firstMark', icon: '\uD83D\uDCCD', name: 'First Mark', desc: 'Answer your first challenge correctly', check: function(u) { return u.correct >= 1; } },
-            { id: 'streak3', icon: '\uD83D\uDD25', name: 'Hot Streak', desc: 'Get a streak of 3', check: function(u) { return u.streak >= 3; } },
-            { id: 'streak5', icon: '\u26A1', name: 'Lightning', desc: 'Get a streak of 5', check: function(u) { return u.streak >= 5; } },
-            { id: 'streak10', icon: '\uD83C\uDF1F', name: 'Number Master', desc: 'Get a streak of 10', check: function(u) { return u.streak >= 10; } },
-            { id: 'score10', icon: '\uD83C\uDFC5', name: 'Solid Ten', desc: 'Score 10 correct', check: function(u) { return u.correct >= 10; } },
-            { id: 'score25', icon: '\uD83C\uDFC6', name: 'Quarter Hundred', desc: 'Score 25 correct', check: function(u) { return u.correct >= 25; } },
-            { id: 'allTypes', icon: '\uD83C\uDF08', name: 'Well Rounded', desc: 'Try all 6 challenge types', check: function(u) { return u.typesUsed >= 6; } },
-            { id: 'rounder', icon: '\uD83C\uDFAF', name: 'Rounder', desc: 'Solve 5 rounding challenges', check: function(u) { return u.roundingSolved >= 5; } },
-            { id: 'fractionFinder', icon: '\uD83C\uDF55', name: 'Fraction Finder', desc: 'Solve 3 fraction challenges', check: function(u) { return u.fractionSolved >= 3; } },
-            { id: 'negative', icon: '\u2796', name: 'Below Zero', desc: 'Solve 3 negative number challenges', check: function(u) { return u.negativeSolved >= 3; } },
-            { id: 'placer', icon: '\uD83D\uDCCD', name: 'Precise Placer', desc: 'Place 5 markers correctly', check: function(u) { return u.placeSolved >= 5; } },
-            { id: 'aiLearner', icon: '\uD83E\uDD16', name: 'AI Learner', desc: 'Ask the AI tutor a question', check: function(u) { return u.aiAsked >= 1; } }
+            { id: 'firstMark', icon: '\uD83D\uDCCD', name: t('stem.numberline.first_mark', 'First Mark'), desc: t('stem.numberline.answer_your_first_challenge_correctly', 'Answer your first challenge correctly'), check: function(u) { return u.correct >= 1; } },
+            { id: 'streak3', icon: '\uD83D\uDD25', name: t('stem.numberline.hot_streak', 'Hot Streak'), desc: t('stem.numberline.get_a_streak_of_3', 'Get a streak of 3'), check: function(u) { return u.streak >= 3; } },
+            { id: 'streak5', icon: '\u26A1', name: t('stem.numberline.lightning', 'Lightning'), desc: t('stem.numberline.get_a_streak_of_5', 'Get a streak of 5'), check: function(u) { return u.streak >= 5; } },
+            { id: 'streak10', icon: '\uD83C\uDF1F', name: t('stem.numberline.number_master', 'Number Master'), desc: t('stem.numberline.get_a_streak_of_10', 'Get a streak of 10'), check: function(u) { return u.streak >= 10; } },
+            { id: 'score10', icon: '\uD83C\uDFC5', name: t('stem.numberline.solid_ten', 'Solid Ten'), desc: t('stem.numberline.score_10_correct', 'Score 10 correct'), check: function(u) { return u.correct >= 10; } },
+            { id: 'score25', icon: '\uD83C\uDFC6', name: t('stem.numberline.quarter_hundred', 'Quarter Hundred'), desc: t('stem.numberline.score_25_correct', 'Score 25 correct'), check: function(u) { return u.correct >= 25; } },
+            { id: 'allTypes', icon: '\uD83C\uDF08', name: t('stem.numberline.well_rounded', 'Well Rounded'), desc: t('stem.numberline.try_all_6_challenge_types', 'Try all 6 challenge types'), check: function(u) { return u.typesUsed >= 6; } },
+            { id: 'rounder', icon: '\uD83C\uDFAF', name: t('stem.numberline.rounder', 'Rounder'), desc: t('stem.numberline.solve_5_rounding_challenges', 'Solve 5 rounding challenges'), check: function(u) { return u.roundingSolved >= 5; } },
+            { id: 'fractionFinder', icon: '\uD83C\uDF55', name: t('stem.numberline.fraction_finder', 'Fraction Finder'), desc: t('stem.numberline.solve_3_fraction_challenges', 'Solve 3 fraction challenges'), check: function(u) { return u.fractionSolved >= 3; } },
+            { id: 'negative', icon: '\u2796', name: t('stem.numberline.below_zero', 'Below Zero'), desc: t('stem.numberline.solve_3_negative_number_challenges', 'Solve 3 negative number challenges'), check: function(u) { return u.negativeSolved >= 3; } },
+            { id: 'placer', icon: '\uD83D\uDCCD', name: t('stem.numberline.precise_placer', 'Precise Placer'), desc: t('stem.numberline.place_5_markers_correctly', 'Place 5 markers correctly'), check: function(u) { return u.placeSolved >= 5; } },
+            { id: 'aiLearner', icon: '\uD83E\uDD16', name: t('stem.numberline.ai_learner', 'AI Learner'), desc: t('stem.numberline.ask_the_ai_tutor_a_question', 'Ask the AI tutor a question'), check: function(u) { return u.aiAsked >= 1; } }
           ];
 
           var checkBadges = function(updates) {
@@ -249,12 +249,12 @@ window.StemLab = window.StemLab || {
 
             if (type === 'identify') {
               var val = randInt(rMin, rMax);
-              ch = { type: 'identify', _arrowValue: val, answer: val, question: 'What number does the arrow point to?' };
+              ch = { type: 'identify', _arrowValue: val, answer: val, question: t('stem.numberline.what_number_does_the_arrow_point_to', 'What number does the arrow point to?') };
 
             } else if (type === 'estimate') {
               var val2 = rMin + Math.random() * (rMax - rMin);
               val2 = Math.round(val2 * 10) / 10;
-              ch = { type: 'estimate', _arrowValue: val2, answer: Math.round(val2), question: 'Estimate the value the arrow points to (nearest whole number).' };
+              ch = { type: 'estimate', _arrowValue: val2, answer: Math.round(val2), question: t('stem.numberline.estimate_the_value_the_arrow_points_to', 'Estimate the value the arrow points to (nearest whole number).') };
 
             } else if (type === 'place') {
               var val3 = randInt(rMin, rMax);
@@ -395,22 +395,22 @@ window.StemLab = window.StemLab || {
           React.useEffect(function() {
             if (tab !== 'fracdec') return;
             var landmarks = [
-              { v: 0,       name: 'Zero',                        dec: '0',    emoji: '⭐' },
-              { v: 0.1,     name: 'One tenth',                   dec: '1/10', emoji: '⭐' },
-              { v: 0.125,   name: 'One eighth',                  dec: '1/8',  emoji: '⭐' },
-              { v: 0.2,     name: 'One fifth',                   dec: '1/5',  emoji: '⭐' },
-              { v: 0.25,    name: 'One quarter',                 dec: '1/4',  emoji: '¼' },
-              { v: 1/3,     name: 'One third (repeats forever)', dec: '1/3',  emoji: '🔁' },
-              { v: 0.375,   name: 'Three eighths',               dec: '3/8',  emoji: '⭐' },
-              { v: 0.4,     name: 'Two fifths',                  dec: '2/5',  emoji: '⭐' },
-              { v: 0.5,     name: 'One half',                    dec: '1/2',  emoji: '½' },
-              { v: 0.6,     name: 'Three fifths',                dec: '3/5',  emoji: '⭐' },
-              { v: 0.625,   name: 'Five eighths',                dec: '5/8',  emoji: '⭐' },
-              { v: 2/3,     name: 'Two thirds (repeats forever)',dec: '2/3',  emoji: '🔁' },
-              { v: 0.75,    name: 'Three quarters',              dec: '3/4',  emoji: '¾' },
-              { v: 0.8,     name: 'Four fifths',                 dec: '4/5',  emoji: '⭐' },
-              { v: 0.875,   name: 'Seven eighths',               dec: '7/8',  emoji: '⭐' },
-              { v: 1,       name: 'One whole',                   dec: '1',    emoji: '⭐' }
+              { v: 0,       name: t('stem.numberline.zero', 'Zero'),                        dec: '0',    emoji: '⭐' },
+              { v: 0.1,     name: t('stem.numberline.one_tenth', 'One tenth'),                   dec: '1/10', emoji: '⭐' },
+              { v: 0.125,   name: t('stem.numberline.one_eighth', 'One eighth'),                  dec: '1/8',  emoji: '⭐' },
+              { v: 0.2,     name: t('stem.numberline.one_fifth', 'One fifth'),                   dec: '1/5',  emoji: '⭐' },
+              { v: 0.25,    name: t('stem.numberline.one_quarter', 'One quarter'),                 dec: '1/4',  emoji: '¼' },
+              { v: 1/3,     name: t('stem.numberline.one_third_repeats_forever', 'One third (repeats forever)'), dec: '1/3',  emoji: '🔁' },
+              { v: 0.375,   name: t('stem.numberline.three_eighths', 'Three eighths'),               dec: '3/8',  emoji: '⭐' },
+              { v: 0.4,     name: t('stem.numberline.two_fifths', 'Two fifths'),                  dec: '2/5',  emoji: '⭐' },
+              { v: 0.5,     name: t('stem.numberline.one_half', 'One half'),                    dec: '1/2',  emoji: '½' },
+              { v: 0.6,     name: t('stem.numberline.three_fifths', 'Three fifths'),                dec: '3/5',  emoji: '⭐' },
+              { v: 0.625,   name: t('stem.numberline.five_eighths', 'Five eighths'),                dec: '5/8',  emoji: '⭐' },
+              { v: 2/3,     name: t('stem.numberline.two_thirds_repeats_forever', 'Two thirds (repeats forever)'),dec: '2/3',  emoji: '🔁' },
+              { v: 0.75,    name: t('stem.numberline.three_quarters', 'Three quarters'),              dec: '3/4',  emoji: '¾' },
+              { v: 0.8,     name: t('stem.numberline.four_fifths', 'Four fifths'),                 dec: '4/5',  emoji: '⭐' },
+              { v: 0.875,   name: t('stem.numberline.seven_eighths', 'Seven eighths'),               dec: '7/8',  emoji: '⭐' },
+              { v: 1,       name: t('stem.numberline.one_whole', 'One whole'),                   dec: '1',    emoji: '⭐' }
             ];
             var hit = null;
             for (var i = 0; i < landmarks.length; i++) {
@@ -616,7 +616,7 @@ window.StemLab = window.StemLab || {
               // Range controls
               h('div', { className: 'grid grid-cols-2 gap-3' },
                 h('div', { className: 'bg-blue-50 rounded-lg p-3 border border-blue-100' },
-                  h('label', { className: 'block text-xs text-blue-700 mb-1 font-bold' }, 'Min Value'),
+                  h('label', { className: 'block text-xs text-blue-700 mb-1 font-bold' }, t('stem.numberline.min_value', 'Min Value')),
                   h('input', {
                     type: 'number', value: range.min,
                     onChange: function(e) { upd({ range: { min: parseInt(e.target.value) || 0, max: range.max } }); },
@@ -624,7 +624,7 @@ window.StemLab = window.StemLab || {
                   })
                 ),
                 h('div', { className: 'bg-blue-50 rounded-lg p-3 border border-blue-100' },
-                  h('label', { className: 'block text-xs text-blue-700 mb-1 font-bold' }, 'Max Value'),
+                  h('label', { className: 'block text-xs text-blue-700 mb-1 font-bold' }, t('stem.numberline.max_value', 'Max Value')),
                   h('input', {
                     type: 'number', value: range.max,
                     onChange: function(e) { upd({ range: { min: range.min, max: parseInt(e.target.value) || 20 } }); },
@@ -650,17 +650,17 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'flex gap-2 items-center' },
                 h('input', {
                   type: 'number', id: 'nlMarkerVal', min: range.min, max: range.max,
-                  placeholder: 'Value',
-                  'aria-label': 'Marker value',
+                  placeholder: t('stem.numberline.value', 'Value'),
+                  'aria-label': t('stem.numberline.marker_value', 'Marker value'),
                   className: 'w-24 px-3 py-1.5 text-sm border border-blue-600 rounded-lg'
                 }),
                 h('input', {
-                  type: 'text', id: 'nlMarkerLabel', placeholder: 'Label (optional)',
-                  'aria-label': 'Marker label',
+                  type: 'text', id: 'nlMarkerLabel', placeholder: t('stem.numberline.label_optional', 'Label (optional)'),
+                  'aria-label': t('stem.numberline.marker_label', 'Marker label'),
                   className: 'flex-1 px-3 py-1.5 text-sm border border-blue-600 rounded-lg'
                 }),
                 h('input', { type: 'color', id: 'nlMarkerColor', defaultValue: '#ef4444', className: 'w-8 h-8 rounded cursor-pointer' }),
-                h('button', { 'aria-label': '+ Add',
+                h('button', { 'aria-label': t('stem.numberline.add', '+ Add'),
                   onClick: function() {
                     var valEl = document.getElementById('nlMarkerVal');
                     var labelEl = document.getElementById('nlMarkerLabel');
@@ -674,11 +674,11 @@ window.StemLab = window.StemLab || {
                     if (labelEl) labelEl.value = '';
                   },
                   className: 'px-4 py-1.5 bg-blue-700 text-white font-bold rounded-lg text-sm hover:bg-blue-600'
-                }, '+ Add'),
-                markers.length > 0 && h('button', { 'aria-label': 'Clear',
+                }, t('stem.numberline.add_2', '+ Add')),
+                markers.length > 0 && h('button', { 'aria-label': t('stem.numberline.clear', 'Clear'),
                   onClick: function() { upd({ markers: [] }); },
                   className: 'px-3 py-1.5 bg-slate-200 text-slate-600 font-bold rounded-lg text-sm hover:bg-slate-300'
-                }, 'Clear')
+                }, t('stem.numberline.clear_2', 'Clear'))
               )
             );
           };
@@ -694,7 +694,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'bg-blue-50 rounded-xl p-4 border border-blue-200 space-y-3' },
                 h('div', { className: 'flex items-center justify-between' },
                   h('div', { className: 'flex items-center gap-2' },
-                    h('h4', { className: 'text-sm font-bold text-blue-800' }, '\uD83C\uDFAF Number Line Challenge'),
+                    h('h4', { className: 'text-sm font-bold text-blue-800' }, t('stem.numberline.number_line_challenge', '\uD83C\uDFAF Number Line Challenge')),
                     h('div', { className: 'flex gap-0.5 ml-2' },
                       ['easy', 'medium', 'hard'].map(function(d) {
                         return h('button', { key: d, onClick: function() { sfxClick(); upd({ difficulty: d }); },
@@ -708,10 +708,10 @@ window.StemLab = window.StemLab || {
                 ),
 
                 !challenge
-                  ? h('button', { 'aria-label': 'Generate Challenge',
+                  ? h('button', { 'aria-label': t('stem.numberline.generate_challenge', 'Generate Challenge'),
                       onClick: genChallenge,
                       className: 'w-full py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold rounded-xl text-sm hover:from-blue-600 hover:to-indigo-600 transition-all shadow-md'
-                    }, '\uD83C\uDFB2 Generate Challenge')
+                    }, t('stem.numberline.generate_challenge_2', '\uD83C\uDFB2 Generate Challenge'))
                   : h('div', { className: 'space-y-2' },
                       h('div', { className: 'flex items-center gap-2' },
                         h('span', { className: 'text-[11px] font-bold uppercase text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full' }, challenge.type),
@@ -723,21 +723,21 @@ window.StemLab = window.StemLab || {
                           type: 'number', value: answer, step: challenge.type === 'fraction' ? '0.1' : '1',
                           onChange: function(e) { upd({ answer: e.target.value }); },
                           onKeyDown: function(e) { if (e.key === 'Enter' && answer) checkAnswer(); },
-                          placeholder: 'Your answer',
-                          'aria-label': 'Challenge answer',
+                          placeholder: t('stem.numberline.your_answer', 'Your answer'),
+                          'aria-label': t('stem.numberline.challenge_answer', 'Challenge answer'),
                           className: 'flex-1 px-3 py-2 border border-blue-600 rounded-lg text-sm font-mono'
-                        }) : h('div', { className: 'flex-1 text-sm font-bold text-amber-600 px-2' }, 'Click the number line above to place a marker.'),
-                        h('button', { 'aria-label': 'Check Answer',
+                        }) : h('div', { className: 'flex-1 text-sm font-bold text-amber-600 px-2' }, t('stem.numberline.click_the_number_line_above_to_place_a', 'Click the number line above to place a marker.')),
+                        h('button', { 'aria-label': t('stem.numberline.check_answer', 'Check Answer'),
                           onClick: checkAnswer,
                           disabled: challenge.type === 'place' && !answer,
                           className: 'px-4 py-2 bg-blue-600 text-white font-bold rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50 transition-all'
                         }, challenge.type === 'place' ? 'Check Placement' : 'Check')
                       ),
                       feedback && h('p', { className: 'text-sm font-bold ' + (feedback.correct ? 'text-green-600' : 'text-red-600') }, feedback.msg),
-                      feedback && h('button', { 'aria-label': 'Next Challenge',
+                      feedback && h('button', { 'aria-label': t('stem.numberline.next_challenge', 'Next Challenge'),
                         onClick: genChallenge,
                         className: 'text-xs text-blue-600 font-bold hover:underline'
-                      }, '\u27A1\uFE0F Next Challenge')
+                      }, t('stem.numberline.next_challenge_2', '\u27A1\uFE0F Next Challenge'))
                     )
               )
             );
@@ -758,7 +758,7 @@ window.StemLab = window.StemLab || {
               // Controls
               h('div', { className: 'grid grid-cols-3 gap-3' },
                 h('div', { className: 'bg-violet-50 rounded-lg p-3 border border-violet-100' },
-                  h('label', { className: 'block text-xs text-violet-700 mb-1 font-bold' }, 'Skip By'),
+                  h('label', { className: 'block text-xs text-violet-700 mb-1 font-bold' }, t('stem.numberline.skip_by', 'Skip By')),
                   h('input', {
                     type: 'number', min: 1, max: 100, value: skipBy,
                     onChange: function(e) { upd({ skipBy: Math.max(1, parseInt(e.target.value) || 1) }); },
@@ -766,7 +766,7 @@ window.StemLab = window.StemLab || {
                   })
                 ),
                 h('div', { className: 'bg-violet-50 rounded-lg p-3 border border-violet-100' },
-                  h('label', { className: 'block text-xs text-violet-700 mb-1 font-bold' }, 'Start From'),
+                  h('label', { className: 'block text-xs text-violet-700 mb-1 font-bold' }, t('stem.numberline.start_from', 'Start From')),
                   h('input', {
                     type: 'number', value: skipFrom,
                     onChange: function(e) { upd({ skipFrom: parseInt(e.target.value) || 0 }); },
@@ -774,7 +774,7 @@ window.StemLab = window.StemLab || {
                   })
                 ),
                 h('div', { className: 'bg-violet-50 rounded-lg p-3 border border-violet-100' },
-                  h('label', { className: 'block text-xs text-violet-700 mb-1 font-bold' }, 'How Many'),
+                  h('label', { className: 'block text-xs text-violet-700 mb-1 font-bold' }, t('stem.numberline.how_many', 'How Many')),
                   h('input', {
                     type: 'number', min: 2, max: 20, value: skipCount,
                     onChange: function(e) { upd({ skipCount: Math.max(2, Math.min(20, parseInt(e.target.value) || 8)) }); },
@@ -784,7 +784,7 @@ window.StemLab = window.StemLab || {
               ),
               // Quick skip presets
               h('div', { className: 'flex flex-wrap gap-1.5' },
-                h('span', { className: 'text-[11px] font-bold text-slate-600 self-center' }, 'Count by:'),
+                h('span', { className: 'text-[11px] font-bold text-slate-600 self-center' }, t('stem.numberline.count_by', 'Count by:')),
                 [2, 3, 5, 10, 25, 100].map(function(s) {
                   return h('button', { key: s,
                     onClick: function() { sfxClick(); upd({ skipBy: s, skipFrom: 0, skipCount: 8 }); },
@@ -799,7 +799,7 @@ window.StemLab = window.StemLab || {
               ),
               // Sequence display
               h('div', { className: 'bg-violet-50 rounded-xl p-4 border border-violet-200' },
-                h('p', { className: 'text-xs font-bold text-violet-700 uppercase tracking-wider mb-2' }, '\uD83D\uDD22 Skip Counting Sequence'),
+                h('p', { className: 'text-xs font-bold text-violet-700 uppercase tracking-wider mb-2' }, t('stem.numberline.skip_counting_sequence', '\uD83D\uDD22 Skip Counting Sequence')),
                 h('div', { className: 'flex flex-wrap gap-2' },
                   skipMarkersList.map(function(val, i) {
                     return h('div', {
@@ -1153,7 +1153,7 @@ window.StemLab = window.StemLab || {
                 'aria-valuemax': fdMax,
                 'aria-valuenow': Math.round(fdValue * 1000) / 1000,
                 'aria-valuetext': decimal + ', which is ' + simpNum + ' over ' + simpDen + (isRepeatingDecimal ? ', repeating decimal' : ''),
-                'aria-label': 'Number line marker. Use arrow keys to move, Home/End for endpoints, Shift for larger steps.',
+                'aria-label': t('stem.numberline.number_line_marker_use_arrow_keys_to_m', 'Number line marker. Use arrow keys to move, Home/End for endpoints, Shift for larger steps.'),
                 onPointerDown: startPointer,
                 onKeyDown: handleLineKey
               },
@@ -1301,7 +1301,7 @@ window.StemLab = window.StemLab || {
             return h('div', { className: 'space-y-4 allo-fd-bg' },
               h('div', { className: 'bg-cyan-50 rounded-lg p-3 border border-cyan-200' },
                 h('div', { className: 'flex flex-wrap items-center gap-2 mb-2' },
-                  h('span', { className: 'text-xs font-bold text-cyan-800' }, 'Divide the line into:'),
+                  h('span', { className: 'text-xs font-bold text-cyan-800' }, t('stem.numberline.divide_the_line_into', 'Divide the line into:')),
                   [2, 3, 4, 5, 6, 8, 10, 12, 16, 20].map(function(d) {
                     return h('button', {
                       key: d,
@@ -1323,7 +1323,7 @@ window.StemLab = window.StemLab || {
                   ),
                   h('label', { className: 'font-bold text-cyan-700 flex items-center gap-1 cursor-pointer' },
                     h('input', { type: 'checkbox', checked: fdShowReps, onChange: function() { upd({ fdShowReps: !fdShowReps }); } }),
-                    'Pie + grid + dots'
+                    t('stem.numberline.pie_grid_dots', 'Pie + grid + dots')
                   )
                 )
               ),
@@ -1335,33 +1335,33 @@ window.StemLab = window.StemLab || {
 
               h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-3' },
                 h('div', { className: 'flex items-center justify-between mb-1' },
-                  h('p', { className: 'text-[11px] font-bold text-cyan-700' }, '📏 Number line — fractions above, decimals below'),
-                  h('span', { className: 'text-[11px] text-slate-600 italic' }, 'Tap or drag the marker')
+                  h('p', { className: 'text-[11px] font-bold text-cyan-700' }, t('stem.numberline.number_line_fractions_above_decimals_b', '📏 Number line — fractions above, decimals below')),
+                  h('span', { className: 'text-[11px] text-slate-600 italic' }, t('stem.numberline.tap_or_drag_the_marker', 'Tap or drag the marker'))
                 ),
                 renderFdLine()
               ),
 
               fdShowReps && h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-3' + (fdCelebrate ? ' allo-fd-card-pulse' : '') },
                 h('p', { className: 'text-[11px] font-bold text-cyan-700 mb-2' },
-                  '🔄 Same amount, three more visuals. Quantity is conserved across every representation.'
+                  t('stem.numberline.same_amount_three_more_visuals_quantit', '🔄 Same amount, three more visuals. Quantity is conserved across every representation.')
                 ),
                 h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3' },
                   h('div', { className: 'flex flex-col items-center bg-cyan-50/40 rounded-lg p-2 border border-cyan-100' },
-                    h('p', { className: 'text-[10px] font-bold text-cyan-800 mb-1 uppercase tracking-wider' }, '◐ Pie (area)'),
+                    h('p', { className: 'text-[10px] font-bold text-cyan-800 mb-1 uppercase tracking-wider' }, t('stem.numberline.pie_area', '◐ Pie (area)')),
                     renderFracPie(),
                     h('p', { className: 'text-[10px] text-slate-700 italic mt-1 text-center' },
                       isExactFrac ? (simpNum + ' of ' + simpDen + ' wedges') : ('~' + nearestNum + '/' + fdDen + ' wedges')
                     )
                   ),
                   h('div', { className: 'flex flex-col items-center bg-cyan-50/40 rounded-lg p-2 border border-cyan-100' },
-                    h('p', { className: 'text-[10px] font-bold text-cyan-800 mb-1 uppercase tracking-wider' }, '⊞ Hundred grid'),
+                    h('p', { className: 'text-[10px] font-bold text-cyan-800 mb-1 uppercase tracking-wider' }, t('stem.numberline.hundred_grid', '⊞ Hundred grid')),
                     renderFracGrid(),
                     h('p', { className: 'text-[10px] text-slate-700 italic mt-1 text-center' },
                       Math.round(fdValue * 100) + ' of 100 squares = ' + percent + '%'
                     )
                   ),
                   h('div', { className: 'flex flex-col items-center bg-cyan-50/40 rounded-lg p-2 border border-cyan-100' },
-                    h('p', { className: 'text-[10px] font-bold text-cyan-800 mb-1 uppercase tracking-wider' }, '● Dots (set)'),
+                    h('p', { className: 'text-[10px] font-bold text-cyan-800 mb-1 uppercase tracking-wider' }, t('stem.numberline.dots_set', '● Dots (set)')),
                     renderFracDots(),
                     h('p', { className: 'text-[10px] text-slate-700 italic mt-1 text-center' },
                       Math.floor(fdValue * fdDen) + ' of ' + fdDen + ' dots filled'
@@ -1375,7 +1375,7 @@ window.StemLab = window.StemLab || {
 
               h('div', { className: 'grid grid-cols-3 gap-2' },
                 h('div', { className: 'bg-cyan-50 rounded-xl p-3 border-2 border-cyan-300 text-center' + (fdCelebrate ? ' allo-fd-card-pulse' : '') },
-                  h('p', { className: 'text-[10px] font-bold text-cyan-700 uppercase tracking-wider mb-1' }, 'Fraction'),
+                  h('p', { className: 'text-[10px] font-bold text-cyan-700 uppercase tracking-wider mb-1' }, t('stem.numberline.fraction', 'Fraction')),
                   h('p', { className: 'text-2xl font-bold text-cyan-900 font-mono' },
                     isExactFrac ? (simpNum + '/' + simpDen) : ('≈ ' + nearestNum + '/' + fdDen)
                   ),
@@ -1388,8 +1388,8 @@ window.StemLab = window.StemLab || {
                 ),
                 h('div', { className: 'bg-amber-50 rounded-xl p-3 border-2 border-amber-300 text-center' + (fdCelebrate ? ' allo-fd-card-pulse' : '') },
                   h('p', { className: 'text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-1' },
-                    'Decimal',
-                    isRepeatingDecimal && h('span', { className: 'allo-fd-repeat-dot ml-1', title: 'This decimal repeats forever' }, ' ↻')
+                    t('stem.numberline.decimal', 'Decimal'),
+                    isRepeatingDecimal && h('span', { className: 'allo-fd-repeat-dot ml-1', title: t('stem.numberline.this_decimal_repeats_forever', 'This decimal repeats forever') }, ' ↻')
                   ),
                   h('p', { className: 'text-2xl font-bold text-amber-900 font-mono' }, decimal + (isRepeatingDecimal ? '…' : '')),
                   isRepeatingDecimal
@@ -1397,19 +1397,19 @@ window.StemLab = window.StemLab || {
                     : h('p', { className: 'text-[10px] text-amber-700 italic mt-1' }, simpNum + ' ÷ ' + simpDen + ' = ' + decimal)
                 ),
                 h('div', { className: 'bg-emerald-50 rounded-xl p-3 border-2 border-emerald-300 text-center' + (fdCelebrate ? ' allo-fd-card-pulse' : '') },
-                  h('p', { className: 'text-[10px] font-bold text-emerald-700 uppercase tracking-wider mb-1' }, 'Percent'),
+                  h('p', { className: 'text-[10px] font-bold text-emerald-700 uppercase tracking-wider mb-1' }, t('stem.numberline.percent', 'Percent')),
                   h('p', { className: 'text-2xl font-bold text-emerald-900 font-mono' }, percent + '%'),
-                  h('p', { className: 'text-[10px] text-emerald-700 italic mt-1' }, 'per hundred')
+                  h('p', { className: 'text-[10px] text-emerald-700 italic mt-1' }, t('stem.numberline.per_hundred', 'per hundred'))
                 )
               ),
 
               // ── Fraction arithmetic on the line (slide the marker) ──
               h('div', { className: 'bg-fuchsia-50 rounded-xl p-3 border border-fuchsia-200' },
                 h('p', { className: 'text-[11px] font-bold text-fuchsia-800 mb-1' },
-                  '➕➖ Move the marker by a fraction — fraction arithmetic on the line'
+                  t('stem.numberline.move_the_marker_by_a_fraction_fraction', '➕➖ Move the marker by a fraction — fraction arithmetic on the line')
                 ),
                 h('p', { className: 'text-[10px] text-fuchsia-700 italic mb-2' },
-                  'Click a chip below. The marker slides; all four visuals update. The line auto-extends if you drift past the edge.'
+                  t('stem.numberline.click_a_chip_below_the_marker_slides_a', 'Click a chip below. The marker slides; all four visuals update. The line auto-extends if you drift past the edge.')
                 ),
                 h('div', { className: 'space-y-1.5' },
                   ['+', '−'].map(function(op) {
@@ -1436,35 +1436,35 @@ window.StemLab = window.StemLab || {
               // ── Common-denominator hunter (LCM-based fraction addition) ──
               h('div', { className: 'bg-rose-50 rounded-xl p-3 border border-rose-200' },
                 h('p', { className: 'text-[11px] font-bold text-rose-800 mb-1' },
-                  '🤝 Common-denominator hunter — how to add fractions with different denominators'
+                  t('stem.numberline.common_denominator_hunter_how_to_add_f', '🤝 Common-denominator hunter — how to add fractions with different denominators')
                 ),
                 h('p', { className: 'text-[10px] text-rose-700 italic mb-2' },
-                  'You cannot add 1/2 + 1/3 directly. First find a shared denominator (the LCM works), rename each fraction, then add the numerators.'
+                  t('stem.numberline.you_cannot_add_1_2_1_3_directly_first_', 'You cannot add 1/2 + 1/3 directly. First find a shared denominator (the LCM works), rename each fraction, then add the numerators.')
                 ),
                 h('div', { className: 'flex flex-wrap items-center gap-1 mb-2 text-sm font-mono' },
                   h('input', { type: 'number', value: fdCDN1, min: 0, max: 100, step: 1,
                     onChange: function(e) { var v = parseInt(e.target.value, 10); if (!isNaN(v) && v >= 0) upd({ fdCDN1: v }); },
-                    'aria-label': 'First fraction numerator',
+                    'aria-label': t('stem.numberline.first_fraction_numerator', 'First fraction numerator'),
                     className: 'w-12 px-1 py-0.5 border border-rose-300 rounded text-center' }),
                   h('span', { className: 'text-rose-700 font-bold' }, '/'),
                   h('input', { type: 'number', value: fdCDD1, min: 1, max: 100, step: 1,
                     onChange: function(e) { var v = parseInt(e.target.value, 10); if (!isNaN(v) && v > 0) upd({ fdCDD1: v }); },
-                    'aria-label': 'First fraction denominator',
+                    'aria-label': t('stem.numberline.first_fraction_denominator', 'First fraction denominator'),
                     className: 'w-12 px-1 py-0.5 border border-rose-300 rounded text-center' }),
                   h('span', { className: 'mx-2 text-rose-700 font-bold text-base' }, '+'),
                   h('input', { type: 'number', value: fdCDN2, min: 0, max: 100, step: 1,
                     onChange: function(e) { var v = parseInt(e.target.value, 10); if (!isNaN(v) && v >= 0) upd({ fdCDN2: v }); },
-                    'aria-label': 'Second fraction numerator',
+                    'aria-label': t('stem.numberline.second_fraction_numerator', 'Second fraction numerator'),
                     className: 'w-12 px-1 py-0.5 border border-rose-300 rounded text-center' }),
                   h('span', { className: 'text-rose-700 font-bold' }, '/'),
                   h('input', { type: 'number', value: fdCDD2, min: 1, max: 100, step: 1,
                     onChange: function(e) { var v = parseInt(e.target.value, 10); if (!isNaN(v) && v > 0) upd({ fdCDD2: v }); },
-                    'aria-label': 'Second fraction denominator',
+                    'aria-label': t('stem.numberline.second_fraction_denominator', 'Second fraction denominator'),
                     className: 'w-12 px-1 py-0.5 border border-rose-300 rounded text-center' }),
-                  h('span', { className: 'ml-2 text-rose-700 font-bold' }, '= ?')
+                  h('span', { className: 'ml-2 text-rose-700 font-bold' }, t('stem.numberline.str', '= ?'))
                 ),
                 h('div', { className: 'text-xs space-y-1 text-rose-900 mb-2 bg-white/60 rounded p-2 border border-rose-100' },
-                  h('p', {}, 'Smallest common denominator: ',
+                  h('p', {}, t('stem.numberline.smallest_common_denominator', 'Smallest common denominator: '),
                     h('b', { className: 'font-mono text-base text-rose-900' }, 'LCM(' + fdCDD1 + ', ' + fdCDD2 + ') = ' + lcmOfDen)
                   ),
                   h('p', { className: 'font-mono' },
@@ -1493,7 +1493,7 @@ window.StemLab = window.StemLab || {
                     announceToSR('Sum plotted: ' + cdSumSimpN + ' over ' + cdSumSimpD);
                   },
                   className: 'px-3 py-1.5 bg-rose-700 text-white text-xs font-bold rounded hover:bg-rose-800 transition-all'
-                }, '→ Plot the sum on the line'),
+                }, t('stem.numberline.plot_the_sum_on_the_line', '→ Plot the sum on the line')),
                 h('div', { className: 'flex flex-wrap gap-1 mt-2' },
                   h('span', { className: 'text-[10px] font-bold text-rose-700 self-center mr-1' }, 'Try:'),
                   [[1,2,1,3], [1,4,1,3], [2,3,1,6], [3,4,1,8], [1,5,2,5], [1,2,1,4]].map(function(q, idx) {
@@ -1509,7 +1509,7 @@ window.StemLab = window.StemLab || {
               // ── Equivalent fractions ribbon (same point, many names) ──
               equivalentFractions.length > 1 && h('div', { className: 'bg-teal-50 rounded-xl p-3 border border-teal-200' },
                 h('p', { className: 'text-[11px] font-bold text-teal-800 mb-2' },
-                  '∞ Equivalent fractions — same point, many names. Click to re-divide the line.'
+                  t('stem.numberline.equivalent_fractions_same_point_many_n', '∞ Equivalent fractions — same point, many names. Click to re-divide the line.')
                 ),
                 h('div', { className: 'flex flex-wrap items-center gap-1.5' },
                   equivalentFractions.map(function(eq, idx) {
@@ -1531,22 +1531,22 @@ window.StemLab = window.StemLab || {
                   })
                 ),
                 h('p', { className: 'text-[10px] text-teal-700 italic mt-2' },
-                  'Multiply (or divide) the top AND bottom by the same number → same value, different name. The marker does not move.'
+                  t('stem.numberline.multiply_or_divide_the_top_and_bottom_', 'Multiply (or divide) the top AND bottom by the same number → same value, different name. The marker does not move.')
                 )
               ),
 
               h('div', { className: 'bg-slate-50 rounded-xl p-3 border border-slate-200 grid grid-cols-1 md:grid-cols-2 gap-3' },
                 h('div', {},
-                  h('label', { className: 'block text-[11px] font-bold text-slate-700 mb-1' }, 'Type a fraction, plot it:'),
+                  h('label', { className: 'block text-[11px] font-bold text-slate-700 mb-1' }, t('stem.numberline.type_a_fraction_plot_it', 'Type a fraction, plot it:')),
                   h('div', { className: 'flex items-center gap-1' },
                     h('input', { type: 'number', placeholder: 'n', min: 0, id: 'fdNum',
-                      'aria-label': 'Fraction numerator',
+                      'aria-label': t('stem.numberline.fraction_numerator', 'Fraction numerator'),
                       className: 'w-14 px-2 py-1 text-sm border border-slate-300 rounded text-center font-mono' }),
                     h('span', { className: 'text-xl font-bold text-slate-600' }, '/'),
                     h('input', { type: 'number', placeholder: 'd', min: 1, id: 'fdDenInput',
-                      'aria-label': 'Fraction denominator',
+                      'aria-label': t('stem.numberline.fraction_denominator', 'Fraction denominator'),
                       className: 'w-14 px-2 py-1 text-sm border border-slate-300 rounded text-center font-mono' }),
-                    h('button', { 'aria-label': 'Plot fraction',
+                    h('button', { 'aria-label': t('stem.numberline.plot_fraction', 'Plot fraction'),
                       onClick: function() {
                         var nEl = document.getElementById('fdNum');
                         var dEl = document.getElementById('fdDenInput');
@@ -1562,16 +1562,16 @@ window.StemLab = window.StemLab || {
                         announceToSR(nv + ' over ' + dv + ' equals ' + (Math.round(v * 1000) / 1000));
                       },
                       className: 'px-2.5 py-1 bg-cyan-700 text-white text-xs font-bold rounded hover:bg-cyan-800 transition-all'
-                    }, '→ Plot')
+                    }, t('stem.numberline.plot', '→ Plot'))
                   )
                 ),
                 h('div', {},
-                  h('label', { className: 'block text-[11px] font-bold text-slate-700 mb-1' }, 'Type a decimal, plot it:'),
+                  h('label', { className: 'block text-[11px] font-bold text-slate-700 mb-1' }, t('stem.numberline.type_a_decimal_plot_it', 'Type a decimal, plot it:')),
                   h('div', { className: 'flex items-center gap-1' },
                     h('input', { type: 'number', step: 0.01, placeholder: '0.00', id: 'fdDec',
-                      'aria-label': 'Decimal value',
+                      'aria-label': t('stem.numberline.decimal_value', 'Decimal value'),
                       className: 'flex-1 px-2 py-1 text-sm border border-slate-300 rounded font-mono' }),
-                    h('button', { 'aria-label': 'Plot decimal',
+                    h('button', { 'aria-label': t('stem.numberline.plot_decimal', 'Plot decimal'),
                       onClick: function() {
                         var dEl = document.getElementById('fdDec');
                         if (!dEl) return;
@@ -1585,13 +1585,13 @@ window.StemLab = window.StemLab || {
                         announceToSR(v + ' on the line');
                       },
                       className: 'px-2.5 py-1 bg-amber-700 text-white text-xs font-bold rounded hover:bg-amber-800 transition-all'
-                    }, '→ Plot')
+                    }, t('stem.numberline.plot_2', '→ Plot'))
                   )
                 )
               ),
 
               h('div', { className: 'bg-indigo-50 rounded-xl p-3 border border-indigo-200' },
-                h('p', { className: 'text-[11px] font-bold text-indigo-700 mb-2' }, '📌 Quick conversions (click to plot):'),
+                h('p', { className: 'text-[11px] font-bold text-indigo-700 mb-2' }, t('stem.numberline.quick_conversions_click_to_plot', '📌 Quick conversions (click to plot):')),
                 h('div', { className: 'flex flex-wrap gap-1.5' },
                   presetFracs.map(function(pf) {
                     var v = pf.n / pf.d;
@@ -1616,7 +1616,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
                 h('div', { className: 'bg-emerald-50 rounded-lg p-3 border border-emerald-200' },
                   h('div', { className: 'flex items-center justify-between mb-1' },
-                    h('p', { className: 'text-[11px] font-bold text-emerald-800' }, '💵 Money view'),
+                    h('p', { className: 'text-[11px] font-bold text-emerald-800' }, t('stem.numberline.money_view', '💵 Money view')),
                     h('button', {
                       onClick: function() { upd({ fdShowMoney: !fdShowMoney }); },
                       'aria-expanded': fdShowMoney,
@@ -1626,13 +1626,13 @@ window.StemLab = window.StemLab || {
                   fdShowMoney && h('div', {},
                     h('p', { className: 'text-lg font-bold text-emerald-900 font-mono' }, moneyStr + ' of $1.00'),
                     h('p', { className: 'text-[11px] text-emerald-700 mt-1' },
-                      'A quarter is $0.25 = 1/4 of a dollar. A dime is $0.10 = 1/10. Coins are decimal-fraction practice.'
+                      t('stem.numberline.a_quarter_is_0_25_1_4_of_a_dollar_a_di', 'A quarter is $0.25 = 1/4 of a dollar. A dime is $0.10 = 1/10. Coins are decimal-fraction practice.')
                     )
                   )
                 ),
                 h('div', { className: 'bg-sky-50 rounded-lg p-3 border border-sky-200' },
                   h('div', { className: 'flex items-center justify-between mb-1' },
-                    h('p', { className: 'text-[11px] font-bold text-sky-800' }, '🔍 Place-value expansion'),
+                    h('p', { className: 'text-[11px] font-bold text-sky-800' }, t('stem.numberline.place_value_expansion', '🔍 Place-value expansion')),
                     h('button', {
                       onClick: function() { upd({ fdShowExpansion: !fdShowExpansion }); },
                       'aria-expanded': fdShowExpansion,
@@ -1642,7 +1642,7 @@ window.StemLab = window.StemLab || {
                   fdShowExpansion && h('div', {},
                     h('p', { className: 'text-base font-bold text-sky-900 font-mono' }, decimal + ' = ' + expansion),
                     h('p', { className: 'text-[11px] text-sky-700 mt-1 italic' },
-                      'Every decimal place IS a fraction. 1st place: tenths, 2nd: hundredths, 3rd: thousandths.'
+                      t('stem.numberline.every_decimal_place_is_a_fraction_1st_', 'Every decimal place IS a fraction. 1st place: tenths, 2nd: hundredths, 3rd: thousandths.')
                     )
                   )
                 )
@@ -1650,7 +1650,7 @@ window.StemLab = window.StemLab || {
 
               h('div', { className: 'bg-purple-50 rounded-xl p-3 border border-purple-200' },
                 h('div', { className: 'flex items-center justify-between mb-2' },
-                  h('p', { className: 'text-[11px] font-bold text-purple-800' }, '↔ Compare two values'),
+                  h('p', { className: 'text-[11px] font-bold text-purple-800' }, t('stem.numberline.compare_two_values', '↔ Compare two values')),
                   h('label', { className: 'text-[11px] font-bold text-purple-700 flex items-center gap-1 cursor-pointer' },
                     h('input', { type: 'checkbox', checked: fdCompareOn, onChange: function() { upd({ fdCompareOn: !fdCompareOn }); } }),
                     'enabled'
@@ -1658,10 +1658,10 @@ window.StemLab = window.StemLab || {
                 ),
                 fdCompareOn && h('div', {},
                   h('div', { className: 'flex flex-wrap items-center gap-2 mb-1' },
-                    h('span', { className: 'text-xs font-bold text-purple-700' }, 'Second value:'),
+                    h('span', { className: 'text-xs font-bold text-purple-700' }, t('stem.numberline.second_value', 'Second value:')),
                     h('input', { type: 'number', value: fdCompareValue, step: 0.01, min: fdMin, max: fdMax,
                       onChange: function(e) { var v = parseFloat(e.target.value); if (!isNaN(v)) upd({ fdCompareValue: v }); },
-                      'aria-label': 'Second value',
+                      'aria-label': t('stem.numberline.second_value_2', 'Second value'),
                       className: 'w-24 px-2 py-1 text-sm border border-purple-300 rounded font-mono'
                     }),
                     h('span', { className: 'text-xs font-mono text-purple-700' }, '≈ ' + Math.round(fdCompareValue * fdDen) + '/' + fdDen)
@@ -1679,27 +1679,27 @@ window.StemLab = window.StemLab || {
               ),
 
               h('div', { className: 'flex flex-wrap items-center gap-2 text-[11px]' },
-                h('span', { className: 'font-bold text-slate-600' }, 'Line range:'),
+                h('span', { className: 'font-bold text-slate-600' }, t('stem.numberline.line_range', 'Line range:')),
                 h('label', { className: 'flex items-center gap-1' }, 'min',
                   h('input', { type: 'number', value: fdMin, step: 1,
                     onChange: function(e) { var v = parseFloat(e.target.value); if (!isNaN(v) && v < fdMax) upd({ fdMin: v }); },
-                    'aria-label': 'Line minimum',
+                    'aria-label': t('stem.numberline.line_minimum', 'Line minimum'),
                     className: 'w-16 px-2 py-0.5 border border-slate-300 rounded font-mono'
                   })
                 ),
                 h('label', { className: 'flex items-center gap-1' }, 'max',
                   h('input', { type: 'number', value: fdMax, step: 1,
                     onChange: function(e) { var v = parseFloat(e.target.value); if (!isNaN(v) && v > fdMin) upd({ fdMax: v }); },
-                    'aria-label': 'Line maximum',
+                    'aria-label': t('stem.numberline.line_maximum', 'Line maximum'),
                     className: 'w-16 px-2 py-0.5 border border-slate-300 rounded font-mono'
                   })
                 ),
                 h('button', { onClick: function() { sfxClick(); upd({ fdMin: 0, fdMax: 1 }); },
-                  className: 'px-2 py-0.5 rounded bg-slate-100 text-slate-700 hover:bg-slate-200 font-bold' }, '0 to 1'),
+                  className: 'px-2 py-0.5 rounded bg-slate-100 text-slate-700 hover:bg-slate-200 font-bold' }, t('stem.numberline.0_to_1', '0 to 1')),
                 h('button', { onClick: function() { sfxClick(); upd({ fdMin: 0, fdMax: 2 }); },
-                  className: 'px-2 py-0.5 rounded bg-slate-100 text-slate-700 hover:bg-slate-200 font-bold' }, '0 to 2'),
+                  className: 'px-2 py-0.5 rounded bg-slate-100 text-slate-700 hover:bg-slate-200 font-bold' }, t('stem.numberline.0_to_2', '0 to 2')),
                 h('button', { onClick: function() { sfxClick(); upd({ fdMin: -1, fdMax: 1 }); },
-                  className: 'px-2 py-0.5 rounded bg-slate-100 text-slate-700 hover:bg-slate-200 font-bold' }, '-1 to 1'),
+                  className: 'px-2 py-0.5 rounded bg-slate-100 text-slate-700 hover:bg-slate-200 font-bold' }, t('stem.numberline.1_to_1', '-1 to 1')),
                 h('button', {
                   onClick: function() {
                     sfxClick();
@@ -1714,18 +1714,18 @@ window.StemLab = window.StemLab || {
                     });
                     announceToSR('Frac Dec reset to defaults');
                   },
-                  'aria-label': 'Reset Frac Dec tab to defaults',
+                  'aria-label': t('stem.numberline.reset_frac_dec_tab_to_defaults', 'Reset Frac Dec tab to defaults'),
                   className: 'ml-auto px-2 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 font-bold'
-                }, '↺ Reset Frac↔Dec')
+                }, t('stem.numberline.reset_frac_dec', '↺ Reset Frac↔Dec'))
               ),
 
               h('details', { className: 'bg-white rounded-xl border border-cyan-200 p-3' },
-                h('summary', { className: 'text-xs font-bold text-cyan-700 cursor-pointer' }, '💡 Why fractions and decimals are the same thing'),
+                h('summary', { className: 'text-xs font-bold text-cyan-700 cursor-pointer' }, t('stem.numberline.why_fractions_and_decimals_are_the_sam', '💡 Why fractions and decimals are the same thing')),
                 h('div', { className: 'mt-2 space-y-2 text-xs text-slate-700' },
-                  h('p', {}, h('b', {}, 'A fraction IS a division problem. '), '3/4 means "3 divided by 4." Type 3 ÷ 4 into any calculator: 0.75. The slash and ÷ mean the same thing.'),
-                  h('p', {}, h('b', {}, 'A decimal IS a fraction with a hidden denominator. '), '0.6 means "6 tenths," 6/10. 0.25 means "25 hundredths," 25/100, which simplifies to 1/4.'),
-                  h('p', {}, h('b', {}, 'The number line proves it. '), 'The point at 1/4 is the same point as the point at 0.25. Same spot, two names.'),
-                  h('p', {}, h('b', {}, 'Some terminate, some repeat. '), '1/2 = 0.5 (stops). 1/4 = 0.25 (stops). 1/3 = 0.333… (repeats forever). The denominator decides: if it factors into only 2s and 5s, it terminates. Otherwise it repeats. Watch the ↻ symbol on the decimal card.')
+                  h('p', {}, h('b', {}, t('stem.numberline.a_fraction_is_a_division_problem', 'A fraction IS a division problem. ')), t('stem.numberline.3_4_means_3_divided_by_4_type_3_4_into', '3/4 means "3 divided by 4." Type 3 ÷ 4 into any calculator: 0.75. The slash and ÷ mean the same thing.')),
+                  h('p', {}, h('b', {}, t('stem.numberline.a_decimal_is_a_fraction_with_a_hidden_', 'A decimal IS a fraction with a hidden denominator. ')), t('stem.numberline.0_6_means_6_tenths_6_10_0_25_means_25_', '0.6 means "6 tenths," 6/10. 0.25 means "25 hundredths," 25/100, which simplifies to 1/4.')),
+                  h('p', {}, h('b', {}, t('stem.numberline.the_number_line_proves_it', 'The number line proves it. ')), t('stem.numberline.the_point_at_1_4_is_the_same_point_as_', 'The point at 1/4 is the same point as the point at 0.25. Same spot, two names.')),
+                  h('p', {}, h('b', {}, t('stem.numberline.some_terminate_some_repeat', 'Some terminate, some repeat. ')), t('stem.numberline.1_2_0_5_stops_1_4_0_25_stops_1_3_0_333', '1/2 = 0.5 (stops). 1/4 = 0.25 (stops). 1/3 = 0.333… (repeats forever). The denominator decides: if it factors into only 2s and 5s, it terminates. Otherwise it repeats. Watch the ↻ symbol on the decimal card.'))
                 )
               )
             );
@@ -1759,8 +1759,8 @@ window.StemLab = window.StemLab || {
             if (!showAITutor) return null;
             return h('div', { className: 'bg-gradient-to-br from-sky-50 to-blue-50 rounded-xl border-2 border-sky-200 p-4 space-y-3' },
               h('div', { className: 'flex items-center justify-between' },
-                h('h4', { className: 'text-sm font-bold text-sky-800' }, '\uD83E\uDD16 AI Number Line Tutor'),
-                h('button', { 'aria-label': 'Toggle number line option',
+                h('h4', { className: 'text-sm font-bold text-sky-800' }, t('stem.numberline.ai_number_line_tutor', '\uD83E\uDD16 AI Number Line Tutor')),
+                h('button', { 'aria-label': t('stem.numberline.toggle_number_line_option', 'Toggle number line option'),
                   onClick: function() { upd({ showAITutor: false }); },
                   className: 'text-sky-400 hover:text-sky-600 text-lg font-bold'
                 }, '\u00D7')
@@ -1770,7 +1770,7 @@ window.StemLab = window.StemLab || {
                   type: 'text', value: aiQuestion,
                   onChange: function(e) { upd({ aiQuestion: e.target.value }); },
                   onKeyDown: function(e) { if (e.key === 'Enter' && aiQuestion.trim()) askAITutor(); },
-                  placeholder: 'Ask about number lines...',
+                  placeholder: t('stem.numberline.ask_about_number_lines', 'Ask about number lines...'),
                   className: 'flex-1 px-3 py-2 border border-sky-600 rounded-lg text-sm'
                 }),
                 h('button', { onClick: askAITutor,
@@ -1780,7 +1780,7 @@ window.StemLab = window.StemLab || {
               ),
               h('div', { className: 'flex flex-wrap gap-1.5' },
                 ['What is a number line?', 'How do I round numbers?', 'What is skip counting?', 'How do negative numbers work?'].map(function(q) {
-                  return h('button', { 'aria-label': 'Ask question',
+                  return h('button', { 'aria-label': t('stem.numberline.ask_question', 'Ask question'),
                     key: q,
                     onClick: function() { upd({ aiQuestion: q }); },
                     className: 'px-2 py-1 text-[11px] font-bold bg-sky-100 text-sky-700 rounded-full hover:bg-sky-200 transition-all'
@@ -1793,19 +1793,19 @@ window.StemLab = window.StemLab || {
 
           // ══════════ MAIN RENDER ══════════
           var tabs = [
-            { id: 'explore', icon: '\uD83D\uDCCF', label: 'Explore' },
-            { id: 'challenges', icon: '\uD83C\uDFAF', label: 'Challenges' },
-            { id: 'skipcount', icon: '\uD83D\uDD22', label: 'Skip Count' },
-            { id: 'fracdec', icon: '\u00BD', label: 'Frac \u2194 Dec' },
-            { id: 'magCompare', icon: '\uD83D\uDD04', label: 'Compare' }
+            { id: 'explore', icon: '\uD83D\uDCCF', label: t('stem.numberline.explore', 'Explore') },
+            { id: 'challenges', icon: '\uD83C\uDFAF', label: t('stem.numberline.challenges', 'Challenges') },
+            { id: 'skipcount', icon: '\uD83D\uDD22', label: t('stem.numberline.skip_count', 'Skip Count') },
+            { id: 'fracdec', icon: '\u00BD', label: t('stem.numberline.frac_dec', 'Frac \u2194 Dec') },
+            { id: 'magCompare', icon: '\uD83D\uDD04', label: t('stem.numberline.compare', 'Compare') }
           ];
 
           return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200' },
             // Header
             h('div', { className: 'flex items-center gap-3 mb-2' },
-              h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back' },
+              h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': t('stem.numberline.back', 'Back') },
                 h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
-              h('h3', { className: 'text-lg font-bold text-blue-800' }, '\uD83D\uDCCF Number Line'),
+              h('h3', { className: 'text-lg font-bold text-blue-800' }, t('stem.numberline.number_line', '\uD83D\uDCCF Number Line')),
               h('div', { className: 'ml-auto flex items-center gap-3' },
                 streak > 0 && h('span', { className: 'text-xs font-bold text-orange-600' }, '\uD83D\uDD25 ' + streak),
                 bestStreak > 0 && h('span', { className: 'text-[11px] text-slate-600' }, 'Best: ' + bestStreak),
@@ -1827,7 +1827,7 @@ window.StemLab = window.StemLab || {
             ),
 
             // Tab bar
-            h('div', { className: 'flex gap-1 bg-blue-50 rounded-xl p-1 border border-blue-200', role: 'tablist', 'aria-label': 'Number Line sections' },
+            h('div', { className: 'flex gap-1 bg-blue-50 rounded-xl p-1 border border-blue-200', role: 'tablist', 'aria-label': t('stem.numberline.number_line_sections', 'Number Line sections') },
               tabs.map(function(t2) {
                 return h('button', { key: t2.id,
                   onClick: function() { sfxClick(); upd({ tab: t2.id }); },
@@ -1841,11 +1841,11 @@ window.StemLab = window.StemLab || {
             // ── Topic-accent hero band per tab ──
             (function() {
               var TAB_META = {
-                explore:    { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)', icon: '\uD83D\uDCCF', title: 'Explore \u2014 the visual home for number sense',  hint: 'Numbers as positions on a line, not just symbols. Negatives mirror across zero. Fractions sit BETWEEN integers; decimals are the same idea finer-grained. Common Core 2.MD.6, 3.NF.2, 6.NS.6.' },
-                challenges: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)', icon: '\uD83C\uDFAF', title: 'Challenges \u2014 estimate, locate, compare',          hint: 'Where does 7/8 sit? What about \u22122.4? Estimation builds magnitude sense. Studies (Siegler 2009) show number-line precision predicts later math success better than rote facts.' },
-                skipcount:  { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83D\uDD22', title: 'Skip Count \u2014 the bridge to multiplication',     hint: '2, 4, 6, 8\u2026 = the 2 times table walking. Skip counting by 5s and 10s pre-builds money and time. Counting backward by 3s pre-builds subtraction and division. The line shows the rhythm.' },
-                fracdec:    { accent: '#0e7490', soft: 'rgba(14,116,144,0.10)', icon: '\u00BD', title: 'Fractions \u2194 Decimals, same point, two names', hint: 'A fraction is a division problem. A decimal is a fraction with a hidden denominator of 10, 100, 1000\u2026 1/4 and 0.25 are the SAME spot on the line. Common Core 4.NF.6, 4.NF.7, 5.NBT.3.' },
-                magCompare: { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)', icon: '🔄', title: 'Compare — magnitude discovery', hint: 'Two fractions, four possible relationships: equal, touching the ½ landmark, A smaller, or B smaller. Sweep the sliders, log what you notice, and write your own comparison rule.' }
+                explore:    { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)', icon: '\uD83D\uDCCF', title: t('stem.numberline.explore_the_visual_home_for_number_sen', 'Explore \u2014 the visual home for number sense'),  hint: t('stem.numberline.numbers_as_positions_on_a_line_not_jus', 'Numbers as positions on a line, not just symbols. Negatives mirror across zero. Fractions sit BETWEEN integers; decimals are the same idea finer-grained. Common Core 2.MD.6, 3.NF.2, 6.NS.6.') },
+                challenges: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)', icon: '\uD83C\uDFAF', title: t('stem.numberline.challenges_estimate_locate_compare', 'Challenges \u2014 estimate, locate, compare'),          hint: t('stem.numberline.where_does_7_8_sit_what_about_2_4_esti', 'Where does 7/8 sit? What about \u22122.4? Estimation builds magnitude sense. Studies (Siegler 2009) show number-line precision predicts later math success better than rote facts.') },
+                skipcount:  { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83D\uDD22', title: t('stem.numberline.skip_count_the_bridge_to_multiplicatio', 'Skip Count \u2014 the bridge to multiplication'),     hint: t('stem.numberline.2_4_6_8_the_2_times_table_walking_skip', '2, 4, 6, 8\u2026 = the 2 times table walking. Skip counting by 5s and 10s pre-builds money and time. Counting backward by 3s pre-builds subtraction and division. The line shows the rhythm.') },
+                fracdec:    { accent: '#0e7490', soft: 'rgba(14,116,144,0.10)', icon: '\u00BD', title: t('stem.numberline.fractions_decimals_same_point_two_name', 'Fractions \u2194 Decimals, same point, two names'), hint: t('stem.numberline.a_fraction_is_a_division_problem_a_dec', 'A fraction is a division problem. A decimal is a fraction with a hidden denominator of 10, 100, 1000\u2026 1/4 and 0.25 are the SAME spot on the line. Common Core 4.NF.6, 4.NF.7, 5.NBT.3.') },
+                magCompare: { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)', icon: '🔄', title: t('stem.numberline.compare_magnitude_discovery', 'Compare — magnitude discovery'), hint: t('stem.numberline.two_fractions_four_possible_relationsh', 'Two fractions, four possible relationships: equal, touching the ½ landmark, A smaller, or B smaller. Sweep the sliders, log what you notice, and write your own comparison rule.') }
               };
               var meta = TAB_META[tab] || TAB_META.explore;
               return h('div', {
@@ -1880,25 +1880,25 @@ window.StemLab = window.StemLab || {
               else if (fracA < fracB) state = 'aSmaller';
               else state = 'bSmaller';
               var stateMeta = {
-                equal:          { label: '🟰 Equivalent fractions',    color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd' },
-                halfLandmark:   { label: '⭐ One is the ½ landmark',    color: '#0891b2', bg: '#ecfeff', border: '#67e8f9' },
-                aSmaller:       { label: '🔼 A < B',                    color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
-                bSmaller:       { label: '🔽 A > B',                    color: '#059669', bg: '#ecfdf5', border: '#86efac' }
+                equal:          { label: t('stem.numberline.equivalent_fractions', '🟰 Equivalent fractions'),    color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd' },
+                halfLandmark:   { label: t('stem.numberline.one_is_the_landmark', '⭐ One is the ½ landmark'),    color: '#0891b2', bg: '#ecfeff', border: '#67e8f9' },
+                aSmaller:       { label: t('stem.numberline.a_b', '🔼 A < B'),                    color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
+                bSmaller:       { label: t('stem.numberline.a_b_2', '🔽 A > B'),                    color: '#059669', bg: '#ecfdf5', border: '#86efac' }
               }[state];
               function logObs() {
                 setIQ({ log: (iq.log || []).concat([{ a: iq.numA + '/' + iq.denA, b: iq.numB + '/' + iq.denB, va: fracA.toFixed(2), vb: fracB.toFixed(2), st: state }]).slice(-8) });
               }
               return h('div', { className: 'p-3 rounded-xl bg-white border border-blue-200 shadow-sm' },
-                h('h3', { className: 'text-sm font-black text-blue-700 mb-1' }, '🔄 Magnitude discovery'),
-                h('p', { className: 'text-[11px] text-slate-700 mb-2 leading-relaxed' }, 'Adjust the numerators and denominators of two fractions. The widget tells you one of four discrete relationships. No score, no reveal — just sweep and notice.'),
+                h('h3', { className: 'text-sm font-black text-blue-700 mb-1' }, t('stem.numberline.magnitude_discovery', '🔄 Magnitude discovery')),
+                h('p', { className: 'text-[11px] text-slate-700 mb-2 leading-relaxed' }, t('stem.numberline.adjust_the_numerators_and_denominators', 'Adjust the numerators and denominators of two fractions. The widget tells you one of four discrete relationships. No score, no reveal — just sweep and notice.')),
                 h('div', { className: 'mb-2 p-2 rounded-lg text-center', style: { background: stateMeta.bg, border: '2px solid ' + stateMeta.border } },
                   h('div', { className: 'text-sm font-black', style: { color: stateMeta.color } }, stateMeta.label),
                   h('div', { className: 'text-[10px] text-slate-700 mt-0.5 font-mono' }, 'A = ' + iq.numA + '/' + iq.denA + ' ≈ ' + fracA.toFixed(2) + '   B = ' + iq.numB + '/' + iq.denB + ' ≈ ' + fracB.toFixed(2))
                 ),
                 h('div', { className: 'grid grid-cols-2 gap-2 mb-2' },
                   [
-                    { key: 'numA', label: 'A num', val: iq.numA, max: 10 }, { key: 'denA', label: 'A den', val: iq.denA, max: 10 },
-                    { key: 'numB', label: 'B num', val: iq.numB, max: 10 }, { key: 'denB', label: 'B den', val: iq.denB, max: 10 }
+                    { key: 'numA', label: t('stem.numberline.a_num', 'A num'), val: iq.numA, max: 10 }, { key: 'denA', label: t('stem.numberline.a_den', 'A den'), val: iq.denA, max: 10 },
+                    { key: 'numB', label: t('stem.numberline.b_num', 'B num'), val: iq.numB, max: 10 }, { key: 'denB', label: t('stem.numberline.b_den', 'B den'), val: iq.denB, max: 10 }
                   ].map(function(s) {
                     return h('div', { key: s.key },
                       h('label', { htmlFor: 'mh-' + s.key, className: 'block text-[10px] font-bold text-slate-700' },
@@ -1909,8 +1909,8 @@ window.StemLab = window.StemLab || {
                   })
                 ),
                 h('div', { className: 'flex gap-2 items-center mb-2 flex-wrap' },
-                  h('button', { onClick: logObs, className: 'px-2 py-0.5 rounded bg-slate-100 text-[10px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
-                  h('button', { onClick: function() { setIQ({ numA: 1, denA: 2, numB: 1, denB: 3, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[10px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset'),
+                  h('button', { onClick: logObs, className: 'px-2 py-0.5 rounded bg-slate-100 text-[10px] font-bold text-slate-700 border border-slate-300' }, t('stem.numberline.log', '📋 Log')),
+                  h('button', { onClick: function() { setIQ({ numA: 1, denA: 2, numB: 1, denB: 3, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[10px] font-semibold text-slate-600 border border-slate-300' }, t('stem.numberline.reset', '↺ Reset')),
                   (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
                 ),
                 (iq.log || []).length > 0 && h('table', { className: 'text-[10px] w-full border-collapse text-slate-700 mb-2' },
@@ -1924,21 +1924,21 @@ window.StemLab = window.StemLab || {
                       h('td', { className: 'px-1 border border-slate-200' }, o.st));
                   }))
                 ),
-                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis (free text): When do two fractions equal each other? When is one near ½?',
+                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.numberline.hypothesis_free_text_when_do_two_fract', 'Hypothesis (free text): When do two fractions equal each other? When is one near ½?'),
                   className: 'w-full text-[11px] border border-slate-300 rounded p-1 font-mono leading-snug mb-2', rows: 2 }),
-                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[10px] font-bold text-amber-800 border border-amber-300 mb-2' }, '🤔 Stuck — show open prompts'),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[10px] font-bold text-amber-800 border border-amber-300 mb-2' }, t('stem.numberline.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
                 iq.stuckRevealed && h('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[10px] text-slate-700 leading-relaxed mb-2' },
                   h('ul', { className: 'list-disc pl-4 space-y-0.5' },
-                    h('li', null, 'Find two fractions with different numerators and denominators that are equal.'),
-                    h('li', null, 'What makes a fraction close to ½? What about close to 1?'),
-                    h('li', null, 'When are two fractions easy to compare? When are they hard?'))),
+                    h('li', null, t('stem.numberline.find_two_fractions_with_different_nume', 'Find two fractions with different numerators and denominators that are equal.')),
+                    h('li', null, t('stem.numberline.what_makes_a_fraction_close_to_what_ab', 'What makes a fraction close to ½? What about close to 1?')),
+                    h('li', null, t('stem.numberline.when_are_two_fractions_easy_to_compare', 'When are two fractions easy to compare? When are they hard?')))),
                 h('div', { className: 'p-2 rounded bg-emerald-50 border border-emerald-200' },
                   h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-emerald-800 cursor-pointer' },
                     h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
-                    'I understand — explain in my own words'),
-                  iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how to compare two fractions without converting to decimals.',
+                    t('stem.numberline.i_understand_explain_in_my_own_words', 'I understand — explain in my own words')),
+                  iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.numberline.explain_how_to_compare_two_fractions_w', 'Explain how to compare two fractions without converting to decimals.'),
                     className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 })),
-                h('div', { className: 'mt-2 text-[9px] italic text-slate-500' }, 'Design note: discrete 4-state outcome; no fraction-comparison score; no reveal — by design.')
+                h('div', { className: 'mt-2 text-[9px] italic text-slate-500' }, t('stem.numberline.design_note_discrete_4_state_outcome_n', 'Design note: discrete 4-state outcome; no fraction-comparison score; no reveal — by design.'))
               );
             })(),
             tab === 'explore' && renderExplore(),
@@ -1951,25 +1951,25 @@ window.StemLab = window.StemLab || {
 
             // AI Tutor toggle + panel
             h('div', { className: 'flex gap-2' },
-              !showAITutor && h('button', { 'aria-label': 'AI Tutor',
+              !showAITutor && h('button', { 'aria-label': t('stem.numberline.ai_tutor', 'AI Tutor'),
                 onClick: function() { sfxClick(); upd({ showAITutor: true }); },
                 className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-50 text-sky-700 border border-sky-600 hover:bg-sky-100 transition-all'
-              }, '\uD83E\uDD16 AI Tutor')
+              }, t('stem.numberline.ai_tutor_2', '\uD83E\uDD16 AI Tutor'))
             ),
             renderAITutor(),
 
             // Keyboard hints
             h('div', { className: 'text-center text-[11px] text-slate-600 mt-2' },
-              '\u2328\uFE0F 1-4: tabs | N: new challenge | ?: AI tutor | \u2190 \u2192 on marker: nudge | Home/End: ends'
+              t('stem.numberline.1_4_tabs_n_new_challenge_ai_tutor_on_m', '\u2328\uFE0F 1-4: tabs | N: new challenge | ?: AI tutor | \u2190 \u2192 on marker: nudge | Home/End: ends')
             ),
 
             // \u2550\u2550\u2550 INTEGERS & ABSOLUTE VALUE \u2550\u2550\u2550
             h('div', { className: 'mt-5 rounded-2xl border border-sky-300 bg-white p-3 shadow-sm' },
-              h('h4', { className: 'text-sm font-bold text-sky-700 mb-2' }, '\uD83D\uDD22 Integers \u2014 Absolute value = distance from zero'),
+              h('h4', { className: 'text-sm font-bold text-sky-700 mb-2' }, t('stem.numberline.integers_absolute_value_distance_from_', '\uD83D\uDD22 Integers \u2014 Absolute value = distance from zero')),
               h('div', { className: 'rounded-xl overflow-hidden border border-sky-200', style: { background: '#020210', aspectRatio: '16/4' } },
                 h('canvas', {
                   role: 'img',
-                  'aria-label': 'Absolute value number line showing distance from zero',
+                  'aria-label': t('stem.numberline.absolute_value_number_line_showing_dis', 'Absolute value number line showing distance from zero'),
                   ref: function(cvEl) {
                     if (!cvEl) return;
                     if (cvEl._nlAnim) return;
