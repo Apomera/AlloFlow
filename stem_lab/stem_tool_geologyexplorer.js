@@ -36,6 +36,16 @@
   };
   var TYPE_COLOR = { 'Surface': '#92786a', 'Sedimentary': '#38bdf8', 'Igneous (intrusive)': '#ec4899', 'Metamorphic': '#a78bfa', 'Molten': '#fb923c' };
   var ROCK_ORDER = ['soil', 'sandstone', 'shale', 'limestone', 'basement', 'magma', 'intrusion', 'marble', 'hornfels'];
+  // Index fossils per depositional environment (illustrative). Sedimentary layers
+  // record life; igneous/metamorphic/molten rock does not — melting and
+  // metamorphism destroy fossils, which is exactly why we date sedimentary strata.
+  var FOSSILS = {
+    soil:      { icon: '🌱', name: 'Roots & recent shells',          tells: 'Forming today — too young to be an index fossil.' },
+    sandstone: { icon: '🌿', name: 'Plant fossils & ripple marks',   tells: 'Point to rivers, deltas and dunes when the sand was laid down.' },
+    shale:     { icon: '🦐', name: 'Trilobites & graptolites',       tells: 'Lived in calm, deeper water — classic index fossils for dating layers.' },
+    limestone: { icon: '🐚', name: 'Brachiopods, crinoids & coral',  tells: 'Shelly sea-floor life — they mark a warm, shallow sea.' }
+  };
+  var SED_FOSSIL = { sandstone: 1, shale: 1, limestone: 1 }; // layers a fossil can be uncovered in (soil is too young)
   var NX = 14, NY = 12, NZ = 14, KM_PER_VOXEL = 0.9;
 
   function rockKeyAt(x, y, z) {
@@ -51,6 +61,8 @@
     if (y <= 9) return 'basement';
     return 'magma';
   }
+  // deterministic: ~1/3 of sedimentary voxels host a fossil, so digging feels like discovery
+  function hasFossilAt(x, y, z) { return (((x + 1) * 13 + (z + 1) * 7 + y * 5) % 3) === 0; }
   function hex(n) { return '#' + ('000000' + n.toString(16)).slice(-6); }
   function rockFacts(key, y) {
     var R = ROCKS[key];
@@ -174,10 +186,14 @@
         var top = shallowest(v.x, v.z);
         if (v.y !== top) { if (opts.onFlash) opts.onFlash('Dig the layers above first — deeper = older (superposition).'); if (opts.onSelect) opts.onSelect(rockFacts(v.key, v.y)); return; }
         removed[vkey(v)] = 1; rebuild();
+        if (opts.onUncover && SED_FOSSIL[v.key] && hasFossilAt(v.x, v.y, v.z)) opts.onUncover(v.key);
         var below = shallowest(v.x, v.z);
         if (below != null && opts.onSelect) opts.onSelect(rockFacts(rockKeyAt(v.x, below, v.z), below));
         if (opts.onFlash) opts.onFlash('Excavated ' + ROCKS[v.key].name + '. The layer beneath is now exposed.');
-      } else if (opts.onSelect) { opts.onSelect(rockFacts(v.key, v.y)); }
+      } else {
+        if (opts.onUncover && SED_FOSSIL[v.key] && hasFossilAt(v.x, v.y, v.z)) opts.onUncover(v.key);
+        if (opts.onSelect) opts.onSelect(rockFacts(v.key, v.y));
+      }
     }
     function onDown(e) { down = { x: e.clientX, y: e.clientY }; }
     function onUp(e) { if (!down) return; var moved = Math.abs(e.clientX - down.x) + Math.abs(e.clientY - down.y); down = null; if (moved < 6) pick(e); }
@@ -215,7 +231,8 @@
     questHooks: [
       { id: 'identify_5', label: 'Identify 5 different rocks', icon: '🔍', check: function (d) { return Object.keys(d.identified || {}).length >= 5; }, progress: function (d) { return Math.min(Object.keys(d.identified || {}).length, 5) + '/5 rocks'; } },
       { id: 'reach_magma', label: 'Expose the magma chamber', icon: '🌋', check: function (d) { return !!(d.identified && d.identified.magma); }, progress: function (d) { return (d.identified && d.identified.magma) ? 'Found it!' : 'Dig / slice deep'; } },
-      { id: 'find_intrusion', label: 'Find the cross-cutting pluton', icon: '⛏️', check: function (d) { return !!(d.identified && d.identified.intrusion); }, progress: function (d) { return (d.identified && d.identified.intrusion) ? 'Cross-cutting!' : 'Slice to the centre'; } }
+      { id: 'find_intrusion', label: 'Find the cross-cutting pluton', icon: '⛏️', check: function (d) { return !!(d.identified && d.identified.intrusion); }, progress: function (d) { return (d.identified && d.identified.intrusion) ? 'Cross-cutting!' : 'Slice to the centre'; } },
+      { id: 'fossils_3', label: 'Uncover an index fossil in all 3 sedimentary layers', icon: '🦴', check: function (d) { var f = d.fossils || {}; return f.sandstone && f.shale && f.limestone; }, progress: function (d) { var f = d.fossils || {}; return ['sandstone', 'shale', 'limestone'].filter(function (k) { return f[k]; }).length + '/3 layers'; } }
     ],
     render: function (ctx) {
       var React = ctx.React, h = React.createElement;
@@ -237,6 +254,8 @@
       var cph = React.useState([]); var cyclePath = cph[0], setCyclePath = cph[1];
       var hst = React.useState(-1); var histStage = hst[0], setHistStage = hst[1];
       var histTimer = React.useRef(null);
+      var fos = React.useState(d.fossils || {}); var found = fos[0], setFound = fos[1];
+      var fossilsRef = React.useRef(found); fossilsRef.current = found;
       var threeReady = !!(ctx.toolData && ctx.toolData._threeLoaded) && !!window.THREE;
 
       function announce(msg) { try { var lr = document.getElementById('allo-live-geology'); if (lr) { lr.textContent = ''; setTimeout(function () { lr.textContent = String(msg || ''); }, 30); } } catch (e) {} }
@@ -246,6 +265,13 @@
         try { if (window[ENGINE_KEY]) window[ENGINE_KEY].setHighlight(facts.key); } catch (e) {}
         announce(msg || (facts.R.name + '. ' + facts.R.type + '. Depth about ' + facts.depthKm + ' kilometres. ' + facts.R.formation + ' ' + facts.R.age));
         var cur = identifiedRef.current || {}; if (!cur[facts.key]) { var id = Object.assign({}, cur); id[facts.key] = 1; upd('identified', id); }
+      }
+      function uncoverFossil(key) {
+        var cur = fossilsRef.current || {}; if (cur[key]) return; // already collected this layer's fossil
+        var nf = Object.assign({}, cur); nf[key] = 1; setFound(nf); upd('fossils', nf);
+        var F = FOSSILS[key], rn = ROCKS[key] ? ROCKS[key].name : 'rock';
+        addToast('✨ ' + (F ? F.name : 'Fossil') + ' uncovered in the ' + rn + '!', 'success');
+        announce('You uncovered ' + (F ? F.name : 'a fossil') + ' in the ' + rn + '. ' + (F ? F.tells : ''));
       }
 
       // ── formation-history playback (assembles the crust in chronological order) ──
@@ -272,6 +298,7 @@
         try {
           window[ENGINE_KEY] = initEngine(containerRef.current, {
             onSelect: function (facts) { selectRock(facts); },
+            onUncover: function (k) { uncoverFossil(k); },
             onFlash: function (m) { addToast(m, 'info'); },
             onContextLost: function () { setWebglError(true); try { if (window[ENGINE_KEY]) { window[ENGINE_KEY].dispose(); window[ENGINE_KEY] = null; } } catch (e) {} }
           });
@@ -287,7 +314,7 @@
       // ── selected info panel (shared by 3D + list) ──
       function infoPanel() {
         if (!selected) return h('div', { className: 'text-xs ' + muted + ' p-3 rounded-xl border ' + cardBg }, t('stem.geology.pick_hint', 'Pick a rock — in the 3D block or the list below — to see its type, depth, temperature/pressure, how it forms, and its age relationship.'));
-        var f = selected, R = f.R, tc = TYPE_COLOR[R.type] || '#64748b';
+        var f = selected, R = f.R, tc = TYPE_COLOR[R.type] || '#64748b', F = FOSSILS[f.key];
         return h('div', { className: 'p-3 rounded-xl border ' + cardBg, role: 'region', 'aria-label': 'Selected rock details' },
           h('div', { className: 'text-base font-extrabold tracking-tight ' + ink }, R.name),
           h('span', { className: 'inline-block text-[11px] font-bold px-2 py-0.5 rounded-full mt-1 mb-2', style: { color: tc, background: tc + '22', border: '1px solid ' + tc + '55' } }, R.type),
@@ -298,7 +325,10 @@
             h('span', { className: muted }, t('stem.geology.forms', 'Forms by')), h('span', null, R.formation),
             h('span', { className: muted }, t('stem.geology.minerals', 'Minerals')), h('span', null, R.minerals)
           ),
-          h('div', { className: 'mt-2 text-[11.5px]', style: { color: '#f59e0b' } }, '🕓 ' + R.age)
+          h('div', { className: 'mt-2 text-[11.5px]', style: { color: '#f59e0b' } }, '🕓 ' + R.age),
+          F
+            ? h('div', { className: 'mt-1 text-[11.5px] ' + ink }, h('span', { 'aria-hidden': 'true' }, F.icon + ' '), h('span', { className: 'font-semibold' }, F.name), h('span', { className: muted }, ' — ' + F.tells + (SED_FOSSIL[f.key] ? ' ' + t('stem.geology.dig_fossil', 'Dig or click this layer to uncover one.') : '')))
+            : h('div', { className: 'mt-1 text-[11.5px] ' + muted }, '🚫 ' + t('stem.geology.no_fossils', 'No fossils — melting and metamorphism destroy them, so geologists read time from sedimentary layers.'))
         );
       }
 
@@ -347,6 +377,18 @@
               h('button', { type: 'button', onClick: function () { stopHistory(); }, 'aria-label': t('stem.geology.to_present', 'Skip to present — show the whole cross-section'), className: 'transition-colors active:scale-[0.97] text-[11px] font-bold px-2 h-7 rounded-lg border ' + (isDark ? 'bg-slate-800 border-slate-600 text-slate-100 hover:bg-slate-700' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100') }, '⏭ ' + t('stem.geology.present', 'Present')))),
           h('div', { className: 'text-[12px] font-semibold leading-snug ' + (isDark ? 'text-amber-100' : 'text-amber-900') }, t(s.tk, s.fb))
         );
+      }
+
+      // ── fossils uncovered (collection grows as you dig the sedimentary layers) ──
+      function fossilStrip() {
+        var keys = Object.keys(found || {}).filter(function (k) { return SED_FOSSIL[k]; });
+        if (!keys.length) return null;
+        return h('div', { className: 'p-2.5 rounded-xl border ' + cardBg, role: 'region', 'aria-label': 'Fossils you have uncovered' },
+          h('div', { className: 'flex items-center justify-between mb-1.5' },
+            h('span', { className: 'text-[11px] font-bold ' + ink }, '🦴 ' + t('stem.geology.fossils_found', 'Fossils uncovered')),
+            h('span', { className: 'text-[11px] ' + muted }, keys.length + '/3')),
+          h('div', { className: 'flex flex-wrap gap-1.5' },
+            keys.map(function (k) { var F = FOSSILS[k]; return h('span', { key: k, title: F.tells, className: 'inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-lg border ' + cardBg + ' ' + ink }, F.icon + ' ' + F.name); })));
       }
 
       // ── accessible cross-section: SVG diagram + keyboard strata list (the non-3D core) ──
@@ -431,7 +473,8 @@
               crossSectionSVG(),
               h('p', { className: 'text-[11px] leading-relaxed ' + muted }, t('stem.geology.teach', 'Deeper sedimentary layers are older (superposition). The granite pluton is YOUNGER than the layers it cuts (cross-cutting), and it bakes a metamorphic rim (contact metamorphism). Heat + pressure rise with depth toward the magma — where the rock cycle restarts.'))),
             h('div', { className: 'text-[11px] font-bold ' + muted }, t('stem.geology.rocks', 'Rock types')),
-            strataList()))
+            strataList(),
+            fossilStrip()))
       );
     }
   });
