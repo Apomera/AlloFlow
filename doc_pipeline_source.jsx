@@ -5508,14 +5508,18 @@ var createDocPipeline = function(deps) {
     if (!rawCss || typeof rawCss !== 'string') return '';
     let out = String(rawCss);
     const stripped = [];
-    // @import — external resource load
-    if (/@import\s+[^;]+;?/i.test(out)) { stripped.push('@import'); out = out.replace(/@import\s+[^;]+;?/gi, '/* @import stripped — external loads blocked for XSS safety */'); }
+    // Strip CSS block comments FIRST so a payload can't hide a token from the patterns
+    // below (e.g. `@imp/**/ort`, `expres/**/sion(`). Export CSS doesn't need comments.
+    if (/\/\*[\s\S]*?\*\//.test(out)) { out = out.replace(/\/\*[\s\S]*?\*\//g, ' '); }
+    // @import — external resource load. \s* (not \s+) so the quote-immediate form
+    // `@import"https://attacker/x.css";` (no whitespace) is also caught.
+    if (/@import\s*['"(]/i.test(out)) { stripped.push('@import'); out = out.replace(/@import\s*[^;]+;?/gi, ' /* @import stripped — external loads blocked for XSS safety */ '); }
     // expression() — IE script execution
     if (/expression\s*\(/i.test(out)) { stripped.push('expression()'); out = out.replace(/expression\s*\([^)]*\)/gi, '/* expression() stripped */'); }
-    // Dangerous URL schemes inside url(...)
-    if (/url\s*\(\s*['"]?\s*(?:javascript|vbscript|data\s*:\s*text\/html)/i.test(out)) {
+    // Dangerous URL schemes inside url(...) — incl. data:image/svg+xml (SVG can carry scripts)
+    if (/url\s*\(\s*['"]?\s*(?:javascript|vbscript|data\s*:\s*text\/html|data\s*:\s*image\/svg)/i.test(out)) {
       stripped.push('dangerous url()');
-      out = out.replace(/url\s*\(\s*['"]?\s*(?:javascript|vbscript|data\s*:\s*text\/html)[^'")]*['"]?\s*\)/gi, 'url("about:blank")');
+      out = out.replace(/url\s*\(\s*['"]?\s*(?:javascript|vbscript|data\s*:\s*text\/html|data\s*:\s*image\/svg)[^'")]*['"]?\s*\)/gi, 'url("about:blank")');
     }
     // behavior: property (IE htc binding)
     if (/(^|[\s;{])behavior\s*:/i.test(out)) { stripped.push('behavior:'); out = out.replace(/(^|[\s;{])behavior\s*:[^;}]+;?/gi, '$1/* behavior stripped */'); }
@@ -5527,6 +5531,12 @@ var createDocPipeline = function(deps) {
       stripped.push('javascript:');
       out = out.replace(/(?<![a-z])javascript\s*:/gi, 'noop:');
     }
+    // Neutralize the HTML rawtext end-tag sequence. This CSS is injected into a <style>
+    // element, which the HTML parser closes at the first literal "</" — so a value like
+    // `…}</style><script>…` would break out and execute. Valid CSS never contains "</",
+    // so escaping it (the parser then sees "<\" — not a tag close) is loss-free and is
+    // the actual XSS guard the prior sanitizer was missing.
+    if (/<\//.test(out)) { stripped.push('</tag breakout'); out = out.replace(/<\//g, '<\\/'); }
     if (stripped.length > 0 && typeof warnLog === 'function') {
       warnLog('[sanitizeCustomExportCSS] stripped dangerous patterns: ' + stripped.join(', '));
     }
@@ -7754,8 +7764,10 @@ Return ONLY valid JSON (no markdown, no backticks): {"score":N,"summary":"1-2 se
     const _brandMode = typeof window !== 'undefined' ? (window.__pdfBrandMode || 'auto') : 'auto';
     const _brandOverride = typeof window !== 'undefined' ? window.__pdfBrandOverride : null;
     if (_brandMode === 'upload' && _brandOverride) {
-      // Use colors extracted from uploaded brand reference
-      batchDocStyle = { ...batchDocStyle, ..._brandOverride };
+      // Use colors extracted from uploaded brand reference. Sanitize like the
+      // auto-extract path below — _brandOverride is Vision-parsed from a user-uploaded
+      // reference doc and flows into a style="" attribute, so drop any breakout chars.
+      batchDocStyle = { ...batchDocStyle, ..._sanitizeStyleObj(_brandOverride) };
       log('Using uploaded brand colors');
     } else if (_brandMode === 'none') {
       // Skip brand extraction, use defaults
@@ -13759,8 +13771,9 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       let docStyle = { ..._defaultDocStyle };
 
       if (_useUploadedBrand) {
-        // User uploaded a brand reference — use those colors, skip PDF extraction
-        docStyle = { ...docStyle, ..._brandOverride };
+        // User uploaded a brand reference — use those colors, skip PDF extraction.
+        // Sanitize (matches the auto-extract path) — Vision-parsed, flows into style="".
+        docStyle = { ...docStyle, ..._sanitizeStyleObj(_brandOverride) };
         _pipeLog('Style', 'Using uploaded brand colors (branding mode: upload)');
       } else if (_brandMode === 'none' && !_hasSpecificSeed) {
         // User turned branding off and hasn't picked a specific theme — use default palette
@@ -20330,14 +20343,18 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     // Link underline satisfies WCAG 1.4.1 (Use of Color): a non-color signal
     // distinguishes links from surrounding prose, so accent color alone isn't
     // carrying the meaning. Print media strips the underline separately.
-    const themeCSS = `
+    // Sanitize: for matchOriginal, bodyFont/extraCSS come from the UPLOADED PDF
+    // (untrusted, not brand-validated) and are interpolated into a <style> block —
+    // route through the XSS sanitizer (strips @import/expression/dangerous url() and
+    // neutralizes any </style> breakout) before injection.
+    const themeCSS = sanitizeCustomExportCSS(`
       body { font-family: ${cssVars.bodyFont}; font-size: ${fontSize}px; background: ${cssVars.bgColor}; color: ${textColor}; }
       h1, h2, h3, h4 { color: ${cssVars.headingColor}; }
       a { color: ${cssVars.accentColor}; text-decoration: underline; }
       table { border-color: ${cssVars.cardBorder}; }
       th { background: ${cssVars.cardBg}; }
       ${cssVars.extraCSS || ''}
-    `;
+    `);
     // De-stack: strip any previously injected seed CSS before injecting the
     // new block. Without this, every theme toggle / preview refresh / builder
     // write-back round-trip APPENDED another theme block — accumulating
@@ -24583,7 +24600,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       // Minimal CSS scoped to the brand bands so they render even when the
       // selected style seed has no awareness of the brand. Uses brand colors
       // so the identity is visually consistent across exports.
-      const _brandBandsCSS = _activeBrand ? (function () {
+      const _brandBandsCSS = _activeBrand ? sanitizeCustomExportCSS((function () {
         var c = _activeBrand.colors;
         return [
           '.brand-header { background: ' + c.heading + '; color: ' + c.bg + '; padding: 0.75rem 1rem; display: flex; align-items: center; gap: 0.75rem; border-radius: 8px 8px 0 0; }',
@@ -24597,7 +24614,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           '  @page { @top-center { content: element(brandHeader); } @bottom-center { content: element(brandFooter); } }',
           '}'
         ].join('\n');
-      })() : '';
+      })()) : '';
       // Font: explicit builder dropdown choice (cfg.fontId, 2026-06-11) wins;
       // 'app' (or the legacy useAppFont checkbox with no fontId) follows the
       // app reading-support font; 'theme'/absent falls back to the theme font.
