@@ -165,6 +165,12 @@ async function _sha256OfBytes(bytes) {
     return null;
   }
 }
+function _withTimeout(promise, ms, label) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error("Timed out after " + ms + "ms: " + (label || "operation"))), ms))
+  ]);
+}
 function _htmlToDocxSpec(html) {
   const doc = new DOMParser().parseFromString(html || "", "text/html");
   const title = ((doc.querySelector("title") || {}).textContent || (doc.querySelector("h1") || {}).textContent || "Accessible document").trim().slice(0, 200) || "Accessible document";
@@ -2374,7 +2380,7 @@ function PdfAuditView(props) {
           const url = await callTTS(segments[i].text, selectedVoice || "Puck", 1, 2);
           if (url && (url.startsWith("blob:") || url.startsWith("data:") || url.startsWith("http"))) {
             dur = await measure(url);
-            blob2 = await (await fetch(url)).blob();
+            blob2 = await (await _withTimeout(fetch(url), 2e4, "TTS audio fetch")).blob();
             if (!(typeof dur === "number" && isFinite(dur) && dur > 0) && blob2) {
               try {
                 dur = _wavDurationFromBytes(new Uint8Array(await blob2.arrayBuffer()));
@@ -2443,7 +2449,7 @@ function PdfAuditView(props) {
       try {
         const url = await callTTS(j.segments[j.nextIdx], selectedVoice || "Puck", 1, 2);
         if (url && (url.startsWith("blob:") || url.startsWith("data:") || url.startsWith("http"))) {
-          const resp = await fetch(url);
+          const resp = await _withTimeout(fetch(url), 2e4, "TTS audio fetch");
           j.blobs.push(await resp.blob());
           try {
             if (url.startsWith("blob:")) URL.revokeObjectURL(url);
@@ -3169,7 +3175,7 @@ function PdfAuditView(props) {
       addToast(t("toasts.fetching_website"), "info");
       try {
         const proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(url);
-        const resp = await fetch(proxyUrl);
+        const resp = await _withTimeout(fetch(proxyUrl), 2e4, "website fetch (proxy)");
         if (!resp.ok) throw new Error("Fetch failed: " + resp.status);
         let html = await resp.text();
         if (!html.includes("<base")) {
@@ -6051,21 +6057,27 @@ Return ONLY JSON:
                               var st = _paneStatus('\u26A0 Could not render the ' + label + ' here (' + msg + '). ');
                               try { var u = URL.createObjectURL(new Blob([_b64ToBytes(b64)], { type: 'application/pdf' })); var a = document.createElement('a'); a.href = u; a.target = '_blank'; a.style.color = '#93c5fd'; a.textContent = 'Open it in its own tab instead'; st.appendChild(a); } catch (_) {}
                             }
+                            var _cmpPdfDoc = null; // the pdf.js doc currently rendering in Compare \u2014 tracked so it's destroyed (was leaking every render/toggle)
                             function _renderPdfInto(b64, label) {
                               var host = document.getElementById('before-pane'); if (!host) return;
                               try { _cropCleanup(); } catch (_) {}
+                              // Release any doc from a prior render (e.g. a fast Verify-tagged toggle) before
+                              // starting a new one \u2014 _renderPdfInto previously never destroyed the pdf.js doc,
+                              // so each render/toggle leaked a worker document.
+                              if (_cmpPdfDoc) { try { _cmpPdfDoc.destroy(); } catch (_) {} _cmpPdfDoc = null; }
                               host.innerHTML = '';
                               var st = _paneStatus('Rendering ' + label + '\u2026');
                               _ensurePdfjs().then(function (pdfjs) {
-                                pdfjs.getDocument({ data: _b64ToBytes(b64) }).promise.then(function (doc) {
+                                _withTimeout(pdfjs.getDocument({ data: _b64ToBytes(b64) }).promise, 30000, 'Compare getDocument').then(function (doc) {
+                                  _cmpPdfDoc = doc;
                                   // Render progressively at a lighter scale (1.0): rasterizing every page
                                   // of a scanned IMAGE PDF is the entire reason Compare's tagged view felt
                                   // far slower than the Downloads button (which never rasterizes). Keep a
                                   // live "page N / M" status so it's visibly working, not stuck.
                                   (function renderPage(n) {
-                                    if (n > doc.numPages) { if (st) { try { st.remove(); } catch (_) {} } return; }
+                                    if (n > doc.numPages) { if (st) { try { st.remove(); } catch (_) {} } try { doc.destroy(); } catch (_) {} if (_cmpPdfDoc === doc) _cmpPdfDoc = null; return; }
                                     if (st) { try { st.textContent = 'Rendering ' + label + '\u2026 page ' + n + ' / ' + doc.numPages; } catch (_) {} }
-                                    doc.getPage(n).then(function (page) {
+                                    _withTimeout(doc.getPage(n), 30000, 'Compare getPage ' + n).then(function (page) {
                                       var vp = page.getViewport({ scale: 1.0 });
                                       var c = document.createElement('canvas');
                                       c.width = vp.width; c.height = vp.height;
@@ -6073,7 +6085,7 @@ Return ONLY JSON:
                                       c.setAttribute('role', 'img');
                                       c.setAttribute('aria-label', label + ', page ' + n + ' of ' + doc.numPages);
                                       host.appendChild(c);
-                                      page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise.then(
+                                      _withTimeout(page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise, 30000, 'Compare render ' + n).then(
                                         function () { renderPage(n + 1); },
                                         function () { renderPage(n + 1); }
                                       );
@@ -9172,7 +9184,7 @@ Return ONLY JSON:
           base64 = img.src.split(",")[1];
         } else {
           try {
-            const resp = await fetch(img.src);
+            const resp = await _withTimeout(fetch(img.src), 2e4, "image fetch");
             const blob = await resp.blob();
             base64 = await new Promise((resolve, reject) => {
               const fr = new FileReader();
@@ -11366,7 +11378,7 @@ Return ONLY JSON:
         try {
           const url = await callTTS(segments[si], selectedVoice || "Puck", 1, 2);
           if (url && (url.startsWith("blob:") || url.startsWith("data:") || url.startsWith("http"))) {
-            const r = await fetch(url);
+            const r = await _withTimeout(fetch(url), 2e4, "TTS audio fetch");
             blobs.push(await r.blob());
             try {
               if (url.startsWith("blob:")) URL.revokeObjectURL(url);
