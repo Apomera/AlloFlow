@@ -15925,7 +15925,8 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         }
       } catch (_) {}
 
-      // Blend final score with the deterministic engines (same 50/50 AI+deterministic method as initial audit)
+      // Govern the final score with the deterministic engines — weakest-layer min() (NOT a mean),
+      // the same method as the initial audit so the before/after comparison is two-engine on both ends.
       let finalAfterScore = verification ? verification.score : afterScore;
       const axeScoreAvailable = axeResults && typeof axeResults.score === 'number';
       const eaScoreAvailable = eaResults && typeof eaResults.score === 'number';
@@ -16398,6 +16399,10 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         axeScore: axeResults ? axeResults.score : null,
         axeViolations: axeResults ? axeResults.totalViolations : 0,
         _axeCoreFailed: axeCoreFailed,
+        // _scoreIsBlended (legacy name): true when the headline is the GOVERNING weakest-layer
+        // min() of BOTH engines (both available) — NOT a 50/50 mean. Kept as-is to avoid a
+        // cross-module rename (consumed in the monolith + batch result); the reports describe it
+        // as weakest-layer min().
         _scoreIsBlended: !axeCoreFailed && !_aiVerificationIncomplete && finalAfterScore !== null,
         _aiVerificationIncomplete,
         _scoreSource: _aiVerificationIncomplete ? 'deterministic-only' : (axeCoreFailed ? 'content-only' : 'min'), // headline = min(content, automated) — the governing layer (2026-06-21)
@@ -16903,7 +16908,7 @@ tr { page-break-inside: avoid; }
         <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#16a34a">Passes</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">Informational</td><td style="padding:8px;border:1px solid #e2e8f0">Passed checks are listed for transparency but do <strong>not</strong> buy back deductions — the score reflects only confirmed issues, so it stays reconstructable from the list above.</td></tr>
       </tbody>
     </table>
-    <p style="font-size:11px;color:#64748b;margin-bottom:0.5rem"><strong>Scoring formula:</strong> Start at 100, subtract per violation: Critical (-15), Serious (-10), Moderate (-5), Minor (-2). Each unique violation counted once. Passing checks proportionally offset deductions — a document that passes 90% of checks receives up to 36% reduction in effective deductions, reflecting that remaining violations represent a small proportion of the overall content. Final score is a 50/50 blend of AI rubric score and axe-core (Deque) automated checker score.</p>`;
+    <p style="font-size:11px;color:#64748b;margin-bottom:0.5rem"><strong>Scoring formula:</strong> Start at 100, subtract per confirmed violation: Critical (-15), Serious (-10), Moderate (-5), Minor (-2); each unique violation counted once. Passing checks are listed for transparency but do <strong>not</strong> buy back deductions, so the score stays reconstructable from the issue list above. The headline is the <strong>weakest-layer score</strong>: the LOWER (more conservative) of the AI rubric score and the automated-checker score (axe-core / IBM Equal Access) — a document is only as accessible as its worst dimension, so a high score on one engine cannot mask a low score on the other. Both layer scores are also reported separately.</p>`;
 
     html += `<div class="footer">
       <p><strong>Methodology:</strong> ${audit.auditorCount || 1}-pass AI self-consistency review with adaptive confidence scoring, a descriptive score-variability summary (SD, SEM) across passes, and axe-core (Deque Systems) automated WCAG 2.1 AA verification. Deterministic fixes applied for color contrast, heading hierarchy, table structure, and landmark regions.</p>
@@ -17042,7 +17047,7 @@ tr { page-break-inside: avoid; }
         </div>
         <div style="font-size:14px;color:${(fr.afterScore - fr.beforeScore) >= 0 ? '#16a34a' : '#dc2626'};font-weight:700">${(fr.afterScore - fr.beforeScore) >= 0 ? '+' : ''}${fr.afterScore - fr.beforeScore} points</div>` : ''}
       </div>
-      ${blendOk ? `<p style="font-size:12px;color:#475569;margin:0">Composite score blends the AI rubric (${aiOnly}) with the more conservative deterministic engine — axe-core / IBM Equal Access (${axeOnly}) — at 50/50.</p>` : '<p style="font-size:12px;color:#475569;margin:0">Score derived from AI rubric only.</p>'}
+      ${blendOk ? `<p style="font-size:12px;color:#475569;margin:0">Headline is the <strong>weakest-layer score</strong> — the LOWER (more conservative) of the AI rubric (${aiOnly}) and the deterministic engine (axe-core / IBM Equal Access, ${axeOnly}). The weakest layer governs, so neither engine's high score can mask the other's low one.</p>` : '<p style="font-size:12px;color:#475569;margin:0">Score derived from the AI rubric only (the deterministic engine did not return a score for these bytes).</p>'}
     `;
 
     // PDF/UA Validation section — the INDEPENDENT veraPDF (ISO 14289-1) verdict on the SHIPPED bytes,

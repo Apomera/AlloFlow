@@ -3326,11 +3326,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
   <h2>Compliance Summary</h2>
   <div style="background:#1e293b;border-radius:12px;padding:20px;border:1px solid #334155">
     <p style="font-size:13px;line-height:1.8;color:#cbd5e1">
-      Of <strong>${queue.length}</strong> documents analyzed, <strong>${excellent.length}</strong> (${done.length > 0 ? Math.round(excellent.length/done.length*100) : 0}%) meet WCAG 2.1 Level AA compliance (score ≥ 90).
-      ${good.length > 0 ? '<strong>' + good.length + '</strong> document' + (good.length > 1 ? 's are' : ' is') + ' partially compliant (70-89) and may meet requirements with minor additional remediation.' : ''}
-      ${needsWork.length > 0 ? '<strong>' + needsWork.length + '</strong> document' + (needsWork.length > 1 ? 's require' : ' requires') + ' significant remediation or expert review to meet compliance standards.' : ''}
+      Of <strong>${queue.length}</strong> documents analyzed, <strong>${excellent.length}</strong> (${done.length > 0 ? Math.round(excellent.length/done.length*100) : 0}%) scored <strong>≥ 90 on AlloFlow's content audit</strong> (a WCAG 2.1 AA-oriented heuristic run on the remediated HTML reconstruction).
+      ${good.length > 0 ? '<strong>' + good.length + '</strong> document' + (good.length > 1 ? 's' : '') + ' scored 70-89 and may meet requirements with minor additional remediation.' : ''}
+      ${needsWork.length > 0 ? '<strong>' + needsWork.length + '</strong> document' + (needsWork.length > 1 ? 's' : '') + ' scored below 70 and require significant remediation or expert review.' : ''}
     </p>
-    <p style="font-size:11px;color:#64748b;margin-top:12px">Standards: WCAG 2.1 Level AA · ADA Title II (28 CFR Part 35 Subpart H) · Section 508 · EN 301 549</p>
+    <p style="font-size:11px;color:#fbbf24;margin-top:12px;line-height:1.6">⚠ The content-audit score is <strong>not</strong> an ISO 14289-1 (PDF/UA) conformance verdict for the exported tagged PDFs — it measures the HTML/text content, not the shipped PDF bytes. Validate exported PDFs in veraPDF / PAC (and confirm alt-text quality and reading order by hand) before claiming compliance for filing.</p>
+    <p style="font-size:11px;color:#64748b;margin-top:12px">Standards referenced: WCAG 2.1 Level AA · ADA Title II (28 CFR Part 35 Subpart H) · Section 508 · EN 301 549</p>
     <p style="font-size:11px;color:#64748b">Methodology: AI multi-pass review (one model, varied prompts) + axe-core (Deque) automated verification · 39 deterministic fixes + 17 surgical AI-diagnosed fixes + iterative AI remediation loop</p>
   </div>
 </div>
@@ -12667,7 +12668,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 </div>
               </details>
 
-              {/* Accessibility Compliance Statement */}
+              {/* Accessibility Statement (features applied — not a certified conformance claim) */}
               <button onClick={() => {
                 const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
                 const existing = doc.getElementById('a11y-compliance-statement');
@@ -12686,13 +12687,13 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
                     <span style="font-size:24px">♿</span>
                     <div>
-                      <div style="font-weight:800;font-size:14px;color:#312e81">Accessibility Compliance Statement</div>
-                      <div style="font-size:11px;color:#6366f1">WCAG 2.1 Level AA · ADA Title II · Section 508</div>
+                      <div style="font-weight:800;font-size:14px;color:#312e81">Accessibility Statement</div>
+                      <div style="font-size:11px;color:#6366f1">Built toward WCAG 2.1 Level AA · ADA Title II · Section 508 (features applied — not an independent conformance audit)</div>
                     </div>
                   </div>
                   <p style="font-size:12px;color:#374151;line-height:1.6;margin-bottom:12px">
                     This document was created with accessibility as a core design principle using AlloFlow's
-                    WCAG-compliant document pipeline. The following accessibility measures have been applied:
+                    accessibility-focused document pipeline. The following accessibility measures have been applied:
                   </p>
                   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
                     <div style="background:white;padding:8px 12px;border-radius:6px;border:1px solid #e0e7ff;font-size:11px">
@@ -12710,11 +12711,12 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   </div>
                   <ul style="font-size:11px;color:#374151;line-height:1.8;padding-left:20px;margin:0 0 12px">
                     <li>Semantic HTML structure with proper heading hierarchy</li>
-                    <li>Color contrast ratios meeting WCAG 2.1 AA (4.5:1 minimum)</li>
+                    <li>Color contrast targeted to WCAG 2.1 AA (4.5:1 minimum)</li>
                     <li>Screen reader compatible with ARIA landmarks where appropriate</li>
                     <li>Keyboard navigable content structure</li>
                     <li>Print-optimized layout preserving reading order</li>
                   </ul>
+                  <p style="font-size:10px;color:#64748b;line-height:1.6;margin:0 0 10px;font-style:italic">This lists accessibility features applied during authoring — it is not an independently validated WCAG, ADA, Section 508, or PDF/UA conformance audit. Validate the exported PDF in veraPDF / PAC, and confirm alt-text quality and reading order by hand, before relying on it for legal compliance.</p>
                   <div style="font-size:10px;color:#6366f1;border-top:1px solid #c7d2fe;padding-top:8px;display:flex;justify-content:space-between">
                     <span>Generated: ${date}</span>
                     <span>AlloFlow Document Pipeline v2.0</span>
@@ -12723,7 +12725,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 (doc.querySelector('main') || doc.body).appendChild(stmt);
                 addToast(t('toasts.accessibility_compliance_statement_added'), 'success');
               }} className="w-full text-[11px] font-bold text-slate-600 py-2 bg-white border border-slate-400 rounded-lg hover:bg-violet-50 hover:text-violet-700 transition-colors flex items-center justify-center gap-1.5">
-                ♿ Insert Compliance Statement
+                ♿ Insert Accessibility Statement
               </button>
 
               {/* Auto Table of Contents */}
