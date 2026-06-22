@@ -77,6 +77,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
     tags: ['swim', 'swimming', 'stroke-physics', 'buoyancy', 'survival-swim', 'cold-water', 'rip-currents', 'ice-safety', 'pfd', 'autism-water', 'maine', 'life-skills'],
 
     render: function(ctx) {
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       try {
       var React = ctx.React;
       var h = React.createElement;
@@ -187,21 +188,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
 
       // ── Persistent emergency banner ──
       function emergencyBanner() {
-        return h('div', { role: 'region', 'aria-label': 'Emergency reminder',
+        return h('div', { role: 'region', 'aria-label': __alloT('stem.swimlab.emergency_reminder', 'Emergency reminder'),
           style: { margin: '0 0 14px', padding: '10px 14px', borderRadius: 10, background: '#7f1d1d', border: '1px solid #dc2626', color: '#fde2e2', fontSize: 13, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' } },
           h('span', { 'aria-hidden': 'true' }, '🚑'),
           h('span', null,
-            h('strong', null, 'In a real emergency: call 911'),
-            ' — in Maine you can text 911. This tool is educational only and does not teach swimming.')
+            h('strong', null, __alloT('stem.swimlab.in_a_real_emergency_call_911', 'In a real emergency: call 911')),
+            __alloT('stem.swimlab.in_maine_you_can_text_911_this_tool_is', ' — in Maine you can text 911. This tool is educational only and does not teach swimming.'))
         );
       }
 
       function disclaimerFooter() {
-        return h('div', { role: 'contentinfo', 'aria-label': 'Educational disclaimer',
+        return h('div', { role: 'contentinfo', 'aria-label': __alloT('stem.swimlab.educational_disclaimer', 'Educational disclaimer'),
           style: { marginTop: 18, padding: '10px 14px', borderRadius: 8, background: T.cardAlt, border: '1px dashed ' + T.border, color: T.dim, fontSize: 11, textAlign: 'center', lineHeight: 1.55 } },
-          'Educational only. To learn to swim, find a certified Water Safety Instructor at ',
-          h('a', { href: 'https://www.redcross.org/take-a-class/swimming', target: '_blank', rel: 'noopener', style: { color: T.link } }, 'Red Cross'),
-          ' or your local YMCA. Real emergencies → ',
+          __alloT('stem.swimlab.educational_only_to_learn_to_swim_find', 'Educational only. To learn to swim, find a certified Water Safety Instructor at '),
+          h('a', { href: 'https://www.redcross.org/take-a-class/swimming', target: '_blank', rel: 'noopener', style: { color: T.link } }, __alloT('stem.swimlab.red_cross', 'Red Cross')),
+          __alloT('stem.swimlab.or_your_local_ymca_real_emergencies', ' or your local YMCA. Real emergencies → '),
           h('strong', { style: { color: T.accentHi } }, '911'),
           '.'
         );
@@ -212,51 +213,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
       // ─────────────────────────────────────────
       function renderConsent() {
         return h('div', { style: { padding: 24, maxWidth: 760, margin: '0 auto', color: T.text } },
-          h('div', { role: 'region', 'aria-label': 'SwimLab consent and educational scope',
+          h('div', { role: 'region', 'aria-label': __alloT('stem.swimlab.swimlab_consent_and_educational_scope', 'SwimLab consent and educational scope'),
             style: { background: '#082f49', border: '1px solid ' + T.water, borderRadius: 14, padding: 24 } },
             h('h2', { style: { margin: '0 0 12px', fontSize: 22, color: T.accentHi } },
-              '🛟 SwimLab is an EDUCATIONAL tool.'),
+              __alloT('stem.swimlab.swimlab_is_an_educational_tool', '🛟 SwimLab is an EDUCATIONAL tool.')),
             h('p', { style: { margin: '0 0 12px', lineHeight: 1.55 } },
-              'It teaches you to ',
+              __alloT('stem.swimlab.it_teaches_you_to', 'It teaches you to '),
               h('strong', null, 'recognize'),
-              ' water hazards, ',
+              __alloT('stem.swimlab.water_hazards', ' water hazards, '),
               h('strong', null, 'respond'),
-              ' to aquatic emergencies, and reduce drowning risk. It is ',
+              __alloT('stem.swimlab.to_aquatic_emergencies_and_reduce_drow', ' to aquatic emergencies, and reduce drowning risk. It is '),
               h('strong', null, 'NOT'),
-              ' a way to learn how to swim. Watching a screen cannot teach you to float, breathe, or move through water. Those skills only come from time in the water with a qualified instructor.'),
+              __alloT('stem.swimlab.a_way_to_learn_how_to_swim_watching_a_', ' a way to learn how to swim. Watching a screen cannot teach you to float, breathe, or move through water. Those skills only come from time in the water with a qualified instructor.')),
             h('p', { style: { margin: '0 0 12px', lineHeight: 1.55 } },
-              'To learn to swim or get certified, find a Water Safety Instructor (WSI) at the ',
-              h('a', { href: 'https://www.redcross.org/take-a-class/swimming', target: '_blank', rel: 'noopener', style: { color: T.accentHi, fontWeight: 700 } }, 'American Red Cross'),
-              ', your local ',
+              __alloT('stem.swimlab.to_learn_to_swim_or_get_certified_find', 'To learn to swim or get certified, find a Water Safety Instructor (WSI) at the '),
+              h('a', { href: 'https://www.redcross.org/take-a-class/swimming', target: '_blank', rel: 'noopener', style: { color: T.accentHi, fontWeight: 700 } }, __alloT('stem.swimlab.american_red_cross', 'American Red Cross')),
+              __alloT('stem.swimlab.your_local', ', your local '),
               h('a', { href: 'https://www.ymca.org/what-we-do/healthy-living/swimming-aquatics', target: '_blank', rel: 'noopener', style: { color: T.accentHi, fontWeight: 700 } }, 'YMCA'),
-              ', or community pool. The ',
-              h('a', { href: 'https://www.usaswimming.org/foundation', target: '_blank', rel: 'noopener', style: { color: T.accentHi, fontWeight: 700 } }, 'USA Swimming Foundation'),
-              ' offers scholarships for families who cannot afford lessons.'),
+              __alloT('stem.swimlab.or_community_pool_the', ', or community pool. The '),
+              h('a', { href: 'https://www.usaswimming.org/foundation', target: '_blank', rel: 'noopener', style: { color: T.accentHi, fontWeight: 700 } }, __alloT('stem.swimlab.usa_swimming_foundation', 'USA Swimming Foundation')),
+              __alloT('stem.swimlab.offers_scholarships_for_families_who_c', ' offers scholarships for families who cannot afford lessons.')),
             h('div', { style: { background: '#7c2d12', border: '1px solid #c2410c', borderRadius: 8, padding: 12, margin: '14px 0', color: '#fed7aa' } },
-              h('strong', null, '⚠️ Content note: '),
-              'This tool talks about drowning, near-drowning, and cold water emergencies. The content is matter-of-fact, not graphic, but the topic is serious. If you have lost someone to a water emergency, this material may bring difficult feelings up. You can step away at any point.'),
+              h('strong', null, __alloT('stem.swimlab.content_note', '⚠️ Content note: ')),
+              __alloT('stem.swimlab.this_tool_talks_about_drowning_near_dr', 'This tool talks about drowning, near-drowning, and cold water emergencies. The content is matter-of-fact, not graphic, but the topic is serious. If you have lost someone to a water emergency, this material may bring difficult feelings up. You can step away at any point.')),
             h('p', { style: { margin: '0 0 12px', lineHeight: 1.55 } },
-              h('strong', null, 'In a real emergency, call 911.'),
-              ' In Maine, you can ',
-              h('strong', null, 'text 911'),
-              ' if you cannot speak.'),
+              h('strong', null, __alloT('stem.swimlab.in_a_real_emergency_call_911_2', 'In a real emergency, call 911.')),
+              __alloT('stem.swimlab.in_maine_you_can', ' In Maine, you can '),
+              h('strong', null, __alloT('stem.swimlab.text_911', 'text 911')),
+              __alloT('stem.swimlab.if_you_cannot_speak', ' if you cannot speak.')),
             h('div', { style: { margin: '16px 0', padding: '12px 14px', borderLeft: '3px solid ' + T.accent, background: 'rgba(14,165,233,0.06)', fontSize: 13, fontStyle: 'italic', color: T.muted, lineHeight: 1.55 } },
-              '"Whoever saves a single soul, scripture considers it as if they saved an entire world."',
+              __alloT('stem.swimlab.whoever_saves_a_single_soul_scripture_', '"Whoever saves a single soul, scripture considers it as if they saved an entire world."'),
               h('br'),
-              h('span', { style: { fontSize: 11, color: T.dim, fontStyle: 'normal' } }, '— Mishnah Sanhedrin 4:5 (Pirkei Avot)')
+              h('span', { style: { fontSize: 11, color: T.dim, fontStyle: 'normal' } }, __alloT('stem.swimlab.mishnah_sanhedrin_4_5_pirkei_avot', '— Mishnah Sanhedrin 4:5 (Pirkei Avot)'))
             ),
             h('button', {
-              'aria-label': 'I understand. Show me the lab.',
+              'aria-label': __alloT('stem.swimlab.i_understand_show_me_the_lab', 'I understand. Show me the lab.'),
               onClick: function() {
                 updMulti({ consentAccepted: true, consentDate: new Date().toISOString(), view: 'menu' });
                 awardBadge('swimlab_starter', 'SwimLab Starter');
                 wsAnnounce('Consent accepted. Welcome to SwimLab.');
               },
               style: { padding: '12px 22px', borderRadius: 10, border: 'none', background: T.accent, color: '#0c2233', fontSize: 15, fontWeight: 700, cursor: 'pointer' }
-            }, 'I understand — show me the lab')
+            }, __alloT('stem.swimlab.i_understand_show_me_the_lab_2', 'I understand — show me the lab'))
           ),
           h('p', { style: { marginTop: 14, fontSize: 12, color: T.dim, fontStyle: 'italic' } },
-            'Acknowledging this screen is a one-time gate. Your acknowledgment is saved with your profile so you do not see it again.')
+            __alloT('stem.swimlab.acknowledging_this_screen_is_a_one_tim', 'Acknowledging this screen is a one-time gate. Your acknowledgment is saved with your profile so you do not see it again.'))
         );
       }
 
@@ -267,17 +268,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
         return h('div', { className: 'swimlab-back-bar', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
           h('button', {
             className: 'swimlab-no-print',
-            'aria-label': 'Back to SwimLab menu',
+            'aria-label': __alloT('stem.swimlab.back_to_swimlab_menu', 'Back to SwimLab menu'),
             onClick: function() { upd('view', 'menu'); wsAnnounce('Back to menu'); },
             style: btn({ padding: '6px 12px', fontSize: 12 })
-          }, '← Menu'),
+          }, __alloT('stem.swimlab.menu', '← Menu')),
           h('h2', { style: { margin: 0, fontSize: 18, color: T.text, flex: 1 } }, title),
           h('button', {
             className: 'swimlab-no-print',
-            'aria-label': 'Print this module as a classroom handout',
+            'aria-label': __alloT('stem.swimlab.print_this_module_as_a_classroom_hando', 'Print this module as a classroom handout'),
             onClick: function() { try { window.print(); } catch (_) {} },
             style: btn({ padding: '6px 12px', fontSize: 12 })
-          }, '🖨️ Print')
+          }, __alloT('stem.swimlab.print', '🖨️ Print'))
         );
       }
 
@@ -293,30 +294,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
       // would-be rescuer death data). Order within section is the order shown.
       var MENU_TILES = [
         // Start Here — life-saving fundamentals
-        { id: 'coldShock',    icon: '🥶', label: 'Cold Water Survival',         section: 'start',     desc: 'The gasp reflex, the mammalian dive response, and the 1-1-10 timeline that beats panic.', ready: true },
-        { id: 'pfd',          icon: '🦺', label: 'Why Life Jackets Work',       section: 'start',     desc: 'The physics of buoyancy. Five PFD types. Fit check that actually works. The 86% statistic.', ready: true },
-        { id: 'reachThrow',   icon: '🪢', label: 'Help Without Drowning Yourself', section: 'start',  desc: 'Reach / Throw / Row / Don\'t Go. Why untrained rescuers die. Bystander effect cuts.', ready: true },
+        { id: 'coldShock',    icon: '🥶', label: __alloT('stem.swimlab.cold_water_survival', 'Cold Water Survival'),         section: 'start',     desc: __alloT('stem.swimlab.the_gasp_reflex_the_mammalian_dive_res', 'The gasp reflex, the mammalian dive response, and the 1-1-10 timeline that beats panic.'), ready: true },
+        { id: 'pfd',          icon: '🦺', label: __alloT('stem.swimlab.why_life_jackets_work', 'Why Life Jackets Work'),       section: 'start',     desc: __alloT('stem.swimlab.the_physics_of_buoyancy_five_pfd_types', 'The physics of buoyancy. Five PFD types. Fit check that actually works. The 86% statistic.'), ready: true },
+        { id: 'reachThrow',   icon: '🪢', label: __alloT('stem.swimlab.help_without_drowning_yourself', 'Help Without Drowning Yourself'), section: 'start',  desc: __alloT('stem.swimlab.reach_throw_row_don_t_go_why_untrained', 'Reach / Throw / Row / Don\'t Go. Why untrained rescuers die. Bystander effect cuts.'), ready: true },
         // Modules — the deeper content
-        { id: 'howSwimming',  icon: '🏊', label: 'How Swimming Works',          section: 'modules',   desc: 'The physics of every major stroke, plus the survival skills (back float, eggbeater, HELP, huddle) that actually save lives.', ready: true },
-        { id: 'ripCurrents',  icon: '🌊', label: 'Rip Currents',                section: 'modules',   desc: 'Spot them from shore. The parallel-to-shore escape. Why fighting the current kills.', ready: true },
-        { id: 'iceSafety',    icon: '🧊', label: 'Falling Through Ice',         section: 'modules',   desc: 'The swim-and-roll self-rescue. Picks of Life. Maine ice color cues. Snowmobile through-ice.', ready: true },
-        { id: 'hypothermia',  icon: '🌡️', label: 'Cold Body, Cold Brain',       section: 'modules',   desc: 'How the body fails in cold. The UMBLES rule. What NOT to do. Why "not dead until warm and dead."', ready: true },
-        { id: 'drainEntrap',  icon: '🌀', label: 'Pool Drain Risks',            section: 'modules',   desc: 'The Virginia Graeme Baker Act. Five entrapment types. The emergency shut-off.', ready: true },
-        { id: 'autismWater',  icon: '♾️', label: 'Autism + Water',              section: 'modules',   desc: 'The 160x drowning risk. Defense-in-depth prevention. Adapted swim instruction. Swimsuit color visibility.', ready: true },
+        { id: 'howSwimming',  icon: '🏊', label: __alloT('stem.swimlab.how_swimming_works', 'How Swimming Works'),          section: 'modules',   desc: __alloT('stem.swimlab.the_physics_of_every_major_stroke_plus', 'The physics of every major stroke, plus the survival skills (back float, eggbeater, HELP, huddle) that actually save lives.'), ready: true },
+        { id: 'ripCurrents',  icon: '🌊', label: __alloT('stem.swimlab.rip_currents', 'Rip Currents'),                section: 'modules',   desc: __alloT('stem.swimlab.spot_them_from_shore_the_parallel_to_s', 'Spot them from shore. The parallel-to-shore escape. Why fighting the current kills.'), ready: true },
+        { id: 'iceSafety',    icon: '🧊', label: __alloT('stem.swimlab.falling_through_ice', 'Falling Through Ice'),         section: 'modules',   desc: __alloT('stem.swimlab.the_swim_and_roll_self_rescue_picks_of', 'The swim-and-roll self-rescue. Picks of Life. Maine ice color cues. Snowmobile through-ice.'), ready: true },
+        { id: 'hypothermia',  icon: '🌡️', label: __alloT('stem.swimlab.cold_body_cold_brain', 'Cold Body, Cold Brain'),       section: 'modules',   desc: __alloT('stem.swimlab.how_the_body_fails_in_cold_the_umbles_', 'How the body fails in cold. The UMBLES rule. What NOT to do. Why "not dead until warm and dead."'), ready: true },
+        { id: 'drainEntrap',  icon: '🌀', label: __alloT('stem.swimlab.pool_drain_risks', 'Pool Drain Risks'),            section: 'modules',   desc: __alloT('stem.swimlab.the_virginia_graeme_baker_act_five_ent', 'The Virginia Graeme Baker Act. Five entrapment types. The emergency shut-off.'), ready: true },
+        { id: 'autismWater',  icon: '♾️', label: __alloT('stem.swimlab.autism_water', 'Autism + Water'),              section: 'modules',   desc: __alloT('stem.swimlab.the_160x_drowning_risk_defense_in_dept', 'The 160x drowning risk. Defense-in-depth prevention. Adapted swim instruction. Swimsuit color visibility.'), ready: true },
         // Practice
-        { id: 'cumulative',   icon: '🎯', label: 'Cumulative Quiz',             section: 'practice',  desc: '15 questions across all nine modules. Missed answers link you straight back to the module you need to review.', ready: true },
-        { id: 'askLifeguard', icon: '🤖', label: 'Ask the Lifeguard (AI)',      section: 'practice',  desc: 'Type a swimming or water question; AI returns a sourced answer. Educational only.', ready: true },
+        { id: 'cumulative',   icon: '🎯', label: __alloT('stem.swimlab.cumulative_quiz', 'Cumulative Quiz'),             section: 'practice',  desc: __alloT('stem.swimlab.15_questions_across_all_nine_modules_m', '15 questions across all nine modules. Missed answers link you straight back to the module you need to review.'), ready: true },
+        { id: 'askLifeguard', icon: '🤖', label: __alloT('stem.swimlab.ask_the_lifeguard_ai', 'Ask the Lifeguard (AI)'),      section: 'practice',  desc: __alloT('stem.swimlab.type_a_swimming_or_water_question_ai_r', 'Type a swimming or water question; AI returns a sourced answer. Educational only.'), ready: true },
         // Resources
-        { id: 'resources',    icon: '📚', label: 'Resources',                   section: 'resources', desc: 'Every org cited in this tool, plus adaptive swim programs and Maine-specific links.', ready: true }
+        { id: 'resources',    icon: '📚', label: __alloT('stem.swimlab.resources', 'Resources'),                   section: 'resources', desc: __alloT('stem.swimlab.every_org_cited_in_this_tool_plus_adap', 'Every org cited in this tool, plus adaptive swim programs and Maine-specific links.'), ready: true }
       ];
 
       // Section metadata. Order in this array is render order. The "start"
       // section gets a heavier treatment to draw the eye for first-time users.
       var MENU_SECTIONS = [
-        { id: 'start',     label: 'Start here',        emoji: '🆘', blurb: 'If you only do three modules, do these. Each one addresses the cause of a large share of real US drowning deaths.', accent: T.danger, emphasized: true },
-        { id: 'modules',   label: 'Modules',           emoji: '📖', blurb: 'The full lab. Take them in any order, or follow the cumulative quiz back to whichever ones you want to revisit.', accent: T.accent },
-        { id: 'practice',  label: 'Practice and ask',  emoji: '🎯', blurb: 'Test your understanding, or ask the AI lifeguard a sourced question.', accent: T.accent },
-        { id: 'resources', label: 'Resources',         emoji: '📚', blurb: 'Where to learn to actually swim, find an adaptive program, or look up the source on any cited claim.', accent: T.accent }
+        { id: 'start',     label: __alloT('stem.swimlab.start_here', 'Start here'),        emoji: '🆘', blurb: 'If you only do three modules, do these. Each one addresses the cause of a large share of real US drowning deaths.', accent: T.danger, emphasized: true },
+        { id: 'modules',   label: __alloT('stem.swimlab.modules', 'Modules'),           emoji: '📖', blurb: 'The full lab. Take them in any order, or follow the cumulative quiz back to whichever ones you want to revisit.', accent: T.accent },
+        { id: 'practice',  label: __alloT('stem.swimlab.practice_and_ask', 'Practice and ask'),  emoji: '🎯', blurb: 'Test your understanding, or ask the AI lifeguard a sourced question.', accent: T.accent },
+        { id: 'resources', label: __alloT('stem.swimlab.resources_2', 'Resources'),         emoji: '📚', blurb: 'Where to learn to actually swim, find an adaptive program, or look up the source on any cited claim.', accent: T.accent }
       ];
 
       function renderMenu() {
@@ -353,15 +354,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
         }
         return h('div', { style: { padding: 20, maxWidth: 980, margin: '0 auto', color: T.text } },
           h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 8 } },
-            h('h2', { style: { margin: 0, fontSize: 22 } }, '🏊 SwimLab'),
+            h('h2', { style: { margin: 0, fontSize: 22 } }, __alloT('stem.swimlab.swimlab', '🏊 SwimLab')),
             h('span', { style: { fontSize: 12, color: T.dim },
               'aria-label': 'Modules visited: ' + Math.min(visitedCount, totalModules) + ' of ' + totalModules },
               'Modules: ', h('strong', { style: { color: T.text } }, Math.min(visitedCount, totalModules) + ' / ' + totalModules))
           ),
           h('p', { style: { margin: '0 0 18px', color: T.muted, fontSize: 14, lineHeight: 1.55 } },
-            'The science of swimming and the survival skills that go with it. The ',
-            h('strong', { style: { color: T.text } }, 'Start here'),
-            ' lane is the three modules most likely to actually save a life if you only do three. Every module is sourced inline.'),
+            __alloT('stem.swimlab.the_science_of_swimming_and_the_surviv', 'The science of swimming and the survival skills that go with it. The '),
+            h('strong', { style: { color: T.text } }, __alloT('stem.swimlab.start_here_2', 'Start here')),
+            __alloT('stem.swimlab.lane_is_the_three_modules_most_likely_', ' lane is the three modules most likely to actually save a life if you only do three. Every module is sourced inline.')),
           MENU_SECTIONS.map(function(sec) {
             var sectionTiles = MENU_TILES.filter(function(t) { return t.section === sec.id; });
             if (sectionTiles.length === 0) return null;
@@ -388,7 +389,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           }),
           // Badge tray
           Object.keys(badges).length > 0 && h('div', { style: { marginTop: 18, padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border } },
-            h('div', { style: { fontSize: 12, fontWeight: 700, color: T.muted, marginBottom: 6 } }, '🏅 Badges earned'),
+            h('div', { style: { fontSize: 12, fontWeight: 700, color: T.muted, marginBottom: 6 } }, __alloT('stem.swimlab.badges_earned', '🏅 Badges earned')),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
               Object.keys(badges).map(function(bid) {
                 return h('span', { key: bid,
@@ -399,9 +400,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           ),
           // Why this tool exists, treated lightly
           h('div', { style: { marginTop: 22, padding: '14px 16px', borderLeft: '3px solid ' + T.accent, background: 'rgba(14,165,233,0.06)', fontSize: 13, fontStyle: 'italic', color: T.muted, lineHeight: 1.6 } },
-            '"Whoever saves a single soul, scripture considers it as if they saved an entire world."',
+            __alloT('stem.swimlab.whoever_saves_a_single_soul_scripture__2', '"Whoever saves a single soul, scripture considers it as if they saved an entire world."'),
             h('br'),
-            h('span', { style: { fontSize: 11, color: T.dim, fontStyle: 'normal' } }, '— Mishnah Sanhedrin 4:5 (Pirkei Avot)')
+            h('span', { style: { fontSize: 11, color: T.dim, fontStyle: 'normal' } }, __alloT('stem.swimlab.mishnah_sanhedrin_4_5_pirkei_avot_2', '— Mishnah Sanhedrin 4:5 (Pirkei Avot)'))
           ),
           disclaimerFooter()
         );
@@ -469,12 +470,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
             h('div', { style: { fontSize: 12, color: localState.choice === scenario.correct ? T.ok : T.warn, marginBottom: 8 } },
               localState.choice === scenario.correct ? '✓ Correct.' : '✗ Reconsider — see why below.'),
             h('p', { style: { margin: '0 0 6px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-              h('strong', null, 'Right answer: '),
+              h('strong', null, __alloT('stem.swimlab.right_answer', 'Right answer: ')),
               scenario.choices[scenario.correct]),
             h('p', { style: { margin: '0 0 6px', color: T.muted, fontSize: 12, lineHeight: 1.55 } }, scenario.explain),
             h('button', {
               onClick: function() { setLocalState(null); },
-              style: btn({ padding: '6px 10px', fontSize: 11, marginTop: 6 }) }, 'Try again')
+              style: btn({ padding: '6px 10px', fontSize: 11, marginTop: 6 }) }, __alloT('stem.swimlab.try_again', 'Try again'))
           )
         );
       }
@@ -503,7 +504,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
               pct >= 80 ? '🏅 Mastery' : '📖 Review recommended'),
             h('p', { style: { margin: 0, color: T.text, fontSize: 13 } },
               'Score: ', h('strong', null, correct + ' / ' + questions.length + ' (' + pct + '%)')),
-            h('button', { onClick: function() { setQIdx(0); setResults({}); }, style: btn({ marginTop: 10, padding: '6px 12px', fontSize: 12 }) }, 'Retry')
+            h('button', { onClick: function() { setQIdx(0); setResults({}); }, style: btn({ marginTop: 10, padding: '6px 12px', fontSize: 12 }) }, __alloT('stem.swimlab.retry', 'Retry'))
           );
         }
         var q = questions[qIdx];
@@ -544,7 +545,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
                 setResults(nr);
                 wsAnnounce('Question reset. Try again.');
               },
-              style: btn({ padding: '8px 14px', fontSize: 13 }) }, '↺ Try again'),
+              style: btn({ padding: '8px 14px', fontSize: 13 }) }, __alloT('stem.swimlab.try_again_2', '↺ Try again')),
             h('button', {
               onClick: function() { setQIdx(qIdx + 1); },
               style: btnPrimary({ padding: '8px 14px', fontSize: 13 }) },
@@ -555,7 +556,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
 
       function sourcesBlock(sources) {
         return h('div', { style: { marginTop: 14, padding: 12, background: T.cardAlt, border: '1px dashed ' + T.border, borderRadius: 8 } },
-          h('div', { style: { fontSize: 11, fontWeight: 700, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, '📖 Sources'),
+          h('div', { style: { fontSize: 11, fontWeight: 700, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, __alloT('stem.swimlab.sources', '📖 Sources')),
           h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 11, color: T.muted, lineHeight: 1.6 } },
             sources.map(function(src, i) {
               return h('li', { key: i },
@@ -581,21 +582,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           style: { background: '#3b2a08', border: '2px solid #d97706', borderRadius: 12, padding: 14, marginTop: 14 } },
           h('summary', {
             style: { cursor: 'pointer', fontSize: 13, fontWeight: 700, color: '#fed7aa', listStyle: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
-            'aria-label': 'Teacher Notes for this module'
+            'aria-label': __alloT('stem.swimlab.teacher_notes_for_this_module', 'Teacher Notes for this module')
           },
-            h('span', null, '🍎 Teacher Notes — click to expand'),
+            h('span', null, __alloT('stem.swimlab.teacher_notes_click_to_expand', '🍎 Teacher Notes — click to expand')),
             h('span', {
               className: 'swimlab-no-print',
               role: 'button', tabIndex: 0,
-              'aria-label': 'Print this module page',
+              'aria-label': __alloT('stem.swimlab.print_this_module_page', 'Print this module page'),
               onClick: function(e) { e.preventDefault(); e.stopPropagation(); try { window.print(); } catch (_) {} },
               onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); try { window.print(); } catch (_) {} } },
               style: { fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 6, background: '#fef3c7', color: '#7c2d12', border: '1px solid #d97706' }
-            }, '🖨️ Print')
+            }, __alloT('stem.swimlab.print_2', '🖨️ Print'))
           ),
           h('div', { style: { marginTop: 12, display: 'flex', flexDirection: 'column', gap: 12 } },
             props.standards && h('div', null,
-              h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, 'Aligned standards'),
+              h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, __alloT('stem.swimlab.aligned_standards', 'Aligned standards')),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
                 props.standards.map(function(s, i) {
                   return h('span', { key: i, style: { fontSize: 11, padding: '3px 8px', background: '#fef3c7', color: '#7c2d12', border: '1px solid #d97706', borderRadius: 6, fontFamily: 'ui-monospace, "SF Mono", Consolas, monospace', fontWeight: 600 } }, s);
@@ -603,13 +604,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
               )
             ),
             props.discussion && h('div', null,
-              h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, 'Discussion questions'),
+              h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, __alloT('stem.swimlab.discussion_questions', 'Discussion questions')),
               h('ol', { style: { margin: 0, paddingLeft: 20, fontSize: 13, color: '#fde68a', lineHeight: 1.65 } },
                 props.discussion.map(function(q, i) { return h('li', { key: i, style: { marginBottom: 4 } }, q); })
               )
             ),
             props.misconceptions && h('div', null,
-              h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, 'Common misconceptions'),
+              h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, __alloT('stem.swimlab.common_misconceptions', 'Common misconceptions')),
               h('ul', { style: { margin: 0, paddingLeft: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 } },
                 props.misconceptions.map(function(m, i) {
                   return h('li', { key: i, style: { fontSize: 13, color: '#fde68a', lineHeight: 1.55, display: 'flex', gap: 8, alignItems: 'flex-start' } },
@@ -624,7 +625,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
               )
             ),
             props.extension && h('div', null,
-              h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, 'Extension activity'),
+              h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, __alloT('stem.swimlab.extension_activity', 'Extension activity')),
               h('div', { style: { fontSize: 13, color: '#fde68a', fontStyle: 'italic', lineHeight: 1.55 } }, props.extension)
             )
           )
@@ -811,16 +812,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
             h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, opts.emoji),
             h('h4', { style: { margin: 0, fontSize: 16, fontWeight: 800, color: T.text } }, opts.name),
-            opts.survival && h('span', { style: { fontSize: 10, fontWeight: 700, padding: '2px 8px', background: '#14532d', color: '#bbf7d0', borderRadius: 999, border: '1px solid ' + T.ok } }, 'SURVIVAL SKILL')
+            opts.survival && h('span', { style: { fontSize: 10, fontWeight: 700, padding: '2px 8px', background: '#14532d', color: '#bbf7d0', borderRadius: 999, border: '1px solid ' + T.ok } }, __alloT('stem.swimlab.survival_skill', 'SURVIVAL SKILL'))
           ),
           h('p', { style: { margin: '0 0 10px', fontSize: 13, color: T.muted, lineHeight: 1.55 } }, opts.intro),
           opts.frames && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10, marginBottom: 10 } },
             opts.frames.map(function(fr, fi) { return h('div', { key: fi }, svgFrame(fr)); })
           ),
           h('div', { style: { fontSize: 12, color: T.text, lineHeight: 1.55, padding: '8px 10px', background: T.cardAlt, borderRadius: 6, marginBottom: 8 } },
-            h('strong', { style: { color: T.accentHi } }, '⚙ Physics: '), opts.physics),
+            h('strong', { style: { color: T.accentHi } }, __alloT('stem.swimlab.physics', '⚙ Physics: ')), opts.physics),
           h('div', { style: { fontSize: 12, color: T.text, lineHeight: 1.55, padding: '8px 10px', background: 'rgba(34,197,94,0.08)', borderRadius: 6, borderLeft: '3px solid ' + T.ok } },
-            h('strong', { style: { color: T.ok } }, '🎯 Key takeaway: '), opts.takeaway),
+            h('strong', { style: { color: T.ok } }, __alloT('stem.swimlab.key_takeaway', '🎯 Key takeaway: ')), opts.takeaway),
           opts.crossRef && h('div', { className: 'swimlab-no-print', style: { marginTop: 8, fontSize: 12, lineHeight: 1.5 } },
             h('button', {
               onClick: function() { upd('view', opts.crossRef.id); markVisited(opts.crossRef.id); wsAnnounce('Opening cross-referenced module'); },
@@ -837,8 +838,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
         // Survival skills (lead with these — they save lives)
         var survivalCards = [
           {
-            id: 'backFloat', emoji: '🛌', name: 'Back Float', survival: true,
-            intro: 'The single most life-saving skill in cold water. Lungs full of air make you naturally buoyant. Tilting the head back keeps the airway out of the water without effort. Costs no energy, can be held for hours, and beats panicking every single time.',
+            id: 'backFloat', emoji: '🛌', name: __alloT('stem.swimlab.back_float', 'Back Float'), survival: true,
+            intro: __alloT('stem.swimlab.the_single_most_life_saving_skill_in_c', 'The single most life-saving skill in cold water. Lungs full of air make you naturally buoyant. Tilting the head back keeps the airway out of the water without effort. Costs no energy, can be held for hours, and beats panicking every single time.'),
             frames: [
               {
                 phase: 'Float position',
@@ -850,18 +851,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
                   { type: 'line', x1: 75, y1: 50, x2: 85, y2: 45, color: '#fde68a', width: 2 }, // arms relaxed at sides
                 ],
                 arrows: [
-                  { x1: 80, y1: 70, x2: 80, y2: 56, color: '#22c55e', label: 'Buoyant force' }
+                  { x1: 80, y1: 70, x2: 80, y2: 56, color: '#22c55e', label: __alloT('stem.swimlab.buoyant_force', 'Buoyant force') }
                 ],
-                caption: 'Lungs full · head back · arms relaxed'
+                caption: __alloT('stem.swimlab.lungs_full_head_back_arms_relaxed', 'Lungs full · head back · arms relaxed')
               }
             ],
             physics: 'Archimedes\' principle: an object floats when displaced water weighs more than the object. Lung air is less dense than water, so a relaxed body with full lungs has average density just below 1.0 g/mL — barely positive buoyancy. Tilting the head back pivots the body around the chest (the buoyant center), which lifts the face out of the water without muscular effort.',
             takeaway: 'The first 60 seconds in cold water are about NOT fighting your body. Float on your back, tilt your head back, breathe through the gasp reflex. Then think about what comes next.',
-            crossRef: { id: 'coldShock', label: 'See why this is the #1 cold-water survival skill →' }
+            crossRef: { id: 'coldShock', label: __alloT('stem.swimlab.see_why_this_is_the_1_cold_water_survi', 'See why this is the #1 cold-water survival skill →') }
           },
           {
-            id: 'eggbeater', emoji: '🥚', name: 'Eggbeater Kick (Treading Water)',  survival: true,
-            intro: 'Used by water polo players, lifeguards, and anyone needing to stay vertical in deep water for a long time. Each leg traces a circle in the opposite direction, generating continuous upward thrust without the up-and-down bobbing of a flutter kick.',
+            id: 'eggbeater', emoji: '🥚', name: __alloT('stem.swimlab.eggbeater_kick_treading_water', 'Eggbeater Kick (Treading Water)'),  survival: true,
+            intro: __alloT('stem.swimlab.used_by_water_polo_players_lifeguards_', 'Used by water polo players, lifeguards, and anyone needing to stay vertical in deep water for a long time. Each leg traces a circle in the opposite direction, generating continuous upward thrust without the up-and-down bobbing of a flutter kick.'),
             frames: [
               {
                 phase: 'Right leg sweeps clockwise, left leg counter-clockwise',
@@ -877,17 +878,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
                 arrows: [
                   { x1: 70, y1: 68, x2: 75, y2: 80, color: '#fbbf24', label: '↻' },
                   { x1: 90, y1: 68, x2: 85, y2: 80, color: '#fbbf24', label: '↺' },
-                  { x1: 80, y1: 25, x2: 80, y2: 18, color: '#22c55e', label: 'Lift' }
+                  { x1: 80, y1: 25, x2: 80, y2: 18, color: '#22c55e', label: __alloT('stem.swimlab.lift', 'Lift') }
                 ],
-                caption: 'Counter-rotating legs · constant lift'
+                caption: __alloT('stem.swimlab.counter_rotating_legs_constant_lift', 'Counter-rotating legs · constant lift')
               }
             ],
             physics: 'Each leg sweep displaces water downward via drag. Newton\'s third law: the water pushes you up with equal force. By alternating directions, the two legs are always in different parts of their cycle, so net upward thrust is constant rather than pulsed (unlike a flutter kick where both legs work in phase). The energy efficiency of an eggbeater is roughly double that of a flutter kick for the same vertical-position task.',
             takeaway: 'When you need to stay vertical in deep water for a long time (treading until rescue, holding a victim above water), eggbeater is the sustainable choice. Flutter kicking exhausts you fast.'
           },
           {
-            id: 'help', emoji: '🤗', name: 'HELP Position (Heat Escape Lessening Posture)', survival: true,
-            intro: 'For solo cold-water survival while wearing a life jacket. Knees pulled to chest, arms crossed over chest, body curled. Reduces heat loss through the body\'s biggest blood-flow zones (groin, armpits, sides of chest).',
+            id: 'help', emoji: '🤗', name: __alloT('stem.swimlab.help_position_heat_escape_lessening_po', 'HELP Position (Heat Escape Lessening Posture)'), survival: true,
+            intro: __alloT('stem.swimlab.for_solo_cold_water_survival_while_wea', 'For solo cold-water survival while wearing a life jacket. Knees pulled to chest, arms crossed over chest, body curled. Reduces heat loss through the body\'s biggest blood-flow zones (groin, armpits, sides of chest).'),
             frames: [
               {
                 phase: 'HELP position (life jacket required)',
@@ -900,17 +901,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
                   { type: 'line', x1: 78, y1: 50, x2: 86, y2: 56, color: '#fde68a', width: 2 }, // arms crossed across chest
                 ],
                 arrows: [
-                  { x1: 105, y1: 45, x2: 96, y2: 50, color: '#dc2626', label: '−Heat loss' }
+                  { x1: 105, y1: 45, x2: 96, y2: 50, color: '#dc2626', label: __alloT('stem.swimlab.heat_loss', '−Heat loss') }
                 ],
-                caption: 'Knees up · arms crossed · groin/armpit closed off'
+                caption: __alloT('stem.swimlab.knees_up_arms_crossed_groin_armpit_clo', 'Knees up · arms crossed · groin/armpit closed off')
               }
             ],
             physics: 'About 50% of body heat loss in cold water is through the head, sides of the chest, groin, and armpits — areas with high blood flow near the surface. Curling the body closes off three of those four zones. Heat loss in HELP position drops by roughly 50% compared to swimming or treading. Survival time in 50°F water can extend from ~1 hour to ~2-3 hours with HELP + a life jacket.',
             takeaway: 'If you are alone in cold water with a life jacket and no immediate way out, get into HELP position. Conserve heat. Wait for rescue. Movement burns heat faster than it generates.'
           },
           {
-            id: 'huddle', emoji: '👥', name: 'Group Huddle', survival: true,
-            intro: 'Multiple people in cold water with life jackets cluster chest-to-chest, arms around each other. Children go in the middle. The group functions as a single warmer body and is much more visible to rescuers than scattered individuals.',
+            id: 'huddle', emoji: '👥', name: __alloT('stem.swimlab.group_huddle', 'Group Huddle'), survival: true,
+            intro: __alloT('stem.swimlab.multiple_people_in_cold_water_with_lif', 'Multiple people in cold water with life jackets cluster chest-to-chest, arms around each other. Children go in the middle. The group functions as a single warmer body and is much more visible to rescuers than scattered individuals.'),
             frames: [
               {
                 phase: '3 people huddled (top-down view)',
@@ -923,7 +924,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
                 arrows: [
                   { x1: 80, y1: 25, x2: 80, y2: 35, color: '#22c55e', label: '+Warmth' }
                 ],
-                caption: 'Adults around · children in middle · facing in'
+                caption: __alloT('stem.swimlab.adults_around_children_in_middle_facin', 'Adults around · children in middle · facing in')
               }
             ],
             physics: 'Multiple bodies share warmth at their points of contact (chest-to-chest). Combined surface area exposed to cold water drops per-person; combined visible silhouette to rescuers grows. Children placed in the center benefit most because they have higher surface-area-to-body-mass ratios and lose heat faster.',
@@ -934,8 +935,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
         // Competitive strokes (physics demos)
         var strokeCards = [
           {
-            id: 'freestyle', emoji: '🏊', name: 'Freestyle (Front Crawl)',
-            intro: 'The fastest stroke. Long-axis rotation: the body rolls 30-45° per arm cycle to reduce frontal cross-section and let the recovering arm clear the water. Bilateral breathing alternates breath sides every 3 strokes.',
+            id: 'freestyle', emoji: '🏊', name: __alloT('stem.swimlab.freestyle_front_crawl', 'Freestyle (Front Crawl)'),
+            intro: __alloT('stem.swimlab.the_fastest_stroke_long_axis_rotation_', 'The fastest stroke. Long-axis rotation: the body rolls 30-45° per arm cycle to reduce frontal cross-section and let the recovering arm clear the water. Bilateral breathing alternates breath sides every 3 strokes.'),
             frames: [
               {
                 phase: '1. Catch',
@@ -946,7 +947,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
                   { type: 'line', x1: 80, y1: 52, x2: 100, y2: 60, color: '#fde68a', width: 2 } // recovering arm under
                 ],
                 arrows: [{ x1: 50, y1: 45, x2: 50, y2: 55, color: '#fbbf24', label: '↓' }],
-                caption: 'Hand enters water · forearm sets vertical'
+                caption: __alloT('stem.swimlab.hand_enters_water_forearm_sets_vertica', 'Hand enters water · forearm sets vertical')
               },
               {
                 phase: '2. Pull',
@@ -955,8 +956,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
                   { type: 'circle', cx: 110, cy: 49, r: 4, color: '#fde68a' },
                   { type: 'line', x1: 60, y1: 50, x2: 70, y2: 60, color: '#fde68a', width: 2.5 } // arm pulling under body
                 ],
-                arrows: [{ x1: 70, y1: 60, x2: 95, y2: 60, color: '#22c55e', label: 'Thrust →' }],
-                caption: 'Arm pulls water back · body moves forward'
+                arrows: [{ x1: 70, y1: 60, x2: 95, y2: 60, color: '#22c55e', label: __alloT('stem.swimlab.thrust', 'Thrust →') }],
+                caption: __alloT('stem.swimlab.arm_pulls_water_back_body_moves_forwar', 'Arm pulls water back · body moves forward')
               },
               {
                 phase: '3. Push',
@@ -966,7 +967,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
                   { type: 'line', x1: 80, y1: 52, x2: 100, y2: 65, color: '#fde68a', width: 2.5 } // arm finishing push at hip
                 ],
                 arrows: [{ x1: 100, y1: 65, x2: 115, y2: 65, color: '#22c55e', label: '→' }],
-                caption: 'Hand pushes past hip · maximum thrust'
+                caption: __alloT('stem.swimlab.hand_pushes_past_hip_maximum_thrust', 'Hand pushes past hip · maximum thrust')
               },
               {
                 phase: '4. Recovery',
@@ -976,15 +977,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
                   { type: 'path', d: 'M105,50 Q90,30 70,38', color: '#fde68a', width: 2.5, fill: 'none' } // arm over water
                 ],
                 arrows: [],
-                caption: 'Arm over water · body rolls to opposite side'
+                caption: __alloT('stem.swimlab.arm_over_water_body_rolls_to_opposite_', 'Arm over water · body rolls to opposite side')
               }
             ],
             physics: 'Most propulsion comes from the PULL phase under the body (Newton\'s third law: pushing water backward propels you forward). Body roll reduces frontal drag — a flat body presents ~60% more cross-section to the water than a body rolled 30°. The "high elbow catch" lets the forearm act as a paddle through the most water; dropping the elbow loses propulsion.',
             takeaway: 'Freestyle speed comes from streamlining as much as from strength. Elite swimmers spend more energy on body position than on pulling harder.'
           },
           {
-            id: 'backstroke', emoji: '🛌', name: 'Backstroke',
-            intro: 'Freestyle inverted — same long-axis rotation, alternating arms, flutter kick. The single most important detail: head position. A neutral head with ears in the water and eyes up keeps the hips up and the body streamlined. Looking down sinks the hips and doubles drag.',
+            id: 'backstroke', emoji: '🛌', name: __alloT('stem.swimlab.backstroke', 'Backstroke'),
+            intro: __alloT('stem.swimlab.freestyle_inverted_same_long_axis_rota', 'Freestyle inverted — same long-axis rotation, alternating arms, flutter kick. The single most important detail: head position. A neutral head with ears in the water and eyes up keeps the hips up and the body streamlined. Looking down sinks the hips and doubles drag.'),
             frames: [
               {
                 phase: 'Pull phase (one arm under, one arm over)',
@@ -994,16 +995,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
                   { type: 'line', x1: 80, y1: 52, x2: 100, y2: 62, color: '#fde68a', width: 2.5 }, // arm pulling under
                   { type: 'path', d: 'M80,48 Q90,30 105,38', color: '#fde68a', width: 2.5, fill: 'none' } // arm over (recovery)
                 ],
-                arrows: [{ x1: 100, y1: 62, x2: 75, y2: 62, color: '#22c55e', label: '← thrust' }],
-                caption: 'Pinky enters first · S-shaped pull'
+                arrows: [{ x1: 100, y1: 62, x2: 75, y2: 62, color: '#22c55e', label: __alloT('stem.swimlab.thrust_2', '← thrust') }],
+                caption: __alloT('stem.swimlab.pinky_enters_first_s_shaped_pull', 'Pinky enters first · S-shaped pull')
               }
             ],
             physics: 'Same propulsion mechanics as freestyle but inverted. Head position is everything: tilting the chin to the chest sinks the hips, increasing wetted surface area and drag dramatically. Elite backstrokers keep their ears just below the surface and eyes pointed straight up.',
             takeaway: 'In any survival situation where you can swim on your back, keeping your head neutral (ears down, eyes up) makes the difference between making progress and exhausting yourself.'
           },
           {
-            id: 'breaststroke', emoji: '🐸', name: 'Breaststroke',
-            intro: 'The oldest competitive stroke and the slowest of the four. Symmetric arm pull and frog-kick legs separated by a long glide phase. Visible head out of water makes it good for staying oriented.',
+            id: 'breaststroke', emoji: '🐸', name: __alloT('stem.swimlab.breaststroke', 'Breaststroke'),
+            intro: __alloT('stem.swimlab.the_oldest_competitive_stroke_and_the_', 'The oldest competitive stroke and the slowest of the four. Symmetric arm pull and frog-kick legs separated by a long glide phase. Visible head out of water makes it good for staying oriented.'),
             frames: [
               {
                 phase: '1. Pull (heart-shaped sweep)',
@@ -1013,8 +1014,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
                   { type: 'path', d: 'M70,48 Q60,55 70,60', color: '#fde68a', width: 2.5, fill: 'none' },
                   { type: 'path', d: 'M70,48 Q60,55 70,60', color: '#fde68a', width: 2.5, fill: 'none', transform: 'translate(20 0) scale(-1 1) translate(-160 0)' }
                 ],
-                arrows: [{ x1: 50, y1: 60, x2: 70, y2: 55, color: '#22c55e', label: 'Pull' }],
-                caption: 'Arms sweep heart-shape · head lifts to breathe'
+                arrows: [{ x1: 50, y1: 60, x2: 70, y2: 55, color: '#22c55e', label: __alloT('stem.swimlab.pull', 'Pull') }],
+                caption: __alloT('stem.swimlab.arms_sweep_heart_shape_head_lifts_to_b', 'Arms sweep heart-shape · head lifts to breathe')
               },
               {
                 phase: '2. Kick + Glide',
@@ -1024,16 +1025,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
                   { type: 'line', x1: 110, y1: 50, x2: 122, y2: 47, color: '#fde68a', width: 2 },
                   { type: 'line', x1: 110, y1: 52, x2: 122, y2: 55, color: '#fde68a', width: 2 }
                 ],
-                arrows: [{ x1: 122, y1: 51, x2: 135, y2: 51, color: '#fbbf24', label: '↺ frog kick' }],
-                caption: 'Frog kick · long glide · streamlined'
+                arrows: [{ x1: 122, y1: 51, x2: 135, y2: 51, color: '#fbbf24', label: __alloT('stem.swimlab.frog_kick', '↺ frog kick') }],
+                caption: __alloT('stem.swimlab.frog_kick_long_glide_streamlined', 'Frog kick · long glide · streamlined')
               }
             ],
             physics: 'Propulsion is concentrated in two short pulses (the pull and the kick) separated by a long glide. Most of the cycle is spent in the glide, where the body decelerates from drag. Optimal breaststroke maximizes glide distance per kick — you propel hard, then minimize losses while coasting.',
             takeaway: 'Breaststroke is the easiest stroke to learn and the slowest to swim. The visible head makes it useful for situational awareness (looking around for boats, the shore, or a rescuer).'
           },
           {
-            id: 'butterfly', emoji: '🦋', name: 'Butterfly',
-            intro: 'The most physically demanding competitive stroke. Symmetric over-water arm recovery, dolphin kick (legs together undulating), and a body undulation that drives propulsion through the chest and hips.',
+            id: 'butterfly', emoji: '🦋', name: __alloT('stem.swimlab.butterfly', 'Butterfly'),
+            intro: __alloT('stem.swimlab.the_most_physically_demanding_competit', 'The most physically demanding competitive stroke. Symmetric over-water arm recovery, dolphin kick (legs together undulating), and a body undulation that drives propulsion through the chest and hips.'),
             frames: [
               {
                 phase: 'Body undulation (side view)',
@@ -1044,16 +1045,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
                   { type: 'line', x1: 60, y1: 48, x2: 70, y2: 35, color: '#fde68a', width: 2 }, // other arm
                   { type: 'line', x1: 120, y1: 55, x2: 130, y2: 60, color: '#fde68a', width: 2 } // feet
                 ],
-                arrows: [{ x1: 130, y1: 60, x2: 130, y2: 50, color: '#fbbf24', label: '↕ dolphin' }],
-                caption: 'Body undulates · arms recover symmetric · feet whip'
+                arrows: [{ x1: 130, y1: 60, x2: 130, y2: 50, color: '#fbbf24', label: __alloT('stem.swimlab.dolphin', '↕ dolphin') }],
+                caption: __alloT('stem.swimlab.body_undulates_arms_recover_symmetric_', 'Body undulates · arms recover symmetric · feet whip')
               }
             ],
             physics: 'The dolphin kick is a traveling wave from chest to feet. Each undulation pushes a packet of water backward (Newton\'s third law again), so propulsion is continuous through the kick rather than pulsed. The double-arm symmetric pull adds a powerful but brief thrust burst. Butterfly is fast but oxygen-expensive — most competitive butterflyers can only sustain it for ~50-100 meters at racing speed.',
             takeaway: 'Butterfly is the closest a human gets to dolphin-style swimming. The undulation IS the propulsion; the arms add to it but the wave through the body is the engine.'
           },
           {
-            id: 'sidestroke', emoji: '🚤', name: 'Sidestroke',
-            intro: 'Historically THE rescue stroke. One arm free for towing a victim, head above water, scissor kick, slow but sustainable. Not raced today but taught in lifeguard certification.',
+            id: 'sidestroke', emoji: '🚤', name: __alloT('stem.swimlab.sidestroke', 'Sidestroke'),
+            intro: __alloT('stem.swimlab.historically_the_rescue_stroke_one_arm', 'Historically THE rescue stroke. One arm free for towing a victim, head above water, scissor kick, slow but sustainable. Not raced today but taught in lifeguard certification.'),
             frames: [
               {
                 phase: 'Side position with scissor kick',
@@ -1065,8 +1066,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
                   { type: 'line', x1: 110, y1: 50, x2: 125, y2: 45, color: '#fde68a', width: 2 }, // top leg up
                   { type: 'line', x1: 110, y1: 52, x2: 125, y2: 60, color: '#fde68a', width: 2 } // bottom leg down
                 ],
-                arrows: [{ x1: 125, y1: 53, x2: 110, y2: 53, color: '#fbbf24', label: 'Scissor close' }],
-                caption: 'Side position · scissor kick · head out · one arm free'
+                arrows: [{ x1: 125, y1: 53, x2: 110, y2: 53, color: '#fbbf24', label: __alloT('stem.swimlab.scissor_close', 'Scissor close') }],
+                caption: __alloT('stem.swimlab.side_position_scissor_kick_head_out_on', 'Side position · scissor kick · head out · one arm free')
               }
             ],
             physics: 'Less efficient than freestyle but vastly more sustainable because the head stays out of water (no breathing rhythm to manage) and one arm can hold a victim or float. The scissor kick (open then snap closed) generates propulsion when the legs come back together — the closing motion accelerates a column of water rearward.',
@@ -1078,18 +1079,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           backBar('🏊 How Swimming Works'),
           emergencyBanner(),
           h('p', { style: { margin: '0 0 16px', color: T.muted, fontSize: 14, lineHeight: 1.55 } },
-            'Swimming is applied physics: buoyancy + propulsion + drag, modulated by body position. This module breaks each stroke into phases with the physics labeled, then explains the underlying forces. ',
-            h('strong', { style: { color: T.text } }, 'Reading this is not a substitute for swim instruction. '),
-            'You cannot learn to swim from a screen. Find a Water Safety Instructor at Red Cross or YMCA.'),
+            __alloT('stem.swimlab.swimming_is_applied_physics_buoyancy_p', 'Swimming is applied physics: buoyancy + propulsion + drag, modulated by body position. This module breaks each stroke into phases with the physics labeled, then explains the underlying forces. '),
+            h('strong', { style: { color: T.text } }, __alloT('stem.swimlab.reading_this_is_not_a_substitute_for_s', 'Reading this is not a substitute for swim instruction. ')),
+            __alloT('stem.swimlab.you_cannot_learn_to_swim_from_a_screen', 'You cannot learn to swim from a screen. Find a Water Safety Instructor at Red Cross or YMCA.')),
 
           sectionHeader('🆘', 'Survival skills (these actually save lives)'),
           h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-            'These four are the highest-leverage skills in the whole module. They cost no athletic talent. They have saved more lives than fancy strokes ever will.'),
+            __alloT('stem.swimlab.these_four_are_the_highest_leverage_sk', 'These four are the highest-leverage skills in the whole module. They cost no athletic talent. They have saved more lives than fancy strokes ever will.')),
           survivalCards.map(strokeCard),
 
           sectionHeader('🏊', 'The competitive strokes (physics demos)'),
           h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-            'These are taught in swim lessons and used in racing. Reading the physics will help you understand what your instructor is asking you to do, but it does NOT replace time in the water.'),
+            __alloT('stem.swimlab.these_are_taught_in_swim_lessons_and_u', 'These are taught in swim lessons and used in racing. Reading the physics will help you understand what your instructor is asking you to do, but it does NOT replace time in the water.')),
           strokeCards.map(strokeCard),
 
           sectionHeader('🔬', 'The underlying physics'),
@@ -1138,12 +1139,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           ]),
 
           sourcesBlock([
-            { label: 'USA Swimming Foundation', url: 'https://www.usaswimming.org/foundation' },
-            { label: 'American Red Cross — Swim & Water Safety', url: 'https://www.redcross.org/take-a-class/swimming' },
-            { label: 'YMCA — Aquatics Programs', url: 'https://www.ymca.org/what-we-do/healthy-living/swimming-aquatics' },
-            { label: 'Cold Water Boot Camp — HELP and Huddle', url: 'https://coldwaterbootcamp.com' },
-            { label: 'Counsilman & Counsilman, "The Science of Swimming" (classic reference for stroke biomechanics)' },
-            { label: 'Maglischo, "Swimming Fastest" (modern stroke physics)' }
+            { label: __alloT('stem.swimlab.usa_swimming_foundation_2', 'USA Swimming Foundation'), url: 'https://www.usaswimming.org/foundation' },
+            { label: __alloT('stem.swimlab.american_red_cross_swim_water_safety', 'American Red Cross — Swim & Water Safety'), url: 'https://www.redcross.org/take-a-class/swimming' },
+            { label: __alloT('stem.swimlab.ymca_aquatics_programs', 'YMCA — Aquatics Programs'), url: 'https://www.ymca.org/what-we-do/healthy-living/swimming-aquatics' },
+            { label: __alloT('stem.swimlab.cold_water_boot_camp_help_and_huddle', 'Cold Water Boot Camp — HELP and Huddle'), url: 'https://coldwaterbootcamp.com' },
+            { label: __alloT('stem.swimlab.counsilman_counsilman_the_science_of_s', 'Counsilman & Counsilman, "The Science of Swimming" (classic reference for stroke biomechanics)') },
+            { label: __alloT('stem.swimlab.maglischo_swimming_fastest_modern_stro', 'Maglischo, "Swimming Fastest" (modern stroke physics)') }
           ]),
           h(TeacherNotes, TEACHER_NOTES.howSwimming),
           disclaimerFooter()
@@ -1158,10 +1159,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           backBar('🥶 Cold Water Survival'),
           emergencyBanner(),
           h('div', { role: 'note', style: { padding: '10px 14px', background: T.cardAlt, border: '1px dashed ' + T.warn, borderRadius: 8, fontSize: 12, color: T.muted, lineHeight: 1.55, marginBottom: 12 } },
-            h('strong', { style: { color: T.text } }, 'Heads up: '),
-            'this module talks about drowning and near-drowning matter-of-factly. If you have lost someone to a water emergency, the content may bring difficult feelings up. You can step away or skip ahead at any time.'),
+            h('strong', { style: { color: T.text } }, __alloT('stem.swimlab.heads_up', 'Heads up: ')),
+            __alloT('stem.swimlab.this_module_talks_about_drowning_and_n', 'this module talks about drowning and near-drowning matter-of-factly. If you have lost someone to a water emergency, the content may bring difficult feelings up. You can step away or skip ahead at any time.')),
           h('p', { style: { margin: '0 0 12px', color: T.muted, fontSize: 14, lineHeight: 1.55 } },
-            'Most cold water deaths happen in the first 60 seconds — not from drowning by inability to swim, but from involuntary breathing and panic. This module teaches the physiology and the response that saves lives.'),
+            __alloT('stem.swimlab.most_cold_water_deaths_happen_in_the_f', 'Most cold water deaths happen in the first 60 seconds — not from drowning by inability to swim, but from involuntary breathing and panic. This module teaches the physiology and the response that saves lives.')),
 
           sectionHeader('🫁', 'What happens to your body in cold water'),
           keyPointBlock(
@@ -1177,12 +1178,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           sectionHeader('⏱️', 'The 1-1-10 Rule'),
           h('div', { style: { background: T.card, border: '1px solid ' + T.water, borderRadius: 12, padding: 16, marginBottom: 14 } },
             h('p', { style: { margin: '0 0 10px', color: T.text, lineHeight: 1.55, fontSize: 14, fontWeight: 600 } },
-              'If you fall into cold water, you have:'),
+              __alloT('stem.swimlab.if_you_fall_into_cold_water_you_have', 'If you fall into cold water, you have:')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginTop: 10 } },
               [
-                { num: '1', unit: 'minute', label: 'to control your breathing', detail: 'Do nothing else. Float on your back. Let the gasp reflex pass. Do not try to swim yet.' },
-                { num: '10', unit: 'minutes', label: 'of meaningful movement', detail: 'After the gasp passes, you have ~10 minutes of useful arm/hand strength to swim to safety, climb out, or signal for help.' },
-                { num: '1', unit: 'hour', label: 'before unconsciousness', detail: 'Hypothermia takes about an hour to make you unconscious in 50°F water. This means rescuers have time. People who appear "drowned" from cold water can sometimes be revived.' }
+                { num: '1', unit: 'minute', label: __alloT('stem.swimlab.to_control_your_breathing', 'to control your breathing'), detail: __alloT('stem.swimlab.do_nothing_else_float_on_your_back_let', 'Do nothing else. Float on your back. Let the gasp reflex pass. Do not try to swim yet.') },
+                { num: '10', unit: 'minutes', label: __alloT('stem.swimlab.of_meaningful_movement', 'of meaningful movement'), detail: __alloT('stem.swimlab.after_the_gasp_passes_you_have_10_minu', 'After the gasp passes, you have ~10 minutes of useful arm/hand strength to swim to safety, climb out, or signal for help.') },
+                { num: '1', unit: 'hour', label: __alloT('stem.swimlab.before_unconsciousness', 'before unconsciousness'), detail: __alloT('stem.swimlab.hypothermia_takes_about_an_hour_to_mak', 'Hypothermia takes about an hour to make you unconscious in 50°F water. This means rescuers have time. People who appear "drowned" from cold water can sometimes be revived.') }
               ].map(function(stage, i) {
                 return h('div', { key: i, style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 10, padding: 12 } },
                   h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 6 } },
@@ -1200,12 +1201,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
 
           calloutBox('info', 'The float-on-your-back trick',
             h(React.Fragment, null,
-              'When you fall in cold water, the worst thing is to try to swim immediately. Tilt your head back, fill your lungs, and float. Your gasp reflex will pass in 60 seconds or so. Then you can swim or signal. This single instruction has saved thousands of lives. ',
+              __alloT('stem.swimlab.when_you_fall_in_cold_water_the_worst_', 'When you fall in cold water, the worst thing is to try to swim immediately. Tilt your head back, fill your lungs, and float. Your gasp reflex will pass in 60 seconds or so. Then you can swim or signal. This single instruction has saved thousands of lives. '),
               h('button', {
                 className: 'swimlab-no-print',
                 onClick: function() { upd('view', 'howSwimming'); markVisited('howSwimming'); wsAnnounce('Opening How Swimming Works'); },
                 style: { background: 'none', border: 'none', padding: 0, color: T.accentHi, fontWeight: 700, cursor: 'pointer', textDecoration: 'underline', font: 'inherit' }
-              }, 'See the Back Float physics in How Swimming Works →')
+              }, __alloT('stem.swimlab.see_the_back_float_physics_in_how_swim', 'See the Back Float physics in How Swimming Works →'))
             )),
 
           sectionHeader('🎭', 'Scenarios'),
@@ -1221,7 +1222,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
             explain: 'The gasp reflex makes you inhale uncontrollably for the first ~60 seconds. If you try to swim or yell during that window, you will likely inhale water and drown. Floating on your back keeps your face out of the water until the gasp passes. THEN you can think about swimming or self-rescue. Heavy clothes (jackets, boots) actually trap insulating air in cold water — taking them off makes you colder and exhausts you. Keep them on until you are out of the water.'
           }),
           scenarioCard('coldShock', 1, {
-            prompt: 'A friend falls off a kayak into a Maine lake in October (water ~55°F). They are wearing a life jacket. They start swimming hard for shore about 200 feet away. What is the biggest risk?',
+            prompt: __alloT('stem.swimlab.a_friend_falls_off_a_kayak_into_a_main', 'A friend falls off a kayak into a Maine lake in October (water ~55°F). They are wearing a life jacket. They start swimming hard for shore about 200 feet away. What is the biggest risk?'),
             choices: [
               'Their life jacket will fail.',
               'They will get hypothermia in the next 5 minutes.',
@@ -1241,11 +1242,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           ]),
 
           sourcesBlock([
-            { label: 'Cold Water Boot Camp (Mario Vittone)', url: 'https://coldwaterbootcamp.com', note: 'The 1-1-10 rule, mammalian dive response, cold incapacitation timelines' },
-            { label: 'CDC: Drowning prevention', url: 'https://www.cdc.gov/drowning' },
-            { label: 'National Drowning Prevention Alliance (NDPA)', url: 'https://ndpa.org' },
-            { label: 'Mario Vittone — "If a child is drowning"', url: 'https://mariovittone.com' },
-            { label: 'AAP Policy Statement: Prevention of Drowning (2019, reaffirmed)', url: 'https://publications.aap.org/pediatrics/article/143/5/e20190850/76998' }
+            { label: __alloT('stem.swimlab.cold_water_boot_camp_mario_vittone', 'Cold Water Boot Camp (Mario Vittone)'), url: 'https://coldwaterbootcamp.com', note: __alloT('stem.swimlab.the_1_1_10_rule_mammalian_dive_respons', 'The 1-1-10 rule, mammalian dive response, cold incapacitation timelines') },
+            { label: __alloT('stem.swimlab.cdc_drowning_prevention', 'CDC: Drowning prevention'), url: 'https://www.cdc.gov/drowning' },
+            { label: __alloT('stem.swimlab.national_drowning_prevention_alliance_', 'National Drowning Prevention Alliance (NDPA)'), url: 'https://ndpa.org' },
+            { label: __alloT('stem.swimlab.mario_vittone_if_a_child_is_drowning', 'Mario Vittone — "If a child is drowning"'), url: 'https://mariovittone.com' },
+            { label: __alloT('stem.swimlab.aap_policy_statement_prevention_of_dro', 'AAP Policy Statement: Prevention of Drowning (2019, reaffirmed)'), url: 'https://publications.aap.org/pediatrics/article/143/5/e20190850/76998' }
           ]),
           h(TeacherNotes, TEACHER_NOTES.coldShock),
           disclaimerFooter()
@@ -1260,7 +1261,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           backBar('🌊 Rip Currents'),
           emergencyBanner(),
           h('p', { style: { margin: '0 0 12px', color: T.muted, fontSize: 14, lineHeight: 1.55 } },
-            'Rip currents pull thousands of beachgoers out to sea every year on US coasts, including Maine. The escape technique is counterintuitive — most people get it wrong because they panic.'),
+            __alloT('stem.swimlab.rip_currents_pull_thousands_of_beachgo', 'Rip currents pull thousands of beachgoers out to sea every year on US coasts, including Maine. The escape technique is counterintuitive — most people get it wrong because they panic.')),
 
           sectionHeader('❓', 'What is a rip current?'),
           keyPointBlock(
@@ -1292,19 +1293,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
             h('ol', { style: { margin: 0, paddingLeft: 20, color: T.text, lineHeight: 1.7, fontSize: 14 } },
               h('li', { style: { marginBottom: 8 } },
                 h('strong', null, 'Do NOT swim against the current.'),
-                ' You will exhaust yourself and drown. The current is faster than you can swim.'),
+                __alloT('stem.swimlab.you_will_exhaust_yourself_and_drown_th', ' You will exhaust yourself and drown. The current is faster than you can swim.')),
               h('li', { style: { marginBottom: 8 } },
-                h('strong', null, 'Stay calm. Float if you need to.'),
-                ' The current will not pull you under, only out. You can float through the whole thing if you have to.'),
+                h('strong', null, __alloT('stem.swimlab.stay_calm_float_if_you_need_to', 'Stay calm. Float if you need to.')),
+                __alloT('stem.swimlab.the_current_will_not_pull_you_under_on', ' The current will not pull you under, only out. You can float through the whole thing if you have to.')),
               h('li', { style: { marginBottom: 8 } },
-                h('strong', null, 'Swim PARALLEL to the shore.'),
-                ' Rip currents are narrow. After 30-100 feet of parallel swimming you will be in normal water and can swim back to shore at an angle.'),
+                h('strong', null, __alloT('stem.swimlab.swim_parallel_to_the_shore', 'Swim PARALLEL to the shore.')),
+                __alloT('stem.swimlab.rip_currents_are_narrow_after_30_100_f', ' Rip currents are narrow. After 30-100 feet of parallel swimming you will be in normal water and can swim back to shore at an angle.')),
               h('li', { style: { marginBottom: 8 } },
-                h('strong', null, 'If you cannot escape, signal and float.'),
-                ' Wave one arm and yell. A lifeguard or bystander can throw a flotation device. The current will eventually weaken (rip currents end past the breakers).'),
+                h('strong', null, __alloT('stem.swimlab.if_you_cannot_escape_signal_and_float', 'If you cannot escape, signal and float.')),
+                __alloT('stem.swimlab.wave_one_arm_and_yell_a_lifeguard_or_b', ' Wave one arm and yell. A lifeguard or bystander can throw a flotation device. The current will eventually weaken (rip currents end past the breakers).')),
               h('li', null,
-                h('strong', null, 'If you see someone else in a rip:'),
-                ' do NOT swim out to them. Throw flotation, alert lifeguards, call 911. Untrained rescuers drown in rip currents at high rates trying to save someone.')
+                h('strong', null, __alloT('stem.swimlab.if_you_see_someone_else_in_a_rip', 'If you see someone else in a rip:')),
+                __alloT('stem.swimlab.do_not_swim_out_to_them_throw_flotatio', ' do NOT swim out to them. Throw flotation, alert lifeguards, call 911. Untrained rescuers drown in rip currents at high rates trying to save someone.'))
             )
           ),
 
@@ -1344,10 +1345,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           ]),
 
           sourcesBlock([
-            { label: 'NOAA Rip Current Safety', url: 'https://www.weather.gov/safety/ripcurrent' },
-            { label: 'US Lifesaving Association (USLA) — Rip Currents', url: 'https://www.usla.org/page/RIPCURRENTS' },
-            { label: 'NWS Gray (Maine forecast office) — Beach Hazards', url: 'https://www.weather.gov/gyx/' },
-            { label: 'CDC: Drowning prevention', url: 'https://www.cdc.gov/drowning' }
+            { label: __alloT('stem.swimlab.noaa_rip_current_safety', 'NOAA Rip Current Safety'), url: 'https://www.weather.gov/safety/ripcurrent' },
+            { label: __alloT('stem.swimlab.us_lifesaving_association_usla_rip_cur', 'US Lifesaving Association (USLA) — Rip Currents'), url: 'https://www.usla.org/page/RIPCURRENTS' },
+            { label: __alloT('stem.swimlab.nws_gray_maine_forecast_office_beach_h', 'NWS Gray (Maine forecast office) — Beach Hazards'), url: 'https://www.weather.gov/gyx/' },
+            { label: __alloT('stem.swimlab.cdc_drowning_prevention_2', 'CDC: Drowning prevention'), url: 'https://www.cdc.gov/drowning' }
           ]),
           h(TeacherNotes, TEACHER_NOTES.ripCurrents),
           disclaimerFooter()
@@ -1362,11 +1363,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           backBar('🪢 How to Help Without Drowning Yourself'),
           emergencyBanner(),
           h('p', { style: { margin: '0 0 12px', color: T.muted, fontSize: 14, lineHeight: 1.55 } },
-            'You cannot help someone you do not realize is drowning. And once you realize it, the strongest urge is to jump in. Both of those instincts are wrong. This module covers ',
+            __alloT('stem.swimlab.you_cannot_help_someone_you_do_not_rea', 'You cannot help someone you do not realize is drowning. And once you realize it, the strongest urge is to jump in. Both of those instincts are wrong. This module covers '),
             h('strong', { style: { color: T.text } }, 'recognizing'),
-            ' drowning (it does not look like the movies) and ',
+            __alloT('stem.swimlab.drowning_it_does_not_look_like_the_mov', ' drowning (it does not look like the movies) and '),
             h('strong', { style: { color: T.text } }, 'helping'),
-            ' without becoming the second victim.'),
+            __alloT('stem.swimlab.without_becoming_the_second_victim', ' without becoming the second victim.')),
 
           // ── Drowning recognition (Mario Vittone framework) ──
           // This is the single most-cited piece of public-facing water safety
@@ -1380,28 +1381,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           sectionHeader('👀', 'Drowning does not look like drowning'),
           calloutBox('danger', 'Drowning is silent.',
             h(React.Fragment, null,
-              'Real drowning looks almost nothing like the movies. There is no yelling for help. There is no waving of arms. There is no thrashing. A drowning person\'s body is doing one thing: trying to keep the airway above water. Speech is secondary to breathing — they cannot call out. Arms are pressing instinctively down on the surface to lift the head — they cannot wave. The whole event lasts only ',
-              h('strong', null, '20 to 60 seconds'),
-              ' before submersion. If you do not know what to look for, you will miss it standing 10 feet away.')),
+              __alloT('stem.swimlab.real_drowning_looks_almost_nothing_lik', 'Real drowning looks almost nothing like the movies. There is no yelling for help. There is no waving of arms. There is no thrashing. A drowning person\'s body is doing one thing: trying to keep the airway above water. Speech is secondary to breathing — they cannot call out. Arms are pressing instinctively down on the surface to lift the head — they cannot wave. The whole event lasts only '),
+              h('strong', null, __alloT('stem.swimlab.20_to_60_seconds', '20 to 60 seconds')),
+              __alloT('stem.swimlab.before_submersion_if_you_do_not_know_w', ' before submersion. If you do not know what to look for, you will miss it standing 10 feet away.'))),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 16, marginBottom: 14 } },
             h('div', { style: { fontSize: 14, fontWeight: 700, color: T.accentHi, marginBottom: 10 } },
-              'The Instinctive Drowning Response — five visible signs (Mario Vittone)'),
+              __alloT('stem.swimlab.the_instinctive_drowning_response_five', 'The Instinctive Drowning Response — five visible signs (Mario Vittone)')),
             h('ol', { style: { margin: 0, paddingLeft: 20, color: T.text, lineHeight: 1.7, fontSize: 13 } },
               h('li', { style: { marginBottom: 6 } },
-                h('strong', null, 'Head low in the water, mouth at water level. '),
-                'Often tilted back with the mouth open. The person looks like they are trying to drink the water.'),
+                h('strong', null, __alloT('stem.swimlab.head_low_in_the_water_mouth_at_water_l', 'Head low in the water, mouth at water level. ')),
+                __alloT('stem.swimlab.often_tilted_back_with_the_mouth_open_', 'Often tilted back with the mouth open. The person looks like they are trying to drink the water.')),
               h('li', { style: { marginBottom: 6 } },
-                h('strong', null, 'Eyes are glassy and empty, or closed. '),
-                'They cannot focus. A person with eyes closed in the water who is not playing a game is in trouble.'),
+                h('strong', null, __alloT('stem.swimlab.eyes_are_glassy_and_empty_or_closed', 'Eyes are glassy and empty, or closed. ')),
+                __alloT('stem.swimlab.they_cannot_focus_a_person_with_eyes_c', 'They cannot focus. A person with eyes closed in the water who is not playing a game is in trouble.')),
               h('li', { style: { marginBottom: 6 } },
-                h('strong', null, 'Hair may be over the forehead or eyes. '),
-                'They will not push it away — their hands are needed elsewhere.'),
+                h('strong', null, __alloT('stem.swimlab.hair_may_be_over_the_forehead_or_eyes', 'Hair may be over the forehead or eyes. ')),
+                __alloT('stem.swimlab.they_will_not_push_it_away_their_hands', 'They will not push it away — their hands are needed elsewhere.')),
               h('li', { style: { marginBottom: 6 } },
-                h('strong', null, 'Body is vertical in the water, no kick. '),
-                'Swimmers move horizontally. Drowning people are upright, treading silently and ineffectively.'),
+                h('strong', null, __alloT('stem.swimlab.body_is_vertical_in_the_water_no_kick', 'Body is vertical in the water, no kick. ')),
+                __alloT('stem.swimlab.swimmers_move_horizontally_drowning_pe', 'Swimmers move horizontally. Drowning people are upright, treading silently and ineffectively.')),
               h('li', null,
-                h('strong', null, '"Ladder climbing" — pressing down on the surface. '),
-                'Arms extend laterally and press down, instinctively trying to leverage the body up out of the water. From shore this looks like "playing in the water." It is not.')
+                h('strong', null, __alloT('stem.swimlab.ladder_climbing_pressing_down_on_the_s', '"Ladder climbing" — pressing down on the surface. ')),
+                __alloT('stem.swimlab.arms_extend_laterally_and_press_down_i', 'Arms extend laterally and press down, instinctively trying to leverage the body up out of the water. From shore this looks like "playing in the water." It is not.'))
             )
           ),
           calloutBox('warn', 'What "aquatic distress" looks like (the warning sign before drowning)',
@@ -1412,10 +1413,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           sectionHeader('🪜', 'The four-step ladder'),
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr', gap: 10, marginBottom: 14 } },
             [
-              { step: 'REACH', icon: '🤲', desc: 'Lie or kneel on a stable surface (dock, shore, edge of pool). Extend a pole, branch, oar, towel, shirt, or even your leg. Stay anchored — do not let the victim pull you in. Pull them to safety hand-over-hand.', when: 'Victim is within arm or pole reach of solid ground.' },
-              { step: 'THROW', icon: '🎯', desc: 'Throw a flotation device — life ring, throw bag, cooler, empty milk jug with cap, even a tied-off plastic trash bag with air. Aim slightly past the victim and drag it back to them. Yell instructions: "GRAB THIS, KICK YOUR FEET, I AM PULLING YOU IN."', when: 'Victim is too far to reach but within throw distance.' },
-              { step: 'ROW', icon: '🚣', desc: 'Use a boat — kayak, canoe, paddleboard, rowboat. Approach with the bow toward the victim. Have them grab the back, not the side. NEVER let them climb in over the side — they will flip you. Tow them to shore.', when: 'Victim is too far to throw to but a boat is available.' },
-              { step: "DON'T GO", icon: '🚫', desc: 'Do not enter the water unless you are a trained lifeguard or rescue swimmer. Panicked drowning victims grab anything that floats — including you — and push it under. The leading cause of death in would-be rescuers is being drowned by the person they tried to save.', when: 'No reach, no throw, no boat, and you are not a trained rescuer.' }
+              { step: 'REACH', icon: '🤲', desc: __alloT('stem.swimlab.lie_or_kneel_on_a_stable_surface_dock_', 'Lie or kneel on a stable surface (dock, shore, edge of pool). Extend a pole, branch, oar, towel, shirt, or even your leg. Stay anchored — do not let the victim pull you in. Pull them to safety hand-over-hand.'), when: 'Victim is within arm or pole reach of solid ground.' },
+              { step: 'THROW', icon: '🎯', desc: __alloT('stem.swimlab.throw_a_flotation_device_life_ring_thr', 'Throw a flotation device — life ring, throw bag, cooler, empty milk jug with cap, even a tied-off plastic trash bag with air. Aim slightly past the victim and drag it back to them. Yell instructions: "GRAB THIS, KICK YOUR FEET, I AM PULLING YOU IN."'), when: 'Victim is too far to reach but within throw distance.' },
+              { step: 'ROW', icon: '🚣', desc: __alloT('stem.swimlab.use_a_boat_kayak_canoe_paddleboard_row', 'Use a boat — kayak, canoe, paddleboard, rowboat. Approach with the bow toward the victim. Have them grab the back, not the side. NEVER let them climb in over the side — they will flip you. Tow them to shore.'), when: 'Victim is too far to throw to but a boat is available.' },
+              { step: "DON'T GO", icon: '🚫', desc: __alloT('stem.swimlab.do_not_enter_the_water_unless_you_are_', 'Do not enter the water unless you are a trained lifeguard or rescue swimmer. Panicked drowning victims grab anything that floats — including you — and push it under. The leading cause of death in would-be rescuers is being drowned by the person they tried to save.'), when: 'No reach, no throw, no boat, and you are not a trained rescuer.' }
             ].map(function(s, i) {
               return h('div', { key: i, style: { background: T.card, border: '1px solid ' + (i === 3 ? T.danger : T.border), borderRadius: 10, padding: 14 } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
@@ -1454,7 +1455,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
             explain: 'REACH first when the victim is within reach. Lie or kneel on the deck so you cannot be pulled in. Extend whatever you have. Yell at someone else to call 911 and find a lifeguard. Do not jump in unless you have no other option AND you are trained.'
           }),
           scenarioCard('reachThrow', 1, {
-            prompt: 'A teenager is struggling about 30 feet from shore in a Maine lake. There is a kayak with a paddle nearby on the beach. You can swim, but you have never done a water rescue. What is the right play?',
+            prompt: __alloT('stem.swimlab.a_teenager_is_struggling_about_30_feet', 'A teenager is struggling about 30 feet from shore in a Maine lake. There is a kayak with a paddle nearby on the beach. You can swim, but you have never done a water rescue. What is the right play?'),
             choices: [
               'Swim out and tow them back.',
               'Push out the kayak, paddle to them, have them grab the BACK of the kayak (not the side), and tow them to shore. Have someone call 911.',
@@ -1475,12 +1476,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           ]),
 
           sourcesBlock([
-            { label: 'Mario Vittone — "Drowning Doesn\'t Look Like Drowning"', url: 'https://mariovittone.com/2010/05/154/', note: 'The canonical public-facing essay on the Instinctive Drowning Response. Originally published in On Scene magazine (2006) by Dr. Francesco A. Pia and refined by Vittone.' },
-            { label: 'American Red Cross — Water Safety', url: 'https://www.redcross.org/get-help/how-to-prepare-for-emergencies/types-of-emergencies/water-safety.html' },
-            { label: 'YMCA Aquatic Standards', url: 'https://www.ymca.org/what-we-do/healthy-living/swimming-aquatics' },
-            { label: 'CDC: Unintentional Drowning Statistics', url: 'https://www.cdc.gov/drowning/data-research/index.html' },
-            { label: 'DAN (Divers Alert Network) — In-water Rescue Principles', url: 'https://dan.org' },
-            { label: 'US Lifesaving Association (USLA)', url: 'https://www.usla.org' }
+            { label: __alloT('stem.swimlab.mario_vittone_drowning_doesn_t_look_li', 'Mario Vittone — "Drowning Doesn\'t Look Like Drowning"'), url: 'https://mariovittone.com/2010/05/154/', note: __alloT('stem.swimlab.the_canonical_public_facing_essay_on_t', 'The canonical public-facing essay on the Instinctive Drowning Response. Originally published in On Scene magazine (2006) by Dr. Francesco A. Pia and refined by Vittone.') },
+            { label: __alloT('stem.swimlab.american_red_cross_water_safety', 'American Red Cross — Water Safety'), url: 'https://www.redcross.org/get-help/how-to-prepare-for-emergencies/types-of-emergencies/water-safety.html' },
+            { label: __alloT('stem.swimlab.ymca_aquatic_standards', 'YMCA Aquatic Standards'), url: 'https://www.ymca.org/what-we-do/healthy-living/swimming-aquatics' },
+            { label: __alloT('stem.swimlab.cdc_unintentional_drowning_statistics', 'CDC: Unintentional Drowning Statistics'), url: 'https://www.cdc.gov/drowning/data-research/index.html' },
+            { label: __alloT('stem.swimlab.dan_divers_alert_network_in_water_resc', 'DAN (Divers Alert Network) — In-water Rescue Principles'), url: 'https://dan.org' },
+            { label: __alloT('stem.swimlab.us_lifesaving_association_usla', 'US Lifesaving Association (USLA)'), url: 'https://www.usla.org' }
           ]),
           h(TeacherNotes, TEACHER_NOTES.reachThrow),
           disclaimerFooter()
@@ -1495,7 +1496,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           backBar('🦺 Why Life Jackets Work'),
           emergencyBanner(),
           h('p', { style: { margin: '0 0 12px', color: T.muted, fontSize: 14, lineHeight: 1.55 } },
-            'A properly fitted, US Coast Guard-approved Personal Flotation Device (PFD) is the single highest-leverage piece of safety equipment in any boat or near any open water. The numbers are stark.'),
+            __alloT('stem.swimlab.a_properly_fitted_us_coast_guard_appro', 'A properly fitted, US Coast Guard-approved Personal Flotation Device (PFD) is the single highest-leverage piece of safety equipment in any boat or near any open water. The numbers are stark.')),
 
           calloutBox('danger', 'The 86% statistic',
             'Per US Coast Guard recreational boating data, approximately 86% of boating-related drowning victims were not wearing a life jacket at the time of death. The single intervention that would have most likely saved them was wearing the PFD they probably had on the boat.'),
@@ -1503,11 +1504,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           sectionHeader('🦺', 'The five PFD types'),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10, marginBottom: 14 } },
             [
-              { type: 'I', name: 'Offshore', use: 'Open ocean, far from shore. Highest buoyancy. Will turn most unconscious wearers face-up.' },
-              { type: 'II', name: 'Near-shore Buoyant Vest', use: 'Calm inland water with quick rescue likely. Will turn SOME unconscious wearers face-up.' },
-              { type: 'III', name: 'Flotation Aid', use: 'Most recreational boating, kayaking, water skiing. Will NOT turn unconscious wearers face-up. Conscious wearer must position themselves.' },
-              { type: 'IV', name: 'Throwable', use: 'Ring buoy, horseshoe buoy, throwable cushion. NOT worn — thrown to a victim. Required as backup on most boats.' },
-              { type: 'V', name: 'Special Use', use: 'Inflatable, work vest, sailboard harness, etc. Type V only counts if worn and used as the label specifies.' }
+              { type: 'I', name: __alloT('stem.swimlab.offshore', 'Offshore'), use: 'Open ocean, far from shore. Highest buoyancy. Will turn most unconscious wearers face-up.' },
+              { type: 'II', name: __alloT('stem.swimlab.near_shore_buoyant_vest', 'Near-shore Buoyant Vest'), use: 'Calm inland water with quick rescue likely. Will turn SOME unconscious wearers face-up.' },
+              { type: 'III', name: __alloT('stem.swimlab.flotation_aid', 'Flotation Aid'), use: 'Most recreational boating, kayaking, water skiing. Will NOT turn unconscious wearers face-up. Conscious wearer must position themselves.' },
+              { type: 'IV', name: __alloT('stem.swimlab.throwable', 'Throwable'), use: 'Ring buoy, horseshoe buoy, throwable cushion. NOT worn — thrown to a victim. Required as backup on most boats.' },
+              { type: 'V', name: __alloT('stem.swimlab.special_use', 'Special Use'), use: 'Inflatable, work vest, sailboard harness, etc. Type V only counts if worn and used as the label specifies.' }
             ].map(function(p, i) {
               return h('div', { key: i, style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 10, padding: 12 } },
                 h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 } },
@@ -1535,9 +1536,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           sectionHeader('⚖️', 'Maine boating law (the basics)'),
           keyPointBlock(
             h(React.Fragment, null,
-              'Per Maine Title 12 (Inland Fisheries & Wildlife) and applicable federal USCG rules. ',
-              h('strong', { style: { color: T.text } }, 'Always check the current statute at the Maine IFW link in the Sources block'),
-              ' — boating law gets updated, and a tool published in one year is not a substitute for the current rule.'),
+              __alloT('stem.swimlab.per_maine_title_12_inland_fisheries_wi', 'Per Maine Title 12 (Inland Fisheries & Wildlife) and applicable federal USCG rules. '),
+              h('strong', { style: { color: T.text } }, __alloT('stem.swimlab.always_check_the_current_statute_at_th', 'Always check the current statute at the Maine IFW link in the Sources block')),
+              __alloT('stem.swimlab.boating_law_gets_updated_and_a_tool_pu', ' — boating law gets updated, and a tool published in one year is not a substitute for the current rule.')),
             [
               'Every person on board needs a US Coast Guard-approved PFD in serviceable condition, of appropriate size for the wearer (Type I, II, III, or appropriate Type V) — 12 MRS §13056',
               'Children 10 and under must WEAR a properly-fitting USCG-approved PFD whenever the watercraft is underway (12 MRS §13056-A) — applies to any watercraft, not just small boats',
@@ -1565,7 +1566,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
             explain: 'Maine 12 MRS §13056-A requires children 10 and under to wear a USCG-approved PFD whenever the watercraft is underway — there is no boat-size exception (you are in a kayak, which counts). It is also the right call regardless of law. Kids learn boating culture from the adult on the boat. If you wear yours and theirs is on tight (lift test it before you launch), the trip will be fine and the habit is set.'
           }),
           scenarioCard('pfd', 1, {
-            prompt: 'You buy a child\'s life jacket. You do the lift test on shore: when you lift at the shoulders, the jacket comes up to the child\'s ears. The salesperson says it will be fine in the water and the child will "grow into it." What do you do?',
+            prompt: __alloT('stem.swimlab.you_buy_a_child_s_life_jacket_you_do_t', 'You buy a child\'s life jacket. You do the lift test on shore: when you lift at the shoulders, the jacket comes up to the child\'s ears. The salesperson says it will be fine in the water and the child will "grow into it." What do you do?'),
             choices: [
               'Trust the salesperson.',
               'Return it. A jacket that rides up to the ears in a lift test will go over the head in the water. Get a smaller size, even if it means the child outgrows it next year.',
@@ -1585,12 +1586,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           ]),
 
           sourcesBlock([
-            { label: 'US Coast Guard — Recreational Boating Statistics', url: 'https://www.uscgboating.org/statistics/accident_statistics.php' },
-            { label: 'US Coast Guard — Life Jacket Wear Information', url: 'https://www.uscgboating.org/recreational-boaters/life-jacket-wear.php' },
-            { label: 'Maine Department of Inland Fisheries & Wildlife — Boating Laws', url: 'https://www.maine.gov/ifw/programs-resources/boating-snowmobile-atv-laws-rules.html', note: 'Authoritative source for current Maine boating PFD law; check here before relying on summaries.' },
-            { label: 'Maine Revised Statutes Title 12 (Inland Fisheries & Wildlife)', url: 'https://legislature.maine.gov/statutes/12/title12sec13056-A.html', note: '§13056-A (children under 10), §13056 (PFDs aboard), §13068-A (personal watercraft).' },
-            { label: 'USCG 33 CFR Part 175 — Equipment requirements', url: 'https://www.ecfr.gov/current/title-33/chapter-I/subchapter-S/part-175' },
-            { label: 'Safe Kids Worldwide — Life Jacket Safety', url: 'https://www.safekids.org/safetytips/field_risks/water-safety' }
+            { label: __alloT('stem.swimlab.us_coast_guard_recreational_boating_st', 'US Coast Guard — Recreational Boating Statistics'), url: 'https://www.uscgboating.org/statistics/accident_statistics.php' },
+            { label: __alloT('stem.swimlab.us_coast_guard_life_jacket_wear_inform', 'US Coast Guard — Life Jacket Wear Information'), url: 'https://www.uscgboating.org/recreational-boaters/life-jacket-wear.php' },
+            { label: __alloT('stem.swimlab.maine_department_of_inland_fisheries_w', 'Maine Department of Inland Fisheries & Wildlife — Boating Laws'), url: 'https://www.maine.gov/ifw/programs-resources/boating-snowmobile-atv-laws-rules.html', note: __alloT('stem.swimlab.authoritative_source_for_current_maine', 'Authoritative source for current Maine boating PFD law; check here before relying on summaries.') },
+            { label: __alloT('stem.swimlab.maine_revised_statutes_title_12_inland', 'Maine Revised Statutes Title 12 (Inland Fisheries & Wildlife)'), url: 'https://legislature.maine.gov/statutes/12/title12sec13056-A.html', note: __alloT('stem.swimlab.13056_a_children_under_10_13056_pfds_a', '§13056-A (children under 10), §13056 (PFDs aboard), §13068-A (personal watercraft).') },
+            { label: __alloT('stem.swimlab.uscg_33_cfr_part_175_equipment_require', 'USCG 33 CFR Part 175 — Equipment requirements'), url: 'https://www.ecfr.gov/current/title-33/chapter-I/subchapter-S/part-175' },
+            { label: __alloT('stem.swimlab.safe_kids_worldwide_life_jacket_safety', 'Safe Kids Worldwide — Life Jacket Safety'), url: 'https://www.safekids.org/safetytips/field_risks/water-safety' }
           ]),
           h(TeacherNotes, TEACHER_NOTES.pfd),
           disclaimerFooter()
@@ -1605,10 +1606,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           backBar('🧊 Falling Through Ice'),
           emergencyBanner(),
           h('div', { role: 'note', style: { padding: '10px 14px', background: T.cardAlt, border: '1px dashed ' + T.warn, borderRadius: 8, fontSize: 12, color: T.muted, lineHeight: 1.55, marginBottom: 12 } },
-            h('strong', { style: { color: T.text } }, 'Heads up: '),
-            'this module covers ice break-through scenarios including snowmobile incidents. Content is practical, not graphic, but the topic is serious.'),
+            h('strong', { style: { color: T.text } }, __alloT('stem.swimlab.heads_up_2', 'Heads up: ')),
+            __alloT('stem.swimlab.this_module_covers_ice_break_through_s', 'this module covers ice break-through scenarios including snowmobile incidents. Content is practical, not graphic, but the topic is serious.')),
           h('p', { style: { margin: '0 0 12px', color: T.muted, fontSize: 14, lineHeight: 1.55 } },
-            'Maine has more frozen surface water in winter than almost any state in the lower 48. Every year, people fall through ice on lakes, ponds, and rivers — ice fishers, snowmobilers, kids playing, dogs and the people who chase them. The good news: cold water self-rescue is teachable, and the survival timeline is longer than people think.'),
+            __alloT('stem.swimlab.maine_has_more_frozen_surface_water_in', 'Maine has more frozen surface water in winter than almost any state in the lower 48. Every year, people fall through ice on lakes, ponds, and rivers — ice fishers, snowmobilers, kids playing, dogs and the people who chase them. The good news: cold water self-rescue is teachable, and the survival timeline is longer than people think.')),
 
           sectionHeader('🎨', 'Ice color and clarity tells you almost everything'),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 14 } },
@@ -1642,26 +1643,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           sectionHeader('🆘', 'If you fall through: the swim-and-roll'),
           h('div', { style: { background: T.card, border: '1px solid ' + T.water, borderRadius: 12, padding: 16, marginBottom: 14 } },
             h('p', { style: { margin: '0 0 10px', color: T.text, lineHeight: 1.55, fontSize: 14, fontWeight: 600 } },
-              'You have time. The 1-1-10 rule applies (1 minute to control breathing, 10 minutes of useful arm strength, 1 hour before unconsciousness). Use that first minute deliberately.'),
+              __alloT('stem.swimlab.you_have_time_the_1_1_10_rule_applies_', 'You have time. The 1-1-10 rule applies (1 minute to control breathing, 10 minutes of useful arm strength, 1 hour before unconsciousness). Use that first minute deliberately.')),
             h('ol', { style: { margin: 0, paddingLeft: 20, color: T.text, lineHeight: 1.7, fontSize: 14 } },
               h('li', { style: { marginBottom: 8 } },
-                h('strong', null, 'Do not panic. Float face-up. '),
-                'The gasp reflex will pass in 60 seconds. Do not try to scramble out yet. Get your breathing under control.'),
+                h('strong', null, __alloT('stem.swimlab.do_not_panic_float_face_up', 'Do not panic. Float face-up. ')),
+                __alloT('stem.swimlab.the_gasp_reflex_will_pass_in_60_second', 'The gasp reflex will pass in 60 seconds. Do not try to scramble out yet. Get your breathing under control.')),
               h('li', { style: { marginBottom: 8 } },
-                h('strong', null, 'Turn back the way you came. '),
-                'The ice you walked on held you. The ice ahead just failed. Face the direction you came from.'),
+                h('strong', null, __alloT('stem.swimlab.turn_back_the_way_you_came', 'Turn back the way you came. ')),
+                __alloT('stem.swimlab.the_ice_you_walked_on_held_you_the_ice', 'The ice you walked on held you. The ice ahead just failed. Face the direction you came from.')),
               h('li', { style: { marginBottom: 8 } },
-                h('strong', null, 'Get your forearms flat on the ice. '),
-                'Spread your weight. If you have ice picks (Picks of Life), use them now to get traction.'),
+                h('strong', null, __alloT('stem.swimlab.get_your_forearms_flat_on_the_ice', 'Get your forearms flat on the ice. ')),
+                __alloT('stem.swimlab.spread_your_weight_if_you_have_ice_pic', 'Spread your weight. If you have ice picks (Picks of Life), use them now to get traction.')),
               h('li', { style: { marginBottom: 8 } },
-                h('strong', null, 'Kick HARD horizontally. '),
-                'Get your body horizontal in the water — like you are swimming. Kick hard with your legs while pulling yourself up onto the ice. Your goal is to slide out, not climb out.'),
+                h('strong', null, __alloT('stem.swimlab.kick_hard_horizontally', 'Kick HARD horizontally. ')),
+                __alloT('stem.swimlab.get_your_body_horizontal_in_the_water_', 'Get your body horizontal in the water — like you are swimming. Kick hard with your legs while pulling yourself up onto the ice. Your goal is to slide out, not climb out.')),
               h('li', { style: { marginBottom: 8 } },
-                h('strong', null, 'Roll away. Do not stand. '),
-                'Once on the ice, ROLL away from the hole, do not stand. Standing concentrates your weight at one point and you may break through again. Roll until you are on ice you know is solid.'),
+                h('strong', null, __alloT('stem.swimlab.roll_away_do_not_stand', 'Roll away. Do not stand. ')),
+                __alloT('stem.swimlab.once_on_the_ice_roll_away_from_the_hol', 'Once on the ice, ROLL away from the hole, do not stand. Standing concentrates your weight at one point and you may break through again. Roll until you are on ice you know is solid.')),
               h('li', null,
-                h('strong', null, 'Get warm immediately. '),
-                'Cold incapacitation continues out of the water. Get to shelter. Change into dry clothes. Warm core (chest, neck, groin) before extremities. See the Hypothermia module.')
+                h('strong', null, __alloT('stem.swimlab.get_warm_immediately', 'Get warm immediately. ')),
+                __alloT('stem.swimlab.cold_incapacitation_continues_out_of_t', 'Cold incapacitation continues out of the water. Get to shelter. Change into dry clothes. Warm core (chest, neck, groin) before extremities. See the Hypothermia module.'))
             )
           ),
 
@@ -1696,7 +1697,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
             explain: 'Float and breathe. The gasp reflex will make you inhale water if you try to scramble out in the first 60 seconds. Heavy clothes actually trap insulating air; do not remove them. After the gasp passes, turn back the way you came (the ice that held you is behind you), get horizontal, kick HARD, and try to slide out onto the ice. Roll away from the hole once on ice. Without picks, your hands cannot grip wet ice; your kicks have to do all the work.'
           }),
           scenarioCard('iceSafety', 1, {
-            prompt: 'You see a person fall through ice on a pond about 100 feet from shore. There is a long rope in your truck. You can ice skate. Two strangers are nearby. What is your best move?',
+            prompt: __alloT('stem.swimlab.you_see_a_person_fall_through_ice_on_a', 'You see a person fall through ice on a pond about 100 feet from shore. There is a long rope in your truck. You can ice skate. Two strangers are nearby. What is your best move?'),
             choices: [
               'Skate out to them quickly.',
               'Point at one stranger, say "CALL 911 NOW." Then go to your truck for the rope. Throw it from the edge of solid ice — do not approach the hole.',
@@ -1716,10 +1717,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           ]),
 
           sourcesBlock([
-            { label: 'Maine Department of Inland Fisheries & Wildlife — Ice Safety', url: 'https://www.maine.gov/ifw/programs-resources/boating-snowmobile-atv-laws-rules.html' },
-            { label: 'Cold Water Safety (coldwatersafety.org)', url: 'https://www.coldwatersafety.org' },
-            { label: 'Vermont Fish & Wildlife — Ice Safety Guidelines', url: 'https://vtfishandwildlife.com' },
-            { label: 'Cold Water Boot Camp (Mario Vittone)', url: 'https://coldwaterbootcamp.com' }
+            { label: __alloT('stem.swimlab.maine_department_of_inland_fisheries_w_2', 'Maine Department of Inland Fisheries & Wildlife — Ice Safety'), url: 'https://www.maine.gov/ifw/programs-resources/boating-snowmobile-atv-laws-rules.html' },
+            { label: __alloT('stem.swimlab.cold_water_safety_coldwatersafety_org', 'Cold Water Safety (coldwatersafety.org)'), url: 'https://www.coldwatersafety.org' },
+            { label: __alloT('stem.swimlab.vermont_fish_wildlife_ice_safety_guide', 'Vermont Fish & Wildlife — Ice Safety Guidelines'), url: 'https://vtfishandwildlife.com' },
+            { label: __alloT('stem.swimlab.cold_water_boot_camp_mario_vittone_2', 'Cold Water Boot Camp (Mario Vittone)'), url: 'https://coldwaterbootcamp.com' }
           ]),
           h(TeacherNotes, TEACHER_NOTES.iceSafety),
           disclaimerFooter()
@@ -1734,7 +1735,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           backBar('🌡️ Cold Body, Cold Brain'),
           emergencyBanner(),
           h('p', { style: { margin: '0 0 12px', color: T.muted, fontSize: 14, lineHeight: 1.55 } },
-            'Hypothermia is core body temperature dropping below 95°F (35°C). It does not require ice or even cold weather — it can happen in 60°F water in summer or 50°F air in spring rain. Recognizing it early and treating it correctly is the difference between a story and a tragedy.'),
+            __alloT('stem.swimlab.hypothermia_is_core_body_temperature_d', 'Hypothermia is core body temperature dropping below 95°F (35°C). It does not require ice or even cold weather — it can happen in 60°F water in summer or 50°F air in spring rain. Recognizing it early and treating it correctly is the difference between a story and a tragedy.')),
 
           sectionHeader('🧠', 'The UMBLES rule (early warning signs)'),
           keyPointBlock(
@@ -1767,11 +1768,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           sectionHeader('❌', "What NOT to do"),
           calloutBox('danger', 'Common mistakes that make hypothermia worse',
             h('ul', { style: { margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.7 } },
-              h('li', null, h('strong', null, 'Do NOT rub extremities. '), 'Rubbing pushes cold blood from the arms and legs back to the warming core. This "afterdrop" can cause cardiac arrest.'),
-              h('li', null, h('strong', null, 'Do NOT give alcohol. '), 'Alcohol dilates skin blood vessels and accelerates heat loss. Folk wisdom is wrong here.'),
-              h('li', null, h('strong', null, 'Do NOT put a severe-hypothermia patient in a hot bath. '), 'Sudden warming of cold extremities returns cold blood to the core too fast. Slow rewarming with warm packs to chest, neck, and groin is correct.'),
-              h('li', null, h('strong', null, 'Do NOT rough-handle severely hypothermic patients. '), 'A cold heart is electrically unstable. Bumping, jostling, or rough handling can trigger ventricular fibrillation. Move them gently.'),
-              h('li', null, h('strong', null, 'Do NOT assume they are dead because they are cold and unresponsive. '), 'The maxim is "not dead until warm and dead." Continue CPR through transport. There are documented full recoveries from core temperatures below 60°F.')
+              h('li', null, h('strong', null, 'Do NOT rub extremities. '), __alloT('stem.swimlab.rubbing_pushes_cold_blood_from_the_arm', 'Rubbing pushes cold blood from the arms and legs back to the warming core. This "afterdrop" can cause cardiac arrest.')),
+              h('li', null, h('strong', null, 'Do NOT give alcohol. '), __alloT('stem.swimlab.alcohol_dilates_skin_blood_vessels_and', 'Alcohol dilates skin blood vessels and accelerates heat loss. Folk wisdom is wrong here.')),
+              h('li', null, h('strong', null, 'Do NOT put a severe-hypothermia patient in a hot bath. '), __alloT('stem.swimlab.sudden_warming_of_cold_extremities_ret', 'Sudden warming of cold extremities returns cold blood to the core too fast. Slow rewarming with warm packs to chest, neck, and groin is correct.')),
+              h('li', null, h('strong', null, 'Do NOT rough-handle severely hypothermic patients. '), __alloT('stem.swimlab.a_cold_heart_is_electrically_unstable_', 'A cold heart is electrically unstable. Bumping, jostling, or rough handling can trigger ventricular fibrillation. Move them gently.')),
+              h('li', null, h('strong', null, 'Do NOT assume they are dead because they are cold and unresponsive. '), __alloT('stem.swimlab.the_maxim_is_not_dead_until_warm_and_d', 'The maxim is "not dead until warm and dead." Continue CPR through transport. There are documented full recoveries from core temperatures below 60°F.'))
             )
           ),
 
@@ -1788,7 +1789,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
             explain: 'Stumbles + mumbles + fumbles + grumbles is mild hypothermia, not tiredness. Acting now (dry, sheltered, warm fluids, gentle movement) reverses it easily. Letting them "rest" — especially lying down — accelerates the drop. Hypothermia in the 50-65°F temperature range is the most common kind in temperate climates because nobody expects it.'
           }),
           scenarioCard('hypothermia', 1, {
-            prompt: 'A person is pulled from cold water unconscious, not breathing, no pulse. Their core temperature is estimated below 82°F. What is the right approach?',
+            prompt: __alloT('stem.swimlab.a_person_is_pulled_from_cold_water_unc', 'A person is pulled from cold water unconscious, not breathing, no pulse. Their core temperature is estimated below 82°F. What is the right approach?'),
             choices: [
               'Pronounce death at scene.',
               'Begin CPR. Handle gently. Continue CPR through transport. Cold patients can recover from longer arrests because cold protects the brain.',
@@ -1808,10 +1809,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           ]),
 
           sourcesBlock([
-            { label: 'Wilderness Medical Society — Practice Guidelines for Hypothermia', url: 'https://wms.org' },
-            { label: 'NOLS Wilderness Medicine — Hypothermia', url: 'https://www.nols.edu/en/wilderness-medicine/' },
-            { label: 'AHA — Cold Emergencies', url: 'https://cpr.heart.org' },
-            { label: 'Cold Water Boot Camp', url: 'https://coldwaterbootcamp.com' }
+            { label: __alloT('stem.swimlab.wilderness_medical_society_practice_gu', 'Wilderness Medical Society — Practice Guidelines for Hypothermia'), url: 'https://wms.org' },
+            { label: __alloT('stem.swimlab.nols_wilderness_medicine_hypothermia', 'NOLS Wilderness Medicine — Hypothermia'), url: 'https://www.nols.edu/en/wilderness-medicine/' },
+            { label: __alloT('stem.swimlab.aha_cold_emergencies', 'AHA — Cold Emergencies'), url: 'https://cpr.heart.org' },
+            { label: __alloT('stem.swimlab.cold_water_boot_camp', 'Cold Water Boot Camp'), url: 'https://coldwaterbootcamp.com' }
           ]),
           h(TeacherNotes, TEACHER_NOTES.hypothermia),
           disclaimerFooter()
@@ -1826,7 +1827,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           backBar('🌀 Pool Drain Risks'),
           emergencyBanner(),
           h('p', { style: { margin: '0 0 12px', color: T.muted, fontSize: 14, lineHeight: 1.55 } },
-            'Pool drain entrapment is rare but catastrophic. A pool pump can generate suction strong enough to hold an adult underwater. Federal law has specific requirements for drain covers since 2008, but old pools, broken covers, and home pools may not be compliant. This module teaches what to look for and what to do.'),
+            __alloT('stem.swimlab.pool_drain_entrapment_is_rare_but_cata', 'Pool drain entrapment is rare but catastrophic. A pool pump can generate suction strong enough to hold an adult underwater. Federal law has specific requirements for drain covers since 2008, but old pools, broken covers, and home pools may not be compliant. This module teaches what to look for and what to do.')),
 
           sectionHeader('📜', 'The Virginia Graeme Baker Pool & Spa Safety Act (2008)'),
           keyPointBlock(
@@ -1842,11 +1843,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           sectionHeader('⚠️', 'Five types of entrapment'),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 14 } },
             [
-              { type: 'Hair entrapment', desc: 'Long hair drawn into the drain by suction and tangled. Common in girls and women.' },
-              { type: 'Limb entrapment', desc: 'Arm, leg, or finger pulled into the drain opening. Suction can break bones during extraction.' },
-              { type: 'Body entrapment', desc: 'Torso held against the drain by suction. The most lethal type — adult-strength forces.' },
-              { type: 'Evisceration', desc: 'Suction pulls intestines through the anus. Catastrophic injury. Specific to flat drain covers and small bodies.' },
-              { type: 'Mechanical', desc: 'Jewelry, swimsuit strings, etc. caught in drain hardware.' }
+              { type: 'Hair entrapment', desc: __alloT('stem.swimlab.long_hair_drawn_into_the_drain_by_suct', 'Long hair drawn into the drain by suction and tangled. Common in girls and women.') },
+              { type: 'Limb entrapment', desc: __alloT('stem.swimlab.arm_leg_or_finger_pulled_into_the_drai', 'Arm, leg, or finger pulled into the drain opening. Suction can break bones during extraction.') },
+              { type: 'Body entrapment', desc: __alloT('stem.swimlab.torso_held_against_the_drain_by_suctio', 'Torso held against the drain by suction. The most lethal type — adult-strength forces.') },
+              { type: 'Evisceration', desc: __alloT('stem.swimlab.suction_pulls_intestines_through_the_a', 'Suction pulls intestines through the anus. Catastrophic injury. Specific to flat drain covers and small bodies.') },
+              { type: 'Mechanical', desc: __alloT('stem.swimlab.jewelry_swimsuit_strings_etc_caught_in', 'Jewelry, swimsuit strings, etc. caught in drain hardware.') }
             ].map(function(t, i) {
               return h('div', { key: i, style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 10, padding: 12 } },
                 h('div', { style: { fontSize: 13, fontWeight: 700, color: T.accentHi, marginBottom: 4 } }, t.type),
@@ -1902,9 +1903,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           ]),
 
           sourcesBlock([
-            { label: 'Pool Safely (CPSC)', url: 'https://www.poolsafely.gov' },
-            { label: 'CPSC — Virginia Graeme Baker Pool and Spa Safety Act', url: 'https://www.cpsc.gov/Regulations-Laws--Standards/Statutes/The-Virginia-Graeme-Baker-Pool-and-Spa-Safety-Act' },
-            { label: 'CDC — Drowning Prevention', url: 'https://www.cdc.gov/drowning' }
+            { label: __alloT('stem.swimlab.pool_safely_cpsc', 'Pool Safely (CPSC)'), url: 'https://www.poolsafely.gov' },
+            { label: __alloT('stem.swimlab.cpsc_virginia_graeme_baker_pool_and_sp', 'CPSC — Virginia Graeme Baker Pool and Spa Safety Act'), url: 'https://www.cpsc.gov/Regulations-Laws--Standards/Statutes/The-Virginia-Graeme-Baker-Pool-and-Spa-Safety-Act' },
+            { label: __alloT('stem.swimlab.cdc_drowning_prevention_3', 'CDC — Drowning Prevention'), url: 'https://www.cdc.gov/drowning' }
           ]),
           h(TeacherNotes, TEACHER_NOTES.drainEntrap),
           disclaimerFooter()
@@ -1919,10 +1920,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           backBar('♾️ Autism + Water'),
           emergencyBanner(),
           h('div', { role: 'note', style: { padding: '10px 14px', background: T.cardAlt, border: '1px dashed ' + T.warn, borderRadius: 8, fontSize: 12, color: T.muted, lineHeight: 1.55, marginBottom: 12 } },
-            h('strong', { style: { color: T.text } }, 'Heads up: '),
-            'this module discusses elevated drowning risk in autistic children and prevention strategies. Content is matter-of-fact and oriented toward action; no blame language toward families.'),
+            h('strong', { style: { color: T.text } }, __alloT('stem.swimlab.heads_up_3', 'Heads up: ')),
+            __alloT('stem.swimlab.this_module_discusses_elevated_drownin', 'this module discusses elevated drowning risk in autistic children and prevention strategies. Content is matter-of-fact and oriented toward action; no blame language toward families.')),
           h('p', { style: { margin: '0 0 12px', color: T.muted, fontSize: 14, lineHeight: 1.55 } },
-            'This module is shorter than the others but covers the highest-stakes content. Autistic children drown at dramatically higher rates than the general pediatric population. Most schools and many parents have never heard the numbers. The intervention is layered prevention, not blame.'),
+            __alloT('stem.swimlab.this_module_is_shorter_than_the_others', 'This module is shorter than the others but covers the highest-stakes content. Autistic children drown at dramatically higher rates than the general pediatric population. Most schools and many parents have never heard the numbers. The intervention is layered prevention, not blame.')),
 
           calloutBox('danger', 'The number that should change your practice',
             'Autistic children are approximately 160 times more likely to die from drowning than children in the general pediatric population (NAA / Autism Speaks Lifespan Mortality Data; AAP referenced). Drowning is the leading cause of death in autistic children who elope (wander). For autistic students with elopement risk, water safety is not optional curriculum — it is life safety.'),
@@ -1943,15 +1944,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           sectionHeader('🛡️', 'Defense in depth (layered prevention)'),
           h('div', { style: { background: T.card, border: '1px solid ' + T.water, borderRadius: 12, padding: 16, marginBottom: 14 } },
             h('p', { style: { margin: '0 0 10px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-              'No single layer is sufficient. Stack multiple layers. If one fails, the others catch.'),
+              __alloT('stem.swimlab.no_single_layer_is_sufficient_stack_mu', 'No single layer is sufficient. Stack multiple layers. If one fails, the others catch.')),
             h('ol', { style: { margin: 0, paddingLeft: 20, color: T.text, lineHeight: 1.7, fontSize: 13 } },
-              h('li', null, h('strong', null, 'Physical barriers. '), 'Pool fences with self-closing, self-latching gates (height per local code, typically 4 ft minimum). Door alarms on every door leading outside. Pool covers when not in use. For at-risk students, additional gate locks at heights beyond the child\'s reach.'),
-              h('li', null, h('strong', null, 'Electronic alarms. '), 'Door alarms (cheap, $10-20). Pool surface alarms (motion sensors floating on the pool surface). GPS tracking devices for high-elopement-risk students (Project Lifesaver, AngelSense, similar).'),
-              h('li', null, h('strong', null, 'Adapted swim instruction. '), 'Survival swim training adapted for sensory needs. The goal is not "competitive swimmer" — the goal is "can roll onto back, breathe, and stay afloat for several minutes." Programs like Infant Swimming Resource (ISR) and many YMCAs offer adaptive sessions.'),
-              h('li', null, h('strong', null, 'Bright-colored swimsuits. '), 'Use NEON YELLOW, ORANGE, or PINK. NEVER blue, green, white, or gray — those colors are nearly invisible against pool bottoms or lake water. This single change can mean the difference between a lifeguard spotting a submerged child in 5 seconds vs 50.'),
-              h('li', null, h('strong', null, 'ID jewelry / clothing. '), 'Wearable ID with name, diagnosis, family contact. Important if the child elopes and is found by strangers who may misinterpret behavior as defiance, intoxication, or hostility.'),
-              h('li', null, h('strong', null, 'Constant supervision near water. '), 'Touch supervision (within arm\'s reach) for any child who cannot self-rescue. No phones, no looking away, no relying on other children to "watch."'),
-              h('li', null, h('strong', null, 'Family + neighbor + school awareness. '), 'Tell neighbors so they know to call you immediately if they see the child. Tell school staff. Tell first responders. The more people who know, the faster the response if the child elopes.')
+              h('li', null, h('strong', null, __alloT('stem.swimlab.physical_barriers', 'Physical barriers. ')), __alloT('stem.swimlab.pool_fences_with_self_closing_self_lat', 'Pool fences with self-closing, self-latching gates (height per local code, typically 4 ft minimum). Door alarms on every door leading outside. Pool covers when not in use. For at-risk students, additional gate locks at heights beyond the child\'s reach.')),
+              h('li', null, h('strong', null, __alloT('stem.swimlab.electronic_alarms', 'Electronic alarms. ')), __alloT('stem.swimlab.door_alarms_cheap_10_20_pool_surface_a', 'Door alarms (cheap, $10-20). Pool surface alarms (motion sensors floating on the pool surface). GPS tracking devices for high-elopement-risk students (Project Lifesaver, AngelSense, similar).')),
+              h('li', null, h('strong', null, __alloT('stem.swimlab.adapted_swim_instruction', 'Adapted swim instruction. ')), __alloT('stem.swimlab.survival_swim_training_adapted_for_sen', 'Survival swim training adapted for sensory needs. The goal is not "competitive swimmer" — the goal is "can roll onto back, breathe, and stay afloat for several minutes." Programs like Infant Swimming Resource (ISR) and many YMCAs offer adaptive sessions.')),
+              h('li', null, h('strong', null, __alloT('stem.swimlab.bright_colored_swimsuits', 'Bright-colored swimsuits. ')), __alloT('stem.swimlab.use_neon_yellow_orange_or_pink_never_b', 'Use NEON YELLOW, ORANGE, or PINK. NEVER blue, green, white, or gray — those colors are nearly invisible against pool bottoms or lake water. This single change can mean the difference between a lifeguard spotting a submerged child in 5 seconds vs 50.')),
+              h('li', null, h('strong', null, __alloT('stem.swimlab.id_jewelry_clothing', 'ID jewelry / clothing. ')), __alloT('stem.swimlab.wearable_id_with_name_diagnosis_family', 'Wearable ID with name, diagnosis, family contact. Important if the child elopes and is found by strangers who may misinterpret behavior as defiance, intoxication, or hostility.')),
+              h('li', null, h('strong', null, __alloT('stem.swimlab.constant_supervision_near_water', 'Constant supervision near water. ')), __alloT('stem.swimlab.touch_supervision_within_arm_s_reach_f', 'Touch supervision (within arm\'s reach) for any child who cannot self-rescue. No phones, no looking away, no relying on other children to "watch."')),
+              h('li', null, h('strong', null, __alloT('stem.swimlab.family_neighbor_school_awareness', 'Family + neighbor + school awareness. ')), __alloT('stem.swimlab.tell_neighbors_so_they_know_to_call_yo', 'Tell neighbors so they know to call you immediately if they see the child. Tell school staff. Tell first responders. The more people who know, the faster the response if the child elopes.'))
             )
           ),
 
@@ -1988,7 +1989,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
             explain: 'Defense in depth. No single layer is enough; stack them. The "search water sources first" instruction is from NAA — when an autistic child elopes, water is statistically the most dangerous destination, so first responders search nearby water immediately, even if the child has shown no prior interest in that body of water. Time is everything.'
           }),
           scenarioCard('autismWater', 1, {
-            prompt: 'A family is buying their autistic child their first swimsuit for summer. The child loves blue and wants a blue one. The store has yellow, orange, pink, white, and blue available. What do you suggest?',
+            prompt: __alloT('stem.swimlab.a_family_is_buying_their_autistic_chil', 'A family is buying their autistic child their first swimsuit for summer. The child loves blue and wants a blue one. The store has yellow, orange, pink, white, and blue available. What do you suggest?'),
             choices: [
               'Get the blue one since the child wants it.',
               'Suggest yellow, neon orange, or hot pink. Blue and white are nearly invisible against pool bottoms and lake water. Visibility from a safety standpoint matters more than preference here, and there are ways to honor preference partially (blue rash guard under a high-vis suit, blue swim shorts with a neon top, etc.).',
@@ -2008,14 +2009,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           ]),
 
           sourcesBlock([
-            { label: 'National Autism Association — Autism Safety Toolkit', url: 'https://nationalautismassociation.org/resources/autism-safety-facts/' },
-            { label: 'AAP — Prevention of Drowning Policy Statement', url: 'https://publications.aap.org/pediatrics/article/143/5/e20190850/76998' },
-            { label: 'Autistic Self-Advocacy Network (ASAN)', url: 'https://autisticadvocacy.org' },
-            { label: 'Project Lifesaver International (GPS tracking for elopement risk)', url: 'https://projectlifesaver.org' },
-            { label: 'Infant Swimming Resource (ISR) — Self-Rescue', url: 'https://infantswim.com' },
-            { label: 'Special Olympics — Aquatics', url: 'https://www.specialolympics.org/our-work/sports/aquatics' },
-            { label: 'Alive Solutions — Swimsuit Color Visibility Tests', url: 'https://alivesolutions.com' },
-            { label: 'USA Swimming Foundation — Make a Splash (scholarships)', url: 'https://www.usaswimming.org/foundation/make-a-splash' }
+            { label: __alloT('stem.swimlab.national_autism_association_autism_saf', 'National Autism Association — Autism Safety Toolkit'), url: 'https://nationalautismassociation.org/resources/autism-safety-facts/' },
+            { label: __alloT('stem.swimlab.aap_prevention_of_drowning_policy_stat', 'AAP — Prevention of Drowning Policy Statement'), url: 'https://publications.aap.org/pediatrics/article/143/5/e20190850/76998' },
+            { label: __alloT('stem.swimlab.autistic_self_advocacy_network_asan', 'Autistic Self-Advocacy Network (ASAN)'), url: 'https://autisticadvocacy.org' },
+            { label: __alloT('stem.swimlab.project_lifesaver_international_gps_tr', 'Project Lifesaver International (GPS tracking for elopement risk)'), url: 'https://projectlifesaver.org' },
+            { label: __alloT('stem.swimlab.infant_swimming_resource_isr_self_resc', 'Infant Swimming Resource (ISR) — Self-Rescue'), url: 'https://infantswim.com' },
+            { label: __alloT('stem.swimlab.special_olympics_aquatics', 'Special Olympics — Aquatics'), url: 'https://www.specialolympics.org/our-work/sports/aquatics' },
+            { label: __alloT('stem.swimlab.alive_solutions_swimsuit_color_visibil', 'Alive Solutions — Swimsuit Color Visibility Tests'), url: 'https://alivesolutions.com' },
+            { label: __alloT('stem.swimlab.usa_swimming_foundation_make_a_splash_', 'USA Swimming Foundation — Make a Splash (scholarships)'), url: 'https://www.usaswimming.org/foundation/make-a-splash' }
           ]),
           h(TeacherNotes, TEACHER_NOTES.autismWater),
           disclaimerFooter()
@@ -2107,8 +2108,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
               h('div', { className: 'swimlab-no-print', style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' } },
                 h('button', { onClick: function() {
                   upd('bigQuizState', { idx: 0, score: 0, answered: false, lastChoice: null, picks: {} });
-                }, style: btn({ padding: '8px 14px', fontSize: 13 }) }, 'Retake quiz'),
-                h('button', { onClick: function() { upd('view', 'menu'); }, style: btnPrimary({ padding: '8px 14px', fontSize: 13 }) }, '← Back to menu')
+                }, style: btn({ padding: '8px 14px', fontSize: 13 }) }, __alloT('stem.swimlab.retake_quiz', 'Retake quiz')),
+                h('button', { onClick: function() { upd('view', 'menu'); }, style: btnPrimary({ padding: '8px 14px', fontSize: 13 }) }, __alloT('stem.swimlab.back_to_menu', '← Back to menu'))
               )
             ),
             // Targeted feedback — per-module cards listing the user's missed
@@ -2116,35 +2117,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
             // are misses; a perfect score sees only the celebration above.
             missedModuleIds.length > 0 && h('div', { style: { marginTop: 18 } },
               h('h3', { style: { margin: '0 0 10px', fontSize: 16, color: T.accentHi } },
-                '📍 Review these specific gaps'),
+                __alloT('stem.swimlab.review_these_specific_gaps', '📍 Review these specific gaps')),
               h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-                'You missed ', h('strong', { style: { color: T.text } }, Object.keys(picks).filter(function(k) { return picks[k] !== CUMULATIVE_QUESTIONS[k].ans; }).length + ' question' + (Object.keys(picks).filter(function(k) { return picks[k] !== CUMULATIVE_QUESTIONS[k].ans; }).length === 1 ? '' : 's')),
+                __alloT('stem.swimlab.you_missed', 'You missed '), h('strong', { style: { color: T.text } }, Object.keys(picks).filter(function(k) { return picks[k] !== CUMULATIVE_QUESTIONS[k].ans; }).length + ' question' + (Object.keys(picks).filter(function(k) { return picks[k] !== CUMULATIVE_QUESTIONS[k].ans; }).length === 1 ? '' : 's')),
                 ' across ', h('strong', { style: { color: T.text } }, missedModuleIds.length + ' module' + (missedModuleIds.length === 1 ? '' : 's')),
-                '. Each card below names the module that covers that gap.'),
+                __alloT('stem.swimlab.each_card_below_names_the_module_that_', '. Each card below names the module that covers that gap.')),
               missedModuleIds.map(function(modId) {
                 var moduleMisses = missedByModule[modId];
                 var modLabel = MODULE_LABELS[modId] || modId;
                 return h('div', { key: modId, style: { background: T.card, border: '1px solid ' + T.warn, borderRadius: 10, padding: 14, marginBottom: 10 } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' } },
                     h('div', { style: { flex: 1, minWidth: 0 } },
-                      h('div', { style: { fontSize: 11, fontWeight: 700, color: T.warn, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Module'),
+                      h('div', { style: { fontSize: 11, fontWeight: 700, color: T.warn, textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.swimlab.module', 'Module')),
                       h('div', { style: { fontSize: 15, fontWeight: 700, color: T.text } }, modLabel)),
                     h('button', {
                       className: 'swimlab-no-print',
                       onClick: function() { upd('view', modId); markVisited(modId); wsAnnounce('Opening ' + modLabel); },
                       'aria-label': 'Open ' + modLabel + ' module to review',
                       style: btnPrimary({ padding: '8px 14px', fontSize: 12, whiteSpace: 'nowrap' })
-                    }, 'Review →')
+                    }, __alloT('stem.swimlab.review', 'Review →'))
                   ),
                   moduleMisses.map(function(m, mi) {
                     return h('div', { key: mi, style: { padding: 10, background: T.cardAlt, borderRadius: 8, marginTop: 6, fontSize: 12, lineHeight: 1.55 } },
                       h('div', { style: { color: T.text, marginBottom: 4 } },
                         h('strong', null, 'Q' + (m.qIdx + 1) + ': '), m.q.q),
                       h('div', { style: { color: T.danger } },
-                        h('span', { style: { fontWeight: 700 } }, 'Your answer: '),
+                        h('span', { style: { fontWeight: 700 } }, __alloT('stem.swimlab.your_answer', 'Your answer: ')),
                         m.q.opts[picks[m.qIdx]]),
                       h('div', { style: { color: T.ok, marginTop: 2 } },
-                        h('span', { style: { fontWeight: 700 } }, 'Right answer: '),
+                        h('span', { style: { fontWeight: 700 } }, __alloT('stem.swimlab.right_answer_2', 'Right answer: ')),
                         m.q.opts[m.q.ans]),
                       h('div', { style: { color: T.muted, marginTop: 6, fontStyle: 'italic' } }, m.q.explain)
                     );
@@ -2158,8 +2159,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
         return h('div', { style: { padding: 20, maxWidth: 720, margin: '0 auto', color: T.text } },
           backBar('🎯 Cumulative SwimLab Quiz'),
           h('div', { style: { fontSize: 12, color: T.dim, marginBottom: 8 } },
-            'Question ', h('strong', null, (st.idx + 1)), ' of ' + CUMULATIVE_QUESTIONS.length,
-            ' · score ', h('strong', null, st.score)),
+            __alloT('stem.swimlab.question', 'Question '), h('strong', null, (st.idx + 1)), ' of ' + CUMULATIVE_QUESTIONS.length,
+            __alloT('stem.swimlab.score', ' · score '), h('strong', null, st.score)),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 18 } },
             h('p', { style: { margin: '0 0 14px', fontSize: 15, color: T.text, fontWeight: 600, lineHeight: 1.5 } }, q.q),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -2199,7 +2200,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
                   upd('bigQuizState', Object.assign({}, st, { answered: false, lastChoice: null, picks: nextPicks }));
                   wsAnnounce('Question reset. Try again.');
                 },
-                style: btn({ padding: '10px 16px', fontSize: 14 }) }, '↺ Try again'),
+                style: btn({ padding: '10px 16px', fontSize: 14 }) }, __alloT('stem.swimlab.try_again_3', '↺ Try again')),
               h('button', {
                 onClick: function() {
                   upd('bigQuizState', Object.assign({}, st, { idx: st.idx + 1, answered: false, lastChoice: null }));
@@ -2232,7 +2233,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
         function ask() {
           if (!q.trim()) return;
           if (!callGemini) {
-            setAns({ error: true, text: 'AI tutor is not available in this build. Try the modules or Resources tab.' });
+            setAns({ error: true, text: __alloT('stem.swimlab.ai_tutor_is_not_available_in_this_buil', 'AI tutor is not available in this build. Try the modules or Resources tab.') });
             return;
           }
           var question = q.trim();
@@ -2277,18 +2278,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           backBar('🤖 Ask the Lifeguard (AI)'),
           emergencyBanner(),
           h('p', { style: { margin: '0 0 12px', color: T.muted, fontSize: 14, lineHeight: 1.55 } },
-            'Type a water safety question. The AI grounds its answer in CDC, USCG, AAP, NOAA, NAA, ASAN, and other primary sources cited throughout this lab. ',
-            h('strong', null, 'Educational only.'),
-            ' Real emergencies need 911, not a chatbot.'),
-          h('label', { htmlFor: 'wsQ', style: { display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 } }, 'Your question:'),
+            __alloT('stem.swimlab.type_a_water_safety_question_the_ai_gr', 'Type a water safety question. The AI grounds its answer in CDC, USCG, AAP, NOAA, NAA, ASAN, and other primary sources cited throughout this lab. '),
+            h('strong', null, __alloT('stem.swimlab.educational_only', 'Educational only.')),
+            __alloT('stem.swimlab.real_emergencies_need_911_not_a_chatbo', ' Real emergencies need 911, not a chatbot.')),
+          h('label', { htmlFor: 'wsQ', style: { display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 } }, __alloT('stem.swimlab.your_question', 'Your question:')),
           h('textarea', { id: 'wsQ', value: q, onChange: function(e) { setQ(e.target.value); }, rows: 3,
-            placeholder: 'e.g. "How long can a person survive in 50°F water?" or "What\'s the safest swim suit color for my non-verbal son?"',
+            placeholder: __alloT('stem.swimlab.e_g_how_long_can_a_person_survive_in_5', 'e.g. "How long can a person survive in 50°F water?" or "What\'s the safest swim suit color for my non-verbal son?"'),
             style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid ' + T.border, background: T.cardAlt, color: T.text, fontSize: 14, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' } }),
           h('div', { className: 'swimlab-no-print', style: { marginTop: 10, display: 'flex', gap: 8 } },
             h('button', { onClick: ask, disabled: loading || !q.trim(),
               style: btnPrimary({ padding: '10px 18px', fontSize: 14, opacity: (loading || !q.trim()) ? 0.5 : 1 }) },
               loading ? 'Thinking…' : 'Ask'),
-            h('button', { onClick: function() { setQ(''); setAns(null); }, style: btn({ padding: '10px 14px', fontSize: 14 }) }, 'Clear')
+            h('button', { onClick: function() { setQ(''); setAns(null); }, style: btn({ padding: '10px 14px', fontSize: 14 }) }, __alloT('stem.swimlab.clear', 'Clear'))
           ),
           ans && h('div', { style: { marginTop: 16, padding: 14, background: T.card, border: '1px solid ' + (ans.error ? T.warn : T.water), borderRadius: 10, fontSize: 14, color: T.text, lineHeight: 1.6, whiteSpace: 'pre-wrap' } },
             ans.text
@@ -2307,9 +2308,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
                   upd('askHistory', []);
                   wsAnnounce('History cleared');
                 },
-                'aria-label': 'Clear all saved AI answers',
+                'aria-label': __alloT('stem.swimlab.clear_all_saved_ai_answers', 'Clear all saved AI answers'),
                 style: btn({ padding: '4px 10px', fontSize: 11 })
-              }, 'Clear history')
+              }, __alloT('stem.swimlab.clear_history', 'Clear history'))
             ),
             askHistory.map(function(entry, i) {
               return h('details', { key: entry.ts + '-' + i,
@@ -2333,61 +2334,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
       // ─────────────────────────────────────────
       function renderResources() {
         var groups = [
-          { name: 'Get certified / learn to swim', items: [
-            { label: 'American Red Cross — Swimming & Water Safety classes', url: 'https://www.redcross.org/take-a-class/swimming' },
-            { label: 'YMCA — Aquatics programs', url: 'https://www.ymca.org/what-we-do/healthy-living/swimming-aquatics' },
-            { label: 'USA Swimming Foundation — Make a Splash (scholarships, find lessons)', url: 'https://www.usaswimming.org/foundation/make-a-splash' },
-            { label: 'Infant Swimming Resource (ISR) — Self-Rescue', url: 'https://infantswim.com' }
+          { name: __alloT('stem.swimlab.get_certified_learn_to_swim', 'Get certified / learn to swim'), items: [
+            { label: __alloT('stem.swimlab.american_red_cross_swimming_water_safe', 'American Red Cross — Swimming & Water Safety classes'), url: 'https://www.redcross.org/take-a-class/swimming' },
+            { label: __alloT('stem.swimlab.ymca_aquatics_programs_2', 'YMCA — Aquatics programs'), url: 'https://www.ymca.org/what-we-do/healthy-living/swimming-aquatics' },
+            { label: __alloT('stem.swimlab.usa_swimming_foundation_make_a_splash__2', 'USA Swimming Foundation — Make a Splash (scholarships, find lessons)'), url: 'https://www.usaswimming.org/foundation/make-a-splash' },
+            { label: __alloT('stem.swimlab.infant_swimming_resource_isr_self_resc_2', 'Infant Swimming Resource (ISR) — Self-Rescue'), url: 'https://infantswim.com' }
           ] },
-          { name: 'Drowning prevention authorities', items: [
-            { label: 'CDC — Drowning Prevention', url: 'https://www.cdc.gov/drowning' },
-            { label: 'National Drowning Prevention Alliance (NDPA)', url: 'https://ndpa.org' },
-            { label: 'Stop Drowning Now', url: 'https://stopdrowningnow.org' },
-            { label: 'AAP Policy Statement — Prevention of Drowning', url: 'https://publications.aap.org/pediatrics/article/143/5/e20190850/76998' },
-            { label: 'Mario Vittone — "Drowning Doesn\'t Look Like Drowning"', url: 'https://mariovittone.com/2010/05/154/' }
+          { name: __alloT('stem.swimlab.drowning_prevention_authorities', 'Drowning prevention authorities'), items: [
+            { label: __alloT('stem.swimlab.cdc_drowning_prevention_4', 'CDC — Drowning Prevention'), url: 'https://www.cdc.gov/drowning' },
+            { label: __alloT('stem.swimlab.national_drowning_prevention_alliance__2', 'National Drowning Prevention Alliance (NDPA)'), url: 'https://ndpa.org' },
+            { label: __alloT('stem.swimlab.stop_drowning_now', 'Stop Drowning Now'), url: 'https://stopdrowningnow.org' },
+            { label: __alloT('stem.swimlab.aap_policy_statement_prevention_of_dro_2', 'AAP Policy Statement — Prevention of Drowning'), url: 'https://publications.aap.org/pediatrics/article/143/5/e20190850/76998' },
+            { label: __alloT('stem.swimlab.mario_vittone_drowning_doesn_t_look_li_2', 'Mario Vittone — "Drowning Doesn\'t Look Like Drowning"'), url: 'https://mariovittone.com/2010/05/154/' }
           ] },
-          { name: 'Cold water + ice safety', items: [
-            { label: 'Cold Water Boot Camp (Mario Vittone)', url: 'https://coldwaterbootcamp.com' },
-            { label: 'Cold Water Safety', url: 'https://www.coldwatersafety.org' },
-            { label: 'Maine Department of Inland Fisheries & Wildlife — Ice Safety', url: 'https://www.maine.gov/ifw/programs-resources/boating-snowmobile-atv-laws-rules.html' }
+          { name: __alloT('stem.swimlab.cold_water_ice_safety', 'Cold water + ice safety'), items: [
+            { label: __alloT('stem.swimlab.cold_water_boot_camp_mario_vittone_3', 'Cold Water Boot Camp (Mario Vittone)'), url: 'https://coldwaterbootcamp.com' },
+            { label: __alloT('stem.swimlab.cold_water_safety', 'Cold Water Safety'), url: 'https://www.coldwatersafety.org' },
+            { label: __alloT('stem.swimlab.maine_department_of_inland_fisheries_w_3', 'Maine Department of Inland Fisheries & Wildlife — Ice Safety'), url: 'https://www.maine.gov/ifw/programs-resources/boating-snowmobile-atv-laws-rules.html' }
           ] },
-          { name: 'Beach + open water', items: [
-            { label: 'NOAA Rip Current Safety', url: 'https://www.weather.gov/safety/ripcurrent' },
-            { label: 'US Lifesaving Association (USLA)', url: 'https://www.usla.org' },
-            { label: 'NWS Gray (Maine) — Beach Hazards', url: 'https://www.weather.gov/gyx/' }
+          { name: __alloT('stem.swimlab.beach_open_water', 'Beach + open water'), items: [
+            { label: __alloT('stem.swimlab.noaa_rip_current_safety_2', 'NOAA Rip Current Safety'), url: 'https://www.weather.gov/safety/ripcurrent' },
+            { label: __alloT('stem.swimlab.us_lifesaving_association_usla_2', 'US Lifesaving Association (USLA)'), url: 'https://www.usla.org' },
+            { label: __alloT('stem.swimlab.nws_gray_maine_beach_hazards', 'NWS Gray (Maine) — Beach Hazards'), url: 'https://www.weather.gov/gyx/' }
           ] },
-          { name: 'Boating + PFDs', items: [
-            { label: 'US Coast Guard — Recreational Boating Safety', url: 'https://www.uscgboating.org' },
-            { label: 'Maine IFW — Boating Laws', url: 'https://www.maine.gov/ifw/programs-resources/boating-snowmobile-atv-laws-rules.html' },
-            { label: 'Safe Kids Worldwide — Water Safety', url: 'https://www.safekids.org/safetytips/field_risks/water-safety' }
+          { name: __alloT('stem.swimlab.boating_pfds', 'Boating + PFDs'), items: [
+            { label: __alloT('stem.swimlab.us_coast_guard_recreational_boating_sa', 'US Coast Guard — Recreational Boating Safety'), url: 'https://www.uscgboating.org' },
+            { label: __alloT('stem.swimlab.maine_ifw_boating_laws', 'Maine IFW — Boating Laws'), url: 'https://www.maine.gov/ifw/programs-resources/boating-snowmobile-atv-laws-rules.html' },
+            { label: __alloT('stem.swimlab.safe_kids_worldwide_water_safety', 'Safe Kids Worldwide — Water Safety'), url: 'https://www.safekids.org/safetytips/field_risks/water-safety' }
           ] },
-          { name: 'Pool + spa safety', items: [
-            { label: 'Pool Safely (CPSC)', url: 'https://www.poolsafely.gov' },
-            { label: 'Virginia Graeme Baker Pool & Spa Safety Act', url: 'https://www.cpsc.gov/Regulations-Laws--Standards/Statutes/The-Virginia-Graeme-Baker-Pool-and-Spa-Safety-Act' }
+          { name: __alloT('stem.swimlab.pool_spa_safety', 'Pool + spa safety'), items: [
+            { label: __alloT('stem.swimlab.pool_safely_cpsc_2', 'Pool Safely (CPSC)'), url: 'https://www.poolsafely.gov' },
+            { label: __alloT('stem.swimlab.virginia_graeme_baker_pool_spa_safety_', 'Virginia Graeme Baker Pool & Spa Safety Act'), url: 'https://www.cpsc.gov/Regulations-Laws--Standards/Statutes/The-Virginia-Graeme-Baker-Pool-and-Spa-Safety-Act' }
           ] },
-          { name: 'Hypothermia / wilderness medicine', items: [
-            { label: 'Wilderness Medical Society', url: 'https://wms.org' },
-            { label: 'NOLS Wilderness Medicine', url: 'https://www.nols.edu/en/wilderness-medicine/' },
-            { label: 'AHA — Cold Emergencies', url: 'https://cpr.heart.org' }
+          { name: __alloT('stem.swimlab.hypothermia_wilderness_medicine', 'Hypothermia / wilderness medicine'), items: [
+            { label: __alloT('stem.swimlab.wilderness_medical_society', 'Wilderness Medical Society'), url: 'https://wms.org' },
+            { label: __alloT('stem.swimlab.nols_wilderness_medicine', 'NOLS Wilderness Medicine'), url: 'https://www.nols.edu/en/wilderness-medicine/' },
+            { label: __alloT('stem.swimlab.aha_cold_emergencies_2', 'AHA — Cold Emergencies'), url: 'https://cpr.heart.org' }
           ] },
-          { name: 'Autism + water safety', items: [
-            { label: 'National Autism Association — Autism Safety Toolkit', url: 'https://nationalautismassociation.org/resources/autism-safety-facts/' },
-            { label: 'Autistic Self-Advocacy Network (ASAN)', url: 'https://autisticadvocacy.org' },
-            { label: 'Project Lifesaver International (GPS for elopement)', url: 'https://projectlifesaver.org' },
-            { label: 'AngelSense (GPS tracking)', url: 'https://www.angelsense.com' },
-            { label: 'Special Olympics — Aquatics', url: 'https://www.specialolympics.org/our-work/sports/aquatics' },
-            { label: 'Alive Solutions — Swimsuit Color Visibility Tests', url: 'https://alivesolutions.com' }
+          { name: __alloT('stem.swimlab.autism_water_safety', 'Autism + water safety'), items: [
+            { label: __alloT('stem.swimlab.national_autism_association_autism_saf_2', 'National Autism Association — Autism Safety Toolkit'), url: 'https://nationalautismassociation.org/resources/autism-safety-facts/' },
+            { label: __alloT('stem.swimlab.autistic_self_advocacy_network_asan_2', 'Autistic Self-Advocacy Network (ASAN)'), url: 'https://autisticadvocacy.org' },
+            { label: __alloT('stem.swimlab.project_lifesaver_international_gps_fo', 'Project Lifesaver International (GPS for elopement)'), url: 'https://projectlifesaver.org' },
+            { label: __alloT('stem.swimlab.angelsense_gps_tracking', 'AngelSense (GPS tracking)'), url: 'https://www.angelsense.com' },
+            { label: __alloT('stem.swimlab.special_olympics_aquatics_2', 'Special Olympics — Aquatics'), url: 'https://www.specialolympics.org/our-work/sports/aquatics' },
+            { label: __alloT('stem.swimlab.alive_solutions_swimsuit_color_visibil_2', 'Alive Solutions — Swimsuit Color Visibility Tests'), url: 'https://alivesolutions.com' }
           ] },
           { name: 'Maine-specific', items: [
-            { label: 'Maine YMCA chapters (find a pool)', url: 'https://www.ymainemaine.org' },
-            { label: 'Maine Warden Service (911 for water emergencies)', url: 'https://www.maine.gov/ifw/about-us/warden-service.html' },
-            { label: 'Maine Marine Patrol', url: 'https://www.maine.gov/dmr/marine-patrol' }
+            { label: __alloT('stem.swimlab.maine_ymca_chapters_find_a_pool', 'Maine YMCA chapters (find a pool)'), url: 'https://www.ymainemaine.org' },
+            { label: __alloT('stem.swimlab.maine_warden_service_911_for_water_eme', 'Maine Warden Service (911 for water emergencies)'), url: 'https://www.maine.gov/ifw/about-us/warden-service.html' },
+            { label: __alloT('stem.swimlab.maine_marine_patrol', 'Maine Marine Patrol'), url: 'https://www.maine.gov/dmr/marine-patrol' }
           ] }
         ];
         return h('div', { style: { padding: 20, maxWidth: 980, margin: '0 auto', color: T.text } },
           backBar('📚 Resources'),
           h('p', { style: { margin: '0 0 14px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-            'Every organization cited in this lab, plus adaptive swim resources and Maine-specific links. Bookmark the Make a Splash scholarship link if cost is a barrier to lessons.'),
+            __alloT('stem.swimlab.every_organization_cited_in_this_lab_p', 'Every organization cited in this lab, plus adaptive swim resources and Maine-specific links. Bookmark the Make a Splash scholarship link if cost is a barrier to lessons.')),
           groups.map(function(g, gi) {
             return h('div', { key: gi, style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 10, padding: 14, marginBottom: 12 } },
               h('h3', { style: { margin: '0 0 10px', fontSize: 14, color: T.accentHi } }, g.name),
@@ -2431,15 +2432,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
         else if (efficiency > 10) state = 'recreational';
         else state = 'inefficient';
         var sm = {
-          elite:        { label: '🏊 Elite efficiency', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'High distance per stroke, balanced kick, optimal rate.' },
-          efficient:    { label: '🟢 Efficient stroke', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Good fundamentals. Sustainable for distance.' },
-          recreational: { label: '🟡 Recreational', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Casual swimming. Tires sooner.' },
-          inefficient:  { label: '🔴 Inefficient stroke', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Wasted energy. Suboptimal length or kick.' }
+          elite:        { label: __alloT('stem.swimlab.elite_efficiency', '🏊 Elite efficiency'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.swimlab.high_distance_per_stroke_balanced_kick', 'High distance per stroke, balanced kick, optimal rate.') },
+          efficient:    { label: __alloT('stem.swimlab.efficient_stroke', '🟢 Efficient stroke'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: __alloT('stem.swimlab.good_fundamentals_sustainable_for_dist', 'Good fundamentals. Sustainable for distance.') },
+          recreational: { label: __alloT('stem.swimlab.recreational', '🟡 Recreational'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.swimlab.casual_swimming_tires_sooner', 'Casual swimming. Tires sooner.') },
+          inefficient:  { label: __alloT('stem.swimlab.inefficient_stroke', '🔴 Inefficient stroke'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.swimlab.wasted_energy_suboptimal_length_or_kic', 'Wasted energy. Suboptimal length or kick.') }
         }[state];
         return h('div', { style: { padding: 20, maxWidth: 900, margin: '0 auto' } },
           h('div', { style: { padding: 16, background: T.bg2 || '#0f172a', borderRadius: 10, color: T.text, border: '1px solid #0891b2' } },
-            h('h3', { style: { fontSize: 14, fontWeight: 800, color: '#67e8f9' } }, '🏊 Stroke efficiency discovery'),
-            h('p', { style: { fontSize: 12, marginBottom: 10 } }, 'Sliders for stroke rate, length per stroke, kick intensity. Discrete 4-state efficiency. No score, no reveal.'),
+            h('h3', { style: { fontSize: 14, fontWeight: 800, color: '#67e8f9' } }, __alloT('stem.swimlab.stroke_efficiency_discovery', '🏊 Stroke efficiency discovery')),
+            h('p', { style: { fontSize: 12, marginBottom: 10 } }, __alloT('stem.swimlab.sliders_for_stroke_rate_length_per_str', 'Sliders for stroke rate, length per stroke, kick intensity. Discrete 4-state efficiency. No score, no reveal.')),
             h('div', { style: { padding: 12, borderRadius: 8, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 10 } },
               h('div', { style: { fontSize: 14, fontWeight: 900, color: sm.color } }, sm.label),
               h('div', { style: { fontSize: 11, color: '#475569', marginTop: 4 } }, sm.desc)
@@ -2457,15 +2458,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
               var pts = [];
               for (var r = 0; r <= 100; r += 5) pts.push(px(r).toFixed(1) + ',' + py(effAt(r)).toFixed(1));
               var curE = effAt(iq.rate);
-              return h('svg', { viewBox: '0 0 ' + W + ' ' + Hc, width: '100%', style: { maxWidth: 340, display: 'block', margin: '0 auto 10px', background: '#0b1220', borderRadius: 8, border: '1px solid rgba(8,145,178,0.35)' }, role: 'img', 'aria-label': 'Efficiency versus stroke rate. With your current length and kick, efficiency peaks at a moderate stroke rate near 50, not at the fastest rate.' },
+              return h('svg', { viewBox: '0 0 ' + W + ' ' + Hc, width: '100%', style: { maxWidth: 340, display: 'block', margin: '0 auto 10px', background: '#0b1220', borderRadius: 8, border: '1px solid rgba(8,145,178,0.35)' }, role: 'img', 'aria-label': __alloT('stem.swimlab.efficiency_versus_stroke_rate_with_you', 'Efficiency versus stroke rate. With your current length and kick, efficiency peaks at a moderate stroke rate near 50, not at the fastest rate.') },
                 h('line', { x1: padL, y1: padT, x2: padL, y2: Hc - padB, stroke: '#334155', strokeWidth: 1 }),
                 h('line', { x1: padL, y1: Hc - padB, x2: W - padR, y2: Hc - padB, stroke: '#334155', strokeWidth: 1 }),
                 h('line', { x1: px(50), y1: padT, x2: px(50), y2: Hc - padB, stroke: '#22c55e', strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.7 }),
-                h('text', { x: px(50), y: padT - 4, fill: '#22c55e', fontSize: 8, textAnchor: 'middle' }, 'optimal rate'),
+                h('text', { x: px(50), y: padT - 4, fill: '#22c55e', fontSize: 8, textAnchor: 'middle' }, __alloT('stem.swimlab.optimal_rate', 'optimal rate')),
                 h('polyline', { points: pts.join(' '), fill: 'none', stroke: '#67e8f9', strokeWidth: 2 }),
                 h('circle', { cx: px(iq.rate), cy: py(curE), r: 4, fill: '#fbbf24', stroke: '#0b1220', strokeWidth: 1 }),
                 h('text', { x: px(iq.rate), y: py(curE) - 7, fill: '#fbbf24', fontSize: 8, textAnchor: 'middle', fontWeight: 'bold' }, 'you'),
-                h('text', { x: (padL + W - padR) / 2, y: Hc - 5, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'Stroke rate →'),
+                h('text', { x: (padL + W - padR) / 2, y: Hc - 5, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, __alloT('stem.swimlab.stroke_rate', 'Stroke rate →')),
                 h('text', { x: 4, y: padT + 4, fill: '#94a3b8', fontSize: 8 }, 'eff')
               );
             })(),
@@ -2479,21 +2480,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
               })
             ),
             h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8 } },
-              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ r: iq.rate, l: iq.length, k: iq.kick, st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
-              h('button', { onClick: function() { setIQ({ rate: 50, length: 50, kick: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset')
+              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ r: iq.rate, l: iq.length, k: iq.kick, st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, __alloT('stem.swimlab.log', '📋 Log')),
+              h('button', { onClick: function() { setIQ({ rate: 50, length: 50, kick: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, __alloT('stem.swimlab.reset', '↺ Reset'))
             ),
-            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: Rate vs length — which matters more?',
+            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.swimlab.hypothesis_rate_vs_length_which_matter', 'Hypothesis: Rate vs length — which matters more?'),
               style: { width: '100%', minHeight: 50, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 8 }, rows: 2 }),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, '🤔 Stuck — show open prompts'),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, __alloT('stem.swimlab.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
             iq.stuckRevealed && h('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: '#cbd5e1', marginBottom: 8 } },
               h('ul', { style: { margin: 0, paddingLeft: 18 } },
-                h('li', null, 'Elite swimmers use slower stroke rate, longer pulls. Why?'),
-                h('li', null, 'What happens with super-fast rate but tiny length?'))),
+                h('li', null, __alloT('stem.swimlab.elite_swimmers_use_slower_stroke_rate_', 'Elite swimmers use slower stroke rate, longer pulls. Why?')),
+                h('li', null, __alloT('stem.swimlab.what_happens_with_super_fast_rate_but_', 'What happens with super-fast rate but tiny length?')))),
             h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
-              h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand — explain in own words'),
-            iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain stroke efficiency physics.',
+              h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), __alloT('stem.swimlab.i_understand_explain_in_own_words', 'I understand — explain in own words')),
+            iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.swimlab.explain_stroke_efficiency_physics', 'Explain stroke efficiency physics.'),
               style: { width: '100%', minHeight: 60, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 3 }),
-            h('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: '#64748b' } }, 'Design note: discrete 4-state stroke marker; no time score; no reveal — by design.')
+            h('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: '#64748b' } }, __alloT('stem.swimlab.design_note_discrete_4_state_stroke_ma', 'Design note: discrete 4-state stroke marker; no time score; no reveal — by design.'))
           )
         );
       })();
@@ -2511,7 +2512,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
         var React2 = (ctx && ctx.React) || window.React;
         if (!React2) return null;
         return React2.createElement('div', { style: { padding: 20, color: '#fde2e2', background: '#7f1d1d', borderRadius: 10, margin: 20 } },
-          React2.createElement('strong', null, 'SwimLab error: '),
+          React2.createElement('strong', null, __alloT('stem.swimlab.swimlab_error', 'SwimLab error: ')),
           String(err && err.message || err)
         );
       }
