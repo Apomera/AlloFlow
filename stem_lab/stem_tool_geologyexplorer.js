@@ -136,6 +136,15 @@
     { tk: 'stem.geology.hist6', fb: '6 · The pluton’s heat bakes the rock it touches into a METAMORPHIC rim — marble from limestone, hornfels from shale (contact metamorphism).' }
   ];
 
+  // ── Relative-dating quiz (active recall of the principles the tool teaches) ──
+  var QUIZ = [
+    { q: 'Which layer is OLDER?',                                              opts: ['Sandstone', 'Limestone'],                                              correct: 1, why: 'Limestone lies below the sandstone, and lower layers were laid down first — superposition.' },
+    { q: 'Is the granite pluton older or younger than the shale it cuts?',      opts: ['Older', 'Younger'],                                                    correct: 1, why: 'A feature that cuts across another must be younger — cross-cutting. The pluton cuts the shale, so it came later.' },
+    { q: 'How did the marble rim form?',                                        opts: ['Shells piled up in a sea', 'The pluton baked the limestone', 'A river dropped sand'], correct: 1, why: 'Marble is limestone recrystallised by the pluton’s heat — contact metamorphism.' },
+    { q: 'Where would you expect to find fossils?',                             opts: ['In the granite pluton', 'In the shale', 'In the magma'],               correct: 1, why: 'Fossils form in sedimentary rock like shale; melting and metamorphism destroy them.' },
+    { q: 'In a drill core, the OLDEST rock is…',                                opts: ['At the top', 'At the bottom'],                                          correct: 1, why: 'Layers stack oldest-first, so the deepest rock is the oldest — superposition.' }
+  ];
+
   // ── three.js engine (imperative; lives on window[ENGINE_KEY]) ───────────────
   function initEngine(container, opts) {
     var THREE = window.THREE;
@@ -171,6 +180,9 @@
     var dummy = new THREE.Object3D(), col = new THREE.Color(), WHITE = new THREE.Color(0xffffff);
     var instanceToVoxel = [];
     var sliceZ = 0, excavate = false, highlightKey = null, showStage = 99;
+    var hoverBox = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1.04, 1.04, 1.04)), new THREE.LineBasicMaterial({ color: 0xfff0c0, transparent: true, opacity: 0.85 }));
+    hoverBox.visible = false; hoverBox.renderOrder = 2; scene.add(hoverBox);
+    var treeMeshes = [], lastHover = 0;
 
     function visible(v) { return !removed[vkey(v)] && v.z >= sliceZ && FORMED_AT[v.key] <= showStage; }
     function rebuild() {
@@ -187,8 +199,25 @@
         instanceToVoxel[i] = v; i++;
       }
       mesh.count = i; mesh.instanceMatrix.needsUpdate = true; if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+      for (var ti = 0; ti < treeMeshes.length; ti++) { var tu = treeMeshes[ti].userData; treeMeshes[ti].visible = (tu.z >= sliceZ) && !removed[tu.x + ',0,' + tu.z] && (FORMED_AT.soil <= showStage); }
     }
     rebuild();
+
+    // simple low-poly trees on the surface — a "this is the top, down is deep" cue
+    (function buildTrees() {
+      var cells = [[2, 3], [4, 10], [8, 2], [11, 9], [5, 6], [10, 4]];
+      var trunkGeo = new THREE.CylinderGeometry(0.08, 0.12, 0.5, 5), trunkMat = new THREE.MeshStandardMaterial({ color: 0x6b4423, roughness: 0.9 });
+      var leafGeo = new THREE.ConeGeometry(0.34, 0.78, 7), leafMat = new THREE.MeshStandardMaterial({ color: 0x3f7d3a, roughness: 0.8 });
+      for (var i = 0; i < cells.length; i++) {
+        var x = cells[i][0], z = cells[i][1], p = worldPos({ x: x, y: 0, z: z });
+        var g = new THREE.Group();
+        var trunk = new THREE.Mesh(trunkGeo, trunkMat); trunk.position.y = 0.25;
+        var leaf = new THREE.Mesh(leafGeo, leafMat); leaf.position.y = 0.78;
+        g.add(trunk); g.add(leaf); g.position.set(p[0], p[1] + 0.5, p[2]); g.userData = { x: x, z: z };
+        scene.add(g); treeMeshes.push(g);
+      }
+      eng._treeGeo = [trunkGeo, leafGeo]; eng._treeMat = [trunkMat, leafMat];
+    })();
 
     var raycaster = new THREE.Raycaster(), pointer = new THREE.Vector2(), down = null;
     function shallowest(x, z) { for (var yy = 0; yy < NY; yy++) { if (!removed[x + ',' + yy + ',' + z]) return yy; } return null; }
@@ -215,6 +244,19 @@
     function onDown(e) { down = { x: e.clientX, y: e.clientY }; }
     function onUp(e) { if (!down) return; var moved = Math.abs(e.clientX - down.x) + Math.abs(e.clientY - down.y); down = null; if (moved < 6) pick(e); }
     cnv.addEventListener('pointerdown', onDown); cnv.addEventListener('pointerup', onUp);
+    function onMoveHover(e) {
+      if (down) { if (hoverBox.visible) hoverBox.visible = false; return; }
+      var now = (window.performance && performance.now) ? performance.now() : 0;
+      if (now - lastHover < 40) return; lastHover = now;
+      var rect = cnv.getBoundingClientRect();
+      pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1; pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(pointer, camera);
+      var hits = raycaster.intersectObject(mesh);
+      if (hits.length) { var v = instanceToVoxel[hits[0].instanceId]; if (v) { var p = worldPos(v); hoverBox.position.set(p[0], p[1], p[2]); hoverBox.visible = true; return; } }
+      hoverBox.visible = false;
+    }
+    function onLeaveHover() { hoverBox.visible = false; }
+    cnv.addEventListener('pointermove', onMoveHover); cnv.addEventListener('pointerleave', onLeaveHover);
     function onLost(e) { e.preventDefault(); if (opts.onContextLost) opts.onContextLost(); }
     cnv.addEventListener('webglcontextlost', onLost, false);
 
@@ -234,8 +276,9 @@
     eng.dispose = function () {
       eng.disposed = true; if (raf) cancelAnimationFrame(raf);
       cnv.removeEventListener('pointerdown', onDown); cnv.removeEventListener('pointerup', onUp); cnv.removeEventListener('webglcontextlost', onLost);
+      cnv.removeEventListener('pointermove', onMoveHover); cnv.removeEventListener('pointerleave', onLeaveHover);
       if (ro) try { ro.disconnect(); } catch (e) {}
-      try { geo.dispose(); mat.dispose(); renderer.dispose(); } catch (e) {}
+      try { geo.dispose(); mat.dispose(); renderer.dispose(); hoverBox.geometry.dispose(); hoverBox.material.dispose(); if (eng._treeGeo) eng._treeGeo.forEach(function (g) { g.dispose(); }); if (eng._treeMat) eng._treeMat.forEach(function (m) { m.dispose(); }); } catch (e) {}
       if (cnv.parentNode) cnv.parentNode.removeChild(cnv);
     };
     return eng;
@@ -274,6 +317,9 @@
       var fos = React.useState(d.fossils || {}); var found = fos[0], setFound = fos[1];
       var fossilsRef = React.useRef(found); fossilsRef.current = found;
       var cr = React.useState(null); var core = cr[0], setCore = cr[1];
+      var qz = React.useState(false); var quizOn = qz[0], setQuizOn = qz[1];
+      var qi = React.useState(0); var quizI = qi[0], setQuizI = qi[1];
+      var qa = React.useState(null); var quizAns = qa[0], setQuizAns = qa[1];
       var threeReady = !!(ctx.toolData && ctx.toolData._threeLoaded) && !!window.THREE;
 
       function announce(msg) { try { var lr = document.getElementById('allo-live-geology'); if (lr) { lr.textContent = ''; setTimeout(function () { lr.textContent = String(msg || ''); }, 30); } } catch (e) {} }
@@ -296,6 +342,8 @@
         setCore({ id: site.id, segs: segs, blurb: site.blurb });
         announce('Core sample, ' + site.label + '. Top to bottom: ' + segs.map(function (s) { return ROCKS[s.key].name; }).join(', ') + '. ' + site.blurb);
       }
+      function answerQuiz(i) { setQuizAns(i); var Q = QUIZ[quizI]; announce((i === Q.correct ? 'Correct. ' : 'Not quite. ') + Q.why); }
+      function nextQuiz() { var n = (quizI + 1) % QUIZ.length; setQuizI(n); setQuizAns(null); announce('Question ' + (n + 1) + '. ' + QUIZ[n].q); }
 
       // ── formation-history playback (assembles the crust in chronological order) ──
       function clearHistTimer() { if (histTimer.current) { clearTimeout(histTimer.current); histTimer.current = null; } }
@@ -437,6 +485,28 @@
           h('div', { className: 'mt-2 text-[11px] leading-snug ' + ink }, core.blurb));
       }
 
+      // ── relative-dating quiz (active recall) ──
+      function quizPanel() {
+        var Q = QUIZ[quizI], revealed = quizAns != null;
+        function ansBtn(i) {
+          var chosen = quizAns === i, right = i === Q.correct;
+          var cls = !revealed
+            ? (isDark ? 'bg-slate-800 border-slate-600 text-slate-100 hover:bg-slate-700 hover:border-violet-400' : 'bg-white border-slate-300 text-slate-700 hover:bg-violet-50 hover:border-violet-400')
+            : right ? 'bg-emerald-500 border-emerald-400 text-emerald-950' : (chosen ? 'bg-rose-500 border-rose-400 text-rose-50' : (isDark ? 'bg-slate-800/60 border-slate-700 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-400'));
+          return h('button', { key: i, type: 'button', disabled: revealed, onClick: function () { answerQuiz(i); }, className: 'transition-colors active:scale-[0.97] text-[12px] font-bold px-3 py-1.5 rounded-lg border ' + cls }, (revealed && right ? '✓ ' : (revealed && chosen ? '✗ ' : '')) + Q.opts[i]);
+        }
+        return h('div', { className: 'rounded-xl border p-3 ' + cardBg, role: 'region', 'aria-label': 'Relative dating quiz' },
+          h('div', { className: 'flex items-center justify-between gap-2' },
+            h('span', { className: 'text-[12px] font-extrabold ' + ink }, '🧠 ' + t('stem.geology.quiz_title', 'Test yourself — relative dating')),
+            h('button', { type: 'button', onClick: function () { var nv = !quizOn; setQuizOn(nv); if (nv) setQuizAns(null); }, 'aria-expanded': quizOn ? 'true' : 'false', className: 'transition-colors active:scale-[0.97] text-[11px] font-bold px-2.5 py-1 rounded-lg border ' + (quizOn ? 'bg-violet-500 border-violet-400 text-violet-50' : (isDark ? 'bg-slate-800 border-slate-600 text-slate-100 hover:bg-slate-700' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100')) }, quizOn ? t('stem.geology.quiz_hide', 'Hide') : t('stem.geology.quiz_start', 'Start'))),
+          quizOn ? h('div', { className: 'mt-2' },
+            h('div', { className: 'text-[12px] font-semibold ' + ink }, (quizI + 1) + '/' + QUIZ.length + '. ' + Q.q),
+            h('div', { className: 'flex flex-wrap gap-1.5 mt-1.5' }, Q.opts.map(function (_, i) { return ansBtn(i); })),
+            revealed ? h('div', { className: 'mt-2 text-[11.5px] ' + (quizAns === Q.correct ? (isDark ? 'text-emerald-300' : 'text-emerald-700') : (isDark ? 'text-rose-300' : 'text-rose-700')) }, (quizAns === Q.correct ? '✓ ' : '✗ ') + Q.why) : null,
+            revealed ? h('button', { type: 'button', onClick: nextQuiz, className: 'mt-2 ' + btn + btnIdle }, t('stem.geology.quiz_next', 'Next question →')) : null
+          ) : null);
+      }
+
       // ── accessible cross-section: SVG diagram + keyboard strata list (the non-3D core) ──
       function crossSectionSVG() {
         var bands = ['soil', 'sandstone', 'shale', 'limestone', 'basement', 'magma'];
@@ -529,6 +599,7 @@
                   return h('button', { key: site.id, type: 'button', onClick: function () { takeCore(site); }, 'aria-pressed': on ? 'true' : 'false', title: site.blurb, className: 'transition-colors active:scale-[0.97] text-[11px] font-bold px-2.5 py-1.5 rounded-lg border ' + (on ? 'bg-amber-500 border-amber-400 text-amber-950' : (isDark ? 'bg-slate-800 border-slate-600 text-slate-100 hover:bg-slate-700 hover:border-amber-400' : 'bg-white border-slate-300 text-slate-700 hover:bg-amber-50 hover:border-amber-400')) }, site.icon + ' ' + t('stem.geology.core_' + site.id, site.label));
                 })),
               corePanel())))
+        , quizPanel()
       );
     }
   });
