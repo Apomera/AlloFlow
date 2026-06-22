@@ -44,10 +44,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for artSt
   "buttons": 24,
   "canvases": 1,
   "inputs": 3,
-  "lengthBucket": 39,
+  "lengthBucket": 40,
   "paths": 0,
   "selects": 0,
-  "sha": "309590fe74b4367b",
+  "sha": "92c6d1c7ae3b1d4d",
   "svgs": 0,
 }
 `;
@@ -109,10 +109,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for chemB
   "buttons": 39,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 71,
+  "lengthBucket": 72,
   "paths": 0,
   "selects": 0,
-  "sha": "a9ba058afdd46ae9",
+  "sha": "a3c6c5d82ba39c0b",
   "svgs": 1,
 }
 `;
@@ -151,7 +151,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for echol
   "lengthBucket": 47,
   "paths": 0,
   "selects": 0,
-  "sha": "e3df20210258c2f8",
+  "sha": "c5fdcd7f70bddaeb",
   "svgs": 0,
 }
 `;
@@ -333,7 +333,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for semic
   "lengthBucket": 44,
   "paths": 0,
   "selects": 0,
-  "sha": "27e736d3e3596722",
+  "sha": "6d943e68c04c5589",
   "svgs": 0,
 }
 `;
@@ -421,10 +421,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for weldL
   "buttons": 26,
   "canvases": 0,
   "inputs": 0,
-  "lengthBucket": 168,
+  "lengthBucket": 170,
   "paths": 0,
   "selects": 0,
-  "sha": "5ac8420c5bf772a6",
+  "sha": "97da90b21693dc1f",
   "svgs": 0,
 }
 `;

@@ -8611,7 +8611,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       function backBtn(targetView, targetSub, label) {
         return h('button', {
           onClick: function() { upd({ view: targetView, sub: targetSub }); },
-          className: 'inline-flex items-center gap-1 text-xs font-bold text-indigo-300 hover:text-indigo-200 mb-3',
+          className: 'transition-colors inline-flex items-center gap-1 text-xs font-bold text-indigo-300 hover:text-indigo-200 mb-3',
           'aria-label': 'Back to ' + (label || 'previous')
         }, '← ' + (label || 'Back'));
       }
@@ -8693,7 +8693,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               return h('button', {
                 key: x.id,
                 onClick: function() { upd({ sub: x.id }); },
-                className: 'text-left p-4 rounded-xl bg-slate-800/60 border border-cyan-500/30 hover:bg-slate-700/60 focus:ring-2 focus:ring-cyan-400 focus:outline-none'
+                className: 'transition-colors text-left p-4 rounded-xl bg-slate-800/60 border border-cyan-500/30 hover:bg-slate-700/60 focus:ring-2 focus:ring-cyan-400 focus:outline-none'
               },
                 h('div', { className: 'text-2xl mb-1' }, x.icon),
                 h('div', { className: 'text-sm font-bold text-cyan-200 mb-1' }, x.label),
@@ -8834,7 +8834,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             h('button', {
               onClick: runCritique,
               disabled: loading || battery.length < 2,
-              className: 'px-5 py-2 rounded-xl font-bold text-sm ' + (loading || battery.length < 2 ? 'bg-slate-700 text-slate-300' : 'bg-cyan-600 text-white hover:bg-cyan-500')
+              className: 'px-5 py-2 rounded-xl font-bold text-sm ' + (loading || battery.length < 2 ? 'bg-slate-700 text-slate-300' : 'transition-colors bg-cyan-600 text-white hover:bg-cyan-500')
             }, loading ? 'Thinking…' : '\u2728 Critique my battery'),
             h('span', { className: 'text-xs text-slate-300' }, battery.length + ' / ' + CHC_BROAD.length + ' broad abilities selected')
           ),
@@ -8842,7 +8842,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             h('h3', { className: 'text-sm font-black text-cyan-300 mb-2' }, 'Critique'),
             h('pre', { className: 'text-xs text-slate-200 whitespace-pre-wrap font-sans leading-relaxed' }, critique),
             h('div', { className: 'mt-3 no-print' },
-              h('button', { onClick: function() { window.print && window.print(); }, className: 'w-full py-2 rounded-lg bg-slate-800 border border-cyan-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print battery + critique / Save as PDF')
+              h('button', { onClick: function() { window.print && window.print(); }, className: 'transition-colors w-full py-2 rounded-lg bg-slate-800 border border-cyan-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print battery + critique / Save as PDF')
             )
           )
         );
@@ -9165,7 +9165,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             ),
             h('button', {
               onClick: nextRound,
-              className: 'w-full py-3 rounded-xl bg-cyan-600 text-white font-bold text-sm hover:bg-cyan-500 focus:outline-none focus:ring-2 ring-cyan-300'
+              className: 'transition-colors w-full py-3 rounded-xl bg-cyan-600 text-white font-bold text-sm hover:bg-cyan-500 focus:outline-none focus:ring-2 ring-cyan-300'
             }, '\uD83D\uDD75\uFE0F Start \u2014 vignette 1 of 12')
           );
         }
@@ -9243,12 +9243,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                   ),
                   h('button', {
                     onClick: function() { upd({ alBiasIdx: -1, alBiasShown: [], alBiasScore: 0, alBiasRounds: 0, alBiasStreak: 0 }); },
-                    className: 'mt-2 px-4 py-1.5 rounded-lg bg-cyan-600 text-white font-bold text-xs hover:bg-cyan-500'
+                    className: 'transition-colors mt-2 px-4 py-1.5 rounded-lg bg-cyan-600 text-white font-bold text-xs hover:bg-cyan-500'
                   }, '\uD83D\uDD04 Restart')
                 )
               : h('button', {
                   onClick: nextRound,
-                  className: 'mt-1 px-4 py-2 rounded-lg bg-cyan-600 text-white font-bold text-sm hover:bg-cyan-500 focus:outline-none focus:ring-2 ring-cyan-300'
+                  className: 'transition-colors mt-1 px-4 py-2 rounded-lg bg-cyan-600 text-white font-bold text-sm hover:bg-cyan-500 focus:outline-none focus:ring-2 ring-cyan-300'
                 }, '\u27A1\uFE0F Next vignette')
           )
         );
@@ -9334,7 +9334,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
 
         return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-3' },
           h('div', { className: 'flex flex-wrap gap-2 no-print' },
-            h('button', { onClick: function() { upd({ sampleArea: null }); }, className: 'px-3 py-1.5 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, '← All areas'),
+            h('button', { onClick: function() { upd({ sampleArea: null }); }, className: 'transition-colors px-3 py-1.5 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, '← All areas'),
             backBtn('cognitive', null, 'Cognitive menu')
           ),
           h('h2', { className: 'text-2xl font-black text-cyan-200' }, '🧪 ' + focusedBroad.code + ' — ' + focusedBroad.name + ' Sample Items'),
@@ -9425,7 +9425,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
 
         return h('div', { className: 'max-w-4xl mx-auto p-4 md:p-6 space-y-3' },
           h('div', { className: 'flex flex-wrap gap-2 no-print' },
-            h('button', { onClick: function() { upd({ narrowBroad: null }); }, className: 'px-3 py-1.5 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, '← All broad abilities'),
+            h('button', { onClick: function() { upd({ narrowBroad: null }); }, className: 'transition-colors px-3 py-1.5 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, '← All broad abilities'),
             backBtn('cognitive', null, 'Cognitive menu')
           ),
           h('section', { className: 'p-4 rounded-xl bg-gradient-to-br from-cyan-900/40 to-blue-900/40 border-2 border-cyan-500/40' },
@@ -9581,7 +9581,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               );
             }),
             h('div', { className: 'no-print' },
-              h('button', { onClick: function() { window.print && window.print(); }, className: 'w-full py-2 rounded-lg bg-slate-800 border border-violet-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print objectives for syllabus')
+              h('button', { onClick: function() { window.print && window.print(); }, className: 'transition-colors w-full py-2 rounded-lg bg-slate-800 border border-violet-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print objectives for syllabus')
             )
           );
         }
@@ -9641,7 +9641,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               );
             }),
             h('div', { className: 'no-print' },
-              h('button', { onClick: function() { window.print && window.print(); }, className: 'w-full py-2 rounded-lg bg-slate-800 border border-violet-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print rubric')
+              h('button', { onClick: function() { window.print && window.print(); }, className: 'transition-colors w-full py-2 rounded-lg bg-slate-800 border border-violet-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print rubric')
             )
           );
         }
@@ -9663,7 +9663,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               return h('button', {
                 key: x.id,
                 onClick: function() { upd({ sub: x.id }); },
-                className: 'text-left p-4 rounded-xl bg-slate-800/60 border border-violet-500/30 hover:bg-slate-700/60 focus:ring-2 focus:ring-violet-400 focus:outline-none'
+                className: 'transition-colors text-left p-4 rounded-xl bg-slate-800/60 border border-violet-500/30 hover:bg-slate-700/60 focus:ring-2 focus:ring-violet-400 focus:outline-none'
               },
                 h('div', { className: 'text-2xl mb-1' }, x.icon),
                 h('div', { className: 'text-sm font-bold text-violet-200 mb-1' }, x.label),
@@ -9725,7 +9725,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             );
           }),
           h('div', { className: 'pt-4 no-print' },
-            h('button', { onClick: function() { window.print && window.print(); }, className: 'w-full py-2 rounded-lg bg-slate-800 border border-stone-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print glossary')
+            h('button', { onClick: function() { window.print && window.print(); }, className: 'transition-colors w-full py-2 rounded-lg bg-slate-800 border border-stone-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print glossary')
           )
         );
       }
@@ -9763,7 +9763,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         })[state];
         return h('div', { className: 'max-w-4xl mx-auto p-4 md:p-6' },
           h('header', { className: 'mb-4 flex items-center gap-3' },
-            ArrowLeft && h('button', { onClick: function() { upd({ view: null, sub: null }); }, className: 'p-2 hover:bg-slate-100 rounded-lg' }, h(ArrowLeft, { size: 18 })),
+            ArrowLeft && h('button', { onClick: function() { upd({ view: null, sub: null }); }, className: 'transition-colors p-2 hover:bg-slate-100 rounded-lg' }, h(ArrowLeft, { size: 18 })),
             h('h1', { className: 'text-xl font-black text-teal-200' }, '🔬 Reliability Inquiry — Sandbox Capstone')
           ),
           h('div', { style: { padding: 16, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
@@ -9882,7 +9882,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         h('div', { className: 'flex justify-end pt-2' },
           h('button', {
             onClick: submit,
-            className: 'px-5 py-2 rounded-xl font-bold text-sm bg-purple-600 text-white hover:bg-purple-500'
+            className: 'transition-colors px-5 py-2 rounded-xl font-bold text-sm bg-purple-600 text-white hover:bg-purple-500'
           }, 'Calculate profile')
         )
       );
@@ -9944,7 +9944,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               return h('button', {
                 key: n,
                 onClick: function() { setNoise(n); },
-                className: 'px-3 py-1 rounded text-xs font-bold ' + (noise === n ? 'bg-rose-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+                className: 'px-3 py-1 rounded text-xs font-bold ' + (noise === n ? 'bg-rose-600 text-white' : 'transition-colors bg-slate-700 text-slate-200 hover:bg-slate-600')
               }, '±' + n);
             })
           ),
@@ -9971,9 +9971,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         ),
 
         h('div', { className: 'flex flex-wrap gap-2 no-print' },
-          h('button', { onClick: function() { upd({ sub: 'inventory', big5Answers: {}, big5Result: null }); }, className: 'flex-1 py-2 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, 'Retake inventory'),
-          h('button', { onClick: function() { upd({ sub: 'critique' }); }, className: 'flex-1 py-2 rounded-lg bg-purple-600 text-white text-xs font-bold hover:bg-purple-500' }, 'See MBTI critique →'),
-          h('button', { onClick: function() { window.print && window.print(); }, className: 'flex-1 py-2 rounded-lg bg-slate-800 border border-purple-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print / PDF')
+          h('button', { onClick: function() { upd({ sub: 'inventory', big5Answers: {}, big5Result: null }); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, 'Retake inventory'),
+          h('button', { onClick: function() { upd({ sub: 'critique' }); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-purple-600 text-white text-xs font-bold hover:bg-purple-500' }, 'See MBTI critique →'),
+          h('button', { onClick: function() { window.print && window.print(); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-slate-800 border border-purple-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print / PDF')
         )
       );
     }
@@ -10191,7 +10191,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           ),
           h('button', {
             onClick: function() { upd({ sub: 'inventory' }); },
-            className: 'px-5 py-2 rounded-xl font-bold text-sm bg-purple-600 text-white hover:bg-purple-500'
+            className: 'transition-colors px-5 py-2 rounded-xl font-bold text-sm bg-purple-600 text-white hover:bg-purple-500'
           }, 'Take self-rated inventory first →')
         );
       }
@@ -10249,7 +10249,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         h('div', { className: 'flex justify-end pt-2' },
           h('button', {
             onClick: pSubmit,
-            className: 'px-5 py-2 rounded-xl font-bold text-sm bg-purple-600 text-white hover:bg-purple-500'
+            className: 'transition-colors px-5 py-2 rounded-xl font-bold text-sm bg-purple-600 text-white hover:bg-purple-500'
           }, 'Compare peer vs. self →')
         )
       );
@@ -10325,8 +10325,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         ),
 
         h('div', { className: 'flex gap-2' },
-          h('button', { onClick: function() { upd({ sub: 'peer', peerAnswers: {}, peerResult: null }); }, className: 'flex-1 py-2 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, 'Add another peer rater'),
-          h('button', { onClick: function() { window.print && window.print(); }, className: 'flex-1 py-2 rounded-lg bg-purple-600 text-white text-xs font-bold hover:bg-purple-500 no-print' }, '\uD83D\uDDA8 Print / Save as PDF')
+          h('button', { onClick: function() { upd({ sub: 'peer', peerAnswers: {}, peerResult: null }); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, 'Add another peer rater'),
+          h('button', { onClick: function() { window.print && window.print(); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-purple-600 text-white text-xs font-bold hover:bg-purple-500 no-print' }, '\uD83D\uDDA8 Print / Save as PDF')
         )
       );
     }
@@ -10394,7 +10394,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
 
       return h('div', { className: 'max-w-4xl mx-auto p-4 md:p-6 space-y-3' },
         h('div', { className: 'flex flex-wrap gap-2 no-print' },
-          h('button', { onClick: function() { upd({ facetTrait: null }); }, className: 'px-3 py-1.5 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, '\u2190 All traits'),
+          h('button', { onClick: function() { upd({ facetTrait: null }); }, className: 'transition-colors px-3 py-1.5 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, '\u2190 All traits'),
           backBtn('personality', null, 'Personality menu')
         ),
         h('section', { className: 'p-5 rounded-xl border-2', style: { borderColor: tmF.color + 'aa', background: 'linear-gradient(135deg, ' + tmF.color + '22, rgba(15,23,42,0.6))' } },
@@ -10454,7 +10454,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           return h('button', {
             key: x.id,
             onClick: function() { upd({ sub: x.id }); },
-            className: 'text-left p-4 rounded-xl bg-slate-800/60 border border-purple-500/30 hover:bg-slate-700/60 focus:ring-2 focus:ring-purple-400 focus:outline-none'
+            className: 'transition-colors text-left p-4 rounded-xl bg-slate-800/60 border border-purple-500/30 hover:bg-slate-700/60 focus:ring-2 focus:ring-purple-400 focus:outline-none'
           },
             h('div', { className: 'text-2xl mb-1' }, x.icon),
             h('div', { className: 'text-sm font-bold text-purple-200 mb-1' }, x.label),
@@ -10519,7 +10519,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         h('div', { className: 'flex justify-end pt-2' },
           h('button', {
             onClick: submit,
-            className: 'px-5 py-2 rounded-xl font-bold text-sm bg-emerald-600 text-white hover:bg-emerald-500'
+            className: 'transition-colors px-5 py-2 rounded-xl font-bold text-sm bg-emerald-600 text-white hover:bg-emerald-500'
           }, 'Get my Holland code')
         )
       );
@@ -10699,15 +10699,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           h('button', {
             onClick: explore,
             disabled: loading,
-            className: 'px-4 py-2 rounded-lg text-xs font-bold ' + (loading ? 'bg-slate-700 text-slate-300' : 'bg-emerald-600 text-white hover:bg-emerald-500')
+            className: 'px-4 py-2 rounded-lg text-xs font-bold ' + (loading ? 'bg-slate-700 text-slate-300' : 'transition-colors bg-emerald-600 text-white hover:bg-emerald-500')
           }, loading ? 'Thinking…' : '\u2728 Explore occupations'),
           result && h('pre', { className: 'text-xs text-slate-200 whitespace-pre-wrap font-sans leading-relaxed mt-3 p-3 rounded bg-slate-900/60' }, result)
         ),
 
         h('div', { className: 'flex flex-wrap gap-2 no-print' },
-          h('button', { onClick: function() { upd({ sub: 'inventory', riasecAnswers: {}, riasecResult: null, occupationResult: '' }); }, className: 'flex-1 py-2 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, 'Retake'),
-          h('button', { onClick: function() { upd({ sub: 'critique' }); }, className: 'flex-1 py-2 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-500' }, 'Compare with clickbait →'),
-          h('button', { onClick: function() { window.print && window.print(); }, className: 'flex-1 py-2 rounded-lg bg-slate-800 border border-emerald-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print / PDF')
+          h('button', { onClick: function() { upd({ sub: 'inventory', riasecAnswers: {}, riasecResult: null, occupationResult: '' }); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, 'Retake'),
+          h('button', { onClick: function() { upd({ sub: 'critique' }); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-500' }, 'Compare with clickbait →'),
+          h('button', { onClick: function() { window.print && window.print(); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-slate-800 border border-emerald-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print / PDF')
         )
       );
     }
@@ -10819,7 +10819,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         h('div', { className: 'flex justify-end pt-2' },
           h('button', {
             onClick: sSubmit,
-            className: 'px-5 py-2 rounded-xl font-bold text-sm bg-emerald-600 text-white hover:bg-emerald-500'
+            className: 'transition-colors px-5 py-2 rounded-xl font-bold text-sm bg-emerald-600 text-white hover:bg-emerald-500'
           }, 'See my values profile')
         )
       );
@@ -10863,9 +10863,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         ),
 
         h('div', { className: 'flex flex-wrap gap-2 no-print' },
-          h('button', { onClick: function() { upd({ sub: 'values', schwartzAnswers: {}, schwartzResult: null }); }, className: 'flex-1 py-2 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, 'Retake'),
-          s.riasecResult && h('button', { onClick: function() { upd({ sub: 'result' }); }, className: 'flex-1 py-2 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-500' }, 'Compare with my Holland code →'),
-          h('button', { onClick: function() { window.print && window.print(); }, className: 'flex-1 py-2 rounded-lg bg-slate-800 border border-emerald-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print / PDF')
+          h('button', { onClick: function() { upd({ sub: 'values', schwartzAnswers: {}, schwartzResult: null }); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, 'Retake'),
+          s.riasecResult && h('button', { onClick: function() { upd({ sub: 'result' }); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-500' }, 'Compare with my Holland code →'),
+          h('button', { onClick: function() { window.print && window.print(); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-slate-800 border border-emerald-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print / PDF')
         )
       );
     }
@@ -10924,7 +10924,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         h('section', { className: 'p-3 rounded-xl bg-slate-800/60 border border-emerald-500/30 space-y-2' },
           h('div', { className: 'flex justify-between items-baseline' },
             h('h3', { className: 'text-xs font-black text-emerald-200 uppercase tracking-wider' }, 'Filter \u2014 ' + filtered.length + ' of ' + CAREER_REGISTRY.length + ' shown'),
-            anyFilter && h('button', { onClick: clearF, className: 'text-xs text-emerald-400 underline hover:text-emerald-300' }, 'Clear all')
+            anyFilter && h('button', { onClick: clearF, className: 'transition-colors text-xs text-emerald-400 underline hover:text-emerald-300' }, 'Clear all')
           ),
           h('input', {
             type: 'text', value: f.search || '',
@@ -11024,7 +11024,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           s.riasecResult && h('div', { className: 'pt-1 border-t border-slate-700/60' },
             h('button', {
               onClick: function() { setF({ riasec: s.riasecResult.code.charAt(0) }); },
-              className: 'text-xs text-emerald-300 underline hover:text-emerald-200'
+              className: 'transition-colors text-xs text-emerald-300 underline hover:text-emerald-200'
             }, '\u2728 Filter to my Holland code (' + s.riasecResult.code + ') \u2014 letter ' + s.riasecResult.code.charAt(0))
           ),
           // CONSTRAINT TAGS \u2014 lifestyle filters
@@ -11060,8 +11060,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             }).join(', ')
           ),
           h('div', { className: 'flex gap-2' },
-            h('button', { onClick: function() { upd({ sub: 'compare' }); }, className: 'px-2 py-1 rounded bg-amber-600 text-white text-xs font-bold hover:bg-amber-500' }, 'View comparison \u2192'),
-            h('button', { onClick: function() { upd({ compareIds: [] }); }, className: 'px-2 py-1 rounded bg-slate-700 text-slate-200 text-xs hover:bg-slate-600' }, 'Clear')
+            h('button', { onClick: function() { upd({ sub: 'compare' }); }, className: 'transition-colors px-2 py-1 rounded bg-amber-600 text-white text-xs font-bold hover:bg-amber-500' }, 'View comparison \u2192'),
+            h('button', { onClick: function() { upd({ compareIds: [] }); }, className: 'transition-colors px-2 py-1 rounded bg-slate-700 text-slate-200 text-xs hover:bg-slate-600' }, 'Clear')
           )
         ),
 
@@ -11145,9 +11145,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
 
       return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-4' },
         h('div', { className: 'flex flex-wrap gap-2 no-print' },
-          h('button', { onClick: function() { upd({ sub: 'explorer' }); }, className: 'px-3 py-1.5 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, '\u2190 Explorer'),
-          h('button', { onClick: function() { upd({ sub: null }); }, className: 'px-3 py-1.5 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, '\u2190 Career menu'),
-          h('button', { onClick: function() { upd({ sub: 'network', networkRootId: detailCareer.id }); }, className: 'px-3 py-1.5 rounded-lg bg-emerald-700 text-white text-xs font-bold hover:bg-emerald-600' }, '\uD83D\uDD78 See in network')
+          h('button', { onClick: function() { upd({ sub: 'explorer' }); }, className: 'transition-colors px-3 py-1.5 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, '\u2190 Explorer'),
+          h('button', { onClick: function() { upd({ sub: null }); }, className: 'transition-colors px-3 py-1.5 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, '\u2190 Career menu'),
+          h('button', { onClick: function() { upd({ sub: 'network', networkRootId: detailCareer.id }); }, className: 'transition-colors px-3 py-1.5 rounded-lg bg-emerald-700 text-white text-xs font-bold hover:bg-emerald-600' }, '\uD83D\uDD78 See in network')
         ),
 
         // HERO
@@ -11262,7 +11262,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         CAREER_ACCOMMODATIONS[detailCareer.id] && h('section', { className: 'p-4 rounded-xl bg-slate-800/60 border-2 border-cyan-500/40' },
           h('div', { className: 'flex justify-between items-baseline mb-2' },
             h('h3', { className: 'text-sm font-black text-cyan-200' }, '\u267F Accommodation considerations by disability domain'),
-            h('button', { onClick: function() { upd({ sub: 'accessibility' }); }, className: 'text-xs text-cyan-300 underline hover:text-cyan-200' }, 'Browse domains \u2192')
+            h('button', { onClick: function() { upd({ sub: 'accessibility' }); }, className: 'transition-colors text-xs text-cyan-300 underline hover:text-cyan-200' }, 'Browse domains \u2192')
           ),
           h('p', { className: 'text-xs text-slate-400 mb-3 italic' }, 'Specific to ' + detailCareer.title + ' \u2014 what accommodations are commonly used, where genuine barriers exist, and which sub-specialties suit different disability profiles. Honest, not aspirational.'),
           h('div', { className: 'space-y-2' },
@@ -11326,10 +11326,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               }
               upd({ compareIds: picks });
             },
-            className: 'flex-1 py-2 rounded-lg text-xs font-bold ' + (dInCompare ? 'bg-amber-600 text-white hover:bg-amber-500' : 'bg-slate-700 text-white hover:bg-slate-600')
+            className: 'flex-1 py-2 rounded-lg text-xs font-bold ' + (dInCompare ? 'transition-colors bg-amber-600 text-white hover:bg-amber-500' : 'transition-colors bg-slate-700 text-white hover:bg-slate-600')
           }, dInCompare ? '\u2713 In compare' : '\u2696 Add to compare'),
-          (s.compareIds && s.compareIds.length > 1) && h('button', { onClick: function() { upd({ sub: 'compare' }); }, className: 'flex-1 py-2 rounded-lg bg-amber-600 text-white text-xs font-bold hover:bg-amber-500' }, 'View comparison (' + s.compareIds.length + ') \u2192'),
-          h('button', { onClick: function() { window.print && window.print(); }, className: 'flex-1 py-2 rounded-lg bg-slate-800 border border-emerald-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print profile')
+          (s.compareIds && s.compareIds.length > 1) && h('button', { onClick: function() { upd({ sub: 'compare' }); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-amber-600 text-white text-xs font-bold hover:bg-amber-500' }, 'View comparison (' + s.compareIds.length + ') \u2192'),
+          h('button', { onClick: function() { window.print && window.print(); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-slate-800 border border-emerald-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print profile')
         )
       );
     }
@@ -11397,8 +11397,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       return h('div', { className: 'max-w-5xl mx-auto p-4 md:p-6 space-y-3' },
         h('div', { className: 'flex flex-wrap gap-2 no-print' },
           backBtn('career', null, 'Career menu'),
-          h('button', { onClick: function() { upd({ sub: 'explorer' }); }, className: 'px-3 py-1.5 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, '\u2190 Explorer'),
-          h('button', { onClick: function() { upd({ sub: 'detail', careerId: root.id }); }, className: 'px-3 py-1.5 rounded-lg bg-emerald-700 text-white text-xs font-bold hover:bg-emerald-600' }, '\uD83D\uDC41 See root detail')
+          h('button', { onClick: function() { upd({ sub: 'explorer' }); }, className: 'transition-colors px-3 py-1.5 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, '\u2190 Explorer'),
+          h('button', { onClick: function() { upd({ sub: 'detail', careerId: root.id }); }, className: 'transition-colors px-3 py-1.5 rounded-lg bg-emerald-700 text-white text-xs font-bold hover:bg-emerald-600' }, '\uD83D\uDC41 See root detail')
         ),
         h('h2', { className: 'text-2xl font-black text-emerald-200' }, '\uD83D\uDD78 Career Network'),
         h('p', { className: 'text-xs text-slate-300 leading-relaxed' },
@@ -11505,7 +11505,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           h('div', { className: 'space-y-2' },
             h('div', null,
               h('div', { className: 'text-xs font-black text-emerald-300 mb-1' }, '\u2B50 Root'),
-              h('button', { onClick: function() { upd({ sub: 'detail', careerId: root.id }); }, className: 'text-xs text-slate-100 underline hover:text-emerald-200' }, root.title)
+              h('button', { onClick: function() { upd({ sub: 'detail', careerId: root.id }); }, className: 'transition-colors text-xs text-slate-100 underline hover:text-emerald-200' }, root.title)
             ),
             neighbors.length > 0 && h('div', null,
               h('div', { className: 'text-xs font-black text-emerald-300 mb-1' }, '\uD83D\uDD17 Direct neighbors (' + neighbors.length + ')'),
@@ -11514,7 +11514,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                   return h('button', {
                     key: n.id,
                     onClick: function() { upd({ networkRootId: n.id }); },
-                    className: 'px-2 py-0.5 rounded text-xs bg-emerald-900/40 border border-emerald-500/30 text-emerald-200 hover:bg-emerald-800/50'
+                    className: 'transition-colors px-2 py-0.5 rounded text-xs bg-emerald-900/40 border border-emerald-500/30 text-emerald-200 hover:bg-emerald-800/50'
                   }, n.title);
                 })
               )
@@ -11526,7 +11526,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                   return h('button', {
                     key: n.id,
                     onClick: function() { upd({ networkRootId: n.id }); },
-                    className: 'px-2 py-0.5 rounded text-xs bg-slate-700/60 border border-slate-600 text-slate-200 hover:bg-slate-600'
+                    className: 'transition-colors px-2 py-0.5 rounded text-xs bg-slate-700/60 border border-slate-600 text-slate-200 hover:bg-slate-600'
                   }, n.title);
                 })
               )
@@ -11551,7 +11551,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           h('h2', { className: 'text-2xl font-black text-emerald-200' }, '\u2696\uFE0F Side-by-Side Comparison'),
           h('div', { className: 'p-6 rounded-lg bg-slate-800/60 border border-emerald-500/30 text-sm text-slate-200 leading-relaxed' },
             h('p', { className: 'mb-3' }, 'No careers selected yet. Use the ', h('strong', { className: 'text-emerald-300' }, '\u2696 Add to compare'), ' button on any career card or detail page to build a comparison set (up to 3 at a time).'),
-            h('button', { onClick: function() { upd({ sub: 'explorer' }); }, className: 'px-4 py-2 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-500' }, '\uD83D\uDDFA Open Career Explorer \u2192')
+            h('button', { onClick: function() { upd({ sub: 'explorer' }); }, className: 'transition-colors px-4 py-2 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-500' }, '\uD83D\uDDFA Open Career Explorer \u2192')
           )
         );
       }
@@ -11582,8 +11582,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       return h('div', { className: 'max-w-5xl mx-auto p-4 md:p-6 space-y-3' },
         h('div', { className: 'flex flex-wrap gap-2 no-print' },
           backBtn('career', null, 'Career menu'),
-          h('button', { onClick: function() { upd({ sub: 'explorer' }); }, className: 'px-3 py-1.5 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, '\u2190 Explorer'),
-          h('button', { onClick: function() { upd({ compareIds: [] }); addToast({ message: 'Comparison cleared.', type: 'info' }); }, className: 'px-3 py-1.5 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, '\uD83D\uDDD1 Clear all')
+          h('button', { onClick: function() { upd({ sub: 'explorer' }); }, className: 'transition-colors px-3 py-1.5 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, '\u2190 Explorer'),
+          h('button', { onClick: function() { upd({ compareIds: [] }); addToast({ message: 'Comparison cleared.', type: 'info' }); }, className: 'transition-colors px-3 py-1.5 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, '\uD83D\uDDD1 Clear all')
         ),
         h('h2', { className: 'text-2xl font-black text-emerald-200' }, '\u2696\uFE0F Side-by-Side Comparison'),
         h('p', { className: 'text-xs text-slate-300' }, 'Comparing ' + compareCareers.length + ' career' + (compareCareers.length === 1 ? '' : 's') + '. Add up to 3 at a time. Use the explorer to add more.'),
@@ -11599,10 +11599,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                   var cl = CAREER_CLUSTERS[c.cluster] || { color: '#666' };
                   return h('th', { key: c.id, className: 'p-3 text-left', scope: 'col', style: { borderLeft: '2px solid ' + cl.color + '88' } },
                     h('div', { className: 'flex items-baseline gap-2 mb-1' },
-                      h('button', { onClick: function() { upd({ sub: 'detail', careerId: c.id }); }, className: 'text-sm font-black text-emerald-200 underline hover:text-emerald-100' }, c.title),
+                      h('button', { onClick: function() { upd({ sub: 'detail', careerId: c.id }); }, className: 'transition-colors text-sm font-black text-emerald-200 underline hover:text-emerald-100' }, c.title),
                       h('button', {
                         onClick: function() { upd({ compareIds: compareIds.filter(function(x) { return x !== c.id; }) }); },
-                        className: 'text-xs text-rose-400 hover:text-rose-300',
+                        className: 'transition-colors text-xs text-rose-400 hover:text-rose-300',
                         title: 'Remove from comparison'
                       }, '\u2715')
                     )
@@ -11735,7 +11735,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         ),
 
         h('div', { className: 'flex flex-wrap gap-2 no-print' },
-          h('button', { onClick: function() { window.print && window.print(); }, className: 'px-4 py-2 rounded-lg bg-slate-800 border border-emerald-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print comparison')
+          h('button', { onClick: function() { window.print && window.print(); }, className: 'transition-colors px-4 py-2 rounded-lg bg-slate-800 border border-emerald-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print comparison')
         )
       );
     }
@@ -11806,7 +11806,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                 h('span', { style: { fontSize: 24 }, 'aria-hidden': 'true' }, '\uD83C\uDFAF'),
                 h('div', null,
                   h('div', { className: 'text-xs uppercase tracking-wider text-slate-300' }, 'Destination'),
-                  h('button', { onClick: function() { upd({ sub: 'detail', careerId: dest.id }); }, className: 'text-2xl font-black text-emerald-100 underline hover:text-emerald-200' }, dest.title)
+                  h('button', { onClick: function() { upd({ sub: 'detail', careerId: dest.id }); }, className: 'transition-colors text-2xl font-black text-emerald-100 underline hover:text-emerald-200' }, dest.title)
                 )
               ),
               h('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-2 text-xs text-slate-200' },
@@ -11948,7 +11948,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           filterText && h('div', { className: 'text-xs text-slate-400 mt-1' },
             matchingSkills.length + ' skill' + (matchingSkills.length === 1 ? '' : 's') + ' match "' + filterText + '"',
             ' \u00B7 ',
-            h('button', { onClick: function() { upd({ skillFilter: '' }); }, className: 'text-emerald-400 underline hover:text-emerald-300' }, 'Clear')
+            h('button', { onClick: function() { upd({ skillFilter: '' }); }, className: 'transition-colors text-emerald-400 underline hover:text-emerald-300' }, 'Clear')
           )
         ),
 
@@ -12191,11 +12191,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           h('button', {
             onClick: runCoach,
             disabled: loading,
-            className: 'flex-1 py-3 rounded-xl text-sm font-black ' + (loading ? 'bg-slate-700 text-slate-300' : 'bg-emerald-600 text-white hover:bg-emerald-500 focus:ring-2 focus:ring-emerald-400 focus:outline-none')
+            className: 'flex-1 py-3 rounded-xl text-sm font-black ' + (loading ? 'bg-slate-700 text-slate-300' : 'transition-colors bg-emerald-600 text-white hover:bg-emerald-500 focus:ring-2 focus:ring-emerald-400 focus:outline-none')
           }, loading ? '\ud83e\udd14 Coach is thinking\u2026' : '\u2728 Coach me'),
           response && h('button', {
             onClick: function() { upd({ coachResponse: '' }); },
-            className: 'px-4 py-3 rounded-xl bg-slate-700 text-white text-xs font-bold hover:bg-slate-600'
+            className: 'transition-colors px-4 py-3 rounded-xl bg-slate-700 text-white text-xs font-bold hover:bg-slate-600'
           }, 'Clear response')
         ),
 
@@ -12260,7 +12260,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
 
       return h('div', { className: 'max-w-4xl mx-auto p-4 md:p-6 space-y-4' },
         h('div', { className: 'flex flex-wrap gap-2 no-print' },
-          h('button', { onClick: function() { upd({ clusterPickerKey: null }); }, className: 'px-3 py-1.5 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, '\u2190 All clusters'),
+          h('button', { onClick: function() { upd({ clusterPickerKey: null }); }, className: 'transition-colors px-3 py-1.5 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, '\u2190 All clusters'),
           backBtn('career', null, 'Career menu'),
           h('button', {
             onClick: function() { upd({ sub: 'explorer', explorerFilters: { cluster: selectedClusterKey } }); },
@@ -12328,7 +12328,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                     return h('button', {
                       key: c.id,
                       onClick: function() { upd({ sub: 'detail', careerId: c.id }); },
-                      className: 'px-2 py-1 rounded text-xs bg-slate-800 border border-slate-600 hover:border-emerald-400 text-slate-100',
+                      className: 'transition-colors px-2 py-1 rounded text-xs bg-slate-800 border border-slate-600 hover:border-emerald-400 text-slate-100',
                       title: c.title + ' \u2014 $' + (c.pay || 0).toLocaleString()
                     }, c.title + ' ($' + Math.round((c.pay || 0) / 1000) + 'K)');
                   })
@@ -12429,7 +12429,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
 
       return h('div', { className: 'max-w-4xl mx-auto p-4 md:p-6 space-y-4' },
         h('div', { className: 'flex flex-wrap gap-2 no-print' },
-          h('button', { onClick: function() { upd({ accessibilityDomain: null }); }, className: 'px-3 py-1.5 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, '\u2190 All domains'),
+          h('button', { onClick: function() { upd({ accessibilityDomain: null }); }, className: 'transition-colors px-3 py-1.5 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, '\u2190 All domains'),
           backBtn('career', null, 'Career menu')
         ),
 
@@ -16943,7 +16943,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                     return h('button', {
                       key: c.id,
                       onClick: function() { upd({ sub: 'detail', careerId: c.id }); },
-                      className: 'px-2 py-1 rounded text-xs bg-slate-800 border border-slate-600 hover:border-emerald-400 text-slate-100',
+                      className: 'transition-colors px-2 py-1 rounded text-xs bg-slate-800 border border-slate-600 hover:border-emerald-400 text-slate-100',
                       title: c.title + ' \u2014 $' + (c.pay || 0).toLocaleString() + ', ' + ((c.growth || 0) > 0 ? '+' : '') + (c.growth || 0) + '%'
                     },
                       h('span', { style: { color: cl.color, marginRight: 4 } }, cl.icon),
@@ -17052,7 +17052,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           return h('button', {
             key: x.id,
             onClick: function() { upd({ sub: x.id }); },
-            className: 'text-left p-4 rounded-xl bg-slate-800/60 border border-emerald-500/30 hover:bg-slate-700/60 focus:ring-2 focus:ring-emerald-400 focus:outline-none'
+            className: 'transition-colors text-left p-4 rounded-xl bg-slate-800/60 border border-emerald-500/30 hover:bg-slate-700/60 focus:ring-2 focus:ring-emerald-400 focus:outline-none'
           },
             h('div', { className: 'text-2xl mb-1' }, x.icon),
             h('div', { className: 'text-sm font-bold text-emerald-200 mb-1' }, x.label),
@@ -17135,7 +17135,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-4' },
         h('button', {
           onClick: function() { upd({ sub: 'tests', employerTest: null, practiceItems: [], practiceFeedback: '' }); },
-          className: 'inline-flex items-center gap-1 text-xs font-bold text-amber-300 hover:text-amber-200 mb-1'
+          className: 'transition-colors inline-flex items-center gap-1 text-xs font-bold text-amber-300 hover:text-amber-200 mb-1'
         }, '← All tests'),
         h('h2', { className: 'text-2xl font-black text-amber-200' }, test.name),
         h('p', { className: 'text-xs text-slate-300 italic' }, test.full),
@@ -17172,7 +17172,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           h('button', {
             onClick: loadPractice,
             disabled: practiceLoading,
-            className: 'px-4 py-2 rounded-lg text-xs font-bold ' + (practiceLoading ? 'bg-slate-700 text-slate-300' : 'bg-amber-600 text-white hover:bg-amber-500')
+            className: 'px-4 py-2 rounded-lg text-xs font-bold ' + (practiceLoading ? 'bg-slate-700 text-slate-300' : 'transition-colors bg-amber-600 text-white hover:bg-amber-500')
           }, practiceLoading ? 'Generating…' : (practice.length ? '\uD83D\uDD04 Regenerate' : '\u2728 Generate practice items')),
           practiceFeedback && h('div', { className: 'mt-3 p-3 rounded bg-rose-900/30 text-xs text-rose-200' }, practiceFeedback),
           practice.length > 0 && h('pre', { className: 'text-xs text-slate-100 whitespace-pre-wrap font-sans leading-relaxed mt-3 p-3 rounded bg-slate-900/70 max-h-96 overflow-y-auto' }, practice[0])
@@ -17190,7 +17190,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             return h('button', {
               key: t.id,
               onClick: function() { upd({ sub: 'test', employerTest: t.id, practiceItems: [], practiceFeedback: '' }); announceSR('Opened ' + t.name); },
-              className: 'text-left p-4 rounded-xl bg-slate-800/60 border border-amber-500/30 hover:bg-slate-700/60 focus:ring-2 focus:ring-amber-400 focus:outline-none'
+              className: 'transition-colors text-left p-4 rounded-xl bg-slate-800/60 border border-amber-500/30 hover:bg-slate-700/60 focus:ring-2 focus:ring-amber-400 focus:outline-none'
             },
               h('div', { className: 'text-sm font-black text-amber-200 mb-1' }, t.name),
               h('div', { className: 'text-xs text-slate-300 italic mb-2' }, t.full),
@@ -17372,7 +17372,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             h('button', {
               onClick: genQuestion,
               disabled: qLoading || !compId,
-              className: 'px-5 py-2 rounded-xl font-bold text-sm no-print ' + (qLoading || !compId ? 'bg-slate-700 text-slate-300' : 'bg-amber-600 text-white hover:bg-amber-500')
+              className: 'px-5 py-2 rounded-xl font-bold text-sm no-print ' + (qLoading || !compId ? 'bg-slate-700 text-slate-300' : 'transition-colors bg-amber-600 text-white hover:bg-amber-500')
             }, qLoading ? 'Thinking…' : '\u2728 Generate interview question')
           ),
           q && h('div', { className: 'mt-4 p-3 rounded bg-slate-900/70' },
@@ -17393,7 +17393,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               h('button', {
                 onClick: critiqueAnswer,
                 disabled: cLoading || ans.length < 50,
-                className: 'px-4 py-2 rounded-lg font-bold no-print ' + (cLoading || ans.length < 50 ? 'bg-slate-700 text-slate-300' : 'bg-amber-600 text-white hover:bg-amber-500')
+                className: 'px-4 py-2 rounded-lg font-bold no-print ' + (cLoading || ans.length < 50 ? 'bg-slate-700 text-slate-300' : 'transition-colors bg-amber-600 text-white hover:bg-amber-500')
               }, cLoading ? 'Thinking…' : '\u2728 Critique my answer')
             )
           ),
@@ -17494,7 +17494,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           return h('button', {
             key: x.id,
             onClick: function() { upd({ sub: x.id }); },
-            className: 'text-left p-4 rounded-xl bg-slate-800/60 border border-amber-500/30 hover:bg-slate-700/60 focus:ring-2 focus:ring-amber-400 focus:outline-none'
+            className: 'transition-colors text-left p-4 rounded-xl bg-slate-800/60 border border-amber-500/30 hover:bg-slate-700/60 focus:ring-2 focus:ring-amber-400 focus:outline-none'
           },
             h('div', { className: 'text-2xl mb-1' }, x.icon),
             h('div', { className: 'text-sm font-bold text-amber-200 mb-1' }, x.label),
@@ -17736,7 +17736,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           )
         ),
         h('div', { className: 'no-print' },
-          h('button', { onClick: function() { window.print && window.print(); }, className: 'w-full py-2 rounded-lg bg-slate-800 border border-sky-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print current settings / Save as PDF')
+          h('button', { onClick: function() { window.print && window.print(); }, className: 'transition-colors w-full py-2 rounded-lg bg-slate-800 border border-sky-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print current settings / Save as PDF')
         )
       );
     }
@@ -17819,7 +17819,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           ),
           h('button', {
             onClick: nextRound,
-            className: 'w-full py-3 rounded-xl bg-sky-600 text-white font-bold text-sm hover:bg-sky-500 focus:outline-none focus:ring-2 ring-sky-300'
+            className: 'transition-colors w-full py-3 rounded-xl bg-sky-600 text-white font-bold text-sm hover:bg-sky-500 focus:outline-none focus:ring-2 ring-sky-300'
           }, '\uD83C\uDFAF Start \u2014 vignette 1 of 12')
         );
       }
@@ -17892,12 +17892,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                 ),
                 h('button', {
                   onClick: function() { upd({ elgIdx: -1, elgShown: [], elgScore: 0, elgRounds: 0, elgStreak: 0 }); },
-                  className: 'mt-2 px-4 py-1.5 rounded-lg bg-sky-600 text-white font-bold text-xs hover:bg-sky-500'
+                  className: 'transition-colors mt-2 px-4 py-1.5 rounded-lg bg-sky-600 text-white font-bold text-xs hover:bg-sky-500'
                 }, '\uD83D\uDD04 Restart')
               )
             : h('button', {
                 onClick: nextRound,
-                className: 'mt-1 px-4 py-2 rounded-lg bg-sky-600 text-white font-bold text-sm hover:bg-sky-500 focus:outline-none focus:ring-2 ring-sky-300'
+                className: 'transition-colors mt-1 px-4 py-2 rounded-lg bg-sky-600 text-white font-bold text-sm hover:bg-sky-500 focus:outline-none focus:ring-2 ring-sky-300'
               }, '\u27A1\uFE0F Next vignette')
         )
       );
@@ -18581,7 +18581,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           h('button', {
             onClick: genHandout,
             disabled: hLoading || !hStudent || !hFindings,
-            className: 'w-full py-2 rounded-xl font-bold text-sm no-print ' + (hLoading || !hStudent || !hFindings ? 'bg-slate-700 text-slate-300' : 'bg-sky-600 text-white hover:bg-sky-500')
+            className: 'w-full py-2 rounded-xl font-bold text-sm no-print ' + (hLoading || !hStudent || !hFindings ? 'bg-slate-700 text-slate-300' : 'transition-colors bg-sky-600 text-white hover:bg-sky-500')
           }, hLoading ? 'Generating…' : '\u2728 Generate parent handout')
         ),
 
@@ -18591,8 +18591,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           h('div', { className: 'mt-3 space-y-2 no-print' },
             h('div', { className: 'text-xs text-slate-300 italic' }, 'Review the draft carefully. Personalize for the specific family. Check for accuracy against your full eval report. Adjust tone as needed.'),
             h('div', { className: 'flex gap-2' },
-              h('button', { onClick: genHandout, className: 'flex-1 py-2 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, '\uD83D\uDD04 Regenerate'),
-              h('button', { onClick: function() { window.print && window.print(); }, className: 'flex-1 py-2 rounded-lg bg-sky-600 text-white text-xs font-bold hover:bg-sky-500' }, '\uD83D\uDDA8 Print / Save as PDF')
+              h('button', { onClick: genHandout, className: 'transition-colors flex-1 py-2 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, '\uD83D\uDD04 Regenerate'),
+              h('button', { onClick: function() { window.print && window.print(); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-sky-600 text-white text-xs font-bold hover:bg-sky-500' }, '\uD83D\uDDA8 Print / Save as PDF')
             )
           )
         )
@@ -18766,7 +18766,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         ),
 
         h('div', { className: 'no-print' },
-          h('button', { onClick: function() { window.print && window.print(); }, className: 'w-full py-2 rounded-lg bg-slate-800 border border-sky-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print IEP meeting facilitation guide')
+          h('button', { onClick: function() { window.print && window.print(); }, className: 'transition-colors w-full py-2 rounded-lg bg-slate-800 border border-sky-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print IEP meeting facilitation guide')
         )
       );
     }
@@ -18903,7 +18903,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         ),
 
         h('div', { className: 'no-print' },
-          h('button', { onClick: function() { window.print && window.print(); }, className: 'w-full py-2 rounded-lg bg-slate-800 border border-sky-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print transition planning guide')
+          h('button', { onClick: function() { window.print && window.print(); }, className: 'transition-colors w-full py-2 rounded-lg bg-slate-800 border border-sky-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print transition planning guide')
         )
       );
     }
@@ -19030,7 +19030,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         ),
 
         h('div', { className: 'no-print' },
-          h('button', { onClick: function() { window.print && window.print(); }, className: 'w-full py-2 rounded-lg bg-slate-800 border border-sky-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print goal-writing guide')
+          h('button', { onClick: function() { window.print && window.print(); }, className: 'transition-colors w-full py-2 rounded-lg bg-slate-800 border border-sky-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print goal-writing guide')
         )
       );
     }
@@ -19079,7 +19079,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         ),
 
         h('div', { className: 'no-print' },
-          h('button', { onClick: function() { window.print && window.print(); }, className: 'w-full py-2 rounded-lg bg-slate-800 border border-sky-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print report-writing guide')
+          h('button', { onClick: function() { window.print && window.print(); }, className: 'transition-colors w-full py-2 rounded-lg bg-slate-800 border border-sky-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print report-writing guide')
         )
       );
     }
@@ -19210,7 +19210,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             h('button', {
               onClick: runCritique,
               disabled: loading || domains.length === 0,
-              className: 'px-4 py-2 rounded-lg text-xs font-bold ' + (loading || domains.length === 0 ? 'bg-slate-700 text-slate-300' : 'bg-sky-600 text-white hover:bg-sky-500')
+              className: 'px-4 py-2 rounded-lg text-xs font-bold ' + (loading || domains.length === 0 ? 'bg-slate-700 text-slate-300' : 'transition-colors bg-sky-600 text-white hover:bg-sky-500')
             }, loading ? 'Thinking…' : '\u2728 Get AI critique of my plan'),
             h('span', { className: 'text-xs text-slate-300' }, domains.length + ' / ' + CASE_DOMAIN_OPTIONS.length + ' domains selected')
           )
@@ -19228,7 +19228,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, selCase && selCase.evidence_check)
           ),
           h('div', { className: 'mt-3 no-print' },
-            h('button', { onClick: function() { window.print && window.print(); }, className: 'w-full py-2 rounded-lg bg-slate-800 border border-sky-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print case + my plan + critique')
+            h('button', { onClick: function() { window.print && window.print(); }, className: 'transition-colors w-full py-2 rounded-lg bg-slate-800 border border-sky-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print case + my plan + critique')
           )
         )
       );
@@ -19427,7 +19427,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       // Condition detail view
       return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-3' },
         h('div', { className: 'flex flex-wrap gap-2 no-print' },
-          h('button', { onClick: function() { upd({ dsmIdx: -1 }); }, className: 'px-3 py-1.5 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, '← All conditions'),
+          h('button', { onClick: function() { upd({ dsmIdx: -1 }); }, className: 'transition-colors px-3 py-1.5 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, '← All conditions'),
           backBtn('schoolpsych', null, 'School Psych menu')
         ),
         h('section', { className: 'p-5 rounded-xl bg-gradient-to-br from-sky-900/40 to-blue-900/40 border-2 border-sky-500/40' },
@@ -19716,7 +19716,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           return h('button', {
             key: x.id,
             onClick: function() { upd({ sub: x.id, ideaCategoryFocus: null }); },
-            className: 'text-left p-4 rounded-xl bg-slate-800/60 border border-sky-500/30 hover:bg-slate-700/60 focus:ring-2 focus:ring-sky-400 focus:outline-none'
+            className: 'transition-colors text-left p-4 rounded-xl bg-slate-800/60 border border-sky-500/30 hover:bg-slate-700/60 focus:ring-2 focus:ring-sky-400 focus:outline-none'
           },
             h('div', { className: 'text-2xl mb-1' }, x.icon),
             h('div', { className: 'text-sm font-bold text-sky-200 mb-1' }, x.label),
@@ -19818,7 +19818,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         ),
         h('button', {
           onClick: startRs,
-          className: 'w-full py-3 rounded-xl bg-sky-600 text-white font-bold text-sm hover:bg-sky-500 focus:outline-none focus:ring-2 ring-sky-300'
+          className: 'transition-colors w-full py-3 rounded-xl bg-sky-600 text-white font-bold text-sm hover:bg-sky-500 focus:outline-none focus:ring-2 ring-sky-300'
         }, '\uD83D\uDD75\uFE0F Start \u2014 vignette 1 of 10')
       );
     }
@@ -19898,12 +19898,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               ),
               h('button', {
                 onClick: function() { upd({ rsIdx: -1, rsShown: [], rsScore: 0, rsRounds: 0, rsStreak: 0 }); },
-                className: 'mt-2 px-4 py-1.5 rounded-lg bg-sky-600 text-white font-bold text-xs hover:bg-sky-500'
+                className: 'transition-colors mt-2 px-4 py-1.5 rounded-lg bg-sky-600 text-white font-bold text-xs hover:bg-sky-500'
               }, '\uD83D\uDD04 Restart')
             )
           : h('button', {
               onClick: startRs,
-              className: 'mt-1 px-4 py-2 rounded-lg bg-sky-600 text-white font-bold text-sm hover:bg-sky-500 focus:outline-none focus:ring-2 ring-sky-300'
+              className: 'transition-colors mt-1 px-4 py-2 rounded-lg bg-sky-600 text-white font-bold text-sm hover:bg-sky-500 focus:outline-none focus:ring-2 ring-sky-300'
             }, '\u27A1\uFE0F Next vignette')
       )
     );
@@ -20014,8 +20014,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           )
         ),
         h('div', { className: 'flex gap-2' },
-          h('button', { onClick: reset, className: 'flex-1 py-2 rounded-lg bg-fuchsia-600 text-white text-sm font-bold hover:bg-fuchsia-500' }, '\uD83D\uDD04 Replay (new order)'),
-          h('button', { onClick: function() { upd({ view: 'menu', sub: null }); }, className: 'flex-1 py-2 rounded-lg bg-slate-700 text-white text-sm font-bold hover:bg-slate-600' }, 'Main menu')
+          h('button', { onClick: reset, className: 'transition-colors flex-1 py-2 rounded-lg bg-fuchsia-600 text-white text-sm font-bold hover:bg-fuchsia-500' }, '\uD83D\uDD04 Replay (new order)'),
+          h('button', { onClick: function() { upd({ view: 'menu', sub: null }); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-slate-700 text-white text-sm font-bold hover:bg-slate-600' }, 'Main menu')
         )
       );
     }
@@ -20092,7 +20092,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               (showCorrect ? 'bg-emerald-600 border-emerald-600 text-white' :
                showWrong ? 'bg-rose-600 border-rose-600 text-white' :
                picked ? 'bg-' + opt.color + '-700/50 border-' + opt.color + '-400 text-white' :
-               'bg-slate-800/60 border-slate-600 text-slate-100 hover:bg-slate-700/60')
+               'transition-colors bg-slate-800/60 border-slate-600 text-slate-100 hover:bg-slate-700/60')
           },
             h('div', { className: 'text-sm font-black mb-1' }, opt.label),
             h('div', { className: 'text-xs opacity-90' }, opt.desc)
@@ -20112,7 +20112,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       reveal && h('div', { className: 'flex justify-end' },
         h('button', {
           onClick: next,
-          className: 'px-5 py-2 rounded-xl font-bold text-sm bg-fuchsia-600 text-white hover:bg-fuchsia-500'
+          className: 'transition-colors px-5 py-2 rounded-xl font-bold text-sm bg-fuchsia-600 text-white hover:bg-fuchsia-500'
         }, idx + 1 >= total ? 'See results \u2192' : 'Next item \u2192')
       )
     );

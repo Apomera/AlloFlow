@@ -1534,7 +1534,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       function backBtn(onClick, label) {
         return h('button', {
           onClick: onClick,
-          className: 'inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 focus:ring-2 focus:ring-violet-400 focus:outline-none',
+          className: 'transition-colors inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 focus:ring-2 focus:ring-violet-400 focus:outline-none',
           'aria-label': label || 'Back'
         }, ArrowLeft ? h(ArrowLeft, { className: 'w-3.5 h-3.5' }) : h('span', null, '\u2190'), h('span', null, label || 'Back'));
       }
@@ -1845,7 +1845,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                   ),
                   h('button', {
                     onClick: function() { sfxClick(); updKey('previewingSpellId', null); },
-                    className: 'text-2xl text-slate-400 hover:text-slate-700 font-bold leading-none focus:ring-2 focus:ring-violet-400 focus:outline-none rounded px-2',
+                    className: 'transition-colors text-2xl text-slate-400 hover:text-slate-700 font-bold leading-none focus:ring-2 focus:ring-violet-400 focus:outline-none rounded px-2',
                     'aria-label': 'Close preview'
                   }, '×')
                 ),
@@ -1902,12 +1902,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                       sfxClick();
                       updSage({ phase: 'practice', practiceSpellId: ps.id, practiceQuestion: null, practiceSession: { correct: 0, attempted: 0 }, previewingSpellId: null });
                     },
-                    className: 'flex-1 py-2.5 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-400 focus:outline-none',
+                    className: 'transition-colors flex-1 py-2.5 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-400 focus:outline-none',
                     'aria-label': 'Drill ' + ps.name + ' in Study Hall'
                   }, '📚 Drill in Study Hall'),
                   h('button', {
                     onClick: function() { sfxClick(); updKey('previewingSpellId', null); },
-                    className: 'px-5 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 focus:ring-2 focus:ring-slate-400 focus:outline-none'
+                    className: 'transition-colors px-5 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 focus:ring-2 focus:ring-slate-400 focus:outline-none'
                   }, 'Close')
                 )
               )
@@ -2002,12 +2002,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                       var defaults = unlockedSpells.slice(0, 3).map(function(s) { return s.id; });
                       updSage({ phase: 'loadout', equippedLoadout: equippedLoadout.length >= 1 ? equippedLoadout : defaults });
                     },
-                    className: 'flex-1 px-6 py-3 rounded-xl font-bold text-white bg-violet-600 hover:bg-violet-700 focus:ring-2 focus:ring-violet-400 focus:outline-none shadow-lg'
+                    className: 'transition-colors flex-1 px-6 py-3 rounded-xl font-bold text-white bg-violet-600 hover:bg-violet-700 focus:ring-2 focus:ring-violet-400 focus:outline-none shadow-lg'
                   }, '\uD83C\uDF0C Begin Expedition (3 rooms \u2192 boss)'),
                   h('button', {
                     key: 'shop',
                     onClick: function() { sfxClick(); updKey('phase', 'shop'); },
-                    className: 'px-5 py-3 rounded-xl font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border-2 border-amber-200 focus:ring-2 focus:ring-amber-400 focus:outline-none'
+                    className: 'transition-colors px-5 py-3 rounded-xl font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border-2 border-amber-200 focus:ring-2 focus:ring-amber-400 focus:outline-none'
                   }, '\uD83D\uDD2E Spell Shop')
                 ]
           ),
@@ -2029,7 +2029,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             return h('div', { className: 'flex flex-col md:flex-row gap-2 mb-5' },
               h('button', {
                 onClick: function() { sfxClick(); updSage({ phase: 'practice', practiceSpellId: null, practiceQuestion: null, practiceSession: null }); },
-                className: 'flex-1 px-5 py-2.5 rounded-xl font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-200 focus:ring-2 focus:ring-emerald-400 focus:outline-none flex items-center justify-center gap-2',
+                className: 'transition-colors flex-1 px-5 py-2.5 rounded-xl font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-200 focus:ring-2 focus:ring-emerald-400 focus:outline-none flex items-center justify-center gap-2',
                 'aria-label': 'Open Study Hall \u2014 untimed practice mode'
               },
                 h('span', { className: 'text-xl' }, '\uD83D\uDCDA'),
@@ -2040,7 +2040,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               ),
               h('button', {
                 onClick: function() { sfxClick(); updSage({ phase: 'review_mistakes', reviewIdx: 0, reviewRevealed: false }); },
-                className: 'flex-1 px-5 py-2.5 rounded-xl font-bold text-red-800 bg-red-50 hover:bg-red-100 border-2 border-red-200 focus:ring-2 focus:ring-red-400 focus:outline-none flex items-center justify-center gap-2',
+                className: 'transition-colors flex-1 px-5 py-2.5 rounded-xl font-bold text-red-800 bg-red-50 hover:bg-red-100 border-2 border-red-200 focus:ring-2 focus:ring-red-400 focus:outline-none flex items-center justify-center gap-2',
                 'aria-label': 'Review tough questions \u2014 ' + toughCount + ' queued'
               },
                 h('span', { className: 'text-xl' }, '\uD83C\uDFAF'),
@@ -2058,7 +2058,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               ),
               h('button', {
                 onClick: function() { sfxClick(); updKey('phase', 'dashboard'); },
-                className: 'flex-1 px-5 py-2.5 rounded-xl font-bold text-sky-800 bg-sky-50 hover:bg-sky-100 border-2 border-sky-200 focus:ring-2 focus:ring-sky-400 focus:outline-none flex items-center justify-center gap-2',
+                className: 'transition-colors flex-1 px-5 py-2.5 rounded-xl font-bold text-sky-800 bg-sky-50 hover:bg-sky-100 border-2 border-sky-200 focus:ring-2 focus:ring-sky-400 focus:outline-none flex items-center justify-center gap-2',
                 'aria-label': 'View your progress dashboard'
               },
                 h('span', { className: 'text-xl' }, '\uD83D\uDCCA'),
@@ -2096,7 +2096,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 ),
                 h('button', {
                   onClick: function() { sfxClick(); updKey('galleryOpen', !galleryOpen); },
-                  className: 'ml-auto text-[10px] text-slate-500 hover:text-slate-800 font-semibold focus:ring-2 focus:ring-violet-400 focus:outline-none rounded px-2 py-0.5',
+                  className: 'transition-colors ml-auto text-[10px] text-slate-500 hover:text-slate-800 font-semibold focus:ring-2 focus:ring-violet-400 focus:outline-none rounded px-2 py-0.5',
                   'aria-expanded': galleryOpen
                 }, galleryOpen ? 'Collapse' : 'Expand')
               ),
@@ -2377,7 +2377,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 h('button', {
                   onClick: saveAsPreset,
                   disabled: presets.length >= 3 || equippedLoadout.length === 0,
-                  className: 'text-[10px] font-bold py-1 px-2 rounded-md bg-slate-700 text-white hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed focus:ring-2 focus:ring-slate-400 focus:outline-none',
+                  className: 'transition-colors text-[10px] font-bold py-1 px-2 rounded-md bg-slate-700 text-white hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed focus:ring-2 focus:ring-slate-400 focus:outline-none',
                   title: presets.length >= 3 ? 'Preset slots full' : equippedLoadout.length === 0 ? 'Equip at least 1 spell first' : 'Save current loadout as a preset'
                 }, '+ Save current')
               ),
@@ -2402,7 +2402,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                         ),
                         h('button', {
                           onClick: function() { if (typeof confirm !== 'function' || confirm('Delete preset "' + p.name + '"?')) deletePreset(idx); },
-                          className: 'text-[12px] text-slate-400 hover:text-red-600 px-1 focus:ring-2 focus:ring-red-400 focus:outline-none rounded',
+                          className: 'transition-colors text-[12px] text-slate-400 hover:text-red-600 px-1 focus:ring-2 focus:ring-red-400 focus:outline-none rounded',
                           'aria-label': 'Delete preset ' + p.name
                         }, '\ud83d\uddd1')
                       );
@@ -2468,7 +2468,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                     addToast('Failed to generate AI questions. Try again.', 'error');
                   });
                 },
-                className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold text-white bg-violet-600 hover:bg-violet-700 focus:ring-2 focus:ring-violet-400 focus:outline-none'
+                className: 'transition-colors px-3 py-1.5 rounded-lg text-[11px] font-bold text-white bg-violet-600 hover:bg-violet-700 focus:ring-2 focus:ring-violet-400 focus:outline-none'
               }, '\u2728 Pre-load')
             ),
             // Per-spell AI status row
@@ -2518,7 +2518,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                       });
                     },
                     'aria-label': 'Regenerate AI questions for ' + s.name,
-                    className: 'text-violet-500 hover:text-violet-700 text-[10px] focus:outline-none focus:ring-1 focus:ring-violet-400 rounded'
+                    className: 'transition-colors text-violet-500 hover:text-violet-700 text-[10px] focus:outline-none focus:ring-1 focus:ring-violet-400 rounded'
                   }, '\ud83d\udd04')
                 );
               })
@@ -2630,7 +2630,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               ),
               h('button', {
                 onClick: function() { sfxClick(); updKey('selectedGoals', []); },
-                className: 'text-[10px] text-violet-600 hover:text-violet-900 font-semibold underline focus:ring-2 focus:ring-violet-400 focus:outline-none rounded'
+                className: 'transition-colors text-[10px] text-violet-600 hover:text-violet-900 font-semibold underline focus:ring-2 focus:ring-violet-400 focus:outline-none rounded'
               }, 'Skip / clear all')
             ),
             (function() {
@@ -2713,7 +2713,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               updSage({ phase: 'expedition', expedition: exp });
               announceSR('Expedition begins in the ' + sector.name + ' on ' + diffProfile.name + ' difficulty. ' + firstRoom.name + ' appears in room 1 of ' + diffProfile.rooms + '.');
             },
-            className: 'w-full py-3 rounded-xl font-bold text-white bg-violet-600 hover:bg-violet-700 disabled:bg-slate-300 disabled:cursor-not-allowed focus:ring-2 focus:ring-violet-400 focus:outline-none'
+            className: 'transition-colors w-full py-3 rounded-xl font-bold text-white bg-violet-600 hover:bg-violet-700 disabled:bg-slate-300 disabled:cursor-not-allowed focus:ring-2 focus:ring-violet-400 focus:outline-none'
           }, equippedLoadout.length === 0 ? 'Equip at least 1 spell' : '\u2728 Launch Expedition (3 rooms)')
         );
       }
@@ -3082,7 +3082,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                   updSage({ phase: 'hub', expedition: null });
                 }
               },
-              className: 'text-xs font-semibold text-slate-300 hover:text-slate-800 underline'
+              className: 'transition-colors text-xs font-semibold text-slate-300 hover:text-slate-800 underline'
             }, 'Abandon'),
             h('div', { className: 'flex-1 text-center' },
               h('div', { className: 'text-[10px] font-bold uppercase tracking-widest text-violet-600' },
@@ -3302,7 +3302,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             ),
             h('button', {
               onClick: function() { restAtShrine(); },
-              className: 'px-6 py-2.5 rounded-xl font-bold text-emerald-800 bg-white hover:bg-emerald-50 focus:ring-2 focus:ring-white focus:outline-none shadow-lg'
+              className: 'transition-colors px-6 py-2.5 rounded-xl font-bold text-emerald-800 bg-white hover:bg-emerald-50 focus:ring-2 focus:ring-white focus:outline-none shadow-lg'
             }, '\u26E9\uFE0F Rest at the shrine')
           ),
 
@@ -3420,7 +3420,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                       + (resolved
                         ? (isCorrect ? 'border-emerald-400 bg-emerald-50 text-emerald-900'
                           : (isSelected ? 'border-red-400 bg-red-50 text-red-900' : 'border-slate-200 bg-slate-50 text-slate-400'))
-                        : 'border-slate-300 bg-white hover:border-violet-500 hover:bg-violet-50')
+                        : 'transition-colors border-slate-300 bg-white hover:border-violet-500 hover:bg-violet-50')
                   },
                     h('span', { className: 'inline-block w-6 h-6 mr-2 rounded-full text-[11px] font-bold text-center leading-6 ' + (resolved && isCorrect ? 'bg-emerald-500 text-white' : resolved && isSelected ? 'bg-red-500 text-white' : 'bg-slate-200 text-slate-600') }, String.fromCharCode(65 + i)),
                     opt
@@ -3688,7 +3688,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             // Backfire-driven CTA: review tough questions
             globalToughCount > 0 && h('button', {
               onClick: function() { sfxClick(); updSage({ phase: 'review_mistakes', reviewIdx: 0, reviewRevealed: false, expedition: null }); },
-              className: 'p-3 rounded-xl border-2 border-red-300 bg-red-50 hover:bg-red-100 text-left flex items-center gap-3 focus:ring-2 focus:ring-red-400 focus:outline-none'
+              className: 'transition-colors p-3 rounded-xl border-2 border-red-300 bg-red-50 hover:bg-red-100 text-left flex items-center gap-3 focus:ring-2 focus:ring-red-400 focus:outline-none'
             },
               h('div', { className: 'text-2xl' }, '\uD83C\uDFAF'),
               h('div', { className: 'flex-1' },
@@ -3703,7 +3703,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               if (!ws) return null;
               return h('button', {
                 onClick: function() { sfxClick(); updSage({ phase: 'practice', practiceSpellId: weakestSpell, practiceQuestion: null, practiceSession: { correct: 0, attempted: 0 }, expedition: null }); },
-                className: 'p-3 rounded-xl border-2 border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-left flex items-center gap-3 focus:ring-2 focus:ring-emerald-400 focus:outline-none'
+                className: 'transition-colors p-3 rounded-xl border-2 border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-left flex items-center gap-3 focus:ring-2 focus:ring-emerald-400 focus:outline-none'
               },
                 h('div', { className: 'text-2xl' }, ws.icon),
                 h('div', { className: 'flex-1' },
@@ -3785,22 +3785,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                   addToast('📝 Reflection saved — view it any time in Your Progress', 'success');
                   announceSR('Reflection saved.');
                 },
-                className: 'px-4 py-1.5 rounded-lg text-[11px] font-bold text-white bg-sky-600 hover:bg-sky-700 focus:ring-2 focus:ring-sky-400 focus:outline-none'
+                className: 'transition-colors px-4 py-1.5 rounded-lg text-[11px] font-bold text-white bg-sky-600 hover:bg-sky-700 focus:ring-2 focus:ring-sky-400 focus:outline-none'
               }, 'Save reflection')
             )
           ),
           h('div', { className: 'flex flex-wrap gap-2 justify-center' },
             h('button', {
               onClick: function() { sfxClick(); updSage({ phase: 'hub', expedition: null }); },
-              className: 'px-5 py-2.5 rounded-xl font-bold text-white bg-violet-600 hover:bg-violet-700 focus:ring-2 focus:ring-violet-400 focus:outline-none'
+              className: 'transition-colors px-5 py-2.5 rounded-xl font-bold text-white bg-violet-600 hover:bg-violet-700 focus:ring-2 focus:ring-violet-400 focus:outline-none'
             }, 'Return to Spellforge'),
             h('button', {
               onClick: function() { sfxClick(); updSage({ phase: 'shop', expedition: null }); },
-              className: 'px-5 py-2.5 rounded-xl font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 focus:ring-2 focus:ring-amber-400 focus:outline-none'
+              className: 'transition-colors px-5 py-2.5 rounded-xl font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 focus:ring-2 focus:ring-amber-400 focus:outline-none'
             }, '\u2B50 Visit Spell Shop'),
             h('button', {
               onClick: function() { sfxClick(); updSage({ phase: 'loadout', expedition: null }); },
-              className: 'px-5 py-2.5 rounded-xl font-bold text-violet-600 bg-violet-50 hover:bg-violet-100 border border-violet-200 focus:ring-2 focus:ring-violet-400 focus:outline-none'
+              className: 'transition-colors px-5 py-2.5 rounded-xl font-bold text-violet-600 bg-violet-50 hover:bg-violet-100 border border-violet-200 focus:ring-2 focus:ring-violet-400 focus:outline-none'
             }, 'Another Expedition')
           )
         );
@@ -3903,7 +3903,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                         + (maxed
                           ? 'bg-emerald-100 text-emerald-700 cursor-default'
                           : canAfford
-                            ? 'bg-amber-500 hover:bg-amber-600 text-white'
+                            ? 'transition-colors bg-amber-500 hover:bg-amber-600 text-white'
                             : 'bg-slate-100 text-slate-400 cursor-not-allowed'),
                       'aria-label': maxed ? s.name + ' is maxed' : 'Upgrade ' + s.name + ' for ' + cost + ' essence'
                     }, maxed ? 'Maxed' : ('\u2B50 ' + cost))
@@ -4047,7 +4047,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           h('div', { className: 'flex items-center gap-3 mb-3' },
             h('button', {
               onClick: function() { sfxClick(); updSage({ practiceSpellId: null, practiceQuestion: null }); },
-              className: 'text-xs font-semibold text-slate-500 hover:text-slate-800 underline'
+              className: 'transition-colors text-xs font-semibold text-slate-500 hover:text-slate-800 underline'
             }, '← Change spell'),
             h('div', { className: 'flex-1 text-center' },
               h('div', { className: 'text-[10px] font-bold uppercase tracking-widest text-emerald-700' }, '📚 Study Hall — Untimed'),
@@ -4057,7 +4057,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             ),
             h('button', {
               onClick: exitPractice,
-              className: 'text-xs font-semibold text-emerald-700 hover:text-emerald-900 underline'
+              className: 'transition-colors text-xs font-semibold text-emerald-700 hover:text-emerald-900 underline'
             }, 'End session')
           ),
           // Spell header
@@ -4116,7 +4116,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           practiceAnswered && h('div', { className: 'flex gap-2 justify-end' },
             h('button', {
               onClick: function() { sfxClick(); nextPractice(); },
-              className: 'px-5 py-2.5 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-400 focus:outline-none'
+              className: 'transition-colors px-5 py-2.5 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-400 focus:outline-none'
             }, 'Next question →')
           )
         );
@@ -4204,7 +4204,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               h('div', { className: 'text-6xl mb-3' }, '🎓'),
               h('h2', { className: 'text-2xl font-bold mb-2' }, 'Review complete!'),
               h('p', { className: 'text-sm text-emerald-100 mb-4' }, 'You reviewed ' + toughList.length + ' tough question' + (toughList.length > 1 ? 's' : '') + '. Strong work — that\'s how learning sticks.'),
-              h('button', { onClick: exitReview, className: 'px-6 py-2.5 rounded-xl font-bold text-emerald-800 bg-white hover:bg-emerald-50' }, 'Back to Spellforge')
+              h('button', { onClick: exitReview, className: 'transition-colors px-6 py-2.5 rounded-xl font-bold text-emerald-800 bg-white hover:bg-emerald-50' }, 'Back to Spellforge')
             )
           );
         }
@@ -4247,7 +4247,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             ),
             !reviewRevealed && h('button', {
               onClick: function() { sfxClick(); updKey('reviewRevealed', true); },
-              className: 'mt-4 w-full py-2.5 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 focus:ring-2 focus:ring-red-400 focus:outline-none'
+              className: 'transition-colors mt-4 w-full py-2.5 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 focus:ring-2 focus:ring-red-400 focus:outline-none'
             }, '👁 Reveal answer + explanation'),
             reviewRevealed && h('div', { className: 'mt-4 p-3 rounded-lg bg-white border border-emerald-200' },
               h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-emerald-700 mb-1' }, '✓ Why this is correct'),
@@ -4258,11 +4258,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           reviewRevealed && h('div', { className: 'flex gap-2' },
             h('button', {
               onClick: stillTough,
-              className: 'flex-1 py-2.5 rounded-xl font-bold text-red-700 bg-red-50 hover:bg-red-100 border-2 border-red-200 focus:ring-2 focus:ring-red-400 focus:outline-none'
+              className: 'transition-colors flex-1 py-2.5 rounded-xl font-bold text-red-700 bg-red-50 hover:bg-red-100 border-2 border-red-200 focus:ring-2 focus:ring-red-400 focus:outline-none'
             }, 'Still tough — keep in queue'),
             h('button', {
               onClick: gotIt,
-              className: 'flex-1 py-2.5 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-400 focus:outline-none'
+              className: 'transition-colors flex-1 py-2.5 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-400 focus:outline-none'
             }, 'Got it now ✓')
           )
         );

@@ -1527,7 +1527,7 @@ window.StemLab = window.StemLab || {
                         ? React.createElement("span", { className: "text-lg font-black text-amber-500" }, t('stem.money.str', '\uD83C\uDFAF ?'))
                         : React.createElement("span", { className: "text-lg font-black text-emerald-600" }, fmt(boardTotal)),
                       placed.length > 0 && React.createElement("button", { "aria-label": t('stem.money.clear', "Clear"), onClick: function () { upd('placed', []); upd('coinGuess', null); upd('coinGuessFb', null); },
-                        className: "text-[11px] text-red-400 hover:text-red-600 font-bold"
+                        className: "transition-colors text-[11px] text-red-400 hover:text-red-600 font-bold"
                       }, t('stem.money.clear_2', "\u2715 Clear"))
                     )
                   ),
@@ -1694,7 +1694,7 @@ window.StemLab = window.StemLab || {
                                 ? (dm.id === 'easy' ? 'bg-emerald-600 text-white border-emerald-400 shadow-md'
                                   : dm.id === 'standard' ? 'bg-amber-600 text-zinc-900 border-amber-400 shadow-md'
                                   : 'bg-red-700 text-white border-red-500 shadow-md')
-                                : 'bg-zinc-800 text-zinc-400 border-zinc-700 hover:border-zinc-500')
+                                : 'transition-colors bg-zinc-800 text-zinc-400 border-zinc-700 hover:border-zinc-500')
                           },
                             React.createElement('div', null, dm.label),
                             React.createElement('div', { className: 'text-[10px] font-normal opacity-80 mt-0.5' }, dm.sub)
@@ -1817,12 +1817,12 @@ window.StemLab = window.StemLab || {
                               onClick: function () { upd('crBotTtsOn', !crBotTtsOn); },
                               'aria-pressed': crBotTtsOn,
                               title: crBotTtsOn ? 'Stop reading aloud' : 'Read aloud',
-                              className: 'text-[10px] font-bold px-2 py-0.5 rounded ' + (crBotTtsOn ? 'bg-indigo-500 text-white' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700')
+                              className: 'text-[10px] font-bold px-2 py-0.5 rounded ' + (crBotTtsOn ? 'bg-indigo-500 text-white' : 'transition-colors bg-zinc-800 text-zinc-400 hover:bg-zinc-700')
                             }, crBotTtsOn ? '🔊 Voice on' : '🔈 Voice off'),
                             React.createElement("button", {
                               onClick: function () { upd('crBotMessage', null); },
                               title: t('stem.money.dismiss', 'Dismiss'),
-                              className: 'text-[10px] font-bold px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                              className: 'transition-colors text-[10px] font-bold px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
                             }, t('stem.money.dismiss_2', 'Dismiss'))
                           )
                         )
@@ -1964,7 +1964,7 @@ window.StemLab = window.StemLab || {
                           upd('recipeFb', { ok: false, msg: '\u274C Missing ' + result.missing.length + ' item(s): ' + result.missing.join(', ') });
                         }
                       }, className: "flex-1 px-4 py-2 bg-purple-700 text-white font-bold rounded-xl hover:bg-purple-600 transition-all text-sm shadow-md" }, t('stem.money.check_recipe_cart_2', "\u2714 Check Recipe Cart")),
-                      React.createElement("button", { "aria-label": t('stem.money.clear_3', "Clear"), onClick: function () { upd('cart', []); upd('recipeFb', null); }, className: "px-3 py-2 text-xs text-red-400 hover:text-red-600 font-bold" }, t('stem.money.clear_4', "Clear"))
+                      React.createElement("button", { "aria-label": t('stem.money.clear_3', "Clear"), onClick: function () { upd('cart', []); upd('recipeFb', null); }, className: "transition-colors px-3 py-2 text-xs text-red-400 hover:text-red-600 font-bold" }, t('stem.money.clear_4', "Clear"))
                     ),
                     d.recipeFb && React.createElement("p", { className: "text-xs font-bold " + (d.recipeFb.ok ? 'text-green-600' : 'text-red-500') }, d.recipeFb.msg)
                   )
@@ -2040,15 +2040,15 @@ window.StemLab = window.StemLab || {
                               React.createElement("span", { className: "text-sm font-black text-emerald-600" }, fmt(displayPrice)),
                               isWeighed && React.createElement("span", { className: "text-[11px] text-orange-700 font-bold" }, "/" + item.pricePer)
                             ),
-                            React.createElement("span", { className: "text-[11px] font-bold " + (isWeighed ? 'text-orange-500' : 'text-orange-400 group-hover:text-orange-600') }, isWeighed ? '\u2696 Enter weight' : '+ Add to cart')
+                            React.createElement("span", { className: "text-[11px] font-bold " + (isWeighed ? 'text-orange-500' : 'transition-colors text-orange-400 group-hover:text-orange-600') }, isWeighed ? '\u2696 Enter weight' : '+ Add to cart')
                           ),
                           // Weight entry popup for per-lb items
                           isAdding && React.createElement("div", { className: "absolute z-20 left-0 right-0 -bottom-2 translate-y-full bg-white rounded-xl p-3 shadow-xl border-2 border-orange-300 space-y-2" },
                             React.createElement("p", { className: "text-[11px] font-bold text-orange-700 text-center" }, "How many " + item.pricePer + "s?"),
                             React.createElement("div", { className: "flex items-center gap-1.5" },
-                              React.createElement("button", { "aria-label": t('stem.money.decrease_item_weight', "Decrease item weight"), onClick: function () { upd('weightInput', Math.max(0.25, (d.weightInput || 1) - 0.25)); }, className: "px-2 py-1 bg-slate-100 rounded-lg text-xs font-bold hover:bg-slate-200" }, "\u2212"),
+                              React.createElement("button", { "aria-label": t('stem.money.decrease_item_weight', "Decrease item weight"), onClick: function () { upd('weightInput', Math.max(0.25, (d.weightInput || 1) - 0.25)); }, className: "transition-colors px-2 py-1 bg-slate-100 rounded-lg text-xs font-bold hover:bg-slate-200" }, "\u2212"),
                               React.createElement("input", { type: "number", step: "0.25", min: "0.25", value: d.weightInput || 1, 'aria-label': t('stem.money.item_weight_in_pounds', 'Item weight in pounds'), onChange: function (e) { upd('weightInput', parseFloat(e.target.value) || 0.25); }, className: "w-14 text-center px-1 py-1 border border-orange-600 rounded-lg text-xs font-bold focus:ring-2 focus:ring-orange-400 outline-none" }),
-                              React.createElement("button", { "aria-label": t('stem.money.add_to_cart', "Add to Cart"), onClick: function () { upd('weightInput', (d.weightInput || 1) + 0.25); }, className: "px-2 py-1 bg-slate-100 rounded-lg text-xs font-bold hover:bg-slate-200" }, "+"),
+                              React.createElement("button", { "aria-label": t('stem.money.add_to_cart', "Add to Cart"), onClick: function () { upd('weightInput', (d.weightInput || 1) + 0.25); }, className: "transition-colors px-2 py-1 bg-slate-100 rounded-lg text-xs font-bold hover:bg-slate-200" }, "+"),
                               React.createElement("span", { className: "text-[11px] text-slate-600 font-bold" }, item.pricePer)
                             ),
                             React.createElement("p", { className: "text-xs font-bold text-center text-emerald-600" }, "= " + fmt(displayPrice * (d.weightInput || 1))),
@@ -2087,7 +2087,7 @@ window.StemLab = window.StemLab || {
                                   if (!isWeighted && item.qty > 1) { upd('cart', cart.map(function (c, idx) { return idx === ci ? Object.assign({}, c, { qty: c.qty - 1 }) : c; })); }
                                   else { upd('cart', cart.filter(function (_, idx) { return idx !== ci; })); }
                                   upd('cartCheckoutFb', null); upd('recipeFb', null);
-                                }, className: "ml-1 text-red-300 hover:text-red-500 text-xs font-bold"
+                                }, className: "transition-colors ml-1 text-red-300 hover:text-red-500 text-xs font-bold"
                               }, "\u2715")
                             );
                           })
@@ -2127,7 +2127,7 @@ window.StemLab = window.StemLab || {
                         }
                       }, disabled: d.cartGuessTotal == null, className: "w-full px-4 py-2 bg-amber-700 text-white font-bold rounded-xl hover:bg-amber-600 transition-all text-sm shadow-md disabled:opacity-40" }, t('stem.money.check_my_math_2', '\uD83E\uDDE0 Check My Math')),
                       d.cartCheckoutFb && React.createElement("p", { className: "text-xs font-bold " + (d.cartCheckoutFb.ok ? 'text-green-600' : 'text-red-500') }, d.cartCheckoutFb.msg),
-                      React.createElement("button", { "aria-label": t('stem.money.clear_cart', "Clear Cart"), onClick: function () { upd('cart', []); upd('cartGuessSubtotal', null); upd('cartGuessTax', null); upd('cartGuessTotal', null); upd('cartCheckoutFb', null); }, className: "w-full px-3 py-1.5 text-xs text-red-400 hover:text-red-600 font-bold" }, t('stem.money.clear_cart_2', "Clear Cart"))
+                      React.createElement("button", { "aria-label": t('stem.money.clear_cart', "Clear Cart"), onClick: function () { upd('cart', []); upd('cartGuessSubtotal', null); upd('cartGuessTax', null); upd('cartGuessTotal', null); upd('cartCheckoutFb', null); }, className: "transition-colors w-full px-3 py-1.5 text-xs text-red-400 hover:text-red-600 font-bold" }, t('stem.money.clear_cart_2', "Clear Cart"))
                     ),
                     // ── Normal Mode: Show totals ──
                     !challengeMode && cart.length > 0 && React.createElement("div", { className: "mt-3 pt-3 border-t border-emerald-200 space-y-1" },
@@ -2148,7 +2148,7 @@ window.StemLab = window.StemLab || {
                         if (typeof addToast === 'function') addToast('\uD83C\uDF89 Purchase complete! Total: ' + fmt(cartGrand), 'success');
                         upd('cart', []);
                       }, className: "w-full mt-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-500 text-white font-bold rounded-xl hover:from-emerald-600 hover:to-green-600 transition-all text-sm shadow-md" }, t('stem.money.checkout_2', "\uD83D\uDCB3 Checkout")),
-                      React.createElement("button", { "aria-label": t('stem.money.clear_cart_3', "Clear Cart"), onClick: function () { upd('cart', []); }, className: "w-full px-3 py-1.5 text-xs text-red-400 hover:text-red-600 font-bold" }, t('stem.money.clear_cart_4', "Clear Cart"))
+                      React.createElement("button", { "aria-label": t('stem.money.clear_cart_3', "Clear Cart"), onClick: function () { upd('cart', []); }, className: "transition-colors w-full px-3 py-1.5 text-xs text-red-400 hover:text-red-600 font-bold" }, t('stem.money.clear_cart_4', "Clear Cart"))
                     )
                   )
                 )
@@ -2175,7 +2175,7 @@ window.StemLab = window.StemLab || {
                           React.createElement("p", { className: "text-sm text-slate-700 leading-relaxed" }, d.wpProblem.problem)
                         ),
                         d.wpProblem.hint && React.createElement("button", { onClick: function () { upd('wpShowHint', !d.wpShowHint); },
-                          className: "text-xs font-bold text-amber-500 hover:text-amber-700"
+                          className: "transition-colors text-xs font-bold text-amber-500 hover:text-amber-700"
                         }, d.wpShowHint ? '\uD83D\uDCA1 Hide Hint' : '\uD83D\uDCA1 Show Hint'),
                         d.wpShowHint && React.createElement("p", { className: "text-xs text-amber-800 bg-amber-50 p-3 rounded-lg border border-amber-200" }, d.wpProblem.hint),
                         React.createElement("div", { className: "flex items-center gap-3" },
@@ -2752,7 +2752,7 @@ window.StemLab = window.StemLab || {
                     cdDropped.length > 0 && !cdFb && React.createElement("button", { "aria-label": t('stem.money.undo_last_coin', "Undo last coin"), onClick: function () {
                       var newDropped = cdDropped.slice(0, -1);
                       upd('cdDropped', newDropped);
-                    }, className: "w-full px-3 py-1 text-xs text-slate-600 hover:text-slate-600 font-bold text-center" }, t('stem.money.undo_last_coin_2', '\u21A9 Undo last coin')),
+                    }, className: "transition-colors w-full px-3 py-1 text-xs text-slate-600 hover:text-slate-600 font-bold text-center" }, t('stem.money.undo_last_coin_2', '\u21A9 Undo last coin')),
                     // Feedback
                     cdFb && React.createElement("div", { className: "space-y-2" },
                       React.createElement("p", { className: "text-xs font-bold text-center " + (cdFb.ok ? 'text-green-600' : 'text-red-500') }, cdFb.msg),
@@ -3091,7 +3091,7 @@ window.StemLab = window.StemLab || {
                           var isCorrect = ci === fq.correct;
                           var btnClass = revealed
                             ? (isCorrect ? 'border-green-500 bg-green-50 text-green-700' : (selected ? 'border-red-400 bg-red-50 text-red-600' : 'border-slate-200 bg-white text-slate-600'))
-                            : (selected ? 'border-amber-500 bg-amber-50 text-amber-700 shadow-md' : 'border-slate-200 bg-white text-slate-600 hover:border-amber-600 hover:bg-amber-50');
+                            : (selected ? 'border-amber-500 bg-amber-50 text-amber-700 shadow-md' : 'transition-colors border-slate-200 bg-white text-slate-600 hover:border-amber-600 hover:bg-amber-50');
                           return React.createElement("button", { key: ci, disabled: revealed, onClick: function () { upd('fqAnswer', ci); upd('fqFb', null); },
                             className: "p-3 rounded-xl border-2 text-sm font-bold text-left transition-all " + btnClass
                           }, String.fromCharCode(65 + ci) + '. ' + ch);

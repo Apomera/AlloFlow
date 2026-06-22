@@ -559,7 +559,7 @@
           ),
           h('button', {
             onClick: reset,
-            className: 'px-2 py-1.5 text-xs font-bold rounded focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'bg-slate-800 text-slate-200 hover:bg-slate-700' : 'bg-emerald-200 text-emerald-900 hover:bg-emerald-300')
+            className: 'px-2 py-1.5 text-xs font-bold rounded focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'transition-colors bg-slate-800 text-slate-200 hover:bg-slate-700' : 'transition-colors bg-emerald-200 text-emerald-900 hover:bg-emerald-300')
           }, '↻ Reset stations & epicenter'),
           h('button', { onClick: function() { try { var _cs = [].slice.call(document.querySelectorAll('canvas')); if (!_cs.length) return; var _c = _cs.sort(function(a,b){ return (b.width*b.height)-(a.width*a.height); })[0]; var _a = document.createElement('a'); _a.href = _c.toDataURL('image/png'); _a.download = 'platetectonics_' + Date.now() + '.png'; _a.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCF8 PNG saved!', 'success'); } catch (e) {} }, style: { padding: '6px 10px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px', background: '#0e7490', color: '#fff', border: 'none', cursor: 'pointer', marginLeft: '6px' } }, '\uD83D\uDCF8 PNG'),
           h('div', { className: 'text-[10px] italic ' + (isDark ? 'text-slate-400' : 'text-emerald-800') },
@@ -996,7 +996,7 @@
               reset();
               if (typeof announceToSR === 'function') announceToSR('Simulation reset');
             },
-            className: 'px-2 py-1.5 text-xs font-bold rounded focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'bg-slate-800 text-slate-200 hover:bg-slate-700' : 'bg-orange-200 text-orange-900 hover:bg-orange-300')
+            className: 'px-2 py-1.5 text-xs font-bold rounded focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'transition-colors bg-slate-800 text-slate-200 hover:bg-slate-700' : 'transition-colors bg-orange-200 text-orange-900 hover:bg-orange-300')
           }, '↻ Reset')
         ),
         h('div', { className: 'text-[10px] px-1 italic ' + (isDark ? 'text-slate-400' : 'text-orange-800') }, info.desc)
@@ -6351,7 +6351,7 @@ var d = labToolData.plateTectonics || {};
                 els.push(React.createElement("div", { key: "top", className: "flex flex-wrap items-center gap-2 w-full mb-3 justify-center" },
                   React.createElement("button", {
                     onClick: function() { setCat(null); upd({ _ptPicked: false }); },
-                    className: "px-3 py-1 rounded-lg text-xs font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (atHub ? "bg-red-700 text-white" : (isDark ? "bg-slate-900 text-red-400 hover:bg-slate-800 border border-slate-700" : "bg-slate-100 text-red-700 hover:bg-red-50 border border-red-300"))
+                    className: "px-3 py-1 rounded-lg text-xs font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (atHub ? "bg-red-700 text-white" : (isDark ? "transition-colors bg-slate-900 text-red-400 hover:bg-slate-800 border border-slate-700" : "transition-colors bg-slate-100 text-red-700 hover:bg-red-50 border border-red-300"))
                   }, "🏠 Hub"),
                   activeCat && !atHub && React.createElement("span", { className: "text-xs text-slate-400" }, "/"),
                   activeCat && !atHub && React.createElement("span", { className: "px-2 py-1 rounded-lg text-xs font-bold bg-slate-50 text-red-700 border border-red-200" }, activeCat.icon + " " + activeCat.label),
@@ -6371,7 +6371,7 @@ var d = labToolData.plateTectonics || {};
                           return React.createElement("button", {
                             key: m,
                             onClick: function() { setTab(m); upd({ _ptSearch: "" }); },
-                            className: "px-2 py-1 rounded text-xs font-bold hover:bg-red-50 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-slate-900 border border-slate-700 text-slate-200 hover:text-red-400 hover:border-red-500" : "bg-white border border-slate-300 text-slate-700 hover:border-red-500")
+                            className: "transition-colors px-2 py-1 rounded text-xs font-bold hover:bg-red-50 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors bg-slate-900 border border-slate-700 text-slate-200 hover:text-red-400 hover:border-red-500" : "transition-colors bg-white border border-slate-300 text-slate-700 hover:border-red-500")
                           }, PT_TAB_LABELS[m] || m);
                         })
                   ));
@@ -6402,7 +6402,7 @@ var d = labToolData.plateTectonics || {};
                         className: "px-3 py-1 rounded-lg text-xs font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none " +
                           (isActive
                             ? "bg-" + activeCat.color + "-700 text-white"
-                            : (isDark ? "bg-slate-900 text-slate-400 hover:bg-slate-800" : "bg-slate-100 text-slate-600 hover:bg-" + activeCat.color + "-50"))
+                            : (isDark ? "transition-colors bg-slate-900 text-slate-400 hover:bg-slate-800" : "transition-colors bg-slate-100 text-slate-600 hover:bg-" + activeCat.color + "-50"))
                       }, PT_TAB_LABELS[m] || m);
                     })
                   ));
@@ -6560,7 +6560,7 @@ var d = labToolData.plateTectonics || {};
                           onClick: function () { upd({ aiLevel: L.id }); },
                           "aria-label": "Reading level: " + L.label + (active ? " (selected)" : ""),
                           "aria-pressed": active,
-                          className: "px-2 py-0.5 rounded text-[10px] font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (active ? 'bg-purple-600 text-white' : (isDark ? 'bg-slate-900 text-purple-300 border border-purple-800 hover:bg-slate-800' : 'bg-white text-purple-700 border border-purple-200 hover:bg-purple-100'))
+                          className: "px-2 py-0.5 rounded text-[10px] font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (active ? 'bg-purple-600 text-white' : (isDark ? 'transition-colors bg-slate-900 text-purple-300 border border-purple-800 hover:bg-slate-800' : 'transition-colors bg-white text-purple-700 border border-purple-200 hover:bg-purple-100'))
                         }, L.label);
                       })
                     ),
@@ -6568,7 +6568,7 @@ var d = labToolData.plateTectonics || {};
                       onClick: explain,
                       disabled: aiLoading,
                       "aria-label": "Generate AI explanation at " + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + " level",
-                      className: "px-3 py-1 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 focus:ring-2 focus:ring-yellow-500 focus:outline-none"
+                      className: "transition-colors px-3 py-1 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 focus:ring-2 focus:ring-yellow-500 focus:outline-none"
                     }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain'))
                   ),
                   aiError && React.createElement("p", { className: "text-[11px] text-rose-600", role: "alert" }, aiError),
@@ -7448,7 +7448,7 @@ var d = labToolData.plateTectonics || {};
                 React.createElement('div', { className: 'flex flex-wrap gap-2 text-xs mb-3' },
                   ['all', 'major', 'minor', 'micro'].map(function(tier) {
                     var active = (d._plateTier || 'all') === tier;
-                    return React.createElement('button', { key: tier, onClick: function() { upd({ _plateTier: tier }); }, className: 'px-3 py-1 rounded-lg font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'bg-red-700 text-white' : (isDark ? 'bg-slate-900 text-red-400 border border-slate-700 hover:bg-slate-800' : 'bg-white text-red-700 border border-red-300 hover:bg-red-50')) }, tier === 'all' ? 'All Plates' : tier.charAt(0).toUpperCase() + tier.slice(1));
+                    return React.createElement('button', { key: tier, onClick: function() { upd({ _plateTier: tier }); }, className: 'px-3 py-1 rounded-lg font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'bg-red-700 text-white' : (isDark ? 'transition-colors bg-slate-900 text-red-400 border border-slate-700 hover:bg-slate-800' : 'transition-colors bg-white text-red-700 border border-red-300 hover:bg-red-50')) }, tier === 'all' ? 'All Plates' : tier.charAt(0).toUpperCase() + tier.slice(1));
                   })
                 ),
                 React.createElement('input', { type: 'text', placeholder: 'Search plates by name or region...', value: d._plateSearch || '', onChange: function(e) { upd({ _plateSearch: e.target.value }); }, className: 'w-full px-3 py-2 text-sm border rounded-lg mb-3 focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'border-slate-700 bg-slate-900 text-slate-200' : 'border-red-300 bg-white text-slate-700') }),
@@ -7481,7 +7481,7 @@ var d = labToolData.plateTectonics || {};
                 React.createElement('div', { className: 'flex flex-wrap gap-2 text-xs mb-3' },
                   ['all', 'transform', 'convergent', 'normal', 'thrust', 'divergent'].map(function(ft) {
                     var active = (d._faultType || 'all') === ft;
-                    return React.createElement('button', { key: ft, onClick: function() { upd({ _faultType: ft }); }, className: 'px-3 py-1 rounded-lg font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'bg-amber-700 text-white' : (isDark ? 'bg-slate-900 text-amber-400 border border-slate-700 hover:bg-slate-800' : 'bg-white text-amber-700 border border-amber-300 hover:bg-amber-50')) }, ft);
+                    return React.createElement('button', { key: ft, onClick: function() { upd({ _faultType: ft }); }, className: 'px-3 py-1 rounded-lg font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'bg-amber-700 text-white' : (isDark ? 'transition-colors bg-slate-900 text-amber-400 border border-slate-700 hover:bg-slate-800' : 'transition-colors bg-white text-amber-700 border border-amber-300 hover:bg-amber-50')) }, ft);
                   })
                 ),
                 React.createElement('div', { className: 'space-y-1' },
@@ -7510,7 +7510,7 @@ var d = labToolData.plateTectonics || {};
                 React.createElement('div', { className: 'flex gap-2 text-xs mb-3' },
                   [['year', 'Year'], ['deaths', 'Deaths'], ['mag', 'Magnitude']].map(function(sm) {
                     var active = (d._tsunamiSort || 'year') === sm[0];
-                    return React.createElement('button', { key: sm[0], onClick: function() { upd({ _tsunamiSort: sm[0] }); }, className: 'px-3 py-1 rounded-lg font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'bg-blue-700 text-white' : (isDark ? 'bg-slate-900 text-blue-400 border border-slate-700 hover:bg-slate-800' : 'bg-white text-blue-700 border border-blue-300 hover:bg-blue-50')) }, 'Sort: ' + sm[1]);
+                    return React.createElement('button', { key: sm[0], onClick: function() { upd({ _tsunamiSort: sm[0] }); }, className: 'px-3 py-1 rounded-lg font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'bg-blue-700 text-white' : (isDark ? 'transition-colors bg-slate-900 text-blue-400 border border-slate-700 hover:bg-slate-800' : 'transition-colors bg-white text-blue-700 border border-blue-300 hover:bg-blue-50')) }, 'Sort: ' + sm[1]);
                   })
                 ),
                 React.createElement('div', { className: 'space-y-1' },
@@ -7561,7 +7561,7 @@ var d = labToolData.plateTectonics || {};
                 React.createElement('div', { className: 'flex flex-wrap gap-2 text-xs mb-3' },
                   ['all', 'igneous', 'sedimentary', 'metamorphic'].map(function(g) {
                     var active = (d._rockGroup || 'all') === g;
-                    return React.createElement('button', { key: g, onClick: function() { upd({ _rockGroup: g }); }, className: 'px-3 py-1 rounded-lg font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'bg-stone-700 text-white' : (isDark ? 'bg-slate-900 text-stone-300 border border-slate-700 hover:bg-slate-850' : 'bg-white text-stone-700 border border-stone-300 hover:bg-stone-50')) }, g);
+                    return React.createElement('button', { key: g, onClick: function() { upd({ _rockGroup: g }); }, className: 'px-3 py-1 rounded-lg font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'bg-stone-700 text-white' : (isDark ? 'transition-colors bg-slate-900 text-stone-300 border border-slate-700 hover:bg-slate-850' : 'transition-colors bg-white text-stone-700 border border-stone-300 hover:bg-stone-50')) }, g);
                   })
                 ),
                 React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },

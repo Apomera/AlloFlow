@@ -3274,7 +3274,7 @@ var d = (labToolData.companionPlanting) || {};
                   h('div', null,
                     h('div', { className: 'font-bold text-sm' }, 'Microscope: ' + plant.emoji + ' ' + plant.label),
                     h('div', { className: 'text-[11px] text-indigo-300' }, 'Zoom into the invisible world beneath the garden'))),
-                h('button', { onClick: function() { cgUpd({ microscopeCell: null }); }, className: 'px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-bold' }, '← Back to Garden')),
+                h('button', { onClick: function() { cgUpd({ microscopeCell: null }); }, className: 'transition-colors px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-bold' }, '← Back to Garden')),
 
               // Layer tabs — ARIA tablist with keyboard navigation
               h('div', { className: 'flex gap-1', role: 'tablist', 'aria-label': 'Microscope science layers' },
@@ -3727,8 +3727,8 @@ var d = (labToolData.companionPlanting) || {};
                       className: 'w-full text-sm border border-slate-400 rounded-lg p-2 outline-none focus:ring-2 focus:ring-violet-300 resize-none'
                     })),
                   h('div', { className: 'flex gap-2' },
-                    h('button', { onClick: cgSubmitReflection, disabled: !cgReflectionResponse.trim(), className: 'px-4 py-2 bg-violet-600 text-white rounded-lg text-sm font-bold hover:bg-violet-700 disabled:opacity-40' }, '📝 Save to Journal'),
-                    h('button', { onClick: function() { cgUpd({ activeReflection: null }); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-200' }, 'Skip')));
+                    h('button', { onClick: cgSubmitReflection, disabled: !cgReflectionResponse.trim(), className: 'transition-colors px-4 py-2 bg-violet-600 text-white rounded-lg text-sm font-bold hover:bg-violet-700 disabled:opacity-40' }, '📝 Save to Journal'),
+                    h('button', { onClick: function() { cgUpd({ activeReflection: null }); }, className: 'transition-colors px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-200' }, 'Skip')));
               })(),
               // ── Event popup ──
               cgActiveEvent && (function() {
@@ -3737,7 +3737,7 @@ var d = (labToolData.companionPlanting) || {};
                 var titleClass = isGood ? 'font-bold text-emerald-800' : 'font-bold text-red-800';
                 var descClass = isGood ? 'text-sm text-emerald-600' : 'text-sm text-red-600';
                 var borderClass = isGood ? 'border-emerald-200' : 'border-red-200';
-                var btnClass = isGood ? 'px-4 py-2 bg-emerald-700 text-white rounded-lg text-sm font-bold hover:bg-emerald-600' : 'px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-bold hover:bg-red-700';
+                var btnClass = isGood ? 'transition-colors px-4 py-2 bg-emerald-700 text-white rounded-lg text-sm font-bold hover:bg-emerald-600' : 'transition-colors px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-bold hover:bg-red-700';
                 var btnText = isGood ? '🌱 Great!' : '⚔️ Manage & Dismiss';
                 return h('div', { className: bgClass + ' rounded-xl p-4 space-y-2 animate-in slide-in-from-top' },
                   h('div', { className: 'flex items-center gap-2' },
@@ -5911,23 +5911,23 @@ var d = (labToolData.companionPlanting) || {};
                     h('div', { className: 'flex-1' },
                       h('div', { className: 'text-xs font-bold text-indigo-800' }, '🎯 ' + ch.title + (isComplete ? ' — ✅ COMPLETE!' : '')),
                       h('div', { className: 'text-[11px] text-indigo-600' }, ch.goal)),
-                    h('button', { onClick: function() { cgUpd({ activeChallenge: null }); }, className: 'text-xs text-slate-200 hover:text-slate-600', 'aria-label': 'Close challenge' }, '✕')),
+                    h('button', { onClick: function() { cgUpd({ activeChallenge: null }); }, className: 'transition-colors text-xs text-slate-200 hover:text-slate-600', 'aria-label': 'Close challenge' }, '✕')),
                   !isComplete && h('div', { className: 'text-[11px] text-amber-700 bg-amber-50 rounded-lg p-2 mt-1' }, '💡 Hint: ' + ch.hint));
               })(),
 
               // ── Action buttons ──
               cgPhase === 'plan' && h('div', { className: 'flex gap-2 flex-wrap' },
-                h('button', { onClick: cgStartGrowing, 'aria-label': 'Start growing season', className: 'px-4 py-2 bg-emerald-700 text-white rounded-lg font-bold text-sm hover:bg-emerald-700' }, '▶️ Start Growing'),
-                h('button', { onClick: function() { cgUpd({ grid: cgGrid.map(function() { return { plantId: null, growthDay: 0, health: 100, watered: false, pests: 0 }; }), day: 0, score: 0, totalHarvested: 0, phase: 'plan', activeChallenge: null }); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-200' }, '🗑️ Clear All')),
+                h('button', { onClick: cgStartGrowing, 'aria-label': 'Start growing season', className: 'transition-colors px-4 py-2 bg-emerald-700 text-white rounded-lg font-bold text-sm hover:bg-emerald-700' }, '▶️ Start Growing'),
+                h('button', { onClick: function() { cgUpd({ grid: cgGrid.map(function() { return { plantId: null, growthDay: 0, health: 100, watered: false, pests: 0 }; }), day: 0, score: 0, totalHarvested: 0, phase: 'plan', activeChallenge: null }); }, className: 'transition-colors px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-200' }, '🗑️ Clear All')),
 
               cgPhase === 'grow' && h('div', { className: 'flex gap-2 flex-wrap items-center' },
-                h('button', { onClick: cgAdvanceDay, className: 'px-4 py-2 bg-sky-600 text-white rounded-lg font-bold text-sm hover:bg-sky-700' }, '⏩ Next Day'),
-                h('button', { onClick: function() { for(var i=0;i<5;i++) cgAdvanceDay(); }, className: 'px-3 py-2 bg-sky-100 text-sky-700 rounded-lg text-sm font-bold hover:bg-sky-200' }, '⏭️ +5 Days'),
-                h('button', { onClick: cgWater, className: 'px-3 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-bold hover:bg-blue-200' }, '💧 Water'),
-                h('button', { onClick: cgWeed, className: 'px-3 py-2 bg-green-100 text-green-700 rounded-lg text-sm font-bold hover:bg-green-200' }, '🧹 Weed'),
-                h('button', { onClick: cgCompost, className: 'px-3 py-2 bg-amber-100 text-amber-700 rounded-lg text-sm font-bold hover:bg-amber-200' }, '🧱 Compost'),
-                h('button', { onClick: cgHarvest, 'aria-label': 'Harvest ready crops', className: 'px-3 py-2 bg-yellow-100 text-yellow-700 rounded-lg text-sm font-bold hover:bg-yellow-200' }, '🌾 Harvest Ready'),
-                h('button', { onClick: function() { cgUpd({ phase: 'plan' }); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-200' }, '\u270F\uFE0F Edit Garden')),
+                h('button', { onClick: cgAdvanceDay, className: 'transition-colors px-4 py-2 bg-sky-600 text-white rounded-lg font-bold text-sm hover:bg-sky-700' }, '⏩ Next Day'),
+                h('button', { onClick: function() { for(var i=0;i<5;i++) cgAdvanceDay(); }, className: 'transition-colors px-3 py-2 bg-sky-100 text-sky-700 rounded-lg text-sm font-bold hover:bg-sky-200' }, '⏭️ +5 Days'),
+                h('button', { onClick: cgWater, className: 'transition-colors px-3 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-bold hover:bg-blue-200' }, '💧 Water'),
+                h('button', { onClick: cgWeed, className: 'transition-colors px-3 py-2 bg-green-100 text-green-700 rounded-lg text-sm font-bold hover:bg-green-200' }, '🧹 Weed'),
+                h('button', { onClick: cgCompost, className: 'transition-colors px-3 py-2 bg-amber-100 text-amber-700 rounded-lg text-sm font-bold hover:bg-amber-200' }, '🧱 Compost'),
+                h('button', { onClick: cgHarvest, 'aria-label': 'Harvest ready crops', className: 'transition-colors px-3 py-2 bg-yellow-100 text-yellow-700 rounded-lg text-sm font-bold hover:bg-yellow-200' }, '🌾 Harvest Ready'),
+                h('button', { onClick: function() { cgUpd({ phase: 'plan' }); }, className: 'transition-colors px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-200' }, '\u270F\uFE0F Edit Garden')),
 
               // ── Soil Chemistry + Economics + Pest HUD ──
               h('div', { className: 'grid grid-cols-2 gap-2' },
@@ -5955,8 +5955,8 @@ var d = (labToolData.companionPlanting) || {};
                   ),
                   // Soil actions
                   h('div', { className: 'flex gap-1 mt-1.5' },
-                    h('button', { onClick: cgAddLime, title: 'Add lime to raise pH (+$0.50)', className: 'flex-1 px-1 py-1 text-[11px] font-bold rounded bg-amber-100 text-amber-700 hover:bg-amber-200' }, '\u2B06 Lime'),
-                    h('button', { onClick: cgAddSulfur, title: 'Add sulfur to lower pH (+$0.50)', className: 'flex-1 px-1 py-1 text-[11px] font-bold rounded bg-yellow-100 text-yellow-700 hover:bg-yellow-200' }, '\u2B07 Sulfur')
+                    h('button', { onClick: cgAddLime, title: 'Add lime to raise pH (+$0.50)', className: 'transition-colors flex-1 px-1 py-1 text-[11px] font-bold rounded bg-amber-100 text-amber-700 hover:bg-amber-200' }, '\u2B06 Lime'),
+                    h('button', { onClick: cgAddSulfur, title: 'Add sulfur to lower pH (+$0.50)', className: 'transition-colors flex-1 px-1 py-1 text-[11px] font-bold rounded bg-yellow-100 text-yellow-700 hover:bg-yellow-200' }, '\u2B07 Sulfur')
                   )
                 ),
                 // Economics + Pest Panel
@@ -5981,10 +5981,10 @@ var d = (labToolData.companionPlanting) || {};
                     ),
                     // IPM action buttons
                     h('div', { className: 'grid grid-cols-2 gap-1 mt-1.5' },
-                      h('button', { onClick: function() { cgIPMAction('ladybugs'); }, title: 'Release ladybugs ($1.50)', className: 'px-1 py-1 text-[11px] font-bold rounded bg-red-100 text-red-700 hover:bg-red-200' }, '\uD83D\uDC1E Ladybugs'),
-                      h('button', { onClick: function() { cgIPMAction('neem'); }, title: 'Neem spray ($1.00)', className: 'px-1 py-1 text-[11px] font-bold rounded bg-orange-100 text-orange-700 hover:bg-orange-200' }, '\uD83C\uDF3F Neem'),
-                      h('button', { onClick: function() { cgIPMAction('handpick'); }, title: 'Hand-pick pests (free)', className: 'px-1 py-1 text-[11px] font-bold rounded bg-yellow-100 text-yellow-700 hover:bg-yellow-200' }, '\u270B Pick'),
-                      h('button', { onClick: function() { cgIPMAction('rowcovers'); }, title: 'Row covers ($2.00)', className: 'px-1 py-1 text-[11px] font-bold rounded bg-blue-100 text-blue-700 hover:bg-blue-200' }, '\uD83E\uDDF5 Covers')
+                      h('button', { onClick: function() { cgIPMAction('ladybugs'); }, title: 'Release ladybugs ($1.50)', className: 'transition-colors px-1 py-1 text-[11px] font-bold rounded bg-red-100 text-red-700 hover:bg-red-200' }, '\uD83D\uDC1E Ladybugs'),
+                      h('button', { onClick: function() { cgIPMAction('neem'); }, title: 'Neem spray ($1.00)', className: 'transition-colors px-1 py-1 text-[11px] font-bold rounded bg-orange-100 text-orange-700 hover:bg-orange-200' }, '\uD83C\uDF3F Neem'),
+                      h('button', { onClick: function() { cgIPMAction('handpick'); }, title: 'Hand-pick pests (free)', className: 'transition-colors px-1 py-1 text-[11px] font-bold rounded bg-yellow-100 text-yellow-700 hover:bg-yellow-200' }, '\u270B Pick'),
+                      h('button', { onClick: function() { cgIPMAction('rowcovers'); }, title: 'Row covers ($2.00)', className: 'transition-colors px-1 py-1 text-[11px] font-bold rounded bg-blue-100 text-blue-700 hover:bg-blue-200' }, '\uD83E\uDDF5 Covers')
                     )
                   )
                 )
@@ -6005,7 +6005,7 @@ var d = (labToolData.companionPlanting) || {};
               cgAdvisorResponse && h('div', { className: 'bg-emerald-50 rounded-xl border border-emerald-200 p-3' },
                 h('div', { className: 'flex items-center gap-2 mb-1' },
                   h('span', { className: 'text-[11px] font-bold text-emerald-700' }, '\uD83E\uDDD1\u200D\uD83C\uDF3E Garden Advisor'),
-                  h('button', { onClick: function() { cgUpd({ advisorResponse: null }); }, className: 'ml-auto text-[11px] text-slate-200 hover:text-slate-600' }, '\u2715')
+                  h('button', { onClick: function() { cgUpd({ advisorResponse: null }); }, className: 'transition-colors ml-auto text-[11px] text-slate-200 hover:text-slate-600' }, '\u2715')
                 ),
                 h('p', { className: 'text-[11px] text-slate-600 leading-relaxed whitespace-pre-line' }, cgAdvisorResponse)
               ),
@@ -6051,7 +6051,7 @@ var d = (labToolData.companionPlanting) || {};
                     React.createElement('h3', { className: 'text-lg font-bold text-slate-800' }, '🏡 Community Garden Simulator'),
                     React.createElement('p', { className: 'text-xs text-slate-600' }, 'Plan, plant, and manage a diverse garden ecosystem'))),
                 React.createElement('div', { className: 'flex gap-2' },
-                  React.createElement('button', { onClick: function() { upd('gardenMode', 'sisters'); }, className: 'px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-emerald-50' }, '🌽 Three Sisters'),
+                  React.createElement('button', { onClick: function() { upd('gardenMode', 'sisters'); }, className: 'transition-colors px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-emerald-50' }, '🌽 Three Sisters'),
                   React.createElement('button', { className: 'px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-700 text-white' }, '🏡 Community Garden'))),
               renderCommunityGarden());
           }
@@ -6161,15 +6161,15 @@ var d = (labToolData.companionPlanting) || {};
 
                 React.createElement("span", { className: "text-[11px] font-bold text-amber-600" }, "Learn more:"),
 
-                React.createElement("a", { href: "https://www.haudenosauneeconfederacy.com/", target: "_blank", rel: "noopener noreferrer", className: "text-[11px] text-amber-700 underline hover:text-amber-900" }, "Haudenosaunee Confederacy"),
+                React.createElement("a", { href: "https://www.haudenosauneeconfederacy.com/", target: "_blank", rel: "noopener noreferrer", className: "transition-colors text-[11px] text-amber-700 underline hover:text-amber-900" }, "Haudenosaunee Confederacy"),
 
                 React.createElement("span", { className: "text-[11px] text-amber-400" }, "•"),
 
-                React.createElement("a", { href: "https://americanindian.si.edu/", target: "_blank", rel: "noopener noreferrer", className: "text-[11px] text-amber-700 underline hover:text-amber-900" }, "Smithsonian NMAI"),
+                React.createElement("a", { href: "https://americanindian.si.edu/", target: "_blank", rel: "noopener noreferrer", className: "transition-colors text-[11px] text-amber-700 underline hover:text-amber-900" }, "Smithsonian NMAI"),
 
                 React.createElement("span", { className: "text-[11px] text-amber-400" }, "•"),
 
-                React.createElement("a", { href: "https://www.usda.gov/media/blog/2021/11/02/three-sisters-and-more-indigenous-food-systems", target: "_blank", rel: "noopener noreferrer", className: "text-[11px] text-amber-700 underline hover:text-amber-900" }, "USDA: Three Sisters")
+                React.createElement("a", { href: "https://www.usda.gov/media/blog/2021/11/02/three-sisters-and-more-indigenous-food-systems", target: "_blank", rel: "noopener noreferrer", className: "transition-colors text-[11px] text-amber-700 underline hover:text-amber-900" }, "USDA: Three Sisters")
 
               )
 
@@ -6311,7 +6311,7 @@ var d = (labToolData.companionPlanting) || {};
 
                 React.createElement("button", { onClick: function () { upd('eventPopup', null); },
 
-                  className: "text-indigo-400 hover:text-indigo-700 text-lg font-bold"
+                  className: "transition-colors text-indigo-400 hover:text-indigo-700 text-lg font-bold"
 
                 }, "✕")
 
@@ -7000,7 +7000,7 @@ var d = (labToolData.companionPlanting) || {};
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-green-800" }, "\u2696\uFE0F Sustainable Farming: Industrial vs Regenerative"),
                 React.createElement("button", { onClick: function() { upd('showFarmCompare', !d.showFarmCompare); },
-                  className: "text-[11px] text-green-600 hover:text-green-800 font-bold"
+                  className: "transition-colors text-[11px] text-green-600 hover:text-green-800 font-bold"
                 }, d.showFarmCompare ? 'Hide' : 'Compare \u2192')
               ),
               d.showFarmCompare && React.createElement("div", null,
@@ -7097,7 +7097,7 @@ var d = (labToolData.companionPlanting) || {};
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-blue-800" }, "\uD83D\uDE9A Food Miles & Carbon Calculator"),
                 React.createElement("button", { onClick: function() { upd('showFoodMiles', !d.showFoodMiles); },
-                  className: "text-[11px] text-blue-600 hover:text-blue-800 font-bold"
+                  className: "transition-colors text-[11px] text-blue-600 hover:text-blue-800 font-bold"
                 }, d.showFoodMiles ? 'Hide' : 'Calculate \u2192')
               ),
               d.showFoodMiles && React.createElement("div", null,
@@ -7154,7 +7154,7 @@ var d = (labToolData.companionPlanting) || {};
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-cyan-800" }, "\uD83D\uDCA7 Water Footprint of Food"),
                 React.createElement("button", { onClick: function() { upd('showWaterFoot', !d.showWaterFoot); },
-                  className: "text-[11px] text-cyan-600 hover:text-cyan-800 font-bold"
+                  className: "transition-colors text-[11px] text-cyan-600 hover:text-cyan-800 font-bold"
                 }, d.showWaterFoot ? 'Hide' : 'View \u2192')
               ),
               d.showWaterFoot && React.createElement("div", null,
@@ -7185,7 +7185,7 @@ var d = (labToolData.companionPlanting) || {};
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-violet-800" }, "\uD83C\uDF00 12 Permaculture Principles"),
                 React.createElement("button", { onClick: function() { upd('showPermaculture', !d.showPermaculture); },
-                  className: "text-[11px] text-violet-600 hover:text-violet-800 font-bold"
+                  className: "transition-colors text-[11px] text-violet-600 hover:text-violet-800 font-bold"
                 }, d.showPermaculture ? 'Hide' : 'Explore \u2192')
               ),
               d.showPermaculture && React.createElement("div", { className: "grid grid-cols-3 gap-1.5 max-h-64 overflow-y-auto" },
@@ -7213,7 +7213,7 @@ var d = (labToolData.companionPlanting) || {};
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-emerald-800" }, "\uD83C\uDF31 Regenerative Practices"),
                 React.createElement("button", { onClick: function() { upd('showRegen', !d.showRegen); },
-                  className: "text-[11px] text-emerald-600 hover:text-emerald-800 font-bold"
+                  className: "transition-colors text-[11px] text-emerald-600 hover:text-emerald-800 font-bold"
                 }, d.showRegen ? 'Hide' : 'Learn \u2192')
               ),
               d.showRegen && React.createElement("div", { className: "space-y-1.5 max-h-56 overflow-y-auto" },
@@ -7263,7 +7263,7 @@ var d = (labToolData.companionPlanting) || {};
                     sc.options.map(function(opt, oi) {
                       var isSelected = gardenScenarioAnswer === oi;
                       var isRight = oi === sc.correct;
-                      var cls = !answered ? 'border-rose-100 bg-white hover:border-rose-400 cursor-pointer' :
+                      var cls = !answered ? 'transition-colors border-rose-100 bg-white hover:border-rose-400 cursor-pointer' :
                         isRight ? 'border-green-400 bg-green-50' :
                         isSelected && !isRight ? 'border-red-400 bg-red-50' : 'border-slate-200 bg-white opacity-40';
                       return React.createElement("button", { key: oi,
@@ -7321,7 +7321,7 @@ var d = (labToolData.companionPlanting) || {};
                 ),
                 React.createElement("button", { "aria-label": "Next",
                   onClick: function() { upd('factIdx', (factIdx + 1) % GARDEN_FACTS.length); },
-                  className: "text-[11px] text-indigo-500 hover:text-indigo-700 font-bold"
+                  className: "transition-colors text-[11px] text-indigo-500 hover:text-indigo-700 font-bold"
                 }, 'Next \u2192')
               )
             ),
@@ -7333,7 +7333,7 @@ var d = (labToolData.companionPlanting) || {};
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-teal-800" }, "\uD83D\uDCCB Quick Reference Cards"),
                 React.createElement("button", { onClick: function() { upd('showGardenRef', !d.showGardenRef); },
-                  className: "text-[11px] text-teal-600 hover:text-teal-800 font-bold"
+                  className: "transition-colors text-[11px] text-teal-600 hover:text-teal-800 font-bold"
                 }, d.showGardenRef ? 'Hide' : 'View \u2192')
               ),
               d.showGardenRef && React.createElement("div", { className: "grid grid-cols-2 gap-2" },
@@ -7360,7 +7360,7 @@ var d = (labToolData.companionPlanting) || {};
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-blue-800" }, "\u267B\uFE0F The Nitrogen Cycle"),
                 React.createElement("button", { onClick: function() { upd('showNitrogen', !d.showNitrogen); },
-                  className: "text-[11px] text-blue-600 hover:text-blue-800 font-bold"
+                  className: "transition-colors text-[11px] text-blue-600 hover:text-blue-800 font-bold"
                 }, d.showNitrogen ? 'Hide' : 'Explore \u2192')
               ),
               d.showNitrogen && React.createElement("div", null,
@@ -7399,7 +7399,7 @@ var d = (labToolData.companionPlanting) || {};
                 React.createElement("h4", { className: "text-sm font-bold text-amber-800" }, "\u267B\uFE0F Composting Guide"),
                 React.createElement("button", { "aria-label": "GREENS (Nitrogen)",
                   onClick: function() { upd('showCompost', !d.showCompost); },
-                  className: "text-[11px] text-amber-600 hover:text-amber-800 font-bold"
+                  className: "transition-colors text-[11px] text-amber-600 hover:text-amber-800 font-bold"
                 }, d.showCompost ? 'Hide' : 'Learn \u2192')
               ),
               d.showCompost && React.createElement("div", null,
@@ -7435,7 +7435,7 @@ var d = (labToolData.companionPlanting) || {};
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-emerald-800" }, "\uD83D\uDCC5 Seasonal Planting Calendar"),
                 React.createElement("button", { onClick: function() { upd('showCalendar', !d.showCalendar); },
-                  className: "text-[11px] text-emerald-600 hover:text-emerald-800 font-bold"
+                  className: "transition-colors text-[11px] text-emerald-600 hover:text-emerald-800 font-bold"
                 }, d.showCalendar ? 'Hide' : 'Plan \u2192')
               ),
               d.showCalendar && React.createElement("div", { className: "space-y-1.5" },
@@ -7471,7 +7471,7 @@ var d = (labToolData.companionPlanting) || {};
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-purple-800" }, "\u2696\uFE0F Soil pH & Plant Preferences"),
                 React.createElement("button", { onClick: function() { upd('showPH', !d.showPH); },
-                  className: "text-[11px] text-purple-600 hover:text-purple-800 font-bold"
+                  className: "transition-colors text-[11px] text-purple-600 hover:text-purple-800 font-bold"
                 }, d.showPH ? 'Hide' : 'View \u2192')
               ),
               d.showPH && React.createElement("div", null,
@@ -7519,7 +7519,7 @@ var d = (labToolData.companionPlanting) || {};
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-green-800" }, "\uD83C\uDF31 Companion Planting Guide (" + COMPANION_PAIRS.length + " pairs)"),
                 React.createElement("button", { onClick: function() { upd('showPairs', !d.showPairs); },
-                  className: "text-[11px] text-green-600 hover:text-green-800 font-bold"
+                  className: "transition-colors text-[11px] text-green-600 hover:text-green-800 font-bold"
                 }, d.showPairs ? 'Hide' : 'Explore \u2192')
               ),
               d.showPairs && React.createElement("div", null,
@@ -7562,7 +7562,7 @@ var d = (labToolData.companionPlanting) || {};
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-violet-800" }, "\uD83C\uDF3E Plant Families & Crop Rotation"),
                 React.createElement("button", { onClick: function() { upd('showFamilies', !d.showFamilies); },
-                  className: "text-[11px] text-violet-600 hover:text-violet-800 font-bold"
+                  className: "transition-colors text-[11px] text-violet-600 hover:text-violet-800 font-bold"
                 }, d.showFamilies ? 'Hide' : 'Learn \u2192')
               ),
               d.showFamilies && React.createElement("div", { className: "space-y-1.5 max-h-56 overflow-y-auto" },
@@ -7595,7 +7595,7 @@ var d = (labToolData.companionPlanting) || {};
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-amber-800" }, "\uD83E\uDEA8 Soil Types Guide"),
                 React.createElement("button", { onClick: function() { upd('showSoilTypes', !d.showSoilTypes); },
-                  className: "text-[11px] text-amber-600 hover:text-amber-800 font-bold"
+                  className: "transition-colors text-[11px] text-amber-600 hover:text-amber-800 font-bold"
                 }, d.showSoilTypes ? 'Hide' : 'Explore \u2192')
               ),
               d.showSoilTypes && React.createElement("div", { className: "grid grid-cols-3 gap-1.5" },
@@ -7627,7 +7627,7 @@ var d = (labToolData.companionPlanting) || {};
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-red-800" }, "\uD83D\uDC1E Garden Pests & Allies"),
                 React.createElement("button", { onClick: function() { upd('showPests', !d.showPests); },
-                  className: "text-[11px] text-red-600 hover:text-red-800 font-bold"
+                  className: "transition-colors text-[11px] text-red-600 hover:text-red-800 font-bold"
                 }, d.showPests ? 'Hide' : 'Identify \u2192')
               ),
               d.showPests && React.createElement("div", null,

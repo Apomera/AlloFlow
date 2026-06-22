@@ -26,9 +26,9 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
 {
   "buttons": 64,
   "inputs": 4,
-  "lengthBucket": 301,
+  "lengthBucket": 302,
   "selects": 0,
-  "sha": "deca199966653dd6",
+  "sha": "4eb3fafa5988a435",
   "svgs": 0,
 }
 `;
@@ -37,9 +37,9 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
 {
   "buttons": 125,
   "inputs": 0,
-  "lengthBucket": 686,
+  "lengthBucket": 697,
   "selects": 0,
-  "sha": "16ac35b8a9116df4",
+  "sha": "9066120729f0b237",
   "svgs": 2,
 }
 `;
@@ -83,7 +83,7 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
   "inputs": 5,
   "lengthBucket": 103,
   "selects": 0,
-  "sha": "57f2e01e6093abb4",
+  "sha": "e845a7e557bfafc7",
   "svgs": 0,
 }
 `;
@@ -103,9 +103,9 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
 {
   "buttons": 48,
   "inputs": 1,
-  "lengthBucket": 103,
+  "lengthBucket": 104,
   "selects": 0,
-  "sha": "82ab300a588ae3cd",
+  "sha": "919fac6bdb79c07b",
   "svgs": 0,
 }
 `;

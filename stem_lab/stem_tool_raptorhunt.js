@@ -7096,7 +7096,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   !revealed && h('div', { className: 'flex gap-2 flex-wrap' },
                     h('button', {
                       onClick: function() { setRH({ challengeRevealed: daySeed }); rhAnnounce('Answer revealed'); },
-                      className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-purple-700 text-amber-100 hover:bg-purple-600',
+                      className: 'transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-purple-700 text-amber-100 hover:bg-purple-600',
                       'aria-label': 'Show answer'
                     }, '👁 Show Answer'),
                     h('button', {
@@ -7123,7 +7123,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                           return Object.assign({}, cur, { activeSection: todayChallenge.jumpTo, visited: visited });
                         });
                       },
-                      className: 'text-[10px] text-cyan-300 hover:text-cyan-200 underline',
+                      className: 'transition-colors text-[10px] text-cyan-300 hover:text-cyan-200 underline',
                       'aria-label': 'Jump to relevant section'
                     }, '↗ Read more in the relevant section')
                   )
@@ -7165,7 +7165,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                         return Object.assign({}, cur, { activeSection: sid, visited: visited, recentlyViewed: newRecent });
                       });
                     },
-                    className: 'px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-amber-200 hover:bg-slate-700 border border-slate-700',
+                    className: 'transition-colors px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-amber-200 hover:bg-slate-700 border border-slate-700',
                     'aria-label': 'Jump back to ' + sec.label
                   }, sec.icon + ' ' + sec.label);
                 })
@@ -7242,7 +7242,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               visitedCount > 0 && h('div', { className: 'text-right mt-2' },
                 h('button', {
                   onClick: function() { if (typeof window !== 'undefined' && window.confirm && window.confirm('Reset visit history?')) setRH({ visited: {} }); },
-                  className: 'text-[10px] text-slate-500 hover:text-amber-300 italic underline',
+                  className: 'transition-colors text-[10px] text-slate-500 hover:text-amber-300 italic underline',
                   'aria-label': 'Reset visit history'
                 }, 'Reset progress')
               )
@@ -7293,7 +7293,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var arrow = active ? (rosterDir === 'asc' ? ' ↑' : ' ↓') : '';
           return h('th', {
             onClick: function() { setRosterSort(key); },
-            className: 'pb-2 px-2 text-left cursor-pointer ' + (active ? 'text-amber-300 font-bold' : 'text-slate-400 hover:text-slate-200'),
+            className: 'pb-2 px-2 text-left cursor-pointer ' + (active ? 'text-amber-300 font-bold' : 'transition-colors text-slate-400 hover:text-slate-200'),
             scope: 'col',
             'aria-sort': active ? (rosterDir === 'asc' ? 'ascending' : 'descending') : 'none',
             'aria-label': label + (active ? ' (sorted ' + (rosterDir === 'asc' ? 'ascending' : 'descending') + ')' : '')
@@ -7422,12 +7422,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'flex gap-2 justify-center' },
                 h('button', {
                   onClick: function() { setRH({ selectedSpecies: duelA }); rhAnnounce(spA.name + ' selected for Hunt Sim'); },
-                  className: 'px-4 py-2 rounded-lg text-xs font-bold bg-slate-700 text-amber-300 hover:bg-slate-600',
+                  className: 'transition-colors px-4 py-2 rounded-lg text-xs font-bold bg-slate-700 text-amber-300 hover:bg-slate-600',
                   'aria-label': 'Select A for Hunt Sim'
                 }, '→ Use ' + spA.name + ' in Hunt Sim'),
                 h('button', {
                   onClick: function() { setRH({ selectedSpecies: duelB }); rhAnnounce(spB.name + ' selected for Hunt Sim'); },
-                  className: 'px-4 py-2 rounded-lg text-xs font-bold bg-slate-700 text-orange-300 hover:bg-slate-600',
+                  className: 'transition-colors px-4 py-2 rounded-lg text-xs font-bold bg-slate-700 text-orange-300 hover:bg-slate-600',
                   'aria-label': 'Select B for Hunt Sim'
                 }, '→ Use ' + spB.name + ' in Hunt Sim')
               )
@@ -7460,7 +7460,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     return h('tr', {
                       key: s.id,
                       onClick: function() { setRH({ selectedSpecies: s.id }); rhAnnounce(s.name + ' selected'); },
-                      className: 'border-b border-slate-800/50 cursor-pointer hover:bg-slate-800/40 ' + (isActive ? 'bg-amber-900/20 ring-1 ring-amber-500/50' : ''),
+                      className: 'transition-colors border-b border-slate-800/50 cursor-pointer hover:bg-slate-800/40 ' + (isActive ? 'bg-amber-900/20 ring-1 ring-amber-500/50' : ''),
                       'aria-label': 'Select ' + s.name + (isActive ? ' (currently active)' : '')
                     },
                       h('td', { className: 'py-1.5 px-2' },
@@ -7716,7 +7716,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded p-3 text-xs text-cyan-100/90' },
                 h('span', { className: 'font-bold text-cyan-300' }, '🦻 Hear them yourself: '),
                 'Cornell Lab\'s ',
-                h('a', { href: 'https://www.macaulaylibrary.org/', target: '_blank', rel: 'noopener noreferrer', className: 'text-cyan-300 underline hover:text-cyan-200' }, 'Macaulay Library'),
+                h('a', { href: 'https://www.macaulaylibrary.org/', target: '_blank', rel: 'noopener noreferrer', className: 'transition-colors text-cyan-300 underline hover:text-cyan-200' }, 'Macaulay Library'),
                 ' has free audio for every species. Search by species name. Free to use for educational + non-commercial purposes.'
               )
             );
@@ -7906,7 +7906,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               ),
               h('button', {
                 onClick: function() { setRH({ huntTutorialDismissed: true }); rhAnnounce('Tutorial dismissed'); },
-                className: 'flex-shrink-0 text-cyan-300 hover:text-cyan-100 text-xs',
+                className: 'transition-colors flex-shrink-0 text-cyan-300 hover:text-cyan-100 text-xs',
                 'aria-label': 'Dismiss tutorial'
               }, '✕ Got it')
             )
@@ -10724,7 +10724,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 // Reset to selected species' true values
                 setRH({ stoopSimVars: { mass: sp.massKg, cd: 0.18, area: sp.wingAreaSqM * 0.06, altitudeM: 600 } });
               },
-              className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-700 text-amber-300 hover:bg-slate-600',
+              className: 'transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-700 text-amber-300 hover:bg-slate-600',
               'aria-label': 'Load active species presets'
             }, '↺ Load ' + sp.name + ' presets')
           ),
@@ -11274,7 +11274,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         function statusHeader(key, label) {
           var active = sortBy === key;
           var arrow = active ? (sortDir === 'asc' ? ' ↑' : ' ↓') : '';
-          return h('th', { onClick: function() { setStatusSort(key); }, className: 'pb-2 px-2 text-left cursor-pointer ' + (active ? 'text-amber-300 font-bold' : 'text-slate-400 hover:text-slate-200') }, label + arrow);
+          return h('th', { onClick: function() { setStatusSort(key); }, className: 'pb-2 px-2 text-left cursor-pointer ' + (active ? 'text-amber-300 font-bold' : 'transition-colors text-slate-400 hover:text-slate-200') }, label + arrow);
         }
         function iucnColor(code) {
           return code === 'LC' ? 'emerald' : code === 'NT' ? 'cyan' : code === 'VU' ? 'amber' : code === 'EN' ? 'orange' : code === 'CR' ? 'red' : 'slate';
@@ -12338,7 +12338,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 else if (selected) btnClass += 'bg-red-900/40 border-red-500 text-red-100';
                 else btnClass += 'bg-slate-800/50 border-slate-700 text-slate-400';
               } else {
-                btnClass += selected ? 'bg-amber-900/40 border-amber-400 text-amber-100' : 'bg-slate-800/50 border-slate-700 text-slate-200 hover:border-amber-600/60';
+                btnClass += selected ? 'bg-amber-900/40 border-amber-400 text-amber-100' : 'transition-colors bg-slate-800/50 border-slate-700 text-slate-200 hover:border-amber-600/60';
               }
               return h('button', {
                 key: i,
@@ -12862,12 +12862,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('div', { className: 'flex gap-2 justify-center pt-2' },
                   h('button', {
                     onClick: startDx,
-                    className: 'px-4 py-2 rounded-lg text-xs font-bold bg-slate-700 text-amber-300 hover:bg-slate-600',
+                    className: 'transition-colors px-4 py-2 rounded-lg text-xs font-bold bg-slate-700 text-amber-300 hover:bg-slate-600',
                     'aria-label': 'Generate another pellet'
                   }, '🔁 New Pellet'),
                   h('button', {
                     onClick: function() { setPD({ started: false, bones: null, identified: {}, complete: false, activeBone: null }); },
-                    className: 'px-4 py-2 rounded-lg text-xs font-bold bg-slate-700 text-slate-300 hover:bg-slate-600',
+                    className: 'transition-colors px-4 py-2 rounded-lg text-xs font-bold bg-slate-700 text-slate-300 hover:bg-slate-600',
                     'aria-label': 'Close dissection'
                   }, '✕ Close')
                 )
@@ -12895,11 +12895,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // External resource
           h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-3 text-xs' },
             h('div', { className: 'font-bold text-amber-300 mb-1' }, '🔗 Free interactive dichotomous keys'),
-            h('a', { href: 'https://www.kidwings.com/owl-pellets/virtual-pellet/', target: '_blank', rel: 'noopener noreferrer', className: 'text-cyan-300 hover:text-cyan-200 underline' }, 'KidWings Virtual Pellet (free online dissection)'),
+            h('a', { href: 'https://www.kidwings.com/owl-pellets/virtual-pellet/', target: '_blank', rel: 'noopener noreferrer', className: 'transition-colors text-cyan-300 hover:text-cyan-200 underline' }, 'KidWings Virtual Pellet (free online dissection)'),
             ' · ',
-            h('a', { href: 'https://www.pellet.com/', target: '_blank', rel: 'noopener noreferrer', className: 'text-cyan-300 hover:text-cyan-200 underline' }, 'Pellet.com (sterilized supplies)'),
+            h('a', { href: 'https://www.pellet.com/', target: '_blank', rel: 'noopener noreferrer', className: 'transition-colors text-cyan-300 hover:text-cyan-200 underline' }, 'Pellet.com (sterilized supplies)'),
             ' · ',
-            h('a', { href: 'https://www.carolina.com/owl-pellets/10288.pr', target: '_blank', rel: 'noopener noreferrer', className: 'text-cyan-300 hover:text-cyan-200 underline' }, 'Carolina Biological')
+            h('a', { href: 'https://www.carolina.com/owl-pellets/10288.pr', target: '_blank', rel: 'noopener noreferrer', className: 'transition-colors text-cyan-300 hover:text-cyan-200 underline' }, 'Carolina Biological')
           )
         );
       }
@@ -13835,7 +13835,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               }, '▶ Replay'),
               h('button', {
                 onClick: function() { setSV({ paused: !sv.paused }); },
-                className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-700 text-amber-300 hover:bg-slate-600',
+                className: 'transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-700 text-amber-300 hover:bg-slate-600',
                 'aria-label': sv.paused ? 'Resume' : 'Pause'
               }, sv.paused ? '⏵ Resume' : '⏸ Pause')
             )
@@ -14727,7 +14727,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               ].map(function(p) {
                 return h('button', { key: p.label,
                   onClick: function() { setPR({ mass: p.mass, wingspan: p.wingspan, wingArea: p.wingArea }); rhAnnounce('Loaded ' + p.label + ' dimensions'); },
-                  className: 'px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-amber-200 hover:bg-slate-700 hover:text-amber-100',
+                  className: 'transition-colors px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-amber-200 hover:bg-slate-700 hover:text-amber-100',
                   'aria-label': 'Load ' + p.label + ' dimensions'
                 }, p.label);
               })
@@ -14984,7 +14984,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 onClick: function() { setStateFilter(r.id); },
                 className: 'px-3 py-1 rounded text-xs font-bold ' + (active
                   ? 'bg-emerald-600 text-white'
-                  : 'text-emerald-200 hover:text-emerald-100'),
+                  : 'transition-colors text-emerald-200 hover:text-emerald-100'),
                 'aria-pressed': active
               }, r.label);
             })
@@ -15043,7 +15043,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 onClick: function() { setEra(e.id); },
                 className: 'px-3 py-1.5 rounded text-xs font-bold ' + (active
                   ? 'bg-amber-600 text-white'
-                  : 'text-amber-200 hover:text-amber-100'),
+                  : 'transition-colors text-amber-200 hover:text-amber-100'),
                 role: 'tab',
                 'aria-selected': active
               }, e.label + ' (' + count + ')');
@@ -15091,7 +15091,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 onClick: function() { setMethod(i); },
                 className: 'px-3 py-1.5 rounded text-xs font-bold ' + (selected
                   ? 'bg-cyan-600 text-white'
-                  : 'bg-slate-800/60 text-cyan-200 hover:bg-slate-700/60'),
+                  : 'transition-colors bg-slate-800/60 text-cyan-200 hover:bg-slate-700/60'),
                 'aria-pressed': selected
               }, m.name.replace(/\s*\(.*\)/, ''));
             })
@@ -15166,7 +15166,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 onClick: function() { setCulture(i); },
                 className: 'px-3 py-1.5 rounded text-xs font-bold ' + (selected
                   ? 'bg-purple-600 text-white'
-                  : 'bg-slate-800/60 text-purple-200 hover:bg-slate-700/60'),
+                  : 'transition-colors bg-slate-800/60 text-purple-200 hover:bg-slate-700/60'),
                 'aria-pressed': selected
               }, c.culture.replace(/\s*\(.*\)/, '').slice(0, 24));
             })
@@ -15224,7 +15224,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 onClick: function() { setPhotoTab(t.id); },
                 className: 'px-3 py-1.5 rounded text-xs font-bold ' + (active
                   ? 'bg-slate-600 text-white'
-                  : 'text-slate-200 hover:text-white'),
+                  : 'transition-colors text-slate-200 hover:text-white'),
                 role: 'tab',
                 'aria-selected': active
               }, t.label);
@@ -15261,7 +15261,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 return h('button', {
                   key: i,
                   onClick: function() { setPhotoSpecies(i); },
-                  className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-cyan-600 text-white font-bold' : 'bg-slate-800/60 text-slate-300 hover:bg-slate-700/60'),
+                  className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-cyan-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-slate-300 hover:bg-slate-700/60'),
                   'aria-pressed': sel
                 }, s.species);
               })
@@ -15318,7 +15318,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 onClick: function() { setCamFilter(s); },
                 className: 'px-3 py-1 rounded text-xs ' + (active
                   ? 'bg-blue-600 text-white font-bold'
-                  : 'bg-slate-800/60 text-blue-200 hover:bg-slate-700/60'),
+                  : 'transition-colors bg-slate-800/60 text-blue-200 hover:bg-slate-700/60'),
                 'aria-pressed': active
               }, s === 'all' ? 'All Cams' : s);
             })
@@ -15385,7 +15385,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setCallSpecies(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-pink-600 text-white font-bold' : 'bg-slate-800/60 text-pink-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-pink-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-pink-200 hover:bg-slate-700/60'),
                 'aria-pressed': sel
               }, s.species);
             })
@@ -15448,7 +15448,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setHuntIdx(i); },
-                className: 'px-3 py-1.5 rounded text-xs ' + (sel ? 'bg-red-600 text-white font-bold' : 'bg-slate-800/60 text-red-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1.5 rounded text-xs ' + (sel ? 'bg-red-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-red-200 hover:bg-slate-700/60'),
                 'aria-pressed': sel
               }, s.name);
             })
@@ -15531,7 +15531,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 onClick: function() { setBehCat(c.id); },
                 className: 'px-3 py-1 rounded text-xs ' + (active
                   ? 'bg-indigo-600 text-white font-bold'
-                  : 'bg-slate-800/60 text-indigo-200 hover:bg-slate-700/60'),
+                  : 'transition-colors bg-slate-800/60 text-indigo-200 hover:bg-slate-700/60'),
                 'aria-pressed': active
               }, c.label + ' (' + count + ')');
             })
@@ -15587,7 +15587,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 onClick: function() { setUrbanTab(t.id); },
                 className: 'px-3 py-1.5 rounded text-xs font-bold ' + (active
                   ? 'bg-zinc-600 text-white'
-                  : 'text-zinc-200 hover:text-white'),
+                  : 'transition-colors text-zinc-200 hover:text-white'),
                 role: 'tab',
                 'aria-selected': active
               }, t.label);
@@ -15600,7 +15600,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 return h('button', {
                   key: i,
                   onClick: function() { setUrbanSp(i); },
-                  className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-zinc-600 text-white font-bold' : 'bg-slate-800/60 text-zinc-200 hover:bg-slate-700/60'),
+                  className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-zinc-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-zinc-200 hover:bg-slate-700/60'),
                   'aria-pressed': sel
                 }, s.name);
               })
@@ -15687,7 +15687,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 onClick: function() { setClimateTab(t.id); },
                 className: 'px-3 py-1.5 rounded text-xs font-bold ' + (active
                   ? 'bg-orange-600 text-white'
-                  : 'text-orange-200 hover:text-white'),
+                  : 'transition-colors text-orange-200 hover:text-white'),
                 role: 'tab',
                 'aria-selected': active
               }, t.label);
@@ -15769,7 +15769,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setSys(i); },
-                className: 'px-3 py-1.5 rounded text-xs ' + (sel ? 'bg-rose-600 text-white font-bold' : 'bg-slate-800/60 text-rose-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1.5 rounded text-xs ' + (sel ? 'bg-rose-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-rose-200 hover:bg-slate-700/60'),
                 'aria-pressed': sel
               }, s.icon + ' ' + s.name);
             })
@@ -15837,7 +15837,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 onClick: function() { setEcoTab(t.id); },
                 className: 'px-3 py-1.5 rounded text-xs font-bold ' + (active
                   ? 'bg-green-600 text-white'
-                  : 'text-green-200 hover:text-white'),
+                  : 'transition-colors text-green-200 hover:text-white'),
                 role: 'tab',
                 'aria-selected': active
               }, t.label);
@@ -15858,7 +15858,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 return h('button', {
                   key: i,
                   onClick: function() { setHab(i); },
-                  className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-green-600 text-white font-bold' : 'bg-slate-800/60 text-green-200 hover:bg-slate-700/60'),
+                  className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-green-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-green-200 hover:bg-slate-700/60'),
                   'aria-pressed': sel
                 }, f.habitat);
               })
@@ -15929,7 +15929,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 onClick: function() { setEvoTab(t.id); },
                 className: 'px-3 py-1.5 rounded text-xs font-bold ' + (active
                   ? 'bg-violet-600 text-white'
-                  : 'text-violet-200 hover:text-white'),
+                  : 'transition-colors text-violet-200 hover:text-white'),
                 role: 'tab',
                 'aria-selected': active
               }, t.label);
@@ -16020,7 +16020,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 onClick: function() { setFnTab(t.id); },
                 className: 'px-3 py-1.5 rounded text-xs font-bold ' + (active
                   ? 'bg-emerald-600 text-white'
-                  : 'text-emerald-200 hover:text-white'),
+                  : 'transition-colors text-emerald-200 hover:text-white'),
                 role: 'tab',
                 'aria-selected': active
               }, t.label);
@@ -16098,7 +16098,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 onClick: function() { setPelletTab(t.id); },
                 className: 'px-3 py-1.5 rounded text-xs font-bold ' + (active
                   ? 'bg-amber-600 text-white'
-                  : 'text-amber-200 hover:text-white'),
+                  : 'transition-colors text-amber-200 hover:text-white'),
                 role: 'tab',
                 'aria-selected': active
               }, t.label);
@@ -16186,7 +16186,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setGearCat(i); },
-                className: 'px-3 py-1.5 rounded text-xs ' + (sel ? 'bg-cyan-600 text-white font-bold' : 'bg-slate-800/60 text-cyan-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1.5 rounded text-xs ' + (sel ? 'bg-cyan-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-cyan-200 hover:bg-slate-700/60'),
                 'aria-pressed': sel
               }, c.category);
             })
@@ -16244,7 +16244,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setCareerIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-yellow-600 text-white font-bold' : 'bg-slate-800/60 text-yellow-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-yellow-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-yellow-200 hover:bg-slate-700/60'),
                 'aria-pressed': sel
               }, career.title);
             })
@@ -16325,7 +16325,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 onClick: function() { setFcTab(t.id); },
                 className: 'px-3 py-1.5 rounded text-xs font-bold ' + (active
                   ? 'bg-orange-600 text-white'
-                  : 'text-orange-200 hover:text-white'),
+                  : 'transition-colors text-orange-200 hover:text-white'),
                 role: 'tab',
                 'aria-selected': active
               }, t.label);
@@ -16338,7 +16338,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 return h('button', {
                   key: i,
                   onClick: function() { setLevel(i); },
-                  className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-orange-600 text-white font-bold' : 'bg-slate-800/60 text-orange-200 hover:bg-slate-700/60'),
+                  className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-orange-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-orange-200 hover:bg-slate-700/60'),
                   'aria-pressed': sel
                 }, l.level);
               })
@@ -16458,7 +16458,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setView(i); },
-                className: 'px-3 py-1.5 rounded text-xs ' + (sel ? 'bg-stone-600 text-white font-bold' : 'bg-slate-800/60 text-stone-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1.5 rounded text-xs ' + (sel ? 'bg-stone-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-stone-200 hover:bg-slate-700/60'),
                 'aria-pressed': sel
               }, view.icon + ' ' + view.name);
             })
@@ -16515,7 +16515,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             }),
             preySearch && h('button', {
               onClick: function() { setPreySearch(''); },
-              className: 'px-3 py-2 bg-slate-700 text-slate-200 rounded text-xs hover:bg-slate-600',
+              className: 'transition-colors px-3 py-2 bg-slate-700 text-slate-200 rounded text-xs hover:bg-slate-600',
               'aria-label': 'Clear search'
             }, 'Clear'),
             h('div', { className: 'text-xs text-amber-200 font-mono' }, filtered.length + ' shown')
@@ -16566,7 +16566,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 onClick: function() { setFossilTab(t.id); },
                 className: 'px-3 py-1.5 rounded text-xs font-bold ' + (active
                   ? 'bg-stone-600 text-white'
-                  : 'text-stone-200 hover:text-white'),
+                  : 'transition-colors text-stone-200 hover:text-white'),
                 role: 'tab',
                 'aria-selected': active
               }, t.label);
@@ -16630,7 +16630,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 onClick: function() { setDemoTab(t.id); },
                 className: 'px-3 py-1.5 rounded text-xs font-bold ' + (active
                   ? 'bg-teal-600 text-white'
-                  : 'text-teal-200 hover:text-white'),
+                  : 'transition-colors text-teal-200 hover:text-white'),
                 role: 'tab',
                 'aria-selected': active
               }, t.label);
@@ -16719,7 +16719,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setHabIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-green-600 text-white font-bold' : 'bg-slate-800/60 text-green-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-green-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-green-200 hover:bg-slate-700/60'),
                 'aria-pressed': sel
               }, b.name);
             })
@@ -16781,7 +16781,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setLessonIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-blue-600 text-white font-bold' : 'bg-slate-800/60 text-blue-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-blue-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-blue-200 hover:bg-slate-700/60'),
                 'aria-pressed': sel
               }, p.title);
             })
@@ -16871,7 +16871,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setCaseIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-purple-600 text-white font-bold' : (solved ? 'bg-emerald-900/60 text-emerald-200' : 'bg-slate-800/60 text-purple-200 hover:bg-slate-700/60')),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-purple-600 text-white font-bold' : (solved ? 'bg-emerald-900/60 text-emerald-200' : 'transition-colors bg-slate-800/60 text-purple-200 hover:bg-slate-700/60')),
                 'aria-pressed': sel
               }, '#' + cs.number + (solved ? ' ✓' : ''));
             })
@@ -16916,7 +16916,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               ),
               h('button', {
                 onClick: toggleReveal,
-                className: 'text-xs text-purple-300 hover:text-purple-200',
+                className: 'transition-colors text-xs text-purple-300 hover:text-purple-200',
                 'aria-label': 'Hide answer'
               }, '🔒 Hide Answer')
             )
@@ -16948,7 +16948,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setRegionIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-amber-600 text-white font-bold' : 'bg-slate-800/60 text-amber-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-amber-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-amber-200 hover:bg-slate-700/60'),
                 'aria-pressed': sel
               }, reg.name.split(' (')[0]);
             })
@@ -17014,7 +17014,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setWtIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-blue-600 text-white font-bold' : 'bg-slate-800/60 text-blue-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-blue-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-blue-200 hover:bg-slate-700/60'),
                 'aria-pressed': sel
               }, dest.flag + ' ' + dest.name.split(',')[0]);
             })
@@ -17102,7 +17102,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setThreatIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-rose-600 text-white font-bold' : 'bg-slate-800/60 text-rose-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-rose-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-rose-200 hover:bg-slate-700/60'),
                 'aria-pressed': sel
               }, th.threat.split(' ')[0] + ' ' + (th.threat.split(' ')[1] || ''));
             })
@@ -17156,7 +17156,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setExpertIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-violet-600 text-white font-bold' : 'bg-slate-800/60 text-violet-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-violet-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-violet-200 hover:bg-slate-700/60'),
                 'aria-pressed': sel
               }, ex.name.split(' ').pop());
             })
@@ -17208,7 +17208,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setScIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-green-600 text-white font-bold' : 'bg-slate-800/60 text-green-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-green-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-green-200 hover:bg-slate-700/60'),
                 'aria-pressed': sel
               }, '#' + (i + 1));
             })
@@ -17229,7 +17229,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 return h('button', {
                   key: i,
                   onClick: function() { pickChoice(letter); },
-                  className: 'w-full text-left px-3 py-2 bg-slate-900/40 hover:bg-slate-800/60 border border-slate-700/40 rounded-lg text-sm text-slate-100',
+                  className: 'transition-colors w-full text-left px-3 py-2 bg-slate-900/40 hover:bg-slate-800/60 border border-slate-700/40 rounded-lg text-sm text-slate-100',
                   'aria-label': 'Choose ' + opt
                 }, opt);
               })
@@ -17249,7 +17249,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               ),
               h('button', {
                 onClick: function() { setRH({ scenarioRevealed: false, scenarioChoice: null }); },
-                className: 'text-xs text-green-300 hover:text-green-200',
+                className: 'transition-colors text-xs text-green-300 hover:text-green-200',
                 'aria-label': 'Reset scenario'
               }, '↺ Try again')
             )
@@ -17280,7 +17280,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setSpIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-amber-600 text-white font-bold' : 'bg-slate-800/60 text-amber-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-amber-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-amber-200 hover:bg-slate-700/60'),
                 'aria-pressed': sel
               }, s.name.split(' (')[0]);
             })
@@ -17352,7 +17352,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setPairIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-pink-600 text-white font-bold' : 'bg-slate-800/60 text-pink-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-pink-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-pink-200 hover:bg-slate-700/60'),
                 'aria-pressed': sel
               }, pair.a.split(' ')[0] + ' vs ' + pair.b.split(' ')[0]);
             })
@@ -17535,7 +17535,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setBookCat(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-purple-600 text-white font-bold' : 'bg-slate-800/60 text-purple-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-purple-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-purple-200 hover:bg-slate-700/60'),
                 'aria-pressed': sel
               }, c.category);
             })
@@ -17609,7 +17609,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setCookIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-amber-600 text-white font-bold' : 'bg-slate-800/60 text-amber-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-amber-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-amber-200 hover:bg-slate-700/60'),
                 'aria-pressed': sel
               }, nest.species);
             })
@@ -17676,7 +17676,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setMathIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-blue-600 text-white font-bold' : 'bg-slate-800/60 text-blue-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-blue-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-blue-200 hover:bg-slate-700/60'),
                 'aria-pressed': sel
               }, '#' + (i + 1));
             })
@@ -17711,7 +17711,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               ),
               h('button', {
                 onClick: toggleRev,
-                className: 'text-xs text-blue-300 hover:text-blue-200',
+                className: 'transition-colors text-xs text-blue-300 hover:text-blue-200',
                 'aria-label': 'Hide solution'
               }, '🔒 Hide')
             )
@@ -17876,7 +17876,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setRescueIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-red-600 text-white font-bold' : 'bg-slate-800/60 text-red-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-red-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-red-200 hover:bg-slate-700/60'),
                 'aria-pressed': sel
               }, '#' + (i + 1));
             })
@@ -17922,7 +17922,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setApIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-fuchsia-600 text-white font-bold' : 'bg-slate-800/60 text-fuchsia-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-fuchsia-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-fuchsia-200 hover:bg-slate-700/60'),
                 'aria-pressed': sel
               }, sp.species);
             })
@@ -18063,7 +18063,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setTableIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-slate-600 text-white font-bold' : 'bg-slate-800/60 text-slate-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-slate-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-slate-200 hover:bg-slate-700/60'),
                 'aria-pressed': sel
               }, '📊 ' + table.title.split(' ')[0]);
             })
@@ -18157,7 +18157,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setAgIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-pink-600 text-white font-bold' : 'bg-slate-800/60 text-pink-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-pink-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-pink-200 hover:bg-slate-700/60'),
                 'aria-pressed': sel
               }, sp.species);
             })
@@ -18246,7 +18246,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('div', { key: i, className: 'bg-slate-800/40 border border-violet-700/30 rounded-lg overflow-hidden' },
                 h('button', {
                   onClick: function() { toggleQA(i); },
-                  className: 'w-full text-left p-3 hover:bg-slate-700/40 flex items-start gap-2',
+                  className: 'transition-colors w-full text-left p-3 hover:bg-slate-700/40 flex items-start gap-2',
                   'aria-expanded': open,
                   'aria-label': qa.q
                 },
@@ -18336,7 +18336,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setIllIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-amber-600 text-white font-bold' : 'bg-slate-800/60 text-amber-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-amber-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-amber-200 hover:bg-slate-700/60'),
                 'aria-pressed': sel
               }, '🖼 #' + (i + 1));
             })
@@ -18417,7 +18417,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setMedIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-indigo-600 text-white font-bold' : 'bg-slate-800/60 text-indigo-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-indigo-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-indigo-200 hover:bg-slate-700/60'),
                 'aria-pressed': sel
               }, '#' + med.number);
             })
@@ -18453,7 +18453,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setProjIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-lime-600 text-white font-bold' : 'bg-slate-800/60 text-lime-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-lime-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-lime-200 hover:bg-slate-700/60'),
                 'aria-pressed': sel
               }, pr.name);
             })
@@ -18521,7 +18521,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: a.id,
                 onClick: function() { setAgeFilter(a.id); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-rose-600 text-white font-bold' : 'bg-slate-800/60 text-rose-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-rose-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-rose-200 hover:bg-slate-700/60'),
                 'aria-pressed': sel
               }, a.label);
             })
@@ -18564,7 +18564,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setRlIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-cyan-600 text-white font-bold' : 'bg-slate-800/60 text-cyan-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-cyan-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-cyan-200 hover:bg-slate-700/60'),
                 'aria-pressed': sel
               }, sm.topic);
             })
@@ -18615,7 +18615,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: c,
                 onClick: function() { setQbCat(c); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-amber-600 text-white font-bold' : 'bg-slate-800/60 text-amber-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-amber-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-amber-200 hover:bg-slate-700/60'),
                 'aria-pressed': sel
               }, c);
             })
@@ -18661,7 +18661,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: s,
                 onClick: function() { setIucnFilter(s); },
-                className: 'px-3 py-1 rounded text-xs font-mono ' + (sel ? 'bg-rose-600 text-white font-bold' : 'bg-slate-800/60 text-rose-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs font-mono ' + (sel ? 'bg-rose-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-rose-200 hover:bg-slate-700/60'),
                 'aria-pressed': sel
               }, s === 'all' ? 'All' : s + ' (' + statusLabels[s] + ')');
             })
@@ -18706,7 +18706,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setModeIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-sky-600 text-white font-bold' : 'bg-slate-800/60 text-sky-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-sky-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-sky-200 hover:bg-slate-700/60'),
                 'aria-pressed': sel
               }, mo.name);
             })
@@ -18983,7 +18983,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setBioIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-amber-600 text-white font-bold' : 'bg-slate-800/60 text-amber-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-amber-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-amber-200 hover:bg-slate-700/60'),
                 'aria-pressed': sel
               }, bio.name.split(' (')[0].split(' ').slice(0,2).join(' '));
             })
@@ -19288,7 +19288,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 ),
                 h('button', {
                   onClick: function() { setFC({ knownIds: {}, reviewedIds: {} }); rhAnnounce('Flashcard progress reset'); },
-                  className: 'text-[10px] text-slate-500 hover:text-amber-300 italic',
+                  className: 'transition-colors text-[10px] text-slate-500 hover:text-amber-300 italic',
                   'aria-label': 'Reset flashcard progress'
                 }, '↺ Reset')
               ),
@@ -19325,7 +19325,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     setFC({ knownIds: newKnown, reviewedIds: newReviewed, deckIdx: fc.deckIdx + 1, flipped: false });
                     rhAnnounce("Marked: didn't know. Next card.");
                   },
-                  className: 'px-3 py-2 rounded-lg text-xs font-bold bg-red-900/40 text-red-200 hover:bg-red-800/50 border border-red-700/40',
+                  className: 'transition-colors px-3 py-2 rounded-lg text-xs font-bold bg-red-900/40 text-red-200 hover:bg-red-800/50 border border-red-700/40',
                   'aria-label': "Didn't know"
                 }, "✗ Didn't Know"),
                 h('button', {
@@ -19335,7 +19335,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     setFC({ reviewedIds: newReviewed, deckIdx: fc.deckIdx + 1, flipped: false });
                     rhAnnounce('Marked: still learning. Next card.');
                   },
-                  className: 'px-3 py-2 rounded-lg text-xs font-bold bg-amber-900/40 text-amber-200 hover:bg-amber-800/50 border border-amber-700/40',
+                  className: 'transition-colors px-3 py-2 rounded-lg text-xs font-bold bg-amber-900/40 text-amber-200 hover:bg-amber-800/50 border border-amber-700/40',
                   'aria-label': 'Still learning'
                 }, '? Still Learning'),
                 h('button', {
@@ -19348,14 +19348,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     rhAnnounce('Marked as known. Next card.');
                     if (ctx.awardXP) ctx.awardXP(1, 'Glossary flashcard: known');
                   },
-                  className: 'px-3 py-2 rounded-lg text-xs font-bold bg-emerald-900/40 text-emerald-200 hover:bg-emerald-800/50 border border-emerald-700/40',
+                  className: 'transition-colors px-3 py-2 rounded-lg text-xs font-bold bg-emerald-900/40 text-emerald-200 hover:bg-emerald-800/50 border border-emerald-700/40',
                   'aria-label': 'Mark as known'
                 }, '✓ Knew It')
               ),
               // Skip button (always)
               !fc.flipped && h('button', {
                 onClick: function() { setFC({ deckIdx: fc.deckIdx + 1, flipped: false }); rhAnnounce('Skipped to next card'); },
-                className: 'w-full px-3 py-2 rounded-lg text-xs font-bold bg-slate-700 text-slate-200 hover:bg-slate-600',
+                className: 'transition-colors w-full px-3 py-2 rounded-lg text-xs font-bold bg-slate-700 text-slate-200 hover:bg-slate-600',
                 'aria-label': 'Skip card'
               }, '➡ Skip — next card'),
               // Help
@@ -20341,7 +20341,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('button', {
               onClick: function() { setCategory(null); goSection('hub'); },
               'aria-label': 'Go to Hub',
-              className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (atHub ? 'bg-amber-600 text-white' : 'bg-slate-800 text-amber-200 hover:bg-slate-700')
+              className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (atHub ? 'bg-amber-600 text-white' : 'transition-colors bg-slate-800 text-amber-200 hover:bg-slate-700')
             }, '🏠 Hub'),
             activeCategory && h('span', { className: 'text-xs text-slate-400' }, '/'),
             activeCategory && h('span', { className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800/60 text-amber-200' }, activeCategory.icon + ' ' + activeCategory.label),
@@ -20367,7 +20367,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     return h('button', {
                       key: s.id,
                       onClick: function() { goSection(s.id); setRH(function(cur) { return Object.assign({}, cur, { sectionSearch: '' }); }); },
-                      className: 'px-2 py-1 rounded text-[11px] font-bold bg-slate-800 text-amber-200 hover:bg-amber-700/40'
+                      className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-slate-800 text-amber-200 hover:bg-amber-700/40'
                     }, s.icon + ' ' + s.label);
                   })
             ));
@@ -20380,7 +20380,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 return h('button', {
                   key: c.id,
                   onClick: function() { setCategory(c.id); goSection(c.sections[0]); },
-                  className: 'text-left p-3 rounded-xl bg-slate-800/40 hover:bg-slate-700/60 border border-' + c.color + '-700/40 hover:border-' + c.color + '-500 transition-all'
+                  className: 'transition-colors text-left p-3 rounded-xl bg-slate-800/40 hover:bg-slate-700/60 border border-' + c.color + 'transition-colors -700/40 hover:border-' + c.color + '-500 transition-all'
                 },
                   h('div', { className: 'text-2xl mb-1' }, c.icon),
                   h('div', { className: 'text-sm font-bold text-' + c.color + '-200 mb-1' }, c.label),

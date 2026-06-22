@@ -3469,7 +3469,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('div', null,
                   h('div', { className: 'font-bold text-sm' }, t('stem.beehive.hive_inspector_2', 'Hive Inspector')),
                   h('div', { className: 'text-[11px] text-amber-300' }, t('stem.beehive.inside_the_superorganism', 'Inside the superorganism')))),
-              h('button', { onClick: function() { upd('showInspect', false); }, className: 'px-3 py-1.5 bg-amber-800 hover:bg-amber-700 rounded-lg text-xs font-bold' }, t('stem.beehive.colony_view', '← Colony View'))),
+              h('button', { onClick: function() { upd('showInspect', false); }, className: 'transition-colors px-3 py-1.5 bg-amber-800 hover:bg-amber-700 rounded-lg text-xs font-bold' }, t('stem.beehive.colony_view', '← Colony View'))),
             // Layer tabs — proper ARIA tablist with keyboard navigation
             h('div', { className: 'flex gap-1 flex-wrap', role: 'tablist', 'aria-label': t('stem.beehive.hive_inspection_layers', 'Hive inspection layers') },
               (function() {
@@ -3547,14 +3547,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         onClick: function () { updI('aiLevel', L.id); },
                         'aria-label': 'Reading level: ' + L.label + (active ? ' (selected)' : ''),
                         'aria-pressed': active,
-                        className: 'px-2 py-1 rounded text-[11px] font-bold ' + (active ? 'bg-amber-500 text-amber-950' : 'bg-amber-950 text-amber-300 border border-amber-500/40 hover:bg-amber-800')
+                        className: 'px-2 py-1 rounded text-[11px] font-bold ' + (active ? 'bg-amber-500 text-amber-950' : 'transition-colors bg-amber-950 text-amber-300 border border-amber-500/40 hover:bg-amber-800')
                       }, L.label);
                     })
                   ),
                   h('button', {
                     onClick: explainI, disabled: aiLoading,
                     'aria-label': 'Generate AI explanation for ' + layerLabel,
-                    className: 'px-2.5 py-1 rounded text-[11px] font-bold bg-amber-500 text-amber-950 hover:bg-amber-400 disabled:opacity-50'
+                    className: 'transition-colors px-2.5 py-1 rounded text-[11px] font-bold bg-amber-500 text-amber-950 hover:bg-amber-400 disabled:opacity-50'
                   }, aiLoading ? '⏳' : (aiText ? '🔄' : '🧠 Explain'))
                 ),
                 aiError && h('p', { className: 'text-[11px] text-rose-300', role: 'alert' }, aiError),
@@ -18008,7 +18008,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('div', { className: 'flex-1 min-w-0' },
                   h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-300' : 'text-amber-800') }, '🧬 Bee Stock: ' + activeSubspecies.name),
                   h('p', { className: 'text-[11px] truncate ' + (dk ? 'text-slate-300' : 'text-slate-600') }, activeSubspecies.note)),
-                h('button', { onClick: function () { upd('stockPickerOpen', true); }, className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold ' + (dk ? 'bg-amber-700 text-white hover:bg-amber-600' : 'bg-amber-500 text-white hover:bg-amber-600') }, t('stem.beehive.change', 'Change ▾')));
+                h('button', { onClick: function () { upd('stockPickerOpen', true); }, className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold ' + (dk ? 'transition-colors bg-amber-700 text-white hover:bg-amber-600' : 'transition-colors bg-amber-500 text-white hover:bg-amber-600') }, t('stem.beehive.change', 'Change ▾')));
             }
             return h('div', { className: 'rounded-2xl border-2 p-4 space-y-3 ' + (dk ? 'bg-gradient-to-br from-amber-900/40 to-yellow-900/30 border-amber-500/60' : 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-400'), role: 'region', 'aria-label': t('stem.beehive.choose_honeybee_subspecies', 'Choose honeybee subspecies') },
               h('div', { className: 'flex items-start justify-between gap-2' },
@@ -18016,7 +18016,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-400' : 'text-amber-700') }, t('stem.beehive.choose_your_bee_stock', '🧬 Choose Your Bee Stock')),
                   h('p', { className: 'text-[11px] mt-0.5 ' + (dk ? 'text-slate-300' : 'text-slate-600') }, t('stem.beehive.real_honeybees_come_in_distinct_geneti', 'Real honeybees come in distinct genetic lines, each adapted to different climates. Pick a subspecies — it will modify honey yield, winter survival, spring buildup, and varroa resistance throughout your colony\'s life.')),
                   h('p', { className: 'text-[11px] mt-0.5 italic ' + (dk ? 'text-amber-500/70' : 'text-amber-600/70') }, 'Current selection: ' + activeSubspecies.emoji + ' ' + activeSubspecies.name + (d.subspecies ? '' : ' (default)'))),
-                d.subspecies && h('button', { onClick: function () { upd('stockPickerOpen', false); }, 'aria-label': t('stem.beehive.collapse_stock_picker', 'Collapse stock picker'), className: 'px-2 py-1 rounded text-[11px] font-bold ' + (dk ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-400') }, t('stem.beehive.collapse', '▲ Collapse'))),
+                d.subspecies && h('button', { onClick: function () { upd('stockPickerOpen', false); }, 'aria-label': t('stem.beehive.collapse_stock_picker', 'Collapse stock picker'), className: 'px-2 py-1 rounded text-[11px] font-bold ' + (dk ? 'transition-colors bg-slate-800 text-slate-300 hover:bg-slate-700' : 'transition-colors bg-white text-slate-600 hover:bg-slate-100 border border-slate-400') }, t('stem.beehive.collapse', '▲ Collapse'))),
             h('div', { className: 'grid grid-cols-1 gap-2' },
               SUBSPECIES.map(function(s) {
                 var active = activeSubspecies.id === s.id;
@@ -18100,7 +18100,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('div', null,
                   h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-400' : 'text-amber-600') }, 'Getting Started · Step ' + (tutorialStep + 1) + '/' + TUTORIAL_STEPS.length),
                   h('div', { className: 'text-sm font-bold ' + (dk ? 'text-slate-100' : 'text-slate-800') }, TUTORIAL_STEPS[tutorialStep].title))),
-              h('button', { onClick: function() { updAll({ tutorialStep: -1, tutorialDone: true }); }, 'aria-label': t('stem.beehive.skip_tutorial', 'Skip tutorial'), className: 'text-[11px] px-2 py-1 rounded-lg ' + (dk ? 'text-slate-400 hover:bg-slate-700' : 'text-slate-400 hover:bg-slate-100') }, t('stem.beehive.skip', 'Skip'))),
+              h('button', { onClick: function() { updAll({ tutorialStep: -1, tutorialDone: true }); }, 'aria-label': t('stem.beehive.skip_tutorial', 'Skip tutorial'), className: 'text-[11px] px-2 py-1 rounded-lg ' + (dk ? 'transition-colors text-slate-400 hover:bg-slate-700' : 'transition-colors text-slate-400 hover:bg-slate-100') }, t('stem.beehive.skip', 'Skip'))),
             h('p', { className: 'text-xs leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, TUTORIAL_STEPS[tutorialStep].text),
             // Progress dots
             h('div', { className: 'flex items-center justify-between' },
@@ -18109,11 +18109,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   return h('div', { key: si, className: 'w-2 h-2 rounded-full transition-all ' + (si === tutorialStep ? (dk ? 'bg-amber-400' : 'bg-amber-500') : si < tutorialStep ? (dk ? 'bg-amber-600' : 'bg-amber-300') : (dk ? 'bg-slate-600' : 'bg-slate-300')) });
                 })),
               h('div', { className: 'flex gap-2' },
-                tutorialStep > 0 && h('button', { onClick: function() { upd('tutorialStep', tutorialStep - 1); }, className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (dk ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, t('stem.beehive.back_2', '← Back')),
+                tutorialStep > 0 && h('button', { onClick: function() { upd('tutorialStep', tutorialStep - 1); }, className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (dk ? 'transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200') }, t('stem.beehive.back_2', '← Back')),
                 h('button', { onClick: function() {
                   if (tutorialStep + 1 >= TUTORIAL_STEPS.length) { updAll({ tutorialStep: -1, tutorialDone: true }); }
                   else { upd('tutorialStep', tutorialStep + 1); }
-                }, className: 'px-4 py-1.5 rounded-lg text-xs font-bold text-white ' + (dk ? 'bg-amber-600 hover:bg-amber-500' : 'bg-amber-500 hover:bg-amber-600') },
+                }, className: 'px-4 py-1.5 rounded-lg text-xs font-bold text-white ' + (dk ? 'transition-colors bg-amber-600 hover:bg-amber-500' : 'transition-colors bg-amber-500 hover:bg-amber-600') },
                   tutorialStep + 1 >= TUTORIAL_STEPS.length ? '✓ Start Beekeeping!' : 'Next →')))),
 
           // ═══ YEAR-END REPORT CARD ═══
@@ -18192,7 +18192,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           d.exportedReport && h('div', { className: 'rounded-xl border p-3 space-y-2 ' + (dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'), role: 'dialog', 'aria-label': t('stem.beehive.exported_colony_report', 'Exported colony report') },
             h('div', { className: 'flex items-center justify-between mb-1' },
               h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-300' : 'text-amber-800') }, t('stem.beehive.colony_report_copy_manually', '📄 Colony Report — Copy Manually')),
-              h('button', { onClick: function() { upd('exportedReport', null); }, className: 'text-[11px] px-2 py-0.5 rounded ' + (dk ? 'text-slate-400 hover:bg-slate-700' : 'text-slate-400 hover:bg-slate-100'), 'aria-label': t('stem.beehive.close_export', 'Close export') }, '✕')),
+              h('button', { onClick: function() { upd('exportedReport', null); }, className: 'text-[11px] px-2 py-0.5 rounded ' + (dk ? 'transition-colors text-slate-400 hover:bg-slate-700' : 'transition-colors text-slate-400 hover:bg-slate-100'), 'aria-label': t('stem.beehive.close_export', 'Close export') }, '✕')),
             h('p', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, t('stem.beehive.select_all_text_below_ctrl_cmd_a_then_', 'Select all text below (Ctrl/Cmd+A), then copy:')),
             h('textarea', { readOnly: true, value: d.exportedReport, style: { width: '100%', height: '240px', fontFamily: 'monospace', fontSize: '11px' },
               className: 'p-2 rounded border ' + (dk ? 'bg-slate-900 border-slate-600 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-800') })),
@@ -18201,7 +18201,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           d.showKeys && h('div', { className: 'rounded-xl border p-4 space-y-2 ' + (dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'), role: 'dialog', 'aria-label': t('stem.beehive.keyboard_shortcuts_3', 'Keyboard shortcuts') },
             h('div', { className: 'flex items-center justify-between mb-1' },
               h('div', { className: 'text-xs font-bold ' + (dk ? 'text-slate-200' : 'text-slate-700') }, t('stem.beehive.keyboard_shortcuts_4', '⌨️ Keyboard Shortcuts')),
-              h('button', { onClick: function() { upd('showKeys', false); }, className: 'text-[11px] px-2 py-0.5 rounded ' + (dk ? 'text-slate-400 hover:bg-slate-700' : 'text-slate-400 hover:bg-slate-100'), 'aria-label': t('stem.beehive.close_shortcuts', 'Close shortcuts') }, '✕')),
+              h('button', { onClick: function() { upd('showKeys', false); }, className: 'text-[11px] px-2 py-0.5 rounded ' + (dk ? 'transition-colors text-slate-400 hover:bg-slate-700' : 'transition-colors text-slate-400 hover:bg-slate-100'), 'aria-label': t('stem.beehive.close_shortcuts', 'Close shortcuts') }, '✕')),
             h('div', { className: 'grid grid-cols-2 gap-1' },
               [
                 ['N', 'Next Day'], ['T', 'Treat Varroa'], ['S', 'Add Super'],
@@ -18232,7 +18232,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           showBadges && h('div', { className: 'rounded-xl border p-4 space-y-3 ' + (dk ? 'bg-gradient-to-b from-slate-800 to-slate-900 border-amber-700/40' : 'bg-gradient-to-b from-white to-amber-50 border-amber-200'), role: 'region', 'aria-label': t('stem.beehive.achievement_badges', 'Achievement badges') },
             h('div', { className: 'flex items-center justify-between mb-1' },
               h('div', { className: 'text-sm font-bold ' + (dk ? 'text-amber-300' : 'text-amber-800') }, '🏅 Badges · ' + badgeCount + '/' + BADGE_DEFS.length),
-              h('button', { onClick: function() { upd('showBadges', false); }, className: 'text-[11px] px-2 py-0.5 rounded ' + (dk ? 'text-slate-400 hover:bg-slate-700' : 'text-slate-400 hover:bg-slate-100'), 'aria-label': t('stem.beehive.close_badges', 'Close badges') }, '✕')),
+              h('button', { onClick: function() { upd('showBadges', false); }, className: 'text-[11px] px-2 py-0.5 rounded ' + (dk ? 'transition-colors text-slate-400 hover:bg-slate-700' : 'transition-colors text-slate-400 hover:bg-slate-100'), 'aria-label': t('stem.beehive.close_badges', 'Close badges') }, '✕')),
             // Progress bar
             h('div', { className: 'h-2.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-slate-200') },
               h('div', { style: { width: Math.round(badgeCount / BADGE_DEFS.length * 100) + '%' }, className: 'h-full bg-gradient-to-r from-amber-500 to-yellow-400 rounded-full transition-all' })),
@@ -18257,7 +18257,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('div', { className: 'text-sm font-bold ' + (dk ? 'text-indigo-300' : 'text-indigo-800') }, t('stem.beehive.bee_knowledge_quiz_2', '🎓 Bee Knowledge Quiz')),
                 h('div', { className: 'flex items-center gap-3' },
                   h('span', { className: 'text-xs font-bold ' + (dk ? 'text-indigo-400' : 'text-indigo-600') }, 'Q' + (quizIdx + 1) + '/' + qs.length + ' · Score: ' + quizScore),
-                  h('button', { onClick: function() { upd('quizOpen', false); }, className: 'text-[11px] px-2 py-0.5 rounded ' + (dk ? 'text-slate-400 hover:bg-slate-700' : 'text-slate-400 hover:bg-slate-100'), 'aria-label': t('stem.beehive.close_quiz', 'Close quiz') }, '✕'))),
+                  h('button', { onClick: function() { upd('quizOpen', false); }, className: 'text-[11px] px-2 py-0.5 rounded ' + (dk ? 'transition-colors text-slate-400 hover:bg-slate-700' : 'transition-colors text-slate-400 hover:bg-slate-100'), 'aria-label': t('stem.beehive.close_quiz', 'Close quiz') }, '✕'))),
               // Progress bar
               h('div', { className: 'h-1.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-indigo-100') },
                 h('div', { style: { width: Math.round((quizIdx + 1) / qs.length * 100) + '%' }, className: 'h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all' })),
@@ -18277,7 +18277,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('span', { className: 'text-xl' }, quizFeedback.correct ? '✅' : '❌'),
                   h('span', { className: 'text-sm font-bold ' + (quizFeedback.correct ? (dk ? 'text-green-300' : 'text-green-800') : (dk ? 'text-red-300' : 'text-red-800')) }, quizFeedback.correct ? 'Correct!' : 'Not quite.')),
                 h('p', { className: 'text-xs leading-relaxed mb-3 ' + (dk ? 'text-slate-300' : 'text-slate-600') }, quizFeedback.explanation),
-                h('button', { onClick: nextQuizQuestion, className: 'px-4 py-2 rounded-lg text-xs font-bold text-white ' + (dk ? 'bg-indigo-600 hover:bg-indigo-500' : 'bg-indigo-500 hover:bg-indigo-600') },
+                h('button', { onClick: nextQuizQuestion, className: 'px-4 py-2 rounded-lg text-xs font-bold text-white ' + (dk ? 'transition-colors bg-indigo-600 hover:bg-indigo-500' : 'transition-colors bg-indigo-500 hover:bg-indigo-600') },
                   quizIdx + 1 >= qs.length ? '🏁 See Results' : 'Next Question →')));
           })(),
 
@@ -18287,7 +18287,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('div', null,
                 h('div', { className: 'text-sm font-bold ' + (dk ? 'text-red-300' : 'text-red-800') }, t('stem.beehive.integrated_pest_management_varroa', '🧪 Integrated Pest Management — Varroa')),
                 h('div', { className: 'text-[11px] ' + (dk ? 'text-red-400' : 'text-red-600') }, 'Current mite load: ' + varroaLevel + '% · Brood: ' + fmtPop(brood) + ' · Season: ' + seasonNames[season])),
-              h('button', { onClick: function() { upd('showTreatModal', false); }, 'aria-label': t('stem.beehive.close_treatment_modal', 'Close treatment modal'), className: 'text-[11px] px-2 py-0.5 rounded ' + (dk ? 'text-slate-400 hover:bg-slate-700' : 'text-slate-400 hover:bg-slate-100') }, '✕')),
+              h('button', { onClick: function() { upd('showTreatModal', false); }, 'aria-label': t('stem.beehive.close_treatment_modal', 'Close treatment modal'), className: 'text-[11px] px-2 py-0.5 rounded ' + (dk ? 'transition-colors text-slate-400 hover:bg-slate-700' : 'transition-colors text-slate-400 hover:bg-slate-100') }, '✕')),
             h('p', { className: 'text-[11px] italic ' + (dk ? 'text-amber-400' : 'text-amber-700') }, t('stem.beehive.every_treatment_has_trade_offs_real_be', 'Every treatment has trade-offs. Real beekeepers rotate treatments seasonally to prevent mite resistance. Effectiveness depends on brood status and temperature.')),
             h('div', { className: 'grid grid-cols-1 gap-2' },
               IPM_TREATMENTS.map(function(t) {
@@ -18723,14 +18723,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 pool.length > 1 && h('button', {
                   onClick: function() { upd('reflectionIdx', rIdx + 1); upd('reflectionThink', false); },
                   title: t('stem.beehive.show_another_reflection_question', 'Show another reflection question'),
-                  className: 'text-[11px] px-2 py-0.5 rounded ' + (dk ? 'text-indigo-300 hover:bg-indigo-900/40' : 'text-indigo-700 hover:bg-indigo-100')
+                  className: 'text-[11px] px-2 py-0.5 rounded ' + (dk ? 'transition-colors text-indigo-300 hover:bg-indigo-900/40' : 'transition-colors text-indigo-700 hover:bg-indigo-100')
                 }, t('stem.beehive.another', 'Another →'))
               ),
               h('p', { className: 'text-xs leading-relaxed ' + (dk ? 'text-slate-100' : 'text-slate-700') }, prompt.q),
               h('button', {
                 onClick: function() { upd('reflectionThink', !showThink); },
                 'aria-expanded': showThink ? 'true' : 'false',
-                className: 'mt-2 text-[11px] font-bold flex items-center gap-1 ' + (dk ? 'text-indigo-300 hover:text-indigo-200' : 'text-indigo-700 hover:text-indigo-900')
+                className: 'mt-2 text-[11px] font-bold flex items-center gap-1 ' + (dk ? 'transition-colors text-indigo-300 hover:text-indigo-200' : 'transition-colors text-indigo-700 hover:text-indigo-900')
               }, (showThink ? '▼' : '▶') + ' ' + (showThink ? 'Hide hint' : 'Stuck? Anchor your thinking →')),
               showThink && h('p', { className: 'mt-1.5 text-[11px] leading-relaxed italic px-2 py-1.5 rounded ' + (dk ? 'bg-indigo-900/30 text-slate-200' : 'bg-white/60 text-slate-600') }, prompt.think)
             );
@@ -18837,7 +18837,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-300' : 'text-amber-800') }, '📔 Beekeeper\'s Journal · ' + journalEntries.length + ' entries'),
                 h('button', { onClick: function() { upd('journalExpanded', !expanded); },
                   'aria-label': expanded ? 'Collapse journal' : 'Expand journal',
-                  className: 'text-[11px] px-2 py-0.5 rounded ' + (dk ? 'text-amber-400 hover:bg-slate-700' : 'text-amber-700 hover:bg-amber-100') },
+                  className: 'text-[11px] px-2 py-0.5 rounded ' + (dk ? 'transition-colors text-amber-400 hover:bg-slate-700' : 'transition-colors text-amber-700 hover:bg-amber-100') },
                   expanded ? 'Show recent' : 'Show all')),
               h('div', { className: 'space-y-1.5' },
                 visible.map(function(e, ei) {
@@ -19020,7 +19020,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('button', {
                   onClick: function() { upd('showBadges', true); },
                   title: t('stem.beehive.see_all_badges_and_their_requirements', 'See all badges and their requirements'),
-                  className: 'text-[11px] px-2 py-0.5 rounded ' + (dk ? 'text-amber-400 hover:bg-amber-900/40' : 'text-amber-700 hover:bg-amber-100')
+                  className: 'text-[11px] px-2 py-0.5 rounded ' + (dk ? 'transition-colors text-amber-400 hover:bg-amber-900/40' : 'transition-colors text-amber-700 hover:bg-amber-100')
                 }, t('stem.beehive.see_all', 'See all →'))
               ),
               h('div', { className: 'space-y-1.5' },
@@ -19091,7 +19091,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               ].map(function(btn) {
                 var enabled = !btn.disabled;
                 var bg = enabled
-                  ? (dk ? 'bg-' + btn.color + '-900/30 text-' + btn.color + '-300 border-' + btn.color + '-700/40 hover:bg-' + btn.color + '-800/40' : 'bg-' + btn.color + '-50 text-' + btn.color + '-700 hover:bg-' + btn.color + '-100 border border-' + btn.color + '-200')
+                  ? (dk ? 'bg-' + btn.color + '-900/30 text-' + btn.color + '-300 border-' + btn.color + 'transition-colors -700/40 hover:bg-' + btn.color + '-800/40' : 'bg-' + btn.color + '-50 text-' + btn.color + 'transition-colors -700 hover:bg-' + btn.color + '-100 border border-' + btn.color + '-200')
                   : (dk ? 'bg-slate-800 text-slate-600 border-slate-700' : 'bg-slate-50 text-slate-300 border border-slate-100');
                 return h('button', { key: btn.label, onClick: btn.onClick, disabled: btn.disabled, title: btn.tip,
                   'aria-label': btn.label + ': ' + btn.tip,
@@ -19172,7 +19172,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       onClick: function () { upd2('aiLevel', L.id); },
                       'aria-label': 'Reading level: ' + L.label + (active ? ' (selected)' : ''),
                       'aria-pressed': active,
-                      className: 'px-2.5 py-1 rounded text-[11px] font-bold ' + (active ? 'bg-purple-600 text-white' : (dk ? 'bg-slate-800 text-purple-300 border border-purple-500/40' : 'bg-white text-purple-700 border border-purple-200 hover:bg-purple-100'))
+                      className: 'px-2.5 py-1 rounded text-[11px] font-bold ' + (active ? 'bg-purple-600 text-white' : (dk ? 'bg-slate-800 text-purple-300 border border-purple-500/40' : 'transition-colors bg-white text-purple-700 border border-purple-200 hover:bg-purple-100'))
                     }, L.label);
                   })
                 ),
@@ -19180,7 +19180,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   onClick: explain,
                   disabled: aiLoading,
                   'aria-label': 'Generate AI explanation for ' + viewLabel + ' at ' + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + ' level',
-                  className: 'px-3 py-1 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50'
+                  className: 'transition-colors px-3 py-1 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50'
                 }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain'))
               ),
               aiError && h('p', { className: 'text-[11px] text-rose-500', role: 'alert' }, aiError),

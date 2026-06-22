@@ -329,7 +329,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       function TeacherNotes(props) {
         return h('details', { className: 'weldlab-teacher-notes bg-amber-50 border-2 border-amber-300 rounded-xl p-4' },
           h('summary', {
-            className: 'cursor-pointer text-sm font-bold text-amber-900 hover:text-amber-700 select-none flex items-center justify-between gap-3',
+            className: 'transition-colors cursor-pointer text-sm font-bold text-amber-900 hover:text-amber-700 select-none flex items-center justify-between gap-3',
             'aria-label': 'Teacher Notes — discussion questions, standards alignment, and extension activities'
           },
             h('span', null, '🍎 Teacher Notes — click to expand'),
@@ -339,7 +339,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               'aria-label': 'Print this module page (includes Teacher Notes)',
               onClick: function(e) { e.preventDefault(); e.stopPropagation(); try { window.print(); } catch (_) {} },
               onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); try { window.print(); } catch (_) {} } },
-              className: 'weldlab-no-print text-xs font-semibold normal-case px-2 py-1 rounded bg-white border border-amber-300 hover:bg-amber-100 text-amber-800'
+              className: 'transition-colors weldlab-no-print text-xs font-semibold normal-case px-2 py-1 rounded bg-white border border-amber-300 hover:bg-amber-100 text-amber-800'
             }, '🖨️ Print')
           ),
           h('div', { className: 'mt-3 space-y-3 text-sm' },
@@ -604,7 +604,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             className: 'relative text-left bg-white rounded-2xl shadow-lg border-2 ' +
               (visited ? 'border-orange-600' : 'border-slate-200') +
               ' overflow-hidden group focus:outline-none focus:ring-4 ' + c.ring +
-              (notReady ? ' opacity-70 cursor-not-allowed' : ' weldlab-card-lift hover:shadow-2xl hover:border-slate-400')
+              (notReady ? ' opacity-70 cursor-not-allowed' : 'transition-colors  weldlab-card-lift hover:shadow-2xl hover:border-slate-400')
           },
             visited && h('span', {
               'aria-hidden': true,
@@ -2679,7 +2679,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             h('button', {
               'aria-label': 'Reset camera to default angle',
               onClick: resetCamera,
-              className: 'px-2 py-1 rounded bg-slate-800/85 text-slate-200 text-xs font-bold border border-slate-600 hover:bg-slate-700 focus:outline-none focus:ring-2 ring-orange-500/40'
+              className: 'transition-colors px-2 py-1 rounded bg-slate-800/85 text-slate-200 text-xs font-bold border border-slate-600 hover:bg-slate-700 focus:outline-none focus:ring-2 ring-orange-500/40'
             }, '↺ Reset camera')
           ),
           // Hint strip
@@ -3397,8 +3397,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 },
                 className: 'rounded-xl shadow border-2 ' +
                   (revealAll
-                    ? 'bg-slate-200 text-slate-800 border-slate-400 hover:bg-slate-300'
-                    : 'bg-orange-600 text-white border-orange-700 hover:bg-orange-700') +
+                    ? 'transition-colors bg-slate-200 text-slate-800 border-slate-400 hover:bg-slate-300'
+                    : 'transition-colors bg-orange-600 text-white border-orange-700 hover:bg-orange-700') +
                   ' font-bold text-sm transition focus:outline-none focus:ring-4 ring-orange-500/40 p-3'
               }, revealAll ? '🔄 Reset Sample' : '👁️ Reveal All (give up)')
             ),
@@ -3882,7 +3882,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               h('div', { className: 'flex items-center justify-between' },
                 h('button', {
                   onClick: function() { setQuizMode(false); announce('Returned to catalog'); },
-                  className: 'px-3 py-1.5 rounded-lg bg-slate-200 hover:bg-slate-300 font-bold text-sm text-slate-800'
+                  className: 'transition-colors px-3 py-1.5 rounded-lg bg-slate-200 hover:bg-slate-300 font-bold text-sm text-slate-800'
                 }, '← Back to Catalog'),
                 h('div', { className: 'text-sm font-bold text-slate-700' },
                   'Question ' + Math.min(quizIdx + 1, quizPool.length) + ' of ' + quizPool.length + ' · Score: ' + quizScore)
@@ -3973,7 +3973,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                       else if (picked) btnClass += 'bg-rose-100 border-rose-500 text-rose-900';
                       else btnClass += 'bg-white border-slate-300 text-slate-800 opacity-60';
                     } else {
-                      btnClass += 'bg-white border-slate-300 hover:border-orange-400 text-slate-800';
+                      btnClass += 'transition-colors bg-white border-slate-300 hover:border-orange-400 text-slate-800';
                     }
                     return h('button', {
                       key: ck,
@@ -4405,7 +4405,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                           if (revealCorrect) btnClass += 'bg-emerald-100 border-emerald-500 text-emerald-900';
                           else if (revealWrong) btnClass += 'bg-rose-100 border-rose-500 text-rose-900';
                           else if (sel) btnClass += 'bg-orange-100 border-orange-500 text-orange-900';
-                          else btnClass += 'bg-white border-slate-300 hover:border-orange-400 text-slate-800';
+                          else btnClass += 'transition-colors bg-white border-slate-300 hover:border-orange-400 text-slate-800';
                           return h('button', {
                             key: ci,
                             onClick: function() { answer(qi, ci); },
@@ -4686,7 +4686,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     'aria-pressed': on ? 'true' : 'false',
                     'aria-label': g.name + (on ? ' (worn)' : ' (not worn)'),
                     className: 'text-left bg-white rounded-2xl shadow border-2 ' +
-                      (on ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 hover:border-orange-400') +
+                      (on ? 'border-emerald-500 bg-emerald-50' : 'transition-colors border-slate-200 hover:border-orange-400') +
                       ' p-4 transition focus:outline-none focus:ring-2 ring-orange-500/40'
                   },
                     h('div', { className: 'flex items-start gap-3' },
@@ -4749,7 +4749,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                       if (revealCorrect) btnClass += 'bg-emerald-100 border-emerald-500 text-emerald-900';
                       else if (revealWrong) btnClass += 'bg-rose-100 border-rose-500 text-rose-900';
                       else if (sel) btnClass += 'bg-orange-100 border-orange-500 text-orange-900';
-                      else btnClass += 'bg-white border-slate-300 hover:border-orange-400 text-slate-800';
+                      else btnClass += 'transition-colors bg-white border-slate-300 hover:border-orange-400 text-slate-800';
                       return h('button', {
                         key: ci,
                         onClick: function() { pickScenario(ci); },
@@ -5648,7 +5648,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               ),
               h('button', {
                 onClick: startPs,
-                className: 'w-full px-5 py-3 rounded-xl bg-amber-600 text-white font-bold hover:bg-amber-700 focus:outline-none focus:ring-2 ring-amber-400'
+                className: 'transition-colors w-full px-5 py-3 rounded-xl bg-amber-600 text-white font-bold hover:bg-amber-700 focus:outline-none focus:ring-2 ring-amber-400'
               }, '🕵️ Start — vignette 1 of 10')
             )
           );
@@ -5732,12 +5732,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     ),
                     h('button', {
                       onClick: function() { upd('psIdx', -1); upd('psShown', []); upd('psScore', 0); upd('psRounds', 0); upd('psStreak', 0); },
-                      className: 'mt-3 px-4 py-1.5 rounded-lg bg-amber-600 text-white font-bold text-xs hover:bg-amber-700'
+                      className: 'transition-colors mt-3 px-4 py-1.5 rounded-lg bg-amber-600 text-white font-bold text-xs hover:bg-amber-700'
                     }, '🔄 Restart')
                   )
                 : h('button', {
                     onClick: startPs,
-                    className: 'px-4 py-2 rounded-lg bg-amber-600 text-white font-bold text-sm hover:bg-amber-700 focus:outline-none focus:ring-2 ring-amber-400'
+                    className: 'transition-colors px-4 py-2 rounded-lg bg-amber-600 text-white font-bold text-sm hover:bg-amber-700 focus:outline-none focus:ring-2 ring-amber-400'
                   }, '➡️ Next vignette')
             )
           )
@@ -5845,7 +5845,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               ),
               h('button', {
                 onClick: startDd2,
-                className: 'w-full px-5 py-3 rounded-xl bg-rose-600 text-white font-bold hover:bg-rose-700 focus:outline-none focus:ring-2 ring-rose-400'
+                className: 'transition-colors w-full px-5 py-3 rounded-xl bg-rose-600 text-white font-bold hover:bg-rose-700 focus:outline-none focus:ring-2 ring-rose-400'
               }, '🔬 Start — defect 1 of 10')
             )
           );
@@ -5925,12 +5925,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     ),
                     h('button', {
                       onClick: function() { upd('dd2Idx', -1); upd('dd2Shown', []); upd('dd2Score', 0); upd('dd2Rounds', 0); upd('dd2Streak', 0); },
-                      className: 'mt-3 px-4 py-1.5 rounded-lg bg-rose-600 text-white font-bold text-xs hover:bg-rose-700'
+                      className: 'transition-colors mt-3 px-4 py-1.5 rounded-lg bg-rose-600 text-white font-bold text-xs hover:bg-rose-700'
                     }, '🔄 Restart')
                   )
                 : h('button', {
                     onClick: startDd2,
-                    className: 'px-4 py-2 rounded-lg bg-rose-600 text-white font-bold text-sm hover:bg-rose-700 focus:outline-none focus:ring-2 ring-rose-400'
+                    className: 'transition-colors px-4 py-2 rounded-lg bg-rose-600 text-white font-bold text-sm hover:bg-rose-700 focus:outline-none focus:ring-2 ring-rose-400'
                   }, '➡️ Next defect')
             )
           )
@@ -6285,7 +6285,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 foundKeys.length === 0 && h('div', { className: 'flex-shrink-0' },
                   h('button', {
                     onClick: function () { goto('defectHunt'); },
-                    className: 'px-4 py-2 rounded-xl bg-orange-700 hover:bg-orange-800 text-white font-black text-sm shadow focus:outline-none focus:ring-4 ring-orange-500/40'
+                    className: 'transition-colors px-4 py-2 rounded-xl bg-orange-700 hover:bg-orange-800 text-white font-black text-sm shadow focus:outline-none focus:ring-4 ring-orange-500/40'
                   }, 'Start inspecting →')
                 )
               )
@@ -6369,11 +6369,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             h('div', { className: 'flex flex-wrap gap-2 pt-2' },
               h('button', {
                 onClick: function () { goto('defectHunt'); },
-                className: 'px-4 py-2 rounded-xl bg-orange-700 hover:bg-orange-800 text-white font-bold text-sm shadow focus:outline-none focus:ring-4 ring-orange-500/40'
+                className: 'transition-colors px-4 py-2 rounded-xl bg-orange-700 hover:bg-orange-800 text-white font-bold text-sm shadow focus:outline-none focus:ring-4 ring-orange-500/40'
               }, '🔍 Open Defect Hunt'),
               h('button', {
                 onClick: function () { goto('processCompare'); },
-                className: 'px-4 py-2 rounded-xl bg-slate-700 hover:bg-slate-800 text-white font-bold text-sm shadow focus:outline-none focus:ring-4 ring-slate-500/40'
+                className: 'transition-colors px-4 py-2 rounded-xl bg-slate-700 hover:bg-slate-800 text-white font-bold text-sm shadow focus:outline-none focus:ring-4 ring-slate-500/40'
               }, '⚖️ Process comparison')
             )
           )
@@ -6817,7 +6817,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 }, '📋 Overview'),
                 h('button', {
                   onClick: function() { setQpView('quiz'); setQuizIdx(0); },
-                  className: 'px-4 py-2 rounded-lg bg-white border-2 border-slate-300 text-sm font-bold hover:border-sky-400'
+                  className: 'transition-colors px-4 py-2 rounded-lg bg-white border-2 border-slate-300 text-sm font-bold hover:border-sky-400'
                 }, '📝 Practice Quiz (30 q)')
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5 space-y-4' },
@@ -6903,7 +6903,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                         (isAns ? 'bg-emerald-50 border-emerald-500 text-emerald-900 font-bold' :
                          isWrong ? 'bg-rose-50 border-rose-500 text-rose-900 font-bold' :
                          answered ? 'bg-slate-50 border-slate-300 text-slate-700' :
-                         'bg-white border-slate-300 hover:border-sky-400 text-slate-800')
+                         'transition-colors bg-white border-slate-300 hover:border-sky-400 text-slate-800')
                     }, String.fromCharCode(65 + oi) + '. ' + opt);
                   })
                 ),
@@ -7953,7 +7953,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               h('div', { className: 'flex justify-between items-center pt-2 border-t border-slate-200 gap-2 flex-wrap' },
                 h('button', {
                   onClick: resetConsQuiz,
-                  className: 'text-xs font-bold px-3 py-1.5 rounded-lg border-2 border-slate-300 bg-white hover:bg-slate-50 text-slate-700'
+                  className: 'transition-colors text-xs font-bold px-3 py-1.5 rounded-lg border-2 border-slate-300 bg-white hover:bg-slate-50 text-slate-700'
                 }, '↺ Restart scenarios'),
                 consScPicked != null && h('button', {
                   onClick: nextConsScenario,
@@ -8304,7 +8304,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 h('h2', { className: 'text-xl font-black text-fuchsia-900' }, curRoadmap.icon + ' ' + curRoadmap.title),
                 h('button', {
                   onClick: function() { setRoadPath(null); announce('Returned to path picker'); },
-                  className: 'text-xs font-bold px-3 py-1.5 rounded-lg border-2 border-slate-300 bg-white hover:bg-slate-50 text-slate-700'
+                  className: 'transition-colors text-xs font-bold px-3 py-1.5 rounded-lg border-2 border-slate-300 bg-white hover:bg-slate-50 text-slate-700'
                 }, '← Pick a different path')
               ),
               h('div', { className: 'bg-fuchsia-50 border-2 border-fuchsia-300 rounded-xl p-4' },
@@ -8736,7 +8736,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   h('div', { className: 'text-sm font-bold text-slate-800' }, 'Progress: ' + overall.answered + ' / ' + overall.total + ' answered'),
                   h('button', {
                     onClick: resetAudit,
-                    className: 'text-xs font-bold px-3 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700'
+                    className: 'transition-colors text-xs font-bold px-3 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700'
                   }, '↺ Reset audit')
                 ),
                 h('div', { className: 'h-2 bg-slate-200 rounded-full overflow-hidden', 'aria-hidden': true },
@@ -9288,7 +9288,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               h('div', { className: 'flex justify-between items-center pt-2 border-t border-slate-200 gap-2 flex-wrap' },
                 h('button', {
                   onClick: resetQuiz,
-                  className: 'text-xs font-bold px-3 py-1.5 rounded-lg border-2 border-slate-300 bg-white hover:bg-slate-50 text-slate-700'
+                  className: 'transition-colors text-xs font-bold px-3 py-1.5 rounded-lg border-2 border-slate-300 bg-white hover:bg-slate-50 text-slate-700'
                 }, '↺ Restart quiz'),
                 mbQPicked != null && h('button', {
                   onClick: nextQuestion,
@@ -9440,7 +9440,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   h('h3', { className: 'text-lg font-black text-fuchsia-900' }, '🎯 Your top matches'),
                   h('button', {
                     onClick: function() { resetQuiz(); announce('Quiz reset'); },
-                    className: 'text-xs font-bold px-3 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700'
+                    className: 'transition-colors text-xs font-bold px-3 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700'
                   }, '↺ Start over')
                 ),
                 matches.length === 0

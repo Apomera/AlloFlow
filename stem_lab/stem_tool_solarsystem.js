@@ -5664,7 +5664,7 @@ const d = labToolData.solarSystem || {};
 
                         ((d.viewTab || 'overview') === tab
                           ? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-500/40 ring-1 ring-indigo-400/40'
-                          : (isDark ? 'bg-gradient-to-br from-slate-700 to-slate-800 text-slate-300 hover:from-slate-600 hover:to-slate-700 hover:text-white border border-slate-600/50' : 'bg-gradient-to-br from-white to-slate-100 text-slate-700 hover:from-slate-50 hover:to-slate-200 hover:text-indigo-700 border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-300')),
+                          : (isDark ? 'bg-gradient-to-br from-slate-700 to-slate-800 text-slate-300 hover:from-slate-600 hover:to-slate-700 hover:text-white border border-slate-600/50' : 'transition-colors bg-gradient-to-br from-white to-slate-100 text-slate-700 hover:from-slate-50 hover:to-slate-200 hover:text-indigo-700 border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-300')),
 
                       style: ((d.viewTab || 'overview') === tab) ? { textShadow: '0 1px 1px rgba(15,23,42,0.4)' } : {}
 
@@ -7141,8 +7141,8 @@ const d = labToolData.solarSystem || {};
                         (isActive
                           ? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white border-indigo-400/50 shadow-lg shadow-indigo-500/25 scale-[1.03] ring-1 ring-indigo-400/30'
                           : (isDark
-                            ? 'bg-slate-800 text-slate-300 border-slate-600 hover:border-indigo-500/50 hover:bg-slate-700 hover:text-indigo-300'
-                            : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 shadow-sm'))
+                            ? 'transition-colors bg-slate-800 text-slate-300 border-slate-600 hover:border-indigo-500/50 hover:bg-slate-700 hover:text-indigo-300'
+                            : 'transition-colors bg-white text-slate-600 border-slate-200 hover:border-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 shadow-sm'))
                     }, btn.icon + ' ' + btn.label);
                   })
                 ),
@@ -12817,7 +12817,7 @@ const d = labToolData.solarSystem || {};
                       ) : React.createElement("div", null,
                         React.createElement("p", { className: "text-xs font-bold " + (d['mc_choice_' + mcTrigger] === mc.answer ? 'text-emerald-600' : 'text-red-600') }, d['mc_choice_' + mcTrigger] === mc.answer ? '\u2705 Correct!' : '\u274C Not quite!'),
                         React.createElement("p", { className: "text-xs text-purple-700 mt-1 leading-relaxed" }, mc.explanation),
-                        React.createElement("button", { onClick: function() { upd('mc_answered_' + mcTrigger, true); upd('misconceptionsSeen', (d.misconceptionsSeen || []).concat([mc.statement])); }, className: "mt-2 px-3 py-1 text-[11px] font-bold rounded bg-purple-200 text-purple-700 hover:bg-purple-300" }, t('stem.solarsystem.got_it', "Got it \u2192")))
+                        React.createElement("button", { onClick: function() { upd('mc_answered_' + mcTrigger, true); upd('misconceptionsSeen', (d.misconceptionsSeen || []).concat([mc.statement])); }, className: "transition-colors mt-2 px-3 py-1 text-[11px] font-bold rounded bg-purple-200 text-purple-700 hover:bg-purple-300" }, t('stem.solarsystem.got_it', "Got it \u2192")))
                     );
                   })(),
 
@@ -12878,7 +12878,7 @@ const d = labToolData.solarSystem || {};
                           var wasChosen = d.quiz.chosen === opt;
 
                           var cls = !d.quiz.answered
-                            ? (isDark ? 'bg-slate-700 text-slate-200 border-slate-600 hover:border-indigo-400 hover:bg-slate-600' : 'bg-white text-slate-700 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50')
+                            ? (isDark ? 'transition-colors bg-slate-700 text-slate-200 border-slate-600 hover:border-indigo-400 hover:bg-slate-600' : 'transition-colors bg-white text-slate-700 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50')
                             : isCorrect
                               ? (isDark ? 'bg-emerald-900/30 text-emerald-300 border-emerald-700/50' : 'bg-emerald-100 text-emerald-800 border-emerald-600')
                               : wasChosen && !isCorrect
@@ -12991,7 +12991,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, "\uD83C\uDF19 Moons of " + sel.name + " (" + sel.moons + " total)"),
                   React.createElement("button", { "aria-label": t('stem.solarsystem.toggle_moon_explorer_panel', "Toggle moon explorer panel"),
                     onClick: function() { upd('showMoons', !d.showMoons); },
-                    className: "text-[11px] text-indigo-500 hover:text-indigo-700"
+                    className: "transition-colors text-[11px] text-indigo-500 hover:text-indigo-700"
                   }, d.showMoons ? 'Hide' : 'Explore \u2192')
                 ),
                 d.showMoons && React.createElement("div", { className: "space-y-2" },
@@ -13008,7 +13008,7 @@ const d = labToolData.solarSystem || {};
                       React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') + " italic" }, moon.fact),
                       React.createElement("button", { "aria-label": t('stem.solarsystem.listen', "Listen"),
                         onClick: function() { speakText(moon.name + '. ' + moon.fact); },
-                        className: "mt-1 text-[11px] text-indigo-400 hover:text-indigo-600"
+                        className: "transition-colors mt-1 text-[11px] text-indigo-400 hover:text-indigo-600"
                       }, t('stem.solarsystem.listen_2', "\uD83D\uDD0A Listen"))
                     );
                   })
@@ -13021,7 +13021,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold text-sky-300" }, "\uD83C\uDF03 Night Sky from " + sel.name),
                   React.createElement("button", { "aria-label": t('stem.solarsystem.toggle_night_sky_view', "Toggle night sky view"),
                     onClick: function() { upd('showSky', !d.showSky); },
-                    className: "text-[11px] text-sky-400 hover:text-sky-200"
+                    className: "transition-colors text-[11px] text-sky-400 hover:text-sky-200"
                   }, d.showSky ? 'Hide' : 'View \u2192')
                 ),
                 d.showSky && React.createElement("div", { className: "space-y-2" },
@@ -13093,7 +13093,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-blue-300' : 'text-blue-700') }, "\uD83E\uDE82 Atmosphere Descent \u2014 " + sel.name),
                   React.createElement("button", { "aria-label": t('stem.solarsystem.toggle_atmosphere_descent_simulator', "Toggle atmosphere descent simulator"),
                     onClick: function() { upd('showDescent', !d.showDescent); if (!d.descentAlt && d.descentAlt !== 0) upd('descentAlt', 100); },
-                    className: "text-[11px] text-blue-500 hover:text-blue-700"
+                    className: "transition-colors text-[11px] text-blue-500 hover:text-blue-700"
                   }, d.showDescent ? 'Hide' : 'Descend \u2192')
                 ),
                 d.showDescent && React.createElement("div", null,
@@ -13157,7 +13157,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, t('stem.solarsystem.planet_size_comparison', "\uD83D\uDCCF Planet Size Comparison")),
                   React.createElement("button", { "aria-label": t('stem.solarsystem.toggle_planet_size_comparison', "Toggle planet size comparison"),
                     onClick: function() { upd('showScale', !d.showScale); },
-                    className: "text-[11px] text-emerald-500 hover:text-emerald-700"
+                    className: "transition-colors text-[11px] text-emerald-500 hover:text-emerald-700"
                   }, d.showScale ? 'Hide' : 'Show \u2192')
                 ),
                 d.showScale && React.createElement("div", { className: "space-y-1" },
@@ -13185,7 +13185,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-purple-300' : 'text-purple-700') }, t('stem.solarsystem.orbital_mechanics', "\uD83C\uDF0C Orbital Mechanics")),
                   React.createElement("button", { "aria-label": t('stem.solarsystem.keplers_three_laws_of_planetary_motion', "Keplers Three Laws of Planetary Motion"),
                     onClick: function() { upd('showOrbital', !d.showOrbital); },
-                    className: "text-[11px] text-purple-500 hover:text-purple-700"
+                    className: "transition-colors text-[11px] text-purple-500 hover:text-purple-700"
                   }, d.showOrbital ? 'Hide' : 'Learn \u2192')
                 ),
                 d.showOrbital && React.createElement("div", { className: "space-y-3" },
@@ -13645,7 +13645,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-pink-300' : 'text-pink-700') }, t('stem.solarsystem.planet_builder', "\uD83C\uDFD7 Planet Builder")),
                   React.createElement("button", { "aria-label": t('stem.solarsystem.design_your_own_hypothetical_planet', "Design your own hypothetical planet!"),
                     onClick: function() { upd('showBuilder', !d.showBuilder); },
-                    className: "text-[11px] text-pink-500 hover:text-pink-700"
+                    className: "transition-colors text-[11px] text-pink-500 hover:text-pink-700"
                   }, d.showBuilder ? 'Hide' : 'Build \u2192')
                 ),
                 d.showBuilder && React.createElement("div", { className: "space-y-2" },
@@ -13711,7 +13711,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-teal-300' : 'text-teal-700') }, t('stem.solarsystem.exoplanet_comparison', "\uD83C\uDF0C Exoplanet Comparison")),
                   React.createElement("button", { "aria-label": t('stem.solarsystem.toggle_exoplanet_comparison_panel', "Toggle exoplanet comparison panel"),
                     onClick: function() { upd('showExo', !d.showExo); },
-                    className: "text-[11px] text-teal-500 hover:text-teal-700"
+                    className: "transition-colors text-[11px] text-teal-500 hover:text-teal-700"
                   }, d.showExo ? 'Hide' : 'Explore \u2192')
                 ),
                 d.showExo && React.createElement("div", { className: "space-y-1.5" },
@@ -13739,7 +13739,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-yellow-300' : 'text-yellow-700') }, "\uD83E\uDD14 What If? \u2014 " + sel.name),
                   React.createElement("button", { "aria-label": t('stem.solarsystem.toggle_what_if_scenarios_panel', "Toggle What If scenarios panel"),
                     onClick: function() { upd('showWhatIf', !d.showWhatIf); },
-                    className: "text-[11px] text-yellow-500 hover:text-yellow-700"
+                    className: "transition-colors text-[11px] text-yellow-500 hover:text-yellow-700"
                   }, d.showWhatIf ? 'Hide' : 'Think \u2192')
                 ),
                 d.showWhatIf && React.createElement("div", { className: "space-y-2" },
@@ -13749,7 +13749,7 @@ const d = labToolData.solarSystem || {};
                       React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, wi.a),
                       React.createElement("button", { "aria-label": t('stem.solarsystem.listen_3', "Listen"),
                         onClick: function() { speakText(wi.q + ' ' + wi.a); },
-                        className: "mt-1 text-[11px] text-yellow-400 hover:text-yellow-600"
+                        className: "transition-colors mt-1 text-[11px] text-yellow-400 hover:text-yellow-600"
                       }, t('stem.solarsystem.listen_4', "\uD83D\uDD0A Listen"))
                     );
                   })
@@ -13778,7 +13778,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-slate-300' : 'text-slate-700') }, t('stem.solarsystem.space_exploration_timeline', "\uD83D\uDCC5 Space Exploration Timeline")),
                   React.createElement("button", { "aria-label": t('stem.solarsystem.toggle_space_exploration_timeline', "Toggle space exploration timeline"),
                     onClick: function() { upd('showTimeline', !d.showTimeline); },
-                    className: "text-[11px] text-slate-600 hover:text-slate-700"
+                    className: "transition-colors text-[11px] text-slate-600 hover:text-slate-700"
                   }, d.showTimeline ? 'Hide' : 'View \u2192')
                 ),
                 d.showTimeline && React.createElement("div", { className: "relative pl-4 border-l-2 " + (isDark ? 'border-slate-600' : 'border-indigo-200') + " space-y-1.5 max-h-64 overflow-y-auto" },
@@ -13808,7 +13808,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-rose-300' : 'text-rose-700') }, "\uD83D\uDE80 Mission to " + sel.name + " (Hohmann Transfer)"),
                   React.createElement("button", { "aria-label": t('stem.solarsystem.toggle_hohmann_transfer_calculator', "Toggle Hohmann transfer calculator"),
                     onClick: function() { upd('showHohmann', !d.showHohmann); },
-                    className: "text-[11px] text-rose-500 hover:text-rose-700"
+                    className: "transition-colors text-[11px] text-rose-500 hover:text-rose-700"
                   }, d.showHohmann ? 'Hide' : 'Plan \u2192')
                 ),
                 d.showHohmann && React.createElement("div", null,
@@ -13921,7 +13921,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-red-300' : 'text-red-700') }, t('stem.solarsystem.escape_velocity', "\uD83D\uDE80 Escape Velocity")),
                   React.createElement("button", { "aria-label": t('stem.solarsystem.toggle_escape_velocity_comparison', "Toggle escape velocity comparison"),
                     onClick: function() { upd('showEscape', !d.showEscape); },
-                    className: "text-[11px] text-red-500 hover:text-red-700"
+                    className: "transition-colors text-[11px] text-red-500 hover:text-red-700"
                   }, d.showEscape ? 'Hide' : 'Show \u2192')
                 ),
                 d.showEscape && React.createElement("div", { className: "space-y-1" },
@@ -14061,7 +14061,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement("div", null, d.aiAnswer),
                   React.createElement("button", { "aria-label": t('stem.solarsystem.read_aloud_2', "Read aloud"),
                     onClick: function() { speakText(d.aiAnswer); },
-                    className: "absolute top-1 right-1 text-violet-400 hover:text-violet-600",
+                    className: "transition-colors absolute top-1 right-1 text-violet-400 hover:text-violet-600",
                     title: t('stem.solarsystem.read_aloud_3', "Read aloud")
                   }, "\uD83D\uDD0A")
                 )
@@ -14849,7 +14849,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'mt-2 grid grid-cols-3 gap-1' },
                                           [['Sun + Earth', 1.0, 1.0], ['Sun + Mars', 1.0, 1.52], ['Proxima + b', 0.0017, 0.05], ['Kepler-186 + f', 0.05, 0.43], ['HD 40307 + g', 0.23, 0.6], ['TRAPPIST-1 + e', 0.0005, 0.029]].map(function(preset) {
-                                            return React.createElement('button', { key: preset[0], onClick: function() { upd('hzLum', preset[1]); upd('hzDist', preset[2]); }, className: 'p-1 rounded text-[9px] font-bold ' + (isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200') }, preset[0]);
+                                            return React.createElement('button', { key: preset[0], onClick: function() { upd('hzLum', preset[1]); upd('hzDist', preset[2]); }, className: 'p-1 rounded text-[9px] font-bold ' + (isDark ? 'transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600' : 'transition-colors bg-slate-100 text-slate-700 hover:bg-slate-200') }, preset[0]);
                                           })
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
@@ -15365,15 +15365,15 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         React.createElement('div', { className: 'mt-2 flex justify-center gap-1' },
-                                          React.createElement('button', { onClick: function() { move(0, -1); }, disabled: reached, className: 'px-3 py-2 rounded font-bold text-lg ' + (isDark ? 'bg-slate-700 text-slate-200 hover:bg-slate-600' : 'bg-slate-200 hover:bg-slate-300') }, '↑')
+                                          React.createElement('button', { onClick: function() { move(0, -1); }, disabled: reached, className: 'px-3 py-2 rounded font-bold text-lg ' + (isDark ? 'transition-colors bg-slate-700 text-slate-200 hover:bg-slate-600' : 'transition-colors bg-slate-200 hover:bg-slate-300') }, '↑')
                                         ),
                                         React.createElement('div', { className: 'flex justify-center gap-1' },
-                                          React.createElement('button', { onClick: function() { move(-1, 0); }, disabled: reached, className: 'px-3 py-2 rounded font-bold text-lg ' + (isDark ? 'bg-slate-700 text-slate-200 hover:bg-slate-600' : 'bg-slate-200 hover:bg-slate-300') }, '←'),
-                                          React.createElement('button', { onClick: function() { reset(); }, className: 'px-3 py-2 rounded font-bold text-xs bg-orange-500 text-white hover:bg-orange-600' }, t('stem.solarsystem.reset_2', 'Reset')),
-                                          React.createElement('button', { onClick: function() { move(1, 0); }, disabled: reached, className: 'px-3 py-2 rounded font-bold text-lg ' + (isDark ? 'bg-slate-700 text-slate-200 hover:bg-slate-600' : 'bg-slate-200 hover:bg-slate-300') }, '→')
+                                          React.createElement('button', { onClick: function() { move(-1, 0); }, disabled: reached, className: 'px-3 py-2 rounded font-bold text-lg ' + (isDark ? 'transition-colors bg-slate-700 text-slate-200 hover:bg-slate-600' : 'transition-colors bg-slate-200 hover:bg-slate-300') }, '←'),
+                                          React.createElement('button', { onClick: function() { reset(); }, className: 'transition-colors px-3 py-2 rounded font-bold text-xs bg-orange-500 text-white hover:bg-orange-600' }, t('stem.solarsystem.reset_2', 'Reset')),
+                                          React.createElement('button', { onClick: function() { move(1, 0); }, disabled: reached, className: 'px-3 py-2 rounded font-bold text-lg ' + (isDark ? 'transition-colors bg-slate-700 text-slate-200 hover:bg-slate-600' : 'transition-colors bg-slate-200 hover:bg-slate-300') }, '→')
                                         ),
                                         React.createElement('div', { className: 'flex justify-center gap-1' },
-                                          React.createElement('button', { onClick: function() { move(0, 1); }, disabled: reached, className: 'px-3 py-2 rounded font-bold text-lg ' + (isDark ? 'bg-slate-700 text-slate-200 hover:bg-slate-600' : 'bg-slate-200 hover:bg-slate-300') }, '↓')
+                                          React.createElement('button', { onClick: function() { move(0, 1); }, disabled: reached, className: 'px-3 py-2 rounded font-bold text-lg ' + (isDark ? 'transition-colors bg-slate-700 text-slate-200 hover:bg-slate-600' : 'transition-colors bg-slate-200 hover:bg-slate-300') }, '↓')
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           React.createElement('div', null, t('stem.solarsystem.drive_the_rover_from_start_to_goal_cos', 'Drive the rover from start to goal. Costs: flat ground 1, '), React.createElement('span', { style: { color: '#fcd34d' } }, '·'), t('stem.solarsystem.rocks_2', ' rocks 2, '), React.createElement('span', { style: { color: '#fcd34d' } }, '◇'), t('stem.solarsystem.boulders_3', ' boulders 3, '), React.createElement('span', { style: { color: '#fcd34d' } }, '▲'), t('stem.solarsystem.mountains_5', ' mountains 5')),
@@ -15723,7 +15723,7 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         React.createElement('div', { className: 'mt-2 flex gap-1' },
-                                          React.createElement('button', { onClick: function() { reset(); }, className: 'flex-1 px-3 py-1.5 rounded font-bold text-xs bg-red-500 text-white hover:bg-red-600' }, t('stem.solarsystem.new_wave', '🚀 New Wave')),
+                                          React.createElement('button', { onClick: function() { reset(); }, className: 'transition-colors flex-1 px-3 py-1.5 rounded font-bold text-xs bg-red-500 text-white hover:bg-red-600' }, t('stem.solarsystem.new_wave', '🚀 New Wave')),
                                           React.createElement('div', { className: 'flex-1 text-center text-xs font-bold ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Hits: ' + earthHits + ' • Asteroids left: ' + asteroids.filter(function(a) { return a.alive; }).length)
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
@@ -16248,9 +16248,9 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         React.createElement('div', { className: 'mt-2 flex gap-1' },
-                                          React.createElement('button', { onClick: function() { thrust(); }, disabled: ll.landed || ll.crashed || ll.fuel <= 0, className: 'flex-1 px-3 py-2 rounded font-bold text-sm bg-orange-500 text-white hover:bg-orange-600 disabled:bg-slate-400' }, t('stem.solarsystem.thrust', '🔥 Thrust')),
+                                          React.createElement('button', { onClick: function() { thrust(); }, disabled: ll.landed || ll.crashed || ll.fuel <= 0, className: 'transition-colors flex-1 px-3 py-2 rounded font-bold text-sm bg-orange-500 text-white hover:bg-orange-600 disabled:bg-slate-400' }, t('stem.solarsystem.thrust', '🔥 Thrust')),
                                           React.createElement('button', { onClick: function() { step(); }, disabled: ll.landed || ll.crashed, className: 'flex-1 px-3 py-2 rounded font-bold text-sm ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, t('stem.solarsystem.fall_tick', '⏬ Fall (tick)')),
-                                          React.createElement('button', { onClick: function() { reset(); }, className: 'px-3 py-2 rounded font-bold text-sm bg-red-500 text-white hover:bg-red-600' }, '↻')
+                                          React.createElement('button', { onClick: function() { reset(); }, className: 'transition-colors px-3 py-2 rounded font-bold text-sm bg-red-500 text-white hover:bg-red-600' }, '↻')
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           t('stem.solarsystem.apollo_11_nearly_ran_out_of_fuel_durin', 'Apollo 11 nearly ran out of fuel during the lunar descent. Neil Armstrong manually overrode the autopilot to find a smoother landing area. Touchdown happened with ~25 seconds of fuel left.')
@@ -16785,7 +16785,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'mt-2 flex items-center gap-2' },
                                           React.createElement('div', { className: 'flex-1 text-center text-xs font-bold ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Found: ' + found + ' / ' + craters.length),
-                                          React.createElement('button', { onClick: function() { reset(); }, className: 'px-3 py-1 rounded font-bold text-xs bg-slate-500 text-white hover:bg-slate-600' }, t('stem.solarsystem.reset_3', 'Reset'))
+                                          React.createElement('button', { onClick: function() { reset(); }, className: 'transition-colors px-3 py-1 rounded font-bold text-xs bg-slate-500 text-white hover:bg-slate-600' }, t('stem.solarsystem.reset_3', 'Reset'))
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           t('stem.solarsystem.crater_counting_is_how_scientists_dete', 'Crater counting is how scientists determine the age of planetary surfaces. More craters = older surface. The Moon\'s highlands are heavily cratered (very old); maria are younger lava flows.')
@@ -19991,7 +19991,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-slate-300' : 'text-slate-700') }, t('stem.solarsystem.mission_log', "\uD83D\uDCCB Mission Log")),
                   React.createElement("button", { "aria-label": t('stem.solarsystem.no_entries_yet_start_exploring', "No entries yet. Start exploring!"),
                     onClick: function() { upd('showLog', !d.showLog); },
-                    className: "text-[11px] text-indigo-500 hover:text-indigo-700"
+                    className: "transition-colors text-[11px] text-indigo-500 hover:text-indigo-700"
                   }, d.showLog ? 'Hide' : 'Show (' + (missionLog.length) + ')')
                 ),
                 d.showLog && React.createElement("div", { className: "space-y-1 max-h-32 overflow-y-auto" },
@@ -20157,7 +20157,7 @@ const d = labToolData.solarSystem || {};
                     var looked = (d.vocabLookedUp || []).indexOf(term) !== -1;
                     return React.createElement("button", { key: term,
                       onClick: function() { upd('vocabSelected', d.vocabSelected === term ? null : term); if (!looked) upd('vocabLookedUp', (d.vocabLookedUp || []).concat([term])); },
-                      className: "text-left p-1.5 rounded text-[11px] border transition-all " + (d.vocabSelected === term ? (isDark ? 'bg-indigo-900/30 border-indigo-600/50 font-bold text-indigo-300' : 'bg-indigo-50 border-indigo-300 font-bold text-indigo-700') : looked ? (isDark ? 'bg-emerald-900/20 border-emerald-700/30 text-slate-300' : 'bg-emerald-50 border-emerald-100 text-slate-600') : (isDark ? 'bg-slate-800 border-slate-700 text-slate-200 hover:border-indigo-500/50' : 'bg-white border-slate-100 text-slate-600 hover:border-indigo-200'))
+                      className: "text-left p-1.5 rounded text-[11px] border transition-all " + (d.vocabSelected === term ? (isDark ? 'bg-indigo-900/30 border-indigo-600/50 font-bold text-indigo-300' : 'bg-indigo-50 border-indigo-300 font-bold text-indigo-700') : looked ? (isDark ? 'bg-emerald-900/20 border-emerald-700/30 text-slate-300' : 'bg-emerald-50 border-emerald-100 text-slate-600') : (isDark ? 'transition-colors bg-slate-800 border-slate-700 text-slate-200 hover:border-indigo-500/50' : 'transition-colors bg-white border-slate-100 text-slate-600 hover:border-indigo-200'))
                     }, (looked ? '\u2705 ' : '') + term + (v.grade > 6 ? ' \u2B50' : ''));
                   })
                 ),
