@@ -63,6 +63,23 @@
   }
   // deterministic: ~1/3 of sedimentary voxels host a fossil, so digging feels like discovery
   function hasFossilAt(x, y, z) { return (((x + 1) * 13 + (z + 1) * 7 + y * 5) % 3) === 0; }
+
+  // A drill core: the vertical rock sequence at one (x,z), merged into bands.
+  function computeCore(x, z) {
+    var segs = [], prev = null;
+    for (var y = 0; y < NY; y++) {
+      var k = rockKeyAt(x, y, z);
+      if (!prev || prev.key !== k) { prev = { key: k, y0: y, y1: y }; segs.push(prev); }
+      else prev.y1 = y;
+    }
+    return segs;
+  }
+  // Three representative columns, each revealing a different principle when compared.
+  var CORE_SITES = [
+    { id: 'edge',   icon: '🪨', label: 'Layered edge',  x: 1, z: 1, blurb: 'Away from the pluton: the sedimentary layers stack up, oldest at the bottom (superposition).' },
+    { id: 'rim',    icon: '🔥', label: 'Baked rim',     x: 9, z: 7, blurb: 'Beside the pluton, limestone & shale became marble & hornfels — contact metamorphism.' },
+    { id: 'centre', icon: '⛏️', label: 'Pluton centre', x: 7, z: 7, blurb: 'The granite pluton cuts straight down through the layers to the magma (cross-cutting).' }
+  ];
   function hex(n) { return '#' + ('000000' + n.toString(16)).slice(-6); }
   function rockFacts(key, y) {
     var R = ROCKS[key];
@@ -256,6 +273,7 @@
       var histTimer = React.useRef(null);
       var fos = React.useState(d.fossils || {}); var found = fos[0], setFound = fos[1];
       var fossilsRef = React.useRef(found); fossilsRef.current = found;
+      var cr = React.useState(null); var core = cr[0], setCore = cr[1];
       var threeReady = !!(ctx.toolData && ctx.toolData._threeLoaded) && !!window.THREE;
 
       function announce(msg) { try { var lr = document.getElementById('allo-live-geology'); if (lr) { lr.textContent = ''; setTimeout(function () { lr.textContent = String(msg || ''); }, 30); } } catch (e) {} }
@@ -272,6 +290,11 @@
         var F = FOSSILS[key], rn = ROCKS[key] ? ROCKS[key].name : 'rock';
         addToast('✨ ' + (F ? F.name : 'Fossil') + ' uncovered in the ' + rn + '!', 'success');
         announce('You uncovered ' + (F ? F.name : 'a fossil') + ' in the ' + rn + '. ' + (F ? F.tells : ''));
+      }
+      function takeCore(site) {
+        var segs = computeCore(site.x, site.z);
+        setCore({ id: site.id, segs: segs, blurb: site.blurb });
+        announce('Core sample, ' + site.label + '. Top to bottom: ' + segs.map(function (s) { return ROCKS[s.key].name; }).join(', ') + '. ' + site.blurb);
       }
 
       // ── formation-history playback (assembles the crust in chronological order) ──
@@ -391,6 +414,29 @@
             keys.map(function (k) { var F = FOSSILS[k]; return h('span', { key: k, title: F.tells, className: 'inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-lg border ' + cardBg + ' ' + ink }, F.icon + ' ' + F.name); })));
       }
 
+      // ── drill core log: a real core reads top (youngest) → bottom (oldest) ──
+      function corePanel() {
+        if (!core) return null;
+        var H = 188, W = 50, total = NY;
+        var bands = core.segs.map(function (s, i) {
+          var y = (s.y0 / total) * H, bh = ((s.y1 - s.y0 + 1) / total) * H;
+          return h('rect', { key: i, x: 0, y: y, width: W, height: bh, fill: hex(ROCKS[s.key].color), stroke: 'rgba(0,0,0,0.3)' });
+        });
+        var list = core.segs.map(function (s, i) {
+          var d0 = (s.y0 * KM_PER_VOXEL).toFixed(1), d1 = ((s.y1 + 1) * KM_PER_VOXEL).toFixed(1), R = ROCKS[s.key];
+          return h('li', { key: i, className: 'flex items-center gap-2 text-[11px] ' + ink },
+            h('span', { 'aria-hidden': 'true', className: 'w-3 h-3 rounded flex-none', style: { background: hex(R.color), boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.15)' } }),
+            h('span', { className: 'font-semibold' }, R.name),
+            h('span', { className: muted }, d0 + '–' + d1 + ' km'));
+        });
+        return h('div', { className: 'p-2.5 rounded-xl border ' + cardBg, role: 'region', 'aria-label': 'Drill core sample' },
+          h('div', { className: 'text-[11px] mb-1.5 ' + muted }, t('stem.geology.core_read', 'A core reads top → bottom: youngest at the surface, oldest at depth.')),
+          h('div', { className: 'flex items-start gap-3' },
+            h('svg', { width: W, height: H, viewBox: '0 0 ' + W + ' ' + H, 'aria-hidden': 'true', className: 'rounded-md overflow-hidden border flex-none ' + (isDark ? 'border-slate-700' : 'border-slate-300') }, bands),
+            h('ol', { className: 'space-y-1 m-0 p-0 list-none' }, list)),
+          h('div', { className: 'mt-2 text-[11px] leading-snug ' + ink }, core.blurb));
+      }
+
       // ── accessible cross-section: SVG diagram + keyboard strata list (the non-3D core) ──
       function crossSectionSVG() {
         var bands = ['soil', 'sandstone', 'shale', 'limestone', 'basement', 'magma'];
@@ -474,7 +520,15 @@
               h('p', { className: 'text-[11px] leading-relaxed ' + muted }, t('stem.geology.teach', 'Deeper sedimentary layers are older (superposition). The granite pluton is YOUNGER than the layers it cuts (cross-cutting), and it bakes a metamorphic rim (contact metamorphism). Heat + pressure rise with depth toward the magma — where the rock cycle restarts.'))),
             h('div', { className: 'text-[11px] font-bold ' + muted }, t('stem.geology.rocks', 'Rock types')),
             strataList(),
-            fossilStrip()))
+            fossilStrip(),
+            h('div', { className: 'space-y-1.5' },
+              h('div', { className: 'text-[11px] font-bold ' + muted }, '🪛 ' + t('stem.geology.core_title', 'Drill a core sample')),
+              h('div', { className: 'flex flex-wrap gap-1.5' },
+                CORE_SITES.map(function (site) {
+                  var on = core && core.id === site.id;
+                  return h('button', { key: site.id, type: 'button', onClick: function () { takeCore(site); }, 'aria-pressed': on ? 'true' : 'false', title: site.blurb, className: 'transition-colors active:scale-[0.97] text-[11px] font-bold px-2.5 py-1.5 rounded-lg border ' + (on ? 'bg-amber-500 border-amber-400 text-amber-950' : (isDark ? 'bg-slate-800 border-slate-600 text-slate-100 hover:bg-slate-700 hover:border-amber-400' : 'bg-white border-slate-300 text-slate-700 hover:bg-amber-50 hover:border-amber-400')) }, site.icon + ' ' + t('stem.geology.core_' + site.id, site.label));
+                })),
+              corePanel())))
       );
     }
   });
