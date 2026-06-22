@@ -9109,8 +9109,16 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     for (let r = 0; r < numRuns; r++) {
       setPdfBatchStep(`Experiment run ${r + 1}/${numRuns}...`);
       try {
-        const result = await processSinglePdfForBatch(base64Data, fileName, (msg) => {
-          setPdfBatchStep(`[Run ${r + 1}/${numRuns}] ${msg}`);
+        // Measure the PRODUCTION pipeline — runPdfAccessibilityAudit + fixAndVerifyPdf, the exact path
+        // the batch runner ships (see ~line 8850) — NOT the legacy processSinglePdfForBatch loop, whose
+        // reliability stats (SD/SEM/CV) characterized code that never ships. (PDF-Issue2)
+        const _audit = await runPdfAccessibilityAudit(base64Data, { skipUiUpdates: true, fileName: fileName });
+        if (!_audit || _audit.score === -1) throw new Error(_audit?.summary || 'Audit failed');
+        const result = await fixAndVerifyPdf({
+          base64: base64Data,
+          fileName: fileName,
+          auditResult: _audit,
+          onProgress: (step, msg) => setPdfBatchStep(`[Run ${r + 1}/${numRuns}] ${msg}`),
         });
         runs.push({ run: r + 1, beforeScore: result.beforeScore, afterScore: result.afterScore, autoFixPasses: result.autoFixPasses, elapsed: result.elapsed });
       } catch(err) {
@@ -9128,7 +9136,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     const range = n > 0 ? Math.max(...afterScores) - Math.min(...afterScores) : 0;
     const bMean = beforeScores.length > 0 ? beforeScores.reduce((a, b) => a + b, 0) / beforeScores.length : 0;
     const bSD = beforeScores.length > 1 ? Math.sqrt(beforeScores.reduce((s, x) => s + (x - bMean) ** 2, 0) / (beforeScores.length - 1)) : 0;
-    const stats = { runs, n, afterMean: Math.round(mean * 10) / 10, afterSD: Math.round(sd * 10) / 10, afterSEM: Math.round(sem * 10) / 10, afterCV: cv, afterRange: range, beforeMean: Math.round(bMean * 10) / 10, beforeSD: Math.round(bSD * 10) / 10 };
+    const stats = { runs, n, pipeline: 'production (runPdfAccessibilityAudit + fixAndVerifyPdf — the shipped path)', afterMean: Math.round(mean * 10) / 10, afterSD: Math.round(sd * 10) / 10, afterSEM: Math.round(sem * 10) / 10, afterCV: cv, afterRange: range, beforeMean: Math.round(bMean * 10) / 10, beforeSD: Math.round(bSD * 10) / 10 };
     const blob = new Blob([JSON.stringify(stats, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url; a.download = `experiment_${fileName.replace(/\.pdf$/i, '')}_${numRuns}runs.json`;
@@ -20665,7 +20673,12 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       const liveDoc = iframe.contentDocument || iframe.contentWindow?.document;
       if (liveDoc && liveDoc.body) {
         const liveText = liveDoc.body.textContent || '';
-        if (liveText.trim().length >= 50) {
+        // Capture the iframe's live edits for a GENUINELY SHORT doc too, once it's been hydrated by a
+        // prior updatePdfPreview write (data-allo-hydrated, set on the HOST iframe element after
+        // doc.close below — never part of the exported inner doc). The bare length>=50 heuristic
+        // silently dropped edits to short docs (abstracts); the flag distinguishes "short" from "shell". (DB-B6)
+        const _wasHydrated = (() => { try { return iframe.getAttribute('data-allo-hydrated') === '1'; } catch (_) { return false; } })();
+        if (_wasHydrated || liveText.trim().length >= 50) {
           // Strip transient overlay CSS so it doesn't get baked into the export source.
           const inspect = liveDoc.getElementById('a11y-inspect-css');
           if (inspect) inspect.remove();
@@ -20694,6 +20707,9 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       }
     }
     doc.close();
+    // Mark the HOST iframe element hydrated (not the inner doc — so it's never exported) so
+    // getPdfPreviewHtml + the live-edit snapshot above trust the iframe even for a short doc. (DB-B6)
+    try { iframe.setAttribute('data-allo-hydrated', '1'); } catch (_) {}
     // Enable editing
     setTimeout(() => {
       try { doc.designMode = 'on'; } catch(e) {}
@@ -21877,7 +21893,11 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     // Prefer the in-memory accessibleHtml in that case; only trust the iframe once it
     // clearly holds rendered remediation content.
     const bodyText = (doc.body ? (doc.body.textContent || '') : '');
-    if (bodyText.trim().length < 50 && memHtml) return memHtml;
+    // Trust the iframe once updatePdfPreview has hydrated it (flag on the host iframe element), even for a
+    // genuinely short doc. Fall back to the in-memory HTML only when NOT hydrated AND near-empty — so a
+    // missing flag can never regress the un-hydrated-shell guard this length check originally added. (DB-B6)
+    const _hydrated = (() => { try { return pdfPreviewRef.current.getAttribute('data-allo-hydrated') === '1'; } catch (_) { return false; } })();
+    if (!_hydrated && bodyText.trim().length < 50 && memHtml) return memHtml;
     // Remove inspect CSS before export
     const inspectEl = doc.getElementById('a11y-inspect-css');
     if (inspectEl) inspectEl.remove();
