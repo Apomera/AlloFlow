@@ -13869,6 +13869,11 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         return blocks.map((block, blockIdx) => {
           // Guard: skip invalid blocks
           if (!block || typeof block !== 'object') return '';
+          // Operate on a shallow CLONE so this renderer is idempotent: the chunked-generation path
+          // re-invokes renderJsonToHtml on the SAME blocks array on retry, and the normalizations below
+          // mutate fields in place — double-cleaning a second time corrupted the output. Clone touches
+          // only primitive fields + reassigns block.items to a new array, so a shallow copy is safe.
+          block = { ...block };
           // ── Normalize alternate schemas ──
           // Gemini sometimes returns {"tag":"p","class":"ds6","content":"..."} or
           // {"element":"p","text":"..."} instead of {"type":"p","text":"..."}.
@@ -19590,6 +19595,7 @@ tr { page-break-inside: avoid; }
         let imagesMissingAlt = 0;       // <img> with no alt or alt="" but not marked decorative
         let imagesTrivialAlt = 0;       // alt looks like a filename or generic stub
         let thWithoutScope = 0;         // <th> missing scope (TH cells need /Scope for SR header announcement)
+        let cellsMerged = 0;            // TH/TD with colspan>1 or rowspan>1 — /Scope alone can't express a merged/multi-row header layout (manual review)
         let linksGenericText = 0;       // "click here", "read more", "here", etc. — WCAG 2.4.4
         const _trivialAltRe = /^(image|img|icon|picture|photo|untitled|graphic|figure)\s*\d*$/i;
         const _filenameAltRe = /\.(png|jpe?g|gif|svg|webp|bmp|tiff?)\s*$/i;
@@ -19642,8 +19648,9 @@ tr { page-break-inside: avoid; }
                         if (!it.scope || (it.scope.toLowerCase() !== 'col' && it.scope.toLowerCase() !== 'row' && it.scope.toLowerCase() !== 'colgroup' && it.scope.toLowerCase() !== 'rowgroup')) {
                             thWithoutScope++;
                         }
+                        if ((it.colSpan || 1) > 1 || (it.rowSpan || 1) > 1) cellsMerged++;
                     }
-                    else if (it.role === 'TD') tableCells++;
+                    else if (it.role === 'TD') { tableCells++; if ((it.colSpan || 1) > 1 || (it.rowSpan || 1) > 1) cellsMerged++; }
                 }
             }
         } catch(_) {}
@@ -19675,6 +19682,7 @@ tr { page-break-inside: avoid; }
             imagesMissingAlt,
             imagesTrivialAlt,
             thWithoutScope,
+            cellsMerged,
             linksGenericText,
         };
     })();
@@ -19945,11 +19953,18 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       // TABLES
       const _tableTotal = (_summary && _summary.tables) || 0;
       const _thNoScope = (_summary && _summary.thWithoutScope) || 0;
+      const _merged = (_summary && _summary.cellsMerged) || 0;
       if (_tableTotal > 0) {
-        _addCheck('Tables', 'Headers (TH with scope)', _thNoScope === 0 ? 'pass' : 'fail',
-          _thNoScope === 0
-            ? 'All TH cells across ' + _tableTotal + ' tables carry /Scope (col/row)'
-            : _thNoScope + ' TH cells missing /Scope — screen readers won\'t announce headers correctly');
+        // /Scope passing is necessary but NOT sufficient for a MERGED / multi-row-header table:
+        // colspan/rowspan need explicit /Headers-id association that /Scope alone can't express, so a
+        // merged-cell table is downgraded pass→warn (advisory — it does NOT withhold the PDF/UA claim).
+        _addCheck('Tables', 'Headers (TH with scope)',
+          _thNoScope > 0 ? 'fail' : (_merged > 0 ? 'warn' : 'pass'),
+          _thNoScope > 0
+            ? _thNoScope + ' TH cells missing /Scope — screen readers won\'t announce headers correctly'
+            : (_merged > 0
+                ? 'All TH cells carry /Scope, but ' + _merged + ' merged cell(s) (colspan/rowspan) were found — /Scope alone cannot express a merged or multi-row header layout; verify header-to-data mapping by hand (PAC 2024 / a screen reader) before relying on it.'
+                : 'All TH cells across ' + _tableTotal + ' tables carry /Scope (col/row)'));
         _addCheck('Tables', 'Regularity', 'manual',
           'Manual review: rectangular structure (every row has equal cells, no merged-without-headers cells)');
       } else {
@@ -26406,8 +26421,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           })();
         </script>
         <main id="main-export-content" role="main">
-        <div class="export-header" style="background:${theme.headerBg};color:${theme.headerText};padding:28px 36px;border-radius:${theme.borderRadius || '14px'};margin-bottom:28px;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
-          <h1 style="color:${theme.headerText};margin:0 0 6px 0;font-size:1.85rem;letter-spacing:-0.02em;">${studentTitlePrefix}${lessonTopic}</h1>
+        <div class="export-header" style="background:${theme.headerBg};color:${(_accessibleHeaderColors(theme.headerBg) || {}).fg || theme.headerText};padding:28px 36px;border-radius:${theme.borderRadius || '14px'};margin-bottom:28px;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+          <h1 style="color:${(_accessibleHeaderColors(theme.headerBg) || {}).fg || theme.headerText};margin:0 0 6px 0;font-size:1.85rem;letter-spacing:-0.02em;">${studentTitlePrefix}${lessonTopic}</h1>
           ${!isWorksheet ? `<p style="opacity:0.85;font-size:0.9rem;margin:0;"><strong>${topicLabel}:</strong> ${lessonTopic} &bull; ${dateLabel} ${new Date().toLocaleDateString()}</p>` : ''}
         </div>
         ${worksheetHeader}
