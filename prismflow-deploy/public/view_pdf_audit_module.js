@@ -647,6 +647,137 @@ function _buildMoOpf(title, lang, segments, totalSec, modifiedIso, ext, mime, ha
   const audioItems = (segments || []).map((s, i) => _has(i) ? '<item id="aud' + (i + 1) + '" href="audio/seg' + (i + 1) + "." + _ext + '" media-type="' + _mime + '"/>' : "").filter(Boolean).join("\n");
   return '<?xml version="1.0" encoding="UTF-8"?>\n<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid" prefix="media: http://www.idpf.org/epub/vocab/overlays/#">\n<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">\n<dc:identifier id="uid">alloflow-mo-' + Date.now() + "</dc:identifier><dc:title>" + _expXmlEsc(title) + "</dc:title><dc:language>" + _expXmlEsc(lang || "en") + '</dc:language><dc:creator>AlloFlow Document Pipeline</dc:creator><meta property="dcterms:modified">' + _expXmlEsc(modifiedIso || (/* @__PURE__ */ new Date()).toISOString().replace(/\.\d+Z/, "Z")) + '</meta><meta property="media:duration">' + _moClock(totalSec) + '</meta><meta property="media:duration" refines="#smil">' + _moClock(totalSec) + '</meta><meta property="media:active-class">-epub-media-overlay-active</meta><meta property="schema:accessMode">textual</meta><meta property="schema:accessMode">auditory</meta><meta property="schema:accessModeSufficient">textual,auditory</meta><meta property="schema:accessibilityFeature">readingOrder</meta><meta property="schema:accessibilityFeature">synchronizedAudioText</meta><meta property="schema:accessibilityFeature">structuralNavigation</meta><meta property="schema:accessibilityHazard">none</meta><meta property="schema:accessibilitySummary">Read-along ebook: AlloFlow text-to-speech narration synchronized to the text via EPUB3 Media Overlays.</meta></metadata>\n<manifest>\n<item id="content" href="content.xhtml" media-type="application/xhtml+xml" media-overlay="smil"/>\n<item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>\n<item id="smil" href="content.smil" media-type="application/smil+xml"/>\n' + audioItems + '\n</manifest>\n<spine><itemref idref="content"/></spine>\n</package>';
 }
+function validateEpubStructure(files) {
+  const issues = [];
+  const f = files || {};
+  const err = (code, message) => issues.push({ severity: "error", code, message });
+  const warn = (code, message) => issues.push({ severity: "warning", code, message });
+  const has = (p) => p != null && Object.prototype.hasOwnProperty.call(f, p) && f[p] != null;
+  const get = (p) => has(p) ? String(f[p]) : "";
+  const resolveRel = (base, src) => {
+    const noFrag = String(src || "").replace(/#.*$/, "");
+    if (!noFrag) return null;
+    const baseDir = base.indexOf("/") >= 0 ? base.replace(/\/[^/]*$/, "") : "";
+    const parts = (baseDir ? baseDir.split("/") : []).concat(noFrag.split("/"));
+    const out = [];
+    for (const seg of parts) {
+      if (seg === "" || seg === ".") continue;
+      if (seg === "..") out.pop();
+      else out.push(seg);
+    }
+    return out.join("/");
+  };
+  const xmlError = (p) => {
+    if (typeof DOMParser === "undefined") return null;
+    try {
+      const d = new DOMParser().parseFromString(get(p), "application/xml");
+      const pe = d.getElementsByTagName("parsererror")[0];
+      return pe ? String(pe.textContent || "XML parse error").replace(/\s+/g, " ").trim().slice(0, 200) : null;
+    } catch (_) {
+      return null;
+    }
+  };
+  if (!has("mimetype")) err("mimetype-missing", "OCF requires a 'mimetype' entry.");
+  else if (get("mimetype").trim() !== "application/epub+zip") err("mimetype-wrong", "mimetype must be exactly 'application/epub+zip'.");
+  const CONTAINER = "META-INF/container.xml";
+  let opfPath = null;
+  if (!has(CONTAINER)) err("container-missing", "META-INF/container.xml is required.");
+  else {
+    const xe = xmlError(CONTAINER);
+    if (xe) err("container-malformed", "container.xml is not well-formed XML: " + xe);
+    const m = get(CONTAINER).match(/full-path\s*=\s*"([^"]+)"/);
+    if (!m) err("rootfile-missing", "container.xml declares no rootfile full-path.");
+    else {
+      opfPath = m[1];
+      if (!has(opfPath)) err("rootfile-unresolved", "container rootfile '" + opfPath + "' is not in the package.");
+    }
+  }
+  if (opfPath && has(opfPath)) {
+    const opf = get(opfPath);
+    const xe = xmlError(opfPath);
+    if (xe) err("opf-malformed", "content.opf is not well-formed XML: " + xe);
+    const items = {};
+    let im;
+    const itemRe = /<item\b([^>]*?)\/?>/g;
+    while (im = itemRe.exec(opf)) {
+      const a = im[1];
+      const id = (a.match(/\bid\s*=\s*"([^"]*)"/) || [])[1];
+      const href = (a.match(/\bhref\s*=\s*"([^"]*)"/) || [])[1];
+      if (!id || !href) continue;
+      const obj = {
+        id,
+        href,
+        props: (a.match(/\bproperties\s*=\s*"([^"]*)"/) || [])[1] || "",
+        mediaType: (a.match(/\bmedia-type\s*=\s*"([^"]*)"/) || [])[1] || "",
+        overlay: (a.match(/\bmedia-overlay\s*=\s*"([^"]*)"/) || [])[1] || "",
+        resolved: resolveRel(opfPath, href)
+      };
+      items[id] = obj;
+      if (!has(obj.resolved)) err("manifest-href-unresolved", "manifest item '" + id + "' href '" + href + "' is not in the package.");
+    }
+    let sm, spineCount = 0;
+    const spineRe = /<itemref\b([^>]*?)\/?>/g;
+    while (sm = spineRe.exec(opf)) {
+      spineCount++;
+      const idref = (sm[1].match(/\bidref\s*=\s*"([^"]*)"/) || [])[1];
+      if (!idref || !items[idref]) err("spine-idref-unresolved", "spine itemref '" + (idref || "") + "' has no matching manifest item.");
+    }
+    if (spineCount === 0) err("spine-empty", "OPF spine has no itemref.");
+    if (!Object.keys(items).some((id) => /\bnav\b/.test(items[id].props))) err("nav-missing", 'OPF manifest has no properties="nav" navigation document.');
+    const overlayItems = Object.keys(items).map((id) => items[id]).filter((it) => it.overlay);
+    for (const it of overlayItems) {
+      const ov = items[it.overlay];
+      if (!ov) err("overlay-unresolved", "item '" + it.id + "' media-overlay='" + it.overlay + "' has no matching manifest item.");
+      else if (!/smil/i.test(ov.mediaType)) warn("overlay-mediatype", "media-overlay target '" + it.overlay + "' is not application/smil+xml.");
+    }
+    if (overlayItems.length && !/property\s*=\s*"media:duration"/.test(opf)) err("duration-missing", "media overlays are declared but no media:duration metadata is present.");
+    for (const id of Object.keys(items)) {
+      const it = items[id];
+      if (/xhtml\+xml/i.test(it.mediaType) && has(it.resolved)) {
+        const xeX = xmlError(it.resolved);
+        if (xeX) err("xhtml-malformed", it.href + " is not well-formed XML: " + xeX);
+      }
+    }
+    const idCache = {};
+    const idsOf = (path) => {
+      if (idCache[path]) return idCache[path];
+      const set = /* @__PURE__ */ new Set();
+      let mm;
+      const idRe = /\bid\s*=\s*"([^"]+)"/g;
+      const s = get(path);
+      while (mm = idRe.exec(s)) set.add(mm[1]);
+      idCache[path] = set;
+      return set;
+    };
+    for (const id of Object.keys(items)) {
+      const it = items[id];
+      if (!/smil/i.test(it.mediaType) || !has(it.resolved)) continue;
+      const smil = get(it.resolved);
+      const xe2 = xmlError(it.resolved);
+      if (xe2) err("smil-malformed", it.href + " is not well-formed XML: " + xe2);
+      let tm;
+      const tRe = /<text\b[^>]*?\bsrc\s*=\s*"([^"]+)"/g;
+      while (tm = tRe.exec(smil)) {
+        const src = tm[1], hash = src.indexOf("#"), target = resolveRel(it.resolved, src);
+        if (!has(target)) {
+          err("smil-text-target-missing", "SMIL text src '" + src + "' points to a file not in the package.");
+          continue;
+        }
+        if (hash >= 0) {
+          const frag = src.slice(hash + 1);
+          if (frag && !idsOf(target).has(frag)) err("smil-text-id-missing", "SMIL text src '" + src + "' references id '" + frag + "' absent from " + target + ".");
+        }
+      }
+      let am;
+      const aRe = /<audio\b[^>]*?\bsrc\s*=\s*"([^"]+)"/g;
+      while (am = aRe.exec(smil)) {
+        const target = resolveRel(it.resolved, am[1]);
+        if (!has(target)) err("smil-audio-missing", "SMIL audio src '" + am[1] + "' is not in the package (a missing clip invalidates the whole EPUB).");
+      }
+    }
+  }
+  return { valid: issues.filter((i) => i.severity === "error").length === 0, issues };
+}
 async function _buildDocxBlobFromSpec(spec, d, mode) {
   const academic = !!(mode && mode.academic);
   const HEADING = { 1: d.HeadingLevel.HEADING_1, 2: d.HeadingLevel.HEADING_2, 3: d.HeadingLevel.HEADING_3, 4: d.HeadingLevel.HEADING_4, 5: d.HeadingLevel.HEADING_5, 6: d.HeadingLevel.HEADING_6 };
@@ -2406,16 +2537,37 @@ function PdfAuditView(props) {
       const withAudio = audioBlobs.filter(Boolean).length;
       const _hasAudio = audioBlobs.map(Boolean);
       const zip = new window.JSZip();
-      zip.file("mimetype", "application/epub+zip", { compression: "STORE" });
-      zip.file("META-INF/container.xml", '<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>');
+      const _containerXml = '<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>';
       let xhtml = '<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE html>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="' + _expXmlEsc(epubLang) + '" lang="' + _expXmlEsc(epubLang) + '"><head><meta charset="utf-8"/><title>' + _expXmlEsc(title) + "</title></head><body>" + bodyHtml + "</body></html>";
       xhtml = xhtml.replace(/<br>/g, "<br/>").replace(/<hr>/g, "<hr/>").replace(/<img([^>]*[^/])>/g, "<img$1/>").replace(/&nbsp;/g, "&#160;");
+      const _smilXml = _buildMoSmil(segments, durations, ext, _hasAudio);
+      const _opfXml = _buildMoOpf(title, epubLang, segments, totalSec, null, ext, mime, _hasAudio);
+      const _navXhtml = '<?xml version="1.0" encoding="utf-8"?>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops"><head><title>Navigation</title></head><body><nav epub:type="toc"><h1>Contents</h1><ol><li><a href="content.xhtml">' + _expXmlEsc(title) + "</a></li></ol></nav></body></html>";
+      zip.file("mimetype", "application/epub+zip", { compression: "STORE" });
+      zip.file("META-INF/container.xml", _containerXml);
       zip.file("OEBPS/content.xhtml", xhtml);
-      zip.file("OEBPS/content.smil", _buildMoSmil(segments, durations, ext, _hasAudio));
-      zip.file("OEBPS/content.opf", _buildMoOpf(title, epubLang, segments, totalSec, null, ext, mime, _hasAudio));
-      zip.file("OEBPS/nav.xhtml", '<?xml version="1.0" encoding="utf-8"?>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops"><head><title>Navigation</title></head><body><nav epub:type="toc"><h1>Contents</h1><ol><li><a href="content.xhtml">' + _expXmlEsc(title) + "</a></li></ol></nav></body></html>");
+      zip.file("OEBPS/content.smil", _smilXml);
+      zip.file("OEBPS/content.opf", _opfXml);
+      zip.file("OEBPS/nav.xhtml", _navXhtml);
       for (let i = 0; i < audioBlobs.length; i++) {
         if (audioBlobs[i]) zip.file("OEBPS/audio/seg" + (i + 1) + "." + ext, audioBlobs[i]);
+      }
+      let _epubSelfCheckNote = "";
+      try {
+        const _epubFiles = { "mimetype": "application/epub+zip", "META-INF/container.xml": _containerXml, "OEBPS/content.xhtml": xhtml, "OEBPS/content.smil": _smilXml, "OEBPS/content.opf": _opfXml, "OEBPS/nav.xhtml": _navXhtml };
+        for (let i = 0; i < audioBlobs.length; i++) {
+          if (audioBlobs[i]) _epubFiles["OEBPS/audio/seg" + (i + 1) + "." + ext] = true;
+        }
+        const _vr = validateEpubStructure(_epubFiles);
+        const _errs = _vr.issues.filter((x) => x.severity === "error");
+        if (_errs.length) {
+          try {
+            console.warn("[EPUB self-check] " + _errs.length + " structural issue(s):", _errs);
+          } catch (_) {
+          }
+          _epubSelfCheckNote = " \u26A0 " + _errs.length + " structural issue(s) flagged by the EPUB self-check (see console) \u2014 the file may not open in all readers.";
+        }
+      } catch (_) {
       }
       const blob = await zip.generateAsync({ type: "blob", mimeType: "application/epub+zip" });
       const a = document.createElement("a");
@@ -2426,8 +2578,8 @@ function PdfAuditView(props) {
       document.body.removeChild(a);
       URL.revokeObjectURL(a.href);
       setMoExport({ total: segments.length, done: segments.length, status: "done" });
-      if (withAudio === 0) addToast(t("toasts.mo_no_audio") || "\u26A0 Read-along ebook saved, but no audio could be generated (voice service unavailable). The text + sync structure are intact.", "error");
-      else addToast("\u{1F4D6}\u{1F50A} " + (t("toasts.mo_done") || "Read-along ebook downloaded") + " \u2014 " + withAudio + "/" + segments.length + " sections narrated.", "success");
+      if (withAudio === 0) addToast((t("toasts.mo_no_audio") || "\u26A0 Read-along ebook saved, but no audio could be generated (voice service unavailable). The text + sync structure are intact.") + _epubSelfCheckNote, _epubSelfCheckNote ? "error" : "error");
+      else addToast("\u{1F4D6}\u{1F50A} " + (t("toasts.mo_done") || "Read-along ebook downloaded") + " \u2014 " + withAudio + "/" + segments.length + " sections narrated." + _epubSelfCheckNote, _epubSelfCheckNote ? "error" : "success");
       setTimeout(() => setMoExport(null), 4e3);
     } catch (e) {
       setMoExport(null);
