@@ -272,11 +272,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       var tab = d.tab || 'vformation';
       var TABS = [
         { id: 'vformation', label: 'V-Formation', icon: '\uD83E\uDEBF' },
-        { id: 'wind', label: 'Wind Currents', icon: '\uD83C\uDF2C\uFE0F' },
-        { id: 'routes', label: 'Migration Routes', icon: '\uD83D\uDDFA\uFE0F' },
-        { id: 'aero', label: 'Aerodynamics', icon: '\u2708\uFE0F' },
-        { id: 'navigate', label: 'Weather & Nav', icon: '\uD83E\uDDED' },
-        { id: 'inquiry', label: 'Energy Inquiry', icon: '\uD83D\uDD2C' }
+        { id: 'wind', label: t('stem.migration.wind_currents', 'Wind Currents'), icon: '\uD83C\uDF2C\uFE0F' },
+        { id: 'routes', label: t('stem.migration.migration_routes', 'Migration Routes'), icon: '\uD83D\uDDFA\uFE0F' },
+        { id: 'aero', label: t('stem.migration.aerodynamics', 'Aerodynamics'), icon: '\u2708\uFE0F' },
+        { id: 'navigate', label: t('stem.migration.weather_nav', 'Weather & Nav'), icon: '\uD83E\uDDED' },
+        { id: 'inquiry', label: t('stem.migration.energy_inquiry', 'Energy Inquiry'), icon: '\uD83D\uDD2C' }
       ];
 
       // ── Theme helpers ──
@@ -781,9 +781,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           callTTS && h('div', { className: 'flex justify-end' },
             h('button', {
               className: 'px-2.5 py-1 rounded-lg text-[11px] font-medium ' + btnSecondary,
-              'aria-label': 'Read V-Formation explanation aloud',
+              'aria-label': t('stem.migration.read_v_formation_explanation_aloud', 'Read V-Formation explanation aloud'),
               onClick: vReadAloud
-            }, '\uD83D\uDD0A Read Aloud')
+            }, t('stem.migration.read_aloud', '\uD83D\uDD0A Read Aloud'))
           ),
 
           // Canvas
@@ -791,7 +791,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('canvas', {
               ref: _vfInitCanvas,
               role: 'img',
-              'aria-label': 'V-formation simulator canvas. Drag birds to reposition them. Leader bird shown with star. Energy bars above each bird show current energy level. Green cones behind each bird show upwash zones where trailing birds save energy. Red zone directly behind shows downwash area.',
+              'aria-label': t('stem.migration.v_formation_simulator_canvas_drag_bird', 'V-formation simulator canvas. Drag birds to reposition them. Leader bird shown with star. Energy bars above each bird show current energy level. Green cones behind each bird show upwash zones where trailing birds save energy. Red zone directly behind shows downwash area.'),
               tabIndex: 0,
               onKeyDown: function(e) {
                 if (e.key === 'v' || e.key === 'V') {
@@ -810,22 +810,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           h('div', { className: 'flex flex-wrap gap-2 items-center' },
             h('button', {
               className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + btnPrimary,
-              'aria-label': 'Auto-form V formation',
+              'aria-label': t('stem.migration.auto_form_v_formation', 'Auto-form V formation'),
               onClick: function() {
                 birdsRef.current = makeVFormation(birdCount);
                 if (beep) beep(659, 0.12, 0.12);
                 if (announceToSR) announceToSR('V formation formed automatically');
               }
-            }, '\uD83E\uDEBF Auto-Form V'),
+            }, t('stem.migration.auto_form_v', '\uD83E\uDEBF Auto-Form V')),
             h('button', {
               className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + btnSecondary,
-              'aria-label': 'Scatter birds randomly',
+              'aria-label': t('stem.migration.scatter_birds_randomly', 'Scatter birds randomly'),
               onClick: function() {
                 birdsRef.current = makeFlock(birdCount);
                 if (beep) beep(880, 0.06, 0.08);
                 if (announceToSR) announceToSR('Birds scattered randomly');
               }
-            }, '\uD83C\uDF2A\uFE0F Scatter'),
+            }, t('stem.migration.scatter', '\uD83C\uDF2A\uFE0F Scatter')),
 
             // Bird count slider
             h('div', { className: 'flex items-center gap-2 ml-auto' },
@@ -858,18 +858,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
           // Info panel
           h('div', { className: 'rounded-xl p-4 border ' + borderCol + ' ' + cardBg },
-            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, '\uD83E\uDEBF How V-Formation Works'),
+            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, t('stem.migration.how_v_formation_works', '\uD83E\uDEBF How V-Formation Works')),
             h('div', { className: 'text-xs leading-relaxed space-y-2 ' + textSecondary },
-              h('p', null, 'When a bird flaps its wings, it creates a rotating vortex of air off each wingtip. The air immediately behind and below the wingtip pushes ', h('strong', null, 'downward'), ' (downwash), but the air to the side pushes ', h('strong', null, 'upward'), ' (upwash).'),
-              h('p', null, 'By positioning themselves in the upwash zone \u2014 roughly 30\u00B0 behind and to the side of the bird ahead \u2014 trailing birds get a free boost of rising air. In real flocks this saves roughly ', h('strong', null, '10\u201330%'), ' of their energy (', h('strong', null, '~65%'), ' is a theoretical maximum).'),
-              h('p', null, 'The leader gets no benefit and tires faster. When its energy drops below 30%, it falls back and another bird takes the lead. This is called ', h('strong', null, 'leader rotation'), '. In nature, every bird takes a turn at the front.'),
-              h('p', null, h('em', null, 'Try dragging birds into different positions and watch how formation efficiency and energy savings change! Press V to auto-form, S to scatter.'))
+              h('p', null, t('stem.migration.when_a_bird_flaps_its_wings_it_creates', 'When a bird flaps its wings, it creates a rotating vortex of air off each wingtip. The air immediately behind and below the wingtip pushes '), h('strong', null, 'downward'), t('stem.migration.downwash_but_the_air_to_the_side_pushe', ' (downwash), but the air to the side pushes '), h('strong', null, 'upward'), ' (upwash).'),
+              h('p', null, t('stem.migration.by_positioning_themselves_in_the_upwas', 'By positioning themselves in the upwash zone \u2014 roughly 30\u00B0 behind and to the side of the bird ahead \u2014 trailing birds get a free boost of rising air. In real flocks this saves roughly '), h('strong', null, '10\u201330%'), t('stem.migration.of_their_energy', ' of their energy ('), h('strong', null, '~65%'), t('stem.migration.is_a_theoretical_maximum', ' is a theoretical maximum).')),
+              h('p', null, t('stem.migration.the_leader_gets_no_benefit_and_tires_f', 'The leader gets no benefit and tires faster. When its energy drops below 30%, it falls back and another bird takes the lead. This is called '), h('strong', null, t('stem.migration.leader_rotation', 'leader rotation')), t('stem.migration.in_nature_every_bird_takes_a_turn_at_t', '. In nature, every bird takes a turn at the front.')),
+              h('p', null, h('em', null, t('stem.migration.try_dragging_birds_into_different_posi', 'Try dragging birds into different positions and watch how formation efficiency and energy savings change! Press V to auto-form, S to scatter.')))
             )
           ),
 
           // Formation science cards
           h('div', { className: 'space-y-2' },
-            h('h3', { className: 'font-bold text-sm ' + textPrimary }, '\uD83D\uDD2C Formation Science'),
+            h('h3', { className: 'font-bold text-sm ' + textPrimary }, t('stem.migration.formation_science', '\uD83D\uDD2C Formation Science')),
             h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
               FORMATION_FACTS.map(function(fact, fi) {
                 var isExpanded = d.expandedFact === fi;
@@ -897,7 +897,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
           // Migration records
           h('div', { className: 'rounded-xl p-4 border ' + borderCol + ' ' + cardBg },
-            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, '\uD83C\uDFC6 Migration World Records'),
+            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, t('stem.migration.migration_world_records', '\uD83C\uDFC6 Migration World Records')),
             h('div', { className: 'space-y-1.5' },
               MIGRATION_RECORDS.map(function(rec, ri) {
                 return h('div', { key: ri, className: 'flex items-start gap-2 text-[11px]' },
@@ -933,8 +933,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             var foodEquivalent = Math.round(totalCost / 2); // ~2 kcal per insect
 
             return h('div', { className: 'rounded-xl p-4 border ' + borderCol + ' ' + cardBg },
-              h('h3', { className: 'font-bold text-sm mb-3 ' + textPrimary }, '\u26A1 Energy Budget Calculator'),
-              h('p', { className: 'text-[11px] mb-3 ' + textSecondary }, 'Adjust the sliders to see how distance, body size, wind, and formation affect a bird\'s energy needs. This models the real physics of migratory flight.'),
+              h('h3', { className: 'font-bold text-sm mb-3 ' + textPrimary }, t('stem.migration.energy_budget_calculator', '\u26A1 Energy Budget Calculator')),
+              h('p', { className: 'text-[11px] mb-3 ' + textSecondary }, t('stem.migration.adjust_the_sliders_to_see_how_distance', 'Adjust the sliders to see how distance, body size, wind, and formation affect a bird\'s energy needs. This models the real physics of migratory flight.')),
               h('div', { className: 'grid grid-cols-2 gap-3 mb-3' },
                 // Distance slider
                 h('div', null,
@@ -978,24 +978,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2', 'aria-live': 'polite' },
                 h('div', { className: 'text-center p-2 rounded-lg ' + accentBg },
                   h('div', { className: 'text-lg font-black ' + accent }, Math.round(totalCost).toLocaleString()),
-                  h('div', { className: 'text-[11px] font-bold ' + textMuted }, 'kcal needed')
+                  h('div', { className: 'text-[11px] font-bold ' + textMuted }, t('stem.migration.kcal_needed', 'kcal needed'))
                 ),
                 h('div', { className: 'text-center p-2 rounded-lg ' + accentBg },
                   h('div', { className: 'text-lg font-black ' + accent }, fatNeeded.toFixed(1) + 'g'),
-                  h('div', { className: 'text-[11px] font-bold ' + textMuted }, 'fat required')
+                  h('div', { className: 'text-[11px] font-bold ' + textMuted }, t('stem.migration.fat_required', 'fat required'))
                 ),
                 h('div', { className: 'text-center p-2 rounded-lg ' + accentBg },
                   h('div', { className: 'text-lg font-black ' + (percentBodyWeight > 80 ? 'text-red-500' : accent) }, Math.round(percentBodyWeight) + '%'),
-                  h('div', { className: 'text-[11px] font-bold ' + textMuted }, 'of body weight')
+                  h('div', { className: 'text-[11px] font-bold ' + textMuted }, t('stem.migration.of_body_weight', 'of body weight'))
                 ),
                 h('div', { className: 'text-center p-2 rounded-lg ' + accentBg },
                   h('div', { className: 'text-lg font-black ' + accent }, foodEquivalent.toLocaleString()),
-                  h('div', { className: 'text-[11px] font-bold ' + textMuted }, 'insects equivalent')
+                  h('div', { className: 'text-[11px] font-bold ' + textMuted }, t('stem.migration.insects_equivalent', 'insects equivalent'))
                 )
               ),
               h('div', { className: 'mt-2 text-[11px] leading-relaxed ' + textSecondary },
-                h('p', null, '\uD83D\uDD2C ', h('strong', null, 'The science: '), 'Bird flight costs ~12x their resting metabolic rate (Kleiber\'s Law). Fat provides 9 kcal/g \u2014 the most energy-dense fuel in biology. Before migration, birds enter ', h('strong', null, 'hyperphagia'), ' \u2014 a feeding frenzy where they may double their body weight in fat. A Bar-tailed Godwit burns through ', h('strong', null, '55% of its body weight'), ' during its 7,145-mile non-stop flight from Alaska to New Zealand.'),
-                percentBodyWeight > 100 && h('p', { className: 'mt-1 font-bold text-red-500' }, '\u26A0\uFE0F This journey requires more fat than the bird weighs! It would need stopovers to refuel \u2014 or V-formation to cut costs.')
+                h('p', null, '\uD83D\uDD2C ', h('strong', null, t('stem.migration.the_science', 'The science: ')), t('stem.migration.bird_flight_costs_12x_their_resting_me', 'Bird flight costs ~12x their resting metabolic rate (Kleiber\'s Law). Fat provides 9 kcal/g \u2014 the most energy-dense fuel in biology. Before migration, birds enter '), h('strong', null, 'hyperphagia'), t('stem.migration.a_feeding_frenzy_where_they_may_double', ' \u2014 a feeding frenzy where they may double their body weight in fat. A Bar-tailed Godwit burns through '), h('strong', null, t('stem.migration.55_of_its_body_weight', '55% of its body weight')), t('stem.migration.during_its_7_145_mile_non_stop_flight_', ' during its 7,145-mile non-stop flight from Alaska to New Zealand.')),
+                percentBodyWeight > 100 && h('p', { className: 'mt-1 font-bold text-red-500' }, t('stem.migration.this_journey_requires_more_fat_than_th', '\u26A0\uFE0F This journey requires more fat than the bird weighs! It would need stopovers to refuel \u2014 or V-formation to cut costs.'))
               )
             );
           })(),
@@ -1010,8 +1010,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             var windAtAlt = Math.round(10 + altFeet / 500); // winds increase with altitude
 
             return h('div', { className: 'rounded-xl p-4 border ' + borderCol + ' ' + cardBg },
-              h('h3', { className: 'font-bold text-sm mb-3 ' + textPrimary }, '\u2708\uFE0F Altitude Physiology'),
-              h('p', { className: 'text-[11px] mb-3 ' + textSecondary }, 'Some birds migrate at extreme altitudes \u2014 Bar-headed Geese cross the Himalayas at 29,000 feet. Drag the slider to see how conditions change.'),
+              h('h3', { className: 'font-bold text-sm mb-3 ' + textPrimary }, t('stem.migration.altitude_physiology', '\u2708\uFE0F Altitude Physiology')),
+              h('p', { className: 'text-[11px] mb-3 ' + textSecondary }, t('stem.migration.some_birds_migrate_at_extreme_altitude', 'Some birds migrate at extreme altitudes \u2014 Bar-headed Geese cross the Himalayas at 29,000 feet. Drag the slider to see how conditions change.')),
               h('div', { className: 'mb-3' },
                 h('label', { className: 'text-[11px] font-bold ' + textPrimary }, '\u2B06\uFE0F Altitude: ' + altFeet.toLocaleString() + ' ft (' + Math.round(altFeet * 0.3048) + ' m)'),
                 h('input', { type: 'range', min: 0, max: 37000, step: 500, value: altFeet,
@@ -1041,22 +1041,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                     h('div', { className: 'absolute bottom-0 w-full rounded-b-lg transition-all duration-300 bg-purple-500', style: { height: airDensity + '%' } })
                   ),
                   h('div', { className: 'text-sm font-black mt-1 ' + textPrimary }, Math.round(airDensity) + '%'),
-                  h('div', { className: 'text-[11px] font-bold ' + textMuted }, 'Air density')
+                  h('div', { className: 'text-[11px] font-bold ' + textMuted }, t('stem.migration.air_density', 'Air density'))
                 ),
                 h('div', { className: 'text-center' },
                   h('div', { className: 'h-24 rounded-lg overflow-hidden relative ' + (isDark ? 'bg-slate-700' : 'bg-slate-200') },
                     h('div', { className: 'absolute bottom-0 w-full rounded-b-lg transition-all duration-300 bg-cyan-500', style: { height: Math.min(100, windAtAlt / 80 * 100) + '%' } })
                   ),
                   h('div', { className: 'text-sm font-black mt-1 ' + textPrimary }, windAtAlt + ' mph'),
-                  h('div', { className: 'text-[11px] font-bold ' + textMuted }, 'Wind')
+                  h('div', { className: 'text-[11px] font-bold ' + textMuted }, t('stem.migration.wind', 'Wind'))
                 )
               ),
               // Science context
               h('div', { className: 'mt-3 text-[11px] leading-relaxed ' + textSecondary },
-                altFeet > 25000 ? h('p', null, '\u{1F9EC} ', h('strong', null, 'Extreme altitude! '), 'Bar-headed Geese survive here thanks to hemoglobin that binds oxygen more tightly, larger lungs, and more efficient mitochondria. Most mammals would be unconscious at this altitude. Their blood has a special hemoglobin mutation (Pro\u2192Ala at position 119) that increases oxygen affinity by 50%.') :
-                altFeet > 15000 ? h('p', null, '\u{1F9EC} ', h('strong', null, 'High altitude zone. '), 'Many songbirds migrate at this range, where thinner air reduces drag but oxygen is scarce. Birds compensate with more efficient breathing \u2014 their one-way airflow system extracts oxygen on both inhale and exhale, unlike mammalian lungs which only extract on inhale.') :
-                altFeet > 5000 ? h('p', null, '\uD83D\uDC26 ', h('strong', null, 'Common cruising altitude. '), 'Most migrants fly between 5,000-15,000 feet. Air temperature drops ~3.5\u00B0F per 1,000 feet (standard lapse rate). Birds choose altitude to find favorable winds \u2014 the same bird may fly at 2,000 feet one night and 12,000 the next.') :
-                h('p', null, '\uD83C\uDF3F ', h('strong', null, 'Low altitude. '), 'Hummingbirds and some shorebirds fly close to the surface, especially over water. Low flight is safer from ice but means more air resistance and less wind assistance. During the 600-mile Gulf of Mexico crossing, most birds fly at 1,000-3,000 feet.')
+                altFeet > 25000 ? h('p', null, '\u{1F9EC} ', h('strong', null, t('stem.migration.extreme_altitude', 'Extreme altitude! ')), t('stem.migration.bar_headed_geese_survive_here_thanks_t', 'Bar-headed Geese survive here thanks to hemoglobin that binds oxygen more tightly, larger lungs, and more efficient mitochondria. Most mammals would be unconscious at this altitude. Their blood has a special hemoglobin mutation (Pro\u2192Ala at position 119) that increases oxygen affinity by 50%.')) :
+                altFeet > 15000 ? h('p', null, '\u{1F9EC} ', h('strong', null, t('stem.migration.high_altitude_zone', 'High altitude zone. ')), t('stem.migration.many_songbirds_migrate_at_this_range_w', 'Many songbirds migrate at this range, where thinner air reduces drag but oxygen is scarce. Birds compensate with more efficient breathing \u2014 their one-way airflow system extracts oxygen on both inhale and exhale, unlike mammalian lungs which only extract on inhale.')) :
+                altFeet > 5000 ? h('p', null, '\uD83D\uDC26 ', h('strong', null, t('stem.migration.common_cruising_altitude', 'Common cruising altitude. ')), t('stem.migration.most_migrants_fly_between_5_000_15_000', 'Most migrants fly between 5,000-15,000 feet. Air temperature drops ~3.5\u00B0F per 1,000 feet (standard lapse rate). Birds choose altitude to find favorable winds \u2014 the same bird may fly at 2,000 feet one night and 12,000 the next.')) :
+                h('p', null, '\uD83C\uDF3F ', h('strong', null, t('stem.migration.low_altitude', 'Low altitude. ')), t('stem.migration.hummingbirds_and_some_shorebirds_fly_c', 'Hummingbirds and some shorebirds fly close to the surface, especially over water. Low flight is safer from ice but means more air resistance and less wind assistance. During the 600-mile Gulf of Mexico crossing, most birds fly at 1,000-3,000 feet.'))
               )
             );
           })()
@@ -1080,11 +1080,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         var placingObj = d.placingObj || null; // 'mountain', 'building', 'lake', 'thermal', 'forest'
 
         var PLACEABLE = [
-          { id: 'mountain', emoji: '\u26F0\uFE0F', label: 'Mountain', desc: 'Deflects wind upward on windward side' },
-          { id: 'building', emoji: '\uD83C\uDFE2', label: 'Building', desc: 'Creates turbulent wake' },
-          { id: 'lake', emoji: '\uD83C\uDF0A', label: 'Lake', desc: 'Sea breeze thermal effect' },
-          { id: 'thermal', emoji: '\uD83C\uDF00', label: 'Thermal', desc: 'Rising warm air column' },
-          { id: 'forest', emoji: '\uD83C\uDF32', label: 'Forest', desc: 'Friction slows wind near surface' }
+          { id: 'mountain', emoji: '\u26F0\uFE0F', label: t('stem.migration.mountain', 'Mountain'), desc: t('stem.migration.deflects_wind_upward_on_windward_side', 'Deflects wind upward on windward side') },
+          { id: 'building', emoji: '\uD83C\uDFE2', label: t('stem.migration.building', 'Building'), desc: t('stem.migration.creates_turbulent_wake', 'Creates turbulent wake') },
+          { id: 'lake', emoji: '\uD83C\uDF0A', label: t('stem.migration.lake', 'Lake'), desc: t('stem.migration.sea_breeze_thermal_effect', 'Sea breeze thermal effect') },
+          { id: 'thermal', emoji: '\uD83C\uDF00', label: t('stem.migration.thermal', 'Thermal'), desc: t('stem.migration.rising_warm_air_column', 'Rising warm air column') },
+          { id: 'forest', emoji: '\uD83C\uDF32', label: t('stem.migration.forest', 'Forest'), desc: t('stem.migration.friction_slows_wind_near_surface', 'Friction slows wind near surface') }
         ];
 
         var COMPASS_DIRS = [
@@ -1419,7 +1419,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
             h('button', {
               className: 'px-2 py-1.5 rounded-lg text-xs font-bold ' + btnSecondary,
-              'aria-label': 'Add a bird to ride the wind currents',
+              'aria-label': t('stem.migration.add_a_bird_to_ride_the_wind_currents', 'Add a bird to ride the wind currents'),
               onClick: function() {
                 var wb = windBirdsRef.current || [];
                 wb.push({ x: 50, y: 100 + Math.random() * 150, vx: 0, vy: 0, phase: Math.random() * 6 });
@@ -1427,11 +1427,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 if (beep) beep(880, 0.06, 0.08);
                 if (announceToSR) announceToSR('Bird added to wind field');
               }
-            }, '\uD83D\uDC26 Add Bird'),
+            }, t('stem.migration.add_bird', '\uD83D\uDC26 Add Bird')),
 
             h('button', {
               className: 'px-2 py-1.5 rounded-lg text-xs font-bold ' + btnSecondary,
-              'aria-label': 'Clear all objects and birds',
+              'aria-label': t('stem.migration.clear_all_objects_and_birds', 'Clear all objects and birds'),
               onClick: function() {
                 objectsRef.current = [];
                 windBirdsRef.current = [];
@@ -1439,7 +1439,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 if (beep) beep(880, 0.06, 0.08);
                 if (announceToSR) announceToSR('All objects and birds cleared');
               }
-            }, '\uD83D\uDDD1\uFE0F Clear All'),
+            }, t('stem.migration.clear_all', '\uD83D\uDDD1\uFE0F Clear All')),
 
             h('button', {
               className: 'px-2 py-1.5 rounded-lg text-xs font-bold ' + (showStreamlines ? btnPrimary : btnSecondary),
@@ -1455,7 +1455,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('div', {
               className: 'flex flex-wrap gap-1',
               role: 'radiogroup',
-              'aria-label': 'Wind direction',
+              'aria-label': t('stem.migration.wind_direction', 'Wind direction'),
               onKeyDown: function(e) {
                 if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
                   e.preventDefault();
@@ -1486,7 +1486,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
             // Speed slider
             h('div', { className: 'flex items-center gap-2 flex-1 min-w-[180px]' },
-              h('label', { className: 'text-xs font-medium ' + textSecondary }, '\uD83C\uDF2C\uFE0F Wind:'),
+              h('label', { className: 'text-xs font-medium ' + textSecondary }, t('stem.migration.wind_2', '\uD83C\uDF2C\uFE0F Wind:')),
               h('input', {
                 type: 'range', min: 0, max: 50, value: windSpeed,
                 'aria-label': 'Wind speed: ' + windSpeed + ' mph, ' + getBeaufort(windSpeed),
@@ -1500,15 +1500,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
           // Wind science info
           h('div', { className: 'rounded-xl p-4 border ' + borderCol + ' ' + cardBg },
-            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, '\uD83C\uDF2C\uFE0F Wind Science for Migrators'),
+            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, t('stem.migration.wind_science_for_migrators', '\uD83C\uDF2C\uFE0F Wind Science for Migrators')),
             h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
               [
-                { title: 'Thermals', emoji: '\uD83C\uDF00', text: 'Thermals are columns of rising warm air created when the sun heats the ground unevenly. Dark surfaces (parking lots, plowed fields) create stronger thermals than light surfaces (water, forests). Soaring birds like hawks and eagles ride thermals in spiraling circles, gaining altitude without flapping. They then glide to the next thermal, creating an energy-efficient "thermal street" highway in the sky.' },
-                { title: 'Orographic Lift', emoji: '\u26F0\uFE0F', text: 'When wind encounters a mountain, it is forced upward along the windward slope. This creates a band of rising air that ridge-soaring birds (like golden eagles) exploit. On the leeward (downwind) side, the air descends rapidly creating a dangerous "rotor" zone of turbulent, sinking air. This is why birds and pilots avoid the lee side of mountains.' },
-                { title: 'Sea Breezes', emoji: '\uD83C\uDF0A', text: 'Land heats faster than water during the day. Hot air rises over land, and cooler air flows in from the sea to replace it \u2014 creating an onshore "sea breeze." At night, the pattern reverses. Migrating birds use these predictable coastal winds to conserve energy. The convergence zone where sea breeze meets inland air often creates thermals that birds use to gain altitude.' },
-                { title: 'Jet Streams', emoji: '\u2708\uFE0F', text: 'High-altitude jet streams are narrow bands of very fast wind (100-200 mph) at 30,000-40,000 feet. While most birds fly far below jet streams, some migrants like the Bar-tailed Godwit climb to 20,000+ feet to catch favorable high-altitude winds. Geese have been detected by radar at 29,000 feet over the Himalayas, where oxygen is scarce and temperatures plunge to -50\u00B0F.' },
-                { title: 'Wind Shear', emoji: '\u26A0\uFE0F', text: 'Wind shear is a sudden change in wind speed or direction over a short distance. It is dangerous for both birds and aircraft. Microbursts (sudden columns of sinking air) during thunderstorms create intense wind shear near the ground. Birds sense pressure changes and will often delay migration when storm fronts approach.' },
-                { title: 'Beaufort Scale', emoji: '\uD83D\uDCCF', text: 'Admiral Sir Francis Beaufort created his wind scale in 1805 based on the effect of wind on sailing ships. Modern Beaufort uses ground observations: Force 0 (Calm) = smoke rises vertically; Force 6 (Strong Breeze) = large branches sway, umbrellas turn inside out; Force 12 (Hurricane) = devastation. Most birds prefer to migrate in Force 2-4 winds (Light to Moderate Breeze).' }
+                { title: t('stem.migration.thermals', 'Thermals'), emoji: '\uD83C\uDF00', text: t('stem.migration.thermals_are_columns_of_rising_warm_ai', 'Thermals are columns of rising warm air created when the sun heats the ground unevenly. Dark surfaces (parking lots, plowed fields) create stronger thermals than light surfaces (water, forests). Soaring birds like hawks and eagles ride thermals in spiraling circles, gaining altitude without flapping. They then glide to the next thermal, creating an energy-efficient "thermal street" highway in the sky.') },
+                { title: t('stem.migration.orographic_lift', 'Orographic Lift'), emoji: '\u26F0\uFE0F', text: t('stem.migration.when_wind_encounters_a_mountain_it_is_', 'When wind encounters a mountain, it is forced upward along the windward slope. This creates a band of rising air that ridge-soaring birds (like golden eagles) exploit. On the leeward (downwind) side, the air descends rapidly creating a dangerous "rotor" zone of turbulent, sinking air. This is why birds and pilots avoid the lee side of mountains.') },
+                { title: t('stem.migration.sea_breezes', 'Sea Breezes'), emoji: '\uD83C\uDF0A', text: t('stem.migration.land_heats_faster_than_water_during_th', 'Land heats faster than water during the day. Hot air rises over land, and cooler air flows in from the sea to replace it \u2014 creating an onshore "sea breeze." At night, the pattern reverses. Migrating birds use these predictable coastal winds to conserve energy. The convergence zone where sea breeze meets inland air often creates thermals that birds use to gain altitude.') },
+                { title: t('stem.migration.jet_streams', 'Jet Streams'), emoji: '\u2708\uFE0F', text: t('stem.migration.high_altitude_jet_streams_are_narrow_b', 'High-altitude jet streams are narrow bands of very fast wind (100-200 mph) at 30,000-40,000 feet. While most birds fly far below jet streams, some migrants like the Bar-tailed Godwit climb to 20,000+ feet to catch favorable high-altitude winds. Geese have been detected by radar at 29,000 feet over the Himalayas, where oxygen is scarce and temperatures plunge to -50\u00B0F.') },
+                { title: t('stem.migration.wind_shear', 'Wind Shear'), emoji: '\u26A0\uFE0F', text: t('stem.migration.wind_shear_is_a_sudden_change_in_wind_', 'Wind shear is a sudden change in wind speed or direction over a short distance. It is dangerous for both birds and aircraft. Microbursts (sudden columns of sinking air) during thunderstorms create intense wind shear near the ground. Birds sense pressure changes and will often delay migration when storm fronts approach.') },
+                { title: t('stem.migration.beaufort_scale', 'Beaufort Scale'), emoji: '\uD83D\uDCCF', text: t('stem.migration.admiral_sir_francis_beaufort_created_h', 'Admiral Sir Francis Beaufort created his wind scale in 1805 based on the effect of wind on sailing ships. Modern Beaufort uses ground observations: Force 0 (Calm) = smoke rises vertically; Force 6 (Strong Breeze) = large branches sway, umbrellas turn inside out; Force 12 (Hurricane) = devastation. Most birds prefer to migrate in Force 2-4 winds (Light to Moderate Breeze).') }
               ].map(function(card) {
                 return h('div', { key: card.title, className: 'rounded-lg p-3 border ' + borderCol + ' ' + (isDark ? 'bg-slate-700/50' : 'bg-white') },
                   h('div', { className: 'flex items-center gap-1.5 mb-1' },
@@ -1523,39 +1523,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
           // How birds use wind
           h('div', { className: 'rounded-xl p-4 border ' + borderCol + ' ' + cardBg },
-            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, '\uD83D\uDC26 How Birds Use Wind'),
+            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, t('stem.migration.how_birds_use_wind', '\uD83D\uDC26 How Birds Use Wind')),
             h('div', { className: 'text-xs leading-relaxed space-y-2 ' + textSecondary },
-              h('p', null, h('strong', null, 'Tail Winds: '), 'Migrants strongly prefer flying with the wind at their backs. A tailwind of just 15 mph effectively doubles a bird\'s ground speed while requiring the same energy output. Studies show that migration days with favorable tail winds see 10x more bird traffic than headwind days.'),
-              h('p', null, h('strong', null, 'Dynamic Soaring: '), 'Albatrosses exploit wind speed gradients over ocean waves. By alternating between climbing into faster wind and diving into slower wind near the surface, they extract energy from the wind shear itself. An albatross can fly thousands of miles with almost no flapping.'),
-              h('p', null, h('strong', null, 'Slope Soaring: '), 'When wind hits a cliff face or ridge, the deflected air creates a "wave" of lift along the ridge line. Raptors ride these ridge lifts during migration, stringing together mountain ridges like stepping stones. Hawk Mountain in Pennsylvania is famous for this phenomenon.'),
-              h('p', null, h('em', null, 'Experiment: Place a thermal and a mountain on the field, then add a bird. Watch how it rides the updrafts!'))
+              h('p', null, h('strong', null, t('stem.migration.tail_winds', 'Tail Winds: ')), t('stem.migration.migrants_strongly_prefer_flying_with_t', 'Migrants strongly prefer flying with the wind at their backs. A tailwind of just 15 mph effectively doubles a bird\'s ground speed while requiring the same energy output. Studies show that migration days with favorable tail winds see 10x more bird traffic than headwind days.')),
+              h('p', null, h('strong', null, t('stem.migration.dynamic_soaring', 'Dynamic Soaring: ')), t('stem.migration.albatrosses_exploit_wind_speed_gradien', 'Albatrosses exploit wind speed gradients over ocean waves. By alternating between climbing into faster wind and diving into slower wind near the surface, they extract energy from the wind shear itself. An albatross can fly thousands of miles with almost no flapping.')),
+              h('p', null, h('strong', null, t('stem.migration.slope_soaring', 'Slope Soaring: ')), t('stem.migration.when_wind_hits_a_cliff_face_or_ridge_t', 'When wind hits a cliff face or ridge, the deflected air creates a "wave" of lift along the ridge line. Raptors ride these ridge lifts during migration, stringing together mountain ridges like stepping stones. Hawk Mountain in Pennsylvania is famous for this phenomenon.')),
+              h('p', null, h('em', null, t('stem.migration.experiment_place_a_thermal_and_a_mount', 'Experiment: Place a thermal and a mountain on the field, then add a bird. Watch how it rides the updrafts!')))
             )
           ),
 
           // Weather forecasting for birds
           h('div', { className: 'rounded-xl p-4 border ' + borderCol + ' ' + cardBg },
-            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, '\uD83C\uDF26\uFE0F Birds as Weather Forecasters'),
+            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, t('stem.migration.birds_as_weather_forecasters', '\uD83C\uDF26\uFE0F Birds as Weather Forecasters')),
             h('div', { className: 'text-xs leading-relaxed space-y-2 ' + textSecondary },
-              h('p', null, 'Birds are exquisitely sensitive to weather changes and have been used as "biological barometers" throughout history:'),
+              h('p', null, t('stem.migration.birds_are_exquisitely_sensitive_to_wea', 'Birds are exquisitely sensitive to weather changes and have been used as "biological barometers" throughout history:')),
               h('ul', { className: 'list-disc pl-4 space-y-1' },
-                h('li', null, h('strong', null, 'Barometric Pressure: '), 'Birds can detect changes in barometric pressure through specialized receptors in their middle ear (the paratympanic organ). When pressure drops before a storm, birds often fly lower and feed more intensely. Swallows flying low is a classic storm predictor.'),
-                h('li', null, h('strong', null, 'Infrasound: '), 'Some birds can hear infrasound (below 20 Hz) generated by distant storms, ocean waves, and even earthquakes. Golden-winged Warblers evacuated Tennessee 24 hours before a tornado system arrived in 2014, detected by GPS trackers. They flew 900+ miles to avoid the storms.'),
-                h('li', null, h('strong', null, 'Cold Fronts: '), 'Autumn migration is strongly correlated with cold front passage. Birds ride the northwesterly winds behind cold fronts, which provide both tailwinds and clear skies. Experienced birders watch weather maps to predict peak migration nights.'),
-                h('li', null, h('strong', null, 'Fog: '), 'Fog is dangerous for migrating birds because it obscures landmarks and celestial navigation cues. Foggy nights with low cloud ceilings cause "fallouts" where exhausted migrants land en masse at the first available habitat. These events, while stressful for birds, create spectacular birding opportunities.')
+                h('li', null, h('strong', null, t('stem.migration.barometric_pressure', 'Barometric Pressure: ')), t('stem.migration.birds_can_detect_changes_in_barometric', 'Birds can detect changes in barometric pressure through specialized receptors in their middle ear (the paratympanic organ). When pressure drops before a storm, birds often fly lower and feed more intensely. Swallows flying low is a classic storm predictor.')),
+                h('li', null, h('strong', null, 'Infrasound: '), t('stem.migration.some_birds_can_hear_infrasound_below_2', 'Some birds can hear infrasound (below 20 Hz) generated by distant storms, ocean waves, and even earthquakes. Golden-winged Warblers evacuated Tennessee 24 hours before a tornado system arrived in 2014, detected by GPS trackers. They flew 900+ miles to avoid the storms.')),
+                h('li', null, h('strong', null, t('stem.migration.cold_fronts', 'Cold Fronts: ')), t('stem.migration.autumn_migration_is_strongly_correlate', 'Autumn migration is strongly correlated with cold front passage. Birds ride the northwesterly winds behind cold fronts, which provide both tailwinds and clear skies. Experienced birders watch weather maps to predict peak migration nights.')),
+                h('li', null, h('strong', null, 'Fog: '), t('stem.migration.fog_is_dangerous_for_migrating_birds_b', 'Fog is dangerous for migrating birds because it obscures landmarks and celestial navigation cues. Foggy nights with low cloud ceilings cause "fallouts" where exhausted migrants land en masse at the first available habitat. These events, while stressful for birds, create spectacular birding opportunities.'))
               ),
-              h('p', { className: 'mt-2 italic' }, '"When the swallows fly high, the weather will be dry. When the swallows fly low, rain is on the go." \u2014 This folk saying is actually scientifically accurate: insects (swallow food) fly higher in high-pressure systems and lower before storms.')
+              h('p', { className: 'mt-2 italic' }, t('stem.migration.when_the_swallows_fly_high_the_weather', '"When the swallows fly high, the weather will be dry. When the swallows fly low, rain is on the go." \u2014 This folk saying is actually scientifically accurate: insects (swallow food) fly higher in high-pressure systems and lower before storms.'))
             )
           ),
 
           // Particle physics legend
           h('div', { className: 'rounded-lg p-3 border ' + borderCol + ' ' + (isDark ? 'bg-slate-700/50' : 'bg-sky-50/50') },
-            h('div', { className: 'text-[11px] font-bold mb-1 ' + textPrimary }, '\uD83C\uDFA8 Particle Color Guide'),
+            h('div', { className: 'text-[11px] font-bold mb-1 ' + textPrimary }, t('stem.migration.particle_color_guide', '\uD83C\uDFA8 Particle Color Guide')),
             h('div', { className: 'flex flex-wrap gap-3 text-[11px] ' + textSecondary },
-              h('span', null, h('span', { style: { color: '#7dd3fc' } }, '\u25CF'), ' Light blue = slow wind'),
-              h('span', null, h('span', { style: { color: 'var(--allo-stem-text, #ffffff)' } }, '\u25CF'), ' White = moderate wind'),
-              h('span', null, h('span', { style: { color: '#fbbf24' } }, '\u25CF'), ' Yellow = fast wind'),
-              h('span', null, h('span', { style: { color: '#22c55e', fontSize: '8px' } }, '\u25CF'), ' Green zone = upwash (rising air)'),
-              h('span', null, h('span', { style: { color: '#ef4444', fontSize: '8px' } }, '\u25CF'), ' Red zone = downwash (sinking air)')
+              h('span', null, h('span', { style: { color: '#7dd3fc' } }, '\u25CF'), t('stem.migration.light_blue_slow_wind', ' Light blue = slow wind')),
+              h('span', null, h('span', { style: { color: 'var(--allo-stem-text, #ffffff)' } }, '\u25CF'), t('stem.migration.white_moderate_wind', ' White = moderate wind')),
+              h('span', null, h('span', { style: { color: '#fbbf24' } }, '\u25CF'), t('stem.migration.yellow_fast_wind', ' Yellow = fast wind')),
+              h('span', null, h('span', { style: { color: '#22c55e', fontSize: '8px' } }, '\u25CF'), t('stem.migration.green_zone_upwash_rising_air', ' Green zone = upwash (rising air)')),
+              h('span', null, h('span', { style: { color: '#ef4444', fontSize: '8px' } }, '\u25CF'), t('stem.migration.red_zone_downwash_sinking_air', ' Red zone = downwash (sinking air)'))
             )
           )
         );
@@ -1608,12 +1608,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
         // Stopover markers
         var STOPOVERS = [
-          { name: 'Delaware Bay', x: 430, y: 185, flyway: 'atlantic', fact: 'Over 1 million shorebirds stop here to feast on horseshoe crab eggs' },
-          { name: 'Gulf Coast', x: 350, y: 280, flyway: 'atlantic', fact: 'Critical rest stop after the 500-mile Gulf of Mexico crossing' },
-          { name: 'Platte River, NE', x: 290, y: 170, flyway: 'central', fact: '600,000 Sandhill Cranes gather here each spring \u2014 one of nature\'s greatest spectacles' },
-          { name: 'Great Salt Lake', x: 200, y: 170, flyway: 'pacific', fact: '5 million migratory birds depend on this inland sea as a refueling station' },
-          { name: 'Mississippi Delta', x: 330, y: 275, flyway: 'mississippi', fact: 'Wetlands here support 40% of North America\'s migratory waterfowl' },
-          { name: 'Chesapeake Bay', x: 430, y: 200, flyway: 'atlantic', fact: 'Largest estuary in the US \u2014 critical wintering habitat for ducks and geese' }
+          { name: t('stem.migration.delaware_bay', 'Delaware Bay'), x: 430, y: 185, flyway: 'atlantic', fact: t('stem.migration.over_1_million_shorebirds_stop_here_to', 'Over 1 million shorebirds stop here to feast on horseshoe crab eggs') },
+          { name: t('stem.migration.gulf_coast', 'Gulf Coast'), x: 350, y: 280, flyway: 'atlantic', fact: t('stem.migration.critical_rest_stop_after_the_500_mile_', 'Critical rest stop after the 500-mile Gulf of Mexico crossing') },
+          { name: t('stem.migration.platte_river_ne', 'Platte River, NE'), x: 290, y: 170, flyway: 'central', fact: t('stem.migration.600_000_sandhill_cranes_gather_here_ea', '600,000 Sandhill Cranes gather here each spring \u2014 one of nature\'s greatest spectacles') },
+          { name: t('stem.migration.great_salt_lake', 'Great Salt Lake'), x: 200, y: 170, flyway: 'pacific', fact: t('stem.migration.5_million_migratory_birds_depend_on_th', '5 million migratory birds depend on this inland sea as a refueling station') },
+          { name: t('stem.migration.mississippi_delta', 'Mississippi Delta'), x: 330, y: 275, flyway: 'mississippi', fact: t('stem.migration.wetlands_here_support_40_of_north_amer', 'Wetlands here support 40% of North America\'s migratory waterfowl') },
+          { name: t('stem.migration.chesapeake_bay', 'Chesapeake Bay'), x: 430, y: 200, flyway: 'atlantic', fact: t('stem.migration.largest_estuary_in_the_us_critical_win', 'Largest estuary in the US \u2014 critical wintering habitat for ducks and geese') }
         ];
 
         var _rtInitCanvas = function(canvas) {
@@ -1768,10 +1768,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.textAlign = 'left';
             c.fillText('Flyways', W - 125, H - 57);
             var legendItems = [
-              { color: '#3b82f6', label: 'Atlantic' },
-              { color: '#22c55e', label: 'Mississippi' },
-              { color: '#f59e0b', label: 'Central' },
-              { color: '#ef4444', label: 'Pacific' }
+              { color: '#3b82f6', label: t('stem.migration.atlantic', 'Atlantic') },
+              { color: '#22c55e', label: t('stem.migration.mississippi', 'Mississippi') },
+              { color: '#f59e0b', label: t('stem.migration.central', 'Central') },
+              { color: '#ef4444', label: t('stem.migration.pacific', 'Pacific') }
             ];
             for (var li2 = 0; li2 < legendItems.length; li2++) {
               var ly = H - 46 + li2 * 12;
@@ -1989,10 +1989,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               ),
               h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2 text-center' },
                 [
-                  { label: 'Distance', value: sp.distance.toLocaleString() + ' mi' },
-                  { label: 'Speed', value: sp.speed + ' mph' },
-                  { label: 'Altitude', value: sp.altitude.toLocaleString() + ' ft' },
-                  { label: 'Formation', value: sp.formation }
+                  { label: t('stem.migration.distance', 'Distance'), value: sp.distance.toLocaleString() + ' mi' },
+                  { label: t('stem.migration.speed', 'Speed'), value: sp.speed + ' mph' },
+                  { label: t('stem.migration.altitude', 'Altitude'), value: sp.altitude.toLocaleString() + ' ft' },
+                  { label: t('stem.migration.formation', 'Formation'), value: sp.formation }
                 ].map(function(stat) {
                   return h('div', { key: stat.label, className: 'rounded-lg p-2 ' + (isDark ? 'bg-slate-700' : 'bg-white') },
                     h('div', { className: 'text-xs font-bold ' + accent }, stat.value),
@@ -2003,7 +2003,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               h('div', { className: 'text-xs ' + textSecondary },
                 h('div', { className: 'mb-1' }, h('strong', null, 'Breeding: '), sp.breedingRange),
                 h('div', { className: 'mb-1' }, h('strong', null, 'Wintering: '), sp.winterRange),
-                h('div', null, h('strong', null, 'Fun Fact: '), sp.funFact)
+                h('div', null, h('strong', null, t('stem.migration.fun_fact', 'Fun Fact: ')), sp.funFact)
               ),
 
               // AI Explorer
@@ -2021,13 +2021,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
           // Flyway comparison table
           h('div', { className: 'rounded-xl p-4 border ' + borderCol + ' ' + cardBg },
-            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, '\uD83D\uDDFA\uFE0F The Four North American Flyways'),
+            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, t('stem.migration.the_four_north_american_flyways', '\uD83D\uDDFA\uFE0F The Four North American Flyways')),
             h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
               [
-                { name: 'Atlantic', color: '#3b82f6', emoji: '\uD83C\uDF0A', birds: '~500 species', terrain: 'Coastal marshes, barrier islands, estuaries', key: 'Delaware Bay, Chesapeake Bay stopover sites' },
-                { name: 'Mississippi', color: '#22c55e', emoji: '\uD83C\uDF3F', birds: '~325 species', terrain: 'River bottomlands, wetlands, delta marshes', key: 'Mississippi River acts as a north-south highway' },
-                { name: 'Central', color: '#f59e0b', emoji: '\uD83C\uDF3E', birds: '~300 species', terrain: 'Great Plains, prairies, playas', key: 'Platte River hosts 600,000 Sandhill Cranes each spring' },
-                { name: 'Pacific', color: '#ef4444', emoji: '\uD83C\uDF0B', birds: '~350 species', terrain: 'Coastline, mountains, inland valleys', key: 'Pacific Coast provides continuous north-south corridor' }
+                { name: t('stem.migration.atlantic_2', 'Atlantic'), color: '#3b82f6', emoji: '\uD83C\uDF0A', birds: '~500 species', terrain: 'Coastal marshes, barrier islands, estuaries', key: 'Delaware Bay, Chesapeake Bay stopover sites' },
+                { name: t('stem.migration.mississippi_2', 'Mississippi'), color: '#22c55e', emoji: '\uD83C\uDF3F', birds: '~325 species', terrain: 'River bottomlands, wetlands, delta marshes', key: 'Mississippi River acts as a north-south highway' },
+                { name: t('stem.migration.central_2', 'Central'), color: '#f59e0b', emoji: '\uD83C\uDF3E', birds: '~300 species', terrain: 'Great Plains, prairies, playas', key: 'Platte River hosts 600,000 Sandhill Cranes each spring' },
+                { name: t('stem.migration.pacific_2', 'Pacific'), color: '#ef4444', emoji: '\uD83C\uDF0B', birds: '~350 species', terrain: 'Coastline, mountains, inland valleys', key: 'Pacific Coast provides continuous north-south corridor' }
               ].map(function(fw) {
                 return h('div', { key: fw.name, className: 'rounded-lg p-3 border ' + borderCol + ' ' + (isDark ? 'bg-slate-700/50' : 'bg-white') },
                   h('div', { className: 'flex items-center gap-1.5 mb-1.5' },
@@ -2046,15 +2046,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
           // Migration timing
           h('div', { className: 'rounded-xl p-4 border ' + borderCol + ' ' + cardBg },
-            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, '\uD83D\uDCC5 When Do Birds Migrate?'),
+            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, t('stem.migration.when_do_birds_migrate', '\uD83D\uDCC5 When Do Birds Migrate?')),
             h('div', { className: 'text-xs leading-relaxed space-y-2 ' + textSecondary },
-              h('p', null, 'Migration timing varies dramatically by species:'),
+              h('p', null, t('stem.migration.migration_timing_varies_dramatically_b', 'Migration timing varies dramatically by species:')),
               h('div', { className: 'grid grid-cols-2 gap-2 mt-2' },
                 [
-                  { period: 'Feb-Mar', desc: 'Early spring: Waterfowl (ducks, geese) head north following ice melt. Red-winged Blackbirds return to marshes.' },
-                  { period: 'Apr-May', desc: 'Peak spring: Warblers, vireos, tanagers flood northward. Most songbirds migrate at night. Peak nights see 500+ million birds in the air.' },
-                  { period: 'Jul-Aug', desc: 'Shorebirds start south \u2014 some species "fail" on breeding grounds and begin returning in early July. Adults often leave before juveniles.' },
-                  { period: 'Sep-Nov', desc: 'Peak fall: Raptors ride thermals along mountain ridges. Songbirds follow cold fronts south. Geese fly in V-formation at night.' }
+                  { period: 'Feb-Mar', desc: t('stem.migration.early_spring_waterfowl_ducks_geese_hea', 'Early spring: Waterfowl (ducks, geese) head north following ice melt. Red-winged Blackbirds return to marshes.') },
+                  { period: 'Apr-May', desc: t('stem.migration.peak_spring_warblers_vireos_tanagers_f', 'Peak spring: Warblers, vireos, tanagers flood northward. Most songbirds migrate at night. Peak nights see 500+ million birds in the air.') },
+                  { period: 'Jul-Aug', desc: t('stem.migration.shorebirds_start_south_some_species_fa', 'Shorebirds start south \u2014 some species "fail" on breeding grounds and begin returning in early July. Adults often leave before juveniles.') },
+                  { period: 'Sep-Nov', desc: t('stem.migration.peak_fall_raptors_ride_thermals_along_', 'Peak fall: Raptors ride thermals along mountain ridges. Songbirds follow cold fronts south. Geese fly in V-formation at night.') }
                 ].map(function(time) {
                   return h('div', { key: time.period, className: 'rounded-lg p-2 ' + (isDark ? 'bg-slate-700/50' : 'bg-sky-50') },
                     h('div', { className: 'text-[11px] font-bold ' + accent + ' mb-0.5' }, time.period),
@@ -2062,33 +2062,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   );
                 })
               ),
-              h('p', { className: 'mt-2 italic' }, 'Photoperiod (day length) is the primary trigger for migration. As days shorten in autumn, hormones trigger "Zugunruhe" \u2014 migratory restlessness \u2014 and birds begin adding fat stores (hyperphagia), sometimes doubling their body weight.')
+              h('p', { className: 'mt-2 italic' }, t('stem.migration.photoperiod_day_length_is_the_primary_', 'Photoperiod (day length) is the primary trigger for migration. As days shorten in autumn, hormones trigger "Zugunruhe" \u2014 migratory restlessness \u2014 and birds begin adding fat stores (hyperphagia), sometimes doubling their body weight.'))
             )
           ),
 
           // Stopover ecology
           h('div', { className: 'rounded-xl p-4 border ' + borderCol + ' ' + cardBg },
-            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, '\u26FA Stopover Ecology'),
+            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, t('stem.migration.stopover_ecology', '\u26FA Stopover Ecology')),
             h('div', { className: 'text-xs leading-relaxed space-y-2 ' + textSecondary },
-              h('p', null, 'Stopovers are not just rest stops \u2014 they are ', h('strong', null, 'refueling stations'), ' critical to survival. A migrating warbler may spend 75% of its migration time at stopovers, eating frantically to rebuild fat stores. Quality stopover habitat can mean the difference between life and death.'),
-              h('p', null, 'At Delaware Bay, over 1 million shorebirds (Red Knots, Ruddy Turnstones, Sanderlings) depend on horseshoe crab eggs laid in May. The timing must be perfect: the birds arrive exactly when crabs spawn. If crab populations decline (from overharvesting for bait), the entire migration chain collapses.'),
-              h('p', null, h('em', null, 'Conservation success story: After horseshoe crab harvest limits were imposed in 2012, Red Knot populations began slowly recovering from a critical low of 15,000 to over 50,000 by 2025.'))
+              h('p', null, t('stem.migration.stopovers_are_not_just_rest_stops_they', 'Stopovers are not just rest stops \u2014 they are '), h('strong', null, t('stem.migration.refueling_stations', 'refueling stations')), t('stem.migration.critical_to_survival_a_migrating_warbl', ' critical to survival. A migrating warbler may spend 75% of its migration time at stopovers, eating frantically to rebuild fat stores. Quality stopover habitat can mean the difference between life and death.')),
+              h('p', null, t('stem.migration.at_delaware_bay_over_1_million_shorebi', 'At Delaware Bay, over 1 million shorebirds (Red Knots, Ruddy Turnstones, Sanderlings) depend on horseshoe crab eggs laid in May. The timing must be perfect: the birds arrive exactly when crabs spawn. If crab populations decline (from overharvesting for bait), the entire migration chain collapses.')),
+              h('p', null, h('em', null, t('stem.migration.conservation_success_story_after_horse', 'Conservation success story: After horseshoe crab harvest limits were imposed in 2012, Red Knot populations began slowly recovering from a critical low of 15,000 to over 50,000 by 2025.')))
             )
           ),
 
           // Migration physiology
           h('div', { className: 'rounded-xl p-4 border ' + borderCol + ' ' + cardBg },
-            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, '\uD83E\uDDB4 Migration Physiology'),
+            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, t('stem.migration.migration_physiology', '\uD83E\uDDB4 Migration Physiology')),
             h('div', { className: 'text-xs leading-relaxed space-y-2 ' + textSecondary },
-              h('p', null, 'Migration is one of the most physically demanding activities in the animal kingdom. Birds undergo remarkable physiological transformations before departure:'),
+              h('p', null, t('stem.migration.migration_is_one_of_the_most_physicall', 'Migration is one of the most physically demanding activities in the animal kingdom. Birds undergo remarkable physiological transformations before departure:')),
               h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2' },
                 [
-                  { title: 'Hyperphagia', emoji: '\uD83C\uDF57', text: 'Before migration, birds enter a feeding frenzy called hyperphagia, consuming food at 2-3 times their normal rate. A Blackpoll Warbler (12g) adds 8-12g of fat stores, nearly doubling its body weight. This fat is the fuel for non-stop flights of 2,000+ miles.' },
-                  { title: 'Organ Shrinkage', emoji: '\uD83E\uDEC1', text: 'To reduce weight, migrating birds actually shrink their digestive organs (intestines, liver, gizzard) by up to 40% before departure. Upon arrival at stopovers, they rapidly regrow these organs to refuel. This "phenotypic flexibility" is unique among vertebrates.' },
-                  { title: 'Hemoglobin', emoji: '\uD83E\uDE78', text: 'High-altitude migrants like Bar-headed Geese (which fly over the Himalayas at 29,000 ft) have special hemoglobin with higher oxygen affinity. Their muscles contain extra myoglobin, and their capillary density is double that of lowland species.' },
-                  { title: 'Sleep in Flight', emoji: '\uD83D\uDE34', text: 'Some birds can sleep while flying using "unihemispheric sleep" \u2014 shutting down one brain hemisphere at a time. Frigate birds have been recorded sleeping for 42 minutes per day during 10-day transoceanic flights, taking micro-naps of 12 seconds each.' },
-                  { title: 'Navigation Clock', emoji: '\u23F0', text: 'Birds maintain an internal circadian clock with extraordinary precision. This clock compensates for the sun\'s movement across the sky (time-compensated sun compass) and tracks seasonal changes in day length that trigger migration hormones.' },
-                  { title: 'Zugunruhe', emoji: '\uD83C\uDF19', text: 'Zugunruhe ("migration restlessness") is a behavioral state where caged migratory birds flutter in the direction they would naturally migrate, at the time they would migrate. It is hormonally driven and genetically encoded. Even hand-raised birds with no migratory experience display Zugunruhe.' }
+                  { title: t('stem.migration.hyperphagia', 'Hyperphagia'), emoji: '\uD83C\uDF57', text: t('stem.migration.before_migration_birds_enter_a_feeding', 'Before migration, birds enter a feeding frenzy called hyperphagia, consuming food at 2-3 times their normal rate. A Blackpoll Warbler (12g) adds 8-12g of fat stores, nearly doubling its body weight. This fat is the fuel for non-stop flights of 2,000+ miles.') },
+                  { title: t('stem.migration.organ_shrinkage', 'Organ Shrinkage'), emoji: '\uD83E\uDEC1', text: t('stem.migration.to_reduce_weight_migrating_birds_actua', 'To reduce weight, migrating birds actually shrink their digestive organs (intestines, liver, gizzard) by up to 40% before departure. Upon arrival at stopovers, they rapidly regrow these organs to refuel. This "phenotypic flexibility" is unique among vertebrates.') },
+                  { title: t('stem.migration.hemoglobin', 'Hemoglobin'), emoji: '\uD83E\uDE78', text: t('stem.migration.high_altitude_migrants_like_bar_headed', 'High-altitude migrants like Bar-headed Geese (which fly over the Himalayas at 29,000 ft) have special hemoglobin with higher oxygen affinity. Their muscles contain extra myoglobin, and their capillary density is double that of lowland species.') },
+                  { title: t('stem.migration.sleep_in_flight', 'Sleep in Flight'), emoji: '\uD83D\uDE34', text: t('stem.migration.some_birds_can_sleep_while_flying_usin', 'Some birds can sleep while flying using "unihemispheric sleep" \u2014 shutting down one brain hemisphere at a time. Frigate birds have been recorded sleeping for 42 minutes per day during 10-day transoceanic flights, taking micro-naps of 12 seconds each.') },
+                  { title: t('stem.migration.navigation_clock', 'Navigation Clock'), emoji: '\u23F0', text: t('stem.migration.birds_maintain_an_internal_circadian_c', 'Birds maintain an internal circadian clock with extraordinary precision. This clock compensates for the sun\'s movement across the sky (time-compensated sun compass) and tracks seasonal changes in day length that trigger migration hormones.') },
+                  { title: t('stem.migration.zugunruhe', 'Zugunruhe'), emoji: '\uD83C\uDF19', text: t('stem.migration.zugunruhe_migration_restlessness_is_a_', 'Zugunruhe ("migration restlessness") is a behavioral state where caged migratory birds flutter in the direction they would naturally migrate, at the time they would migrate. It is hormonally driven and genetically encoded. Even hand-raised birds with no migratory experience display Zugunruhe.') }
                 ].map(function(phys) {
                   return h('div', { key: phys.title, className: 'rounded-lg p-2.5 border ' + borderCol + ' ' + (isDark ? 'bg-slate-700/50' : 'bg-white') },
                     h('div', { className: 'flex items-center gap-1.5 mb-1' },
@@ -2104,7 +2104,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
           // Species comparison table
           h('div', { className: 'rounded-xl p-4 border ' + borderCol + ' ' + cardBg },
-            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, '\uD83D\uDCCA Species Comparison'),
+            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, t('stem.migration.species_comparison', '\uD83D\uDCCA Species Comparison')),
             h('div', { className: 'overflow-x-auto' },
               h('table', { className: 'w-full text-[11px] ' + textSecondary, role: 'table' },
                 h('thead', null,
@@ -2116,14 +2116,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 ),
                 h('tbody', null,
                   [
-                    { name: 'Canada Goose', dist: '3,000 mi', spd: '40 mph', alt: '3,000 ft', wt: '3.5-6 kg', fw: 'Atlantic', form: 'V-formation' },
-                    { name: 'Arctic Tern', dist: '44,000 mi', spd: '25 mph', alt: '1,500 ft', wt: '100 g', fw: 'Atlantic', form: 'Loose flock' },
-                    { name: 'Ruby-thr. Hummingbird', dist: '3,000 mi', spd: '30 mph', alt: '500 ft', wt: '3.5 g', fw: 'Mississippi', form: 'Solo' },
-                    { name: 'Snow Goose', dist: '5,000 mi', spd: '50 mph', alt: '7,500 ft', wt: '2.5-3.5 kg', fw: 'Central', form: 'V-formation' },
-                    { name: 'Peregrine Falcon', dist: '15,500 mi', spd: '60 mph', alt: '3,500 ft', wt: '0.5-1.5 kg', fw: 'Pacific', form: 'Solo' },
-                    { name: 'Sandhill Crane', dist: '6,000 mi', spd: '35 mph', alt: '6,000 ft', wt: '3-5 kg', fw: 'Central', form: 'V-formation' },
-                    { name: 'Monarch Butterfly', dist: '3,000 mi', spd: '12 mph', alt: '1,200 ft', wt: '0.5 g', fw: 'Central', form: 'Swarm' },
-                    { name: 'Bar-tailed Godwit', dist: '7,000 mi', spd: '55 mph', alt: '6,000 ft', wt: '300 g', fw: 'Pacific', form: 'V-formation' }
+                    { name: t('stem.migration.canada_goose', 'Canada Goose'), dist: '3,000 mi', spd: '40 mph', alt: t('stem.migration.3_000_ft', '3,000 ft'), wt: '3.5-6 kg', fw: 'Atlantic', form: 'V-formation' },
+                    { name: t('stem.migration.arctic_tern', 'Arctic Tern'), dist: '44,000 mi', spd: '25 mph', alt: t('stem.migration.1_500_ft', '1,500 ft'), wt: '100 g', fw: 'Atlantic', form: 'Loose flock' },
+                    { name: t('stem.migration.ruby_thr_hummingbird', 'Ruby-thr. Hummingbird'), dist: '3,000 mi', spd: '30 mph', alt: t('stem.migration.500_ft', '500 ft'), wt: '3.5 g', fw: 'Mississippi', form: 'Solo' },
+                    { name: t('stem.migration.snow_goose', 'Snow Goose'), dist: '5,000 mi', spd: '50 mph', alt: t('stem.migration.7_500_ft', '7,500 ft'), wt: '2.5-3.5 kg', fw: 'Central', form: 'V-formation' },
+                    { name: t('stem.migration.peregrine_falcon', 'Peregrine Falcon'), dist: '15,500 mi', spd: '60 mph', alt: t('stem.migration.3_500_ft', '3,500 ft'), wt: '0.5-1.5 kg', fw: 'Pacific', form: 'Solo' },
+                    { name: t('stem.migration.sandhill_crane', 'Sandhill Crane'), dist: '6,000 mi', spd: '35 mph', alt: t('stem.migration.6_000_ft', '6,000 ft'), wt: '3-5 kg', fw: 'Central', form: 'V-formation' },
+                    { name: t('stem.migration.monarch_butterfly', 'Monarch Butterfly'), dist: '3,000 mi', spd: '12 mph', alt: t('stem.migration.1_200_ft', '1,200 ft'), wt: '0.5 g', fw: 'Central', form: 'Swarm' },
+                    { name: t('stem.migration.bar_tailed_godwit', 'Bar-tailed Godwit'), dist: '7,000 mi', spd: '55 mph', alt: t('stem.migration.6_000_ft_2', '6,000 ft'), wt: '300 g', fw: 'Pacific', form: 'V-formation' }
                   ].map(function(row, ri2) {
                     return h('tr', { key: ri2, className: 'border-b ' + borderCol + ' ' + (ri2 % 2 === 0 ? (isDark ? 'bg-slate-800/30' : 'bg-slate-50/50') : '') },
                       h('td', { className: 'py-1 px-1 font-medium ' + textPrimary }, row.name),
@@ -2138,21 +2138,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 )
               )
             ),
-            h('p', { className: 'text-[11px] mt-2 italic ' + textMuted }, 'Distances are approximate annual migration distances. Speeds are typical cruising speeds. Altitude is typical migration altitude.')
+            h('p', { className: 'text-[11px] mt-2 italic ' + textMuted }, t('stem.migration.distances_are_approximate_annual_migra', 'Distances are approximate annual migration distances. Speeds are typical cruising speeds. Altitude is typical migration altitude.'))
           ),
 
           // Technology & tracking
           h('div', { className: 'rounded-xl p-4 border ' + borderCol + ' ' + cardBg },
-            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, '\uD83D\uDCE1 How Scientists Track Migration'),
+            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, t('stem.migration.how_scientists_track_migration', '\uD83D\uDCE1 How Scientists Track Migration')),
             h('div', { className: 'text-xs leading-relaxed space-y-2 ' + textSecondary },
-              h('p', null, 'Our understanding of migration has been revolutionized by technology:'),
+              h('p', null, t('stem.migration.our_understanding_of_migration_has_bee', 'Our understanding of migration has been revolutionized by technology:')),
               h('ul', { className: 'list-disc pl-4 space-y-1.5 mt-1' },
-                h('li', null, h('strong', null, 'Bird Banding: '), 'Since 1920, over 80 million birds have been banded in North America. Each band has a unique number. When a banded bird is recaptured, scientists learn about survival, routes, and timing. Recovery rates are low (1-5%) but the dataset is enormous.'),
-                h('li', null, h('strong', null, 'GPS Trackers: '), 'Solar-powered GPS tags (now as small as 1g) transmit location data via satellite. They reveal exact routes, stopover timing, and flight altitude. The 7,145-mile non-stop Godwit flight was tracked by GPS.'),
-                h('li', null, h('strong', null, 'Geolocators: '), 'Light-level geolocators (0.5g) record sunrise/sunset times. When the bird is recaptured, scientists download the data and calculate latitude (from day length) and longitude (from solar noon timing). Accuracy: ~200 km.'),
-                h('li', null, h('strong', null, 'Weather Radar: '), 'NEXRAD weather radar stations across the US detect massive flocks of migrating birds. BirdCast (Cornell Lab) uses machine learning to predict and visualize real-time migration from radar data. On peak nights, radar shows enormous green blobs of bird migration.'),
-                h('li', null, h('strong', null, 'eBird: '), 'Citizen scientists submit 100+ million bird observations per year through eBird, creating the largest biodiversity database in the world. These data reveal continent-scale patterns in migration timing and distribution that no research team could collect alone.'),
-                h('li', null, h('strong', null, 'Motus Wildlife Tracking: '), 'A network of 1,500+ automated radio telemetry stations across the Americas detects tagged birds as they fly by. Each station listens for unique radio frequencies, creating a continental-scale detection network. A tagged bird flying from Canada to Brazil is detected at dozens of stations along the way.')
+                h('li', null, h('strong', null, t('stem.migration.bird_banding', 'Bird Banding: ')), t('stem.migration.since_1920_over_80_million_birds_have_', 'Since 1920, over 80 million birds have been banded in North America. Each band has a unique number. When a banded bird is recaptured, scientists learn about survival, routes, and timing. Recovery rates are low (1-5%) but the dataset is enormous.')),
+                h('li', null, h('strong', null, t('stem.migration.gps_trackers', 'GPS Trackers: ')), t('stem.migration.solar_powered_gps_tags_now_as_small_as', 'Solar-powered GPS tags (now as small as 1g) transmit location data via satellite. They reveal exact routes, stopover timing, and flight altitude. The 7,145-mile non-stop Godwit flight was tracked by GPS.')),
+                h('li', null, h('strong', null, 'Geolocators: '), t('stem.migration.light_level_geolocators_0_5g_record_su', 'Light-level geolocators (0.5g) record sunrise/sunset times. When the bird is recaptured, scientists download the data and calculate latitude (from day length) and longitude (from solar noon timing). Accuracy: ~200 km.')),
+                h('li', null, h('strong', null, t('stem.migration.weather_radar', 'Weather Radar: ')), t('stem.migration.nexrad_weather_radar_stations_across_t', 'NEXRAD weather radar stations across the US detect massive flocks of migrating birds. BirdCast (Cornell Lab) uses machine learning to predict and visualize real-time migration from radar data. On peak nights, radar shows enormous green blobs of bird migration.')),
+                h('li', null, h('strong', null, 'eBird: '), t('stem.migration.citizen_scientists_submit_100_million_', 'Citizen scientists submit 100+ million bird observations per year through eBird, creating the largest biodiversity database in the world. These data reveal continent-scale patterns in migration timing and distribution that no research team could collect alone.')),
+                h('li', null, h('strong', null, t('stem.migration.motus_wildlife_tracking', 'Motus Wildlife Tracking: ')), t('stem.migration.a_network_of_1_500_automated_radio_tel', 'A network of 1,500+ automated radio telemetry stations across the Americas detects tagged birds as they fly by. Each station listens for unique radio frequencies, creating a continental-scale detection network. A tagged bird flying from Canada to Brazil is detected at dozens of stations along the way.'))
               )
             )
           )
@@ -2541,7 +2541,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
           // AoA slider
           h('div', { className: 'flex items-center gap-3' },
-            h('label', { className: 'text-xs font-bold ' + textPrimary }, 'Angle of Attack:'),
+            h('label', { className: 'text-xs font-bold ' + textPrimary }, t('stem.migration.angle_of_attack', 'Angle of Attack:')),
             h('input', {
               type: 'range', min: 0, max: 20, value: aoa,
               'aria-label': 'Angle of attack: ' + aoa + ' degrees' + (isStalling ? '. Warning: wing is stalling.' : ''),
@@ -2549,15 +2549,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               onChange: function(e) { upd('aoa', parseInt(e.target.value, 10)); }
             }),
             h('span', { className: 'text-sm font-bold min-w-[40px] text-right ' + (isStalling ? 'text-red-500' : accent) }, aoa + '\u00B0'),
-            isStalling && h('span', { className: 'text-xs font-bold text-red-500' }, '\u26A0 STALL')
+            isStalling && h('span', { className: 'text-xs font-bold text-red-500' }, t('stem.migration.stall', '\u26A0 STALL'))
           ),
 
           // Stats readout
           h('div', { className: 'grid grid-cols-3 gap-2 text-center' },
             [
-              { label: 'Lift Coeff (C\u2097)', value: cl.toFixed(3), color: '#3b82f6' },
-              { label: 'Drag Coeff (C\u2091)', value: cd.toFixed(4), color: '#ef4444' },
-              { label: 'L/D Ratio', value: ldRatio.toFixed(1), color: '#22c55e' }
+              { label: t('stem.migration.lift_coeff_c', 'Lift Coeff (C\u2097)'), value: cl.toFixed(3), color: '#3b82f6' },
+              { label: t('stem.migration.drag_coeff_c', 'Drag Coeff (C\u2091)'), value: cd.toFixed(4), color: '#ef4444' },
+              { label: t('stem.migration.l_d_ratio', 'L/D Ratio'), value: ldRatio.toFixed(1), color: '#22c55e' }
             ].map(function(s) {
               return h('div', { key: s.label, className: 'rounded-lg p-2 border ' + borderCol + ' ' + cardBg },
                 h('div', { className: 'text-sm font-black', style: { color: s.color } }, s.value),
@@ -2568,7 +2568,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
           // Wing type selector
           h('div', { className: 'space-y-2' },
-            h('h3', { className: 'font-bold text-sm ' + textPrimary }, 'Wing Type Comparison'),
+            h('h3', { className: 'font-bold text-sm ' + textPrimary }, t('stem.migration.wing_type_comparison', 'Wing Type Comparison')),
             h('div', { className: 'grid grid-cols-2 gap-2' },
               WING_TYPES.map(function(wt) {
                 var active = selectedWing === wt.id;
@@ -2599,44 +2599,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
           // Flight physics explanation
           h('div', { className: 'rounded-xl p-4 border ' + borderCol + ' ' + cardBg },
-            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, '\uD83D\uDCDA Flight Physics Explained'),
+            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, t('stem.migration.flight_physics_explained', '\uD83D\uDCDA Flight Physics Explained')),
             h('div', { className: 'text-xs leading-relaxed space-y-3 ' + textSecondary },
               h('div', null,
-                h('h4', { className: 'font-bold text-[11px] mb-1 ' + textPrimary }, 'Bernoulli\'s Principle'),
-                h('p', null, 'As air speeds up, its pressure drops. A wing\'s curved upper surface forces air to travel faster over the top than under the bottom. This creates ', h('strong', null, 'lower pressure above'), ' and ', h('strong', null, 'higher pressure below'), ' the wing, generating lift.'),
-                h('p', { className: 'mt-1 font-mono text-[11px] ' + accent }, 'P + \u00BDpv\u00B2 + pgh = constant')
+                h('h4', { className: 'font-bold text-[11px] mb-1 ' + textPrimary }, t('stem.migration.bernoulli_s_principle', 'Bernoulli\'s Principle')),
+                h('p', null, t('stem.migration.as_air_speeds_up_its_pressure_drops_a_', 'As air speeds up, its pressure drops. A wing\'s curved upper surface forces air to travel faster over the top than under the bottom. This creates '), h('strong', null, t('stem.migration.lower_pressure_above', 'lower pressure above')), ' and ', h('strong', null, t('stem.migration.higher_pressure_below', 'higher pressure below')), t('stem.migration.the_wing_generating_lift', ' the wing, generating lift.')),
+                h('p', { className: 'mt-1 font-mono text-[11px] ' + accent }, t('stem.migration.p_pv_pgh_constant', 'P + \u00BDpv\u00B2 + pgh = constant'))
               ),
               h('div', null,
-                h('h4', { className: 'font-bold text-[11px] mb-1 ' + textPrimary }, 'Angle of Attack & Stall'),
-                h('p', null, 'As the angle of attack increases, lift increases \u2014 up to a point. Beyond the ', h('strong', null, 'critical angle'), ' (stall angle), airflow separates from the upper surface. The wing loses its smooth airflow, lift drops dramatically, and drag spikes. This is a "stall."'),
-                h('p', { className: 'mt-1' }, 'Current wing\'s stall angle: ', h('strong', { className: 'text-red-500' }, wing.stallAngle + '\u00B0'), '. Best L/D at: ', h('strong', { className: 'text-green-500' }, wing.bestAngle + '\u00B0'), '.')
+                h('h4', { className: 'font-bold text-[11px] mb-1 ' + textPrimary }, t('stem.migration.angle_of_attack_stall', 'Angle of Attack & Stall')),
+                h('p', null, t('stem.migration.as_the_angle_of_attack_increases_lift_', 'As the angle of attack increases, lift increases \u2014 up to a point. Beyond the '), h('strong', null, t('stem.migration.critical_angle', 'critical angle')), t('stem.migration.stall_angle_airflow_separates_from_the', ' (stall angle), airflow separates from the upper surface. The wing loses its smooth airflow, lift drops dramatically, and drag spikes. This is a "stall."')),
+                h('p', { className: 'mt-1' }, t('stem.migration.current_wing_s_stall_angle', 'Current wing\'s stall angle: '), h('strong', { className: 'text-red-500' }, wing.stallAngle + '\u00B0'), t('stem.migration.best_l_d_at', '. Best L/D at: '), h('strong', { className: 'text-green-500' }, wing.bestAngle + '\u00B0'), '.')
               ),
               h('div', null,
-                h('h4', { className: 'font-bold text-[11px] mb-1 ' + textPrimary }, 'Lift-to-Drag Ratio (L/D)'),
-                h('p', null, 'L/D measures aerodynamic efficiency. A higher L/D means more lift per unit of drag. Albatrosses achieve L/D ratios of ', h('strong', null, '20:1'), ' (meaning 20 pounds of lift for every 1 pound of drag), among the best in nature. Modern sailplanes reach ', h('strong', null, '60:1'), '.')
+                h('h4', { className: 'font-bold text-[11px] mb-1 ' + textPrimary }, t('stem.migration.lift_to_drag_ratio_l_d', 'Lift-to-Drag Ratio (L/D)')),
+                h('p', null, t('stem.migration.l_d_measures_aerodynamic_efficiency_a_', 'L/D measures aerodynamic efficiency. A higher L/D means more lift per unit of drag. Albatrosses achieve L/D ratios of '), h('strong', null, '20:1'), t('stem.migration.meaning_20_pounds_of_lift_for_every_1_', ' (meaning 20 pounds of lift for every 1 pound of drag), among the best in nature. Modern sailplanes reach '), h('strong', null, '60:1'), '.')
               ),
               h('div', null,
-                h('h4', { className: 'font-bold text-[11px] mb-1 ' + textPrimary }, 'Induced vs Parasite Drag'),
-                h('p', null, h('strong', null, 'Induced drag'), ' is a byproduct of creating lift \u2014 the wingtip vortices that V-formation birds exploit. It decreases with speed. ', h('strong', null, 'Parasite drag'), ' comes from the bird\'s body pushing through air \u2014 it increases with speed\u00B2. At the intersection of these two curves lies the ', h('strong', null, 'minimum drag speed'), ' \u2014 the most efficient cruising speed.')
+                h('h4', { className: 'font-bold text-[11px] mb-1 ' + textPrimary }, t('stem.migration.induced_vs_parasite_drag', 'Induced vs Parasite Drag')),
+                h('p', null, h('strong', null, t('stem.migration.induced_drag', 'Induced drag')), t('stem.migration.is_a_byproduct_of_creating_lift_the_wi', ' is a byproduct of creating lift \u2014 the wingtip vortices that V-formation birds exploit. It decreases with speed. '), h('strong', null, t('stem.migration.parasite_drag', 'Parasite drag')), t('stem.migration.comes_from_the_bird_s_body_pushing_thr', ' comes from the bird\'s body pushing through air \u2014 it increases with speed\u00B2. At the intersection of these two curves lies the '), h('strong', null, t('stem.migration.minimum_drag_speed', 'minimum drag speed')), t('stem.migration.the_most_efficient_cruising_speed', ' \u2014 the most efficient cruising speed.'))
               ),
               h('div', null,
-                h('h4', { className: 'font-bold text-[11px] mb-1 ' + textPrimary }, 'Reynolds Number'),
-                h('p', null, 'Bird flight operates at Reynolds numbers between 10,000 and 500,000 \u2014 a tricky aerodynamic regime. At these scales, the boundary layer (thin layer of air clinging to the wing surface) is partly laminar and partly turbulent. Bird feathers create micro-turbulence that actually ', h('strong', null, 'helps'), ' maintain airflow attachment, especially at high angles of attack. This is something engineers are still trying to replicate in drone designs.')
+                h('h4', { className: 'font-bold text-[11px] mb-1 ' + textPrimary }, t('stem.migration.reynolds_number', 'Reynolds Number')),
+                h('p', null, t('stem.migration.bird_flight_operates_at_reynolds_numbe', 'Bird flight operates at Reynolds numbers between 10,000 and 500,000 \u2014 a tricky aerodynamic regime. At these scales, the boundary layer (thin layer of air clinging to the wing surface) is partly laminar and partly turbulent. Bird feathers create micro-turbulence that actually '), h('strong', null, 'helps'), t('stem.migration.maintain_airflow_attachment_especially', ' maintain airflow attachment, especially at high angles of attack. This is something engineers are still trying to replicate in drone designs.'))
               )
             )
           ),
 
           // Bio-inspired engineering
           h('div', { className: 'rounded-xl p-4 border ' + borderCol + ' ' + cardBg },
-            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, '\u2699\uFE0F Bio-Inspired Engineering'),
+            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, t('stem.migration.bio_inspired_engineering', '\u2699\uFE0F Bio-Inspired Engineering')),
             h('div', { className: 'text-xs leading-relaxed space-y-2 ' + textSecondary },
-              h('p', null, 'Bird flight has inspired countless engineering innovations:'),
+              h('p', null, t('stem.migration.bird_flight_has_inspired_countless_eng', 'Bird flight has inspired countless engineering innovations:')),
               h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2' },
                 [
-                  { title: 'Winglets', text: 'The upturned wingtips on modern airliners (Boeing 737 MAX, Airbus A350) are directly inspired by the slotted feathers at the tip of eagle wings. These "winglets" reduce induced drag by 5-7%, saving airlines billions in fuel costs annually. They work by disrupting the wingtip vortex.' },
-                  { title: 'Owl-Quiet Fans', text: 'Owl feathers have a serrated leading edge, a velvety surface texture, and a fringed trailing edge that together reduce aerodynamic noise to near-silence. Engineers at GE and Dyson have mimicked these features in turbine blades and fan designs, reducing noise by 10+ decibels.' },
-                  { title: 'Kingfisher Bullet Trains', text: 'The Shinkansen bullet train\'s nose was redesigned after engineer Eiji Nakatsu, a birdwatcher, noticed that kingfishers dive from air into water without a splash. The kingfisher-bill-shaped nose reduced the sonic boom when exiting tunnels by 30% and cut electricity use by 15%.' },
-                  { title: 'Morphing Wings', text: 'Birds continuously adjust wing shape, angle, and feather positions during flight \u2014 far more sophisticated than any aircraft. NASA and MIT are developing "morphing wing" technology that uses flexible materials and actuators to mimic bird-like wing adjustment, potentially improving efficiency by 8-12%.' }
+                  { title: t('stem.migration.winglets', 'Winglets'), text: t('stem.migration.the_upturned_wingtips_on_modern_airlin', 'The upturned wingtips on modern airliners (Boeing 737 MAX, Airbus A350) are directly inspired by the slotted feathers at the tip of eagle wings. These "winglets" reduce induced drag by 5-7%, saving airlines billions in fuel costs annually. They work by disrupting the wingtip vortex.') },
+                  { title: t('stem.migration.owl_quiet_fans', 'Owl-Quiet Fans'), text: t('stem.migration.owl_feathers_have_a_serrated_leading_e', 'Owl feathers have a serrated leading edge, a velvety surface texture, and a fringed trailing edge that together reduce aerodynamic noise to near-silence. Engineers at GE and Dyson have mimicked these features in turbine blades and fan designs, reducing noise by 10+ decibels.') },
+                  { title: t('stem.migration.kingfisher_bullet_trains', 'Kingfisher Bullet Trains'), text: t('stem.migration.the_shinkansen_bullet_train_s_nose_was', 'The Shinkansen bullet train\'s nose was redesigned after engineer Eiji Nakatsu, a birdwatcher, noticed that kingfishers dive from air into water without a splash. The kingfisher-bill-shaped nose reduced the sonic boom when exiting tunnels by 30% and cut electricity use by 15%.') },
+                  { title: t('stem.migration.morphing_wings', 'Morphing Wings'), text: t('stem.migration.birds_continuously_adjust_wing_shape_a', 'Birds continuously adjust wing shape, angle, and feather positions during flight \u2014 far more sophisticated than any aircraft. NASA and MIT are developing "morphing wing" technology that uses flexible materials and actuators to mimic bird-like wing adjustment, potentially improving efficiency by 8-12%.') }
                 ].map(function(eng) {
                   return h('div', { key: eng.title, className: 'rounded-lg p-2.5 border ' + borderCol + ' ' + (isDark ? 'bg-slate-700/50' : 'bg-white') },
                     h('div', { className: 'text-[11px] font-bold mb-1 ' + textPrimary }, eng.title),
@@ -2649,36 +2649,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
           // Feather microstructure
           h('div', { className: 'rounded-xl p-4 border ' + borderCol + ' ' + cardBg },
-            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, '\uD83E\uDEB6 Feather Engineering'),
+            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, t('stem.migration.feather_engineering', '\uD83E\uDEB6 Feather Engineering')),
             h('div', { className: 'text-xs leading-relaxed space-y-2 ' + textSecondary },
-              h('p', null, 'A bird feather is one of the most complex structures in nature. A single flight feather has:'),
+              h('p', null, t('stem.migration.a_bird_feather_is_one_of_the_most_comp', 'A bird feather is one of the most complex structures in nature. A single flight feather has:')),
               h('ul', { className: 'list-disc pl-4 space-y-1' },
-                h('li', null, h('strong', null, 'Rachis: '), 'The central shaft \u2014 a hollow tube stronger per weight than steel, made of beta-keratin.'),
-                h('li', null, h('strong', null, 'Barbs: '), 'Hundreds of branches growing from the rachis, forming the feather vane.'),
-                h('li', null, h('strong', null, 'Barbules: '), 'Tiny hook-like structures connecting barbs together like Velcro. A single pigeon feather has ~1 million barbules.'),
-                h('li', null, h('strong', null, 'Hooklets: '), 'Microscopic hooks on barbules that zip barbs together, creating an airtight surface. When a feather gets ruffled, a bird can "zip" it back by preening.')
+                h('li', null, h('strong', null, 'Rachis: '), t('stem.migration.the_central_shaft_a_hollow_tube_strong', 'The central shaft \u2014 a hollow tube stronger per weight than steel, made of beta-keratin.')),
+                h('li', null, h('strong', null, 'Barbs: '), t('stem.migration.hundreds_of_branches_growing_from_the_', 'Hundreds of branches growing from the rachis, forming the feather vane.')),
+                h('li', null, h('strong', null, 'Barbules: '), t('stem.migration.tiny_hook_like_structures_connecting_b', 'Tiny hook-like structures connecting barbs together like Velcro. A single pigeon feather has ~1 million barbules.')),
+                h('li', null, h('strong', null, 'Hooklets: '), t('stem.migration.microscopic_hooks_on_barbules_that_zip', 'Microscopic hooks on barbules that zip barbs together, creating an airtight surface. When a feather gets ruffled, a bird can "zip" it back by preening.'))
               ),
-              h('p', { className: 'mt-2' }, 'Flight feathers are asymmetric \u2014 the leading edge vane is narrower than the trailing edge. This asymmetry creates a cambered airfoil shape that generates lift, similar to an airplane wing. Primary feathers at the wingtips twist during the downstroke, acting like individual propeller blades.'),
-              h('p', null, 'Birds have 1,000-25,000 feathers (a swan has the most). They replace all flight feathers annually during ', h('strong', null, 'molt'), ', typically after breeding season and before migration. Losing too many feathers at once would ground the bird, so molt follows a precise bilateral symmetry \u2014 matching feathers on each wing are replaced simultaneously.')
+              h('p', { className: 'mt-2' }, t('stem.migration.flight_feathers_are_asymmetric_the_lea', 'Flight feathers are asymmetric \u2014 the leading edge vane is narrower than the trailing edge. This asymmetry creates a cambered airfoil shape that generates lift, similar to an airplane wing. Primary feathers at the wingtips twist during the downstroke, acting like individual propeller blades.')),
+              h('p', null, t('stem.migration.birds_have_1_000_25_000_feathers_a_swa', 'Birds have 1,000-25,000 feathers (a swan has the most). They replace all flight feathers annually during '), h('strong', null, 'molt'), t('stem.migration.typically_after_breeding_season_and_be', ', typically after breeding season and before migration. Losing too many feathers at once would ground the bird, so molt follows a precise bilateral symmetry \u2014 matching feathers on each wing are replaced simultaneously.'))
             )
           ),
 
           // Energy budget
           h('div', { className: 'rounded-xl p-4 border-2 border-sky-400/50 ' + accentBg },
-            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, '\u26A1 Migration Energy Budget'),
+            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, t('stem.migration.migration_energy_budget', '\u26A1 Migration Energy Budget')),
             h('div', { className: 'text-xs leading-relaxed space-y-2 ' + textSecondary },
-              h('p', null, 'Consider a Ruby-throated Hummingbird crossing the Gulf of Mexico (500 miles non-stop):'),
+              h('p', null, t('stem.migration.consider_a_ruby_throated_hummingbird_c', 'Consider a Ruby-throated Hummingbird crossing the Gulf of Mexico (500 miles non-stop):')),
               h('div', { className: 'font-mono text-[11px] p-2 rounded-lg mt-1 ' + (isDark ? 'bg-slate-700' : 'bg-white') },
-                h('div', null, 'Body mass: 3.5g'),
-                h('div', null, 'Pre-flight fat: +2g (57% body weight!)'),
-                h('div', null, 'Fat energy density: 9 kcal/g'),
-                h('div', null, 'Available energy: ~18 kcal'),
-                h('div', null, 'Flight metabolic rate: ~0.8 kcal/hr'),
-                h('div', null, 'Crossing time: ~20 hours at 25 mph'),
-                h('div', null, 'Energy required: ~16 kcal'),
-                h('div', { className: 'mt-1 font-bold ' + accent }, 'Margin of safety: ~2 kcal (11%)')
+                h('div', null, t('stem.migration.body_mass_3_5g', 'Body mass: 3.5g')),
+                h('div', null, t('stem.migration.pre_flight_fat_2g_57_body_weight', 'Pre-flight fat: +2g (57% body weight!)')),
+                h('div', null, t('stem.migration.fat_energy_density_9_kcal_g', 'Fat energy density: 9 kcal/g')),
+                h('div', null, t('stem.migration.available_energy_18_kcal', 'Available energy: ~18 kcal')),
+                h('div', null, t('stem.migration.flight_metabolic_rate_0_8_kcal_hr', 'Flight metabolic rate: ~0.8 kcal/hr')),
+                h('div', null, t('stem.migration.crossing_time_20_hours_at_25_mph', 'Crossing time: ~20 hours at 25 mph')),
+                h('div', null, t('stem.migration.energy_required_16_kcal', 'Energy required: ~16 kcal')),
+                h('div', { className: 'mt-1 font-bold ' + accent }, t('stem.migration.margin_of_safety_2_kcal_11', 'Margin of safety: ~2 kcal (11%)'))
               ),
-              h('p', { className: 'mt-2' }, 'That is an incredibly thin margin. A strong headwind, a cold front, or arriving at the coast 10% underweight could be fatal. This is why stopover habitat quality is ', h('strong', null, 'literally life or death'), ' for migratory birds.')
+              h('p', { className: 'mt-2' }, t('stem.migration.that_is_an_incredibly_thin_margin_a_st', 'That is an incredibly thin margin. A strong headwind, a cold front, or arriving at the coast 10% underweight could be fatal. This is why stopover habitat quality is '), h('strong', null, t('stem.migration.literally_life_or_death', 'literally life or death')), t('stem.migration.for_migratory_birds', ' for migratory birds.'))
             )
           )
         );
@@ -2933,9 +2933,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 challengeChoices: {
                   scenario: 'Your flock encounters ' + newWeather.toLowerCase() + ' conditions over a mountain range. Energy is at ' + energy + '%.',
                   choices: [
-                    { label: 'Push through the weather', energy_cost: -20, distance_gain: 400, flock_change: -3, result: 'The flock battles through but loses some members to exhaustion.' },
-                    { label: 'Find shelter and wait', energy_cost: -5, distance_gain: 0, flock_change: 0, result: 'The flock rests safely but makes no progress.' },
-                    { label: 'Detour around', energy_cost: -12, distance_gain: 250, flock_change: -1, result: 'A longer but safer route. One bird gets separated.' }
+                    { label: t('stem.migration.push_through_the_weather', 'Push through the weather'), energy_cost: -20, distance_gain: 400, flock_change: -3, result: 'The flock battles through but loses some members to exhaustion.' },
+                    { label: t('stem.migration.find_shelter_and_wait', 'Find shelter and wait'), energy_cost: -5, distance_gain: 0, flock_change: 0, result: 'The flock rests safely but makes no progress.' },
+                    { label: t('stem.migration.detour_around', 'Detour around'), energy_cost: -12, distance_gain: 250, flock_change: -1, result: 'A longer but safer route. One bird gets separated.' }
                   ]
                 },
                 challengeWeather: newWeather,
@@ -2947,9 +2947,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               challengeChoices: {
                 scenario: 'The flock faces ' + newWeather.toLowerCase() + ' conditions. ' + remaining + ' miles remain.',
                 choices: [
-                  { label: 'Keep flying', energy_cost: -15, distance_gain: 300, flock_change: -1, result: 'Steady progress at moderate cost.' },
-                  { label: 'Land and rest', energy_cost: 10, distance_gain: 0, flock_change: 0, result: 'The flock recovers some energy.' },
-                  { label: 'Ride thermals', energy_cost: -5, distance_gain: 200, flock_change: 0, result: 'Smart use of rising air currents saves energy.' }
+                  { label: t('stem.migration.keep_flying', 'Keep flying'), energy_cost: -15, distance_gain: 300, flock_change: -1, result: 'Steady progress at moderate cost.' },
+                  { label: t('stem.migration.land_and_rest', 'Land and rest'), energy_cost: 10, distance_gain: 0, flock_change: 0, result: 'The flock recovers some energy.' },
+                  { label: t('stem.migration.ride_thermals', 'Ride thermals'), energy_cost: -5, distance_gain: 200, flock_change: 0, result: 'Smart use of rising air currents saves energy.' }
                 ]
               },
               challengeWeather: newWeather,
@@ -3034,7 +3034,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('canvas', {
               ref: _nvInitCanvas,
               role: 'img',
-              'aria-label': 'Animated night sky showing nocturnal bird migration. Stars twinkle around Polaris, magnetic field lines curve across the sky, and a small flock migrates through the scene. Demonstrates how birds use stars and magnetic sense to navigate at night.',
+              'aria-label': t('stem.migration.animated_night_sky_showing_nocturnal_b', 'Animated night sky showing nocturnal bird migration. Stars twinkle around Polaris, magnetic field lines curve across the sky, and a small flock migrates through the scene. Demonstrates how birds use stars and magnetic sense to navigate at night.'),
               tabIndex: 0,
               onKeyDown: function(e) {
                 if (e.key === 'r' || e.key === 'R') {
@@ -3047,7 +3047,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
           // Navigation methods
           h('div', { className: 'space-y-2' },
-            h('h3', { className: 'font-bold text-sm ' + textPrimary }, '\uD83E\uDDED How Birds Navigate'),
+            h('h3', { className: 'font-bold text-sm ' + textPrimary }, t('stem.migration.how_birds_navigate', '\uD83E\uDDED How Birds Navigate')),
             h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 gap-2' },
               NAV_METHODS.map(function(nm) {
                 var isExpanded = expandedNav === nm.id;
@@ -3084,16 +3084,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           // Challenge game
           h('div', { className: 'space-y-3' },
             h('div', { className: 'flex items-center justify-between' },
-              h('h3', { className: 'font-bold text-sm ' + textPrimary }, '\uD83C\uDFAE Navigate Your Flock'),
+              h('h3', { className: 'font-bold text-sm ' + textPrimary }, t('stem.migration.navigate_your_flock', '\uD83C\uDFAE Navigate Your Flock')),
               !challengeActive && h('button', {
                 className: 'px-4 py-2 rounded-lg text-xs font-bold ' + btnPrimary,
-                'aria-label': 'Start the Navigate Your Flock challenge',
+                'aria-label': t('stem.migration.start_the_navigate_your_flock_challeng', 'Start the Navigate Your Flock challenge'),
                 onClick: startChallenge
-              }, '\uD83E\uDEBF Start Challenge')
+              }, t('stem.migration.start_challenge', '\uD83E\uDEBF Start Challenge'))
             ),
 
             !challengeActive && h('p', { className: 'text-xs ' + textSecondary },
-              'Guide a flock of Canada Geese from their breeding grounds in Northern Canada to their wintering grounds in the Southern US. Make decisions about weather, rest stops, and routes. Can you get your flock home safely?'
+              t('stem.migration.guide_a_flock_of_canada_geese_from_the', 'Guide a flock of Canada Geese from their breeding grounds in Northern Canada to their wintering grounds in the Southern US. Make decisions about weather, rest stops, and routes. Can you get your flock home safely?')
             ),
 
             // Active challenge
@@ -3101,26 +3101,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               // Status bar
               h('div', { className: 'grid grid-cols-4 gap-2 text-center' },
                 h('div', { className: 'rounded-lg p-2 ' + cardBg + ' border ' + borderCol },
-                  h('div', { className: 'text-[11px] ' + textMuted }, '\u26A1 Energy'),
+                  h('div', { className: 'text-[11px] ' + textMuted }, t('stem.migration.energy', '\u26A1 Energy')),
                   h('div', { className: 'mt-1 h-2 rounded-full ' + (isDark ? 'bg-slate-700' : 'bg-slate-200') + ' overflow-hidden' },
                     h('div', { className: 'h-full rounded-full transition-all ' + (challengeEnergy > 50 ? 'bg-green-500' : challengeEnergy > 25 ? 'bg-yellow-500' : 'bg-red-500'), style: { width: challengeEnergy + '%' } })
                   ),
                   h('div', { className: 'text-xs font-bold mt-1 ' + textPrimary }, challengeEnergy + '%')
                 ),
                 h('div', { className: 'rounded-lg p-2 ' + cardBg + ' border ' + borderCol },
-                  h('div', { className: 'text-[11px] ' + textMuted }, '\uD83D\uDCCD Distance'),
+                  h('div', { className: 'text-[11px] ' + textMuted }, t('stem.migration.distance_2', '\uD83D\uDCCD Distance')),
                   h('div', { className: 'mt-1 h-2 rounded-full ' + (isDark ? 'bg-slate-700' : 'bg-slate-200') + ' overflow-hidden' },
                     h('div', { className: 'h-full bg-sky-500 rounded-full transition-all', style: { width: ((challengeDistance - challengeDistRemaining) / challengeDistance * 100) + '%' } })
                   ),
                   h('div', { className: 'text-xs font-bold mt-1 ' + textPrimary }, challengeDistRemaining + ' mi left')
                 ),
                 h('div', { className: 'rounded-lg p-2 ' + cardBg + ' border ' + borderCol },
-                  h('div', { className: 'text-[11px] ' + textMuted }, '\uD83E\uDEBF Flock'),
+                  h('div', { className: 'text-[11px] ' + textMuted }, t('stem.migration.flock', '\uD83E\uDEBF Flock')),
                   h('div', { className: 'text-sm font-bold ' + textPrimary }, challengeFlockSize),
                   h('div', { className: 'text-[11px] ' + textMuted }, 'birds')
                 ),
                 h('div', { className: 'rounded-lg p-2 ' + cardBg + ' border ' + borderCol },
-                  h('div', { className: 'text-[11px] ' + textMuted }, '\uD83C\uDF24\uFE0F Weather'),
+                  h('div', { className: 'text-[11px] ' + textMuted }, t('stem.migration.weather', '\uD83C\uDF24\uFE0F Weather')),
                   h('div', { className: 'text-[11px] font-bold ' + textPrimary }, challengeWeather),
                   h('div', { className: 'text-[11px] ' + textMuted }, 'Step ' + (challengeStep + 1))
                 )
@@ -3128,13 +3128,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
               // Last result
               challengeResult && h('div', { className: 'text-xs p-2 rounded-lg ' + (isDark ? 'bg-slate-700' : 'bg-sky-50') + ' ' + textSecondary, 'aria-live': 'polite', 'aria-atomic': 'true' },
-                h('strong', null, 'Last result: '), challengeResult
+                h('strong', null, t('stem.migration.last_result', 'Last result: ')), challengeResult
               ),
 
               // Decision
               challengeLoading && h('div', { className: 'text-center py-4 ' + textMuted, role: 'status', 'aria-live': 'polite' },
                 h('span', { className: 'animate-spin inline-block text-xl' }, '\uD83C\uDF00'),
-                h('p', { className: 'text-xs mt-2' }, 'Scouting ahead...')
+                h('p', { className: 'text-xs mt-2' }, t('stem.migration.scouting_ahead', 'Scouting ahead...'))
               ),
 
               challengeChoices && !challengeComplete && h('div', { className: 'space-y-2' },
@@ -3164,20 +3164,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               challengeComplete && h('div', { className: 'text-center p-4 rounded-xl border ' + borderCol + ' ' + cardBg },
                 challengeDistRemaining <= 0 ? h('div', null,
                   h('div', { className: 'text-3xl mb-2', 'aria-hidden': 'true' }, '\uD83C\uDF89'),
-                  h('h4', { className: 'font-bold ' + textPrimary }, 'Migration Complete!'),
+                  h('h4', { className: 'font-bold ' + textPrimary }, t('stem.migration.migration_complete', 'Migration Complete!')),
                   h('p', { className: 'text-xs ' + textSecondary + ' mt-1' }, challengeFlockSize + ' of 50 birds arrived safely.'),
                   h('p', { className: 'text-sm font-bold mt-2 ' + accent }, 'Score: ' + challengeScore)
                 ) : h('div', null,
                   h('div', { className: 'text-3xl mb-2', 'aria-hidden': 'true' }, '\uD83D\uDE22'),
-                  h('h4', { className: 'font-bold ' + textPrimary }, 'Migration Failed'),
+                  h('h4', { className: 'font-bold ' + textPrimary }, t('stem.migration.migration_failed', 'Migration Failed')),
                   h('p', { className: 'text-xs ' + textSecondary + ' mt-1' }, challengeEnergy <= 0 ? 'The flock ran out of energy.' : 'Too many birds were lost.'),
                   h('p', { className: 'text-xs ' + textSecondary }, 'You made it ' + (challengeDistance - challengeDistRemaining) + ' of ' + challengeDistance + ' miles.')
                 ),
                 h('button', {
                   className: 'mt-3 px-4 py-2 rounded-lg text-xs font-bold ' + btnPrimary,
-                  'aria-label': 'Try the migration challenge again',
+                  'aria-label': t('stem.migration.try_the_migration_challenge_again', 'Try the migration challenge again'),
                   onClick: startChallenge
-                }, '\uD83D\uDD04 Try Again')
+                }, t('stem.migration.try_again', '\uD83D\uDD04 Try Again'))
               ),
 
               // Journey log
@@ -3203,8 +3203,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
           // Threats to migratory birds
           h('div', { className: 'space-y-2' },
-            h('h3', { className: 'font-bold text-sm ' + textPrimary }, '\u26A0\uFE0F Threats to Migratory Birds'),
-            h('p', { className: 'text-[11px] ' + textSecondary }, 'Migratory birds face growing dangers. Understanding these threats is the first step toward conservation.'),
+            h('h3', { className: 'font-bold text-sm ' + textPrimary }, t('stem.migration.threats_to_migratory_birds', '\u26A0\uFE0F Threats to Migratory Birds')),
+            h('p', { className: 'text-[11px] ' + textSecondary }, t('stem.migration.migratory_birds_face_growing_dangers_u', 'Migratory birds face growing dangers. Understanding these threats is the first step toward conservation.')),
             h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
               MIGRATION_THREATS.map(function(th, ti) {
                 return h('div', { key: ti, className: 'rounded-lg p-3 border ' + borderCol + ' ' + cardBg },
@@ -3220,34 +3220,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
           // Conservation actions
           h('div', { className: 'rounded-xl p-4 border ' + borderCol + ' ' + cardBg },
-            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, '\uD83C\uDF31 What You Can Do'),
+            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, t('stem.migration.what_you_can_do', '\uD83C\uDF31 What You Can Do')),
             h('div', { className: 'text-xs leading-relaxed space-y-2 ' + textSecondary },
               h('ul', { className: 'list-disc pl-4 space-y-1' },
-                h('li', null, h('strong', null, 'Lights Out: '), 'Turn off unnecessary lights during spring and fall migration (March-May, August-November). Even a single dark building can save hundreds of birds per night.'),
-                h('li', null, h('strong', null, 'Window Decals: '), 'Apply bird-safe decals to windows. Birds see reflections of sky and trees in glass, not the glass itself. Decals spaced 2 inches apart break up reflections.'),
-                h('li', null, h('strong', null, 'Native Plants: '), 'Plant native trees and shrubs that produce berries and attract insects \u2014 critical fuel for migrating birds. Non-native plants often lack the insects birds need.'),
-                h('li', null, h('strong', null, 'Keep Cats Inside: '), 'Indoor cats live longer, healthier lives AND save birds. Win-win.'),
-                h('li', null, h('strong', null, 'Citizen Science: '), 'Use apps like eBird (Cornell Lab) to report bird sightings. Your data helps scientists track migration timing and population trends.'),
-                h('li', null, h('strong', null, 'Support Habitat: '), 'Advocate for wetland protection and responsible wind energy siting in your community.')
+                h('li', null, h('strong', null, t('stem.migration.lights_out', 'Lights Out: ')), t('stem.migration.turn_off_unnecessary_lights_during_spr', 'Turn off unnecessary lights during spring and fall migration (March-May, August-November). Even a single dark building can save hundreds of birds per night.')),
+                h('li', null, h('strong', null, t('stem.migration.window_decals', 'Window Decals: ')), t('stem.migration.apply_bird_safe_decals_to_windows_bird', 'Apply bird-safe decals to windows. Birds see reflections of sky and trees in glass, not the glass itself. Decals spaced 2 inches apart break up reflections.')),
+                h('li', null, h('strong', null, t('stem.migration.native_plants', 'Native Plants: ')), t('stem.migration.plant_native_trees_and_shrubs_that_pro', 'Plant native trees and shrubs that produce berries and attract insects \u2014 critical fuel for migrating birds. Non-native plants often lack the insects birds need.')),
+                h('li', null, h('strong', null, t('stem.migration.keep_cats_inside', 'Keep Cats Inside: ')), t('stem.migration.indoor_cats_live_longer_healthier_live', 'Indoor cats live longer, healthier lives AND save birds. Win-win.')),
+                h('li', null, h('strong', null, t('stem.migration.citizen_science', 'Citizen Science: ')), t('stem.migration.use_apps_like_ebird_cornell_lab_to_rep', 'Use apps like eBird (Cornell Lab) to report bird sightings. Your data helps scientists track migration timing and population trends.')),
+                h('li', null, h('strong', null, t('stem.migration.support_habitat', 'Support Habitat: ')), t('stem.migration.advocate_for_wetland_protection_and_re', 'Advocate for wetland protection and responsible wind energy siting in your community.'))
               )
             )
           ),
 
           // Did you know box
           h('div', { className: 'rounded-xl p-4 border-2 border-sky-400/50 ' + accentBg },
-            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, '\uD83E\uDD14 Did You Know?'),
+            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, t('stem.migration.did_you_know', '\uD83E\uDD14 Did You Know?')),
             h('div', { className: 'text-xs leading-relaxed space-y-2 ' + textSecondary },
-              h('p', null, 'On peak migration nights, ', h('strong', null, 'over 500 million birds'), ' are in the air over North America simultaneously. Weather radar stations detect massive clouds of migrants taking off at sunset. You can watch migration in real-time at BirdCast (birdcast.info).'),
-              h('p', null, 'Most songbird migration happens at night, when the air is calmer, predators are fewer, and stars are visible for navigation. Birds use the ', h('strong', null, 'setting sun'), ' to calibrate their star compass at dusk.'),
-              h('p', null, 'The ', h('strong', null, 'magnetic sense'), ' of birds may work through quantum mechanics. Cryptochrome proteins in bird eyes may use quantum entanglement to detect Earth\'s magnetic field \u2014 making bird navigation one of the few biological processes that depends on quantum physics.'),
-              h('p', null, 'Some bird species can detect the ', h('strong', null, 'polarization pattern'), ' of sunlight even through heavy cloud cover, using special UV-sensitive cone cells in their retinas. This means that even on overcast days, birds can determine the sun\'s position and maintain their heading.'),
-              h('p', null, 'The ', h('strong', null, 'hippocampus'), ' (the brain\'s memory center) is significantly larger in migratory bird species than in non-migratory ones. During the migration season, it actually grows in size, adding new neurons through a process called adult neurogenesis. After migration, it shrinks back. This seasonal brain plasticity is a major area of neuroscience research.')
+              h('p', null, t('stem.migration.on_peak_migration_nights', 'On peak migration nights, '), h('strong', null, t('stem.migration.over_500_million_birds', 'over 500 million birds')), t('stem.migration.are_in_the_air_over_north_america_simu', ' are in the air over North America simultaneously. Weather radar stations detect massive clouds of migrants taking off at sunset. You can watch migration in real-time at BirdCast (birdcast.info).')),
+              h('p', null, t('stem.migration.most_songbird_migration_happens_at_nig', 'Most songbird migration happens at night, when the air is calmer, predators are fewer, and stars are visible for navigation. Birds use the '), h('strong', null, t('stem.migration.setting_sun', 'setting sun')), t('stem.migration.to_calibrate_their_star_compass_at_dus', ' to calibrate their star compass at dusk.')),
+              h('p', null, 'The ', h('strong', null, t('stem.migration.magnetic_sense', 'magnetic sense')), t('stem.migration.of_birds_may_work_through_quantum_mech', ' of birds may work through quantum mechanics. Cryptochrome proteins in bird eyes may use quantum entanglement to detect Earth\'s magnetic field \u2014 making bird navigation one of the few biological processes that depends on quantum physics.')),
+              h('p', null, t('stem.migration.some_bird_species_can_detect_the', 'Some bird species can detect the '), h('strong', null, t('stem.migration.polarization_pattern', 'polarization pattern')), t('stem.migration.of_sunlight_even_through_heavy_cloud_c', ' of sunlight even through heavy cloud cover, using special UV-sensitive cone cells in their retinas. This means that even on overcast days, birds can determine the sun\'s position and maintain their heading.')),
+              h('p', null, 'The ', h('strong', null, 'hippocampus'), t('stem.migration.the_brain_s_memory_center_is_significa', ' (the brain\'s memory center) is significantly larger in migratory bird species than in non-migratory ones. During the migration season, it actually grows in size, adding new neurons through a process called adult neurogenesis. After migration, it shrinks back. This seasonal brain plasticity is a major area of neuroscience research.'))
             )
           ),
 
           // Vocabulary builder
           h('div', { className: 'rounded-xl p-4 border ' + borderCol + ' ' + cardBg },
-            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, '\uD83D\uDCD6 Migration Vocabulary'),
+            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, t('stem.migration.migration_vocabulary', '\uD83D\uDCD6 Migration Vocabulary')),
             h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 gap-1.5' },
               [
                 { term: 'Zugunruhe', def: 'Migration restlessness; the urge to migrate' },
@@ -3280,15 +3280,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       // Back button
       var backButton = h('button', {
         className: 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + btnSecondary,
-        'aria-label': 'Back to STEM Lab tool list',
+        'aria-label': t('stem.migration.back_to_stem_lab_tool_list', 'Back to STEM Lab tool list'),
         onClick: function() { if (setStemLabTool) setStemLabTool(null); }
       },
         ArrowLeft && h(ArrowLeft, { size: 14, 'aria-hidden': 'true' }),
-        'Back'
+        t('stem.migration.back', 'Back')
       );
 
       // Tab bar
-      var tabBar = h('div', { className: 'flex gap-1 flex-wrap', role: 'tablist', 'aria-label': 'Migration & Wind Lab sections' },
+      var tabBar = h('div', { className: 'flex gap-1 flex-wrap', role: 'tablist', 'aria-label': t('stem.migration.migration_wind_lab_sections', 'Migration & Wind Lab sections') },
         TABS.map(function(tb, ti) {
           var active = tab === tb.id;
           return h('button', {
@@ -3335,24 +3335,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         var feasibility = fatBurnKJ / Math.max(1, totalKJ);
         var state = feasibility < 0.5 ? 'fatal' : feasibility < 0.9 ? 'borderline' : feasibility < 1.5 ? 'feasible' : feasibility < 3 ? 'comfortable' : 'easy';
         var sm = ({
-          fatal: { label: 'Fatal', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Energy budget < 50% of distance — bird would starve mid-flight. Stopover required.' },
-          borderline: { label: 'Borderline', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'Energy budget near distance — possible with perfect tailwind, otherwise stopovers mandatory.' },
-          feasible: { label: 'Feasible', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Single-leg flight realistic but tight. Most species refuel midway anyway.' },
-          comfortable: { label: 'Comfortable', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Distance is well within energy budget. Bar-tailed godwit-class endurance.' },
-          easy: { label: 'Easy', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: '3×+ reserve. Either short distance or oversized fat stores.' }
+          fatal: { label: t('stem.migration.fatal', 'Fatal'), color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: t('stem.migration.energy_budget_50_of_distance_bird_woul', 'Energy budget < 50% of distance — bird would starve mid-flight. Stopover required.') },
+          borderline: { label: t('stem.migration.borderline', 'Borderline'), color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: t('stem.migration.energy_budget_near_distance_possible_w', 'Energy budget near distance — possible with perfect tailwind, otherwise stopovers mandatory.') },
+          feasible: { label: t('stem.migration.feasible', 'Feasible'), color: '#facc15', bg: '#2a2410', border: '#eab308', desc: t('stem.migration.single_leg_flight_realistic_but_tight_', 'Single-leg flight realistic but tight. Most species refuel midway anyway.') },
+          comfortable: { label: t('stem.migration.comfortable', 'Comfortable'), color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: t('stem.migration.distance_is_well_within_energy_budget_', 'Distance is well within energy budget. Bar-tailed godwit-class endurance.') },
+          easy: { label: t('stem.migration.easy', 'Easy'), color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: t('stem.migration.3_reserve_either_short_distance_or_ove', '3×+ reserve. Either short distance or oversized fat stores.') }
         })[state];
         // SVG energy budget bar
         var pct = Math.min(1, totalKJ / fatBurnKJ);
         return h('div', { style: { padding: 14, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
-          h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, '🔬 Energy Inquiry — Can the bird make it?'),
-          h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, 'Pick wingspan, mass, headwind, formation, and distance. Predict the energy state. No score, no reveal.'),
+          h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, t('stem.migration.energy_inquiry_can_the_bird_make_it', '🔬 Energy Inquiry — Can the bird make it?')),
+          h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, t('stem.migration.pick_wingspan_mass_headwind_formation_', 'Pick wingspan, mass, headwind, formation, and distance. Predict the energy state. No score, no reveal.')),
           h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · reserve ratio ' + feasibility.toFixed(2) + 'x'),
           h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 10 } },
             [
               { label: 'Energy/km', val: energyPerKm.toFixed(2) + ' kJ' },
-              { label: 'Total need', val: totalKJ.toFixed(0) + ' kJ' },
-              { label: 'Fat budget', val: fatBurnKJ.toFixed(0) + ' kJ' }
+              { label: t('stem.migration.total_need', 'Total need'), val: totalKJ.toFixed(0) + ' kJ' },
+              { label: t('stem.migration.fat_budget', 'Fat budget'), val: fatBurnKJ.toFixed(0) + ' kJ' }
             ].map(function(m) {
               return h('div', { key: m.label, style: { padding: 6, borderRadius: 4, background: '#0a0a1a', border: '1px solid ' + sm.border, textAlign: 'center' } },
                 h('div', { style: { fontSize: 9, opacity: 0.6 } }, m.label),
@@ -3361,7 +3361,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             })
           ),
           h('svg', { width: '100%', height: 80, viewBox: '0 0 320 80', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 } },
-            h('text', { x: 10, y: 18, fill: '#94a3b8', fontSize: 10 }, 'Fat reserve (kJ)'),
+            h('text', { x: 10, y: 18, fill: '#94a3b8', fontSize: 10 }, t('stem.migration.fat_reserve_kj', 'Fat reserve (kJ)')),
             h('rect', { x: 10, y: 24, width: 300, height: 22, fill: '#0f172a', stroke: '#1e293b' }),
             h('rect', { x: 10, y: 24, width: Math.min(300, pct * 300), height: 22, fill: sm.color, opacity: 0.85 }),
             h('text', { x: 160, y: 39, fill: '#fff', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'flight needs ' + (pct * 100).toFixed(0) + '% of fat'),
@@ -3369,19 +3369,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
             h('label', null,
-              h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Wingspan'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.wingspan.toFixed(2) + ' m')),
+              h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, t('stem.migration.wingspan', 'Wingspan')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.wingspan.toFixed(2) + ' m')),
               h('input', { type: 'range', min: 0.1, max: 3.0, step: 0.05, value: iq.wingspan, onChange: function(e) { setKey('wingspan', parseFloat(e.target.value)); }, style: { width: '100%' } })
             ),
             h('label', null,
-              h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Mass'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.mass.toFixed(2) + ' kg')),
+              h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, t('stem.migration.mass', 'Mass')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.mass.toFixed(2) + ' kg')),
               h('input', { type: 'range', min: 0.05, max: 12, step: 0.05, value: iq.mass, onChange: function(e) { setKey('mass', parseFloat(e.target.value)); }, style: { width: '100%' } })
             ),
             h('label', null,
-              h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Headwind'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.headwind + ' m/s')),
+              h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, t('stem.migration.headwind', 'Headwind')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.headwind + ' m/s')),
               h('input', { type: 'range', min: -10, max: 20, step: 1, value: iq.headwind, onChange: function(e) { setKey('headwind', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
             ),
             h('label', null,
-              h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Distance'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.distance + ' km')),
+              h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, t('stem.migration.distance_3', 'Distance')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.distance + ' km')),
               h('input', { type: 'range', min: 100, max: 15000, step: 100, value: iq.distance, onChange: function(e) { setKey('distance', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
             )
           ),
@@ -3395,40 +3395,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('button', { onClick: function() {
               var t = new Date().toISOString().slice(11, 19);
               setIQ({ log: iq.log.concat([{ t: t, w: iq.wingspan.toFixed(2), m: iq.mass.toFixed(2), hw: iq.headwind, fmt: iq.vMode, d: iq.distance, fr: feasibility.toFixed(2), state: sm.label }]) });
-            }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '📋 Log this profile'),
-            h('button', { onClick: function() { setIQ({ wingspan: 1.2, mass: 0.8, headwind: 0, vMode: 'V', distance: 4000 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
+            }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, t('stem.migration.log_this_profile', '📋 Log this profile')),
+            h('button', { onClick: function() { setIQ({ wingspan: 1.2, mass: 0.8, headwind: 0, vMode: 'V', distance: 4000 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, t('stem.migration.reset', 'Reset'))
           ),
           iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
             iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · w' + e.w + ' m' + e.m + ' hw' + e.hw + ' ' + e.fmt + ' d' + e.d + ' → ' + e.fr + 'x'); })
           ),
-          h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (which parameter forces the most stopovers?)'),
-          h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., V-formation savings only pay off above 1500 km because takeoff cost dominates...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
-          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
+          h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, t('stem.migration.your_hypothesis_which_parameter_forces', 'Your hypothesis (which parameter forces the most stopovers?)')),
+          h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: t('stem.migration.e_g_v_formation_savings_only_pay_off_a', 'e.g., V-formation savings only pay off above 1500 km because takeoff cost dominates...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, t('stem.migration.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
           iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
-            h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
+            h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, t('stem.migration.open_questions_no_answer_key', 'Open questions (no answer key)')),
             h('ul', { style: { margin: 0, paddingLeft: 16 } },
-              h('li', null, 'Why would a heavier bird necessarily need MORE energy per km — what does that have to do with drag?'),
-              h('li', null, 'A 10 m/s headwind doubles the work — what happens if half the journey has 10 m/s tailwind?'),
-              h('li', null, 'Why is V-formation savings about 22%? What does it cost the lead bird?'),
-              h('li', null, 'How does a hummingbird (4 g, 1500 km Gulf of Mexico crossing) even survive its migration?')
+              h('li', null, t('stem.migration.why_would_a_heavier_bird_necessarily_n', 'Why would a heavier bird necessarily need MORE energy per km — what does that have to do with drag?')),
+              h('li', null, t('stem.migration.a_10_m_s_headwind_doubles_the_work_wha', 'A 10 m/s headwind doubles the work — what happens if half the journey has 10 m/s tailwind?')),
+              h('li', null, t('stem.migration.why_is_v_formation_savings_about_22_wh', 'Why is V-formation savings about 22%? What does it cost the lead bird?')),
+              h('li', null, t('stem.migration.how_does_a_hummingbird_4_g_1500_km_gul', 'How does a hummingbird (4 g, 1500 km Gulf of Mexico crossing) even survive its migration?'))
             )
           ),
           h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
             h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
-            h('span', null, 'I can explain why this profile yields this energy state.')
+            h('span', null, t('stem.migration.i_can_explain_why_this_profile_yields_', 'I can explain why this profile yields this energy state.'))
           ),
-          iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
-          h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal, no answer dump. Energy model is illustrative (drag ∝ m^0.67 / wingspan). V-formation savings vary ~10–30% across species and positions (Lissaman & Shollenberger 1970 theoretical upper bound; in-flight measurements include Weimerskirch et al. 2001 on pelicans and Portugal et al. 2014 on ibises). Widget uses 22% as a midpoint estimate. For real-world stopover ecology consult primary literature.')
+          iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: t('stem.migration.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+          h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, t('stem.migration.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Energy model is illustrative (drag ∝ m^0.67 / wingspan). V-formation savings vary ~10–30% across species and positions (Lissaman & Shollenberger 1970 theoretical upper bound; in-flight measurements include Weimerskirch et al. 2001 on pelicans and Portugal et al. 2014 on ibises). Widget uses 22% as a midpoint estimate. For real-world stopover ecology consult primary literature.'))
         );
       }
 
       // Topic-accent hero band per tab
       var TAB_META = {
-        vformation: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)',  icon: '\uD83E\uDEBF', title: 'V-formation flying',         hint: 'Trailing birds catch the upwash from the bird ahead \u2014 20\u201330% energy savings. Lead position rotates because the front bird does the most work.' },
-        wind:       { accent: '#06b6d4', soft: 'rgba(6,182,212,0.10)',   icon: '\uD83C\uDF2C\uFE0F', title: 'Wind currents + thermals',   hint: 'Birds read pressure gradients we cannot feel. Updrafts, ridge lift, and thermal columns are how raptors fly hundreds of miles burning almost no calories.' },
-        routes:     { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',   icon: '\uD83D\uDDFA\uFE0F', title: 'Migration routes + flyways',  hint: 'Four major North American flyways (Pacific, Central, Mississippi, Atlantic) channel billions of birds twice yearly. Maine sits at the top of the Atlantic Flyway.' },
-        aero:       { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)',  icon: '\u2708\uFE0F', title: 'Aerodynamics of bird flight', hint: 'Wing shape (aspect ratio + camber) tunes lift vs drag. Soaring birds = high aspect ratio, slow wingbeat. Hummingbirds = low AR, 60+ Hz wingbeat.' },
-        navigate:   { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)',  icon: '\uD83E\uDDED', title: 'Weather + navigation',       hint: 'Birds use multiple cues simultaneously \u2014 sun compass, magnetic field via cryptochrome in the eye, star patterns, and learned landmarks. Robust against losing any single cue.' }
+        vformation: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)',  icon: '\uD83E\uDEBF', title: t('stem.migration.v_formation_flying', 'V-formation flying'),         hint: t('stem.migration.trailing_birds_catch_the_upwash_from_t', 'Trailing birds catch the upwash from the bird ahead \u2014 20\u201330% energy savings. Lead position rotates because the front bird does the most work.') },
+        wind:       { accent: '#06b6d4', soft: 'rgba(6,182,212,0.10)',   icon: '\uD83C\uDF2C\uFE0F', title: t('stem.migration.wind_currents_thermals', 'Wind currents + thermals'),   hint: t('stem.migration.birds_read_pressure_gradients_we_canno', 'Birds read pressure gradients we cannot feel. Updrafts, ridge lift, and thermal columns are how raptors fly hundreds of miles burning almost no calories.') },
+        routes:     { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',   icon: '\uD83D\uDDFA\uFE0F', title: t('stem.migration.migration_routes_flyways', 'Migration routes + flyways'),  hint: t('stem.migration.four_major_north_american_flyways_paci', 'Four major North American flyways (Pacific, Central, Mississippi, Atlantic) channel billions of birds twice yearly. Maine sits at the top of the Atlantic Flyway.') },
+        aero:       { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)',  icon: '\u2708\uFE0F', title: t('stem.migration.aerodynamics_of_bird_flight', 'Aerodynamics of bird flight'), hint: t('stem.migration.wing_shape_aspect_ratio_camber_tunes_l', 'Wing shape (aspect ratio + camber) tunes lift vs drag. Soaring birds = high aspect ratio, slow wingbeat. Hummingbirds = low AR, 60+ Hz wingbeat.') },
+        navigate:   { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)',  icon: '\uD83E\uDDED', title: t('stem.migration.weather_navigation', 'Weather + navigation'),       hint: t('stem.migration.birds_use_multiple_cues_simultaneously', 'Birds use multiple cues simultaneously \u2014 sun compass, magnetic field via cryptochrome in the eye, star patterns, and learned landmarks. Robust against losing any single cue.') }
       };
       var meta = TAB_META[tab] || TAB_META.vformation;
       var tabHero = h('div', {
@@ -3456,7 +3456,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('span', { className: 'text-2xl', 'aria-hidden': 'true' }, '\uD83E\uDEBF'),
             h('div', null,
               h('h2', { className: 'font-black text-sm ' + textPrimary }, t ? t('Migration & Wind Lab') : 'Migration & Wind Lab'),
-              h('p', { className: 'text-[11px] ' + textMuted }, 'V-formation \u2022 Wind currents \u2022 Flyways \u2022 Aerodynamics \u2022 Navigation')
+              h('p', { className: 'text-[11px] ' + textMuted }, t('stem.migration.v_formation_wind_currents_flyways_aero', 'V-formation \u2022 Wind currents \u2022 Flyways \u2022 Aerodynamics \u2022 Navigation'))
             )
           )
         ),

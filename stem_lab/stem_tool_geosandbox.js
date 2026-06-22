@@ -1171,7 +1171,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'flex flex-col items-center justify-center gap-4 p-12 animate-pulse' },
           h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, gd._srMsg || ''),
           h('div', { className: 'text-5xl' }, '\uD83D\uDD37'),
-          h('div', { className: 'text-slate-200 text-lg' }, 'Loading 3D engine...')
+          h('div', { className: 'text-slate-200 text-lg' }, t('stem.geosandbox.loading_3d_engine', 'Loading 3D engine...'))
         );
       }
 
@@ -1183,10 +1183,10 @@ window.StemLab = window.StemLab || {
         // Header row
         h('div', { className: 'flex items-center justify-between gap-3 flex-wrap' },
           h('h2', { className: 'text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-blue-500 flex items-center gap-2' },
-            '\uD83D\uDD37 Geometry Sandbox'
+            t('stem.geosandbox.geometry_sandbox', '\uD83D\uDD37 Geometry Sandbox')
           ),
           // \u2500\u2500 v2: Mode toggle (Single shape \u2194 Dimensional stretch) \u2500\u2500
-          h('div', { className: 'flex items-center gap-1 bg-slate-800/60 rounded-full p-1 border border-slate-700', role: 'tablist', 'aria-label': 'Geometry mode' },
+          h('div', { className: 'flex items-center gap-1 bg-slate-800/60 rounded-full p-1 border border-slate-700', role: 'tablist', 'aria-label': t('stem.geosandbox.geometry_mode', 'Geometry mode') },
             h('button', {
               role: 'tab',
               'aria-selected': mode === 'single',
@@ -1196,7 +1196,7 @@ window.StemLab = window.StemLab || {
               },
               className: 'px-3 py-1 rounded-full text-[11px] font-bold transition-all ' +
                 (mode === 'single' ? 'bg-sky-600 text-white shadow' : 'text-slate-300 hover:text-slate-100')
-            }, '\uD83D\uDCE6 Single shape'),
+            }, t('stem.geosandbox.single_shape', '\uD83D\uDCE6 Single shape')),
             h('button', {
               role: 'tab',
               'aria-selected': mode === 'stretch',
@@ -1204,40 +1204,40 @@ window.StemLab = window.StemLab || {
                 upd('mode', 'stretch');
                 if (announceToSR) announceToSR('Dimensional stretch mode. Place a point and stretch it into higher dimensions.');
               },
-              title: 'HandWaver-inspired: build by stretching point \u2192 line \u2192 plane \u2192 solid',
+              title: t('stem.geosandbox.handwaver_inspired_build_by_stretching', 'HandWaver-inspired: build by stretching point \u2192 line \u2192 plane \u2192 solid'),
               className: 'px-3 py-1 rounded-full text-[11px] font-bold transition-all ' +
                 (mode === 'stretch' ? 'bg-purple-600 text-white shadow' : 'text-slate-300 hover:text-slate-100')
-            }, '\uD83D\uDCD0 Stretch mode')
+            }, t('stem.geosandbox.stretch_mode', '\uD83D\uDCD0 Stretch mode'))
           ),
           h('div', { className: 'flex gap-2 flex-wrap' },
-            h('button', { 'aria-label': 'Challenge',
+            h('button', { 'aria-label': t('stem.geosandbox.challenge', 'Challenge'),
               onClick: generateChallenge,
-              title: 'Challenge Mode [C]',
+              title: t('stem.geosandbox.challenge_mode_c', 'Challenge Mode [C]'),
               className: 'px-3 py-1.5 text-xs font-bold transition-all rounded-full flex items-center gap-1 ' + (gd.challengeMode ? 'text-white bg-gradient-to-r from-amber-600 to-orange-700 shadow-md shadow-amber-600/20 hover:from-amber-700 hover:to-orange-800' : 'text-amber-900 bg-amber-500/20 border border-amber-500/30 hover:bg-amber-500/30')
-            }, '\uD83C\uDFAF Challenge'),
-            gd.challengeMode && h('button', { 'aria-label': 'Exit',
+            }, t('stem.geosandbox.challenge_2', '\uD83C\uDFAF Challenge')),
+            gd.challengeMode && h('button', { 'aria-label': t('stem.geosandbox.exit', 'Exit'),
               onClick: function() { setLabToolData(function(prev) { return Object.assign({}, prev, { geoSandbox: Object.assign({}, prev.geoSandbox||{}, { challengeMode:false, challenge:null, challengeAnswer:'', challengeResult:null }) }); }); },
               className: 'px-3 py-1.5 text-xs font-bold text-slate-200 bg-slate-700/60 rounded-full hover:bg-slate-600 transition-all'
-            }, '\u2716 Exit'),
-            h('button', { 'aria-label': 'Badges [B]',
+            }, t('stem.geosandbox.exit_2', '\u2716 Exit')),
+            h('button', { 'aria-label': t('stem.geosandbox.badges_b', 'Badges [B]'),
               onClick: function() { updExt({ showBadges: !showBadges }); },
-              title: 'Badges [B]',
+              title: t('stem.geosandbox.badges_b_2', 'Badges [B]'),
               className: 'px-3 py-1.5 text-xs font-bold rounded-full flex items-center gap-1 transition-all ' + (showBadges ? 'text-white bg-gradient-to-r from-purple-500 to-fuchsia-600 shadow-md' : 'text-purple-300 bg-purple-500/20 border border-purple-500/30 hover:bg-purple-500/30')
             }, '\uD83C\uDFC5 ' + badgeCount + '/' + Object.keys(geoBadges).length),
             h('button', { 'aria-label': 'STL',
               onClick: askAI,
-              title: 'AI Tutor [/]',
+              title: t('stem.geosandbox.ai_tutor', 'AI Tutor [/]'),
               className: 'px-3 py-1.5 text-xs font-bold rounded-full flex items-center gap-1 transition-all ' + (aiLoading ? 'text-white bg-gradient-to-r from-cyan-700 to-blue-700 animate-pulse' : showAI ? 'text-white bg-gradient-to-r from-cyan-700 to-blue-700 shadow-md' : 'text-cyan-300 bg-cyan-500/20 border border-cyan-500/30 hover:bg-cyan-500/30')
             }, aiLoading ? '\u23F3 Thinking...' : '\uD83E\uDD16 AI Tutor'),
             h('button', { 'aria-label': 'STL',
               onClick: doExportSTL,
-              title: 'Export STL [E]',
+              title: t('stem.geosandbox.export_stl_e', 'Export STL [E]'),
               className: 'px-3 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-emerald-700 to-green-700 rounded-full hover:from-emerald-800 hover:to-green-800 shadow-md hover:shadow-lg transition-all flex items-center gap-1'
-            }, '\uD83D\uDCE6 STL'),
-            h('button', { 'aria-label': 'Back',
+            }, t('stem.geosandbox.stl', '\uD83D\uDCE6 STL')),
+            h('button', { 'aria-label': t('stem.geosandbox.back', 'Back'),
               onClick: function() { cleanupScene(); setStemLabTool(null); },
               className: 'px-3 py-1.5 text-xs font-bold text-slate-300 bg-slate-700/60 rounded-full hover:bg-slate-600 transition-all'
-            }, '\u2190 Back')
+            }, t('stem.geosandbox.back_2', '\u2190 Back'))
           )
         ),
 
@@ -1260,14 +1260,14 @@ window.StemLab = window.StemLab || {
         // ── AI Tutor panel ──
         showAI && h('div', { className: 'bg-gradient-to-br from-cyan-900/40 to-blue-900/30 backdrop-blur-md rounded-xl p-4 border border-cyan-500/30' },
           h('div', { className: 'flex items-center justify-between mb-2' },
-            h('div', { className: 'text-sm font-bold text-cyan-200 flex items-center gap-2' }, '\uD83E\uDD16 AI Geometry Tutor'),
-            h('button', { onClick: function() { updExt({ showAI: false }); }, 'aria-label': 'Close AI Geometry Tutor', className: 'text-xs text-slate-200 hover:text-slate-200' }, '\u2716')
+            h('div', { className: 'text-sm font-bold text-cyan-200 flex items-center gap-2' }, t('stem.geosandbox.ai_geometry_tutor', '\uD83E\uDD16 AI Geometry Tutor')),
+            h('button', { onClick: function() { updExt({ showAI: false }); }, 'aria-label': t('stem.geosandbox.close_ai_geometry_tutor', 'Close AI Geometry Tutor'), className: 'text-xs text-slate-200 hover:text-slate-200' }, '\u2716')
           ),
           aiLoading
             ? h('div', { className: 'text-sm text-cyan-300 animate-pulse' }, 'Analyzing this ' + m.name + '...')
             : aiResponse
               ? h('div', { className: 'text-sm text-slate-200 leading-relaxed whitespace-pre-wrap' }, aiResponse)
-              : h('div', { className: 'text-sm text-slate-200 italic' }, 'Click "AI Tutor" or press / to get insights about the current shape.')
+              : h('div', { className: 'text-sm text-slate-200 italic' }, t('stem.geosandbox.click_ai_tutor_or_press_to_get_insight', 'Click "AI Tutor" or press / to get insights about the current shape.'))
         ),
 
         // Main layout: sidebar + viewport
@@ -1278,10 +1278,10 @@ window.StemLab = window.StemLab || {
 
             // Shape palette (single-shape mode only)
             mode === 'single' && h('div', { className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border border-slate-700/50' },
-              h('div', { className: 'text-xs font-bold text-slate-300 uppercase tracking-wider mb-2' }, 'Shapes'),
+              h('div', { className: 'text-xs font-bold text-slate-300 uppercase tracking-wider mb-2' }, t('stem.geosandbox.shapes', 'Shapes')),
               h('div', { className: 'grid grid-cols-4 gap-1.5' },
                 shapes.map(function(s) {
-                  return h('button', { 'aria-label': 'Select Shape',
+                  return h('button', { 'aria-label': t('stem.geosandbox.select_shape', 'Select Shape'),
                     key: s.id,
                     onClick: function() { selectShape(s.id); },
                     title: s.label + ' [' + s.key + ']',
@@ -1297,20 +1297,20 @@ window.StemLab = window.StemLab || {
 
             // ── v2: STRETCH MODE PANEL — the HandWaver-inspired workflow ──
             mode === 'stretch' && h('div', { className: 'bg-gradient-to-br from-purple-900/40 to-fuchsia-900/30 rounded-xl p-3 border border-purple-500/40 space-y-3' },
-              h('div', { className: 'text-xs font-bold text-purple-200 uppercase tracking-wider' }, '📐 Dimensional Stretch Builder'),
+              h('div', { className: 'text-xs font-bold text-purple-200 uppercase tracking-wider' }, t('stem.geosandbox.dimensional_stretch_builder', '📐 Dimensional Stretch Builder')),
               h('p', { className: 'text-[11px] text-purple-200/80 leading-relaxed' },
-                'Build geometry by stretching a point into a line, a line into a plane, and a plane into a solid. Each stretch adds a new object to the scene.'
+                t('stem.geosandbox.build_geometry_by_stretching_a_point_i', 'Build geometry by stretching a point into a line, a line into a plane, and a plane into a solid. Each stretch adds a new object to the scene.')
               ),
               // Step 1: Place point
               h('button', {
                 onClick: function() { addPoint([0, 0, 0]); },
-                'aria-label': 'Add a point at origin',
+                'aria-label': t('stem.geosandbox.add_a_point_at_origin', 'Add a point at origin'),
                 className: 'w-full px-3 py-2 rounded-lg text-xs font-bold bg-purple-600 text-white hover:bg-purple-700 transition-all shadow-md'
-              }, '⊙ Place point at origin'),
+              }, t('stem.geosandbox.place_point_at_origin', '⊙ Place point at origin')),
               // Stretch axis selector
               h('div', null,
-                h('div', { className: 'text-[11px] font-bold text-purple-200 mb-1' }, 'Stretch axis:'),
-                h('div', { className: 'flex gap-1', role: 'radiogroup', 'aria-label': 'Stretch axis' },
+                h('div', { className: 'text-[11px] font-bold text-purple-200 mb-1' }, t('stem.geosandbox.stretch_axis', 'Stretch axis:')),
+                h('div', { className: 'flex gap-1', role: 'radiogroup', 'aria-label': t('stem.geosandbox.stretch_axis_2', 'Stretch axis') },
                   STRETCH_AXES.map(function(ax) {
                     var active = stretchAxis === ax.id;
                     return h('button', {
@@ -1328,14 +1328,14 @@ window.StemLab = window.StemLab || {
               // Stretch length
               h('div', null,
                 h('div', { className: 'flex justify-between text-[11px] font-bold text-purple-200 mb-1' },
-                  h('span', null, 'Length'),
+                  h('span', null, t('stem.geosandbox.length', 'Length')),
                   h('span', { className: 'text-purple-300 font-mono' }, stretchLength.toFixed(1) + ' ' + unitDef.short)
                 ),
                 h('input', {
                   type: 'range', min: '0.5', max: '8', step: '0.5',
                   value: stretchLength,
                   onChange: function(e) { upd('stretchLength', parseFloat(e.target.value)); },
-                  'aria-label': 'Stretch length',
+                  'aria-label': t('stem.geosandbox.stretch_length', 'Stretch length'),
                   className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-500'
                 })
               ),
@@ -1384,17 +1384,17 @@ window.StemLab = window.StemLab || {
                 h('button', {
                   onClick: doStretchUndo,
                   disabled: !history.length,
-                  'aria-label': 'Undo last stretch',
+                  'aria-label': t('stem.geosandbox.undo_last_stretch', 'Undo last stretch'),
                   className: 'flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all ' +
                     (history.length ? 'bg-amber-700 text-white hover:bg-amber-800' : 'bg-slate-700 text-slate-500 cursor-not-allowed')
                 }, '↶ Undo (' + history.length + ')'),
                 h('button', {
                   onClick: clearConstruction,
                   disabled: !construction.objects.length,
-                  'aria-label': 'Clear all construction objects',
+                  'aria-label': t('stem.geosandbox.clear_all_construction_objects', 'Clear all construction objects'),
                   className: 'flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all ' +
                     (construction.objects.length ? 'bg-rose-700 text-white hover:bg-rose-800' : 'bg-slate-700 text-slate-500 cursor-not-allowed')
-                }, '× Clear all')
+                }, t('stem.geosandbox.clear_all', '× Clear all'))
               )
             ),
 
@@ -1432,10 +1432,10 @@ window.StemLab = window.StemLab || {
               cx /= n; cy /= n; cz /= n;
               var state = avgDim < 0.5 ? 'pointcloud' : avgDim < 1.5 ? 'linear' : avgDim < 2.5 ? 'planar' : 'volumetric';
               var sm = ({
-                pointcloud: { label: 'Point cloud (0D)', color: '#a78bfa', bg: '#1a0a2e', border: '#7c3aed', desc: 'Mostly points — stretch any to begin building line segments.' },
-                linear: { label: 'Linear (1D)', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Line segments dominate. Stretching them perpendicular yields planes.' },
-                planar: { label: 'Planar (2D)', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Rectangles dominate. Stretch perpendicular to a plane to extrude prisms.' },
-                volumetric: { label: 'Volumetric (3D)', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Solids dominate. Each prism has interior volume and surface boundary.' }
+                pointcloud: { label: t('stem.geosandbox.point_cloud_0d', 'Point cloud (0D)'), color: '#a78bfa', bg: '#1a0a2e', border: '#7c3aed', desc: t('stem.geosandbox.mostly_points_stretch_any_to_begin_bui', 'Mostly points — stretch any to begin building line segments.') },
+                linear: { label: t('stem.geosandbox.linear_1d', 'Linear (1D)'), color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: t('stem.geosandbox.line_segments_dominate_stretching_them', 'Line segments dominate. Stretching them perpendicular yields planes.') },
+                planar: { label: t('stem.geosandbox.planar_2d', 'Planar (2D)'), color: '#facc15', bg: '#2a2410', border: '#eab308', desc: t('stem.geosandbox.rectangles_dominate_stretch_perpendicu', 'Rectangles dominate. Stretch perpendicular to a plane to extrude prisms.') },
+                volumetric: { label: t('stem.geosandbox.volumetric_3d', 'Volumetric (3D)'), color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: t('stem.geosandbox.solids_dominate_each_prism_has_interio', 'Solids dominate. Each prism has interior volume and surface boundary.') }
               })[state];
               // SVG isometric projection
               var ang = iq.viewAngle * Math.PI / 180;
@@ -1484,15 +1484,15 @@ window.StemLab = window.StemLab || {
                 }
               });
               var metrics = [
-                { k: 'count', label: 'Objects', val: objs.length },
-                { k: 'dim', label: 'Avg dim', val: avgDim.toFixed(2) },
-                { k: 'len', label: 'Σ length', val: totalLen.toFixed(2) },
-                { k: 'area', label: 'Σ area', val: totalArea.toFixed(2) },
-                { k: 'vol', label: 'Σ volume', val: totalVol.toFixed(2) }
+                { k: 'count', label: t('stem.geosandbox.objects', 'Objects'), val: objs.length },
+                { k: 'dim', label: t('stem.geosandbox.avg_dim', 'Avg dim'), val: avgDim.toFixed(2) },
+                { k: 'len', label: t('stem.geosandbox.length_2', 'Σ length'), val: totalLen.toFixed(2) },
+                { k: 'area', label: t('stem.geosandbox.area', 'Σ area'), val: totalArea.toFixed(2) },
+                { k: 'vol', label: t('stem.geosandbox.volume', 'Σ volume'), val: totalVol.toFixed(2) }
               ];
               return h('div', { className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border border-purple-700/40', style: { color: '#e8f0f5' } },
-                h('div', { className: 'text-xs font-bold uppercase tracking-wider mb-1', style: { color: sm.color } }, '📐 Stretch Analyzer — Inquiry Widget'),
-                h('div', { className: 'text-[10px] opacity-80 mb-2' }, 'Predict geometry properties as you stretch. No answer key — you mark your own understanding.'),
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider mb-1', style: { color: sm.color } }, t('stem.geosandbox.stretch_analyzer_inquiry_widget', '📐 Stretch Analyzer — Inquiry Widget')),
+                h('div', { className: 'text-[10px] opacity-80 mb-2' }, t('stem.geosandbox.predict_geometry_properties_as_you_str', 'Predict geometry properties as you stretch. No answer key — you mark your own understanding.')),
                 h('div', { className: 'inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2', style: { background: sm.color, color: '#000' } }, sm.label),
                 h('div', { className: 'text-[10px] opacity-80 mb-2' }, sm.desc),
                 h('div', { className: 'grid grid-cols-5 gap-1 mb-2' },
@@ -1519,21 +1519,21 @@ window.StemLab = window.StemLab || {
                 ),
                 h('div', { className: 'grid grid-cols-2 gap-2 mb-2' },
                   h('label', { className: 'text-[10px]' },
-                    h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, 'View angle'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.viewAngle + '°')),
+                    h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, t('stem.geosandbox.view_angle', 'View angle')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.viewAngle + '°')),
                     h('input', { type: 'range', min: 0, max: 60, step: 5, value: iq.viewAngle, onChange: function(e) { setKey('viewAngle', parseInt(e.target.value, 10)); }, className: 'w-full' })
                   ),
                   h('label', { className: 'text-[10px]' },
-                    h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, 'Detail level'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.detail)),
+                    h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, t('stem.geosandbox.detail_level', 'Detail level')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.detail)),
                     h('input', { type: 'range', min: 1, max: 3, step: 1, value: iq.detail, onChange: function(e) { setKey('detail', parseInt(e.target.value, 10)); }, className: 'w-full' })
                   ),
                   h('label', { className: 'text-[10px]' },
-                    h('div', { className: 'mb-0.5' }, 'Focus on type'),
+                    h('div', { className: 'mb-0.5' }, t('stem.geosandbox.focus_on_type', 'Focus on type')),
                     h('select', { value: iq.focus, onChange: function(e) { setKey('focus', e.target.value); }, className: 'w-full p-1 rounded bg-slate-900 border border-purple-700/40 text-[10px]', style: { color: '#e8f0f5' } },
                       ['all', 'point', 'segment', 'rect', 'prism'].map(function(t) { return h('option', { key: t, value: t }, t); })
                     )
                   ),
                   h('label', { className: 'text-[10px]' },
-                    h('div', { className: 'mb-0.5' }, 'Edge style'),
+                    h('div', { className: 'mb-0.5' }, t('stem.geosandbox.edge_style', 'Edge style')),
                     h('select', { value: iq.edgeStyle, onChange: function(e) { setKey('edgeStyle', e.target.value); }, className: 'w-full p-1 rounded bg-slate-900 border border-purple-700/40 text-[10px]', style: { color: '#e8f0f5' } },
                       [['colored', 'colored by dimension'], ['plain', 'plain white']].map(function(o) { return h('option', { key: o[0], value: o[0] }, o[1]); })
                     )
@@ -1543,36 +1543,36 @@ window.StemLab = window.StemLab || {
                   h('button', { onClick: function() {
                     var t = new Date().toISOString().slice(11, 19);
                     setIQ({ log: iq.log.concat([{ t: t, n: objs.length, dim: avgDim.toFixed(2), len: totalLen.toFixed(2), area: totalArea.toFixed(2), vol: totalVol.toFixed(2) }]) });
-                  }, className: 'flex-1 px-2 py-1 rounded text-[10px] font-bold', style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, '📋 Log snapshot'),
-                  h('button', { onClick: function() { setIQ({ log: [] }); }, className: 'px-2 py-1 rounded text-[10px]', style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, 'Clear log')
+                  }, className: 'flex-1 px-2 py-1 rounded text-[10px] font-bold', style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, t('stem.geosandbox.log_snapshot', '📋 Log snapshot')),
+                  h('button', { onClick: function() { setIQ({ log: [] }); }, className: 'px-2 py-1 rounded text-[10px]', style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, t('stem.geosandbox.clear_log', 'Clear log'))
                 ),
                 iq.log.length > 0 && h('div', { className: 'mb-2 p-1.5 rounded text-[9px] font-mono', style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
                   iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  n=' + e.n + ' d=' + e.dim + ' L=' + e.len + ' A=' + e.area + ' V=' + e.vol); })
                 ),
-                h('label', { className: 'block text-[10px] font-bold opacity-85 mb-1' }, 'Your hypothesis (what stretches grow length faster — area faster — volume faster?)'),
-                h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., stretching a segment perpendicular doubles area but volume needs a second stretch...', className: 'w-full p-1.5 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded text-[10px] font-bold mb-2', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, "🤔 I'm stuck — show open questions"),
+                h('label', { className: 'block text-[10px] font-bold opacity-85 mb-1' }, t('stem.geosandbox.your_hypothesis_what_stretches_grow_le', 'Your hypothesis (what stretches grow length faster — area faster — volume faster?)')),
+                h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: t('stem.geosandbox.e_g_stretching_a_segment_perpendicular', 'e.g., stretching a segment perpendicular doubles area but volume needs a second stretch...'), className: 'w-full p-1.5 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded text-[10px] font-bold mb-2', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, t('stem.geosandbox.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
                 iq.stuckRevealed && h('div', { className: 'p-2 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
-                  h('div', { className: 'font-bold mb-1', style: { color: sm.color } }, 'Open questions (no answer key)'),
+                  h('div', { className: 'font-bold mb-1', style: { color: sm.color } }, t('stem.geosandbox.open_questions_no_answer_key', 'Open questions (no answer key)')),
                   h('ul', { className: 'pl-4 m-0' },
-                    h('li', null, 'When you stretch a segment perpendicular to itself, what happens to its dimension count?'),
-                    h('li', null, 'If centroid shifts after a stretch, what direction did you stretch most?'),
-                    h('li', null, 'How does total volume change vs total area as you stretch the same axis twice?'),
-                    h('li', null, 'What would make this construction symmetric about its centroid?')
+                    h('li', null, t('stem.geosandbox.when_you_stretch_a_segment_perpendicul', 'When you stretch a segment perpendicular to itself, what happens to its dimension count?')),
+                    h('li', null, t('stem.geosandbox.if_centroid_shifts_after_a_stretch_wha', 'If centroid shifts after a stretch, what direction did you stretch most?')),
+                    h('li', null, t('stem.geosandbox.how_does_total_volume_change_vs_total_', 'How does total volume change vs total area as you stretch the same axis twice?')),
+                    h('li', null, t('stem.geosandbox.what_would_make_this_construction_symm', 'What would make this construction symmetric about its centroid?'))
                   )
                 ),
                 h('label', { className: 'flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1' },
                   h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
-                  h('span', null, 'I can explain why these metrics scale the way they do as I stretch.')
+                  h('span', null, t('stem.geosandbox.i_can_explain_why_these_metrics_scale_', 'I can explain why these metrics scale the way they do as I stretch.'))
                 ),
-                iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', className: 'w-full p-1.5 rounded text-[10px] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-                h('p', { className: 'm-0 text-[9px] italic opacity-60' }, 'Inquiry widget — no score, no reveal, no answer dump.')
+                iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: t('stem.geosandbox.explain_in_your_own_words', 'Explain in your own words...'), className: 'w-full p-1.5 rounded text-[10px] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                h('p', { className: 'm-0 text-[9px] italic opacity-60' }, t('stem.geosandbox.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump.'))
               );
             })(),
 
             // Property sliders (single-shape mode only)
             mode === 'single' && h('div', { className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border border-slate-700/50' },
-              h('div', { className: 'text-xs font-bold text-slate-300 uppercase tracking-wider mb-2' }, 'Properties'),
+              h('div', { className: 'text-xs font-bold text-slate-300 uppercase tracking-wider mb-2' }, t('stem.geosandbox.properties', 'Properties')),
               currentSliders.map(function(sl) {
                 return h('div', { key: sl.key, className: 'mb-2' },
                   h('div', { className: 'flex justify-between text-[11px] text-slate-300 mb-0.5' },
@@ -1593,7 +1593,7 @@ window.StemLab = window.StemLab || {
               }),
               // Color picker
               h('div', { className: 'mt-3' },
-                h('div', { className: 'text-[11px] text-slate-300 mb-1' }, 'Color'),
+                h('div', { className: 'text-[11px] text-slate-300 mb-1' }, t('stem.geosandbox.color', 'Color')),
                 h('div', { className: 'flex gap-1.5 flex-wrap' },
                   colorPalette.map(function(c) {
                     return h('button', { key: c,
@@ -1607,28 +1607,28 @@ window.StemLab = window.StemLab || {
               ),
               // Wireframe toggle
               h('div', { className: 'flex items-center gap-2 mt-3' },
-                h('button', { 'aria-label': 'Wireframe',
+                h('button', { 'aria-label': t('stem.geosandbox.wireframe', 'Wireframe'),
                   onClick: toggleWireframe,
-                  title: 'Toggle wireframe [W]',
+                  title: t('stem.geosandbox.toggle_wireframe_w', 'Toggle wireframe [W]'),
                   className: 'w-8 h-4 rounded-full transition-all relative ' + (wireframe ? 'bg-sky-500' : 'bg-slate-600')
                 },
                   h('div', {
                     className: 'w-3 h-3 rounded-full bg-white absolute top-0.5 transition-all ' + (wireframe ? 'left-4' : 'left-0.5')
                   })
                 ),
-                h('span', { className: 'text-[11px] text-slate-300' }, 'Wireframe')
+                h('span', { className: 'text-[11px] text-slate-300' }, t('stem.geosandbox.wireframe_2', 'Wireframe'))
               ),
               // Opacity slider
               h('div', { className: 'mt-2' },
                 h('div', { className: 'flex justify-between text-[11px] text-slate-300 mb-0.5' },
-                  h('span', null, 'Opacity'),
+                  h('span', null, t('stem.geosandbox.opacity', 'Opacity')),
                   h('span', { className: 'text-sky-400 font-mono' }, Math.round(opacity * 100) + '%')
                 ),
                 h('input', {
                   type: 'range', min: 0.1, max: 1, step: 0.05,
                   value: opacity,
                   onChange: function(e) { upd('opacity', parseFloat(e.target.value)); },
-                  'aria-label': 'Shape opacity',
+                  'aria-label': t('stem.geosandbox.shape_opacity', 'Shape opacity'),
                   className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-sky-500'
                 })
               )
@@ -1636,13 +1636,13 @@ window.StemLab = window.StemLab || {
 
             // ── v2: Real-world unit + save/load shared between modes ──
             h('div', { className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border border-slate-700/50 space-y-2' },
-              h('div', { className: 'text-xs font-bold text-slate-300 uppercase tracking-wider' }, '🛠 Tools'),
+              h('div', { className: 'text-xs font-bold text-slate-300 uppercase tracking-wider' }, t('stem.geosandbox.tools', '🛠 Tools')),
               h('div', { className: 'flex items-center gap-1' },
                 h('label', { className: 'text-[11px] text-slate-300 font-bold mr-1' }, 'Units:'),
                 h('select', {
                   value: unitId,
                   onChange: function(e) { upd('unitId', e.target.value); if (announceToSR) announceToSR('Unit changed to ' + e.target.options[e.target.selectedIndex].text); },
-                  'aria-label': 'Real-world unit',
+                  'aria-label': t('stem.geosandbox.real_world_unit', 'Real-world unit'),
                   className: 'flex-1 text-[11px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-200 font-mono'
                 }, GEO_UNITS.map(function(u) {
                   return h('option', { key: u.id, value: u.id }, u.short + ' — ' + u.long);
@@ -1659,7 +1659,7 @@ window.StemLab = window.StemLab || {
                   disabled: !construction.objects.length,
                   className: 'flex-1 px-2 py-1 rounded text-[11px] font-bold ' +
                     (construction.objects.length ? 'bg-blue-700 text-white hover:bg-blue-800' : 'bg-slate-700 text-slate-500 cursor-not-allowed')
-                }, '💾 Save'),
+                }, t('stem.geosandbox.save', '💾 Save')),
                 h('button', {
                   onClick: function() { upd('showSaved', !showSaved); },
                   className: 'flex-1 px-2 py-1 rounded text-[11px] font-bold bg-indigo-700 text-white hover:bg-indigo-800'
@@ -1667,7 +1667,7 @@ window.StemLab = window.StemLab || {
               ),
               mode === 'stretch' && showSaved && h('div', { className: 'border-t border-slate-700 pt-2 space-y-1 max-h-40 overflow-y-auto' },
                 Object.keys(savedConstructions).length === 0
-                  ? h('p', { className: 'text-[11px] text-slate-500 italic' }, 'No saved constructions yet.')
+                  ? h('p', { className: 'text-[11px] text-slate-500 italic' }, t('stem.geosandbox.no_saved_constructions_yet', 'No saved constructions yet.'))
                   : Object.keys(savedConstructions).map(function(name) {
                       var snap = savedConstructions[name];
                       return h('div', { key: 'sv-' + name, className: 'flex items-center gap-1 bg-slate-900/60 rounded p-1' },
@@ -1676,7 +1676,7 @@ window.StemLab = window.StemLab || {
                         h('button', {
                           onClick: function() { loadConstruction(name); },
                           className: 'px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-700 text-white hover:bg-indigo-800'
-                        }, 'Load'),
+                        }, t('stem.geosandbox.load', 'Load')),
                         h('button', {
                           onClick: function() { if (window.confirm && window.confirm('Delete "' + name + '"?')) deleteConstruction(name); },
                           className: 'px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-700 text-white hover:bg-rose-800'
@@ -1688,12 +1688,12 @@ window.StemLab = window.StemLab || {
 
             // Measurements (hidden during challenge mode AND stretch mode — stretch has its own readouts in the object list)
             !gd.challengeMode && mode === 'single' && h('div', { className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border border-slate-700/50' },
-              h('div', { className: 'text-xs font-bold text-slate-300 uppercase tracking-wider mb-2' }, '\uD83D\uDCCF Measurements'),
+              h('div', { className: 'text-xs font-bold text-slate-300 uppercase tracking-wider mb-2' }, t('stem.geosandbox.measurements', '\uD83D\uDCCF Measurements')),
               h('div', { className: 'space-y-1.5' },
                 // Volume with formula
                 h('div', null,
                   h('div', { className: 'flex justify-between text-xs' },
-                    h('span', { className: 'text-slate-300' }, 'Volume'),
+                    h('span', { className: 'text-slate-300' }, t('stem.geosandbox.volume_2', 'Volume')),
                     h('span', { className: 'text-emerald-400 font-mono font-bold' }, m.vol.toFixed(2) + ' u\u00B3')
                   ),
                   h('div', { className: 'text-[11px] text-emerald-500/70 font-mono mt-0.5' }, fm.vol)
@@ -1701,26 +1701,26 @@ window.StemLab = window.StemLab || {
                 // Surface Area with formula
                 h('div', null,
                   h('div', { className: 'flex justify-between text-xs' },
-                    h('span', { className: 'text-slate-300' }, 'Surface Area'),
+                    h('span', { className: 'text-slate-300' }, t('stem.geosandbox.surface_area', 'Surface Area')),
                     h('span', { className: 'text-sky-400 font-mono font-bold' }, m.sa.toFixed(2) + ' u\u00B2')
                   ),
                   h('div', { className: 'text-[11px] text-sky-500/70 font-mono mt-0.5' }, fm.sa)
                 ),
                 h('div', { className: 'flex justify-between text-xs' },
-                  h('span', { className: 'text-slate-300' }, 'Faces'),
+                  h('span', { className: 'text-slate-300' }, t('stem.geosandbox.faces', 'Faces')),
                   h('span', { className: 'text-amber-400 font-mono font-bold' }, m.faces)
                 ),
                 h('div', { className: 'flex justify-between text-xs' },
-                  h('span', { className: 'text-slate-300' }, 'Edges'),
+                  h('span', { className: 'text-slate-300' }, t('stem.geosandbox.edges', 'Edges')),
                   h('span', { className: 'text-purple-400 font-mono font-bold' }, m.edges)
                 ),
                 h('div', { className: 'flex justify-between text-xs' },
-                  h('span', { className: 'text-slate-300' }, 'Vertices'),
+                  h('span', { className: 'text-slate-300' }, t('stem.geosandbox.vertices', 'Vertices')),
                   h('span', { className: 'text-rose-400 font-mono font-bold' }, m.vertices)
                 ),
                 // Euler's formula (for shapes with faces)
                 m.faces > 0 && h('div', { className: 'flex justify-between text-xs mt-1.5 pt-1.5 border-t border-slate-700/50' },
-                  h('span', { className: 'text-slate-300', title: 'Euler\'s polyhedron formula: for any convex polyhedron, V \u2212 E + F = 2' }, "Euler's Formula"),
+                  h('span', { className: 'text-slate-300', title: t('stem.geosandbox.euler_s_polyhedron_formula_for_any_con', 'Euler\'s polyhedron formula: for any convex polyhedron, V \u2212 E + F = 2') }, t('stem.geosandbox.euler_s_formula', "Euler's Formula")),
                   h('span', { className: 'text-cyan-400 font-mono font-bold' },
                     m.vertices + ' \u2212 ' + m.edges + ' + ' + m.faces + ' = ' + (m.vertices - m.edges + m.faces),
                     (m.vertices - m.edges + m.faces) === 2 ? ' \u2713' : ''
@@ -1741,22 +1741,22 @@ window.StemLab = window.StemLab || {
             webglError
               ? h('div', { className: 'flex flex-col items-center justify-center p-6 text-center gap-4 w-full h-full absolute inset-0 bg-slate-950/90 text-slate-200' },
                   h('span', { className: 'text-4xl' }, '⚠️'),
-                  h('span', { className: 'text-base font-bold text-red-400' }, 'WebGL is disabled or unsupported'),
-                  h('span', { className: 'text-sm text-slate-400 max-w-md' }, 'AlloFlow requires hardware acceleration to display 3D graphics. Please enable WebGL in your browser settings to interact with this lab.'),
+                  h('span', { className: 'text-base font-bold text-red-400' }, t('stem.geosandbox.webgl_is_disabled_or_unsupported', 'WebGL is disabled or unsupported')),
+                  h('span', { className: 'text-sm text-slate-400 max-w-md' }, t('stem.geosandbox.alloflow_requires_hardware_acceleratio', 'AlloFlow requires hardware acceleration to display 3D graphics. Please enable WebGL in your browser settings to interact with this lab.')),
                   h('button', {
                     onClick: function() { selectShape(shape); },
                     className: 'px-4 py-2 text-xs font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all'
-                  }, 'Retry')
+                  }, t('stem.geosandbox.retry', 'Retry'))
                 )
               : h('canvas', { 
                   id: 'geo-sandbox-canvas',
-                  'aria-label': 'Interactive geometry sandbox 3D visualization', tabIndex: 0,
+                  'aria-label': t('stem.geosandbox.interactive_geometry_sandbox_3d_visual', 'Interactive geometry sandbox 3D visualization'), tabIndex: 0,
                   className: 'w-full h-full',
                   style: { display: 'block', width: '100%', height: '100%', minHeight: '400px' }
                 }),
             // Controls hint overlay
             h('div', { className: 'absolute bottom-2 right-2 text-[11px] text-slate-300 bg-slate-900/80 px-2 py-1 rounded-md' },
-              '\uD83D\uDDB1\uFE0F Drag: rotate \u2022 Scroll: zoom \u2022 Right-click: pan'
+              t('stem.geosandbox.drag_rotate_scroll_zoom_right_click_pa', '\uD83D\uDDB1\uFE0F Drag: rotate \u2022 Scroll: zoom \u2022 Right-click: pan')
             ),
             // Shape name overlay (single mode) \u2014 or construction summary (stretch mode)
             h('div', { className: 'absolute top-2 left-2 text-xs font-bold text-sky-300 bg-slate-900/80 px-2 py-1 rounded-md' },
@@ -1833,7 +1833,7 @@ window.StemLab = window.StemLab || {
         gd.challengeMode && challenge && h('div', { className: 'bg-gradient-to-br from-amber-900/80 to-orange-900/60 backdrop-blur-md rounded-xl border-2 border-amber-500/60 p-4 space-y-3 shadow-lg shadow-amber-900/30' },
           // Challenge header with score
           h('div', { className: 'flex items-center justify-between' },
-            h('h3', { className: 'text-base font-black text-amber-200 flex items-center gap-2' }, '\uD83C\uDFAF Geometry Challenge'),
+            h('h3', { className: 'text-base font-black text-amber-200 flex items-center gap-2' }, t('stem.geosandbox.geometry_challenge', '\uD83C\uDFAF Geometry Challenge')),
             h('div', { className: 'flex items-center gap-3' },
               h('span', { className: 'text-xs font-bold text-emerald-400' }, '\u2705 ' + challengeScore.correct),
               h('span', { className: 'text-xs text-slate-600' }, '/'),
@@ -1857,15 +1857,15 @@ window.StemLab = window.StemLab || {
               onChange: function(e) { upd('challengeAnswer', e.target.value); },
               onKeyDown: function(e) { if (e.key === 'Enter') checkChallengeAnswer(); },
               placeholder: challenge.type === 'identify' ? 'Type the shape name...' : 'Enter your answer...',
-              'aria-label': 'Challenge answer',
+              'aria-label': t('stem.geosandbox.challenge_answer', 'Challenge answer'),
               className: 'flex-1 px-4 py-3 bg-slate-900 border-2 border-amber-500/40 rounded-xl text-base text-white font-bold placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/30',
               step: 'any'
             }),
-            h('button', { 'aria-label': 'Check',
+            h('button', { 'aria-label': t('stem.geosandbox.check', 'Check'),
               onClick: checkChallengeAnswer,
               disabled: !challengeAnswer.trim(),
               className: 'px-4 py-2 rounded-lg text-xs font-bold transition-all ' + (challengeAnswer.trim() ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md hover:from-amber-600 hover:to-orange-700' : 'bg-slate-700 text-slate-600 cursor-not-allowed')
-            }, '\u2714 Check')
+            }, t('stem.geosandbox.check_2', '\u2714 Check'))
           ),
           // Result feedback
           challengeResult && h('div', { className: 'space-y-2' },
@@ -1873,26 +1873,26 @@ window.StemLab = window.StemLab || {
               h('span', { className: 'text-lg' }, challengeResult === 'correct' ? '\u2705' : '\u274C'),
               h('div', null,
                 h('div', { className: 'text-sm font-bold ' + (challengeResult === 'correct' ? 'text-emerald-300' : 'text-red-300') }, challengeResult === 'correct' ? 'Correct! +5 XP' : 'Not quite!'),
-                challengeResult !== 'correct' && h('div', { className: 'text-xs text-slate-200 mt-0.5' }, 'The correct answer is: ',
+                challengeResult !== 'correct' && h('div', { className: 'text-xs text-slate-200 mt-0.5' }, t('stem.geosandbox.the_correct_answer_is', 'The correct answer is: '),
                   h('span', { className: 'font-bold text-amber-300 font-mono' }, typeof challenge.answer === 'number' ? challenge.answer.toFixed(2) : challenge.answer),
                   challenge.unit ? ' ' + challenge.unit : ''
                 )
               )
             ),
-            h('button', { 'aria-label': 'Next Challenge',
+            h('button', { 'aria-label': t('stem.geosandbox.next_challenge', 'Next Challenge'),
               onClick: generateChallenge,
               className: 'w-full px-4 py-2 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md hover:from-amber-600 hover:to-orange-700 transition-all'
-            }, '\u27A1 Next Challenge')
+            }, t('stem.geosandbox.next_challenge_2', '\u27A1 Next Challenge'))
           ),
           // Hint for numeric challenges
           !challengeResult && ['volume','surfaceArea','lateralArea'].indexOf(challenge.type) >= 0 && h('div', { className: 'text-xs text-amber-200/70 italic bg-amber-900/20 rounded-lg p-2' },
-            '\uD83D\uDCA1 Tip: Your answer must be within 5% of the exact value. Use \u03C0 \u2248 3.14159'
+            t('stem.geosandbox.tip_your_answer_must_be_within_5_of_th', '\uD83D\uDCA1 Tip: Your answer must be within 5% of the exact value. Use \u03C0 \u2248 3.14159')
           )
         ),
 
         // STL note
         h('div', { className: 'text-[11px] text-slate-600 text-center' },
-          '\uD83D\uDCA1 STL files are unit-less. Most 3D printer slicers (Cura, PrusaSlicer) default to millimeters. A shape with width=5 will print as 5mm wide.'
+          t('stem.geosandbox.stl_files_are_unit_less_most_3d_printe', '\uD83D\uDCA1 STL files are unit-less. Most 3D printer slicers (Cura, PrusaSlicer) default to millimeters. A shape with width=5 will print as 5mm wide.')
         )
       );
       })();
