@@ -8882,6 +8882,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       { id: 'complete_lesson', label: 'Complete a flight lesson', icon: '\uD83D\uDCDA', check: function(d) { return (d.lessonsCompleted || 0) >= 1; }, progress: function(d) { return (d.lessonsCompleted || 0) >= 1 ? 'Done!' : 'Not yet'; } }
     ],
     render: function(ctx) {
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = ctx.React;
       var h = React.createElement;
       var useState = React.useState;
@@ -13440,66 +13441,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       // Each entry has lat/lon, a draw type, and educational fact.
       var ICONIC_LANDMARKS = [
         // North America
-        { name: 'Statue of Liberty', lat: 40.689, lon: -74.045, type: 'liberty', height: 305, fact: 'Gift from France in 1886. Copper turned green from oxidation.' },
-        { name: 'Empire State Building', lat: 40.748, lon: -73.986, type: 'megatower', height: 1454, color: '#a8a8b0', fact: 'Built in just 410 days during the Great Depression (1930-1931).' },
-        { name: 'Hollywood Sign', lat: 34.134, lon: -118.322, type: 'sign', text: 'HOLLYWOOD', fact: 'Originally read "HOLLYWOODLAND" — a 1923 real estate ad.' },
-        { name: 'Golden Gate Bridge', lat: 37.819, lon: -122.479, type: 'bridge', color: '#c0392b', fact: 'Painted "International Orange" for visibility in fog. Opened 1937.' },
-        { name: 'Space Needle', lat: 47.620, lon: -122.349, type: 'spire', height: 605, color: '#d5d5d8', fact: 'Built for the 1962 World\'s Fair. Survives 200mph winds & 9.1 quakes.' },
-        { name: 'Mount Rushmore', lat: 43.879, lon: -103.459, type: 'rockface', fact: 'Four 60-ft presidential heads carved 1927-1941 by 400 workers.' },
-        { name: 'CN Tower', lat: 43.642, lon: -79.387, type: 'spire', height: 1815, color: '#e0d8c8', fact: 'Tallest free-standing structure 1976-2007. 147-story glass elevator.' },
-        { name: 'White House', lat: 38.898, lon: -77.037, type: 'capitol', fact: 'Built 1792-1800. Burned by British in 1814, rebuilt by 1817.' },
+        { name: __alloT('stem.flightsim.statue_of_liberty', 'Statue of Liberty'), lat: 40.689, lon: -74.045, type: 'liberty', height: 305, fact: __alloT('stem.flightsim.gift_from_france_in_1886_copper_turned', 'Gift from France in 1886. Copper turned green from oxidation.') },
+        { name: __alloT('stem.flightsim.empire_state_building', 'Empire State Building'), lat: 40.748, lon: -73.986, type: 'megatower', height: 1454, color: '#a8a8b0', fact: __alloT('stem.flightsim.built_in_just_410_days_during_the_grea', 'Built in just 410 days during the Great Depression (1930-1931).') },
+        { name: __alloT('stem.flightsim.hollywood_sign', 'Hollywood Sign'), lat: 34.134, lon: -118.322, type: 'sign', text: 'HOLLYWOOD', fact: __alloT('stem.flightsim.originally_read_hollywoodland_a_1923_r', 'Originally read "HOLLYWOODLAND" — a 1923 real estate ad.') },
+        { name: __alloT('stem.flightsim.golden_gate_bridge', 'Golden Gate Bridge'), lat: 37.819, lon: -122.479, type: 'bridge', color: '#c0392b', fact: __alloT('stem.flightsim.painted_international_orange_for_visib', 'Painted "International Orange" for visibility in fog. Opened 1937.') },
+        { name: __alloT('stem.flightsim.space_needle', 'Space Needle'), lat: 47.620, lon: -122.349, type: 'spire', height: 605, color: '#d5d5d8', fact: __alloT('stem.flightsim.built_for_the_1962_world_s_fair_surviv', 'Built for the 1962 World\'s Fair. Survives 200mph winds & 9.1 quakes.') },
+        { name: __alloT('stem.flightsim.mount_rushmore', 'Mount Rushmore'), lat: 43.879, lon: -103.459, type: 'rockface', fact: __alloT('stem.flightsim.four_60_ft_presidential_heads_carved_1', 'Four 60-ft presidential heads carved 1927-1941 by 400 workers.') },
+        { name: __alloT('stem.flightsim.cn_tower', 'CN Tower'), lat: 43.642, lon: -79.387, type: 'spire', height: 1815, color: '#e0d8c8', fact: __alloT('stem.flightsim.tallest_free_standing_structure_1976_2', 'Tallest free-standing structure 1976-2007. 147-story glass elevator.') },
+        { name: __alloT('stem.flightsim.white_house', 'White House'), lat: 38.898, lon: -77.037, type: 'capitol', fact: __alloT('stem.flightsim.built_1792_1800_burned_by_british_in_1', 'Built 1792-1800. Burned by British in 1814, rebuilt by 1817.') },
         // Europe
-        { name: 'Eiffel Tower', lat: 48.858, lon: 2.294, type: 'tower', height: 1063, color: '#8b7355', fact: 'Iron lattice. Grows 6 inches in summer due to thermal expansion.' },
-        { name: 'Big Ben', lat: 51.500, lon: -0.124, type: 'clocktower', height: 316, color: '#c4a777', fact: '"Big Ben" is actually the bell, not the tower (Elizabeth Tower).' },
-        { name: 'Colosseum', lat: 41.890, lon: 12.492, type: 'colosseum', fact: 'Built 70-80 AD. Held 50,000-80,000 spectators for gladiator games.' },
-        { name: 'Leaning Tower of Pisa', lat: 43.723, lon: 10.396, type: 'leaning_tower', height: 183, fact: 'Lean caused by soft soil in 1178. Stabilized in 2008 — tilts 3.97°.' },
-        { name: 'Stonehenge', lat: 51.179, lon: -1.826, type: 'stones', fact: 'Built ~3000-2000 BC. Stones weigh up to 50 tons, moved 150 miles.' },
-        { name: 'Sagrada Familia', lat: 41.404, lon: 2.174, type: 'cathedral', fact: 'Under construction since 1882. Expected completion: 2026.' },
-        { name: 'Acropolis', lat: 37.971, lon: 23.726, type: 'temple', fact: 'The Parthenon (438 BC) sits on a 490-ft limestone hill above Athens.' },
+        { name: __alloT('stem.flightsim.eiffel_tower', 'Eiffel Tower'), lat: 48.858, lon: 2.294, type: 'tower', height: 1063, color: '#8b7355', fact: __alloT('stem.flightsim.iron_lattice_grows_6_inches_in_summer_', 'Iron lattice. Grows 6 inches in summer due to thermal expansion.') },
+        { name: __alloT('stem.flightsim.big_ben', 'Big Ben'), lat: 51.500, lon: -0.124, type: 'clocktower', height: 316, color: '#c4a777', fact: __alloT('stem.flightsim.big_ben_is_actually_the_bell_not_the_t', '"Big Ben" is actually the bell, not the tower (Elizabeth Tower).') },
+        { name: __alloT('stem.flightsim.colosseum', 'Colosseum'), lat: 41.890, lon: 12.492, type: 'colosseum', fact: __alloT('stem.flightsim.built_70_80_ad_held_50_000_80_000_spec', 'Built 70-80 AD. Held 50,000-80,000 spectators for gladiator games.') },
+        { name: __alloT('stem.flightsim.leaning_tower_of_pisa', 'Leaning Tower of Pisa'), lat: 43.723, lon: 10.396, type: 'leaning_tower', height: 183, fact: __alloT('stem.flightsim.lean_caused_by_soft_soil_in_1178_stabi', 'Lean caused by soft soil in 1178. Stabilized in 2008 — tilts 3.97°.') },
+        { name: __alloT('stem.flightsim.stonehenge', 'Stonehenge'), lat: 51.179, lon: -1.826, type: 'stones', fact: __alloT('stem.flightsim.built_3000_2000_bc_stones_weigh_up_to_', 'Built ~3000-2000 BC. Stones weigh up to 50 tons, moved 150 miles.') },
+        { name: __alloT('stem.flightsim.sagrada_familia', 'Sagrada Familia'), lat: 41.404, lon: 2.174, type: 'cathedral', fact: __alloT('stem.flightsim.under_construction_since_1882_expected', 'Under construction since 1882. Expected completion: 2026.') },
+        { name: __alloT('stem.flightsim.acropolis', 'Acropolis'), lat: 37.971, lon: 23.726, type: 'temple', fact: __alloT('stem.flightsim.the_parthenon_438_bc_sits_on_a_490_ft_', 'The Parthenon (438 BC) sits on a 490-ft limestone hill above Athens.') },
         // Middle East / Asia
-        { name: 'Great Pyramids of Giza', lat: 29.979, lon: 31.134, type: 'pyramids', fact: 'Built ~2560 BC. Great Pyramid was tallest structure on Earth for 3,800 years.' },
-        { name: 'Burj Khalifa', lat: 25.197, lon: 55.274, type: 'megatower', height: 2717, color: '#cfd2d6', fact: 'World\'s tallest building (2010). Has 163 floors, sways 5 ft at top.' },
-        { name: 'Taj Mahal', lat: 27.175, lon: 78.042, type: 'taj', fact: 'White marble mausoleum built 1632-1653 by Shah Jahan for his wife.' },
-        { name: 'Mount Fuji', lat: 35.361, lon: 138.727, type: 'volcano', height: 12388, fact: 'Sacred dormant volcano. Last erupted 1707. Climbed by 200,000+ yearly.' },
-        { name: 'Great Wall (Badaling)', lat: 40.432, lon: 116.570, type: 'wall', fact: '13,000+ miles total. Construction spanned 2,000 years (7th c. BC - 1644).' },
-        { name: 'Forbidden City', lat: 39.916, lon: 116.397, type: 'palace_complex', fact: '180-acre imperial palace (1406-1420). Contains 9,999 rooms.' },
-        { name: 'Angkor Wat', lat: 13.412, lon: 103.867, type: 'temple_complex', fact: 'Largest religious monument on Earth. 12th-century Hindu-Buddhist temple.' },
-        { name: 'Petra', lat: 30.329, lon: 35.443, type: 'rockcity', fact: 'Carved into rose-red cliffs by Nabataeans 2,000+ years ago.' },
+        { name: __alloT('stem.flightsim.great_pyramids_of_giza', 'Great Pyramids of Giza'), lat: 29.979, lon: 31.134, type: 'pyramids', fact: __alloT('stem.flightsim.built_2560_bc_great_pyramid_was_talles', 'Built ~2560 BC. Great Pyramid was tallest structure on Earth for 3,800 years.') },
+        { name: __alloT('stem.flightsim.burj_khalifa', 'Burj Khalifa'), lat: 25.197, lon: 55.274, type: 'megatower', height: 2717, color: '#cfd2d6', fact: __alloT('stem.flightsim.world_s_tallest_building_2010_has_163_', 'World\'s tallest building (2010). Has 163 floors, sways 5 ft at top.') },
+        { name: __alloT('stem.flightsim.taj_mahal', 'Taj Mahal'), lat: 27.175, lon: 78.042, type: 'taj', fact: __alloT('stem.flightsim.white_marble_mausoleum_built_1632_1653', 'White marble mausoleum built 1632-1653 by Shah Jahan for his wife.') },
+        { name: __alloT('stem.flightsim.mount_fuji', 'Mount Fuji'), lat: 35.361, lon: 138.727, type: 'volcano', height: 12388, fact: __alloT('stem.flightsim.sacred_dormant_volcano_last_erupted_17', 'Sacred dormant volcano. Last erupted 1707. Climbed by 200,000+ yearly.') },
+        { name: __alloT('stem.flightsim.great_wall_badaling', 'Great Wall (Badaling)'), lat: 40.432, lon: 116.570, type: 'wall', fact: __alloT('stem.flightsim.13_000_miles_total_construction_spanne', '13,000+ miles total. Construction spanned 2,000 years (7th c. BC - 1644).') },
+        { name: __alloT('stem.flightsim.forbidden_city', 'Forbidden City'), lat: 39.916, lon: 116.397, type: 'palace_complex', fact: __alloT('stem.flightsim.180_acre_imperial_palace_1406_1420_con', '180-acre imperial palace (1406-1420). Contains 9,999 rooms.') },
+        { name: __alloT('stem.flightsim.angkor_wat', 'Angkor Wat'), lat: 13.412, lon: 103.867, type: 'temple_complex', fact: __alloT('stem.flightsim.largest_religious_monument_on_earth_12', 'Largest religious monument on Earth. 12th-century Hindu-Buddhist temple.') },
+        { name: __alloT('stem.flightsim.petra', 'Petra'), lat: 30.329, lon: 35.443, type: 'rockcity', fact: __alloT('stem.flightsim.carved_into_rose_red_cliffs_by_nabatae', 'Carved into rose-red cliffs by Nabataeans 2,000+ years ago.') },
         // South America / Other
-        { name: 'Christ the Redeemer', lat: -22.952, lon: -43.211, type: 'statue_hill', height: 98, fact: '98-ft Art Deco statue atop 2,300-ft Corcovado mountain (1931).' },
-        { name: 'Machu Picchu', lat: -13.163, lon: -72.545, type: 'ruins', fact: 'Inca citadel built ~1450 AD at 7,970 ft. Hidden until 1911.' },
-        { name: 'Sydney Opera House', lat: -33.857, lon: 151.215, type: 'opera_house', fact: '1+ million ceramic roof tiles. Opened 1973. UNESCO site.' },
-        { name: 'Uluru', lat: -25.345, lon: 131.036, type: 'monolith', fact: 'Sacred sandstone monolith. 1,142 ft tall, 5.8 mi around, 600M years old.' },
-        { name: 'Easter Island Moai', lat: -27.122, lon: -109.367, type: 'moai', fact: '887 stone heads carved by Rapa Nui people 1100-1500 AD.' },
+        { name: __alloT('stem.flightsim.christ_the_redeemer', 'Christ the Redeemer'), lat: -22.952, lon: -43.211, type: 'statue_hill', height: 98, fact: __alloT('stem.flightsim.98_ft_art_deco_statue_atop_2_300_ft_co', '98-ft Art Deco statue atop 2,300-ft Corcovado mountain (1931).') },
+        { name: __alloT('stem.flightsim.machu_picchu', 'Machu Picchu'), lat: -13.163, lon: -72.545, type: 'ruins', fact: __alloT('stem.flightsim.inca_citadel_built_1450_ad_at_7_970_ft', 'Inca citadel built ~1450 AD at 7,970 ft. Hidden until 1911.') },
+        { name: __alloT('stem.flightsim.sydney_opera_house', 'Sydney Opera House'), lat: -33.857, lon: 151.215, type: 'opera_house', fact: __alloT('stem.flightsim.1_million_ceramic_roof_tiles_opened_19', '1+ million ceramic roof tiles. Opened 1973. UNESCO site.') },
+        { name: __alloT('stem.flightsim.uluru', 'Uluru'), lat: -25.345, lon: 131.036, type: 'monolith', fact: __alloT('stem.flightsim.sacred_sandstone_monolith_1_142_ft_tal', 'Sacred sandstone monolith. 1,142 ft tall, 5.8 mi around, 600M years old.') },
+        { name: __alloT('stem.flightsim.easter_island_moai', 'Easter Island Moai'), lat: -27.122, lon: -109.367, type: 'moai', fact: __alloT('stem.flightsim.887_stone_heads_carved_by_rapa_nui_peo', '887 stone heads carved by Rapa Nui people 1100-1500 AD.') },
         // Natural wonders
-        { name: 'Grand Canyon', lat: 36.107, lon: -112.113, type: 'canyon', fact: '277 miles long, 1+ mile deep. Rocks at bottom are 1.8 billion years old.' },
-        { name: 'Niagara Falls', lat: 43.084, lon: -79.074, type: 'waterfall', fact: '6 million cubic feet/minute. Migrated 7 miles upstream in 12,000 years.' },
-        { name: 'Mt. Everest', lat: 27.988, lon: 86.925, type: 'peak', fact: '29,032 ft tall. Summit has 1/3 the oxygen of sea level. Grows 4mm/year.' },
-        { name: 'Victoria Falls', lat: -17.925, lon: 25.857, type: 'waterfall', fact: '5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.' },
-        { name: 'Iguazú Falls', lat: -25.695, lon: -54.437, type: 'multi_waterfall', fact: '275 individual waterfalls spanning nearly 2 miles of cliffs.' },
-        { name: 'Mt. Kilimanjaro', lat: -3.076, lon: 37.353, type: 'peak_snow', fact: 'Africa\'s tallest peak (19,341 ft). Dormant volcano with melting glaciers.' },
-        { name: 'Yellowstone (Old Faithful)', lat: 44.460, lon: -110.828, type: 'geyser', fact: 'Erupts every ~90 min, shooting 3,700-8,400 gal of water 100-180 ft high.' },
-        { name: 'Aurora (Iceland)', lat: 64.963, lon: -19.021, type: 'aurora', fact: 'Northern Lights caused by solar wind colliding with Earth\'s magnetic field.' },
+        { name: __alloT('stem.flightsim.grand_canyon', 'Grand Canyon'), lat: 36.107, lon: -112.113, type: 'canyon', fact: __alloT('stem.flightsim.277_miles_long_1_mile_deep_rocks_at_bo', '277 miles long, 1+ mile deep. Rocks at bottom are 1.8 billion years old.') },
+        { name: __alloT('stem.flightsim.niagara_falls', 'Niagara Falls'), lat: 43.084, lon: -79.074, type: 'waterfall', fact: __alloT('stem.flightsim.6_million_cubic_feet_minute_migrated_7', '6 million cubic feet/minute. Migrated 7 miles upstream in 12,000 years.') },
+        { name: __alloT('stem.flightsim.mt_everest', 'Mt. Everest'), lat: 27.988, lon: 86.925, type: 'peak', fact: __alloT('stem.flightsim.29_032_ft_tall_summit_has_1_3_the_oxyg', '29,032 ft tall. Summit has 1/3 the oxygen of sea level. Grows 4mm/year.') },
+        { name: __alloT('stem.flightsim.victoria_falls', 'Victoria Falls'), lat: -17.925, lon: 25.857, type: 'waterfall', fact: __alloT('stem.flightsim.5_604_ft_wide_354_ft_tall_largest_shee', '5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.') },
+        { name: __alloT('stem.flightsim.iguaz_falls', 'Iguazú Falls'), lat: -25.695, lon: -54.437, type: 'multi_waterfall', fact: __alloT('stem.flightsim.275_individual_waterfalls_spanning_nea', '275 individual waterfalls spanning nearly 2 miles of cliffs.') },
+        { name: __alloT('stem.flightsim.mt_kilimanjaro', 'Mt. Kilimanjaro'), lat: -3.076, lon: 37.353, type: 'peak_snow', fact: __alloT('stem.flightsim.africa_s_tallest_peak_19_341_ft_dorman', 'Africa\'s tallest peak (19,341 ft). Dormant volcano with melting glaciers.') },
+        { name: __alloT('stem.flightsim.yellowstone_old_faithful', 'Yellowstone (Old Faithful)'), lat: 44.460, lon: -110.828, type: 'geyser', fact: __alloT('stem.flightsim.erupts_every_90_min_shooting_3_700_8_4', 'Erupts every ~90 min, shooting 3,700-8,400 gal of water 100-180 ft high.') },
+        { name: __alloT('stem.flightsim.aurora_iceland', 'Aurora (Iceland)'), lat: 64.963, lon: -19.021, type: 'aurora', fact: __alloT('stem.flightsim.northern_lights_caused_by_solar_wind_c', 'Northern Lights caused by solar wind colliding with Earth\'s magnetic field.') },
         // Additional iconic structures
-        { name: 'Chichén Itzá', lat: 20.683, lon: -88.568, type: 'maya_pyramid', fact: 'Maya pyramid (9th-12th c.). During equinoxes, a serpent shadow slithers down the steps.' },
-        { name: 'Burj Al Arab', lat: 25.141, lon: 55.185, type: 'sail_tower', height: 1053, color: '#f5f5f8', fact: 'Sail-shaped 7-star hotel built on its own artificial island (1999).' },
-        { name: 'Tower Bridge', lat: 51.505, lon: -0.075, type: 'drawbridge', fact: 'Bascule bridge completed 1894. Opens ~800 times a year for ship traffic.' },
-        { name: 'Brandenburg Gate', lat: 52.516, lon: 13.378, type: 'gate', fact: '18th-century neoclassical arch. Symbol of German reunification (1989).' },
-        { name: 'Kremlin', lat: 55.752, lon: 37.617, type: 'kremlin', fact: 'Fortified complex (15th c.). Contains 4 palaces, 4 cathedrals, and red-brick walls.' },
-        { name: 'Arc de Triomphe', lat: 48.874, lon: 2.295, type: 'arch', fact: '164 ft tall arch commissioned by Napoleon (1806). Honors French war heroes.' },
-        { name: 'Leaning Tower of Shanghai', lat: 31.245, lon: 121.506, type: 'megatower', height: 2073, color: '#c8d0d8', fact: 'Shanghai Tower — 2nd tallest building in the world. Twists 120° to reduce wind load.' },
-        { name: 'Neuschwanstein Castle', lat: 47.557, lon: 10.750, type: 'castle', fact: 'Bavarian fairy-tale castle (1869). Inspiration for Disney\'s Sleeping Beauty Castle.' },
-        { name: 'Kennedy Space Center', lat: 28.573, lon: -80.649, type: 'rocketpad', fact: 'NASA launch complex since 1962. Site of every crewed US moon mission (Apollo 11 onward).' },
-        { name: 'Las Vegas Strip', lat: 36.115, lon: -115.173, type: 'vegas', fact: '4.2-mile stretch of casinos. Visible from space at night due to extreme light output.' },
-        { name: 'Statue of Unity', lat: 21.838, lon: 73.719, type: 'unity', height: 597, fact: 'Tallest statue in the world (597 ft). Depicts Indian statesman Sardar Vallabhbhai Patel (2018).' },
-        { name: 'Salar de Uyuni', lat: -20.133, lon: -67.489, type: 'saltflat', fact: 'World\'s largest salt flat — 4,086 sq mi. Becomes a mirror during the rainy season.' },
-        { name: 'Mt. Saint Helens', lat: 46.191, lon: -122.195, type: 'volcano_active', fact: '1980 eruption was the deadliest in US history. Lost 1,300 ft of summit in 9 hours.' },
-        { name: 'Atomium (Brussels)', lat: 50.895, lon: 4.341, type: 'atomium', fact: 'Built for 1958 World Expo. 9 steel spheres represent an iron crystal magnified 165 billion times.' },
-        { name: 'Palm Jumeirah', lat: 25.116, lon: 55.138, type: 'palm_island', fact: 'Artificial palm-shaped island in Dubai. Adds 40 miles of coastline; visible from space.' },
-        { name: 'The Pentagon', lat: 38.871, lon: -77.056, type: 'pentagon', fact: '5-sided DoD HQ (1943). 17.5 miles of corridors — designed so any 2 points are ≤7 min walk.' },
-        { name: 'Kaaba (Mecca)', lat: 21.423, lon: 39.826, type: 'kaaba', fact: 'Sacred cube at the center of the Masjid al-Haram. Holiest site in Islam — faced during prayer.' },
-        { name: 'Ha Long Bay', lat: 20.910, lon: 107.183, type: 'karst_bay', fact: 'UNESCO site with 1,600+ limestone karst islands rising from emerald waters.' },
-        { name: 'Giant\'s Causeway', lat: 55.241, lon: -6.512, type: 'hex_columns', fact: '40,000 hexagonal basalt columns from a 60M-year-old volcanic eruption.' },
+        { name: __alloT('stem.flightsim.chich_n_itz', 'Chichén Itzá'), lat: 20.683, lon: -88.568, type: 'maya_pyramid', fact: __alloT('stem.flightsim.maya_pyramid_9th_12th_c_during_equinox', 'Maya pyramid (9th-12th c.). During equinoxes, a serpent shadow slithers down the steps.') },
+        { name: __alloT('stem.flightsim.burj_al_arab', 'Burj Al Arab'), lat: 25.141, lon: 55.185, type: 'sail_tower', height: 1053, color: '#f5f5f8', fact: __alloT('stem.flightsim.sail_shaped_7_star_hotel_built_on_its_', 'Sail-shaped 7-star hotel built on its own artificial island (1999).') },
+        { name: __alloT('stem.flightsim.tower_bridge', 'Tower Bridge'), lat: 51.505, lon: -0.075, type: 'drawbridge', fact: __alloT('stem.flightsim.bascule_bridge_completed_1894_opens_80', 'Bascule bridge completed 1894. Opens ~800 times a year for ship traffic.') },
+        { name: __alloT('stem.flightsim.brandenburg_gate', 'Brandenburg Gate'), lat: 52.516, lon: 13.378, type: 'gate', fact: __alloT('stem.flightsim.18th_century_neoclassical_arch_symbol_', '18th-century neoclassical arch. Symbol of German reunification (1989).') },
+        { name: __alloT('stem.flightsim.kremlin', 'Kremlin'), lat: 55.752, lon: 37.617, type: 'kremlin', fact: __alloT('stem.flightsim.fortified_complex_15th_c_contains_4_pa', 'Fortified complex (15th c.). Contains 4 palaces, 4 cathedrals, and red-brick walls.') },
+        { name: __alloT('stem.flightsim.arc_de_triomphe', 'Arc de Triomphe'), lat: 48.874, lon: 2.295, type: 'arch', fact: __alloT('stem.flightsim.164_ft_tall_arch_commissioned_by_napol', '164 ft tall arch commissioned by Napoleon (1806). Honors French war heroes.') },
+        { name: __alloT('stem.flightsim.leaning_tower_of_shanghai', 'Leaning Tower of Shanghai'), lat: 31.245, lon: 121.506, type: 'megatower', height: 2073, color: '#c8d0d8', fact: __alloT('stem.flightsim.shanghai_tower_2nd_tallest_building_in', 'Shanghai Tower — 2nd tallest building in the world. Twists 120° to reduce wind load.') },
+        { name: __alloT('stem.flightsim.neuschwanstein_castle', 'Neuschwanstein Castle'), lat: 47.557, lon: 10.750, type: 'castle', fact: __alloT('stem.flightsim.bavarian_fairy_tale_castle_1869_inspir', 'Bavarian fairy-tale castle (1869). Inspiration for Disney\'s Sleeping Beauty Castle.') },
+        { name: __alloT('stem.flightsim.kennedy_space_center', 'Kennedy Space Center'), lat: 28.573, lon: -80.649, type: 'rocketpad', fact: __alloT('stem.flightsim.nasa_launch_complex_since_1962_site_of', 'NASA launch complex since 1962. Site of every crewed US moon mission (Apollo 11 onward).') },
+        { name: __alloT('stem.flightsim.las_vegas_strip', 'Las Vegas Strip'), lat: 36.115, lon: -115.173, type: 'vegas', fact: __alloT('stem.flightsim.4_2_mile_stretch_of_casinos_visible_fr', '4.2-mile stretch of casinos. Visible from space at night due to extreme light output.') },
+        { name: __alloT('stem.flightsim.statue_of_unity', 'Statue of Unity'), lat: 21.838, lon: 73.719, type: 'unity', height: 597, fact: __alloT('stem.flightsim.tallest_statue_in_the_world_597_ft_dep', 'Tallest statue in the world (597 ft). Depicts Indian statesman Sardar Vallabhbhai Patel (2018).') },
+        { name: __alloT('stem.flightsim.salar_de_uyuni', 'Salar de Uyuni'), lat: -20.133, lon: -67.489, type: 'saltflat', fact: __alloT('stem.flightsim.world_s_largest_salt_flat_4_086_sq_mi_', 'World\'s largest salt flat — 4,086 sq mi. Becomes a mirror during the rainy season.') },
+        { name: __alloT('stem.flightsim.mt_saint_helens', 'Mt. Saint Helens'), lat: 46.191, lon: -122.195, type: 'volcano_active', fact: __alloT('stem.flightsim.1980_eruption_was_the_deadliest_in_us_', '1980 eruption was the deadliest in US history. Lost 1,300 ft of summit in 9 hours.') },
+        { name: __alloT('stem.flightsim.atomium_brussels', 'Atomium (Brussels)'), lat: 50.895, lon: 4.341, type: 'atomium', fact: __alloT('stem.flightsim.built_for_1958_world_expo_9_steel_sphe', 'Built for 1958 World Expo. 9 steel spheres represent an iron crystal magnified 165 billion times.') },
+        { name: __alloT('stem.flightsim.palm_jumeirah', 'Palm Jumeirah'), lat: 25.116, lon: 55.138, type: 'palm_island', fact: __alloT('stem.flightsim.artificial_palm_shaped_island_in_dubai', 'Artificial palm-shaped island in Dubai. Adds 40 miles of coastline; visible from space.') },
+        { name: __alloT('stem.flightsim.the_pentagon', 'The Pentagon'), lat: 38.871, lon: -77.056, type: 'pentagon', fact: __alloT('stem.flightsim.5_sided_dod_hq_1943_17_5_miles_of_corr', '5-sided DoD HQ (1943). 17.5 miles of corridors — designed so any 2 points are ≤7 min walk.') },
+        { name: __alloT('stem.flightsim.kaaba_mecca', 'Kaaba (Mecca)'), lat: 21.423, lon: 39.826, type: 'kaaba', fact: __alloT('stem.flightsim.sacred_cube_at_the_center_of_the_masji', 'Sacred cube at the center of the Masjid al-Haram. Holiest site in Islam — faced during prayer.') },
+        { name: __alloT('stem.flightsim.ha_long_bay', 'Ha Long Bay'), lat: 20.910, lon: 107.183, type: 'karst_bay', fact: __alloT('stem.flightsim.unesco_site_with_1_600_limestone_karst', 'UNESCO site with 1,600+ limestone karst islands rising from emerald waters.') },
+        { name: __alloT('stem.flightsim.giant_s_causeway', 'Giant\'s Causeway'), lat: 55.241, lon: -6.512, type: 'hex_columns', fact: __alloT('stem.flightsim.40_000_hexagonal_basalt_columns_from_a', '40,000 hexagonal basalt columns from a 60M-year-old volcanic eruption.') },
       ];
 
       var iconicDiscoveredRef = useRef({});
@@ -15000,11 +15001,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       // ── Weather System ──
       var weatherRef = useRef({ wind: 0, windDir: 270, turbulence: 0, visibility: 1, type: 'clear' });
       var WEATHER_TYPES = [
-        { id: 'clear', label: '☀️ Clear', wind: 5, turb: 0, vis: 1, lesson: 'Clear skies with calm winds. High pressure systems push air down, preventing cloud formation. Called "CAVU" in aviation: Ceiling And Visibility Unlimited.' },
-        { id: 'breezy', label: '🌬️ Breezy', wind: 20, turb: 0.2, vis: 1, lesson: 'Moderate winds caused by pressure differences. Wind always flows from high to low pressure. The Coriolis effect curves wind to the right in the Northern Hemisphere.' },
-        { id: 'gusty', label: '💨 Gusty', wind: 35, turb: 0.6, vis: 0.9, lesson: 'Strong, variable winds with turbulence. Mechanical turbulence forms when wind flows over mountains or buildings. Pilots use the crosswind component to determine if it\'s safe to land.' },
-        { id: 'overcast', label: '☁️ Overcast', wind: 15, turb: 0.3, vis: 0.7, lesson: 'Low cloud cover with reduced visibility. Clouds form when air cools to its dew point. Stratus clouds (flat, layered) indicate stable air. IFR conditions require instrument flying skills.' },
-        { id: 'stormy', label: '⛈️ Stormy', wind: 45, turb: 0.9, vis: 0.4, lesson: 'Thunderstorms with severe turbulence. Cumulonimbus clouds can reach 60,000 ft and contain updrafts of 100+ mph. Pilots ALWAYS avoid thunderstorms — never fly through one.' },
+        { id: 'clear', label: __alloT('stem.flightsim.clear', '☀️ Clear'), wind: 5, turb: 0, vis: 1, lesson: 'Clear skies with calm winds. High pressure systems push air down, preventing cloud formation. Called "CAVU" in aviation: Ceiling And Visibility Unlimited.' },
+        { id: 'breezy', label: __alloT('stem.flightsim.breezy', '🌬️ Breezy'), wind: 20, turb: 0.2, vis: 1, lesson: 'Moderate winds caused by pressure differences. Wind always flows from high to low pressure. The Coriolis effect curves wind to the right in the Northern Hemisphere.' },
+        { id: 'gusty', label: __alloT('stem.flightsim.gusty', '💨 Gusty'), wind: 35, turb: 0.6, vis: 0.9, lesson: 'Strong, variable winds with turbulence. Mechanical turbulence forms when wind flows over mountains or buildings. Pilots use the crosswind component to determine if it\'s safe to land.' },
+        { id: 'overcast', label: __alloT('stem.flightsim.overcast', '☁️ Overcast'), wind: 15, turb: 0.3, vis: 0.7, lesson: 'Low cloud cover with reduced visibility. Clouds form when air cools to its dew point. Stratus clouds (flat, layered) indicate stable air. IFR conditions require instrument flying skills.' },
+        { id: 'stormy', label: __alloT('stem.flightsim.stormy', '⛈️ Stormy'), wind: 45, turb: 0.9, vis: 0.4, lesson: 'Thunderstorms with severe turbulence. Cumulonimbus clouds can reach 60,000 ft and contain updrafts of 100+ mph. Pilots ALWAYS avoid thunderstorms — never fly through one.' },
       ];
 
       // ── Wind Indicator (wind barb on HUD) ──
@@ -15042,21 +15043,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       // ── Country border segments (simplified) ──
       var COUNTRY_BORDERS = [
         // US-Canada border (49th parallel)
-        { lat1: 49, lon1: -125, lat2: 49, lon2: -67, label: 'US / Canada' },
+        { lat1: 49, lon1: -125, lat2: 49, lon2: -67, label: __alloT('stem.flightsim.us_canada', 'US / Canada') },
         // US-Mexico border
-        { lat1: 32, lon1: -117, lat2: 26, lon2: -97, label: 'US / Mexico' },
+        { lat1: 32, lon1: -117, lat2: 26, lon2: -97, label: __alloT('stem.flightsim.us_mexico', 'US / Mexico') },
         // France-Germany
-        { lat1: 49, lon1: 6, lat2: 47.5, lon2: 8, label: 'France / Germany' },
+        { lat1: 49, lon1: 6, lat2: 47.5, lon2: 8, label: __alloT('stem.flightsim.france_germany', 'France / Germany') },
         // India-China
-        { lat1: 35, lon1: 74, lat2: 28, lon2: 97, label: 'India / China' },
+        { lat1: 35, lon1: 74, lat2: 28, lon2: 97, label: __alloT('stem.flightsim.india_china', 'India / China') },
         // Brazil-Argentina
-        { lat1: -25, lon1: -55, lat2: -33, lon2: -58, label: 'Brazil / Argentina' },
+        { lat1: -25, lon1: -55, lat2: -33, lon2: -58, label: __alloT('stem.flightsim.brazil_argentina', 'Brazil / Argentina') },
         // Egypt-Libya
-        { lat1: 31, lon1: 25, lat2: 22, lon2: 25, label: 'Egypt / Libya' },
+        { lat1: 31, lon1: 25, lat2: 22, lon2: 25, label: __alloT('stem.flightsim.egypt_libya', 'Egypt / Libya') },
         // Russia-China
-        { lat1: 50, lon1: 87, lat2: 43, lon2: 131, label: 'Russia / China' },
+        { lat1: 50, lon1: 87, lat2: 43, lon2: 131, label: __alloT('stem.flightsim.russia_china', 'Russia / China') },
         // Spain-France
-        { lat1: 43, lon1: -2, lat2: 42.5, lon2: 3, label: 'Spain / France' },
+        { lat1: 43, lon1: -2, lat2: 42.5, lon2: 3, label: __alloT('stem.flightsim.spain_france', 'Spain / France') },
       ];
 
       var drawCountryBorders = function(gfx, W, H, horizonY, state) {
@@ -19258,22 +19259,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             gfx.fillText('✈️ SKYSCHOOL — CONTROLS & HELP', W / 2, 30);
             var shY = 45;
             var shSections = [
-              { title: '🛩️ FLIGHT CONTROLS', items: [
+              { title: __alloT('stem.flightsim.flight_controls', '🛩️ FLIGHT CONTROLS'), items: [
                 ['W / ↑', 'Pitch up (climb)'], ['S / ↓', 'Pitch down (descend)'],
                 ['A / ←', 'Bank left (turn left)'], ['D / →', 'Bank right (turn right)'],
                 ['Shift / =', 'Increase throttle'], ['Ctrl / -', 'Decrease throttle'],
               ]},
-              { title: '📚 LEARNING TOOLS', items: [
+              { title: __alloT('stem.flightsim.learning_tools', '📚 LEARNING TOOLS'), items: [
                 ['F', 'Toggle force diagram (lift/drag/thrust/weight arrows)'],
                 ['Q', 'Geography quiz — identify nearby places'],
               ]},
-              { title: '🎮 GAME CONTROLS', items: [
+              { title: __alloT('stem.flightsim.game_controls', '🎮 GAME CONTROLS'), items: [
                 ['Space', 'Pause / Resume flight'],
                 ['I', 'Read flight status (screen reader / audio summary)'],
                 ['?', 'Toggle this help screen'],
                 ['ESC', 'Exit to debrief'],
               ]},
-              { title: '🧭 FLIGHT TIPS', items: [
+              { title: __alloT('stem.flightsim.flight_tips', '🧭 FLIGHT TIPS'), items: [
                 ['Takeoff', 'Full throttle → at 60kts, pitch up gently → you\'re flying!'],
                 ['Level flight', 'When altimeter stops changing, you\'re level. Adjust pitch.'],
                 ['Landing', 'Reduce throttle → descend slowly → aim for < 200 fpm at touchdown'],
@@ -19753,12 +19754,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' } },
                 h('div', { style: { fontSize: '32px' } }, '🛸'),
                 h('div', null,
-                  h('div', { id: 'drone-briefing-title', style: { fontSize: '18px', fontWeight: 900, letterSpacing: '0.5px' } }, 'Pre-Flight Safety Briefing'),
-                  h('div', { style: { fontSize: '11px', color: '#7dd3fc', fontWeight: 700, marginTop: '2px' } }, 'FAA Part 107 — Small UAS Operations')
+                  h('div', { id: 'drone-briefing-title', style: { fontSize: '18px', fontWeight: 900, letterSpacing: '0.5px' } }, __alloT('stem.flightsim.pre_flight_safety_briefing', 'Pre-Flight Safety Briefing')),
+                  h('div', { style: { fontSize: '11px', color: '#7dd3fc', fontWeight: 700, marginTop: '2px' } }, __alloT('stem.flightsim.faa_part_107_small_uas_operations', 'FAA Part 107 — Small UAS Operations'))
                 )
               ),
               h('p', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.6, marginBottom: '14px' } },
-                'Before you fly, real Part 107 remote pilots in the U.S. must comply with these rules. This sim treats them as flight constraints.'
+                __alloT('stem.flightsim.before_you_fly_real_part_107_remote_pi', 'Before you fly, real Part 107 remote pilots in the U.S. must comply with these rules. This sim treats them as flight constraints.')
               ),
               h('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' } },
                 [
@@ -19781,13 +19782,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 })
               ),
               h('div', { style: { fontSize: '10px', color: '#cbd5e1', marginTop: '14px', lineHeight: 1.5 } },
-                'Source: 14 CFR § 107 (Small Unmanned Aircraft Systems). For real flights, study the official FAA Part 107 study guide and pass the Remote Pilot Knowledge Test.'
+                __alloT('stem.flightsim.source_14_cfr_107_small_unmanned_aircr', 'Source: 14 CFR § 107 (Small Unmanned Aircraft Systems). For real flights, study the official FAA Part 107 study guide and pass the Remote Pilot Knowledge Test.')
               ),
               h('div', { style: { display: 'flex', gap: '8px', marginTop: '16px' } },
                 h('button', {
                   onClick: function() { updMulti({ droneBriefing: false, selectedChallenge: null }); },
                   style: { flex: 1, padding: '12px', borderRadius: '10px', border: '1px solid #334155', background: 'transparent', color: '#cbd5e1', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
-                }, 'Cancel'),
+                }, __alloT('stem.flightsim.cancel', 'Cancel')),
                 h('button', {
                   onClick: function() {
                     var pwm = WAYPOINTS.filter(function(a) { return a.id === 'kpwm'; })[0];
@@ -19802,21 +19803,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                       // Spacing ~0.002° lon ≈ 540 ft per pole — realistic transmission spacing.
                       var poleLat = lat0 + 0.012;
                       photoPts = [
-                        { lat: poleLat, lon: lon0 - 0.006, captured: false, name: 'Pole 1 — Cracked insulator' },
-                        { lat: poleLat, lon: lon0 - 0.004, captured: false, name: 'Pole 2 — Vegetation contact' },
-                        { lat: poleLat, lon: lon0 - 0.002, captured: false, name: 'Pole 3 — Loose hardware' },
-                        { lat: poleLat, lon: lon0 + 0.000, captured: false, name: 'Pole 4 — Corrosion' },
-                        { lat: poleLat, lon: lon0 + 0.002, captured: false, name: 'Pole 5 — Splice integrity' },
-                        { lat: poleLat, lon: lon0 + 0.004, captured: false, name: 'Pole 6 — Bird strike risk' }
+                        { lat: poleLat, lon: lon0 - 0.006, captured: false, name: __alloT('stem.flightsim.pole_1_cracked_insulator', 'Pole 1 — Cracked insulator') },
+                        { lat: poleLat, lon: lon0 - 0.004, captured: false, name: __alloT('stem.flightsim.pole_2_vegetation_contact', 'Pole 2 — Vegetation contact') },
+                        { lat: poleLat, lon: lon0 - 0.002, captured: false, name: __alloT('stem.flightsim.pole_3_loose_hardware', 'Pole 3 — Loose hardware') },
+                        { lat: poleLat, lon: lon0 + 0.000, captured: false, name: __alloT('stem.flightsim.pole_4_corrosion', 'Pole 4 — Corrosion') },
+                        { lat: poleLat, lon: lon0 + 0.002, captured: false, name: __alloT('stem.flightsim.pole_5_splice_integrity', 'Pole 5 — Splice integrity') },
+                        { lat: poleLat, lon: lon0 + 0.004, captured: false, name: __alloT('stem.flightsim.pole_6_bird_strike_risk', 'Pole 6 — Bird strike risk') }
                       ];
                       armToast = '🔌 Powerline inspection armed. Fly low (< 60 ft AGL) and slow (< 5 kts) along each pole.';
                     } else {
                       // 4 photo waypoints in a small box pattern within ~1 nm of launch
                       photoPts = [
-                        { lat: lat0 + 0.008, lon: lon0 + 0.008, captured: false, name: 'Photo 1 — NE' },
-                        { lat: lat0 + 0.008, lon: lon0 - 0.008, captured: false, name: 'Photo 2 — NW' },
-                        { lat: lat0 - 0.008, lon: lon0 - 0.008, captured: false, name: 'Photo 3 — SW' },
-                        { lat: lat0 - 0.008, lon: lon0 + 0.008, captured: false, name: 'Photo 4 — SE' }
+                        { lat: lat0 + 0.008, lon: lon0 + 0.008, captured: false, name: __alloT('stem.flightsim.photo_1_ne', 'Photo 1 — NE') },
+                        { lat: lat0 + 0.008, lon: lon0 - 0.008, captured: false, name: __alloT('stem.flightsim.photo_2_nw', 'Photo 2 — NW') },
+                        { lat: lat0 - 0.008, lon: lon0 - 0.008, captured: false, name: __alloT('stem.flightsim.photo_3_sw', 'Photo 3 — SW') },
+                        { lat: lat0 - 0.008, lon: lon0 + 0.008, captured: false, name: __alloT('stem.flightsim.photo_4_se', 'Photo 4 — SE') }
                       ];
                       armToast = '🛸 Drone armed. Lift off and fly to each photo waypoint. Stay below 400 ft.';
                     }
@@ -19839,7 +19840,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                     if (typeof addToast === 'function') addToast(armToast, 'info');
                   },
                   style: { flex: 2, padding: '12px', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg, #0891b2, #06b6d4)', color: '#fff', fontSize: '12px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(8,145,178,0.4)' }
-                }, '✓ I Understand — Begin Flight')
+                }, __alloT('stem.flightsim.i_understand_begin_flight', '✓ I Understand — Begin Flight'))
               )
             )
           ),
@@ -19847,15 +19848,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           h('div', { style: { padding: '12px 16px 0', display: 'flex', alignItems: 'center', gap: '8px' } },
             h('button', {
               onClick: function() { if (ctx.setStemLabTool) ctx.setStemLabTool(null); },
-              'aria-label': 'Back to STEM Lab',
+              'aria-label': __alloT('stem.flightsim.back_to_stem_lab', 'Back to STEM Lab'),
               style: { background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', padding: '6px 12px', color: '#94a3b8', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }
-            }, '\u2190 STEM Lab')
+            }, __alloT('stem.flightsim.stem_lab', '\u2190 STEM Lab'))
           ),
           // Header
           h('div', { style: { textAlign: 'center', padding: '16px 24px 8px' } },
             h('div', { style: { fontSize: '48px', marginBottom: '4px' } }, '\u2708\uFE0F'),
             h('div', { style: { fontSize: '28px', fontWeight: 900, color: '#fff', letterSpacing: '2px' } }, 'SKYSCHOOL'),
-            h('div', { style: { fontSize: '13px', color: '#94a3b8', marginTop: '4px' } }, 'Learn to fly. Learn the world.'),
+            h('div', { style: { fontSize: '13px', color: '#94a3b8', marginTop: '4px' } }, __alloT('stem.flightsim.learn_to_fly_learn_the_world', 'Learn to fly. Learn the world.')),
             // Stats bar
             (d.totalFlightTime || 0) > 0 && h('div', { style: { display: 'flex', justifyContent: 'center', gap: '16px', marginTop: '8px', fontSize: '10px', color: '#94a3b8' } },
               h('span', null, '\u23F1 ' + Math.floor((d.totalFlightTime || 0) / 60) + ' min flight time'),
@@ -19865,32 +19866,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           ),
           // Welcome guide for new users (shows when no flight time)
           !(d.totalFlightTime > 0) && h('div', { style: { margin: '0 24px 12px', padding: '12px 16px', borderRadius: '12px', background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(59,130,246,0.1))', border: '1px solid rgba(99,102,241,0.25)' } },
-            h('div', { style: { fontSize: '12px', fontWeight: 800, color: '#a5b4fc', marginBottom: '6px' } }, '\uD83C\uDFAE First Time? Here\u2019s How to Get Airborne:'),
+            h('div', { style: { fontSize: '12px', fontWeight: 800, color: '#a5b4fc', marginBottom: '6px' } }, __alloT('stem.flightsim.first_time_here_s_how_to_get_airborne', '\uD83C\uDFAE First Time? Here\u2019s How to Get Airborne:')),
             h('div', { style: { fontSize: '11px', color: '#94a3b8', lineHeight: 1.6 } },
-              '1. Click "Free Flight" below to start on a runway', h('br'),
-              '2. Hold ', h('span', { style: { background: 'rgba(255,255,255,0.1)', padding: '1px 6px', borderRadius: '3px', fontFamily: 'monospace', fontWeight: 700, color: '#e2e8f0' } }, 'SHIFT'), ' to increase throttle to 100%', h('br'),
-              '3. When your speed reaches ~60 knots, press ', h('span', { style: { background: 'rgba(255,255,255,0.1)', padding: '1px 6px', borderRadius: '3px', fontFamily: 'monospace', fontWeight: 700, color: '#e2e8f0' } }, 'W'), ' to pitch up', h('br'),
-              '4. You\u2019re flying! Use ', h('span', { style: { background: 'rgba(255,255,255,0.1)', padding: '1px 6px', borderRadius: '3px', fontFamily: 'monospace', fontWeight: 700, color: '#e2e8f0' } }, 'A/D'), ' to bank and turn', h('br'),
-              '5. Press ', h('span', { style: { background: 'rgba(255,255,255,0.1)', padding: '1px 6px', borderRadius: '3px', fontFamily: 'monospace', fontWeight: 700, color: '#e2e8f0' } }, 'V'), ' to toggle cockpit/chase camera'
+              __alloT('stem.flightsim.1_click_free_flight_below_to_start_on_', '1. Click "Free Flight" below to start on a runway'), h('br'),
+              __alloT('stem.flightsim.2_hold', '2. Hold '), h('span', { style: { background: 'rgba(255,255,255,0.1)', padding: '1px 6px', borderRadius: '3px', fontFamily: 'monospace', fontWeight: 700, color: '#e2e8f0' } }, 'SHIFT'), __alloT('stem.flightsim.to_increase_throttle_to_100', ' to increase throttle to 100%'), h('br'),
+              __alloT('stem.flightsim.3_when_your_speed_reaches_60_knots_pre', '3. When your speed reaches ~60 knots, press '), h('span', { style: { background: 'rgba(255,255,255,0.1)', padding: '1px 6px', borderRadius: '3px', fontFamily: 'monospace', fontWeight: 700, color: '#e2e8f0' } }, 'W'), __alloT('stem.flightsim.to_pitch_up', ' to pitch up'), h('br'),
+              __alloT('stem.flightsim.4_you_re_flying_use', '4. You\u2019re flying! Use '), h('span', { style: { background: 'rgba(255,255,255,0.1)', padding: '1px 6px', borderRadius: '3px', fontFamily: 'monospace', fontWeight: 700, color: '#e2e8f0' } }, 'A/D'), __alloT('stem.flightsim.to_bank_and_turn', ' to bank and turn'), h('br'),
+              __alloT('stem.flightsim.5_press', '5. Press '), h('span', { style: { background: 'rgba(255,255,255,0.1)', padding: '1px 6px', borderRadius: '3px', fontFamily: 'monospace', fontWeight: 700, color: '#e2e8f0' } }, 'V'), __alloT('stem.flightsim.to_toggle_cockpit_chase_camera', ' to toggle cockpit/chase camera')
             )
           ),
           // Quick Fly — more prominent with description
           h('div', { style: { padding: '0 24px 12px' } },
             h('button', { onClick: function() { flightPlanRef.current = { departure: null, destination: null, route: [], distNm: 0, estTime: 0, initialHdg: 0 }; startFlying('kpwm'); },
               style: { width: '100%', padding: '16px', borderRadius: '14px', border: '2px solid #3b82f6', background: 'linear-gradient(135deg, #1e40af, #3b82f6)', color: '#fff', fontSize: '16px', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 20px rgba(59,130,246,0.3)' }
-            }, '\uD83D\uDEEB Free Flight from Portland, ME'),
-            h('div', { style: { textAlign: 'center', fontSize: '11px', color: '#cbd5e1', marginTop: '6px' } }, 'Takeoff from Portland International Jetport \u2022 Fly anywhere in the world')
+            }, __alloT('stem.flightsim.free_flight_from_portland_me', '\uD83D\uDEEB Free Flight from Portland, ME')),
+            h('div', { style: { textAlign: 'center', fontSize: '11px', color: '#cbd5e1', marginTop: '6px' } }, __alloT('stem.flightsim.takeoff_from_portland_international_je', 'Takeoff from Portland International Jetport \u2022 Fly anywhere in the world'))
           ),
           // Flight Planner
           h('div', { style: { padding: '0 24px 16px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🗺️ Flight Planner'),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, __alloT('stem.flightsim.flight_planner', '🗺️ Flight Planner')),
             h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #1e3a5f' } },
               h('div', { style: { display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center' } },
                 h('div', { style: { flex: 1 } },
-                  h('div', { style: { fontSize: '8px', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '2px' } }, 'From'),
+                  h('div', { style: { fontSize: '8px', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '2px' } }, __alloT('stem.flightsim.from', 'From')),
                   h('select', { value: d.planDep || 'kpwm', onChange: function(e) { upd('planDep', e.target.value); },
                     style: { width: '100%', padding: '6px', borderRadius: '6px', border: '1px solid #334155', background: '#1e293b', color: '#fff', fontSize: '11px', fontWeight: 700 },
-                    'aria-label': 'Departure airport'
+                    'aria-label': __alloT('stem.flightsim.departure_airport', 'Departure airport')
                   }, WAYPOINTS.map(function(wp) { return h('option', { key: wp.id, value: wp.id }, wp.code + ' — ' + wp.name); }))
                 ),
                 h('div', { style: { color: '#94a3b8', fontSize: '16px', marginTop: '10px' } }, '→'),
@@ -19898,7 +19899,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                   h('div', { style: { fontSize: '8px', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '2px' } }, 'To'),
                   h('select', { value: d.planDest || 'kjfk', onChange: function(e) { upd('planDest', e.target.value); },
                     style: { width: '100%', padding: '6px', borderRadius: '6px', border: '1px solid #334155', background: '#1e293b', color: '#fff', fontSize: '11px', fontWeight: 700 },
-                    'aria-label': 'Destination airport'
+                    'aria-label': __alloT('stem.flightsim.destination_airport', 'Destination airport')
                   }, WAYPOINTS.map(function(wp) { return h('option', { key: wp.id, value: wp.id }, wp.code + ' — ' + wp.name); }))
                 )
               ),
@@ -19932,14 +19933,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                     createFlightPlan(d.planDep || 'kpwm', d.planDest || 'kjfk');
                     startFlying(d.planDep || 'kpwm');
                   }, style: { width: '100%', marginTop: '8px', padding: '10px', borderRadius: '8px', border: 'none', background: 'linear-gradient(135deg, #059669, #10b981)', color: '#fff', fontSize: '13px', fontWeight: 800, cursor: 'pointer' }
-                  }, '🗺️ File Flight Plan & Depart')
+                  }, __alloT('stem.flightsim.file_flight_plan_depart', '🗺️ File Flight Plan & Depart'))
                 );
               })()
             )
           ),
           // Aircraft Selection
           h('div', { style: { padding: '0 24px 16px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🛩️ Select Aircraft'),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, __alloT('stem.flightsim.select_aircraft', '🛩️ Select Aircraft')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '4px' } },
               AIRCRAFT.map(function(ac) {
                 var isSelected = selectedAircraft === ac.id;
@@ -19983,7 +19984,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           ),
           // Departure selector
           h('div', { style: { padding: '0 24px 16px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, 'Or choose a departure airport'),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, __alloT('stem.flightsim.or_choose_a_departure_airport', 'Or choose a departure airport')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' } },
               WAYPOINTS.map(function(wp) {
                 var visited = visitedAirports.indexOf(wp.id) >= 0;
@@ -20012,14 +20013,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           ),
           // Learn / Quiz / Preflight / Calculator — new interactive modes
           h('div', { style: { padding: '0 24px 16px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🎓 Learn, Practice, Calculate'),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, __alloT('stem.flightsim.learn_practice_calculate', '🎓 Learn, Practice, Calculate')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' } },
               [
-                { id: 'learn',      icon: '📚', label: 'Learn',       desc: '20 topics: forces, instruments, history, careers...', bg: 'linear-gradient(135deg, #3b82f6, #2563eb)' },
-                { id: 'quiz',       icon: '🎯', label: 'Quiz',        desc: 'Test your knowledge with scoring + streaks',          bg: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' },
-                { id: 'preflight',  icon: '✅', label: 'Pre-Flight',  desc: 'Interactive checklist real pilots use',              bg: 'linear-gradient(135deg, #16a34a, #15803d)' },
-                { id: 'calculator', icon: '🧮', label: 'Lift Calc',   desc: 'Compute lift for any aircraft + speed + altitude',   bg: 'linear-gradient(135deg, #ea580c, #c2410c)' },
-                { id: 'stallHunt',  icon: '⚠️', label: 'Stall Discovery', desc: 'Adjust airspeed, altitude, AoA — discover the stall envelope.', bg: 'linear-gradient(135deg, #be123c, #9f1239)' }
+                { id: 'learn',      icon: '📚', label: __alloT('stem.flightsim.learn', 'Learn'),       desc: __alloT('stem.flightsim.20_topics_forces_instruments_history_c', '20 topics: forces, instruments, history, careers...'), bg: 'linear-gradient(135deg, #3b82f6, #2563eb)' },
+                { id: 'quiz',       icon: '🎯', label: __alloT('stem.flightsim.quiz', 'Quiz'),        desc: __alloT('stem.flightsim.test_your_knowledge_with_scoring_strea', 'Test your knowledge with scoring + streaks'),          bg: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' },
+                { id: 'preflight',  icon: '✅', label: 'Pre-Flight',  desc: __alloT('stem.flightsim.interactive_checklist_real_pilots_use', 'Interactive checklist real pilots use'),              bg: 'linear-gradient(135deg, #16a34a, #15803d)' },
+                { id: 'calculator', icon: '🧮', label: __alloT('stem.flightsim.lift_calc', 'Lift Calc'),   desc: __alloT('stem.flightsim.compute_lift_for_any_aircraft_speed_al', 'Compute lift for any aircraft + speed + altitude'),   bg: 'linear-gradient(135deg, #ea580c, #c2410c)' },
+                { id: 'stallHunt',  icon: '⚠️', label: __alloT('stem.flightsim.stall_discovery', 'Stall Discovery'), desc: __alloT('stem.flightsim.adjust_airspeed_altitude_aoa_discover_', 'Adjust airspeed, altitude, AoA — discover the stall envelope.'), bg: 'linear-gradient(135deg, #be123c, #9f1239)' }
               ].map(function(m) {
                 return h('button', {
                   key: m.id,
@@ -20036,7 +20037,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           ),
           // Lessons
           h('div', { style: { padding: '0 24px 16px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '📚 Aerodynamics Lessons'),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, __alloT('stem.flightsim.aerodynamics_lessons', '📚 Aerodynamics Lessons')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' } },
               Object.keys(LESSONS).map(function(key) {
                 var les = LESSONS[key];
@@ -20050,7 +20051,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           ),
           // Challenges
           h('div', { style: { padding: '0 24px 24px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🏆 Flight Challenges'),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, __alloT('stem.flightsim.flight_challenges', '🏆 Flight Challenges')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
               CHALLENGES.map(function(ch) {
                 var isRescue = ch.id === 'coastal_rescue';
@@ -20100,8 +20101,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           ),
           // HyperJet Geography Sprint
           h('div', { style: { padding: '0 24px 24px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🚀 HyperJet Geography Sprint'),
-            h('p', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '8px' } }, 'Fly at Mach 3 on autopilot — name countries, capitals, and cities as you zoom past! Press 1-4 to answer before you fly by.'),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, __alloT('stem.flightsim.hyperjet_geography_sprint', '🚀 HyperJet Geography Sprint')),
+            h('p', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '8px' } }, __alloT('stem.flightsim.fly_at_mach_3_on_autopilot_name_countr', 'Fly at Mach 3 on autopilot — name countries, capitals, and cities as you zoom past! Press 1-4 to answer before you fly by.')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' } },
               SPRINT_ROUTES.map(function(route) {
                 return h('button', { key: route.id, onClick: function() { startSprint(route.id); },
@@ -20142,19 +20143,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       if (view === 'lesson' && selectedLesson && LESSONS[selectedLesson]) {
         var les = LESSONS[selectedLesson];
         return h('div', { style: { padding: '24px', maxWidth: '600px', margin: '0 auto' } },
-          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '16px', fontSize: '13px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Back to Menu'),
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '16px', fontSize: '13px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.flightsim.back_to_menu', '← Back to Menu')),
           h('div', { style: { background: 'linear-gradient(135deg, #0c1222, #1e3a5f)', borderRadius: '16px', padding: '24px', color: '#fff' } },
             h('div', { style: { fontSize: '40px', textAlign: 'center', marginBottom: '8px' } }, les.icon),
             h('h2', { style: { fontSize: '20px', fontWeight: 900, textAlign: 'center', marginBottom: '16px' } }, les.title),
             h('p', { style: { fontSize: '14px', lineHeight: '1.7', color: '#cbd5e1', marginBottom: '16px' } }, les.content),
             h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid #334155' } },
-              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '6px' } }, 'Formula'),
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '6px' } }, __alloT('stem.flightsim.formula', 'Formula')),
               h('div', { style: { fontSize: '16px', fontWeight: 800, color: '#22d3ee', fontFamily: 'monospace', marginBottom: '8px' } }, les.formula),
               h('div', { style: { fontSize: '11px', color: '#94a3b8', lineHeight: '1.5' } }, les.variables)
             ),
             h('button', { onClick: function() { startFlying('kpwm'); },
               style: { width: '100%', marginTop: '16px', padding: '12px', borderRadius: '10px', border: 'none', background: '#3b82f6', color: '#fff', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }
-            }, '✈️ Try It — Free Flight')
+            }, __alloT('stem.flightsim.try_it_free_flight', '✈️ Try It — Free Flight'))
           )
         );
       }
@@ -20169,7 +20170,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           h('canvas', {
             ref: canvasRef,
             role: 'application',
-            'aria-label': 'Flight simulator cockpit view. W/S pitch, A/D bank, Shift/Ctrl throttle, Q quiz, F forces, Space pause, I info.',
+            'aria-label': __alloT('stem.flightsim.flight_simulator_cockpit_view_w_s_pitc', 'Flight simulator cockpit view. W/S pitch, A/D bank, Shift/Ctrl throttle, Q quiz, F forces, Space pause, I info.'),
             'aria-roledescription': 'Flight simulator',
             tabIndex: 0,
             style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 2, display: 'block', outline: 'none', background: threeLoaded ? 'transparent' : '#000' },
@@ -20194,17 +20195,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               updMulti({ view: 'debrief' });
             },
               style: { padding: '6px 10px', borderRadius: '6px', background: 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
-            }, '✕ Exit'),
+            }, __alloT('stem.flightsim.exit', '✕ Exit')),
             h('button', { onClick: function() {
               var container = document.getElementById('skyschool-flight-container');
               if (!container) return;
               if (document.fullscreenElement) { document.exitFullscreen(); }
               else { container.requestFullscreen().catch(function() {}); }
             },
-              'aria-label': 'Toggle fullscreen flight view',
+              'aria-label': __alloT('stem.flightsim.toggle_fullscreen_flight_view', 'Toggle fullscreen flight view'),
               'aria-pressed': document.fullscreenElement ? 'true' : 'false',
               style: { padding: '6px 10px', borderRadius: '6px', background: document.fullscreenElement ? 'rgba(34,211,238,0.3)' : 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
-            }, '\u26F6 Fullscreen'),
+            }, __alloT('stem.flightsim.fullscreen', '\u26F6 Fullscreen')),
             h('button', { onClick: function() { upd('thirdPerson', !d.thirdPerson); },
               'aria-label': d.thirdPerson ? 'Switch to cockpit view' : 'Switch to third-person view',
               style: { padding: '6px 10px', borderRadius: '6px', background: d.thirdPerson ? 'rgba(99,102,241,0.4)' : 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
@@ -20253,40 +20254,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             }
           },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' } },
-              h('div', { style: { fontSize: '14px', fontWeight: 900, color: '#fbbf24' } }, '🛬 On Approach'),
+              h('div', { style: { fontSize: '14px', fontWeight: 900, color: '#fbbf24' } }, __alloT('stem.flightsim.on_approach', '🛬 On Approach')),
               h('button', { onClick: function() { upd('landingTutorialDismissed', true); },
-                'aria-label': 'Dismiss landing tutorial',
+                'aria-label': __alloT('stem.flightsim.dismiss_landing_tutorial', 'Dismiss landing tutorial'),
                 style: { background: 'none', border: 'none', color: '#94a3b8', fontSize: '16px', cursor: 'pointer', padding: '0 4px' }
               }, '✕')
             ),
             h('div', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '8px' } }, "You're descending toward " + (hudRef.current.nearWp.code || hudRef.current.nearWp.name) + ". Land smoothly:"),
             h('ol', { style: { paddingLeft: '20px', margin: '0 0 12px 0' } },
               h('li', { style: { marginBottom: '6px' } },
-                h('b', { style: { color: '#fbbf24' } }, '1. Reduce throttle: '),
-                'Hold ', h('kbd', { style: { padding: '1px 5px', background: '#334155', borderRadius: '3px', fontSize: '10px' } }, 'Ctrl'),
-                ' to spool the engine down to ~30%. Speed will bleed off.'
+                h('b', { style: { color: '#fbbf24' } }, __alloT('stem.flightsim.1_reduce_throttle', '1. Reduce throttle: ')),
+                __alloT('stem.flightsim.hold', 'Hold '), h('kbd', { style: { padding: '1px 5px', background: '#334155', borderRadius: '3px', fontSize: '10px' } }, __alloT('stem.flightsim.ctrl', 'Ctrl')),
+                __alloT('stem.flightsim.to_spool_the_engine_down_to_30_speed_w', ' to spool the engine down to ~30%. Speed will bleed off.')
               ),
               h('li', { style: { marginBottom: '6px' } },
-                h('b', { style: { color: '#fbbf24' } }, '2. Hold the glideslope: '),
-                'Aim for a ', h('span', { style: { color: '#22d3ee', fontWeight: 700 } }, '3° descent'),
-                '. The PAPI lights show 2 white + 2 red when you\'re on slope.'
+                h('b', { style: { color: '#fbbf24' } }, __alloT('stem.flightsim.2_hold_the_glideslope', '2. Hold the glideslope: ')),
+                __alloT('stem.flightsim.aim_for_a', 'Aim for a '), h('span', { style: { color: '#22d3ee', fontWeight: 700 } }, __alloT('stem.flightsim.3_descent', '3° descent')),
+                __alloT('stem.flightsim.the_papi_lights_show_2_white_2_red_whe', '. The PAPI lights show 2 white + 2 red when you\'re on slope.')
               ),
               h('li', { style: { marginBottom: '6px' } },
-                h('b', { style: { color: '#fbbf24' } }, '3. Approach speed: '),
-                'Keep speed at ~', h('span', { style: { color: '#22d3ee', fontWeight: 700 } }, '65 kts'),
-                ' (1.3 × stall speed). Faster = float past runway. Slower = stall.'
+                h('b', { style: { color: '#fbbf24' } }, __alloT('stem.flightsim.3_approach_speed', '3. Approach speed: ')),
+                __alloT('stem.flightsim.keep_speed_at', 'Keep speed at ~'), h('span', { style: { color: '#22d3ee', fontWeight: 700 } }, __alloT('stem.flightsim.65_kts', '65 kts')),
+                __alloT('stem.flightsim.1_3_stall_speed_faster_float_past_runw', ' (1.3 × stall speed). Faster = float past runway. Slower = stall.')
               ),
               h('li', null,
-                h('b', { style: { color: '#fbbf24' } }, '4. Flare: '),
-                'Just above the runway (~10 ft), gently pull ', h('kbd', { style: { padding: '1px 5px', background: '#334155', borderRadius: '3px', fontSize: '10px' } }, 'W'),
-                ' to raise the nose. Target ', h('span', { style: { color: '#22d3ee', fontWeight: 700 } }, '< 200 fpm'),
-                ' descent at touchdown.'
+                h('b', { style: { color: '#fbbf24' } }, __alloT('stem.flightsim.4_flare', '4. Flare: ')),
+                __alloT('stem.flightsim.just_above_the_runway_10_ft_gently_pul', 'Just above the runway (~10 ft), gently pull '), h('kbd', { style: { padding: '1px 5px', background: '#334155', borderRadius: '3px', fontSize: '10px' } }, 'W'),
+                __alloT('stem.flightsim.to_raise_the_nose_target', ' to raise the nose. Target '), h('span', { style: { color: '#22d3ee', fontWeight: 700 } }, __alloT('stem.flightsim.200_fpm', '< 200 fpm')),
+                __alloT('stem.flightsim.descent_at_touchdown', ' descent at touchdown.')
               )
             ),
             h('div', { style: { padding: '10px', background: 'rgba(251,191,36,0.1)', borderRadius: '6px', borderLeft: '3px solid #fbbf24', fontSize: '11px' } },
-              h('div', { style: { fontWeight: 800, color: '#fbbf24', marginBottom: '4px' } }, '🔬 The Science'),
+              h('div', { style: { fontWeight: 800, color: '#fbbf24', marginBottom: '4px' } }, __alloT('stem.flightsim.the_science', '🔬 The Science')),
               h('div', { style: { color: '#cbd5e1' } },
-                'Energy = ½mv² (kinetic) + mgh (potential). To descend safely, you trade altitude for distance — letting drag bleed off speed. The flare converts forward velocity into a brief lift increase that breaks the descent rate just before the wheels touch.'
+                __alloT('stem.flightsim.energy_mv_kinetic_mgh_potential_to_des', 'Energy = ½mv² (kinetic) + mgh (potential). To descend safely, you trade altitude for distance — letting drag bleed off speed. The flare converts forward velocity into a brief lift increase that breaks the descent rate just before the wheels touch.')
               )
             )
           ) : null,
@@ -20300,40 +20301,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             }
           },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' } },
-              h('div', { style: { fontSize: '14px', fontWeight: 900, color: '#38bdf8' } }, '🛫 Ready for Takeoff'),
+              h('div', { style: { fontSize: '14px', fontWeight: 900, color: '#38bdf8' } }, __alloT('stem.flightsim.ready_for_takeoff', '🛫 Ready for Takeoff')),
               h('button', { onClick: function() { upd('takeoffTutorialDismissed', true); },
-                'aria-label': 'Dismiss takeoff tutorial',
+                'aria-label': __alloT('stem.flightsim.dismiss_takeoff_tutorial', 'Dismiss takeoff tutorial'),
                 style: { background: 'none', border: 'none', color: '#94a3b8', fontSize: '16px', cursor: 'pointer', padding: '0 4px' }
               }, '✕')
             ),
-            h('div', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '8px' } }, "You're parked on the runway. Here's how to get airborne:"),
+            h('div', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '8px' } }, __alloT('stem.flightsim.you_re_parked_on_the_runway_here_s_how', "You're parked on the runway. Here's how to get airborne:")),
             h('ol', { style: { paddingLeft: '20px', margin: '0 0 12px 0' } },
               h('li', { style: { marginBottom: '6px' } },
-                h('b', { style: { color: '#fbbf24' } }, '1. Add throttle: '),
-                'Hold ', h('kbd', { style: { padding: '1px 5px', background: '#334155', borderRadius: '3px', fontSize: '10px' } }, 'Shift'),
-                ' to spool up the engine to 100%. Watch your speed (kts) climb.'
+                h('b', { style: { color: '#fbbf24' } }, __alloT('stem.flightsim.1_add_throttle', '1. Add throttle: ')),
+                __alloT('stem.flightsim.hold_2', 'Hold '), h('kbd', { style: { padding: '1px 5px', background: '#334155', borderRadius: '3px', fontSize: '10px' } }, __alloT('stem.flightsim.shift', 'Shift')),
+                __alloT('stem.flightsim.to_spool_up_the_engine_to_100_watch_yo', ' to spool up the engine to 100%. Watch your speed (kts) climb.')
               ),
               h('li', { style: { marginBottom: '6px' } },
-                h('b', { style: { color: '#fbbf24' } }, '2. Build airspeed: '),
-                'Roll down the runway. Don\'t pull up yet. Wait for ', h('span', { style: { color: '#22d3ee', fontWeight: 700 } }, '~55–65 kts'),
-                ' (Cessna rotation speed).'
+                h('b', { style: { color: '#fbbf24' } }, __alloT('stem.flightsim.2_build_airspeed', '2. Build airspeed: ')),
+                __alloT('stem.flightsim.roll_down_the_runway_don_t_pull_up_yet', 'Roll down the runway. Don\'t pull up yet. Wait for '), h('span', { style: { color: '#22d3ee', fontWeight: 700 } }, __alloT('stem.flightsim.55_65_kts', '~55–65 kts')),
+                __alloT('stem.flightsim.cessna_rotation_speed', ' (Cessna rotation speed).')
               ),
               h('li', { style: { marginBottom: '6px' } },
-                h('b', { style: { color: '#fbbf24' } }, '3. Rotate: '),
-                'Press ', h('kbd', { style: { padding: '1px 5px', background: '#334155', borderRadius: '3px', fontSize: '10px' } }, 'W'),
-                ' (or ↑) to pitch the nose up gently — about 10°. The plane will lift off naturally.'
+                h('b', { style: { color: '#fbbf24' } }, __alloT('stem.flightsim.3_rotate', '3. Rotate: ')),
+                __alloT('stem.flightsim.press', 'Press '), h('kbd', { style: { padding: '1px 5px', background: '#334155', borderRadius: '3px', fontSize: '10px' } }, 'W'),
+                __alloT('stem.flightsim.or_to_pitch_the_nose_up_gently_about_1', ' (or ↑) to pitch the nose up gently — about 10°. The plane will lift off naturally.')
               ),
               h('li', null,
-                h('b', { style: { color: '#fbbf24' } }, '4. Climb: '),
-                'Keep nose up ~5–10° to maintain a steady climb. Don\'t over-rotate or you\'ll stall.'
+                h('b', { style: { color: '#fbbf24' } }, __alloT('stem.flightsim.4_climb', '4. Climb: ')),
+                __alloT('stem.flightsim.keep_nose_up_5_10_to_maintain_a_steady', 'Keep nose up ~5–10° to maintain a steady climb. Don\'t over-rotate or you\'ll stall.')
               )
             ),
             h('div', { style: { padding: '10px', background: 'rgba(56,189,248,0.1)', borderRadius: '6px', borderLeft: '3px solid #38bdf8', fontSize: '11px' } },
-              h('div', { style: { fontWeight: 800, color: '#38bdf8', marginBottom: '4px' } }, '🔬 The Science'),
+              h('div', { style: { fontWeight: 800, color: '#38bdf8', marginBottom: '4px' } }, __alloT('stem.flightsim.the_science_2', '🔬 The Science')),
               h('div', { style: { color: '#cbd5e1' } },
-                'Lift = ½ × air density × velocity² × wing area × C',
+                __alloT('stem.flightsim.lift_air_density_velocity_wing_area_c', 'Lift = ½ × air density × velocity² × wing area × C'),
                 h('sub', null, 'L'),
-                '. Lift grows with the SQUARE of speed. Doubling airspeed = 4× the lift. At ~55 kts with a small angle of attack, your wings produce just enough lift to overcome the plane\'s weight (2,550 lbs for a Cessna 172).'
+                __alloT('stem.flightsim.lift_grows_with_the_square_of_speed_do', '. Lift grows with the SQUARE of speed. Doubling airspeed = 4× the lift. At ~55 kts with a small angle of attack, your wings produce just enough lift to overcome the plane\'s weight (2,550 lbs for a Cessna 172).')
               )
             )
           ) : null
@@ -20371,7 +20372,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Grade card header
           h('div', { style: { textAlign: 'center', marginBottom: '16px', padding: '16px', borderRadius: '14px', background: 'linear-gradient(135deg, rgba(251,191,36,0.08), rgba(59,130,246,0.08))', border: '1px solid rgba(255,255,255,0.08)' } },
             h('div', { style: { fontSize: '48px', marginBottom: '4px' } }, gradeIcon),
-            h('div', { style: { fontSize: '22px', fontWeight: 900, letterSpacing: '1px' } }, 'FLIGHT DEBRIEF'),
+            h('div', { style: { fontSize: '22px', fontWeight: 900, letterSpacing: '1px' } }, __alloT('stem.flightsim.flight_debrief', 'FLIGHT DEBRIEF')),
             h('div', { style: { fontSize: '15px', color: gradeColor, fontWeight: 800, marginTop: '6px' } }, gradeText),
             h('div', { style: { fontSize: '11px', color: '#94a3b8', marginTop: '4px' } }, 'Aircraft: ' + db.aircraft + ' \u2022 +' + gradeXP + ' XP')
           ),
@@ -20397,8 +20398,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           ),
           // Flight Path Map (from black box data)
           blackBoxRef.current.length > 3 ? h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #1e293b', marginBottom: '16px' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#60a5fa', textTransform: 'uppercase', marginBottom: '8px' } }, '🗺️ Flight Path'),
-            h('canvas', { 'aria-label': 'Flightsim interactive visualization',
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#60a5fa', textTransform: 'uppercase', marginBottom: '8px' } }, __alloT('stem.flightsim.flight_path', '🗺️ Flight Path')),
+            h('canvas', { 'aria-label': __alloT('stem.flightsim.flightsim_interactive_visualization', 'Flightsim interactive visualization'),
               ref: function(canvas) {
                 if (!canvas) return;
                 var g = canvas.getContext('2d');
@@ -20469,7 +20470,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               style: { width: '100%', height: '120px', borderRadius: '6px', display: 'block' }
             }),
             // Altitude + Speed profile chart
-            h('canvas', { 'aria-label': 'Flightsim visualization', 
+            h('canvas', { 'aria-label': __alloT('stem.flightsim.flightsim_visualization', 'Flightsim visualization'), 
               ref: function(canvas) {
                 if (!canvas) return;
                 var g = canvas.getContext('2d');
@@ -20517,28 +20518,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 if (addToast) addToast('📊 Flight data exported!', 'success');
               },
               style: { marginTop: '8px', padding: '6px 14px', borderRadius: '6px', background: 'rgba(96,165,250,0.2)', border: '1px solid rgba(96,165,250,0.3)', color: '#60a5fa', fontSize: '10px', fontWeight: 700, cursor: 'pointer' }
-            }, '📊 Export Flight Data (CSV)')
+            }, __alloT('stem.flightsim.export_flight_data_csv', '📊 Export Flight Data (CSV)'))
           ) : null,
           // Educational takeaways
           h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #1e293b', marginBottom: '16px' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', marginBottom: '8px' } }, '💡 What You Learned This Flight'),
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', marginBottom: '8px' } }, __alloT('stem.flightsim.what_you_learned_this_flight', '💡 What You Learned This Flight')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
-              db.maxAlt > 10000 ? h('div', { style: { fontSize: '11px', color: '#94a3b8', paddingLeft: '8px', borderLeft: '2px solid #22d3ee' } }, '🌌 You flew above 10,000 ft where supplemental oxygen is required. Air density drops to 70% of sea level.') : null,
-              db.maxSpeed > 400 ? h('div', { style: { fontSize: '11px', color: '#94a3b8', paddingLeft: '8px', borderLeft: '2px solid #fbbf24' } }, '💨 You exceeded 400 kts! At these speeds, compressibility effects start to matter — air can no longer be treated as incompressible.') : null,
+              db.maxAlt > 10000 ? h('div', { style: { fontSize: '11px', color: '#94a3b8', paddingLeft: '8px', borderLeft: '2px solid #22d3ee' } }, __alloT('stem.flightsim.you_flew_above_10_000_ft_where_supplem', '🌌 You flew above 10,000 ft where supplemental oxygen is required. Air density drops to 70% of sea level.')) : null,
+              db.maxSpeed > 400 ? h('div', { style: { fontSize: '11px', color: '#94a3b8', paddingLeft: '8px', borderLeft: '2px solid #fbbf24' } }, __alloT('stem.flightsim.you_exceeded_400_kts_at_these_speeds_c', '💨 You exceeded 400 kts! At these speeds, compressibility effects start to matter — air can no longer be treated as incompressible.')) : null,
               db.airports > 0 ? h('div', { style: { fontSize: '11px', color: '#94a3b8', paddingLeft: '8px', borderLeft: '2px solid #4ade80' } }, '✈️ You visited ' + db.airports + ' airport(s). Real pilots plan routes using airways — highways in the sky defined by radio beacons.') : null,
               db.discovered > 0 ? h('div', { style: { fontSize: '11px', color: '#94a3b8', paddingLeft: '8px', borderLeft: '2px solid #f97316' } }, '📍 You discovered ' + db.discovered + ' geographic locations. Professional pilots use sectional charts that show terrain, airspace, and obstacles.') : null,
               db.bestLanding && db.bestLanding < 200 ? h('div', { style: { fontSize: '11px', color: '#94a3b8', paddingLeft: '8px', borderLeft: '2px solid #ec4899' } }, '🧈 Great landing at ' + db.bestLanding + ' fpm! Airline standards consider < 180 fpm a smooth landing. The technique is called "flaring" — pitching up gently at 20 ft above the runway.') : null,
-              db.flightTime > 300 ? h('div', { style: { fontSize: '11px', color: '#94a3b8', paddingLeft: '8px', borderLeft: '2px solid #8b5cf6' } }, '⏱️ You flew for over 5 minutes. Real pilots track fuel consumption carefully — the Cessna 172 burns about 8 gallons per hour.') : null
+              db.flightTime > 300 ? h('div', { style: { fontSize: '11px', color: '#94a3b8', paddingLeft: '8px', borderLeft: '2px solid #8b5cf6' } }, __alloT('stem.flightsim.you_flew_for_over_5_minutes_real_pilot', '⏱️ You flew for over 5 minutes. Real pilots track fuel consumption carefully — the Cessna 172 burns about 8 gallons per hour.')) : null
             )
           ),
           // Actions
           h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center' } },
             h('button', { onClick: function() { upd('view', 'menu'); },
               style: { padding: '10px 24px', borderRadius: '8px', border: '1px solid #3b82f6', background: '#1e40af', color: '#fff', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
-            }, '🏠 Back to Menu'),
+            }, __alloT('stem.flightsim.back_to_menu_2', '🏠 Back to Menu')),
             h('button', { onClick: function() { startFlying('kpwm'); },
               style: { padding: '10px 24px', borderRadius: '8px', border: 'none', background: '#3b82f6', color: '#fff', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
-            }, '🛫 Fly Again')
+            }, __alloT('stem.flightsim.fly_again', '🛫 Fly Again'))
           )
         );
       }
@@ -20549,106 +20550,106 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       if (view === 'learn') {
         var learnTopic = d.learnTopic || 'forces';
         var LEARN_TOPICS = [
-          { id: 'forces',    label: 'The Four Forces',         icon: '⚖️',  data: FOUR_FORCES,             titleKey: 'force' },
-          { id: 'aero',      label: 'Aerodynamics',            icon: '🌊',  data: AERODYNAMICS,            titleKey: 'concept' },
-          { id: 'cockpit',   label: 'Cockpit Instruments',     icon: '📊',  data: COCKPIT_INSTRUMENTS,     titleKey: 'instrument' },
-          { id: 'anatomy',   label: 'Aircraft Anatomy',        icon: '🛩️',  data: AIRCRAFT_ANATOMY,        titleKey: 'part' },
-          { id: 'famous',    label: 'Famous Aircraft',         icon: '✈️',  data: FAMOUS_AIRCRAFT,         titleKey: 'aircraft' },
-          { id: 'pioneers',  label: 'Aviation Pioneers',       icon: '👥',  data: AVIATION_PIONEERS,       titleKey: 'name' },
-          { id: 'weather',   label: 'Weather & Flight',        icon: '⛈️',  data: WEATHER_AND_FLIGHT,      titleKey: 'phenomenon' },
-          { id: 'nav',       label: 'Navigation',              icon: '🧭',  data: NAVIGATION_CONCEPTS,     titleKey: 'concept' },
-          { id: 'training',  label: 'Pilot Training Paths',    icon: '🎓',  data: PILOT_TRAINING,          titleKey: 'certificate' },
-          { id: 'careers',   label: 'Aviation Careers',        icon: '💼',  data: AVIATION_CAREERS,        titleKey: 'role' },
-          { id: 'atmos',     label: 'Atmosphere & Altitude',   icon: '🌐',  data: ATMOSPHERE_LAYERS,       titleKey: 'layer' },
-          { id: 'flights',   label: 'Famous Flights',          icon: '🚀',  data: FAMOUS_FLIGHTS,          titleKey: 'flight' },
-          { id: 'timeline',  label: 'History Timeline',        icon: '📅',  data: AVIATION_TIMELINE,       titleKey: 'year' },
-          { id: 'faq',       label: 'Student FAQ',             icon: '❓',  data: STUDENT_FAQ,             titleKey: 'q' },
-          { id: 'lessons',   label: 'Lesson Plans',            icon: '👨‍🏫', data: FLIGHT_LESSON_PLANS,     titleKey: 'title' },
-          { id: 'math',      label: 'Aviation Math',           icon: '🧮',  data: AVIATION_MATH,           titleKey: 'problem' },
-          { id: 'drone',     label: 'Drone Deep Dive',         icon: '🛸',  data: DRONE_DEEP_DIVE,         titleKey: 'topic' },
-          { id: 'mnemonics', label: 'Pilot Mnemonics',         icon: '🧠',  data: AVIATION_MNEMONICS,      titleKey: 'mnemonic' },
-          { id: 'glossary',  label: 'Aviation Glossary',       icon: '📖',  data: AVIATION_GLOSSARY,       titleKey: 'term' },
-          { id: 'inquiry',   label: 'Inquiry Prompts',         icon: '💭',  data: INQUIRY_PROMPTS,         titleKey: null },
-          { id: 'airports',  label: 'Airport Types',           icon: '🏛️',  data: AIRPORT_TYPES,           titleKey: 'type' },
-          { id: 'phras',     label: 'ATC Phraseology',         icon: '📡',  data: ATC_PHRASEOLOGY,         titleKey: 'phrase' },
-          { id: 'engines',   label: 'Engines Deep Dive',       icon: '⚙️',  data: ENGINE_TYPES_DEEP,       titleKey: 'type' },
-          { id: 'pressur',   label: 'Pressurization + O2',     icon: '🫁',  data: PRESSURIZATION,          titleKey: 'concept' },
-          { id: 'wake',      label: 'Wake Turbulence',         icon: '🌀',  data: WAKE_TURBULENCE,         titleKey: 'concept' },
-          { id: 'lighting',  label: 'Runway Lighting',         icon: '💡',  data: RUNWAY_LIGHTING,         titleKey: 'lighting' },
-          { id: 'human',     label: 'Human Factors',           icon: '🧠',  data: HUMAN_FACTORS,           titleKey: 'topic' },
-          { id: 'incidents', label: 'Incident Lessons',        icon: '📓',  data: AVIATION_INCIDENT_LESSONS, titleKey: 'incident' },
-          { id: 'regs',      label: 'Regulations Primer',      icon: '⚖️',  data: AVIATION_REGULATIONS,    titleKey: 'regulation' },
-          { id: 'charts',    label: 'Performance Charts',      icon: '📈',  data: PERFORMANCE_CHARTS,      titleKey: 'chart' },
-          { id: 'systems',   label: 'Aircraft Systems',        icon: '🔧',  data: AIRCRAFT_SYSTEMS,        titleKey: 'system' },
-          { id: 'maneuvers', label: 'Flight Maneuvers',        icon: '🎯',  data: FLIGHT_MANEUVERS,        titleKey: 'maneuver' },
-          { id: 'future',    label: 'Future of Aviation',      icon: '🚀',  data: FUTURE_AVIATION,         titleKey: 'trend' },
-          { id: 'world_aps', label: 'World Airports',          icon: '🌍',  data: WORLD_AIRPORTS_DEEP,     titleKey: 'airport' },
-          { id: 'careers_d', label: 'Careers in Depth',        icon: '💼',  data: AVIATION_CAREERS_DETAIL, titleKey: 'role' },
-          { id: 'kids',      label: 'For Younger Students',    icon: '👶',  data: AVIATION_FOR_KIDS,       titleKey: 'topic' },
+          { id: 'forces',    label: __alloT('stem.flightsim.the_four_forces', 'The Four Forces'),         icon: '⚖️',  data: FOUR_FORCES,             titleKey: 'force' },
+          { id: 'aero',      label: __alloT('stem.flightsim.aerodynamics', 'Aerodynamics'),            icon: '🌊',  data: AERODYNAMICS,            titleKey: 'concept' },
+          { id: 'cockpit',   label: __alloT('stem.flightsim.cockpit_instruments', 'Cockpit Instruments'),     icon: '📊',  data: COCKPIT_INSTRUMENTS,     titleKey: 'instrument' },
+          { id: 'anatomy',   label: __alloT('stem.flightsim.aircraft_anatomy', 'Aircraft Anatomy'),        icon: '🛩️',  data: AIRCRAFT_ANATOMY,        titleKey: 'part' },
+          { id: 'famous',    label: __alloT('stem.flightsim.famous_aircraft', 'Famous Aircraft'),         icon: '✈️',  data: FAMOUS_AIRCRAFT,         titleKey: 'aircraft' },
+          { id: 'pioneers',  label: __alloT('stem.flightsim.aviation_pioneers', 'Aviation Pioneers'),       icon: '👥',  data: AVIATION_PIONEERS,       titleKey: 'name' },
+          { id: 'weather',   label: __alloT('stem.flightsim.weather_flight', 'Weather & Flight'),        icon: '⛈️',  data: WEATHER_AND_FLIGHT,      titleKey: 'phenomenon' },
+          { id: 'nav',       label: __alloT('stem.flightsim.navigation', 'Navigation'),              icon: '🧭',  data: NAVIGATION_CONCEPTS,     titleKey: 'concept' },
+          { id: 'training',  label: __alloT('stem.flightsim.pilot_training_paths', 'Pilot Training Paths'),    icon: '🎓',  data: PILOT_TRAINING,          titleKey: 'certificate' },
+          { id: 'careers',   label: __alloT('stem.flightsim.aviation_careers', 'Aviation Careers'),        icon: '💼',  data: AVIATION_CAREERS,        titleKey: 'role' },
+          { id: 'atmos',     label: __alloT('stem.flightsim.atmosphere_altitude', 'Atmosphere & Altitude'),   icon: '🌐',  data: ATMOSPHERE_LAYERS,       titleKey: 'layer' },
+          { id: 'flights',   label: __alloT('stem.flightsim.famous_flights', 'Famous Flights'),          icon: '🚀',  data: FAMOUS_FLIGHTS,          titleKey: 'flight' },
+          { id: 'timeline',  label: __alloT('stem.flightsim.history_timeline', 'History Timeline'),        icon: '📅',  data: AVIATION_TIMELINE,       titleKey: 'year' },
+          { id: 'faq',       label: __alloT('stem.flightsim.student_faq', 'Student FAQ'),             icon: '❓',  data: STUDENT_FAQ,             titleKey: 'q' },
+          { id: 'lessons',   label: __alloT('stem.flightsim.lesson_plans', 'Lesson Plans'),            icon: '👨‍🏫', data: FLIGHT_LESSON_PLANS,     titleKey: 'title' },
+          { id: 'math',      label: __alloT('stem.flightsim.aviation_math', 'Aviation Math'),           icon: '🧮',  data: AVIATION_MATH,           titleKey: 'problem' },
+          { id: 'drone',     label: __alloT('stem.flightsim.drone_deep_dive', 'Drone Deep Dive'),         icon: '🛸',  data: DRONE_DEEP_DIVE,         titleKey: 'topic' },
+          { id: 'mnemonics', label: __alloT('stem.flightsim.pilot_mnemonics', 'Pilot Mnemonics'),         icon: '🧠',  data: AVIATION_MNEMONICS,      titleKey: 'mnemonic' },
+          { id: 'glossary',  label: __alloT('stem.flightsim.aviation_glossary', 'Aviation Glossary'),       icon: '📖',  data: AVIATION_GLOSSARY,       titleKey: 'term' },
+          { id: 'inquiry',   label: __alloT('stem.flightsim.inquiry_prompts', 'Inquiry Prompts'),         icon: '💭',  data: INQUIRY_PROMPTS,         titleKey: null },
+          { id: 'airports',  label: __alloT('stem.flightsim.airport_types', 'Airport Types'),           icon: '🏛️',  data: AIRPORT_TYPES,           titleKey: 'type' },
+          { id: 'phras',     label: __alloT('stem.flightsim.atc_phraseology', 'ATC Phraseology'),         icon: '📡',  data: ATC_PHRASEOLOGY,         titleKey: 'phrase' },
+          { id: 'engines',   label: __alloT('stem.flightsim.engines_deep_dive', 'Engines Deep Dive'),       icon: '⚙️',  data: ENGINE_TYPES_DEEP,       titleKey: 'type' },
+          { id: 'pressur',   label: __alloT('stem.flightsim.pressurization_o2', 'Pressurization + O2'),     icon: '🫁',  data: PRESSURIZATION,          titleKey: 'concept' },
+          { id: 'wake',      label: __alloT('stem.flightsim.wake_turbulence', 'Wake Turbulence'),         icon: '🌀',  data: WAKE_TURBULENCE,         titleKey: 'concept' },
+          { id: 'lighting',  label: __alloT('stem.flightsim.runway_lighting', 'Runway Lighting'),         icon: '💡',  data: RUNWAY_LIGHTING,         titleKey: 'lighting' },
+          { id: 'human',     label: __alloT('stem.flightsim.human_factors', 'Human Factors'),           icon: '🧠',  data: HUMAN_FACTORS,           titleKey: 'topic' },
+          { id: 'incidents', label: __alloT('stem.flightsim.incident_lessons', 'Incident Lessons'),        icon: '📓',  data: AVIATION_INCIDENT_LESSONS, titleKey: 'incident' },
+          { id: 'regs',      label: __alloT('stem.flightsim.regulations_primer', 'Regulations Primer'),      icon: '⚖️',  data: AVIATION_REGULATIONS,    titleKey: 'regulation' },
+          { id: 'charts',    label: __alloT('stem.flightsim.performance_charts', 'Performance Charts'),      icon: '📈',  data: PERFORMANCE_CHARTS,      titleKey: 'chart' },
+          { id: 'systems',   label: __alloT('stem.flightsim.aircraft_systems', 'Aircraft Systems'),        icon: '🔧',  data: AIRCRAFT_SYSTEMS,        titleKey: 'system' },
+          { id: 'maneuvers', label: __alloT('stem.flightsim.flight_maneuvers', 'Flight Maneuvers'),        icon: '🎯',  data: FLIGHT_MANEUVERS,        titleKey: 'maneuver' },
+          { id: 'future',    label: __alloT('stem.flightsim.future_of_aviation', 'Future of Aviation'),      icon: '🚀',  data: FUTURE_AVIATION,         titleKey: 'trend' },
+          { id: 'world_aps', label: __alloT('stem.flightsim.world_airports', 'World Airports'),          icon: '🌍',  data: WORLD_AIRPORTS_DEEP,     titleKey: 'airport' },
+          { id: 'careers_d', label: __alloT('stem.flightsim.careers_in_depth', 'Careers in Depth'),        icon: '💼',  data: AVIATION_CAREERS_DETAIL, titleKey: 'role' },
+          { id: 'kids',      label: __alloT('stem.flightsim.for_younger_students', 'For Younger Students'),    icon: '👶',  data: AVIATION_FOR_KIDS,       titleKey: 'topic' },
           { id: 'xdiscip',   label: 'Cross-Disciplinary',      icon: '🧩',  data: AVIATION_CROSS_DISCIPLINARY, titleKey: 'subject' },
-          { id: 'gloss2',    label: 'Glossary Supplement',     icon: '📚',  data: GLOSSARY_SUPPLEMENT,     titleKey: 'term' },
-          { id: 'quotes',    label: 'Famous Quotes',           icon: '💬',  data: AVIATION_QUOTES,         titleKey: 'quote' },
-          { id: 'mistakes',  label: 'Common Mistakes',         icon: '⚠️',  data: STUDENT_MISTAKES,        titleKey: 'mistake' },
-          { id: 'wisdom',    label: 'Pilot Wisdom',            icon: '🦉',  data: PILOT_WISDOM,            titleKey: null },
-          { id: 'ntsb',      label: 'Accident Investigation',  icon: '🔬',  data: ACCIDENT_INVESTIGATION,  titleKey: 'step' },
-          { id: 'safety_m',  label: 'Safety Milestones',       icon: '🛡️',  data: SAFETY_MILESTONES,       titleKey: 'milestone' },
-          { id: 'maint',     label: 'Maintenance Basics',      icon: '🔧',  data: MAINTENANCE_BASICS,      titleKey: 'maintenance' },
-          { id: 'military',  label: 'Military Aviation',       icon: '🪖',  data: MILITARY_OPERATIONS,     titleKey: 'mission' },
-          { id: 'space',     label: 'Space Boundary',          icon: '🛰️',  data: SPACE_BOUNDARY,          titleKey: 'concept' },
-          { id: 'labs',      label: 'Hands-On Labs',           icon: '🔬',  data: FLIGHT_LAB_ACTIVITIES,   titleKey: 'activity' },
-          { id: 'atc_deep',  label: 'ATC Career Deep Dive',    icon: '🎧',  data: ATC_CAREER_DETAIL,       titleKey: 'role' },
-          { id: 'why',       label: 'Why Aviation Matters',    icon: '🌟',  data: WHY_AVIATION_MATTERS,    titleKey: 'reason' },
-          { id: 'planning',  label: 'Flight Planning Scenarios', icon: '📋', data: FLIGHT_PLANNING_SCENARIOS, titleKey: 'scenario' },
-          { id: 'dayinlife', label: 'Day in the Life',          icon: '⏰',  data: DAY_IN_LIFE,             titleKey: 'role' },
-          { id: 'modern_nav',label: 'Modern Navigation',        icon: '📡',  data: MODERN_NAV_SYSTEMS,      titleKey: 'system' },
-          { id: 'atc_q',     label: 'ATC Scenarios',            icon: '🎙️',  data: ATC_QUIZ_SCENARIOS,      titleKey: 'situation' },
-          { id: 'teachers',  label: 'Teacher Notes',            icon: '📝',  data: TEACHER_NOTES,           titleKey: 'note' },
-          { id: 'vintage',   label: 'Vintage Aircraft',         icon: '🛩️',  data: VINTAGE_AIRCRAFT,        titleKey: 'aircraft' },
-          { id: 'acronyms',  label: 'Aviation Acronyms',        icon: '🔤',  data: AVIATION_ACRONYMS,       titleKey: 'acronym' },
-          { id: 'mfgrs',     label: 'Aircraft Manufacturers',   icon: '🏭',  data: AIRCRAFT_MANUFACTURERS,  titleKey: 'manufacturer' },
-          { id: 'emerg',     label: 'Flight Emergencies',       icon: '🆘',  data: FLIGHT_EMERGENCIES,      titleKey: 'emergency' },
-          { id: 'aero_ext',  label: 'Aerodynamic Terms',        icon: '💨',  data: AERO_TERMS_EXPANDED,     titleKey: 'term' },
-          { id: 'physio',    label: 'Flight Physiology',        icon: '🫀',  data: FLIGHT_PHYSIOLOGY,       titleKey: 'condition' },
-          { id: 'heli',      label: 'Helicopters',              icon: '🚁',  data: HELICOPTER_FUNDAMENTALS, titleKey: 'concept' },
-          { id: 'gliders',   label: 'Gliders + Soaring',        icon: '🪁',  data: GLIDERS_SOARING,         titleKey: 'concept' },
-          { id: 'special',   label: 'Special Missions',         icon: '🎯',  data: SPECIAL_MISSIONS,        titleKey: 'mission' },
-          { id: 'drones2',   label: 'Drone Use Cases',          icon: '📷',  data: DRONE_USE_CASES,         titleKey: 'use' },
-          { id: 'odd',       label: 'Unusual Careers',          icon: '🌟',  data: UNUSUAL_AVIATION_CAREERS,titleKey: 'career' },
-          { id: 'media',     label: 'Aviation in Media',        icon: '🎬',  data: AVIATION_MEDIA,          titleKey: 'title' },
-          { id: 'books',     label: 'Aviation Books',           icon: '📚',  data: AVIATION_BOOKS,          titleKey: 'title' },
-          { id: 'train_ms',  label: 'Training Milestones',      icon: '🎓',  data: TRAINING_MILESTONES,     titleKey: 'milestone' },
-          { id: 'atc_world', label: 'World ATC Complexity',     icon: '🌐',  data: ATC_COMPLEXITY,          titleKey: 'area' },
-          { id: 'language',  label: 'Aviation in Language',     icon: '🗣️',  data: AVIATION_LANGUAGE,       titleKey: 'phrase' },
-          { id: 'person',    label: 'Pilot Personality',        icon: '👤',  data: PILOT_PERSONALITY,       titleKey: 'trait' },
-          { id: 'time_ext',  label: 'Expanded Timeline',        icon: '⏳',  data: AVIATION_TIMELINE_EXPANDED, titleKey: 'year' },
-          { id: 'reflect',   label: 'Reflective Notes',         icon: '🌅',  data: REFLECTIVE_NOTES,        titleKey: 'thought' },
-          { id: 'controls',  label: 'Flight Controls Deep',     icon: '🕹️',  data: FLIGHT_CONTROLS_DEEP,    titleKey: 'control' },
-          { id: 'atc_comm',  label: 'ATC Communications',       icon: '📻',  data: ATC_COMMS_DETAIL,        titleKey: 'stage' },
-          { id: 'events',    label: 'Aviation Events',          icon: '🎪',  data: AVIATION_EVENTS,         titleKey: 'event' },
-          { id: 'student_f', label: 'Student Pilot Failure Modes', icon: '⚠️', data: FAILURE_MODES_FOR_STUDENTS, titleKey: 'issue' },
-          { id: 'shapes',    label: 'Aerodynamic Shapes',       icon: '✏️',  data: AERO_SHAPES,             titleKey: 'shape' },
-          { id: 'adv_inq',   label: 'Advanced Inquiry',         icon: '🔭',  data: ADVANCED_INQUIRY,        titleKey: null },
-          { id: 'discuss',   label: 'Discussion Problems',      icon: '💭',  data: DISCUSSION_PROBLEMS,     titleKey: 'problem' },
-          { id: 'impact',    label: 'Aviation Impact',          icon: '🌎',  data: AVIATION_IMPACT,         titleKey: 'area' },
-          { id: 'logbook',   label: 'Pilot Logbook',            icon: '📔',  data: LOGBOOK_CONCEPTS,        titleKey: 'column' },
-          { id: 'ownership', label: 'Aircraft Ownership',       icon: '🏷️',  data: AIRCRAFT_OWNERSHIP,      titleKey: 'topic' },
-          { id: 'plan_ck',   label: 'Flight Planning Checklist',icon: '✈️',  data: FLIGHT_PLANNING_CHECKLIST, titleKey: 'phase' },
-          { id: 'philo',     label: 'Aviation Philosophy',      icon: '🦉',  data: AVIATION_PHILOSOPHY,     titleKey: 'principle' },
-          { id: 'trivia',    label: 'Aviation Trivia',          icon: '🎲',  data: AVIATION_TRIVIA,         titleKey: null },
-          { id: 'inspire',   label: 'Inspirational Closing',    icon: '✨',  data: INSPIRATIONAL_CLOSING,   titleKey: 'thought' },
-          { id: 'wx_detail', label: 'Weather Phenomena Deep',   icon: '🌦️',  data: WEATHER_DETAIL,          titleKey: 'phenomenon' },
-          { id: 'ecosystem', label: 'Aviation Ecosystem',       icon: '🏢',  data: AVIATION_ECOSYSTEM,      titleKey: 'role' },
-          { id: 'youngstart',label: 'Getting Started Young',    icon: '🌱',  data: GETTING_STARTED_YOUNG,   titleKey: 'step' },
-          { id: 'women',     label: 'Women in Aviation',        icon: '👩‍✈️', data: WOMEN_IN_AVIATION,       titleKey: 'name' },
-          { id: 'reading',   label: 'Student Reading List',     icon: '📖',  data: STUDENT_READING,         titleKey: 'level' },
-          { id: 'quotes_ext',label: 'More Aviation Quotes',     icon: '💭',  data: AVIATION_QUOTES_EXTENDED,titleKey: 'quote' },
-          { id: 'regulators',label: 'Regulatory Bodies',        icon: '⚖️',  data: REGULATORY_BODIES,       titleKey: 'body' },
-          { id: 'diversity', label: 'Diversity in Aviation',    icon: '🤝',  data: DIVERSITY_IN_AVIATION,   titleKey: null },
-          { id: 'closing',   label: 'Closing Words',            icon: '🛬',  data: CLOSING_WORDS,           titleKey: 'message' },
-          { id: 'resources', label: 'Free Resources',           icon: '🎁',  data: FREE_RESOURCES,          titleKey: 'resource' },
-          { id: 'numbers',   label: 'Aviation Numbers',         icon: '🔢',  data: AVIATION_NUMBERS,        titleKey: 'number' },
-          { id: 'liveries',  label: 'Airline Liveries',         icon: '🎨',  data: FAMOUS_LIVERIES,         titleKey: 'airline' },
-          { id: 'welcome',   label: 'New Pilot Welcome',        icon: '🎉',  data: NEW_PILOT_WELCOME,       titleKey: null },
+          { id: 'gloss2',    label: __alloT('stem.flightsim.glossary_supplement', 'Glossary Supplement'),     icon: '📚',  data: GLOSSARY_SUPPLEMENT,     titleKey: 'term' },
+          { id: 'quotes',    label: __alloT('stem.flightsim.famous_quotes', 'Famous Quotes'),           icon: '💬',  data: AVIATION_QUOTES,         titleKey: 'quote' },
+          { id: 'mistakes',  label: __alloT('stem.flightsim.common_mistakes', 'Common Mistakes'),         icon: '⚠️',  data: STUDENT_MISTAKES,        titleKey: 'mistake' },
+          { id: 'wisdom',    label: __alloT('stem.flightsim.pilot_wisdom', 'Pilot Wisdom'),            icon: '🦉',  data: PILOT_WISDOM,            titleKey: null },
+          { id: 'ntsb',      label: __alloT('stem.flightsim.accident_investigation', 'Accident Investigation'),  icon: '🔬',  data: ACCIDENT_INVESTIGATION,  titleKey: 'step' },
+          { id: 'safety_m',  label: __alloT('stem.flightsim.safety_milestones', 'Safety Milestones'),       icon: '🛡️',  data: SAFETY_MILESTONES,       titleKey: 'milestone' },
+          { id: 'maint',     label: __alloT('stem.flightsim.maintenance_basics', 'Maintenance Basics'),      icon: '🔧',  data: MAINTENANCE_BASICS,      titleKey: 'maintenance' },
+          { id: 'military',  label: __alloT('stem.flightsim.military_aviation', 'Military Aviation'),       icon: '🪖',  data: MILITARY_OPERATIONS,     titleKey: 'mission' },
+          { id: 'space',     label: __alloT('stem.flightsim.space_boundary', 'Space Boundary'),          icon: '🛰️',  data: SPACE_BOUNDARY,          titleKey: 'concept' },
+          { id: 'labs',      label: __alloT('stem.flightsim.hands_on_labs', 'Hands-On Labs'),           icon: '🔬',  data: FLIGHT_LAB_ACTIVITIES,   titleKey: 'activity' },
+          { id: 'atc_deep',  label: __alloT('stem.flightsim.atc_career_deep_dive', 'ATC Career Deep Dive'),    icon: '🎧',  data: ATC_CAREER_DETAIL,       titleKey: 'role' },
+          { id: 'why',       label: __alloT('stem.flightsim.why_aviation_matters', 'Why Aviation Matters'),    icon: '🌟',  data: WHY_AVIATION_MATTERS,    titleKey: 'reason' },
+          { id: 'planning',  label: __alloT('stem.flightsim.flight_planning_scenarios', 'Flight Planning Scenarios'), icon: '📋', data: FLIGHT_PLANNING_SCENARIOS, titleKey: 'scenario' },
+          { id: 'dayinlife', label: __alloT('stem.flightsim.day_in_the_life', 'Day in the Life'),          icon: '⏰',  data: DAY_IN_LIFE,             titleKey: 'role' },
+          { id: 'modern_nav',label: __alloT('stem.flightsim.modern_navigation', 'Modern Navigation'),        icon: '📡',  data: MODERN_NAV_SYSTEMS,      titleKey: 'system' },
+          { id: 'atc_q',     label: __alloT('stem.flightsim.atc_scenarios', 'ATC Scenarios'),            icon: '🎙️',  data: ATC_QUIZ_SCENARIOS,      titleKey: 'situation' },
+          { id: 'teachers',  label: __alloT('stem.flightsim.teacher_notes', 'Teacher Notes'),            icon: '📝',  data: TEACHER_NOTES,           titleKey: 'note' },
+          { id: 'vintage',   label: __alloT('stem.flightsim.vintage_aircraft', 'Vintage Aircraft'),         icon: '🛩️',  data: VINTAGE_AIRCRAFT,        titleKey: 'aircraft' },
+          { id: 'acronyms',  label: __alloT('stem.flightsim.aviation_acronyms', 'Aviation Acronyms'),        icon: '🔤',  data: AVIATION_ACRONYMS,       titleKey: 'acronym' },
+          { id: 'mfgrs',     label: __alloT('stem.flightsim.aircraft_manufacturers', 'Aircraft Manufacturers'),   icon: '🏭',  data: AIRCRAFT_MANUFACTURERS,  titleKey: 'manufacturer' },
+          { id: 'emerg',     label: __alloT('stem.flightsim.flight_emergencies', 'Flight Emergencies'),       icon: '🆘',  data: FLIGHT_EMERGENCIES,      titleKey: 'emergency' },
+          { id: 'aero_ext',  label: __alloT('stem.flightsim.aerodynamic_terms', 'Aerodynamic Terms'),        icon: '💨',  data: AERO_TERMS_EXPANDED,     titleKey: 'term' },
+          { id: 'physio',    label: __alloT('stem.flightsim.flight_physiology', 'Flight Physiology'),        icon: '🫀',  data: FLIGHT_PHYSIOLOGY,       titleKey: 'condition' },
+          { id: 'heli',      label: __alloT('stem.flightsim.helicopters', 'Helicopters'),              icon: '🚁',  data: HELICOPTER_FUNDAMENTALS, titleKey: 'concept' },
+          { id: 'gliders',   label: __alloT('stem.flightsim.gliders_soaring', 'Gliders + Soaring'),        icon: '🪁',  data: GLIDERS_SOARING,         titleKey: 'concept' },
+          { id: 'special',   label: __alloT('stem.flightsim.special_missions', 'Special Missions'),         icon: '🎯',  data: SPECIAL_MISSIONS,        titleKey: 'mission' },
+          { id: 'drones2',   label: __alloT('stem.flightsim.drone_use_cases', 'Drone Use Cases'),          icon: '📷',  data: DRONE_USE_CASES,         titleKey: 'use' },
+          { id: 'odd',       label: __alloT('stem.flightsim.unusual_careers', 'Unusual Careers'),          icon: '🌟',  data: UNUSUAL_AVIATION_CAREERS,titleKey: 'career' },
+          { id: 'media',     label: __alloT('stem.flightsim.aviation_in_media', 'Aviation in Media'),        icon: '🎬',  data: AVIATION_MEDIA,          titleKey: 'title' },
+          { id: 'books',     label: __alloT('stem.flightsim.aviation_books', 'Aviation Books'),           icon: '📚',  data: AVIATION_BOOKS,          titleKey: 'title' },
+          { id: 'train_ms',  label: __alloT('stem.flightsim.training_milestones', 'Training Milestones'),      icon: '🎓',  data: TRAINING_MILESTONES,     titleKey: 'milestone' },
+          { id: 'atc_world', label: __alloT('stem.flightsim.world_atc_complexity', 'World ATC Complexity'),     icon: '🌐',  data: ATC_COMPLEXITY,          titleKey: 'area' },
+          { id: 'language',  label: __alloT('stem.flightsim.aviation_in_language', 'Aviation in Language'),     icon: '🗣️',  data: AVIATION_LANGUAGE,       titleKey: 'phrase' },
+          { id: 'person',    label: __alloT('stem.flightsim.pilot_personality', 'Pilot Personality'),        icon: '👤',  data: PILOT_PERSONALITY,       titleKey: 'trait' },
+          { id: 'time_ext',  label: __alloT('stem.flightsim.expanded_timeline', 'Expanded Timeline'),        icon: '⏳',  data: AVIATION_TIMELINE_EXPANDED, titleKey: 'year' },
+          { id: 'reflect',   label: __alloT('stem.flightsim.reflective_notes', 'Reflective Notes'),         icon: '🌅',  data: REFLECTIVE_NOTES,        titleKey: 'thought' },
+          { id: 'controls',  label: __alloT('stem.flightsim.flight_controls_deep', 'Flight Controls Deep'),     icon: '🕹️',  data: FLIGHT_CONTROLS_DEEP,    titleKey: 'control' },
+          { id: 'atc_comm',  label: __alloT('stem.flightsim.atc_communications', 'ATC Communications'),       icon: '📻',  data: ATC_COMMS_DETAIL,        titleKey: 'stage' },
+          { id: 'events',    label: __alloT('stem.flightsim.aviation_events', 'Aviation Events'),          icon: '🎪',  data: AVIATION_EVENTS,         titleKey: 'event' },
+          { id: 'student_f', label: __alloT('stem.flightsim.student_pilot_failure_modes', 'Student Pilot Failure Modes'), icon: '⚠️', data: FAILURE_MODES_FOR_STUDENTS, titleKey: 'issue' },
+          { id: 'shapes',    label: __alloT('stem.flightsim.aerodynamic_shapes', 'Aerodynamic Shapes'),       icon: '✏️',  data: AERO_SHAPES,             titleKey: 'shape' },
+          { id: 'adv_inq',   label: __alloT('stem.flightsim.advanced_inquiry', 'Advanced Inquiry'),         icon: '🔭',  data: ADVANCED_INQUIRY,        titleKey: null },
+          { id: 'discuss',   label: __alloT('stem.flightsim.discussion_problems', 'Discussion Problems'),      icon: '💭',  data: DISCUSSION_PROBLEMS,     titleKey: 'problem' },
+          { id: 'impact',    label: __alloT('stem.flightsim.aviation_impact', 'Aviation Impact'),          icon: '🌎',  data: AVIATION_IMPACT,         titleKey: 'area' },
+          { id: 'logbook',   label: __alloT('stem.flightsim.pilot_logbook', 'Pilot Logbook'),            icon: '📔',  data: LOGBOOK_CONCEPTS,        titleKey: 'column' },
+          { id: 'ownership', label: __alloT('stem.flightsim.aircraft_ownership', 'Aircraft Ownership'),       icon: '🏷️',  data: AIRCRAFT_OWNERSHIP,      titleKey: 'topic' },
+          { id: 'plan_ck',   label: __alloT('stem.flightsim.flight_planning_checklist', 'Flight Planning Checklist'),icon: '✈️',  data: FLIGHT_PLANNING_CHECKLIST, titleKey: 'phase' },
+          { id: 'philo',     label: __alloT('stem.flightsim.aviation_philosophy', 'Aviation Philosophy'),      icon: '🦉',  data: AVIATION_PHILOSOPHY,     titleKey: 'principle' },
+          { id: 'trivia',    label: __alloT('stem.flightsim.aviation_trivia', 'Aviation Trivia'),          icon: '🎲',  data: AVIATION_TRIVIA,         titleKey: null },
+          { id: 'inspire',   label: __alloT('stem.flightsim.inspirational_closing', 'Inspirational Closing'),    icon: '✨',  data: INSPIRATIONAL_CLOSING,   titleKey: 'thought' },
+          { id: 'wx_detail', label: __alloT('stem.flightsim.weather_phenomena_deep', 'Weather Phenomena Deep'),   icon: '🌦️',  data: WEATHER_DETAIL,          titleKey: 'phenomenon' },
+          { id: 'ecosystem', label: __alloT('stem.flightsim.aviation_ecosystem', 'Aviation Ecosystem'),       icon: '🏢',  data: AVIATION_ECOSYSTEM,      titleKey: 'role' },
+          { id: 'youngstart',label: __alloT('stem.flightsim.getting_started_young', 'Getting Started Young'),    icon: '🌱',  data: GETTING_STARTED_YOUNG,   titleKey: 'step' },
+          { id: 'women',     label: __alloT('stem.flightsim.women_in_aviation', 'Women in Aviation'),        icon: '👩‍✈️', data: WOMEN_IN_AVIATION,       titleKey: 'name' },
+          { id: 'reading',   label: __alloT('stem.flightsim.student_reading_list', 'Student Reading List'),     icon: '📖',  data: STUDENT_READING,         titleKey: 'level' },
+          { id: 'quotes_ext',label: __alloT('stem.flightsim.more_aviation_quotes', 'More Aviation Quotes'),     icon: '💭',  data: AVIATION_QUOTES_EXTENDED,titleKey: 'quote' },
+          { id: 'regulators',label: __alloT('stem.flightsim.regulatory_bodies', 'Regulatory Bodies'),        icon: '⚖️',  data: REGULATORY_BODIES,       titleKey: 'body' },
+          { id: 'diversity', label: __alloT('stem.flightsim.diversity_in_aviation', 'Diversity in Aviation'),    icon: '🤝',  data: DIVERSITY_IN_AVIATION,   titleKey: null },
+          { id: 'closing',   label: __alloT('stem.flightsim.closing_words', 'Closing Words'),            icon: '🛬',  data: CLOSING_WORDS,           titleKey: 'message' },
+          { id: 'resources', label: __alloT('stem.flightsim.free_resources', 'Free Resources'),           icon: '🎁',  data: FREE_RESOURCES,          titleKey: 'resource' },
+          { id: 'numbers',   label: __alloT('stem.flightsim.aviation_numbers', 'Aviation Numbers'),         icon: '🔢',  data: AVIATION_NUMBERS,        titleKey: 'number' },
+          { id: 'liveries',  label: __alloT('stem.flightsim.airline_liveries', 'Airline Liveries'),         icon: '🎨',  data: FAMOUS_LIVERIES,         titleKey: 'airline' },
+          { id: 'welcome',   label: __alloT('stem.flightsim.new_pilot_welcome', 'New Pilot Welcome'),        icon: '🎉',  data: NEW_PILOT_WELCOME,       titleKey: null },
         ];
         var activeTopic = LEARN_TOPICS.find(function(t) { return t.id === learnTopic; }) || LEARN_TOPICS[0];
 
@@ -20736,10 +20737,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', flexShrink: 0 } },
             h('button', {
               onClick: function() { upd('view', 'menu'); },
-              'aria-label': 'Back to menu',
+              'aria-label': __alloT('stem.flightsim.back_to_menu_3', 'Back to menu'),
               style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid #334155', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
-            }, '← Menu'),
-            h('h2', { style: { fontSize: '20px', fontWeight: 900, color: '#fff', margin: 0, flex: 1 } }, '📚 SkySchool Learn'),
+            }, __alloT('stem.flightsim.menu', '← Menu')),
+            h('h2', { style: { fontSize: '20px', fontWeight: 900, color: '#fff', margin: 0, flex: 1 } }, __alloT('stem.flightsim.skyschool_learn', '📚 SkySchool Learn')),
             h('div', { style: { fontSize: '11px', color: '#94a3b8' } }, LEARN_TOPICS.length + ' topics')
           ),
 
@@ -20747,7 +20748,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           h('div', { style: { display: 'flex', gap: '12px', flex: 1, minHeight: 0 } },
             // Sidebar
             h('nav', {
-              'aria-label': 'Learn topics',
+              'aria-label': __alloT('stem.flightsim.learn_topics', 'Learn topics'),
               style: { width: '230px', flexShrink: 0, overflowY: 'auto', background: 'rgba(15,23,42,0.5)', borderRadius: '12px', padding: '8px', border: '1px solid #1e293b' }
             },
               LEARN_TOPICS.map(function(t) {
@@ -20786,7 +20787,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               ),
               activeTopic.data && activeTopic.data.length > 0
                 ? activeTopic.data.map(function(entry, i) { return renderEntryCard(entry, i, activeTopic.titleKey); })
-                : h('p', { style: { color: '#94a3b8' } }, 'No content yet.')
+                : h('p', { style: { color: '#94a3b8' } }, __alloT('stem.flightsim.no_content_yet', 'No content yet.'))
             )
           )
         );
@@ -20847,10 +20848,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' } },
             h('button', {
               onClick: function() { upd('view', 'menu'); },
-              'aria-label': 'Back to menu',
+              'aria-label': __alloT('stem.flightsim.back_to_menu_4', 'Back to menu'),
               style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid #334155', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
-            }, '← Menu'),
-            h('h2', { style: { fontSize: '20px', fontWeight: 900, color: '#fff', margin: 0, flex: 1 } }, '🎯 Flight Knowledge Quiz')
+            }, __alloT('stem.flightsim.menu_2', '← Menu')),
+            h('h2', { style: { fontSize: '20px', fontWeight: 900, color: '#fff', margin: 0, flex: 1 } }, __alloT('stem.flightsim.flight_knowledge_quiz', '🎯 Flight Knowledge Quiz'))
           ),
 
           // Scoreboard
@@ -20858,23 +20859,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             style: { display: 'flex', gap: '10px', flexWrap: 'wrap', padding: '14px', background: 'linear-gradient(135deg, #1e3a8a, #1e40af)', borderRadius: '12px', border: '1px solid #3b82f6', marginBottom: '16px' }
           },
             h('div', { style: { flex: 1, minWidth: '100px' } },
-              h('div', { style: { fontSize: '10px', color: '#bfdbfe', fontWeight: 700, textTransform: 'uppercase' } }, 'Question'),
+              h('div', { style: { fontSize: '10px', color: '#bfdbfe', fontWeight: 700, textTransform: 'uppercase' } }, __alloT('stem.flightsim.question', 'Question')),
               h('div', { style: { fontSize: '22px', fontWeight: 900, color: '#fff' } }, (safeIdx + 1) + ' / ' + FLIGHT_QUIZ.length)
             ),
             h('div', { style: { flex: 1, minWidth: '100px' } },
-              h('div', { style: { fontSize: '10px', color: '#bfdbfe', fontWeight: 700, textTransform: 'uppercase' } }, 'Correct'),
+              h('div', { style: { fontSize: '10px', color: '#bfdbfe', fontWeight: 700, textTransform: 'uppercase' } }, __alloT('stem.flightsim.correct', 'Correct')),
               h('div', { style: { fontSize: '22px', fontWeight: 900, color: '#86efac' } }, qScore + ' / ' + qTotal)
             ),
             h('div', { style: { flex: 1, minWidth: '100px' } },
-              h('div', { style: { fontSize: '10px', color: '#bfdbfe', fontWeight: 700, textTransform: 'uppercase' } }, 'Accuracy'),
+              h('div', { style: { fontSize: '10px', color: '#bfdbfe', fontWeight: 700, textTransform: 'uppercase' } }, __alloT('stem.flightsim.accuracy', 'Accuracy')),
               h('div', { style: { fontSize: '22px', fontWeight: 900, color: '#fff' } }, accuracy + '%')
             ),
             h('div', { style: { flex: 1, minWidth: '100px' } },
-              h('div', { style: { fontSize: '10px', color: '#bfdbfe', fontWeight: 700, textTransform: 'uppercase' } }, 'Streak'),
+              h('div', { style: { fontSize: '10px', color: '#bfdbfe', fontWeight: 700, textTransform: 'uppercase' } }, __alloT('stem.flightsim.streak', 'Streak')),
               h('div', { style: { fontSize: '22px', fontWeight: 900, color: '#fbbf24' } }, '🔥 ' + qStreak),
               qBest > 0 && h('div', { style: { fontSize: '10px', color: '#bfdbfe' } }, 'Best: ' + qBest)
             ),
-            h('button', { onClick: resetQuiz, style: { padding: '8px 12px', borderRadius: '6px', border: '1px solid #fbbf24', background: 'rgba(251,191,36,0.1)', color: '#fbbf24', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, '↻ Reset')
+            h('button', { onClick: resetQuiz, style: { padding: '8px 12px', borderRadius: '6px', border: '1px solid #fbbf24', background: 'rgba(251,191,36,0.1)', color: '#fbbf24', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, __alloT('stem.flightsim.reset', '↻ Reset'))
           ),
 
           // Question card
@@ -20936,10 +20937,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 onClick: function() { updMulti({ quizIdx: safeIdx - 1, quizPicked: null }); },
                 disabled: safeIdx === 0,
                 style: { padding: '10px 16px', borderRadius: '8px', border: '1px solid #334155', background: 'transparent', color: safeIdx === 0 ? '#64748b' : '#e2e8f0', fontSize: '12px', fontWeight: 700, cursor: safeIdx === 0 ? 'not-allowed' : 'pointer' }
-              }, '◀ Previous'),
+              }, __alloT('stem.flightsim.previous', '◀ Previous')),
               h('div', { style: { display: 'flex', gap: '8px' } },
-                h('button', { onClick: randomQuiz, style: { padding: '10px 16px', borderRadius: '8px', border: '1px solid #334155', background: 'transparent', color: '#e2e8f0', fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, '🎲 Random'),
-                h('button', { onClick: nextQuiz, style: { padding: '10px 16px', borderRadius: '8px', border: 'none', background: '#3b82f6', color: '#fff', fontSize: '12px', fontWeight: 800, cursor: 'pointer' } }, 'Next ▶')
+                h('button', { onClick: randomQuiz, style: { padding: '10px 16px', borderRadius: '8px', border: '1px solid #334155', background: 'transparent', color: '#e2e8f0', fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, __alloT('stem.flightsim.random', '🎲 Random')),
+                h('button', { onClick: nextQuiz, style: { padding: '10px 16px', borderRadius: '8px', border: 'none', background: '#3b82f6', color: '#fff', fontSize: '12px', fontWeight: 800, cursor: 'pointer' } }, __alloT('stem.flightsim.next', 'Next ▶'))
               )
             )
           )
@@ -20971,8 +20972,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             h('button', {
               onClick: function() { upd('view', 'menu'); },
               style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid #334155', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
-            }, '← Menu'),
-            h('h2', { style: { fontSize: '20px', fontWeight: 900, color: '#fff', margin: 0, flex: 1 } }, '✅ Pre-Flight Checklist')
+            }, __alloT('stem.flightsim.menu_3', '← Menu')),
+            h('h2', { style: { fontSize: '20px', fontWeight: 900, color: '#fff', margin: 0, flex: 1 } }, __alloT('stem.flightsim.pre_flight_checklist', '✅ Pre-Flight Checklist'))
           ),
 
           // Progress
@@ -20981,11 +20982,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           },
             h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' } },
               h('div', null,
-                h('div', { style: { fontSize: '11px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, 'Progress'),
+                h('div', { style: { fontSize: '11px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, __alloT('stem.flightsim.progress', 'Progress')),
                 h('div', { style: { fontSize: '20px', fontWeight: 900, color: pctComplete === 100 ? '#86efac' : '#fff' } }, checkedCount + ' / ' + totalItems + ' items')
               ),
               h('div', { style: { fontSize: '28px', fontWeight: 900, color: pctComplete === 100 ? '#86efac' : '#22d3ee' } }, pctComplete + '%'),
-              h('button', { onClick: resetChecklist, style: { padding: '6px 12px', fontSize: '11px', fontWeight: 700, background: 'transparent', color: '#94a3b8', border: '1px solid #334155', borderRadius: '6px', cursor: 'pointer' } }, '↻ Reset')
+              h('button', { onClick: resetChecklist, style: { padding: '6px 12px', fontSize: '11px', fontWeight: 700, background: 'transparent', color: '#94a3b8', border: '1px solid #334155', borderRadius: '6px', cursor: 'pointer' } }, __alloT('stem.flightsim.reset_2', '↻ Reset'))
             ),
             h('div', { style: { height: '8px', background: '#0f172a', borderRadius: '4px', overflow: 'hidden' } },
               h('div', { style: { width: pctComplete + '%', height: '100%', background: pctComplete === 100 ? 'linear-gradient(90deg, #16a34a, #22c55e)' : 'linear-gradient(90deg, #3b82f6, #22d3ee)', transition: 'width 0.3s' } })
@@ -21031,8 +21032,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
           pctComplete === 100 && h('div', { style: { padding: '20px', textAlign: 'center', background: 'rgba(22,163,74,0.15)', borderRadius: '12px', border: '2px solid #16a34a', marginTop: '16px' } },
             h('div', { style: { fontSize: '40px', marginBottom: '8px' } }, '🎉'),
-            h('div', { style: { fontSize: '18px', fontWeight: 900, color: '#86efac', marginBottom: '6px' } }, 'Checklist Complete!'),
-            h('div', { style: { fontSize: '13px', color: '#cbd5e1', lineHeight: 1.5 } }, 'You\'ve verified every pre-flight item. Real pilots do this before every flight. Ready to fly!')
+            h('div', { style: { fontSize: '18px', fontWeight: 900, color: '#86efac', marginBottom: '6px' } }, __alloT('stem.flightsim.checklist_complete', 'Checklist Complete!')),
+            h('div', { style: { fontSize: '13px', color: '#cbd5e1', lineHeight: 1.5 } }, __alloT('stem.flightsim.you_ve_verified_every_pre_flight_item_', 'You\'ve verified every pre-flight item. Real pilots do this before every flight. Ready to fly!'))
           )
         );
       }
@@ -21096,17 +21097,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             h('button', {
               onClick: function() { upd('view', 'menu'); },
               style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid #334155', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
-            }, '← Menu'),
-            h('h2', { style: { fontSize: '20px', fontWeight: 900, color: '#fff', margin: 0, flex: 1 } }, '🧮 Lift Force Calculator')
+            }, __alloT('stem.flightsim.menu_4', '← Menu')),
+            h('h2', { style: { fontSize: '20px', fontWeight: 900, color: '#fff', margin: 0, flex: 1 } }, __alloT('stem.flightsim.lift_force_calculator', '🧮 Lift Force Calculator'))
           ),
 
           h('p', { style: { fontSize: '12px', color: '#94a3b8', marginBottom: '16px', lineHeight: 1.5 } },
-            'L = ½ ρ v² S Cₗ — adjust the inputs to see how lift changes. Choose an aircraft preset to start with realistic values.'
+            __alloT('stem.flightsim.l_v_s_c_adjust_the_inputs_to_see_how_l', 'L = ½ ρ v² S Cₗ — adjust the inputs to see how lift changes. Choose an aircraft preset to start with realistic values.')
           ),
 
           // Preset picker
           h('div', { style: { marginBottom: '16px' } },
-            h('div', { style: { fontSize: '11px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' } }, 'Aircraft preset'),
+            h('div', { style: { fontSize: '11px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' } }, __alloT('stem.flightsim.aircraft_preset', 'Aircraft preset')),
             h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
               FORCE_CALCULATOR_PRESETS.map(function(p, i) {
                 var active = calcPreset === i;
@@ -21124,7 +21125,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' } },
             // Inputs
             h('div', { style: { padding: '16px', background: 'rgba(15,23,42,0.5)', borderRadius: '12px', border: '1px solid #1e293b' } },
-              h('h3', { style: { fontSize: '13px', fontWeight: 800, color: '#fff', marginBottom: '14px' } }, 'Inputs'),
+              h('h3', { style: { fontSize: '13px', fontWeight: 800, color: '#fff', marginBottom: '14px' } }, __alloT('stem.flightsim.inputs', 'Inputs')),
               slider('Airspeed', calcSpeed, 0, preset.maxSpeed * 1.5, 1, function(v) { upd('calcSpeed', v); }, 'kts'),
               slider('Altitude', calcAltitude, 0, 50000, 500, function(v) { upd('calcAltitude', v); }, 'ft MSL'),
               slider('Wing area', calcWingArea, 5, 600, 1, function(v) { upd('calcWingArea', v); }, 'ft²'),
@@ -21133,19 +21134,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
             // Outputs
             h('div', { style: { padding: '16px', background: 'rgba(15,23,42,0.5)', borderRadius: '12px', border: '1px solid #1e293b' } },
-              h('h3', { style: { fontSize: '13px', fontWeight: 800, color: '#fff', marginBottom: '14px' } }, 'Outputs'),
+              h('h3', { style: { fontSize: '13px', fontWeight: 800, color: '#fff', marginBottom: '14px' } }, __alloT('stem.flightsim.outputs', 'Outputs')),
               h('div', { style: { marginBottom: '12px' } },
-                h('div', { style: { fontSize: '11px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, 'Air density'),
+                h('div', { style: { fontSize: '11px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, __alloT('stem.flightsim.air_density', 'Air density')),
                 h('div', { style: { fontSize: '15px', color: '#22d3ee', fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace' } }, rho.toFixed(5) + ' slug/ft³'),
                 h('div', { style: { fontSize: '10px', color: '#94a3b8' } }, (Math.round(sigma * 100)) + '% of sea-level density')
               ),
               h('div', { style: { marginBottom: '12px' } },
-                h('div', { style: { fontSize: '11px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, 'Lift force'),
+                h('div', { style: { fontSize: '11px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, __alloT('stem.flightsim.lift_force', 'Lift force')),
                 h('div', { style: { fontSize: '24px', color: '#86efac', fontWeight: 900, fontFamily: 'ui-monospace, Menlo, monospace' } }, Math.round(liftLb).toLocaleString() + ' lb'),
                 h('div', { style: { fontSize: '10px', color: '#94a3b8' } }, '= ' + Math.round(liftLb / 2.2046).toLocaleString() + ' kg')
               ),
               h('div', { style: { marginBottom: '12px' } },
-                h('div', { style: { fontSize: '11px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, 'Aircraft weight (preset)'),
+                h('div', { style: { fontSize: '11px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, __alloT('stem.flightsim.aircraft_weight_preset', 'Aircraft weight (preset)')),
                 h('div', { style: { fontSize: '15px', color: '#fbbf24', fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace' } }, preset.weight.toLocaleString() + ' lb')
               ),
               h('div', {
@@ -21160,12 +21161,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
           // Pedagogical reminder
           h('div', { style: { marginTop: '16px', padding: '14px', background: 'rgba(59,130,246,0.1)', borderRadius: '10px', border: '1px solid #3b82f6' } },
-            h('div', { style: { fontSize: '12px', fontWeight: 700, color: '#bfdbfe', marginBottom: '4px' } }, '🧠 Try these experiments:'),
+            h('div', { style: { fontSize: '12px', fontWeight: 700, color: '#bfdbfe', marginBottom: '4px' } }, __alloT('stem.flightsim.try_these_experiments', '🧠 Try these experiments:')),
             h('ul', { style: { margin: 0, paddingLeft: '20px', fontSize: '11px', color: '#cbd5e1', lineHeight: 1.6 } },
-              h('li', null, 'Double the airspeed. What happens to lift? (Hint: v²)'),
-              h('li', null, 'Climb to 40,000 ft at the same speed. Lift drops because density drops.'),
-              h('li', null, 'Compare the F-22 (small fast wings) vs the 747 (big slower wings) — both fly, but very differently.'),
-              h('li', null, 'Lower Cₗ to 0.3 (cruise config) vs raise it to 1.5 (flaps extended for landing).')
+              h('li', null, __alloT('stem.flightsim.double_the_airspeed_what_happens_to_li', 'Double the airspeed. What happens to lift? (Hint: v²)')),
+              h('li', null, __alloT('stem.flightsim.climb_to_40_000_ft_at_the_same_speed_l', 'Climb to 40,000 ft at the same speed. Lift drops because density drops.')),
+              h('li', null, __alloT('stem.flightsim.compare_the_f_22_small_fast_wings_vs_t', 'Compare the F-22 (small fast wings) vs the 747 (big slower wings) — both fly, but very differently.')),
+              h('li', null, __alloT('stem.flightsim.lower_c_to_0_3_cruise_config_vs_raise_', 'Lower Cₗ to 0.3 (cruise config) vs raise it to 1.5 (flaps extended for landing).'))
             )
           )
         );
@@ -21185,17 +21186,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         else if (effectiveAoA < 17) state = 'boundary';
         else state = 'stall';
         var stateMeta = {
-          normal:   { label: '🟢 Normal flow',         color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Air remains attached. Lift increases predictably with AoA.' },
-          boundary: { label: '🟡 Boundary separation', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Lift still rising but turbulent flow detaching. Buffet may begin.' },
-          stall:    { label: '🔴 Full stall',          color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Lift collapses. Wing no longer producing required lift — nose drops.' }
+          normal:   { label: __alloT('stem.flightsim.normal_flow', '🟢 Normal flow'),         color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.flightsim.air_remains_attached_lift_increases_pr', 'Air remains attached. Lift increases predictably with AoA.') },
+          boundary: { label: __alloT('stem.flightsim.boundary_separation', '🟡 Boundary separation'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.flightsim.lift_still_rising_but_turbulent_flow_d', 'Lift still rising but turbulent flow detaching. Buffet may begin.') },
+          stall:    { label: __alloT('stem.flightsim.full_stall', '🔴 Full stall'),          color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.flightsim.lift_collapses_wing_no_longer_producin', 'Lift collapses. Wing no longer producing required lift — nose drops.') }
         }[state];
         function logObs() {
           setIQ({ log: (iq.log || []).concat([{ s: iq.airspeed, a: iq.altitude, aoa: iq.aoa, st: state }]).slice(-8) });
         }
         return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto' } },
-          h('button', { onClick: function() { upd('view', 'menu'); }, style: { padding: '6px 12px', background: 'rgba(99,102,241,0.2)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.4)', borderRadius: '6px', fontSize: '11px', cursor: 'pointer', marginBottom: '12px' } }, '← Back to menu'),
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { padding: '6px 12px', background: 'rgba(99,102,241,0.2)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.4)', borderRadius: '6px', fontSize: '11px', cursor: 'pointer', marginBottom: '12px' } }, __alloT('stem.flightsim.back_to_menu_5', '← Back to menu')),
           h('div', { style: { padding: '16px', background: 'rgba(15,23,42,0.6)', borderRadius: '10px', border: '1px solid rgba(190,18,60,0.3)' } },
-            h('h3', { style: { fontSize: '16px', fontWeight: 800, color: '#fb7185', margin: '0 0 6px 0' } }, '⚠️ Stall discovery'),
+            h('h3', { style: { fontSize: '16px', fontWeight: 800, color: '#fb7185', margin: '0 0 6px 0' } }, __alloT('stem.flightsim.stall_discovery_2', '⚠️ Stall discovery')),
             h('p', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.5, marginBottom: '12px' } },
               'You are flying. Adjust airspeed, altitude, and angle of attack (AoA). The wing shows one of three discrete states (normal flow / boundary separation / full stall). There is no score and no reveal. Sweep the sliders. Log observations. Type what you discover.'),
             h('div', { style: { marginBottom: '12px', padding: '12px', borderRadius: '8px', textAlign: 'center', background: stateMeta.bg, border: '2px solid ' + stateMeta.border } },
@@ -21204,9 +21205,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '12px' } },
               [
-                { key: 'airspeed', label: 'Airspeed (kts)', val: iq.airspeed, min: 40, max: 250, step: 5 },
-                { key: 'altitude', label: 'Altitude (ft)',   val: iq.altitude, min: 0,  max: 30000, step: 500 },
-                { key: 'aoa',      label: 'Angle of attack (°)', val: iq.aoa, min: 0, max: 25, step: 0.5 }
+                { key: 'airspeed', label: __alloT('stem.flightsim.airspeed_kts', 'Airspeed (kts)'), val: iq.airspeed, min: 40, max: 250, step: 5 },
+                { key: 'altitude', label: __alloT('stem.flightsim.altitude_ft', 'Altitude (ft)'),   val: iq.altitude, min: 0,  max: 30000, step: 500 },
+                { key: 'aoa',      label: __alloT('stem.flightsim.angle_of_attack', 'Angle of attack (°)'), val: iq.aoa, min: 0, max: 25, step: 0.5 }
               ].map(function(s) {
                 return h('div', { key: s.key },
                   h('label', { htmlFor: 'sh-' + s.key, style: { display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#cbd5e1', marginBottom: '4px' } },
@@ -21217,9 +21218,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               })
             ),
             h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap' } },
-              h('button', { onClick: logObs, style: { padding: '4px 10px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
+              h('button', { onClick: logObs, style: { padding: '4px 10px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' } }, __alloT('stem.flightsim.log', '📋 Log')),
               h('button', { onClick: function() { setIQ({ airspeed: 130, altitude: 5000, aoa: 8, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
-                style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: '4px', fontSize: '11px', cursor: 'pointer' } }, '↺ Reset'),
+                style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: '4px', fontSize: '11px', cursor: 'pointer' } }, __alloT('stem.flightsim.reset_3', '↺ Reset')),
               (iq.log || []).length > 0 && h('span', { style: { fontSize: '10px', color: '#94a3b8', fontStyle: 'italic' } }, (iq.log || []).length + ' logged')
             ),
             (iq.log || []).length > 0 && h('table', { style: { fontSize: '10px', width: '100%', borderCollapse: 'collapse', color: '#cbd5e1', marginBottom: '12px' } },
@@ -21234,33 +21235,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               }))
             ),
             h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
-              placeholder: 'Hypothesis (free text — no right answer): Which slider matters most for stall? Is airspeed alone sufficient to prevent it?',
+              placeholder: __alloT('stem.flightsim.hypothesis_free_text_no_right_answer_w', 'Hypothesis (free text — no right answer): Which slider matters most for stall? Is airspeed alone sufficient to prevent it?'),
               style: { width: '100%', minHeight: '60px', padding: '6px', background: '#0f1c2f', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: '4px', fontSize: '12px', fontFamily: 'monospace', marginBottom: '10px' }, rows: 3 }),
             !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
               style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', marginBottom: '10px' } },
-              '🤔 Stuck — show open prompts'),
+              __alloT('stem.flightsim.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
             iq.stuckRevealed && h('div', { style: { padding: '10px', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: '4px', fontSize: '11px', color: '#cbd5e1', lineHeight: 1.5, marginBottom: '10px' } },
               h('ul', { style: { margin: 0, paddingLeft: '18px' } },
-                h('li', null, 'Hold airspeed steady. Vary AoA. When does the state flip?'),
-                h('li', null, 'At a fixed AoA, vary airspeed. Does the state change?'),
-                h('li', null, 'Find two combinations that produce a stall. What do they share?'),
-                h('li', null, 'Real pilots are taught "angle of attack, not airspeed" causes stall. Investigate why.'))),
+                h('li', null, __alloT('stem.flightsim.hold_airspeed_steady_vary_aoa_when_doe', 'Hold airspeed steady. Vary AoA. When does the state flip?')),
+                h('li', null, __alloT('stem.flightsim.at_a_fixed_aoa_vary_airspeed_does_the_', 'At a fixed AoA, vary airspeed. Does the state change?')),
+                h('li', null, __alloT('stem.flightsim.find_two_combinations_that_produce_a_s', 'Find two combinations that produce a stall. What do they share?')),
+                h('li', null, __alloT('stem.flightsim.real_pilots_are_taught_angle_of_attack', 'Real pilots are taught "angle of attack, not airspeed" causes stall. Investigate why.')))),
             h('div', { style: { padding: '10px', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '4px' } },
               h('label', { style: { display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
                 h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
-                'I think I understand — explain in own words'),
+                __alloT('stem.flightsim.i_think_i_understand_explain_in_own_wo', 'I think I understand — explain in own words')),
               iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); },
-                placeholder: 'Explain in your own words: what role do airspeed, altitude, and AoA each play?',
+                placeholder: __alloT('stem.flightsim.explain_in_your_own_words_what_role_do', 'Explain in your own words: what role do airspeed, altitude, and AoA each play?'),
                 style: { width: '100%', minHeight: '80px', padding: '6px', background: '#0f1c2f', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '4px', fontSize: '12px', fontFamily: 'monospace', marginTop: '6px' }, rows: 4 })
             ),
             h('div', { style: { marginTop: '10px', padding: '8px', background: 'rgba(15,28,47,0.5)', borderRadius: '4px', fontSize: '10px', fontStyle: 'italic', color: '#94a3b8' } },
-              'Design note: discrete 3-state stall indicator; no continuous score; no reveal — by design to discourage optimization-gaming.')
+              __alloT('stem.flightsim.design_note_discrete_3_state_stall_ind', 'Design note: discrete 3-state stall indicator; no continuous score; no reveal — by design to discourage optimization-gaming.'))
           )
         );
       }
 
       // Fallback
-      return h('div', { style: { padding: '24px', textAlign: 'center', color: '#94a3b8' } }, 'Loading SkySchool...');
+      return h('div', { style: { padding: '24px', textAlign: 'center', color: '#94a3b8' } }, __alloT('stem.flightsim.loading_skyschool', 'Loading SkySchool...'));
     }
   });
 

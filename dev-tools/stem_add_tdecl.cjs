@@ -45,32 +45,24 @@ const param = fnNode.params && fnNode.params[0];
 if (!param || param.type !== 'Identifier') { console.error('render param is not a plain identifier (destructured?) — handle by hand.'); process.exit(3); }
 const pname = param.name;
 
-// Scan render body for `t` bindings (var/let/const declarators + fn params).
-// If `t` is already a ctx.t-decl -> idempotent skip. If `t` is bound to ANYTHING
-// ELSE (the tool uses `t` as a local, e.g. time/temperature) -> COLLISION:
-// inserting our `var t = ctx.t` would be reassigned and wrapped t(...) calls
-// would throw "t is not a function". Bail so the tool is handled by hand.
-let already = false, collision = false;
+// Insert `var __alloT = <param>.t || fallback`. We use the unique name __alloT
+// (never used as a local in any tool) instead of `t`, so it can never collide
+// with a tool's own `t` (time/temperature/map-index) and never clobbers it.
+// Idempotent on __alloT.
+let already = false;
 const bodyStart = fnNode.body.start, bodyEnd = fnNode.body.end;
 const inBody = (n) => n && n.start > bodyStart && n.end < bodyEnd;
-const isPt = (n) => n && ((n.type === 'MemberExpression' && n.object && n.object.name === pname && n.property && n.property.name === 't') || (n.type === 'LogicalExpression' && isPt(n.left)));
 traverse(ast, {
   VariableDeclarator(p) {
-    if (!inBody(p.node) || !(p.node.id && p.node.id.name === 't')) return;
-    if (isPt(p.node.init)) already = true; else collision = true;
-  },
-  Function(p) {
-    if (!inBody(p.node)) return;
-    for (const par of (p.node.params || [])) if (par.type === 'Identifier' && par.name === 't') collision = true;
+    if (inBody(p.node) && p.node.id && p.node.id.name === '__alloT') already = true;
   }
 });
-if (already) { console.log(tool + ': t-decl already present — skipping.'); process.exit(0); }
-if (collision) { console.error(tool + ": render already binds `t` to a non-ctx value (local var/param) — COLLISION, handle by hand."); process.exit(4); }
+if (already) { console.log(tool + ': __alloT decl already present — skipping.'); process.exit(0); }
 
 const insertAt = bodyStart + 1; // right after the `{`
-const decl = '\n      var t = ' + pname + '.t || function (k, fb) { return fb != null ? fb : k; };';
+const decl = '\n      var __alloT = ' + pname + '.t || function (k, fb) { return fb != null ? fb : k; };';
 const out = code.slice(0, insertAt) + decl + code.slice(insertAt);
-console.log(tool + ': render(' + pname + ') — inserting t-decl' + (WRITE ? '' : ' (dry-run)') + '.');
+console.log(tool + ': render(' + pname + ') — inserting __alloT decl' + (WRITE ? '' : ' (dry-run)') + '.');
 if (WRITE) {
   fs.copyFileSync(file, file + '.bak.tdecl');
   fs.writeFileSync(file, out);

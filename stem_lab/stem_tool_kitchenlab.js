@@ -1700,6 +1700,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         progress: function(d) { return (d && d.klViewedResources) ? 'opened' : 'not yet'; } }
     ],
     render: function(ctx) {
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -1763,12 +1764,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
       function renderHeader() {
         var TABS = [
-          { id: 'safety', label: 'Safety', icon: '🛡️', sub: 'food safety' },
-          { id: 'knife', label: 'Knife Lab', icon: '🔪', sub: 'cuts + technique' },
-          { id: 'heat', label: 'Heat & Technique', icon: '🔥', sub: '8 cooking methods' },
-          { id: 'maillard', label: 'Maillard', icon: '🟫', sub: 'the browning reaction' },
-          { id: 'recipe', label: 'Recipe Sim', icon: '🍽️', sub: 'real-time cooking' },
-          { id: 'resources', label: 'Resources', icon: '📚', sub: 'glossary + cheat sheets' }
+          { id: 'safety', label: __alloT('stem.kitchenlab.safety', 'Safety'), icon: '🛡️', sub: 'food safety' },
+          { id: 'knife', label: __alloT('stem.kitchenlab.knife_lab', 'Knife Lab'), icon: '🔪', sub: 'cuts + technique' },
+          { id: 'heat', label: __alloT('stem.kitchenlab.heat_technique', 'Heat & Technique'), icon: '🔥', sub: '8 cooking methods' },
+          { id: 'maillard', label: __alloT('stem.kitchenlab.maillard', 'Maillard'), icon: '🟫', sub: 'the browning reaction' },
+          { id: 'recipe', label: __alloT('stem.kitchenlab.recipe_sim', 'Recipe Sim'), icon: '🍽️', sub: 'real-time cooking' },
+          { id: 'resources', label: __alloT('stem.kitchenlab.resources', 'Resources'), icon: '📚', sub: 'glossary + cheat sheets' }
         ];
         var sectionCount = TABS.length;
         var currentTab = TABS.find(function(tab) { return tab.id === section; }) || TABS[0];
@@ -1783,25 +1784,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 fontSize: 28, flexShrink: 0, boxShadow: '0 2px 6px rgba(0,0,0,0.3)' } }, '🍳'),
             h('div', { style: { flex: 1, minWidth: 240 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' } },
-                h('div', { style: { fontSize: 22, fontWeight: 800, color: 'var(--allo-stem-text, #fde68a)', letterSpacing: '-0.01em' } }, 'Kitchen Lab'),
+                h('div', { style: { fontSize: 22, fontWeight: 800, color: 'var(--allo-stem-text, #fde68a)', letterSpacing: '-0.01em' } }, __alloT('stem.kitchenlab.kitchen_lab', 'Kitchen Lab')),
                 h('div', { style: { fontSize: 10, fontWeight: 700, color: '#fdba74', background: 'rgba(251,146,60,0.12)',
                     border: '1px solid rgba(251,146,60,0.3)', padding: '2px 8px', borderRadius: 9999, fontFamily: 'ui-monospace, Menlo, monospace' } },
                   sectionCount + ' sections')),
               h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4, lineHeight: 1.5 } },
-                'Cooking life skills + culinary science. Food safety, knife technique, heat methods, Maillard chemistry, recipes, glossary. Built for life skills classrooms + family + consumer science.'))));
+                __alloT('stem.kitchenlab.cooking_life_skills_culinary_science_f', 'Cooking life skills + culinary science. Food safety, knife technique, heat methods, Maillard chemistry, recipes, glossary. Built for life skills classrooms + family + consumer science.')))));
       }
 
       function renderTabs() {
         var TABS = [
-          { id: 'safety', label: 'Safety', icon: '🛡️' },
-          { id: 'knife', label: 'Knife Lab', icon: '🔪' },
-          { id: 'heat', label: 'Heat & Technique', icon: '🔥' },
-          { id: 'maillard', label: 'Maillard', icon: '🟫' },
-          { id: 'recipe', label: 'Recipe Sim', icon: '🍽️' },
-          { id: 'resources', label: 'Resources', icon: '📚' },
-          { id: 'maillardHunt', label: 'Browning Lab', icon: '🔬' }
+          { id: 'safety', label: __alloT('stem.kitchenlab.safety_2', 'Safety'), icon: '🛡️' },
+          { id: 'knife', label: __alloT('stem.kitchenlab.knife_lab_2', 'Knife Lab'), icon: '🔪' },
+          { id: 'heat', label: __alloT('stem.kitchenlab.heat_technique_2', 'Heat & Technique'), icon: '🔥' },
+          { id: 'maillard', label: __alloT('stem.kitchenlab.maillard_2', 'Maillard'), icon: '🟫' },
+          { id: 'recipe', label: __alloT('stem.kitchenlab.recipe_sim_2', 'Recipe Sim'), icon: '🍽️' },
+          { id: 'resources', label: __alloT('stem.kitchenlab.resources_2', 'Resources'), icon: '📚' },
+          { id: 'maillardHunt', label: __alloT('stem.kitchenlab.browning_lab', 'Browning Lab'), icon: '🔬' }
         ];
-        return h('div', { role: 'tablist', 'aria-label': 'Kitchen Lab sections',
+        return h('div', { role: 'tablist', 'aria-label': __alloT('stem.kitchenlab.kitchen_lab_sections', 'Kitchen Lab sections'),
           style: { display: 'flex', flexWrap: 'wrap', gap: 0, padding: '0 16px',
             borderBottom: '1px solid rgba(251,146,60,0.25)', position: 'relative', zIndex: 1 } },
           TABS.map(function(t) {
@@ -1846,17 +1847,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // ─── Danger Zone Visualizer ───
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, '🌡️ The Danger Zone (FDA Food Code)'),
+            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.the_danger_zone_fda_food_code', '🌡️ The Danger Zone (FDA Food Code)')),
             h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
-              'Bacteria grow fastest between 40°F and 140°F (4°C–60°C). This is "the danger zone." Food shouldn\'t sit here for more than 2 hours total (1 hour if it\'s over 90°F outside). Drag the slider to see what happens at different temps.'),
+              __alloT('stem.kitchenlab.bacteria_grow_fastest_between_40_f_and', 'Bacteria grow fastest between 40°F and 140°F (4°C–60°C). This is "the danger zone." Food shouldn\'t sit here for more than 2 hours total (1 hour if it\'s over 90°F outside). Drag the slider to see what happens at different temps.')),
             // Temp slider
             h('div', { style: { marginBottom: 14 } },
               h('label', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6, fontWeight: 700 } },
-                h('span', null, 'Food temperature'),
+                h('span', null, __alloT('stem.kitchenlab.food_temperature', 'Food temperature')),
                 h('span', { style: { color: zone.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, curTemp + '°F (' + Math.round((curTemp - 32) * 5 / 9) + '°C)')),
               h('input', { type: 'range', min: 32, max: 220, step: 1, value: curTemp,
                 onChange: function(e) { setKL({ safetyTemp: parseInt(e.target.value, 10) }); },
-                'aria-label': 'Food temperature in Fahrenheit',
+                'aria-label': __alloT('stem.kitchenlab.food_temperature_in_fahrenheit', 'Food temperature in Fahrenheit'),
                 style: { width: '100%', accentColor: zone.color } })),
             // Zone callout
             h('div', { style: {
@@ -1867,19 +1868,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, zone.descr)),
             // Growth visualization
             zone.zone === 'danger' ? h('div', { style: { background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.3)', padding: 12, borderRadius: 8 } },
-              h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fca5a5', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'After 2 hours at this temp'),
+              h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fca5a5', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.kitchenlab.after_2_hours_at_this_temp', 'After 2 hours at this temp')),
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 } },
                 h('div', { style: { fontSize: 28, fontWeight: 900, color: '#fca5a5', fontFamily: 'ui-monospace, Menlo, monospace' } }, growthAfter2h + '×'),
-                h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.45 } }, 'starting bacterial population')),
+                h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.45 } }, __alloT('stem.kitchenlab.starting_bacterial_population', 'starting bacterial population'))),
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
                 growthAfter2h >= 64 ? 'At ~optimal-growth temp, a single bacterium can become 64+ by hour 2. If you started with 100, you now have 6,400. If you started with 1,000, you have 64,000.' : 'Below 70°F bacteria grow slower but still doubling. Don\'t leave food on the counter to "cool" — chill it within 2 hours.')) : null
           ),
 
           // ─── USDA Safe Temps ───
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, '🔥 USDA Safe Cooking Temperatures'),
+            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.usda_safe_cooking_temperatures', '🔥 USDA Safe Cooking Temperatures')),
             h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
-              'These are the minimum internal temperatures. A meat thermometer is the only way to know for sure. Color is unreliable — pink chicken at 165°F is safe; brown chicken at 140°F is not.'),
+              __alloT('stem.kitchenlab.these_are_the_minimum_internal_tempera', 'These are the minimum internal temperatures. A meat thermometer is the only way to know for sure. Color is unreliable — pink chicken at 165°F is safe; brown chicken at 140°F is not.')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 } },
               SAFE_TEMPS.map(function(t, i) {
                 return h('div', { key: i,
@@ -1893,7 +1894,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                   h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 6 } },
                     h('b', { style: { color: 'var(--allo-stem-text, #e2e8f0)' } }, 'Why: '), t.why),
                   h('div', { style: { fontSize: 10, color: '#fb923c', lineHeight: 1.5, background: 'rgba(251,146,60,0.08)', padding: '6px 8px', borderRadius: 6 } },
-                    h('b', null, '⚠️ Pitfall: '), t.pitfall));
+                    h('b', null, __alloT('stem.kitchenlab.pitfall', '⚠️ Pitfall: ')), t.pitfall));
               }))),
 
           // ─── WHO Handwash Timer ───
@@ -1901,17 +1902,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // ─── Cross-contamination quick rules ───
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, '🚫 Cross-Contamination Rules'),
+            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.cross_contamination_rules', '🚫 Cross-Contamination Rules')),
             h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 12 } },
-              'Pathogens move from raw meat → hands → cutting board → ready-to-eat food. The fixes are simple but easy to forget mid-cook.'),
+              __alloT('stem.kitchenlab.pathogens_move_from_raw_meat_hands_cut', 'Pathogens move from raw meat → hands → cutting board → ready-to-eat food. The fixes are simple but easy to forget mid-cook.')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 } },
               [
-                { icon: '🪧', rule: 'Separate cutting boards (or wash thoroughly)', detail: 'Red board for raw meat, green for produce. Many home kitchens skip this — it\'s the #1 home-kitchen cross-contamination source.' },
-                { icon: '🧼', rule: 'Wash hands AFTER touching raw meat', detail: '20 seconds with soap + hot water. The 20 seconds is what dislodges the bacteria — soap alone doesn\'t.' },
-                { icon: '🧊', rule: 'Thaw meat in fridge, never on counter', detail: 'Surface thaws fast → bacteria multiply on the outside while inside is still frozen. Fridge keeps the whole thing under 40°F.' },
-                { icon: '📥', rule: 'Marinade-as-sauce: cook it first', detail: 'Marinade that touched raw meat contains those pathogens. Boil it 1 min before using as a finishing sauce, or make extra separately.' },
-                { icon: '🧽', rule: 'Replace sponges weekly + microwave wet daily', detail: 'Damp kitchen sponges harbor more bacteria per square cm than the toilet seat. Microwaving wet for 90 seconds sanitizes most of it.' },
-                { icon: '🌡️', rule: 'Two-hour rule', detail: 'Cooked food in danger zone (40-140°F) → into fridge within 2 hours (1 hour if room is 90°F+).' }
+                { icon: '🪧', rule: 'Separate cutting boards (or wash thoroughly)', detail: __alloT('stem.kitchenlab.red_board_for_raw_meat_green_for_produ', 'Red board for raw meat, green for produce. Many home kitchens skip this — it\'s the #1 home-kitchen cross-contamination source.') },
+                { icon: '🧼', rule: 'Wash hands AFTER touching raw meat', detail: __alloT('stem.kitchenlab.20_seconds_with_soap_hot_water_the_20_', '20 seconds with soap + hot water. The 20 seconds is what dislodges the bacteria — soap alone doesn\'t.') },
+                { icon: '🧊', rule: 'Thaw meat in fridge, never on counter', detail: __alloT('stem.kitchenlab.surface_thaws_fast_bacteria_multiply_o', 'Surface thaws fast → bacteria multiply on the outside while inside is still frozen. Fridge keeps the whole thing under 40°F.') },
+                { icon: '📥', rule: 'Marinade-as-sauce: cook it first', detail: __alloT('stem.kitchenlab.marinade_that_touched_raw_meat_contain', 'Marinade that touched raw meat contains those pathogens. Boil it 1 min before using as a finishing sauce, or make extra separately.') },
+                { icon: '🧽', rule: 'Replace sponges weekly + microwave wet daily', detail: __alloT('stem.kitchenlab.damp_kitchen_sponges_harbor_more_bacte', 'Damp kitchen sponges harbor more bacteria per square cm than the toilet seat. Microwaving wet for 90 seconds sanitizes most of it.') },
+                { icon: '🌡️', rule: 'Two-hour rule', detail: __alloT('stem.kitchenlab.cooked_food_in_danger_zone_40_140_f_in', 'Cooked food in danger zone (40-140°F) → into fridge within 2 hours (1 hour if room is 90°F+).') }
               ].map(function(r, i) {
                 return h('div', { key: i, style: { background: 'rgba(15,23,42,0.5)', borderTop: '1px solid rgba(100,116,139,0.3)', borderRight: '1px solid rgba(100,116,139,0.3)', borderBottom: '1px solid rgba(100,116,139,0.3)', borderLeft: '4px solid #dc2626', padding: '10px 12px', borderRadius: 8 } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
@@ -1922,9 +1923,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // ─── Top 9 Allergens ───
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, '⚠️ The Top 9 Allergens (FDA + FASTER Act)'),
+            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.the_top_9_allergens_fda_faster_act', '⚠️ The Top 9 Allergens (FDA + FASTER Act)')),
             h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
-              'These 9 cause ~90% of all severe food allergic reactions in the US. Sesame was added in 2023. By law, packaged food must declare these. The "hidden in" column matters most — that\'s where surprises happen.'),
+              __alloT('stem.kitchenlab.these_9_cause_90_of_all_severe_food_al', 'These 9 cause ~90% of all severe food allergic reactions in the US. Sesame was added in 2023. By law, packaged food must declare these. The "hidden in" column matters most — that\'s where surprises happen.')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 } },
               ALLERGENS_9.map(function(a, i) {
                 return h('div', { key: i, style: { background: 'rgba(15,23,42,0.5)', borderTop: '1px solid rgba(100,116,139,0.3)', borderRight: '1px solid rgba(100,116,139,0.3)', borderBottom: '1px solid rgba(100,116,139,0.3)', borderLeft: '4px solid #eab308', padding: '12px 14px', borderRadius: 10 } },
@@ -1936,7 +1937,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                         'Prevalence: ' + a.prev))),
                   h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 6 } }, a.notes),
                   h('div', { style: { fontSize: 10, color: '#fbbf24', lineHeight: 1.5, background: 'rgba(234,179,8,0.08)', padding: '6px 8px', borderRadius: 6 } },
-                    h('b', null, '🕵️ Hidden in: '), a.hiddenIn));
+                    h('b', null, __alloT('stem.kitchenlab.hidden_in', '🕵️ Hidden in: ')), a.hiddenIn));
               })))
         );
       }
@@ -1947,9 +1948,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         var elapsed = started ? Math.min(20, (Date.now() - started) / 1000) : 0;
         var pct = Math.min(100, (elapsed / 20) * 100);
         return h('div', { style: cardStyle() },
-          h('div', { style: subheaderStyle() }, '🧼 20-Second Handwash (CDC + WHO)'),
+          h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.20_second_handwash_cdc_who', '🧼 20-Second Handwash (CDC + WHO)')),
           h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
-            'Soap + 20 seconds + friction = the minimum for hand sanitation in a kitchen. The mechanical action (friction) is what dislodges bacteria — soap loosens them, water rinses them away.'),
+            __alloT('stem.kitchenlab.soap_20_seconds_friction_the_minimum_f', 'Soap + 20 seconds + friction = the minimum for hand sanitation in a kitchen. The mechanical action (friction) is what dislodges bacteria — soap loosens them, water rinses them away.')),
           h('div', { style: { display: 'flex', alignItems: 'center', gap: 14, marginBottom: 12, flexWrap: 'wrap' } },
             h('button', { onClick: function() {
                 if (!started) {
@@ -2007,7 +2008,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // ─── Cut picker ───
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, 'Pick a cut to learn'),
+            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.pick_a_cut_to_learn', 'Pick a cut to learn')),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
               KNIFE_CUTS.map(function(c) {
                 var active = c.id === selectedId;
@@ -2047,22 +2048,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // ─── Why uniformity matters ───
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, '🎯 Why Uniformity Matters'),
+            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.why_uniformity_matters', '🎯 Why Uniformity Matters')),
             h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
-              'When pieces are different sizes, they finish cooking at different times. Small pieces burn while large pieces are still raw. Uniform cuts = uniform cook = no kitchen guessing.'),
+              __alloT('stem.kitchenlab.when_pieces_are_different_sizes_they_f', 'When pieces are different sizes, they finish cooking at different times. Small pieces burn while large pieces are still raw. Uniform cuts = uniform cook = no kitchen guessing.')),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
               h('div', { style: { background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 8, padding: 12 } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '❌ Uneven cuts'),
-                h('div', { style: { fontSize: 11, color: '#fecaca', lineHeight: 1.55 } }, 'Small pieces blacken at 6 min while large pieces are still raw inside at 12 min. You either eat charcoal + crunchy, or you cook so long the small pieces are inedible.')),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.kitchenlab.uneven_cuts', '❌ Uneven cuts')),
+                h('div', { style: { fontSize: 11, color: '#fecaca', lineHeight: 1.55 } }, __alloT('stem.kitchenlab.small_pieces_blacken_at_6_min_while_la', 'Small pieces blacken at 6 min while large pieces are still raw inside at 12 min. You either eat charcoal + crunchy, or you cook so long the small pieces are inedible.'))),
               h('div', { style: { background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 8, padding: 12 } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '✅ Uniform cuts'),
-                h('div', { style: { fontSize: 11, color: '#bbf7d0', lineHeight: 1.55 } }, 'Every piece reaches doneness at the same moment. You can leave the pan and trust the clock. This is why professional kitchens drill knife skills before anything else.')))),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.kitchenlab.uniform_cuts', '✅ Uniform cuts')),
+                h('div', { style: { fontSize: 11, color: '#bbf7d0', lineHeight: 1.55 } }, __alloT('stem.kitchenlab.every_piece_reaches_doneness_at_the_sa', 'Every piece reaches doneness at the same moment. You can leave the pan and trust the clock. This is why professional kitchens drill knife skills before anything else.'))))),
 
           // ─── Knife grip + safety ───
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, '✋ The Claw Grip (Finger Safety)'),
+            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.the_claw_grip_finger_safety', '✋ The Claw Grip (Finger Safety)')),
             h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
-              'Curl your guiding fingers INWARD so your knuckles face the blade, not your fingertips. The flat of the blade slides along your knuckles as a guide. If the knife slips, it slides up your knuckle wall — not into your fingertip.'),
+              __alloT('stem.kitchenlab.curl_your_guiding_fingers_inward_so_yo', 'Curl your guiding fingers INWARD so your knuckles face the blade, not your fingertips. The flat of the blade slides along your knuckles as a guide. If the knife slips, it slides up your knuckle wall — not into your fingertip.')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
               [
                 { rule: 'A sharp knife is safer than a dull one', why: 'A sharp knife cuts where you aim. A dull knife slips off the food and into your hand. Most kitchen knife injuries are from dull knives.' },
@@ -2139,10 +2140,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         // Visual signal: too cold, just right, too hot
         var diff = panTemp - tech.panTempF;
         var heatVerdict = (function() {
-          if (Math.abs(diff) <= 25) return { label: '✅ Perfect for ' + tech.name, color: '#22c55e', note: 'Pan is at the right temp for this technique. Food browns + cooks evenly.' };
-          if (diff < -25) return { label: '🥶 Too cold', color: '#38bdf8', note: 'Below threshold — food will steam in its own juices instead of browning. No Maillard. Gray + soggy.' };
-          if (diff > 25 && diff <= 75) return { label: '🔥 Hot but tolerable', color: '#fb923c', note: 'Workable for fast cooks but easy to burn. Watch carefully.' };
-          return { label: '☠️ Smoking + risky', color: '#dc2626', note: 'Past the smoke point of most cooking oils. Acrolein-forming, bitter flavors, fire risk. Reduce heat or change oil to one with higher smoke point (avocado, refined peanut, ghee).' };
+          if (Math.abs(diff) <= 25) return { label: '✅ Perfect for ' + tech.name, color: '#22c55e', note: __alloT('stem.kitchenlab.pan_is_at_the_right_temp_for_this_tech', 'Pan is at the right temp for this technique. Food browns + cooks evenly.') };
+          if (diff < -25) return { label: __alloT('stem.kitchenlab.too_cold', '🥶 Too cold'), color: '#38bdf8', note: __alloT('stem.kitchenlab.below_threshold_food_will_steam_in_its', 'Below threshold — food will steam in its own juices instead of browning. No Maillard. Gray + soggy.') };
+          if (diff > 25 && diff <= 75) return { label: __alloT('stem.kitchenlab.hot_but_tolerable', '🔥 Hot but tolerable'), color: '#fb923c', note: __alloT('stem.kitchenlab.workable_for_fast_cooks_but_easy_to_bu', 'Workable for fast cooks but easy to burn. Watch carefully.') };
+          return { label: __alloT('stem.kitchenlab.smoking_risky', '☠️ Smoking + risky'), color: '#dc2626', note: __alloT('stem.kitchenlab.past_the_smoke_point_of_most_cooking_o', 'Past the smoke point of most cooking oils. Acrolein-forming, bitter flavors, fire risk. Reduce heat or change oil to one with higher smoke point (avocado, refined peanut, ghee).') };
         })();
         return h('div', null,
           panelHeader('🔥 Heat & Technique',
@@ -2150,7 +2151,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // ─── Technique picker ───
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, 'Pick a technique'),
+            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.pick_a_technique', 'Pick a technique')),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 6 } },
               TECHNIQUES.map(function(t) {
                 var active = t.id === selId;
@@ -2176,11 +2177,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             // Slider
             h('div', { style: { marginBottom: 14 } },
               h('label', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6, fontWeight: 700 } },
-                h('span', null, 'Your pan temperature'),
+                h('span', null, __alloT('stem.kitchenlab.your_pan_temperature', 'Your pan temperature')),
                 h('span', { style: { color: heatVerdict.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, panTemp + '°F')),
               h('input', { type: 'range', min: 100, max: 500, step: 5, value: panTemp,
                 onChange: function(e) { setKL({ heatPanTempF: parseInt(e.target.value, 10) }); },
-                'aria-label': 'Pan temperature in Fahrenheit',
+                'aria-label': __alloT('stem.kitchenlab.pan_temperature_in_fahrenheit', 'Pan temperature in Fahrenheit'),
                 style: { width: '100%', accentColor: heatVerdict.color } })),
             h('div', { style: { background: heatVerdict.color + '18', border: '1px solid ' + heatVerdict.color + '55', borderLeft: '4px solid ' + heatVerdict.color, padding: '10px 12px', borderRadius: 10 } },
               h('div', { style: { fontSize: 13, fontWeight: 800, color: heatVerdict.color, marginBottom: 4 } }, heatVerdict.label),
@@ -2218,9 +2219,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         return h('div', null,
           panelHeader(emoji + ' ' + title, lede),
           h('div', { style: cardStyle() },
-            h('div', { style: { fontSize: 14, fontWeight: 800, color: 'var(--allo-stem-text, #fde68a)', marginBottom: 10 } }, '🚧 Coming in the next ship'),
+            h('div', { style: { fontSize: 14, fontWeight: 800, color: 'var(--allo-stem-text, #fde68a)', marginBottom: 10 } }, __alloT('stem.kitchenlab.coming_in_the_next_ship', '🚧 Coming in the next ship')),
             h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.65, marginBottom: 12 } },
-              'This section is being built. Below is what\'s planned. The architecture pieces are in place — content depth is what\'s in flight.'),
+              __alloT('stem.kitchenlab.this_section_is_being_built_below_is_w', 'This section is being built. Below is what\'s planned. The architecture pieces are in place — content depth is what\'s in flight.')),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.8 } },
               items.map(function(it, i) { return h('li', { key: i }, it); }))));
       }
@@ -2236,33 +2237,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // ─── What it is ───
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, '🔬 What\'s actually happening'),
+            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.what_s_actually_happening', '🔬 What\'s actually happening')),
             h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, lineHeight: 1.7 } },
-              'Maillard is a cascade of chemical reactions between ',
-              h('b', { style: { color: 'var(--allo-stem-text, #fde68a)' } }, 'amino acids'),
-              ' (the building blocks of protein) and ',
-              h('b', { style: { color: 'var(--allo-stem-text, #fde68a)' } }, 'reducing sugars'),
-              ' (glucose, fructose, lactose — sugars that can give up an electron). It needs heat to start (~280°F / 140°C surface temp), and once running it produces:'),
+              __alloT('stem.kitchenlab.maillard_is_a_cascade_of_chemical_reac', 'Maillard is a cascade of chemical reactions between '),
+              h('b', { style: { color: 'var(--allo-stem-text, #fde68a)' } }, __alloT('stem.kitchenlab.amino_acids', 'amino acids')),
+              __alloT('stem.kitchenlab.the_building_blocks_of_protein_and', ' (the building blocks of protein) and '),
+              h('b', { style: { color: 'var(--allo-stem-text, #fde68a)' } }, __alloT('stem.kitchenlab.reducing_sugars', 'reducing sugars')),
+              __alloT('stem.kitchenlab.glucose_fructose_lactose_sugars_that_c', ' (glucose, fructose, lactose — sugars that can give up an electron). It needs heat to start (~280°F / 140°C surface temp), and once running it produces:')),
             h('ul', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.8, margin: '10px 0 0 0', padding: '0 0 0 20px' } },
-              h('li', null, h('b', { style: { color: '#fb923c' } }, 'Melanoidins'), ' — the brown pigments. Why crust is brown.'),
-              h('li', null, h('b', { style: { color: '#fb923c' } }, '1000+ volatile aroma compounds'), ' — pyrazines (nutty/roasty), furans (sweet/caramel), thiophenes (meaty/sulfury). These don\'t exist in raw food at all.'),
-              h('li', null, h('b', { style: { color: '#fb923c' } }, 'Complex flavor'), ' — Maillard is why seared beef tastes like more than the sum of "raw beef + salt." You\'re eating compounds that didn\'t exist 30 seconds earlier.'))),
+              h('li', null, h('b', { style: { color: '#fb923c' } }, __alloT('stem.kitchenlab.melanoidins', 'Melanoidins')), __alloT('stem.kitchenlab.the_brown_pigments_why_crust_is_brown', ' — the brown pigments. Why crust is brown.')),
+              h('li', null, h('b', { style: { color: '#fb923c' } }, __alloT('stem.kitchenlab.1000_volatile_aroma_compounds', '1000+ volatile aroma compounds')), __alloT('stem.kitchenlab.pyrazines_nutty_roasty_furans_sweet_ca', ' — pyrazines (nutty/roasty), furans (sweet/caramel), thiophenes (meaty/sulfury). These don\'t exist in raw food at all.')),
+              h('li', null, h('b', { style: { color: '#fb923c' } }, __alloT('stem.kitchenlab.complex_flavor', 'Complex flavor')), __alloT('stem.kitchenlab.maillard_is_why_seared_beef_tastes_lik', ' — Maillard is why seared beef tastes like more than the sum of "raw beef + salt." You\'re eating compounds that didn\'t exist 30 seconds earlier.')))),
 
           // ─── Temperature explorer ───
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, '🌡️ Temperature Explorer'),
+            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.temperature_explorer', '🌡️ Temperature Explorer')),
             h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
-              'Drag the slider to see what\'s happening at different surface temperatures. Note: ',
-              h('b', { style: { color: 'var(--allo-stem-text, #fde68a)' } }, 'surface temp ≠ internal temp'),
-              ' ≠ pan temp. Surface temp can be much higher than internal because the surface is touching the hot pan or air.'),
+              __alloT('stem.kitchenlab.drag_the_slider_to_see_what_s_happenin', 'Drag the slider to see what\'s happening at different surface temperatures. Note: '),
+              h('b', { style: { color: 'var(--allo-stem-text, #fde68a)' } }, __alloT('stem.kitchenlab.surface_temp_internal_temp', 'surface temp ≠ internal temp')),
+              __alloT('stem.kitchenlab.pan_temp_surface_temp_can_be_much_high', ' ≠ pan temp. Surface temp can be much higher than internal because the surface is touching the hot pan or air.')),
             h('div', { style: { marginBottom: 16 } },
               h('label', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6, fontWeight: 700 } },
-                h('span', null, 'Food surface temperature'),
+                h('span', null, __alloT('stem.kitchenlab.food_surface_temperature', 'Food surface temperature')),
                 h('span', { style: { color: zone.textColor === '#fef9c3' || zone.textColor === '#fef3c7' || zone.textColor === '#fbbf24' ? zone.color : '#fde68a', fontFamily: 'ui-monospace, Menlo, monospace' } },
                   surfF + '°F (' + surfC + '°C)')),
               h('input', { type: 'range', min: 100, max: 500, step: 5, value: surfF,
                 onChange: function(e) { setKL({ maillardSurfaceF: parseInt(e.target.value, 10) }); },
-                'aria-label': 'Food surface temperature in Fahrenheit',
+                'aria-label': __alloT('stem.kitchenlab.food_surface_temperature_in_fahrenheit', 'Food surface temperature in Fahrenheit'),
                 style: { width: '100%', accentColor: '#fb923c' } })),
             // Visual swatch
             h('div', { style: { display: 'flex', gap: 16, alignItems: 'center', marginBottom: 12, flexWrap: 'wrap' } },
@@ -2272,17 +2273,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 11, fontWeight: 800, color: zone.textColor,
                   textAlign: 'center', padding: 8, transition: 'background 0.3s' } },
-                'visual color'),
+                __alloT('stem.kitchenlab.visual_color', 'visual color')),
               h('div', { style: { flex: 1, minWidth: 220 } },
                 h('div', { style: { fontSize: 14, fontWeight: 800, color: zone.color, marginBottom: 4 } }, zone.label),
                 h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } }, zone.visual))),
             h('div', { style: { background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #7dd3fc', padding: '10px 12px', borderRadius: 8 } },
-              h('div', { style: { fontSize: 10, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, '⚗️ Science'),
+              h('div', { style: { fontSize: 10, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, __alloT('stem.kitchenlab.science', '⚗️ Science')),
               h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, zone.science))),
 
           // ─── All 6 zones reference ───
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, '📊 All six zones at a glance'),
+            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.all_six_zones_at_a_glance', '📊 All six zones at a glance')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
               MAILLARD_ZONES.map(function(z, i) {
                 var prevMax = i === 0 ? 100 : MAILLARD_ZONES[i - 1].maxF;
@@ -2298,16 +2299,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // ─── Caramelization vs Maillard ───
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, '🆚 Caramelization vs Maillard'),
+            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.caramelization_vs_maillard', '🆚 Caramelization vs Maillard')),
             h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
-              'Often confused — they\'re different reactions. Caramelization is sugar alone breaking down. Maillard needs amino acids + reducing sugars together. Most "browning" you see is Maillard, even when called "caramelizing."'),
+              __alloT('stem.kitchenlab.often_confused_they_re_different_react', 'Often confused — they\'re different reactions. Caramelization is sugar alone breaking down. Maillard needs amino acids + reducing sugars together. Most "browning" you see is Maillard, even when called "caramelizing."')),
             h('div', { style: { overflowX: 'auto' } },
               h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 12 } },
                 h('thead', null,
                   h('tr', { style: { borderBottom: '2px solid rgba(251,146,60,0.3)' } },
-                    h('th', { style: { textAlign: 'left', padding: '8px 12px', color: '#fb923c', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Aspect'),
-                    h('th', { style: { textAlign: 'left', padding: '8px 12px', color: '#fbbf24', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Caramelization'),
-                    h('th', { style: { textAlign: 'left', padding: '8px 12px', color: '#86efac', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Maillard'))),
+                    h('th', { style: { textAlign: 'left', padding: '8px 12px', color: '#fb923c', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.kitchenlab.aspect', 'Aspect')),
+                    h('th', { style: { textAlign: 'left', padding: '8px 12px', color: '#fbbf24', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.kitchenlab.caramelization', 'Caramelization')),
+                    h('th', { style: { textAlign: 'left', padding: '8px 12px', color: '#86efac', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.kitchenlab.maillard_3', 'Maillard')))),
                 h('tbody', null,
                   CARAM_VS_MAILLARD.map(function(row, i) {
                     return h('tr', { key: i, style: { borderBottom: '1px solid rgba(100,116,139,0.15)' } },
@@ -2318,9 +2319,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // ─── Browning examples ───
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, '🍽️ Browning in the wild'),
+            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.browning_in_the_wild', '🍽️ Browning in the wild')),
             h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
-              'Same chemistry, different foods. Each carries its own characteristic flavor profile because amino acid + reducing sugar mixes differ.'),
+              __alloT('stem.kitchenlab.same_chemistry_different_foods_each_ca', 'Same chemistry, different foods. Each carries its own characteristic flavor profile because amino acid + reducing sugar mixes differ.')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 } },
               BROWNING_EXAMPLES.map(function(b, i) {
                 return h('div', { key: i,
@@ -2336,9 +2337,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // ─── pH effects ───
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, '⚗️ pH effects on Maillard'),
+            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.ph_effects_on_maillard', '⚗️ pH effects on Maillard')),
             h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
-              'The acidity of your food dramatically changes how fast Maillard runs. This is one of the most underused kitchen "cheat codes."'),
+              __alloT('stem.kitchenlab.the_acidity_of_your_food_dramatically_', 'The acidity of your food dramatically changes how fast Maillard runs. This is one of the most underused kitchen "cheat codes."')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10 } },
               PH_EFFECTS.map(function(p, i) {
                 var color = i === 0 ? '#fca5a5' : i === 1 ? '#94a3b8' : i === 2 ? '#86efac' : '#a78bfa';
@@ -2348,27 +2349,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                   h('div', { style: { fontSize: 12, fontWeight: 700, color: color, marginBottom: 6 } }, p.ph),
                   h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55, marginBottom: 6 } }, p.effect),
                   h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.55, background: 'rgba(251,146,60,0.08)', padding: '6px 8px', borderRadius: 6 } },
-                    h('b', null, '💡 Use: '), p.use));
+                    h('b', null, __alloT('stem.kitchenlab.use', '💡 Use: ')), p.use));
               }))),
 
           // ─── Acrylamide warning ───
           h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #dc2626' }) },
-            h('div', { style: Object.assign({}, subheaderStyle(), { color: '#fca5a5' }) }, '☠️ The dark side: acrylamide'),
+            h('div', { style: Object.assign({}, subheaderStyle(), { color: '#fca5a5' }) }, __alloT('stem.kitchenlab.the_dark_side_acrylamide', '☠️ The dark side: acrylamide')),
             h('div', { style: { color: '#fecaca', fontSize: 12, lineHeight: 1.7 } },
               h('p', { style: { margin: '0 0 10px 0' } },
-                'Above ~250°F (120°C), starchy foods + the amino acid ',
+                __alloT('stem.kitchenlab.above_250_f_120_c_starchy_foods_the_am', 'Above ~250°F (120°C), starchy foods + the amino acid '),
                 h('b', null, 'asparagine'),
-                ' react to form ',
+                __alloT('stem.kitchenlab.react_to_form', ' react to form '),
                 h('b', null, 'acrylamide'),
-                ' — classified by IARC as a ',
-                h('em', null, 'probable human carcinogen'),
-                ' (Group 2A). It\'s the same compound used in some industrial polymer manufacturing.'),
+                __alloT('stem.kitchenlab.classified_by_iarc_as_a', ' — classified by IARC as a '),
+                h('em', null, __alloT('stem.kitchenlab.probable_human_carcinogen', 'probable human carcinogen')),
+                __alloT('stem.kitchenlab.group_2a_it_s_the_same_compound_used_i', ' (Group 2A). It\'s the same compound used in some industrial polymer manufacturing.')),
               h('p', { style: { margin: '0 0 10px 0' } },
-                'Foods most affected: french fries, potato chips, breakfast cereal, toast (especially dark), coffee, baked goods. The darker the brown, the more acrylamide. The FDA campaign tagline:'),
+                __alloT('stem.kitchenlab.foods_most_affected_french_fries_potat', 'Foods most affected: french fries, potato chips, breakfast cereal, toast (especially dark), coffee, baked goods. The darker the brown, the more acrylamide. The FDA campaign tagline:')),
               h('p', { style: { margin: '0 0 10px 0', padding: '8px 12px', background: 'rgba(220,38,38,0.15)', borderRadius: 8, fontWeight: 700, color: 'var(--allo-stem-text, #fde68a)', textAlign: 'center' } },
-                '"Go for gold, not brown."'),
+                __alloT('stem.kitchenlab.go_for_gold_not_brown', '"Go for gold, not brown."')),
               h('p', { style: { margin: 0 } },
-                'Practical advice: aim for golden-yellow on starchy foods, not deep brown. Don\'t store potatoes in the fridge (cold storage raises their reducing-sugar content → more acrylamide when cooked).')))
+                __alloT('stem.kitchenlab.practical_advice_aim_for_golden_yellow', 'Practical advice: aim for golden-yellow on starchy foods, not deep brown. Don\'t store potatoes in the fridge (cold storage raises their reducing-sugar content → more acrylamide when cooked).'))))
         );
       }
 
@@ -3030,10 +3031,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         var total = scores.reduce(function(a, b) { return a + (b || 0); }, 0);
         var maxPossible = 450;
         var pct = total / maxPossible;
-        var medal = pct >= 0.89 ? { icon: '🥇', label: 'Gold', color: '#fbbf24', subtitle: 'Master chef tier — extraordinary command of heat, timing, and constraint.' } :
-                    pct >= 0.71 ? { icon: '🥈', label: 'Silver', color: 'var(--allo-stem-text, #cbd5e1)', subtitle: 'Real cook. Confident across heat ranges + constraints.' } :
-                    pct >= 0.53 ? { icon: '🥉', label: 'Bronze', color: '#d97706', subtitle: 'Solid home cook. Some constraints still tripping you up.' } :
-                                  { icon: '🍳', label: 'Honorable Mention', color: 'var(--allo-stem-text-soft, #94a3b8)', subtitle: 'You made it through. Tournament punishes mistakes — that\'s the point.' };
+        var medal = pct >= 0.89 ? { icon: '🥇', label: __alloT('stem.kitchenlab.gold', 'Gold'), color: '#fbbf24', subtitle: __alloT('stem.kitchenlab.master_chef_tier_extraordinary_command', 'Master chef tier — extraordinary command of heat, timing, and constraint.') } :
+                    pct >= 0.71 ? { icon: '🥈', label: __alloT('stem.kitchenlab.silver', 'Silver'), color: 'var(--allo-stem-text, #cbd5e1)', subtitle: __alloT('stem.kitchenlab.real_cook_confident_across_heat_ranges', 'Real cook. Confident across heat ranges + constraints.') } :
+                    pct >= 0.53 ? { icon: '🥉', label: __alloT('stem.kitchenlab.bronze', 'Bronze'), color: '#d97706', subtitle: __alloT('stem.kitchenlab.solid_home_cook_some_constraints_still', 'Solid home cook. Some constraints still tripping you up.') } :
+                                  { icon: '🍳', label: __alloT('stem.kitchenlab.honorable_mention', 'Honorable Mention'), color: 'var(--allo-stem-text-soft, #94a3b8)', subtitle: __alloT('stem.kitchenlab.you_made_it_through_tournament_punishe', 'You made it through. Tournament punishes mistakes — that\'s the point.') };
         var isNewBest = total === (d.tournamentBestTotal || 0) && total > 0;
         return h('div', null,
           panelHeader('🏆 Tournament Complete',
@@ -3048,10 +3049,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             isNewBest ? h('div', { style: { marginTop: 16, padding: '10px 18px', background: 'rgba(251,191,36,0.18)',
                 border: '1px solid rgba(251,191,36,0.5)', borderRadius: 9999, display: 'inline-block',
                 fontSize: 13, fontWeight: 800, color: '#fbbf24' } },
-              '🌟 New personal best!') : null),
+              __alloT('stem.kitchenlab.new_personal_best', '🌟 New personal best!')) : null),
           // Per-round breakdown
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, '📋 Round-by-round'),
+            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.round_by_round', '📋 Round-by-round')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               scores.map(function(score, i) {
                 var rid = (d.tournamentRecipes || [])[i];
@@ -3079,11 +3080,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('button', { onClick: function() { startTournament(); awardXP(3); },
               style: { padding: '12px 26px', background: '#fbbf24', color: '#1c1410',
                 border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
-              '🏅 New tournament'),
+              __alloT('stem.kitchenlab.new_tournament', '🏅 New tournament')),
             h('button', { onClick: function() { exitTournament(); },
               style: { padding: '12px 24px', background: 'transparent', color: '#fde68a',
                 border: '1px solid rgba(251,146,60,0.4)', borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: 'pointer' } },
-              '🍽️ Back to recipe list'))
+              __alloT('stem.kitchenlab.back_to_recipe_list', '🍽️ Back to recipe list')))
         );
       }
 
@@ -3105,13 +3106,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 14, flexWrap: 'wrap' } },
               h('div', { 'aria-hidden': 'true', style: { fontSize: 38, lineHeight: 1, flexShrink: 0 } }, '🤔'),
               h('div', { style: { flex: 1, minWidth: 220 } },
-                h('div', { style: { fontSize: 16, fontWeight: 800, color: '#e9d5ff', letterSpacing: '-0.01em', marginBottom: 4 } }, 'What should I cook tonight?'),
+                h('div', { style: { fontSize: 16, fontWeight: 800, color: '#e9d5ff', letterSpacing: '-0.01em', marginBottom: 4 } }, __alloT('stem.kitchenlab.what_should_i_cook_tonight', 'What should I cook tonight?')),
                 h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 10 } },
-                  'Tell the AI what you have, how much time, or who you\'re feeding — it picks the right recipe from your unlocked list + explains why.'),
+                  __alloT('stem.kitchenlab.tell_the_ai_what_you_have_how_much_tim', 'Tell the AI what you have, how much time, or who you\'re feeding — it picks the right recipe from your unlocked list + explains why.')),
                 h('button', { onClick: function() { openSuggester(); awardXP(2); },
                   style: { padding: '10px 18px', background: '#a78bfa', color: '#1c1410',
                     border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
-                  '💡 Ask the AI chef')))) : null,
+                  __alloT('stem.kitchenlab.ask_the_ai_chef', '💡 Ask the AI chef'))))) : null,
           // ─── COMPETITION MODE CARD (above the tutorial recipes) ───
           h('div', { style: { background: 'linear-gradient(135deg, rgba(220,38,38,0.18), rgba(251,146,60,0.18))',
               border: '2px solid rgba(251,146,60,0.6)', borderRadius: 14, padding: '20px 22px', marginBottom: 16,
@@ -3119,30 +3120,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 14, flexWrap: 'wrap' } },
               h('div', { 'aria-hidden': 'true', style: { fontSize: 44, lineHeight: 1, flexShrink: 0 } }, '🏆'),
               h('div', { style: { flex: 1, minWidth: 220 } },
-                h('div', { style: { fontSize: 18, fontWeight: 900, color: '#fde68a', letterSpacing: '-0.01em', marginBottom: 4 } }, 'Competition Mode'),
+                h('div', { style: { fontSize: 18, fontWeight: 900, color: '#fde68a', letterSpacing: '-0.01em', marginBottom: 4 } }, __alloT('stem.kitchenlab.competition_mode', 'Competition Mode')),
                 h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 12 } },
-                  'Chopped-style challenge. Random recipe + 2 mystery constraints (time pressure, heat caps, ingredient discipline, restaurant-grade standard, and more). Combine recipe skill + constraint mastery for a score up to 150. Beat your personal best.'),
+                  __alloT('stem.kitchenlab.chopped_style_challenge_random_recipe_', 'Chopped-style challenge. Random recipe + 2 mystery constraints (time pressure, heat caps, ingredient discipline, restaurant-grade standard, and more). Combine recipe skill + constraint mastery for a score up to 150. Beat your personal best.')),
                 h('button', { onClick: function() { startCompetition(); awardXP(3); },
                   style: { padding: '12px 22px', background: '#fb923c', color: '#1c1410',
                     border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 800, cursor: 'pointer',
                     boxShadow: '0 2px 6px rgba(251,146,60,0.4)' } },
-                  '🎲 Start a random challenge'))),
+                  __alloT('stem.kitchenlab.start_a_random_challenge', '🎲 Start a random challenge')))),
             // Tournament mode entry inside same card
             h('div', { style: { marginTop: 14, paddingTop: 14, borderTop: '1px solid rgba(251,146,60,0.25)',
               display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' } },
               h('div', { 'aria-hidden': 'true', style: { fontSize: 32, lineHeight: 1, flexShrink: 0 } }, '🏅'),
               h('div', { style: { flex: 1, minWidth: 200 } },
-                h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fde68a', marginBottom: 2 } }, 'Tournament Mode (3 rounds)'),
+                h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fde68a', marginBottom: 2 } }, __alloT('stem.kitchenlab.tournament_mode_3_rounds', 'Tournament Mode (3 rounds)')),
                 h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
-                  'Round 1: 1 constraint, full time. Round 2: 2 constraints, 80% time. Round 3: 3 constraints (Restaurant Standard + Speed Demon forced), 60% time. Compete for cumulative score across 450 points.')),
+                  __alloT('stem.kitchenlab.round_1_1_constraint_full_time_round_2', 'Round 1: 1 constraint, full time. Round 2: 2 constraints, 80% time. Round 3: 3 constraints (Restaurant Standard + Speed Demon forced), 60% time. Compete for cumulative score across 450 points.'))),
               h('button', { onClick: function() { startTournament(); awardXP(3); },
                 style: { padding: '10px 18px', background: 'transparent', color: '#fde68a',
                   border: '2px solid rgba(251,146,60,0.6)', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer' } },
-                '🏅 Start tournament'),
+                __alloT('stem.kitchenlab.start_tournament', '🏅 Start tournament')),
               (d.tournamentBestTotal || 0) > 0 ? h('div', { style: { fontSize: 11, color: '#86efac', fontFamily: 'ui-monospace, Menlo, monospace' } },
                 'Best ever: ' + (d.tournamentBestTotal || 0) + ' / 450') : null),
             bestEntries.length > 0 ? h('div', { style: { marginTop: 14, paddingTop: 12, borderTop: '1px solid rgba(251,146,60,0.25)' } },
-              h('div', { style: { fontSize: 10, fontWeight: 700, color: '#fb923c', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } }, '🥇 Your personal bests'),
+              h('div', { style: { fontSize: 10, fontWeight: 700, color: '#fb923c', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } }, __alloT('stem.kitchenlab.your_personal_bests', '🥇 Your personal bests')),
               h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
                 bestEntries.map(function(e) {
                   var ridName = (RECIPE_CATALOG.find(function(x) { return x.id === e[0]; }) || {}).name || e[0];
@@ -3162,7 +3163,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             });
             return h('div', { style: cardStyle() },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 10, marginBottom: 12 } },
-                h('div', { style: subheaderStyle() }, '🏆 Achievements'),
+                h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.achievements', '🏆 Achievements')),
                 h('div', { style: { fontSize: 12, color: '#fbbf24', fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 700 } },
                   unlocked.length + ' / ' + ACHIEVEMENTS.length + ' unlocked')),
               ['gold', 'silver', 'bronze'].map(function(tier) {
@@ -3185,13 +3186,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // ─── Tutorial progress ───
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, '📖 Tutorial mode — recipes mastered'),
+            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.tutorial_mode_recipes_mastered', '📖 Tutorial mode — recipes mastered')),
             h('div', { style: { display: 'flex', gap: 20, flexWrap: 'wrap' } },
               h('div', null,
                 h('div', { style: { fontSize: 28, fontWeight: 900, color: '#fb923c', fontFamily: 'ui-monospace, Menlo, monospace' } }, completed.length + ' / ' + unlockedCount + ' unlocked'),
-                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'recipes mastered')),
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.kitchenlab.recipes_mastered', 'recipes mastered'))),
               h('div', { style: { flex: 1, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, minWidth: 240 } },
-                'Tutorial mode is the unhurried run — no time pressure, no constraints. Use it to learn each recipe before taking it into competition. v0.5 adds Competition Mode + personal bests. v0.6 will unlock multi-pot recipes (Pasta + Pan Sauce, Sheet-Pan, Roast Chicken).'))),
+                __alloT('stem.kitchenlab.tutorial_mode_is_the_unhurried_run_no_', 'Tutorial mode is the unhurried run — no time pressure, no constraints. Use it to learn each recipe before taking it into competition. v0.5 adds Competition Mode + personal bests. v0.6 will unlock multi-pot recipes (Pasta + Pan Sauce, Sheet-Pan, Roast Chicken).')))),
 
           // Recipe cards
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14 } },
@@ -3208,8 +3209,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                     h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fde68a', marginBottom: 2 } }, r.name),
                     h('div', { style: { display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' } },
                       h('span', { style: { fontSize: 9, fontWeight: 700, color: diffColor, background: diffColor + '20', padding: '2px 7px', borderRadius: 9999, textTransform: 'uppercase', letterSpacing: '0.05em' } }, r.difficulty),
-                      isCompleted ? h('span', { style: { fontSize: 9, fontWeight: 700, color: '#86efac', background: 'rgba(34,197,94,0.15)', padding: '2px 7px', borderRadius: 9999, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '✓ Mastered') : null,
-                      !isPlayable ? h('span', { style: { fontSize: 9, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', background: 'rgba(100,116,139,0.2)', padding: '2px 7px', borderRadius: 9999, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '🔒 Locked') : null))),
+                      isCompleted ? h('span', { style: { fontSize: 9, fontWeight: 700, color: '#86efac', background: 'rgba(34,197,94,0.15)', padding: '2px 7px', borderRadius: 9999, textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.kitchenlab.mastered', '✓ Mastered')) : null,
+                      !isPlayable ? h('span', { style: { fontSize: 9, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', background: 'rgba(100,116,139,0.2)', padding: '2px 7px', borderRadius: 9999, textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.kitchenlab.locked', '🔒 Locked')) : null))),
                 h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 12 } }, r.blurb),
                 isPlayable ? h('button', {
                   onClick: function() { startRecipe(r.id); },
@@ -3218,7 +3219,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                   isCompleted ? '🍳 Cook again' : '▶ Start cooking') :
                 h('div', { style: { padding: '10px 14px', background: 'rgba(100,116,139,0.15)', color: 'var(--allo-stem-text-soft, #94a3b8)',
                     border: '1px dashed rgba(100,116,139,0.3)', borderRadius: 8, fontSize: 12, textAlign: 'center', fontStyle: 'italic' } },
-                  'Unlocks in a future ship'));
+                  __alloT('stem.kitchenlab.unlocks_in_a_future_ship', 'Unlocks in a future ship')));
             }))
         );
       }
@@ -3275,11 +3276,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             borderLeft: '4px solid ' + (deadlineWarn ? '#dc2626' : '#fb923c')
           }) },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', marginBottom: 12 } },
-              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fb923c', textTransform: 'uppercase', letterSpacing: '0.08em' } }, '🏆 Competition'),
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fb923c', textTransform: 'uppercase', letterSpacing: '0.08em' } }, __alloT('stem.kitchenlab.competition', '🏆 Competition')),
               secLeft != null ? h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 6 } },
                 h('span', { style: { fontSize: 32, fontWeight: 900, color: deadlineWarn ? '#dc2626' : '#fde68a', fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1 } },
                   Math.floor(secLeft / 60) + ':' + String(secLeft % 60).padStart(2, '0')),
-                h('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'time left')
+                h('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em' } }, __alloT('stem.kitchenlab.time_left', 'time left'))
               ) : null),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 8 } },
               activeConstraints.map(function(c, i) {
@@ -3302,20 +3303,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               h('div', { style: { fontSize: 18, fontWeight: 800, color: '#fde68a', flex: 1, minWidth: 0 } }, step.title)),
             h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 12 } }, step.instruction),
             h('div', { style: { background: 'rgba(125,211,252,0.08)', borderLeft: '3px solid #7dd3fc', padding: '8px 12px', borderRadius: 6, fontSize: 11, color: '#bae6fd', lineHeight: 1.55 } },
-              h('b', null, '🧠 What\'s happening: '), step.teach)),
+              h('b', null, __alloT('stem.kitchenlab.what_s_happening', '🧠 What\'s happening: ')), step.teach)),
 
           // Pan + burner cockpit
           h('div', { style: cardStyle() },
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, marginBottom: 16 } },
               // Pan temp readout
               h('div', { style: { background: 'rgba(15,23,42,0.6)', border: '1px solid ' + tempColor + '55', borderRadius: 10, padding: '12px 14px' } },
-                h('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, 'Pan temperature'),
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, __alloT('stem.kitchenlab.pan_temperature', 'Pan temperature')),
                 h('div', { style: { fontSize: 28, fontWeight: 900, color: tempColor, fontFamily: 'ui-monospace, Menlo, monospace' } }, panTemp + '°F'),
                 h('div', { style: { fontSize: 11, color: tempColor, marginTop: 2 } }, tempLabel),
                 h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace' } }, 'peak this run: ' + maxTemp + '°F')),
               // Active cook time
               h('div', { style: { background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(100,116,139,0.3)', borderRadius: 10, padding: '12px 14px' } },
-                h('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, 'Food in pan'),
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, __alloT('stem.kitchenlab.food_in_pan', 'Food in pan')),
                 h('div', { style: { fontSize: 28, fontWeight: 900, color: '#fde68a', fontFamily: 'ui-monospace, Menlo, monospace' } }, activeTime + 's'),
                 h('div', { style: { fontSize: 11, color: (d.recipeItemsInPan || []).length > 0 ? '#86efac' : '#94a3b8', marginTop: 2 } }, (d.recipeItemsInPan || []).length > 0 ? '🟢 Cooking' : '— Empty pan'))),
 
@@ -3336,8 +3337,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                     h('span', { key: 'l1' }, 'OFF'), h('span', { key: 'l2' }, '175°'), h('span', { key: 'l3' }, '300°'),
                     h('span', { key: 'l4' }, '425°'), h('span', { key: 'l5' }, '525°')
                   ] : [
-                    h('span', { key: 'l1' }, '0 OFF'), h('span', { key: 'l2' }, 'low'), h('span', { key: 'l3' }, 'med'),
-                    h('span', { key: 'l4' }, 'high'), h('span', { key: 'l5' }, '10 MAX')
+                    h('span', { key: 'l1' }, __alloT('stem.kitchenlab.0_off', '0 OFF')), h('span', { key: 'l2' }, 'low'), h('span', { key: 'l3' }, 'med'),
+                    h('span', { key: 'l4' }, 'high'), h('span', { key: 'l5' }, __alloT('stem.kitchenlab.10_max', '10 MAX'))
                   ]));
             })(),
 
@@ -3346,9 +3347,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // Ingredient tray
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, '🧺 Ingredients tray'),
+            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.ingredients_tray', '🧺 Ingredients tray')),
             availableItems.length === 0 ?
-              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', textAlign: 'center', padding: 12 } }, 'All ingredients are in the pan.') :
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', textAlign: 'center', padding: 12 } }, __alloT('stem.kitchenlab.all_ingredients_are_in_the_pan', 'All ingredients are in the pan.')) :
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
                 availableItems.map(function(ing) {
                   return h('button', { key: ing.id,
@@ -3376,7 +3377,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 onClick: function() { nextStep(); klAnnounce('Step complete.'); },
                 style: { padding: '12px 24px', background: '#22c55e', color: '#052e16',
                   border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
-                '✓ Continue to next step') : h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', padding: '12px 16px', background: 'rgba(15,23,42,0.5)', borderRadius: 8, fontStyle: 'italic', flex: 1, minWidth: 200 } },
+                __alloT('stem.kitchenlab.continue_to_next_step', '✓ Continue to next step')) : h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', padding: '12px 16px', background: 'rgba(15,23,42,0.5)', borderRadius: 8, fontStyle: 'italic', flex: 1, minWidth: 200 } },
                 step.completeWhen === 'panInRange' ? '⏳ Auto-advances when pan reaches target temperature' :
                 step.completeWhen === 'itemAdded' ? '⏳ Auto-advances when ingredient is added' :
                 step.completeWhen === 'heatRemoved' ? '⏳ Auto-advances when burner reaches 0' :
@@ -3386,7 +3387,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 onClick: function() { if (confirm('Abandon this recipe?')) abortRecipe(); },
                 style: { padding: '12px 18px', background: 'transparent', color: '#fca5a5',
                   border: '1px solid rgba(220,38,38,0.4)', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' } },
-                '✕ Abandon')))
+                __alloT('stem.kitchenlab.abandon', '✕ Abandon'))))
         );
       }
 
@@ -3403,7 +3404,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         var recommendedRec = result ? RECIPES[result.recipeId] : null;
         var recommendedCat = result ? RECIPE_CATALOG.find(function(r) { return r.id === result.recipeId; }) : null;
         return h('div', {
-            role: 'dialog', 'aria-modal': 'true', 'aria-label': 'AI recipe suggester',
+            role: 'dialog', 'aria-modal': 'true', 'aria-label': __alloT('stem.kitchenlab.ai_recipe_suggester', 'AI recipe suggester'),
             onClick: function(e) { if (e.target === e.currentTarget) closeSuggester(); },
             style: {
               position: 'fixed', inset: 0, zIndex: 9999,
@@ -3422,16 +3423,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 } },
               h('div', { 'aria-hidden': 'true', style: { fontSize: 36, lineHeight: 1 } }, '🤔'),
               h('div', { style: { flex: 1 } },
-                h('div', { style: { fontSize: 18, fontWeight: 900, color: '#e9d5ff', letterSpacing: '-0.01em' } }, 'What should I cook?'),
-                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, 'Powered by AI · picks from your unlocked recipes')),
-              h('button', { onClick: closeSuggester, 'aria-label': 'Close suggester',
+                h('div', { style: { fontSize: 18, fontWeight: 900, color: '#e9d5ff', letterSpacing: '-0.01em' } }, __alloT('stem.kitchenlab.what_should_i_cook', 'What should I cook?')),
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, __alloT('stem.kitchenlab.powered_by_ai_picks_from_your_unlocked', 'Powered by AI · picks from your unlocked recipes'))),
+              h('button', { onClick: closeSuggester, 'aria-label': __alloT('stem.kitchenlab.close_suggester', 'Close suggester'),
                 style: { background: 'transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', border: 'none', fontSize: 22, fontWeight: 700, cursor: 'pointer', padding: 4 } },
                 '✕')),
             // Body — varies by state
             result && recommendedRec && recommendedCat ? h('div', null,
               // Result view
               h('div', { style: { fontSize: 11, fontWeight: 800, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 } },
-                '💡 Chef\'s pick'),
+                __alloT('stem.kitchenlab.chef_s_pick', '💡 Chef\'s pick')),
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 14, padding: 16,
                   background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(167,139,250,0.4)',
                   borderRadius: 12, marginBottom: 14 } },
@@ -3448,23 +3449,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 h('button', { onClick: function() { closeSuggester(); startRecipe(result.recipeId); },
                   style: { padding: '12px 22px', background: '#a78bfa', color: '#1c1410',
                     border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
-                  '🍳 Cook this'),
+                  __alloT('stem.kitchenlab.cook_this', '🍳 Cook this')),
                 h('button', { onClick: function() { setKL({ suggesterResult: null, suggesterInput: inputVal }); },
                   style: { padding: '12px 18px', background: 'transparent', color: 'var(--allo-stem-text, #cbd5e1)',
                     border: '1px solid rgba(100,116,139,0.5)', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' } },
-                  '🔄 Ask again'))
+                  __alloT('stem.kitchenlab.ask_again', '🔄 Ask again')))
             ) : loading ? h('div', { style: { textAlign: 'center', padding: '36px 16px' } },
               h('div', { style: { fontSize: 48, marginBottom: 16 } }, '🤔'),
               h('div', { style: { fontSize: 14, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' } },
-                'Chef is thinking about what suits your night...')
+                __alloT('stem.kitchenlab.chef_is_thinking_about_what_suits_your', 'Chef is thinking about what suits your night...'))
             ) : h('div', null,
               // Input view
               h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 12 } },
-                'Tell the chef about your situation — what you have in the kitchen, how much time, whether you\'re feeding kids, mood, etc. Or leave blank for a free pick.'),
+                __alloT('stem.kitchenlab.tell_the_chef_about_your_situation_wha', 'Tell the chef about your situation — what you have in the kitchen, how much time, whether you\'re feeding kids, mood, etc. Or leave blank for a free pick.')),
               h('textarea', {
                 value: inputVal,
                 onChange: function(e) { setKL({ suggesterInput: e.target.value, suggesterError: null }); },
-                placeholder: 'e.g., "I\'ve got eggs and butter, 10 minutes, kids are hungry"\nor\n"want something impressive for date night"\nor leave blank',
+                placeholder: __alloT('stem.kitchenlab.e_g_i_ve_got_eggs_and_butter_10_minute', 'e.g., "I\'ve got eggs and butter, 10 minutes, kids are hungry"\nor\n"want something impressive for date night"\nor leave blank'),
                 rows: 4,
                 style: { width: '100%', padding: '12px 14px', fontSize: 13, fontFamily: 'inherit',
                   background: 'rgba(15,23,42,0.7)', border: '1px solid rgba(100,116,139,0.5)',
@@ -3477,11 +3478,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 h('button', { onClick: function() { runSuggester(inputVal); },
                   style: { padding: '12px 22px', background: '#a78bfa', color: '#1c1410',
                     border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
-                  '🤔 Suggest a recipe'),
+                  __alloT('stem.kitchenlab.suggest_a_recipe', '🤔 Suggest a recipe')),
                 h('button', { onClick: closeSuggester,
                   style: { padding: '12px 18px', background: 'transparent', color: 'var(--allo-stem-text, #cbd5e1)',
                     border: '1px solid rgba(100,116,139,0.5)', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' } },
-                  'Cancel')))
+                  __alloT('stem.kitchenlab.cancel', 'Cancel'))))
           )
         );
       }
@@ -3575,12 +3576,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                   onClick: function() { startPot(); awardXP(1); },
                   style: { padding: '8px 14px', background: '#fb923c', color: '#1c1410',
                     border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
-                  '🔥 Start pasta water') : null,
+                  __alloT('stem.kitchenlab.start_pasta_water', '🔥 Start pasta water')) : null,
                 phase === 'boiling' ? h('button', {
                   onClick: function() { dropPasta(); awardXP(2); },
                   style: { padding: '8px 14px', background: '#22c55e', color: '#052e16',
                     border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
-                  '🍝 Drop pasta') : null,
+                  __alloT('stem.kitchenlab.drop_pasta', '🍝 Drop pasta')) : null,
                 (phase === 'pasta-in' || phase === 'pasta-done') ? h('button', {
                   onClick: function() { drainPasta(true); awardXP(2); },
                   disabled: phase !== 'pasta-done',
@@ -3589,7 +3590,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                     color: phase === 'pasta-done' ? '#052e16' : '#94a3b8',
                     border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 700,
                     cursor: phase === 'pasta-done' ? 'pointer' : 'not-allowed' } },
-                  '✓ Drain (save water)') : null,
+                  __alloT('stem.kitchenlab.drain_save_water', '✓ Drain (save water)')) : null,
                 (phase === 'pasta-in' || phase === 'pasta-done') ? h('button', {
                   onClick: function() { drainPasta(false); },
                   disabled: phase !== 'pasta-done',
@@ -3597,7 +3598,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                     background: 'transparent', color: '#fca5a5',
                     border: '1px solid rgba(220,38,38,0.4)', borderRadius: 6, fontSize: 11, fontWeight: 600,
                     cursor: phase === 'pasta-done' ? 'pointer' : 'not-allowed', opacity: phase === 'pasta-done' ? 1 : 0.5 } },
-                  'Drain (waste water)') : null))));
+                  __alloT('stem.kitchenlab.drain_waste_water', 'Drain (waste water)')) : null))));
       }
 
       // ─── Visual pan rendering ───
@@ -3626,7 +3627,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         else if (hasEggs && panTemp > 320 && activeTime > 60) eggsColor = '#fbbf24'; // golden
         else if (hasEggs && activeTime > 45) eggsColor = '#fef9c3'; // set
         return h('div', { style: { display: 'flex', justifyContent: 'center', padding: '8px 0' } },
-          h('svg', { width: 280, height: 180, viewBox: '0 0 280 180', 'aria-label': 'Visual pan', 'aria-hidden': 'true' },
+          h('svg', { width: 280, height: 180, viewBox: '0 0 280 180', 'aria-label': __alloT('stem.kitchenlab.visual_pan', 'Visual pan'), 'aria-hidden': 'true' },
             // Glow / heat shimmer
             panTemp >= 300 ? h('ellipse', { cx: 140, cy: 95, rx: 110, ry: 55, fill: glow, opacity: 0.6 }) : null,
             // Pan rim
@@ -3657,7 +3658,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               panTemp > 400 && activeTime > 20 ? h('g', null,
                 h('path', { d: 'M 130 70 Q 135 50 125 35 Q 115 25 120 10', stroke: 'rgba(60,60,60,0.6)', strokeWidth: 3, fill: 'none' }),
                 h('path', { d: 'M 160 72 Q 155 55 165 40 Q 175 28 168 12', stroke: 'rgba(60,60,60,0.6)', strokeWidth: 3, fill: 'none' }),
-                h('text', { x: 140, y: 25, textAnchor: 'middle', fontSize: 11, fontWeight: 800, fill: '#dc2626' }, '⚠️ BURNING')
+                h('text', { x: 140, y: 25, textAnchor: 'middle', fontSize: 11, fontWeight: 800, fill: '#dc2626' }, __alloT('stem.kitchenlab.burning', '⚠️ BURNING'))
               ) : null
             ) : null,
             // Pan handle
@@ -3671,7 +3672,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       function renderRecipeResults() {
         var rec = RECIPES[d.recipeActiveId];
         var j = d.recipeJudgement;
-        if (!rec || !j) return h('div', null, h('button', { onClick: abortRecipe }, 'Back'));
+        if (!rec || !j) return h('div', null, h('button', { onClick: abortRecipe }, __alloT('stem.kitchenlab.back', 'Back')));
         var compResult = j.compResult;
         var displayScore = compResult ? compResult.finalScore : j.score;
         var gradeColor = displayScore >= 90 ? '#86efac' : displayScore >= 80 ? '#fbbf24' : displayScore >= 70 ? '#fb923c' : '#fca5a5';
@@ -3690,7 +3691,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             background: 'linear-gradient(135deg, #fde68a, #fb923c)', color: '#1c1410',
             padding: '14px 20px', borderRadius: 12, marginBottom: 16, textAlign: 'center',
             fontWeight: 900, fontSize: 16, boxShadow: '0 4px 12px rgba(251,146,60,0.3)' } },
-            '🥇 NEW PERSONAL BEST!  ',
+            __alloT('stem.kitchenlab.new_personal_best_2', '🥇 NEW PERSONAL BEST!  '),
             h('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace' } }, compResult.finalScore),
             compResult.previousBest > 0 ? h('span', { style: { fontWeight: 600, fontSize: 13, opacity: 0.85, marginLeft: 8 } },
               '(previous: ' + compResult.previousBest + ')') : null) : null,
@@ -3716,9 +3717,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             var sy = function(t) { return pt + (1 - (t - minT) / (maxT - minT)) * (H - pt - pb); };
             var line = function(key) { return hist.map(function(p, i) { return sx(i).toFixed(1) + ',' + sy(p[key]).toFixed(1); }).join(' '); };
             var panPeak = Math.round(Math.max.apply(null, hist.map(function(p) { return p.pan; })));
-            var refs = [{ t: 212, label: 'Boil', c: '#38bdf8' }, { t: 310, label: 'Maillard', c: '#f97316' }];
+            var refs = [{ t: 212, label: __alloT('stem.kitchenlab.boil', 'Boil'), c: '#38bdf8' }, { t: 310, label: __alloT('stem.kitchenlab.maillard_4', 'Maillard'), c: '#f97316' }];
             return h('div', { style: cardStyle() },
-              h('div', { style: subheaderStyle() }, '🌡️ Temperature trace'),
+              h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.temperature_trace', '🌡️ Temperature trace')),
               h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-label': 'Pan and food internal temperature over the cook; pan peaked at ' + panPeak + ' degrees Fahrenheit.' },
                 refs.filter(function(r) { return r.t < maxT; }).map(function(r) {
                   return h('g', { key: r.t },
@@ -3727,19 +3728,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 }),
                 h('polyline', { points: line('pan'), fill: 'none', stroke: '#fb923c', strokeWidth: 2 }),
                 h('polyline', { points: line('food'), fill: 'none', stroke: '#ef4444', strokeWidth: 2 }),
-                h('text', { x: pl, y: 12, fontSize: 9, fill: '#fb923c', fontWeight: 700 }, '— Pan'),
-                h('text', { x: pl + 42, y: 12, fontSize: 9, fill: '#ef4444', fontWeight: 700 }, '— Food internal'),
-                h('text', { x: (pl + W - pr) / 2, y: H - 4, textAnchor: 'middle', fontSize: 8, fill: 'var(--allo-stem-text-soft, #94a3b8)' }, 'Cook time →'),
+                h('text', { x: pl, y: 12, fontSize: 9, fill: '#fb923c', fontWeight: 700 }, __alloT('stem.kitchenlab.pan', '— Pan')),
+                h('text', { x: pl + 42, y: 12, fontSize: 9, fill: '#ef4444', fontWeight: 700 }, __alloT('stem.kitchenlab.food_internal', '— Food internal')),
+                h('text', { x: (pl + W - pr) / 2, y: H - 4, textAnchor: 'middle', fontSize: 8, fill: 'var(--allo-stem-text-soft, #94a3b8)' }, __alloT('stem.kitchenlab.cook_time', 'Cook time →')),
                 h('text', { x: pl - 3, y: sy(maxT) + 6, textAnchor: 'end', fontSize: 7, fill: '#64748b' }, Math.round(maxT) + '°'),
                 h('text', { x: pl - 3, y: sy(minT), textAnchor: 'end', fontSize: 7, fill: '#64748b' }, minT + '°')
               ),
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 6, lineHeight: 1.5 } }, 'See where the pan crossed key thresholds — and how the food\'s internal temp lagged behind the pan.')
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 6, lineHeight: 1.5 } }, __alloT('stem.kitchenlab.see_where_the_pan_crossed_key_threshol', 'See where the pan crossed key thresholds — and how the food\'s internal temp lagged behind the pan.'))
             );
           })(),
 
           // ─── Competition constraint results ───
           compResult ? h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, '🏆 Competition constraints'),
+            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.competition_constraints', '🏆 Competition constraints')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               compResult.constraints.map(function(c, i) {
                 return h('div', { key: i,
@@ -3758,7 +3759,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // Detailed notes
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, '📋 Judge\'s notes'),
+            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.judge_s_notes', '📋 Judge\'s notes')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               j.notes.map(function(n, i) {
                 return h('div', { key: i,
@@ -3772,7 +3773,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // Lessons recap
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, '📖 What this recipe teaches'),
+            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.what_this_recipe_teaches', '📖 What this recipe teaches')),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
               rec.teaches.map(function(t, i) {
                 return h('div', { key: i, style: { padding: '8px 12px', background: 'rgba(251,146,60,0.12)',
@@ -3806,13 +3807,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             borderLeft: '4px solid #a78bfa',
             background: 'linear-gradient(135deg, rgba(167,139,250,0.08), rgba(15,23,42,0.6))'
           }) },
-            h('div', { style: subheaderStyle() }, '👨‍🍳 Chef\'s Notes (AI-generated critique)'),
+            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.chef_s_notes_ai_generated_critique', '👨‍🍳 Chef\'s Notes (AI-generated critique)')),
             d.aiCritique ? h('div', { style: { fontSize: 13, color: '#e9d5ff', lineHeight: 1.7, fontStyle: 'italic' } },
               '"', d.aiCritique, '"') :
             d.aiCritiqueLoading ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', padding: '8px 0' } },
-              '🤔 Chef is reviewing your work...') :
+              __alloT('stem.kitchenlab.chef_is_reviewing_your_work', '🤔 Chef is reviewing your work...')) :
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } },
-              'Critique will appear here.')) : null,
+              __alloT('stem.kitchenlab.critique_will_appear_here', 'Critique will appear here.'))) : null,
 
           // ─── Tournament standing (if in tournament) ───
           inTournament ? h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #fbbf24' }) },
@@ -3837,7 +3838,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                     roundScore) : null);
               })),
             h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', textAlign: 'center' } },
-              'Running total: ', h('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800, color: '#fbbf24', fontSize: 14 } },
+              __alloT('stem.kitchenlab.running_total', 'Running total: '), h('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800, color: '#fbbf24', fontSize: 14 } },
                 (d.tournamentScores || []).reduce(function(a, b) { return a + (b || 0); }, 0) + ' / ' + ((tRound + 1) * 150)))) : null,
 
           // Action buttons
@@ -3849,24 +3850,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             inTournament && tRound === 2 ? h('button', { onClick: function() { advanceTournament(); },
               style: { padding: '12px 28px', background: '#22c55e', color: '#052e16',
                 border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
-              '🏆 See final standings') :
+              __alloT('stem.kitchenlab.see_final_standings', '🏆 See final standings')) :
             compResult ? h('button', { onClick: function() { startCompetition(); awardXP(2); },
               style: { padding: '12px 24px', background: '#fb923c', color: '#1c1410',
                 border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
-              '🎲 Next challenge') :
+              __alloT('stem.kitchenlab.next_challenge', '🎲 Next challenge')) :
               h('button', { onClick: function() { startRecipe(rec.id); awardXP(2); },
                 style: { padding: '12px 24px', background: '#fb923c', color: '#1c1410',
                   border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
-                '🔁 Cook again'),
+                __alloT('stem.kitchenlab.cook_again', '🔁 Cook again')),
             !inTournament ? h('button', { onClick: function() { setKL({ recipePhase: 'idle', recipeActiveId: null,
                 competitionActive: false, competitionConstraints: [], competitionDeadline: null }); },
               style: { padding: '12px 24px', background: 'transparent', color: '#fde68a',
                 border: '1px solid rgba(251,146,60,0.4)', borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: 'pointer' } },
-              '🍽️ Back to recipe list') :
+              __alloT('stem.kitchenlab.back_to_recipe_list_2', '🍽️ Back to recipe list')) :
               h('button', { onClick: function() { if (confirm('Abandon tournament?')) exitTournament(); },
                 style: { padding: '12px 24px', background: 'transparent', color: '#fca5a5',
                   border: '1px solid rgba(220,38,38,0.4)', borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: 'pointer' } },
-                '✕ Abandon tournament'))
+                __alloT('stem.kitchenlab.abandon_tournament', '✕ Abandon tournament')))
         );
       }
 
@@ -3874,19 +3875,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         var sub = d.resourcesSub || 'glossary';
         var filter = (d.glossaryFilter || '').toLowerCase().trim();
         var SUBS = [
-          { id: 'glossary', label: 'Glossary', icon: '📖', count: GLOSSARY.length },
-          { id: 'smoke', label: 'Smoke Points', icon: '🛢️', count: SMOKE_POINTS.length },
-          { id: 'conversions', label: 'Conversions', icon: '📏', count: CONVERSIONS.length },
-          { id: 'subs', label: 'Substitutions', icon: '🔄', count: SUBSTITUTIONS.length },
-          { id: 'troubleshoot', label: 'Troubleshooter', icon: '🩺', count: TROUBLESHOOTING.length },
-          { id: 'sources', label: 'Sources', icon: '📜' }
+          { id: 'glossary', label: __alloT('stem.kitchenlab.glossary', 'Glossary'), icon: '📖', count: GLOSSARY.length },
+          { id: 'smoke', label: __alloT('stem.kitchenlab.smoke_points', 'Smoke Points'), icon: '🛢️', count: SMOKE_POINTS.length },
+          { id: 'conversions', label: __alloT('stem.kitchenlab.conversions', 'Conversions'), icon: '📏', count: CONVERSIONS.length },
+          { id: 'subs', label: __alloT('stem.kitchenlab.substitutions', 'Substitutions'), icon: '🔄', count: SUBSTITUTIONS.length },
+          { id: 'troubleshoot', label: __alloT('stem.kitchenlab.troubleshooter', 'Troubleshooter'), icon: '🩺', count: TROUBLESHOOTING.length },
+          { id: 'sources', label: __alloT('stem.kitchenlab.sources', 'Sources'), icon: '📜' }
         ];
         return h('div', null,
           panelHeader('📚 Resources & Glossary',
             'Reference material — terms, conversions, smoke points, substitutions, troubleshooting. The "lookup" half of Kitchen Lab. Bookmark this section.'),
 
           // Sub-tab strip
-          h('div', { role: 'tablist', 'aria-label': 'Resources sub-sections',
+          h('div', { role: 'tablist', 'aria-label': __alloT('stem.kitchenlab.resources_sub_sections', 'Resources sub-sections'),
             style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 } },
             SUBS.map(function(s) {
               var active = sub === s.id;
@@ -3906,12 +3907,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           // ─── GLOSSARY ───
           sub === 'glossary' ? h('div', null,
             h('div', { style: cardStyle() },
-              h('div', { style: subheaderStyle() }, '📖 Culinary Glossary'),
+              h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.culinary_glossary', '📖 Culinary Glossary')),
               h('div', { style: { marginBottom: 14 } },
                 h('input', { type: 'search', value: d.glossaryFilter || '',
                   onChange: function(e) { setKL({ glossaryFilter: e.target.value }); },
-                  placeholder: 'Search terms... (e.g., "deglaze", "emulsify", "brine")',
-                  'aria-label': 'Filter glossary terms',
+                  placeholder: __alloT('stem.kitchenlab.search_terms_e_g_deglaze_emulsify_brin', 'Search terms... (e.g., "deglaze", "emulsify", "brine")'),
+                  'aria-label': __alloT('stem.kitchenlab.filter_glossary_terms', 'Filter glossary terms'),
                   style: { width: '100%', padding: '10px 14px',
                     background: 'rgba(15,23,42,0.7)', border: '1px solid rgba(100,116,139,0.4)',
                     borderRadius: 8, color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 13, fontFamily: 'inherit' } })),
@@ -3942,9 +3943,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           // ─── SMOKE POINTS ───
           sub === 'smoke' ? h('div', null,
             h('div', { style: cardStyle() },
-              h('div', { style: subheaderStyle() }, '🛢️ Cooking Oil Smoke Points'),
+              h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.cooking_oil_smoke_points', '🛢️ Cooking Oil Smoke Points')),
               h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
-                'The smoke point is the temp at which an oil starts breaking down into acrolein (bitter, irritating) and free fatty acids. Cooking above smoke point = bitter taste + unhealthful compounds + real fire risk. Ranked highest to lowest.'),
+                __alloT('stem.kitchenlab.the_smoke_point_is_the_temp_at_which_a', 'The smoke point is the temp at which an oil starts breaking down into acrolein (bitter, irritating) and free fatty acids. Cooking above smoke point = bitter taste + unhealthful compounds + real fire risk. Ranked highest to lowest.')),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                 SMOKE_POINTS.map(function(o, i) {
                   // Color-code: green high, amber medium, red low
@@ -3968,11 +3969,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           // ─── CONVERSIONS ───
           sub === 'conversions' ? h('div', null,
             h('div', { style: cardStyle() },
-              h('div', { style: subheaderStyle() }, '📏 Kitchen Conversions'),
+              h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.kitchen_conversions', '📏 Kitchen Conversions')),
               h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
-                'The most useful kitchen conversions, plus the notes that prevent the common "why didn\'t this work" moments. Pro tip for baking: ',
-                h('b', { style: { color: '#fde68a' } }, 'measure by weight when possible'),
-                ' — volume varies up to 20% depending on how you scoop.'),
+                __alloT('stem.kitchenlab.the_most_useful_kitchen_conversions_pl', 'The most useful kitchen conversions, plus the notes that prevent the common "why didn\'t this work" moments. Pro tip for baking: '),
+                h('b', { style: { color: '#fde68a' } }, __alloT('stem.kitchenlab.measure_by_weight_when_possible', 'measure by weight when possible')),
+                __alloT('stem.kitchenlab.volume_varies_up_to_20_depending_on_ho', ' — volume varies up to 20% depending on how you scoop.')),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                 CONVERSIONS.map(function(c, i) {
                   return h('div', { key: i,
@@ -3987,11 +3988,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           // ─── SUBSTITUTIONS ───
           sub === 'subs' ? h('div', null,
             h('div', { style: cardStyle() },
-              h('div', { style: subheaderStyle() }, '🔄 Emergency Substitutions'),
+              h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.emergency_substitutions', '🔄 Emergency Substitutions')),
               h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
-                'When you start cooking + realize you don\'t have an ingredient, these are the swaps that actually work. Each entry includes ',
+                __alloT('stem.kitchenlab.when_you_start_cooking_realize_you_don', 'When you start cooking + realize you don\'t have an ingredient, these are the swaps that actually work. Each entry includes '),
                 h('b', { style: { color: '#fde68a' } }, 'why'),
-                ' the swap works so you can adapt to similar situations.'),
+                __alloT('stem.kitchenlab.the_swap_works_so_you_can_adapt_to_sim', ' the swap works so you can adapt to similar situations.')),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
                 SUBSTITUTIONS.map(function(s, i) {
                   return h('div', { key: i,
@@ -4008,9 +4009,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           // ─── TROUBLESHOOTER ───
           sub === 'troubleshoot' ? h('div', null,
             h('div', { style: cardStyle() },
-              h('div', { style: subheaderStyle() }, '🩺 "Why did my X fail?" Troubleshooter'),
+              h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.why_did_my_x_fail_troubleshooter', '🩺 "Why did my X fail?" Troubleshooter')),
               h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
-                'The most common cooking failures + their likely causes. Most cooking problems are some combination of these — work through the list, fix the ones that apply, try again.'),
+                __alloT('stem.kitchenlab.the_most_common_cooking_failures_their', 'The most common cooking failures + their likely causes. Most cooking problems are some combination of these — work through the list, fix the ones that apply, try again.')),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
                 TROUBLESHOOTING.map(function(t, i) {
                   return h('details', { key: i,
@@ -4027,21 +4028,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           // ─── SOURCES ───
           sub === 'sources' ? h('div', null,
             h('div', { style: cardStyle() },
-              h('div', { style: subheaderStyle() }, '📜 Sources + Further Reading'),
+              h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.sources_further_reading', '📜 Sources + Further Reading')),
               h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.7 } },
                 h('p', { style: { margin: '0 0 12px 0' } },
-                  'Kitchen Lab content is anchored in publicly available food-safety guidance + culinary science references. Where temperatures or rules appear, the cited source is the authoritative one for the US:'),
+                  __alloT('stem.kitchenlab.kitchen_lab_content_is_anchored_in_pub', 'Kitchen Lab content is anchored in publicly available food-safety guidance + culinary science references. Where temperatures or rules appear, the cited source is the authoritative one for the US:')),
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10 } },
                   [
-                    { name: 'USDA FSIS', topic: 'Safe cooking temps, meat handling, recall data', url: 'fsis.usda.gov' },
-                    { name: 'FDA Food Code 2022', topic: 'Bacteria danger zone, cross-contamination, allergens-9 (FASTER Act 2023 added sesame)', url: 'fda.gov/food/retail-food-protection/fda-food-code' },
-                    { name: 'CDC Foodsafety.gov', topic: 'Foodborne illness, handwashing protocols, kitchen hygiene', url: 'foodsafety.gov' },
-                    { name: 'WHO 12-step handwash', topic: 'The technical sequence used in healthcare + commercial kitchens worldwide', url: 'who.int' },
-                    { name: 'Harold McGee, "On Food and Cooking" (2nd ed.)', topic: 'The science reference for culinary curiosity — Maillard chemistry, emulsions, heat transfer', url: 'book' },
-                    { name: 'Modernist Cuisine (Myhrvold)', topic: 'Deep technical reference; Maillard temp data + heat transfer models', url: 'book' },
-                    { name: 'Kenji López-Alt, "The Food Lab"', topic: 'Practical kitchen science, accessible; technique + science integration', url: 'book' },
-                    { name: 'ServSafe instructor guide', topic: 'Industry-standard food safety certification training', url: 'servsafe.com' },
-                    { name: 'IARC monographs', topic: 'Acrylamide classification (Group 2A, probable human carcinogen)', url: 'monographs.iarc.who.int' }
+                    { name: __alloT('stem.kitchenlab.usda_fsis', 'USDA FSIS'), topic: 'Safe cooking temps, meat handling, recall data', url: 'fsis.usda.gov' },
+                    { name: __alloT('stem.kitchenlab.fda_food_code_2022', 'FDA Food Code 2022'), topic: 'Bacteria danger zone, cross-contamination, allergens-9 (FASTER Act 2023 added sesame)', url: 'fda.gov/food/retail-food-protection/fda-food-code' },
+                    { name: __alloT('stem.kitchenlab.cdc_foodsafety_gov', 'CDC Foodsafety.gov'), topic: 'Foodborne illness, handwashing protocols, kitchen hygiene', url: 'foodsafety.gov' },
+                    { name: __alloT('stem.kitchenlab.who_12_step_handwash', 'WHO 12-step handwash'), topic: 'The technical sequence used in healthcare + commercial kitchens worldwide', url: 'who.int' },
+                    { name: __alloT('stem.kitchenlab.harold_mcgee_on_food_and_cooking_2nd_e', 'Harold McGee, "On Food and Cooking" (2nd ed.)'), topic: 'The science reference for culinary curiosity — Maillard chemistry, emulsions, heat transfer', url: 'book' },
+                    { name: __alloT('stem.kitchenlab.modernist_cuisine_myhrvold', 'Modernist Cuisine (Myhrvold)'), topic: 'Deep technical reference; Maillard temp data + heat transfer models', url: 'book' },
+                    { name: __alloT('stem.kitchenlab.kenji_l_pez_alt_the_food_lab', 'Kenji López-Alt, "The Food Lab"'), topic: 'Practical kitchen science, accessible; technique + science integration', url: 'book' },
+                    { name: __alloT('stem.kitchenlab.servsafe_instructor_guide', 'ServSafe instructor guide'), topic: 'Industry-standard food safety certification training', url: 'servsafe.com' },
+                    { name: __alloT('stem.kitchenlab.iarc_monographs', 'IARC monographs'), topic: 'Acrylamide classification (Group 2A, probable human carcinogen)', url: 'monographs.iarc.who.int' }
                   ].map(function(s, i) {
                     return h('div', { key: i,
                       style: { background: 'rgba(15,23,42,0.5)', borderTop: '1px solid rgba(100,116,139,0.3)', borderRight: '1px solid rgba(100,116,139,0.3)', borderBottom: '1px solid rgba(100,116,139,0.3)', borderLeft: '3px solid #fb923c', padding: '10px 12px', borderRadius: 8 } },
@@ -4084,15 +4085,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         else if (reactivity < 0.9) state = 'deep';
         else state = 'burnt';
         var sm = {
-          noReact:   { label: '⚪ No reaction', color: '#475569', bg: '#f1f5f9', border: '#cbd5e1', desc: 'Below threshold — no Maillard activity.' },
-          beginning: { label: '🟡 Browning begins', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Light tan color, mild aroma.' },
-          active:    { label: '🟠 Active Maillard', color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: 'Golden-brown, rich aroma compounds forming.' },
-          deep:      { label: '🟤 Deep brown', color: '#92400e', bg: '#fef3c7', border: '#fbbf24', desc: 'Strong flavors. Approaching upper limit.' },
-          burnt:     { label: '⚫ Burnt / acrylamide risk', color: '#1e293b', bg: '#fef2f2', border: '#fca5a5', desc: 'Pyrolysis. Bitter, potential acrylamide formation.' }
+          noReact:   { label: __alloT('stem.kitchenlab.no_reaction', '⚪ No reaction'), color: '#475569', bg: '#f1f5f9', border: '#cbd5e1', desc: __alloT('stem.kitchenlab.below_threshold_no_maillard_activity', 'Below threshold — no Maillard activity.') },
+          beginning: { label: __alloT('stem.kitchenlab.browning_begins', '🟡 Browning begins'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.kitchenlab.light_tan_color_mild_aroma', 'Light tan color, mild aroma.') },
+          active:    { label: __alloT('stem.kitchenlab.active_maillard', '🟠 Active Maillard'), color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: __alloT('stem.kitchenlab.golden_brown_rich_aroma_compounds_form', 'Golden-brown, rich aroma compounds forming.') },
+          deep:      { label: __alloT('stem.kitchenlab.deep_brown', '🟤 Deep brown'), color: '#92400e', bg: '#fef3c7', border: '#fbbf24', desc: __alloT('stem.kitchenlab.strong_flavors_approaching_upper_limit', 'Strong flavors. Approaching upper limit.') },
+          burnt:     { label: __alloT('stem.kitchenlab.burnt_acrylamide_risk', '⚫ Burnt / acrylamide risk'), color: '#1e293b', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.kitchenlab.pyrolysis_bitter_potential_acrylamide_', 'Pyrolysis. Bitter, potential acrylamide formation.') }
         }[state];
         return h('div', { className: 'p-4 rounded-xl bg-white border border-orange-300 space-y-3' },
-          h('h3', { className: 'text-sm font-black text-orange-700' }, '🔬 Maillard browning discovery'),
-          h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, 'Sliders for surface temp, amino-acid %, sugar %. Discrete 5-state browning stage. No score, no reveal.'),
+          h('h3', { className: 'text-sm font-black text-orange-700' }, __alloT('stem.kitchenlab.maillard_browning_discovery', '🔬 Maillard browning discovery')),
+          h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, __alloT('stem.kitchenlab.sliders_for_surface_temp_amino_acid_su', 'Sliders for surface temp, amino-acid %, sugar %. Discrete 5-state browning stage. No score, no reveal.')),
           h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
             h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
             h('div', { className: 'text-[11px] text-slate-700 mt-1' }, sm.desc)
@@ -4109,27 +4110,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             })
           ),
           h('div', { className: 'flex gap-2 items-center flex-wrap' },
-            h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.tempF, a: iq.aminoPct, s: iq.sugarPct, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
-            h('button', { onClick: function() { setIQ({ tempF: 350, aminoPct: 50, sugarPct: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+            h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.tempF, a: iq.aminoPct, s: iq.sugarPct, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.kitchenlab.log', '📋 Log')),
+            h('button', { onClick: function() { setIQ({ tempF: 350, aminoPct: 50, sugarPct: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.kitchenlab.reset', '↺ Reset'))
           ),
-          h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: Both amino + sugar needed? Or one is enough?',
+          h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.kitchenlab.hypothesis_both_amino_sugar_needed_or_', 'Hypothesis: Both amino + sugar needed? Or one is enough?'),
             className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
-          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.kitchenlab.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
           iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
             h('ul', { className: 'list-disc pl-5 space-y-1' },
-              h('li', null, 'What happens at 100% amino but 0% sugar?'),
-              h('li', null, 'Why does crust form on bread above 320°F?'))),
+              h('li', null, __alloT('stem.kitchenlab.what_happens_at_100_amino_but_0_sugar', 'What happens at 100% amino but 0% sugar?')),
+              h('li', null, __alloT('stem.kitchenlab.why_does_crust_form_on_bread_above_320', 'Why does crust form on bread above 320°F?')))),
           h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
             h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
-            'I understand — explain in own words'),
-          iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain the chemistry of Maillard browning.',
+            __alloT('stem.kitchenlab.i_understand_explain_in_own_words', 'I understand — explain in own words')),
+          iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.kitchenlab.explain_the_chemistry_of_maillard_brow', 'Explain the chemistry of Maillard browning.'),
             className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
-          h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 5-state browning marker; no flavor score; no reveal — by design.')
+          h('div', { className: 'text-[10px] italic text-slate-500' }, __alloT('stem.kitchenlab.design_note_discrete_5_state_browning_', 'Design note: discrete 5-state browning marker; no flavor score; no reveal — by design.'))
         );
       })();
       else content = renderSafety();
 
-      return h('div', { style: rootStyle, role: 'region', 'aria-label': 'Kitchen Lab' },
+      return h('div', { style: rootStyle, role: 'region', 'aria-label': __alloT('stem.kitchenlab.kitchen_lab_2', 'Kitchen Lab') },
         renderHeader(),
         renderTabs(),
         h('div', { style: { padding: 20 } }, content)

@@ -97,14 +97,18 @@ if (renderStart < 0 && renderRefName) {
   });
 }
 if (renderStart < 0) { console.error('No render function found.'); process.exit(2); }
+// Prefer the collision-free `var __alloT = ctx.t` alias; fall back to a tool's
+// own `var t = ctx.t`. Wrap calls with whichever name is declared.
+let aliasName = null;
 traverse(ast, {
   VariableDeclarator(p) {
-    if (p.node.id && p.node.id.name === 't' && isCtxT(p.node.init) && p.node.start > renderStart && p.node.end < renderEnd) {
-      if (tDeclEnd === -1) tDeclEnd = p.node.end;
-    }
+    if (!(p.node.start > renderStart && p.node.end < renderEnd) || !isCtxT(p.node.init)) return;
+    const nm = p.node.id && p.node.id.name;
+    if (nm === '__alloT') { if (aliasName !== '__alloT') { aliasName = '__alloT'; tDeclEnd = p.node.end; } }
+    else if (nm === 't' && aliasName == null) { aliasName = 't'; tDeclEnd = p.node.end; }
   }
 });
-if (tDeclEnd < 0) { console.error('No `var t = ctx.t` found inside render — add it manually first.'); process.exit(2); }
+if (tDeclEnd < 0 || !aliasName) { console.error('No `var __alloT = ctx.t` (or `var t = ctx.t`) found inside render — run stem_add_tdecl.cjs first.'); process.exit(2); }
 
 // Collect candidate strings.
 const inRender = [], skippedStatic = [];
@@ -114,7 +118,7 @@ traverse(ast, {
   StringLiteral(p) {
     const node = p.node, value = node.value, par = p.parent;
     if (par && par.type === 'CallExpression' && par.arguments[0] === node) {
-      const cn = calleeName(par.callee); if (cn === 't' || cn === 'ts') return; // already localized
+      const cn = calleeName(par.callee); if (cn === 't' || cn === 'ts' || cn === '__alloT') return; // already localized
     }
     if (AI_CONTENT.test(value)) return;
     let isUF = false, bucket = null;
@@ -151,7 +155,7 @@ let out = code;
 const byEnd = inRender.slice().sort((a, b) => b.start - a.start);
 for (const r of byEnd) {
   const orig = code.slice(r.start, r.end); // original literal incl. quotes/escapes
-  const repl = "t('stem." + tool + "." + r.key + "', " + orig + ")";
+  const repl = aliasName + "('stem." + tool + "." + r.key + "', " + orig + ")";
   out = out.slice(0, r.start) + repl + out.slice(r.end);
 }
 
