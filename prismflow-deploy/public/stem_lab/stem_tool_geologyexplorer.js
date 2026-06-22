@@ -46,6 +46,19 @@
     limestone: { icon: '🐚', name: 'Brachiopods, crinoids & coral',  tells: 'Shelly sea-floor life — they mark a warm, shallow sea.' }
   };
   var SED_FOSSIL = { sandstone: 1, shale: 1, limestone: 1 }; // layers a fossil can be uncovered in (soil is too young)
+  // Groundwater behaviour by rock — permeable layers store/transmit water (aquifers),
+  // impermeable ones trap it (aquitards). The water table tops the saturated zone.
+  var GROUNDWATER = {
+    soil:      { perm: 'Porous',                    role: 'lets rain soak in from the surface' },
+    sandstone: { perm: 'Permeable — aquifer',       role: 'connected pores store & transmit groundwater (wells tap this)' },
+    shale:     { perm: 'Impermeable — aquitard',    role: 'tight clay traps water in the rock above it' },
+    limestone: { perm: 'Permeable where fractured', role: 'cracks & caves carry water (karst aquifers)' },
+    basement:  { perm: 'Impermeable',               role: 'solid crystalline rock blocks water unless fractured' },
+    intrusion: { perm: 'Impermeable',               role: 'solid granite blocks water unless fractured' },
+    marble:    { perm: 'Impermeable',               role: 'tight, recrystallised rock' },
+    hornfels:  { perm: 'Impermeable',               role: 'baked, tight rock' },
+    magma:     { perm: '—',                          role: 'molten rock — no groundwater here' }
+  };
   var NX = 14, NY = 12, NZ = 14, KM_PER_VOXEL = 0.9;
 
   function rockKeyAt(x, y, z) {
@@ -183,6 +196,9 @@
     var hoverBox = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1.04, 1.04, 1.04)), new THREE.LineBasicMaterial({ color: 0xfff0c0, transparent: true, opacity: 0.85 }));
     hoverBox.visible = false; hoverBox.renderOrder = 2; scene.add(hoverBox);
     var treeMeshes = [], lastHover = 0;
+    var WATER_Y = (NY - 1) / 2 - 1.8; // water table perched in the sandstone, above the shale
+    var waterMesh = new THREE.Mesh(new THREE.PlaneGeometry(NX, NZ), new THREE.MeshStandardMaterial({ color: 0x3b82f6, transparent: true, opacity: 0.4, roughness: 0.25, metalness: 0.15, side: THREE.DoubleSide }));
+    waterMesh.rotation.x = -Math.PI / 2; waterMesh.position.set(0, WATER_Y, 0); waterMesh.visible = false; waterMesh.renderOrder = 1; scene.add(waterMesh);
 
     function visible(v) { return !removed[vkey(v)] && v.z >= sliceZ && FORMED_AT[v.key] <= showStage; }
     function rebuild() {
@@ -268,8 +284,9 @@
     function loop() { if (eng.disposed) return; raf = requestAnimationFrame(loop); t += 0.016; magmaGlow.intensity = 1.5 + Math.sin(t * 2) * 0.3; if (controls) controls.update(); renderer.render(scene, camera); }
     loop();
 
-    eng.setSlice = function (z) { sliceZ = z | 0; rebuild(); };
+    eng.setSlice = function (z) { sliceZ = z | 0; waterMesh.scale.z = (NZ - sliceZ) / NZ; waterMesh.position.z = sliceZ / 2; rebuild(); };
     eng.setExcavate = function (b) { excavate = !!b; };
+    eng.setWaterTable = function (b) { waterMesh.visible = !!b; };
     eng.setHighlight = function (k) { highlightKey = (k && ROCKS[k]) ? k : null; rebuild(); };
     eng.setStage = function (n) { showStage = (n == null) ? 99 : n; rebuild(); };
     eng.reset = function () { removed = {}; sliceZ = 0; rebuild(); };
@@ -278,7 +295,7 @@
       cnv.removeEventListener('pointerdown', onDown); cnv.removeEventListener('pointerup', onUp); cnv.removeEventListener('webglcontextlost', onLost);
       cnv.removeEventListener('pointermove', onMoveHover); cnv.removeEventListener('pointerleave', onLeaveHover);
       if (ro) try { ro.disconnect(); } catch (e) {}
-      try { geo.dispose(); mat.dispose(); renderer.dispose(); hoverBox.geometry.dispose(); hoverBox.material.dispose(); if (eng._treeGeo) eng._treeGeo.forEach(function (g) { g.dispose(); }); if (eng._treeMat) eng._treeMat.forEach(function (m) { m.dispose(); }); } catch (e) {}
+      try { geo.dispose(); mat.dispose(); renderer.dispose(); hoverBox.geometry.dispose(); hoverBox.material.dispose(); waterMesh.geometry.dispose(); waterMesh.material.dispose(); if (eng._treeGeo) eng._treeGeo.forEach(function (g) { g.dispose(); }); if (eng._treeMat) eng._treeMat.forEach(function (m) { m.dispose(); }); } catch (e) {}
       if (cnv.parentNode) cnv.parentNode.removeChild(cnv);
     };
     return eng;
@@ -320,6 +337,7 @@
       var qz = React.useState(false); var quizOn = qz[0], setQuizOn = qz[1];
       var qi = React.useState(0); var quizI = qi[0], setQuizI = qi[1];
       var qa = React.useState(null); var quizAns = qa[0], setQuizAns = qa[1];
+      var wt = React.useState(false); var waterOn = wt[0], setWaterOn = wt[1];
       var threeReady = !!(ctx.toolData && ctx.toolData._threeLoaded) && !!window.THREE;
 
       function announce(msg) { try { var lr = document.getElementById('allo-live-geology'); if (lr) { lr.textContent = ''; setTimeout(function () { lr.textContent = String(msg || ''); }, 30); } } catch (e) {} }
@@ -399,7 +417,8 @@
           h('div', { className: 'mt-2 text-[11.5px]', style: { color: '#f59e0b' } }, '🕓 ' + R.age),
           F
             ? h('div', { className: 'mt-1 text-[11.5px] ' + ink }, h('span', { 'aria-hidden': 'true' }, F.icon + ' '), h('span', { className: 'font-semibold' }, F.name), h('span', { className: muted }, ' — ' + F.tells + (SED_FOSSIL[f.key] ? ' ' + t('stem.geology.dig_fossil', 'Dig or click this layer to uncover one.') : '')))
-            : h('div', { className: 'mt-1 text-[11.5px] ' + muted }, '🚫 ' + t('stem.geology.no_fossils', 'No fossils — melting and metamorphism destroy them, so geologists read time from sedimentary layers.'))
+            : h('div', { className: 'mt-1 text-[11.5px] ' + muted }, '🚫 ' + t('stem.geology.no_fossils', 'No fossils — melting and metamorphism destroy them, so geologists read time from sedimentary layers.')),
+          GROUNDWATER[f.key] ? h('div', { className: 'mt-1 text-[11.5px] ' + ink }, h('span', { 'aria-hidden': 'true' }, '💧 '), h('span', { className: 'font-semibold' }, GROUNDWATER[f.key].perm), h('span', { className: muted }, ' — ' + GROUNDWATER[f.key].role)) : null
         );
       }
 
@@ -517,8 +536,14 @@
           );
         });
         // cross-cutting pluton (triangle up the centre) + label
-        return h('svg', { width: W, height: bands.length * bh, viewBox: '0 0 ' + W + ' ' + (bands.length * bh), role: 'img', 'aria-label': 'Cross-section: sedimentary layers over basement and magma, cut by a granite pluton', className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+        return h('svg', { width: W, height: bands.length * bh, viewBox: '0 0 ' + W + ' ' + (bands.length * bh), role: 'img', 'aria-label': 'Cross-section: sedimentary layers over basement and magma, cut by a granite pluton' + (waterOn ? '. Groundwater fills the sandstone aquifer and is trapped above the shale; a dashed line marks the water table.' : ''), className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
           rows,
+          // groundwater: saturated zone fills the lower sandstone, perched on the shale
+          waterOn ? h('g', { key: 'water' },
+            h('rect', { x: 0, y: 1.55 * bh, width: W, height: 0.45 * bh, fill: '#3b82f6', opacity: 0.42 }),
+            h('line', { x1: 0, y1: 1.55 * bh, x2: W, y2: 1.55 * bh, stroke: '#1d4ed8', strokeWidth: 1.5, strokeDasharray: '5 2' }),
+            h('text', { x: W - 5, y: 1.55 * bh - 3, fontSize: 9, fill: '#1d4ed8', textAnchor: 'end', style: { fontWeight: 700 } }, '💧')
+          ) : null,
           h('polygon', { points: (W / 2) + ',' + (bands.length * bh) + ' ' + (W / 2 - 14) + ',' + (2 * bh) + ' ' + (W / 2 + 14) + ',' + (2 * bh), fill: hex(ROCKS.intrusion.color), opacity: 0.92, stroke: 'rgba(255,255,255,0.4)' })
         );
       }
@@ -581,6 +606,7 @@
               h('button', { type: 'button', disabled: histStage >= 0 || !threeReady || webglError, onClick: function () { var nv = !excavate; setExcavate(nv); if (window[ENGINE_KEY]) window[ENGINE_KEY].setExcavate(nv); }, 'aria-pressed': excavate ? 'true' : 'false', className: btn + (excavate ? 'bg-amber-500 border-amber-400 text-amber-950' : btnIdle) }, '⛏️ ' + t('stem.geology.excavate', 'Excavate') + ': ' + (excavate ? t('stem.on', 'ON') : t('stem.off', 'OFF'))),
               h('button', { type: 'button', disabled: histStage >= 0 || !threeReady || webglError, onClick: function () { setSlice(0); setExcavate(false); if (window[ENGINE_KEY]) { window[ENGINE_KEY].reset(); window[ENGINE_KEY].setExcavate(false); } }, className: btn + btnIdle }, '↺ ' + t('stem.geology.reset', 'Reset')),
               h('button', { type: 'button', onClick: function () { if (histStage >= 0) { stopHistory(); } else { playHistory(); } }, 'aria-pressed': histStage >= 0 ? 'true' : 'false', title: t('stem.geology.play_history_tip', 'Watch the cross-section build in the order it formed'), className: btn + (histStage >= 0 ? 'bg-violet-500 border-violet-400 text-violet-50' : btnIdle) }, histStage >= 0 ? '■ ' + t('stem.geology.stop', 'Stop') : '▶ ' + t('stem.geology.play_history', 'Play history')),
+              h('button', { type: 'button', disabled: histStage >= 0, onClick: function () { var nv = !waterOn; setWaterOn(nv); if (window[ENGINE_KEY]) window[ENGINE_KEY].setWaterTable(nv); if (nv) announce('Water table on. Rain soaks through permeable rock like sandstone and is trapped by the impermeable shale; the water table is the top of the saturated zone. Slice the block or read the cross-section to see it.'); }, 'aria-pressed': waterOn ? 'true' : 'false', title: t('stem.geology.water_tip', 'Show the water table and which layers hold groundwater'), className: btn + (waterOn ? 'bg-blue-500 border-blue-400 text-blue-50' : btnIdle) }, '💧 ' + t('stem.geology.water', 'Water table') + ': ' + (waterOn ? t('stem.on', 'ON') : t('stem.off', 'OFF'))),
               h('span', { className: 'text-[11px] ' + muted }, threeReady && !webglError ? t('stem.geology.tip', 'Drag to orbit · click a block to identify') : '')),
             infoPanel(),
             cyclePanel()),
