@@ -92,6 +92,21 @@
                 { proc: 'Uplift & weather',   icon: '💧', to: 'soil',      note: 'Exposed and broken into sediment.' }]
   };
 
+  // ── Formation history ───────────────────────────────────────────────────────
+  // The chronological stage each rock appeared, so "Play history" can assemble the
+  // cross-section in the order it actually formed — the synthesis of superposition
+  // (sediments bottom-up), cross-cutting (pluton last) and contact metamorphism.
+  var FORMED_AT = { basement: 0, magma: 0, limestone: 1, shale: 2, sandstone: 3, soil: 4, intrusion: 5, marble: 6, hornfels: 6 };
+  var HISTORY = [
+    { tk: 'stem.geology.hist0', fb: 'Starting point — an ancient granite basement above deep, molten magma.' },
+    { tk: 'stem.geology.hist1', fb: '1 · A warm, shallow sea deposits LIMESTONE — the first and oldest sedimentary layer, so it ends up on the bottom.' },
+    { tk: 'stem.geology.hist2', fb: '2 · Mud settles in calmer water and hardens into SHALE, resting on the older limestone.' },
+    { tk: 'stem.geology.hist3', fb: '3 · Rivers and dunes pile up sand → SANDSTONE, the newest layer on top (superposition: youngest is highest).' },
+    { tk: 'stem.geology.hist4', fb: '4 · Weathering breaks down the surface rock into SOIL.' },
+    { tk: 'stem.geology.hist5', fb: '5 · A LATER pulse of magma forces up through every layer and freezes into a granite PLUTON — because it cuts the layers, it must be younger (cross-cutting).' },
+    { tk: 'stem.geology.hist6', fb: '6 · The pluton’s heat bakes the rock it touches into a METAMORPHIC rim — marble from limestone, hornfels from shale (contact metamorphism).' }
+  ];
+
   // ── three.js engine (imperative; lives on window[ENGINE_KEY]) ───────────────
   function initEngine(container, opts) {
     var THREE = window.THREE;
@@ -126,9 +141,9 @@
     scene.add(mesh);
     var dummy = new THREE.Object3D(), col = new THREE.Color(), WHITE = new THREE.Color(0xffffff);
     var instanceToVoxel = [];
-    var sliceZ = 0, excavate = false, highlightKey = null;
+    var sliceZ = 0, excavate = false, highlightKey = null, showStage = 99;
 
-    function visible(v) { return !removed[vkey(v)] && v.z >= sliceZ; }
+    function visible(v) { return !removed[vkey(v)] && v.z >= sliceZ && FORMED_AT[v.key] <= showStage; }
     function rebuild() {
       var i = 0; instanceToVoxel.length = 0;
       for (var k = 0; k < voxels.length; k++) {
@@ -181,6 +196,7 @@
     eng.setSlice = function (z) { sliceZ = z | 0; rebuild(); };
     eng.setExcavate = function (b) { excavate = !!b; };
     eng.setHighlight = function (k) { highlightKey = (k && ROCKS[k]) ? k : null; rebuild(); };
+    eng.setStage = function (n) { showStage = (n == null) ? 99 : n; rebuild(); };
     eng.reset = function () { removed = {}; sliceZ = 0; rebuild(); };
     eng.dispose = function () {
       eng.disposed = true; if (raf) cancelAnimationFrame(raf);
@@ -219,6 +235,8 @@
       var slc = React.useState(0); var slice = slc[0], setSlice = slc[1];
       var exc = React.useState(false); var excavate = exc[0], setExcavate = exc[1];
       var cph = React.useState([]); var cyclePath = cph[0], setCyclePath = cph[1];
+      var hst = React.useState(-1); var histStage = hst[0], setHistStage = hst[1];
+      var histTimer = React.useRef(null);
       var threeReady = !!(ctx.toolData && ctx.toolData._threeLoaded) && !!window.THREE;
 
       function announce(msg) { try { var lr = document.getElementById('allo-live-geology'); if (lr) { lr.textContent = ''; setTimeout(function () { lr.textContent = String(msg || ''); }, 30); } } catch (e) {} }
@@ -229,6 +247,25 @@
         announce(msg || (facts.R.name + '. ' + facts.R.type + '. Depth about ' + facts.depthKm + ' kilometres. ' + facts.R.formation + ' ' + facts.R.age));
         var cur = identifiedRef.current || {}; if (!cur[facts.key]) { var id = Object.assign({}, cur); id[facts.key] = 1; upd('identified', id); }
       }
+
+      // ── formation-history playback (assembles the crust in chronological order) ──
+      function clearHistTimer() { if (histTimer.current) { clearTimeout(histTimer.current); histTimer.current = null; } }
+      function goStage(n) {
+        setHistStage(n);
+        try { if (window[ENGINE_KEY]) window[ENGINE_KEY].setStage(n); } catch (e) {}
+        var s = HISTORY[n]; if (s) announce(t(s.tk, s.fb));
+      }
+      function playHistory() {
+        clearHistTimer();
+        setSelected(null); setSlice(0); setExcavate(false);
+        try { if (window[ENGINE_KEY]) { window[ENGINE_KEY].reset(); window[ENGINE_KEY].setExcavate(false); window[ENGINE_KEY].setHighlight(null); } } catch (e) {}
+        var n = 0; goStage(0);
+        function tick() { n++; if (n >= HISTORY.length) { histTimer.current = null; return; } goStage(n); histTimer.current = setTimeout(tick, 2600); }
+        histTimer.current = setTimeout(tick, 2600);
+      }
+      function stopHistory() { clearHistTimer(); setHistStage(-1); try { if (window[ENGINE_KEY]) window[ENGINE_KEY].setStage(null); } catch (e) {} }
+      function stepTo(n) { clearHistTimer(); if (n < 0) n = 0; if (n >= HISTORY.length) { stopHistory(); return; } goStage(n); }
+      React.useEffect(function () { return function () { if (histTimer.current) clearTimeout(histTimer.current); }; }, []);
 
       React.useEffect(function () {
         if (!threeReady || webglError || !containerRef.current || window[ENGINE_KEY]) return;
@@ -292,6 +329,23 @@
             h('span', { className: 'font-bold ' + ink }, t('stem.geology.cycle_path', 'Your path: ')),
             cyclePath.map(function (k, i) { return (i ? ' → ' : '') + ROCKS[k].name; }).join('')
           ) : null
+        );
+      }
+
+      // ── formation history bar: the "how did this form?" chronological narrative ──
+      function historyBar() {
+        if (histStage < 0) return null;
+        var s = HISTORY[histStage] || HISTORY[0];
+        var stepBtn = 'transition-colors active:scale-[0.97] text-[12px] font-bold w-7 h-7 inline-flex items-center justify-center rounded-lg border ' + (isDark ? 'bg-slate-800 border-slate-600 text-slate-100 hover:bg-slate-700' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100');
+        return h('div', { className: 'p-2.5 rounded-xl border-2 ' + (isDark ? 'bg-amber-950/40 border-amber-700/60' : 'bg-amber-50 border-amber-300'), role: 'region', 'aria-label': 'Formation history, step ' + (histStage + 1) + ' of ' + HISTORY.length },
+          h('div', { className: 'flex items-center justify-between gap-2 mb-1.5' },
+            h('div', { className: 'flex items-center gap-1', 'aria-hidden': 'true' },
+              HISTORY.map(function (_, i) { return h('span', { key: i, className: 'w-2 h-2 rounded-full transition-colors ' + (i === histStage ? 'bg-amber-500' : i < histStage ? (isDark ? 'bg-amber-700' : 'bg-amber-300') : (isDark ? 'bg-slate-700' : 'bg-slate-300')) }); })),
+            h('div', { className: 'flex items-center gap-1' },
+              h('button', { type: 'button', onClick: function () { stepTo(histStage - 1); }, disabled: histStage <= 0, 'aria-label': t('stem.geology.prev_step', 'Previous step'), className: stepBtn + (histStage <= 0 ? ' opacity-40' : '') }, '◀'),
+              h('button', { type: 'button', onClick: function () { stepTo(histStage + 1); }, 'aria-label': t('stem.geology.next_step', 'Next step'), className: stepBtn }, '▶'),
+              h('button', { type: 'button', onClick: function () { stopHistory(); }, 'aria-label': t('stem.geology.to_present', 'Skip to present — show the whole cross-section'), className: 'transition-colors active:scale-[0.97] text-[11px] font-bold px-2 h-7 rounded-lg border ' + (isDark ? 'bg-slate-800 border-slate-600 text-slate-100 hover:bg-slate-700' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100') }, '⏭ ' + t('stem.geology.present', 'Present')))),
+          h('div', { className: 'text-[12px] font-semibold leading-snug ' + (isDark ? 'text-amber-100' : 'text-amber-900') }, t(s.tk, s.fb))
         );
       }
 
@@ -359,14 +413,16 @@
         // main: viewport + controls (left) | info + cross-section + list (right)
         h('div', { className: 'grid gap-3', style: { gridTemplateColumns: 'minmax(0,1.4fr) minmax(0,1fr)' } },
           h('div', { className: 'space-y-2' },
+            historyBar(),
             viewport(),
             // controls
             h('div', { className: 'flex flex-wrap items-center gap-2' },
               h('label', { className: 'flex items-center gap-2 text-xs ' + ink },
                 h('span', { className: muted }, t('stem.geology.slice', 'Slice')),
-                h('input', { type: 'range', min: 0, max: NZ - 1, value: slice, disabled: !threeReady || webglError, 'aria-label': 'Cross-section slice depth', onChange: function (e) { var v = +e.target.value; setSlice(v); if (window[ENGINE_KEY]) window[ENGINE_KEY].setSlice(v); } })),
-              h('button', { type: 'button', disabled: !threeReady || webglError, onClick: function () { var nv = !excavate; setExcavate(nv); if (window[ENGINE_KEY]) window[ENGINE_KEY].setExcavate(nv); }, 'aria-pressed': excavate ? 'true' : 'false', className: btn + (excavate ? 'bg-amber-500 border-amber-400 text-amber-950' : btnIdle) }, '⛏️ ' + t('stem.geology.excavate', 'Excavate') + ': ' + (excavate ? t('stem.on', 'ON') : t('stem.off', 'OFF'))),
-              h('button', { type: 'button', disabled: !threeReady || webglError, onClick: function () { setSlice(0); setExcavate(false); if (window[ENGINE_KEY]) { window[ENGINE_KEY].reset(); window[ENGINE_KEY].setExcavate(false); } }, className: btn + btnIdle }, '↺ ' + t('stem.geology.reset', 'Reset')),
+                h('input', { type: 'range', min: 0, max: NZ - 1, value: slice, disabled: histStage >= 0 || !threeReady || webglError, 'aria-label': 'Cross-section slice depth', onChange: function (e) { var v = +e.target.value; setSlice(v); if (window[ENGINE_KEY]) window[ENGINE_KEY].setSlice(v); } })),
+              h('button', { type: 'button', disabled: histStage >= 0 || !threeReady || webglError, onClick: function () { var nv = !excavate; setExcavate(nv); if (window[ENGINE_KEY]) window[ENGINE_KEY].setExcavate(nv); }, 'aria-pressed': excavate ? 'true' : 'false', className: btn + (excavate ? 'bg-amber-500 border-amber-400 text-amber-950' : btnIdle) }, '⛏️ ' + t('stem.geology.excavate', 'Excavate') + ': ' + (excavate ? t('stem.on', 'ON') : t('stem.off', 'OFF'))),
+              h('button', { type: 'button', disabled: histStage >= 0 || !threeReady || webglError, onClick: function () { setSlice(0); setExcavate(false); if (window[ENGINE_KEY]) { window[ENGINE_KEY].reset(); window[ENGINE_KEY].setExcavate(false); } }, className: btn + btnIdle }, '↺ ' + t('stem.geology.reset', 'Reset')),
+              h('button', { type: 'button', onClick: function () { if (histStage >= 0) { stopHistory(); } else { playHistory(); } }, 'aria-pressed': histStage >= 0 ? 'true' : 'false', title: t('stem.geology.play_history_tip', 'Watch the cross-section build in the order it formed'), className: btn + (histStage >= 0 ? 'bg-violet-500 border-violet-400 text-violet-50' : btnIdle) }, histStage >= 0 ? '■ ' + t('stem.geology.stop', 'Stop') : '▶ ' + t('stem.geology.play_history', 'Play history')),
               h('span', { className: 'text-[11px] ' + muted }, threeReady && !webglError ? t('stem.geology.tip', 'Drag to orbit · click a block to identify') : '')),
             infoPanel(),
             cyclePanel()),
