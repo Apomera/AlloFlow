@@ -616,7 +616,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
             var bgCol = seasonBGs[(seasonCycle || {}).id] || '#0f172a';
             ctx.fillStyle = bgCol; ctx.fillRect(0, 0, w, h);
 
-            // Enhanced starfield with twinkling
+            // Enhanced starfield with twinkling — additive so bright stars bloom
+            ctx.save(); ctx.globalCompositeOperation = 'lighter';
             for (var si = 0; si < 120; si++) {
               var sx = (si * 7919 + 12345) % w; var sy = (si * 6271 + 54321) % h;
               var twinkle = 0.15 + Math.sin(animPhase + si * 0.5) * 0.15 + ((si * 31) % 8) * 0.06;
@@ -624,6 +625,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
               ctx.fillStyle = si < 5 ? 'rgba(200,220,255,' + twinkle + ')' : 'rgba(255,255,255,' + twinkle + ')';
               ctx.beginPath(); ctx.arc(sx, sy, starSize / 2, 0, Math.PI * 2); ctx.fill();
             }
+            ctx.restore();
 
             // Nebula glow (season-colored)
             var nebulaColors = { bloom: 'rgba(34,197,94,0.03)', dry: 'rgba(234,179,8,0.03)', storm: 'rgba(59,130,246,0.04)', calm: 'rgba(139,92,246,0.03)' };

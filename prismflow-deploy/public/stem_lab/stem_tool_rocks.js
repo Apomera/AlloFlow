@@ -4263,6 +4263,7 @@ const d = labToolData.rockCycle || {};
 
                   // Sparkle dots on crystals
 
+                  ctx.save(); ctx.shadowColor = 'rgba(255,255,255,0.9)'; ctx.shadowBlur = 5;
                   ctx.fillStyle = 'rgba(255,255,255,' + (0.15 + 0.1 * Math.sin(tick * 0.05)) + ')';
 
                   for (var spi2 = 0; spi2 < 5; spi2++) {
@@ -4272,6 +4273,7 @@ const d = labToolData.rockCycle || {};
                     ctx.beginPath(); ctx.arc(n.x * dpr + Math.cos(spa) * 10 * dpr, n.y * dpr + Math.sin(spa) * 8 * dpr, 1.2 * dpr, 0, Math.PI * 2); ctx.fill();
 
                   }
+                  ctx.restore();
 
                 } else if (rock.id === 'sedimentary') {
 

@@ -261,6 +261,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
         // Helper: plot a function curve onto canvas rect with axis transforms
         function plotCurve(c, fn, xR, yR, Lx, Rx, Ty, By, color, width) {
+          c.save();
+          c.shadowColor = color; c.shadowBlur = 6;
           c.strokeStyle = color; c.lineWidth = width || 2;
           c.beginPath();
           var N = 200;
@@ -272,6 +274,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             if (i === 0) c.moveTo(sx, sy); else c.lineTo(sx, sy);
           }
           c.stroke();
+          c.restore();
         }
         function drawAxes(c, Lx, Rx, Ty, By, xR, yR, color) {
           color = color || 'rgba(148,163,184,0.35)';

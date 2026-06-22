@@ -1143,7 +1143,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                     // Ship approach dot
                     var shipX = W * 0.15 + Math.sin(tick * 0.008) * W * 0.05;
                     var shipY = H * 0.5 + Math.cos(tick * 0.006) * H * 0.08;
-                    ctx2.fillStyle = '#fff'; ctx2.beginPath(); ctx2.arc(shipX, shipY, 2, 0, Math.PI * 2); ctx2.fill();
+                    ctx2.save();
+                    ctx2.shadowColor = 'rgba(125,211,252,0.9)'; ctx2.shadowBlur = 8;
+                    ctx2.fillStyle = '#e0f2fe'; ctx2.beginPath(); ctx2.arc(shipX, shipY, 2.5, 0, Math.PI * 2); ctx2.fill();
+                    ctx2.restore();
                     ctx2.strokeStyle = 'rgba(255,255,255,0.12)'; ctx2.lineWidth = 0.5;
                     ctx2.beginPath(); ctx2.moveTo(shipX, shipY);
                     ctx2.lineTo(W * 0.6 - Math.min(W, H) * 0.35, H * 0.5); ctx2.stroke();

@@ -1192,6 +1192,8 @@ window.StemLab = window.StemLab || {
                       pt.life--;
                       
                       if (pt.type === 'spark') {
+                        ctx2d.save();
+                        ctx2d.shadowColor = 'rgba(251,146,60,0.9)'; ctx2d.shadowBlur = 6;
                         ctx2d.fillStyle = 'rgba(251, 146, 60, ' + (pt.life / pt.maxLife).toFixed(2) + ')';
                         ctx2d.beginPath();
                         ctx2d.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2);
@@ -1199,6 +1201,7 @@ window.StemLab = window.StemLab || {
                         ctx2d.strokeStyle = 'rgba(239, 68, 68, ' + (pt.life / pt.maxLife * 0.4).toFixed(2) + ')';
                         ctx2d.lineWidth = 1;
                         ctx2d.stroke();
+                        ctx2d.restore();
                       } else {
                         // smoke
                         ctx2d.fillStyle = 'rgba(148, 163, 184, ' + (pt.life / pt.maxLife * 0.15).toFixed(2) + ')';

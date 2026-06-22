@@ -375,11 +375,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       }
     }
 
-    // Note head (filled ellipse)
+    // Note head (filled ellipse) — glows in its note colour so active/coloured notes pop
+    ctx2d.save();
+    if (color) { ctx2d.shadowColor = color; ctx2d.shadowBlur = 8; }
     ctx2d.fillStyle = color || '#1e293b';
     ctx2d.beginPath();
     ctx2d.ellipse(x, y, r * 1.2, r, -0.3, 0, 2 * Math.PI);
     ctx2d.fill();
+    ctx2d.restore();
 
     // Stem
     var stemDir = y > staffTop + lineGap * 2 ? -1 : 1; // up if below middle, down if above

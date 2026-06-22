@@ -688,6 +688,7 @@ const d = labToolData.physics;
 
                 // Flag pole
 
+                if (tgt.hit) { ctx.save(); ctx.shadowColor = tgt.color; ctx.shadowBlur = 10; }
                 ctx.strokeStyle = tgt.hit ? tgt.color : 'rgba(255,255,255,0.4)';
 
                 ctx.lineWidth = 2 * dpr;
@@ -707,6 +708,7 @@ const d = labToolData.physics;
                 ctx.lineTo(tx, groundY - 16 * dpr);
 
                 ctx.closePath(); ctx.fill();
+                if (tgt.hit) { ctx.restore(); }
 
                 // Label
 

@@ -1119,7 +1119,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         segs.forEach(function(s) {
           var sweep = (s.val / total) * Math.PI * 2;
           c.beginPath(); c.arc(cx, cy, r, angle, angle + sweep); c.arc(cx, cy, inner, angle + sweep, angle, true); c.closePath();
-          c.fillStyle = s.color; c.fill();
+          c.save(); c.shadowColor = s.color; c.shadowBlur = 8; c.fillStyle = s.color; c.fill(); c.restore();
           // Label
           var mid = angle + sweep / 2;
           var lx = cx + Math.cos(mid) * (r + 16), ly = cy + Math.sin(mid) * (r + 16);
@@ -1128,9 +1128,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           angle += sweep;
         });
         // Center text
-        c.fillStyle = ct.total < 2000 ? '#4ade80' : ct.total < 5000 ? '#fbbf24' : '#f87171';
+        var ctCol = ct.total < 2000 ? '#4ade80' : ct.total < 5000 ? '#fbbf24' : '#f87171';
+        c.save(); c.shadowColor = ctCol; c.shadowBlur = 10;
+        c.fillStyle = ctCol;
         c.font = 'bold 22px system-ui'; c.textAlign = 'center'; c.textBaseline = 'middle';
         c.fillText(ct.total.toLocaleString(), cx, cy - 6);
+        c.restore();
         c.fillStyle = '#94a3b8'; c.font = '600 9px system-ui';
         c.fillText('kg CO\u2082/yr', cx, cy + 12);
       }
