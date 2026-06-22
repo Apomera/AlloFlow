@@ -30,7 +30,8 @@ describe('#5 Compare tagged PDF — no hang, lighter render with live progress',
 
   it('shows live "page N / M" progress during render (so it reads as working, not stuck)', () => {
     expect(view).toContain("st.textContent = 'Rendering ' + label + '… page ' + n + ' / ' + doc.numPages");
-    // the status is now removed AT THE END of the render loop, not before it starts
-    expect(view).toContain('if (n > doc.numPages) { if (st) { try { st.remove(); } catch (_) {} } return; }');
+    // the status is removed AT THE END of the render loop, not before it starts — and the loop now also
+    // destroys the pdf.js doc on completion (2026-06-22 leak fix) before returning.
+    expect(view).toContain('if (n > doc.numPages) { if (st) { try { st.remove(); } catch (_) {} } try { doc.destroy(); } catch (_) {} if (_cmpPdfDoc === doc) _cmpPdfDoc = null; return; }');
   });
 });

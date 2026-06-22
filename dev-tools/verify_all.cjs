@@ -219,6 +219,11 @@ const checks = [
     description: '29 critical doc_pipeline functions present in source + module',
   },
   {
+    name: 'Pipeline + Doc-Builder vitest gate',
+    cmd: ['node', 'dev-tools/check_pipeline_tests.cjs', '--quiet'],
+    description: 'Runs the remediation-pipeline + Document-Builder + scoring + security vitest suites (~137 files, ~28s) as a BLOCKING gate. Closes the "green-when-run yet ships" gap the 2026-06-21 reports flagged: the ~230 vitest files were excluded from verify_all, so a phase regression could deploy unnoticed (acute with concurrent multi-session edits on one tree). Allowlist by domain keyword — deliberately EXCLUDES the volatile STEM/SEL/lang/lab/game suites owned by other tracks (so their transient golden churn can never block a pipeline deploy). Skips cleanly if vitest is not installed.',
+  },
+  {
     name: 'LTI 1.3 surface',
     cmd: ['node', 'dev-tools/check_lti_surface.cjs', '--quiet'],
     description: 'LTI endpoints + OIDC params + JWT verification + secrets',
