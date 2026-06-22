@@ -296,6 +296,7 @@ window.StemLab = window.StemLab || {
     desc: 'Base-10 blocks, abacus, slide rule & place value quiz.',
     color: 'orange', category: 'math',
     render: function(ctx) {
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = ctx.React;
       var h = React.createElement;
       var ArrowLeft = ctx.icons.ArrowLeft;
@@ -841,13 +842,13 @@ window.StemLab = window.StemLab || {
       // ══════════════════════════════════════════════════════════════
       var headerEl = h('div', { className: 'space-y-3 mb-4' },
         h('div', { className: 'flex items-center gap-3 flex-wrap' },
-          h('button', { onClick: function() { setStemLabTool(null); }, className: 'transition-colors p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back' },
+          h('button', { onClick: function() { setStemLabTool(null); }, className: 'transition-colors p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': __alloT('stem.manipulatives.back', 'Back') },
             h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
-          h('h3', { className: 'text-lg font-bold text-orange-800' }, '\uD83E\uDDEE Math Manipulatives'),
+          h('h3', { className: 'text-lg font-bold text-orange-800' }, __alloT('stem.manipulatives.math_manipulatives', '\uD83E\uDDEE Math Manipulatives')),
           streak >= 3 && h('span', { className: 'text-xs font-bold text-orange-500' }, '\uD83D\uDD25 ' + streak),
           h('div', { className: 'ml-auto flex gap-1.5' },
             h('span', { className: 'text-xs font-bold text-emerald-600 self-center' }, score.correct + '/' + score.total),
-            h('button', { 'aria-label': 'Badges', onClick: function() { upd({ showBadgesPanel: !showBadgesPanel }); }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border transition-all ' + (showBadgesPanel ? 'bg-amber-100 border-amber-600 text-amber-700' : 'bg-slate-100 border-slate-200 text-slate-600') }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + badgeDefs.length),
+            h('button', { 'aria-label': __alloT('stem.manipulatives.badges', 'Badges'), onClick: function() { upd({ showBadgesPanel: !showBadgesPanel }); }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border transition-all ' + (showBadgesPanel ? 'bg-amber-100 border-amber-600 text-amber-700' : 'bg-slate-100 border-slate-200 text-slate-600') }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + badgeDefs.length),
             h('button', { onClick: function() { upd({ soundEnabled: !soundEnabled }); }, 'aria-label': soundEnabled ? 'Mute sound' : 'Enable sound', className: 'text-sm px-1' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
             callGemini && h('button', { 'aria-label': aiLoading ? 'AI Tutor thinking' : 'Ask AI Tutor', 'aria-busy': aiLoading, onClick: askAI, disabled: aiLoading, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border transition-all ' + (aiLoading ? 'bg-pink-100 border-pink-600 text-pink-400' : 'bg-pink-50 border-pink-600 text-pink-600 hover:bg-pink-100') }, aiLoading ? '\u23F3' : '\uD83E\uDD16 Tutor')
           )
@@ -855,7 +856,7 @@ window.StemLab = window.StemLab || {
 
         // Badges panel
         showBadgesPanel && h('div', { className: 'bg-amber-50 rounded-xl p-3 border border-amber-200' },
-          h('div', { className: 'text-xs font-bold text-amber-700 uppercase mb-2' }, '\uD83C\uDFC5 Badges'),
+          h('div', { className: 'text-xs font-bold text-amber-700 uppercase mb-2' }, __alloT('stem.manipulatives.badges_2', '\uD83C\uDFC5 Badges')),
           h('div', { className: 'grid grid-cols-3 sm:grid-cols-4 gap-2' },
             badgeDefs.map(function(badge) {
               var earned = !!earnedBadges[badge.id];
@@ -872,39 +873,39 @@ window.StemLab = window.StemLab || {
 
         // AI insight
         aiInsight && h('div', { className: 'bg-pink-50 rounded-lg p-3 border border-pink-200 text-xs text-slate-700 whitespace-pre-line' },
-          h('span', { className: 'font-bold text-pink-600' }, '\uD83E\uDD16 AI Tutor: '),
+          h('span', { className: 'font-bold text-pink-600' }, __alloT('stem.manipulatives.ai_tutor', '\uD83E\uDD16 AI Tutor: ')),
           aiInsight
         ),
 
         // v3: Mode tabs (12 modes \u2014 wraps to multiple lines on small screens).
         // Organized into 2 rows: classic manipulatives first, then v3 additions.
         h('div', { className: 'flex gap-1 bg-slate-100 rounded-xl p-1 flex-wrap' },
-          [{ id: 'blocks',        icon: '\uD83E\uDDF1', label: 'Base-10 Blocks' },
-           { id: 'abacus',        icon: '\uD83E\uDDEE', label: 'Abacus' },
-           { id: 'slideRule',     icon: '\uD83D\uDCCF', label: 'Slide Rule' },
-           { id: 'quiz',          icon: '\uD83E\uDDE0', label: 'Quiz' },
-           { id: 'tenFrame',      icon: '\uD83D\uDD1F', label: 'Ten Frames' },
-           { id: 'counters',      icon: '\uD83D\uDD34', label: 'Counters' },
-           { id: 'pvDisks',       icon: '\uD83D\uDCBF', label: 'Place-Value Disks' },
-           { id: 'hundredsChart', icon: '\uD83D\uDCAF', label: 'Hundreds Chart' },
-           { id: 'patternBlocks', icon: '\u2B22',       label: 'Pattern Blocks' },
-           { id: 'geoboard',      icon: '\u2B1C', label: 'Geoboard' },
-           { id: 'cRods',         icon: '\uD83D\uDFE7', label: 'Cuisenaire' },
-           { id: 'numberBonds',   icon: '\uD83D\uDD17', label: 'Number Bonds' },
-           { id: 'fracBars',      icon: '\u25AD',  label: 'Fraction Bars' },
-           { id: 'algebraTiles',  icon: '\uD83D\uDD32', label: 'Algebra Tiles' },
-           { id: 'cra',           icon: '\uD83D\uDD04', label: 'CRA Progression' },
-           { id: 'challenges',    icon: '\uD83C\uDFC6', label: 'Challenge Hub' },
-           { id: 'puzzles',       icon: '\uD83E\uDDE9', label: 'Brain Teasers' },
-           { id: 'history',       icon: '\uD83C\uDFDB', label: 'History' },
-           { id: 'curriculum',    icon: '\uD83D\uDDFA', label: 'Curriculum Map' },
-           { id: 'activities',    icon: '\uD83C\uDCCF', label: 'Activity Cards' },
-           { id: 'help',          icon: '\u2753', label: 'Help & FAQ' },
-           { id: 'glossary',      icon: '\uD83D\uDCD6', label: 'Glossary' },
-           { id: 'standards',     icon: '\uD83D\uDCDC', label: 'Standards' },
-           { id: 'library',       icon: '\uD83D\uDCDA', label: 'Library' },
-           { id: 'teacher',       icon: '\uD83D\uDC69\u200D\uD83C\uDFEB', label: 'Teacher' },
-           { id: 'inquiry',       icon: '\uD83D\uDD2C', label: 'Math Inquiry' }
+          [{ id: 'blocks',        icon: '\uD83E\uDDF1', label: __alloT('stem.manipulatives.base_10_blocks', 'Base-10 Blocks') },
+           { id: 'abacus',        icon: '\uD83E\uDDEE', label: __alloT('stem.manipulatives.abacus', 'Abacus') },
+           { id: 'slideRule',     icon: '\uD83D\uDCCF', label: __alloT('stem.manipulatives.slide_rule', 'Slide Rule') },
+           { id: 'quiz',          icon: '\uD83E\uDDE0', label: __alloT('stem.manipulatives.quiz', 'Quiz') },
+           { id: 'tenFrame',      icon: '\uD83D\uDD1F', label: __alloT('stem.manipulatives.ten_frames', 'Ten Frames') },
+           { id: 'counters',      icon: '\uD83D\uDD34', label: __alloT('stem.manipulatives.counters', 'Counters') },
+           { id: 'pvDisks',       icon: '\uD83D\uDCBF', label: __alloT('stem.manipulatives.place_value_disks', 'Place-Value Disks') },
+           { id: 'hundredsChart', icon: '\uD83D\uDCAF', label: __alloT('stem.manipulatives.hundreds_chart', 'Hundreds Chart') },
+           { id: 'patternBlocks', icon: '\u2B22',       label: __alloT('stem.manipulatives.pattern_blocks', 'Pattern Blocks') },
+           { id: 'geoboard',      icon: '\u2B1C', label: __alloT('stem.manipulatives.geoboard', 'Geoboard') },
+           { id: 'cRods',         icon: '\uD83D\uDFE7', label: __alloT('stem.manipulatives.cuisenaire', 'Cuisenaire') },
+           { id: 'numberBonds',   icon: '\uD83D\uDD17', label: __alloT('stem.manipulatives.number_bonds', 'Number Bonds') },
+           { id: 'fracBars',      icon: '\u25AD',  label: __alloT('stem.manipulatives.fraction_bars', 'Fraction Bars') },
+           { id: 'algebraTiles',  icon: '\uD83D\uDD32', label: __alloT('stem.manipulatives.algebra_tiles', 'Algebra Tiles') },
+           { id: 'cra',           icon: '\uD83D\uDD04', label: __alloT('stem.manipulatives.cra_progression', 'CRA Progression') },
+           { id: 'challenges',    icon: '\uD83C\uDFC6', label: __alloT('stem.manipulatives.challenge_hub', 'Challenge Hub') },
+           { id: 'puzzles',       icon: '\uD83E\uDDE9', label: __alloT('stem.manipulatives.brain_teasers', 'Brain Teasers') },
+           { id: 'history',       icon: '\uD83C\uDFDB', label: __alloT('stem.manipulatives.history', 'History') },
+           { id: 'curriculum',    icon: '\uD83D\uDDFA', label: __alloT('stem.manipulatives.curriculum_map', 'Curriculum Map') },
+           { id: 'activities',    icon: '\uD83C\uDCCF', label: __alloT('stem.manipulatives.activity_cards', 'Activity Cards') },
+           { id: 'help',          icon: '\u2753', label: __alloT('stem.manipulatives.help_faq', 'Help & FAQ') },
+           { id: 'glossary',      icon: '\uD83D\uDCD6', label: __alloT('stem.manipulatives.glossary', 'Glossary') },
+           { id: 'standards',     icon: '\uD83D\uDCDC', label: __alloT('stem.manipulatives.standards', 'Standards') },
+           { id: 'library',       icon: '\uD83D\uDCDA', label: __alloT('stem.manipulatives.library', 'Library') },
+           { id: 'teacher',       icon: '\uD83D\uDC69\u200D\uD83C\uDFEB', label: __alloT('stem.manipulatives.teacher', 'Teacher') },
+           { id: 'inquiry',       icon: '\uD83D\uDD2C', label: __alloT('stem.manipulatives.math_inquiry', 'Math Inquiry') }
           ].map(function(m) {
             return h('button', { 'aria-label': 'Switch to ' + m.label + ' mode',
               key: m.id, onClick: function() { switchMode(m.id); },
@@ -917,31 +918,31 @@ window.StemLab = window.StemLab || {
         // ── Topic-accent hero band per mode ──
         (function() {
           var MODE_META = {
-            blocks:    { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83E\uDDF1', title: 'Base-10 Blocks \u2014 ones, tens, hundreds, thousands',  hint: 'The whole point of place value made TANGIBLE. 10 ones = 1 ten; 10 tens = 1 hundred; 10 hundreds = 1 thousand. Regrouping (carrying / borrowing) becomes obvious when you have to physically swap blocks.' },
-            abacus:    { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83E\uDDEE', title: 'Abacus \u2014 4,500 years of mental arithmetic',         hint: 'Soroban (Japanese) and Suanpan (Chinese) are still taught \u2014 advanced users beat calculators on speed for many problems. Each rod is a place value; bead-state IS the number. Concrete \u2192 mental in months.' },
-            slideRule: { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83D\uDCCF', title: 'Slide Rule \u2014 logarithms in your hand',              hint: 'How engineers multiplied before electronic calculators: align logarithmic scales, read the answer. Apollo 11 (1969) did orbital math with slide rules. Replaced en masse only after the HP-35 dropped in 1972.' },
-            quiz:      { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83E\uDDE0', title: 'Quiz \u2014 graded place-value + arithmetic',           hint: 'CCSS 1.NBT, 2.NBT, 3.NBT, 4.NBT progression. Mixed concrete-pictorial-abstract sequencing (CPA, Bruner 1966) is the spine of every well-designed elementary math curriculum.' },
-            tenFrame:      { accent: '#f97316', soft: 'rgba(249,115,22,0.10)', icon: '\uD83D\uDD1F', title: 'Ten Frames \u2014 the K-2 number-sense workhorse', hint: 'A 5-by-2 grid. Fill cells to show a number. Subitizing (instant recognition without counting) develops here. CCSS K.OA.A.4: the "what makes 10?" question is the gateway to all later arithmetic fluency.' },
-            counters:      { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)', icon: '\uD83D\uDD34', title: 'Two-Color Counters \u2014 integers concrete',     hint: 'Yellow = +1; red = -1. A yellow + red pair = 0 (a "zero pair"). The most concrete model for understanding negative numbers and integer arithmetic. CCSS 6.NS.C.5, 7.NS.A.1.' },
-            pvDisks:       { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)', icon: '\uD83D\uDCBF', title: 'Place-Value Disks \u2014 bridge to algorithm',     hint: 'Each disk labeled with its value (1, 10, 100, 1000). Move 10 disks of one kind to trade for 1 of the next. The conceptual bridge from physical blocks to the standard algorithm. CCSS 4.NBT.B.4.' },
-            hundredsChart: { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83D\uDCAF', title: 'Hundreds Chart \u2014 count, pattern, and skip',  hint: 'A 10x10 grid of 1-100. Click to highlight cells. Skip-count overlays reveal multiplication patterns. CCSS 2.NBT.A.2: skip-counting by 5s, 10s, 100s.' },
-            patternBlocks: { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\u2B22',       title: 'Pattern Blocks \u2014 fractions + symmetry', hint: 'Hexagon, trapezoid, rhombus, triangle, square, narrow rhombus. 6 trapezoids = 1 hexagon (so 1 trapezoid = 1/2 hex). 3 rhombi = 1 hex (so 1 rhombus = 1/3). 6 triangles = 1 hex (so 1 triangle = 1/6).' },
-            geoboard:      { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\u2B1C', title: 'Geoboard \u2014 polygons on a peg grid',         hint: 'Connect pegs with "rubber bands" to make polygons. Measure perimeter and area. The classic concrete tool for plane geometry and Pick\'s theorem.' },
-            cRods:         { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83D\uDFE7', title: 'Cuisenaire Rods \u2014 numbers in color',         hint: 'Belgian teacher Georges Cuisenaire (1952): 10 rods, lengths 1-10, each a different color. Add rods to make new numbers. White=1, red=2, light green=3, purple=4, yellow=5, dark green=6, black=7, brown=8, blue=9, orange=10.' },
-            numberBonds:   { accent: '#be185d', soft: 'rgba(190,24,93,0.10)',  icon: '\uD83D\uDD17', title: 'Number Bonds \u2014 part-part-whole',             hint: 'The whole splits into two parts. Singapore Math made this central. CCSS K.OA.A.3: decompose 10 into pairs. This builds toward all addition and subtraction.' },
-            fracBars:      { accent: '#ea580c', soft: 'rgba(234,88,12,0.10)',  icon: '\u25AD',  title: 'Fraction Bars \u2014 compare and add fractions',           hint: 'Equal-length bars partitioned into halves, thirds, fourths, sixths, eighths, twelfths. Stack to compare. Find equivalents visually. The cleanest single tool for fraction equivalence (3.NF, 4.NF).' },
-            algebraTiles:  { accent: '#1e40af', soft: 'rgba(30,64,175,0.10)',  icon: '\uD83D\uDD32', title: 'Algebra Tiles \u2014 model expressions and equations',     hint: 'A tile for 1 (unit), x (variable), x\u00B2 (square). Two-color: positive and negative. Model expressions like 2x + 3 or factor quadratics by arranging tiles into rectangles. CCSS 7.EE, 8.EE.' },
-            cra:           { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\uD83D\uDD04', title: 'CRA Progression \u2014 concrete \u2192 picture \u2192 equation', hint: 'Bruner (1966): students master each concept by moving through three modes of representation. We step you through the SAME problem in all three ways so the abstract symbol is grounded in a thing you can SEE and TOUCH.' },
-            challenges:    { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83C\uDFC6', title: 'Challenge Hub \u2014 quick practice across every manipulative', hint: 'Random problems spanning all 12 manipulatives. Designed for distributed practice (Cepeda et al. 2006): a quick five-minute set, mixing kinds, beats twenty minutes of one kind in a row.' },
-            glossary:      { accent: '#06b6d4', soft: 'rgba(6,182,212,0.10)',  icon: '\uD83D\uDCD6', title: 'Glossary \u2014 math vocabulary, with examples',                 hint: 'Vocabulary IS the curriculum. A student who hears "regroup," "compose," "decompose," "fluently," and "place value" enough times in context will internalize the system. Definitions are tied to the specific manipulative that demonstrates each.' },
-            puzzles:       { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '\uD83E\uDDE9', title: 'Brain Teasers \u2014 classic math puzzles',                          hint: 'Classic problems that are solvable, satisfying, and often easier with a manipulative in hand. Useful as warm-ups, sponge activities, or anchor tasks for class discussion.' },
-            history:       { accent: '#84cc16', soft: 'rgba(132,204,22,0.10)', icon: '\uD83C\uDFDB', title: 'History \u2014 math tools through time',                          hint: 'Counting bones (Lebombo, ~35,000 BCE) \u2192 Sumerian tokens \u2192 Roman abacus \u2192 Cuisenaire rods (1952) \u2192 today. Every manipulative in this tool is part of a long lineage of teaching aids.' },
-            curriculum:    { accent: '#22c55e', soft: 'rgba(34,197,94,0.10)',  icon: '\uD83D\uDDFA', title: 'Curriculum Map \u2014 which tool, which grade',                  hint: 'A K-5 progression chart showing which manipulatives are typically introduced at which grade and which standards they support. Click any cell to open that tool.' },
-            activities:    { accent: '#f43f5e', soft: 'rgba(244,63,94,0.10)',  icon: '\uD83C\uDCCF', title: 'Activity Cards \u2014 printable lessons',                    hint: 'Ready-to-print activity cards for small-group or whole-class use. Each card names a goal, materials, steps, and an extension question. Designed to be used WITHOUT this app \u2014 but you can also walk through them in-app.' },
-            help:          { accent: '#64748b', soft: 'rgba(100,116,139,0.10)', icon: '\u2753', title: 'Help & FAQ',                                              hint: 'Quick-reference answers to common student and teacher questions, plus keyboard shortcuts, accessibility info, and how to contact AlloFlow support.' },
-            standards:     { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDCDC', title: 'CCSS Standards Browser',                                      hint: 'Common Core State Standards for Mathematics, K\u20135. Browse by grade, see which manipulative addresses each standard, and jump straight to it.' },
-            library:       { accent: '#475569', soft: 'rgba(71,85,105,0.10)',  icon: '\uD83D\uDCDA', title: 'Library \u2014 saved constructions',                          hint: 'Every manipulative\u2019s current state can be named, saved, and reopened later. Useful for setting up class examples in advance, or for students to return to in-progress work.' },
-            teacher:       { accent: '#0f172a', soft: 'rgba(15,23,42,0.10)',   icon: '\uD83D\uDC69\u200D\uD83C\uDFEB', title: 'Teacher Dashboard \u2014 progress + planning',          hint: 'Per-student progress (badges earned, modes visited, streak best, problems solved). Quick lesson-plan templates aligned to CCSS. Export progress as CSV/JSON.' }
+            blocks:    { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83E\uDDF1', title: __alloT('stem.manipulatives.base_10_blocks_ones_tens_hundreds_thou', 'Base-10 Blocks \u2014 ones, tens, hundreds, thousands'),  hint: __alloT('stem.manipulatives.the_whole_point_of_place_value_made_ta', 'The whole point of place value made TANGIBLE. 10 ones = 1 ten; 10 tens = 1 hundred; 10 hundreds = 1 thousand. Regrouping (carrying / borrowing) becomes obvious when you have to physically swap blocks.') },
+            abacus:    { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83E\uDDEE', title: __alloT('stem.manipulatives.abacus_4_500_years_of_mental_arithmeti', 'Abacus \u2014 4,500 years of mental arithmetic'),         hint: __alloT('stem.manipulatives.soroban_japanese_and_suanpan_chinese_a', 'Soroban (Japanese) and Suanpan (Chinese) are still taught \u2014 advanced users beat calculators on speed for many problems. Each rod is a place value; bead-state IS the number. Concrete \u2192 mental in months.') },
+            slideRule: { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83D\uDCCF', title: __alloT('stem.manipulatives.slide_rule_logarithms_in_your_hand', 'Slide Rule \u2014 logarithms in your hand'),              hint: __alloT('stem.manipulatives.how_engineers_multiplied_before_electr', 'How engineers multiplied before electronic calculators: align logarithmic scales, read the answer. Apollo 11 (1969) did orbital math with slide rules. Replaced en masse only after the HP-35 dropped in 1972.') },
+            quiz:      { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83E\uDDE0', title: __alloT('stem.manipulatives.quiz_graded_place_value_arithmetic', 'Quiz \u2014 graded place-value + arithmetic'),           hint: __alloT('stem.manipulatives.ccss_1_nbt_2_nbt_3_nbt_4_nbt_progressi', 'CCSS 1.NBT, 2.NBT, 3.NBT, 4.NBT progression. Mixed concrete-pictorial-abstract sequencing (CPA, Bruner 1966) is the spine of every well-designed elementary math curriculum.') },
+            tenFrame:      { accent: '#f97316', soft: 'rgba(249,115,22,0.10)', icon: '\uD83D\uDD1F', title: __alloT('stem.manipulatives.ten_frames_the_k_2_number_sense_workho', 'Ten Frames \u2014 the K-2 number-sense workhorse'), hint: __alloT('stem.manipulatives.a_5_by_2_grid_fill_cells_to_show_a_num', 'A 5-by-2 grid. Fill cells to show a number. Subitizing (instant recognition without counting) develops here. CCSS K.OA.A.4: the "what makes 10?" question is the gateway to all later arithmetic fluency.') },
+            counters:      { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)', icon: '\uD83D\uDD34', title: __alloT('stem.manipulatives.two_color_counters_integers_concrete', 'Two-Color Counters \u2014 integers concrete'),     hint: __alloT('stem.manipulatives.yellow_1_red_1_a_yellow_red_pair_0_a_z', 'Yellow = +1; red = -1. A yellow + red pair = 0 (a "zero pair"). The most concrete model for understanding negative numbers and integer arithmetic. CCSS 6.NS.C.5, 7.NS.A.1.') },
+            pvDisks:       { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)', icon: '\uD83D\uDCBF', title: __alloT('stem.manipulatives.place_value_disks_bridge_to_algorithm', 'Place-Value Disks \u2014 bridge to algorithm'),     hint: __alloT('stem.manipulatives.each_disk_labeled_with_its_value_1_10_', 'Each disk labeled with its value (1, 10, 100, 1000). Move 10 disks of one kind to trade for 1 of the next. The conceptual bridge from physical blocks to the standard algorithm. CCSS 4.NBT.B.4.') },
+            hundredsChart: { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83D\uDCAF', title: __alloT('stem.manipulatives.hundreds_chart_count_pattern_and_skip', 'Hundreds Chart \u2014 count, pattern, and skip'),  hint: __alloT('stem.manipulatives.a_10x10_grid_of_1_100_click_to_highlig', 'A 10x10 grid of 1-100. Click to highlight cells. Skip-count overlays reveal multiplication patterns. CCSS 2.NBT.A.2: skip-counting by 5s, 10s, 100s.') },
+            patternBlocks: { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\u2B22',       title: __alloT('stem.manipulatives.pattern_blocks_fractions_symmetry', 'Pattern Blocks \u2014 fractions + symmetry'), hint: __alloT('stem.manipulatives.hexagon_trapezoid_rhombus_triangle_squ', 'Hexagon, trapezoid, rhombus, triangle, square, narrow rhombus. 6 trapezoids = 1 hexagon (so 1 trapezoid = 1/2 hex). 3 rhombi = 1 hex (so 1 rhombus = 1/3). 6 triangles = 1 hex (so 1 triangle = 1/6).') },
+            geoboard:      { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\u2B1C', title: __alloT('stem.manipulatives.geoboard_polygons_on_a_peg_grid', 'Geoboard \u2014 polygons on a peg grid'),         hint: __alloT('stem.manipulatives.connect_pegs_with_rubber_bands_to_make', 'Connect pegs with "rubber bands" to make polygons. Measure perimeter and area. The classic concrete tool for plane geometry and Pick\'s theorem.') },
+            cRods:         { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83D\uDFE7', title: __alloT('stem.manipulatives.cuisenaire_rods_numbers_in_color', 'Cuisenaire Rods \u2014 numbers in color'),         hint: __alloT('stem.manipulatives.belgian_teacher_georges_cuisenaire_195', 'Belgian teacher Georges Cuisenaire (1952): 10 rods, lengths 1-10, each a different color. Add rods to make new numbers. White=1, red=2, light green=3, purple=4, yellow=5, dark green=6, black=7, brown=8, blue=9, orange=10.') },
+            numberBonds:   { accent: '#be185d', soft: 'rgba(190,24,93,0.10)',  icon: '\uD83D\uDD17', title: __alloT('stem.manipulatives.number_bonds_part_part_whole', 'Number Bonds \u2014 part-part-whole'),             hint: __alloT('stem.manipulatives.the_whole_splits_into_two_parts_singap', 'The whole splits into two parts. Singapore Math made this central. CCSS K.OA.A.3: decompose 10 into pairs. This builds toward all addition and subtraction.') },
+            fracBars:      { accent: '#ea580c', soft: 'rgba(234,88,12,0.10)',  icon: '\u25AD',  title: __alloT('stem.manipulatives.fraction_bars_compare_and_add_fraction', 'Fraction Bars \u2014 compare and add fractions'),           hint: __alloT('stem.manipulatives.equal_length_bars_partitioned_into_hal', 'Equal-length bars partitioned into halves, thirds, fourths, sixths, eighths, twelfths. Stack to compare. Find equivalents visually. The cleanest single tool for fraction equivalence (3.NF, 4.NF).') },
+            algebraTiles:  { accent: '#1e40af', soft: 'rgba(30,64,175,0.10)',  icon: '\uD83D\uDD32', title: __alloT('stem.manipulatives.algebra_tiles_model_expressions_and_eq', 'Algebra Tiles \u2014 model expressions and equations'),     hint: __alloT('stem.manipulatives.a_tile_for_1_unit_x_variable_x_square_', 'A tile for 1 (unit), x (variable), x\u00B2 (square). Two-color: positive and negative. Model expressions like 2x + 3 or factor quadratics by arranging tiles into rectangles. CCSS 7.EE, 8.EE.') },
+            cra:           { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\uD83D\uDD04', title: __alloT('stem.manipulatives.cra_progression_concrete_picture_equat', 'CRA Progression \u2014 concrete \u2192 picture \u2192 equation'), hint: __alloT('stem.manipulatives.bruner_1966_students_master_each_conce', 'Bruner (1966): students master each concept by moving through three modes of representation. We step you through the SAME problem in all three ways so the abstract symbol is grounded in a thing you can SEE and TOUCH.') },
+            challenges:    { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83C\uDFC6', title: __alloT('stem.manipulatives.challenge_hub_quick_practice_across_ev', 'Challenge Hub \u2014 quick practice across every manipulative'), hint: __alloT('stem.manipulatives.random_problems_spanning_all_12_manipu', 'Random problems spanning all 12 manipulatives. Designed for distributed practice (Cepeda et al. 2006): a quick five-minute set, mixing kinds, beats twenty minutes of one kind in a row.') },
+            glossary:      { accent: '#06b6d4', soft: 'rgba(6,182,212,0.10)',  icon: '\uD83D\uDCD6', title: __alloT('stem.manipulatives.glossary_math_vocabulary_with_examples', 'Glossary \u2014 math vocabulary, with examples'),                 hint: __alloT('stem.manipulatives.vocabulary_is_the_curriculum_a_student', 'Vocabulary IS the curriculum. A student who hears "regroup," "compose," "decompose," "fluently," and "place value" enough times in context will internalize the system. Definitions are tied to the specific manipulative that demonstrates each.') },
+            puzzles:       { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '\uD83E\uDDE9', title: __alloT('stem.manipulatives.brain_teasers_classic_math_puzzles', 'Brain Teasers \u2014 classic math puzzles'),                          hint: __alloT('stem.manipulatives.classic_problems_that_are_solvable_sat', 'Classic problems that are solvable, satisfying, and often easier with a manipulative in hand. Useful as warm-ups, sponge activities, or anchor tasks for class discussion.') },
+            history:       { accent: '#84cc16', soft: 'rgba(132,204,22,0.10)', icon: '\uD83C\uDFDB', title: __alloT('stem.manipulatives.history_math_tools_through_time', 'History \u2014 math tools through time'),                          hint: __alloT('stem.manipulatives.counting_bones_lebombo_35_000_bce_sume', 'Counting bones (Lebombo, ~35,000 BCE) \u2192 Sumerian tokens \u2192 Roman abacus \u2192 Cuisenaire rods (1952) \u2192 today. Every manipulative in this tool is part of a long lineage of teaching aids.') },
+            curriculum:    { accent: '#22c55e', soft: 'rgba(34,197,94,0.10)',  icon: '\uD83D\uDDFA', title: __alloT('stem.manipulatives.curriculum_map_which_tool_which_grade', 'Curriculum Map \u2014 which tool, which grade'),                  hint: __alloT('stem.manipulatives.a_k_5_progression_chart_showing_which_', 'A K-5 progression chart showing which manipulatives are typically introduced at which grade and which standards they support. Click any cell to open that tool.') },
+            activities:    { accent: '#f43f5e', soft: 'rgba(244,63,94,0.10)',  icon: '\uD83C\uDCCF', title: __alloT('stem.manipulatives.activity_cards_printable_lessons', 'Activity Cards \u2014 printable lessons'),                    hint: __alloT('stem.manipulatives.ready_to_print_activity_cards_for_smal', 'Ready-to-print activity cards for small-group or whole-class use. Each card names a goal, materials, steps, and an extension question. Designed to be used WITHOUT this app \u2014 but you can also walk through them in-app.') },
+            help:          { accent: '#64748b', soft: 'rgba(100,116,139,0.10)', icon: '\u2753', title: __alloT('stem.manipulatives.help_faq_2', 'Help & FAQ'),                                              hint: __alloT('stem.manipulatives.quick_reference_answers_to_common_stud', 'Quick-reference answers to common student and teacher questions, plus keyboard shortcuts, accessibility info, and how to contact AlloFlow support.') },
+            standards:     { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDCDC', title: __alloT('stem.manipulatives.ccss_standards_browser', 'CCSS Standards Browser'),                                      hint: __alloT('stem.manipulatives.common_core_state_standards_for_mathem', 'Common Core State Standards for Mathematics, K\u20135. Browse by grade, see which manipulative addresses each standard, and jump straight to it.') },
+            library:       { accent: '#475569', soft: 'rgba(71,85,105,0.10)',  icon: '\uD83D\uDCDA', title: __alloT('stem.manipulatives.library_saved_constructions', 'Library \u2014 saved constructions'),                          hint: __alloT('stem.manipulatives.every_manipulative_s_current_state_can', 'Every manipulative\u2019s current state can be named, saved, and reopened later. Useful for setting up class examples in advance, or for students to return to in-progress work.') },
+            teacher:       { accent: '#0f172a', soft: 'rgba(15,23,42,0.10)',   icon: '\uD83D\uDC69\u200D\uD83C\uDFEB', title: __alloT('stem.manipulatives.teacher_dashboard_progress_planning', 'Teacher Dashboard \u2014 progress + planning'),          hint: __alloT('stem.manipulatives.per_student_progress_badges_earned_mod', 'Per-student progress (badges earned, modes visited, streak best, problems solved). Quick lesson-plan templates aligned to CCSS. Export progress as CSV/JSON.') }
           };
           var meta = MODE_META[manipMode] || MODE_META.blocks;
           return h('div', {
@@ -970,7 +971,7 @@ window.StemLab = window.StemLab || {
       if (manipMode === 'blocks') {
         return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200' },
           headerEl,
-          h('style', null, '@keyframes b10regroup { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(168,85,247,0.5); } 40% { transform: scale(1.15); box-shadow: 0 0 20px 8px rgba(168,85,247,0.4); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(168,85,247,0); } }'),
+          h('style', null, __alloT('stem.manipulatives.keyframes_b10regroup_0_transform_scale', '@keyframes b10regroup { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(168,85,247,0.5); } 40% { transform: scale(1.15); box-shadow: 0 0 20px 8px rgba(168,85,247,0.4); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(168,85,247,0); } }')),
 
           h('div', { className: 'bg-gradient-to-b from-orange-50 to-amber-50 rounded-xl border-2 border-orange-200 p-6' },
             // Total display with expanded form + number words
@@ -987,11 +988,11 @@ window.StemLab = window.StemLab || {
                 renderBlock3D('#059669', '#34d399', 10, 48, b10.tens, 1, 10),
                 (b10.thousands > 0 || b10.hundreds > 0 || b10.tens > 0) && b10.ones > 0 && h('span', { className: 'w-px h-8 bg-slate-200 mx-0.5' }),
                 renderBlock3D('#ea580c', '#fb923c', 10, 10, b10.ones, 1, 1),
-                totalValue === 0 && h('span', { className: 'text-sm text-slate-600 italic' }, 'no blocks')
+                totalValue === 0 && h('span', { className: 'text-sm text-slate-600 italic' }, __alloT('stem.manipulatives.no_blocks', 'no blocks'))
               )
             ),
             h('div', { className: 'flex items-center justify-center gap-4 mb-3 text-[11px] font-bold text-slate-600' },
-              h('span', null, '\u25A0 Cube = 1000'), h('span', null, '\u25AC Flat = 100'), h('span', null, '\u2503 Rod = 10'), h('span', null, '\u25AA Unit = 1')
+              h('span', null, __alloT('stem.manipulatives.cube_1000', '\u25A0 Cube = 1000')), h('span', null, __alloT('stem.manipulatives.flat_100', '\u25AC Flat = 100')), h('span', null, __alloT('stem.manipulatives.rod_10', '\u2503 Rod = 10')), h('span', null, __alloT('stem.manipulatives.unit_1', '\u25AA Unit = 1'))
             ),
             // Place value columns
             h('div', { className: 'grid grid-cols-4 gap-3' },
@@ -1002,7 +1003,7 @@ window.StemLab = window.StemLab || {
             ),
             // Regrouping
             h('div', { className: 'bg-gradient-to-r from-violet-50 to-fuchsia-50 rounded-xl border border-violet-200 p-3 mt-1' },
-              h('p', { className: 'text-[11px] font-bold text-violet-700 uppercase tracking-wider mb-2 text-center' }, '\u21C4 Regroup / Ungroup'),
+              h('p', { className: 'text-[11px] font-bold text-violet-700 uppercase tracking-wider mb-2 text-center' }, __alloT('stem.manipulatives.regroup_ungroup', '\u21C4 Regroup / Ungroup')),
               h('div', { className: 'flex flex-wrap gap-2 justify-center' },
                 regroupBtn('10 \u25AA \u2192 1 \u2503', 'ones', 'tens', b10.ones >= 10, '#ea580c', '#059669'),
                 regroupBtn('1 \u2503 \u2192 10 \u25AA', 'tens', 'ones', b10.tens >= 1, '#059669', '#ea580c'),
@@ -1013,7 +1014,7 @@ window.StemLab = window.StemLab || {
                 regroupBtn('10 \u25AC \u2192 1 \u25A0', 'hundreds', 'thousands', b10.hundreds >= 10, '#2563eb', '#db2777'),
                 regroupBtn('1 \u25A0 \u2192 10 \u25AC', 'thousands', 'hundreds', b10.thousands >= 1, '#db2777', '#2563eb')
               ),
-              h('p', { className: 'text-[11px] text-violet-400 text-center mt-1.5 italic' }, '\uD83D\uDCA1 10 of one place value always equals 1 of the next!')
+              h('p', { className: 'text-[11px] text-violet-400 text-center mt-1.5 italic' }, __alloT('stem.manipulatives.10_of_one_place_value_always_equals_1_', '\uD83D\uDCA1 10 of one place value always equals 1 of the next!'))
             )
           ),
 
@@ -1021,26 +1022,26 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex gap-1.5 items-center flex-wrap' },
             h('span', { className: 'text-[11px] font-bold text-slate-600' }, 'Difficulty:'),
             [{ id: 'ones', label: '1\u20139', color: '#ea580c' }, { id: 'tens', label: '10\u201399', color: '#059669' }, { id: 'hundreds', label: '100\u2013999', color: '#2563eb' }, { id: 'thousands', label: '1K\u20139K', color: '#db2777' }, { id: 'any', label: 'Any', color: 'var(--allo-stem-text-soft, #94a3b8)' }].map(function(dl) {
-              return h('button', { 'aria-label': 'Expanded Form', key: dl.id, onClick: function() { upd({ diffLevel: dl.id }); },
+              return h('button', { 'aria-label': __alloT('stem.manipulatives.expanded_form', 'Expanded Form'), key: dl.id, onClick: function() { upd({ diffLevel: dl.id }); },
                 className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ' + (diffLevel === dl.id ? 'text-white shadow' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-50'),
                 style: diffLevel === dl.id ? { backgroundColor: dl.color } : {}
               }, dl.label);
             }),
             h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-orange-600 cursor-pointer ml-auto' },
-              h('input', { type: 'checkbox', checked: showExpanded, onChange: function() { upd({ showExpanded: !showExpanded }); }, className: 'accent-orange-600' }), 'Expanded Form')
+              h('input', { type: 'checkbox', checked: showExpanded, onChange: function() { upd({ showExpanded: !showExpanded }); }, className: 'accent-orange-600' }), __alloT('stem.manipulatives.expanded_form_2', 'Expanded Form'))
           ),
 
           // Action buttons
           h('div', { className: 'flex gap-2 flex-wrap' },
-            h('button', { onClick: genBlockChallenge, className: 'flex-1 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold rounded-lg text-sm hover:from-orange-600 hover:to-amber-600 transition-all shadow-md' }, '\uD83C\uDFB2 Build Number'),
-            h('button', { 'aria-label': 'Addition', onClick: genAdditionProblem, className: 'flex-1 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-lg text-sm hover:from-emerald-600 hover:to-teal-600 transition-all shadow-md' }, '\u2795 Addition'),
-            h('button', { 'aria-label': 'Reset', onClick: function() { upd({ b10: { ones: 0, tens: 0, hundreds: 0, thousands: 0 }, b10Challenge: null, b10Feedback: null, b10AddMode: false, b10Addends: null }); }, className: 'px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all' }, '\u21BA Reset')
+            h('button', { onClick: genBlockChallenge, className: 'flex-1 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold rounded-lg text-sm hover:from-orange-600 hover:to-amber-600 transition-all shadow-md' }, __alloT('stem.manipulatives.build_number', '\uD83C\uDFB2 Build Number')),
+            h('button', { 'aria-label': __alloT('stem.manipulatives.addition', 'Addition'), onClick: genAdditionProblem, className: 'flex-1 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-lg text-sm hover:from-emerald-600 hover:to-teal-600 transition-all shadow-md' }, __alloT('stem.manipulatives.addition_2', '\u2795 Addition')),
+            h('button', { 'aria-label': __alloT('stem.manipulatives.reset', 'Reset'), onClick: function() { upd({ b10: { ones: 0, tens: 0, hundreds: 0, thousands: 0 }, b10Challenge: null, b10Feedback: null, b10AddMode: false, b10Addends: null }); }, className: 'px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all' }, __alloT('stem.manipulatives.reset_2', '\u21BA Reset'))
           ),
 
           // Addition problem display
           b10AddMode && b10Addends && h('div', { className: 'bg-emerald-50 rounded-xl p-4 border border-emerald-200' },
             h('div', { className: 'text-center' },
-              h('div', { className: 'text-sm font-bold text-emerald-800 mb-2' }, '\u2795 Addition with Regrouping'),
+              h('div', { className: 'text-sm font-bold text-emerald-800 mb-2' }, __alloT('stem.manipulatives.addition_with_regrouping', '\u2795 Addition with Regrouping')),
               h('div', { className: 'flex items-center justify-center gap-3 text-2xl font-bold font-mono' },
                 h('span', { className: 'text-emerald-700' }, b10Addends.a.toLocaleString()),
                 h('span', { className: 'text-emerald-500' }, '+'),
@@ -1048,7 +1049,7 @@ window.StemLab = window.StemLab || {
                 h('span', { className: 'text-emerald-500' }, '='),
                 h('span', { className: 'text-emerald-400' }, '?')
               ),
-              h('p', { className: 'text-xs text-emerald-600 mt-2' }, 'Use the blocks above to show the sum. Add blocks for each number, then regroup if needed!')
+              h('p', { className: 'text-xs text-emerald-600 mt-2' }, __alloT('stem.manipulatives.use_the_blocks_above_to_show_the_sum_a', 'Use the blocks above to show the sum. Add blocks for each number, then regroup if needed!'))
             )
           ),
 
@@ -1056,8 +1057,8 @@ window.StemLab = window.StemLab || {
           b10Challenge && !b10AddMode && h('div', { className: 'bg-orange-50 rounded-lg p-3 border border-orange-200' },
             h('p', { className: 'text-sm font-bold text-orange-800 mb-2' }, '\uD83C\uDFAF Show ' + b10Challenge.target.toLocaleString() + ' using base-10 blocks'),
             h('div', { className: 'flex gap-2 items-center' },
-              h('span', { className: 'text-xs text-orange-600' }, 'Your value: ', h('span', { className: 'font-bold text-orange-900' }, totalValue.toLocaleString())),
-              h('button', { 'aria-label': 'Check', onClick: checkBase10, className: 'ml-auto px-4 py-1.5 bg-orange-700 text-white font-bold rounded-lg text-sm hover:bg-orange-600 transition-all' }, '\u2714 Check')
+              h('span', { className: 'text-xs text-orange-600' }, __alloT('stem.manipulatives.your_value', 'Your value: '), h('span', { className: 'font-bold text-orange-900' }, totalValue.toLocaleString())),
+              h('button', { 'aria-label': __alloT('stem.manipulatives.check', 'Check'), onClick: checkBase10, className: 'ml-auto px-4 py-1.5 bg-orange-700 text-white font-bold rounded-lg text-sm hover:bg-orange-600 transition-all' }, __alloT('stem.manipulatives.check_2', '\u2714 Check'))
             ),
             b10Feedback && h('p', { className: 'text-sm font-bold mt-2 ' + (b10Feedback.correct ? 'text-green-600' : 'text-red-600') }, b10Feedback.msg)
           ),
@@ -1065,8 +1066,8 @@ window.StemLab = window.StemLab || {
           // Addition challenge check
           b10AddMode && b10Challenge && h('div', { className: 'bg-orange-50 rounded-lg p-3 border border-orange-200' },
             h('div', { className: 'flex gap-2 items-center' },
-              h('span', { className: 'text-xs text-orange-600' }, 'Your value: ', h('span', { className: 'font-bold text-orange-900' }, totalValue.toLocaleString()), ' (need ' + b10Challenge.target.toLocaleString() + ')'),
-              h('button', { 'aria-label': 'Check Sum', onClick: checkBase10, className: 'ml-auto px-4 py-1.5 bg-emerald-700 text-white font-bold rounded-lg text-sm hover:bg-emerald-600 transition-all' }, '\u2714 Check Sum')
+              h('span', { className: 'text-xs text-orange-600' }, __alloT('stem.manipulatives.your_value_2', 'Your value: '), h('span', { className: 'font-bold text-orange-900' }, totalValue.toLocaleString()), ' (need ' + b10Challenge.target.toLocaleString() + ')'),
+              h('button', { 'aria-label': __alloT('stem.manipulatives.check_sum', 'Check Sum'), onClick: checkBase10, className: 'ml-auto px-4 py-1.5 bg-emerald-700 text-white font-bold rounded-lg text-sm hover:bg-emerald-600 transition-all' }, __alloT('stem.manipulatives.check_sum_2', '\u2714 Check Sum'))
             ),
             b10Feedback && h('p', { className: 'text-sm font-bold mt-2 ' + (b10Feedback.correct ? 'text-green-600' : 'text-red-600') }, b10Feedback.msg)
           )
@@ -1102,7 +1103,7 @@ window.StemLab = window.StemLab || {
                 return h('div', { key: rodIdx, className: 'flex flex-col items-center', style: { width: '48px' } },
                   h('div', { className: 'flex flex-col items-center gap-1 mb-1', style: { minHeight: '60px', justifyContent: 'flex-end' } },
                     h('div', { style: { position: 'absolute', width: '3px', height: '100%', background: 'linear-gradient(180deg, #92400e 0%, #b45309 100%)', borderRadius: '2px', zIndex: 0 } }),
-                    h('button', { 'aria-label': 'Set Rod',
+                    h('button', { 'aria-label': __alloT('stem.manipulatives.set_rod', 'Set Rod'),
                       onClick: function() { setRod(rodIdx, heavenlyVal ? val - 5 : val + 5); },
                       className: 'relative z-10 transition-all duration-200',
                       style: {
@@ -1143,37 +1144,37 @@ window.StemLab = window.StemLab || {
 
           // Controls
           h('div', { className: 'flex gap-2 flex-wrap' },
-            h('button', { 'aria-label': 'Challenge', onClick: function() {
+            h('button', { 'aria-label': __alloT('stem.manipulatives.challenge', 'Challenge'), onClick: function() {
               var target = 1 + Math.floor(Math.random() * 99999);
               upd({ abacusChallenge: { target: target }, abacusFeedback: null, abacus: { rods: [0, 0, 0, 0, 0] }, speedChallenge: null });
-            }, className: 'flex-1 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-lg text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-md' }, '\uD83C\uDFB2 Challenge'),
-            h('button', { 'aria-label': 'Speed', onClick: function() {
+            }, className: 'flex-1 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-lg text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-md' }, __alloT('stem.manipulatives.challenge_2', '\uD83C\uDFB2 Challenge')),
+            h('button', { 'aria-label': __alloT('stem.manipulatives.speed', 'Speed'), onClick: function() {
               var target = 1 + Math.floor(Math.random() * 99999);
               upd({ speedChallenge: { target: target, startTime: Date.now() }, abacusChallenge: null, abacusFeedback: null, abacus: { rods: [0, 0, 0, 0, 0] } });
-            }, className: 'flex-1 py-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white font-bold rounded-lg text-sm hover:from-rose-600 hover:to-pink-600 transition-all shadow-md' }, '\u23F1\uFE0F Speed'),
-            h('button', { 'aria-label': 'Reset', onClick: function() { upd({ abacus: { rods: [0, 0, 0, 0, 0] }, abacusChallenge: null, abacusFeedback: null, speedChallenge: null }); }, className: 'px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all' }, '\u21BA Reset')
+            }, className: 'flex-1 py-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white font-bold rounded-lg text-sm hover:from-rose-600 hover:to-pink-600 transition-all shadow-md' }, __alloT('stem.manipulatives.speed_2', '\u23F1\uFE0F Speed')),
+            h('button', { 'aria-label': __alloT('stem.manipulatives.reset_3', 'Reset'), onClick: function() { upd({ abacus: { rods: [0, 0, 0, 0, 0] }, abacusChallenge: null, abacusFeedback: null, speedChallenge: null }); }, className: 'px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all' }, __alloT('stem.manipulatives.reset_4', '\u21BA Reset'))
           ),
 
           // Challenge / Speed display
           abacusChallenge && h('div', { className: 'bg-amber-50 rounded-lg p-3 border border-amber-200' },
             h('p', { className: 'text-sm font-bold text-amber-800 mb-2' }, '\uD83C\uDFAF Show ' + abacusChallenge.target.toLocaleString() + ' on the abacus'),
             h('div', { className: 'flex gap-2 items-center' },
-              h('span', { className: 'text-xs text-amber-600' }, 'Your value: ', h('span', { className: 'font-bold text-amber-900' }, abacusTotal.toLocaleString())),
-              h('button', { 'aria-label': 'Check', onClick: checkAbacus, className: 'ml-auto px-4 py-1.5 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-600 transition-all' }, '\u2714 Check')
+              h('span', { className: 'text-xs text-amber-600' }, __alloT('stem.manipulatives.your_value_3', 'Your value: '), h('span', { className: 'font-bold text-amber-900' }, abacusTotal.toLocaleString())),
+              h('button', { 'aria-label': __alloT('stem.manipulatives.check_3', 'Check'), onClick: checkAbacus, className: 'ml-auto px-4 py-1.5 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-600 transition-all' }, __alloT('stem.manipulatives.check_4', '\u2714 Check'))
             ),
             abacusFeedback && h('p', { className: 'text-sm font-bold mt-2 ' + (abacusFeedback.correct ? 'text-green-600' : 'text-red-600') }, abacusFeedback.msg)
           ),
           speedChallenge && h('div', { className: 'bg-rose-50 rounded-lg p-3 border border-rose-200' },
             h('p', { className: 'text-sm font-bold text-rose-800 mb-2' }, '\u23F1\uFE0F Speed: Show ' + speedChallenge.target.toLocaleString() + ' as fast as you can!'),
             h('div', { className: 'flex gap-2 items-center' },
-              h('span', { className: 'text-xs text-rose-600' }, 'Your value: ', h('span', { className: 'font-bold text-rose-900' }, abacusTotal.toLocaleString())),
-              h('button', { 'aria-label': 'Done!', onClick: checkSpeed, className: 'ml-auto px-4 py-1.5 bg-rose-700 text-white font-bold rounded-lg text-sm hover:bg-rose-600 transition-all' }, '\u2714 Done!')
+              h('span', { className: 'text-xs text-rose-600' }, __alloT('stem.manipulatives.your_value_4', 'Your value: '), h('span', { className: 'font-bold text-rose-900' }, abacusTotal.toLocaleString())),
+              h('button', { 'aria-label': 'Done!', onClick: checkSpeed, className: 'ml-auto px-4 py-1.5 bg-rose-700 text-white font-bold rounded-lg text-sm hover:bg-rose-600 transition-all' }, __alloT('stem.manipulatives.done', '\u2714 Done!'))
             )
           ),
 
           // Culture cards
           h('div', null,
-            h('button', { 'aria-label': 'Toggle cultural context panel', onClick: function() { upd({ showCulture: !showCulture }); }, className: 'text-[11px] font-bold ' + (showCulture ? 'text-amber-600' : 'text-slate-600') + 'transition-colors  hover:text-amber-600' }, (showCulture ? '\u25B2' : '\u25BC') + ' \uD83C\uDF0F Abacus Around the World'),
+            h('button', { 'aria-label': __alloT('stem.manipulatives.toggle_cultural_context_panel', 'Toggle cultural context panel'), onClick: function() { upd({ showCulture: !showCulture }); }, className: 'text-[11px] font-bold ' + (showCulture ? 'text-amber-600' : 'text-slate-600') + 'transition-colors  hover:text-amber-600' }, (showCulture ? '\u25B2' : '\u25BC') + ' \uD83C\uDF0F Abacus Around the World'),
             showCulture && h('div', { className: 'grid grid-cols-2 gap-2 mt-2' },
               abacusFacts.map(function(fact) {
                 return h('div', { key: fact.name, className: 'bg-amber-50 rounded-lg p-3 border border-amber-200' },
@@ -1248,23 +1249,23 @@ window.StemLab = window.StemLab || {
           // Readout
           h('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-4' },
             h('div', { className: 'grid grid-cols-3 gap-4 text-center' },
-              h('div', null, h('div', { className: 'text-xs font-bold text-green-700 uppercase mb-1' }, 'C Scale'), h('div', { className: 'text-2xl font-bold font-mono text-green-800' }, cVal.toFixed(2))),
+              h('div', null, h('div', { className: 'text-xs font-bold text-green-700 uppercase mb-1' }, __alloT('stem.manipulatives.c_scale', 'C Scale')), h('div', { className: 'text-2xl font-bold font-mono text-green-800' }, cVal.toFixed(2))),
               h('div', null, h('div', { className: 'text-xs font-bold text-slate-600 uppercase mb-1' }, '\u00D7'), h('div', { className: 'text-2xl font-bold text-slate-600' }, '\u00D7')),
-              h('div', null, h('div', { className: 'text-xs font-bold text-amber-700 uppercase mb-1' }, 'D Scale'), h('div', { className: 'text-2xl font-bold font-mono text-amber-800' }, dVal.toFixed(2)))
+              h('div', null, h('div', { className: 'text-xs font-bold text-amber-700 uppercase mb-1' }, __alloT('stem.manipulatives.d_scale', 'D Scale')), h('div', { className: 'text-2xl font-bold font-mono text-amber-800' }, dVal.toFixed(2)))
             ),
             h('div', { className: 'text-center mt-3 pt-3 border-t border-amber-200' },
-              h('div', { className: 'text-xs font-bold text-slate-600 uppercase mb-1' }, 'Result'),
+              h('div', { className: 'text-xs font-bold text-slate-600 uppercase mb-1' }, __alloT('stem.manipulatives.result', 'Result')),
               h('div', { className: 'text-3xl font-bold font-mono text-orange-800' }, '\u2248 ' + product.toFixed(2))
             )
           ),
 
           // Controls + practice problems
           h('div', { className: 'flex gap-2 flex-wrap' },
-            h('button', { 'aria-label': 'Practice Problem', onClick: function() {
+            h('button', { 'aria-label': __alloT('stem.manipulatives.practice_problem', 'Practice Problem'), onClick: function() {
               var p = srProblems[Math.floor(Math.random() * srProblems.length)];
               upd({ srProblem: p, srFeedback: null, slideRule: { cOffset: 0, cursorPos: 0.301 } });
-            }, className: 'flex-1 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-lg text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-md' }, '\uD83C\uDFAF Practice Problem'),
-            h('button', { 'aria-label': 'Reset', onClick: function() { upd({ slideRule: { cOffset: 0, cursorPos: 0.301 }, srProblem: null, srFeedback: null }); }, className: 'px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all' }, '\u21BA Reset')
+            }, className: 'flex-1 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-lg text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-md' }, __alloT('stem.manipulatives.practice_problem_2', '\uD83C\uDFAF Practice Problem')),
+            h('button', { 'aria-label': __alloT('stem.manipulatives.reset_5', 'Reset'), onClick: function() { upd({ slideRule: { cOffset: 0, cursorPos: 0.301 }, srProblem: null, srFeedback: null }); }, className: 'px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all' }, __alloT('stem.manipulatives.reset_6', '\u21BA Reset'))
           ),
 
           // Practice problem display
@@ -1272,22 +1273,22 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-sm font-bold text-amber-800 mb-2' }, '\uD83C\uDFAF Use the slide rule to multiply: ' + srProblem.a + ' \u00D7 ' + srProblem.b + ' = ?'),
             h('p', { className: 'text-xs text-amber-600 mb-2' }, '\uD83D\uDCA1 Set C-scale "1" to line up with ' + srProblem.a + ' on D, then find ' + srProblem.b + ' on C. Read D under it!'),
             h('div', { className: 'flex gap-2 items-center' },
-              h('span', { className: 'text-xs text-amber-600' }, 'Your result: ', h('span', { className: 'font-bold text-amber-900' }, '\u2248 ' + product.toFixed(1))),
-              h('button', { 'aria-label': 'Check', onClick: checkSR, className: 'ml-auto px-4 py-1.5 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-600 transition-all' }, '\u2714 Check')
+              h('span', { className: 'text-xs text-amber-600' }, __alloT('stem.manipulatives.your_result', 'Your result: '), h('span', { className: 'font-bold text-amber-900' }, '\u2248 ' + product.toFixed(1))),
+              h('button', { 'aria-label': __alloT('stem.manipulatives.check_5', 'Check'), onClick: checkSR, className: 'ml-auto px-4 py-1.5 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-600 transition-all' }, __alloT('stem.manipulatives.check_6', '\u2714 Check'))
             ),
             srFeedback && h('p', { className: 'text-sm font-bold mt-2 ' + (srFeedback.correct ? 'text-green-600' : 'text-red-600') }, srFeedback.msg)
           ),
 
           // Tutorial
           h('div', { className: 'bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-xs text-yellow-800 space-y-2' },
-            h('p', { className: 'font-bold text-sm text-amber-800' }, '\uD83D\uDCCF How to Use the Slide Rule'),
+            h('p', { className: 'font-bold text-sm text-amber-800' }, __alloT('stem.manipulatives.how_to_use_the_slide_rule', '\uD83D\uDCCF How to Use the Slide Rule')),
             h('div', { className: 'space-y-1.5' },
-              h('p', null, '1\uFE0F\u20E3 The slide rule multiplies using ', h('strong', null, 'logarithmic scales'), ' \u2014 sliding turns multiplication into addition.'),
-              h('p', null, '2\uFE0F\u20E3 ', h('strong', null, 'Click the top (C) area'), ' to shift the C scale relative to D.'),
-              h('p', null, '3\uFE0F\u20E3 ', h('strong', null, 'Click the bottom (D) area'), ' to move the red cursor.'),
-              h('p', null, '4\uFE0F\u20E3 Read where the ', h('strong', null, 'cursor crosses both scales'), '. The readout shows exact values.')
+              h('p', null, __alloT('stem.manipulatives.1_the_slide_rule_multiplies_using', '1\uFE0F\u20E3 The slide rule multiplies using '), h('strong', null, __alloT('stem.manipulatives.logarithmic_scales', 'logarithmic scales')), __alloT('stem.manipulatives.sliding_turns_multiplication_into_addi', ' \u2014 sliding turns multiplication into addition.')),
+              h('p', null, '2\uFE0F\u20E3 ', h('strong', null, __alloT('stem.manipulatives.click_the_top_c_area', 'Click the top (C) area')), __alloT('stem.manipulatives.to_shift_the_c_scale_relative_to_d', ' to shift the C scale relative to D.')),
+              h('p', null, '3\uFE0F\u20E3 ', h('strong', null, __alloT('stem.manipulatives.click_the_bottom_d_area', 'Click the bottom (D) area')), __alloT('stem.manipulatives.to_move_the_red_cursor', ' to move the red cursor.')),
+              h('p', null, __alloT('stem.manipulatives.4_read_where_the', '4\uFE0F\u20E3 Read where the '), h('strong', null, __alloT('stem.manipulatives.cursor_crosses_both_scales', 'cursor crosses both scales')), __alloT('stem.manipulatives.the_readout_shows_exact_values', '. The readout shows exact values.'))
             ),
-            h('p', { className: 'text-[11px] text-amber-600 italic mt-1' }, '\uD83D\uDE80 NASA engineers used slide rules for Apollo moon mission trajectories!')
+            h('p', { className: 'text-[11px] text-amber-600 italic mt-1' }, __alloT('stem.manipulatives.nasa_engineers_used_slide_rules_for_ap', '\uD83D\uDE80 NASA engineers used slide rules for Apollo moon mission trajectories!'))
           )
         );
       }
@@ -1299,11 +1300,11 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200' },
           headerEl,
           h('div', { className: 'text-center' },
-            h('h4', { className: 'text-lg font-bold text-orange-800' }, '\uD83E\uDDE0 Place Value Quiz'),
-            h('p', { className: 'text-xs text-slate-600' }, 'Test your understanding of place value, expanded form, and number comparison')
+            h('h4', { className: 'text-lg font-bold text-orange-800' }, __alloT('stem.manipulatives.place_value_quiz', '\uD83E\uDDE0 Place Value Quiz')),
+            h('p', { className: 'text-xs text-slate-600' }, __alloT('stem.manipulatives.test_your_understanding_of_place_value', 'Test your understanding of place value, expanded form, and number comparison'))
           ),
 
-          h('button', { 'aria-label': 'Generate new place value quiz', onClick: function() { upd({ pvQuiz: generatePVQuiz(), pvFeedback: null }); },
+          h('button', { 'aria-label': __alloT('stem.manipulatives.generate_new_place_value_quiz', 'Generate new place value quiz'), onClick: function() { upd({ pvQuiz: generatePVQuiz(), pvFeedback: null }); },
             className: 'w-full py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold rounded-xl text-sm hover:from-orange-600 hover:to-amber-600 transition-all shadow-md'
           }, pvQuiz ? '\uD83D\uDD04 Next Question' : '\uD83C\uDFAF Start Quiz'),
 
@@ -1325,28 +1326,28 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-lg font-bold text-slate-800 mb-4' }, pvQuiz.q),
             !pvFeedback && h('div', { className: 'grid grid-cols-2 gap-3' },
               pvQuiz.opts.map(function(opt) {
-                return h('button', { 'aria-label': 'Next', key: opt, onClick: function() { answerPVQuiz(opt); },
+                return h('button', { 'aria-label': __alloT('stem.manipulatives.next', 'Next'), key: opt, onClick: function() { answerPVQuiz(opt); },
                   className: 'px-4 py-3 rounded-xl text-sm font-bold border-2 bg-white text-slate-700 border-slate-200 hover:border-orange-400 hover:bg-orange-50 transition-all cursor-pointer'
                 }, opt);
               })
             ),
             pvFeedback && h('div', { className: 'p-3 rounded-xl text-sm font-bold ' + (pvFeedback.correct ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200') },
               pvFeedback.msg,
-              h('button', { 'aria-label': 'Next', onClick: function() { upd({ pvQuiz: generatePVQuiz(), pvFeedback: null }); }, className: 'ml-3 text-xs font-bold underline' }, '\u27A1 Next')
+              h('button', { 'aria-label': __alloT('stem.manipulatives.next_2', 'Next'), onClick: function() { upd({ pvQuiz: generatePVQuiz(), pvFeedback: null }); }, className: 'ml-3 text-xs font-bold underline' }, __alloT('stem.manipulatives.next_3', '\u27A1 Next'))
             )
           ),
 
-          !pvQuiz && h('div', { className: 'text-center text-sm text-slate-600 py-8' }, 'Click "Start Quiz" to test your place value skills!'),
+          !pvQuiz && h('div', { className: 'text-center text-sm text-slate-600 py-8' }, __alloT('stem.manipulatives.click_start_quiz_to_test_your_place_va', 'Click "Start Quiz" to test your place value skills!')),
 
           // Quiz categories info
           h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 gap-2' },
             [
-              { icon: '\uD83D\uDD22', name: 'Digit in Place', desc: 'Find a specific digit' },
-              { icon: '\uD83D\uDCC4', name: 'Expanded Form', desc: 'Break numbers apart' },
-              { icon: '\u2696\uFE0F', name: 'Compare', desc: 'Greater/less than' },
-              { icon: '\uD83C\uDFAF', name: 'Rounding', desc: 'Round to nearest 10/100/1000' },
-              { icon: '\u21C4', name: 'Convert', desc: 'Between standard & expanded' },
-              { icon: '\uD83E\uDDE0', name: 'Place Value', desc: 'What is each digit worth?' }
+              { icon: '\uD83D\uDD22', name: __alloT('stem.manipulatives.digit_in_place', 'Digit in Place'), desc: __alloT('stem.manipulatives.find_a_specific_digit', 'Find a specific digit') },
+              { icon: '\uD83D\uDCC4', name: __alloT('stem.manipulatives.expanded_form_3', 'Expanded Form'), desc: __alloT('stem.manipulatives.break_numbers_apart', 'Break numbers apart') },
+              { icon: '\u2696\uFE0F', name: __alloT('stem.manipulatives.compare', 'Compare'), desc: __alloT('stem.manipulatives.greater_less_than', 'Greater/less than') },
+              { icon: '\uD83C\uDFAF', name: __alloT('stem.manipulatives.rounding', 'Rounding'), desc: __alloT('stem.manipulatives.round_to_nearest_10_100_1000', 'Round to nearest 10/100/1000') },
+              { icon: '\u21C4', name: __alloT('stem.manipulatives.convert', 'Convert'), desc: __alloT('stem.manipulatives.between_standard_expanded', 'Between standard & expanded') },
+              { icon: '\uD83E\uDDE0', name: __alloT('stem.manipulatives.place_value', 'Place Value'), desc: __alloT('stem.manipulatives.what_is_each_digit_worth', 'What is each digit worth?') }
             ].map(function(cat) {
               return h('div', { key: cat.name, className: 'bg-orange-50 rounded-lg p-2 border border-orange-200 text-center' },
                 h('div', { className: 'text-base mb-0.5' }, cat.icon),
@@ -1402,10 +1403,10 @@ window.StemLab = window.StemLab || {
             h('label', { className: 'ml-auto flex items-center gap-1 text-xs font-bold text-orange-700' },
               h('input', { type: 'checkbox', checked: tenFrameDouble,
                 onChange: function(e) { upd({ tenFrameDouble: e.target.checked, tenFrameFilled: Math.min(tenFrameFilled, e.target.checked ? 20 : 10) }); },
-                'aria-label': 'Toggle double ten frame',
+                'aria-label': __alloT('stem.manipulatives.toggle_double_ten_frame', 'Toggle double ten frame'),
                 className: 'accent-orange-600'
               }),
-              'Double frame (to 20)'
+              __alloT('stem.manipulatives.double_frame_to_20', 'Double frame (to 20)')
             )
           ),
           h('div', { className: 'bg-white rounded-xl border-2 border-orange-200 p-4 flex justify-center' },
@@ -1415,13 +1416,13 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: 'flex gap-2 justify-center' },
             h('button', { onClick: function() { upd({ tenFrameFilled: 0 }); },
-              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-rose-100 text-rose-700 hover:bg-rose-200' }, '↺ Clear'),
+              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-rose-100 text-rose-700 hover:bg-rose-200' }, __alloT('stem.manipulatives.clear', '↺ Clear')),
             h('button', { onClick: function() { upd({ tenFrameFilled: Math.min(tfMax, tenFrameFilled + 1) }); sfxClick(); },
-              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-orange-600 text-white hover:bg-orange-700' }, '+ Add one'),
+              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-orange-600 text-white hover:bg-orange-700' }, __alloT('stem.manipulatives.add_one', '+ Add one')),
             h('button', { onClick: function() { upd({ tenFrameFilled: Math.max(0, tenFrameFilled - 1) }); sfxClick(); },
-              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-orange-200 text-orange-800 hover:bg-orange-300' }, '− Remove one'),
+              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-orange-200 text-orange-800 hover:bg-orange-300' }, __alloT('stem.manipulatives.remove_one', '− Remove one')),
             h('button', { onClick: function() { upd({ tenFrameFilled: Math.floor(Math.random() * (tfMax + 1)) }); sfxClick(); },
-              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-amber-100 text-amber-800 hover:bg-amber-200' }, '🎲 Random')
+              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-amber-100 text-amber-800 hover:bg-amber-200' }, __alloT('stem.manipulatives.random', '🎲 Random'))
           ),
           h('div', { className: 'bg-orange-50 rounded-lg p-3 border border-orange-100 text-xs text-orange-800' },
             '💡 ',
@@ -1467,12 +1468,12 @@ window.StemLab = window.StemLab || {
             };
             return h('div', { className: 'bg-white rounded-xl border-2 border-orange-300 p-3' },
               h('div', { className: 'flex items-center justify-between mb-2' },
-                h('p', { className: 'text-xs font-bold text-orange-800 uppercase' }, '🎯 Challenge'),
+                h('p', { className: 'text-xs font-bold text-orange-800 uppercase' }, __alloT('stem.manipulatives.challenge_3', '🎯 Challenge')),
                 h('button', { onClick: genTfChallenge,
-                  className: 'transition-colors px-3 py-1 rounded text-xs font-bold bg-orange-600 text-white hover:bg-orange-700' }, '🎲 New')
+                  className: 'transition-colors px-3 py-1 rounded text-xs font-bold bg-orange-600 text-white hover:bg-orange-700' }, __alloT('stem.manipulatives.new', '🎲 New'))
               ),
               !tfChallenge && h('p', { className: 'text-xs text-orange-700 italic' },
-                'Click "New" for a quick practice problem (subitize, make 10, or fill the double frame).'
+                __alloT('stem.manipulatives.click_new_for_a_quick_practice_problem', 'Click "New" for a quick practice problem (subitize, make 10, or fill the double frame).')
               ),
               tfChallenge && h('div', { className: 'space-y-2' },
                 h('p', { className: 'text-sm text-slate-800' }, tfChallenge.q),
@@ -1483,7 +1484,7 @@ window.StemLab = window.StemLab || {
                 tfFeedback && h('div', { className: 'space-y-1' },
                   h('p', { className: 'text-sm font-bold ' + (tfFeedback.ok ? 'text-green-700' : 'text-red-700') }, tfFeedback.msg),
                   h('button', { onClick: genTfChallenge,
-                    className: 'transition-colors w-full px-3 py-1.5 rounded text-xs font-bold bg-orange-600 text-white hover:bg-orange-700' }, '🔄 Next')
+                    className: 'transition-colors w-full px-3 py-1.5 rounded text-xs font-bold bg-orange-600 text-white hover:bg-orange-700' }, __alloT('stem.manipulatives.next_4', '🔄 Next'))
                 )
               )
             );
@@ -1526,8 +1527,8 @@ window.StemLab = window.StemLab || {
                 var nc = Object.assign({}, counters); nc[kind] = Math.max(0, nc[kind] - 1);
                 upd({ counters: nc }); sfxClick();
               },
-              'aria-label': 'Counter — drag to opposite-color zone to remove zero pair, or click to remove just this one',
-              title: 'Drag onto opposite color to cancel; click to remove',
+              'aria-label': __alloT('stem.manipulatives.counter_drag_to_opposite_color_zone_to', 'Counter — drag to opposite-color zone to remove zero pair, or click to remove just this one'),
+              title: __alloT('stem.manipulatives.drag_onto_opposite_color_to_cancel_cli', 'Drag onto opposite color to cancel; click to remove'),
               style: {
                 width: 36, height: 36, borderRadius: '50%',
                 background: color, border: '2px solid #0f172a', cursor: 'grab',
@@ -1551,7 +1552,7 @@ window.StemLab = window.StemLab || {
           headerEl,
           // Net value display
           h('div', { className: 'bg-white rounded-xl border-2 border-rose-200 p-4 text-center' },
-            h('p', { className: 'text-xs font-bold text-rose-700' }, 'Net value (yellow − red):'),
+            h('p', { className: 'text-xs font-bold text-rose-700' }, __alloT('stem.manipulatives.net_value_yellow_red', 'Net value (yellow − red):')),
             h('p', { className: 'text-5xl font-black ' + (net > 0 ? 'text-emerald-700' : net < 0 ? 'text-rose-700' : 'text-slate-600') },
               (net > 0 ? '+' : '') + net
             ),
@@ -1570,14 +1571,14 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'text-xs font-bold text-amber-700 mb-2 text-center' }, '🟡 Yellow (positive): ' + counters.yellow),
               h('div', { className: 'flex flex-wrap gap-1 justify-center min-h-[80px]' },
                 counters.yellow === 0
-                  ? h('p', { className: 'text-[11px] italic text-slate-500 self-center' }, 'No yellow counters yet')
+                  ? h('p', { className: 'text-[11px] italic text-slate-500 self-center' }, __alloT('stem.manipulatives.no_yellow_counters_yet', 'No yellow counters yet'))
                   : renderCounter(palette.counter2, counters.yellow, 'yellow')
               ),
               h('div', { className: 'flex gap-1 mt-2' },
                 h('button', { onClick: function() { upd({ counters: Object.assign({}, counters, { yellow: counters.yellow + 1 }) }); sfxClick(); },
-                  className: 'transition-colors flex-1 px-2 py-1 rounded text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700' }, '+ Yellow'),
+                  className: 'transition-colors flex-1 px-2 py-1 rounded text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700' }, __alloT('stem.manipulatives.yellow', '+ Yellow')),
                 h('button', { onClick: function() { upd({ counters: Object.assign({}, counters, { yellow: counters.yellow + 5 }) }); sfxClick(); },
-                  className: 'transition-colors flex-1 px-2 py-1 rounded text-[11px] font-bold bg-amber-700 text-white hover:bg-amber-800' }, '+ 5')
+                  className: 'transition-colors flex-1 px-2 py-1 rounded text-[11px] font-bold bg-amber-700 text-white hover:bg-amber-800' }, __alloT('stem.manipulatives.5', '+ 5'))
               )
             ),
             h('div', {
@@ -1589,25 +1590,25 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'text-xs font-bold text-rose-700 mb-2 text-center' }, '🔴 Red (negative): ' + counters.red),
               h('div', { className: 'flex flex-wrap gap-1 justify-center min-h-[80px]' },
                 counters.red === 0
-                  ? h('p', { className: 'text-[11px] italic text-slate-500 self-center' }, 'No red counters yet')
+                  ? h('p', { className: 'text-[11px] italic text-slate-500 self-center' }, __alloT('stem.manipulatives.no_red_counters_yet', 'No red counters yet'))
                   : renderCounter(palette.counter1, counters.red, 'red')
               ),
               h('div', { className: 'flex gap-1 mt-2' },
                 h('button', { onClick: function() { upd({ counters: Object.assign({}, counters, { red: counters.red + 1 }) }); sfxClick(); },
-                  className: 'transition-colors flex-1 px-2 py-1 rounded text-[11px] font-bold bg-rose-600 text-white hover:bg-rose-700' }, '+ Red'),
+                  className: 'transition-colors flex-1 px-2 py-1 rounded text-[11px] font-bold bg-rose-600 text-white hover:bg-rose-700' }, __alloT('stem.manipulatives.red', '+ Red')),
                 h('button', { onClick: function() { upd({ counters: Object.assign({}, counters, { red: counters.red + 5 }) }); sfxClick(); },
-                  className: 'transition-colors flex-1 px-2 py-1 rounded text-[11px] font-bold bg-rose-700 text-white hover:bg-rose-800' }, '+ 5')
+                  className: 'transition-colors flex-1 px-2 py-1 rounded text-[11px] font-bold bg-rose-700 text-white hover:bg-rose-800' }, __alloT('stem.manipulatives.5_2', '+ 5'))
               )
             )
           ),
           // Drag hint
           (counters.red > 0 && counters.yellow > 0) && h('p', { className: 'text-[11px] text-center text-emerald-700 italic' },
-            '✋ Tip: drag a yellow onto the red box (or vice versa) to remove a zero pair.'
+            __alloT('stem.manipulatives.tip_drag_a_yellow_onto_the_red_box_or_', '✋ Tip: drag a yellow onto the red box (or vice versa) to remove a zero pair.')
           ),
           // Actions
           h('div', { className: 'flex gap-2 justify-center' },
             h('button', { onClick: function() { upd({ counters: { red: 0, yellow: 0 } }); sfxClick(); announceToSR && announceToSR('Counters cleared'); },
-              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300' }, '↺ Clear all'),
+              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300' }, __alloT('stem.manipulatives.clear_all', '↺ Clear all')),
             zeroPairs > 0 && h('button', {
               onClick: function() { upd({ counters: { red: counters.red - zeroPairs, yellow: counters.yellow - zeroPairs } }); sfxRegroup(); announceToSR && announceToSR('Removed ' + zeroPairs + ' zero pairs'); },
               className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700' },
@@ -1661,12 +1662,12 @@ window.StemLab = window.StemLab || {
             };
             return h('div', { className: 'bg-white rounded-xl border-2 border-rose-300 p-3' },
               h('div', { className: 'flex items-center justify-between mb-2' },
-                h('p', { className: 'text-xs font-bold text-rose-800 uppercase' }, '🎯 Integer Challenge'),
+                h('p', { className: 'text-xs font-bold text-rose-800 uppercase' }, __alloT('stem.manipulatives.integer_challenge', '🎯 Integer Challenge')),
                 h('button', { onClick: genCtChallenge,
-                  className: 'transition-colors px-3 py-1 rounded text-xs font-bold bg-rose-600 text-white hover:bg-rose-700' }, '🎲 New')
+                  className: 'transition-colors px-3 py-1 rounded text-xs font-bold bg-rose-600 text-white hover:bg-rose-700' }, __alloT('stem.manipulatives.new_2', '🎲 New'))
               ),
               !counterChallenge && h('p', { className: 'text-xs text-rose-700 italic' },
-                'Click "New" for a quick problem: match a net value, build a zero pile, or model an addition.'
+                __alloT('stem.manipulatives.click_new_for_a_quick_problem_match_a_', 'Click "New" for a quick problem: match a net value, build a zero pile, or model an addition.')
               ),
               counterChallenge && h('div', { className: 'space-y-2' },
                 h('p', { className: 'text-sm text-slate-800' }, counterChallenge.q),
@@ -1677,7 +1678,7 @@ window.StemLab = window.StemLab || {
                 counterFeedback && h('div', { className: 'space-y-1' },
                   h('p', { className: 'text-sm font-bold ' + (counterFeedback.ok ? 'text-green-700' : 'text-red-700') }, counterFeedback.msg),
                   h('button', { onClick: genCtChallenge,
-                    className: 'transition-colors w-full px-3 py-1.5 rounded text-xs font-bold bg-rose-600 text-white hover:bg-rose-700' }, '🔄 Next')
+                    className: 'transition-colors w-full px-3 py-1.5 rounded text-xs font-bold bg-rose-600 text-white hover:bg-rose-700' }, __alloT('stem.manipulatives.next_5', '🔄 Next'))
                 )
               )
             );
@@ -1739,7 +1740,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200' },
           headerEl,
           h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-3 text-center' },
-            h('p', { className: 'text-xs font-bold text-cyan-700' }, 'Total value:'),
+            h('p', { className: 'text-xs font-bold text-cyan-700' }, __alloT('stem.manipulatives.total_value', 'Total value:')),
             h('p', { className: 'text-4xl font-black text-cyan-900 font-mono' }, pvdTotal.toLocaleString())
           ),
           h('div', { className: 'grid grid-cols-4 gap-2' },
@@ -1754,10 +1755,10 @@ window.StemLab = window.StemLab || {
               '⇄ Regroup (' + (pvDisks.ones >= 10 ? '10 ones → 1 ten' : '') + (pvDisks.tens >= 10 ? '10 tens → 1 hundred' : '') + ')'
             ),
             h('button', { onClick: function() { upd({ pvDisks: { ones: 0, tens: 0, hundreds: 0, thousands: 0 } }); },
-              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-rose-100 text-rose-700 hover:bg-rose-200' }, '↺ Clear')
+              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-rose-100 text-rose-700 hover:bg-rose-200' }, __alloT('stem.manipulatives.clear_2', '↺ Clear'))
           ),
           h('div', { className: 'bg-cyan-50 rounded-lg p-3 border border-cyan-100 text-xs text-cyan-800' },
-            '💡 Each disk has a labeled value. When you have 10 disks of the same kind, you can trade them for 1 disk of the next-higher value. This is the conceptual bridge from blocks to the standard addition algorithm.'
+            __alloT('stem.manipulatives.each_disk_has_a_labeled_value_when_you', '💡 Each disk has a labeled value. When you have 10 disks of the same kind, you can trade them for 1 disk of the next-higher value. This is the conceptual bridge from blocks to the standard addition algorithm.')
           ),
           // ── Challenge sub-panel ──
           (function() {
@@ -1805,23 +1806,23 @@ window.StemLab = window.StemLab || {
             };
             return h('div', { className: 'bg-white rounded-xl border-2 border-cyan-300 p-3' },
               h('div', { className: 'flex items-center justify-between mb-2' },
-                h('p', { className: 'text-xs font-bold text-cyan-800 uppercase' }, '🎯 Disk Challenge'),
+                h('p', { className: 'text-xs font-bold text-cyan-800 uppercase' }, __alloT('stem.manipulatives.disk_challenge', '🎯 Disk Challenge')),
                 h('button', { onClick: genPvd,
-                  className: 'transition-colors px-3 py-1 rounded text-xs font-bold bg-cyan-600 text-white hover:bg-cyan-700' }, '🎲 New')
+                  className: 'transition-colors px-3 py-1 rounded text-xs font-bold bg-cyan-600 text-white hover:bg-cyan-700' }, __alloT('stem.manipulatives.new_3', '🎲 New'))
               ),
               !pvdChallenge && h('p', { className: 'text-xs text-cyan-700 italic' },
-                'Build a number, add and regroup, or model subtraction with disks.'
+                __alloT('stem.manipulatives.build_a_number_add_and_regroup_or_mode', 'Build a number, add and regroup, or model subtraction with disks.')
               ),
               pvdChallenge && h('div', { className: 'space-y-2' },
                 h('p', { className: 'text-sm text-slate-800' }, pvdChallenge.q),
                 !pvdFeedback && h('button', { onClick: checkPvd,
                   className: 'transition-colors w-full px-3 py-1.5 rounded text-xs font-bold bg-cyan-600 text-white hover:bg-cyan-700' },
-                  'Check'
+                  __alloT('stem.manipulatives.check_7', 'Check')
                 ),
                 pvdFeedback && h('div', { className: 'space-y-1' },
                   h('p', { className: 'text-sm font-bold ' + (pvdFeedback.ok ? 'text-green-700' : 'text-red-700') }, pvdFeedback.msg),
                   h('button', { onClick: genPvd,
-                    className: 'transition-colors w-full px-3 py-1.5 rounded text-xs font-bold bg-cyan-600 text-white hover:bg-cyan-700' }, '🔄 Next')
+                    className: 'transition-colors w-full px-3 py-1.5 rounded text-xs font-bold bg-cyan-600 text-white hover:bg-cyan-700' }, __alloT('stem.manipulatives.next_6', '🔄 Next'))
                 )
               )
             );
@@ -1860,7 +1861,7 @@ window.StemLab = window.StemLab || {
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: 2 } }, cells)
           ),
           h('div', { className: 'bg-green-50 rounded-xl p-3 border border-green-200' },
-            h('p', { className: 'text-xs font-bold text-green-700 mb-2' }, 'Skip-count overlay (highlights multiples):'),
+            h('p', { className: 'text-xs font-bold text-green-700 mb-2' }, __alloT('stem.manipulatives.skip_count_overlay_highlights_multiple', 'Skip-count overlay (highlights multiples):')),
             h('div', { className: 'flex gap-1 flex-wrap' },
               [null, 2, 3, 5, 10].map(function(sc) {
                 var active = hundredsSkipCount === sc;
@@ -1877,7 +1878,7 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: 'flex gap-2 justify-center' },
             h('button', { onClick: function() { upd({ hundredsHighlight: {} }); },
-              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-rose-100 text-rose-700 hover:bg-rose-200' }, '↺ Clear highlights'),
+              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-rose-100 text-rose-700 hover:bg-rose-200' }, __alloT('stem.manipulatives.clear_highlights', '↺ Clear highlights')),
             h('button', { onClick: function() {
               var nh = {};
               for (var p = 2; p <= 100; p++) {
@@ -1888,7 +1889,7 @@ window.StemLab = window.StemLab || {
               upd({ hundredsHighlight: nh });
               checkBadges({ hcPrimesShown: true });
             },
-              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-violet-600 text-white hover:bg-violet-700' }, '🔢 Show primes'),
+              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-violet-600 text-white hover:bg-violet-700' }, __alloT('stem.manipulatives.show_primes', '🔢 Show primes')),
             h('button', { onClick: function() {
               var f = parseInt(prompt('Highlight multiples of which number?', '7') || '0', 10);
               if (!f || f < 2 || f > 99) return;
@@ -1896,7 +1897,7 @@ window.StemLab = window.StemLab || {
               for (var k = f; k <= 100; k += f) nh[k] = true;
               upd({ hundredsHighlight: nh });
             },
-              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700' }, '× Multiples of n'),
+              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700' }, __alloT('stem.manipulatives.multiples_of_n', '× Multiples of n')),
             h('button', { onClick: function() {
               // Sieve of Eratosthenes step: highlight all composites
               var nh = {};
@@ -1905,7 +1906,7 @@ window.StemLab = window.StemLab || {
               }
               upd({ hundredsHighlight: nh });
             },
-              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-rose-600 text-white hover:bg-rose-700' }, '🚫 Composites')
+              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-rose-600 text-white hover:bg-rose-700' }, __alloT('stem.manipulatives.composites', '🚫 Composites'))
           ),
           // ── Challenge sub-panel ──
           (function() {
@@ -1953,23 +1954,23 @@ window.StemLab = window.StemLab || {
             };
             return h('div', { className: 'bg-white rounded-xl border-2 border-green-300 p-3' },
               h('div', { className: 'flex items-center justify-between mb-2' },
-                h('p', { className: 'text-xs font-bold text-green-800 uppercase' }, '🎯 Chart Challenge'),
+                h('p', { className: 'text-xs font-bold text-green-800 uppercase' }, __alloT('stem.manipulatives.chart_challenge', '🎯 Chart Challenge')),
                 h('button', { onClick: genHc,
-                  className: 'transition-colors px-3 py-1 rounded text-xs font-bold bg-green-600 text-white hover:bg-green-700' }, '🎲 New')
+                  className: 'transition-colors px-3 py-1 rounded text-xs font-bold bg-green-600 text-white hover:bg-green-700' }, __alloT('stem.manipulatives.new_4', '🎲 New'))
               ),
               !hcChallenge && h('p', { className: 'text-xs text-green-700 italic' },
-                'Click a chart cell, then "Check" — we score based on which cell you most recently clicked.'
+                __alloT('stem.manipulatives.click_a_chart_cell_then_check_we_score', 'Click a chart cell, then "Check" — we score based on which cell you most recently clicked.')
               ),
               hcChallenge && h('div', { className: 'space-y-2' },
                 h('p', { className: 'text-sm text-slate-800' }, hcChallenge.q),
                 !hcFeedback && h('button', { onClick: checkHc,
                   className: 'transition-colors w-full px-3 py-1.5 rounded text-xs font-bold bg-green-600 text-white hover:bg-green-700' },
-                  'Check (last clicked cell)'
+                  __alloT('stem.manipulatives.check_last_clicked_cell', 'Check (last clicked cell)')
                 ),
                 hcFeedback && h('div', { className: 'space-y-1' },
                   h('p', { className: 'text-sm font-bold ' + (hcFeedback.ok ? 'text-green-700' : 'text-red-700') }, hcFeedback.msg),
                   h('button', { onClick: function() { upd({ hundredsHighlight: {} }); genHc(); },
-                    className: 'transition-colors w-full px-3 py-1.5 rounded text-xs font-bold bg-green-600 text-white hover:bg-green-700' }, '🔄 Next (clears chart)')
+                    className: 'transition-colors w-full px-3 py-1.5 rounded text-xs font-bold bg-green-600 text-white hover:bg-green-700' }, __alloT('stem.manipulatives.next_clears_chart', '🔄 Next (clears chart)'))
                 )
               )
             );
@@ -1982,12 +1983,12 @@ window.StemLab = window.StemLab || {
       // ═══════════════════════════════════════════════════════════════
       if (manipMode === 'patternBlocks') {
         var PB_SHAPES = [
-          { id: 'hex',          name: 'Hexagon',       color: '#fbbf24', value: 1,    sides: 6, fraction: '1'    },
-          { id: 'trap',         name: 'Trapezoid',     color: '#dc2626', value: 0.5,  sides: 4, fraction: '1/2'  },
-          { id: 'rhombus_blue', name: 'Blue rhombus',  color: '#3b82f6', value: 1/3,  sides: 4, fraction: '1/3'  },
-          { id: 'triangle',     name: 'Triangle',      color: '#16a34a', value: 1/6,  sides: 3, fraction: '1/6'  },
-          { id: 'square',       name: 'Square',        color: '#f97316', value: null, sides: 4, fraction: 'n/a' },
-          { id: 'rhombus_tan',  name: 'Tan rhombus',   color: '#a16207', value: null, sides: 4, fraction: 'n/a' }
+          { id: 'hex',          name: __alloT('stem.manipulatives.hexagon', 'Hexagon'),       color: '#fbbf24', value: 1,    sides: 6, fraction: '1'    },
+          { id: 'trap',         name: __alloT('stem.manipulatives.trapezoid', 'Trapezoid'),     color: '#dc2626', value: 0.5,  sides: 4, fraction: '1/2'  },
+          { id: 'rhombus_blue', name: __alloT('stem.manipulatives.blue_rhombus', 'Blue rhombus'),  color: '#3b82f6', value: 1/3,  sides: 4, fraction: '1/3'  },
+          { id: 'triangle',     name: __alloT('stem.manipulatives.triangle', 'Triangle'),      color: '#16a34a', value: 1/6,  sides: 3, fraction: '1/6'  },
+          { id: 'square',       name: __alloT('stem.manipulatives.square', 'Square'),        color: '#f97316', value: null, sides: 4, fraction: 'n/a' },
+          { id: 'rhombus_tan',  name: __alloT('stem.manipulatives.tan_rhombus', 'Tan rhombus'),   color: '#a16207', value: null, sides: 4, fraction: 'n/a' }
         ];
         // ── v3.1: SVG polygon coordinates for each true pattern-block shape ──
         // Centered at (cx, cy); all sized so 1 hexagon fits in a 60x60 viewBox.
@@ -2072,7 +2073,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'space-y-3 max-w-3xl mx-auto animate-in fade-in duration-200' },
           headerEl,
           h('div', { className: 'bg-white rounded-xl border-2 border-purple-200 p-3' },
-            h('p', { className: 'text-xs font-bold text-purple-700 mb-2' }, 'Shape palette (click to add to workspace):'),
+            h('p', { className: 'text-xs font-bold text-purple-700 mb-2' }, __alloT('stem.manipulatives.shape_palette_click_to_add_to_workspac', 'Shape palette (click to add to workspace):')),
             h('div', { className: 'grid grid-cols-6 gap-2' },
               PB_SHAPES.map(function(s) {
                 return h('button', { key: 'pb-' + s.id,
@@ -2096,10 +2097,10 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('p', { className: 'text-xs font-bold text-purple-700' }, 'Workspace (' + patternBlocks.length + ' shapes):'),
               h('button', { onClick: function() { upd({ patternBlocks: [] }); },
-                className: 'transition-colors px-2 py-1 rounded text-[10px] font-bold bg-rose-100 text-rose-700 hover:bg-rose-200' }, '↺ Clear')
+                className: 'transition-colors px-2 py-1 rounded text-[10px] font-bold bg-rose-100 text-rose-700 hover:bg-rose-200' }, __alloT('stem.manipulatives.clear_3', '↺ Clear'))
             ),
             patternBlocks.length === 0
-              ? h('p', { className: 'text-[11px] italic text-slate-500 text-center py-4' }, 'Empty workspace. Click a shape above to add it. Click a workspace shape to remove it.')
+              ? h('p', { className: 'text-[11px] italic text-slate-500 text-center py-4' }, __alloT('stem.manipulatives.empty_workspace_click_a_shape_above_to', 'Empty workspace. Click a shape above to add it. Click a workspace shape to remove it.'))
               : h('div', { className: 'flex flex-wrap gap-1 justify-center', style: { filter: 'drop-shadow(0 2px 2px rgba(15,23,42,0.25))' } },
                   patternBlocks.map(function(b, i) {
                     var shape = PB_SHAPES.find(function(s) { return s.id === b.type; });
@@ -2114,14 +2115,14 @@ window.StemLab = window.StemLab || {
                   })
                 ),
             patternBlocks.length > 0 && h('p', { className: 'text-[11px] text-purple-700 mt-2 text-center font-bold' },
-              'Total fractional value (in hexagons): ', h('span', { className: 'font-mono' }, totalValue.toFixed(3)),
+              __alloT('stem.manipulatives.total_fractional_value_in_hexagons', 'Total fractional value (in hexagons): '), h('span', { className: 'font-mono' }, totalValue.toFixed(3)),
               totalValue === Math.floor(totalValue) && totalValue > 0 && ' = ' + totalValue + ' whole hexagon' + (totalValue === 1 ? '' : 's')
             )
           ),
           h('div', { className: 'bg-purple-50 rounded-lg p-3 border border-purple-100 text-xs text-purple-800' },
-            '💡 Fraction relationships: 1 hexagon = 2 trapezoids = 3 blue rhombi = 6 triangles. ',
-            'So 1 trapezoid = 1/2 of a hexagon, 1 rhombus = 1/3, 1 triangle = 1/6. ',
-            'Mix shapes that add up to hexagons to explore equivalent fractions visually.'
+            __alloT('stem.manipulatives.fraction_relationships_1_hexagon_2_tra', '💡 Fraction relationships: 1 hexagon = 2 trapezoids = 3 blue rhombi = 6 triangles. '),
+            __alloT('stem.manipulatives.so_1_trapezoid_1_2_of_a_hexagon_1_rhom', 'So 1 trapezoid = 1/2 of a hexagon, 1 rhombus = 1/3, 1 triangle = 1/6. '),
+            __alloT('stem.manipulatives.mix_shapes_that_add_up_to_hexagons_to_', 'Mix shapes that add up to hexagons to explore equivalent fractions visually.')
           ),
           // ── Challenge sub-panel ──
           (function() {
@@ -2173,12 +2174,12 @@ window.StemLab = window.StemLab || {
             };
             return h('div', { className: 'bg-white rounded-xl border-2 border-purple-300 p-3' },
               h('div', { className: 'flex items-center justify-between mb-2' },
-                h('p', { className: 'text-xs font-bold text-purple-800 uppercase' }, '🎯 Fraction Puzzle'),
+                h('p', { className: 'text-xs font-bold text-purple-800 uppercase' }, __alloT('stem.manipulatives.fraction_puzzle', '🎯 Fraction Puzzle')),
                 h('button', { onClick: genPb,
-                  className: 'transition-colors px-3 py-1 rounded text-xs font-bold bg-purple-600 text-white hover:bg-purple-700' }, '🎲 New')
+                  className: 'transition-colors px-3 py-1 rounded text-xs font-bold bg-purple-600 text-white hover:bg-purple-700' }, __alloT('stem.manipulatives.new_5', '🎲 New'))
               ),
               !pbChallenge && h('p', { className: 'text-xs text-purple-700 italic' },
-                'Cover a hexagon, build a target value, or compose fractions out of mixed shapes.'
+                __alloT('stem.manipulatives.cover_a_hexagon_build_a_target_value_o', 'Cover a hexagon, build a target value, or compose fractions out of mixed shapes.')
               ),
               pbChallenge && h('div', { className: 'space-y-2' },
                 h('p', { className: 'text-sm text-slate-800' }, pbChallenge.q),
@@ -2189,7 +2190,7 @@ window.StemLab = window.StemLab || {
                 pbFeedback && h('div', { className: 'space-y-1' },
                   h('p', { className: 'text-sm font-bold ' + (pbFeedback.ok ? 'text-green-700' : 'text-red-700') }, pbFeedback.msg),
                   h('button', { onClick: genPb,
-                    className: 'transition-colors w-full px-3 py-1.5 rounded text-xs font-bold bg-purple-600 text-white hover:bg-purple-700' }, '🔄 Next')
+                    className: 'transition-colors w-full px-3 py-1.5 rounded text-xs font-bold bg-purple-600 text-white hover:bg-purple-700' }, __alloT('stem.manipulatives.next_7', '🔄 Next'))
                 )
               )
             );
@@ -2264,28 +2265,28 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: 'grid grid-cols-3 gap-2' },
             h('div', { className: 'bg-sky-50 rounded p-2 border border-sky-200 text-center' },
-              h('p', { className: 'text-[10px] font-bold text-sky-700' }, 'Segments'),
+              h('p', { className: 'text-[10px] font-bold text-sky-700' }, __alloT('stem.manipulatives.segments', 'Segments')),
               h('p', { className: 'text-xl font-black text-sky-900' }, geoboardSegments.length)
             ),
             h('div', { className: 'bg-sky-50 rounded p-2 border border-sky-200 text-center' },
-              h('p', { className: 'text-[10px] font-bold text-sky-700' }, 'Perimeter (units)'),
+              h('p', { className: 'text-[10px] font-bold text-sky-700' }, __alloT('stem.manipulatives.perimeter_units', 'Perimeter (units)')),
               h('p', { className: 'text-xl font-black text-sky-900' }, perimeter.toFixed(2))
             ),
             h('div', { className: 'bg-sky-50 rounded p-2 border border-sky-200 text-center' },
-              h('p', { className: 'text-[10px] font-bold text-sky-700' }, 'Grid size'),
+              h('p', { className: 'text-[10px] font-bold text-sky-700' }, __alloT('stem.manipulatives.grid_size', 'Grid size')),
               h('p', { className: 'text-xl font-black text-sky-900' }, GB_SIZE + '×' + GB_SIZE)
             )
           ),
           h('div', { className: 'flex gap-2 justify-center' },
             h('button', { onClick: function() { upd({ geoboardSegments: [], geoboardSelected: null }); },
-              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-rose-100 text-rose-700 hover:bg-rose-200' }, '↺ Clear'),
+              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-rose-100 text-rose-700 hover:bg-rose-200' }, __alloT('stem.manipulatives.clear_4', '↺ Clear')),
             h('button', { onClick: function() { upd({ geoboardSize: Math.min(10, GB_SIZE + 1), geoboardSegments: [], geoboardSelected: null }); },
-              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-sky-100 text-sky-700 hover:bg-sky-200' }, '+ Larger grid'),
+              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-sky-100 text-sky-700 hover:bg-sky-200' }, __alloT('stem.manipulatives.larger_grid', '+ Larger grid')),
             h('button', { onClick: function() { upd({ geoboardSize: Math.max(3, GB_SIZE - 1), geoboardSegments: [], geoboardSelected: null }); },
-              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-sky-100 text-sky-700 hover:bg-sky-200' }, '− Smaller grid')
+              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-sky-100 text-sky-700 hover:bg-sky-200' }, __alloT('stem.manipulatives.smaller_grid', '− Smaller grid'))
           ),
           h('div', { className: 'bg-sky-50 rounded-lg p-3 border border-sky-100 text-xs text-sky-800' },
-            '💡 Click any two pegs to draw a segment between them. Build polygons. ',
+            __alloT('stem.manipulatives.click_any_two_pegs_to_draw_a_segment_b', '💡 Click any two pegs to draw a segment between them. Build polygons. '),
             geoboardSelected ? 'Selected peg highlighted in red — click another peg to draw, or click the same peg to cancel.' :
             'Click a peg to start a segment.'
           ),
@@ -2399,12 +2400,12 @@ window.StemLab = window.StemLab || {
             };
             return h('div', { className: 'bg-white rounded-xl border-2 border-sky-300 p-3' },
               h('div', { className: 'flex items-center justify-between mb-2' },
-                h('p', { className: 'text-xs font-bold text-sky-800 uppercase' }, '🎯 Geoboard Challenge'),
+                h('p', { className: 'text-xs font-bold text-sky-800 uppercase' }, __alloT('stem.manipulatives.geoboard_challenge', '🎯 Geoboard Challenge')),
                 h('button', { onClick: genGb,
-                  className: 'transition-colors px-3 py-1 rounded text-xs font-bold bg-sky-600 text-white hover:bg-sky-700' }, '🎲 New')
+                  className: 'transition-colors px-3 py-1 rounded text-xs font-bold bg-sky-600 text-white hover:bg-sky-700' }, __alloT('stem.manipulatives.new_6', '🎲 New'))
               ),
               !gbChallenge && h('p', { className: 'text-xs text-sky-700 italic' },
-                'Build a rectangle of a given perimeter, or a polygon of a given side count.'
+                __alloT('stem.manipulatives.build_a_rectangle_of_a_given_perimeter', 'Build a rectangle of a given perimeter, or a polygon of a given side count.')
               ),
               gbChallenge && h('div', { className: 'space-y-2' },
                 h('p', { className: 'text-sm text-slate-800' }, gbChallenge.q),
@@ -2415,7 +2416,7 @@ window.StemLab = window.StemLab || {
                 gbFeedback && h('div', { className: 'space-y-1' },
                   h('p', { className: 'text-sm font-bold ' + (gbFeedback.ok ? 'text-green-700' : 'text-red-700') }, gbFeedback.msg),
                   h('button', { onClick: genGb,
-                    className: 'transition-colors w-full px-3 py-1.5 rounded text-xs font-bold bg-sky-600 text-white hover:bg-sky-700' }, '🔄 Next')
+                    className: 'transition-colors w-full px-3 py-1.5 rounded text-xs font-bold bg-sky-600 text-white hover:bg-sky-700' }, __alloT('stem.manipulatives.next_8', '🔄 Next'))
                 )
               )
             );
@@ -2436,7 +2437,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'space-y-3 max-w-3xl mx-auto animate-in fade-in duration-200' },
           headerEl,
           h('div', { className: 'bg-white rounded-xl border-2 border-amber-200 p-3' },
-            h('p', { className: 'text-xs font-bold text-amber-700 mb-2' }, 'Rod palette (click to add):'),
+            h('p', { className: 'text-xs font-bold text-amber-700 mb-2' }, __alloT('stem.manipulatives.rod_palette_click_to_add', 'Rod palette (click to add):')),
             h('div', { className: 'grid grid-cols-10 gap-1' },
               [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(function(len) {
                 return h('button', { key: 'cr-' + len,
@@ -2451,16 +2452,16 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('p', { className: 'text-xs font-bold text-amber-700' }, 'Workspace (' + cRods.length + ' rods, total length = ' + rodLengthsTotal + '):'),
               h('button', { onClick: function() { upd({ cRods: [] }); },
-                className: 'transition-colors px-2 py-1 rounded text-[10px] font-bold bg-rose-100 text-rose-700 hover:bg-rose-200' }, '↺ Clear')
+                className: 'transition-colors px-2 py-1 rounded text-[10px] font-bold bg-rose-100 text-rose-700 hover:bg-rose-200' }, __alloT('stem.manipulatives.clear_5', '↺ Clear'))
             ),
             cRods.length === 0
-              ? h('p', { className: 'text-[11px] italic text-slate-500 text-center py-4' }, 'No rods yet. Click a colored rod above to add it.')
+              ? h('p', { className: 'text-[11px] italic text-slate-500 text-center py-4' }, __alloT('stem.manipulatives.no_rods_yet_click_a_colored_rod_above_', 'No rods yet. Click a colored rod above to add it.'))
               : h('div', { className: 'space-y-1' },
                   cRods.map(function(r, i) {
                     return h('button', {
                       key: 'crw-' + i,
                       onClick: function() { upd({ cRods: cRods.filter(function(_, j) { return j !== i; }) }); },
-                      title: 'Click to remove',
+                      title: __alloT('stem.manipulatives.click_to_remove', 'Click to remove'),
                       style: {
                         width: (r.length * 30) + 'px',
                         height: 24, background: palette.rods[r.length - 1],
@@ -2477,9 +2478,9 @@ window.StemLab = window.StemLab || {
             )
           ),
           h('div', { className: 'bg-amber-50 rounded-lg p-3 border border-amber-100 text-xs text-amber-800' },
-            '💡 Cuisenaire rods (1952, Georges Cuisenaire) come in 10 lengths, each a distinct color. ',
-            'White=1, Red=2, Light green=3, Purple=4, Yellow=5, Dark green=6, Black=7, Brown=8, Blue=9, Orange=10. ',
-            'Combine rods to make new numbers. Two reds (2+2) = a purple (4).'
+            __alloT('stem.manipulatives.cuisenaire_rods_1952_georges_cuisenair', '💡 Cuisenaire rods (1952, Georges Cuisenaire) come in 10 lengths, each a distinct color. '),
+            __alloT('stem.manipulatives.white_1_red_2_light_green_3_purple_4_y', 'White=1, Red=2, Light green=3, Purple=4, Yellow=5, Dark green=6, Black=7, Brown=8, Blue=9, Orange=10. '),
+            __alloT('stem.manipulatives.combine_rods_to_make_new_numbers_two_r', 'Combine rods to make new numbers. Two reds (2+2) = a purple (4).')
           ),
           // ── Challenge sub-panel ──
           (function() {
@@ -2522,12 +2523,12 @@ window.StemLab = window.StemLab || {
             };
             return h('div', { className: 'bg-white rounded-xl border-2 border-amber-300 p-3' },
               h('div', { className: 'flex items-center justify-between mb-2' },
-                h('p', { className: 'text-xs font-bold text-amber-800 uppercase' }, '🎯 Rod Challenge'),
+                h('p', { className: 'text-xs font-bold text-amber-800 uppercase' }, __alloT('stem.manipulatives.rod_challenge', '🎯 Rod Challenge')),
                 h('button', { onClick: genCr,
-                  className: 'transition-colors px-3 py-1 rounded text-xs font-bold bg-amber-600 text-white hover:bg-amber-700' }, '🎲 New')
+                  className: 'transition-colors px-3 py-1 rounded text-xs font-bold bg-amber-600 text-white hover:bg-amber-700' }, __alloT('stem.manipulatives.new_7', '🎲 New'))
               ),
               !cRodChallenge && h('p', { className: 'text-xs text-amber-700 italic' },
-                'Make a "train" of rods matching a target length under specific constraints.'
+                __alloT('stem.manipulatives.make_a_train_of_rods_matching_a_target', 'Make a "train" of rods matching a target length under specific constraints.')
               ),
               cRodChallenge && h('div', { className: 'space-y-2' },
                 h('p', { className: 'text-sm text-slate-800' }, cRodChallenge.q),
@@ -2538,7 +2539,7 @@ window.StemLab = window.StemLab || {
                 cRodFeedback && h('div', { className: 'space-y-1' },
                   h('p', { className: 'text-sm font-bold ' + (cRodFeedback.ok ? 'text-green-700' : 'text-red-700') }, cRodFeedback.msg),
                   h('button', { onClick: genCr,
-                    className: 'transition-colors w-full px-3 py-1.5 rounded text-xs font-bold bg-amber-600 text-white hover:bg-amber-700' }, '🔄 Next')
+                    className: 'transition-colors w-full px-3 py-1.5 rounded text-xs font-bold bg-amber-600 text-white hover:bg-amber-700' }, __alloT('stem.manipulatives.next_9', '🔄 Next'))
                 )
               )
             );
@@ -2577,9 +2578,9 @@ window.StemLab = window.StemLab || {
           headerEl,
           h('div', { className: 'flex gap-1 bg-pink-50 rounded-xl p-1 border border-pink-200' },
             h('button', { onClick: function() { upd({ nbMode: 'explore' }); },
-              className: 'flex-1 py-1.5 rounded text-xs font-bold ' + (nbMode === 'explore' ? 'bg-white text-pink-800' : 'text-pink-600') }, '🔍 Explore'),
+              className: 'flex-1 py-1.5 rounded text-xs font-bold ' + (nbMode === 'explore' ? 'bg-white text-pink-800' : 'text-pink-600') }, __alloT('stem.manipulatives.explore', '🔍 Explore')),
             h('button', { onClick: newNbPractice,
-              className: 'flex-1 py-1.5 rounded text-xs font-bold ' + (nbMode === 'practice' ? 'bg-white text-pink-800' : 'text-pink-600') }, '🎯 Practice')
+              className: 'flex-1 py-1.5 rounded text-xs font-bold ' + (nbMode === 'practice' ? 'bg-white text-pink-800' : 'text-pink-600') }, __alloT('stem.manipulatives.practice', '🎯 Practice'))
           ),
           h('div', { className: 'bg-white rounded-xl border-2 border-pink-200 p-4' },
             // Whole-part-part visualization
@@ -2633,22 +2634,22 @@ window.StemLab = window.StemLab || {
                 h('input', { type: 'number', value: nbAnswer,
                   onChange: function(e) { upd({ nbAnswer: e.target.value }); },
                   onKeyDown: function(e) { if (e.key === 'Enter' && nbAnswer) checkNb(); },
-                  placeholder: 'What\'s the missing part?',
-                  'aria-label': 'Number bond answer',
+                  placeholder: __alloT('stem.manipulatives.what_s_the_missing_part', 'What\'s the missing part?'),
+                  'aria-label': __alloT('stem.manipulatives.number_bond_answer', 'Number bond answer'),
                   className: 'flex-1 px-3 py-2 border border-pink-400 rounded-lg text-sm font-mono' }),
                 h('button', { onClick: checkNb,
-                  className: 'transition-colors px-4 py-2 bg-pink-600 text-white font-bold rounded-lg hover:bg-pink-700' }, 'Check')
+                  className: 'transition-colors px-4 py-2 bg-pink-600 text-white font-bold rounded-lg hover:bg-pink-700' }, __alloT('stem.manipulatives.check_8', 'Check'))
               ),
               nbFeedback && h('div', { className: 'space-y-2' },
                 h('p', { className: 'text-sm font-bold ' + (nbFeedback.correct ? 'text-green-700' : 'text-red-700') }, nbFeedback.msg),
                 h('button', { onClick: newNbPractice,
-                  className: 'transition-colors w-full px-4 py-2 bg-pink-600 text-white font-bold rounded-lg hover:bg-pink-700' }, '🔄 Next problem')
+                  className: 'transition-colors w-full px-4 py-2 bg-pink-600 text-white font-bold rounded-lg hover:bg-pink-700' }, __alloT('stem.manipulatives.next_problem', '🔄 Next problem'))
               )
             )
           ),
           h('div', { className: 'bg-pink-50 rounded-lg p-3 border border-pink-100 text-xs text-pink-800' },
-            '💡 A whole splits into two parts. The Singapore Math curriculum (1980s) made this the cornerstone for early addition and subtraction. ',
-            'Once a student fluently sees 10 = 6 + 4 = 7 + 3 = 5 + 5, they can add and subtract with much less effort.'
+            __alloT('stem.manipulatives.a_whole_splits_into_two_parts_the_sing', '💡 A whole splits into two parts. The Singapore Math curriculum (1980s) made this the cornerstone for early addition and subtraction. '),
+            __alloT('stem.manipulatives.once_a_student_fluently_sees_10_6_4_7_', 'Once a student fluently sees 10 = 6 + 4 = 7 + 3 = 5 + 5, they can add and subtract with much less effort.')
           ),
           // ── Rainbow / doubles overlay panel ──
           h('div', { className: 'bg-white rounded-xl border-2 border-pink-200 p-3' },
@@ -2671,7 +2672,7 @@ window.StemLab = window.StemLab || {
               })()
             ),
             nbWhole === 10 && h('p', { className: 'text-[11px] italic text-pink-700 mt-2' },
-              'The "make-ten" facts are the gateway to all later regrouping. Doubles facts (1+1, 2+2, ...) are usually learned earliest.'
+              __alloT('stem.manipulatives.the_make_ten_facts_are_the_gateway_to_', 'The "make-ten" facts are the gateway to all later regrouping. Doubles facts (1+1, 2+2, ...) are usually learned earliest.')
             )
           )
         );
@@ -2741,14 +2742,14 @@ window.StemLab = window.StemLab || {
             ),
             h('p', { className: 'text-center text-2xl font-black text-teal-700' }, '='),
             h('div', { className: 'bg-amber-50 rounded-xl p-4 border-2 border-amber-200' },
-              h('p', { className: 'text-xs font-bold text-amber-700 mb-1' }, 'PUSH THEM TOGETHER — count them all'),
+              h('p', { className: 'text-xs font-bold text-amber-700 mb-1' }, __alloT('stem.manipulatives.push_them_together_count_them_all', 'PUSH THEM TOGETHER — count them all')),
               h('div', { className: 'flex flex-wrap' },
                 renderDots(t.a, '#fbbf24'),
                 renderDots(t.b, '#60a5fa')
               )
             ),
             h('p', { className: 'text-center text-sm text-teal-700 italic mt-2' },
-              'Total objects? Count them out loud, one by one.'
+              __alloT('stem.manipulatives.total_objects_count_them_out_loud_one_', 'Total objects? Count them out loud, one by one.')
             )
           );
         };
@@ -2882,7 +2883,7 @@ window.StemLab = window.StemLab || {
         var renderAbstract = function(t) {
           return h('div', { className: 'space-y-3' },
             h('div', { className: 'bg-purple-50 rounded-xl p-6 border-2 border-purple-200 text-center' },
-              h('p', { className: 'text-xs font-bold text-purple-700 mb-2 uppercase tracking-wider' }, 'Now WRITE the equation'),
+              h('p', { className: 'text-xs font-bold text-purple-700 mb-2 uppercase tracking-wider' }, __alloT('stem.manipulatives.now_write_the_equation', 'Now WRITE the equation')),
               h('div', { className: 'flex items-center justify-center gap-3 font-mono text-4xl font-black text-purple-900' },
                 h('span', null, t.a),
                 h('span', null, t.op),
@@ -2909,7 +2910,7 @@ window.StemLab = window.StemLab || {
                 (craFeedback.ok ? 'bg-green-50 border-green-300 text-green-800' : 'bg-red-50 border-red-300 text-red-800')
             }, craFeedback.msg),
             h('p', { className: 'text-center text-sm text-teal-700 italic' },
-              'You have just translated a real physical idea into a symbol. That symbol now MEANS that thing.'
+              __alloT('stem.manipulatives.you_have_just_translated_a_real_physic', 'You have just translated a real physical idea into a symbol. That symbol now MEANS that thing.')
             )
           );
         };
@@ -2918,23 +2919,23 @@ window.StemLab = window.StemLab || {
           headerEl,
           // Generator buttons
           h('div', { className: 'bg-white rounded-xl border-2 border-teal-200 p-3' },
-            h('p', { className: 'text-xs font-bold text-teal-700 uppercase tracking-wider mb-2' }, 'Choose an operation to walk through:'),
+            h('p', { className: 'text-xs font-bold text-teal-700 uppercase tracking-wider mb-2' }, __alloT('stem.manipulatives.choose_an_operation_to_walk_through', 'Choose an operation to walk through:')),
             h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
               h('button', { onClick: craGenAddition,
                 className: 'transition-colors px-3 py-2 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border border-emerald-300' },
-                '+ Addition (within 20)'
+                __alloT('stem.manipulatives.addition_within_20', '+ Addition (within 20)')
               ),
               h('button', { onClick: craGenSubtraction,
                 className: 'transition-colors px-3 py-2 rounded-lg text-xs font-bold bg-amber-100 text-amber-800 hover:bg-amber-200 border border-amber-300' },
-                '− Subtraction (take-away)'
+                __alloT('stem.manipulatives.subtraction_take_away', '− Subtraction (take-away)')
               ),
               h('button', { onClick: craGenRegroup,
                 className: 'transition-colors px-3 py-2 rounded-lg text-xs font-bold bg-violet-100 text-violet-800 hover:bg-violet-200 border border-violet-300' },
-                '+ Addition w/ regroup'
+                __alloT('stem.manipulatives.addition_w_regroup', '+ Addition w/ regroup')
               ),
               h('button', { onClick: craGenMultiplication,
                 className: 'transition-colors px-3 py-2 rounded-lg text-xs font-bold bg-rose-100 text-rose-800 hover:bg-rose-200 border border-rose-300' },
-                '× Multiplication (array)'
+                __alloT('stem.manipulatives.multiplication_array', '× Multiplication (array)')
               )
             )
           ),
@@ -2984,32 +2985,32 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex gap-2 mt-4 justify-between' },
               h('button', { onClick: craBack, disabled: craStep <= 1,
                 className: 'px-3 py-1.5 rounded text-xs font-bold ' + (craStep <= 1 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'transition-colors bg-slate-200 text-slate-700 hover:bg-slate-300')
-              }, '← Previous stage'),
+              }, __alloT('stem.manipulatives.previous_stage', '← Previous stage')),
               h('button', { onClick: craNext, disabled: craStep >= 3,
                 className: 'px-3 py-1.5 rounded text-xs font-bold ' + (craStep >= 3 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'transition-colors bg-teal-600 text-white hover:bg-teal-700')
-              }, 'Next stage →')
+              }, __alloT('stem.manipulatives.next_stage', 'Next stage →'))
             )
           ),
           !craTarget && h('div', { className: 'bg-white rounded-xl border-2 border-teal-200 p-6 text-center' },
-            h('p', { className: 'text-base font-bold text-teal-800 mb-2' }, 'Pick an operation above to begin.'),
+            h('p', { className: 'text-base font-bold text-teal-800 mb-2' }, __alloT('stem.manipulatives.pick_an_operation_above_to_begin', 'Pick an operation above to begin.')),
             h('p', { className: 'text-xs text-teal-600 mb-4' },
-              'You will walk through the same problem in three forms: physical objects → a picture → a written equation.'
+              __alloT('stem.manipulatives.you_will_walk_through_the_same_problem', 'You will walk through the same problem in three forms: physical objects → a picture → a written equation.')
             ),
             h('div', { className: 'bg-teal-50 rounded-lg p-3 border border-teal-100 text-xs text-teal-800 text-left max-w-xl mx-auto' },
-              h('p', { className: 'font-bold mb-1' }, 'Why CRA?'),
+              h('p', { className: 'font-bold mb-1' }, __alloT('stem.manipulatives.why_cra', 'Why CRA?')),
               h('p', null,
-                'Bruner (1966) argued that for a concept to be fully understood, the learner has to ',
-                'experience it in three ways: enactively (do it with their hands), iconically (see a picture), ',
-                'and symbolically (write the symbol). Witzel, Mercer & Miller (2003) meta-analyzed CRA across ',
-                'special-education math interventions and found average effect sizes around 0.5 — large enough ',
-                'to be the difference between a student passing or failing.'
+                __alloT('stem.manipulatives.bruner_1966_argued_that_for_a_concept_', 'Bruner (1966) argued that for a concept to be fully understood, the learner has to '),
+                __alloT('stem.manipulatives.experience_it_in_three_ways_enactively', 'experience it in three ways: enactively (do it with their hands), iconically (see a picture), '),
+                __alloT('stem.manipulatives.and_symbolically_write_the_symbol_witz', 'and symbolically (write the symbol). Witzel, Mercer & Miller (2003) meta-analyzed CRA across '),
+                __alloT('stem.manipulatives.special_education_math_interventions_a', 'special-education math interventions and found average effect sizes around 0.5 — large enough '),
+                __alloT('stem.manipulatives.to_be_the_difference_between_a_student', 'to be the difference between a student passing or failing.')
               )
             )
           ),
           h('div', { className: 'bg-teal-50 rounded-lg p-3 border border-teal-100 text-xs text-teal-800' },
-            '💡 CRA is not "three different problems." It is the SAME problem expressed three ways. ',
-            'The point is that the abstract symbol "8" means a thing you can count, group, and arrange — ',
-            'not a magic spell to memorize.'
+            __alloT('stem.manipulatives.cra_is_not_three_different_problems_it', '💡 CRA is not "three different problems." It is the SAME problem expressed three ways. '),
+            __alloT('stem.manipulatives.the_point_is_that_the_abstract_symbol_', 'The point is that the abstract symbol "8" means a thing you can count, group, and arrange — '),
+            __alloT('stem.manipulatives.not_a_magic_spell_to_memorize', 'not a magic spell to memorize.')
           )
         );
       }
@@ -3071,14 +3072,14 @@ window.StemLab = window.StemLab || {
               type: 'search',
               value: standardsSearch,
               onChange: function(e) { upd({ standardsSearch: e.target.value }); },
-              placeholder: 'Search standards (e.g. "fluently add" or "K.OA")...',
+              placeholder: __alloT('stem.manipulatives.search_standards_e_g_fluently_add_or_k', 'Search standards (e.g. "fluently add" or "K.OA")...'),
               className: 'w-full px-3 py-1.5 text-xs border border-purple-300 rounded-lg'
             })
           ),
           // Results
           h('div', { className: 'space-y-3' },
             grades.length === 0 && h('div', { className: 'bg-white rounded-xl border border-slate-200 p-6 text-center text-sm text-slate-500' },
-              'No standards match. Try clearing the filter or search.'
+              __alloT('stem.manipulatives.no_standards_match_try_clearing_the_fi', 'No standards match. Try clearing the filter or search.')
             ),
             grades.map(function(g) {
               return h('div', { key: 'gg' + g, className: 'bg-white rounded-xl border-2 border-purple-200 overflow-hidden' },
@@ -3103,10 +3104,10 @@ window.StemLab = window.StemLab || {
             })
           ),
           h('div', { className: 'bg-purple-50 rounded-lg p-3 border border-purple-100 text-xs text-purple-800' },
-            '💡 CCSS = Common Core State Standards. The codes are read as ',
+            __alloT('stem.manipulatives.ccss_common_core_state_standards_the_c', '💡 CCSS = Common Core State Standards. The codes are read as '),
             h('span', { className: 'font-mono' }, 'GRADE.DOMAIN.CLUSTER.STANDARD'),
-            '. So ', h('span', { className: 'font-mono' }, '2.NBT.A.1'),
-            ' = "Grade 2, Number & Operations in Base Ten, cluster A, standard 1."'
+            __alloT('stem.manipulatives.so', '. So '), h('span', { className: 'font-mono' }, '2.NBT.A.1'),
+            __alloT('stem.manipulatives.grade_2_number_operations_in_base_ten_', ' = "Grade 2, Number & Operations in Base Ten, cluster A, standard 1."')
           )
         );
       }
@@ -3186,17 +3187,17 @@ window.StemLab = window.StemLab || {
           headerEl,
           // Save panel
           h('div', { className: 'bg-white rounded-xl border-2 border-slate-200 p-3' },
-            h('p', { className: 'text-xs font-bold text-slate-700 mb-2' }, '💾 Save the current workspace (from the manipulative you were just on):'),
+            h('p', { className: 'text-xs font-bold text-slate-700 mb-2' }, __alloT('stem.manipulatives.save_the_current_workspace_from_the_ma', '💾 Save the current workspace (from the manipulative you were just on):')),
             h('div', { className: 'flex gap-2' },
               h('input', {
                 type: 'text', value: libraryName,
                 onChange: function(e) { upd({ libraryName: e.target.value }); },
                 onKeyDown: function(e) { if (e.key === 'Enter') saveCurrent(); },
-                placeholder: 'Name (e.g. "Wed lesson: regroup demo")',
+                placeholder: __alloT('stem.manipulatives.name_e_g_wed_lesson_regroup_demo', 'Name (e.g. "Wed lesson: regroup demo")'),
                 className: 'flex-1 px-3 py-1.5 text-xs border border-slate-300 rounded'
               }),
               h('button', { onClick: saveCurrent,
-                className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-slate-700 text-white hover:bg-slate-800' }, 'Save')
+                className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-slate-700 text-white hover:bg-slate-800' }, __alloT('stem.manipulatives.save', 'Save'))
             ),
             _m.lastMode && h('p', { className: 'text-[11px] text-slate-500 italic mt-1' },
               'Will snapshot the current state of: ' + (_m.lastMode || 'blocks')
@@ -3208,9 +3209,9 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'text-xs font-bold text-slate-700' }, '📂 Saved (' + names.length + ')'),
               h('div', { className: 'flex gap-1' },
                 h('button', { onClick: exportConstr, disabled: names.length === 0,
-                  className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-blue-100 text-blue-700 hover:bg-blue-200 disabled:opacity-50' }, 'Export JSON'),
+                  className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-blue-100 text-blue-700 hover:bg-blue-200 disabled:opacity-50' }, __alloT('stem.manipulatives.export_json', 'Export JSON')),
                 h('label', { className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-blue-100 text-blue-700 hover:bg-blue-200 cursor-pointer' },
-                  'Import',
+                  __alloT('stem.manipulatives.import', 'Import'),
                   h('input', { type: 'file', accept: '.json,application/json',
                     onChange: function(e) { if (e.target.files && e.target.files[0]) importConstr(e.target.files[0]); },
                     style: { display: 'none' } })
@@ -3219,7 +3220,7 @@ window.StemLab = window.StemLab || {
             ),
             names.length === 0
               ? h('p', { className: 'text-xs italic text-slate-500 text-center py-4' },
-                  'Nothing saved yet. Build something in any manipulative, then come back here to name and save it.')
+                  __alloT('stem.manipulatives.nothing_saved_yet_build_something_in_a', 'Nothing saved yet. Build something in any manipulative, then come back here to name and save it.'))
               : h('div', { className: 'divide-y divide-slate-200' },
                   names.map(function(n) {
                     var c = savedConstructions[n];
@@ -3231,7 +3232,7 @@ window.StemLab = window.StemLab || {
                       ),
                       h('button', { onClick: function() { loadConstr(n); },
                         className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-emerald-100 text-emerald-700 hover:bg-emerald-200' },
-                        'Open'),
+                        __alloT('stem.manipulatives.open', 'Open')),
                       h('button', { onClick: function() { deleteConstr(n); },
                         className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-rose-100 text-rose-700 hover:bg-rose-200' },
                         '✕')
@@ -3240,8 +3241,8 @@ window.StemLab = window.StemLab || {
                 )
           ),
           h('div', { className: 'bg-slate-50 rounded-lg p-3 border border-slate-200 text-xs text-slate-700' },
-            '💡 The library lives in your browser. Use ', h('b', null, 'Export JSON'), ' to back it up or share saved constructions across devices. ',
-            'Teachers: pre-save a sequence of "look at this" examples to walk a small group through.'
+            __alloT('stem.manipulatives.the_library_lives_in_your_browser_use', '💡 The library lives in your browser. Use '), h('b', null, __alloT('stem.manipulatives.export_json_2', 'Export JSON')), __alloT('stem.manipulatives.to_back_it_up_or_share_saved_construct', ' to back it up or share saved constructions across devices. '),
+            __alloT('stem.manipulatives.teachers_pre_save_a_sequence_of_look_a', 'Teachers: pre-save a sequence of "look at this" examples to walk a small group through.')
           )
         );
       }
@@ -3255,16 +3256,16 @@ window.StemLab = window.StemLab || {
         var loadIndex = (iq.abstractness * 1.5) - (iq.scaffoldDensity * 0.6) - (iq.errorTolerance * 0.4) + (10 - iq.gradeLevel) * 0.3;
         var state = gradeAbstractMatch === 'mismatched' ? 'mismatch' : loadIndex < 2 ? 'sandbox' : loadIndex < 4 ? 'productive' : loadIndex < 7 ? 'stretching' : 'overload';
         var sm = ({
-          mismatch: { label: 'Grade-abstractness mismatch', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Picked abstractness is far from grade-typical (e.g., K students with abstract algebra). Students will be lost or bored.' },
-          sandbox: { label: 'Sandbox / play', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Low cognitive load. Heavy scaffolding + concrete tools = exploration-friendly. Good for first exposure.' },
-          productive: { label: 'Productive struggle', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Sweet spot. Challenging enough to require thought; scaffolded enough to make progress. The growth zone.' },
-          stretching: { label: 'Stretching', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Approaching the upper bound of productive challenge. Risk of frustration without teacher proximity.' },
-          overload: { label: 'Cognitive overload', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'Too abstract, too little scaffold, too little tolerance. Students freeze, give up, or develop math anxiety.' }
+          mismatch: { label: __alloT('stem.manipulatives.grade_abstractness_mismatch', 'Grade-abstractness mismatch'), color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: __alloT('stem.manipulatives.picked_abstractness_is_far_from_grade_', 'Picked abstractness is far from grade-typical (e.g., K students with abstract algebra). Students will be lost or bored.') },
+          sandbox: { label: __alloT('stem.manipulatives.sandbox_play', 'Sandbox / play'), color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: __alloT('stem.manipulatives.low_cognitive_load_heavy_scaffolding_c', 'Low cognitive load. Heavy scaffolding + concrete tools = exploration-friendly. Good for first exposure.') },
+          productive: { label: __alloT('stem.manipulatives.productive_struggle', 'Productive struggle'), color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: __alloT('stem.manipulatives.sweet_spot_challenging_enough_to_requi', 'Sweet spot. Challenging enough to require thought; scaffolded enough to make progress. The growth zone.') },
+          stretching: { label: __alloT('stem.manipulatives.stretching', 'Stretching'), color: '#facc15', bg: '#2a2410', border: '#eab308', desc: __alloT('stem.manipulatives.approaching_the_upper_bound_of_product', 'Approaching the upper bound of productive challenge. Risk of frustration without teacher proximity.') },
+          overload: { label: __alloT('stem.manipulatives.cognitive_overload', 'Cognitive overload'), color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: __alloT('stem.manipulatives.too_abstract_too_little_scaffold_too_l', 'Too abstract, too little scaffold, too little tolerance. Students freeze, give up, or develop math anxiety.') }
         })[state];
         return h('div', { className: 'p-4' },
           h('div', { className: 'flex items-center gap-3 mb-3' },
             ArrowLeft && h('button', { onClick: function() { switchMode(_m.lastMode || 'blocks'); }, className: 'transition-colors p-1.5 hover:bg-slate-100 rounded-lg' }, h(ArrowLeft, { size: 18 })),
-            h('div', null, h('h3', { className: 'text-base font-bold text-slate-800' }, '🔬 Math Inquiry — Pick the Productive-Struggle Zone'), h('p', { className: 'text-xs text-slate-600' }, 'No right answer. Tune four dials. Predict where you land.'))
+            h('div', null, h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.manipulatives.math_inquiry_pick_the_productive_strug', '🔬 Math Inquiry — Pick the Productive-Struggle Zone')), h('p', { className: 'text-xs text-slate-600' }, __alloT('stem.manipulatives.no_right_answer_tune_four_dials_predic', 'No right answer. Tune four dials. Predict where you land.')))
           ),
           h('div', { style: { padding: 14, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
             h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · load index ' + loadIndex.toFixed(1)),
@@ -3272,26 +3273,26 @@ window.StemLab = window.StemLab || {
             h('svg', { width: '100%', height: 80, viewBox: '0 0 320 80', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
               h('rect', { x: 30, y: 30, width: 260, height: 26, fill: '#0f172a', stroke: '#1e293b' }),
               h('rect', { x: 30 + Math.max(0, Math.min(220, 60)), y: 30, width: 60, height: 26, fill: '#4ade80', opacity: 0.4 }),
-              h('text', { x: 120, y: 22, fill: '#4ade80', fontSize: 9, textAnchor: 'middle' }, 'sweet spot'),
+              h('text', { x: 120, y: 22, fill: '#4ade80', fontSize: 9, textAnchor: 'middle' }, __alloT('stem.manipulatives.sweet_spot', 'sweet spot')),
               h('circle', { cx: 30 + Math.max(0, Math.min(260, (loadIndex + 2) * 20)), cy: 43, r: 6, fill: sm.color, stroke: '#fff', strokeWidth: 1.5 }),
-              h('text', { x: 30, y: 72, fill: '#94a3b8', fontSize: 9 }, 'too easy'),
-              h('text', { x: 290, y: 72, fill: '#94a3b8', fontSize: 9, textAnchor: 'end' }, 'too hard')
+              h('text', { x: 30, y: 72, fill: '#94a3b8', fontSize: 9 }, __alloT('stem.manipulatives.too_easy', 'too easy')),
+              h('text', { x: 290, y: 72, fill: '#94a3b8', fontSize: 9, textAnchor: 'end' }, __alloT('stem.manipulatives.too_hard', 'too hard'))
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
               h('label', { style: { fontSize: 11 } },
-                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Grade level (K=0 to 8)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.gradeLevel)),
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.manipulatives.grade_level_k_0_to_8', 'Grade level (K=0 to 8)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.gradeLevel)),
                 h('input', { type: 'range', min: 0, max: 8, step: 1, value: iq.gradeLevel, onChange: function(e) { setKey('gradeLevel', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
               ),
               h('label', { style: { fontSize: 11 } },
-                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Abstractness (concrete 1 → symbolic 5)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.abstractness)),
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.manipulatives.abstractness_concrete_1_symbolic_5', 'Abstractness (concrete 1 → symbolic 5)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.abstractness)),
                 h('input', { type: 'range', min: 1, max: 5, step: 1, value: iq.abstractness, onChange: function(e) { setKey('abstractness', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
               ),
               h('label', { style: { fontSize: 11 } },
-                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Scaffold density (1-10)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.scaffoldDensity)),
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.manipulatives.scaffold_density_1_10', 'Scaffold density (1-10)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.scaffoldDensity)),
                 h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.scaffoldDensity, onChange: function(e) { setKey('scaffoldDensity', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
               ),
               h('label', { style: { fontSize: 11 } },
-                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Error tolerance (1-10)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.errorTolerance)),
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.manipulatives.error_tolerance_1_10', 'Error tolerance (1-10)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.errorTolerance)),
                 h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.errorTolerance, onChange: function(e) { setKey('errorTolerance', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
               )
             ),
@@ -3299,30 +3300,30 @@ window.StemLab = window.StemLab || {
               h('button', { onClick: function() {
                 var t = new Date().toISOString().slice(11, 19);
                 setIQ({ log: iq.log.concat([{ t: t, g: iq.gradeLevel, a: iq.abstractness, sc: iq.scaffoldDensity, et: iq.errorTolerance, idx: loadIndex.toFixed(1), state: sm.label }]) });
-              }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '📋 Log this lesson design'),
-              h('button', { onClick: function() { setIQ({ gradeLevel: 4, abstractness: 3, scaffoldDensity: 5, errorTolerance: 5 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
+              }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, __alloT('stem.manipulatives.log_this_lesson_design', '📋 Log this lesson design')),
+              h('button', { onClick: function() { setIQ({ gradeLevel: 4, abstractness: 3, scaffoldDensity: 5, errorTolerance: 5 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, __alloT('stem.manipulatives.reset_7', 'Reset'))
             ),
             iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
               iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · g' + e.g + ' abs' + e.a + ' sc' + e.sc + ' et' + e.et + ' → idx ' + e.idx); })
             ),
-            h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (which slider should a beginning teacher worry about most? Why?)'),
-            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., abstractness mismatch causes the most damage because students can\'t see what they\'re even working on...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
+            h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, __alloT('stem.manipulatives.your_hypothesis_which_slider_should_a_', 'Your hypothesis (which slider should a beginning teacher worry about most? Why?)')),
+            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.manipulatives.e_g_abstractness_mismatch_causes_the_m', 'e.g., abstractness mismatch causes the most damage because students can\'t see what they\'re even working on...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, __alloT('stem.manipulatives.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
             iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
-              h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
+              h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, __alloT('stem.manipulatives.open_questions_no_answer_key', 'Open questions (no answer key)')),
               h('ul', { style: { margin: 0, paddingLeft: 16 } },
-                h('li', null, 'What does "productive struggle" look like vs "frustration"? How would you tell the difference in a classroom?'),
-                h('li', null, 'Bruner\'s CPA: Concrete → Pictorial → Abstract. Map your abstractness slider to this progression.'),
-                h('li', null, 'High error tolerance means more room to be wrong. When is that helpful and when is it cruel?'),
-                h('li', null, 'Why does the same task feel different in K vs 5th grade vs 8th grade?')
+                h('li', null, __alloT('stem.manipulatives.what_does_productive_struggle_look_lik', 'What does "productive struggle" look like vs "frustration"? How would you tell the difference in a classroom?')),
+                h('li', null, __alloT('stem.manipulatives.bruner_s_cpa_concrete_pictorial_abstra', 'Bruner\'s CPA: Concrete → Pictorial → Abstract. Map your abstractness slider to this progression.')),
+                h('li', null, __alloT('stem.manipulatives.high_error_tolerance_means_more_room_t', 'High error tolerance means more room to be wrong. When is that helpful and when is it cruel?')),
+                h('li', null, __alloT('stem.manipulatives.why_does_the_same_task_feel_different_', 'Why does the same task feel different in K vs 5th grade vs 8th grade?'))
               )
             ),
             h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
               h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
-              h('span', null, 'I can explain why this lesson design lands in this state.')
+              h('span', null, __alloT('stem.manipulatives.i_can_explain_why_this_lesson_design_l', 'I can explain why this lesson design lands in this state.'))
             ),
-            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
-            h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal, no answer dump. Load index is a heuristic; real lesson design depends on prior knowledge, motivation, peer dynamics, and many more dimensions than four.')
+            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.manipulatives.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+            h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, __alloT('stem.manipulatives.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Load index is a heuristic; real lesson design depends on prior knowledge, motivation, peer dynamics, and many more dimensions than four.'))
           )
         );
       }
@@ -3389,137 +3390,137 @@ window.StemLab = window.StemLab || {
         };
 
         var lessonPlans = [
-          { grade: 'K', title: 'Build to 10', manips: ['tenFrame', 'numberBonds'],
-            desc: 'Use a ten frame to fill in dots up to 10. Then switch to Number Bonds and decompose 10 into pairs (1+9, 2+8, 3+7...).',
+          { grade: 'K', title: __alloT('stem.manipulatives.build_to_10', 'Build to 10'), manips: ['tenFrame', 'numberBonds'],
+            desc: __alloT('stem.manipulatives.use_a_ten_frame_to_fill_in_dots_up_to_', 'Use a ten frame to fill in dots up to 10. Then switch to Number Bonds and decompose 10 into pairs (1+9, 2+8, 3+7...).'),
             standards: ['K.OA.A.3', 'K.OA.A.4'] },
-          { grade: '1', title: 'Adding within 20 with regrouping', manips: ['blocks', 'cra'],
-            desc: 'Build 8 with orange unit blocks. Add 5 more. Notice you now have 13 ones. Regroup 10 of them into 1 green ten-rod.',
+          { grade: '1', title: __alloT('stem.manipulatives.adding_within_20_with_regrouping', 'Adding within 20 with regrouping'), manips: ['blocks', 'cra'],
+            desc: __alloT('stem.manipulatives.build_8_with_orange_unit_blocks_add_5_', 'Build 8 with orange unit blocks. Add 5 more. Notice you now have 13 ones. Regroup 10 of them into 1 green ten-rod.'),
             standards: ['1.NBT.C.4', '1.OA.C.6'] },
-          { grade: '2', title: 'Place value to 1,000', manips: ['blocks', 'pvDisks'],
-            desc: 'Build 347. Now build 347 with disks. Same number, two representations — which felt easier?',
+          { grade: '2', title: __alloT('stem.manipulatives.place_value_to_1_000', 'Place value to 1,000'), manips: ['blocks', 'pvDisks'],
+            desc: __alloT('stem.manipulatives.build_347_now_build_347_with_disks_sam', 'Build 347. Now build 347 with disks. Same number, two representations — which felt easier?'),
             standards: ['2.NBT.A.1', '2.NBT.A.3'] },
-          { grade: '2', title: 'Skip-counting by 5s and 10s', manips: ['hundredsChart'],
-            desc: 'Turn on the Skip 5 overlay. What pattern do you see? (Two vertical columns highlighted.) Now Skip 10. Now compare.',
+          { grade: '2', title: __alloT('stem.manipulatives.skip_counting_by_5s_and_10s', 'Skip-counting by 5s and 10s'), manips: ['hundredsChart'],
+            desc: __alloT('stem.manipulatives.turn_on_the_skip_5_overlay_what_patter', 'Turn on the Skip 5 overlay. What pattern do you see? (Two vertical columns highlighted.) Now Skip 10. Now compare.'),
             standards: ['2.NBT.A.2'] },
-          { grade: '3', title: 'Unit fractions with pattern blocks', manips: ['patternBlocks'],
-            desc: 'Place 1 hexagon. Now build the SAME shape with trapezoids only — how many fit? With triangles — how many?',
+          { grade: '3', title: __alloT('stem.manipulatives.unit_fractions_with_pattern_blocks', 'Unit fractions with pattern blocks'), manips: ['patternBlocks'],
+            desc: __alloT('stem.manipulatives.place_1_hexagon_now_build_the_same_sha', 'Place 1 hexagon. Now build the SAME shape with trapezoids only — how many fit? With triangles — how many?'),
             standards: ['3.NF.A.1'] },
-          { grade: '3', title: 'Multiplication as repeated groups', manips: ['cra'],
-            desc: 'Pick the × Multiplication CRA path. Walk through 3 × 4 as three groups of 4, then as a 3×4 array, then as the equation.',
+          { grade: '3', title: __alloT('stem.manipulatives.multiplication_as_repeated_groups', 'Multiplication as repeated groups'), manips: ['cra'],
+            desc: __alloT('stem.manipulatives.pick_the_multiplication_cra_path_walk_', 'Pick the × Multiplication CRA path. Walk through 3 × 4 as three groups of 4, then as a 3×4 array, then as the equation.'),
             standards: ['3.OA.A.1'] },
-          { grade: '4', title: 'Area and perimeter on the geoboard', manips: ['geoboard'],
-            desc: 'Make a 4×3 rectangle. What is the perimeter (count the unit segments around the edge)? What is the area (count the unit squares inside)?',
+          { grade: '4', title: __alloT('stem.manipulatives.area_and_perimeter_on_the_geoboard', 'Area and perimeter on the geoboard'), manips: ['geoboard'],
+            desc: __alloT('stem.manipulatives.make_a_4_3_rectangle_what_is_the_perim', 'Make a 4×3 rectangle. What is the perimeter (count the unit segments around the edge)? What is the area (count the unit squares inside)?'),
             standards: ['4.MD.A.3'] },
-          { grade: '4', title: 'Multi-digit addition with disks', manips: ['pvDisks'],
-            desc: 'Build 256. Add 178: drop in 8 ones, 7 tens, 1 hundred. Now regroup: 10 ones = 1 ten, 10 tens = 1 hundred. Read the answer.',
+          { grade: '4', title: __alloT('stem.manipulatives.multi_digit_addition_with_disks', 'Multi-digit addition with disks'), manips: ['pvDisks'],
+            desc: __alloT('stem.manipulatives.build_256_add_178_drop_in_8_ones_7_ten', 'Build 256. Add 178: drop in 8 ones, 7 tens, 1 hundred. Now regroup: 10 ones = 1 ten, 10 tens = 1 hundred. Read the answer.'),
             standards: ['4.NBT.B.4'] },
-          { grade: '5', title: 'Cuisenaire fractions', manips: ['cRods'],
-            desc: 'Place an orange rod (10). What fraction of it is the yellow rod (5)? The red rod (2)? Write each as a fraction.',
+          { grade: '5', title: __alloT('stem.manipulatives.cuisenaire_fractions', 'Cuisenaire fractions'), manips: ['cRods'],
+            desc: __alloT('stem.manipulatives.place_an_orange_rod_10_what_fraction_o', 'Place an orange rod (10). What fraction of it is the yellow rod (5)? The red rod (2)? Write each as a fraction.'),
             standards: ['5.NF.B.4.b'] },
-          { grade: '6', title: 'Negative numbers with counters', manips: ['counters'],
-            desc: 'Start with 4 yellow and 7 red. What is the net value? Now remove zero pairs one at a time — what stays?',
+          { grade: '6', title: __alloT('stem.manipulatives.negative_numbers_with_counters', 'Negative numbers with counters'), manips: ['counters'],
+            desc: __alloT('stem.manipulatives.start_with_4_yellow_and_7_red_what_is_', 'Start with 4 yellow and 7 red. What is the net value? Now remove zero pairs one at a time — what stays?'),
             standards: ['6.NS.C.5', '7.NS.A.1'] },
-          { grade: 'K', title: 'Subitizing with the ten frame', manips: ['tenFrame'],
-            desc: 'Flash a ten frame for 1 second. Have students say how many they saw — no counting. Build up from 1-3, then 4-7, then 8-10.',
+          { grade: 'K', title: __alloT('stem.manipulatives.subitizing_with_the_ten_frame', 'Subitizing with the ten frame'), manips: ['tenFrame'],
+            desc: __alloT('stem.manipulatives.flash_a_ten_frame_for_1_second_have_st', 'Flash a ten frame for 1 second. Have students say how many they saw — no counting. Build up from 1-3, then 4-7, then 8-10.'),
             standards: ['K.CC.B.4'] },
-          { grade: '1', title: 'Number bonds to 5', manips: ['numberBonds'],
-            desc: 'Whole = 5. Drag the slider so part 1 ranges through 0..5. Each time, say the bond aloud: "5 is 0 and 5, 5 is 1 and 4, ..."',
+          { grade: '1', title: __alloT('stem.manipulatives.number_bonds_to_5', 'Number bonds to 5'), manips: ['numberBonds'],
+            desc: __alloT('stem.manipulatives.whole_5_drag_the_slider_so_part_1_rang', 'Whole = 5. Drag the slider so part 1 ranges through 0..5. Each time, say the bond aloud: "5 is 0 and 5, 5 is 1 and 4, ..."'),
             standards: ['K.OA.A.3', '1.OA.C.6'] },
-          { grade: '2', title: 'Same number, two ways with blocks', manips: ['blocks'],
-            desc: 'Build 47 in the standard way. Then build it again using only ones (47 ones). Then again using only tens and ones. Compare.',
+          { grade: '2', title: __alloT('stem.manipulatives.same_number_two_ways_with_blocks', 'Same number, two ways with blocks'), manips: ['blocks'],
+            desc: __alloT('stem.manipulatives.build_47_in_the_standard_way_then_buil', 'Build 47 in the standard way. Then build it again using only ones (47 ones). Then again using only tens and ones. Compare.'),
             standards: ['2.NBT.A.3'] },
-          { grade: '3', title: 'Skip-counting by 7s', manips: ['hundredsChart'],
-            desc: 'Click cells in 7s order: 7, 14, 21, 28, ... What pattern of cells do you see? (A diagonal stripe.)',
+          { grade: '3', title: __alloT('stem.manipulatives.skip_counting_by_7s', 'Skip-counting by 7s'), manips: ['hundredsChart'],
+            desc: __alloT('stem.manipulatives.click_cells_in_7s_order_7_14_21_28_wha', 'Click cells in 7s order: 7, 14, 21, 28, ... What pattern of cells do you see? (A diagonal stripe.)'),
             standards: ['2.NBT.A.2', '3.OA.D.9'] },
-          { grade: '3', title: 'Equivalent fractions with pattern blocks', manips: ['patternBlocks'],
-            desc: 'Cover 1 hexagon with 2 trapezoids. Cover it with 3 rhombi. Cover with 6 triangles. So 2/2 = 3/3 = 6/6 = 1.',
+          { grade: '3', title: __alloT('stem.manipulatives.equivalent_fractions_with_pattern_bloc', 'Equivalent fractions with pattern blocks'), manips: ['patternBlocks'],
+            desc: __alloT('stem.manipulatives.cover_1_hexagon_with_2_trapezoids_cove', 'Cover 1 hexagon with 2 trapezoids. Cover it with 3 rhombi. Cover with 6 triangles. So 2/2 = 3/3 = 6/6 = 1.'),
             standards: ['3.NF.A.3'] },
-          { grade: '4', title: 'Polygons + names on the geoboard', manips: ['geoboard'],
-            desc: 'Build any 3-sided shape (triangle), 4-sided (quadrilateral), 5-sided (pentagon), 6-sided (hexagon). Name each before building.',
+          { grade: '4', title: __alloT('stem.manipulatives.polygons_names_on_the_geoboard', 'Polygons + names on the geoboard'), manips: ['geoboard'],
+            desc: __alloT('stem.manipulatives.build_any_3_sided_shape_triangle_4_sid', 'Build any 3-sided shape (triangle), 4-sided (quadrilateral), 5-sided (pentagon), 6-sided (hexagon). Name each before building.'),
             standards: ['3.G.A.1', '4.G.A.2'] },
-          { grade: '4', title: 'Cuisenaire division', manips: ['cRods'],
-            desc: 'Take a brown (8) rod. Lay red (2) rods alongside it: 4 fit. So 8 ÷ 2 = 4. Try with other small rods under larger ones.',
+          { grade: '4', title: __alloT('stem.manipulatives.cuisenaire_division', 'Cuisenaire division'), manips: ['cRods'],
+            desc: __alloT('stem.manipulatives.take_a_brown_8_rod_lay_red_2_rods_alon', 'Take a brown (8) rod. Lay red (2) rods alongside it: 4 fit. So 8 ÷ 2 = 4. Try with other small rods under larger ones.'),
             standards: ['3.OA.C.7', '4.NBT.B.6'] },
-          { grade: '5', title: 'Order of operations with counters', manips: ['counters', 'cra'],
-            desc: 'Model (3 + 2) × 4: first make a group of (3 + 2) yellows, then make 4 copies of that group. Now model 3 + (2 × 4).',
+          { grade: '5', title: __alloT('stem.manipulatives.order_of_operations_with_counters', 'Order of operations with counters'), manips: ['counters', 'cra'],
+            desc: __alloT('stem.manipulatives.model_3_2_4_first_make_a_group_of_3_2_', 'Model (3 + 2) × 4: first make a group of (3 + 2) yellows, then make 4 copies of that group. Now model 3 + (2 × 4).'),
             standards: ['5.OA.A.1'] },
-          { grade: '5', title: 'Prime numbers under 100', manips: ['hundredsChart'],
-            desc: 'Use the "Show primes" button on the Hundreds Chart. Count them. Notice the gaps. Discuss: which row has the most primes? Which has the fewest?',
+          { grade: '5', title: __alloT('stem.manipulatives.prime_numbers_under_100', 'Prime numbers under 100'), manips: ['hundredsChart'],
+            desc: __alloT('stem.manipulatives.use_the_show_primes_button_on_the_hund', 'Use the "Show primes" button on the Hundreds Chart. Count them. Notice the gaps. Discuss: which row has the most primes? Which has the fewest?'),
             standards: ['4.OA.B.4'] },
-          { grade: '6', title: 'Integer subtraction (KEEP-CHANGE-CHANGE)', manips: ['counters', 'cra'],
-            desc: 'Model 5 − (−3): "Keep 5, change minus to plus, change −3 to +3" → 5 + 3 = 8. Show with counters: removing 3 reds from a pile increases the net by 3.',
+          { grade: '6', title: __alloT('stem.manipulatives.integer_subtraction_keep_change_change', 'Integer subtraction (KEEP-CHANGE-CHANGE)'), manips: ['counters', 'cra'],
+            desc: __alloT('stem.manipulatives.model_5_3_keep_5_change_minus_to_plus_', 'Model 5 − (−3): "Keep 5, change minus to plus, change −3 to +3" → 5 + 3 = 8. Show with counters: removing 3 reds from a pile increases the net by 3.'),
             standards: ['7.NS.A.1.C'] },
-          { grade: 'K-1', title: 'Showing "more" and "less"', manips: ['cRods', 'tenFrame'],
-            desc: 'Show a red rod (2) and a yellow rod (5). Which is more? By how many? Now do the same with ten frames showing 4 and 7.',
+          { grade: 'K-1', title: __alloT('stem.manipulatives.showing_more_and_less', 'Showing "more" and "less"'), manips: ['cRods', 'tenFrame'],
+            desc: __alloT('stem.manipulatives.show_a_red_rod_2_and_a_yellow_rod_5_wh', 'Show a red rod (2) and a yellow rod (5). Which is more? By how many? Now do the same with ten frames showing 4 and 7.'),
             standards: ['K.CC.C.6', '1.OA.A.1'] },
-          { grade: '2-3', title: 'Composing 100', manips: ['blocks', 'pvDisks'],
-            desc: 'Use 10 tens-rods to build 100. Trade for one hundreds-flat. Same idea with disks: 10 ten-disks → 1 hundred-disk.',
+          { grade: '2-3', title: __alloT('stem.manipulatives.composing_100', 'Composing 100'), manips: ['blocks', 'pvDisks'],
+            desc: __alloT('stem.manipulatives.use_10_tens_rods_to_build_100_trade_fo', 'Use 10 tens-rods to build 100. Trade for one hundreds-flat. Same idea with disks: 10 ten-disks → 1 hundred-disk.'),
             standards: ['2.NBT.A.1.A'] },
-          { grade: '4-5', title: 'Hands-off slide rule demo', manips: ['slideRule'],
-            desc: 'Show 2 × 3 on the slide rule by aligning 1 on the C scale with 2 on the D scale, then reading under 3 on C. The cursor lands on 6.',
+          { grade: '4-5', title: __alloT('stem.manipulatives.hands_off_slide_rule_demo', 'Hands-off slide rule demo'), manips: ['slideRule'],
+            desc: __alloT('stem.manipulatives.show_2_3_on_the_slide_rule_by_aligning', 'Show 2 × 3 on the slide rule by aligning 1 on the C scale with 2 on the D scale, then reading under 3 on C. The cursor lands on 6.'),
             standards: ['5.OA.A.2'] },
-          { grade: 'K', title: 'Make-10 with counters', manips: ['counters', 'tenFrame'],
-            desc: 'Pretend yellow is "in our jar" and we need 10. Start with some yellow. How many MORE to get to 10? Place that many. Verify with a ten frame.',
+          { grade: 'K', title: __alloT('stem.manipulatives.make_10_with_counters', 'Make-10 with counters'), manips: ['counters', 'tenFrame'],
+            desc: __alloT('stem.manipulatives.pretend_yellow_is_in_our_jar_and_we_ne', 'Pretend yellow is "in our jar" and we need 10. Start with some yellow. How many MORE to get to 10? Place that many. Verify with a ten frame.'),
             standards: ['K.OA.A.4'] },
-          { grade: '4', title: 'Standard algorithm with disks (subtraction)', manips: ['pvDisks'],
-            desc: 'Build 503. Subtract 248. You\'ll need to ungroup: trade 1 hundred for 10 tens, then 1 ten for 10 ones. Read the answer from the remaining disks: 255.',
+          { grade: '4', title: __alloT('stem.manipulatives.standard_algorithm_with_disks_subtract', 'Standard algorithm with disks (subtraction)'), manips: ['pvDisks'],
+            desc: __alloT('stem.manipulatives.build_503_subtract_248_you_ll_need_to_', 'Build 503. Subtract 248. You\'ll need to ungroup: trade 1 hundred for 10 tens, then 1 ten for 10 ones. Read the answer from the remaining disks: 255.'),
             standards: ['4.NBT.B.4'] },
-          { grade: '5', title: 'Area as multiplication', manips: ['geoboard'],
-            desc: 'Build a 4×6 rectangle on the geoboard. Count unit squares: 24. Notice 4 × 6 = 24. Area = length × width.',
+          { grade: '5', title: __alloT('stem.manipulatives.area_as_multiplication', 'Area as multiplication'), manips: ['geoboard'],
+            desc: __alloT('stem.manipulatives.build_a_4_6_rectangle_on_the_geoboard_', 'Build a 4×6 rectangle on the geoboard. Count unit squares: 24. Notice 4 × 6 = 24. Area = length × width.'),
             standards: ['5.MD.C.5'] },
-          { grade: '2', title: 'Odd vs even on the hundreds chart', manips: ['hundredsChart'],
-            desc: 'Color every other cell starting at 2. What pattern do you see? (Columns of evens, columns of odds.) Why is the rightmost digit always 0, 2, 4, 6, or 8 for evens?',
+          { grade: '2', title: __alloT('stem.manipulatives.odd_vs_even_on_the_hundreds_chart', 'Odd vs even on the hundreds chart'), manips: ['hundredsChart'],
+            desc: __alloT('stem.manipulatives.color_every_other_cell_starting_at_2_w', 'Color every other cell starting at 2. What pattern do you see? (Columns of evens, columns of odds.) Why is the rightmost digit always 0, 2, 4, 6, or 8 for evens?'),
             standards: ['2.OA.C.3'] },
-          { grade: '3', title: 'Multiplication facts with arrays', manips: ['cRods', 'cra'],
-            desc: 'Walk through CRA for 4 × 3: 4 groups of 3 white rods, then a 4-by-3 array of dots, then the equation 4 × 3 = 12.',
+          { grade: '3', title: __alloT('stem.manipulatives.multiplication_facts_with_arrays', 'Multiplication facts with arrays'), manips: ['cRods', 'cra'],
+            desc: __alloT('stem.manipulatives.walk_through_cra_for_4_3_4_groups_of_3', 'Walk through CRA for 4 × 3: 4 groups of 3 white rods, then a 4-by-3 array of dots, then the equation 4 × 3 = 12.'),
             standards: ['3.OA.A.1', '3.OA.C.7'] },
-          { grade: '1', title: 'Counting on with the abacus', manips: ['abacus'],
-            desc: 'Show 6 on the ones rod. Add 2 by sliding two more earth beads. Now show 9 + 4: add 5 by sliding the heaven bead down, then take back 1.',
+          { grade: '1', title: __alloT('stem.manipulatives.counting_on_with_the_abacus', 'Counting on with the abacus'), manips: ['abacus'],
+            desc: __alloT('stem.manipulatives.show_6_on_the_ones_rod_add_2_by_slidin', 'Show 6 on the ones rod. Add 2 by sliding two more earth beads. Now show 9 + 4: add 5 by sliding the heaven bead down, then take back 1.'),
             standards: ['1.OA.C.5', '1.OA.C.6'] },
-          { grade: '3-4', title: 'Money with disks', manips: ['pvDisks'],
-            desc: 'Re-label disks: ones = pennies, tens = dimes, hundreds = dollars. Build $2.47 with 2 dollar-disks, 4 dime-disks, 7 penny-disks. Add $1.85.',
+          { grade: '3-4', title: __alloT('stem.manipulatives.money_with_disks', 'Money with disks'), manips: ['pvDisks'],
+            desc: __alloT('stem.manipulatives.re_label_disks_ones_pennies_tens_dimes', 'Re-label disks: ones = pennies, tens = dimes, hundreds = dollars. Build $2.47 with 2 dollar-disks, 4 dime-disks, 7 penny-disks. Add $1.85.'),
             standards: ['2.MD.C.8'] },
-          { grade: '4-5', title: 'Decimals with disks', manips: ['pvDisks'],
-            desc: 'Re-label: ones = tenths, tens = wholes. So 23 disks = 2.3. Build, regroup, read aloud.',
+          { grade: '4-5', title: __alloT('stem.manipulatives.decimals_with_disks', 'Decimals with disks'), manips: ['pvDisks'],
+            desc: __alloT('stem.manipulatives.re_label_ones_tenths_tens_wholes_so_23', 'Re-label: ones = tenths, tens = wholes. So 23 disks = 2.3. Build, regroup, read aloud.'),
             standards: ['4.NF.C.6', '5.NBT.A.3'] },
-          { grade: '5-6', title: 'Fraction addition', manips: ['cRods'],
-            desc: 'Build 1/2 + 1/3 with rods, using a 6-rod (dark green) as the whole. Half of 6 is 3 (light green). A third is 2 (red). Combined: 5. Read as 5/6.',
+          { grade: '5-6', title: __alloT('stem.manipulatives.fraction_addition', 'Fraction addition'), manips: ['cRods'],
+            desc: __alloT('stem.manipulatives.build_1_2_1_3_with_rods_using_a_6_rod_', 'Build 1/2 + 1/3 with rods, using a 6-rod (dark green) as the whole. Half of 6 is 3 (light green). A third is 2 (red). Combined: 5. Read as 5/6.'),
             standards: ['5.NF.A.1'] },
-          { grade: '6', title: 'Subtracting negatives', manips: ['counters'],
-            desc: 'Show 3 yellow. Pose: 3 − (−2). You don\'t have any reds to take away! So FIRST add a zero pair (1 yellow + 1 red doesn\'t change net). Now you can remove 2 reds. Final: 5.',
+          { grade: '6', title: __alloT('stem.manipulatives.subtracting_negatives', 'Subtracting negatives'), manips: ['counters'],
+            desc: __alloT('stem.manipulatives.show_3_yellow_pose_3_2_you_don_t_have_', 'Show 3 yellow. Pose: 3 − (−2). You don\'t have any reds to take away! So FIRST add a zero pair (1 yellow + 1 red doesn\'t change net). Now you can remove 2 reds. Final: 5.'),
             standards: ['7.NS.A.1.C'] },
-          { grade: 'K-1', title: 'Shape sorting', manips: ['patternBlocks'],
-            desc: 'Sort blocks into bins by number of sides: triangles (3), squares (4), trapezoids (4), hexagons (6). Count each pile.',
+          { grade: 'K-1', title: __alloT('stem.manipulatives.shape_sorting', 'Shape sorting'), manips: ['patternBlocks'],
+            desc: __alloT('stem.manipulatives.sort_blocks_into_bins_by_number_of_sid', 'Sort blocks into bins by number of sides: triangles (3), squares (4), trapezoids (4), hexagons (6). Count each pile.'),
             standards: ['K.G.A.2', '1.G.A.1'] },
-          { grade: '4-5', title: 'Place value to one million', manips: ['blocks', 'pvDisks'],
-            desc: 'A thousand-cube is 1,000. Ten of those would be 10,000. A hundred of those is 1,000,000. Build 1,000,000 in your imagination: 10 stacks of 10 cubes of 10 cubes. Now you understand "ten million."',
+          { grade: '4-5', title: __alloT('stem.manipulatives.place_value_to_one_million', 'Place value to one million'), manips: ['blocks', 'pvDisks'],
+            desc: __alloT('stem.manipulatives.a_thousand_cube_is_1_000_ten_of_those_', 'A thousand-cube is 1,000. Ten of those would be 10,000. A hundred of those is 1,000,000. Build 1,000,000 in your imagination: 10 stacks of 10 cubes of 10 cubes. Now you understand "ten million."'),
             standards: ['4.NBT.A.1'] },
-          { grade: '5', title: 'Coordinate grid intro', manips: ['geoboard'],
-            desc: 'Label the geoboard pegs with (x, y) coordinates. Plot the point (2, 3). Connect (1,1), (4,1), (4,3), (1,3) to make a rectangle. Compute its perimeter and area.',
+          { grade: '5', title: __alloT('stem.manipulatives.coordinate_grid_intro', 'Coordinate grid intro'), manips: ['geoboard'],
+            desc: __alloT('stem.manipulatives.label_the_geoboard_pegs_with_x_y_coord', 'Label the geoboard pegs with (x, y) coordinates. Plot the point (2, 3). Connect (1,1), (4,1), (4,3), (1,3) to make a rectangle. Compute its perimeter and area.'),
             standards: ['5.G.A.1', '5.G.A.2'] },
-          { grade: '6', title: 'Ratios with Cuisenaire', manips: ['cRods'],
-            desc: 'Place 2 red rods (2 each) and 3 yellow rods (5 each). Ratio of reds to yellows is 2:3. Total reds = 4 units; total yellows = 15 units. What is the ratio of total LENGTHS?',
+          { grade: '6', title: __alloT('stem.manipulatives.ratios_with_cuisenaire', 'Ratios with Cuisenaire'), manips: ['cRods'],
+            desc: __alloT('stem.manipulatives.place_2_red_rods_2_each_and_3_yellow_r', 'Place 2 red rods (2 each) and 3 yellow rods (5 each). Ratio of reds to yellows is 2:3. Total reds = 4 units; total yellows = 15 units. What is the ratio of total LENGTHS?'),
             standards: ['6.RP.A.1'] },
-          { grade: '7', title: 'Percent as fraction with blocks', manips: ['blocks', 'patternBlocks'],
-            desc: '50% means 50 out of 100. Build a 100-flat. Show 50%: half the flat = 50 ones. Show 25%: 1/4 of the flat = 25 ones. Show 75%, 10%, 5%.',
+          { grade: '7', title: __alloT('stem.manipulatives.percent_as_fraction_with_blocks', 'Percent as fraction with blocks'), manips: ['blocks', 'patternBlocks'],
+            desc: __alloT('stem.manipulatives.50_means_50_out_of_100_build_a_100_fla', '50% means 50 out of 100. Build a 100-flat. Show 50%: half the flat = 50 ones. Show 25%: 1/4 of the flat = 25 ones. Show 75%, 10%, 5%.'),
             standards: ['6.RP.A.3.C'] },
-          { grade: '3-4', title: 'Combinations puzzle', manips: ['cRods', 'numberBonds'],
-            desc: 'How many ways can you make a "train" of length 4 using only Cuisenaire rods? Find all of them and list. (1+1+1+1, 1+1+2, 1+3, 2+2, 4 — 5 unordered ways.)',
+          { grade: '3-4', title: __alloT('stem.manipulatives.combinations_puzzle', 'Combinations puzzle'), manips: ['cRods', 'numberBonds'],
+            desc: __alloT('stem.manipulatives.how_many_ways_can_you_make_a_train_of_', 'How many ways can you make a "train" of length 4 using only Cuisenaire rods? Find all of them and list. (1+1+1+1, 1+1+2, 1+3, 2+2, 4 — 5 unordered ways.)'),
             standards: ['4.OA.A.3'] },
-          { grade: 'K-1', title: 'Counting backward from 10', manips: ['tenFrame', 'cRods'],
-            desc: 'Fill a ten frame. Remove dots one at a time, counting backward: 10, 9, 8, 7, ... 1, 0. Notice the visual shrinking.',
+          { grade: 'K-1', title: __alloT('stem.manipulatives.counting_backward_from_10', 'Counting backward from 10'), manips: ['tenFrame', 'cRods'],
+            desc: __alloT('stem.manipulatives.fill_a_ten_frame_remove_dots_one_at_a_', 'Fill a ten frame. Remove dots one at a time, counting backward: 10, 9, 8, 7, ... 1, 0. Notice the visual shrinking.'),
             standards: ['K.CC.A.2'] },
-          { grade: '2-3', title: 'Skip-count chant', manips: ['hundredsChart'],
-            desc: 'Skip-count by 2s aloud: 2, 4, 6, ... 30. By 5s: 5, 10, ... 50. Highlight each on the chart as you say it. Notice columns / diagonals.',
+          { grade: '2-3', title: __alloT('stem.manipulatives.skip_count_chant', 'Skip-count chant'), manips: ['hundredsChart'],
+            desc: __alloT('stem.manipulatives.skip_count_by_2s_aloud_2_4_6_30_by_5s_', 'Skip-count by 2s aloud: 2, 4, 6, ... 30. By 5s: 5, 10, ... 50. Highlight each on the chart as you say it. Notice columns / diagonals.'),
             standards: ['2.NBT.A.2', '3.OA.A.4'] },
-          { grade: '3-4', title: 'Fact-family triangles', manips: ['numberBonds'],
-            desc: 'A number bond with whole 12 and parts 5 and 7 gives 4 facts: 5+7=12, 7+5=12, 12−5=7, 12−7=5. Have students list all 4 from any single bond.',
+          { grade: '3-4', title: __alloT('stem.manipulatives.fact_family_triangles', 'Fact-family triangles'), manips: ['numberBonds'],
+            desc: __alloT('stem.manipulatives.a_number_bond_with_whole_12_and_parts_', 'A number bond with whole 12 and parts 5 and 7 gives 4 facts: 5+7=12, 7+5=12, 12−5=7, 12−7=5. Have students list all 4 from any single bond.'),
             standards: ['3.OA.B.6'] },
-          { grade: '4', title: 'Long multiplication via array', manips: ['cRods', 'cra'],
-            desc: 'Model 13 × 14: build a 13-by-14 grid with rods. Break it: (10+3) × (10+4) = 100 + 40 + 30 + 12 = 182. This is "area model" multiplication.',
+          { grade: '4', title: __alloT('stem.manipulatives.long_multiplication_via_array', 'Long multiplication via array'), manips: ['cRods', 'cra'],
+            desc: __alloT('stem.manipulatives.model_13_14_build_a_13_by_14_grid_with', 'Model 13 × 14: build a 13-by-14 grid with rods. Break it: (10+3) × (10+4) = 100 + 40 + 30 + 12 = 182. This is "area model" multiplication.'),
             standards: ['4.NBT.B.5'] },
-          { grade: '5', title: 'Common denominators with C-rods', manips: ['cRods'],
-            desc: 'Compare 1/3 and 1/4. The LCD is 12. Use 12 = orange + red as your whole. 1/3 = 4 white rods. 1/4 = 3 white rods. Visible: 1/3 > 1/4.',
+          { grade: '5', title: __alloT('stem.manipulatives.common_denominators_with_c_rods', 'Common denominators with C-rods'), manips: ['cRods'],
+            desc: __alloT('stem.manipulatives.compare_1_3_and_1_4_the_lcd_is_12_use_', 'Compare 1/3 and 1/4. The LCD is 12. Use 12 = orange + red as your whole. 1/3 = 4 white rods. 1/4 = 3 white rods. Visible: 1/3 > 1/4.'),
             standards: ['5.NF.A.1'] }
         ];
 
@@ -3527,45 +3528,45 @@ window.StemLab = window.StemLab || {
           headerEl,
           // Progress overview
           h('div', { className: 'bg-white rounded-xl border-2 border-slate-700 p-4' },
-            h('p', { className: 'text-xs font-bold text-slate-700 uppercase tracking-wider mb-3' }, '📊 Student progress (this device)'),
+            h('p', { className: 'text-xs font-bold text-slate-700 uppercase tracking-wider mb-3' }, __alloT('stem.manipulatives.student_progress_this_device', '📊 Student progress (this device)')),
             h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
               h('div', { className: 'bg-emerald-50 rounded p-2 text-center' },
-                h('p', { className: 'text-xs text-emerald-700' }, 'Score'),
+                h('p', { className: 'text-xs text-emerald-700' }, __alloT('stem.manipulatives.score', 'Score')),
                 h('p', { className: 'text-xl font-black text-emerald-900' }, score.correct + '/' + score.total)
               ),
               h('div', { className: 'bg-amber-50 rounded p-2 text-center' },
-                h('p', { className: 'text-xs text-amber-700' }, 'Best streak'),
+                h('p', { className: 'text-xs text-amber-700' }, __alloT('stem.manipulatives.best_streak', 'Best streak')),
                 h('p', { className: 'text-xl font-black text-amber-900' }, streak)
               ),
               h('div', { className: 'bg-blue-50 rounded p-2 text-center' },
-                h('p', { className: 'text-xs text-blue-700' }, 'Modes used'),
+                h('p', { className: 'text-xs text-blue-700' }, __alloT('stem.manipulatives.modes_used', 'Modes used')),
                 h('p', { className: 'text-xl font-black text-blue-900' }, modesUsed + '/12')
               ),
               h('div', { className: 'bg-purple-50 rounded p-2 text-center' },
-                h('p', { className: 'text-xs text-purple-700' }, 'Badges'),
+                h('p', { className: 'text-xs text-purple-700' }, __alloT('stem.manipulatives.badges_3', 'Badges')),
                 h('p', { className: 'text-xl font-black text-purple-900' }, badgesCount + '/' + badgeDefs.length + ' (' + pct + '%)')
               )
             ),
             h('div', { className: 'mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]' },
               h('div', { className: 'bg-slate-50 rounded p-2 text-center' },
-                h('p', { className: 'text-slate-600' }, 'Blocks solved'),
+                h('p', { className: 'text-slate-600' }, __alloT('stem.manipulatives.blocks_solved', 'Blocks solved')),
                 h('p', { className: 'font-bold text-slate-900' }, blocksSolved)
               ),
               h('div', { className: 'bg-slate-50 rounded p-2 text-center' },
-                h('p', { className: 'text-slate-600' }, 'Abacus solved'),
+                h('p', { className: 'text-slate-600' }, __alloT('stem.manipulatives.abacus_solved', 'Abacus solved')),
                 h('p', { className: 'font-bold text-slate-900' }, abacusSolved)
               ),
               h('div', { className: 'bg-slate-50 rounded p-2 text-center' },
-                h('p', { className: 'text-slate-600' }, 'Regroups'),
+                h('p', { className: 'text-slate-600' }, __alloT('stem.manipulatives.regroups', 'Regroups')),
                 h('p', { className: 'font-bold text-slate-900' }, regroupCount)
               ),
               h('div', { className: 'bg-slate-50 rounded p-2 text-center' },
-                h('p', { className: 'text-slate-600' }, 'Best speed'),
+                h('p', { className: 'text-slate-600' }, __alloT('stem.manipulatives.best_speed', 'Best speed')),
                 h('p', { className: 'font-bold text-slate-900' }, speedBest != null ? speedBest.toFixed(1) + 's' : '—')
               )
             ),
             // Mode-by-mode visited indicator
-            h('p', { className: 'text-[11px] font-bold text-slate-700 mt-3 mb-1' }, 'Mode coverage:'),
+            h('p', { className: 'text-[11px] font-bold text-slate-700 mt-3 mb-1' }, __alloT('stem.manipulatives.mode_coverage', 'Mode coverage:')),
             h('div', { className: 'flex flex-wrap gap-1' },
               ['blocks', 'abacus', 'slideRule', 'quiz', 'tenFrame', 'counters', 'pvDisks', 'hundredsChart', 'patternBlocks', 'geoboard', 'cRods', 'numberBonds'].map(function(mid) {
                 return h('span', { key: mid,
@@ -3577,14 +3578,14 @@ window.StemLab = window.StemLab || {
           ),
           // Export panel
           h('div', { className: 'bg-white rounded-xl border-2 border-slate-200 p-3' },
-            h('p', { className: 'text-xs font-bold text-slate-700 mb-2' }, '📤 Export / reset:'),
+            h('p', { className: 'text-xs font-bold text-slate-700 mb-2' }, __alloT('stem.manipulatives.export_reset', '📤 Export / reset:')),
             h('div', { className: 'flex gap-2 flex-wrap' },
               h('button', { onClick: exportCSV,
-                className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-blue-600 text-white hover:bg-blue-700' }, 'Export CSV'),
+                className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-blue-600 text-white hover:bg-blue-700' }, __alloT('stem.manipulatives.export_csv', 'Export CSV')),
               h('button', { onClick: exportProgress,
-                className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700' }, 'Export JSON'),
+                className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700' }, __alloT('stem.manipulatives.export_json_3', 'Export JSON')),
               h('button', { onClick: resetProgress,
-                className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-rose-100 text-rose-700 hover:bg-rose-200 ml-auto' }, '↻ Reset progress')
+                className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-rose-100 text-rose-700 hover:bg-rose-200 ml-auto' }, __alloT('stem.manipulatives.reset_progress', '↻ Reset progress'))
             )
           ),
           // Lesson plan templates
@@ -3620,10 +3621,10 @@ window.StemLab = window.StemLab || {
           ),
           // Settings (palette, sound, motion)
           h('div', { className: 'bg-white rounded-xl border-2 border-slate-200 p-3' },
-            h('p', { className: 'text-xs font-bold text-slate-700 mb-2' }, '⚙️ Accessibility settings:'),
+            h('p', { className: 'text-xs font-bold text-slate-700 mb-2' }, __alloT('stem.manipulatives.accessibility_settings', '⚙️ Accessibility settings:')),
             h('div', { className: 'space-y-2' },
               h('div', null,
-                h('p', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, 'Color palette (applies to counters, rods, geoboard, ten frame):'),
+                h('p', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, __alloT('stem.manipulatives.color_palette_applies_to_counters_rods', 'Color palette (applies to counters, rods, geoboard, ten frame):')),
                 h('div', { className: 'flex gap-1 flex-wrap' },
                   Object.keys(MANIP_PALETTES).map(function(pid) {
                     return h('button', { key: pid, onClick: function() { upd({ paletteId: pid }); },
@@ -3636,13 +3637,13 @@ window.StemLab = window.StemLab || {
               h('label', { className: 'flex items-center gap-2 text-[11px] text-slate-700' },
                 h('input', { type: 'checkbox', checked: soundEnabled,
                   onChange: function() { upd({ soundEnabled: !soundEnabled }); }, className: 'accent-slate-600' }),
-                'Sound effects'
+                __alloT('stem.manipulatives.sound_effects', 'Sound effects')
               )
             )
           ),
           h('div', { className: 'bg-slate-50 rounded-lg p-3 border border-slate-200 text-xs text-slate-700' },
-            '💡 The Teacher dashboard is local to this device. If multiple students share a device, export each student\'s ',
-            'CSV at the end of a session and reset before the next student begins.'
+            __alloT('stem.manipulatives.the_teacher_dashboard_is_local_to_this', '💡 The Teacher dashboard is local to this device. If multiple students share a device, export each student\'s '),
+            __alloT('stem.manipulatives.csv_at_the_end_of_a_session_and_reset_', 'CSV at the end of a session and reset before the next student begins.')
           )
         );
       }
@@ -3791,7 +3792,7 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'text-sm text-slate-600 mb-3' }, 'Hit the button. We will pick a random problem from any of the ' + chProblems.length + ' challenge types.'),
               h('button', { onClick: chPick,
                 className: 'transition-colors px-5 py-2.5 rounded-lg bg-amber-600 text-white font-bold text-sm hover:bg-amber-700 shadow-md' },
-                '🎲 Pick a problem'
+                __alloT('stem.manipulatives.pick_a_problem', '🎲 Pick a problem')
               )
             ),
             crChallenge && h('div', { className: 'space-y-3' },
@@ -3809,24 +3810,24 @@ window.StemLab = window.StemLab || {
                   value: _m.crUserAns || '',
                   onChange: function(e) { upd({ crUserAns: e.target.value }); },
                   onKeyDown: function(e) { if (e.key === 'Enter') chCheck(); },
-                  placeholder: 'Your answer',
+                  placeholder: __alloT('stem.manipulatives.your_answer', 'Your answer'),
                   className: 'flex-1 px-3 py-2 border border-amber-400 rounded text-sm font-mono'
                 }),
                 h('button', { onClick: chCheck,
-                  className: 'transition-colors px-4 py-2 bg-amber-600 text-white font-bold rounded text-sm hover:bg-amber-700' }, 'Check')
+                  className: 'transition-colors px-4 py-2 bg-amber-600 text-white font-bold rounded text-sm hover:bg-amber-700' }, __alloT('stem.manipulatives.check_9', 'Check'))
               ),
               crFeedback && h('div', { className: 'space-y-2' },
                 h('p', { className: 'text-sm font-bold ' + (crFeedback.ok ? 'text-green-700' : 'text-red-700') }, crFeedback.msg),
                 h('button', { onClick: chPick,
                   className: 'transition-colors w-full px-4 py-2 bg-amber-600 text-white font-bold rounded text-sm hover:bg-amber-700' },
-                  '🔄 Next problem'
+                  __alloT('stem.manipulatives.next_problem_2', '🔄 Next problem')
                 )
               )
             )
           ),
           // Category breakdown
           h('div', { className: 'bg-white rounded-xl border-2 border-amber-200 p-3' },
-            h('p', { className: 'text-xs font-bold text-amber-700 mb-2' }, 'Categories in the pool:'),
+            h('p', { className: 'text-xs font-bold text-amber-700 mb-2' }, __alloT('stem.manipulatives.categories_in_the_pool', 'Categories in the pool:')),
             h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-1.5' },
               cats.map(function(c) {
                 return h('div', { key: c, className: 'bg-amber-50 rounded p-2 text-center border border-amber-100' },
@@ -3838,8 +3839,8 @@ window.StemLab = window.StemLab || {
             )
           ),
           h('div', { className: 'bg-amber-50 rounded-lg p-3 border border-amber-100 text-xs text-amber-800' },
-            '💡 Interleaving (mixed practice across topics) usually beats blocked practice for long-term retention ',
-            '(Rohrer & Taylor 2007). The trade-off: it FEELS harder during the session. That feeling of difficulty is the learning happening.'
+            __alloT('stem.manipulatives.interleaving_mixed_practice_across_top', '💡 Interleaving (mixed practice across topics) usually beats blocked practice for long-term retention '),
+            __alloT('stem.manipulatives.rohrer_taylor_2007_the_trade_off_it_fe', '(Rohrer & Taylor 2007). The trade-off: it FEELS harder during the session. That feeling of difficulty is the learning happening.')
           )
         );
       }
@@ -4113,7 +4114,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'space-y-3 max-w-3xl mx-auto animate-in fade-in duration-200' },
           headerEl,
           h('p', { className: 'text-xs text-cyan-700 italic px-1' },
-            'Click the manipulative tag on any entry to jump to that tool.'
+            __alloT('stem.manipulatives.click_the_manipulative_tag_on_any_entr', 'Click the manipulative tag on any entry to jump to that tool.')
           ),
           h('div', { className: 'space-y-2' },
             glossary.map(function(g, i) {
@@ -4130,8 +4131,8 @@ window.StemLab = window.StemLab || {
             })
           ),
           h('div', { className: 'bg-cyan-50 rounded-lg p-3 border border-cyan-100 text-xs text-cyan-800' },
-            '💡 Why vocabulary matters: a Marzano (2004) meta-analysis estimated that direct vocabulary instruction in a content area produces an average percentile gain of ~33 points. ',
-            'In math, the words are the conceptual moves: "regroup," "decompose," "fluently."'
+            __alloT('stem.manipulatives.why_vocabulary_matters_a_marzano_2004_', '💡 Why vocabulary matters: a Marzano (2004) meta-analysis estimated that direct vocabulary instruction in a content area produces an average percentile gain of ~33 points. '),
+            __alloT('stem.manipulatives.in_math_the_words_are_the_conceptual_m', 'In math, the words are the conceptual moves: "regroup," "decompose," "fluently."')
           )
         );
       }
@@ -4141,248 +4142,248 @@ window.StemLab = window.StemLab || {
       // ═══════════════════════════════════════════════════════════════
       if (manipMode === 'puzzles') {
         var puzzles = [
-          { id: 'handshake', title: 'The Handshake Problem',
+          { id: 'handshake', title: __alloT('stem.manipulatives.the_handshake_problem', 'The Handshake Problem'),
             difficulty: 'easy', tools: ['hundredsChart'],
             q: 'There are 6 people at a party. Everyone shakes hands with everyone else exactly once. How many handshakes happen?',
-            hint: 'Person 1 shakes with 5 others. Person 2 with 4 NEW others. Person 3 with 3 new. Add: 5+4+3+2+1 = ?',
+            hint: __alloT('stem.manipulatives.person_1_shakes_with_5_others_person_2', 'Person 1 shakes with 5 others. Person 2 with 4 NEW others. Person 3 with 3 new. Add: 5+4+3+2+1 = ?'),
             answer: '15',
             why: 'For n people: n(n−1)/2 handshakes. With 6: 6×5/2 = 15.'
           },
-          { id: 'pizza', title: 'The Pizza Slices',
+          { id: 'pizza', title: __alloT('stem.manipulatives.the_pizza_slices', 'The Pizza Slices'),
             difficulty: 'easy', tools: ['patternBlocks'],
             q: 'A pizza is cut into 8 equal slices. Anna eats 3 slices, Ben eats 2. How much pizza is LEFT (as a fraction)?',
-            hint: 'They ate 5 of 8 slices. So 5/8 is gone. How much remains?',
+            hint: __alloT('stem.manipulatives.they_ate_5_of_8_slices_so_5_8_is_gone_', 'They ate 5 of 8 slices. So 5/8 is gone. How much remains?'),
             answer: '3/8',
             why: '8/8 − 3/8 − 2/8 = 3/8. Pattern blocks model the same idea: 3 of 8 equal pieces remain.'
           },
-          { id: 'chicken', title: 'Chickens & Cows',
+          { id: 'chicken', title: __alloT('stem.manipulatives.chickens_cows', 'Chickens & Cows'),
             difficulty: 'medium', tools: ['counters', 'blocks'],
             q: 'On a farm, chickens (2 legs) and cows (4 legs) total 10 animals with 28 legs. How many cows?',
-            hint: 'Try: 10 chickens would have 20 legs. Every swap of a chicken for a cow adds 2 legs. You need 8 more legs.',
+            hint: __alloT('stem.manipulatives.try_10_chickens_would_have_20_legs_eve', 'Try: 10 chickens would have 20 legs. Every swap of a chicken for a cow adds 2 legs. You need 8 more legs.'),
             answer: '4',
             why: 'If all 10 were chickens: 20 legs. Need 28 − 20 = 8 more legs. Each cow swap adds 2. So 4 cows, 6 chickens.'
           },
-          { id: 'staircase', title: 'The Staircase',
+          { id: 'staircase', title: __alloT('stem.manipulatives.the_staircase', 'The Staircase'),
             difficulty: 'medium', tools: ['cRods', 'numberBonds'],
             q: 'Make a staircase by stacking Cuisenaire rods: 1, then 1+2, then 1+2+3, etc. What is the total length after the 10th step?',
-            hint: 'You\'re summing 1+2+3+...+10. Use the trick: pair (1+10)+(2+9)+(3+8)+(4+7)+(5+6) = ?',
+            hint: __alloT('stem.manipulatives.you_re_summing_1_2_3_10_use_the_trick_', 'You\'re summing 1+2+3+...+10. Use the trick: pair (1+10)+(2+9)+(3+8)+(4+7)+(5+6) = ?'),
             answer: '55',
             why: 'The formula is n(n+1)/2. For n=10: 10×11/2 = 55. Gauss\'s trick at age 8: pair from the ends inward.'
           },
-          { id: 'change', title: 'Make 25¢ Three Ways',
+          { id: 'change', title: __alloT('stem.manipulatives.make_25_three_ways', 'Make 25¢ Three Ways'),
             difficulty: 'easy', tools: ['pvDisks'],
             q: 'You have only nickels (5¢) and pennies (1¢). Find at least three different combinations that make exactly 25¢.',
-            hint: 'Start with how many nickels you could use: 5? 4? 3? Each one leaves a different number of pennies.',
-            answer: '5 nickels; 4 nickels + 5 pennies; 3 nickels + 10 pennies; 2 nickels + 15 pennies; 1 nickel + 20 pennies; 25 pennies. (Six possible combinations.)',
+            hint: __alloT('stem.manipulatives.start_with_how_many_nickels_you_could_', 'Start with how many nickels you could use: 5? 4? 3? Each one leaves a different number of pennies.'),
+            answer: __alloT('stem.manipulatives.5_nickels_4_nickels_5_pennies_3_nickel', '5 nickels; 4 nickels + 5 pennies; 3 nickels + 10 pennies; 2 nickels + 15 pennies; 1 nickel + 20 pennies; 25 pennies. (Six possible combinations.)'),
             why: '6 valid combinations exist: 5n+0p, 4n+5p, 3n+10p, 2n+15p, 1n+20p, 0n+25p.'
           },
-          { id: 'kaprekar', title: 'Kaprekar\'s Constant',
+          { id: 'kaprekar', title: __alloT('stem.manipulatives.kaprekar_s_constant', 'Kaprekar\'s Constant'),
             difficulty: 'hard', tools: ['blocks', 'pvDisks'],
             q: 'Pick any 4-digit number with at least two different digits (e.g. 5294). Arrange the digits in descending order, then ascending order, and subtract. Repeat. What happens?',
-            hint: 'Try: 5294 → 9542 − 2459 = 7083. Now 7083 → 8730 − 0378 = 8352. Keep going.',
+            hint: __alloT('stem.manipulatives.try_5294_9542_2459_7083_now_7083_8730_', 'Try: 5294 → 9542 − 2459 = 7083. Now 7083 → 8730 − 0378 = 8352. Keep going.'),
             answer: '6174',
             why: 'You always converge to 6174 within 7 steps. This is Kaprekar\'s constant (D.R. Kaprekar, 1949).'
           },
-          { id: 'frogs', title: 'The Two Frogs',
+          { id: 'frogs', title: __alloT('stem.manipulatives.the_two_frogs', 'The Two Frogs'),
             difficulty: 'medium', tools: ['hundredsChart', 'cRods'],
             q: 'Frog A jumps 3 squares forward. Frog B jumps 5 squares forward. They both start on square 0 and jump at the same time. After 30 squares, what square will they BOTH have landed on together (other than 0)?',
-            hint: 'A lands on multiples of 3. B lands on multiples of 5. They meet on common multiples.',
+            hint: __alloT('stem.manipulatives.a_lands_on_multiples_of_3_b_lands_on_m', 'A lands on multiples of 3. B lands on multiples of 5. They meet on common multiples.'),
             answer: '15',
             why: 'LCM(3, 5) = 15. They also meet at 30, 45, 60, etc.'
           },
-          { id: 'pigeon', title: 'The Sock Drawer',
+          { id: 'pigeon', title: __alloT('stem.manipulatives.the_sock_drawer', 'The Sock Drawer'),
             difficulty: 'medium', tools: ['counters'],
             q: 'A drawer has 10 black socks and 10 white socks, all mixed up. In the dark, what is the FEWEST socks you must grab to guarantee a matching pair?',
-            hint: 'Worst case: you grab one of each color first. The next one must match SOMETHING.',
+            hint: __alloT('stem.manipulatives.worst_case_you_grab_one_of_each_color_', 'Worst case: you grab one of each color first. The next one must match SOMETHING.'),
             answer: '3',
             why: 'Pigeonhole principle: with 2 colors and 3 socks, at least two must share a color.'
           },
-          { id: 'pascalrow', title: 'Pascal\'s Row',
+          { id: 'pascalrow', title: __alloT('stem.manipulatives.pascal_s_row', 'Pascal\'s Row'),
             difficulty: 'hard', tools: ['hundredsChart'],
             q: 'In Pascal\'s triangle, each number is the sum of the two above it. The first row is just "1". The second row is "1 1". The third row is "1 2 1". What is the SUM of all numbers in the 6th row?',
-            hint: 'Row sums: row 1 = 1, row 2 = 2, row 3 = 4, row 4 = 8... see the pattern?',
+            hint: __alloT('stem.manipulatives.row_sums_row_1_1_row_2_2_row_3_4_row_4', 'Row sums: row 1 = 1, row 2 = 2, row 3 = 4, row 4 = 8... see the pattern?'),
             answer: '32',
             why: 'The sum of row n is 2^(n−1). Row 6: 2^5 = 32.'
           },
-          { id: 'broken_calc', title: 'Broken Calculator',
+          { id: 'broken_calc', title: __alloT('stem.manipulatives.broken_calculator', 'Broken Calculator'),
             difficulty: 'easy', tools: ['blocks', 'numberBonds'],
             q: 'Your calculator can ONLY add 7 or subtract 3. Starting at 0, what is the FEWEST presses to reach 11?',
-            hint: 'Try +7 first. Where does that put you? How much more (or less) do you need?',
-            answer: '3 presses: +7, +7, −3 → 7, 14, 11.',
+            hint: __alloT('stem.manipulatives.try_7_first_where_does_that_put_you_ho', 'Try +7 first. Where does that put you? How much more (or less) do you need?'),
+            answer: __alloT('stem.manipulatives.3_presses_7_7_3_7_14_11', '3 presses: +7, +7, −3 → 7, 14, 11.'),
             why: 'You need to solve 7a − 3b = 11 with a, b ≥ 0. The smallest non-negative solution is a = 2, b = 1, giving 3 presses. (For target 17 it would take 11 presses — a = 5, b = 6 — which is why we use 11 here for a cleaner puzzle.)'
           },
-          { id: 'mobius', title: 'Möbius Half-Twist',
+          { id: 'mobius', title: __alloT('stem.manipulatives.m_bius_half_twist', 'Möbius Half-Twist'),
             difficulty: 'easy', tools: [],
             q: 'Take a strip of paper, give it a half-twist, and tape the ends. How many SIDES does the resulting band have?',
-            hint: 'Try it with paper and a pen. Draw a line down the middle without lifting your pen.',
+            hint: __alloT('stem.manipulatives.try_it_with_paper_and_a_pen_draw_a_lin', 'Try it with paper and a pen. Draw a line down the middle without lifting your pen.'),
             answer: '1',
             why: 'A Möbius strip has only ONE side. The line you draw eventually covers what looks like both sides.'
           },
-          { id: 'monty', title: 'Monty Hall (junior version)',
+          { id: 'monty', title: __alloT('stem.manipulatives.monty_hall_junior_version', 'Monty Hall (junior version)'),
             difficulty: 'hard', tools: [],
             q: 'There are 3 doors. Behind one is a prize. You pick door 1. The host opens door 3 to show no prize. Should you switch to door 2, stay with door 1, or does it not matter?',
-            hint: 'Think about what was true BEFORE the host opened door 3.',
+            hint: __alloT('stem.manipulatives.think_about_what_was_true_before_the_h', 'Think about what was true BEFORE the host opened door 3.'),
             answer: 'Switch.',
             why: 'Your original 1/3 stays 1/3. The other 2/3 was distributed across doors 2 and 3 — but now ALL of it is concentrated on door 2. Switching doubles your odds (1/3 → 2/3).'
           },
-          { id: 'truelies', title: 'Two Doors',
+          { id: 'truelies', title: __alloT('stem.manipulatives.two_doors', 'Two Doors'),
             difficulty: 'hard', tools: [],
             q: 'You face two doors. One has a treasure, one has a tiger. Two guards stand by — one ALWAYS lies, one ALWAYS tells the truth. You don\'t know which is which. You may ask ONE question to ONE guard. What do you ask?',
-            hint: 'Ask a question whose ANSWER does the same thing whether asked of the truth-teller or the liar.',
-            answer: 'Point to either door and ask either guard: "Would the OTHER guard say this door has the treasure?" Then pick the OPPOSITE door from what they say.',
+            hint: __alloT('stem.manipulatives.ask_a_question_whose_answer_does_the_s', 'Ask a question whose ANSWER does the same thing whether asked of the truth-teller or the liar.'),
+            answer: __alloT('stem.manipulatives.point_to_either_door_and_ask_either_gu', 'Point to either door and ask either guard: "Would the OTHER guard say this door has the treasure?" Then pick the OPPOSITE door from what they say.'),
             why: 'Both guards will give the same (wrong) answer, because either truth-tells-a-lie or lies-about-the-truth. So whatever you hear, do the opposite.'
           },
-          { id: 'arithmetic_seq', title: 'Hidden Sequence',
+          { id: 'arithmetic_seq', title: __alloT('stem.manipulatives.hidden_sequence', 'Hidden Sequence'),
             difficulty: 'medium', tools: ['hundredsChart'],
             q: 'What\'s next: 2, 6, 12, 20, 30, ___?',
-            hint: 'Subtract neighbors: 4, 6, 8, 10. The differences grow by 2 each time.',
+            hint: __alloT('stem.manipulatives.subtract_neighbors_4_6_8_10_the_differ', 'Subtract neighbors: 4, 6, 8, 10. The differences grow by 2 each time.'),
             answer: '42',
             why: 'Each term is n(n+1) for n = 1, 2, 3... So the 6th term is 6×7 = 42. These are the "pronic" or rectangular numbers.'
           },
-          { id: 'wheels', title: 'Bike and Trike',
+          { id: 'wheels', title: __alloT('stem.manipulatives.bike_and_trike', 'Bike and Trike'),
             difficulty: 'easy', tools: ['counters', 'blocks'],
             q: 'In a garage there are bikes (2 wheels) and tricycles (3 wheels). 7 vehicles total, 18 wheels. How many trikes?',
-            hint: '7 bikes would have 14 wheels — 4 short. Each swap (bike→trike) adds 1 wheel.',
+            hint: __alloT('stem.manipulatives.7_bikes_would_have_14_wheels_4_short_e', '7 bikes would have 14 wheels — 4 short. Each swap (bike→trike) adds 1 wheel.'),
             answer: '4',
             why: 'Need 18 − 14 = 4 more wheels. Each trike adds 1 over a bike. So 4 trikes, 3 bikes.'
           },
-          { id: 'paint_cube', title: 'The Painted Cube',
+          { id: 'paint_cube', title: __alloT('stem.manipulatives.the_painted_cube', 'The Painted Cube'),
             difficulty: 'hard', tools: ['blocks'],
             q: 'A 3×3×3 cube of small unit cubes is painted on the outside, then taken apart. How many small cubes have NO paint on any face?',
-            hint: 'The unpainted ones are entirely interior. What is the size of the interior?',
+            hint: __alloT('stem.manipulatives.the_unpainted_ones_are_entirely_interi', 'The unpainted ones are entirely interior. What is the size of the interior?'),
             answer: '1',
             why: 'The interior is a 1×1×1 cube — exactly one little cube. (Try with 4×4×4: 2×2×2 = 8 unpainted.)'
           },
-          { id: 'race', title: 'The Race',
+          { id: 'race', title: __alloT('stem.manipulatives.the_race', 'The Race'),
             difficulty: 'easy', tools: [],
             q: 'You\'re running in a race. You pass the person in 2nd place. What place are you now?',
-            hint: 'Not first.',
+            hint: __alloT('stem.manipulatives.not_first', 'Not first.'),
             answer: '2nd',
             why: 'You took the spot of the person you passed — that\'s 2nd. (1st place is still ahead of you.)'
           },
-          { id: 'doubling_penny', title: 'Doubling Penny',
+          { id: 'doubling_penny', title: __alloT('stem.manipulatives.doubling_penny', 'Doubling Penny'),
             difficulty: 'medium', tools: ['hundredsChart'],
             q: 'Would you rather get $1,000,000 right now, or 1 penny today that doubles every day for 30 days?',
-            hint: 'Day 1: 1¢. Day 2: 2¢. Day 10: $5.12. Day 20: $5,242. Day 30: ?',
-            answer: 'Take the doubling penny. Total after 30 days ≈ $10.7 million.',
+            hint: __alloT('stem.manipulatives.day_1_1_day_2_2_day_10_5_12_day_20_5_2', 'Day 1: 1¢. Day 2: 2¢. Day 10: $5.12. Day 20: $5,242. Day 30: ?'),
+            answer: __alloT('stem.manipulatives.take_the_doubling_penny_total_after_30', 'Take the doubling penny. Total after 30 days ≈ $10.7 million.'),
             why: 'Day 30 alone is 2^29 cents = $5,368,709. Sum of days 1-30 ≈ $10,737,418. Exponential growth crushes linear thinking.'
           },
-          { id: 'birthday', title: 'Birthday Coincidence',
+          { id: 'birthday', title: __alloT('stem.manipulatives.birthday_coincidence', 'Birthday Coincidence'),
             difficulty: 'hard', tools: [],
             q: 'How many people need to be in a room before there\'s better than a 50% chance two share a birthday (same month + day, ignoring year)?',
-            hint: 'It is way fewer than you think.',
+            hint: __alloT('stem.manipulatives.it_is_way_fewer_than_you_think', 'It is way fewer than you think.'),
             answer: '23',
             why: 'Counter-intuitive but true. With 23 people there are 23 × 22 / 2 = 253 PAIRS, each with a ~1/365 chance of matching.'
           },
-          { id: 'envelopes', title: 'Two Envelopes',
+          { id: 'envelopes', title: __alloT('stem.manipulatives.two_envelopes', 'Two Envelopes'),
             difficulty: 'medium', tools: [],
             q: 'Five envelopes lie in front of you. Each contains either $1 or nothing — flipped fairly per envelope. You take all five and dump them out. What is the EXPECTED amount you get?',
-            hint: 'Each envelope has probability 1/2 of having $1.',
+            hint: __alloT('stem.manipulatives.each_envelope_has_probability_1_2_of_h', 'Each envelope has probability 1/2 of having $1.'),
             answer: '$2.50',
             why: 'Expected value per envelope = $0.50. Five envelopes: 5 × $0.50 = $2.50.'
           },
-          { id: 'four_fours', title: 'Four Fours',
+          { id: 'four_fours', title: __alloT('stem.manipulatives.four_fours', 'Four Fours'),
             difficulty: 'medium', tools: [],
             q: 'Using exactly four 4s and any of +, −, ×, ÷, and parentheses, make the number 5.',
-            hint: 'Think (4 + 4)/something or 4 + 4/4 + ?',
-            answer: '4 + (4 + 4) / 4 = 4 + 2 = 6. Hmm wait, target is 5. Try: 4 + 4/4 + 0 = 5? Need exactly four 4s. Try: (4 × 4 + 4) / 4 = 20/4 = 5. ✓',
+            hint: __alloT('stem.manipulatives.think_4_4_something_or_4_4_4', 'Think (4 + 4)/something or 4 + 4/4 + ?'),
+            answer: __alloT('stem.manipulatives.4_4_4_4_4_2_6_hmm_wait_target_is_5_try', '4 + (4 + 4) / 4 = 4 + 2 = 6. Hmm wait, target is 5. Try: 4 + 4/4 + 0 = 5? Need exactly four 4s. Try: (4 × 4 + 4) / 4 = 20/4 = 5. ✓'),
             why: '(4 × 4 + 4) ÷ 4 = 5. You can build the integers 0-100 with four 4s. This is a classic puzzle from 1881.'
           },
-          { id: 'pascal_diag', title: 'Pascal\'s Diagonal',
+          { id: 'pascal_diag', title: __alloT('stem.manipulatives.pascal_s_diagonal', 'Pascal\'s Diagonal'),
             difficulty: 'hard', tools: ['hundredsChart'],
             q: 'In Pascal\'s triangle, the second diagonal is 1, 2, 3, 4, 5... (counting numbers). The third diagonal is 1, 3, 6, 10, 15... What ARE those numbers?',
-            hint: 'Try: 1, 1+2, 1+2+3, 1+2+3+4. So each is the SUM of all earlier counting numbers.',
-            answer: 'Triangular numbers.',
+            hint: __alloT('stem.manipulatives.try_1_1_2_1_2_3_1_2_3_4_so_each_is_the', 'Try: 1, 1+2, 1+2+3, 1+2+3+4. So each is the SUM of all earlier counting numbers.'),
+            answer: __alloT('stem.manipulatives.triangular_numbers', 'Triangular numbers.'),
             why: 'The nth triangular number T_n = n(n+1)/2 = number of objects in a triangle of n rows. T_4 = 10 = bowling pin setup.'
           },
-          { id: 'sock_match', title: 'Three Color Sock Drawer',
+          { id: 'sock_match', title: __alloT('stem.manipulatives.three_color_sock_drawer', 'Three Color Sock Drawer'),
             difficulty: 'medium', tools: ['counters'],
             q: 'A drawer has black, white, and grey socks (lots of each). What is the fewest socks you must grab in the dark to guarantee a matching pair?',
-            hint: 'Pigeonhole again, but with 3 colors instead of 2.',
+            hint: __alloT('stem.manipulatives.pigeonhole_again_but_with_3_colors_ins', 'Pigeonhole again, but with 3 colors instead of 2.'),
             answer: '4',
             why: 'Worst case: you grab one of each (3). The 4th sock must match one of them.'
           },
-          { id: 'tens_decomposition', title: 'Sum to 10',
+          { id: 'tens_decomposition', title: __alloT('stem.manipulatives.sum_to_10', 'Sum to 10'),
             difficulty: 'easy', tools: ['numberBonds'],
             q: 'How many different pairs of WHOLE NUMBERS (order doesn\'t matter, both positive) add to 10?',
-            hint: '1+9, 2+8, 3+7, 4+6, 5+5. Then 6+4 is the same as 4+6.',
+            hint: __alloT('stem.manipulatives.1_9_2_8_3_7_4_6_5_5_then_6_4_is_the_sa', '1+9, 2+8, 3+7, 4+6, 5+5. Then 6+4 is the same as 4+6.'),
             answer: '5',
             why: 'Unordered, positive: (1,9), (2,8), (3,7), (4,6), (5,5). If you include 0, that\'s 6; if order matters, 11.'
           },
-          { id: 'ant_clock', title: 'The Clock Ant',
+          { id: 'ant_clock', title: __alloT('stem.manipulatives.the_clock_ant', 'The Clock Ant'),
             difficulty: 'easy', tools: [],
             q: 'A clock\'s minute hand moves 360° in 60 minutes. How many degrees does it move in 15 minutes?',
-            hint: '15 minutes is 1/4 of an hour.',
+            hint: __alloT('stem.manipulatives.15_minutes_is_1_4_of_an_hour', '15 minutes is 1/4 of an hour.'),
             answer: '90°',
             why: '15/60 = 1/4 of a full rotation. 1/4 × 360° = 90°.'
           },
-          { id: 'twelve_eggs', title: 'The Twelve Eggs',
+          { id: 'twelve_eggs', title: __alloT('stem.manipulatives.the_twelve_eggs', 'The Twelve Eggs'),
             difficulty: 'medium', tools: ['blocks'],
             q: 'You have 12 eggs. One is heavier than the rest. Using a balance scale, what is the FEWEST number of weighings needed to identify it?',
-            hint: 'Split into groups of 4, 4, and 4.',
-            answer: '3 weighings',
+            hint: __alloT('stem.manipulatives.split_into_groups_of_4_4_and_4', 'Split into groups of 4, 4, and 4.'),
+            answer: __alloT('stem.manipulatives.3_weighings', '3 weighings'),
             why: 'Weigh 4 vs 4. If equal, heavy egg is in the third group. Then weigh 2 vs 2 within the heavy group. Then 1 vs 1.'
           },
-          { id: 'pizza_cut', title: 'Pizza Cuts',
+          { id: 'pizza_cut', title: __alloT('stem.manipulatives.pizza_cuts', 'Pizza Cuts'),
             difficulty: 'medium', tools: ['patternBlocks'],
             q: 'With 4 straight cuts, what\'s the MOST pieces of pizza you can get?',
-            hint: 'Each new cut should cross every previous cut.',
+            hint: __alloT('stem.manipulatives.each_new_cut_should_cross_every_previo', 'Each new cut should cross every previous cut.'),
             answer: '11',
             why: 'Formula: (n² + n + 2) / 2. For n=4: (16+4+2)/2 = 11. The pattern is 2, 4, 7, 11, 16, ...'
           },
-          { id: 'gold_chain', title: 'Gold Chain',
+          { id: 'gold_chain', title: __alloT('stem.manipulatives.gold_chain', 'Gold Chain'),
             difficulty: 'hard', tools: [],
             q: 'A 7-link gold chain. You owe someone 1 link per day for 7 days. They want full payment each day, but you\'ll get the chain back at the end. What is the MINIMUM number of links you need to CUT?',
-            hint: 'Think about what you can give and TAKE BACK each day.',
+            hint: __alloT('stem.manipulatives.think_about_what_you_can_give_and_take', 'Think about what you can give and TAKE BACK each day.'),
             answer: '1',
             why: 'Cut the 3rd link. You now have a 1, a 2, and a 4. Day 1: give the 1. Day 2: give the 2, take back the 1. Day 3: give the 1. Day 4: give the 4, take back the 1 and 2. Continue similarly.'
           },
-          { id: 'lcm_birthdays', title: 'When do we meet?',
+          { id: 'lcm_birthdays', title: __alloT('stem.manipulatives.when_do_we_meet', 'When do we meet?'),
             difficulty: 'medium', tools: ['hundredsChart'],
             q: 'Alex visits grandma every 4 days. Bo visits every 6 days. They both visit today. When is the NEXT day they both visit?',
-            hint: 'Find a number that is a multiple of BOTH 4 and 6.',
-            answer: 'In 12 days',
+            hint: __alloT('stem.manipulatives.find_a_number_that_is_a_multiple_of_bo', 'Find a number that is a multiple of BOTH 4 and 6.'),
+            answer: __alloT('stem.manipulatives.in_12_days', 'In 12 days'),
             why: 'LCM(4, 6) = 12. Multiples of 4: 4, 8, 12, 16, 20, 24. Multiples of 6: 6, 12, 18, 24. The smallest shared is 12.'
           },
-          { id: 'square_dance', title: 'Square Dance',
+          { id: 'square_dance', title: __alloT('stem.manipulatives.square_dance', 'Square Dance'),
             difficulty: 'medium', tools: ['geoboard', 'patternBlocks'],
             q: 'Build a square. Cut it in half by joining opposite vertices (a diagonal). What two shapes do you get?',
-            hint: 'They are identical to each other.',
-            answer: 'Two right triangles.',
+            hint: __alloT('stem.manipulatives.they_are_identical_to_each_other', 'They are identical to each other.'),
+            answer: __alloT('stem.manipulatives.two_right_triangles', 'Two right triangles.'),
             why: 'Each triangle has one 90° angle (a corner of the square) and two 45° angles. Together they reassemble into the square.'
           },
-          { id: 'triangle_inequality', title: 'Stick Triangles',
+          { id: 'triangle_inequality', title: __alloT('stem.manipulatives.stick_triangles', 'Stick Triangles'),
             difficulty: 'medium', tools: ['cRods'],
             q: 'Can you make a triangle with rods of length 2, 3, and 6?',
-            hint: 'Try to lay them down. Does the long one reach across?',
+            hint: __alloT('stem.manipulatives.try_to_lay_them_down_does_the_long_one', 'Try to lay them down. Does the long one reach across?'),
             answer: 'No',
             why: 'The sum of any two sides must be GREATER than the third. 2 + 3 = 5, but the third side is 6. The two short rods can\'t even meet.'
           },
-          { id: 'square_root', title: 'Square Roots Without a Calculator',
+          { id: 'square_root', title: __alloT('stem.manipulatives.square_roots_without_a_calculator', 'Square Roots Without a Calculator'),
             difficulty: 'hard', tools: ['blocks', 'geoboard'],
             q: 'What is √49?',
-            hint: 'What integer, multiplied by itself, equals 49?',
+            hint: __alloT('stem.manipulatives.what_integer_multiplied_by_itself_equa', 'What integer, multiplied by itself, equals 49?'),
             answer: '7',
             why: '7 × 7 = 49. A 7-by-7 square has area 49. Square root = the side length of a square with that area.'
           },
-          { id: 'frac_dec', title: 'Fraction → Decimal',
+          { id: 'frac_dec', title: __alloT('stem.manipulatives.fraction_decimal', 'Fraction → Decimal'),
             difficulty: 'medium', tools: ['pvDisks'],
             q: 'Express 3/4 as a decimal.',
-            hint: '3/4 = ?/100.',
+            hint: __alloT('stem.manipulatives.3_4_100', '3/4 = ?/100.'),
             answer: '0.75',
             why: '3/4 = 75/100 = 0.75. Think: 1 dollar split four ways is 25 cents each. Three shares = 75 cents = 0.75.'
           },
-          { id: 'sum_evens', title: 'Sum of First 10 Evens',
+          { id: 'sum_evens', title: __alloT('stem.manipulatives.sum_of_first_10_evens', 'Sum of First 10 Evens'),
             difficulty: 'easy', tools: ['hundredsChart'],
             q: 'What is 2 + 4 + 6 + 8 + ... + 20?',
-            hint: 'Pair them: (2 + 20), (4 + 18), (6 + 16), (8 + 14), (10 + 12).',
+            hint: __alloT('stem.manipulatives.pair_them_2_20_4_18_6_16_8_14_10_12', 'Pair them: (2 + 20), (4 + 18), (6 + 16), (8 + 14), (10 + 12).'),
             answer: '110',
             why: '5 pairs of 22 = 110. Or: n(n+1) for n = 10: 10 × 11 = 110.'
           },
-          { id: 'odd_sums', title: 'Sum of First n Odds',
+          { id: 'odd_sums', title: __alloT('stem.manipulatives.sum_of_first_n_odds', 'Sum of First n Odds'),
             difficulty: 'hard', tools: ['hundredsChart'],
             q: '1 + 3 + 5 + 7 + ... + 19 = ?',
-            hint: 'Try shorter: 1 + 3 = 4 (2²). 1 + 3 + 5 = 9 (3²). 1 + 3 + 5 + 7 = 16 (4²). See the pattern?',
+            hint: __alloT('stem.manipulatives.try_shorter_1_3_4_2_1_3_5_9_3_1_3_5_7_', 'Try shorter: 1 + 3 = 4 (2²). 1 + 3 + 5 = 9 (3²). 1 + 3 + 5 + 7 = 16 (4²). See the pattern?'),
             answer: '100',
             why: 'The sum of the first n odd numbers is n². There are 10 odd numbers from 1 to 19, so the sum is 10² = 100.'
           }
@@ -4410,7 +4411,7 @@ window.StemLab = window.StemLab || {
             ),
             h('p', { className: 'text-sm text-slate-800 mb-3' }, pCurrent.q),
             pCurrent.tools && pCurrent.tools.length > 0 && h('p', { className: 'text-xs text-pink-700 italic mb-2' },
-              'Try with: ',
+              __alloT('stem.manipulatives.try_with', 'Try with: '),
               pCurrent.tools.map(function(t, i) {
                 return h('button', { key: t,
                   onClick: function() { switchMode(t); },
@@ -4441,23 +4442,23 @@ window.StemLab = window.StemLab || {
               onClick: function() { upd({ puzzleIdx: Math.max(0, pIdx - 1), puzzleShowHint: false, puzzleShowAns: false }); },
               disabled: pIdx <= 0,
               className: 'px-4 py-2 rounded text-xs font-bold ' + (pIdx <= 0 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'transition-colors bg-slate-200 text-slate-700 hover:bg-slate-300')
-            }, '← Previous'),
+            }, __alloT('stem.manipulatives.previous', '← Previous')),
             h('button', {
               onClick: function() {
                 var r;
                 do { r = Math.floor(Math.random() * puzzles.length); } while (r === pIdx && puzzles.length > 1);
                 upd({ puzzleIdx: r, puzzleShowHint: false, puzzleShowAns: false });
               },
-              className: 'transition-colors px-4 py-2 rounded text-xs font-bold bg-pink-600 text-white hover:bg-pink-700' }, '🎲 Random'),
+              className: 'transition-colors px-4 py-2 rounded text-xs font-bold bg-pink-600 text-white hover:bg-pink-700' }, __alloT('stem.manipulatives.random_2', '🎲 Random')),
             h('button', {
               onClick: function() { upd({ puzzleIdx: Math.min(puzzles.length - 1, pIdx + 1), puzzleShowHint: false, puzzleShowAns: false }); },
               disabled: pIdx >= puzzles.length - 1,
               className: 'px-4 py-2 rounded text-xs font-bold ' + (pIdx >= puzzles.length - 1 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'transition-colors bg-slate-200 text-slate-700 hover:bg-slate-300')
-            }, 'Next →')
+            }, __alloT('stem.manipulatives.next_10', 'Next →'))
           ),
           // Index
           h('div', { className: 'bg-white rounded-xl border-2 border-pink-200 p-3' },
-            h('p', { className: 'text-xs font-bold text-pink-700 mb-2' }, 'Jump to puzzle:'),
+            h('p', { className: 'text-xs font-bold text-pink-700 mb-2' }, __alloT('stem.manipulatives.jump_to_puzzle', 'Jump to puzzle:')),
             h('div', { className: 'flex flex-wrap gap-1' },
               puzzles.map(function(p, i) {
                 return h('button', { key: 'pn' + i,
@@ -4470,8 +4471,8 @@ window.StemLab = window.StemLab || {
             )
           ),
           h('div', { className: 'bg-pink-50 rounded-lg p-3 border border-pink-100 text-xs text-pink-800' },
-            '💡 These puzzles are good for ', h('b', null, 'class discussion'),
-            ' more than silent practice. The richest pedagogy: state the problem, give students 5 minutes with a manipulative, then have them present their reasoning at the board.'
+            __alloT('stem.manipulatives.these_puzzles_are_good_for', '💡 These puzzles are good for '), h('b', null, __alloT('stem.manipulatives.class_discussion', 'class discussion')),
+            __alloT('stem.manipulatives.more_than_silent_practice_the_richest_', ' more than silent practice. The richest pedagogy: state the problem, give students 5 minutes with a manipulative, then have them present their reasoning at the board.')
           )
         );
       }
@@ -4481,110 +4482,110 @@ window.StemLab = window.StemLab || {
       // ═══════════════════════════════════════════════════════════════
       if (manipMode === 'history') {
         var timeline = [
-          { year: '~35,000 BCE', title: 'Lebombo Bone (Eswatini)',
-            desc: 'A baboon fibula with 29 notches — likely the oldest known mathematical artifact. Possibly a lunar phase tally.',
+          { year: '~35,000 BCE', title: __alloT('stem.manipulatives.lebombo_bone_eswatini', 'Lebombo Bone (Eswatini)'),
+            desc: __alloT('stem.manipulatives.a_baboon_fibula_with_29_notches_likely', 'A baboon fibula with 29 notches — likely the oldest known mathematical artifact. Possibly a lunar phase tally.'),
             tools: [] },
-          { year: '~18,000 BCE', title: 'Ishango Bone (DR Congo)',
-            desc: 'A baboon fibula with three columns of grouped notches. Some columns are pairs of doubles; one column contains only prime numbers.',
+          { year: '~18,000 BCE', title: __alloT('stem.manipulatives.ishango_bone_dr_congo', 'Ishango Bone (DR Congo)'),
+            desc: __alloT('stem.manipulatives.a_baboon_fibula_with_three_columns_of_', 'A baboon fibula with three columns of grouped notches. Some columns are pairs of doubles; one column contains only prime numbers.'),
             tools: [] },
-          { year: '~4,000 BCE', title: 'Sumerian Clay Tokens',
-            desc: 'Pebble-sized clay tokens with shapes representing quantities of grain, livestock, etc. The probable ancestor of writing AND of base-10 blocks.',
+          { year: '~4,000 BCE', title: __alloT('stem.manipulatives.sumerian_clay_tokens', 'Sumerian Clay Tokens'),
+            desc: __alloT('stem.manipulatives.pebble_sized_clay_tokens_with_shapes_r', 'Pebble-sized clay tokens with shapes representing quantities of grain, livestock, etc. The probable ancestor of writing AND of base-10 blocks.'),
             tools: ['blocks'] },
-          { year: '~2,700 BCE', title: 'Egyptian Hieroglyphs',
-            desc: 'Egyptians used distinct symbols for 1, 10, 100, 1000 — additive, base-10. (A "tally" for 1, a heel-bone for 10, a coil for 100, a lotus for 1000.)',
+          { year: '~2,700 BCE', title: __alloT('stem.manipulatives.egyptian_hieroglyphs', 'Egyptian Hieroglyphs'),
+            desc: __alloT('stem.manipulatives.egyptians_used_distinct_symbols_for_1_', 'Egyptians used distinct symbols for 1, 10, 100, 1000 — additive, base-10. (A "tally" for 1, a heel-bone for 10, a coil for 100, a lotus for 1000.)'),
             tools: ['blocks'] },
-          { year: '~500 BCE', title: 'Salamis Tablet (Greece)',
-            desc: 'The oldest surviving counting board: a marble slab with parallel lines, where pebbles ("calculi" in Latin — the origin of "calculate") were moved to compute sums.',
+          { year: '~500 BCE', title: __alloT('stem.manipulatives.salamis_tablet_greece', 'Salamis Tablet (Greece)'),
+            desc: __alloT('stem.manipulatives.the_oldest_surviving_counting_board_a_', 'The oldest surviving counting board: a marble slab with parallel lines, where pebbles ("calculi" in Latin — the origin of "calculate") were moved to compute sums.'),
             tools: ['abacus'] },
-          { year: '~200 BCE', title: 'Chinese Suanpan',
-            desc: 'The Chinese abacus: 2 heaven beads + 5 earth beads per rod. Allows base-16 (for traditional Chinese weight) as well as base-10. Still used in shops today.',
+          { year: '~200 BCE', title: __alloT('stem.manipulatives.chinese_suanpan', 'Chinese Suanpan'),
+            desc: __alloT('stem.manipulatives.the_chinese_abacus_2_heaven_beads_5_ea', 'The Chinese abacus: 2 heaven beads + 5 earth beads per rod. Allows base-16 (for traditional Chinese weight) as well as base-10. Still used in shops today.'),
             tools: ['abacus'] },
-          { year: '~600 CE', title: 'Indian Numerals',
-            desc: 'Brahmi script gives us 0–9 and place-value notation. The single most consequential invention in numeracy.',
+          { year: '~600 CE', title: __alloT('stem.manipulatives.indian_numerals', 'Indian Numerals'),
+            desc: __alloT('stem.manipulatives.brahmi_script_gives_us_0_9_and_place_v', 'Brahmi script gives us 0–9 and place-value notation. The single most consequential invention in numeracy.'),
             tools: ['blocks', 'pvDisks'] },
-          { year: '~825 CE', title: 'Al-Khwārizmī (Baghdad)',
-            desc: 'Persian mathematician writes "Kitāb al-mukhtaṣar fī ḥisāb al-jabr wal-muqābala." The word "algorithm" comes from his name; "algebra" from the title.',
+          { year: '~825 CE', title: __alloT('stem.manipulatives.al_khw_rizm_baghdad', 'Al-Khwārizmī (Baghdad)'),
+            desc: __alloT('stem.manipulatives.persian_mathematician_writes_kit_b_al_', 'Persian mathematician writes "Kitāb al-mukhtaṣar fī ḥisāb al-jabr wal-muqābala." The word "algorithm" comes from his name; "algebra" from the title.'),
             tools: ['cra'] },
-          { year: '~1200 CE', title: 'Fibonacci\'s Liber Abaci',
-            desc: 'Leonardo of Pisa\'s book introduces the Hindu-Arabic numerals to medieval Europe. Includes the famous "rabbit population" problem.',
+          { year: '~1200 CE', title: __alloT('stem.manipulatives.fibonacci_s_liber_abaci', 'Fibonacci\'s Liber Abaci'),
+            desc: __alloT('stem.manipulatives.leonardo_of_pisa_s_book_introduces_the', 'Leonardo of Pisa\'s book introduces the Hindu-Arabic numerals to medieval Europe. Includes the famous "rabbit population" problem.'),
             tools: ['hundredsChart'] },
-          { year: '~1300 CE', title: 'Russian Schoty',
-            desc: '10 beads per rod, no divider. Used in Russian shops until cash registers replaced them in the 1990s.',
+          { year: '~1300 CE', title: __alloT('stem.manipulatives.russian_schoty', 'Russian Schoty'),
+            desc: __alloT('stem.manipulatives.10_beads_per_rod_no_divider_used_in_ru', '10 beads per rod, no divider. Used in Russian shops until cash registers replaced them in the 1990s.'),
             tools: ['abacus'] },
-          { year: '1614', title: 'Napier\'s Logarithms',
-            desc: 'John Napier publishes the first table of logarithms. Lets multiplication become addition.',
+          { year: '1614', title: __alloT('stem.manipulatives.napier_s_logarithms', 'Napier\'s Logarithms'),
+            desc: __alloT('stem.manipulatives.john_napier_publishes_the_first_table_', 'John Napier publishes the first table of logarithms. Lets multiplication become addition.'),
             tools: ['slideRule'] },
-          { year: '1622', title: 'Oughtred\'s Slide Rule',
-            desc: 'William Oughtred slides two log scales past each other. The slide rule becomes the calculator for the next 350 years.',
+          { year: '1622', title: __alloT('stem.manipulatives.oughtred_s_slide_rule', 'Oughtred\'s Slide Rule'),
+            desc: __alloT('stem.manipulatives.william_oughtred_slides_two_log_scales', 'William Oughtred slides two log scales past each other. The slide rule becomes the calculator for the next 350 years.'),
             tools: ['slideRule'] },
-          { year: '1798', title: 'Carl Gauss, age 8',
-            desc: 'Famously sums 1 through 100 in seconds by pairing 1+100, 2+99, ..., 50+51 — fifty pairs of 101 = 5050. The story may be apocryphal but the method is real.',
+          { year: '1798', title: __alloT('stem.manipulatives.carl_gauss_age_8', 'Carl Gauss, age 8'),
+            desc: __alloT('stem.manipulatives.famously_sums_1_through_100_in_seconds', 'Famously sums 1 through 100 in seconds by pairing 1+100, 2+99, ..., 50+51 — fifty pairs of 101 = 5050. The story may be apocryphal but the method is real.'),
             tools: ['hundredsChart'] },
-          { year: '1857', title: 'Maria Montessori is born',
-            desc: 'The Italian physician will go on to design the "Golden Beads" base-10 system, which is the direct ancestor of every modern set of base-10 blocks.',
+          { year: '1857', title: __alloT('stem.manipulatives.maria_montessori_is_born', 'Maria Montessori is born'),
+            desc: __alloT('stem.manipulatives.the_italian_physician_will_go_on_to_de', 'The Italian physician will go on to design the "Golden Beads" base-10 system, which is the direct ancestor of every modern set of base-10 blocks.'),
             tools: ['blocks'] },
-          { year: '1888', title: 'Hilaire Belloc & Pattern Blocks',
-            desc: 'European primary classrooms begin using wooden geometric tiles for tessellation work. Pattern blocks as standardized today come later (1960s, ESS curriculum).',
+          { year: '1888', title: __alloT('stem.manipulatives.hilaire_belloc_pattern_blocks', 'Hilaire Belloc & Pattern Blocks'),
+            desc: __alloT('stem.manipulatives.european_primary_classrooms_begin_usin', 'European primary classrooms begin using wooden geometric tiles for tessellation work. Pattern blocks as standardized today come later (1960s, ESS curriculum).'),
             tools: ['patternBlocks'] },
-          { year: '1952', title: 'Cuisenaire Rods',
-            desc: 'Belgian teacher Georges Cuisenaire shows his colored rods to Caleb Gattegno. Gattegno popularizes them worldwide.',
+          { year: '1952', title: __alloT('stem.manipulatives.cuisenaire_rods', 'Cuisenaire Rods'),
+            desc: __alloT('stem.manipulatives.belgian_teacher_georges_cuisenaire_sho', 'Belgian teacher Georges Cuisenaire shows his colored rods to Caleb Gattegno. Gattegno popularizes them worldwide.'),
             tools: ['cRods'] },
-          { year: '1960', title: 'Geoboard (Gattegno)',
-            desc: 'Gattegno also popularizes the geoboard: a peg grid for stretching rubber bands into polygons. Brings discrete geometry into reach for young children.',
+          { year: '1960', title: __alloT('stem.manipulatives.geoboard_gattegno', 'Geoboard (Gattegno)'),
+            desc: __alloT('stem.manipulatives.gattegno_also_popularizes_the_geoboard', 'Gattegno also popularizes the geoboard: a peg grid for stretching rubber bands into polygons. Brings discrete geometry into reach for young children.'),
             tools: ['geoboard'] },
-          { year: '1966', title: 'Jerome Bruner — CRA Theory',
-            desc: '"Toward a Theory of Instruction." Bruner argues for enactive → iconic → symbolic progression — what U.S. classrooms call Concrete-Representational-Abstract.',
+          { year: '1966', title: __alloT('stem.manipulatives.jerome_bruner_cra_theory', 'Jerome Bruner — CRA Theory'),
+            desc: __alloT('stem.manipulatives.toward_a_theory_of_instruction_bruner_', '"Toward a Theory of Instruction." Bruner argues for enactive → iconic → symbolic progression — what U.S. classrooms call Concrete-Representational-Abstract.'),
             tools: ['cra'] },
-          { year: '1972', title: 'HP-35 calculator',
-            desc: 'Hewlett-Packard releases the first handheld scientific calculator. Slide rule sales collapse within 5 years.',
+          { year: '1972', title: __alloT('stem.manipulatives.hp_35_calculator', 'HP-35 calculator'),
+            desc: __alloT('stem.manipulatives.hewlett_packard_releases_the_first_han', 'Hewlett-Packard releases the first handheld scientific calculator. Slide rule sales collapse within 5 years.'),
             tools: ['slideRule'] },
-          { year: '1980s', title: 'Singapore Math',
-            desc: 'Singapore\'s Ministry of Education adopts a curriculum centered on the "Number Bond" model and CRA progression. Singapore tops international rankings within two decades.',
+          { year: '1980s', title: __alloT('stem.manipulatives.singapore_math', 'Singapore Math'),
+            desc: __alloT('stem.manipulatives.singapore_s_ministry_of_education_adop', 'Singapore\'s Ministry of Education adopts a curriculum centered on the "Number Bond" model and CRA progression. Singapore tops international rankings within two decades.'),
             tools: ['numberBonds', 'cra'] },
-          { year: '2010', title: 'Common Core State Standards',
-            desc: 'U.S. CCSS-M adopted in most states. Explicitly names "concrete models" and "manipulatives" for K-5 — pulling the methods of Montessori, Cuisenaire, and Singapore into the national standards.',
+          { year: '2010', title: __alloT('stem.manipulatives.common_core_state_standards', 'Common Core State Standards'),
+            desc: __alloT('stem.manipulatives.u_s_ccss_m_adopted_in_most_states_expl', 'U.S. CCSS-M adopted in most states. Explicitly names "concrete models" and "manipulatives" for K-5 — pulling the methods of Montessori, Cuisenaire, and Singapore into the national standards.'),
             tools: ['standards'] },
-          { year: '2020s', title: 'Virtual Manipulatives',
-            desc: 'Web-based tools like this one let students interact with classical manipulatives anywhere. The pedagogy is the same; only the medium has changed.',
+          { year: '2020s', title: __alloT('stem.manipulatives.virtual_manipulatives', 'Virtual Manipulatives'),
+            desc: __alloT('stem.manipulatives.web_based_tools_like_this_one_let_stud', 'Web-based tools like this one let students interact with classical manipulatives anywhere. The pedagogy is the same; only the medium has changed.'),
             tools: ['blocks', 'tenFrame', 'cRods', 'patternBlocks'] },
-          { year: '~3,500 BCE', title: 'Sumerian Sexagesimal',
-            desc: 'The Sumerians use a base-60 system (sexagesimal) — still visible in our 60-second minute and 360-degree circle. Base-60 has many divisors, which is mathematically elegant.',
+          { year: '~3,500 BCE', title: __alloT('stem.manipulatives.sumerian_sexagesimal', 'Sumerian Sexagesimal'),
+            desc: __alloT('stem.manipulatives.the_sumerians_use_a_base_60_system_sex', 'The Sumerians use a base-60 system (sexagesimal) — still visible in our 60-second minute and 360-degree circle. Base-60 has many divisors, which is mathematically elegant.'),
             tools: ['blocks'] },
-          { year: '~250 BCE', title: 'Archimedes',
-            desc: 'Approximates π by inscribing polygons inside a circle and circumscribing polygons around it. Squeezes π between 3 10/71 and 3 1/7.',
+          { year: '~250 BCE', title: __alloT('stem.manipulatives.archimedes', 'Archimedes'),
+            desc: __alloT('stem.manipulatives.approximates_by_inscribing_polygons_in', 'Approximates π by inscribing polygons inside a circle and circumscribing polygons around it. Squeezes π between 3 10/71 and 3 1/7.'),
             tools: ['geoboard'] },
-          { year: '~830 CE', title: 'Algebra',
-            desc: 'Al-Khwārizmī\'s algebra is geometric — he completes squares LITERALLY by drawing rectangles. Manipulative-based algebra is older than symbolic algebra.',
+          { year: '~830 CE', title: __alloT('stem.manipulatives.algebra', 'Algebra'),
+            desc: __alloT('stem.manipulatives.al_khw_rizm_s_algebra_is_geometric_he_', 'Al-Khwārizmī\'s algebra is geometric — he completes squares LITERALLY by drawing rectangles. Manipulative-based algebra is older than symbolic algebra.'),
             tools: ['geoboard'] },
-          { year: '1202', title: 'Liber Abaci (in detail)',
-            desc: 'Fibonacci\'s book includes a problem about rabbit reproduction that produces the Fibonacci sequence: 1, 1, 2, 3, 5, 8, 13... These same numbers appear in nature and in pattern-block tilings.',
+          { year: '1202', title: __alloT('stem.manipulatives.liber_abaci_in_detail', 'Liber Abaci (in detail)'),
+            desc: __alloT('stem.manipulatives.fibonacci_s_book_includes_a_problem_ab', 'Fibonacci\'s book includes a problem about rabbit reproduction that produces the Fibonacci sequence: 1, 1, 2, 3, 5, 8, 13... These same numbers appear in nature and in pattern-block tilings.'),
             tools: ['patternBlocks'] },
-          { year: '1631', title: 'Oughtred publishes Clavis Mathematicae',
-            desc: 'In addition to inventing the slide rule, Oughtred introduces the × symbol for multiplication. (Leibniz hated it: he thought × looked too much like the variable x.)',
+          { year: '1631', title: __alloT('stem.manipulatives.oughtred_publishes_clavis_mathematicae', 'Oughtred publishes Clavis Mathematicae'),
+            desc: __alloT('stem.manipulatives.in_addition_to_inventing_the_slide_rul', 'In addition to inventing the slide rule, Oughtred introduces the × symbol for multiplication. (Leibniz hated it: he thought × looked too much like the variable x.)'),
             tools: ['slideRule'] },
-          { year: '1707', title: 'Euler is born',
-            desc: 'Leonhard Euler will give us e, i for √(−1), the function-notation f(x), and the Euler formula. Geoboards demonstrate his "V − E + F = 2" formula for polyhedra.',
+          { year: '1707', title: __alloT('stem.manipulatives.euler_is_born', 'Euler is born'),
+            desc: __alloT('stem.manipulatives.leonhard_euler_will_give_us_e_i_for_1_', 'Leonhard Euler will give us e, i for √(−1), the function-notation f(x), and the Euler formula. Geoboards demonstrate his "V − E + F = 2" formula for polyhedra.'),
             tools: ['geoboard'] },
-          { year: '1924', title: 'Friedrich Fröbel\'s Gifts',
-            desc: 'Building on Fröbel\'s 19th-century kindergarten "gifts" (wooden manipulatives), Edith Somervell publishes A Rhythmic Approach to Mathematics — an early manipulative-rich curriculum.',
+          { year: '1924', title: __alloT('stem.manipulatives.friedrich_fr_bel_s_gifts', 'Friedrich Fröbel\'s Gifts'),
+            desc: __alloT('stem.manipulatives.building_on_fr_bel_s_19th_century_kind', 'Building on Fröbel\'s 19th-century kindergarten "gifts" (wooden manipulatives), Edith Somervell publishes A Rhythmic Approach to Mathematics — an early manipulative-rich curriculum.'),
             tools: ['blocks', 'patternBlocks'] },
-          { year: '1937', title: 'Cuisenaire\'s rods discovered',
-            desc: 'Georges Cuisenaire, a Belgian school principal, has been quietly using colored rods for 4 years. A visit by an inspector leads to publication; uptake remains slow until the 1950s.',
+          { year: '1937', title: __alloT('stem.manipulatives.cuisenaire_s_rods_discovered', 'Cuisenaire\'s rods discovered'),
+            desc: __alloT('stem.manipulatives.georges_cuisenaire_a_belgian_school_pr', 'Georges Cuisenaire, a Belgian school principal, has been quietly using colored rods for 4 years. A visit by an inspector leads to publication; uptake remains slow until the 1950s.'),
             tools: ['cRods'] },
-          { year: '1958', title: 'Caleb Gattegno\'s tour',
-            desc: 'Gattegno tours UK schools demonstrating Cuisenaire rods. Adoption explodes. By the 1960s the rods are in classrooms across Europe and the Commonwealth.',
+          { year: '1958', title: __alloT('stem.manipulatives.caleb_gattegno_s_tour', 'Caleb Gattegno\'s tour'),
+            desc: __alloT('stem.manipulatives.gattegno_tours_uk_schools_demonstratin', 'Gattegno tours UK schools demonstrating Cuisenaire rods. Adoption explodes. By the 1960s the rods are in classrooms across Europe and the Commonwealth.'),
             tools: ['cRods'] },
-          { year: '1973', title: 'NCTM Standards',
-            desc: 'The National Council of Teachers of Mathematics issues guidance recommending manipulatives at all grades. The shift from procedural to conceptual emphasis begins in earnest in U.S. classrooms.',
+          { year: '1973', title: __alloT('stem.manipulatives.nctm_standards', 'NCTM Standards'),
+            desc: __alloT('stem.manipulatives.the_national_council_of_teachers_of_ma', 'The National Council of Teachers of Mathematics issues guidance recommending manipulatives at all grades. The shift from procedural to conceptual emphasis begins in earnest in U.S. classrooms.'),
             tools: ['cra'] },
-          { year: '1989', title: 'NCTM Curriculum & Evaluation Standards',
-            desc: 'The seminal NCTM document that anchored "reform math." Names problem-solving, reasoning, communication, and connections as core. Manipulatives become standard equipment.',
+          { year: '1989', title: __alloT('stem.manipulatives.nctm_curriculum_evaluation_standards', 'NCTM Curriculum & Evaluation Standards'),
+            desc: __alloT('stem.manipulatives.the_seminal_nctm_document_that_anchore', 'The seminal NCTM document that anchored "reform math." Names problem-solving, reasoning, communication, and connections as core. Manipulatives become standard equipment.'),
             tools: ['standards'] },
-          { year: '2000', title: 'NCTM Principles and Standards',
-            desc: 'Updated standards add a Representation strand: students should be able to translate among physical, pictorial, symbolic, and contextual representations — i.e., the CRA loop.',
+          { year: '2000', title: __alloT('stem.manipulatives.nctm_principles_and_standards', 'NCTM Principles and Standards'),
+            desc: __alloT('stem.manipulatives.updated_standards_add_a_representation', 'Updated standards add a Representation strand: students should be able to translate among physical, pictorial, symbolic, and contextual representations — i.e., the CRA loop.'),
             tools: ['cra'] },
-          { year: '2010', title: 'Common Core in detail',
-            desc: 'CCSS-M explicitly names number lines, ten frames, base-10 blocks, and area models. The mathematical practices (MP1-MP8) frame HOW students should engage with manipulatives.',
+          { year: '2010', title: __alloT('stem.manipulatives.common_core_in_detail', 'Common Core in detail'),
+            desc: __alloT('stem.manipulatives.ccss_m_explicitly_names_number_lines_t', 'CCSS-M explicitly names number lines, ten frames, base-10 blocks, and area models. The mathematical practices (MP1-MP8) frame HOW students should engage with manipulatives.'),
             tools: ['standards'] }
         ];
 
@@ -4609,8 +4610,8 @@ window.StemLab = window.StemLab || {
             })
           ),
           h('div', { className: 'bg-lime-50 rounded-lg p-3 border border-lime-100 text-xs text-lime-800' },
-            '💡 Mathematics is older than writing. Every manipulative in this tool is a descendent of something ancient. ',
-            'Showing students the lineage — "this is the same idea your great-great-great-grandparents used" — re-frames math as a human invention, not a mystery to memorize.'
+            __alloT('stem.manipulatives.mathematics_is_older_than_writing_ever', '💡 Mathematics is older than writing. Every manipulative in this tool is a descendent of something ancient. '),
+            __alloT('stem.manipulatives.showing_students_the_lineage_this_is_t', 'Showing students the lineage — "this is the same idea your great-great-great-grandparents used" — re-frames math as a human invention, not a mystery to memorize.')
           )
         );
       }
@@ -4670,7 +4671,7 @@ window.StemLab = window.StemLab || {
             h('table', { className: 'w-full text-xs', style: { borderCollapse: 'separate', borderSpacing: 2 } },
               h('thead', null,
                 h('tr', null,
-                  h('th', { className: 'text-left text-green-800 font-bold py-1' }, 'Manipulative'),
+                  h('th', { className: 'text-left text-green-800 font-bold py-1' }, __alloT('stem.manipulatives.manipulative', 'Manipulative')),
                   grades.map(function(g) {
                     return h('th', { key: g, className: 'text-center text-green-800 font-bold py-1 px-2 min-w-[44px]' }, g);
                   })
@@ -4697,19 +4698,19 @@ window.StemLab = window.StemLab || {
           ),
           // Suggested sequencing
           h('div', { className: 'bg-white rounded-xl border-2 border-green-200 p-3' },
-            h('p', { className: 'text-xs font-bold text-green-700 mb-2' }, 'Suggested first-month sequence (any grade):'),
+            h('p', { className: 'text-xs font-bold text-green-700 mb-2' }, __alloT('stem.manipulatives.suggested_first_month_sequence_any_gra', 'Suggested first-month sequence (any grade):')),
             h('ol', { className: 'list-decimal pl-5 text-xs text-slate-700 space-y-1' },
-              h('li', null, 'Start with the manipulative most central to current standards.'),
-              h('li', null, 'Spend 2–3 sessions on free exploration before any "challenge."'),
-              h('li', null, 'Use the Glossary to introduce 1–2 vocab terms per session.'),
-              h('li', null, 'Build into CRA Progression mode once a concept is fluent.'),
-              h('li', null, 'Save anchor examples to the Library; revisit weekly.'),
-              h('li', null, 'Use the Challenge Hub for 5-min warm-ups (interleaved practice).')
+              h('li', null, __alloT('stem.manipulatives.start_with_the_manipulative_most_centr', 'Start with the manipulative most central to current standards.')),
+              h('li', null, __alloT('stem.manipulatives.spend_2_3_sessions_on_free_exploration', 'Spend 2–3 sessions on free exploration before any "challenge."')),
+              h('li', null, __alloT('stem.manipulatives.use_the_glossary_to_introduce_1_2_voca', 'Use the Glossary to introduce 1–2 vocab terms per session.')),
+              h('li', null, __alloT('stem.manipulatives.build_into_cra_progression_mode_once_a', 'Build into CRA Progression mode once a concept is fluent.')),
+              h('li', null, __alloT('stem.manipulatives.save_anchor_examples_to_the_library_re', 'Save anchor examples to the Library; revisit weekly.')),
+              h('li', null, __alloT('stem.manipulatives.use_the_challenge_hub_for_5_min_warm_u', 'Use the Challenge Hub for 5-min warm-ups (interleaved practice).'))
             )
           ),
           h('div', { className: 'bg-green-50 rounded-lg p-3 border border-green-100 text-xs text-green-800' },
-            '💡 Manipulative use should ', h('b', null, 'decrease'), ' across grades as students internalize the representations. ',
-            'A 6th grader who needs blocks for 23+47 has not been failed by the blocks — they were never taken away soon enough.'
+            __alloT('stem.manipulatives.manipulative_use_should', '💡 Manipulative use should '), h('b', null, 'decrease'), __alloT('stem.manipulatives.across_grades_as_students_internalize_', ' across grades as students internalize the representations. '),
+            __alloT('stem.manipulatives.a_6th_grader_who_needs_blocks_for_23_4', 'A 6th grader who needs blocks for 23+47 has not been failed by the blocks — they were never taken away soon enough.')
           )
         );
       }
@@ -4720,7 +4721,7 @@ window.StemLab = window.StemLab || {
       if (manipMode === 'activities') {
         var activities = [
           { id: 'tf_make10', grade: 'K-1', tool: 'tenFrame', time: '5 min',
-            goal: 'Find all ways to make 10 with two parts.',
+            goal: __alloT('stem.manipulatives.find_all_ways_to_make_10_with_two_part', 'Find all ways to make 10 with two parts.'),
             materials: 'One ten frame and 10 counters per pair.',
             steps: [
               'Show 5 dots filled in. Ask: "How many more to make 10?"',
@@ -4731,7 +4732,7 @@ window.StemLab = window.StemLab || {
             extension: 'Are 3+7 and 7+3 the same or different? (This is the commutative property.)'
           },
           { id: 'b10_regroup', grade: '1-2', tool: 'blocks', time: '10 min',
-            goal: 'Discover regrouping (carrying) by running out of ones.',
+            goal: __alloT('stem.manipulatives.discover_regrouping_carrying_by_runnin', 'Discover regrouping (carrying) by running out of ones.'),
             materials: 'Base-10 blocks: ~30 ones, ~10 tens.',
             steps: [
               'Each student builds 27 with 2 tens and 7 ones.',
@@ -4742,7 +4743,7 @@ window.StemLab = window.StemLab || {
             extension: 'Why is it called "regrouping"? What is being "re-grouped"?'
           },
           { id: 'ct_zero', grade: '6-7', tool: 'counters', time: '15 min',
-            goal: 'Model integer addition with positive/negative counters.',
+            goal: __alloT('stem.manipulatives.model_integer_addition_with_positive_n', 'Model integer addition with positive/negative counters.'),
             materials: 'Two-color counters (yellow = +1, red = −1). About 20 per pair.',
             steps: [
               'Show 5 yellow + 3 red. Net = +2.',
@@ -4753,7 +4754,7 @@ window.StemLab = window.StemLab || {
             extension: 'Why does (-3) + (-5) make MORE negative? (No zero pairs to cancel.)'
           },
           { id: 'pb_hex', grade: '2-3', tool: 'patternBlocks', time: '10 min',
-            goal: 'Use the hexagon as the unit whole; build other shapes as fractions of it.',
+            goal: __alloT('stem.manipulatives.use_the_hexagon_as_the_unit_whole_buil', 'Use the hexagon as the unit whole; build other shapes as fractions of it.'),
             materials: 'Pattern blocks: hexagons, trapezoids, blue rhombi, triangles.',
             steps: [
               'Place 1 hexagon. Ask: "How many trapezoids cover this exactly?" (2 — so 1 trap = 1/2.)',
@@ -4764,7 +4765,7 @@ window.StemLab = window.StemLab || {
             extension: 'Find THREE different ways to cover 2 hexagons. Which uses the fewest pieces?'
           },
           { id: 'gb_rect', grade: '3-4', tool: 'geoboard', time: '15 min',
-            goal: 'Discover that area and perimeter are independent.',
+            goal: __alloT('stem.manipulatives.discover_that_area_and_perimeter_are_i', 'Discover that area and perimeter are independent.'),
             materials: 'A geoboard per student (or 5×5 dot paper).',
             steps: [
               'Build a 3×4 rectangle. Count perimeter: 14 units. Count area: 12 sq units.',
@@ -4775,7 +4776,7 @@ window.StemLab = window.StemLab || {
             extension: 'Of all rectangles with perimeter 12, which has the LARGEST area? Why?'
           },
           { id: 'cr_staircase', grade: '1-2', tool: 'cRods', time: '10 min',
-            goal: 'See the addition staircase pattern.',
+            goal: __alloT('stem.manipulatives.see_the_addition_staircase_pattern', 'See the addition staircase pattern.'),
             materials: 'A set of Cuisenaire rods per pair.',
             steps: [
               'Line up rods 1 through 10 in a "staircase" — shortest to longest.',
@@ -4786,7 +4787,7 @@ window.StemLab = window.StemLab || {
             extension: 'How would you compute 1+2+3+...+100 without writing them all down?'
           },
           { id: 'hc_primes', grade: '4-5', tool: 'hundredsChart', time: '20 min',
-            goal: 'Find all primes 1-100 using the Sieve of Eratosthenes.',
+            goal: __alloT('stem.manipulatives.find_all_primes_1_100_using_the_sieve_', 'Find all primes 1-100 using the Sieve of Eratosthenes.'),
             materials: 'A blank hundreds chart for each student.',
             steps: [
               'Cross out 1 (not prime).',
@@ -4797,7 +4798,7 @@ window.StemLab = window.StemLab || {
             extension: 'Why didn\'t we need to check past 10 (since 10² = 100)?'
           },
           { id: 'nb_compose', grade: 'K-1', tool: 'numberBonds', time: '10 min',
-            goal: 'Fluently decompose any number from 5 to 10.',
+            goal: __alloT('stem.manipulatives.fluently_decompose_any_number_from_5_t', 'Fluently decompose any number from 5 to 10.'),
             materials: 'Number bond template + 10 counters per child.',
             steps: [
               'Place 7 counters in the "whole" circle.',
@@ -4808,7 +4809,7 @@ window.StemLab = window.StemLab || {
             extension: 'How many ways are there to decompose 8? 9? 10? Do you see a pattern?'
           },
           { id: 'ab_speed', grade: '3-5', tool: 'abacus', time: '15 min',
-            goal: 'Build mental imagery of place value via the abacus.',
+            goal: __alloT('stem.manipulatives.build_mental_imagery_of_place_value_vi', 'Build mental imagery of place value via the abacus.'),
             materials: 'A virtual abacus (this app) or physical soroban.',
             steps: [
               'Show 234 on the abacus (2 hundreds, 3 tens, 4 ones).',
@@ -4819,7 +4820,7 @@ window.StemLab = window.StemLab || {
             extension: 'Time a speed round: who can show "678" the fastest, starting from empty?'
           },
           { id: 'pvd_addition', grade: '4', tool: 'pvDisks', time: '20 min',
-            goal: 'Connect the standard addition algorithm to physical regrouping.',
+            goal: __alloT('stem.manipulatives.connect_the_standard_addition_algorith', 'Connect the standard addition algorithm to physical regrouping.'),
             materials: 'A place-value mat with columns for ones, tens, hundreds, thousands. Disks labeled 1, 10, 100, 1000.',
             steps: [
               'Build 256 in the ones/tens/hundreds columns.',
@@ -4831,7 +4832,7 @@ window.StemLab = window.StemLab || {
             extension: 'How is the "carry the 1" in the written algorithm the SAME as trading disks?'
           },
           { id: 'tf_dice', grade: 'K', tool: 'tenFrame', time: '5 min',
-            goal: 'Subitize numbers 1-6 instantly.',
+            goal: __alloT('stem.manipulatives.subitize_numbers_1_6_instantly', 'Subitize numbers 1-6 instantly.'),
             materials: 'A die per student and one ten frame each.',
             steps: [
               'Roll the die.',
@@ -4842,7 +4843,7 @@ window.StemLab = window.StemLab || {
             extension: 'Roll twice. Add the two numbers using ONE ten frame.'
           },
           { id: 'ct_temp', grade: '6', tool: 'counters', time: '10 min',
-            goal: 'Use counters as a thermometer model.',
+            goal: __alloT('stem.manipulatives.use_counters_as_a_thermometer_model', 'Use counters as a thermometer model.'),
             materials: 'Two-color counters; yellow = +1 degree, red = −1 degree.',
             steps: [
               'Place 5 yellow. "Temperature = +5°."',
@@ -4853,7 +4854,7 @@ window.StemLab = window.StemLab || {
             extension: 'The temperature drops 12, then rises 4, then drops 7. Starting at 0°, what is the final?'
           },
           { id: 'pb_symm', grade: '3-4', tool: 'patternBlocks', time: '15 min',
-            goal: 'Build symmetric designs.',
+            goal: __alloT('stem.manipulatives.build_symmetric_designs', 'Build symmetric designs.'),
             materials: 'Pattern blocks. A line drawn on paper as a "mirror."',
             steps: [
               'Place 2 hexagons and 4 triangles on the left of the mirror line.',
@@ -4864,7 +4865,7 @@ window.StemLab = window.StemLab || {
             extension: 'How many lines of symmetry does a hexagon have? Try folding paper to discover.'
           },
           { id: 'hc_arrow', grade: '1-2', tool: 'hundredsChart', time: '10 min',
-            goal: 'Notice that ↓ adds 10 and → adds 1.',
+            goal: __alloT('stem.manipulatives.notice_that_adds_10_and_adds_1', 'Notice that ↓ adds 10 and → adds 1.'),
             materials: 'A printed hundreds chart per pair.',
             steps: [
               'Start at 24. Move 1 cell DOWN. What number? (34.)',
@@ -4875,7 +4876,7 @@ window.StemLab = window.StemLab || {
             extension: 'From 56, what arrow path lands on 89? (3 down, 3 right.)'
           },
           { id: 'cr_train', grade: '1-3', tool: 'cRods', time: '10 min',
-            goal: 'Find all "trains" of a given total.',
+            goal: __alloT('stem.manipulatives.find_all_trains_of_a_given_total', 'Find all "trains" of a given total.'),
             materials: 'A full set of Cuisenaire rods per pair.',
             steps: [
               'Pick a target length, say 5.',
@@ -4886,7 +4887,7 @@ window.StemLab = window.StemLab || {
             extension: 'How many DIFFERENT trains of length 5 exist? (16 if you count order, 7 if not.)'
           },
           { id: 'gb_quad', grade: '3-4', tool: 'geoboard', time: '15 min',
-            goal: 'Sort quadrilaterals by their properties.',
+            goal: __alloT('stem.manipulatives.sort_quadrilaterals_by_their_propertie', 'Sort quadrilaterals by their properties.'),
             materials: 'Geoboards or dot paper.',
             steps: [
               'Build a square. Note: 4 equal sides, 4 right angles.',
@@ -4898,7 +4899,7 @@ window.StemLab = window.StemLab || {
             extension: 'Build a shape that is BOTH a rectangle and a rhombus. (It\'s a square.)'
           },
           { id: 'nb_doubles', grade: 'K-1', tool: 'numberBonds', time: '10 min',
-            goal: 'Master the doubles facts (1+1, 2+2, 3+3, ..., 5+5).',
+            goal: __alloT('stem.manipulatives.master_the_doubles_facts_1_1_2_2_3_3_5', 'Master the doubles facts (1+1, 2+2, 3+3, ..., 5+5).'),
             materials: 'Number bonds template.',
             steps: [
               'Set whole = 2. Move part 1 to 1. Note: 1+1=2.',
@@ -4909,7 +4910,7 @@ window.StemLab = window.StemLab || {
             extension: 'Why do all doubles end in an even number?'
           },
           { id: 'pvd_estimate', grade: '4-5', tool: 'pvDisks', time: '15 min',
-            goal: 'Estimate before computing.',
+            goal: __alloT('stem.manipulatives.estimate_before_computing', 'Estimate before computing.'),
             materials: 'Place-value disks.',
             steps: [
               'Pose: "Is 387 + 246 closer to 500 or 700?"',
@@ -4920,7 +4921,7 @@ window.StemLab = window.StemLab || {
             extension: 'When is rounding to the nearest hundred FINE, and when is it too coarse?'
           },
           { id: 'frac_compare', grade: '3-4', tool: 'patternBlocks', time: '15 min',
-            goal: 'Compare two fractions using the same whole.',
+            goal: __alloT('stem.manipulatives.compare_two_fractions_using_the_same_w', 'Compare two fractions using the same whole.'),
             materials: 'Pattern blocks.',
             steps: [
               'Lay out 1 hexagon — call it 1 whole.',
@@ -4931,7 +4932,7 @@ window.StemLab = window.StemLab || {
             extension: 'Why does the rule "bigger denominator = smaller pieces" make sense, given the blocks?'
           },
           { id: 'tf_dot_talk', grade: 'K-1', tool: 'tenFrame', time: '5 min',
-            goal: 'Dot Talks — multiple ways to see the same arrangement.',
+            goal: __alloT('stem.manipulatives.dot_talks_multiple_ways_to_see_the_sam', 'Dot Talks — multiple ways to see the same arrangement.'),
             materials: 'A pre-arranged ten frame (e.g. 7 dots).',
             steps: [
               'Show the frame for 3 seconds, then hide.',
@@ -4942,7 +4943,7 @@ window.StemLab = window.StemLab || {
             extension: 'Same activity but with two different arrangements showing 7 — which feels easier to see?'
           },
           { id: 'hc_target', grade: '2-3', tool: 'hundredsChart', time: '10 min',
-            goal: 'Find a number through 10-and-1 navigation.',
+            goal: __alloT('stem.manipulatives.find_a_number_through_10_and_1_navigat', 'Find a number through 10-and-1 navigation.'),
             materials: 'Printed hundreds chart.',
             steps: [
               'Pick a "secret" number 1-100. Don\'t tell.',
@@ -4953,7 +4954,7 @@ window.StemLab = window.StemLab || {
             extension: 'Is moving by 10s first faster than moving by 1s first? Why?'
           },
           { id: 'gb_pick', grade: '5', tool: 'geoboard', time: '20 min',
-            goal: 'Discover Pick\'s Theorem for area.',
+            goal: __alloT('stem.manipulatives.discover_pick_s_theorem_for_area', 'Discover Pick\'s Theorem for area.'),
             materials: 'Geoboards or dot paper.',
             steps: [
               'Build a polygon. Count: I = pegs INSIDE the shape; B = pegs ON the boundary.',
@@ -4964,7 +4965,7 @@ window.StemLab = window.StemLab || {
             extension: 'Why does the formula need "− 1" at the end? (Hint: try a 1-by-1 square.)'
           },
           { id: 'b10_compare', grade: '2', tool: 'blocks', time: '10 min',
-            goal: 'Compare 3-digit numbers using place-value blocks.',
+            goal: __alloT('stem.manipulatives.compare_3_digit_numbers_using_place_va', 'Compare 3-digit numbers using place-value blocks.'),
             materials: 'Base-10 blocks for two players.',
             steps: [
               'Each player builds a 3-digit number (say, 234 and 252).',
@@ -4975,7 +4976,7 @@ window.StemLab = window.StemLab || {
             extension: 'What if the hundreds digit differs? Then you can stop comparing immediately. Why?'
           },
           { id: 'cr_ratios', grade: '5-6', tool: 'cRods', time: '20 min',
-            goal: 'Find equivalent ratios with rods.',
+            goal: __alloT('stem.manipulatives.find_equivalent_ratios_with_rods', 'Find equivalent ratios with rods.'),
             materials: 'Cuisenaire rods.',
             steps: [
               'Place a yellow (5) and a red (2). Ratio 5:2.',
@@ -4986,7 +4987,7 @@ window.StemLab = window.StemLab || {
             extension: 'Why does 5:2 simplify to itself? (It\'s already in lowest terms — GCD is 1.)'
           },
           { id: 'nb_minus', grade: '1', tool: 'numberBonds', time: '5 min',
-            goal: 'Solve missing-addend subtraction with a number bond.',
+            goal: __alloT('stem.manipulatives.solve_missing_addend_subtraction_with_', 'Solve missing-addend subtraction with a number bond.'),
             materials: 'Number bond template.',
             steps: [
               'Pose: 8 − ? = 3.',
@@ -4997,7 +4998,7 @@ window.StemLab = window.StemLab || {
             extension: 'How does the bond help when you don\'t know the answer? (It turns subtraction into an addition.)'
           },
           { id: 'tf_double', grade: 'K-1', tool: 'tenFrame', time: '10 min',
-            goal: 'Use the double ten frame to add within 20.',
+            goal: __alloT('stem.manipulatives.use_the_double_ten_frame_to_add_within', 'Use the double ten frame to add within 20.'),
             materials: 'Two ten frames per student.',
             steps: [
               'Place 8 in the first frame. Place 5 in the second frame.',
@@ -5008,7 +5009,7 @@ window.StemLab = window.StemLab || {
             extension: 'Why does "make ten first" feel easier than just counting all? (Working memory: 10 + something is automatic.)'
           },
           { id: 'pb_mosaic', grade: '2-3', tool: 'patternBlocks', time: '20 min',
-            goal: 'Tile a region with no gaps (tessellation).',
+            goal: __alloT('stem.manipulatives.tile_a_region_with_no_gaps_tessellatio', 'Tile a region with no gaps (tessellation).'),
             materials: 'Pattern blocks, a paper outline (square or hexagon).',
             steps: [
               'Trace a 6-inch square on paper.',
@@ -5019,7 +5020,7 @@ window.StemLab = window.StemLab || {
             extension: 'Which shapes tile the plane all by themselves? (Triangle, square, hexagon are the only 3 regular polygons that do.)'
           },
           { id: 'ab_kindergarten', grade: 'K', tool: 'abacus', time: '5 min',
-            goal: 'Connect one bead to one count.',
+            goal: __alloT('stem.manipulatives.connect_one_bead_to_one_count', 'Connect one bead to one count.'),
             materials: 'Soroban abacus (1 rod is enough).',
             steps: [
               'Slide one bead up. "One."',
@@ -5030,7 +5031,7 @@ window.StemLab = window.StemLab || {
             extension: 'Make 9: heaven bead + 4 earth beads = 5 + 4 = 9.'
           },
           { id: 'sr_lookup', grade: '7-8', tool: 'slideRule', time: '15 min',
-            goal: 'Look up the log of a number.',
+            goal: __alloT('stem.manipulatives.look_up_the_log_of_a_number', 'Look up the log of a number.'),
             materials: 'The virtual slide rule.',
             steps: [
               'Find 2 on the D scale.',
@@ -5041,7 +5042,7 @@ window.StemLab = window.StemLab || {
             extension: 'Why does the D scale start at 1 instead of 0?'
           },
           { id: 'all_show2025', grade: '3-5', tool: 'curriculum', time: '5 min',
-            goal: 'Pick the right tool for the goal.',
+            goal: __alloT('stem.manipulatives.pick_the_right_tool_for_the_goal', 'Pick the right tool for the goal.'),
             materials: 'Just this app.',
             steps: [
               'Open the Curriculum Map.',
@@ -5052,7 +5053,7 @@ window.StemLab = window.StemLab || {
             extension: 'Pick ONE topic from the standards browser. Find every manipulative that supports it.'
           },
           { id: 'b10_estimate', grade: '2-3', tool: 'blocks', time: '10 min',
-            goal: 'Estimate before computing 3-digit sums.',
+            goal: __alloT('stem.manipulatives.estimate_before_computing_3_digit_sums', 'Estimate before computing 3-digit sums.'),
             materials: 'Base-10 blocks.',
             steps: [
               'Pose: 287 + 156. Before building, estimate to the nearest 100: ~300 + ~200 = ~500.',
@@ -5063,7 +5064,7 @@ window.StemLab = window.StemLab || {
             extension: 'Try 412 + 87. Estimate: ~400 + ~100 = ~500. Then verify: 499. Close!'
           },
           { id: 'cra_real_world', grade: '3-5', tool: 'cra', time: '15 min',
-            goal: 'Apply CRA to a real word problem.',
+            goal: __alloT('stem.manipulatives.apply_cra_to_a_real_word_problem', 'Apply CRA to a real word problem.'),
             materials: 'A word problem (e.g. "There are 4 packs of pencils, with 6 pencils in each pack").',
             steps: [
               'CONCRETE: Have students stack 4 piles of 6 cubes.',
@@ -5074,7 +5075,7 @@ window.StemLab = window.StemLab || {
             extension: 'Take a different word problem from your math book. Walk the same C → R → A path.'
           },
           { id: 'all_warm_up', grade: 'any', tool: 'challenges', time: '5 min',
-            goal: 'Five-minute warm-up across all manipulatives.',
+            goal: __alloT('stem.manipulatives.five_minute_warm_up_across_all_manipul', 'Five-minute warm-up across all manipulatives.'),
             materials: 'Just this app.',
             steps: [
               'Open the Challenge Hub.',
@@ -5116,7 +5117,7 @@ window.StemLab = window.StemLab || {
                 return h('li', { key: 'st' + i }, s);
               })
             ),
-            h('p', { className: 'text-xs font-bold text-rose-700 mb-1' }, 'EXTENSION QUESTION:'),
+            h('p', { className: 'text-xs font-bold text-rose-700 mb-1' }, __alloT('stem.manipulatives.extension_question', 'EXTENSION QUESTION:')),
             h('p', { className: 'text-sm text-slate-800 italic' }, curAct.extension)
           ),
           h('div', { className: 'flex gap-2 justify-between' },
@@ -5124,21 +5125,21 @@ window.StemLab = window.StemLab || {
               onClick: function() { upd({ activityIdx: Math.max(0, aIdx - 1) }); },
               disabled: aIdx <= 0,
               className: 'px-4 py-2 rounded text-xs font-bold ' + (aIdx <= 0 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'transition-colors bg-slate-200 text-slate-700 hover:bg-slate-300')
-            }, '← Previous'),
+            }, __alloT('stem.manipulatives.previous_2', '← Previous')),
             h('button', { onClick: function() { switchMode(curAct.tool); },
               className: 'transition-colors px-4 py-2 rounded text-xs font-bold bg-rose-600 text-white hover:bg-rose-700' },
               '→ Open the ' + curAct.tool + ' tool'
             ),
             h('button', { onClick: doPrint,
-              className: 'transition-colors px-4 py-2 rounded text-xs font-bold bg-blue-600 text-white hover:bg-blue-700' }, '🖨 Print'),
+              className: 'transition-colors px-4 py-2 rounded text-xs font-bold bg-blue-600 text-white hover:bg-blue-700' }, __alloT('stem.manipulatives.print', '🖨 Print')),
             h('button', {
               onClick: function() { upd({ activityIdx: Math.min(activities.length - 1, aIdx + 1) }); },
               disabled: aIdx >= activities.length - 1,
               className: 'px-4 py-2 rounded text-xs font-bold ' + (aIdx >= activities.length - 1 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'transition-colors bg-slate-200 text-slate-700 hover:bg-slate-300')
-            }, 'Next →')
+            }, __alloT('stem.manipulatives.next_11', 'Next →'))
           ),
           h('div', { className: 'bg-white rounded-xl border-2 border-rose-200 p-3' },
-            h('p', { className: 'text-xs font-bold text-rose-700 mb-2' }, 'All cards:'),
+            h('p', { className: 'text-xs font-bold text-rose-700 mb-2' }, __alloT('stem.manipulatives.all_cards', 'All cards:')),
             h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-1' },
               activities.map(function(a, i) {
                 return h('button', { key: 'ac' + i, onClick: function() { upd({ activityIdx: i }); },
@@ -5153,8 +5154,8 @@ window.StemLab = window.StemLab || {
             )
           ),
           h('div', { className: 'bg-rose-50 rounded-lg p-3 border border-rose-100 text-xs text-rose-800' },
-            '💡 Cards are designed to be printed and used away from the screen. Real, physical manipulatives still beat virtual ones for K-2 — the kinesthetic loop matters. ',
-            'The app gives you EVERY manipulative on hand, even when the physical kit isn\'t in the room.'
+            __alloT('stem.manipulatives.cards_are_designed_to_be_printed_and_u', '💡 Cards are designed to be printed and used away from the screen. Real, physical manipulatives still beat virtual ones for K-2 — the kinesthetic loop matters. '),
+            __alloT('stem.manipulatives.the_app_gives_you_every_manipulative_o', 'The app gives you EVERY manipulative on hand, even when the physical kit isn\'t in the room.')
           )
         );
       }
@@ -5253,7 +5254,7 @@ window.StemLab = window.StemLab || {
           headerEl,
           // Sub-tabs
           h('div', { className: 'flex gap-1 bg-slate-100 rounded-lg p-1' },
-            [{ id: 'faq', label: '❓ FAQ' }, { id: 'shortcuts', label: '⌨ Shortcuts' }, { id: 'pitfalls', label: '⚠ Pitfalls' }, { id: 'about', label: 'ℹ About' }].map(function(s) {
+            [{ id: 'faq', label: __alloT('stem.manipulatives.faq', '❓ FAQ') }, { id: 'shortcuts', label: __alloT('stem.manipulatives.shortcuts', '⌨ Shortcuts') }, { id: 'pitfalls', label: __alloT('stem.manipulatives.pitfalls', '⚠ Pitfalls') }, { id: 'about', label: __alloT('stem.manipulatives.about', 'ℹ About') }].map(function(s) {
               return h('button', { key: 'hs' + s.id,
                 onClick: function() { upd({ helpSub: s.id }); },
                 className: 'flex-1 py-1.5 rounded text-xs font-bold transition-all ' +
@@ -5270,7 +5271,7 @@ window.StemLab = window.StemLab || {
             })
           ),
           helpAct === 'shortcuts' && h('div', { className: 'bg-white rounded-xl border-2 border-slate-200 p-3' },
-            h('p', { className: 'text-xs font-bold text-slate-700 mb-2' }, 'Keyboard shortcuts:'),
+            h('p', { className: 'text-xs font-bold text-slate-700 mb-2' }, __alloT('stem.manipulatives.keyboard_shortcuts', 'Keyboard shortcuts:')),
             h('table', { className: 'w-full text-xs' },
               h('tbody', null,
                 shortcuts.map(function(s) {
@@ -5286,41 +5287,41 @@ window.StemLab = window.StemLab || {
           ),
           helpAct === 'pitfalls' && h('div', { className: 'space-y-2' },
             [
-              { title: 'Treating manipulatives as "filler" not instruction',
-                detail: 'Common mistake: handing out blocks and walking away. Without explicit instruction CONNECTING the manipulative to the symbol, students often play with the toy and learn nothing new. Always close every manipulative session with: "Show me on paper what you just did."'
+              { title: __alloT('stem.manipulatives.treating_manipulatives_as_filler_not_i', 'Treating manipulatives as "filler" not instruction'),
+                detail: __alloT('stem.manipulatives.common_mistake_handing_out_blocks_and_', 'Common mistake: handing out blocks and walking away. Without explicit instruction CONNECTING the manipulative to the symbol, students often play with the toy and learn nothing new. Always close every manipulative session with: "Show me on paper what you just did."')
               },
-              { title: 'Keeping students on the concrete stage too long',
-                detail: 'A 4th grader who still NEEDS blocks for 23 + 47 has a problem. The blocks were a scaffold; if they never come off, fluency never develops. Move to representational (pictures) by grade 2-3, to abstract (symbols) by grade 3-4. Re-enter concrete only for new concepts.'
+              { title: __alloT('stem.manipulatives.keeping_students_on_the_concrete_stage', 'Keeping students on the concrete stage too long'),
+                detail: __alloT('stem.manipulatives.a_4th_grader_who_still_needs_blocks_fo', 'A 4th grader who still NEEDS blocks for 23 + 47 has a problem. The blocks were a scaffold; if they never come off, fluency never develops. Move to representational (pictures) by grade 2-3, to abstract (symbols) by grade 3-4. Re-enter concrete only for new concepts.')
               },
-              { title: 'Skipping the representational stage',
-                detail: 'Most rushed teachers go from blocks straight to "now write 4 + 5 = 9." That skips the iconic stage (drawing dots, number lines, arrays). Witzel, Mercer & Miller (2003) found the gap is where most learners fail. Always include a picture step.'
+              { title: __alloT('stem.manipulatives.skipping_the_representational_stage', 'Skipping the representational stage'),
+                detail: __alloT('stem.manipulatives.most_rushed_teachers_go_from_blocks_st', 'Most rushed teachers go from blocks straight to "now write 4 + 5 = 9." That skips the iconic stage (drawing dots, number lines, arrays). Witzel, Mercer & Miller (2003) found the gap is where most learners fail. Always include a picture step.')
               },
-              { title: 'Letting students always work alone',
-                detail: 'Manipulative work without TALK is half the value. Pair students; require them to verbalize what they\'re doing. The verbalization IS the consolidation step that moves the action from "fingers know" to "head knows."'
+              { title: __alloT('stem.manipulatives.letting_students_always_work_alone', 'Letting students always work alone'),
+                detail: __alloT('stem.manipulatives.manipulative_work_without_talk_is_half', 'Manipulative work without TALK is half the value. Pair students; require them to verbalize what they\'re doing. The verbalization IS the consolidation step that moves the action from "fingers know" to "head knows."')
               },
-              { title: 'Confusing speed with understanding',
-                detail: 'Timed fact-fluency drills can make students faster at procedures they don\'t understand (look up "math anxiety" research: Boaler 2014). Slow manipulative work is NOT inferior to fast paper work for K-3.'
+              { title: __alloT('stem.manipulatives.confusing_speed_with_understanding', 'Confusing speed with understanding'),
+                detail: __alloT('stem.manipulatives.timed_fact_fluency_drills_can_make_stu', 'Timed fact-fluency drills can make students faster at procedures they don\'t understand (look up "math anxiety" research: Boaler 2014). Slow manipulative work is NOT inferior to fast paper work for K-3.')
               },
-              { title: 'Mismatching manipulative to standard',
-                detail: 'Don\'t use the abacus to teach fractions. Don\'t use pattern blocks to teach place value. The Curriculum Map shows which manipulative addresses which CCSS — start there.'
+              { title: __alloT('stem.manipulatives.mismatching_manipulative_to_standard', 'Mismatching manipulative to standard'),
+                detail: __alloT('stem.manipulatives.don_t_use_the_abacus_to_teach_fraction', 'Don\'t use the abacus to teach fractions. Don\'t use pattern blocks to teach place value. The Curriculum Map shows which manipulative addresses which CCSS — start there.')
               },
-              { title: 'Praising effort but not strategy',
-                detail: 'Saying "great job!" rewards completion. Saying "I noticed you tried 3 trapezoids before switching to 6 triangles — what made you switch?" rewards thinking. Be specific.'
+              { title: __alloT('stem.manipulatives.praising_effort_but_not_strategy', 'Praising effort but not strategy'),
+                detail: __alloT('stem.manipulatives.saying_great_job_rewards_completion_sa', 'Saying "great job!" rewards completion. Saying "I noticed you tried 3 trapezoids before switching to 6 triangles — what made you switch?" rewards thinking. Be specific.')
               },
-              { title: 'Ignoring student-invented strategies',
-                detail: 'A student who shows 8 + 5 as "9 + 4" (because they took 1 from 5 and added it to 8 first) has invented a make-ten strategy. Surface it; name it; teach the class to try it. The textbook approach is not the only correct approach.'
+              { title: __alloT('stem.manipulatives.ignoring_student_invented_strategies', 'Ignoring student-invented strategies'),
+                detail: __alloT('stem.manipulatives.a_student_who_shows_8_5_as_9_4_because', 'A student who shows 8 + 5 as "9 + 4" (because they took 1 from 5 and added it to 8 first) has invented a make-ten strategy. Surface it; name it; teach the class to try it. The textbook approach is not the only correct approach.')
               },
-              { title: 'Using too many manipulatives at once',
-                detail: 'A table covered in 4 different manipulatives is a recipe for distraction, not differentiation. Pick ONE per lesson. The other 11 in this tool are great — for other lessons.'
+              { title: __alloT('stem.manipulatives.using_too_many_manipulatives_at_once', 'Using too many manipulatives at once'),
+                detail: __alloT('stem.manipulatives.a_table_covered_in_4_different_manipul', 'A table covered in 4 different manipulatives is a recipe for distraction, not differentiation. Pick ONE per lesson. The other 11 in this tool are great — for other lessons.')
               },
-              { title: 'Forgetting to ask "why?"',
-                detail: 'Students will arrange counters correctly because they\'ve memorized the moves, without understanding the meaning. "Why did you put the 1 in the tens column?" should be your most-asked question.'
+              { title: __alloT('stem.manipulatives.forgetting_to_ask_why', 'Forgetting to ask "why?"'),
+                detail: __alloT('stem.manipulatives.students_will_arrange_counters_correct', 'Students will arrange counters correctly because they\'ve memorized the moves, without understanding the meaning. "Why did you put the 1 in the tens column?" should be your most-asked question.')
               },
-              { title: 'Cleaning up too quickly',
-                detail: 'A built construction is a powerful artifact — leave it on the table while the class talks about it. Save it to the Library if you need it back tomorrow. Don\'t make students dismantle a hard-won build to "be ready for the next subject."'
+              { title: __alloT('stem.manipulatives.cleaning_up_too_quickly', 'Cleaning up too quickly'),
+                detail: __alloT('stem.manipulatives.a_built_construction_is_a_powerful_art', 'A built construction is a powerful artifact — leave it on the table while the class talks about it. Save it to the Library if you need it back tomorrow. Don\'t make students dismantle a hard-won build to "be ready for the next subject."')
               },
-              { title: 'Asking only convergent questions',
-                detail: '"What is 4 + 3?" has one answer (convergent). "Show me 7 in three different ways" has many (divergent). Divergent prompts expose how students think — which is the assessment that matters.'
+              { title: __alloT('stem.manipulatives.asking_only_convergent_questions', 'Asking only convergent questions'),
+                detail: __alloT('stem.manipulatives.what_is_4_3_has_one_answer_convergent_', '"What is 4 + 3?" has one answer (convergent). "Show me 7 in three different ways" has many (divergent). Divergent prompts expose how students think — which is the assessment that matters.')
               }
             ].map(function(p, i) {
               return h('details', { key: 'pf' + i, className: 'bg-white rounded-xl border-2 border-amber-200 p-3' },
@@ -5330,29 +5331,29 @@ window.StemLab = window.StemLab || {
             })
           ),
           helpAct === 'about' && h('div', { className: 'bg-white rounded-xl border-2 border-slate-200 p-4 space-y-3 text-xs text-slate-800' },
-            h('h3', { className: 'text-base font-bold' }, 'About Math Manipulatives'),
+            h('h3', { className: 'text-base font-bold' }, __alloT('stem.manipulatives.about_math_manipulatives', 'About Math Manipulatives')),
             h('p', null,
-              'A virtual kit of 12 classic K-5 math manipulatives, plus a CRA progression scaffold, ',
-              'a challenge bank, a CCSS standards browser, a printable activity-card library, and ',
-              'a teacher dashboard with progress export.'
+              __alloT('stem.manipulatives.a_virtual_kit_of_12_classic_k_5_math_m', 'A virtual kit of 12 classic K-5 math manipulatives, plus a CRA progression scaffold, '),
+              __alloT('stem.manipulatives.a_challenge_bank_a_ccss_standards_brow', 'a challenge bank, a CCSS standards browser, a printable activity-card library, and '),
+              __alloT('stem.manipulatives.a_teacher_dashboard_with_progress_expo', 'a teacher dashboard with progress export.')
             ),
             h('p', null,
-              'Built as part of ', h('b', null, 'AlloFlow'),
-              ', an open-source learning platform for K-12 classrooms. ',
-              'AlloFlow is licensed under AGPL v3.'
+              __alloT('stem.manipulatives.built_as_part_of', 'Built as part of '), h('b', null, 'AlloFlow'),
+              __alloT('stem.manipulatives.an_open_source_learning_platform_for_k', ', an open-source learning platform for K-12 classrooms. '),
+              __alloT('stem.manipulatives.alloflow_is_licensed_under_agpl_v3', 'AlloFlow is licensed under AGPL v3.')
             ),
-            h('h4', { className: 'font-bold mt-3' }, 'Sources & credits'),
+            h('h4', { className: 'font-bold mt-3' }, __alloT('stem.manipulatives.sources_credits', 'Sources & credits')),
             h('ul', { className: 'list-disc pl-5 space-y-1' },
-              h('li', null, 'Pedagogy: Bruner (1966), Witzel/Mercer/Miller (2003 meta-analysis), Carbonneau/Marley/Selig (2013 meta-analysis).'),
-              h('li', null, 'Manipulatives: Montessori (Golden Beads), Cuisenaire (1952), Gattegno (Geoboard), Singapore Math (Number Bonds).'),
-              h('li', null, 'Standards: Common Core State Standards for Mathematics, K-7.'),
-              h('li', null, 'Accessibility: WCAG 2.1 AA. Okabe-Ito CB-safe palette.'),
-              h('li', null, 'Audio: Web Audio API for sound effects, fully togglable.')
+              h('li', null, __alloT('stem.manipulatives.pedagogy_bruner_1966_witzel_mercer_mil', 'Pedagogy: Bruner (1966), Witzel/Mercer/Miller (2003 meta-analysis), Carbonneau/Marley/Selig (2013 meta-analysis).')),
+              h('li', null, __alloT('stem.manipulatives.manipulatives_montessori_golden_beads_', 'Manipulatives: Montessori (Golden Beads), Cuisenaire (1952), Gattegno (Geoboard), Singapore Math (Number Bonds).')),
+              h('li', null, __alloT('stem.manipulatives.standards_common_core_state_standards_', 'Standards: Common Core State Standards for Mathematics, K-7.')),
+              h('li', null, __alloT('stem.manipulatives.accessibility_wcag_2_1_aa_okabe_ito_cb', 'Accessibility: WCAG 2.1 AA. Okabe-Ito CB-safe palette.')),
+              h('li', null, __alloT('stem.manipulatives.audio_web_audio_api_for_sound_effects_', 'Audio: Web Audio API for sound effects, fully togglable.'))
             ),
-            h('h4', { className: 'font-bold mt-3' }, 'Privacy'),
+            h('h4', { className: 'font-bold mt-3' }, __alloT('stem.manipulatives.privacy', 'Privacy')),
             h('p', null,
-              'All state lives in your browser. No data is sent anywhere unless you explicitly export. ',
-              'Browser storage is per-device — clearing site data resets progress.'
+              __alloT('stem.manipulatives.all_state_lives_in_your_browser_no_dat', 'All state lives in your browser. No data is sent anywhere unless you explicitly export. '),
+              __alloT('stem.manipulatives.browser_storage_is_per_device_clearing', 'Browser storage is per-device — clearing site data resets progress.')
             )
           )
         );
@@ -5460,22 +5461,22 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: 'flex gap-2 justify-center flex-wrap' },
             h('button', { onClick: clearFb,
-              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300' }, '↺ Clear'),
+              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300' }, __alloT('stem.manipulatives.clear_6', '↺ Clear')),
             h('button', { onClick: genFb,
-              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-orange-600 text-white hover:bg-orange-700' }, '🎯 New challenge')
+              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-orange-600 text-white hover:bg-orange-700' }, __alloT('stem.manipulatives.new_challenge', '🎯 New challenge'))
           ),
           fbChallenge && h('div', { className: 'bg-white rounded-xl border-2 border-orange-300 p-3' },
             h('p', { className: 'text-sm text-slate-800 mb-2' }, fbChallenge.q),
             !fbFeedback && h('button', { onClick: checkFb,
-              className: 'transition-colors w-full px-3 py-2 rounded text-xs font-bold bg-orange-600 text-white hover:bg-orange-700' }, 'Check'),
+              className: 'transition-colors w-full px-3 py-2 rounded text-xs font-bold bg-orange-600 text-white hover:bg-orange-700' }, __alloT('stem.manipulatives.check_10', 'Check')),
             fbFeedback && h('div', { className: 'space-y-1' },
               h('p', { className: 'text-sm font-bold ' + (fbFeedback.ok ? 'text-green-700' : 'text-red-700') }, fbFeedback.msg),
               h('button', { onClick: genFb,
-                className: 'transition-colors w-full px-3 py-1.5 rounded text-xs font-bold bg-orange-600 text-white hover:bg-orange-700' }, '🔄 Next')
+                className: 'transition-colors w-full px-3 py-1.5 rounded text-xs font-bold bg-orange-600 text-white hover:bg-orange-700' }, __alloT('stem.manipulatives.next_12', '🔄 Next'))
             )
           ),
           h('div', { className: 'bg-orange-50 rounded-lg p-3 border border-orange-100 text-xs text-orange-800' },
-            '💡 Fraction bars make equivalence VISIBLE: highlight 1/2 of the halves bar and 3/6 of the sixths bar — they cover the same length. Same fraction.'
+            __alloT('stem.manipulatives.fraction_bars_make_equivalence_visible', '💡 Fraction bars make equivalence VISIBLE: highlight 1/2 of the halves bar and 3/6 of the sixths bar — they cover the same length. Same fraction.')
           )
         );
       }
@@ -5528,7 +5529,7 @@ window.StemLab = window.StemLab || {
               key: kind + '-' + i,
               onClick: function() { atSub(kind); },
               'aria-label': 'Remove a ' + kind + ' tile',
-              title: 'Click to remove',
+              title: __alloT('stem.manipulatives.click_to_remove_2', 'Click to remove'),
               style: {
                 width: w + 'px', height: ht + 'px',
                 backgroundColor: color,
@@ -5545,8 +5546,8 @@ window.StemLab = window.StemLab || {
           return arr;
         };
         var palette = [
-          { kind: 'xSq',    color: '#1e40af', w: 64, h: 64, name: '+x² (square)' },
-          { kind: 'xSqNeg', color: '#fef2f2', w: 64, h: 64, name: '−x² (square, dashed)' },
+          { kind: 'xSq',    color: '#1e40af', w: 64, h: 64, name: __alloT('stem.manipulatives.x_square', '+x² (square)') },
+          { kind: 'xSqNeg', color: '#fef2f2', w: 64, h: 64, name: __alloT('stem.manipulatives.x_square_dashed', '−x² (square, dashed)') },
           { kind: 'x',      color: '#2563eb', w: 64, h: 24, name: '+x' },
           { kind: 'xNeg',   color: '#fef2f2', w: 64, h: 24, name: '−x' },
           { kind: 'unit',   color: '#3b82f6', w: 24, h: 24, name: '+1' },
@@ -5556,7 +5557,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'space-y-3 max-w-4xl mx-auto animate-in fade-in duration-200' },
           headerEl,
           h('div', { className: 'bg-white rounded-xl border-2 border-indigo-200 p-3' },
-            h('p', { className: 'text-xs font-bold text-indigo-700 mb-2' }, 'Tile palette (click + to add):'),
+            h('p', { className: 'text-xs font-bold text-indigo-700 mb-2' }, __alloT('stem.manipulatives.tile_palette_click_to_add', 'Tile palette (click + to add):')),
             h('div', { className: 'grid grid-cols-3 sm:grid-cols-6 gap-2' },
               palette.map(function(p) {
                 return h('div', { key: 'pal-' + p.kind, className: 'flex flex-col items-center gap-1 p-2 bg-indigo-50 rounded border border-indigo-200' },
@@ -5572,14 +5573,14 @@ window.StemLab = window.StemLab || {
                   } }, p.name.split(' ')[0]),
                   h('p', { className: 'text-[9px] font-bold text-indigo-700 text-center' }, p.name),
                   h('button', { onClick: function(k) { return function() { atAdd(k); }; }(p.kind),
-                    className: 'transition-colors px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-600 text-white hover:bg-indigo-700' }, '+ Add')
+                    className: 'transition-colors px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-600 text-white hover:bg-indigo-700' }, __alloT('stem.manipulatives.add', '+ Add'))
                 );
               })
             )
           ),
           h('div', { className: 'bg-indigo-50 rounded-xl border-2 border-indigo-200 p-3' },
             h('div', { className: 'flex items-center justify-between mb-2' },
-              h('p', { className: 'text-xs font-bold text-indigo-700' }, 'Workspace — expression: '),
+              h('p', { className: 'text-xs font-bold text-indigo-700' }, __alloT('stem.manipulatives.workspace_expression', 'Workspace — expression: ')),
               h('span', { className: 'font-mono text-base font-black text-indigo-900' }, atExpr())
             ),
             h('div', { className: 'min-h-[80px] p-1' },
@@ -5593,12 +5594,12 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: 'flex gap-2 justify-center flex-wrap' },
             h('button', { onClick: atClear,
-              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300' }, '↺ Clear'),
+              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300' }, __alloT('stem.manipulatives.clear_7', '↺ Clear')),
             h('button', { onClick: atZeroPairs,
-              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700' }, '✂ Remove zero pairs')
+              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700' }, __alloT('stem.manipulatives.remove_zero_pairs', '✂ Remove zero pairs'))
           ),
           h('div', { className: 'bg-indigo-50 rounded-lg p-3 border border-indigo-100 text-xs text-indigo-800' },
-            '💡 Algebra tiles make abstract algebra physical. A positive and a negative tile of the same shape make a "zero pair." Solid colored tiles are positive; dashed-bordered white tiles are negative. Use these to model expressions, simplify, and (for older students) factor quadratics by arranging tiles into rectangles.'
+            __alloT('stem.manipulatives.algebra_tiles_make_abstract_algebra_ph', '💡 Algebra tiles make abstract algebra physical. A positive and a negative tile of the same shape make a "zero pair." Solid colored tiles are positive; dashed-bordered white tiles are negative. Use these to model expressions, simplify, and (for older students) factor quadratics by arranging tiles into rectangles.')
           )
         );
       }
@@ -5606,7 +5607,7 @@ window.StemLab = window.StemLab || {
       // Default fallback
       return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200' },
         headerEl,
-        h('p', { className: 'text-sm text-slate-600 text-center' }, 'Select a tool above to get started.')
+        h('p', { className: 'text-sm text-slate-600 text-center' }, __alloT('stem.manipulatives.select_a_tool_above_to_get_started', 'Select a tool above to get started.'))
       );
     }
   });
