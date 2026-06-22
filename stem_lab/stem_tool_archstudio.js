@@ -230,6 +230,7 @@
       { id: 'try_2_styles', label: 'Try 2 architectural styles', icon: '\uD83C\uDFDB\uFE0F', check: function(d) { return Object.keys(d.stylesUsed || {}).length >= 2; }, progress: function(d) { return Object.keys(d.stylesUsed || {}).length + '/2 styles'; } }
     ],
     render: function (ctx) {
+      var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
     var React = ctx.React;
     var el = React.createElement;
     var d = (ctx.toolData && ctx.toolData.archStudio) || {};
@@ -272,35 +273,35 @@
 
     // ── Shape definitions (12 shapes) ──
     var shapes = [
-      { id: 'block', icon: '\uD83D\uDFE6', label: 'Block', vol: 1 },
-      { id: 'slab', icon: '\uD83D\uDCCF', label: 'Slab', vol: 0.5 },
-      { id: 'ramp', icon: '\uD83C\uDFD4\uFE0F', label: 'Ramp', vol: 0.5 },
-      { id: 'column', icon: '\uD83C\uDFDB\uFE0F', label: 'Column', vol: 0.385 },
-      { id: 'arch', icon: '\uD83C\uDF09', label: 'Arch', vol: 0.24 },
-      { id: 'roof', icon: '\uD83D\uDCD0', label: 'Roof', vol: 0.35 },
-      { id: 'pyramid', icon: '\uD83D\uDD3A', label: 'Pyramid', vol: 0.26 },
-      { id: 'dome', icon: '\uD83D\uDD35', label: 'Dome', vol: 0.26 },
-      { id: 'cylinder', icon: '\uD83D\uDEE2\uFE0F', label: 'Cylinder', vol: 0.785 },
+      { id: 'block', icon: '\uD83D\uDFE6', label: t('stem.archstudio.block', 'Block'), vol: 1 },
+      { id: 'slab', icon: '\uD83D\uDCCF', label: t('stem.archstudio.slab', 'Slab'), vol: 0.5 },
+      { id: 'ramp', icon: '\uD83C\uDFD4\uFE0F', label: t('stem.archstudio.ramp', 'Ramp'), vol: 0.5 },
+      { id: 'column', icon: '\uD83C\uDFDB\uFE0F', label: t('stem.archstudio.column', 'Column'), vol: 0.385 },
+      { id: 'arch', icon: '\uD83C\uDF09', label: t('stem.archstudio.arch', 'Arch'), vol: 0.24 },
+      { id: 'roof', icon: '\uD83D\uDCD0', label: t('stem.archstudio.roof', 'Roof'), vol: 0.35 },
+      { id: 'pyramid', icon: '\uD83D\uDD3A', label: t('stem.archstudio.pyramid', 'Pyramid'), vol: 0.26 },
+      { id: 'dome', icon: '\uD83D\uDD35', label: t('stem.archstudio.dome', 'Dome'), vol: 0.26 },
+      { id: 'cylinder', icon: '\uD83D\uDEE2\uFE0F', label: t('stem.archstudio.cylinder', 'Cylinder'), vol: 0.785 },
       { id: 'lbeam', icon: '\uD83D\uDD29', label: 'L-Beam', vol: 0.75 },
-      { id: 'window', icon: '\uD83E\uDE9F', label: 'Window', vol: 0.3 },
-      { id: 'door', icon: '\uD83D\uDEAA', label: 'Door', vol: 0.4 }
+      { id: 'window', icon: '\uD83E\uDE9F', label: t('stem.archstudio.window', 'Window'), vol: 0.3 },
+      { id: 'door', icon: '\uD83D\uDEAA', label: t('stem.archstudio.door', 'Door'), vol: 0.4 }
     ];
 
     // ── Material definitions with costs ──
     var materials = [
-      { id: 'stone', label: 'Stone', color: 'var(--allo-stem-text-soft, #94a3b8)', icon: '\uD83E\uDEA8', weight: 2.3, cost: 5 },
-      { id: 'brick', label: 'Brick', color: '#b45309', icon: '\uD83E\uDDF1', weight: 1.9, cost: 8 },
-      { id: 'wood', label: 'Wood', color: '#92400e', icon: '\uD83E\uDEB5', weight: 0.6, cost: 3 },
-      { id: 'glass', label: 'Glass', color: '#38bdf8', icon: '\uD83E\uDE9F', weight: 2.5, cost: 12 },
-      { id: 'marble', label: 'Marble', color: 'var(--allo-stem-text, #f1f5f9)', icon: '\u26AA', weight: 2.7, cost: 15 },
-      { id: 'metal', label: 'Metal', color: 'var(--allo-stem-text, #cbd5e1)', icon: '\u2699\uFE0F', weight: 7.8, cost: 20 }
+      { id: 'stone', label: t('stem.archstudio.stone', 'Stone'), color: 'var(--allo-stem-text-soft, #94a3b8)', icon: '\uD83E\uDEA8', weight: 2.3, cost: 5 },
+      { id: 'brick', label: t('stem.archstudio.brick', 'Brick'), color: '#b45309', icon: '\uD83E\uDDF1', weight: 1.9, cost: 8 },
+      { id: 'wood', label: t('stem.archstudio.wood', 'Wood'), color: '#92400e', icon: '\uD83E\uDEB5', weight: 0.6, cost: 3 },
+      { id: 'glass', label: t('stem.archstudio.glass', 'Glass'), color: '#38bdf8', icon: '\uD83E\uDE9F', weight: 2.5, cost: 12 },
+      { id: 'marble', label: t('stem.archstudio.marble', 'Marble'), color: 'var(--allo-stem-text, #f1f5f9)', icon: '\u26AA', weight: 2.7, cost: 15 },
+      { id: 'metal', label: t('stem.archstudio.metal', 'Metal'), color: 'var(--allo-stem-text, #cbd5e1)', icon: '\u2699\uFE0F', weight: 7.8, cost: 20 }
     ];
 
     // ── Tool modes ──
     var modes = [
-      { id: 'place', label: 'Place', icon: '\u2795' },
-      { id: 'erase', label: 'Erase', icon: '\u274C' },
-      { id: 'paint', label: 'Paint', icon: '\uD83C\uDFA8' }
+      { id: 'place', label: t('stem.archstudio.place', 'Place'), icon: '\u2795' },
+      { id: 'erase', label: t('stem.archstudio.erase', 'Erase'), icon: '\u274C' },
+      { id: 'paint', label: t('stem.archstudio.paint', 'Paint'), icon: '\uD83C\uDFA8' }
     ];
 
     // ── Rotation options ──
@@ -424,36 +425,36 @@
     var volToSurf = surfaceArea > 0 ? (parseFloat(totalVolume) / surfaceArea) : 0;
 
     var challenges = [
-      { id: 0, title: 'First Wall', icon: '\uD83E\uDDF1', desc: 'Build a wall: 3+ wide, 3+ tall', xp: 10,
+      { id: 0, title: t('stem.archstudio.first_wall', 'First Wall'), icon: '\uD83E\uDDF1', desc: t('stem.archstudio.build_a_wall_3_wide_3_tall', 'Build a wall: 3+ wide, 3+ tall'), xp: 10,
         check: function () { return buildW >= 3 && buildH >= 3; },
-        fact: 'The earliest known brick wall dates to ~7500 BCE in Jericho!' },
-      { id: 1, title: 'Stable Tower', icon: '\uD83C\uDFD7\uFE0F', desc: '6+ high, stability > 60%', xp: 15,
+        fact: t('stem.archstudio.the_earliest_known_brick_wall_dates_to', 'The earliest known brick wall dates to ~7500 BCE in Jericho!') },
+      { id: 1, title: t('stem.archstudio.stable_tower', 'Stable Tower'), icon: '\uD83C\uDFD7\uFE0F', desc: t('stem.archstudio.6_high_stability_60', '6+ high, stability > 60%'), xp: 15,
         check: function () { return buildH >= 6 && analysis.stability > 60; },
-        fact: 'The Leaning Tower of Pisa has a 3.97\u00B0 lean due to shallow foundations!' },
-      { id: 2, title: 'Material Mix', icon: '\uD83C\uDFA8', desc: 'Use 3+ different materials', xp: 10,
+        fact: t('stem.archstudio.the_leaning_tower_of_pisa_has_a_3_97_l', 'The Leaning Tower of Pisa has a 3.97\u00B0 lean due to shallow foundations!') },
+      { id: 2, title: t('stem.archstudio.material_mix', 'Material Mix'), icon: '\uD83C\uDFA8', desc: t('stem.archstudio.use_3_different_materials', 'Use 3+ different materials'), xp: 10,
         check: function () { return analysis.materialCount >= 3; },
-        fact: 'The Parthenon used marble, limestone, and iron clamps!' },
-      { id: 3, title: 'Roman Arch', icon: '\uD83C\uDFDB\uFE0F', desc: '2+ arches and 2+ columns', xp: 20,
+        fact: t('stem.archstudio.the_parthenon_used_marble_limestone_an', 'The Parthenon used marble, limestone, and iron clamps!') },
+      { id: 3, title: t('stem.archstudio.roman_arch', 'Roman Arch'), icon: '\uD83C\uDFDB\uFE0F', desc: t('stem.archstudio.2_arches_and_2_columns', '2+ arches and 2+ columns'), xp: 20,
         check: function () { return (shapeCount.arch || 0) >= 2 && (shapeCount.column || 0) >= 2; },
-        fact: 'The Colosseum has 80 arched entrances!' },
-      { id: 4, title: 'Symmetry Master', icon: '\u2696\uFE0F', desc: 'Symmetry score > 80%', xp: 15,
+        fact: t('stem.archstudio.the_colosseum_has_80_arched_entrances', 'The Colosseum has 80 arched entrances!') },
+      { id: 4, title: t('stem.archstudio.symmetry_master', 'Symmetry Master'), icon: '\u2696\uFE0F', desc: t('stem.archstudio.symmetry_score_80', 'Symmetry score > 80%'), xp: 15,
         check: function () { return totalBlocks >= 6 && analysis.symmetry > 80; },
-        fact: 'The Taj Mahal is perfectly symmetrical along its central axis.' },
-      { id: 5, title: 'Bridge Builder', icon: '\uD83C\uDF09', desc: '4+ wide, 3+ high, no floaters', xp: 25,
+        fact: t('stem.archstudio.the_taj_mahal_is_perfectly_symmetrical', 'The Taj Mahal is perfectly symmetrical along its central axis.') },
+      { id: 5, title: t('stem.archstudio.bridge_builder', 'Bridge Builder'), icon: '\uD83C\uDF09', desc: t('stem.archstudio.4_wide_3_high_no_floaters', '4+ wide, 3+ high, no floaters'), xp: 25,
         check: function () { return buildW >= 4 && buildH >= 3 && analysis.unsupported === 0; },
-        fact: 'The 1915 \u00C7anakkale Bridge spans 2,023 meters!' },
-      { id: 6, title: 'Efficient Design', icon: '\uD83D\uDCCA', desc: '20+ blocks, vol/surface > 0.5', xp: 20,
+        fact: t('stem.archstudio.the_1915_anakkale_bridge_spans_2_023_m', 'The 1915 \u00C7anakkale Bridge spans 2,023 meters!') },
+      { id: 6, title: t('stem.archstudio.efficient_design', 'Efficient Design'), icon: '\uD83D\uDCCA', desc: t('stem.archstudio.20_blocks_vol_surface_0_5', '20+ blocks, vol/surface > 0.5'), xp: 20,
         check: function () { return totalBlocks >= 20 && volToSurf > 0.5; },
-        fact: 'Igloos use dome shapes to minimize heat loss!' },
-      { id: 7, title: 'Skyscraper', icon: '\uD83C\uDFD9\uFE0F', desc: '10+ height, stability > 50%', xp: 25,
+        fact: t('stem.archstudio.igloos_use_dome_shapes_to_minimize_hea', 'Igloos use dome shapes to minimize heat loss!') },
+      { id: 7, title: t('stem.archstudio.skyscraper', 'Skyscraper'), icon: '\uD83C\uDFD9\uFE0F', desc: t('stem.archstudio.10_height_stability_50', '10+ height, stability > 50%'), xp: 25,
         check: function () { return buildH >= 10 && analysis.stability > 50; },
-        fact: 'The Burj Khalifa (828m) uses a Y-shaped floor plan!' },
-      { id: 8, title: 'The Pyramid', icon: '\uD83D\uDD3A', desc: 'Pyramid/ramp shapes, stability > 90%', xp: 20,
+        fact: t('stem.archstudio.the_burj_khalifa_828m_uses_a_y_shaped_', 'The Burj Khalifa (828m) uses a Y-shaped floor plan!') },
+      { id: 8, title: t('stem.archstudio.the_pyramid', 'The Pyramid'), icon: '\uD83D\uDD3A', desc: t('stem.archstudio.pyramid_ramp_shapes_stability_90', 'Pyramid/ramp shapes, stability > 90%'), xp: 20,
         check: function () { return ((shapeCount.pyramid || 0) + (shapeCount.ramp || 0)) >= 3 && analysis.stability > 90; },
-        fact: 'The Great Pyramid contains 2.3 million stone blocks!' },
-      { id: 9, title: 'Dream Home', icon: '\uD83C\uDFE0', desc: '30+ blocks, 4+ mats, doors & windows', xp: 30,
+        fact: t('stem.archstudio.the_great_pyramid_contains_2_3_million', 'The Great Pyramid contains 2.3 million stone blocks!') },
+      { id: 9, title: t('stem.archstudio.dream_home', 'Dream Home'), icon: '\uD83C\uDFE0', desc: t('stem.archstudio.30_blocks_4_mats_doors_windows', '30+ blocks, 4+ mats, doors & windows'), xp: 30,
         check: function () { return totalBlocks >= 30 && analysis.materialCount >= 4 && (shapeCount.door || 0) >= 1 && (shapeCount.window || 0) >= 1; },
-        fact: 'Architects balance light, ventilation, integrity, and aesthetics!' }
+        fact: t('stem.archstudio.architects_balance_light_ventilation_i', 'Architects balance light, ventilation, integrity, and aesthetics!') }
     ];
 
     var challengeProgress = null;
@@ -830,17 +831,17 @@
     // ══════════════════════════════════════════════════════════════
     var showStyleGuide = d.showStyleGuide || false;
     var archStyles = [
-      { name: 'Classical', icon: '\uD83C\uDFDB\uFE0F', era: '800 BCE \u2013 500 CE', features: 'Columns, symmetry, pediments, marble. Think Parthenon, Colosseum.',
+      { name: t('stem.archstudio.classical', 'Classical'), icon: '\uD83C\uDFDB\uFE0F', era: '800 BCE \u2013 500 CE', features: 'Columns, symmetry, pediments, marble. Think Parthenon, Colosseum.',
         tips: 'Use columns + arches, marble material, high symmetry' },
-      { name: 'Gothic', icon: '\u26EA', era: '1100 \u2013 1500 CE', features: 'Pointed arches, tall spires, flying buttresses, stained glass.',
+      { name: t('stem.archstudio.gothic', 'Gothic'), icon: '\u26EA', era: '1100 \u2013 1500 CE', features: 'Pointed arches, tall spires, flying buttresses, stained glass.',
         tips: 'Build tall! Use arches, glass windows, stone walls' },
-      { name: 'Art Deco', icon: '\uD83C\uDFD9\uFE0F', era: '1920s \u2013 1940s', features: 'Geometric shapes, stepped facades, metallic accents, bold symmetry.',
+      { name: t('stem.archstudio.art_deco', 'Art Deco'), icon: '\uD83C\uDFD9\uFE0F', era: '1920s \u2013 1940s', features: 'Geometric shapes, stepped facades, metallic accents, bold symmetry.',
         tips: 'Use metal + glass, stepped pyramid shapes, strict symmetry' },
-      { name: 'Modern', icon: '\uD83C\uDFE2', era: '1920s \u2013 present', features: 'Clean lines, glass curtain walls, open plans, "less is more".',
+      { name: t('stem.archstudio.modern', 'Modern'), icon: '\uD83C\uDFE2', era: '1920s \u2013 present', features: 'Clean lines, glass curtain walls, open plans, "less is more".',
         tips: 'Use glass + metal, flat roofs (slabs), minimal decoration' },
-      { name: 'Japanese', icon: '\u26E9\uFE0F', era: 'Traditional', features: 'Wooden frames, curved roofs, harmony with nature, tatami proportions.',
+      { name: t('stem.archstudio.japanese', 'Japanese'), icon: '\u26E9\uFE0F', era: 'Traditional', features: 'Wooden frames, curved roofs, harmony with nature, tatami proportions.',
         tips: 'Use wood, roof shapes, low profiles, symmetry' },
-      { name: 'Brutalist', icon: '\uD83D\uDDFF', era: '1950s \u2013 1970s', features: 'Raw concrete, massive forms, geometric repetition, fortress-like.',
+      { name: t('stem.archstudio.brutalist', 'Brutalist'), icon: '\uD83D\uDDFF', era: '1950s \u2013 1970s', features: 'Raw concrete, massive forms, geometric repetition, fortress-like.',
         tips: 'Use stone only, blocky shapes, L-beams, no decoration' }
     ];
 
@@ -942,12 +943,12 @@
     // ══════════════════════════════════════════════════════════════
     var showRandomGen = d.showRandomGen || false;
     var randomPresets = [
-      { id: 'tower', name: 'Random Tower', icon: '\uD83C\uDFD7\uFE0F', desc: 'Tall narrow structure' },
-      { id: 'house', name: 'Random House', icon: '\uD83C\uDFE0', desc: 'Simple house with roof' },
-      { id: 'wall', name: 'Random Wall', icon: '\uD83E\uDDF1', desc: 'Defensive wall segment' },
-      { id: 'pyramid', name: 'Random Pyramid', icon: '\uD83D\uDD3A', desc: 'Layered pyramid' },
-      { id: 'castle', name: 'Random Castle', icon: '\uD83C\uDFF0', desc: 'Castle with towers' },
-      { id: 'bridge', name: 'Random Bridge', icon: '\uD83C\uDF09', desc: 'Bridge with arches' }
+      { id: 'tower', name: t('stem.archstudio.random_tower', 'Random Tower'), icon: '\uD83C\uDFD7\uFE0F', desc: t('stem.archstudio.tall_narrow_structure', 'Tall narrow structure') },
+      { id: 'house', name: t('stem.archstudio.random_house', 'Random House'), icon: '\uD83C\uDFE0', desc: t('stem.archstudio.simple_house_with_roof', 'Simple house with roof') },
+      { id: 'wall', name: t('stem.archstudio.random_wall', 'Random Wall'), icon: '\uD83E\uDDF1', desc: t('stem.archstudio.defensive_wall_segment', 'Defensive wall segment') },
+      { id: 'pyramid', name: t('stem.archstudio.random_pyramid', 'Random Pyramid'), icon: '\uD83D\uDD3A', desc: t('stem.archstudio.layered_pyramid', 'Layered pyramid') },
+      { id: 'castle', name: t('stem.archstudio.random_castle', 'Random Castle'), icon: '\uD83C\uDFF0', desc: t('stem.archstudio.castle_with_towers', 'Castle with towers') },
+      { id: 'bridge', name: t('stem.archstudio.random_bridge', 'Random Bridge'), icon: '\uD83C\uDF09', desc: t('stem.archstudio.bridge_with_arches', 'Bridge with arches') }
     ];
 
     var generateRandom = function (presetId) {
@@ -1128,18 +1129,18 @@
     var showBadges = d.showBadges || false;
     var earnedBadges = d.earnedBadges || {};
     var badges = [
-      { id: 'first_block', icon: '\uD83E\uDDF1', name: 'First Block', desc: 'Place your very first block', check: function () { return totalBlocks >= 1; } },
-      { id: 'hundred_club', icon: '\uD83D\uDCAF', name: '100 Club', desc: 'Have 100+ blocks in one build', check: function () { return totalBlocks >= 100; } },
-      { id: 'all_shapes', icon: '\u2B50', name: 'Shape Master', desc: 'Use all 12 shape types in one build', check: function () { return Object.keys(shapeCount).length >= 12; } },
-      { id: 'all_mats', icon: '\uD83C\uDFA8', name: 'Material Maven', desc: 'Use all 6 materials in one build', check: function () { return analysis.materialCount >= 6; } },
-      { id: 'sky_high', icon: '\uD83D\uDE80', name: 'Sky High', desc: 'Build 20+ blocks tall', check: function () { return buildH >= 20; } },
-      { id: 'rock_solid', icon: '\uD83E\uDEA8', name: 'Rock Solid', desc: '50+ blocks with 95%+ stability', check: function () { return totalBlocks >= 50 && analysis.stability >= 95; } },
-      { id: 'perfect_sym', icon: '\uD83E\uDE9E', name: 'Perfectly Balanced', desc: 'Symmetry score 100%', check: function () { return totalBlocks >= 10 && analysis.symmetry >= 100; } },
-      { id: 'quake_proof', icon: '\uD83C\uDF0B', name: 'Quake-Proof', desc: 'Survive intensity 10 earthquake', check: function () { var qr = d.quakeResult; return qr && qr.intensity >= 10 && qr.pct >= 80; } },
-      { id: 'five_saves', icon: '\uD83D\uDCBE', name: 'Collector', desc: 'Save 5+ builds to gallery', check: function () { return galleryItems.length >= 5; } },
-      { id: 'challenger', icon: '\uD83C\uDFC6', name: 'Challenger', desc: 'Complete all 10 challenges', check: function () { return completedCount >= 10; } },
-      { id: 'mega_build', icon: '\uD83C\uDFF0', name: 'Mega Build', desc: '200+ blocks in one build', check: function () { return totalBlocks >= 200; } },
-      { id: 'minimalist', icon: '\u2728', name: 'Minimalist', desc: 'Build stable (70%+) with exactly 5 blocks', check: function () { return totalBlocks === 5 && analysis.stability >= 70; } }
+      { id: 'first_block', icon: '\uD83E\uDDF1', name: t('stem.archstudio.first_block', 'First Block'), desc: t('stem.archstudio.place_your_very_first_block', 'Place your very first block'), check: function () { return totalBlocks >= 1; } },
+      { id: 'hundred_club', icon: '\uD83D\uDCAF', name: t('stem.archstudio.100_club', '100 Club'), desc: t('stem.archstudio.have_100_blocks_in_one_build', 'Have 100+ blocks in one build'), check: function () { return totalBlocks >= 100; } },
+      { id: 'all_shapes', icon: '\u2B50', name: t('stem.archstudio.shape_master', 'Shape Master'), desc: t('stem.archstudio.use_all_12_shape_types_in_one_build', 'Use all 12 shape types in one build'), check: function () { return Object.keys(shapeCount).length >= 12; } },
+      { id: 'all_mats', icon: '\uD83C\uDFA8', name: t('stem.archstudio.material_maven', 'Material Maven'), desc: t('stem.archstudio.use_all_6_materials_in_one_build', 'Use all 6 materials in one build'), check: function () { return analysis.materialCount >= 6; } },
+      { id: 'sky_high', icon: '\uD83D\uDE80', name: t('stem.archstudio.sky_high', 'Sky High'), desc: t('stem.archstudio.build_20_blocks_tall', 'Build 20+ blocks tall'), check: function () { return buildH >= 20; } },
+      { id: 'rock_solid', icon: '\uD83E\uDEA8', name: t('stem.archstudio.rock_solid', 'Rock Solid'), desc: t('stem.archstudio.50_blocks_with_95_stability', '50+ blocks with 95%+ stability'), check: function () { return totalBlocks >= 50 && analysis.stability >= 95; } },
+      { id: 'perfect_sym', icon: '\uD83E\uDE9E', name: t('stem.archstudio.perfectly_balanced', 'Perfectly Balanced'), desc: t('stem.archstudio.symmetry_score_100', 'Symmetry score 100%'), check: function () { return totalBlocks >= 10 && analysis.symmetry >= 100; } },
+      { id: 'quake_proof', icon: '\uD83C\uDF0B', name: 'Quake-Proof', desc: t('stem.archstudio.survive_intensity_10_earthquake', 'Survive intensity 10 earthquake'), check: function () { var qr = d.quakeResult; return qr && qr.intensity >= 10 && qr.pct >= 80; } },
+      { id: 'five_saves', icon: '\uD83D\uDCBE', name: t('stem.archstudio.collector', 'Collector'), desc: t('stem.archstudio.save_5_builds_to_gallery', 'Save 5+ builds to gallery'), check: function () { return galleryItems.length >= 5; } },
+      { id: 'challenger', icon: '\uD83C\uDFC6', name: t('stem.archstudio.challenger', 'Challenger'), desc: t('stem.archstudio.complete_all_10_challenges', 'Complete all 10 challenges'), check: function () { return completedCount >= 10; } },
+      { id: 'mega_build', icon: '\uD83C\uDFF0', name: t('stem.archstudio.mega_build', 'Mega Build'), desc: t('stem.archstudio.200_blocks_in_one_build', '200+ blocks in one build'), check: function () { return totalBlocks >= 200; } },
+      { id: 'minimalist', icon: '\u2728', name: t('stem.archstudio.minimalist', 'Minimalist'), desc: t('stem.archstudio.build_stable_70_with_exactly_5_blocks', 'Build stable (70%+) with exactly 5 blocks'), check: function () { return totalBlocks === 5 && analysis.stability >= 70; } }
     ];
 
     // Check for newly earned badges
@@ -1411,7 +1412,7 @@
       key: 'archStudio',
       style: { display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 16, overflow: 'hidden', outline: 'none' },
       role: 'region',
-      'aria-label': 'Architecture Studio. Keyboard shortcuts: P Place, E Erase, A Paint, R Rotate.',
+      'aria-label': t('stem.archstudio.architecture_studio_keyboard_shortcuts', 'Architecture Studio. Keyboard shortcuts: P Place, E Erase, A Paint, R Rotate.'),
       tabIndex: 0,
       onKeyDown: onArchKey
     },
@@ -1444,16 +1445,16 @@
         pillBtn('\uD83D\uDD0D Filter', showFilter, 'rgba(96,165,250,.2)', '#60a5fa', '#93c5fd', function () { upd('showFilter', !showFilter); }),
         pillBtn('\uD83C\uDFC5 ' + badgeCount + '/' + badges.length, showBadges, 'rgba(251,146,60,.2)', '#fb923c', '#fdba74', function () { upd('showBadges', !showBadges); }),
         pillBtn('\uD83C\uDFE0 Floor Plans', showFloorPlans, 'rgba(45,212,191,.2)', '#2dd4bf', '#5eead4', function () { upd('showFloorPlans', !showFloorPlans); }),
-        el('button', { onClick: applyGravity, disabled: !blocks.length, title: 'Apply gravity (drop floating blocks)', style: { background: blocks.length && analysis.unsupported > 0 ? 'rgba(239,68,68,.2)' : 'rgba(71,85,105,.3)', border: '1px solid ' + (blocks.length && analysis.unsupported > 0 ? '#ef4444' : '#475569'), color: blocks.length && analysis.unsupported > 0 ? '#fca5a5' : '#94a3b8', borderRadius: 20, padding: '4px 10px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\u2B07\uFE0F Gravity'),
+        el('button', { onClick: applyGravity, disabled: !blocks.length, title: t('stem.archstudio.apply_gravity_drop_floating_blocks', 'Apply gravity (drop floating blocks)'), style: { background: blocks.length && analysis.unsupported > 0 ? 'rgba(239,68,68,.2)' : 'rgba(71,85,105,.3)', border: '1px solid ' + (blocks.length && analysis.unsupported > 0 ? '#ef4444' : '#475569'), color: blocks.length && analysis.unsupported > 0 ? '#fca5a5' : '#94a3b8', borderRadius: 20, padding: '4px 10px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\u2B07\uFE0F Gravity'),
         // Screenshot + Sound
-        el('button', { onClick: takeScreenshot, title: 'Screenshot', style: { background: 'rgba(71,85,105,.3)', border: '1px solid var(--allo-stem-border, #475569)', color: 'var(--allo-stem-text-soft, #94a3b8)', borderRadius: 20, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDCF8'),
-        el('button', { onClick: function () { upd('soundEnabled', !soundEnabled); }, title: 'Sound effects', 'aria-label': soundEnabled ? 'Mute sound effects' : 'Enable sound effects', 'aria-pressed': soundEnabled, style: { background: 'transparent', border: 'none', color: soundEnabled ? '#94a3b8' : '#475569', cursor: 'pointer', fontSize: 14, padding: '2px 6px' } }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
+        el('button', { onClick: takeScreenshot, title: t('stem.archstudio.screenshot', 'Screenshot'), style: { background: 'rgba(71,85,105,.3)', border: '1px solid var(--allo-stem-border, #475569)', color: 'var(--allo-stem-text-soft, #94a3b8)', borderRadius: 20, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDCF8'),
+        el('button', { onClick: function () { upd('soundEnabled', !soundEnabled); }, title: t('stem.archstudio.sound_effects', 'Sound effects'), 'aria-label': soundEnabled ? 'Mute sound effects' : 'Enable sound effects', 'aria-pressed': soundEnabled, style: { background: 'transparent', border: 'none', color: soundEnabled ? '#94a3b8' : '#475569', cursor: 'pointer', fontSize: 14, padding: '2px 6px' } }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
         el('div', { style: { flex: 1 } }),
         // Undo / Redo / Clear
-        el('button', { onClick: doUndo, disabled: !undoStack.length, title: 'Undo (multi-level)', style: { background: 'rgba(71,85,105,.5)', border: 'none', color: undoStack.length ? '#e2e8f0' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: undoStack.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 600 } }, '\u21A9 Undo' + (undoStack.length ? ' (' + undoStack.length + ')' : '')),
-        el('button', { onClick: doRedo, disabled: !redoStack.length, title: 'Redo', style: { background: 'rgba(71,85,105,.5)', border: 'none', color: redoStack.length ? '#e2e8f0' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: redoStack.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 600 } }, '\u21AA Redo' + (redoStack.length ? ' (' + redoStack.length + ')' : '')),
+        el('button', { onClick: doUndo, disabled: !undoStack.length, title: t('stem.archstudio.undo_multi_level', 'Undo (multi-level)'), style: { background: 'rgba(71,85,105,.5)', border: 'none', color: undoStack.length ? '#e2e8f0' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: undoStack.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 600 } }, '\u21A9 Undo' + (undoStack.length ? ' (' + undoStack.length + ')' : '')),
+        el('button', { onClick: doRedo, disabled: !redoStack.length, title: t('stem.archstudio.redo', 'Redo'), style: { background: 'rgba(71,85,105,.5)', border: 'none', color: redoStack.length ? '#e2e8f0' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: redoStack.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 600 } }, '\u21AA Redo' + (redoStack.length ? ' (' + redoStack.length + ')' : '')),
         el('button', { onClick: clearAll, disabled: !blocks.length, style: { background: blocks.length ? 'rgba(239,68,68,.3)' : 'rgba(71,85,105,.3)', border: blocks.length ? '1px solid rgba(239,68,68,.4)' : '1px solid transparent', color: blocks.length ? '#fca5a5' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 600 } }, '\uD83D\uDDD1\uFE0F Clear'),
-        el('button', { onClick: saveBuild, disabled: !blocks.length, title: 'Save to gallery', style: { background: blocks.length ? 'rgba(34,197,94,.2)' : 'rgba(71,85,105,.3)', border: blocks.length ? '1px solid #22c55e' : '1px solid transparent', color: blocks.length ? '#4ade80' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDCBE Save'),
+        el('button', { onClick: saveBuild, disabled: !blocks.length, title: t('stem.archstudio.save_to_gallery', 'Save to gallery'), style: { background: blocks.length ? 'rgba(34,197,94,.2)' : 'rgba(71,85,105,.3)', border: blocks.length ? '1px solid #22c55e' : '1px solid transparent', color: blocks.length ? '#4ade80' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDCBE Save'),
         // Export buttons
         el('button', { onClick: exportBlueprint, disabled: !blocks.length, style: { background: blocks.length ? 'rgba(34,211,238,.15)' : 'rgba(71,85,105,.3)', border: blocks.length ? '1px solid #22d3ee' : '1px solid transparent', color: blocks.length ? '#67e8f9' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDCD0 Top SVG'),
         el('button', { onClick: exportSideBlueprint, disabled: !blocks.length, style: { background: blocks.length ? 'rgba(168,85,247,.15)' : 'rgba(71,85,105,.3)', border: blocks.length ? '1px solid #a855f7' : '1px solid transparent', color: blocks.length ? '#c084fc' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\uD83C\uDFD7\uFE0F Side SVG'),
@@ -1681,7 +1682,7 @@
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#f87171', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83C\uDF0B Earthquake Test'),
             el('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 } },
               el('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', minWidth: 20 } }, quakeIntensity + '/10'),
-              el('input', { type: 'range', 'aria-label': 'quake intensity', min: 1, max: 10, value: quakeIntensity, onChange: function (e) { upd('quakeIntensity', parseInt(e.target.value)); }, style: { flex: 1, height: 4, accentColor: '#ef4444' } })
+              el('input', { type: 'range', 'aria-label': t('stem.archstudio.quake_intensity', 'quake intensity'), min: 1, max: 10, value: quakeIntensity, onChange: function (e) { upd('quakeIntensity', parseInt(e.target.value)); }, style: { flex: 1, height: 4, accentColor: '#ef4444' } })
             ),
             el('button', { onClick: runEarthquake, disabled: !blocks.length, style: {
               width: '100%', padding: '6px 10px', borderRadius: 8, border: 'none',
@@ -1697,9 +1698,9 @@
           el('div', null,
             el('div', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDCCB Duplicate Build'),
             el('div', { style: { display: 'flex', gap: 3 } },
-              el('button', { onClick: function () { duplicateBuild(buildW + 1, 0, 0); }, disabled: !blocks.length, title: 'Copy to the right', style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, background: 'transparent', color: blocks.length ? '#94a3b8' : '#475569', cursor: blocks.length ? 'pointer' : 'default' } }, '\u27A1\uFE0F +X'),
-              el('button', { onClick: function () { duplicateBuild(0, 0, buildD + 1); }, disabled: !blocks.length, title: 'Copy forward', style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, background: 'transparent', color: blocks.length ? '#94a3b8' : '#475569', cursor: blocks.length ? 'pointer' : 'default' } }, '\u2B07\uFE0F +Z'),
-              el('button', { onClick: function () { duplicateBuild(0, buildH, 0); }, disabled: !blocks.length, title: 'Copy upward', style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, background: 'transparent', color: blocks.length ? '#94a3b8' : '#475569', cursor: blocks.length ? 'pointer' : 'default' } }, '\u2B06\uFE0F +Y')
+              el('button', { onClick: function () { duplicateBuild(buildW + 1, 0, 0); }, disabled: !blocks.length, title: t('stem.archstudio.copy_to_the_right', 'Copy to the right'), style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, background: 'transparent', color: blocks.length ? '#94a3b8' : '#475569', cursor: blocks.length ? 'pointer' : 'default' } }, '\u27A1\uFE0F +X'),
+              el('button', { onClick: function () { duplicateBuild(0, 0, buildD + 1); }, disabled: !blocks.length, title: t('stem.archstudio.copy_forward', 'Copy forward'), style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, background: 'transparent', color: blocks.length ? '#94a3b8' : '#475569', cursor: blocks.length ? 'pointer' : 'default' } }, '\u2B07\uFE0F +Z'),
+              el('button', { onClick: function () { duplicateBuild(0, buildH, 0); }, disabled: !blocks.length, title: t('stem.archstudio.copy_upward', 'Copy upward'), style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, background: 'transparent', color: blocks.length ? '#94a3b8' : '#475569', cursor: blocks.length ? 'pointer' : 'default' } }, '\u2B06\uFE0F +Y')
             )
           ),
 
@@ -1832,8 +1833,8 @@
             ),
             el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, 'Paste a code below to import:'),
             el('div', { style: { display: 'flex', gap: 3 } },
-              el('input', { type: 'text', placeholder: 'Paste share code...', value: d.importCode || '',
-                'aria-label': 'Paste share code to import a design',
+              el('input', { type: 'text', placeholder: t('stem.archstudio.paste_share_code', 'Paste share code...'), value: d.importCode || '',
+                'aria-label': t('stem.archstudio.paste_share_code_to_import_a_design', 'Paste share code to import a design'),
                 onChange: function (e) { upd('importCode', e.target.value); },
                 style: { flex: 1, padding: '5px 8px', background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 9 }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'
               }),
@@ -1966,7 +1967,7 @@
                     el('button', { onClick: function () { upd('replayStep', replayFrames); }, style: { padding: '4px 8px', borderRadius: 6, border: '1px solid var(--allo-stem-border, #334155)', background: 'transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', fontSize: 10 } }, '\u23ED')
                   ),
                   el('div', { style: { marginTop: 4 } },
-                    el('input', { type: 'range', 'aria-label': 'replay step', min: 0, max: replayFrames, value: replayStep >= 0 ? replayStep : replayFrames, onChange: function (e) { upd('replayStep', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#fbbf24' } })
+                    el('input', { type: 'range', 'aria-label': t('stem.archstudio.replay_step', 'replay step'), min: 0, max: replayFrames, value: replayStep >= 0 ? replayStep : replayFrames, onChange: function (e) { upd('replayStep', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#fbbf24' } })
                   ),
                   el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center', marginTop: 2 } },
                     (replayStep >= 0 && replayStep < replayFrames ? replayBlocks.length : totalBlocks) + ' blocks at this step'
@@ -2081,7 +2082,7 @@
                 'Loading 3D engine...'
               )
             )
-            : el('canvas', { id: 'arch-studio-canvas', 'aria-label': 'Interactive architecture studio 3D visualization', tabIndex: 0, style: { flex: 1, width: '100%', display: 'block', cursor: mode === 'place' ? 'crosshair' : mode === 'erase' ? 'not-allowed' : 'pointer' } }),
+            : el('canvas', { id: 'arch-studio-canvas', 'aria-label': t('stem.archstudio.interactive_architecture_studio_3d_vis', 'Interactive architecture studio 3D visualization'), tabIndex: 0, style: { flex: 1, width: '100%', display: 'block', cursor: mode === 'place' ? 'crosshair' : mode === 'erase' ? 'not-allowed' : 'pointer' } }),
 
           // Controls overlay (top-right)
           el('div', { style: { position: 'absolute', top: 8, right: 8, background: 'rgba(15,23,42,.85)', borderRadius: 10, padding: '6px 10px', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.6, backdropFilter: 'blur(8px)', border: '1px solid var(--allo-stem-border, #1e293b)' } },
@@ -2111,9 +2112,9 @@
             el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, marginTop: 4 } },
               [
                 { label: 'CoG', value: '(' + analysis.cogX + ',' + analysis.cogY + ',' + analysis.cogZ + ')', icon: '\u2316' },
-                { label: 'Weight', value: analysis.totalWeight + 't', icon: '\u2696\uFE0F' },
-                { label: 'Materials', value: analysis.materialCount, icon: '\uD83C\uDFA8' },
-                { label: 'Floating', value: analysis.unsupported, icon: analysis.unsupported > 0 ? '\u26A0\uFE0F' : '\u2705' }
+                { label: t('stem.archstudio.weight', 'Weight'), value: analysis.totalWeight + 't', icon: '\u2696\uFE0F' },
+                { label: t('stem.archstudio.materials', 'Materials'), value: analysis.materialCount, icon: '\uD83C\uDFA8' },
+                { label: t('stem.archstudio.floating', 'Floating'), value: analysis.unsupported, icon: analysis.unsupported > 0 ? '\u26A0\uFE0F' : '\u2705' }
               ].map(function (r) {
                 return el('div', { key: r.label, style: { background: 'rgba(30,41,59,.5)', borderRadius: 8, padding: '4px 6px', textAlign: 'center' } },
                   el('div', { style: { fontSize: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, r.icon + ' ' + r.label),
@@ -2145,14 +2146,14 @@
           // Bottom stats bar
           el('div', { style: { display: 'flex', gap: 12, justifyContent: 'center', padding: '6px 12px', background: 'linear-gradient(0deg,var(--allo-stem-panel, #1e293b),var(--allo-stem-canvas, #0f172a))', borderTop: '1px solid var(--allo-stem-border, #334155)', flexWrap: 'wrap' } },
             [
-              { label: 'Blocks', value: totalBlocks, icon: '\uD83E\uDDF1' },
-              { label: 'Size', value: blocks.length > 0 ? buildW + '\u00D7' + buildD + '\u00D7' + buildH : '\u2014', icon: '\uD83D\uDCCF' },
-              { label: 'Volume', value: totalVolume + 'u\u00B3', icon: '\uD83D\uDCE6' },
-              { label: 'Footprint', value: footprint + 'u\u00B2', icon: '\uD83D\uDDFA\uFE0F' },
-              { label: 'Surface', value: surfaceArea + 'u\u00B2', icon: '\uD83D\uDCC0' },
-              { label: 'Stability', value: analysis.stabilityEmoji + analysis.stability + '%', icon: '\uD83C\uDFD7\uFE0F' },
-              budgetEnabled && { label: 'Cost', value: '\uD83D\uDCB2' + totalCost + '/' + budget, icon: '\uD83D\uDCB0' },
-              { label: 'Challenges', value: completedCount + '/10', icon: '\uD83C\uDFC6' }
+              { label: t('stem.archstudio.blocks', 'Blocks'), value: totalBlocks, icon: '\uD83E\uDDF1' },
+              { label: t('stem.archstudio.size', 'Size'), value: blocks.length > 0 ? buildW + '\u00D7' + buildD + '\u00D7' + buildH : '\u2014', icon: '\uD83D\uDCCF' },
+              { label: t('stem.archstudio.volume', 'Volume'), value: totalVolume + 'u\u00B3', icon: '\uD83D\uDCE6' },
+              { label: t('stem.archstudio.footprint', 'Footprint'), value: footprint + 'u\u00B2', icon: '\uD83D\uDDFA\uFE0F' },
+              { label: t('stem.archstudio.surface', 'Surface'), value: surfaceArea + 'u\u00B2', icon: '\uD83D\uDCC0' },
+              { label: t('stem.archstudio.stability', 'Stability'), value: analysis.stabilityEmoji + analysis.stability + '%', icon: '\uD83C\uDFD7\uFE0F' },
+              budgetEnabled && { label: t('stem.archstudio.cost', 'Cost'), value: '\uD83D\uDCB2' + totalCost + '/' + budget, icon: '\uD83D\uDCB0' },
+              { label: t('stem.archstudio.challenges', 'Challenges'), value: completedCount + '/10', icon: '\uD83C\uDFC6' }
             ].filter(Boolean).map(function (stat) {
               return el('div', { key: stat.label, style: { textAlign: 'center' } },
                 el('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, stat.icon + ' ' + stat.label),
@@ -2179,10 +2180,10 @@
         else if (stress < 2.5) state = 'mod';
         else state = 'unstable';
         var sm = {
-          ultra:    { label: '🏛️ Ultra-stable', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Low effective stress. Structure tolerates extreme conditions.' },
-          stable:   { label: '🟢 Stable',        color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Within design margins. Survives normal loads.' },
-          mod:      { label: '🟡 Moderate',       color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Approaching failure threshold. Marginal under stress.' },
-          unstable: { label: '🔴 Unstable',       color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Likely collapse under load.' }
+          ultra:    { label: t('stem.archstudio.ultra_stable', '🏛️ Ultra-stable'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: t('stem.archstudio.low_effective_stress_structure_tolerat', 'Low effective stress. Structure tolerates extreme conditions.') },
+          stable:   { label: t('stem.archstudio.stable', '🟢 Stable'),        color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: t('stem.archstudio.within_design_margins_survives_normal_', 'Within design margins. Survives normal loads.') },
+          mod:      { label: t('stem.archstudio.moderate', '🟡 Moderate'),       color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.archstudio.approaching_failure_threshold_marginal', 'Approaching failure threshold. Marginal under stress.') },
+          unstable: { label: t('stem.archstudio.unstable', '🔴 Unstable'),       color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.archstudio.likely_collapse_under_load', 'Likely collapse under load.') }
         }[state];
         return el('div', { style: { padding: 12, background: 'var(--allo-stem-panel, #1e293b)', borderTop: '1px solid #334155', color: '#e2e8f0' } },
           el('h3', { style: { fontSize: 13, fontWeight: 800, color: '#a78bfa', margin: '0 0 6px 0' } }, '⚖️ Gravity-rigidity discovery'),
@@ -2206,7 +2207,7 @@
             el('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ g: iq.gravMult, r: iq.rigidity, m: iq.mass, st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#0f172a', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 10, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
             el('button', { onClick: function() { setIQ({ gravMult: 1, rigidity: 80, mass: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 10, cursor: 'pointer' } }, '↺ Reset')
           ),
-          el('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: When does rigidity rescue an overloaded structure?',
+          el('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.archstudio.hypothesis_when_does_rigidity_rescue_a', 'Hypothesis: When does rigidity rescue an overloaded structure?'),
             style: { width: '100%', minHeight: 50, padding: 6, background: '#0f172a', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontFamily: 'monospace', marginBottom: 8 }, rows: 2 }),
           !iq.stuckRevealed && el('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 10, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, '🤔 Stuck — show open prompts'),
           iq.stuckRevealed && el('div', { style: { padding: 8, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 10, color: '#cbd5e1', marginBottom: 8 } },
@@ -2215,7 +2216,7 @@
               el('li', null, 'On Mars (gravMult=0.4), what mass becomes stable?'))),
           el('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
             el('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand — explain in own words'),
-          iq.understood && el('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how gravity, rigidity, and mass interact to determine stability.',
+          iq.understood && el('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.archstudio.explain_how_gravity_rigidity_and_mass_', 'Explain how gravity, rigidity, and mass interact to determine stability.'),
             style: { width: '100%', minHeight: 60, padding: 6, background: '#0f172a', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 11, fontFamily: 'monospace', marginTop: 4 }, rows: 3 }),
           el('div', { style: { marginTop: 6, fontSize: 9, fontStyle: 'italic', color: '#64748b' } }, 'Design note: discrete 4-state structural marker; no FEM score; no reveal — by design.')
         );

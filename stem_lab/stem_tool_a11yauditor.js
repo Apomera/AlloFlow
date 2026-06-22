@@ -80,6 +80,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
     color: 'teal',
     category: 'coding',
     render: function(ctx) {
+      var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = ctx.React;
       var h = React.createElement;
       var d = (ctx.toolData && ctx.toolData['a11yAuditor']) || {};
@@ -162,7 +163,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
           }
         }).catch(function() {
           if (!_mounted.current) return;
-          updMulti({ auditResult: { score: -1, summary: 'Vision audit failed. The file may be too large or unsupported.', issues: [], strengths: [] }, auditLoading: false });
+          updMulti({ auditResult: { score: -1, summary: t('stem.a11yauditor.vision_audit_failed_the_file_may_be_to', 'Vision audit failed. The file may be too large or unsupported.'), issues: [], strengths: [] }, auditLoading: false });
         });
       };
 
@@ -227,11 +228,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             if (awardStemXP) awardStemXP(10);
             if (announceToSR) announceToSR('Social media audit complete. Score: ' + audit.score);
           } catch(e) {
-            updMulti({ auditResult: { score: -1, summary: 'Social media audit failed.', issues: [], strengths: [] }, auditLoading: false });
+            updMulti({ auditResult: { score: -1, summary: t('stem.a11yauditor.social_media_audit_failed', 'Social media audit failed.'), issues: [], strengths: [] }, auditLoading: false });
           }
         }).catch(function() {
           if (!_mounted.current) return;
-          updMulti({ auditResult: { score: -1, summary: 'Social media audit failed.', issues: [], strengths: [] }, auditLoading: false });
+          updMulti({ auditResult: { score: -1, summary: t('stem.a11yauditor.social_media_audit_failed_2', 'Social media audit failed.'), issues: [], strengths: [] }, auditLoading: false });
         });
       };
 
@@ -297,11 +298,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             if (awardStemXP) awardStemXP(15);
             if (announceToSR) announceToSR('Title II audit complete. Score: ' + audit.score);
           } catch(e) {
-            updMulti({ auditResult: { score: -1, summary: 'Government audit failed.', issues: [], strengths: [] }, auditLoading: false });
+            updMulti({ auditResult: { score: -1, summary: t('stem.a11yauditor.government_audit_failed', 'Government audit failed.'), issues: [], strengths: [] }, auditLoading: false });
           }
         }).catch(function() {
           if (!_mounted.current) return;
-          updMulti({ auditResult: { score: -1, summary: 'Government audit failed.', issues: [], strengths: [] }, auditLoading: false });
+          updMulti({ auditResult: { score: -1, summary: t('stem.a11yauditor.government_audit_failed_2', 'Government audit failed.'), issues: [], strengths: [] }, auditLoading: false });
         });
       };
 
@@ -356,11 +357,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             if (announceToSR) announceToSR('Triangulated audit complete. Score: ' + merged.score + ' out of 100. Grade: ' + merged.grade);
             if (merged.score >= 90 && stemCelebrate) stemCelebrate();
           } catch(e) {
-            updMulti({ auditResult: { score: -1, summary: 'Audit failed. Try different content or a simpler URL.', issues: [], strengths: [] }, auditLoading: false });
+            updMulti({ auditResult: { score: -1, summary: t('stem.a11yauditor.audit_failed_try_different_content_or_', 'Audit failed. Try different content or a simpler URL.'), issues: [], strengths: [] }, auditLoading: false });
           }
         }).catch(function() {
           if (!_mounted.current) return;
-          updMulti({ auditResult: { score: -1, summary: 'Audit failed. The content could not be analyzed.', issues: [], strengths: [] }, auditLoading: false });
+          updMulti({ auditResult: { score: -1, summary: t('stem.a11yauditor.audit_failed_the_content_could_not_be_', 'Audit failed. The content could not be analyzed.'), issues: [], strengths: [] }, auditLoading: false });
         });
       };
 
@@ -404,16 +405,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             h(ArrowLeft, { size: 20 })
           ),
           h('div', { className: 'flex-1' },
-            h('h2', { className: 'text-xl font-black text-slate-800' }, '\u267F Digital Accessibility Lab'),
-            h('p', { className: 'text-xs text-slate-600' }, 'Be an Accessibility Change Agent \u2014 Audit, Learn, Advocate')
+            h('h2', { className: 'text-xl font-black text-slate-800' }, t('stem.a11yauditor.digital_accessibility_lab', '\u267F Digital Accessibility Lab')),
+            h('p', { className: 'text-xs text-slate-600' }, t('stem.a11yauditor.be_an_accessibility_change_agent_audit', 'Be an Accessibility Change Agent \u2014 Audit, Learn, Advocate'))
           ),
           auditsCompleted > 0 && h('span', { className: 'bg-teal-100 text-teal-700 px-3 py-1 rounded-full text-xs font-bold' }, auditsCompleted + ' audits')
         ),
 
         // Student-friendly intro (collapsible)
         !d.introHidden && h('div', { className: 'bg-gradient-to-r from-teal-50 to-cyan-50 border-2 border-teal-200 rounded-2xl p-5 relative' },
-          h('button', { onClick: function() { upd('introHidden', true); }, className: 'absolute top-3 right-3 text-teal-400 hover:text-teal-600 text-xs font-bold', 'aria-label': 'Hide intro' }, '\u2716'),
-          h('h3', { className: 'text-base font-black text-teal-800 mb-2' }, '\u267F What is Digital Accessibility?'),
+          h('button', { onClick: function() { upd('introHidden', true); }, className: 'absolute top-3 right-3 text-teal-400 hover:text-teal-600 text-xs font-bold', 'aria-label': t('stem.a11yauditor.hide_intro', 'Hide intro') }, '\u2716'),
+          h('h3', { className: 'text-base font-black text-teal-800 mb-2' }, t('stem.a11yauditor.what_is_digital_accessibility', '\u267F What is Digital Accessibility?')),
           h('p', { className: 'text-sm text-teal-700 leading-relaxed mb-3' },
             parseInt(gradeLevel, 10) <= 5
               ? 'Imagine you visit a website but you can\u2019t see the screen. A special tool called a screen reader reads the page aloud to you. But what if the pictures don\u2019t have descriptions? Or the buttons don\u2019t say what they do? That\u2019s what happens when a website isn\u2019t accessible. In this lab, YOU become a detective \u2014 finding problems that make websites hard to use for people with disabilities!'
@@ -423,10 +424,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
           ),
           h('div', { className: 'flex flex-wrap gap-2' },
             [
-              { icon: '\uD83D\uDC41\uFE0F', label: 'Blind & low vision', desc: 'Need screen readers and alt text' },
-              { icon: '\uD83D\uDC42', label: 'Deaf & hard of hearing', desc: 'Need captions and transcripts' },
-              { icon: '\u270B', label: 'Motor disabilities', desc: 'Need keyboard-only navigation' },
-              { icon: '\uD83E\uDDE0', label: 'Cognitive disabilities', desc: 'Need clear language and structure' }
+              { icon: '\uD83D\uDC41\uFE0F', label: t('stem.a11yauditor.blind_low_vision', 'Blind & low vision'), desc: t('stem.a11yauditor.need_screen_readers_and_alt_text', 'Need screen readers and alt text') },
+              { icon: '\uD83D\uDC42', label: t('stem.a11yauditor.deaf_hard_of_hearing', 'Deaf & hard of hearing'), desc: t('stem.a11yauditor.need_captions_and_transcripts', 'Need captions and transcripts') },
+              { icon: '\u270B', label: t('stem.a11yauditor.motor_disabilities', 'Motor disabilities'), desc: t('stem.a11yauditor.need_keyboard_only_navigation', 'Need keyboard-only navigation') },
+              { icon: '\uD83E\uDDE0', label: t('stem.a11yauditor.cognitive_disabilities', 'Cognitive disabilities'), desc: t('stem.a11yauditor.need_clear_language_and_structure', 'Need clear language and structure') }
             ].map(function(d2) {
               return h('div', { key: d2.label, className: 'flex items-center gap-2 bg-white rounded-lg px-3 py-1.5 border border-teal-100 text-xs' },
                 h('span', null, d2.icon),
@@ -441,7 +442,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
 
         // Tabs
         h('div', { role: 'tablist', className: 'flex gap-1 bg-teal-50 rounded-xl p-1 border border-teal-200 flex-wrap' },
-          [{ id: 'audit', label: '\uD83D\uDD0D Audit' }, { id: 'learn', label: '\uD83D\uDCD6 Learn' }, { id: 'knowbility', label: '\u267F Knowbility' }, { id: 'action', label: '\u2696\uFE0F Take Action' }, { id: 'history', label: '\uD83D\uDCCA History' }, { id: 'badges', label: '\uD83C\uDFC5 Badges' }].map(function(t) {
+          [{ id: 'audit', label: t('stem.a11yauditor.audit', '\uD83D\uDD0D Audit') }, { id: 'learn', label: t('stem.a11yauditor.learn', '\uD83D\uDCD6 Learn') }, { id: 'knowbility', label: t('stem.a11yauditor.knowbility', '\u267F Knowbility') }, { id: 'action', label: t('stem.a11yauditor.take_action', '\u2696\uFE0F Take Action') }, { id: 'history', label: t('stem.a11yauditor.history', '\uD83D\uDCCA History') }, { id: 'badges', label: t('stem.a11yauditor.badges', '\uD83C\uDFC5 Badges') }].map(function(t) {
             return h('button', { 'aria-label': 'Switch to ' + t.label + ' tab',
               key: t.id, role: 'tab', 'aria-selected': tab === t.id,
               onClick: function() { upd('tab', t.id); },
@@ -453,12 +454,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
         // ── Topic-accent hero band per tab ──
         (function() {
           var TAB_META = {
-            audit:      { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)',  icon: '\uD83D\uDD0D', title: 'Audit \u2014 paste it, see what breaks',         hint: 'AI runs a WCAG 2.1 AA pass against URL / HTML / PDF / screenshot / social / gov input. Common findings: missing alt text (1.1.1), color contrast under 4.5:1 (1.4.3), keyboard traps (2.1.1), unlabeled inputs (3.3.2).' },
-            learn:      { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',   icon: '\uD83D\uDCD6', title: 'Learn \u2014 the four POUR principles',         hint: 'Perceivable, Operable, Understandable, Robust. Every WCAG criterion maps to one of these. Disability is a mismatch between body and environment, never a property of the person.' },
-            knowbility: { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)',  icon: '\u267F',         title: 'Knowbility \u2014 the field\u2019s veterans',     hint: 'Knowbility (Austin TX, est. 1999) runs OpenAIR \u2014 the world\u2019s longest-running accessibility hackathon \u2014 and trains pros via AccessU. They wrote much of the playbook every modern auditor uses.' },
-            action:     { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',   icon: '\u2696\uFE0F', title: 'Take Action \u2014 advocacy in practice',          hint: 'You don\u2019t need a lawyer to file an ADA Title II / III complaint. Department of Justice (ada.gov), Section 508 (section508.gov), and state AG offices all accept civilian complaints \u2014 and inaccessible gov sites are illegal.' },
-            history:    { accent: '#059669', soft: 'rgba(5,150,105,0.10)',   icon: '\uD83D\uDCCA', title: 'History \u2014 your audit trail',                hint: 'Past audits saved here so you can track which sites improved (or regressed) over time. Aggregate metrics let you make a sharable case to school IT or a vendor.' },
-            badges:     { accent: '#ca8a04', soft: 'rgba(202,138,4,0.10)',   icon: '\uD83C\uDFC5', title: 'Badges \u2014 audit milestones',                  hint: 'First Audit, 5 Audits, 10 Audits, Critical Issue Hunter, POUR Master, etc. Recognition for the unglamorous work of catching issues *before* they reach disabled users.' }
+            audit:      { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)',  icon: '\uD83D\uDD0D', title: t('stem.a11yauditor.audit_paste_it_see_what_breaks', 'Audit \u2014 paste it, see what breaks'),         hint: t('stem.a11yauditor.ai_runs_a_wcag_2_1_aa_pass_against_url', 'AI runs a WCAG 2.1 AA pass against URL / HTML / PDF / screenshot / social / gov input. Common findings: missing alt text (1.1.1), color contrast under 4.5:1 (1.4.3), keyboard traps (2.1.1), unlabeled inputs (3.3.2).') },
+            learn:      { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',   icon: '\uD83D\uDCD6', title: t('stem.a11yauditor.learn_the_four_pour_principles', 'Learn \u2014 the four POUR principles'),         hint: t('stem.a11yauditor.perceivable_operable_understandable_ro', 'Perceivable, Operable, Understandable, Robust. Every WCAG criterion maps to one of these. Disability is a mismatch between body and environment, never a property of the person.') },
+            knowbility: { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)',  icon: '\u267F',         title: t('stem.a11yauditor.knowbility_the_field_s_veterans', 'Knowbility \u2014 the field\u2019s veterans'),     hint: t('stem.a11yauditor.knowbility_austin_tx_est_1999_runs_ope', 'Knowbility (Austin TX, est. 1999) runs OpenAIR \u2014 the world\u2019s longest-running accessibility hackathon \u2014 and trains pros via AccessU. They wrote much of the playbook every modern auditor uses.') },
+            action:     { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',   icon: '\u2696\uFE0F', title: t('stem.a11yauditor.take_action_advocacy_in_practice', 'Take Action \u2014 advocacy in practice'),          hint: t('stem.a11yauditor.you_don_t_need_a_lawyer_to_file_an_ada', 'You don\u2019t need a lawyer to file an ADA Title II / III complaint. Department of Justice (ada.gov), Section 508 (section508.gov), and state AG offices all accept civilian complaints \u2014 and inaccessible gov sites are illegal.') },
+            history:    { accent: '#059669', soft: 'rgba(5,150,105,0.10)',   icon: '\uD83D\uDCCA', title: t('stem.a11yauditor.history_your_audit_trail', 'History \u2014 your audit trail'),                hint: t('stem.a11yauditor.past_audits_saved_here_so_you_can_trac', 'Past audits saved here so you can track which sites improved (or regressed) over time. Aggregate metrics let you make a sharable case to school IT or a vendor.') },
+            badges:     { accent: '#ca8a04', soft: 'rgba(202,138,4,0.10)',   icon: '\uD83C\uDFC5', title: t('stem.a11yauditor.badges_audit_milestones', 'Badges \u2014 audit milestones'),                  hint: t('stem.a11yauditor.first_audit_5_audits_10_audits_critica', 'First Audit, 5 Audits, 10 Audits, Critical Issue Hunter, POUR Master, etc. Recognition for the unglamorous work of catching issues *before* they reach disabled users.') }
           };
           var meta = TAB_META[tab] || TAB_META.audit;
           return h('div', {
@@ -485,16 +486,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
 
           // Input area
           h('div', { className: 'bg-white rounded-2xl border-2 border-teal-200 p-5 space-y-3' },
-            h('h3', { className: 'text-sm font-bold text-teal-700 mb-2' }, 'What would you like to audit?'),
+            h('h3', { className: 'text-sm font-bold text-teal-700 mb-2' }, t('stem.a11yauditor.what_would_you_like_to_audit', 'What would you like to audit?')),
 
             // Input mode tabs
             h('div', { className: 'flex gap-1 bg-slate-100 rounded-lg p-1 mb-3' },
               [
-                { id: 'url', icon: '\uD83C\uDF10', label: 'Website' },
+                { id: 'url', icon: '\uD83C\uDF10', label: t('stem.a11yauditor.website', 'Website') },
                 { id: 'html', icon: '\uD83D\uDCBB', label: 'HTML' },
                 { id: 'pdf', icon: '\uD83D\uDCC4', label: 'PDF' },
-                { id: 'screenshot', icon: '\uD83D\uDCF7', label: 'Screenshot' },
-                { id: 'social', icon: '\uD83D\uDCF1', label: 'Social Media' },
+                { id: 'screenshot', icon: '\uD83D\uDCF7', label: t('stem.a11yauditor.screenshot', 'Screenshot') },
+                { id: 'social', icon: '\uD83D\uDCF1', label: t('stem.a11yauditor.social_media', 'Social Media') },
                 { id: 'gov', icon: '\uD83C\uDFDB\uFE0F', label: 'Gov/School' }
               ].map(function(mode) {
                 return h('button', { key: mode.id,
@@ -506,14 +507,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
 
             // URL input mode
             auditInputMode === 'url' && h('div', null,
-              h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, 'Website URL'),
+              h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, t('stem.a11yauditor.website_url', 'Website URL')),
               h('div', { className: 'flex gap-2' },
                 h('input', {
                   type: 'url', value: auditUrl,
                   onChange: function(e) { upd('auditUrl', e.target.value); },
                   onKeyDown: function(e) { if (e.key === 'Enter' && auditUrl.trim()) fetchAndAudit(auditUrl.trim()); },
                   placeholder: 'https://example.com',
-                  'aria-label': 'Website URL to audit',
+                  'aria-label': t('stem.a11yauditor.website_url_to_audit', 'Website URL to audit'),
                   className: 'flex-1 text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-teal-300'
                 }),
                 h('button', { 'aria-label': 'Try:',
@@ -522,7 +523,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                   className: 'px-4 py-2 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-800 disabled:bg-slate-300 disabled:text-slate-600 transition-colors'
                 }, auditLoading ? 'Auditing...' : '\uD83D\uDD0D Audit URL')
               ),
-              h('p', { className: 'text-[11px] text-slate-600 mt-1' }, 'The AI will analyze the website\u2019s accessibility based on its known structure and common patterns.'),
+              h('p', { className: 'text-[11px] text-slate-600 mt-1' }, t('stem.a11yauditor.the_ai_will_analyze_the_website_s_acce', 'The AI will analyze the website\u2019s accessibility based on its known structure and common patterns.')),
               // Quick suggestions
               h('div', { className: 'flex flex-wrap gap-2 pt-2' },
                 h('span', { className: 'text-[11px] text-slate-600 font-bold' }, 'Try:'),
@@ -537,31 +538,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
 
             // HTML input mode
             auditInputMode === 'html' && h('div', null,
-              h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, 'Paste HTML Code'),
+              h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, t('stem.a11yauditor.paste_html_code', 'Paste HTML Code')),
               h('textarea', {
                 value: auditHtml,
                 onChange: function(e) { upd('auditHtml', e.target.value); },
-                placeholder: '<html>\n  <head><title>My Page</title></head>\n  <body>\n    <h1>Hello World</h1>\n    <img src="photo.jpg">\n  </body>\n</html>',
-                'aria-label': 'HTML code to audit',
+                placeholder: t('stem.a11yauditor.html_head_title_my_page_title_head_bod', '<html>\n  <head><title>My Page</title></head>\n  <body>\n    <h1>Hello World</h1>\n    <img src="photo.jpg">\n  </body>\n</html>'),
+                'aria-label': t('stem.a11yauditor.html_code_to_audit', 'HTML code to audit'),
                 className: 'w-full text-xs p-3 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-teal-300 font-mono resize-none h-32'
               }),
               h('button', { onClick: function() { if (auditHtml.trim()) runAudit(auditHtml.trim(), 'html'); },
                 disabled: !auditHtml.trim() || auditLoading,
                 className: 'mt-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 disabled:opacity-40 transition-colors'
               }, auditLoading ? 'Auditing...' : '\uD83D\uDD0D Audit HTML'),
-              h('p', { className: 'text-[11px] text-slate-600 mt-1' }, 'Paste any HTML code \u2014 from a school project, a webpage, or generated by a coding tool. The AI will check it for accessibility issues.')
+              h('p', { className: 'text-[11px] text-slate-600 mt-1' }, t('stem.a11yauditor.paste_any_html_code_from_a_school_proj', 'Paste any HTML code \u2014 from a school project, a webpage, or generated by a coding tool. The AI will check it for accessibility issues.'))
             ),
 
             // PDF input mode
             auditInputMode === 'pdf' && h('div', { className: 'text-center py-4' },
               h('div', { className: 'text-3xl mb-2' }, '\uD83D\uDCC4'),
-              h('p', { className: 'text-sm text-slate-600 mb-3' }, 'Upload a PDF document to check its accessibility'),
-              h('p', { className: 'text-[11px] text-slate-600 mb-3' }, 'The AI will check for: tagged structure, reading order, alt text on images, form labels, color contrast, language declaration, and heading hierarchy.'),
+              h('p', { className: 'text-sm text-slate-600 mb-3' }, t('stem.a11yauditor.upload_a_pdf_document_to_check_its_acc', 'Upload a PDF document to check its accessibility')),
+              h('p', { className: 'text-[11px] text-slate-600 mb-3' }, t('stem.a11yauditor.the_ai_will_check_for_tagged_structure', 'The AI will check for: tagged structure, reading order, alt text on images, form labels, color contrast, language declaration, and heading hierarchy.')),
               h('label', { className: 'inline-flex items-center gap-2 px-5 py-2.5 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-800 cursor-pointer transition-colors ' + (auditLoading ? 'opacity-40 pointer-events-none' : '') },
                 h('input', {
                   type: 'file', accept: 'application/pdf', className: 'hidden',
                   onChange: handleFileAudit, disabled: auditLoading,
-                  'aria-label': 'Upload PDF for accessibility audit'
+                  'aria-label': t('stem.a11yauditor.upload_pdf_for_accessibility_audit', 'Upload PDF for accessibility audit')
                 }),
                 auditLoading ? 'Auditing...' : '\uD83D\uDCC2 Upload PDF'
               )
@@ -570,13 +571,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             // Screenshot input mode
             auditInputMode === 'screenshot' && h('div', { className: 'text-center py-4' },
               h('div', { className: 'text-3xl mb-2' }, '\uD83D\uDCF7'),
-              h('p', { className: 'text-sm text-slate-600 mb-3' }, 'Upload a screenshot of a website, app, or document'),
-              h('p', { className: 'text-[11px] text-slate-600 mb-3' }, 'The AI will visually analyze the screenshot for: color contrast issues, missing labels, layout problems, text readability, and visual accessibility barriers.'),
+              h('p', { className: 'text-sm text-slate-600 mb-3' }, t('stem.a11yauditor.upload_a_screenshot_of_a_website_app_o', 'Upload a screenshot of a website, app, or document')),
+              h('p', { className: 'text-[11px] text-slate-600 mb-3' }, t('stem.a11yauditor.the_ai_will_visually_analyze_the_scree', 'The AI will visually analyze the screenshot for: color contrast issues, missing labels, layout problems, text readability, and visual accessibility barriers.')),
               h('label', { className: 'inline-flex items-center gap-2 px-5 py-2.5 bg-purple-600 text-white rounded-lg text-xs font-bold hover:bg-purple-700 cursor-pointer transition-colors ' + (auditLoading ? 'opacity-40 pointer-events-none' : '') },
                 h('input', {
                   type: 'file', accept: 'image/*', className: 'hidden',
                   onChange: handleFileAudit, disabled: auditLoading,
-                  'aria-label': 'Upload screenshot for accessibility audit'
+                  'aria-label': t('stem.a11yauditor.upload_screenshot_for_accessibility_au', 'Upload screenshot for accessibility audit')
                 }),
                 auditLoading ? 'Auditing...' : '\uD83D\uDCF7 Upload Screenshot'
               )
@@ -587,77 +588,77 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
           auditInputMode === 'social' && h('div', { className: 'bg-white rounded-2xl border-2 border-pink-200 p-5 space-y-3' },
             h('div', { className: 'flex items-center gap-2 mb-2' },
               h('span', { className: 'text-2xl' }, '\uD83D\uDCF1'),
-              h('h3', { className: 'text-sm font-bold text-pink-700' }, 'Social Media Post Audit')
+              h('h3', { className: 'text-sm font-bold text-pink-700' }, t('stem.a11yauditor.social_media_post_audit', 'Social Media Post Audit'))
             ),
             // Platform selector
             h('div', { className: 'flex gap-1 bg-pink-50 rounded-lg p-1' },
-              [{ id: 'instagram', label: 'Instagram' }, { id: 'twitter', label: 'X/Twitter' }, { id: 'facebook', label: 'Facebook' }, { id: 'linkedin', label: 'LinkedIn' }, { id: 'tiktok', label: 'TikTok' }].map(function(p) {
+              [{ id: 'instagram', label: t('stem.a11yauditor.instagram', 'Instagram') }, { id: 'twitter', label: 'X/Twitter' }, { id: 'facebook', label: t('stem.a11yauditor.facebook', 'Facebook') }, { id: 'linkedin', label: 'LinkedIn' }, { id: 'tiktok', label: 'TikTok' }].map(function(p) {
                 return h('button', { key: p.id, onClick: function() { upd('socialPlatform', p.id); },
                   className: 'flex-1 px-2 py-1.5 rounded-md text-[11px] font-bold transition-all ' + (socialPlatform === p.id ? 'bg-white text-pink-700 shadow-sm' : 'text-pink-500/60 hover:text-pink-600')
                 }, p.label);
               })
             ),
-            h('label', { className: 'text-xs font-bold text-slate-600 block' }, 'Paste the post text (include hashtags, mentions, and any image descriptions)'),
+            h('label', { className: 'text-xs font-bold text-slate-600 block' }, t('stem.a11yauditor.paste_the_post_text_include_hashtags_m', 'Paste the post text (include hashtags, mentions, and any image descriptions)')),
             h('textarea', { value: socialText, onChange: function(e) { upd('socialText', e.target.value); },
-              placeholder: 'Paste the full post text here...\n\nInclude:\n\u2022 All text content\n\u2022 Hashtags\n\u2022 Image descriptions (if any)\n\u2022 Link URLs',
-              className: 'w-full text-xs p-3 border border-pink-600 rounded-lg outline-none focus:ring-2 focus:ring-pink-300 resize-none h-28', 'aria-label': 'Social media post text'
+              placeholder: t('stem.a11yauditor.paste_the_full_post_text_here_include_', 'Paste the full post text here...\n\nInclude:\n\u2022 All text content\n\u2022 Hashtags\n\u2022 Image descriptions (if any)\n\u2022 Link URLs'),
+              className: 'w-full text-xs p-3 border border-pink-600 rounded-lg outline-none focus:ring-2 focus:ring-pink-300 resize-none h-28', 'aria-label': t('stem.a11yauditor.social_media_post_text', 'Social media post text')
             }),
             h('div', { className: 'flex gap-2' },
-              h('button', { 'aria-label': 'Audit social media post',
+              h('button', { 'aria-label': t('stem.a11yauditor.audit_social_media_post', 'Audit social media post'),
                 onClick: runSocialAudit, disabled: !socialText.trim() || auditLoading,
                 className: 'flex-1 px-4 py-2.5 bg-pink-600 text-white rounded-lg text-xs font-bold hover:bg-pink-700 disabled:opacity-40 transition-all'
               }, auditLoading ? 'Auditing...' : '\uD83D\uDD0D Audit Post'),
-              h('button', { 'aria-label': 'Rewrite post accessibly',
+              h('button', { 'aria-label': t('stem.a11yauditor.rewrite_post_accessibly', 'Rewrite post accessibly'),
                 onClick: rewriteAccessibly, disabled: !socialText.trim() || socialRewriteLoading,
                 className: 'flex-1 px-4 py-2.5 bg-emerald-700 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 disabled:opacity-40 transition-all'
               }, socialRewriteLoading ? 'Rewriting...' : '\u2728 Rewrite Accessibly')
             ),
             // Rewrite result
             socialRewrite && h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-4 space-y-2' },
-              h('h4', { className: 'text-xs font-bold text-emerald-700' }, '\u2728 Accessible Version'),
+              h('h4', { className: 'text-xs font-bold text-emerald-700' }, t('stem.a11yauditor.accessible_version', '\u2728 Accessible Version')),
               h('pre', { className: 'text-xs text-slate-700 whitespace-pre-wrap font-sans leading-relaxed' }, socialRewrite),
-              h('button', { 'aria-label': 'Copy rewrite', onClick: function() { navigator.clipboard.writeText(socialRewrite); if (addToast) addToast('Copied!', 'success'); },
+              h('button', { 'aria-label': t('stem.a11yauditor.copy_rewrite', 'Copy rewrite'), onClick: function() { navigator.clipboard.writeText(socialRewrite); if (addToast) addToast('Copied!', 'success'); },
                 className: 'px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-lg text-[11px] font-bold hover:bg-emerald-200'
-              }, '\uD83D\uDCCB Copy to Clipboard')
+              }, t('stem.a11yauditor.copy_to_clipboard', '\uD83D\uDCCB Copy to Clipboard'))
             ),
-            h('p', { className: 'text-[11px] text-slate-600' }, 'Checks: alt text, captions, CamelCase hashtags, emoji placement, readability, contrast, and text-in-images.')
+            h('p', { className: 'text-[11px] text-slate-600' }, t('stem.a11yauditor.checks_alt_text_captions_camelcase_has', 'Checks: alt text, captions, CamelCase hashtags, emoji placement, readability, contrast, and text-in-images.'))
           ),
 
           // Government/School input mode
           auditInputMode === 'gov' && h('div', { className: 'bg-white rounded-2xl border-2 border-amber-200 p-5 space-y-3' },
             h('div', { className: 'flex items-center gap-2 mb-2' },
               h('span', { className: 'text-2xl' }, '\uD83C\uDFDB\uFE0F'),
-              h('h3', { className: 'text-sm font-bold text-amber-700' }, 'Government / School Title II Audit')
+              h('h3', { className: 'text-sm font-bold text-amber-700' }, t('stem.a11yauditor.government_school_title_ii_audit', 'Government / School Title II Audit'))
             ),
-            h('p', { className: 'text-xs text-slate-600 mb-2' }, 'Audit government and school websites for ADA Title II compliance. Includes standard WCAG checks plus Title II-specific requirements.'),
+            h('p', { className: 'text-xs text-slate-600 mb-2' }, t('stem.a11yauditor.audit_government_and_school_websites_f', 'Audit government and school websites for ADA Title II compliance. Includes standard WCAG checks plus Title II-specific requirements.')),
             // Entity type
             h('div', { className: 'flex gap-1 bg-amber-50 rounded-lg p-1 mb-2' },
-              [{ id: 'school', label: '\uD83C\uDFEB School' }, { id: 'library', label: '\uD83D\uDCDA Library' }, { id: 'city', label: '\uD83C\uDFD9\uFE0F City/County' }, { id: 'state', label: '\uD83C\uDFDB\uFE0F State' }].map(function(t) {
+              [{ id: 'school', label: t('stem.a11yauditor.school', '\uD83C\uDFEB School') }, { id: 'library', label: t('stem.a11yauditor.library', '\uD83D\uDCDA Library') }, { id: 'city', label: t('stem.a11yauditor.city_county', '\uD83C\uDFD9\uFE0F City/County') }, { id: 'state', label: t('stem.a11yauditor.state', '\uD83C\uDFDB\uFE0F State') }].map(function(t) {
                 return h('button', { key: t.id, onClick: function() { upd('govEntityType', t.id); },
                   className: 'flex-1 px-2 py-1.5 rounded-md text-[11px] font-bold transition-all ' + (govEntityType === t.id ? 'bg-white text-amber-700 shadow-sm' : 'text-amber-500/60 hover:text-amber-600')
                 }, t.label);
               })
             ),
-            h('label', { className: 'text-xs font-bold text-slate-600 block' }, 'Website URL'),
+            h('label', { className: 'text-xs font-bold text-slate-600 block' }, t('stem.a11yauditor.website_url_2', 'Website URL')),
             h('div', { className: 'flex gap-2' },
               h('input', { type: 'url', value: govUrl, onChange: function(e) { upd('govUrl', e.target.value); },
                 onKeyDown: function(e) { if (e.key === 'Enter' && govUrl.trim()) runGovAudit(); },
-                placeholder: 'https://www.portlandschools.org', 'aria-label': 'Government website URL',
+                placeholder: 'https://www.portlandschools.org', 'aria-label': t('stem.a11yauditor.government_website_url', 'Government website URL'),
                 className: 'flex-1 text-sm p-2.5 border border-amber-600 rounded-lg outline-none focus:ring-2 focus:ring-amber-300'
               }),
-              h('button', { 'aria-label': 'Run Title II audit',
+              h('button', { 'aria-label': t('stem.a11yauditor.run_title_ii_audit', 'Run Title II audit'),
                 onClick: runGovAudit, disabled: !govUrl.trim() || auditLoading,
                 className: 'px-4 py-2 bg-amber-600 text-white rounded-lg text-xs font-bold hover:bg-amber-700 disabled:opacity-40 transition-colors'
               }, auditLoading ? 'Auditing...' : '\u2696\uFE0F Title II Audit')
             ),
-            h('p', { className: 'text-[11px] text-slate-600 mt-1' }, 'Checks WCAG 2.1 AA + ADA Coordinator info, accessibility statement, grievance procedure, PDF tagging, form accessibility, captions, and third-party tools.')
+            h('p', { className: 'text-[11px] text-slate-600 mt-1' }, t('stem.a11yauditor.checks_wcag_2_1_aa_ada_coordinator_inf', 'Checks WCAG 2.1 AA + ADA Coordinator info, accessibility statement, grievance procedure, PDF tagging, form accessibility, captions, and third-party tools.'))
           ),
 
           // Loading
           auditLoading && h('div', { className: 'bg-teal-50 border border-teal-200 rounded-2xl p-8 text-center' },
             h('div', { className: 'text-4xl mb-3 animate-pulse' }, '♿'),
-            h('p', { className: 'text-teal-700 font-bold' }, 'Running WCAG 2.1 AA accessibility audit...'),
-            h('p', { className: 'text-xs text-teal-500 mt-1' }, 'Checking structure, images, contrast, keyboard access, and more')
+            h('p', { className: 'text-teal-700 font-bold' }, t('stem.a11yauditor.running_wcag_2_1_aa_accessibility_audi', 'Running WCAG 2.1 AA accessibility audit...')),
+            h('p', { className: 'text-xs text-teal-500 mt-1' }, t('stem.a11yauditor.checking_structure_images_contrast_key', 'Checking structure, images, contrast, keyboard access, and more'))
           ),
 
           // Results
@@ -668,13 +669,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
               h('div', { className: 'text-6xl font-black' }, auditResult.score, h('span', { className: 'text-2xl opacity-80' }, '/100')),
               h('div', { className: 'text-3xl font-black mt-1' }, 'Grade: ', auditResult.grade),
               h('div', { className: 'text-[13px] font-semibold mt-2', style: { maxWidth: '44ch' } },
-                'This score is generated by an AI model reasoning over what it can see — not an automated WCAG test. Verify real contrast ratios, keyboard order, and focus with tools like axe, WAVE, or Lighthouse.'),
+                t('stem.a11yauditor.this_score_is_generated_by_an_ai_model', 'This score is generated by an AI model reasoning over what it can see — not an automated WCAG test. Verify real contrast ratios, keyboard order, and focus with tools like axe, WAVE, or Lighthouse.')),
               h('p', { className: 'text-sm opacity-90 mt-2 max-w-md mx-auto' }, auditResult.summary)
             ),
 
             // Score breakdown radar
             auditResult.score_breakdown && h('div', { className: 'bg-white rounded-2xl border border-slate-400 p-4' },
-              h('h4', { className: 'text-xs font-bold text-slate-600 uppercase tracking-widest mb-3' }, 'Score Breakdown'),
+              h('h4', { className: 'text-xs font-bold text-slate-600 uppercase tracking-widest mb-3' }, t('stem.a11yauditor.score_breakdown', 'Score Breakdown')),
               h('div', { className: 'grid grid-cols-2 sm:grid-cols-5 gap-2' },
                 Object.entries(auditResult.score_breakdown).filter(function(entry) { return entry[1] != null; }).map(function(entry) {
                   var key = entry[0], val = entry[1];
@@ -689,11 +690,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
 
             // Title II compliance card (government audits)
             auditResult.title_ii && h('div', { className: 'bg-amber-50 rounded-2xl border-2 border-amber-300 p-4' },
-              h('h4', { className: 'text-xs font-bold text-amber-800 uppercase tracking-widest mb-3' }, '\u2696\uFE0F Title II \u2014 Things to Investigate'),
+              h('h4', { className: 'text-xs font-bold text-amber-800 uppercase tracking-widest mb-3' }, t('stem.a11yauditor.title_ii_things_to_investigate', '\u2696\uFE0F Title II \u2014 Things to Investigate')),
               h('div', { className: 'text-xs opacity-70 mb-2' },
-                'AlloFlow cannot fetch or inspect a live site \u2014 these are AI guesses from training data, not verified findings. Do not claim compliance or file a complaint based on them without checking each one yourself.'),
+                t('stem.a11yauditor.alloflow_cannot_fetch_or_inspect_a_liv', 'AlloFlow cannot fetch or inspect a live site \u2014 these are AI guesses from training data, not verified findings. Do not claim compliance or file a complaint based on them without checking each one yourself.')),
               h('div', { className: 'grid grid-cols-2 gap-2' },
-                [{ key: 'ada_coordinator', label: 'ADA Coordinator Published' }, { key: 'accessibility_statement', label: 'Accessibility Statement' }, { key: 'grievance_procedure', label: 'Grievance Procedure' }, { key: 'compliant_forms', label: 'Accessible Forms' }, { key: 'tagged_pdfs', label: 'Tagged PDF Documents' }, { key: 'captioned_videos', label: 'Captioned Videos' }].map(function(item) {
+                [{ key: 'ada_coordinator', label: t('stem.a11yauditor.ada_coordinator_published', 'ADA Coordinator Published') }, { key: 'accessibility_statement', label: t('stem.a11yauditor.accessibility_statement', 'Accessibility Statement') }, { key: 'grievance_procedure', label: t('stem.a11yauditor.grievance_procedure', 'Grievance Procedure') }, { key: 'compliant_forms', label: t('stem.a11yauditor.accessible_forms', 'Accessible Forms') }, { key: 'tagged_pdfs', label: t('stem.a11yauditor.tagged_pdf_documents', 'Tagged PDF Documents') }, { key: 'captioned_videos', label: t('stem.a11yauditor.captioned_videos', 'Captioned Videos') }].map(function(item) {
                   var pass = auditResult.title_ii[item.key];
                   return h('div', { key: item.key, className: 'flex items-center gap-2 p-2 rounded-lg border ' + (pass ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200') },
                     h('span', { className: 'text-sm' }, pass ? '\u2705' : '\u274C'),
@@ -701,12 +702,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                   );
                 })
               ),
-              h('button', { 'aria-label': 'File complaint about findings', onClick: function() { if (!window.confirm('These findings are AI-generated guesses, not a verified audit. Only continue if you have independently confirmed each issue is real. Continue?')) return; upd('tab', 'action'); }, className: 'mt-3 w-full px-3 py-2 bg-amber-600 text-white rounded-lg text-xs font-bold hover:bg-amber-700 transition-colors' }, '\u270D\uFE0F Take Action \u2014 Generate Complaint Letter')
+              h('button', { 'aria-label': t('stem.a11yauditor.file_complaint_about_findings', 'File complaint about findings'), onClick: function() { if (!window.confirm('These findings are AI-generated guesses, not a verified audit. Only continue if you have independently confirmed each issue is real. Continue?')) return; upd('tab', 'action'); }, className: 'mt-3 w-full px-3 py-2 bg-amber-600 text-white rounded-lg text-xs font-bold hover:bg-amber-700 transition-colors' }, t('stem.a11yauditor.take_action_generate_complaint_letter', '\u270D\uFE0F Take Action \u2014 Generate Complaint Letter'))
             ),
 
             // Issues
             auditResult.issues && auditResult.issues.length > 0 && h('div', { className: 'bg-white rounded-2xl border border-slate-400 p-4' },
-              h('h4', { className: 'text-xs font-bold text-slate-600 uppercase tracking-widest mb-3' }, 'Issues Found (', auditResult.issues.length, ')'),
+              h('h4', { className: 'text-xs font-bold text-slate-600 uppercase tracking-widest mb-3' }, t('stem.a11yauditor.issues_found', 'Issues Found ('), auditResult.issues.length, ')'),
               h('div', { className: 'space-y-2' },
                 auditResult.issues.map(function(issue, i) {
                   var sevColor = issue.severity === 'critical' ? 'bg-red-50 border-red-200' : issue.severity === 'major' ? 'bg-amber-50 border-amber-200' : 'bg-blue-50 border-blue-200';
@@ -716,8 +717,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                       h('span', { className: 'text-[11px] font-bold text-slate-600' }, 'WCAG ', issue.criterion)
                     ),
                     h('p', { className: 'text-sm text-slate-800 font-medium mt-1' }, issue.issue),
-                    issue.who && h('p', { className: 'text-xs text-slate-600 mt-1' }, '👤 Who it affects: ', issue.who),
-                    issue.fix && h('p', { className: 'text-xs text-teal-600 mt-1 font-medium' }, '🔧 Fix: ', issue.fix)
+                    issue.who && h('p', { className: 'text-xs text-slate-600 mt-1' }, t('stem.a11yauditor.who_it_affects', '👤 Who it affects: '), issue.who),
+                    issue.fix && h('p', { className: 'text-xs text-teal-600 mt-1 font-medium' }, t('stem.a11yauditor.fix', '🔧 Fix: '), issue.fix)
                   );
                 })
               )
@@ -725,7 +726,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
 
             // Strengths
             auditResult.strengths && auditResult.strengths.length > 0 && h('div', { className: 'bg-green-50 border border-green-200 rounded-xl p-4' },
-              h('h4', { className: 'text-xs font-bold text-green-600 uppercase tracking-widest mb-2' }, '✅ What\'s Good'),
+              h('h4', { className: 'text-xs font-bold text-green-600 uppercase tracking-widest mb-2' }, t('stem.a11yauditor.what_s_good', '✅ What\'s Good')),
               auditResult.strengths.map(function(s, i) {
                 return h('div', { key: i, className: 'text-xs text-green-700 mb-1 flex items-start gap-2' }, h('span', null, '✓'), ' ', s);
               })
@@ -738,15 +739,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
 
             // Action buttons
             h('div', { className: 'flex gap-2 justify-center' },
-              h('button', { 'aria-label': 'Download Report', onClick: downloadReport, className: 'px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-200 transition-colors' }, '📥 Download Report'),
-              h('button', { 'aria-label': 'New Audit', onClick: function() { updMulti({ auditResult: null, auditUrl: '', auditHtml: '' }); }, className: 'px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors' }, '🔄 New Audit')
+              h('button', { 'aria-label': t('stem.a11yauditor.download_report', 'Download Report'), onClick: downloadReport, className: 'px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-200 transition-colors' }, t('stem.a11yauditor.download_report_2', '📥 Download Report')),
+              h('button', { 'aria-label': t('stem.a11yauditor.new_audit', 'New Audit'), onClick: function() { updMulti({ auditResult: null, auditUrl: '', auditHtml: '' }); }, className: 'px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors' }, t('stem.a11yauditor.new_audit_2', '🔄 New Audit'))
             )
           )
         ),
 
         // ═══ LEARN WCAG TAB ═══
         tab === 'learn' && h('div', { className: 'space-y-3' },
-          h('p', { className: 'text-sm text-slate-600 text-center mb-2' }, 'WCAG 2.1 AA has ', WCAG_CRITERIA.length, ' core criteria. Click any to learn more.'),
+          h('p', { className: 'text-sm text-slate-600 text-center mb-2' }, t('stem.a11yauditor.wcag_2_1_aa_has', 'WCAG 2.1 AA has '), WCAG_CRITERIA.length, t('stem.a11yauditor.core_criteria_click_any_to_learn_more', ' core criteria. Click any to learn more.')),
 
           // ── Live contrast checker (real WCAG math, client-side) ──
           // The tool's #1 taught concept (1.4.3) was prose-only, and the AI
@@ -770,26 +771,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
               return h('div', { className: 'px-2 py-1 rounded-lg text-[11px] font-bold ' + (pass ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700') }, (pass ? '✅ ' : '❌ ') + label);
             }
             return h('div', { className: 'rounded-2xl border-2 border-teal-300 bg-white p-4 mb-3' },
-              h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, '🎨 Live contrast checker'),
-              h('p', { className: 'text-[11px] text-slate-600 mb-3' }, 'A REAL WCAG ratio computed in your browser from relative luminance — not an AI guess. Pick a text and a background color.'),
+              h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, t('stem.a11yauditor.live_contrast_checker', '🎨 Live contrast checker')),
+              h('p', { className: 'text-[11px] text-slate-600 mb-3' }, t('stem.a11yauditor.a_real_wcag_ratio_computed_in_your_bro', 'A REAL WCAG ratio computed in your browser from relative luminance — not an AI guess. Pick a text and a background color.')),
               h('div', { className: 'flex flex-wrap items-center gap-4' },
-                h('label', { className: 'flex items-center gap-2 text-xs font-bold text-slate-700' }, 'Text',
-                  h('input', { type: 'color', value: ccFg, 'aria-label': 'Text color', onChange: function(e) { upd('ccFg', e.target.value); }, className: 'w-9 h-9 rounded cursor-pointer border border-slate-300' })),
-                h('label', { className: 'flex items-center gap-2 text-xs font-bold text-slate-700' }, 'Background',
-                  h('input', { type: 'color', value: ccBg, 'aria-label': 'Background color', onChange: function(e) { upd('ccBg', e.target.value); }, className: 'w-9 h-9 rounded cursor-pointer border border-slate-300' })),
+                h('label', { className: 'flex items-center gap-2 text-xs font-bold text-slate-700' }, t('stem.a11yauditor.text', 'Text'),
+                  h('input', { type: 'color', value: ccFg, 'aria-label': t('stem.a11yauditor.text_color', 'Text color'), onChange: function(e) { upd('ccFg', e.target.value); }, className: 'w-9 h-9 rounded cursor-pointer border border-slate-300' })),
+                h('label', { className: 'flex items-center gap-2 text-xs font-bold text-slate-700' }, t('stem.a11yauditor.background', 'Background'),
+                  h('input', { type: 'color', value: ccBg, 'aria-label': t('stem.a11yauditor.background_color', 'Background color'), onChange: function(e) { upd('ccBg', e.target.value); }, className: 'w-9 h-9 rounded cursor-pointer border border-slate-300' })),
                 h('div', { className: 'flex-1 min-w-[140px] rounded-lg border border-slate-300 px-3 py-2 text-center', style: { background: ccBg, color: ccFg } },
-                  h('div', { className: 'text-base font-bold' }, 'Sample text'),
-                  h('div', { className: 'text-[11px]' }, 'Large heading'))
+                  h('div', { className: 'text-base font-bold' }, t('stem.a11yauditor.sample_text', 'Sample text')),
+                  h('div', { className: 'text-[11px]' }, t('stem.a11yauditor.large_heading', 'Large heading')))
               ),
               h('div', { className: 'mt-3 flex flex-wrap items-center gap-2' },
                 h('div', { className: 'text-xl font-black text-slate-800' }, ratio.toFixed(2) + ':1'),
-                h('span', { className: 'text-[11px] text-slate-600 mr-1' }, 'contrast ratio'),
+                h('span', { className: 'text-[11px] text-slate-600 mr-1' }, t('stem.a11yauditor.contrast_ratio', 'contrast ratio')),
                 chip('AA normal (4.5)', ratio >= 4.5),
                 chip('AAA normal (7)', ratio >= 7),
                 chip('AA large (3)', ratio >= 3),
                 chip('AAA large (4.5)', ratio >= 4.5)
               ),
-              h('p', { className: 'text-[10px] text-slate-600 mt-2' }, 'Large = 18pt+ (or 14pt+ bold). This is the exact math axe / WAVE / Lighthouse use.')
+              h('p', { className: 'text-[10px] text-slate-600 mt-2' }, t('stem.a11yauditor.large_18pt_or_14pt_bold_this_is_the_ex', 'Large = 18pt+ (or 14pt+ bold). This is the exact math axe / WAVE / Lighthouse use.'))
             );
           })(),
 
@@ -797,15 +798,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
           // can FEEL it. Tab between the two buttons: one shows a clear focus
           // ring, the other hides it (a real WCAG failure for keyboard users). ──
           h('div', { className: 'rounded-2xl border-2 border-teal-300 bg-white p-4 mb-3' },
-            h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, '⌨️ Focus-visible demo (2.4.7)'),
-            h('p', { className: 'text-[11px] text-slate-600 mb-3' }, 'Press Tab to move between these two buttons. One shows where keyboard focus is; the other hides it — a keyboard-only user would be lost.'),
+            h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, t('stem.a11yauditor.focus_visible_demo_2_4_7', '⌨️ Focus-visible demo (2.4.7)')),
+            h('p', { className: 'text-[11px] text-slate-600 mb-3' }, t('stem.a11yauditor.press_tab_to_move_between_these_two_bu', 'Press Tab to move between these two buttons. One shows where keyboard focus is; the other hides it — a keyboard-only user would be lost.')),
             h('div', { className: 'flex flex-wrap gap-5' },
               h('div', { className: 'text-center' },
-                h('button', { type: 'button', className: 'px-4 py-2 rounded-lg bg-teal-700 text-white font-bold text-xs hover:bg-teal-800 focus:outline-none focus:ring-4 focus:ring-amber-400' }, 'Tab to me ✅'),
-                h('div', { className: 'text-[10px] text-green-700 font-bold mt-1' }, 'Visible focus ring')),
+                h('button', { type: 'button', className: 'px-4 py-2 rounded-lg bg-teal-700 text-white font-bold text-xs hover:bg-teal-800 focus:outline-none focus:ring-4 focus:ring-amber-400' }, t('stem.a11yauditor.tab_to_me', 'Tab to me ✅')),
+                h('div', { className: 'text-[10px] text-green-700 font-bold mt-1' }, t('stem.a11yauditor.visible_focus_ring', 'Visible focus ring'))),
               h('div', { className: 'text-center' },
-                h('button', { type: 'button', className: 'px-4 py-2 rounded-lg bg-slate-600 text-white font-bold text-xs hover:bg-slate-700 focus:outline-none', style: { outline: 'none' } }, 'Tab to me ❌'),
-                h('div', { className: 'text-[10px] text-red-600 font-bold mt-1' }, 'Focus hidden — fails 2.4.7'))
+                h('button', { type: 'button', className: 'px-4 py-2 rounded-lg bg-slate-600 text-white font-bold text-xs hover:bg-slate-700 focus:outline-none', style: { outline: 'none' } }, t('stem.a11yauditor.tab_to_me_2', 'Tab to me ❌')),
+                h('div', { className: 'text-[10px] text-red-600 font-bold mt-1' }, t('stem.a11yauditor.focus_hidden_fails_2_4_7', 'Focus hidden — fails 2.4.7')))
             )
           ),
 
@@ -828,18 +829,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                 h('span', { className: 'bg-teal-100 text-teal-700 px-2 py-1 rounded-lg text-xs font-bold shrink-0' }, criterion.id),
                 h('div', { className: 'flex-1' },
                   h('div', { className: 'font-bold text-sm text-slate-800' }, criterion.name),
-                  h('span', { className: 'text-[11px] text-slate-600 font-bold' }, 'Level ', criterion.level)
+                  h('span', { className: 'text-[11px] text-slate-600 font-bold' }, t('stem.a11yauditor.level', 'Level '), criterion.level)
                 )
               ),
               isExpanded && h('div', { className: 'px-4 pb-4 space-y-2' },
                 h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, criterion.desc),
                 h('div', { className: 'bg-white rounded-xl p-3 border border-teal-200' },
-                  h('p', { className: 'text-xs text-teal-800 font-medium' }, '👤 Impact: ', criterion.impact)
+                  h('p', { className: 'text-xs text-teal-800 font-medium' }, t('stem.a11yauditor.impact', '👤 Impact: '), criterion.impact)
                 ),
-                callTTS && h('button', { 'aria-label': 'Read aloud',
+                callTTS && h('button', { 'aria-label': t('stem.a11yauditor.read_aloud', 'Read aloud'),
                   onClick: function() { callTTS(criterion.desc + '. Impact: ' + criterion.impact); },
                   className: 'text-[11px] text-teal-500 hover:text-teal-700 font-bold'
-                }, '🔊 Read aloud')
+                }, t('stem.a11yauditor.read_aloud_2', '🔊 Read aloud'))
               )
             );
           })
@@ -850,19 +851,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
           // Hero banner
           h('div', { className: 'bg-gradient-to-r from-indigo-600 to-purple-700 text-white rounded-2xl p-6 text-center' },
             h('div', { className: 'text-4xl mb-2' }, '\u267F'),
-            h('h3', { className: 'text-lg font-black' }, 'Knowbility'),
-            h('p', { className: 'text-sm opacity-90 mt-1' }, 'Creating an inclusive digital world since 1999')
+            h('h3', { className: 'text-lg font-black' }, t('stem.a11yauditor.knowbility_2', 'Knowbility')),
+            h('p', { className: 'text-sm opacity-90 mt-1' }, t('stem.a11yauditor.creating_an_inclusive_digital_world_si', 'Creating an inclusive digital world since 1999'))
           ),
           // History
           h('div', { className: 'bg-white rounded-2xl border-2 border-indigo-200 p-5 space-y-3' },
-            h('h4', { className: 'text-sm font-black text-indigo-800 uppercase tracking-widest' }, 'Our Partner\u2019s Story'),
+            h('h4', { className: 'text-sm font-black text-indigo-800 uppercase tracking-widest' }, t('stem.a11yauditor.our_partner_s_story', 'Our Partner\u2019s Story')),
             h('p', { className: 'text-sm text-slate-700 leading-relaxed' },
               parseInt(gradeLevel, 10) <= 5
                 ? 'Knowbility is a group of people in Austin, Texas who believe everyone should be able to use the internet \u2014 including people who are blind, deaf, or have other disabilities. They\u2019ve been working on this since 1999, which is over 25 years! They teach people how to build websites the right way and help test if websites actually work for everyone.'
                 : 'Knowbility is a 501(c)(3) nonprofit founded in 1999 in Austin, TX. Born from a community effort during the late-1990s tech boom, they recognized that the digital revolution was leaving people with disabilities behind. For over 25 years, they\u2019ve worked to ensure equal access to technology through three pillars: Awareness, Education, and Accessibility Services.'
             ),
             h('div', { className: 'grid grid-cols-3 gap-2 mt-3' },
-              [{ num: '25+', label: 'Years' }, { num: '1999', label: 'Founded' }, { num: '501(c)(3)', label: 'Nonprofit' }].map(function(stat) {
+              [{ num: '25+', label: t('stem.a11yauditor.years', 'Years') }, { num: '1999', label: t('stem.a11yauditor.founded', 'Founded') }, { num: '501(c)(3)', label: t('stem.a11yauditor.nonprofit', 'Nonprofit') }].map(function(stat) {
                 return h('div', { key: stat.label, className: 'text-center p-2 bg-indigo-50 rounded-lg' },
                   h('div', { className: 'text-lg font-black text-indigo-700' }, stat.num),
                   h('div', { className: 'text-[11px] text-indigo-600 font-bold' }, stat.label)
@@ -872,15 +873,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
           ),
           // Programs
           h('div', { className: 'space-y-3' },
-            h('h4', { className: 'text-sm font-black text-indigo-800 uppercase tracking-widest' }, 'Key Programs'),
+            h('h4', { className: 'text-sm font-black text-indigo-800 uppercase tracking-widest' }, t('stem.a11yauditor.key_programs', 'Key Programs')),
             // AccessU
             h('button', { onClick: function() { var n = Math.min(knowbilityExplored + 1, 3); upd('knowbilityExplored', n); if (awardStemXP) awardStemXP(5); }, className: 'w-full text-left bg-white rounded-2xl border-2 border-purple-600 p-4 hover:border-purple-400 transition-all' },
               h('div', { className: 'flex items-start gap-3' },
                 h('div', { className: 'text-2xl' }, '\uD83C\uDF93'),
                 h('div', { className: 'flex-1' },
-                  h('div', { className: 'font-bold text-sm text-purple-800' }, 'John Slatin AccessU'),
-                  h('p', { className: 'text-xs text-slate-600 mt-1' }, 'Annual hands-on training conference (hybrid). Named after Dr. John Slatin, it teaches practical skills in coding, usability, and inclusive design. Next session: May 11\u201314, 2026.'),
-                  h('div', { className: 'text-[11px] text-purple-500 font-bold mt-2' }, '\uD83D\uDD17 knowbility.org/programs/accessu')
+                  h('div', { className: 'font-bold text-sm text-purple-800' }, t('stem.a11yauditor.john_slatin_accessu', 'John Slatin AccessU')),
+                  h('p', { className: 'text-xs text-slate-600 mt-1' }, t('stem.a11yauditor.annual_hands_on_training_conference_hy', 'Annual hands-on training conference (hybrid). Named after Dr. John Slatin, it teaches practical skills in coding, usability, and inclusive design. Next session: May 11\u201314, 2026.')),
+                  h('div', { className: 'text-[11px] text-purple-500 font-bold mt-2' }, t('stem.a11yauditor.knowbility_org_programs_accessu', '\uD83D\uDD17 knowbility.org/programs/accessu'))
                 )
               )
             ),
@@ -889,21 +890,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
               h('div', { className: 'flex items-start gap-3' },
                 h('div', { className: 'text-2xl' }, '\uD83C\uDF10'),
                 h('div', { className: 'flex-1' },
-                  h('div', { className: 'font-bold text-sm text-teal-800' }, 'Accessibility Internet Rally (AIR)'),
-                  h('p', { className: 'text-xs text-slate-600 mt-1' }, 'An 8-week global online competition pairing volunteer web professionals with nonprofits to build accessible websites. Started as a one-day hackathon and evolved into Knowbility\u2019s signature program.'),
-                  h('div', { className: 'text-[11px] text-teal-500 font-bold mt-2' }, '\uD83D\uDD17 knowbility.org/programs/air')
+                  h('div', { className: 'font-bold text-sm text-teal-800' }, t('stem.a11yauditor.accessibility_internet_rally_air', 'Accessibility Internet Rally (AIR)')),
+                  h('p', { className: 'text-xs text-slate-600 mt-1' }, t('stem.a11yauditor.an_8_week_global_online_competition_pa', 'An 8-week global online competition pairing volunteer web professionals with nonprofits to build accessible websites. Started as a one-day hackathon and evolved into Knowbility\u2019s signature program.')),
+                  h('div', { className: 'text-[11px] text-teal-500 font-bold mt-2' }, t('stem.a11yauditor.knowbility_org_programs_air', '\uD83D\uDD17 knowbility.org/programs/air'))
                 )
               )
             )
           ),
           // Get Involved
           h('div', { className: 'bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-5 space-y-3' },
-            h('h4', { className: 'text-sm font-black text-amber-800 uppercase tracking-widest' }, '\uD83E\uDD1D How to Get Involved'),
+            h('h4', { className: 'text-sm font-black text-amber-800 uppercase tracking-widest' }, t('stem.a11yauditor.how_to_get_involved', '\uD83E\uDD1D How to Get Involved')),
             h('div', { className: 'space-y-2' },
-              [{ icon: '\uD83D\uDE4B', title: 'Volunteer at AccessU', desc: 'Help with registration, room hosting, and support. Earn free conference access for a 4-8 hour shift.' },
-               { icon: '\uD83D\uDCBB', title: 'Join an AIR Team', desc: 'Developers, designers, and content creators build accessible websites for nonprofits.' },
-               { icon: '\uD83D\uDCDA', title: 'Learn', desc: 'Attend AccessU sessions, use free resources, and build your accessibility skills.' },
-               { icon: '\uD83D\uDCE3', title: 'Advocate', desc: 'Use THIS tool to audit and report accessibility barriers. Be a change agent in your community!' }
+              [{ icon: '\uD83D\uDE4B', title: t('stem.a11yauditor.volunteer_at_accessu', 'Volunteer at AccessU'), desc: t('stem.a11yauditor.help_with_registration_room_hosting_an', 'Help with registration, room hosting, and support. Earn free conference access for a 4-8 hour shift.') },
+               { icon: '\uD83D\uDCBB', title: t('stem.a11yauditor.join_an_air_team', 'Join an AIR Team'), desc: t('stem.a11yauditor.developers_designers_and_content_creat', 'Developers, designers, and content creators build accessible websites for nonprofits.') },
+               { icon: '\uD83D\uDCDA', title: t('stem.a11yauditor.learn_2', 'Learn'), desc: t('stem.a11yauditor.attend_accessu_sessions_use_free_resou', 'Attend AccessU sessions, use free resources, and build your accessibility skills.') },
+               { icon: '\uD83D\uDCE3', title: t('stem.a11yauditor.advocate', 'Advocate'), desc: t('stem.a11yauditor.use_this_tool_to_audit_and_report_acce', 'Use THIS tool to audit and report accessibility barriers. Be a change agent in your community!') }
               ].map(function(item) {
                 return h('button', { key: item.title, onClick: function() { var n = Math.min(knowbilityExplored + 1, 3); upd('knowbilityExplored', n); if (awardStemXP) awardStemXP(3); }, className: 'w-full text-left flex items-start gap-3 bg-white rounded-xl p-3 border border-amber-600 hover:border-amber-600 transition-all' },
                   h('span', { className: 'text-lg' }, item.icon),
@@ -914,7 +915,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                 );
               })
             ),
-            h('a', { href: 'https://knowbility.org/about/volunteer-with-knowbility?utm_source=alloflow&utm_medium=referral&utm_campaign=stem_lab_volunteer', target: '_blank', rel: 'noopener', className: 'block text-center px-4 py-2.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors mt-3' }, '\u267F Visit Knowbility \u2014 Volunteer Today')
+            h('a', { href: 'https://knowbility.org/about/volunteer-with-knowbility?utm_source=alloflow&utm_medium=referral&utm_campaign=stem_lab_volunteer', target: '_blank', rel: 'noopener', className: 'block text-center px-4 py-2.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors mt-3' }, t('stem.a11yauditor.visit_knowbility_volunteer_today', '\u267F Visit Knowbility \u2014 Volunteer Today'))
           )
         ),
 
@@ -922,7 +923,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
         tab === 'action' && h('div', { className: 'space-y-4' },
           // Title II explainer
           h('div', { className: 'bg-gradient-to-r from-slate-800 to-slate-900 text-white rounded-2xl p-6' },
-            h('h3', { className: 'text-lg font-black flex items-center gap-2' }, '\u2696\uFE0F ADA Title II & Digital Accessibility'),
+            h('h3', { className: 'text-lg font-black flex items-center gap-2' }, t('stem.a11yauditor.ada_title_ii_digital_accessibility', '\u2696\uFE0F ADA Title II & Digital Accessibility')),
             h('p', { className: 'text-sm opacity-90 mt-2 leading-relaxed' },
               parseInt(gradeLevel, 10) <= 5
                 ? 'There\u2019s a law called the ADA (Americans with Disabilities Act) that says government websites \u2014 like your school district\u2019s website, the library, and city hall \u2014 must work for EVERYONE, including people with disabilities. If they don\u2019t, you can ask them to fix it!'
@@ -938,27 +939,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
           ),
           // Complaint builder
           h('div', { className: 'bg-white rounded-2xl border-2 border-red-200 p-5 space-y-3' },
-            h('h4', { className: 'text-sm font-black text-red-800 flex items-center gap-2' }, '\uD83D\uDCDD Accessibility Complaint Builder'),
-            h('p', { className: 'text-xs text-slate-600 mb-2' }, 'Found accessibility barriers? Generate a formal complaint letter to request change. Choose your recipient:'),
+            h('h4', { className: 'text-sm font-black text-red-800 flex items-center gap-2' }, t('stem.a11yauditor.accessibility_complaint_builder', '\uD83D\uDCDD Accessibility Complaint Builder')),
+            h('p', { className: 'text-xs text-slate-600 mb-2' }, t('stem.a11yauditor.found_accessibility_barriers_generate_', 'Found accessibility barriers? Generate a formal complaint letter to request change. Choose your recipient:')),
             // Recipient selector
             h('div', { className: 'flex gap-2 mb-3' },
-              [{ id: 'ada_coordinator', label: '\uD83C\uDFE2 ADA Coordinator' }, { id: 'doj', label: '\uD83C\uDFDB\uFE0F Dept. of Justice' }].map(function(opt) {
+              [{ id: 'ada_coordinator', label: t('stem.a11yauditor.ada_coordinator', '\uD83C\uDFE2 ADA Coordinator') }, { id: 'doj', label: t('stem.a11yauditor.dept_of_justice', '\uD83C\uDFDB\uFE0F Dept. of Justice') }].map(function(opt) {
                 return h('button', { key: opt.id, onClick: function() { upd('complaintType', opt.id); },
                   className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold border-2 transition-all ' + (complaintType === opt.id ? 'border-red-400 bg-red-50 text-red-700' : 'border-slate-200 text-slate-600 hover:border-red-600')
                 }, opt.label);
               })
             ),
             // Entity name
-            h('label', { className: 'text-xs font-bold text-slate-600 block' }, 'Entity Name (school, city, agency)'),
-            h('input', { type: 'text', value: complaintEntity, onChange: function(e) { upd('complaintEntity', e.target.value); }, placeholder: 'e.g. Portland Public Schools, City of Austin', className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-red-300 mt-1', 'aria-label': 'Entity name' }),
+            h('label', { className: 'text-xs font-bold text-slate-600 block' }, t('stem.a11yauditor.entity_name_school_city_agency', 'Entity Name (school, city, agency)')),
+            h('input', { type: 'text', value: complaintEntity, onChange: function(e) { upd('complaintEntity', e.target.value); }, placeholder: t('stem.a11yauditor.e_g_portland_public_schools_city_of_au', 'e.g. Portland Public Schools, City of Austin'), className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-red-300 mt-1', 'aria-label': t('stem.a11yauditor.entity_name', 'Entity name') }),
             // Impact description
-            h('label', { className: 'text-xs font-bold text-slate-600 block mt-2' }, 'Describe the impact (who is affected and how)'),
-            h('textarea', { value: complaintImpact, onChange: function(e) { upd('complaintImpact', e.target.value); }, placeholder: 'e.g. My child uses a screen reader and cannot navigate the enrollment forms...', className: 'w-full text-xs p-3 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-red-300 resize-none h-20 mt-1', 'aria-label': 'Impact description' }),
+            h('label', { className: 'text-xs font-bold text-slate-600 block mt-2' }, t('stem.a11yauditor.describe_the_impact_who_is_affected_an', 'Describe the impact (who is affected and how)')),
+            h('textarea', { value: complaintImpact, onChange: function(e) { upd('complaintImpact', e.target.value); }, placeholder: t('stem.a11yauditor.e_g_my_child_uses_a_screen_reader_and_', 'e.g. My child uses a screen reader and cannot navigate the enrollment forms...'), className: 'w-full text-xs p-3 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-red-300 resize-none h-20 mt-1', 'aria-label': t('stem.a11yauditor.impact_description', 'Impact description') }),
             // Auto-populate from last audit
             auditResult && auditResult.issues && h('p', { className: 'text-[11px] text-teal-600 font-bold' }, '\u2705 ' + auditResult.issues.length + ' issues from your last audit will be included automatically'),
             // Generate button
             h('button', {
-              'aria-label': 'Generate complaint letter',
+              'aria-label': t('stem.a11yauditor.generate_complaint_letter', 'Generate complaint letter'),
               disabled: !complaintEntity.trim() || complaintLoading,
               onClick: function() {
                 if (!window.confirm('These findings are AI-generated guesses, not a verified audit. Only continue if you have independently confirmed each issue is real. Continue?')) return;
@@ -999,34 +1000,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                 h('pre', { className: 'text-xs text-slate-700 whitespace-pre-wrap font-sans leading-relaxed' }, complaintResult)
               ),
               h('div', { className: 'flex gap-2' },
-                h('button', { onClick: function() { navigator.clipboard.writeText(complaintResult); if (addToast) addToast('Copied to clipboard!', 'success'); }, className: 'flex-1 px-3 py-2 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-200' }, '\uD83D\uDCCB Copy to Clipboard'),
-                h('button', { 'aria-label': 'Reset complaint', onClick: function() { upd('complaintResult', null); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200' }, '\uD83D\uDD04 New Letter')
+                h('button', { onClick: function() { navigator.clipboard.writeText(complaintResult); if (addToast) addToast('Copied to clipboard!', 'success'); }, className: 'flex-1 px-3 py-2 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-200' }, t('stem.a11yauditor.copy_to_clipboard_2', '\uD83D\uDCCB Copy to Clipboard')),
+                h('button', { 'aria-label': t('stem.a11yauditor.reset_complaint', 'Reset complaint'), onClick: function() { upd('complaintResult', null); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200' }, t('stem.a11yauditor.new_letter', '\uD83D\uDD04 New Letter'))
               )
             )
           ),
           // Filing guide
           h('div', { className: 'bg-blue-50 border border-blue-200 rounded-2xl p-5' },
-            h('h4', { className: 'text-sm font-black text-blue-800 mb-2' }, '\uD83D\uDCCB How to File'),
+            h('h4', { className: 'text-sm font-black text-blue-800 mb-2' }, t('stem.a11yauditor.how_to_file', '\uD83D\uDCCB How to File')),
             h('ol', { className: 'space-y-2 text-xs text-blue-900' },
-              h('li', { className: 'flex gap-2' }, h('span', { className: 'font-black text-blue-500' }, '1.'), 'Contact the entity\u2019s ADA Coordinator first \u2014 they can often resolve issues quickly.'),
-              h('li', { className: 'flex gap-2' }, h('span', { className: 'font-black text-blue-500' }, '2.'), 'If unresolved, file with the DOJ at ada.gov/file-a-complaint/'),
-              h('li', { className: 'flex gap-2' }, h('span', { className: 'font-black text-blue-500' }, '3.'), 'You can also mail: U.S. DOJ, Civil Rights Division, 950 Pennsylvania Ave NW, Washington DC 20530'),
-              h('li', { className: 'flex gap-2' }, h('span', { className: 'font-black text-blue-500' }, '4.'), 'ADA Info Line: 1-800-514-0301 (voice) / 1-833-610-1264 (TTY)')
+              h('li', { className: 'flex gap-2' }, h('span', { className: 'font-black text-blue-500' }, '1.'), t('stem.a11yauditor.contact_the_entity_s_ada_coordinator_f', 'Contact the entity\u2019s ADA Coordinator first \u2014 they can often resolve issues quickly.')),
+              h('li', { className: 'flex gap-2' }, h('span', { className: 'font-black text-blue-500' }, '2.'), t('stem.a11yauditor.if_unresolved_file_with_the_doj_at_ada', 'If unresolved, file with the DOJ at ada.gov/file-a-complaint/')),
+              h('li', { className: 'flex gap-2' }, h('span', { className: 'font-black text-blue-500' }, '3.'), t('stem.a11yauditor.you_can_also_mail_u_s_doj_civil_rights', 'You can also mail: U.S. DOJ, Civil Rights Division, 950 Pennsylvania Ave NW, Washington DC 20530')),
+              h('li', { className: 'flex gap-2' }, h('span', { className: 'font-black text-blue-500' }, '4.'), t('stem.a11yauditor.ada_info_line_1_800_514_0301_voice_1_8', 'ADA Info Line: 1-800-514-0301 (voice) / 1-833-610-1264 (TTY)'))
             )
           )
         ),
 
         // ═══ HISTORY TAB ═══
         tab === 'history' && h('div', { className: 'space-y-3' },
-          h('h3', { className: 'text-sm font-bold text-slate-700 text-center' }, 'Audit History'),
-          auditHistory.length === 0 && h('p', { className: 'text-sm text-slate-600 text-center py-8' }, 'No audits yet. Run your first audit to see results here.'),
+          h('h3', { className: 'text-sm font-bold text-slate-700 text-center' }, t('stem.a11yauditor.audit_history', 'Audit History')),
+          auditHistory.length === 0 && h('p', { className: 'text-sm text-slate-600 text-center py-8' }, t('stem.a11yauditor.no_audits_yet_run_your_first_audit_to_', 'No audits yet. Run your first audit to see results here.')),
           auditHistory.slice().reverse().map(function(entry, i) {
             var color = entry.score >= 80 ? 'border-green-200 bg-green-50' : entry.score >= 60 ? 'border-amber-200 bg-amber-50' : 'border-red-200 bg-red-50';
             return h('div', { key: i, className: 'flex items-center gap-3 p-3 rounded-xl border ' + color },
               h('div', { className: 'text-2xl font-black ' + (entry.score >= 80 ? 'text-green-600' : entry.score >= 60 ? 'text-amber-600' : 'text-red-600') }, entry.score),
               h('div', { className: 'flex-1 min-w-0' },
                 h('div', { className: 'text-xs font-bold text-slate-700 truncate' }, entry.input),
-                h('div', { className: 'text-[11px] text-slate-600' }, new Date(entry.date).toLocaleDateString(), ' · Grade: ', entry.grade)
+                h('div', { className: 'text-[11px] text-slate-600' }, new Date(entry.date).toLocaleDateString(), t('stem.a11yauditor.grade', ' · Grade: '), entry.grade)
               )
             );
           })
@@ -1034,7 +1035,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
 
         // ═══ BADGES TAB ═══
         tab === 'badges' && h('div', { className: 'space-y-3' },
-          h('h3', { className: 'text-sm font-bold text-slate-700 text-center' }, 'Badges (', badges.length, '/', AUDIT_BADGES.length, ')'),
+          h('h3', { className: 'text-sm font-bold text-slate-700 text-center' }, t('stem.a11yauditor.badges_2', 'Badges ('), badges.length, '/', AUDIT_BADGES.length, ')'),
           h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 gap-3' },
             AUDIT_BADGES.map(function(badge) {
               var earned = badges.indexOf(badge.id) >= 0;
