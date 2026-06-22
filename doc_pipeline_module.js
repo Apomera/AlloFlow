@@ -2168,12 +2168,14 @@ var createDocPipeline = function(deps) {
       bytes = new Uint8Array(bin.length);
       for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
     }
-    const pdoc = await window.pdfjsLib.getDocument({ data: bytes.slice() }).promise;
+    let pdoc = null;
+    try {
+    pdoc = await _withTimeout(window.pdfjsLib.getDocument({ data: bytes.slice() }).promise, 60000, 'pdf.js getDocument (blank fields)');
     const out = [];
     let idx = 0;
     for (let pi = 1; pi <= pdoc.numPages; pi++) {
-      const page = await pdoc.getPage(pi);
-      const tc = await page.getTextContent();
+      const page = await _withTimeout(pdoc.getPage(pi), 30000, 'getPage (blank fields) p' + pi);
+      const tc = await _withTimeout(page.getTextContent(), 30000, 'getTextContent (blank fields) p' + pi);
       const items = tc.items.filter((it) => it.str != null);
       items.forEach((it) => {
         const str = String(it.str);
@@ -2227,8 +2229,10 @@ var createDocPipeline = function(deps) {
         }
       });
     }
-    try { pdoc.destroy(); } catch (_) {}
     return out;
+    } finally {
+      if (pdoc) { try { pdoc.destroy(); } catch (_) {} } // always release the pdf.js doc, even if the loop throws
+    }
   };
   const overlayPdfFormFields = async (pdfBytesOrBase64, candidates, accepted) => {
     const PDFLibNS = (typeof window !== 'undefined' && window.PDFLib) || null;
@@ -3727,16 +3731,20 @@ var createDocPipeline = function(deps) {
       category: 'STRUCTURE', wcag: '2.4.2', params: '{title}',
       fn: function(html, p) {
         if (!p.title) return html;
-        if (/<title>[^<]*<\/title>/i.test(html)) return html.replace(/<title>[^<]*<\/title>/i, '<title>' + p.title + '</title>');
-        return html.replace('</head>', '<title>' + p.title + '</title>\n</head>');
+        // fn replacers: p.title is AI-generated, so $&/$1/$$ in it must NOT be read as replace tokens
+        // (a string-search replace still interprets $ in the replacement, so the </head> branch needs it too).
+        if (/<title>[^<]*<\/title>/i.test(html)) return html.replace(/<title>[^<]*<\/title>/i, () => '<title>' + p.title + '</title>');
+        return html.replace('</head>', () => '<title>' + p.title + '</title>\n</head>');
       }
     },
     fix_lang: {
       category: 'STRUCTURE', wcag: '3.1.1', params: '{lang}',
       fn: function(html, p) {
         if (!p.lang) return html;
-        return html.replace(/<html([^>]*)lang="[^"]*"/, '<html$1lang="' + p.lang + '"')
-                   .replace(/<html(?![^>]*lang=)/, '<html lang="' + p.lang + '"');
+        // fn replacers: preserve the $1 capture (attrs before lang) via the group arg, and keep p.lang
+        // literal so a $-bearing value can't be misread as a replace token.
+        return html.replace(/<html([^>]*)lang="[^"]*"/, (m, g1) => '<html' + g1 + 'lang="' + p.lang + '"')
+                   .replace(/<html(?![^>]*lang=)/, () => '<html lang="' + p.lang + '"');
       }
     },
     fix_lang_span: {
@@ -3751,7 +3759,7 @@ var createDocPipeline = function(deps) {
           return html;
         }
         if (String(p.text).length < 2) return html;
-        return html.replace(new RegExp(escapeForRegex(p.text)), '<span lang="' + p.lang + '">' + p.text + '</span>');
+        return html.replace(new RegExp(escapeForRegex(p.text)), () => '<span lang="' + p.lang + '">' + p.text + '</span>'); // fn replacer: p.text as data, not replace tokens
       }
     },
     fix_contrast: {
@@ -3951,7 +3959,7 @@ var createDocPipeline = function(deps) {
           if (!/role=/i.test(newAttrs)) newAttrs = ' role="img"' + newAttrs;
           var newContent = content || '';
           if (!/<title[\s>]/i.test(newContent)) newContent = '<title>' + p.title.replace(/</g, '&lt;') + '</title>' + newContent;
-          if (p.desc && !/<desc[\s>]/i.test(newContent)) newContent = newContent.replace(/<\/title>/i, '</title><desc>' + p.desc.replace(/</g, '&lt;') + '</desc>');
+          if (p.desc && !/<desc[\s>]/i.test(newContent)) newContent = newContent.replace(/<\/title>/i, () => '</title><desc>' + p.desc.replace(/</g, '&lt;') + '</desc>'); // fn replacer: p.desc as data
           return '<svg' + newAttrs + '>' + newContent + '</svg>';
         });
       }
@@ -5179,12 +5187,13 @@ var createDocPipeline = function(deps) {
   // that we resolve against page.getTextContent({ includeMarkedContent: true }).
   // Result: real heading text the AI prompt + axe-baseline HTML can use.
   const extractPdfStructTree = async (base64) => {
+    let pdf = null; // hoisted so finally can always destroy() — was leaking the pdf.js worker doc
     try {
       await ensurePdfJsLoaded();
       if (!window.pdfjsLib) return { hasTags: false };
       const raw = base64.includes(',') ? base64.split(',')[1] : base64;
       const bytes = _b64ToBytes(base64); // capped at _MAX_PDF_BYTES (was raw atob — uncapped OOM on low-RAM devices)
-      const pdf = await window.pdfjsLib.getDocument({ data: bytes }).promise;
+      pdf = await _withTimeout(window.pdfjsLib.getDocument({ data: bytes }).promise, 60000, 'pdf.js getDocument (structTree)');
       const roleCounts = {};
       const headings = []; // { level, text, page }
       let altWithText = 0;
@@ -5209,16 +5218,16 @@ var createDocPipeline = function(deps) {
       };
 
       for (let p = 1; p <= pdf.numPages; p++) {
-        const page = await pdf.getPage(p);
+        const page = await _withTimeout(pdf.getPage(p), 30000, 'getPage (structTree) p' + p);
         let structTree = null;
-        try { structTree = await page.getStructTree(); } catch (_) { continue; }
+        try { structTree = await _withTimeout(page.getStructTree(), 30000, 'getStructTree p' + p); } catch (_) { continue; }
         if (!structTree) continue;
 
         // Build MCID → text map for this page. Pages without tagged content
         // produce an empty map, which is fine — heading text just stays empty.
         const mcidToText = {};
         try {
-          const tc = await page.getTextContent({ includeMarkedContent: true });
+          const tc = await _withTimeout(page.getTextContent({ includeMarkedContent: true }), 30000, 'getTextContent (structTree) p' + p);
           let stack = [];
           (tc.items || []).forEach(item => {
             if (!item) return;
@@ -5270,6 +5279,8 @@ var createDocPipeline = function(deps) {
     } catch (e) {
       warnLog('[PDF StructTree] extraction failed:', e?.message || e);
       return { hasTags: false, error: e?.message || String(e) };
+    } finally {
+      if (pdf) { try { pdf.destroy(); } catch (_) {} } // release the pdf.js worker doc on every path
     }
   };
 
@@ -9616,9 +9627,9 @@ HTML section ${chunkNum}/${chunks.length}:
         _axeSourcePromise = (async () => {
           for (const u of _AXE_CDN_URLS) {
             try {
-              const r = await fetch(u);
+              const r = await _withTimeout(fetch(u), 15000, 'axe-core CDN fetch'); // bounded: a hung mirror falls through to the next, never stalls the audit
               if (!r.ok) { warnLog('[axe-core] CDN returned HTTP ' + r.status + ' ' + r.statusText + ' for ' + u + ' — trying next mirror'); continue; }
-              const txt = await r.text();
+              const txt = await _withTimeout(r.text(), 15000, 'axe-core CDN body');
               if (txt) { _axeSourceCache = txt; return txt; }
             } catch (err) {
               warnLog('[axe-core] CDN fetch threw: ' + (err?.message || err) + ' (URL: ' + u + ') — trying next mirror');
@@ -9834,9 +9845,12 @@ HTML section ${chunkNum}/${chunks.length}:
             const _regUrl = _ALLO_CJK_URL[_script] || _ALLO_NOTO_URL(_ALLO_SCRIPT_FONT[_script]);
             const _boldUrl = _ALLO_CJK_BOLD_URL[_script] || _ALLO_NOTO_BOLD_URL(_ALLO_SCRIPT_FONT[_script]);
             const _fetchFont = async (u) => {
-              const r = await fetch(u);
+              // Bounded: a hung CDN must not stall the whole typeset export forever (the outer
+              // catch already falls back to dropping non-Latin text + a warning). Both the fetch
+              // AND the body read are timeout-wrapped.
+              const r = await _withTimeout(fetch(u), 15000, 'Noto font fetch');
               if (!r.ok) throw new Error('HTTP ' + r.status);
-              return new Uint8Array(await r.arrayBuffer());
+              return new Uint8Array(await _withTimeout(r.arrayBuffer(), 15000, 'Noto font bytes'));
             };
             const _regBytes = await _fetchFont(_regUrl);
             font = await doc.embedFont(_regBytes, { subset: true });
@@ -14609,7 +14623,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
               const previewEl = document.querySelector('[data-pdf-fix-preview]');
               if (previewEl) previewEl.innerHTML = bodyContent;
               const storedResult = window.__pdfFixResultRef;
-              if (storedResult && storedResult.set) storedResult.set(prev => ({ ...prev, accessibleHtml: prev.accessibleHtml.replace(/<body[^>]*>[\s\S]*<\/body>/, '<body>' + bodyContent + '</body>') }));
+              if (storedResult && storedResult.set) storedResult.set(prev => ({ ...prev, accessibleHtml: prev.accessibleHtml.replace(/<body[^>]*>[\s\S]*<\/body>/, () => '<body>' + bodyContent + '</body>') })); // fn replacer: bodyContent is data, so $&/$1/$$ in document text are NOT treated as replace tokens
               warnLog('[PDF Fix] Chunk ' + (chunkIdx + 1) + ' retry SUCCESS: ' + retryBlocks.length + ' blocks');
             } else {
               if (failDiv) failDiv.innerHTML = '<p style="color:#991b1b;font-weight:bold;font-size:0.9em">\u274c Retry failed. Try running the full remediation again.</p>';
@@ -16639,10 +16653,12 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
     // audit report (pre-tag) stays 2-axis.
     let h = '';
     const hasPdfUa = pdfua && (typeof pdfua.pass === 'number') && (typeof pdfua.fail === 'number');
-    const pdfuaPct = hasPdfUa ? Math.round((pdfua.pass / (pdfua.pass + pdfua.fail)) * 100) : null;
+    // Guard against 0/0 = NaN (validator ran but found no applicable rules) → pct stays null,
+    // and the tile/warning below suppress rather than render "NaN%".
+    const pdfuaPct = (hasPdfUa && (pdfua.pass + pdfua.fail) > 0) ? Math.round((pdfua.pass / (pdfua.pass + pdfua.fail)) * 100) : null;
     if (typeof structural === 'number' && typeof semantic === 'number') {
       const div = Math.abs(structural - semantic);
-      const pdfuaTile = hasPdfUa
+      const pdfuaTile = (hasPdfUa && pdfuaPct !== null)
         ? `<div style="flex:1;min-width:150px;text-align:center;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px"><div style="font-size:1.25rem;font-weight:800;color:#1e3a5f">${pdfuaPct}<span style="font-size:0.75rem;color:#64748b">%</span></div><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;font-weight:600">PDF/UA-1 (self-check)</div><div style="font-size:10px;color:#94a3b8;margin-top:2px">${pdfua.pass}/${pdfua.pass + pdfua.fail} rules</div></div>`
         : '';
       h += `<div style="display:flex;gap:12px;margin:12px 0;flex-wrap:wrap">
@@ -16651,7 +16667,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         ${pdfuaTile}
       </div>`;
       if (div >= 15) h += `<p style="font-size:12px;color:#b45309;margin:0 0 12px"><strong>&#9888; Structural and semantic scores diverge by ${div} points.</strong> Automated structural checks (axe-core) can pass while the AI rubric flags meaning/usability gaps. Treat the lower score as the honest ceiling and have a human verify the experience.</p>`;
-      if (hasPdfUa && pdfuaPct < 80 && (structural >= 80 || semantic >= 80)) {
+      if (hasPdfUa && pdfuaPct !== null && pdfuaPct < 80 && (structural >= 80 || semantic >= 80)) {
         h += `<p style="font-size:12px;color:#b45309;margin:0 0 12px"><strong>&#9888; PDF/UA-1 self-check (${pdfuaPct}%) is meaningfully lower than the WCAG / semantic scores.</strong> The HTML representation passes WCAG but the exported PDF bytes have structural gaps — a PDF/UA-1 validator (PAC 2024, veraPDF, Acrobat Pro Accessibility Checker) would flag what's missing. See the "Independent Self-Check" section below for the specific rules that failed.</p>`;
       }
     }
