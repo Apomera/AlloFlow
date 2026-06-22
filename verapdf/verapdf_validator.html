@@ -37,6 +37,7 @@
 <p id="status">Booting…</p>
 <input type="file" id="pick" accept="application/pdf,.pdf" disabled />
 <div id="report"></div>
+<div id="ro" style="margin-top:10px"></div>
 <p class="muted">Runs entirely in your browser — nothing is uploaded. Independent check against ISO 14289-1; not a legal compliance certificate.</p>
 
 <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
@@ -260,6 +261,94 @@
       (r.failedRules.length ? '<ul>' + r.failedRules.map((f) => '<li>ISO 14289-1 §' + f.clause + ' (test ' + f.testNumber + '): ' + f.message + (f.count > 1 ? ' <span class="muted">×' + f.count + '</span>' : '') + '</li>').join('') + '</ul>' : '');
   }
 
+  // ── Reading-order preview (2026-06-22) ── veraPDF/PDFBox validate the STRUCTURE; this previews the
+  // EXPERIENCE: walk the tagged PDF's structure tree IN ORDER and replay the text each element carries
+  // (/ActualText, else /Alt) — i.e. the exact sequence a conformant screen reader announces — and read it
+  // aloud with the browser's built-in speechSynthesis (no NVDA, no dependency). A multi-column or complex
+  // layout tagged in the wrong order reads out of sequence here, which makes the silent defect visible+audible.
+  let _lastBytes = null, _roItems = null, _roSpeaking = false;
+  const _roEsc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const _roName = (v) => { try { return v && v.encodedName ? String(v.encodedName).replace(/^\//, '') : (v ? String(v.toString()).replace(/^\//, '') : ''); } catch (e) { return ''; } };
+  function _roText(d) {
+    try {
+      const N = window.PDFLib.PDFName;
+      const v = d.lookup(N.of('ActualText')) || d.lookup(N.of('Alt'));
+      if (!v) return '';
+      if (typeof v.decodeText === 'function') return v.decodeText();
+      if (typeof v.asString === 'function') return v.asString();
+      return String(v);
+    } catch (e) { return ''; }
+  }
+  async function _extractReadingOrder(bytes) {
+    const PL = window.PDFLib; if (!PL || !bytes) return null;
+    const { PDFDocument, PDFName, PDFDict, PDFArray } = PL;
+    let doc; try { doc = await PDFDocument.load(bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes)); } catch (e) { return null; }
+    const str = doc.catalog.lookup(PDFName.of('StructTreeRoot'));
+    if (!str || !str.lookup) return { tagged: false, items: [] };
+    const items = [];
+    const childElems = (node) => {
+      const K = node.lookup(PDFName.of('K'));
+      const kids = [];
+      if (K instanceof PDFArray) { for (let i = 0; i < K.size(); i++) kids.push(K.lookup(i)); }
+      else if (K) kids.push(K);
+      return kids.filter((k) => k instanceof PDFDict && k.lookup(PDFName.of('S'))); // child StructElems only (skip MCR/MCID leaves)
+    };
+    const walk = (node, depth) => {
+      if (!node || !node.lookup || depth > 60) return;
+      const ch = childElems(node);
+      if (ch.length) { for (const c of ch) walk(c, depth + 1); return; } // grouping element → recurse
+      const role = _roName(node.lookup(PDFName.of('S')));
+      if (role) items.push({ role: role, text: (_roText(node) || '').replace(/\s+/g, ' ').trim() }); // content leaf → emit
+    };
+    const rootK = str.lookup(PDFName.of('K'));
+    const roots = [];
+    if (rootK instanceof PDFArray) { for (let i = 0; i < rootK.size(); i++) roots.push(rootK.lookup(i)); }
+    else if (rootK) roots.push(rootK);
+    for (const r of roots) walk(r, 0);
+    return { tagged: true, items: items };
+  }
+  function _roHighlight(i) {
+    const ul = document.getElementById('ro-list'); if (!ul) return;
+    Array.prototype.forEach.call(ul.children, (li, n) => { li.style.background = (n === i) ? '#fef9c3' : ''; });
+    const cur = ul.children[i]; if (cur && cur.scrollIntoView) { try { cur.scrollIntoView({ block: 'nearest' }); } catch (e) {} }
+  }
+  function _roStop() { try { speechSynthesis.cancel(); } catch (e) {} _roSpeaking = false; _roHighlight(-1); }
+  function _roSpeakFrom(i) {
+    if (!_roItems || i >= _roItems.length) { _roSpeaking = false; _roHighlight(-1); return; }
+    _roHighlight(i);
+    const it = _roItems[i];
+    const u = new SpeechSynthesisUtterance((it.role ? it.role + '. ' : '') + (it.text || 'no actual-text — content is in the page stream'));
+    u.rate = 1.05;
+    u.onend = () => { if (_roSpeaking) _roSpeakFrom(i + 1); };
+    try { speechSynthesis.speak(u); } catch (e) { _roSpeaking = false; }
+  }
+  function _roPlay() { if (!_roItems || !_roItems.length) return; _roStop(); _roSpeaking = true; _roSpeakFrom(0); }
+  function _roPause() { try { if (speechSynthesis.speaking && !speechSynthesis.paused) speechSynthesis.pause(); else speechSynthesis.resume(); } catch (e) {} }
+  async function _showReadingOrder() {
+    const host = document.getElementById('ro'); if (!host) return;
+    host.innerHTML = '<span class="muted">Reading the tag tree…</span>';
+    const ro = await _extractReadingOrder(_lastBytes);
+    if (!ro) { host.innerHTML = '<span class="muted">Could not parse this PDF for a reading-order preview.</span>'; return; }
+    if (!ro.tagged) { host.innerHTML = '<span class="muted">No structure tree — this PDF is untagged, so it has no programmatic reading order to preview.</span>'; return; }
+    if (!ro.items.length) { host.innerHTML = '<span class="muted">The structure tree has no content leaves to read.</span>'; return; }
+    _roItems = ro.items;
+    const list = ro.items.map((it, n) => '<li data-i="' + n + '"><b>' + _roEsc(it.role) + '</b>' + (it.text ? ': ' + _roEsc(it.text.slice(0, 200)) : ' <span class="muted">(no /ActualText)</span>') + '</li>').join('');
+    host.innerHTML =
+      '<h3 style="font-size:14px;margin:14px 0 4px">🔊 Reading-order preview <span class="muted">(' + ro.items.length + ' elements — the order a screen reader announces)</span></h3>' +
+      '<p class="muted" style="margin:0 0 6px">Replays the tagged structure in order. If a multi-column or complex page reads out of sequence here, the tag reading order is wrong — independent of whether veraPDF passes.</p>' +
+      '<div style="margin:6px 0;display:flex;gap:6px;flex-wrap:wrap"><button id="ro-play">▶ Read aloud</button><button id="ro-pause">⏸ Pause / Resume</button><button id="ro-stop">⏹ Stop</button></div>' +
+      '<ol id="ro-list" style="max-height:320px;overflow:auto;font-size:13px;line-height:1.5;border:1px solid #e2e8f0;border-radius:8px;padding:8px 8px 8px 30px;margin:0">' + list + '</ol>';
+    document.getElementById('ro-play').onclick = _roPlay;
+    document.getElementById('ro-pause').onclick = _roPause;
+    document.getElementById('ro-stop').onclick = _roStop;
+  }
+  function _roOfferPreview() {
+    const host = document.getElementById('ro'); if (!host) return;
+    _roStop();
+    host.innerHTML = '<button id="ro-go">🔊 Preview reading order (what a screen reader announces)</button>';
+    const go = document.getElementById('ro-go'); if (go) go.onclick = _showReadingOrder;
+  }
+
   function announceReady() {
     try { if (window.opener) window.opener.postMessage({ type: 'verapdf-ready' }, '*'); } catch (e) {}
     try { if (window.parent && window.parent !== window) window.parent.postMessage({ type: 'verapdf-ready' }, '*'); } catch (e) {}
@@ -306,8 +395,10 @@
     const f = e.target.files[0]; if (!f) return;
     setStatus('Validating ' + f.name + '…');
     const t = performance.now();
-    const r = await validateBytes(new Uint8Array(await f.arrayBuffer()));
+    const _b = new Uint8Array(await f.arrayBuffer());
+    const r = await validateBytes(_b);
     render(r);
+    _lastBytes = _b; _roOfferPreview();
     setStatus('Done in ' + Math.round(performance.now() - t) + 'ms.');
     window.__lastResult = r; // for headless tests
   });
@@ -319,6 +410,7 @@
       try {
         const r = await validateBytes(d.bytes);
         render(r); // show the verdict in this window too (useful when it's the visible popup fallback)
+        _lastBytes = d.bytes; _roOfferPreview();
         setStatus(r.compliant ? '✅ PDF/UA-1: conformant — result sent back to AlloFlow.' : '❌ PDF/UA-1: ' + r.failedRules.length + ' rule(s) — result sent back to AlloFlow.');
         (ev.source || window.opener || window.parent).postMessage({ type: 'verapdf-result', result: r }, '*');
       } catch (e) {
