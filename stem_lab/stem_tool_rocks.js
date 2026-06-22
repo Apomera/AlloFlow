@@ -1667,6 +1667,8 @@ const d = labToolData.rocks || {};
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800 tracking-tight" }, "\uD83E\uDEA8 Rocks & Minerals Explorer"),
 
+              React.createElement("button", { onClick: function () { setStemLabTool('geologyExplorer'); }, title: 'Open the 3D voxel cross-section of the crust', 'aria-label': 'Open Geology Explorer \u2014 3D voxel cross-section', className: "transition-colors active:scale-[0.97] text-[11px] font-bold px-2.5 py-1 rounded-lg border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100" }, "\u26F0\uFE0F Explore in 3D \u2192"),
+
               React.createElement("div", { className: "flex gap-1 ml-auto" },
 
                 ['landscape', 'rocks', 'minerals', 'mystery', 'quiz', 'weathHunt'].map(function (m) {

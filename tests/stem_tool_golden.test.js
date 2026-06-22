@@ -28,6 +28,7 @@ const TOOLS = [
   { file: 'stem_lab/stem_tool_ecosystem.js', id: 'ecosystem' },
   { file: 'stem_lab/stem_tool_evolab.js', id: 'evoLab' },
   { file: 'stem_lab/stem_tool_geometryworld.js', id: 'geometryWorld' },
+  { file: 'stem_lab/stem_tool_geologyexplorer.js', id: 'geologyExplorer' },
   { file: 'stem_lab/stem_tool_spacecolony.js', id: 'spaceColony' },
   { file: 'stem_lab/stem_tool_climateExplorer.js', id: 'climateExplorer' },
   { file: 'stem_lab/stem_tool_behaviorlab.js', id: 'behaviorLab' },
