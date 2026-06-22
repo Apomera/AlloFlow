@@ -1488,7 +1488,7 @@
       /* graphCalc canvas renderer: removed — see stem_tool_graphcalc.js */
       // ── 3D Tools: Load Three.js on demand (Geometry Sandbox + Architecture Studio) ──
       React.useEffect(function () {
-        if (stemLabTab !== 'explore' || (stemLabTool !== 'geoSandbox' && stemLabTool !== 'archStudio' && stemLabTool !== 'geometryWorld' && stemLabTool !== 'echolocation')) return;
+        if (stemLabTab !== 'explore' || (stemLabTool !== 'geoSandbox' && stemLabTool !== 'archStudio' && stemLabTool !== 'geometryWorld' && stemLabTool !== 'echolocation' && stemLabTool !== 'geologyExplorer')) return;
         if (window.THREE) { setLabToolData(function (p) { return Object.assign({}, p, { _threeLoaded: true }); }); return; }
         var s = document.createElement('script');
         s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
@@ -1657,6 +1657,33 @@
           renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
           renderer.shadowMap.enabled = true;
           renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+          // ── Bloom post-processing (guarded, auto-fallback) — AlloFlow FX rollout ──
+          // ArchStudio: gentle, high-threshold glow on bright block highlights over the
+          // dark navy bg; kept subtle so the build editor stays legible (same tuning
+          // philosophy as geometryworld). Plain render until the r128 addons load; any
+          // failure falls back to renderer.render — can never break the tool. This is
+          // the LAST un-bloomed 3D surface in STEM Lab.
+          renderer._alloComposer = null;
+          (function(){
+            if (window.AlloPostFXEnabled === false) return;
+            var _ens = function(cb){
+              if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
+              var u = ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'];
+              var i=0; (function n(){ if(i>=u.length){cb();return;} var s=document.createElement("script"); s.src=u[i]; s.onload=function(){i++;n();}; s.onerror=function(){i++;n();}; document.head.appendChild(s); })();
+            };
+            _ens(function(){
+              try {
+                var T=window.THREE; if(!T||!T.EffectComposer||!T.RenderPass||!T.UnrealBloomPass) return;
+                var rm=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+                var lp=rm||(!!navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4); var rs=lp?0.5:1;
+                var cc=new T.EffectComposer(renderer);
+                cc.addPass(new T.RenderPass(scene, camera));
+                cc.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1,Math.round((cnv.clientWidth)*rs)),Math.max(1,Math.round((cnv.clientHeight)*rs))), lp?0.49:0.7, 0.35, 0.85));
+                renderer._alloComposer=cc;
+              } catch(e){ try{ renderer._alloComposer=null; }catch(_){} }
+            });
+          })();
           // Lights
           var ambient = new THREE.AmbientLight(0xffffff, 0.45);
           scene.add(ambient);
@@ -1712,7 +1739,7 @@
           var animate = function () {
             animId = requestAnimationFrame(animate);
             if (controls) controls.update();
-            renderer.render(scene, camera);
+            var _ac = renderer._alloComposer; if (_ac) { try { _ac.render(); } catch (e) { renderer._alloComposer = null; renderer.render(scene, camera); } } else { renderer.render(scene, camera); }
           };
           animate();
           // ── Pointer events for placement ──
@@ -2003,6 +2030,7 @@
         return function () {
           if (window._archScene) {
             cancelAnimationFrame(window._archScene.animId);
+            try { var _arc = window._archScene.renderer && window._archScene.renderer._alloComposer; if (_arc) { (_arc.passes || []).forEach(function (p) { if (p && p.dispose) p.dispose(); }); window._archScene.renderer._alloComposer = null; } } catch (e) {}
             if (window._archScene.renderer) window._archScene.renderer.dispose();
             if (window._archScene.controls) window._archScene.controls.dispose();
             window._archScene.blockMeshes.forEach(function (m) { m.geometry.dispose(); if (m.material) m.material.dispose(); });
@@ -2141,21 +2169,22 @@
         var _turtleState = _cpgd.turtle || { x: 250, y: 250, angle: -90, penDown: true, color: '#6366f1', width: 2 };
         var _drawnLines = _cpgd.lines || [];
         var _showTurtle = _cpgd.showTurtle !== false;
+        var _hc = !!_cpgd.highContrastMode; // C3: high-contrast = black bg, white thick lines (21:1, AA)
         var cvs = _codingCanvasRef.current;
         if (!cvs) return;
         var ctx = cvs.getContext('2d');
         var W = 500, H = 500;
         cvs.width = W; cvs.height = H;
-        ctx.fillStyle = '#0f172a';
+        ctx.fillStyle = _hc ? '#000000' : '#0f172a';
         ctx.fillRect(0, 0, W, H);
-        ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 0.5;
+        ctx.strokeStyle = _hc ? '#1f1f1f' : '#1e293b'; ctx.lineWidth = 0.5;
         for (var gx = 0; gx <= W; gx += 25) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke(); }
         for (var gy = 0; gy <= H; gy += 25) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke(); }
-        ctx.strokeStyle = '#334155'; ctx.lineWidth = 1;
+        ctx.strokeStyle = _hc ? '#3a3a3a' : '#334155'; ctx.lineWidth = 1;
         ctx.beginPath(); ctx.moveTo(W / 2, 0); ctx.lineTo(W / 2, H); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(0, H / 2); ctx.lineTo(W, H / 2); ctx.stroke();
         _drawnLines.forEach(function (ln) {
-          ctx.strokeStyle = ln.color || '#6366f1'; ctx.lineWidth = ln.width || 2; ctx.lineCap = 'round';
+          ctx.strokeStyle = _hc ? '#ffffff' : (ln.color || '#6366f1'); ctx.lineWidth = _hc ? Math.max(3, (ln.width || 2) + 1) : (ln.width || 2); ctx.lineCap = 'round';
           ctx.beginPath(); ctx.moveTo(ln.x1, ln.y1); ctx.lineTo(ln.x2, ln.y2); ctx.stroke();
         });
         var tx = _turtleState.x, ty = _turtleState.y, ta = _turtleState.angle * Math.PI / 180;
@@ -2988,7 +3017,7 @@
             className: "flex items-center gap-2"
           }, /*#__PURE__*/React.createElement("span", {
             className: "text-sm"
-          }, snap.tool === 'volume' ? '📦' : snap.tool === 'base10' ? '🧮' : snap.tool === 'coordinate' ? '📍' : '📐'), /*#__PURE__*/React.createElement("span", {
+          }, snap.tool === 'volume' ? '📦' : snap.tool === 'base10' ? '🧮' : snap.tool === 'coordinate' ? '📍' : snap.tool === 'codingPlayground' ? '🔬' : '📐'), /*#__PURE__*/React.createElement("span", {
             className: "text-xs font-bold text-slate-700 flex-1 truncate"
           }, snap.label), /*#__PURE__*/React.createElement("button", { "aria-label": "Open " + snap.label + " snapshot",
             onClick: () => {
@@ -3007,6 +3036,7 @@
               if (snap.tool === 'base10' && snap.data) setBase10Value(snap.data);
               if (snap.tool === 'coordinate' && snap.data) setGridPoints(snap.data.points || []);
               if (snap.tool === 'protractor' && snap.data) setAngleValue(snap.data.angle || 45);
+              if (snap.tool === 'codingPlayground' && snap.data) setLabToolData(function (prev) { return Object.assign({}, prev, { _codingPlayground: snap.data }); });
             },
             className: "text-[10px] font-bold text-indigo-500 hover:text-indigo-700 transition-colors"
           }, "\u21A9 Load"), /*#__PURE__*/React.createElement("button", { "aria-label": "Set Tool Snapshots",
@@ -3520,6 +3550,7 @@
               { id: '_cat_Geography', icon: '', label: '🌍 Geography & Earth Science', desc: '', color: 'slate', category: true },
               { id: 'geoQuiz', icon: '🗺️', label: 'Geography Quiz', desc: 'Test your world geography knowledge with interactive maps, flags, and capitals.', color: 'sky', ready: true },
               { id: 'plateTectonics', icon: '🌋', label: 'Plate Tectonics', desc: 'Explore tectonic plates, earthquakes, volcanoes, and continental drift.', color: 'orange', ready: true },
+              { id: 'geologyExplorer', icon: '⛰️', label: 'Geology Explorer', desc: 'Dig a 3D voxel cross-section of the crust — identify rocks, read the layers, and find the pluton that cuts them.', color: 'amber', ready: true },
               { id: 'astronomy', icon: '🔭', label: 'Night Sky & Astronomy', desc: 'Earth & Space Science: constellations (with Wabanaki + cross-cultural sky traditions), moon phases, planets, seasons, stars, galaxies, eclipses, observing practice, light-pollution awareness. NGSS MS-ESS1 + HS-ESS1. Place-based for Maine. Printable observing checklists.', color: 'indigo', ready: true },
 
               { id: '_cat_AdvancedMathLogic', icon: '', label: '📐 Advanced Math', desc: '', color: 'slate', category: true },
@@ -4693,7 +4724,7 @@
             chemBalance: true, climateExplorer: true, companionPlanting: true, fisherLab: true, renewablesLab: true, petsLab: true,
             dataPlot: true, dissection: true, dnaLab: true, ecosystem: true,
             epidemicSim: true, fireEcology: true, microbiology: true, molecule: true, opticsLab: true, punnett: true,
-            rocks: true, rockCycle: true, science: true, solarSystem: true,
+            rocks: true, rockCycle: true, geologyExplorer: true, science: true, solarSystem: true,
             titrationLab: true, universe: true, unitConvert: true, waterCycle: true,
             // Engineering & CS
             archStudio: true, bridgeLab: true, circuit: true, codingPlayground: true,
