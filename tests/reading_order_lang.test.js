@@ -4,7 +4,7 @@
 // are Canvas-only and wired into the pipeline later (not here).
 
 import { describe, it, expect } from 'vitest';
-import { isSingleColumn, simpleReadingOrder, validateReadingOrder, applyReadingOrder } from './lib/reading_order.js';
+import { isSingleColumn, simpleReadingOrder, validateReadingOrder, applyReadingOrder, deriveColumnReadingOrder } from './lib/reading_order.js';
 import { detectScripts, dominantScript, scriptLangHint, isRtlScript, isValidBcp47, reconcileSpanLang } from './lib/lang_dispatch.js';
 
 const blk = (id, x, y, w, h) => ({ id, x, y, w, h });
@@ -46,6 +46,46 @@ describe('reading order — fallback order + accept-or-revert', () => {
     const blocks = [blk('a', 0, 0, 10, 10), blk('b', 0, 10, 10, 10)];
     expect(applyReadingOrder(blocks, ['b', 'a']).map((x) => x.id)).toEqual(['b', 'a']);
     expect(applyReadingOrder(blocks, ['b', 'ghost', 'a']).map((x) => x.id)).toEqual(['b', 'a']);
+  });
+});
+
+describe('reading order — deterministic multi-column derivation (the new coordinate-bridge core)', () => {
+  // page width 100, gutter ~50. Inputs are deliberately given in SCRAMBLED order to prove the function
+  // re-derives reading order from geometry, not input order.
+  it('single column → plain top-to-bottom (delegates to simpleReadingOrder)', () => {
+    const b = [blk('b', 0, 20, 100, 10), blk('a', 0, 0, 100, 10), blk('c', 0, 40, 100, 10)];
+    expect(deriveColumnReadingOrder(b, 100)).toEqual(['a', 'b', 'c']);
+  });
+  it('two columns → entire LEFT column (top→bottom) then entire RIGHT column — not row-interleaved', () => {
+    const b = [blk('R2', 60, 20, 40, 10), blk('L1', 0, 0, 40, 10), blk('R1', 60, 0, 40, 10), blk('L2', 0, 20, 40, 10)];
+    expect(deriveColumnReadingOrder(b, 100)).toEqual(['L1', 'L2', 'R1', 'R2']);
+    // simpleReadingOrder (y-then-x) would WRONGLY interleave: L1,R1,L2,R2
+    expect(simpleReadingOrder(b)).toEqual(['L1', 'R1', 'L2', 'R2']);
+  });
+  it('full-width title above two columns → title, then left column, then right column', () => {
+    const b = [blk('L1', 0, 20, 40, 10), blk('T', 0, 0, 100, 10), blk('R1', 60, 20, 40, 10), blk('L2', 0, 40, 40, 10), blk('R2', 60, 40, 40, 10)];
+    expect(deriveColumnReadingOrder(b, 100)).toEqual(['T', 'L1', 'L2', 'R1', 'R2']);
+  });
+  it('a mid-page full-width figure segments the columns into bands', () => {
+    const b = [blk('T', 0, 0, 100, 8), blk('L1', 0, 12, 40, 10), blk('R1', 60, 12, 40, 10), blk('F', 0, 30, 100, 10), blk('L2', 0, 45, 40, 10), blk('R2', 60, 45, 40, 10)];
+    expect(deriveColumnReadingOrder(b, 100)).toEqual(['T', 'L1', 'R1', 'F', 'L2', 'R2']);
+  });
+  it('three columns → left, middle, right', () => {
+    const b = [blk('C1', 72, 0, 28, 10), blk('A1', 0, 0, 28, 10), blk('B1', 36, 0, 28, 10), blk('A2', 0, 20, 28, 10), blk('B2', 36, 20, 28, 10), blk('C2', 72, 20, 28, 10)];
+    expect(deriveColumnReadingOrder(b, 100)).toEqual(['A1', 'A2', 'B1', 'B2', 'C1', 'C2']);
+  });
+  it('full-width footer is read last', () => {
+    const b = [blk('L1', 0, 0, 40, 10), blk('R1', 60, 0, 40, 10), blk('L2', 0, 20, 40, 10), blk('R2', 60, 20, 40, 10), blk('Foot', 0, 40, 100, 8)];
+    expect(deriveColumnReadingOrder(b, 100)).toEqual(['L1', 'L2', 'R1', 'R2', 'Foot']);
+  });
+  it('always returns a clean permutation of the input ids (safe for accept-or-revert)', () => {
+    const b = [blk('T', 0, 0, 100, 8), blk('L1', 0, 12, 40, 10), blk('R1', 60, 12, 40, 10), blk('L2', 0, 30, 40, 10), blk('R2', 60, 30, 40, 10)];
+    const order = deriveColumnReadingOrder(b, 100);
+    expect(validateReadingOrder(order, b.map((x) => x.id)).ok).toBe(true);
+  });
+  it('degrades to single-column order on ragged/sparse layouts (conservative)', () => {
+    const b = [blk('a', 0, 0, 80, 10), blk('b', 0, 20, 50, 10), blk('c', 0, 40, 95, 10)];
+    expect(deriveColumnReadingOrder(b, 100)).toEqual(simpleReadingOrder(b)); // no real gutter → single-column
   });
 });
 
