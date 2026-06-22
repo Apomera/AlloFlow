@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 // inject_stem_keys.cjs <tool> — merge the English key map emitted by
-// stem_extract_tool.cjs (dev-tools/stem_i18n_report/ui_strings_stem_<tool>.json)
-// into ui_strings.js under stem.<tool>.{...}. Idempotent + JSON-validated.
+// stem_extract_tool.cjs into ui_strings.js under stem.<tool>.{...}.
+// ui_strings.js is canonical 2-space JSON, so load → merge → stringify is exact
+// (clean diff = only the added keys). Merges into an existing stem.<tool> object
+// (e.g. when a tool name collides with a curated stem key like fractions/volume),
+// never overwriting an existing key. Reports value-differing collisions.
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -14,21 +17,19 @@ if (!fs.existsSync(mapPath)) { console.error('No emitted map: ' + mapPath); proc
 const keys = JSON.parse(fs.readFileSync(mapPath, 'utf8'))[tool];
 if (!keys || !Object.keys(keys).length) { console.log(tool + ': no keys to inject'); process.exit(0); }
 
-let src = fs.readFileSync(UI, 'utf8');
-const parsed0 = JSON.parse(src);
-if (parsed0.stem && parsed0.stem[tool]) { console.log(tool + ': stem.' + tool + ' already present — skipping'); process.exit(0); }
+const data = JSON.parse(fs.readFileSync(UI, 'utf8'));
+if (!data.stem || typeof data.stem !== 'object') { console.error('no stem namespace'); process.exit(2); }
+const existing = (data.stem[tool] && typeof data.stem[tool] === 'object' && !Array.isArray(data.stem[tool])) ? data.stem[tool] : null;
+const target = existing || {};
+let added = 0, kept = 0, conflicts = [];
+for (const [k, v] of Object.entries(keys)) {
+  if (k in target) {
+    if (target[k] !== v) conflicts.push(k);
+    kept++;
+  } else { target[k] = v; added++; }
+}
+data.stem[tool] = target;
 
-const marker = '\n  "stem": {\n';
-const idx = src.indexOf(marker);
-if (idx === -1) { console.error('stem namespace not found'); process.exit(2); }
-const lines = Object.keys(keys).map(k => '      ' + JSON.stringify(k) + ': ' + JSON.stringify(keys[k]));
-const block = '    ' + JSON.stringify(tool) + ': {\n' + lines.join(',\n') + '\n    },\n';
-const at = idx + marker.length;
-src = src.slice(0, at) + block + src.slice(at);
-
-const parsed = JSON.parse(src); // throws if malformed
-const t = (parsed.stem && parsed.stem[tool]) || {};
-const bad = Object.keys(keys).filter(k => t[k] !== keys[k]);
-if (bad.length) { console.error('post-parse mismatch: ' + bad.slice(0, 5).join(', ')); process.exit(3); }
-fs.writeFileSync(UI, src);
-console.log('Injected stem.' + tool + ' (' + Object.keys(t).length + ' keys). JSON valid.');
+fs.writeFileSync(UI, JSON.stringify(data, null, 2) + '\n');
+console.log('stem.' + tool + ': +' + added + ' new keys' + (existing ? ' (merged into existing ' + (Object.keys(existing).length) + ')' : '') + (kept ? ', ' + kept + ' already present' : '') + '.');
+if (conflicts.length) console.log('  ⚠ ' + conflicts.length + ' key(s) exist with a DIFFERENT value (kept curated; verify render): ' + conflicts.slice(0, 6).join(', '));
