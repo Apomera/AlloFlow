@@ -120,6 +120,18 @@ async function _latexToOmml(latex) {
 }
 if (typeof window !== 'undefined') window.__alloLatexToOmml = _latexToOmml; // test seam
 
+// _sha256OfBytes: SHA-256 hex of a byte buffer (Uint8Array / ArrayBuffer). Null on empty input
+// or any failure. Used to fingerprint shipped PDF bytes AND to BIND a veraPDF verdict to the exact
+// bytes it validated — so the signed audit trail can never pair a fingerprint with a verdict that
+// was computed on different bytes (the stale-verdict defect, 2026-06-22).
+async function _sha256OfBytes(bytes) {
+  try {
+    if (!bytes || !bytes.byteLength || typeof crypto === 'undefined' || !crypto.subtle) return null;
+    const buf = await crypto.subtle.digest('SHA-256', bytes);
+    return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('');
+  } catch (_) { return null; }
+}
+
 // _htmlToDocxSpec: pure HTML → block-spec transformer. Deliberately free of
 // docx-library types so it stays unit-testable headlessly —
 // tests/view_pdf_audit_docx_spec.test.js extracts this function at runtime
@@ -3511,7 +3523,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             _validated = true;
                             setVeraPdfResult(_vrV);
                             _recordVeraPdfRules(_vrV, 'export'); // what the native tagger left failing on a fresh export
-                            setLastTaggedValidation(prev => prev ? { ...prev, veraPdf: _vrV, veraPdfAt: new Date().toISOString() } : { fileName: pendingPdfFile?.name || 'document.pdf', veraPdf: _vrV, generatedAt: new Date().toISOString() });
+                            const _vbhV = await _sha256OfBytes(_tbV); // bind the verdict to the exact bytes it validated
+                            setLastTaggedValidation(prev => prev ? { ...prev, veraPdf: _vrV, veraPdfAt: new Date().toISOString(), veraPdfBytesHash: _vbhV } : { fileName: pendingPdfFile?.name || 'document.pdf', veraPdf: _vrV, veraPdfBytesHash: _vbhV, generatedAt: new Date().toISOString() });
                             if (_vrV && !_vrV.error) addToast((_vrV.compliant ? '✅ ' : '⚠ ') + (t('toasts.auto_verapdf_done') || 'Independent veraPDF (ISO 14289-1) validation complete') + (_vrV.compliant ? '' : ' — ' + (_vrV.failedRules ? _vrV.failedRules.length : 0) + ' rule(s) flagged — see the Self-check section'), _vrV.compliant ? 'success' : 'warning');
                           }
                         }
@@ -3913,6 +3926,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               const summary = (_result && _result.summary) || null;
                               if (!taggedBytes) { addToast(t('toasts.tagged_pdf_generation_returned_bytes'), 'error'); return; }
                               _lastTaggedBytesRef.current = taggedBytes; // enable on-demand veraPDF validation of the shipped bytes
+                              // These baseline bytes were NOT validated by veraPDF — drop any stale verdict so the
+                              // live UI + signed audit trail never pair it with this (different) artifact.
+                              setLastTaggedValidation(prev => prev ? { ...prev, veraPdf: null, veraPdfAt: null, veraPdfBytesHash: null } : prev);
                               // Parity with the main tagged-download path: never hand over
                               // a baseline file whose structure failed the post-save check.
                               const _blRoundTrip = (_result && _result.roundTrip) || null;
@@ -8263,6 +8279,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               }
                               if (!taggedBytes) { addToast(t('toasts.tagged_pdf_generation_returned_bytes'), 'error'); return; }
                               _lastTaggedBytesRef.current = taggedBytes; // enable on-demand veraPDF validation of the shipped bytes
+                              // These freshly-tagged bytes have NOT been veraPDF-validated yet — drop any prior
+                              // verdict (the pdfUa1Checks self-check block above replaces it only when present;
+                              // this guarantees no stale veraPdf survives into the Formatted report / signed trail).
+                              setLastTaggedValidation(prev => prev ? { ...prev, veraPdf: null, veraPdfAt: null, veraPdfBytesHash: null } : prev);
                               // ── #5 Content-fidelity gate ── A SEVERE shortfall (<80% of source text
                               // preserved) or a detected AI refusal means the doc may be missing
                               // content; a tagged PDF would look complete but be incomplete. Don't hand
@@ -8395,6 +8415,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               const taggedBytes = _result && _result.bytes ? _result.bytes : _result;
                               if (!taggedBytes) { addToast(t('toasts.tagged_pdf_generation_returned_bytes'), 'error'); return; }
                               _lastTaggedBytesRef.current = taggedBytes; // enable on-demand veraPDF validation of the shipped bytes
+                              // These typeset bytes were NOT validated by veraPDF — drop any stale verdict so the
+                              // live UI + signed audit trail never pair it with this (different) artifact.
+                              setLastTaggedValidation(prev => prev ? { ...prev, veraPdf: null, veraPdfAt: null, veraPdfBytesHash: null } : prev);
                               const _rt = (_result && _result.roundTrip) || null;
                               if (_rt && _rt.ok === false) {
                                 addToast('⚠ ' + (t('toasts.typeset_failed_check') || 'The typeset tagged PDF failed its post-save structure check — use the Word or HTML download instead.'), 'error');
@@ -8598,12 +8621,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   onClick={async () => {
                                     setVeraPdfBusy(true); setVeraPdfResult(null);
                                     try {
-                                      const _vr = await runVeraPdfValidation(_lastTaggedBytesRef.current);
+                                      const _vbBytes = _lastTaggedBytesRef.current;
+                                      const _vr = await runVeraPdfValidation(_vbBytes);
                                       setVeraPdfResult(_vr);
                                       _recordVeraPdfRules(_vr, 'validate'); // on-demand validation of the tagged bytes
                                       // Persist the independent verdict onto lastTaggedValidation so it survives + flows
-                                      // into the downloadable report (it was previously transient UI-only state).
-                                      setLastTaggedValidation(prev => prev ? { ...prev, veraPdf: _vr, veraPdfAt: new Date().toISOString() } : prev);
+                                      // into the downloadable report (it was previously transient UI-only state). Bind it
+                                      // to the hash of the exact bytes validated so the audit trail can detect staleness.
+                                      const _vbh = await _sha256OfBytes(_vbBytes);
+                                      setLastTaggedValidation(prev => prev ? { ...prev, veraPdf: _vr, veraPdfAt: new Date().toISOString(), veraPdfBytesHash: _vbh } : prev);
                                     }
                                     catch (e) { setVeraPdfResult({ error: String((e && e.message) || e) }); }
                                     finally { setVeraPdfBusy(false); }
@@ -8650,7 +8676,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                               const _a = document.createElement('a');
                                               _a.href = _url; _a.download = (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '') + '-tagged-veraPDF-fixed.pdf';
                                               document.body.appendChild(_a); _a.click(); document.body.removeChild(_a); URL.revokeObjectURL(_url);
-                                              setVeraPdfResult(_rem.verdict || { compliant: !!_rem.compliant, failedChecks: 0, failedRules: [] });
+                                              const _rv = _rem.verdict || { compliant: !!_rem.compliant, failedChecks: 0, failedRules: [] };
+                                              setVeraPdfResult(_rv);
+                                              // The repaired bytes (_u8) are the NEW shipped artifact AND were just re-validated —
+                                              // keep the persisted verdict (Formatted report + signed trail) in sync, bound to their
+                                              // hash, so it reflects the repaired file rather than the pre-repair verdict.
+                                              const _rvh = await _sha256OfBytes(_u8);
+                                              setLastTaggedValidation(prev => prev ? { ...prev, veraPdf: _rv, veraPdfAt: new Date().toISOString(), veraPdfBytesHash: _rvh } : prev);
                                               addToast(_rem.compliant
                                                 ? (t('pdf_audit.verapdf.fixed_pass') || 'Auto-fixed to PDF/UA-1 — downloaded the independently-validated file.')
                                                 : (t('pdf_audit.verapdf.fixed_partial') || 'Applied veraPDF auto-fixes (some rules need richer repair) — downloaded the improved file.'),
@@ -8843,6 +8875,29 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     docFingerprint = Array.from(new Uint8Array(dfBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
                                   } catch (_) { docFingerprint = null; }
                                 }
+                                // Hash the SHIPPED (remediated, tagged) PDF bytes — the artifact a reviewer
+                                // actually receives — so the trail fingerprints the OUTPUT, not only the
+                                // source. Null when no tagged PDF has been produced in this session yet.
+                                const shippedFingerprint = await _sha256OfBytes(_lastTaggedBytesRef.current);
+                                // Independent ISO 14289-1 (PDF/UA-1) verdict from veraPDF — attached ONLY if it
+                                // was computed on the SAME bytes we are shipping. The verdict carries
+                                // veraPdfBytesHash (hash of the bytes veraPDF validated); if that doesn't match
+                                // shippedFingerprint the verdict is STALE (e.g. new tagged bytes were produced
+                                // after validating) and pairing it with this fingerprint would misrepresent the
+                                // shipped artifact, so we withhold it. failedRules are PDF-structural metadata
+                                // (clause/test/message) — never document content / student data (FERPA-safe).
+                                const _vera = lastTaggedValidation && lastTaggedValidation.veraPdf;
+                                const _veraBytesMatch = !!(_vera && shippedFingerprint && lastTaggedValidation.veraPdfBytesHash && lastTaggedValidation.veraPdfBytesHash === shippedFingerprint);
+                                const _veraStale = !!(_vera && !_veraBytesMatch); // a verdict exists, but for different bytes than shipped
+                                const veraPdfTrail = (_veraBytesMatch && !_vera.error) ? {
+                                  validator: 'veraPDF (ISO 14289-1 / PDF/UA-1)',
+                                  validatedAt: lastTaggedValidation.veraPdfAt || null,
+                                  compliant: _vera.compliant === true,
+                                  failedChecks: _vera.failedChecks != null ? _vera.failedChecks : (_vera.failedRules ? _vera.failedRules.length : 0),
+                                  failedRules: (_vera.failedRules || []).map(f => ({ clause: f.clause, testNumber: f.testNumber, message: f.message, count: f.count || 1 })),
+                                  bytesHash: { algo: 'SHA-256', hash: lastTaggedValidation.veraPdfBytesHash },
+                                } : (_veraBytesMatch && _vera.error ? { validator: 'veraPDF (ISO 14289-1 / PDF/UA-1)', error: String(_vera.error) } : null);
+                                const _escT = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                                 let pipelineHash = 'unknown';
                                 try {
                                   const scripts = Array.from(document.querySelectorAll('script[src*="Apomera/AlloFlow@"]'));
@@ -8862,6 +8917,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     pageCount: pdfFixResult.pageCount || pdfAuditResult?.pageCount || null,
                                     imageCount: pdfFixResult.imageCount || 0,
                                     fingerprint: docFingerprint ? { algo: 'SHA-256', hash: docFingerprint } : null,
+                                    shippedFingerprint: shippedFingerprint ? { algo: 'SHA-256', hash: shippedFingerprint, note: 'SHA-256 of the remediated tagged-PDF bytes AlloFlow produced (the artifact actually shipped to readers)' } : null,
+                                  },
+                                  validation: {
+                                    pdfUA: veraPdfTrail,
+                                    note: (veraPdfTrail && !veraPdfTrail.error)
+                                      ? 'Independent ISO 14289-1 (PDF/UA-1) verdict on the shipped bytes from the open-source reference validator (veraPDF). Authoritative at the PDF level and independent of the content score above — a high content score does not by itself imply PDF/UA conformance. Not a legal accessibility certificate; human review (alt-text quality, reading order) still recommended.'
+                                      : (_veraStale
+                                          ? 'A prior veraPDF verdict exists but was computed on a DIFFERENT set of bytes than the PDF fingerprinted here (new tagged bytes were produced after validating), so it is withheld to avoid misrepresenting the shipped artifact. Re-run "Independently validate with veraPDF" on the shipped PDF before claiming conformance.'
+                                          : 'No independent veraPDF / PDF-UA validation verdict was recorded for the shipped PDF. The scores above are AlloFlow self-checks plus the AI/axe content audit — NOT an ISO 14289-1 conformance verdict. Run "Independently validate with veraPDF" (or validate externally in veraPDF / PAC 2024) before claiming conformance.'),
                                   },
                                   remediation: {
                                     standard: 'WCAG 2.1 AA',
@@ -8889,15 +8953,26 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   pendingPdfFile?.name || 'document.pdf',
                                   true
                                 );
+                                const _veraSummaryHtml = veraPdfTrail
+                                  ? (veraPdfTrail.error
+                                      ? '<span style="color:#d97706">⚠ validation did not complete (' + _escT(veraPdfTrail.error) + ') — validate externally before claiming conformance</span>'
+                                      : (veraPdfTrail.compliant
+                                          ? '<span style="color:#16a34a;font-weight:bold">✓ Passes PDF/UA-1</span> <span style="color:#64748b">(independently validated by veraPDF' + (veraPdfTrail.validatedAt ? ' · ' + _escT(veraPdfTrail.validatedAt) : '') + ')</span>'
+                                          : '<span style="color:#dc2626;font-weight:bold">✕ Does NOT pass PDF/UA-1 — ' + (veraPdfTrail.failedChecks || 0) + ' rule(s) failed</span> <span style="color:#64748b">(veraPDF — see the JSON payload below for the rule list)</span>'))
+                                  : (_veraStale
+                                      ? '<span style="color:#d97706">⚠ A prior veraPDF verdict was for different bytes than the shipped PDF — re-validate before claiming conformance</span>'
+                                      : '<span style="color:#64748b">Not independently validated — the content score above is not an ISO 14289-1 verdict</span>');
                                 const trailFooter = `
 <section id="alloflow-audit-trail" style="margin-top:40px;padding:20px;background:#f1f5f9;border-radius:12px;border:2px solid #6366f1;font-family:system-ui,sans-serif">
   <h2 style="color:#4f46e5;font-size:18px;margin:0 0 8px">🔒 Audit Trail — Signed Integrity Envelope</h2>
   <p style="color:#475569;font-size:13px;margin:0 0 12px">This report is signed with a SHA-256 hash of its embedded audit payload. The hash is computed client-side in the browser that generated this file — sufficient to detect alteration of the JSON payload below, not a legal-grade cryptographic signature. For a tamper-evident server-signed audit, an institutional reviewer should record this hash at generation time.</p>
   <dl style="display:grid;grid-template-columns:max-content 1fr;gap:6px 14px;font-size:12px;color:#334155;margin:0 0 12px">
-    <dt style="font-weight:bold">Signer</dt><dd>${signer.replace(/</g, '&lt;')}</dd>
+    <dt style="font-weight:bold">Signer</dt><dd>${_escT(signer)}</dd>
     <dt style="font-weight:bold">Generated</dt><dd>${nowISO}</dd>
     <dt style="font-weight:bold">Pipeline</dt><dd>AlloFlow @ ${pipelineHash}</dd>
-    <dt style="font-weight:bold">Document fingerprint</dt><dd style="font-family:ui-monospace,monospace;word-break:break-all">${docFingerprint || '(PDF not attached at sign time)'}</dd>
+    <dt style="font-weight:bold">Source fingerprint</dt><dd style="font-family:ui-monospace,monospace;word-break:break-all">${docFingerprint || '(PDF not attached at sign time)'}</dd>
+    <dt style="font-weight:bold">Shipped PDF fingerprint</dt><dd style="font-family:ui-monospace,monospace;word-break:break-all">${shippedFingerprint || '(no tagged PDF produced in this session — run Fix &amp; Verify / download first)'}</dd>
+    <dt style="font-weight:bold">PDF/UA (veraPDF)</dt><dd>${_veraSummaryHtml}</dd>
     <dt style="font-weight:bold">Payload hash (SHA-256)</dt><dd style="font-family:ui-monospace,monospace;word-break:break-all" id="aat-stored-hash">${hashHex}</dd>
   </dl>
   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
