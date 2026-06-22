@@ -2635,6 +2635,7 @@
         progress: function(d) { return (d.aiGradedCount || 0) + '/1 AI grades'; } }
     ],
     render: function(ctx) {
+      var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -2824,40 +2825,40 @@
         h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' } },
           h('div', { style: { fontSize: 36 } }, '🔆'),
           h('div', { style: { flex: 1 } },
-            h('h2', { style: { margin: 0, color: '#7dd3fc', fontSize: 24, fontWeight: 900 } }, 'Optics Lab'),
-            h('p', { style: { margin: '4px 0 0', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, 'AP Physics 2: ray diagrams, Snell\'s law, mirrors, lenses, interference, diffraction, polarization. Side-by-side sims + calculators.')
+            h('h2', { style: { margin: 0, color: '#7dd3fc', fontSize: 24, fontWeight: 900 } }, t('stem.optics.optics_lab', 'Optics Lab')),
+            h('p', { style: { margin: '4px 0 0', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, t('stem.optics.ap_physics_2_ray_diagrams_snell_s_law_', 'AP Physics 2: ray diagrams, Snell\'s law, mirrors, lenses, interference, diffraction, polarization. Side-by-side sims + calculators.'))
           )
         ),
         // Mode tabs
         h('div', {
           role: 'tablist',
-          'aria-label': 'Optics Lab navigation',
+          'aria-label': t('stem.optics.optics_lab_navigation', 'Optics Lab navigation'),
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }
         },
           [
-            { id: 'home', label: '🏠 Home', desc: 'Sample problems' },
-            { id: 'reflection', label: '🪞 Reflection', desc: 'Mirrors + ray diagrams' },
-            { id: 'refraction', label: '🌊 Refraction', desc: "Snell's law + TIR" },
-            { id: 'lenses', label: '🔍 Lenses', desc: 'Thin lens + image formation' },
-            { id: 'interference', label: '✨ Interference', desc: 'Double-slit fringes' },
-            { id: 'diffraction', label: '〰 Diffraction', desc: 'Single-slit + grating' },
-            { id: 'polarization', label: '↕ Polarization', desc: "Malus's law" },
-            { id: 'phenomena', label: '🌈 Phenomena', desc: 'Rainbows · mirages · after-images · color · polarized sky' },
-            { id: 'calcs', label: '🧮 Calculators', desc: '14 interactive calculators + visualizers' },
-            { id: 'phenomena_db', label: '📚 Encyclopedia', desc: '120+ optical phenomena' },
-            { id: 'scientists', label: '👨‍🔬 Scientists', desc: '50+ optical scientists from antiquity to today' },
-            { id: 'history', label: '📜 History', desc: '100+ optics milestones' },
-            { id: 'instruments', label: '🔭 Instruments', desc: '30+ telescopes, microscopes, cameras, lasers, displays' },
-            { id: 'lab_kits', label: '🧪 Lab Kits', desc: '20+ hands-on experiments' },
-            { id: 'worked', label: '📝 Worked Problems', desc: '30+ step-by-step AP problems' },
-            { id: 'careers', label: '💼 Careers', desc: '40+ optics career paths' },
-            { id: 'deep', label: '🎓 Deep Dives', desc: 'Lasers, vision, color, astronomy + more' },
-            { id: 'glossary_ex', label: '📖 Glossary+', desc: '120+ optics terms with examples' },
-            { id: 'reference', label: '📊 Reference', desc: 'Trivia · records · quotes · safety · data · teaching tips' },
-            { id: 'sleuth', label: '🕵️ Sleuth', desc: 'Predict image from setup' },
-            { id: 'quiz', label: '📝 Quiz', desc: 'AP exam practice' },
-            { id: 'mastery', label: '🏅 Mastery', desc: 'Concept progress + which questions you have nailed' },
-            { id: 'inquiry', label: '🔬 Inquiry', desc: 'Snell\'s law sandbox — predict TIR + dispersion' }
+            { id: 'home', label: t('stem.optics.home', '🏠 Home'), desc: t('stem.optics.sample_problems', 'Sample problems') },
+            { id: 'reflection', label: t('stem.optics.reflection', '🪞 Reflection'), desc: t('stem.optics.mirrors_ray_diagrams', 'Mirrors + ray diagrams') },
+            { id: 'refraction', label: t('stem.optics.refraction', '🌊 Refraction'), desc: t('stem.optics.snell_s_law_tir', "Snell's law + TIR") },
+            { id: 'lenses', label: t('stem.optics.lenses', '🔍 Lenses'), desc: t('stem.optics.thin_lens_image_formation', 'Thin lens + image formation') },
+            { id: 'interference', label: t('stem.optics.interference', '✨ Interference'), desc: t('stem.optics.double_slit_fringes', 'Double-slit fringes') },
+            { id: 'diffraction', label: t('stem.optics.diffraction', '〰 Diffraction'), desc: t('stem.optics.single_slit_grating', 'Single-slit + grating') },
+            { id: 'polarization', label: t('stem.optics.polarization', '↕ Polarization'), desc: t('stem.optics.malus_s_law', "Malus's law") },
+            { id: 'phenomena', label: t('stem.optics.phenomena', '🌈 Phenomena'), desc: t('stem.optics.rainbows_mirages_after_images_color_po', 'Rainbows · mirages · after-images · color · polarized sky') },
+            { id: 'calcs', label: t('stem.optics.calculators', '🧮 Calculators'), desc: t('stem.optics.14_interactive_calculators_visualizers', '14 interactive calculators + visualizers') },
+            { id: 'phenomena_db', label: t('stem.optics.encyclopedia', '📚 Encyclopedia'), desc: t('stem.optics.120_optical_phenomena', '120+ optical phenomena') },
+            { id: 'scientists', label: t('stem.optics.scientists', '👨‍🔬 Scientists'), desc: t('stem.optics.50_optical_scientists_from_antiquity_t', '50+ optical scientists from antiquity to today') },
+            { id: 'history', label: t('stem.optics.history', '📜 History'), desc: t('stem.optics.100_optics_milestones', '100+ optics milestones') },
+            { id: 'instruments', label: t('stem.optics.instruments', '🔭 Instruments'), desc: t('stem.optics.30_telescopes_microscopes_cameras_lase', '30+ telescopes, microscopes, cameras, lasers, displays') },
+            { id: 'lab_kits', label: t('stem.optics.lab_kits', '🧪 Lab Kits'), desc: t('stem.optics.20_hands_on_experiments', '20+ hands-on experiments') },
+            { id: 'worked', label: t('stem.optics.worked_problems', '📝 Worked Problems'), desc: t('stem.optics.30_step_by_step_ap_problems', '30+ step-by-step AP problems') },
+            { id: 'careers', label: t('stem.optics.careers', '💼 Careers'), desc: t('stem.optics.40_optics_career_paths', '40+ optics career paths') },
+            { id: 'deep', label: t('stem.optics.deep_dives', '🎓 Deep Dives'), desc: t('stem.optics.lasers_vision_color_astronomy_more', 'Lasers, vision, color, astronomy + more') },
+            { id: 'glossary_ex', label: t('stem.optics.glossary', '📖 Glossary+'), desc: t('stem.optics.120_optics_terms_with_examples', '120+ optics terms with examples') },
+            { id: 'reference', label: t('stem.optics.reference', '📊 Reference'), desc: t('stem.optics.trivia_records_quotes_safety_data_teac', 'Trivia · records · quotes · safety · data · teaching tips') },
+            { id: 'sleuth', label: t('stem.optics.sleuth', '🕵️ Sleuth'), desc: t('stem.optics.predict_image_from_setup', 'Predict image from setup') },
+            { id: 'quiz', label: t('stem.optics.quiz', '📝 Quiz'), desc: t('stem.optics.ap_exam_practice', 'AP exam practice') },
+            { id: 'mastery', label: t('stem.optics.mastery', '🏅 Mastery'), desc: t('stem.optics.concept_progress_which_questions_you_h', 'Concept progress + which questions you have nailed') },
+            { id: 'inquiry', label: t('stem.optics.inquiry', '🔬 Inquiry'), desc: t('stem.optics.snell_s_law_sandbox_predict_tir_disper', 'Snell\'s law sandbox — predict TIR + dispersion') }
           ].map(function(tab) {
             var sel = d.mode === tab.id;
             return h('button', {
@@ -2881,38 +2882,38 @@
         d.mode === 'home' && _renderHome(d, upd, h),
         d.mode === 'reflection' && _renderTopicPanel({
           d: d, upd: upd, h: h, addToast: addToast, awardXP: awardXP, callGemini: callGemini, tab: 'reflection',
-          title: '🪞 Reflection — plane + curved mirrors',
+          title: t('stem.optics.reflection_plane_curved_mirrors', '🪞 Reflection — plane + curved mirrors'),
           sim: _renderReflectionSim(d, upd, h),
           calc: _renderReflectionCalc(d, upd, h, addToast, awardXP)
         }),
         d.mode === 'refraction' && _renderTopicPanel({
           d: d, upd: upd, h: h, addToast: addToast, awardXP: awardXP, callGemini: callGemini, tab: 'refraction',
-          title: "🌊 Refraction — Snell's law + total internal reflection",
+          title: t('stem.optics.refraction_snell_s_law_total_internal_', "🌊 Refraction — Snell's law + total internal reflection"),
           sim: _renderRefractionSim(d, upd, h),
           calc: _renderRefractionCalc(d, upd, h)
         }),
         d.mode === 'lenses' && _renderTopicPanel({
           d: d, upd: upd, h: h, addToast: addToast, awardXP: awardXP, callGemini: callGemini, tab: 'lenses',
-          title: '🔍 Lenses — converging + diverging, thin lens equation',
+          title: t('stem.optics.lenses_converging_diverging_thin_lens_', '🔍 Lenses — converging + diverging, thin lens equation'),
           sim: _renderLensSim(d, upd, h),
           calc: _renderLensCalc(d, upd, h, addToast, awardXP)
         }),
         d.mode === 'interference' && _renderTopicPanel({
           d: d, upd: upd, h: h, addToast: addToast, awardXP: awardXP, callGemini: callGemini, tab: 'interference',
-          title: "✨ Interference — Young's double-slit",
+          title: t('stem.optics.interference_young_s_double_slit', "✨ Interference — Young's double-slit"),
           sim: _renderInterferenceSim(d, upd, h),
           calc: _renderInterferenceCalc(d, upd, h),
           extra: _renderPhQuantumTwist(d, upd, h)
         }),
         d.mode === 'diffraction' && _renderTopicPanel({
           d: d, upd: upd, h: h, addToast: addToast, awardXP: awardXP, callGemini: callGemini, tab: 'diffraction',
-          title: '〰 Diffraction — single slit + grating',
+          title: t('stem.optics.diffraction_single_slit_grating', '〰 Diffraction — single slit + grating'),
           sim: _renderDiffractionSim(d, upd, h),
           calc: _renderDiffractionCalc(d, upd, h)
         }),
         d.mode === 'polarization' && _renderTopicPanel({
           d: d, upd: upd, h: h, addToast: addToast, awardXP: awardXP, callGemini: callGemini, tab: 'polarization',
-          title: "↕ Polarization — Malus's law",
+          title: t('stem.optics.polarization_malus_s_law', "↕ Polarization — Malus's law"),
           sim: _renderPolarizationSim(d, upd, h),
           calc: _renderPolarizationCalc(d, upd, h)
         }),
@@ -2946,11 +2947,11 @@
           var theta2 = isTIR ? null : Math.asin(sinT2) * 180 / Math.PI;
           var state = isTIR ? 'tir' : nDisp > iq.n1 ? (iq.angle > 60 ? 'glancing' : 'denser') : (tirCritical != null && iq.angle > tirCritical * 0.9 ? 'nearCrit' : 'lighter');
           var sm = ({
-            tir: { label: 'Total Internal Reflection', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Angle exceeds critical angle. No light transmitted — all reflects back. Basis of fiber optics, diamond brilliance, prism periscopes.' },
-            nearCrit: { label: 'Near critical', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'Approaching TIR boundary. Refracted ray runs nearly along the surface; transmitted intensity dropping.' },
-            denser: { label: 'Bend toward normal', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Light entering denser medium (n₁ < n₂). Refracted ray bends TOWARD the normal — slower light in dense medium.' },
-            lighter: { label: 'Bend away from normal', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Light entering less-dense medium. Refracted ray bends AWAY from normal — faster light in light medium.' },
-            glancing: { label: 'Grazing incidence', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Steep angle from normal. Much energy reflected (Fresnel rises), little transmitted.' }
+            tir: { label: t('stem.optics.total_internal_reflection', 'Total Internal Reflection'), color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: t('stem.optics.angle_exceeds_critical_angle_no_light_', 'Angle exceeds critical angle. No light transmitted — all reflects back. Basis of fiber optics, diamond brilliance, prism periscopes.') },
+            nearCrit: { label: t('stem.optics.near_critical', 'Near critical'), color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: t('stem.optics.approaching_tir_boundary_refracted_ray', 'Approaching TIR boundary. Refracted ray runs nearly along the surface; transmitted intensity dropping.') },
+            denser: { label: t('stem.optics.bend_toward_normal', 'Bend toward normal'), color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: t('stem.optics.light_entering_denser_medium_n_n_refra', 'Light entering denser medium (n₁ < n₂). Refracted ray bends TOWARD the normal — slower light in dense medium.') },
+            lighter: { label: t('stem.optics.bend_away_from_normal', 'Bend away from normal'), color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: t('stem.optics.light_entering_less_dense_medium_refra', 'Light entering less-dense medium. Refracted ray bends AWAY from normal — faster light in light medium.') },
+            glancing: { label: t('stem.optics.grazing_incidence', 'Grazing incidence'), color: '#facc15', bg: '#2a2410', border: '#eab308', desc: t('stem.optics.steep_angle_from_normal_much_energy_re', 'Steep angle from normal. Much energy reflected (Fresnel rises), little transmitted.') }
           })[state];
           // SVG: incident + refracted rays
           var cx = 160, cy = 100, len = 80;
@@ -2959,15 +2960,15 @@
           var refX = isTIR ? cx + Math.sin(rad) * len : cx + Math.sin(theta2 * Math.PI / 180) * len;
           var refY = isTIR ? cy - Math.cos(rad) * len : cy + Math.cos(theta2 * Math.PI / 180) * len;
           return h('div', { style: { padding: 16, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
-            h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, '🔬 Snell\'s Law Inquiry — Refraction, TIR, Dispersion'),
-            h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, 'Set n₁, n₂, incidence angle, and wavelength. Predict where the system transitions from refraction to TIR. No score, no reveal.'),
+            h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, t('stem.optics.snell_s_law_inquiry_refraction_tir_dis', '🔬 Snell\'s Law Inquiry — Refraction, TIR, Dispersion')),
+            h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, t('stem.optics.set_n_n_incidence_angle_and_wavelength', 'Set n₁, n₂, incidence angle, and wavelength. Predict where the system transitions from refraction to TIR. No score, no reveal.')),
             h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label),
             h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 10 } },
               [
-                { label: 'θ₂ (refracted)', val: isTIR ? '— (TIR)' : theta2.toFixed(1) + '°' },
-                { label: 'Critical angle', val: tirCritical != null ? tirCritical.toFixed(1) + '°' : '— (n₁ ≤ n₂)' },
-                { label: 'n₂(λ) toy', val: nDisp.toFixed(3) + ' (used in ray math)' }
+                { label: t('stem.optics.refracted', 'θ₂ (refracted)'), val: isTIR ? '— (TIR)' : theta2.toFixed(1) + '°' },
+                { label: t('stem.optics.critical_angle', 'Critical angle'), val: tirCritical != null ? tirCritical.toFixed(1) + '°' : '— (n₁ ≤ n₂)' },
+                { label: t('stem.optics.n_toy', 'n₂(λ) toy'), val: nDisp.toFixed(3) + ' (used in ray math)' }
               ].map(function(m) {
                 return h('div', { key: m.label, style: { padding: 6, borderRadius: 4, background: '#0a0a1a', border: '1px solid ' + sm.border, textAlign: 'center' } },
                   h('div', { style: { fontSize: 9, opacity: 0.6 } }, m.label),
@@ -3007,19 +3008,19 @@
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
               h('label', null,
-                h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'n₁ (medium 1)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.n1.toFixed(2))),
+                h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, t('stem.optics.n_medium_1', 'n₁ (medium 1)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.n1.toFixed(2))),
                 h('input', { type: 'range', min: 1.0, max: 2.5, step: 0.01, value: iq.n1, onChange: function(e) { setKey('n1', parseFloat(e.target.value)); }, style: { width: '100%' } })
               ),
               h('label', null,
-                h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'n₂ (medium 2)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.n2.toFixed(2))),
+                h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, t('stem.optics.n_medium_2', 'n₂ (medium 2)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.n2.toFixed(2))),
                 h('input', { type: 'range', min: 1.0, max: 2.5, step: 0.01, value: iq.n2, onChange: function(e) { setKey('n2', parseFloat(e.target.value)); }, style: { width: '100%' } })
               ),
               h('label', null,
-                h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Incidence angle θ₁'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.angle + '°')),
+                h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, t('stem.optics.incidence_angle', 'Incidence angle θ₁')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.angle + '°')),
                 h('input', { type: 'range', min: 0, max: 89, step: 1, value: iq.angle, onChange: function(e) { setKey('angle', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
               ),
               h('label', null,
-                h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Wavelength λ'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.wavelength + ' nm')),
+                h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, t('stem.optics.wavelength', 'Wavelength λ')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.wavelength + ' nm')),
                 h('input', { type: 'range', min: 380, max: 740, step: 10, value: iq.wavelength, onChange: function(e) { setKey('wavelength', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
               )
             ),
@@ -3032,30 +3033,30 @@
               h('button', { onClick: function() {
                 var t = new Date().toISOString().slice(11, 19);
                 setIQ({ log: iq.log.concat([{ t: t, n1: iq.n1.toFixed(2), n2: iq.n2.toFixed(2), a: iq.angle, l: iq.wavelength, tir: isTIR, state: sm.label }]) });
-              }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '📋 Log this configuration'),
-              h('button', { onClick: function() { setIQ({ n1: 1.0, n2: 1.5, angle: 30, wavelength: 550 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
+              }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, t('stem.optics.log_this_configuration', '📋 Log this configuration')),
+              h('button', { onClick: function() { setIQ({ n1: 1.0, n2: 1.5, angle: 30, wavelength: 550 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, t('stem.optics.reset', 'Reset'))
             ),
             iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
               iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · n₁=' + e.n1 + ' n₂=' + e.n2 + ' θ=' + e.a + ' λ=' + e.l + (e.tir ? ' · TIR' : '')); })
             ),
-            h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (where exactly does TIR start, and why does diamond TIR more aggressively than glass?)'),
-            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., diamond has critical angle ~24° vs glass ~42°, so any steeper angle TIRs...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
+            h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, t('stem.optics.your_hypothesis_where_exactly_does_tir', 'Your hypothesis (where exactly does TIR start, and why does diamond TIR more aggressively than glass?)')),
+            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: t('stem.optics.e_g_diamond_has_critical_angle_24_vs_g', 'e.g., diamond has critical angle ~24° vs glass ~42°, so any steeper angle TIRs...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, t('stem.optics.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
             iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
-              h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
+              h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, t('stem.optics.open_questions_no_answer_key', 'Open questions (no answer key)')),
               h('ul', { style: { margin: 0, paddingLeft: 16 } },
-                h('li', null, 'Why is there NO critical angle when going from less-dense to more-dense?'),
-                h('li', null, 'Set water→air (n₁=1.33 n₂=1.00). What\'s the critical angle? Why do fish see the world compressed into a cone above?'),
-                h('li', null, 'In a rainbow, why does red bend less than blue? Connect to the wavelength slider.'),
-                h('li', null, 'How does a prism separate white light if all wavelengths obey the same Snell\'s law?')
+                h('li', null, t('stem.optics.why_is_there_no_critical_angle_when_go', 'Why is there NO critical angle when going from less-dense to more-dense?')),
+                h('li', null, t('stem.optics.set_water_air_n_1_33_n_1_00_what_s_the', 'Set water→air (n₁=1.33 n₂=1.00). What\'s the critical angle? Why do fish see the world compressed into a cone above?')),
+                h('li', null, t('stem.optics.in_a_rainbow_why_does_red_bend_less_th', 'In a rainbow, why does red bend less than blue? Connect to the wavelength slider.')),
+                h('li', null, t('stem.optics.how_does_a_prism_separate_white_light_', 'How does a prism separate white light if all wavelengths obey the same Snell\'s law?'))
               )
             ),
             h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
               h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
-              h('span', null, 'I can explain why this n₁/n₂/θ combination yields this refraction state.')
+              h('span', null, t('stem.optics.i_can_explain_why_this_n_n_combination', 'I can explain why this n₁/n₂/θ combination yields this refraction state.'))
             ),
-            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
-            h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal, no answer dump. Dispersion model is illustrative (Cauchy-like first-order); real dispersion curves are material-specific (Sellmeier coefficients).')
+            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: t('stem.optics.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+            h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, t('stem.optics.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Dispersion model is illustrative (Cauchy-like first-order); real dispersion curves are material-specific (Sellmeier coefficients).'))
           );
         })(),
         // Concept-mastery celebration overlay — fixed-position, top of screen,
@@ -3084,7 +3085,7 @@
           },
             h('span', { 'aria-hidden': 'true', style: { fontSize: 28 } }, '🏅'),
             h('div', null,
-              h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.95 } }, 'Concept locked in'),
+              h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.95 } }, t('stem.optics.concept_locked_in', 'Concept locked in')),
               h('div', { style: { fontSize: 13, fontWeight: 800, lineHeight: 1.3 } }, opCeleb.question.length > 90 ? (opCeleb.question.substring(0, 87) + '…') : opCeleb.question),
               h('div', { style: { fontSize: 11, fontStyle: 'italic', opacity: 0.95, marginTop: 2 } }, opCeleb.total + ' / 30 quiz questions mastered')
             )
