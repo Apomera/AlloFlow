@@ -64,25 +64,47 @@ function calleeName(callee) {
 const code = fs.readFileSync(file, 'utf8');
 const ast = parser.parse(code, { sourceType: 'script', allowReturnOutsideFunction: true, errorRecovery: true, ranges: true });
 
-// Find render(ctx) function body range + the `var t = ctx.t` end position.
+// Find the render function body range + the `var t = ctx.t [|| ...]` end position.
+// Handles: render: function(ctx){}, render(ctx){} (method), render: <ref> (named fn).
 let renderStart = -1, renderEnd = -1, tDeclEnd = -1;
+let renderRefName = null;
+function isFn(n) { return n && /FunctionExpression|ArrowFunctionExpression/.test(n.type); }
+function setRender(fnNode) { if (fnNode && fnNode.body) { renderStart = fnNode.body.start; renderEnd = fnNode.body.end; } }
+// init is `ctx.t` or `ctx.t || fallback`
+function isCtxT(init) {
+  if (!init) return false;
+  if (init.type === 'MemberExpression') return init.object && init.object.name === 'ctx' && init.property && (init.property.name === 't');
+  if (init.type === 'LogicalExpression') return isCtxT(init.left);
+  return false;
+}
 traverse(ast, {
   ObjectProperty(p) {
     const k = String((p.node.key && (p.node.key.name || p.node.key.value)) || '');
-    if (k === 'render' && p.node.value && /FunctionExpression/.test(p.node.value.type)) {
-      renderStart = p.node.value.body.start; renderEnd = p.node.value.body.end;
-    }
+    if (k !== 'render') return;
+    if (isFn(p.node.value)) setRender(p.node.value);
+    else if (p.node.value && p.node.value.type === 'Identifier') renderRefName = p.node.value.name;
   },
+  ObjectMethod(p) {
+    const k = String((p.node.key && (p.node.key.name || p.node.key.value)) || '');
+    if (k === 'render') setRender(p.node);
+  }
+});
+// render is a named-function reference → find its definition body.
+if (renderStart < 0 && renderRefName) {
+  traverse(ast, {
+    FunctionDeclaration(p) { if (p.node.id && p.node.id.name === renderRefName) setRender(p.node); },
+    VariableDeclarator(p) { if (p.node.id && p.node.id.name === renderRefName && isFn(p.node.init)) setRender(p.node.init); }
+  });
+}
+if (renderStart < 0) { console.error('No render function found.'); process.exit(2); }
+traverse(ast, {
   VariableDeclarator(p) {
-    if (p.node.id && p.node.id.name === 't' && p.node.init && p.node.init.type === 'MemberExpression'
-      && calleeName({ type: 'MemberExpression', property: p.node.init.property }) === 't'
-      && p.node.init.object && p.node.init.object.name === 'ctx') {
+    if (p.node.id && p.node.id.name === 't' && isCtxT(p.node.init) && p.node.start > renderStart && p.node.end < renderEnd) {
       if (tDeclEnd === -1) tDeclEnd = p.node.end;
     }
   }
 });
-if (renderStart < 0) { console.error('No render(ctx) function found.'); process.exit(2); }
-if (tDeclEnd < 0) { console.error('No `var t = ctx.t` found in render — would need to add it manually first.'); process.exit(2); }
+if (tDeclEnd < 0) { console.error('No `var t = ctx.t` found inside render — add it manually first.'); process.exit(2); }
 
 // Collect candidate strings.
 const inRender = [], skippedStatic = [];
