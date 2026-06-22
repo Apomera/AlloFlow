@@ -22,7 +22,24 @@ const ast = parser.parse(code, { sourceType: 'script', allowReturnOutsideFunctio
 
 function isFn(n) { return n && /FunctionExpression|ArrowFunctionExpression/.test(n.type); }
 let fnNode = null, renderRefName = null;
+// Anchor on registerTool('<id>', { render }) so nested `render:` props don't win.
 traverse(ast, {
+  CallExpression(p) {
+    if (fnNode || renderRefName) return;
+    const c = p.node.callee;
+    if (!(c && c.type === 'MemberExpression' && c.property && c.property.name === 'registerTool')) return;
+    const obj = p.node.arguments[1];
+    if (!obj || obj.type !== 'ObjectExpression') return;
+    for (const pr of obj.properties) {
+      const k = pr.key && (pr.key.name || pr.key.value);
+      if (k !== 'render') continue;
+      if (pr.type === 'ObjectMethod') { fnNode = pr; return; }
+      if (isFn(pr.value)) { fnNode = pr.value; return; }
+      if (pr.value && pr.value.type === 'Identifier') { renderRefName = pr.value.name; return; }
+    }
+  }
+});
+if (!fnNode && !renderRefName) traverse(ast, {
   ObjectProperty(p) {
     const k = String((p.node.key && (p.node.key.name || p.node.key.value)) || '');
     if (k !== 'render') return;

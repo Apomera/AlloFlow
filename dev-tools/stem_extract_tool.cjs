@@ -77,7 +77,29 @@ function isCtxT(init) {
   if (init.type === 'LogicalExpression') return isCtxT(init.left);
   return false;
 }
+// Anchor on the registerTool('<id>', { render }) config object so nested
+// `render:` properties (e.g. a per-row cell render) don't hijack detection.
+function renderPropFromConfig(objExpr) {
+  if (!objExpr || objExpr.type !== 'ObjectExpression') return;
+  for (const pr of objExpr.properties) {
+    const k = pr.key && (pr.key.name || pr.key.value);
+    if (k !== 'render') continue;
+    if (pr.type === 'ObjectMethod') { setRender(pr); return; }
+    if (isFn(pr.value)) { setRender(pr.value); return; }
+    if (pr.value && pr.value.type === 'Identifier') { renderRefName = pr.value.name; return; }
+  }
+}
 traverse(ast, {
+  CallExpression(p) {
+    if (renderStart >= 0 || renderRefName) return;
+    const c = p.node.callee;
+    if (c && c.type === 'MemberExpression' && c.property && c.property.name === 'registerTool') {
+      renderPropFromConfig(p.node.arguments[1]);
+    }
+  }
+});
+// Fallback: any render property/method (last wins) if registerTool not matched.
+if (renderStart < 0 && !renderRefName) traverse(ast, {
   ObjectProperty(p) {
     const k = String((p.node.key && (p.node.key.name || p.node.key.value)) || '');
     if (k !== 'render') return;

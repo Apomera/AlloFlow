@@ -18682,6 +18682,7 @@ test('no a11y violations', async () => {
       { id: 'iterate', label: 'Use "Enhance" to modify an app', icon: '\u2728', check: function(d) { return (d.enhanceCount || 0) >= 1; }, progress: function(d) { return (d.enhanceCount || 0) >= 1 ? 'Enhanced!' : 'Not yet'; } },
     ],
     render: function(ctx) {
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = ctx.React;
       var h = React.createElement;
       var useState = React.useState;
@@ -18698,20 +18699,20 @@ test('no a11y violations', async () => {
 
       // ── Pipeline Agent Definitions (configurable) ──
       var PIPELINE_AGENTS = [
-        { id: 'architect', name: 'Architect', icon: '\uD83C\uDFD7\uFE0F', color: '#818cf8',
-          desc: 'Plans the app structure, features, and accessibility requirements before any code is written.',
+        { id: 'architect', name: __alloT('stem.applab.architect', 'Architect'), icon: '\uD83C\uDFD7\uFE0F', color: '#818cf8',
+          desc: __alloT('stem.applab.plans_the_app_structure_features_and_a', 'Plans the app structure, features, and accessibility requirements before any code is written.'),
           learnMore: 'In software engineering, architects design systems before developers write code. This separation of "thinking" from "doing" produces better results because planning prevents structural mistakes that are expensive to fix later.',
           required: false, defaultOn: true },
-        { id: 'builder', name: 'Builder', icon: '\uD83D\uDD28', color: '#34d399',
-          desc: 'Writes the actual HTML, CSS, and JavaScript code based on the plan (or from scratch if Architect is off).',
+        { id: 'builder', name: __alloT('stem.applab.builder', 'Builder'), icon: '\uD83D\uDD28', color: '#34d399',
+          desc: __alloT('stem.applab.writes_the_actual_html_css_and_javascr', 'Writes the actual HTML, CSS, and JavaScript code based on the plan (or from scratch if Architect is off).'),
           learnMore: 'The Builder agent uses a Large Language Model (LLM) that has been trained on billions of lines of code. It understands programming patterns, HTML structure, CSS styling, and JavaScript logic. When given a plan, it produces higher quality code than when improvising.',
           required: true, defaultOn: true },
-        { id: 'reviewer', name: 'Reviewer', icon: '\uD83D\uDD0D', color: '#fbbf24',
-          desc: 'A separate AI reads the code with fresh eyes to find bugs, accessibility issues, and UX problems.',
+        { id: 'reviewer', name: __alloT('stem.applab.reviewer', 'Reviewer'), icon: '\uD83D\uDD0D', color: '#fbbf24',
+          desc: __alloT('stem.applab.a_separate_ai_reads_the_code_with_fres', 'A separate AI reads the code with fresh eyes to find bugs, accessibility issues, and UX problems.'),
           learnMore: 'Code review is a standard practice in professional software development. A different person (or AI) reviewing code catches mistakes the original author missed. This works because of "fresh eyes" — the reviewer has no assumptions about what the code should do.',
           required: false, defaultOn: true },
-        { id: 'fixer', name: 'Fixer', icon: '\uD83D\uDD27', color: '#f87171',
-          desc: 'Takes the Reviewer\'s feedback and applies targeted fixes. Only runs if issues were found.',
+        { id: 'fixer', name: __alloT('stem.applab.fixer', 'Fixer'), icon: '\uD83D\uDD27', color: '#f87171',
+          desc: __alloT('stem.applab.takes_the_reviewer_s_feedback_and_appl', 'Takes the Reviewer\'s feedback and applies targeted fixes. Only runs if issues were found.'),
           learnMore: 'The Fixer receives a specific list of bugs to fix, not a vague "make it better" request. This targeted approach is more reliable than asking an AI to find AND fix issues simultaneously — a principle called "separation of concerns."',
           required: false, defaultOn: true }
       ];
@@ -19106,12 +19107,12 @@ test('no a11y violations', async () => {
       };
 
       var TABS = [
-        { id: 'build', label: 'Build', icon: '🚀', desc: 'Generate, edit, and preview AI-built apps' },
-        { id: 'learn', label: 'Learn', icon: '📚', desc: 'HTML, CSS, JavaScript, frameworks, and APIs' },
-        { id: 'practice', label: 'Practice', icon: '✏️', desc: 'Projects, tutorials, lessons, and quizzes' },
-        { id: 'patterns', label: 'Patterns', icon: '🧩', desc: 'Algorithms, data structures, and design patterns' },
-        { id: 'quality', label: 'Quality', icon: '✅', desc: 'Accessibility, performance, security, and testing' },
-        { id: 'career', label: 'Career', icon: '🏆', desc: 'Careers, programmers, ethics, and growth' }
+        { id: 'build', label: __alloT('stem.applab.build', 'Build'), icon: '🚀', desc: __alloT('stem.applab.generate_edit_and_preview_ai_built_app', 'Generate, edit, and preview AI-built apps') },
+        { id: 'learn', label: __alloT('stem.applab.learn', 'Learn'), icon: '📚', desc: __alloT('stem.applab.html_css_javascript_frameworks_and_api', 'HTML, CSS, JavaScript, frameworks, and APIs') },
+        { id: 'practice', label: __alloT('stem.applab.practice', 'Practice'), icon: '✏️', desc: __alloT('stem.applab.projects_tutorials_lessons_and_quizzes', 'Projects, tutorials, lessons, and quizzes') },
+        { id: 'patterns', label: __alloT('stem.applab.patterns', 'Patterns'), icon: '🧩', desc: __alloT('stem.applab.algorithms_data_structures_and_design_', 'Algorithms, data structures, and design patterns') },
+        { id: 'quality', label: __alloT('stem.applab.quality', 'Quality'), icon: '✅', desc: __alloT('stem.applab.accessibility_performance_security_and', 'Accessibility, performance, security, and testing') },
+        { id: 'career', label: __alloT('stem.applab.career', 'Career'), icon: '🏆', desc: __alloT('stem.applab.careers_programmers_ethics_and_growth', 'Careers, programmers, ethics, and growth') }
       ];
 
       // ── Reusable: split-pane (topic chooser + content) ──
@@ -19144,7 +19145,7 @@ test('no a11y violations', async () => {
               ),
               active.subtitle && h('p', { style: { fontSize: '12px', color: '#6b7280', marginTop: '4px', marginBottom: 0 } }, active.subtitle)
             ),
-            active.render ? active.render() : h('p', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'No content yet.')
+            active.render ? active.render() : h('p', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.applab.no_content_yet', 'No content yet.'))
           )
         );
       };
@@ -19231,7 +19232,7 @@ test('no a11y violations', async () => {
 
       var renderQuizEngine = function() {
         var ALL_Q = [].concat(typeof QUIZ_QUESTIONS !== 'undefined' ? QUIZ_QUESTIONS : [], typeof QUIZ_QUESTIONS_EXTENDED !== 'undefined' ? QUIZ_QUESTIONS_EXTENDED : []);
-        if (ALL_Q.length === 0) return h('p', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'No quiz questions loaded.');
+        if (ALL_Q.length === 0) return h('p', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.applab.no_quiz_questions_loaded', 'No quiz questions loaded.'));
         var safeIdx = ((quizIdx % ALL_Q.length) + ALL_Q.length) % ALL_Q.length;
         var q = ALL_Q[safeIdx];
         var questionText = q.question || q.q || '';
@@ -19246,23 +19247,23 @@ test('no a11y violations', async () => {
           // Scoreboard
           h('div', { style: { display: 'flex', gap: '10px', flexWrap: 'wrap', padding: '12px', background: 'linear-gradient(135deg, #f5f3ff, #ede9fe)', borderRadius: '12px', border: '1px solid #ddd6fe' } },
             h('div', { style: { flex: 1, minWidth: '100px' } },
-              h('div', { style: { fontSize: '10px', color: '#6b21a8', fontWeight: 700, textTransform: 'uppercase' } }, 'Question'),
+              h('div', { style: { fontSize: '10px', color: '#6b21a8', fontWeight: 700, textTransform: 'uppercase' } }, __alloT('stem.applab.question', 'Question')),
               h('div', { style: { fontSize: '20px', fontWeight: 900, color: '#581c87' } }, (safeIdx + 1) + ' / ' + ALL_Q.length)
             ),
             h('div', { style: { flex: 1, minWidth: '100px' } },
-              h('div', { style: { fontSize: '10px', color: '#6b21a8', fontWeight: 700, textTransform: 'uppercase' } }, 'Correct'),
+              h('div', { style: { fontSize: '10px', color: '#6b21a8', fontWeight: 700, textTransform: 'uppercase' } }, __alloT('stem.applab.correct', 'Correct')),
               h('div', { style: { fontSize: '20px', fontWeight: 900, color: '#16a34a' } }, quizScore.correct + ' / ' + quizScore.total)
             ),
             h('div', { style: { flex: 1, minWidth: '100px' } },
-              h('div', { style: { fontSize: '10px', color: '#6b21a8', fontWeight: 700, textTransform: 'uppercase' } }, 'Accuracy'),
+              h('div', { style: { fontSize: '10px', color: '#6b21a8', fontWeight: 700, textTransform: 'uppercase' } }, __alloT('stem.applab.accuracy', 'Accuracy')),
               h('div', { style: { fontSize: '20px', fontWeight: 900, color: '#581c87' } }, accuracy + '%')
             ),
             h('div', { style: { flex: 1, minWidth: '100px' } },
-              h('div', { style: { fontSize: '10px', color: '#6b21a8', fontWeight: 700, textTransform: 'uppercase' } }, 'Streak'),
+              h('div', { style: { fontSize: '10px', color: '#6b21a8', fontWeight: 700, textTransform: 'uppercase' } }, __alloT('stem.applab.streak', 'Streak')),
               h('div', { style: { fontSize: '20px', fontWeight: 900, color: '#dc2626' } }, '🔥 ' + quizScore.streak),
               quizScore.best > 0 && h('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'Best: ' + quizScore.best)
             ),
-            h('button', { onClick: resetQuizScore, style: btn('#fef3c7', '#92400e', false), title: 'Reset score' }, '↻ Reset')
+            h('button', { onClick: resetQuizScore, style: btn('#fef3c7', '#92400e', false), title: __alloT('stem.applab.reset_score', 'Reset score') }, __alloT('stem.applab.reset', '↻ Reset'))
           ),
 
           // Question card
@@ -19313,14 +19314,14 @@ test('no a11y violations', async () => {
             // Nav
             h('div', { style: { display: 'flex', gap: '8px', marginTop: '14px', justifyContent: 'space-between' } },
               h('button', { onClick: function() { setQuizIdx(safeIdx - 1); setQuizPicked(null); }, disabled: safeIdx === 0,
-                style: btn('#f1f5f9', '#374151', safeIdx === 0) }, '◀ Previous'),
+                style: btn('#f1f5f9', '#374151', safeIdx === 0) }, __alloT('stem.applab.previous', '◀ Previous')),
               h('div', { style: { display: 'flex', gap: '8px' } },
                 h('button', { onClick: function() {
                   var rand = Math.floor(Math.random() * ALL_Q.length);
                   setQuizIdx(rand); setQuizPicked(null);
-                }, style: btn('#f1f5f9', '#374151', false) }, '🎲 Random'),
+                }, style: btn('#f1f5f9', '#374151', false) }, __alloT('stem.applab.random', '🎲 Random')),
                 h('button', { onClick: function() { setQuizIdx(safeIdx + 1); setQuizPicked(null); }, disabled: safeIdx === ALL_Q.length - 1,
-                  style: btn(PURPLE, '#fff', safeIdx === ALL_Q.length - 1) }, 'Next ▶')
+                  style: btn(PURPLE, '#fff', safeIdx === ALL_Q.length - 1) }, __alloT('stem.applab.next', 'Next ▶'))
               )
             )
           )
@@ -19335,7 +19336,7 @@ test('no a11y violations', async () => {
 
       var renderFlashcards = function() {
         var GLOSS = typeof COMPUTING_GLOSSARY !== 'undefined' ? COMPUTING_GLOSSARY : [];
-        if (GLOSS.length === 0) return h('p', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'No glossary loaded.');
+        if (GLOSS.length === 0) return h('p', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.applab.no_glossary_loaded', 'No glossary loaded.'));
         var order = flashOrder || GLOSS.map(function(_, i) { return i; });
         var safeIdx = ((flashIdx % order.length) + order.length) % order.length;
         var entry = GLOSS[order[safeIdx]];
@@ -19363,8 +19364,8 @@ test('no a11y violations', async () => {
           h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', width: '100%', justifyContent: 'center' } },
             h('span', { style: { fontSize: '12px', color: '#6b7280', fontWeight: 700 } }, 'Card ' + (safeIdx + 1) + ' of ' + GLOSS.length),
             flashShuffle
-              ? h('button', { onClick: unshuffle, style: btn('#f1f5f9', '#374151', false) }, '↩ Unshuffle')
-              : h('button', { onClick: shuffle, style: btn('#f1f5f9', '#374151', false) }, '🔀 Shuffle')
+              ? h('button', { onClick: unshuffle, style: btn('#f1f5f9', '#374151', false) }, __alloT('stem.applab.unshuffle', '↩ Unshuffle'))
+              : h('button', { onClick: shuffle, style: btn('#f1f5f9', '#374151', false) }, __alloT('stem.applab.shuffle', '🔀 Shuffle'))
           ),
 
           // Card
@@ -19387,13 +19388,13 @@ test('no a11y violations', async () => {
           // Nav
           h('div', { style: { display: 'flex', gap: '8px' } },
             h('button', { onClick: function() { setFlashIdx(safeIdx - 1); setFlashFlipped(false); },
-              style: btn('#f1f5f9', '#374151', false) }, '◀ Previous'),
+              style: btn('#f1f5f9', '#374151', false) }, __alloT('stem.applab.previous_2', '◀ Previous')),
             h('button', { onClick: function() {
               var rand = Math.floor(Math.random() * order.length);
               setFlashIdx(rand); setFlashFlipped(false);
-            }, style: btn('#f1f5f9', '#374151', false) }, '🎲 Random'),
+            }, style: btn('#f1f5f9', '#374151', false) }, __alloT('stem.applab.random_2', '🎲 Random')),
             h('button', { onClick: function() { setFlashIdx(safeIdx + 1); setFlashFlipped(false); },
-              style: btn(PURPLE, '#fff', false) }, 'Next ▶')
+              style: btn(PURPLE, '#fff', false) }, __alloT('stem.applab.next_2', 'Next ▶'))
           )
         );
       };
@@ -19426,7 +19427,7 @@ test('no a11y violations', async () => {
                 tabBtn('html', '📄 HTML'),
                 tabBtn('css', '🎨 CSS'),
                 tabBtn('js', '⚡ JS'),
-                h('button', { onClick: function() { setPgRun(pgRun + 1); }, style: Object.assign({}, btn(PURPLE, '#fff', false), { marginLeft: 'auto' }) }, '▶ Run')
+                h('button', { onClick: function() { setPgRun(pgRun + 1); }, style: Object.assign({}, btn(PURPLE, '#fff', false), { marginLeft: 'auto' }) }, __alloT('stem.applab.run', '▶ Run'))
               ),
               h('textarea', {
                 value: pgTab === 'html' ? pgHtml : pgTab === 'css' ? pgCss : pgJs,
@@ -19444,44 +19445,44 @@ test('no a11y violations', async () => {
             ),
             // Preview
             h('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', gap: '6px', minWidth: 0 } },
-              h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase' } }, 'Live Preview'),
-              h('iframe', { key: pgRun, src: blob, title: 'Playground preview', sandbox: 'allow-scripts',
+              h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase' } }, __alloT('stem.applab.live_preview', 'Live Preview')),
+              h('iframe', { key: pgRun, src: blob, title: __alloT('stem.applab.playground_preview', 'Playground preview'), sandbox: 'allow-scripts',
                 style: { flex: 1, border: '1px solid #e5e7eb', borderRadius: '10px', background: '#fff' } })
             )
           ),
           // Hint
           h('p', { style: { fontSize: '11px', color: '#6b7280', margin: 0 } },
-            '💡 Edit the HTML, CSS, or JS tabs. Click Run to see your changes. The preview is sandboxed for safety.')
+            __alloT('stem.applab.edit_the_html_css_or_js_tabs_click_run', '💡 Edit the HTML, CSS, or JS tabs. Click Run to see your changes. The preview is sandboxed for safety.'))
         );
       };
 
       // ── Tab content renderers ──
       var LEARN_TOPICS = [
-        { id: 'html_quick', label: 'HTML Quick Ref', icon: '🔹', subtitle: 'Common HTML elements at a glance', render: function() { return renderEntries(HTML_REFERENCE || [], { titleKey: 'tag' }); } },
-        { id: 'html_full', label: 'HTML5 Full Reference', icon: '📝', subtitle: 'Complete element-by-element documentation', render: function() { return renderEntries(typeof HTML5_FULL_REFERENCE !== 'undefined' ? HTML5_FULL_REFERENCE : [], { titleKey: 'element' }); } },
-        { id: 'css_quick', label: 'CSS Quick Ref', icon: '🎨', subtitle: 'Properties + selectors cheat sheet', render: function() { return renderEntries(CSS_REFERENCE || [], { titleKey: 'property' }); } },
-        { id: 'css_full', label: 'CSS Full Reference', icon: '🎭', subtitle: 'Verbose property documentation with examples', render: function() { return renderEntries(typeof CSS_FULL_REFERENCE !== 'undefined' ? CSS_FULL_REFERENCE : [], { titleKey: 'property' }); } },
-        { id: 'js_quick', label: 'JavaScript Quick Ref', icon: '⚡', subtitle: 'JS fundamentals in one screen', render: function() { return renderEntries(JS_REFERENCE || [], { titleKey: 'topic' }); } },
-        { id: 'js_methods', label: 'JS Methods Reference', icon: '🔧', subtitle: 'String/Array/Object/Math/Date methods', render: function() { return renderEntries(typeof JS_METHODS_REFERENCE !== 'undefined' ? JS_METHODS_REFERENCE : [], { titleKey: 'method' }); } },
-        { id: 'modern_js', label: 'Modern JS Features', icon: '✨', subtitle: 'ES6+ features used in production today', render: function() { return renderEntries(MODERN_JS || []); } },
-        { id: 'react', label: 'React Reference', icon: '⚛️', subtitle: 'Hooks, components, and patterns', render: function() { return renderEntries(REACT_REFERENCE || []); } },
-        { id: 'typescript', label: 'TypeScript', icon: '🔷', subtitle: 'Static typing for JavaScript', render: function() { return renderEntries(TYPESCRIPT_REFERENCE || []); } },
-        { id: 'node', label: 'Node.js + npm', icon: '🟢', subtitle: 'Server-side JS, packages, and tooling', render: function() { return renderEntries(NODE_REFERENCE || []); } },
-        { id: 'web_apis', label: 'Web APIs', icon: '🌐', subtitle: 'fetch, storage, observers, workers, media', render: function() { return renderEntries(WEB_APIS_REFERENCE || []); } },
-        { id: 'dom_api', label: 'DOM API', icon: '🌳', subtitle: 'Document manipulation and events', render: function() { return renderEntries(typeof DOM_API_REFERENCE !== 'undefined' ? DOM_API_REFERENCE : [], { titleKey: 'method' }); } },
-        { id: 'aria', label: 'ARIA Reference', icon: '👂', subtitle: 'Accessibility attributes by name', render: function() { return renderEntries(typeof ARIA_REFERENCE !== 'undefined' ? ARIA_REFERENCE : [], { titleKey: 'attribute' }); } },
-        { id: 'sql', label: 'SQL Reference', icon: '🗄️', subtitle: 'SELECT, JOIN, GROUP BY, and more', render: function() { return renderEntries(SQL_REFERENCE || []); } },
-        { id: 'regex', label: 'Regex Reference', icon: '🔍', subtitle: 'Patterns, flags, and pitfalls', render: function() { return renderEntries(REGEX_REFERENCE || [], { titleKey: 'pattern' }); } },
-        { id: 'shell', label: 'Shell + CLI', icon: '💻', subtitle: 'Terminal commands every dev needs', render: function() { return renderEntries(SHELL_REFERENCE || []); } },
-        { id: 'languages', label: 'Programming Languages', icon: '🌍', subtitle: '20 languages with strengths, weaknesses, future', render: function() { return renderEntries(PROGRAMMING_LANGUAGES || []); } },
-        { id: 'glossary', label: 'Computing Glossary', icon: '📖', subtitle: '50+ essential terms defined', render: function() { return renderEntries(typeof COMPUTING_GLOSSARY !== 'undefined' ? COMPUTING_GLOSSARY : [], { titleKey: 'term' }); } },
-        { id: 'svg', label: 'SVG Reference', icon: '🖌️', subtitle: 'Elements, paths, attributes, accessibility', render: function() { return renderEntries(typeof SVG_REFERENCE !== 'undefined' ? SVG_REFERENCE : [], { titleKey: 'element' }); } },
-        { id: 'web_components', label: 'Web Components', icon: '🧱', subtitle: 'Custom Elements, Shadow DOM, Templates', render: function() { return renderEntries(typeof WEB_COMPONENTS !== 'undefined' ? WEB_COMPONENTS : [], { titleKey: 'concept' }); } },
-        { id: 'gloss_advanced', label: 'Advanced Glossary', icon: '🧠', subtitle: '70+ deeper concepts (Big O, CAP, ACID, etc.)', render: function() { return renderEntries(typeof GLOSSARY_SUPPLEMENT !== 'undefined' ? GLOSSARY_SUPPLEMENT : [], { titleKey: 'term' }); } }
+        { id: 'html_quick', label: __alloT('stem.applab.html_quick_ref', 'HTML Quick Ref'), icon: '🔹', subtitle: __alloT('stem.applab.common_html_elements_at_a_glance', 'Common HTML elements at a glance'), render: function() { return renderEntries(HTML_REFERENCE || [], { titleKey: 'tag' }); } },
+        { id: 'html_full', label: __alloT('stem.applab.html5_full_reference', 'HTML5 Full Reference'), icon: '📝', subtitle: __alloT('stem.applab.complete_element_by_element_documentat', 'Complete element-by-element documentation'), render: function() { return renderEntries(typeof HTML5_FULL_REFERENCE !== 'undefined' ? HTML5_FULL_REFERENCE : [], { titleKey: 'element' }); } },
+        { id: 'css_quick', label: __alloT('stem.applab.css_quick_ref', 'CSS Quick Ref'), icon: '🎨', subtitle: __alloT('stem.applab.properties_selectors_cheat_sheet', 'Properties + selectors cheat sheet'), render: function() { return renderEntries(CSS_REFERENCE || [], { titleKey: 'property' }); } },
+        { id: 'css_full', label: __alloT('stem.applab.css_full_reference', 'CSS Full Reference'), icon: '🎭', subtitle: __alloT('stem.applab.verbose_property_documentation_with_ex', 'Verbose property documentation with examples'), render: function() { return renderEntries(typeof CSS_FULL_REFERENCE !== 'undefined' ? CSS_FULL_REFERENCE : [], { titleKey: 'property' }); } },
+        { id: 'js_quick', label: __alloT('stem.applab.javascript_quick_ref', 'JavaScript Quick Ref'), icon: '⚡', subtitle: __alloT('stem.applab.js_fundamentals_in_one_screen', 'JS fundamentals in one screen'), render: function() { return renderEntries(JS_REFERENCE || [], { titleKey: 'topic' }); } },
+        { id: 'js_methods', label: __alloT('stem.applab.js_methods_reference', 'JS Methods Reference'), icon: '🔧', subtitle: __alloT('stem.applab.string_array_object_math_date_methods', 'String/Array/Object/Math/Date methods'), render: function() { return renderEntries(typeof JS_METHODS_REFERENCE !== 'undefined' ? JS_METHODS_REFERENCE : [], { titleKey: 'method' }); } },
+        { id: 'modern_js', label: __alloT('stem.applab.modern_js_features', 'Modern JS Features'), icon: '✨', subtitle: __alloT('stem.applab.es6_features_used_in_production_today', 'ES6+ features used in production today'), render: function() { return renderEntries(MODERN_JS || []); } },
+        { id: 'react', label: __alloT('stem.applab.react_reference', 'React Reference'), icon: '⚛️', subtitle: __alloT('stem.applab.hooks_components_and_patterns', 'Hooks, components, and patterns'), render: function() { return renderEntries(REACT_REFERENCE || []); } },
+        { id: 'typescript', label: 'TypeScript', icon: '🔷', subtitle: __alloT('stem.applab.static_typing_for_javascript', 'Static typing for JavaScript'), render: function() { return renderEntries(TYPESCRIPT_REFERENCE || []); } },
+        { id: 'node', label: __alloT('stem.applab.node_js_npm', 'Node.js + npm'), icon: '🟢', subtitle: __alloT('stem.applab.server_side_js_packages_and_tooling', 'Server-side JS, packages, and tooling'), render: function() { return renderEntries(NODE_REFERENCE || []); } },
+        { id: 'web_apis', label: __alloT('stem.applab.web_apis', 'Web APIs'), icon: '🌐', subtitle: __alloT('stem.applab.fetch_storage_observers_workers_media', 'fetch, storage, observers, workers, media'), render: function() { return renderEntries(WEB_APIS_REFERENCE || []); } },
+        { id: 'dom_api', label: __alloT('stem.applab.dom_api', 'DOM API'), icon: '🌳', subtitle: __alloT('stem.applab.document_manipulation_and_events', 'Document manipulation and events'), render: function() { return renderEntries(typeof DOM_API_REFERENCE !== 'undefined' ? DOM_API_REFERENCE : [], { titleKey: 'method' }); } },
+        { id: 'aria', label: __alloT('stem.applab.aria_reference', 'ARIA Reference'), icon: '👂', subtitle: __alloT('stem.applab.accessibility_attributes_by_name', 'Accessibility attributes by name'), render: function() { return renderEntries(typeof ARIA_REFERENCE !== 'undefined' ? ARIA_REFERENCE : [], { titleKey: 'attribute' }); } },
+        { id: 'sql', label: __alloT('stem.applab.sql_reference', 'SQL Reference'), icon: '🗄️', subtitle: __alloT('stem.applab.select_join_group_by_and_more', 'SELECT, JOIN, GROUP BY, and more'), render: function() { return renderEntries(SQL_REFERENCE || []); } },
+        { id: 'regex', label: __alloT('stem.applab.regex_reference', 'Regex Reference'), icon: '🔍', subtitle: __alloT('stem.applab.patterns_flags_and_pitfalls', 'Patterns, flags, and pitfalls'), render: function() { return renderEntries(REGEX_REFERENCE || [], { titleKey: 'pattern' }); } },
+        { id: 'shell', label: __alloT('stem.applab.shell_cli', 'Shell + CLI'), icon: '💻', subtitle: __alloT('stem.applab.terminal_commands_every_dev_needs', 'Terminal commands every dev needs'), render: function() { return renderEntries(SHELL_REFERENCE || []); } },
+        { id: 'languages', label: __alloT('stem.applab.programming_languages', 'Programming Languages'), icon: '🌍', subtitle: __alloT('stem.applab.20_languages_with_strengths_weaknesses', '20 languages with strengths, weaknesses, future'), render: function() { return renderEntries(PROGRAMMING_LANGUAGES || []); } },
+        { id: 'glossary', label: __alloT('stem.applab.computing_glossary', 'Computing Glossary'), icon: '📖', subtitle: __alloT('stem.applab.50_essential_terms_defined', '50+ essential terms defined'), render: function() { return renderEntries(typeof COMPUTING_GLOSSARY !== 'undefined' ? COMPUTING_GLOSSARY : [], { titleKey: 'term' }); } },
+        { id: 'svg', label: __alloT('stem.applab.svg_reference', 'SVG Reference'), icon: '🖌️', subtitle: __alloT('stem.applab.elements_paths_attributes_accessibilit', 'Elements, paths, attributes, accessibility'), render: function() { return renderEntries(typeof SVG_REFERENCE !== 'undefined' ? SVG_REFERENCE : [], { titleKey: 'element' }); } },
+        { id: 'web_components', label: __alloT('stem.applab.web_components', 'Web Components'), icon: '🧱', subtitle: __alloT('stem.applab.custom_elements_shadow_dom_templates', 'Custom Elements, Shadow DOM, Templates'), render: function() { return renderEntries(typeof WEB_COMPONENTS !== 'undefined' ? WEB_COMPONENTS : [], { titleKey: 'concept' }); } },
+        { id: 'gloss_advanced', label: __alloT('stem.applab.advanced_glossary', 'Advanced Glossary'), icon: '🧠', subtitle: __alloT('stem.applab.70_deeper_concepts_big_o_cap_acid_etc', '70+ deeper concepts (Big O, CAP, ACID, etc.)'), render: function() { return renderEntries(typeof GLOSSARY_SUPPLEMENT !== 'undefined' ? GLOSSARY_SUPPLEMENT : [], { titleKey: 'term' }); } }
       ];
 
       var PRACTICE_TOPICS = [
-        { id: 'projects', label: 'Project Ideas', icon: '💡', subtitle: '25 detailed specs to build from scratch', render: function() {
+        { id: 'projects', label: __alloT('stem.applab.project_ideas', 'Project Ideas'), icon: '💡', subtitle: __alloT('stem.applab.25_detailed_specs_to_build_from_scratc', '25 detailed specs to build from scratch'), render: function() {
             return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
               (PROJECT_IDEAS || []).map(function(p, i) {
                 return h('div', { key: i, style: { background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '10px', padding: '12px' } },
@@ -19491,16 +19492,16 @@ test('no a11y violations', async () => {
                   ),
                   p.description && h('p', { style: { fontSize: '12px', color: '#374151', margin: '0 0 8px 0', lineHeight: 1.5 } }, p.description),
                   p.prompt && h('button', { onClick: function() { setPrompt(p.prompt); goToTab('build'); if (addToast) addToast('Loaded into Build tab', 'success'); },
-                    style: btn(PURPLE, '#fff', false) }, '🚀 Build This'),
+                    style: btn(PURPLE, '#fff', false) }, __alloT('stem.applab.build_this', '🚀 Build This')),
                   p.skills && h('div', { style: { fontSize: '11px', color: '#6b7280', marginTop: '8px' } }, h('strong', null, 'Skills: '), Array.isArray(p.skills) ? p.skills.join(', ') : p.skills)
                 );
               })
             );
           } },
-        { id: 'tutorials', label: 'Tutorials', icon: '📖', subtitle: 'Step-by-step walkthroughs', render: function() { return renderEntries(typeof TUTORIALS !== 'undefined' ? TUTORIALS : [], { titleKey: 'title' }); } },
-        { id: 'hour_of_code', label: 'Hour of Code', icon: '⏱️', subtitle: 'Quick guided activities (1 hour each)', render: function() { return renderEntries(typeof HOUR_OF_CODE_LESSONS !== 'undefined' ? HOUR_OF_CODE_LESSONS : [], { titleKey: 'title' }); } },
-        { id: 'lessons', label: 'Lesson Plans', icon: '👨‍🏫', subtitle: 'NGSS-aligned for K-12 educators', render: function() { return renderEntries(typeof LESSON_PLANS !== 'undefined' ? LESSON_PLANS : [], { titleKey: 'title' }); } },
-        { id: 'starters', label: 'Starter Templates', icon: '📄', subtitle: 'Ready-to-modify HTML/CSS/JS boilerplates', render: function() {
+        { id: 'tutorials', label: __alloT('stem.applab.tutorials', 'Tutorials'), icon: '📖', subtitle: __alloT('stem.applab.step_by_step_walkthroughs', 'Step-by-step walkthroughs'), render: function() { return renderEntries(typeof TUTORIALS !== 'undefined' ? TUTORIALS : [], { titleKey: 'title' }); } },
+        { id: 'hour_of_code', label: __alloT('stem.applab.hour_of_code', 'Hour of Code'), icon: '⏱️', subtitle: __alloT('stem.applab.quick_guided_activities_1_hour_each', 'Quick guided activities (1 hour each)'), render: function() { return renderEntries(typeof HOUR_OF_CODE_LESSONS !== 'undefined' ? HOUR_OF_CODE_LESSONS : [], { titleKey: 'title' }); } },
+        { id: 'lessons', label: __alloT('stem.applab.lesson_plans', 'Lesson Plans'), icon: '👨‍🏫', subtitle: __alloT('stem.applab.ngss_aligned_for_k_12_educators', 'NGSS-aligned for K-12 educators'), render: function() { return renderEntries(typeof LESSON_PLANS !== 'undefined' ? LESSON_PLANS : [], { titleKey: 'title' }); } },
+        { id: 'starters', label: __alloT('stem.applab.starter_templates', 'Starter Templates'), icon: '📄', subtitle: __alloT('stem.applab.ready_to_modify_html_css_js_boilerplat', 'Ready-to-modify HTML/CSS/JS boilerplates'), render: function() {
             var STARTERS = typeof STARTER_TEMPLATES !== 'undefined' ? STARTER_TEMPLATES : [];
             return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
               STARTERS.map(function(s, i) {
@@ -19509,138 +19510,138 @@ test('no a11y violations', async () => {
                   s.description && h('p', { style: { fontSize: '12px', color: '#374151', margin: '0 0 8px 0' } }, s.description),
                   s.code && h('pre', { style: { fontSize: '11px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', padding: '10px', borderRadius: '8px', overflowX: 'auto', maxHeight: '240px' } }, s.code),
                   s.code && h('button', { onClick: function() { setHtml(s.code); setEditHtml(s.code); setHistory([s.code]); setHistoryIdx(0); goToTab('build'); if (addToast) addToast('Loaded ' + (s.name || 'template'), 'success'); },
-                    style: Object.assign({}, btn(PURPLE, '#fff', false), { marginTop: '8px' }) }, '📥 Load in Build')
+                    style: Object.assign({}, btn(PURPLE, '#fff', false), { marginTop: '8px' }) }, __alloT('stem.applab.load_in_build', '📥 Load in Build'))
                 );
               })
             );
           } },
-        { id: 'exemplars', label: 'Student Exemplars', icon: '🌟', subtitle: 'Sample student work across grade levels', render: function() { return renderEntries(typeof STUDENT_EXEMPLARS !== 'undefined' ? STUDENT_EXEMPLARS : [], { titleKey: 'title' }); } },
-        { id: 'interview', label: 'Interview Problems', icon: '🧠', subtitle: '11 classic problems with full solutions', render: function() { return renderEntries(typeof INTERVIEW_PROBLEMS !== 'undefined' ? INTERVIEW_PROBLEMS : [], { titleKey: 'problem' }); } },
-        { id: 'quiz', label: 'Quiz Engine', icon: '❓', subtitle: 'Interactive quiz with scoring and streaks', render: renderQuizEngine },
-        { id: 'flashcards', label: 'Flashcards', icon: '🃏', subtitle: 'Flip-card study mode for the glossary', render: renderFlashcards },
-        { id: 'playground', label: 'Code Playground', icon: '🛝', subtitle: 'Live HTML/CSS/JS sandbox with preview', render: renderPlayground },
-        { id: 'deep_dives', label: 'Deep Dives', icon: '🌊', subtitle: 'In-depth essays on big concepts', render: function() { return renderEntries(typeof DEEP_DIVES !== 'undefined' ? DEEP_DIVES : [], { titleKey: 'title' }); } },
-        { id: 'pep_talk', label: 'Pep Talk', icon: '💪', subtitle: 'Encouragement when you hit a wall', render: function() { return renderEntries(typeof STUDENT_PEP_TALK !== 'undefined' ? STUDENT_PEP_TALK : [], { titleKey: 'message' }); } }
+        { id: 'exemplars', label: __alloT('stem.applab.student_exemplars', 'Student Exemplars'), icon: '🌟', subtitle: __alloT('stem.applab.sample_student_work_across_grade_level', 'Sample student work across grade levels'), render: function() { return renderEntries(typeof STUDENT_EXEMPLARS !== 'undefined' ? STUDENT_EXEMPLARS : [], { titleKey: 'title' }); } },
+        { id: 'interview', label: __alloT('stem.applab.interview_problems', 'Interview Problems'), icon: '🧠', subtitle: __alloT('stem.applab.11_classic_problems_with_full_solution', '11 classic problems with full solutions'), render: function() { return renderEntries(typeof INTERVIEW_PROBLEMS !== 'undefined' ? INTERVIEW_PROBLEMS : [], { titleKey: 'problem' }); } },
+        { id: 'quiz', label: __alloT('stem.applab.quiz_engine', 'Quiz Engine'), icon: '❓', subtitle: __alloT('stem.applab.interactive_quiz_with_scoring_and_stre', 'Interactive quiz with scoring and streaks'), render: renderQuizEngine },
+        { id: 'flashcards', label: __alloT('stem.applab.flashcards', 'Flashcards'), icon: '🃏', subtitle: __alloT('stem.applab.flip_card_study_mode_for_the_glossary', 'Flip-card study mode for the glossary'), render: renderFlashcards },
+        { id: 'playground', label: __alloT('stem.applab.code_playground', 'Code Playground'), icon: '🛝', subtitle: __alloT('stem.applab.live_html_css_js_sandbox_with_preview', 'Live HTML/CSS/JS sandbox with preview'), render: renderPlayground },
+        { id: 'deep_dives', label: __alloT('stem.applab.deep_dives', 'Deep Dives'), icon: '🌊', subtitle: __alloT('stem.applab.in_depth_essays_on_big_concepts', 'In-depth essays on big concepts'), render: function() { return renderEntries(typeof DEEP_DIVES !== 'undefined' ? DEEP_DIVES : [], { titleKey: 'title' }); } },
+        { id: 'pep_talk', label: __alloT('stem.applab.pep_talk', 'Pep Talk'), icon: '💪', subtitle: __alloT('stem.applab.encouragement_when_you_hit_a_wall', 'Encouragement when you hit a wall'), render: function() { return renderEntries(typeof STUDENT_PEP_TALK !== 'undefined' ? STUDENT_PEP_TALK : [], { titleKey: 'message' }); } }
       ];
 
       var PATTERN_TOPICS = [
-        { id: 'algorithms', label: 'Algorithms', icon: '🧮', subtitle: '30 algorithms with code and complexity', render: function() { return renderEntries(typeof ALGORITHMS !== 'undefined' ? ALGORITHMS : []); } },
-        { id: 'data_structures', label: 'Data Structures', icon: '🏗️', subtitle: 'Arrays, lists, trees, graphs, and more', render: function() { return renderEntries(DATA_STRUCTURES || []); } },
-        { id: 'design_patterns', label: 'Design Patterns', icon: '🧩', subtitle: 'Reusable solutions to common problems', render: function() { return renderEntries(typeof DESIGN_PATTERNS !== 'undefined' ? DESIGN_PATTERNS : []); } },
-        { id: 'computational_thinking', label: 'Computational Thinking', icon: '🧠', subtitle: 'The 5 pillars: decomposition, pattern, abstraction, algorithms, debug', render: function() { return renderEntries(typeof COMPUTATIONAL_THINKING !== 'undefined' ? COMPUTATIONAL_THINKING : [], { titleKey: 'pillar' }); } },
-        { id: 'ap_csp', label: 'AP CSP Framework', icon: '🎓', subtitle: 'Big Ideas + Computational Thinking Practices', render: function() { return renderEntries(typeof AP_CSP_FRAMEWORK !== 'undefined' ? AP_CSP_FRAMEWORK : [], { titleKey: 'bigIdea' }); } },
-        { id: 'app_arch', label: 'App Architecture', icon: '🏛️', subtitle: '19 architectural patterns explained', render: function() { return renderEntries(typeof APP_ARCHITECTURE !== 'undefined' ? APP_ARCHITECTURE : []); } },
-        { id: 'idioms', label: 'Code Idioms', icon: '📜', subtitle: '25 common patterns every JS dev knows', render: function() { return renderEntries(typeof CODE_IDIOMS !== 'undefined' ? CODE_IDIOMS : []); } },
-        { id: 'gen_patterns', label: 'App Generation Patterns', icon: '🔄', subtitle: 'How to build different kinds of apps', render: function() { return renderEntries(APP_GENERATION_PATTERNS || []); } },
-        { id: 'programming_concepts', label: 'Programming Concepts', icon: '💭', subtitle: '17 core ideas every programmer learns', render: function() { return renderEntries(typeof PROGRAMMING_CONCEPTS !== 'undefined' ? PROGRAMMING_CONCEPTS : []); } },
-        { id: 'common_bugs', label: 'Common Bugs', icon: '🐛', subtitle: 'Bugs every dev hits, with fixes', render: function() { return renderEntries(typeof COMMON_BUGS !== 'undefined' ? COMMON_BUGS : []); } },
-        { id: 'errors', label: 'Error Recovery', icon: '⚠️', subtitle: 'How to read and fix error messages', render: function() { return renderEntries(typeof ERROR_RECOVERY !== 'undefined' ? ERROR_RECOVERY : [], { titleKey: 'error' }); } },
-        { id: 'famous_bugs', label: 'Famous Bugs', icon: '💻', subtitle: 'The 15 most expensive bugs in history', render: function() { return renderEntries(typeof FAMOUS_BUGS !== 'undefined' ? FAMOUS_BUGS : []); } },
-        { id: 'browser_internals', label: 'Browser Internals', icon: '🌐', subtitle: 'How the browser actually works', render: function() { return renderEntries(typeof BROWSER_INTERNALS !== 'undefined' ? BROWSER_INTERNALS : [], { titleKey: 'topic' }); } },
-        { id: 'tech_stacks', label: 'Tech Stacks', icon: '📚', subtitle: 'How real apps combine technologies', render: function() { return renderEntries(typeof TECH_STACKS !== 'undefined' ? TECH_STACKS : [], { titleKey: 'stack' }); } },
-        { id: 'apis', label: 'Popular APIs', icon: '🔌', subtitle: '25 APIs to integrate into your apps', render: function() { return renderEntries(typeof POPULAR_APIS !== 'undefined' ? POPULAR_APIS : []); } },
-        { id: 'database', label: 'Database Concepts', icon: '🗄️', subtitle: '15 essential DB concepts', render: function() { return renderEntries(typeof DATABASE_CONCEPTS !== 'undefined' ? DATABASE_CONCEPTS : []); } },
-        { id: 'build_tools', label: 'Build Tools', icon: '🔨', subtitle: 'Vite, esbuild, webpack, and friends', render: function() { return renderEntries(typeof BUILD_TOOLS !== 'undefined' ? BUILD_TOOLS : [], { titleKey: 'tool' }); } },
-        { id: 'http_status', label: 'HTTP Status Codes', icon: '🚦', subtitle: 'Every status code explained', render: function() { return renderEntries(typeof HTTP_STATUS_CODES !== 'undefined' ? HTTP_STATUS_CODES : [], { titleKey: 'code' }); } },
-        { id: 'http_methods', label: 'HTTP Methods', icon: '🔁', subtitle: 'GET, POST, PUT, DELETE, and the rest', render: function() { return renderEntries(typeof HTTP_METHODS !== 'undefined' ? HTTP_METHODS : [], { titleKey: 'method' }); } },
-        { id: 'mime_types', label: 'MIME Types', icon: '📦', subtitle: 'Content types every dev encounters', render: function() { return renderEntries(typeof MIME_TYPES !== 'undefined' ? MIME_TYPES : [], { titleKey: 'type' }); } },
-        { id: 'dns', label: 'DNS Records', icon: '🌍', subtitle: 'A, CNAME, MX, TXT, and more', render: function() { return renderEntries(typeof DNS_RECORDS !== 'undefined' ? DNS_RECORDS : [], { titleKey: 'type' }); } },
-        { id: 'errors_dict', label: 'Error Dictionary', icon: '🚨', subtitle: 'Decode common JS / web error messages', render: function() { return renderEntries(typeof ERROR_DICTIONARY !== 'undefined' ? ERROR_DICTIONARY : [], { titleKey: 'error' }); } },
-        { id: 'api_design', label: 'API Design Guide', icon: '🛠️', subtitle: 'REST conventions, versioning, pagination', render: function() { return renderEntries(typeof API_DESIGN !== 'undefined' ? API_DESIGN : [], { titleKey: 'principle' }); } },
-        { id: 'async', label: 'Async Patterns', icon: '🔁', subtitle: 'Promises, await, retries, cancellation', render: function() { return renderEntries(typeof ASYNC_PATTERNS !== 'undefined' ? ASYNC_PATTERNS : [], { titleKey: 'pattern' }); } },
-        { id: 'state_mgmt', label: 'State Management', icon: '🗂️', subtitle: 'When to use what (Context, Zustand, Redux, etc.)', render: function() { return renderEntries(typeof STATE_MANAGEMENT !== 'undefined' ? STATE_MANAGEMENT : [], { titleKey: 'level' }); } },
-        { id: 'debugging', label: 'Debugging Techniques', icon: '🔬', subtitle: '15 techniques every dev should master', render: function() { return renderEntries(typeof DEBUGGING_TECHNIQUES !== 'undefined' ? DEBUGGING_TECHNIQUES : [], { titleKey: 'technique' }); } },
-        { id: 'refactoring', label: 'Refactoring Patterns', icon: '🔧', subtitle: 'Classic Fowler-style refactorings with code', render: function() { return renderEntries(typeof REFACTORING_PATTERNS !== 'undefined' ? REFACTORING_PATTERNS : [], { titleKey: 'pattern' }); } },
-        { id: 'code_smells', label: 'Code Smells', icon: '👃', subtitle: '25 signs that code needs refactoring', render: function() { return renderEntries(typeof CODE_SMELLS !== 'undefined' ? CODE_SMELLS : [], { titleKey: 'smell' }); } }
+        { id: 'algorithms', label: __alloT('stem.applab.algorithms', 'Algorithms'), icon: '🧮', subtitle: __alloT('stem.applab.30_algorithms_with_code_and_complexity', '30 algorithms with code and complexity'), render: function() { return renderEntries(typeof ALGORITHMS !== 'undefined' ? ALGORITHMS : []); } },
+        { id: 'data_structures', label: __alloT('stem.applab.data_structures', 'Data Structures'), icon: '🏗️', subtitle: __alloT('stem.applab.arrays_lists_trees_graphs_and_more', 'Arrays, lists, trees, graphs, and more'), render: function() { return renderEntries(DATA_STRUCTURES || []); } },
+        { id: 'design_patterns', label: __alloT('stem.applab.design_patterns', 'Design Patterns'), icon: '🧩', subtitle: __alloT('stem.applab.reusable_solutions_to_common_problems', 'Reusable solutions to common problems'), render: function() { return renderEntries(typeof DESIGN_PATTERNS !== 'undefined' ? DESIGN_PATTERNS : []); } },
+        { id: 'computational_thinking', label: __alloT('stem.applab.computational_thinking', 'Computational Thinking'), icon: '🧠', subtitle: __alloT('stem.applab.the_5_pillars_decomposition_pattern_ab', 'The 5 pillars: decomposition, pattern, abstraction, algorithms, debug'), render: function() { return renderEntries(typeof COMPUTATIONAL_THINKING !== 'undefined' ? COMPUTATIONAL_THINKING : [], { titleKey: 'pillar' }); } },
+        { id: 'ap_csp', label: __alloT('stem.applab.ap_csp_framework', 'AP CSP Framework'), icon: '🎓', subtitle: __alloT('stem.applab.big_ideas_computational_thinking_pract', 'Big Ideas + Computational Thinking Practices'), render: function() { return renderEntries(typeof AP_CSP_FRAMEWORK !== 'undefined' ? AP_CSP_FRAMEWORK : [], { titleKey: 'bigIdea' }); } },
+        { id: 'app_arch', label: __alloT('stem.applab.app_architecture', 'App Architecture'), icon: '🏛️', subtitle: __alloT('stem.applab.19_architectural_patterns_explained', '19 architectural patterns explained'), render: function() { return renderEntries(typeof APP_ARCHITECTURE !== 'undefined' ? APP_ARCHITECTURE : []); } },
+        { id: 'idioms', label: __alloT('stem.applab.code_idioms', 'Code Idioms'), icon: '📜', subtitle: __alloT('stem.applab.25_common_patterns_every_js_dev_knows', '25 common patterns every JS dev knows'), render: function() { return renderEntries(typeof CODE_IDIOMS !== 'undefined' ? CODE_IDIOMS : []); } },
+        { id: 'gen_patterns', label: __alloT('stem.applab.app_generation_patterns', 'App Generation Patterns'), icon: '🔄', subtitle: __alloT('stem.applab.how_to_build_different_kinds_of_apps', 'How to build different kinds of apps'), render: function() { return renderEntries(APP_GENERATION_PATTERNS || []); } },
+        { id: 'programming_concepts', label: __alloT('stem.applab.programming_concepts', 'Programming Concepts'), icon: '💭', subtitle: __alloT('stem.applab.17_core_ideas_every_programmer_learns', '17 core ideas every programmer learns'), render: function() { return renderEntries(typeof PROGRAMMING_CONCEPTS !== 'undefined' ? PROGRAMMING_CONCEPTS : []); } },
+        { id: 'common_bugs', label: __alloT('stem.applab.common_bugs', 'Common Bugs'), icon: '🐛', subtitle: __alloT('stem.applab.bugs_every_dev_hits_with_fixes', 'Bugs every dev hits, with fixes'), render: function() { return renderEntries(typeof COMMON_BUGS !== 'undefined' ? COMMON_BUGS : []); } },
+        { id: 'errors', label: __alloT('stem.applab.error_recovery', 'Error Recovery'), icon: '⚠️', subtitle: __alloT('stem.applab.how_to_read_and_fix_error_messages', 'How to read and fix error messages'), render: function() { return renderEntries(typeof ERROR_RECOVERY !== 'undefined' ? ERROR_RECOVERY : [], { titleKey: 'error' }); } },
+        { id: 'famous_bugs', label: __alloT('stem.applab.famous_bugs', 'Famous Bugs'), icon: '💻', subtitle: __alloT('stem.applab.the_15_most_expensive_bugs_in_history', 'The 15 most expensive bugs in history'), render: function() { return renderEntries(typeof FAMOUS_BUGS !== 'undefined' ? FAMOUS_BUGS : []); } },
+        { id: 'browser_internals', label: __alloT('stem.applab.browser_internals', 'Browser Internals'), icon: '🌐', subtitle: __alloT('stem.applab.how_the_browser_actually_works', 'How the browser actually works'), render: function() { return renderEntries(typeof BROWSER_INTERNALS !== 'undefined' ? BROWSER_INTERNALS : [], { titleKey: 'topic' }); } },
+        { id: 'tech_stacks', label: __alloT('stem.applab.tech_stacks', 'Tech Stacks'), icon: '📚', subtitle: __alloT('stem.applab.how_real_apps_combine_technologies', 'How real apps combine technologies'), render: function() { return renderEntries(typeof TECH_STACKS !== 'undefined' ? TECH_STACKS : [], { titleKey: 'stack' }); } },
+        { id: 'apis', label: __alloT('stem.applab.popular_apis', 'Popular APIs'), icon: '🔌', subtitle: __alloT('stem.applab.25_apis_to_integrate_into_your_apps', '25 APIs to integrate into your apps'), render: function() { return renderEntries(typeof POPULAR_APIS !== 'undefined' ? POPULAR_APIS : []); } },
+        { id: 'database', label: __alloT('stem.applab.database_concepts', 'Database Concepts'), icon: '🗄️', subtitle: __alloT('stem.applab.15_essential_db_concepts', '15 essential DB concepts'), render: function() { return renderEntries(typeof DATABASE_CONCEPTS !== 'undefined' ? DATABASE_CONCEPTS : []); } },
+        { id: 'build_tools', label: __alloT('stem.applab.build_tools', 'Build Tools'), icon: '🔨', subtitle: __alloT('stem.applab.vite_esbuild_webpack_and_friends', 'Vite, esbuild, webpack, and friends'), render: function() { return renderEntries(typeof BUILD_TOOLS !== 'undefined' ? BUILD_TOOLS : [], { titleKey: 'tool' }); } },
+        { id: 'http_status', label: __alloT('stem.applab.http_status_codes', 'HTTP Status Codes'), icon: '🚦', subtitle: __alloT('stem.applab.every_status_code_explained', 'Every status code explained'), render: function() { return renderEntries(typeof HTTP_STATUS_CODES !== 'undefined' ? HTTP_STATUS_CODES : [], { titleKey: 'code' }); } },
+        { id: 'http_methods', label: __alloT('stem.applab.http_methods', 'HTTP Methods'), icon: '🔁', subtitle: __alloT('stem.applab.get_post_put_delete_and_the_rest', 'GET, POST, PUT, DELETE, and the rest'), render: function() { return renderEntries(typeof HTTP_METHODS !== 'undefined' ? HTTP_METHODS : [], { titleKey: 'method' }); } },
+        { id: 'mime_types', label: __alloT('stem.applab.mime_types', 'MIME Types'), icon: '📦', subtitle: __alloT('stem.applab.content_types_every_dev_encounters', 'Content types every dev encounters'), render: function() { return renderEntries(typeof MIME_TYPES !== 'undefined' ? MIME_TYPES : [], { titleKey: 'type' }); } },
+        { id: 'dns', label: __alloT('stem.applab.dns_records', 'DNS Records'), icon: '🌍', subtitle: __alloT('stem.applab.a_cname_mx_txt_and_more', 'A, CNAME, MX, TXT, and more'), render: function() { return renderEntries(typeof DNS_RECORDS !== 'undefined' ? DNS_RECORDS : [], { titleKey: 'type' }); } },
+        { id: 'errors_dict', label: __alloT('stem.applab.error_dictionary', 'Error Dictionary'), icon: '🚨', subtitle: __alloT('stem.applab.decode_common_js_web_error_messages', 'Decode common JS / web error messages'), render: function() { return renderEntries(typeof ERROR_DICTIONARY !== 'undefined' ? ERROR_DICTIONARY : [], { titleKey: 'error' }); } },
+        { id: 'api_design', label: __alloT('stem.applab.api_design_guide', 'API Design Guide'), icon: '🛠️', subtitle: __alloT('stem.applab.rest_conventions_versioning_pagination', 'REST conventions, versioning, pagination'), render: function() { return renderEntries(typeof API_DESIGN !== 'undefined' ? API_DESIGN : [], { titleKey: 'principle' }); } },
+        { id: 'async', label: __alloT('stem.applab.async_patterns', 'Async Patterns'), icon: '🔁', subtitle: __alloT('stem.applab.promises_await_retries_cancellation', 'Promises, await, retries, cancellation'), render: function() { return renderEntries(typeof ASYNC_PATTERNS !== 'undefined' ? ASYNC_PATTERNS : [], { titleKey: 'pattern' }); } },
+        { id: 'state_mgmt', label: __alloT('stem.applab.state_management', 'State Management'), icon: '🗂️', subtitle: __alloT('stem.applab.when_to_use_what_context_zustand_redux', 'When to use what (Context, Zustand, Redux, etc.)'), render: function() { return renderEntries(typeof STATE_MANAGEMENT !== 'undefined' ? STATE_MANAGEMENT : [], { titleKey: 'level' }); } },
+        { id: 'debugging', label: __alloT('stem.applab.debugging_techniques', 'Debugging Techniques'), icon: '🔬', subtitle: __alloT('stem.applab.15_techniques_every_dev_should_master', '15 techniques every dev should master'), render: function() { return renderEntries(typeof DEBUGGING_TECHNIQUES !== 'undefined' ? DEBUGGING_TECHNIQUES : [], { titleKey: 'technique' }); } },
+        { id: 'refactoring', label: __alloT('stem.applab.refactoring_patterns', 'Refactoring Patterns'), icon: '🔧', subtitle: __alloT('stem.applab.classic_fowler_style_refactorings_with', 'Classic Fowler-style refactorings with code'), render: function() { return renderEntries(typeof REFACTORING_PATTERNS !== 'undefined' ? REFACTORING_PATTERNS : [], { titleKey: 'pattern' }); } },
+        { id: 'code_smells', label: __alloT('stem.applab.code_smells', 'Code Smells'), icon: '👃', subtitle: __alloT('stem.applab.25_signs_that_code_needs_refactoring', '25 signs that code needs refactoring'), render: function() { return renderEntries(typeof CODE_SMELLS !== 'undefined' ? CODE_SMELLS : [], { titleKey: 'smell' }); } }
       ];
 
       var QUALITY_TOPICS = [
-        { id: 'wcag', label: 'WCAG Patterns', icon: '♿', subtitle: '15 accessibility patterns with code', render: function() { return renderEntries(typeof WCAG_PATTERNS !== 'undefined' ? WCAG_PATTERNS : []); } },
-        { id: 'a11y_checklist', label: 'A11y Testing Checklist', icon: '✅', subtitle: '9 categories of accessibility checks', render: function() { return renderEntries(typeof A11Y_TESTING_CHECKLIST !== 'undefined' ? A11Y_TESTING_CHECKLIST : []); } },
-        { id: 'performance', label: 'Performance Patterns', icon: '⚡', subtitle: 'How to make apps fast', render: function() { return renderEntries(typeof PERFORMANCE_PATTERNS !== 'undefined' ? PERFORMANCE_PATTERNS : []); } },
-        { id: 'security', label: 'Security Patterns', icon: '🔒', subtitle: 'XSS, SQL injection, and other risks', render: function() { return renderEntries(typeof SECURITY_PATTERNS !== 'undefined' ? SECURITY_PATTERNS : []); } },
-        { id: 'testing', label: 'Testing Guide', icon: '🧪', subtitle: 'Unit, integration, end-to-end', render: function() { return renderEntries(typeof TESTING_GUIDE !== 'undefined' ? TESTING_GUIDE : []); } },
-        { id: 'responsive', label: 'Responsive Design', icon: '📱', subtitle: 'Mobile-first, fluid layouts', render: function() { return renderEntries(RESPONSIVE_DESIGN || []); } },
-        { id: 'uiux', label: 'UI/UX Principles', icon: '🎨', subtitle: 'Make apps that feel right', render: function() { return renderEntries(typeof UI_UX_PRINCIPLES !== 'undefined' ? UI_UX_PRINCIPLES : []); } },
-        { id: 'real_practices', label: 'Real World Practices', icon: '🏢', subtitle: '20+ practices used in production teams', render: function() { return renderEntries(typeof REAL_WORLD_PRACTICES !== 'undefined' ? REAL_WORLD_PRACTICES : []); } },
-        { id: 'devtools', label: 'DevTools Guide', icon: '🔍', subtitle: 'Browser DevTools mastery', render: function() { return renderEntries(typeof DEVTOOLS_GUIDE !== 'undefined' ? DEVTOOLS_GUIDE : [], { titleKey: 'panel' }); } },
-        { id: 'git', label: 'Git Reference', icon: '🌿', subtitle: 'Commands and scenarios', render: function() {
+        { id: 'wcag', label: __alloT('stem.applab.wcag_patterns', 'WCAG Patterns'), icon: '♿', subtitle: __alloT('stem.applab.15_accessibility_patterns_with_code', '15 accessibility patterns with code'), render: function() { return renderEntries(typeof WCAG_PATTERNS !== 'undefined' ? WCAG_PATTERNS : []); } },
+        { id: 'a11y_checklist', label: __alloT('stem.applab.a11y_testing_checklist', 'A11y Testing Checklist'), icon: '✅', subtitle: __alloT('stem.applab.9_categories_of_accessibility_checks', '9 categories of accessibility checks'), render: function() { return renderEntries(typeof A11Y_TESTING_CHECKLIST !== 'undefined' ? A11Y_TESTING_CHECKLIST : []); } },
+        { id: 'performance', label: __alloT('stem.applab.performance_patterns', 'Performance Patterns'), icon: '⚡', subtitle: __alloT('stem.applab.how_to_make_apps_fast', 'How to make apps fast'), render: function() { return renderEntries(typeof PERFORMANCE_PATTERNS !== 'undefined' ? PERFORMANCE_PATTERNS : []); } },
+        { id: 'security', label: __alloT('stem.applab.security_patterns', 'Security Patterns'), icon: '🔒', subtitle: __alloT('stem.applab.xss_sql_injection_and_other_risks', 'XSS, SQL injection, and other risks'), render: function() { return renderEntries(typeof SECURITY_PATTERNS !== 'undefined' ? SECURITY_PATTERNS : []); } },
+        { id: 'testing', label: __alloT('stem.applab.testing_guide', 'Testing Guide'), icon: '🧪', subtitle: __alloT('stem.applab.unit_integration_end_to_end', 'Unit, integration, end-to-end'), render: function() { return renderEntries(typeof TESTING_GUIDE !== 'undefined' ? TESTING_GUIDE : []); } },
+        { id: 'responsive', label: __alloT('stem.applab.responsive_design', 'Responsive Design'), icon: '📱', subtitle: __alloT('stem.applab.mobile_first_fluid_layouts', 'Mobile-first, fluid layouts'), render: function() { return renderEntries(RESPONSIVE_DESIGN || []); } },
+        { id: 'uiux', label: __alloT('stem.applab.ui_ux_principles', 'UI/UX Principles'), icon: '🎨', subtitle: __alloT('stem.applab.make_apps_that_feel_right', 'Make apps that feel right'), render: function() { return renderEntries(typeof UI_UX_PRINCIPLES !== 'undefined' ? UI_UX_PRINCIPLES : []); } },
+        { id: 'real_practices', label: __alloT('stem.applab.real_world_practices', 'Real World Practices'), icon: '🏢', subtitle: __alloT('stem.applab.20_practices_used_in_production_teams', '20+ practices used in production teams'), render: function() { return renderEntries(typeof REAL_WORLD_PRACTICES !== 'undefined' ? REAL_WORLD_PRACTICES : []); } },
+        { id: 'devtools', label: __alloT('stem.applab.devtools_guide', 'DevTools Guide'), icon: '🔍', subtitle: __alloT('stem.applab.browser_devtools_mastery', 'Browser DevTools mastery'), render: function() { return renderEntries(typeof DEVTOOLS_GUIDE !== 'undefined' ? DEVTOOLS_GUIDE : [], { titleKey: 'panel' }); } },
+        { id: 'git', label: __alloT('stem.applab.git_reference', 'Git Reference'), icon: '🌿', subtitle: __alloT('stem.applab.commands_and_scenarios', 'Commands and scenarios'), render: function() {
             var GIT_REF = typeof GIT_REFERENCE !== 'undefined' ? GIT_REFERENCE : [];
             var GIT_SC = typeof GIT_SCENARIOS !== 'undefined' ? GIT_SCENARIOS : [];
             return h('div', null,
-              h('h5', { style: { fontSize: '13px', fontWeight: 700, color: '#374151', marginBottom: '8px', marginTop: 0 } }, 'Commands'),
+              h('h5', { style: { fontSize: '13px', fontWeight: 700, color: '#374151', marginBottom: '8px', marginTop: 0 } }, __alloT('stem.applab.commands', 'Commands')),
               renderEntries(GIT_REF, { titleKey: 'command' }),
-              h('h5', { style: { fontSize: '13px', fontWeight: 700, color: '#374151', margin: '16px 0 8px 0' } }, 'Scenarios'),
+              h('h5', { style: { fontSize: '13px', fontWeight: 700, color: '#374151', margin: '16px 0 8px 0' } }, __alloT('stem.applab.scenarios', 'Scenarios')),
               renderEntries(GIT_SC, { titleKey: 'scenario' })
             );
           } },
-        { id: 'deployment', label: 'Deployment Guide', icon: '🚀', subtitle: 'Hosting platforms compared', render: function() { return renderEntries(DEPLOYMENT_GUIDE || [], { titleKey: 'platform' }); } },
-        { id: 'teaching', label: 'Teaching Principles', icon: '🎓', subtitle: 'For teachers and tutors', render: function() { return renderEntries(typeof TEACHING_PRINCIPLES !== 'undefined' ? TEACHING_PRINCIPLES : [], { titleKey: 'principle' }); } },
-        { id: 'security_checklist', label: 'Security Checklist', icon: '🛡️', subtitle: '11 categories of security audits', render: function() { return renderEntries(typeof SECURITY_CHECKLIST !== 'undefined' ? SECURITY_CHECKLIST : []); } },
-        { id: 'lighthouse', label: 'Lighthouse Audits', icon: '🏮', subtitle: 'Performance / a11y / SEO / PWA scoring', render: function() { return renderEntries(typeof LIGHTHOUSE_CATEGORIES !== 'undefined' ? LIGHTHOUSE_CATEGORIES : []); } },
-        { id: 'colors', label: 'Color Palettes', icon: '🎨', subtitle: 'Curated palettes + color theory + a11y', render: function() { return renderEntries(typeof COLOR_PALETTES !== 'undefined' ? COLOR_PALETTES : []); } },
-        { id: 'fonts', label: 'Font Pairings', icon: '🔠', subtitle: 'Tested font combinations for the web', render: function() { return renderEntries(typeof FONT_PAIRINGS !== 'undefined' ? FONT_PAIRINGS : [], { titleKey: 'pairing' }); } },
-        { id: 'icons', label: 'Icon Libraries', icon: '🔣', subtitle: 'Lucide, Heroicons, Phosphor, and more', render: function() { return renderEntries(typeof ICON_LIBRARIES !== 'undefined' ? ICON_LIBRARIES : []); } },
-        { id: 'keyboard', label: 'Keyboard Shortcuts', icon: '⌨️', subtitle: 'DevTools, VS Code, terminal, git', render: function() { return renderEntries(typeof KEYBOARD_SHORTCUTS !== 'undefined' ? KEYBOARD_SHORTCUTS : []); } },
-        { id: 'unicode', label: 'Unicode Symbols', icon: '✨', subtitle: 'Useful symbols beyond emoji', render: function() { return renderEntries(typeof UNICODE_SYMBOLS !== 'undefined' ? UNICODE_SYMBOLS : [], { titleKey: 'symbol' }); } },
-        { id: 'animation', label: 'CSS Animation', icon: '🎬', subtitle: 'Transitions, keyframes, easings, reduced-motion', render: function() { return renderEntries(typeof ANIMATION_REFERENCE !== 'undefined' ? ANIMATION_REFERENCE : [], { titleKey: 'concept' }); } },
-        { id: 'forms', label: 'Forms Guide', icon: '📝', subtitle: 'Inputs, validation, a11y, multi-step', render: function() { return renderEntries(typeof FORMS_GUIDE !== 'undefined' ? FORMS_GUIDE : [], { titleKey: 'concept' }); } },
-        { id: 'pwa', label: 'PWA Guide', icon: '📲', subtitle: 'Service workers, install, push, offline', render: function() { return renderEntries(typeof PWA_GUIDE !== 'undefined' ? PWA_GUIDE : [], { titleKey: 'concept' }); } },
-        { id: 'dark_mode', label: 'Dark Mode', icon: '🌙', subtitle: 'Implementation, FOIT, colors, a11y', render: function() { return renderEntries(typeof DARK_MODE_GUIDE !== 'undefined' ? DARK_MODE_GUIDE : [], { titleKey: 'approach' }); } },
-        { id: 'docker', label: 'Docker Basics', icon: '🐳', subtitle: 'Images, containers, compose, deployment', render: function() { return renderEntries(typeof DOCKER_BASICS !== 'undefined' ? DOCKER_BASICS : [], { titleKey: 'concept' }); } },
-        { id: 'i18n', label: 'Internationalization', icon: '🌐', subtitle: 'i18n / l10n, RTL, plurals, dates', render: function() { return renderEntries(typeof I18N_GUIDE !== 'undefined' ? I18N_GUIDE : [], { titleKey: 'concept' }); } },
-        { id: 'image_opt', label: 'Image Optimization', icon: '🖼️', subtitle: 'Format selection, srcset, lazy load, CDNs', render: function() { return renderEntries(typeof IMAGE_OPTIMIZATION !== 'undefined' ? IMAGE_OPTIMIZATION : [], { titleKey: 'concept' }); } },
-        { id: 'progressive', label: 'Progressive Enhancement', icon: '🎂', subtitle: 'HTML-first, layer in CSS + JS', render: function() { return renderEntries(typeof PROGRESSIVE_ENHANCEMENT !== 'undefined' ? PROGRESSIVE_ENHANCEMENT : [], { titleKey: 'concept' }); } },
-        { id: 'grid_vs_flex', label: 'Grid vs Flexbox', icon: '🆚', subtitle: 'When to use which, side-by-side examples', render: function() { return renderEntries(typeof GRID_VS_FLEXBOX !== 'undefined' ? GRID_VS_FLEXBOX : [], { titleKey: 'compare' }); } },
-        { id: 'testing_patterns', label: 'Testing Patterns', icon: '🧪', subtitle: 'Unit / integration / E2E / a11y testing', render: function() { return renderEntries(typeof TESTING_PATTERNS !== 'undefined' ? TESTING_PATTERNS : [], { titleKey: 'type' }); } }
+        { id: 'deployment', label: __alloT('stem.applab.deployment_guide', 'Deployment Guide'), icon: '🚀', subtitle: __alloT('stem.applab.hosting_platforms_compared', 'Hosting platforms compared'), render: function() { return renderEntries(DEPLOYMENT_GUIDE || [], { titleKey: 'platform' }); } },
+        { id: 'teaching', label: __alloT('stem.applab.teaching_principles', 'Teaching Principles'), icon: '🎓', subtitle: __alloT('stem.applab.for_teachers_and_tutors', 'For teachers and tutors'), render: function() { return renderEntries(typeof TEACHING_PRINCIPLES !== 'undefined' ? TEACHING_PRINCIPLES : [], { titleKey: 'principle' }); } },
+        { id: 'security_checklist', label: __alloT('stem.applab.security_checklist', 'Security Checklist'), icon: '🛡️', subtitle: __alloT('stem.applab.11_categories_of_security_audits', '11 categories of security audits'), render: function() { return renderEntries(typeof SECURITY_CHECKLIST !== 'undefined' ? SECURITY_CHECKLIST : []); } },
+        { id: 'lighthouse', label: __alloT('stem.applab.lighthouse_audits', 'Lighthouse Audits'), icon: '🏮', subtitle: __alloT('stem.applab.performance_a11y_seo_pwa_scoring', 'Performance / a11y / SEO / PWA scoring'), render: function() { return renderEntries(typeof LIGHTHOUSE_CATEGORIES !== 'undefined' ? LIGHTHOUSE_CATEGORIES : []); } },
+        { id: 'colors', label: __alloT('stem.applab.color_palettes', 'Color Palettes'), icon: '🎨', subtitle: __alloT('stem.applab.curated_palettes_color_theory_a11y', 'Curated palettes + color theory + a11y'), render: function() { return renderEntries(typeof COLOR_PALETTES !== 'undefined' ? COLOR_PALETTES : []); } },
+        { id: 'fonts', label: __alloT('stem.applab.font_pairings', 'Font Pairings'), icon: '🔠', subtitle: __alloT('stem.applab.tested_font_combinations_for_the_web', 'Tested font combinations for the web'), render: function() { return renderEntries(typeof FONT_PAIRINGS !== 'undefined' ? FONT_PAIRINGS : [], { titleKey: 'pairing' }); } },
+        { id: 'icons', label: __alloT('stem.applab.icon_libraries', 'Icon Libraries'), icon: '🔣', subtitle: __alloT('stem.applab.lucide_heroicons_phosphor_and_more', 'Lucide, Heroicons, Phosphor, and more'), render: function() { return renderEntries(typeof ICON_LIBRARIES !== 'undefined' ? ICON_LIBRARIES : []); } },
+        { id: 'keyboard', label: __alloT('stem.applab.keyboard_shortcuts', 'Keyboard Shortcuts'), icon: '⌨️', subtitle: __alloT('stem.applab.devtools_vs_code_terminal_git', 'DevTools, VS Code, terminal, git'), render: function() { return renderEntries(typeof KEYBOARD_SHORTCUTS !== 'undefined' ? KEYBOARD_SHORTCUTS : []); } },
+        { id: 'unicode', label: __alloT('stem.applab.unicode_symbols', 'Unicode Symbols'), icon: '✨', subtitle: __alloT('stem.applab.useful_symbols_beyond_emoji', 'Useful symbols beyond emoji'), render: function() { return renderEntries(typeof UNICODE_SYMBOLS !== 'undefined' ? UNICODE_SYMBOLS : [], { titleKey: 'symbol' }); } },
+        { id: 'animation', label: __alloT('stem.applab.css_animation', 'CSS Animation'), icon: '🎬', subtitle: __alloT('stem.applab.transitions_keyframes_easings_reduced_', 'Transitions, keyframes, easings, reduced-motion'), render: function() { return renderEntries(typeof ANIMATION_REFERENCE !== 'undefined' ? ANIMATION_REFERENCE : [], { titleKey: 'concept' }); } },
+        { id: 'forms', label: __alloT('stem.applab.forms_guide', 'Forms Guide'), icon: '📝', subtitle: __alloT('stem.applab.inputs_validation_a11y_multi_step', 'Inputs, validation, a11y, multi-step'), render: function() { return renderEntries(typeof FORMS_GUIDE !== 'undefined' ? FORMS_GUIDE : [], { titleKey: 'concept' }); } },
+        { id: 'pwa', label: __alloT('stem.applab.pwa_guide', 'PWA Guide'), icon: '📲', subtitle: __alloT('stem.applab.service_workers_install_push_offline', 'Service workers, install, push, offline'), render: function() { return renderEntries(typeof PWA_GUIDE !== 'undefined' ? PWA_GUIDE : [], { titleKey: 'concept' }); } },
+        { id: 'dark_mode', label: __alloT('stem.applab.dark_mode', 'Dark Mode'), icon: '🌙', subtitle: __alloT('stem.applab.implementation_foit_colors_a11y', 'Implementation, FOIT, colors, a11y'), render: function() { return renderEntries(typeof DARK_MODE_GUIDE !== 'undefined' ? DARK_MODE_GUIDE : [], { titleKey: 'approach' }); } },
+        { id: 'docker', label: __alloT('stem.applab.docker_basics', 'Docker Basics'), icon: '🐳', subtitle: __alloT('stem.applab.images_containers_compose_deployment', 'Images, containers, compose, deployment'), render: function() { return renderEntries(typeof DOCKER_BASICS !== 'undefined' ? DOCKER_BASICS : [], { titleKey: 'concept' }); } },
+        { id: 'i18n', label: __alloT('stem.applab.internationalization', 'Internationalization'), icon: '🌐', subtitle: __alloT('stem.applab.i18n_l10n_rtl_plurals_dates', 'i18n / l10n, RTL, plurals, dates'), render: function() { return renderEntries(typeof I18N_GUIDE !== 'undefined' ? I18N_GUIDE : [], { titleKey: 'concept' }); } },
+        { id: 'image_opt', label: __alloT('stem.applab.image_optimization', 'Image Optimization'), icon: '🖼️', subtitle: __alloT('stem.applab.format_selection_srcset_lazy_load_cdns', 'Format selection, srcset, lazy load, CDNs'), render: function() { return renderEntries(typeof IMAGE_OPTIMIZATION !== 'undefined' ? IMAGE_OPTIMIZATION : [], { titleKey: 'concept' }); } },
+        { id: 'progressive', label: __alloT('stem.applab.progressive_enhancement', 'Progressive Enhancement'), icon: '🎂', subtitle: __alloT('stem.applab.html_first_layer_in_css_js', 'HTML-first, layer in CSS + JS'), render: function() { return renderEntries(typeof PROGRESSIVE_ENHANCEMENT !== 'undefined' ? PROGRESSIVE_ENHANCEMENT : [], { titleKey: 'concept' }); } },
+        { id: 'grid_vs_flex', label: __alloT('stem.applab.grid_vs_flexbox', 'Grid vs Flexbox'), icon: '🆚', subtitle: __alloT('stem.applab.when_to_use_which_side_by_side_example', 'When to use which, side-by-side examples'), render: function() { return renderEntries(typeof GRID_VS_FLEXBOX !== 'undefined' ? GRID_VS_FLEXBOX : [], { titleKey: 'compare' }); } },
+        { id: 'testing_patterns', label: __alloT('stem.applab.testing_patterns', 'Testing Patterns'), icon: '🧪', subtitle: __alloT('stem.applab.unit_integration_e2e_a11y_testing', 'Unit / integration / E2E / a11y testing'), render: function() { return renderEntries(typeof TESTING_PATTERNS !== 'undefined' ? TESTING_PATTERNS : [], { titleKey: 'type' }); } }
       ];
 
       var CAREER_TOPICS = [
-        { id: 'careers', label: 'Coding Careers', icon: '💼', subtitle: 'Roles, salaries, and paths', render: function() { return renderEntries(typeof CODING_CAREERS !== 'undefined' ? CODING_CAREERS : [], { titleKey: 'role' }); } },
-        { id: 'career_dev', label: 'Career Development', icon: '📈', subtitle: 'How to grow from junior to senior', render: function() { return renderEntries(typeof CAREER_DEVELOPMENT !== 'undefined' ? CAREER_DEVELOPMENT : [], { titleKey: 'stage' }); } },
-        { id: 'bootcamps', label: 'Bootcamp Guide', icon: '🎯', subtitle: 'Choosing a bootcamp, surviving it', render: function() { return renderEntries(typeof BOOTCAMP_GUIDE !== 'undefined' ? BOOTCAMP_GUIDE : [], { titleKey: 'topic' }); } },
-        { id: 'programmers', label: 'Famous Programmers', icon: '👥', subtitle: 'People who built the field', render: function() { return renderEntries(typeof FAMOUS_PROGRAMMERS !== 'undefined' ? FAMOUS_PROGRAMMERS : []); } },
-        { id: 'open_source', label: 'Open Source Projects', icon: '✨', subtitle: 'Projects to study and contribute to', render: function() { return renderEntries(typeof OPEN_SOURCE_PROJECTS !== 'undefined' ? OPEN_SOURCE_PROJECTS : [], { titleKey: 'project' }); } },
-        { id: 'interview_faq', label: 'Interview FAQ', icon: '💬', subtitle: 'Common interview questions', render: function() { return renderEntries(typeof INTERVIEW_FAQ !== 'undefined' ? INTERVIEW_FAQ : [], { titleKey: 'question' }); } },
-        { id: 'ai_ethics', label: 'AI Ethics', icon: '⚖️', subtitle: 'Building AI responsibly', render: function() { return renderEntries(typeof AI_ETHICS !== 'undefined' ? AI_ETHICS : [], { titleKey: 'topic' }); } },
-        { id: 'prompts', label: 'AI Prompt Patterns', icon: '💬', subtitle: 'How to prompt AI well', render: function() {
+        { id: 'careers', label: __alloT('stem.applab.coding_careers', 'Coding Careers'), icon: '💼', subtitle: __alloT('stem.applab.roles_salaries_and_paths', 'Roles, salaries, and paths'), render: function() { return renderEntries(typeof CODING_CAREERS !== 'undefined' ? CODING_CAREERS : [], { titleKey: 'role' }); } },
+        { id: 'career_dev', label: __alloT('stem.applab.career_development', 'Career Development'), icon: '📈', subtitle: __alloT('stem.applab.how_to_grow_from_junior_to_senior', 'How to grow from junior to senior'), render: function() { return renderEntries(typeof CAREER_DEVELOPMENT !== 'undefined' ? CAREER_DEVELOPMENT : [], { titleKey: 'stage' }); } },
+        { id: 'bootcamps', label: __alloT('stem.applab.bootcamp_guide', 'Bootcamp Guide'), icon: '🎯', subtitle: __alloT('stem.applab.choosing_a_bootcamp_surviving_it', 'Choosing a bootcamp, surviving it'), render: function() { return renderEntries(typeof BOOTCAMP_GUIDE !== 'undefined' ? BOOTCAMP_GUIDE : [], { titleKey: 'topic' }); } },
+        { id: 'programmers', label: __alloT('stem.applab.famous_programmers', 'Famous Programmers'), icon: '👥', subtitle: __alloT('stem.applab.people_who_built_the_field', 'People who built the field'), render: function() { return renderEntries(typeof FAMOUS_PROGRAMMERS !== 'undefined' ? FAMOUS_PROGRAMMERS : []); } },
+        { id: 'open_source', label: __alloT('stem.applab.open_source_projects', 'Open Source Projects'), icon: '✨', subtitle: __alloT('stem.applab.projects_to_study_and_contribute_to', 'Projects to study and contribute to'), render: function() { return renderEntries(typeof OPEN_SOURCE_PROJECTS !== 'undefined' ? OPEN_SOURCE_PROJECTS : [], { titleKey: 'project' }); } },
+        { id: 'interview_faq', label: __alloT('stem.applab.interview_faq', 'Interview FAQ'), icon: '💬', subtitle: __alloT('stem.applab.common_interview_questions', 'Common interview questions'), render: function() { return renderEntries(typeof INTERVIEW_FAQ !== 'undefined' ? INTERVIEW_FAQ : [], { titleKey: 'question' }); } },
+        { id: 'ai_ethics', label: __alloT('stem.applab.ai_ethics', 'AI Ethics'), icon: '⚖️', subtitle: __alloT('stem.applab.building_ai_responsibly', 'Building AI responsibly'), render: function() { return renderEntries(typeof AI_ETHICS !== 'undefined' ? AI_ETHICS : [], { titleKey: 'topic' }); } },
+        { id: 'prompts', label: __alloT('stem.applab.ai_prompt_patterns', 'AI Prompt Patterns'), icon: '💬', subtitle: __alloT('stem.applab.how_to_prompt_ai_well', 'How to prompt AI well'), render: function() {
             var PP = typeof PROMPT_PATTERNS !== 'undefined' ? PROMPT_PATTERNS : [];
             var PE = typeof AI_PROMPT_EXAMPLES !== 'undefined' ? AI_PROMPT_EXAMPLES : [];
             return h('div', null,
-              h('h5', { style: { fontSize: '13px', fontWeight: 700, color: '#374151', marginBottom: '8px', marginTop: 0 } }, 'Prompt Patterns'),
+              h('h5', { style: { fontSize: '13px', fontWeight: 700, color: '#374151', marginBottom: '8px', marginTop: 0 } }, __alloT('stem.applab.prompt_patterns', 'Prompt Patterns')),
               renderEntries(PP, { titleKey: 'pattern' }),
-              h('h5', { style: { fontSize: '13px', fontWeight: 700, color: '#374151', margin: '16px 0 8px 0' } }, 'Example Prompts'),
+              h('h5', { style: { fontSize: '13px', fontWeight: 700, color: '#374151', margin: '16px 0 8px 0' } }, __alloT('stem.applab.example_prompts', 'Example Prompts')),
               renderEntries(PE, { titleKey: 'use' })
             );
           } },
-        { id: 'case_studies', label: 'Case Studies', icon: '🔬', subtitle: 'How real apps came to be', render: function() {
+        { id: 'case_studies', label: __alloT('stem.applab.case_studies', 'Case Studies'), icon: '🔬', subtitle: __alloT('stem.applab.how_real_apps_came_to_be', 'How real apps came to be'), render: function() {
             var CS = typeof CASE_STUDIES !== 'undefined' ? CASE_STUDIES : [];
             var EX = typeof EXTRA_CASE_STUDIES !== 'undefined' ? EXTRA_CASE_STUDIES : [];
             var SP = typeof SHOWCASE_PROJECTS !== 'undefined' ? SHOWCASE_PROJECTS : [];
             return h('div', null,
               CS.length > 0 && h('div', null,
-                h('h5', { style: { fontSize: '13px', fontWeight: 700, color: '#374151', marginBottom: '8px', marginTop: 0 } }, 'Core Case Studies'),
+                h('h5', { style: { fontSize: '13px', fontWeight: 700, color: '#374151', marginBottom: '8px', marginTop: 0 } }, __alloT('stem.applab.core_case_studies', 'Core Case Studies')),
                 renderEntries(CS, { titleKey: 'title' })
               ),
               EX.length > 0 && h('div', null,
-                h('h5', { style: { fontSize: '13px', fontWeight: 700, color: '#374151', margin: '16px 0 8px 0' } }, 'Extra Case Studies'),
+                h('h5', { style: { fontSize: '13px', fontWeight: 700, color: '#374151', margin: '16px 0 8px 0' } }, __alloT('stem.applab.extra_case_studies', 'Extra Case Studies')),
                 renderEntries(EX, { titleKey: 'title' })
               ),
               SP.length > 0 && h('div', null,
-                h('h5', { style: { fontSize: '13px', fontWeight: 700, color: '#374151', margin: '16px 0 8px 0' } }, 'Showcase Projects'),
+                h('h5', { style: { fontSize: '13px', fontWeight: 700, color: '#374151', margin: '16px 0 8px 0' } }, __alloT('stem.applab.showcase_projects', 'Showcase Projects')),
                 renderEntries(SP, { titleKey: 'title' })
               )
             );
           } },
-        { id: 'resources', label: 'Free Resources', icon: '🎁', subtitle: 'Best free learning resources', render: function() { return renderEntries(typeof FREE_RESOURCES !== 'undefined' ? FREE_RESOURCES : [], { titleKey: 'name' }); } },
-        { id: 'final_refs', label: 'Where to Get Help', icon: '🆘', subtitle: 'Communities, habits, anti-patterns', render: function() { return renderEntries(typeof FINAL_REFERENCES !== 'undefined' ? FINAL_REFERENCES : [], { titleKey: 'topic' }); } },
-        { id: 'licenses', label: 'Open Source Licenses', icon: '📜', subtitle: 'MIT vs Apache vs GPL vs more', render: function() { return renderEntries(typeof OPEN_SOURCE_LICENSES !== 'undefined' ? OPEN_SOURCE_LICENSES : [], { titleKey: 'license' }); } },
-        { id: 'quick_wins', label: 'Quick Wins', icon: '🎯', subtitle: '15 high-impact actions for new developers', render: function() { return renderEntries(typeof QUICK_WINS !== 'undefined' ? QUICK_WINS : [], { titleKey: 'win' }); } }
+        { id: 'resources', label: __alloT('stem.applab.free_resources', 'Free Resources'), icon: '🎁', subtitle: __alloT('stem.applab.best_free_learning_resources', 'Best free learning resources'), render: function() { return renderEntries(typeof FREE_RESOURCES !== 'undefined' ? FREE_RESOURCES : [], { titleKey: 'name' }); } },
+        { id: 'final_refs', label: __alloT('stem.applab.where_to_get_help', 'Where to Get Help'), icon: '🆘', subtitle: __alloT('stem.applab.communities_habits_anti_patterns', 'Communities, habits, anti-patterns'), render: function() { return renderEntries(typeof FINAL_REFERENCES !== 'undefined' ? FINAL_REFERENCES : [], { titleKey: 'topic' }); } },
+        { id: 'licenses', label: __alloT('stem.applab.open_source_licenses', 'Open Source Licenses'), icon: '📜', subtitle: __alloT('stem.applab.mit_vs_apache_vs_gpl_vs_more', 'MIT vs Apache vs GPL vs more'), render: function() { return renderEntries(typeof OPEN_SOURCE_LICENSES !== 'undefined' ? OPEN_SOURCE_LICENSES : [], { titleKey: 'license' }); } },
+        { id: 'quick_wins', label: __alloT('stem.applab.quick_wins', 'Quick Wins'), icon: '🎯', subtitle: __alloT('stem.applab.15_high_impact_actions_for_new_develop', '15 high-impact actions for new developers'), render: function() { return renderEntries(typeof QUICK_WINS !== 'undefined' ? QUICK_WINS : [], { titleKey: 'win' }); } }
       ];
 
       // ═══ RENDER ═══
       // Tab bar
-      var tabBar = h('div', { role: 'tablist', 'aria-label': 'AppLab sections',
+      var tabBar = h('div', { role: 'tablist', 'aria-label': __alloT('stem.applab.applab_sections', 'AppLab sections'),
         style: { display: 'flex', gap: '4px', flexShrink: 0, borderBottom: '2px solid #e5e7eb', paddingBottom: '6px', overflowX: 'auto' } },
         TABS.map(function(t) {
           var isActive = t.id === activeTab;
@@ -19661,20 +19662,20 @@ test('no a11y violations', async () => {
 
         // ── Header / Back ──
         h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 } },
-          h('button', { onClick: function() { ctx.setStemLabTool(null); }, 'aria-label': 'Back to STEM Lab', style: btn('#f1f5f9', '#374151', false) }, h(ArrowLeft, { size: 14 })),
-          h('h2', { style: { fontSize: '18px', fontWeight: 900, color: '#1e293b', margin: 0 } }, '\uD83D\uDCA1 AppLab'),
-          h('span', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'AI Mini-App Generator + Coding Curriculum'),
+          h('button', { onClick: function() { ctx.setStemLabTool(null); }, 'aria-label': __alloT('stem.applab.back_to_stem_lab', 'Back to STEM Lab'), style: btn('#f1f5f9', '#374151', false) }, h(ArrowLeft, { size: 14 })),
+          h('h2', { style: { fontSize: '18px', fontWeight: 900, color: '#1e293b', margin: 0 } }, __alloT('stem.applab.applab', '\uD83D\uDCA1 AppLab')),
+          h('span', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.applab.ai_mini_app_generator_coding_curriculu', 'AI Mini-App Generator + Coding Curriculum')),
           activeTab === 'build' && html && h('div', { style: { marginLeft: 'auto', display: 'flex', gap: '4px' } },
-            h('button', { onClick: undo, disabled: !canUndo, style: btn('#f1f5f9', '#374151', !canUndo), title: 'Undo' }, '↩'),
-            h('button', { onClick: redo, disabled: !canRedo, style: btn('#f1f5f9', '#374151', !canRedo), title: 'Redo' }, '↪'),
-            h('button', { onClick: function() { setShowCode(!showCode); }, style: btn(showCode ? PURPLE : '#f1f5f9', showCode ? '#fff' : '#374151', false), 'aria-label': 'Toggle code view' }, showCode ? '</> Hide Code' : '</> View Code'),
-            h('button', { onClick: saveToGallery, style: btn('#f1f5f9', '#374151', false), title: 'Save to gallery', 'aria-label': 'Save to gallery' }, '💾'),
-            h('button', { onClick: exportHtml, style: btn('#f1f5f9', '#374151', false), title: 'Export as HTML file', 'aria-label': 'Export as HTML file' }, '📥'),
-            h('label', { style: Object.assign({}, btn('#f1f5f9', '#374151', false), { cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }), title: 'Import HTML file', 'aria-label': 'Import HTML file' },
+            h('button', { onClick: undo, disabled: !canUndo, style: btn('#f1f5f9', '#374151', !canUndo), title: __alloT('stem.applab.undo', 'Undo') }, '↩'),
+            h('button', { onClick: redo, disabled: !canRedo, style: btn('#f1f5f9', '#374151', !canRedo), title: __alloT('stem.applab.redo', 'Redo') }, '↪'),
+            h('button', { onClick: function() { setShowCode(!showCode); }, style: btn(showCode ? PURPLE : '#f1f5f9', showCode ? '#fff' : '#374151', false), 'aria-label': __alloT('stem.applab.toggle_code_view', 'Toggle code view') }, showCode ? '</> Hide Code' : '</> View Code'),
+            h('button', { onClick: saveToGallery, style: btn('#f1f5f9', '#374151', false), title: __alloT('stem.applab.save_to_gallery', 'Save to gallery'), 'aria-label': __alloT('stem.applab.save_to_gallery_2', 'Save to gallery') }, '💾'),
+            h('button', { onClick: exportHtml, style: btn('#f1f5f9', '#374151', false), title: __alloT('stem.applab.export_as_html_file', 'Export as HTML file'), 'aria-label': __alloT('stem.applab.export_as_html_file_2', 'Export as HTML file') }, '📥'),
+            h('label', { style: Object.assign({}, btn('#f1f5f9', '#374151', false), { cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }), title: __alloT('stem.applab.import_html_file', 'Import HTML file'), 'aria-label': __alloT('stem.applab.import_html_file_2', 'Import HTML file') },
               '📂',
               h('input', { type: 'file', accept: '.html,.htm', style: { display: 'none' }, onChange: function(ev) { if (ev.target.files && ev.target.files[0]) importHtml(ev.target.files[0]); ev.target.value = ''; } })
             ),
-            h('button', { onClick: function() { setFullscreen(!fullscreen); }, style: btn('#f1f5f9', '#374151', false), 'aria-label': 'Toggle fullscreen' }, fullscreen ? '🗗' : '⛶')
+            h('button', { onClick: function() { setFullscreen(!fullscreen); }, style: btn('#f1f5f9', '#374151', false), 'aria-label': __alloT('stem.applab.toggle_fullscreen', 'Toggle fullscreen') }, fullscreen ? '🗗' : '⛶')
           )
         ),
 
@@ -19708,23 +19709,23 @@ test('no a11y violations', async () => {
           h('details', { open: showPipelineConfig, style: { marginBottom: '12px', background: 'linear-gradient(135deg, var(--allo-stem-canvas, #0f172a), #1e1b4b)', borderRadius: '12px', border: '1px solid var(--allo-stem-border, #334155)', overflow: 'hidden' } },
             h('summary', { onClick: function(e) { e.preventDefault(); setShowPipelineConfig(!showPipelineConfig); },
               style: { padding: '10px 14px', color: '#c4b5fd', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', listStyle: 'none' } },
-              h('span', null, '\u2699\uFE0F AI Pipeline Configuration'),
+              h('span', null, __alloT('stem.applab.ai_pipeline_configuration', '\u2699\uFE0F AI Pipeline Configuration')),
               h('span', { style: { fontSize: '10px', color: '#818cf8', background: 'rgba(129,140,248,0.1)', padding: '2px 8px', borderRadius: '10px' } },
                 pipelineConfig.filter(function(c) { return c.enabled; }).length + '/' + PIPELINE_AGENTS.length + ' agents active')
             ),
             showPipelineConfig && h('div', { style: { padding: '12px 14px', paddingTop: 0 } },
               h('p', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '12px', lineHeight: 1.5 } },
-                'Configure which AI agents run when generating an app. Toggle agents on/off and reorder them to see how it affects output quality. Each agent specializes in a different aspect of software development.'
+                __alloT('stem.applab.configure_which_ai_agents_run_when_gen', 'Configure which AI agents run when generating an app. Toggle agents on/off and reorder them to see how it affects output quality. Each agent specializes in a different aspect of software development.')
               ),
 
               // Pipeline flow diagram
               h('div', { style: { display: 'flex', alignItems: 'center', gap: '4px', overflowX: 'auto', paddingBottom: '8px' },
-                role: 'list', 'aria-label': 'AI agent pipeline — drag to reorder, click to toggle' },
+                role: 'list', 'aria-label': __alloT('stem.applab.ai_agent_pipeline_drag_to_reorder_clic', 'AI agent pipeline — drag to reorder, click to toggle') },
 
                 // Input node
                 h('div', { style: { background: 'var(--allo-stem-panel, #1e293b)', border: '2px solid var(--allo-stem-border, #475569)', borderRadius: '10px', padding: '6px 10px', textAlign: 'center', flexShrink: 0 } },
                   h('div', { style: { fontSize: '16px' } }, '\uD83D\uDCDD'),
-                  h('div', { style: { fontSize: '8px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, 'Your Prompt')
+                  h('div', { style: { fontSize: '8px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, __alloT('stem.applab.your_prompt', 'Your Prompt'))
                 ),
 
                 // Arrow
@@ -19768,7 +19769,7 @@ test('no a11y violations', async () => {
                           background: isOn ? 'rgba(34,197,94,0.1)' : 'rgba(220,38,38,0.1)',
                           color: isOn ? '#22c55e' : '#dc2626', fontSize: '8px', fontWeight: 700, cursor: 'pointer' }
                       }, isOn ? 'ON' : 'OFF'),
-                      agent.required && h('div', { style: { marginTop: '4px', fontSize: '8px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Required')
+                      agent.required && h('div', { style: { marginTop: '4px', fontSize: '8px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.applab.required', 'Required'))
                     ),
 
                     // Arrow between agents
@@ -19782,7 +19783,7 @@ test('no a11y violations', async () => {
                 // Output node
                 h('div', { style: { background: 'var(--allo-stem-panel, #1e293b)', border: '2px solid #22c55e', borderRadius: '10px', padding: '6px 10px', textAlign: 'center', flexShrink: 0 } },
                   h('div', { style: { fontSize: '16px' } }, '\u2705'),
-                  h('div', { style: { fontSize: '8px', color: '#22c55e', fontWeight: 600 } }, 'Your App')
+                  h('div', { style: { fontSize: '8px', color: '#22c55e', fontWeight: 600 } }, __alloT('stem.applab.your_app', 'Your App'))
                 )
               ),
 
@@ -19800,7 +19801,7 @@ test('no a11y violations', async () => {
 
               h('div', { style: { marginTop: '8px', padding: '6px 10px', background: 'rgba(99,102,241,0.1)', borderRadius: '8px', border: '1px solid rgba(99,102,241,0.2)' } },
                 h('p', { style: { fontSize: '9px', color: '#a5b4fc', lineHeight: 1.5 } },
-                  '\uD83D\uDCA1 Experiment: Try disabling the Reviewer to see what happens when code isn\'t checked. Or disable the Architect to see how the Builder does without a plan. This teaches how software quality depends on process, not just skill.'
+                  __alloT('stem.applab.experiment_try_disabling_the_reviewer_', '\uD83D\uDCA1 Experiment: Try disabling the Reviewer to see what happens when code isn\'t checked. Or disable the Architect to see how the Builder does without a plan. This teaches how software quality depends on process, not just skill.')
                 )
               )
             )
@@ -19808,13 +19809,13 @@ test('no a11y violations', async () => {
 
           // Prompt input
           h('div', { style: card },
-            h('label', { style: { fontSize: '13px', fontWeight: 700, color: '#374151', marginBottom: '6px', display: 'block' } }, 'What do you want to build?'),
+            h('label', { style: { fontSize: '13px', fontWeight: 700, color: '#374151', marginBottom: '6px', display: 'block' } }, __alloT('stem.applab.what_do_you_want_to_build', 'What do you want to build?')),
             h('textarea', { value: prompt, onChange: function(ev) { setPrompt(ev.target.value); },
-              placeholder: 'Describe an interactive app, simulation, or visualization...\n\nExamples:\n• "Interactive solar system with orbiting planets and info on click"\n• "Color mixing tool where you combine primary colors"\n• "Simple calculator with history"',
+              placeholder: __alloT('stem.applab.describe_an_interactive_app_simulation', 'Describe an interactive app, simulation, or visualization...\n\nExamples:\n• "Interactive solar system with orbiting planets and info on click"\n• "Color mixing tool where you combine primary colors"\n• "Simple calculator with history"'),
               rows: 4, style: { width: '100%', padding: '10px 14px', border: '2px solid #d1d5db', borderRadius: '12px', fontSize: '14px', fontFamily: 'inherit', resize: 'vertical', outline: 'none' },
               onFocus: function(e) { e.target.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.4)'; },
               onBlur: function(e) { e.target.style.boxShadow = 'none'; },
-              'aria-label': 'App description prompt' }),
+              'aria-label': __alloT('stem.applab.app_description_prompt', 'App description prompt') }),
             h('div', { style: { display: 'flex', gap: '8px', marginTop: '10px', flexWrap: 'wrap' } },
               h('button', { onClick: function() { generateApp(prompt); }, disabled: isGenerating || !prompt.trim(),
                 'aria-busy': isGenerating,
@@ -19830,7 +19831,7 @@ test('no a11y violations', async () => {
 
           // Suggestions
           showSuggestions && suggestions.length > 0 && h('div', { style: card },
-            h('h3', { style: { fontSize: '14px', fontWeight: 700, color: PURPLE, marginBottom: '8px' } }, '\u2728 Suggested Projects'),
+            h('h3', { style: { fontSize: '14px', fontWeight: 700, color: PURPLE, marginBottom: '8px' } }, __alloT('stem.applab.suggested_projects', '\u2728 Suggested Projects')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '8px' } },
               suggestions.map(function(s, i) {
                 return h('button', { key: i, onClick: function() { setPrompt(s.prompt || s.description); setShowSuggestions(false); },
@@ -19846,7 +19847,7 @@ test('no a11y violations', async () => {
 
           // Templates
           h('div', { style: card },
-            h('h3', { style: { fontSize: '13px', fontWeight: 700, color: '#374151', marginBottom: '8px' } }, '\uD83D\uDCCB Quick Templates'),
+            h('h3', { style: { fontSize: '13px', fontWeight: 700, color: '#374151', marginBottom: '8px' } }, __alloT('stem.applab.quick_templates', '\uD83D\uDCCB Quick Templates')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
               TEMPLATES.map(function(cat) {
                 return h('div', { key: cat.cat },
@@ -19865,7 +19866,7 @@ test('no a11y violations', async () => {
 
           // Gallery
           showGallery && gallery.length > 0 && h('div', { style: card },
-            h('h3', { style: { fontSize: '14px', fontWeight: 700, color: '#374151', marginBottom: '8px' } }, '\uD83D\uDCC2 Saved Apps'),
+            h('h3', { style: { fontSize: '14px', fontWeight: 700, color: '#374151', marginBottom: '8px' } }, __alloT('stem.applab.saved_apps', '\uD83D\uDCC2 Saved Apps')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '200px', overflowY: 'auto' } },
               gallery.map(function(app) {
                 return h('div', { key: app.id, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '8px' } },
@@ -19875,7 +19876,7 @@ test('no a11y violations', async () => {
                   ),
                   h('div', { style: { display: 'flex', gap: '4px' } },
                     h('button', { onClick: function() { setHtml(app.html); setEditHtml(app.html); setPrompt(app.prompt || ''); setHistory([app.html]); setHistoryIdx(0); setShowGallery(false); },
-                      style: btn('#f1f5f9', '#374151', false) }, 'Load'),
+                      style: btn('#f1f5f9', '#374151', false) }, __alloT('stem.applab.load', 'Load')),
                     h('button', { onClick: function() {
                       var updated = gallery.filter(function(g) { return g.id !== app.id; });
                       setGallery(updated);
@@ -19891,11 +19892,11 @@ test('no a11y violations', async () => {
         // ── Behind the Scenes: Agent Pipeline Visualizer ──
         activeTab === 'build' && d.lastPipelineLog && d.lastPipelineLog.length > 0 && h('details', { style: { background: 'linear-gradient(135deg, #1e1b4b, #312e81)', borderRadius: '12px', border: '1px solid #4338ca', overflow: 'hidden' } },
           h('summary', { style: { padding: '10px 14px', color: '#c4b5fd', fontSize: '11px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' } },
-            '\uD83E\uDD16 Behind the Scenes — How AI Built This App'
+            __alloT('stem.applab.behind_the_scenes_how_ai_built_this_ap', '\uD83E\uDD16 Behind the Scenes — How AI Built This App')
           ),
           h('div', { style: { padding: '12px 14px', paddingTop: 0 } },
             h('p', { style: { fontSize: '10px', color: '#a5b4fc', marginBottom: '10px', lineHeight: 1.6 } },
-              'This app was built by a team of AI agents working together \u2014 each specializing in a different aspect of software development. This is called "agentic AI" or "multi-agent orchestration." Each agent has a specific role and passes its work to the next agent in the pipeline.'
+              __alloT('stem.applab.this_app_was_built_by_a_team_of_ai_age', 'This app was built by a team of AI agents working together \u2014 each specializing in a different aspect of software development. This is called "agentic AI" or "multi-agent orchestration." Each agent has a specific role and passes its work to the next agent in the pipeline.')
             ),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
               d.lastPipelineLog.map(function(step, si) {
@@ -19923,7 +19924,7 @@ test('no a11y violations', async () => {
               })
             ),
             h('div', { style: { marginTop: '10px', padding: '8px 10px', background: 'rgba(99,102,241,0.1)', borderRadius: '8px', border: '1px solid rgba(99,102,241,0.2)' } },
-              h('p', { style: { fontSize: '10px', color: '#a5b4fc', fontWeight: 600, marginBottom: '4px' } }, '\uD83D\uDCA1 How does this relate to real software engineering?'),
+              h('p', { style: { fontSize: '10px', color: '#a5b4fc', fontWeight: 600, marginBottom: '4px' } }, __alloT('stem.applab.how_does_this_relate_to_real_software_', '\uD83D\uDCA1 How does this relate to real software engineering?')),
               h('p', { style: { fontSize: '9px', color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } },
                 'This app was built using a hierarchical multi-agent architecture. An Architect AI decomposed the app into independent sections, then EACH section was built, reviewed, and fixed by separate specialist AI agents, one section at a time \u2014 just like how professional software teams work. '
                 + 'This is called "component-based architecture" \u2014 the same pattern used by React, Vue, and Angular. Each component is small enough for an AI to build perfectly, and the Assembler combines them into a working whole. '
@@ -19939,18 +19940,18 @@ test('no a11y violations', async () => {
           // Code editor (left panel when visible)
           showCode && h('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' } },
-              h('span', { style: { fontSize: '11px', fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, '</> Source Code'),
+              h('span', { style: { fontSize: '11px', fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.applab.source_code', '</> Source Code')),
               h('div', { style: { display: 'flex', gap: '4px' } },
                 h('button', { onClick: applyCodeEdit, disabled: editHtml === html,
-                  style: btn(editHtml !== html ? '#22c55e' : '#e5e7eb', editHtml !== html ? '#fff' : '#9ca3af', editHtml === html) }, '▶ Apply Changes'),
-                h('button', { onClick: function() { setEditHtml(html); }, style: btn('#f1f5f9', '#374151', false) }, '↩ Reset')
+                  style: btn(editHtml !== html ? '#22c55e' : '#e5e7eb', editHtml !== html ? '#fff' : '#9ca3af', editHtml === html) }, __alloT('stem.applab.apply_changes', '▶ Apply Changes')),
+                h('button', { onClick: function() { setEditHtml(html); }, style: btn('#f1f5f9', '#374151', false) }, __alloT('stem.applab.reset_2', '↩ Reset'))
               )
             ),
             h('textarea', { value: editHtml, onChange: function(ev) { setEditHtml(ev.target.value); },
               style: { flex: 1, fontFamily: 'Consolas, Monaco, monospace', fontSize: '11px', padding: '10px', border: '1px solid #d1d5db', borderRadius: '8px', resize: 'none', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #e2e8f0)', outline: 'none', tabSize: 2, lineHeight: 1.5 },
               onFocus: function(e) { e.target.style.boxShadow = '0 0 0 3px rgba(34,211,238,0.5)'; },
               onBlur: function(e) { e.target.style.boxShadow = 'none'; },
-              spellCheck: false, 'aria-label': 'HTML source code editor' })
+              spellCheck: false, 'aria-label': __alloT('stem.applab.html_source_code_editor', 'HTML source code editor') })
           ),
 
           // Preview iframe with error capture
@@ -19959,7 +19960,7 @@ test('no a11y violations', async () => {
               ref: iframeRef,
               srcDoc: html,
               sandbox: 'allow-scripts',
-              title: 'AppLab preview',
+              title: __alloT('stem.applab.applab_preview', 'AppLab preview'),
               'aria-label': 'Interactive app preview: ' + (prompt || 'generated app'),
               style: { flex: 1, border: '2px solid #e5e7eb', borderRadius: '12px', background: '#fff', width: '100%', boxShadow: '0 10px 30px rgba(15,23,42,0.15)' },
               onLoad: function() {
@@ -19990,13 +19991,13 @@ test('no a11y violations', async () => {
             h('div', { style: { display: 'flex', gap: '6px', marginTop: '6px', flexShrink: 0 } },
               h('input', { type: 'text', value: enhancePrompt, onChange: function(ev) { setEnhancePrompt(ev.target.value); },
                 onKeyDown: function(ev) { if (ev.key === 'Enter' && enhancePrompt.trim() && !isGenerating) enhanceApp(); },
-                placeholder: 'Enhance: "add a dark mode toggle" or "make the particles bigger"...',
+                placeholder: __alloT('stem.applab.enhance_add_a_dark_mode_toggle_or_make', 'Enhance: "add a dark mode toggle" or "make the particles bigger"...'),
                 style: { flex: 1, padding: '8px 14px', border: '2px solid #d1d5db', borderRadius: '10px', fontSize: '12px', outline: 'none' },
-                disabled: isGenerating, 'aria-label': 'Enhancement prompt' }),
+                disabled: isGenerating, 'aria-label': __alloT('stem.applab.enhancement_prompt', 'Enhancement prompt') }),
               h('button', { onClick: enhanceApp, disabled: !enhancePrompt.trim() || isGenerating,
                 style: btn(PURPLE, '#fff', !enhancePrompt.trim() || isGenerating) }, isGenerating ? '\u23F3' : '\u2728 Enhance'),
               h('button', { onClick: function() { setHtml(''); setEditHtml(''); setPrompt(''); setHistory([]); setHistoryIdx(-1); },
-                style: btn('#fee2e2', '#991b1b', false), title: 'Start over' }, '\uD83D\uDDD1\uFE0F New')
+                style: btn('#fee2e2', '#991b1b', false), title: __alloT('stem.applab.start_over', 'Start over') }, __alloT('stem.applab.new', '\uD83D\uDDD1\uFE0F New'))
             )
           )
         ),
@@ -20005,7 +20006,7 @@ test('no a11y violations', async () => {
         isGenerating && !html && h('div', { style: { textAlign: 'center', padding: '40px', color: 'var(--allo-stem-text-soft, #94a3b8)' } },
           h('div', { style: { fontSize: '48px', marginBottom: '12px', animation: 'pulse 1.5s infinite' } }, '\uD83D\uDCA1'),
           h('p', { style: { fontSize: '14px', fontWeight: 600 } }, genStep || 'Generating your app...'),
-          h('p', { style: { fontSize: '11px', color: '#6b7280' } }, 'This usually takes 5-15 seconds')
+          h('p', { style: { fontSize: '11px', color: '#6b7280' } }, __alloT('stem.applab.this_usually_takes_5_15_seconds', 'This usually takes 5-15 seconds'))
         ),
 
         // \u2550\u2550 PROMPT-CRAFT INQUIRY widget (H7b'') \u2550\u2550
@@ -20017,32 +20018,32 @@ test('no a11y violations', async () => {
           var brittleness = Math.max(0, 10 - iq.specificity - iq.constraints * 0.5);
           var state = promptQuality > 8 ? 'precise' : promptQuality > 6 ? 'targeted' : promptQuality > 4 ? 'vague' : brittleness > 5 ? 'underspecified' : 'minimal';
           var sm = ({
-            precise: { label: 'Precise prompt', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Specificity + constraints + examples + persona aligned. Output highly predictable across runs.' },
-            targeted: { label: 'Targeted', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Mostly clear ask. May need one revision pass.' },
-            vague: { label: 'Vague \u2014 re-runs vary', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Open-ended ask. Same prompt yields different outputs run-to-run. Acceptable for brainstorming.' },
-            underspecified: { label: 'Under-specified', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'AI will fill gaps with plausible-but-wrong defaults. Common cause of "AI hallucinations".' },
-            minimal: { label: 'Minimal prompt', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Roll the dice. Sometimes the model surprises you; usually it produces generic output.' }
+            precise: { label: __alloT('stem.applab.precise_prompt', 'Precise prompt'), color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: __alloT('stem.applab.specificity_constraints_examples_perso', 'Specificity + constraints + examples + persona aligned. Output highly predictable across runs.') },
+            targeted: { label: __alloT('stem.applab.targeted', 'Targeted'), color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: __alloT('stem.applab.mostly_clear_ask_may_need_one_revision', 'Mostly clear ask. May need one revision pass.') },
+            vague: { label: __alloT('stem.applab.vague_re_runs_vary', 'Vague \u2014 re-runs vary'), color: '#facc15', bg: '#2a2410', border: '#eab308', desc: __alloT('stem.applab.open_ended_ask_same_prompt_yields_diff', 'Open-ended ask. Same prompt yields different outputs run-to-run. Acceptable for brainstorming.') },
+            underspecified: { label: 'Under-specified', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: __alloT('stem.applab.ai_will_fill_gaps_with_plausible_but_w', 'AI will fill gaps with plausible-but-wrong defaults. Common cause of "AI hallucinations".') },
+            minimal: { label: __alloT('stem.applab.minimal_prompt', 'Minimal prompt'), color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: __alloT('stem.applab.roll_the_dice_sometimes_the_model_surp', 'Roll the dice. Sometimes the model surprises you; usually it produces generic output.') }
           })[state];
           return h('div', { style: { padding: 14, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5', maxWidth: 720, margin: '20px auto' } },
-            h('h3', { style: { margin: '0 0 4px', fontSize: 14, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, '\uD83D\uDD2C Prompt-Craft Inquiry \u2014 Predict the Output Variance'),
-            h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, 'Set how much specificity, constraints, examples, and persona you put into a prompt. Predict how reliable the AI output will be. No score, no reveal.'),
+            h('h3', { style: { margin: '0 0 4px', fontSize: 14, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, __alloT('stem.applab.prompt_craft_inquiry_predict_the_outpu', '\uD83D\uDD2C Prompt-Craft Inquiry \u2014 Predict the Output Variance')),
+            h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, __alloT('stem.applab.set_how_much_specificity_constraints_e', 'Set how much specificity, constraints, examples, and persona you put into a prompt. Predict how reliable the AI output will be. No score, no reveal.')),
             h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' \u00B7 quality ' + promptQuality.toFixed(1) + ' \u00B7 brittleness ' + brittleness.toFixed(1)),
             h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
               h('label', { style: { fontSize: 11 } },
-                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Specificity (1-10)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.specificity)),
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.applab.specificity_1_10', 'Specificity (1-10)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.specificity)),
                 h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.specificity, onChange: function(e) { setKey('specificity', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
               ),
               h('label', { style: { fontSize: 11 } },
-                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Constraints stated (1-10)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.constraints)),
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.applab.constraints_stated_1_10', 'Constraints stated (1-10)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.constraints)),
                 h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.constraints, onChange: function(e) { setKey('constraints', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
               ),
               h('label', { style: { fontSize: 11 } },
-                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Example count (0-5)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.examples)),
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.applab.example_count_0_5', 'Example count (0-5)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.examples)),
                 h('input', { type: 'range', min: 0, max: 5, step: 1, value: iq.examples, onChange: function(e) { setKey('examples', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
               ),
               h('label', { style: { fontSize: 11 } },
-                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Persona / role clarity'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.persona)),
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.applab.persona_role_clarity', 'Persona / role clarity')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.persona)),
                 h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.persona, onChange: function(e) { setKey('persona', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
               )
             ),
@@ -20050,30 +20051,30 @@ test('no a11y violations', async () => {
               h('button', { onClick: function() {
                 var t = new Date().toISOString().slice(11, 19);
                 setIQ({ log: iq.log.concat([{ t: t, sp: iq.specificity, c: iq.constraints, ex: iq.examples, pe: iq.persona, q: promptQuality.toFixed(1), state: sm.label }]) });
-              }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '\uD83D\uDCCB Log this prompt-craft profile'),
-              h('button', { onClick: function() { setIQ({ specificity: 5, constraints: 5, examples: 0, persona: 5 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
+              }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, __alloT('stem.applab.log_this_prompt_craft_profile', '\uD83D\uDCCB Log this prompt-craft profile')),
+              h('button', { onClick: function() { setIQ({ specificity: 5, constraints: 5, examples: 0, persona: 5 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, __alloT('stem.applab.reset_3', 'Reset'))
             ),
             iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
               iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' \u00B7 sp' + e.sp + ' c' + e.c + ' ex' + e.ex + ' pe' + e.pe + ' \u2192 ' + e.q); })
             ),
-            h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (do examples or constraints reduce variance more?)'),
-            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., one well-chosen example beats five vague constraints because it pins down style + structure simultaneously...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "\uD83E\uDD14 I'm stuck \u2014 show open questions"),
+            h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, __alloT('stem.applab.your_hypothesis_do_examples_or_constra', 'Your hypothesis (do examples or constraints reduce variance more?)')),
+            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.applab.e_g_one_well_chosen_example_beats_five', 'e.g., one well-chosen example beats five vague constraints because it pins down style + structure simultaneously...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, __alloT('stem.applab.i_m_stuck_show_open_questions', "\uD83E\uDD14 I'm stuck \u2014 show open questions")),
             iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
-              h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
+              h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, __alloT('stem.applab.open_questions_no_answer_key', 'Open questions (no answer key)')),
               h('ul', { style: { margin: 0, paddingLeft: 16 } },
-                h('li', null, 'Why does adding one good example often beat adding five constraints?'),
-                h('li', null, 'A vague prompt is fine for what tasks? (Hint: divergent vs convergent thinking.)'),
-                h('li', null, 'How does persona ("you are an expert X") change output style \u2014 and when is it manipulative?'),
-                h('li', null, 'When is brittleness actually GOOD? (Hint: reproducible scientific outputs.)')
+                h('li', null, __alloT('stem.applab.why_does_adding_one_good_example_often', 'Why does adding one good example often beat adding five constraints?')),
+                h('li', null, __alloT('stem.applab.a_vague_prompt_is_fine_for_what_tasks_', 'A vague prompt is fine for what tasks? (Hint: divergent vs convergent thinking.)')),
+                h('li', null, __alloT('stem.applab.how_does_persona_you_are_an_expert_x_c', 'How does persona ("you are an expert X") change output style \u2014 and when is it manipulative?')),
+                h('li', null, __alloT('stem.applab.when_is_brittleness_actually_good_hint', 'When is brittleness actually GOOD? (Hint: reproducible scientific outputs.)'))
               )
             ),
             h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
               h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
-              h('span', null, 'I can explain why this prompt-craft profile yields this output variance.')
+              h('span', null, __alloT('stem.applab.i_can_explain_why_this_prompt_craft_pr', 'I can explain why this prompt-craft profile yields this output variance.'))
             ),
-            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
-            h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget \u2014 no score, no reveal, no answer dump. Quality/brittleness indices are heuristics; real prompt engineering depends on model, temperature, system message, and task type. See OpenAI/Anthropic prompt-engineering docs.')
+            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.applab.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+            h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, __alloT('stem.applab.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget \u2014 no score, no reveal, no answer dump. Quality/brittleness indices are heuristics; real prompt engineering depends on model, temperature, system message, and task type. See OpenAI/Anthropic prompt-engineering docs.'))
           );
         })()
       );

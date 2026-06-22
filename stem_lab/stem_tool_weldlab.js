@@ -183,6 +183,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
     icon: '🔥',
     desc: 'Vocational welding simulator covering MIG / TIG / Stick / Oxy-Fuel processes, heat-input physics, weld bead geometry, defect identification, AWS welding symbols, OSHA-aligned PPE, and Maine career pathways (Bath Iron Works, EMCC welding program, AWS certification ladder). Real procedural and conceptual content for skilled-trades exploration — not a watered-down toy.',
     render: function(ctx) {
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = ctx.React || window.React;
       var h = React.createElement;
       var useState = React.useState;
@@ -289,9 +290,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         return h('div', { className: 'flex items-center gap-3 bg-gradient-to-r from-orange-600 to-red-700 text-white p-4 shadow' },
           h('button', {
             onClick: function() { setView('menu'); upd('view', 'menu'); },
-            'aria-label': 'Back to WeldLab menu',
+            'aria-label': __alloT('stem.weldlab.back_to_weldlab_menu', 'Back to WeldLab menu'),
             className: 'px-3 py-1.5 rounded-lg bg-white/20 hover:bg-white/30 font-bold text-sm transition-colors'
-          }, '← Menu'),
+          }, __alloT('stem.weldlab.menu', '← Menu')),
           h('span', { className: 'text-3xl' }, props.icon),
           h('h1', { className: 'text-xl font-black flex-1' }, props.title)
         );
@@ -330,21 +331,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         return h('details', { className: 'weldlab-teacher-notes bg-amber-50 border-2 border-amber-300 rounded-xl p-4' },
           h('summary', {
             className: 'transition-colors cursor-pointer text-sm font-bold text-amber-900 hover:text-amber-700 select-none flex items-center justify-between gap-3',
-            'aria-label': 'Teacher Notes — discussion questions, standards alignment, and extension activities'
+            'aria-label': __alloT('stem.weldlab.teacher_notes_discussion_questions_sta', 'Teacher Notes — discussion questions, standards alignment, and extension activities')
           },
-            h('span', null, '🍎 Teacher Notes — click to expand'),
+            h('span', null, __alloT('stem.weldlab.teacher_notes_click_to_expand', '🍎 Teacher Notes — click to expand')),
             h('span', {
               role: 'button',
               tabIndex: 0,
-              'aria-label': 'Print this module page (includes Teacher Notes)',
+              'aria-label': __alloT('stem.weldlab.print_this_module_page_includes_teache', 'Print this module page (includes Teacher Notes)'),
               onClick: function(e) { e.preventDefault(); e.stopPropagation(); try { window.print(); } catch (_) {} },
               onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); try { window.print(); } catch (_) {} } },
               className: 'transition-colors weldlab-no-print text-xs font-semibold normal-case px-2 py-1 rounded bg-white border border-amber-300 hover:bg-amber-100 text-amber-800'
-            }, '🖨️ Print')
+            }, __alloT('stem.weldlab.print', '🖨️ Print'))
           ),
           h('div', { className: 'mt-3 space-y-3 text-sm' },
             props.standards && props.standards.length > 0 && h('div', null,
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-800 mb-1' }, 'NGSS / CTE Standards'),
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-800 mb-1' }, __alloT('stem.weldlab.ngss_cte_standards', 'NGSS / CTE Standards')),
               h('div', { className: 'text-slate-700' },
                 props.standards.map(function(s, i) {
                   return h('span', { key: i, className: 'inline-block mr-2 mb-1 px-2 py-0.5 bg-white border border-amber-300 rounded text-xs font-mono' }, s);
@@ -352,13 +353,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               )
             ),
             props.questions && props.questions.length > 0 && h('div', null,
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-800 mb-1' }, 'Discussion Questions'),
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-800 mb-1' }, __alloT('stem.weldlab.discussion_questions', 'Discussion Questions')),
               h('ol', { className: 'list-decimal list-inside space-y-1 text-slate-700' },
                 props.questions.map(function(q, i) { return h('li', { key: i }, q); })
               )
             ),
             props.misconceptions && props.misconceptions.length > 0 && h('div', null,
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-800 mb-1' }, 'Watch for these misconceptions'),
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-800 mb-1' }, __alloT('stem.weldlab.watch_for_these_misconceptions', 'Watch for these misconceptions')),
               h('ul', { className: 'space-y-1 text-slate-700' },
                 props.misconceptions.map(function(m, i) {
                   return h('li', { key: i, className: 'flex items-start gap-1.5' },
@@ -369,7 +370,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               )
             ),
             props.extension && h('div', null,
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-800 mb-1' }, 'Extension Activity'),
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-800 mb-1' }, __alloT('stem.weldlab.extension_activity', 'Extension Activity')),
               h('div', { className: 'text-slate-700 italic' }, props.extension)
             )
           )
@@ -382,45 +383,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       function MainMenu() {
         var bigCards = [
           {
-            id: 'heatInput', title: 'Heat Input Calculator', icon: '⚡',
-            subtitle: 'The math that drives every weld',
-            desc: 'Voltage × amperage × time gives you total heat per inch of weld. Too low: lack of fusion. Too high: warping, grain coarsening, hot cracking. This is the single most important number in arc welding — every certified welder knows it.',
+            id: 'heatInput', title: __alloT('stem.weldlab.heat_input_calculator', 'Heat Input Calculator'), icon: '⚡',
+            subtitle: __alloT('stem.weldlab.the_math_that_drives_every_weld', 'The math that drives every weld'),
+            desc: __alloT('stem.weldlab.voltage_amperage_time_gives_you_total_', 'Voltage × amperage × time gives you total heat per inch of weld. Too low: lack of fusion. Too high: warping, grain coarsening, hot cracking. This is the single most important number in arc welding — every certified welder knows it.'),
             bullets: ['Live formula: kJ/in = (V × A × 60) / (TS × 1000)', 'Process efficiency factors (MIG, TIG, Stick, Oxy-Fuel)', 'Tier classification: low / medium / high heat input', 'Failure-mode warnings tied to real metallurgy'],
             color: 'from-yellow-500 to-orange-600',
             ring: 'ring-orange-500/40',
             ready: true
           },
           {
-            id: 'beadLab', title: 'Weld Bead Lab', icon: '🔥',
-            subtitle: 'Live bead simulator — drag your arc',
-            desc: 'Pick a process, material, and plate thickness. Set voltage, amperage, travel speed. Watch a top-down bead form on the plate with accurate geometry — width, reinforcement height, ripple spacing — all driven by the heat-input physics. Score on penetration, uniformity, and spatter.',
+            id: 'beadLab', title: __alloT('stem.weldlab.weld_bead_lab', 'Weld Bead Lab'), icon: '🔥',
+            subtitle: __alloT('stem.weldlab.live_bead_simulator_drag_your_arc', 'Live bead simulator — drag your arc'),
+            desc: __alloT('stem.weldlab.pick_a_process_material_and_plate_thic', 'Pick a process, material, and plate thickness. Set voltage, amperage, travel speed. Watch a top-down bead form on the plate with accurate geometry — width, reinforcement height, ripple spacing — all driven by the heat-input physics. Score on penetration, uniformity, and spatter.'),
             bullets: ['4 processes: MIG / TIG / Stick / Oxy-Fuel', '3 materials: mild steel, aluminum, stainless', 'Real bead geometry tied to heat input', 'Live score: penetration / uniformity / spatter'],
             color: 'from-orange-500 to-red-700',
             ring: 'ring-red-500/40',
             ready: true
           },
           {
-            id: 'defectHunt', title: 'Defect Hunt Lab', icon: '🔍',
-            subtitle: 'Inspector training — click to identify',
-            desc: 'Look at a finished bead. Click the defects you can spot. Each defect (porosity, undercut, lack of fusion, cold lap, crater crack, overlap) has a hover card explaining what causes it and how to fix it. Same skill that AWS-certified welding inspectors use.',
+            id: 'defectHunt', title: __alloT('stem.weldlab.defect_hunt_lab', 'Defect Hunt Lab'), icon: '🔍',
+            subtitle: __alloT('stem.weldlab.inspector_training_click_to_identify', 'Inspector training — click to identify'),
+            desc: __alloT('stem.weldlab.look_at_a_finished_bead_click_the_defe', 'Look at a finished bead. Click the defects you can spot. Each defect (porosity, undercut, lack of fusion, cold lap, crater crack, overlap) has a hover card explaining what causes it and how to fix it. Same skill that AWS-certified welding inspectors use.'),
             bullets: ['6 common defect types', 'Cause + remediation per defect', 'Multiple bead samples to inspect', 'Score on accuracy and completeness'],
             color: 'from-rose-500 to-red-700',
             ring: 'ring-rose-500/40',
             ready: true
           },
           {
-            id: 'speedChallenge', title: 'Speed Challenge', icon: '⏱️',
-            subtitle: 'Timed precision welding',
-            desc: 'A 60-second timed run. The torch travels automatically; you adjust voltage and amperage on the fly to keep the bead in spec. Score combines penetration, uniformity, and spatter control. Three tiers: Apprentice (forgiving), Pro (tight tolerance), Bath Iron Works (no margin for error). Personal-best persists across sessions.',
+            id: 'speedChallenge', title: __alloT('stem.weldlab.speed_challenge', 'Speed Challenge'), icon: '⏱️',
+            subtitle: __alloT('stem.weldlab.timed_precision_welding', 'Timed precision welding'),
+            desc: __alloT('stem.weldlab.a_60_second_timed_run_the_torch_travel', 'A 60-second timed run. The torch travels automatically; you adjust voltage and amperage on the fly to keep the bead in spec. Score combines penetration, uniformity, and spatter control. Three tiers: Apprentice (forgiving), Pro (tight tolerance), Bath Iron Works (no margin for error). Personal-best persists across sessions.'),
             bullets: ['60-second timed run, auto-travel', 'Live voltage / amperage adjustment', '3 difficulty tiers', 'Personal-best score saved per tier'],
             color: 'from-fuchsia-500 to-rose-700',
             ring: 'ring-fuchsia-500/40',
             ready: true
           },
           {
-            id: 'underwater', title: 'Underwater Welding', icon: '🌊',
-            subtitle: 'Specialty career — wet & hyperbaric',
-            desc: 'The highest-paying tier of welding ($80-200K+) and the most dangerous. Explore wet vs dry techniques, hyperbaric pressure effects on the arc, hydrogen-embrittlement risk, the unique safety hazards (electric shock through water, decompression sickness, hydrogen pocket explosions), and the path to becoming a commercial diver-welder.',
+            id: 'underwater', title: __alloT('stem.weldlab.underwater_welding', 'Underwater Welding'), icon: '🌊',
+            subtitle: __alloT('stem.weldlab.specialty_career_wet_hyperbaric', 'Specialty career — wet & hyperbaric'),
+            desc: __alloT('stem.weldlab.the_highest_paying_tier_of_welding_80_', 'The highest-paying tier of welding ($80-200K+) and the most dangerous. Explore wet vs dry techniques, hyperbaric pressure effects on the arc, hydrogen-embrittlement risk, the unique safety hazards (electric shock through water, decompression sickness, hydrogen pocket explosions), and the path to becoming a commercial diver-welder.'),
             bullets: ['Wet vs hyperbaric technique', 'Live depth / pressure simulator', 'Specialty safety hazards', 'Career reality + dive-school path'],
             color: 'from-cyan-600 to-blue-800',
             ring: 'ring-cyan-500/40',
@@ -429,153 +430,153 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         ];
         var miniCards = [
           {
-            id: 'processCompare', title: 'Process Comparison', icon: '⚖️',
-            subtitle: 'MIG vs TIG vs Stick vs Oxy',
-            desc: 'Side-by-side card matrix: typical use, materials, skill ceiling, equipment cost, portability, joint quality. Pick the right process for the job.',
+            id: 'processCompare', title: __alloT('stem.weldlab.process_comparison', 'Process Comparison'), icon: '⚖️',
+            subtitle: __alloT('stem.weldlab.mig_vs_tig_vs_stick_vs_oxy', 'MIG vs TIG vs Stick vs Oxy'),
+            desc: __alloT('stem.weldlab.side_by_side_card_matrix_typical_use_m', 'Side-by-side card matrix: typical use, materials, skill ceiling, equipment cost, portability, joint quality. Pick the right process for the job.'),
             color: 'from-amber-500 to-orange-600',
             ring: 'ring-amber-500/40',
             ready: true
           },
           {
-            id: 'jointCatalog', title: 'Joint Configuration', icon: '🔩',
-            subtitle: '5 joints × 4 positions',
-            desc: 'Butt, lap, corner, edge, T-joint. Position codes 1F/2F/3F/4F (flat, horizontal, vertical, overhead). Quiz mode to match symbol → joint.',
+            id: 'jointCatalog', title: __alloT('stem.weldlab.joint_configuration', 'Joint Configuration'), icon: '🔩',
+            subtitle: __alloT('stem.weldlab.5_joints_4_positions', '5 joints × 4 positions'),
+            desc: __alloT('stem.weldlab.butt_lap_corner_edge_t_joint_position_', 'Butt, lap, corner, edge, T-joint. Position codes 1F/2F/3F/4F (flat, horizontal, vertical, overhead). Quiz mode to match symbol → joint.'),
             color: 'from-stone-500 to-stone-700',
             ring: 'ring-stone-500/40',
             ready: true
           },
           {
-            id: 'symbolsReader', title: 'Welding Symbols Reader', icon: '📐',
-            subtitle: 'AWS A2.4 blueprint decoder',
-            desc: 'Read a real engineering blueprint. Decode the welding symbol on the leader line: process? size? both sides? field weld? Critical shop-floor literacy.',
+            id: 'symbolsReader', title: __alloT('stem.weldlab.welding_symbols_reader', 'Welding Symbols Reader'), icon: '📐',
+            subtitle: __alloT('stem.weldlab.aws_a2_4_blueprint_decoder', 'AWS A2.4 blueprint decoder'),
+            desc: __alloT('stem.weldlab.read_a_real_engineering_blueprint_deco', 'Read a real engineering blueprint. Decode the welding symbol on the leader line: process? size? both sides? field weld? Critical shop-floor literacy.'),
             color: 'from-slate-500 to-slate-700',
             ring: 'ring-slate-500/40',
             ready: true
           },
           {
-            id: 'ppeSafety', title: 'PPE & Safety', icon: '🦺',
-            subtitle: 'OSHA 1910.252 essentials',
-            desc: 'Auto-darkening helmet, FR clothing, leather gloves, respirator, ventilation, fire watch. Hazard scenarios with branch decisions: arc flash, fume exposure, hot work, confined space.',
+            id: 'ppeSafety', title: __alloT('stem.weldlab.ppe_safety', 'PPE & Safety'), icon: '🦺',
+            subtitle: __alloT('stem.weldlab.osha_1910_252_essentials', 'OSHA 1910.252 essentials'),
+            desc: __alloT('stem.weldlab.auto_darkening_helmet_fr_clothing_leat', 'Auto-darkening helmet, FR clothing, leather gloves, respirator, ventilation, fire watch. Hazard scenarios with branch decisions: arc flash, fume exposure, hot work, confined space.'),
             color: 'from-yellow-500 to-amber-700',
             ring: 'ring-yellow-500/40',
             ready: true
           },
           {
-            id: 'careerPaths', title: 'Career Pathways', icon: '🛠️',
-            subtitle: 'Maine welding careers',
-            desc: 'Bath Iron Works hiring, Eastern Maine Community College welding program, AWS certification ladder, salary bands by certification, apprenticeship vs trade school paths.',
+            id: 'careerPaths', title: __alloT('stem.weldlab.career_pathways', 'Career Pathways'), icon: '🛠️',
+            subtitle: __alloT('stem.weldlab.maine_welding_careers', 'Maine welding careers'),
+            desc: __alloT('stem.weldlab.bath_iron_works_hiring_eastern_maine_c', 'Bath Iron Works hiring, Eastern Maine Community College welding program, AWS certification ladder, salary bands by certification, apprenticeship vs trade school paths.'),
             color: 'from-blue-600 to-indigo-700',
             ring: 'ring-blue-600/40',
             ready: true
           },
           {
-            id: 'processSleuth', title: 'Process Sleuth', icon: '🕵️',
-            subtitle: '10 vignettes — pick the right process',
-            desc: '10 real-world welding scenarios. For each, pick the correct process from MIG / TIG / Stick / FCAW / Resistance. Vignettes target the canonical decisions: stainless food-service, structural outdoor in wind, aluminum boat hull, sanitary brewery pipe, cast-iron engine block crack, automotive sheet metal, agricultural repair on rusty steel.',
+            id: 'processSleuth', title: __alloT('stem.weldlab.process_sleuth', 'Process Sleuth'), icon: '🕵️',
+            subtitle: __alloT('stem.weldlab.10_vignettes_pick_the_right_process', '10 vignettes — pick the right process'),
+            desc: __alloT('stem.weldlab.10_real_world_welding_scenarios_for_ea', '10 real-world welding scenarios. For each, pick the correct process from MIG / TIG / Stick / FCAW / Resistance. Vignettes target the canonical decisions: stainless food-service, structural outdoor in wind, aluminum boat hull, sanitary brewery pipe, cast-iron engine block crack, automotive sheet metal, agricultural repair on rusty steel.'),
             color: 'from-amber-600 to-orange-700',
             ring: 'ring-amber-600/40',
             ready: true
           },
           {
-            id: 'defectDiagnose', title: 'Defect Diagnose', icon: '🔬',
-            subtitle: '10 defects — identify the root cause',
-            desc: 'Complement to Defect Hunt: that one teaches what defects LOOK like; this one teaches what CAUSED them. 10 weld defects (porosity, undercut, lack of fusion, burn-through, crater crack, overlap, slag inclusion, spatter, distortion, sugar oxidation). Pick the cause from 6 categories (heat too high/low, travel too fast/slow, contamination, technique).',
+            id: 'defectDiagnose', title: __alloT('stem.weldlab.defect_diagnose', 'Defect Diagnose'), icon: '🔬',
+            subtitle: __alloT('stem.weldlab.10_defects_identify_the_root_cause', '10 defects — identify the root cause'),
+            desc: __alloT('stem.weldlab.complement_to_defect_hunt_that_one_tea', 'Complement to Defect Hunt: that one teaches what defects LOOK like; this one teaches what CAUSED them. 10 weld defects (porosity, undercut, lack of fusion, burn-through, crater crack, overlap, slag inclusion, spatter, distortion, sugar oxidation). Pick the cause from 6 categories (heat too high/low, travel too fast/slow, contamination, technique).'),
             color: 'from-rose-600 to-fuchsia-700',
             ring: 'ring-rose-600/40',
             ready: true
           },
           {
-            id: 'defectCatalog', title: "Welder's Defect Catalog", icon: '📔',
-            subtitle: 'Your personal log of every defect type you have ID\'d',
-            desc: 'A persistent catalog of welding discontinuities you have correctly identified across every Defect Hunt sample. CWI-style mental library. Crosses sessions when you save your project.',
+            id: 'defectCatalog', title: __alloT('stem.weldlab.welder_s_defect_catalog', "Welder's Defect Catalog"), icon: '📔',
+            subtitle: __alloT('stem.weldlab.your_personal_log_of_every_defect_type', 'Your personal log of every defect type you have ID\'d'),
+            desc: __alloT('stem.weldlab.a_persistent_catalog_of_welding_discon', 'A persistent catalog of welding discontinuities you have correctly identified across every Defect Hunt sample. CWI-style mental library. Crosses sessions when you save your project.'),
             color: 'from-orange-500 to-rose-700',
             ring: 'ring-orange-500/40',
             ready: true
           },
           {
-            id: 'metallurgy', title: 'Welding Metallurgy', icon: '🧪',
-            subtitle: 'Carbon, stainless, aluminum, exotics + HAZ + PWHT',
-            desc: 'The science of what heat does to metal. Phase diagrams, carbon equivalent (CE) for crack-susceptibility, HAZ properties, sensitization in stainless, hot vs cold cracking, post-weld heat treatment (PWHT). Differentiates a welder who follows a procedure from one who understands it.',
+            id: 'metallurgy', title: __alloT('stem.weldlab.welding_metallurgy', 'Welding Metallurgy'), icon: '🧪',
+            subtitle: __alloT('stem.weldlab.carbon_stainless_aluminum_exotics_haz_', 'Carbon, stainless, aluminum, exotics + HAZ + PWHT'),
+            desc: __alloT('stem.weldlab.the_science_of_what_heat_does_to_metal', 'The science of what heat does to metal. Phase diagrams, carbon equivalent (CE) for crack-susceptibility, HAZ properties, sensitization in stainless, hot vs cold cracking, post-weld heat treatment (PWHT). Differentiates a welder who follows a procedure from one who understands it.'),
             color: 'from-emerald-600 to-teal-700',
             ring: 'ring-emerald-500/40',
             ready: true
           },
           {
-            id: 'codes', title: 'Codes + Standards', icon: '📜',
-            subtitle: 'AWS D1.1, ASME IX, API 1104',
-            desc: 'The legal frameworks that govern what welds must be. AWS D1.1 (structural steel), ASME Section IX (pressure vessels), API 1104 (pipelines). How to read a Welding Procedure Specification (WPS) + Procedure Qualification Record (PQR), what each section means, why violations get welders fired.',
+            id: 'codes', title: __alloT('stem.weldlab.codes_standards', 'Codes + Standards'), icon: '📜',
+            subtitle: __alloT('stem.weldlab.aws_d1_1_asme_ix_api_1104', 'AWS D1.1, ASME IX, API 1104'),
+            desc: __alloT('stem.weldlab.the_legal_frameworks_that_govern_what_', 'The legal frameworks that govern what welds must be. AWS D1.1 (structural steel), ASME Section IX (pressure vessels), API 1104 (pipelines). How to read a Welding Procedure Specification (WPS) + Procedure Qualification Record (PQR), what each section means, why violations get welders fired.'),
             color: 'from-purple-600 to-violet-700',
             ring: 'ring-purple-500/40',
             ready: true
           },
           {
-            id: 'qualPrep', title: 'Welder Qualification Prep', icon: '🎓',
-            subtitle: 'AWS performance + written test prep',
-            desc: 'How welder qualification tests work — AWS D1.1, ASME, in-house. What a 6G pipe coupon looks like, how it gets bend-tested + visually inspected, what gets you passed or failed. Plus 30 written-exam practice questions covering the topics every certified welder must know.',
+            id: 'qualPrep', title: __alloT('stem.weldlab.welder_qualification_prep', 'Welder Qualification Prep'), icon: '🎓',
+            subtitle: __alloT('stem.weldlab.aws_performance_written_test_prep', 'AWS performance + written test prep'),
+            desc: __alloT('stem.weldlab.how_welder_qualification_tests_work_aw', 'How welder qualification tests work — AWS D1.1, ASME, in-house. What a 6G pipe coupon looks like, how it gets bend-tested + visually inspected, what gets you passed or failed. Plus 30 written-exam practice questions covering the topics every certified welder must know.'),
             color: 'from-sky-600 to-blue-700',
             ring: 'ring-sky-500/40',
             ready: true
           },
           {
-            id: 'pipeWelding', title: 'Pipe Welding Deep-Dive', icon: '🪈',
-            subtitle: '5G / 6G / 6GR + orbital + pipeline',
-            desc: 'Pipe is its own world — fixed positions (1G/2G/5G/6G/6GR), root pass + hot pass + fill + cap technique, downhill vs uphill, pipeline welding (cross-country), orbital welding (semi-auto for nuclear + pharma). The highest-paid welding specialty when combined with X-ray-quality CWI standards.',
+            id: 'pipeWelding', title: __alloT('stem.weldlab.pipe_welding_deep_dive', 'Pipe Welding Deep-Dive'), icon: '🪈',
+            subtitle: __alloT('stem.weldlab.5g_6g_6gr_orbital_pipeline', '5G / 6G / 6GR + orbital + pipeline'),
+            desc: __alloT('stem.weldlab.pipe_is_its_own_world_fixed_positions_', 'Pipe is its own world — fixed positions (1G/2G/5G/6G/6GR), root pass + hot pass + fill + cap technique, downhill vs uphill, pipeline welding (cross-country), orbital welding (semi-auto for nuclear + pharma). The highest-paid welding specialty when combined with X-ray-quality CWI standards.'),
             color: 'from-indigo-600 to-blue-800',
             ring: 'ring-indigo-500/40',
             ready: true
           },
           {
-            id: 'robotic', title: 'Robotic + Automated Welding', icon: '🤖',
-            subtitle: 'FANUC, ABB, KUKA — programming + future',
-            desc: 'Industrial robotic welding is automating high-volume production (auto, appliance, structural). Brands (FANUC, ABB, KUKA, Yaskawa), teach-pendant programming, vision systems, collaborative cobots. Career impact: traditional welders aren\'t replaced — robot programmers + technicians are growing fast.',
+            id: 'robotic', title: __alloT('stem.weldlab.robotic_automated_welding', 'Robotic + Automated Welding'), icon: '🤖',
+            subtitle: __alloT('stem.weldlab.fanuc_abb_kuka_programming_future', 'FANUC, ABB, KUKA — programming + future'),
+            desc: __alloT('stem.weldlab.industrial_robotic_welding_is_automati', 'Industrial robotic welding is automating high-volume production (auto, appliance, structural). Brands (FANUC, ABB, KUKA, Yaskawa), teach-pendant programming, vision systems, collaborative cobots. Career impact: traditional welders aren\'t replaced — robot programmers + technicians are growing fast.'),
             color: 'from-zinc-600 to-stone-800',
             ring: 'ring-zinc-500/40',
             ready: true
           },
           {
-            id: 'inspection', title: 'Welding Inspection (CWI)', icon: '🧐',
-            subtitle: 'AWS Certified Welding Inspector prep',
-            desc: 'The Certified Welding Inspector (CWI) is the gatekeeper. ~$70-110K pay, $1,150 exam, 3 parts (fundamentals, code book, hands-on). Visual inspection (VT), 5 NDT methods (PT, MT, UT, RT, ET), code interpretation, ethical responsibilities. Top of the welding career ladder for someone who reads + writes well.',
+            id: 'inspection', title: __alloT('stem.weldlab.welding_inspection_cwi', 'Welding Inspection (CWI)'), icon: '🧐',
+            subtitle: __alloT('stem.weldlab.aws_certified_welding_inspector_prep', 'AWS Certified Welding Inspector prep'),
+            desc: __alloT('stem.weldlab.the_certified_welding_inspector_cwi_is', 'The Certified Welding Inspector (CWI) is the gatekeeper. ~$70-110K pay, $1,150 exam, 3 parts (fundamentals, code book, hands-on). Visual inspection (VT), 5 NDT methods (PT, MT, UT, RT, ET), code interpretation, ethical responsibilities. Top of the welding career ladder for someone who reads + writes well.'),
             color: 'from-amber-700 to-orange-800',
             ring: 'ring-amber-700/40',
             ready: true
           },
           {
-            id: 'consumables', title: 'Consumables Deep-Dive', icon: '🧵',
-            subtitle: 'Electrodes, wires, gases, flux — what to buy + when',
-            desc: 'Picking the right consumable is half the welding decision. Every electrode classification (E6010, 6011, 6013, 7018, 7024), wire (ER70S-2/3/6, FCAW), shielding gas mixes, flux types. Practical: cost per pound, deposition rate, storage requirements, what each is for. Same Welder + same machine + wrong consumable = bad weld.',
+            id: 'consumables', title: __alloT('stem.weldlab.consumables_deep_dive', 'Consumables Deep-Dive'), icon: '🧵',
+            subtitle: __alloT('stem.weldlab.electrodes_wires_gases_flux_what_to_bu', 'Electrodes, wires, gases, flux — what to buy + when'),
+            desc: __alloT('stem.weldlab.picking_the_right_consumable_is_half_t', 'Picking the right consumable is half the welding decision. Every electrode classification (E6010, 6011, 6013, 7018, 7024), wire (ER70S-2/3/6, FCAW), shielding gas mixes, flux types. Practical: cost per pound, deposition rate, storage requirements, what each is for. Same Welder + same machine + wrong consumable = bad weld.'),
             color: 'from-fuchsia-600 to-purple-800',
             ring: 'ring-fuchsia-600/40',
             ready: true
           },
           {
-            id: 'maineEcosystem', title: 'Maine Welding Ecosystem', icon: '🦞',
-            subtitle: 'Bath Iron Works, EMCC, employers, apprenticeships',
-            desc: 'Deep-dive into Maine\'s welding economy: Bath Iron Works (US Navy destroyers, 6,500+ employees), Cianbro, Pratt & Whitney, Maine Maritime Academy, EMCC + KVCC + SMCC welding programs, apprenticeship pathways, salary ranges by employer, Maine Apprenticeship Council, MaineWorks workforce programs. The real Maine welding career map.',
+            id: 'maineEcosystem', title: __alloT('stem.weldlab.maine_welding_ecosystem', 'Maine Welding Ecosystem'), icon: '🦞',
+            subtitle: __alloT('stem.weldlab.bath_iron_works_emcc_employers_apprent', 'Bath Iron Works, EMCC, employers, apprenticeships'),
+            desc: __alloT('stem.weldlab.deep_dive_into_maine_s_welding_economy', 'Deep-dive into Maine\'s welding economy: Bath Iron Works (US Navy destroyers, 6,500+ employees), Cianbro, Pratt & Whitney, Maine Maritime Academy, EMCC + KVCC + SMCC welding programs, apprenticeship pathways, salary ranges by employer, Maine Apprenticeship Council, MaineWorks workforce programs. The real Maine welding career map.'),
             color: 'from-red-700 to-rose-900',
             ring: 'ring-red-700/40',
             ready: true
           },
           {
-            id: 'safetyHealth', title: 'Safety + Health Deep-Dive', icon: '⚕️',
-            subtitle: 'Fume, noise, ergonomics, vision, cancer risk',
-            desc: 'Beyond PPE basics: welding fume (manganese, hexavalent chromium, nickel), noise exposure + hearing loss, ergonomic injuries (back, shoulder, wrist), arc-eye + cataracts, skin cancer, hot metal burns, electrocution risks, confined space, fire watch protocols, OSHA + NIOSH regs, long-term career health planning. Welders are 30%+ more likely to develop lung cancer — not a footnote.',
+            id: 'safetyHealth', title: __alloT('stem.weldlab.safety_health_deep_dive', 'Safety + Health Deep-Dive'), icon: '⚕️',
+            subtitle: __alloT('stem.weldlab.fume_noise_ergonomics_vision_cancer_ri', 'Fume, noise, ergonomics, vision, cancer risk'),
+            desc: __alloT('stem.weldlab.beyond_ppe_basics_welding_fume_mangane', 'Beyond PPE basics: welding fume (manganese, hexavalent chromium, nickel), noise exposure + hearing loss, ergonomic injuries (back, shoulder, wrist), arc-eye + cataracts, skin cancer, hot metal burns, electrocution risks, confined space, fire watch protocols, OSHA + NIOSH regs, long-term career health planning. Welders are 30%+ more likely to develop lung cancer — not a footnote.'),
             color: 'from-rose-700 to-red-900',
             ring: 'ring-rose-700/40',
             ready: true
           },
           {
-            id: 'mathBlueprint', title: 'Welding Math + Blueprints', icon: '📐',
-            subtitle: 'Fractions, decimals, geometry, blueprint reading',
-            desc: 'The math + drawing literacy every welder needs: fractions/decimals/measurement, geometry (angles, circles, area), trigonometry basics for layout, reading welding blueprints (orthographic views, dimensioning, tolerances, welding symbols). The shop-floor literacy that distinguishes a welder who follows specs from one who interprets them.',
+            id: 'mathBlueprint', title: __alloT('stem.weldlab.welding_math_blueprints', 'Welding Math + Blueprints'), icon: '📐',
+            subtitle: __alloT('stem.weldlab.fractions_decimals_geometry_blueprint_', 'Fractions, decimals, geometry, blueprint reading'),
+            desc: __alloT('stem.weldlab.the_math_drawing_literacy_every_welder', 'The math + drawing literacy every welder needs: fractions/decimals/measurement, geometry (angles, circles, area), trigonometry basics for layout, reading welding blueprints (orthographic views, dimensioning, tolerances, welding symbols). The shop-floor literacy that distinguishes a welder who follows specs from one who interprets them.'),
             color: 'from-cyan-700 to-blue-900',
             ring: 'ring-cyan-700/40',
             ready: true
           },
           {
-            id: 'careerStories', title: 'Welder Career Stories', icon: '📖',
-            subtitle: '12 real welder profiles + paths',
-            desc: '12 narrative profiles of working welders: shipyard journeyman, pipeline traveler, nuclear specialist, ironworker, female pipefitter, artist welder, welding instructor, mining welder, motorcycle frame builder, race car fabricator, sculptor, marine welder. What they actually do, what they earn, what they wish they\'d known, how they got there.',
+            id: 'careerStories', title: __alloT('stem.weldlab.welder_career_stories', 'Welder Career Stories'), icon: '📖',
+            subtitle: __alloT('stem.weldlab.12_real_welder_profiles_paths', '12 real welder profiles + paths'),
+            desc: __alloT('stem.weldlab.12_narrative_profiles_of_working_welde', '12 narrative profiles of working welders: shipyard journeyman, pipeline traveler, nuclear specialist, ironworker, female pipefitter, artist welder, welding instructor, mining welder, motorcycle frame builder, race car fabricator, sculptor, marine welder. What they actually do, what they earn, what they wish they\'d known, how they got there.'),
             color: 'from-teal-700 to-emerald-900',
             ring: 'ring-teal-700/40',
             ready: true
@@ -613,7 +614,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             notReady && h('span', {
               'aria-hidden': true,
               className: 'absolute top-2 right-2 z-10 bg-slate-700 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full shadow-md'
-            }, 'Soon'),
+            }, __alloT('stem.weldlab.soon', 'Soon')),
             h('div', { className: 'bg-gradient-to-br ' + c.color + ' p-5 text-white' },
               h('div', { className: 'flex items-start justify-between mb-2' },
                 h('span', { className: isBig ? 'text-5xl' : 'text-4xl' }, c.icon),
@@ -656,7 +657,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             h('div', { className: 'text-6xl mb-3 relative' }, '🔥'),
             h('h1', { className: 'text-4xl font-black text-slate-800 mb-2 relative' }, 'WeldLab'),
             h('p', { className: 'text-lg text-slate-700 max-w-2xl mx-auto relative' },
-              'Welding & metal joining — heat-input physics, bead geometry, defect ID, AWS symbols, OSHA-aligned safety, and Maine welding careers (Bath Iron Works, EMCC, AWS).')
+              __alloT('stem.weldlab.welding_metal_joining_heat_input_physi', 'Welding & metal joining — heat-input physics, bead geometry, defect ID, AWS symbols, OSHA-aligned safety, and Maine welding careers (Bath Iron Works, EMCC, AWS).'))
           ),
           // ── Welder's journey progress card ──
           // Pulls the existing 13-module menu into a career-arc narrative
@@ -724,7 +725,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 h('div', { className: 'flex items-center gap-3 flex-1 min-w-[220px]' },
                   h('span', { className: 'text-3xl' + (allDone ? ' weldlab-arc-pulse' : ''), 'aria-hidden': true }, tierIcon),
                   h('div', null,
-                    h('div', { className: 'text-xs font-bold uppercase tracking-wider ' + tierColor + ' mb-0.5' }, 'Your tier'),
+                    h('div', { className: 'text-xs font-bold uppercase tracking-wider ' + tierColor + ' mb-0.5' }, __alloT('stem.weldlab.your_tier', 'Your tier')),
                     h('div', { className: 'font-bold text-slate-800 text-lg leading-tight' }, tier),
                     h('div', { className: 'text-xs text-slate-700 mt-0.5' }, tierBlurb)
                   )
@@ -742,13 +743,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               // Next-up nudge — only shown when there's a clear next module.
               !allDone && nextBadgeId && h('div', { className: 'mt-3 pt-3 border-t border-slate-300/60 flex items-center justify-between gap-3 flex-wrap' },
                 h('div', { className: 'text-sm text-slate-700 flex-1 min-w-[180px]' },
-                  h('span', { className: 'font-bold text-slate-800' }, '→ Try next: '),
+                  h('span', { className: 'font-bold text-slate-800' }, __alloT('stem.weldlab.try_next', '→ Try next: ')),
                   h('span', null, nextLabel)
                 ),
                 h('button', {
                   onClick: function () { goto(nextBadgeId); },
                   className: 'px-3 py-1.5 rounded-lg bg-orange-600 text-white text-xs font-bold hover:bg-orange-700 focus:outline-none focus:ring-4 ring-orange-500/40 transition'
-                }, 'Open →')
+                }, __alloT('stem.weldlab.open', 'Open →'))
               )
             );
           })(),
@@ -776,12 +777,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               h('div', { className: 'p-4 flex items-center gap-4 flex-wrap' },
                 h('div', { className: 'flex-shrink-0 text-center', style: { minWidth: 86 } },
                   h('div', { className: 'text-3xl font-black text-orange-800 leading-none' }, foundDefectTypes + ' / ' + totalDefectTypes),
-                  h('div', { className: 'text-[9px] uppercase tracking-widest text-slate-700 font-bold mt-1' }, 'Defects ID\'d')
+                  h('div', { className: 'text-[9px] uppercase tracking-widest text-slate-700 font-bold mt-1' }, __alloT('stem.weldlab.defects_id_d', 'Defects ID\'d'))
                 ),
                 h('div', { className: 'flex-1 min-w-0' },
                   h('div', { className: 'flex items-center gap-2 mb-1' },
                     h('span', { 'aria-hidden': true, className: 'text-xl' }, '📔'),
-                    h('h3', { className: 'text-base font-black text-slate-800' }, "Welder's Defect Catalog")
+                    h('h3', { className: 'text-base font-black text-slate-800' }, __alloT('stem.weldlab.welder_s_defect_catalog_2', "Welder's Defect Catalog"))
                   ),
                   h('div', { className: 'h-2 bg-white/60 rounded-full overflow-hidden mb-1.5', 'aria-hidden': true },
                     h('div', { className: 'h-full bg-orange-600 transition-all', style: { width: catalogPct + '%' } })
@@ -806,16 +807,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               )
             );
           })(),
-          h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-700 mb-2 px-1' }, 'Core Simulators'),
+          h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-700 mb-2 px-1' }, __alloT('stem.weldlab.core_simulators', 'Core Simulators')),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8' },
             bigCards.map(function(c) { return renderCard(c, true); })
           ),
-          h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-700 mb-2 px-1' }, 'Quick Labs'),
+          h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-700 mb-2 px-1' }, __alloT('stem.weldlab.quick_labs', 'Quick Labs')),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' },
             miniCards.map(function(c) { return renderCard(c, false); })
           ),
           h('div', { className: 'mt-8 text-center text-xs text-slate-700 italic' },
-            'All 10 modules live. From heat-input physics to AWS welding symbols to Maine welding careers, plus underwater specialty + timed Speed Challenge — explore in any order.')
+            __alloT('stem.weldlab.all_10_modules_live_from_heat_input_ph', 'All 10 modules live. From heat-input physics to AWS welding symbols to Maine welding careers, plus underwater specialty + timed Speed Challenge — explore in any order.'))
         );
       }
 
@@ -860,29 +861,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         }
 
         var processInfo = {
-          mig:   { label: 'MIG / GMAW',  eff: '80%', note: 'Low spatter, most arc energy reaches the weld.' },
-          tig:   { label: 'TIG / GTAW',  eff: '70%', note: 'Open arc, significant radiative loss.' },
-          stick: { label: 'Stick / SMAW', eff: '85%', note: 'Slag retains heat, high transfer efficiency.' },
-          oxy:   { label: 'Oxy-Fuel',    eff: '55%', note: 'Flame heating; much heat is lost to convection.' }
+          mig:   { label: __alloT('stem.weldlab.mig_gmaw', 'MIG / GMAW'),  eff: '80%', note: __alloT('stem.weldlab.low_spatter_most_arc_energy_reaches_th', 'Low spatter, most arc energy reaches the weld.') },
+          tig:   { label: __alloT('stem.weldlab.tig_gtaw', 'TIG / GTAW'),  eff: '70%', note: __alloT('stem.weldlab.open_arc_significant_radiative_loss', 'Open arc, significant radiative loss.') },
+          stick: { label: __alloT('stem.weldlab.stick_smaw', 'Stick / SMAW'), eff: '85%', note: __alloT('stem.weldlab.slag_retains_heat_high_transfer_effici', 'Slag retains heat, high transfer efficiency.') },
+          oxy:   { label: 'Oxy-Fuel',    eff: '55%', note: __alloT('stem.weldlab.flame_heating_much_heat_is_lost_to_con', 'Flame heating; much heat is lost to convection.') }
         };
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '⚡', title: 'Heat Input Calculator' }),
+          h(BackBar, { icon: '⚡', title: __alloT('stem.weldlab.heat_input_calculator_2', 'Heat Input Calculator') }),
           h('div', { className: 'p-6 max-w-5xl mx-auto space-y-6' },
             h('div', { className: 'bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-orange-300 rounded-2xl p-5' },
-              h('h2', { className: 'text-lg font-black text-orange-900 mb-2' }, 'The most important number in arc welding'),
+              h('h2', { className: 'text-lg font-black text-orange-900 mb-2' }, __alloT('stem.weldlab.the_most_important_number_in_arc_weldi', 'The most important number in arc welding')),
               h('p', { className: 'text-sm text-slate-700 leading-relaxed' },
-                'Heat input — measured in kilojoules per inch (kJ/in) — controls how deep your weld penetrates, how big the heat-affected zone gets, and whether you risk warping or cracking. Every certified welder calculates this. Every welding procedure specification (WPS) lists it.'),
+                __alloT('stem.weldlab.heat_input_measured_in_kilojoules_per_', 'Heat input — measured in kilojoules per inch (kJ/in) — controls how deep your weld penetrates, how big the heat-affected zone gets, and whether you risk warping or cracking. Every certified welder calculates this. Every welding procedure specification (WPS) lists it.')),
               h('div', { className: 'mt-3 p-3 bg-white rounded-lg border border-orange-300 font-mono text-sm text-slate-800' },
-                'Gross HI (kJ/in) = (V × A × 60) ÷ (Travel Speed in/min × 1000)',
+                __alloT('stem.weldlab.gross_hi_kj_in_v_a_60_travel_speed_in_', 'Gross HI (kJ/in) = (V × A × 60) ÷ (Travel Speed in/min × 1000)'),
                 h('br'),
-                h('span', { className: 'text-slate-700' }, 'Net HI = Gross HI × arc efficiency η')
+                h('span', { className: 'text-slate-700' }, __alloT('stem.weldlab.net_hi_gross_hi_arc_efficiency', 'Net HI = Gross HI × arc efficiency η'))
               )
             ),
             // Process selector
             h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-4' },
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, 'Welding Process'),
-              h('div', { 'role': 'radiogroup', 'aria-label': 'Welding process', className: 'grid grid-cols-2 md:grid-cols-4 gap-2' },
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, __alloT('stem.weldlab.welding_process', 'Welding Process')),
+              h('div', { 'role': 'radiogroup', 'aria-label': __alloT('stem.weldlab.welding_process_2', 'Welding process'), className: 'grid grid-cols-2 md:grid-cols-4 gap-2' },
                 ['mig','tig','stick','oxy'].map(function(p) {
                   var sel = (P === p);
                   return h('button', {
@@ -900,37 +901,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             // Sliders
             h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-4' },
               h(LabeledSlider, {
-                label: 'Voltage', valueText: V.toFixed(1) + ' V',
+                label: __alloT('stem.weldlab.voltage', 'Voltage'), valueText: V.toFixed(1) + ' V',
                 min: 10, max: 40, step: 0.5, value: V, onChange: setV,
-                hint: 'Typical: MIG 18-26V, TIG 12-22V, Stick 18-30V'
+                hint: __alloT('stem.weldlab.typical_mig_18_26v_tig_12_22v_stick_18', 'Typical: MIG 18-26V, TIG 12-22V, Stick 18-30V')
               }),
               h(LabeledSlider, {
-                label: 'Amperage', valueText: Math.round(A) + ' A',
+                label: __alloT('stem.weldlab.amperage', 'Amperage'), valueText: Math.round(A) + ' A',
                 min: 50, max: 350, step: 5, value: A, onChange: setA,
-                hint: 'Higher amps = deeper penetration, more heat'
+                hint: __alloT('stem.weldlab.higher_amps_deeper_penetration_more_he', 'Higher amps = deeper penetration, more heat')
               }),
               h(LabeledSlider, {
-                label: 'Travel Speed', valueText: TS.toFixed(1) + ' in/min',
+                label: __alloT('stem.weldlab.travel_speed', 'Travel Speed'), valueText: TS.toFixed(1) + ' in/min',
                 min: 3, max: 30, step: 0.5, value: TS, onChange: setTS,
-                hint: 'Faster travel = lower heat input per inch'
+                hint: __alloT('stem.weldlab.faster_travel_lower_heat_input_per_inc', 'Faster travel = lower heat input per inch')
               })
             ),
             // Results
             h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
               h(StatCard, {
-                label: 'Gross Heat Input',
+                label: __alloT('stem.weldlab.gross_heat_input', 'Gross Heat Input'),
                 value: gross.toFixed(1),
                 unit: 'kJ/in',
                 color: 'text-slate-700'
               }),
               h(StatCard, {
-                label: 'Arc Efficiency',
+                label: __alloT('stem.weldlab.arc_efficiency', 'Arc Efficiency'),
                 value: Math.round(eta * 100) + '%',
                 unit: processInfo[P].label,
                 color: 'text-orange-700'
               }),
               h(StatCard, {
-                label: 'Net Heat Input',
+                label: __alloT('stem.weldlab.net_heat_input', 'Net Heat Input'),
                 value: net.toFixed(1),
                 unit: 'kJ/in (to weld)',
                 color: 'text-red-700'
@@ -944,7 +945,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               h('div', { className: 'flex items-center gap-3 mb-2' },
                 h('span', { className: 'text-3xl' }, tier === 'LOW' ? '🥶' : tier === 'MEDIUM' ? '✅' : tier === 'HIGH' ? '🌡️' : '🔥'),
                 h('div', null,
-                  h('div', { className: 'text-xs font-bold uppercase tracking-widest opacity-80' }, 'Heat Input Tier'),
+                  h('div', { className: 'text-xs font-bold uppercase tracking-widest opacity-80' }, __alloT('stem.weldlab.heat_input_tier', 'Heat Input Tier')),
                   h('div', { className: 'text-2xl font-black' }, tier)
                 )
               ),
@@ -952,7 +953,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             ),
             // Worked example
             h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
-              h('h3', { className: 'text-sm font-black uppercase tracking-wider text-slate-700 mb-2' }, 'Worked Example — verify by hand'),
+              h('h3', { className: 'text-sm font-black uppercase tracking-wider text-slate-700 mb-2' }, __alloT('stem.weldlab.worked_example_verify_by_hand', 'Worked Example — verify by hand')),
               h('div', { className: 'font-mono text-sm text-slate-800 space-y-1' },
                 h('div', null, 'Gross HI = (' + V.toFixed(1) + ' × ' + Math.round(A) + ' × 60) ÷ (' + TS.toFixed(1) + ' × 1000)'),
                 h('div', null, '         = ' + (V * A * 60).toFixed(0) + ' ÷ ' + (TS * 1000).toFixed(0)),
@@ -1198,13 +1199,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           (penetration * 1000 | 0) / 1000 + ' inches. Overall score ' + overall + ' percent.';
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '🔥', title: 'Weld Bead Lab' }),
+          h(BackBar, { icon: '🔥', title: __alloT('stem.weldlab.weld_bead_lab_2', 'Weld Bead Lab') }),
           h('div', { className: 'p-6 max-w-6xl mx-auto space-y-5' },
             // Process + material + thickness
             h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-4' },
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-3' },
-                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, 'Process'),
-                h('div', { 'role': 'radiogroup', 'aria-label': 'Welding process', className: 'grid grid-cols-2 gap-1.5' },
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, __alloT('stem.weldlab.process', 'Process')),
+                h('div', { 'role': 'radiogroup', 'aria-label': __alloT('stem.weldlab.welding_process_3', 'Welding process'), className: 'grid grid-cols-2 gap-1.5' },
                   ['mig','tig','stick','oxy'].map(function(p) {
                     var sel = (P === p);
                     var lbl = p === 'mig' ? 'MIG' : p === 'tig' ? 'TIG' : p === 'stick' ? 'Stick' : 'Oxy';
@@ -1220,8 +1221,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 )
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-3' },
-                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, 'Material'),
-                h('div', { 'role': 'radiogroup', 'aria-label': 'Base metal', className: 'space-y-1.5' },
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, __alloT('stem.weldlab.material', 'Material')),
+                h('div', { 'role': 'radiogroup', 'aria-label': __alloT('stem.weldlab.base_metal', 'Base metal'), className: 'space-y-1.5' },
                   Object.keys(MATERIAL).map(function(mk) {
                     var sel = (M === mk);
                     return h('button', {
@@ -1236,8 +1237,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 )
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-3' },
-                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, 'Plate Thickness'),
-                h('div', { 'role': 'radiogroup', 'aria-label': 'Plate thickness', className: 'grid grid-cols-2 gap-1.5' },
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, __alloT('stem.weldlab.plate_thickness', 'Plate Thickness')),
+                h('div', { 'role': 'radiogroup', 'aria-label': __alloT('stem.weldlab.plate_thickness_2', 'Plate thickness'), className: 'grid grid-cols-2 gap-1.5' },
                   [0.125, 0.1875, 0.25, 0.375].map(function(t) {
                     var sel = (TH === t);
                     var lbl = t === 0.125 ? '1/8"' : t === 0.1875 ? '3/16"' : t === 0.25 ? '1/4"' : '3/8"';
@@ -1256,15 +1257,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             // Sliders
             h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-4' },
               h(LabeledSlider, {
-                label: 'Voltage', valueText: V.toFixed(1) + ' V',
+                label: __alloT('stem.weldlab.voltage_2', 'Voltage'), valueText: V.toFixed(1) + ' V',
                 min: 10, max: 40, step: 0.5, value: V, onChange: setV
               }),
               h(LabeledSlider, {
-                label: 'Amperage', valueText: Math.round(A) + ' A',
+                label: __alloT('stem.weldlab.amperage_2', 'Amperage'), valueText: Math.round(A) + ' A',
                 min: 50, max: 350, step: 5, value: A, onChange: setA
               }),
               h(LabeledSlider, {
-                label: 'Travel Speed', valueText: TS.toFixed(1) + ' in/min',
+                label: __alloT('stem.weldlab.travel_speed_2', 'Travel Speed'), valueText: TS.toFixed(1) + ' in/min',
                 min: 3, max: 30, step: 0.5, value: TS, onChange: setTS
               })
             ),
@@ -1273,12 +1274,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             // 2D view used for inspector-style geometry reading. 3D adds
             // the immersive perspective for engagement; same V/A/TS state
             // drives both. Three.js is lazy-loaded only when 3D is opened.
-            h('div', { role: 'tablist', 'aria-label': 'Bead view mode', className: 'flex gap-2 items-center' },
+            h('div', { role: 'tablist', 'aria-label': __alloT('stem.weldlab.bead_view_mode', 'Bead view mode'), className: 'flex gap-2 items-center' },
               h('span', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mr-1' }, 'View:'),
               [
                 { id: 'topdown', label: 'Top-down', icon: '📐', sub: 'physics view' },
-                { id: '3d', label: '3D Scene', icon: '🎥', sub: 'immersive' },
-                { id: 'helmet', label: 'Helmet POV', icon: '🥽', sub: 'first-person' }
+                { id: '3d', label: __alloT('stem.weldlab.3d_scene', '3D Scene'), icon: '🎥', sub: 'immersive' },
+                { id: 'helmet', label: __alloT('stem.weldlab.helmet_pov', 'Helmet POV'), icon: '🥽', sub: 'first-person' }
               ].map(function (m) {
                 var sel = (beadView === m.id);
                 return h('button', {
@@ -1314,18 +1315,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             // strip so the parent layout stays clean. Each sub-control persists
             // independently so students can compare combinations across sessions.
             beadView === '3d' && h('div', { className: 'bg-white rounded-2xl shadow border-2 border-orange-200 p-4 space-y-3' },
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-orange-800' }, '3D Scene Configuration'),
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-orange-800' }, __alloT('stem.weldlab.3d_scene_configuration', '3D Scene Configuration')),
               h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4' },
                 // Joint type selector
                 h('div', null,
-                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5' }, 'Joint Type'),
-                  h('div', { role: 'radiogroup', 'aria-label': 'Joint type', className: 'grid grid-cols-5 gap-1.5' },
+                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5' }, __alloT('stem.weldlab.joint_type', 'Joint Type')),
+                  h('div', { role: 'radiogroup', 'aria-label': __alloT('stem.weldlab.joint_type_2', 'Joint type'), className: 'grid grid-cols-5 gap-1.5' },
                     [
-                      { id: 'butt',   label: 'Butt',   icon: '⎯⎯', desc: 'Edge to edge' },
-                      { id: 'lap',    label: 'Lap',    icon: '⎯̲̲',   desc: 'Overlap' },
-                      { id: 'tee',    label: 'T',      icon: '⊥',    desc: 'Perpendicular' },
-                      { id: 'corner', label: 'Corner', icon: '⌐',    desc: 'L-shape' },
-                      { id: 'edge',   label: 'Edge',   icon: '∥',    desc: 'Stacked edge' }
+                      { id: 'butt',   label: __alloT('stem.weldlab.butt', 'Butt'),   icon: '⎯⎯', desc: __alloT('stem.weldlab.edge_to_edge', 'Edge to edge') },
+                      { id: 'lap',    label: 'Lap',    icon: '⎯̲̲',   desc: __alloT('stem.weldlab.overlap', 'Overlap') },
+                      { id: 'tee',    label: 'T',      icon: '⊥',    desc: __alloT('stem.weldlab.perpendicular', 'Perpendicular') },
+                      { id: 'corner', label: __alloT('stem.weldlab.corner', 'Corner'), icon: '⌐',    desc: 'L-shape' },
+                      { id: 'edge',   label: __alloT('stem.weldlab.edge', 'Edge'),   icon: '∥',    desc: __alloT('stem.weldlab.stacked_edge', 'Stacked edge') }
                     ].map(function(j) {
                       var sel = (jointType === j.id);
                       return h('button', {
@@ -1345,13 +1346,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 ),
                 // Weld position selector
                 h('div', null,
-                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5' }, 'Weld Position'),
-                  h('div', { role: 'radiogroup', 'aria-label': 'Welding position', className: 'grid grid-cols-4 gap-1.5' },
+                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5' }, __alloT('stem.weldlab.weld_position', 'Weld Position')),
+                  h('div', { role: 'radiogroup', 'aria-label': __alloT('stem.weldlab.welding_position', 'Welding position'), className: 'grid grid-cols-4 gap-1.5' },
                     [
-                      { id: '1G', label: '1G/1F', icon: '⬜', desc: 'Flat — gravity helps' },
-                      { id: '2G', label: '2G/2F', icon: '▭',  desc: 'Horizontal — bead runs sideways' },
-                      { id: '3G', label: '3G/3F', icon: '▮',  desc: 'Vertical — fight gravity' },
-                      { id: '4G', label: '4G/4F', icon: '⬜̲', desc: 'Overhead — gravity fights you' }
+                      { id: '1G', label: '1G/1F', icon: '⬜', desc: __alloT('stem.weldlab.flat_gravity_helps', 'Flat — gravity helps') },
+                      { id: '2G', label: '2G/2F', icon: '▭',  desc: __alloT('stem.weldlab.horizontal_bead_runs_sideways', 'Horizontal — bead runs sideways') },
+                      { id: '3G', label: '3G/3F', icon: '▮',  desc: __alloT('stem.weldlab.vertical_fight_gravity', 'Vertical — fight gravity') },
+                      { id: '4G', label: '4G/4F', icon: '⬜̲', desc: __alloT('stem.weldlab.overhead_gravity_fights_you', 'Overhead — gravity fights you') }
                     ].map(function(p) {
                       var sel = (weldPosition === p.id);
                       return h('button', {
@@ -1379,8 +1380,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     onChange: function(e) { setShowDefects(e.target.checked); announce(e.target.checked ? 'Defect overlay on' : 'Defect overlay off'); },
                     className: 'w-4 h-4 accent-orange-600 focus:ring-2 focus:ring-orange-500'
                   }),
-                  h('span', { className: 'font-bold text-slate-800' }, '🔍 Show real-time defects'),
-                  h('span', { className: 'text-xs text-slate-600' }, '— bad parameters → visible bad bead')
+                  h('span', { className: 'font-bold text-slate-800' }, __alloT('stem.weldlab.show_real_time_defects', '🔍 Show real-time defects')),
+                  h('span', { className: 'text-xs text-slate-600' }, __alloT('stem.weldlab.bad_parameters_visible_bad_bead', '— bad parameters → visible bad bead'))
                 ),
                 h('label', { className: 'inline-flex items-center gap-2 cursor-pointer text-sm' },
                   h('input', {
@@ -1389,8 +1390,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     onChange: function(e) { setShowCrossSection(e.target.checked); announce(e.target.checked ? 'Cross-section view on' : 'Cross-section view off'); },
                     className: 'w-4 h-4 accent-orange-600 focus:ring-2 focus:ring-orange-500'
                   }),
-                  h('span', { className: 'font-bold text-slate-800' }, '🪓 Show cross-section'),
-                  h('span', { className: 'text-xs text-slate-600' }, '— X-ray view of penetration + HAZ + crown')
+                  h('span', { className: 'font-bold text-slate-800' }, __alloT('stem.weldlab.show_cross_section', '🪓 Show cross-section')),
+                  h('span', { className: 'text-xs text-slate-600' }, __alloT('stem.weldlab.x_ray_view_of_penetration_haz_crown', '— X-ray view of penetration + HAZ + crown'))
                 )
               )
             ),
@@ -1425,20 +1426,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             }),
             // Stat cards
             h('div', { className: 'grid grid-cols-2 md:grid-cols-5 gap-3' },
-              h(StatCard, { label: 'Net HI', value: net.toFixed(1), unit: 'kJ/in', color: 'text-red-700' }),
-              h(StatCard, { label: 'Bead Width', value: beadWidth.toFixed(3), unit: 'inches', color: 'text-orange-700' }),
-              h(StatCard, { label: 'Reinforcement', value: beadReinf.toFixed(3), unit: 'inches', color: 'text-orange-700' }),
-              h(StatCard, { label: 'Penetration', value: penetration.toFixed(3), unit: 'inches', color: 'text-orange-700' }),
-              h(StatCard, { label: 'Score', value: overall + '%', unit: 'overall', color: overall >= 80 ? 'text-emerald-700' : overall >= 60 ? 'text-amber-700' : 'text-rose-700' })
+              h(StatCard, { label: __alloT('stem.weldlab.net_hi', 'Net HI'), value: net.toFixed(1), unit: 'kJ/in', color: 'text-red-700' }),
+              h(StatCard, { label: __alloT('stem.weldlab.bead_width', 'Bead Width'), value: beadWidth.toFixed(3), unit: 'inches', color: 'text-orange-700' }),
+              h(StatCard, { label: __alloT('stem.weldlab.reinforcement', 'Reinforcement'), value: beadReinf.toFixed(3), unit: 'inches', color: 'text-orange-700' }),
+              h(StatCard, { label: __alloT('stem.weldlab.penetration', 'Penetration'), value: penetration.toFixed(3), unit: 'inches', color: 'text-orange-700' }),
+              h(StatCard, { label: __alloT('stem.weldlab.score', 'Score'), value: overall + '%', unit: 'overall', color: overall >= 80 ? 'text-emerald-700' : overall >= 60 ? 'text-amber-700' : 'text-rose-700' })
             ),
             // Score breakdown
             h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-4' },
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-3' }, 'Inspector Scorecard'),
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-3' }, __alloT('stem.weldlab.inspector_scorecard', 'Inspector Scorecard')),
               h('div', { className: 'space-y-2' },
                 [
-                  { label: 'Penetration', val: penScore, hint: 'Ideal ≈ 70% of plate thickness (' + (penIdeal * 1000 | 0)/1000 + '" target)' },
-                  { label: 'Uniformity', val: unifScore, hint: 'Even ripple spacing — steady travel speed' },
-                  { label: 'Spatter Control', val: spatterScore, hint: 'Amperage matched to process (target ~' + ampIdeal + 'A for ' + (P === 'mig' ? 'MIG' : P === 'tig' ? 'TIG' : P === 'stick' ? 'Stick' : 'Oxy') + ')' }
+                  { label: __alloT('stem.weldlab.penetration_2', 'Penetration'), val: penScore, hint: 'Ideal ≈ 70% of plate thickness (' + (penIdeal * 1000 | 0)/1000 + '" target)' },
+                  { label: __alloT('stem.weldlab.uniformity', 'Uniformity'), val: unifScore, hint: __alloT('stem.weldlab.even_ripple_spacing_steady_travel_spee', 'Even ripple spacing — steady travel speed') },
+                  { label: __alloT('stem.weldlab.spatter_control', 'Spatter Control'), val: spatterScore, hint: 'Amperage matched to process (target ~' + ampIdeal + 'A for ' + (P === 'mig' ? 'MIG' : P === 'tig' ? 'TIG' : P === 'stick' ? 'Stick' : 'Oxy') + ')' }
                 ].map(function(row, i) {
                   var color = row.val >= 80 ? 'bg-emerald-500' : row.val >= 60 ? 'bg-amber-500' : 'bg-rose-500';
                   return h('div', { key: i },
@@ -1456,7 +1457,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             ),
             // Material context
             h('div', { className: 'bg-blue-50 border-2 border-blue-300 rounded-2xl p-4' },
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-blue-900 mb-1' }, 'About this material'),
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-blue-900 mb-1' }, __alloT('stem.weldlab.about_this_material', 'About this material')),
               h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
                 M === 'steel' ? 'Mild steel A36 — the workhorse of structural welding. Moderate thermal conductivity means heat stays where you put it. Forgiving, good for learning. Most common metal at Bath Iron Works.' :
                 M === 'aluminum' ? 'Aluminum 6061 — high thermal conductivity (2.4× steel) means heat dissipates fast. You need MORE amperage to compensate. Forms an oxide layer that must be removed (AC TIG cleans it). Trickier than steel.' :
@@ -1585,12 +1586,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         // Defect color legend rendered alongside the 3D scene when
         // showDefects is on. Each entry: { key, label, color, swatch }.
         var defectLegend = [
-          { key: 'burnthrough',  label: 'Burnthrough',   color: '#000000', desc: 'hole punched through' },
-          { key: 'lackOfFusion', label: 'Lack of fusion', color: 'var(--allo-stem-text-soft, #475569)', desc: 'cold weld, no bond' },
-          { key: 'undercut',     label: 'Undercut',      color: '#7c2d12', desc: 'groove next to bead' },
-          { key: 'overlap',      label: 'Overlap',       color: '#92400e', desc: 'bead overhangs edge' },
-          { key: 'spatter',      label: 'Spatter',       color: '#f59e0b', desc: 'molten splatter' },
-          { key: 'porosity',     label: 'Porosity',      color: '#1e293b', desc: 'gas bubbles in bead' }
+          { key: 'burnthrough',  label: __alloT('stem.weldlab.burnthrough', 'Burnthrough'),   color: '#000000', desc: __alloT('stem.weldlab.hole_punched_through', 'hole punched through') },
+          { key: 'lackOfFusion', label: __alloT('stem.weldlab.lack_of_fusion', 'Lack of fusion'), color: 'var(--allo-stem-text-soft, #475569)', desc: __alloT('stem.weldlab.cold_weld_no_bond', 'cold weld, no bond') },
+          { key: 'undercut',     label: __alloT('stem.weldlab.undercut', 'Undercut'),      color: '#7c2d12', desc: __alloT('stem.weldlab.groove_next_to_bead', 'groove next to bead') },
+          { key: 'overlap',      label: __alloT('stem.weldlab.overlap_2', 'Overlap'),       color: '#92400e', desc: __alloT('stem.weldlab.bead_overhangs_edge', 'bead overhangs edge') },
+          { key: 'spatter',      label: __alloT('stem.weldlab.spatter', 'Spatter'),       color: '#f59e0b', desc: __alloT('stem.weldlab.molten_splatter', 'molten splatter') },
+          { key: 'porosity',     label: __alloT('stem.weldlab.porosity', 'Porosity'),      color: '#1e293b', desc: __alloT('stem.weldlab.gas_bubbles_in_bead', 'gas bubbles in bead') }
         ];
 
         function resetCamera() {
@@ -2653,7 +2654,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           },
             h('div', { className: 'flex items-center gap-2 text-slate-300 text-sm' },
               h('span', { className: 'animate-pulse' }, '🎥'),
-              h('span', null, 'Loading 3D scene…')
+              h('span', null, __alloT('stem.weldlab.loading_3d_scene', 'Loading 3D scene…'))
             )
           ),
           // Error state — three.js failed to load
@@ -2662,32 +2663,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             className: 'absolute inset-0 flex items-center justify-center bg-slate-900/95 rounded-lg p-4 text-center'
           },
             h('div', null,
-              h('div', { className: 'text-rose-300 text-sm font-bold mb-2' }, '3D view unavailable'),
+              h('div', { className: 'text-rose-300 text-sm font-bold mb-2' }, __alloT('stem.weldlab.3d_view_unavailable', '3D view unavailable')),
               h('div', { className: 'text-slate-300 text-xs leading-relaxed max-w-xs mb-3' },
-                'Three.js failed to load (CDN blocked, offline, or WebGL not supported on this device). Switch back to top-down view above.'),
+                __alloT('stem.weldlab.three_js_failed_to_load_cdn_blocked_of', 'Three.js failed to load (CDN blocked, offline, or WebGL not supported on this device). Switch back to top-down view above.')),
               h('button', {
                 onClick: function() {
                   setStatus('loading');
                   setRetryCount(function(c) { return c + 1; });
                 },
                 className: 'px-3 py-1.5 rounded bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold transition focus:outline-none focus:ring-2 ring-orange-500/40'
-              }, 'Retry 3D Mode')
+              }, __alloT('stem.weldlab.retry_3d_mode', 'Retry 3D Mode'))
             )
           ),
           // Camera controls overlay (only when scene is ready)
           status === 'ready' && h('div', { className: 'absolute top-3 right-3 flex gap-2' },
             h('button', {
-              'aria-label': 'Reset camera to default angle',
+              'aria-label': __alloT('stem.weldlab.reset_camera_to_default_angle', 'Reset camera to default angle'),
               onClick: resetCamera,
               className: 'transition-colors px-2 py-1 rounded bg-slate-800/85 text-slate-200 text-xs font-bold border border-slate-600 hover:bg-slate-700 focus:outline-none focus:ring-2 ring-orange-500/40'
-            }, '↺ Reset camera')
+            }, __alloT('stem.weldlab.reset_camera', '↺ Reset camera'))
           ),
           // Hint strip
           status === 'ready' && h('div', { className: 'mt-2 text-[11px] text-slate-300 flex flex-wrap items-center gap-x-3 gap-y-1' },
-            h('span', null, '🖱 Drag to orbit'),
-            h('span', null, '⚙ Wheel to zoom'),
-            h('span', null, '⌨ Arrow keys + / − for keyboard control'),
-            h('span', { className: 'text-slate-400' }, '— same V/A/TS controls above drive both views')
+            h('span', null, __alloT('stem.weldlab.drag_to_orbit', '🖱 Drag to orbit')),
+            h('span', null, __alloT('stem.weldlab.wheel_to_zoom', '⚙ Wheel to zoom')),
+            h('span', null, __alloT('stem.weldlab.arrow_keys_for_keyboard_control', '⌨ Arrow keys + / − for keyboard control')),
+            h('span', { className: 'text-slate-400' }, __alloT('stem.weldlab.same_v_a_ts_controls_above_drive_both_', '— same V/A/TS controls above drive both views'))
           ),
           // Cross-section inset — visible only when toggle is on
           status === 'ready' && props.showCrossSection && h('div', { className: 'mt-3 pt-3 border-t border-slate-700' },
@@ -2696,25 +2697,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               width: 540,
               height: 200,
               role: 'img',
-              'aria-label': 'Cross-section profile view showing penetration depth, heat-affected zone, and reinforcement crown',
+              'aria-label': __alloT('stem.weldlab.cross_section_profile_view_showing_pen', 'Cross-section profile view showing penetration depth, heat-affected zone, and reinforcement crown'),
               className: 'w-full block rounded-lg bg-slate-950'
             }),
             h('div', { className: 'mt-1.5 text-[10px] text-slate-400 leading-snug' },
-              'The cross-section view is what an inspector sees when they cut the weld in half + polish + etch with nital (carbon steel) or oxalic (stainless). ',
-              'The bright dome above the plate is the ',
-              h('span', { className: 'text-amber-300 font-bold' }, 'reinforcement crown'),
-              ' (excess filler stacked above the surface — should be ~1–3 mm for code). ',
-              'The orange halo is the ',
-              h('span', { className: 'text-amber-300 font-bold' }, 'heat-affected zone (HAZ)'),
-              ' — base metal that didn\'t melt but reached temperatures high enough to change grain structure + properties. ',
-              'The depth into the plate is the ',
+              __alloT('stem.weldlab.the_cross_section_view_is_what_an_insp', 'The cross-section view is what an inspector sees when they cut the weld in half + polish + etch with nital (carbon steel) or oxalic (stainless). '),
+              __alloT('stem.weldlab.the_bright_dome_above_the_plate_is_the', 'The bright dome above the plate is the '),
+              h('span', { className: 'text-amber-300 font-bold' }, __alloT('stem.weldlab.reinforcement_crown', 'reinforcement crown')),
+              __alloT('stem.weldlab.excess_filler_stacked_above_the_surfac', ' (excess filler stacked above the surface — should be ~1–3 mm for code). '),
+              __alloT('stem.weldlab.the_orange_halo_is_the', 'The orange halo is the '),
+              h('span', { className: 'text-amber-300 font-bold' }, __alloT('stem.weldlab.heat_affected_zone_haz', 'heat-affected zone (HAZ)')),
+              __alloT('stem.weldlab.base_metal_that_didn_t_melt_but_reache', ' — base metal that didn\'t melt but reached temperatures high enough to change grain structure + properties. '),
+              __alloT('stem.weldlab.the_depth_into_the_plate_is_the', 'The depth into the plate is the '),
               h('span', { className: 'text-rose-300 font-bold' }, 'penetration'),
-              ' — how deep into the base metal the fusion actually went.'
+              __alloT('stem.weldlab.how_deep_into_the_base_metal_the_fusio', ' — how deep into the base metal the fusion actually went.')
             )
           ),
           // Defect legend — visible only when defect overlay is on
           status === 'ready' && props.showDefects && h('div', { className: 'mt-3 pt-3 border-t border-slate-700' },
-            h('div', { className: 'text-xs font-bold uppercase tracking-wider text-orange-300 mb-2' }, '🔍 Defect Overlay Legend'),
+            h('div', { className: 'text-xs font-bold uppercase tracking-wider text-orange-300 mb-2' }, __alloT('stem.weldlab.defect_overlay_legend', '🔍 Defect Overlay Legend')),
             h('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-2' },
               defectLegend.map(function(d) {
                 return h('div', { key: d.key, className: 'flex items-center gap-2 text-xs text-slate-200' },
@@ -2729,11 +2730,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               })
             ),
             h('div', { className: 'mt-2 text-[11px] text-slate-400 leading-snug' },
-              '⚠ Defects appear when your parameters cross unsafe thresholds. Try ',
-              h('span', { className: 'text-orange-300 font-bold' }, 'V=14, A=300, TS=4 on 1/8" steel'),
-              ' to trigger burnthrough. Try ',
-              h('span', { className: 'text-orange-300 font-bold' }, 'V=14, A=80, TS=22 on 3/8" steel'),
-              ' to trigger lack of fusion. Real welders read their bead this way — every defect has a parameter cause.'
+              __alloT('stem.weldlab.defects_appear_when_your_parameters_cr', '⚠ Defects appear when your parameters cross unsafe thresholds. Try '),
+              h('span', { className: 'text-orange-300 font-bold' }, __alloT('stem.weldlab.v_14_a_300_ts_4_on_1_8_steel', 'V=14, A=300, TS=4 on 1/8" steel')),
+              __alloT('stem.weldlab.to_trigger_burnthrough_try', ' to trigger burnthrough. Try '),
+              h('span', { className: 'text-orange-300 font-bold' }, __alloT('stem.weldlab.v_14_a_80_ts_22_on_3_8_steel', 'V=14, A=80, TS=22 on 3/8" steel')),
+              __alloT('stem.weldlab.to_trigger_lack_of_fusion_real_welders', ' to trigger lack of fusion. Real welders read their bead this way — every defect has a parameter cause.')
             )
           )
         );
@@ -2971,21 +2972,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           ),
           // Educational explainer below — what students are seeing & why it matters
           h('div', { className: 'bg-slate-900 text-slate-200 rounded-2xl border-2 border-slate-700 p-4' },
-            h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-400 mb-2' }, '🥽 What you are seeing'),
+            h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-400 mb-2' }, __alloT('stem.weldlab.what_you_are_seeing', '🥽 What you are seeing')),
             h('p', { className: 'text-sm leading-relaxed mb-3' },
-              'This is approximately what a welder sees through an auto-darkening hood with the lens at Shade 11. The lens darkens within about 1 millisecond of arc strike. Most of the visual world goes black; the arc and the immediate weld pool are nearly the only things visible. The faint rectangle is the plate; the dark shape in the lower-right is your gloved hand on the torch.'),
+              __alloT('stem.weldlab.this_is_approximately_what_a_welder_se', 'This is approximately what a welder sees through an auto-darkening hood with the lens at Shade 11. The lens darkens within about 1 millisecond of arc strike. Most of the visual world goes black; the arc and the immediate weld pool are nearly the only things visible. The faint rectangle is the plate; the dark shape in the lower-right is your gloved hand on the torch.')),
             h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3 text-xs' },
               h('div', { className: 'bg-slate-800/60 rounded-lg p-3 border border-slate-700' },
-                h('div', { className: 'font-bold text-amber-300 mb-1' }, 'Why so dark?'),
-                h('div', { className: 'text-slate-300 leading-relaxed' }, 'A welding arc is roughly as bright as the surface of the sun. Without lens shading, retinal damage happens in milliseconds. Shade 11 reduces visible light by ~99.9% and blocks UV / IR.')
+                h('div', { className: 'font-bold text-amber-300 mb-1' }, __alloT('stem.weldlab.why_so_dark', 'Why so dark?')),
+                h('div', { className: 'text-slate-300 leading-relaxed' }, __alloT('stem.weldlab.a_welding_arc_is_roughly_as_bright_as_', 'A welding arc is roughly as bright as the surface of the sun. Without lens shading, retinal damage happens in milliseconds. Shade 11 reduces visible light by ~99.9% and blocks UV / IR.'))
               ),
               h('div', { className: 'bg-slate-800/60 rounded-lg p-3 border border-slate-700' },
-                h('div', { className: 'font-bold text-amber-300 mb-1' }, 'Why this teaches the craft'),
-                h('div', { className: 'text-slate-300 leading-relaxed' }, 'You can\'t see fine detail once the arc is lit — you set up your torch position, work angle, and travel speed BEFORE striking, then run by muscle memory + the small visible region around the pool. That is what years of practice build.')
+                h('div', { className: 'font-bold text-amber-300 mb-1' }, __alloT('stem.weldlab.why_this_teaches_the_craft', 'Why this teaches the craft')),
+                h('div', { className: 'text-slate-300 leading-relaxed' }, __alloT('stem.weldlab.you_can_t_see_fine_detail_once_the_arc', 'You can\'t see fine detail once the arc is lit — you set up your torch position, work angle, and travel speed BEFORE striking, then run by muscle memory + the small visible region around the pool. That is what years of practice build.'))
               ),
               h('div', { className: 'bg-slate-800/60 rounded-lg p-3 border border-slate-700' },
-                h('div', { className: 'font-bold text-amber-300 mb-1' }, 'Auto vs fixed-shade'),
-                h('div', { className: 'text-slate-300 leading-relaxed' }, 'Old fixed-shade hoods stayed at Shade 11 always — you flipped them down only after striking. Many old welders developed cataracts or had \'flash burn\' incidents. Auto-darkening (1980s+) lets you see clearly until the moment you strike.')
+                h('div', { className: 'font-bold text-amber-300 mb-1' }, __alloT('stem.weldlab.auto_vs_fixed_shade', 'Auto vs fixed-shade')),
+                h('div', { className: 'text-slate-300 leading-relaxed' }, __alloT('stem.weldlab.old_fixed_shade_hoods_stayed_at_shade_', 'Old fixed-shade hoods stayed at Shade 11 always — you flipped them down only after striking. Many old welders developed cataracts or had \'flash burn\' incidents. Auto-darkening (1980s+) lets you see clearly until the moment you strike.'))
               )
             )
           )
@@ -3004,37 +3005,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       // inspector's time in the real world).
       var DEFECT_INFO = {
         porosity: {
-          name: 'Porosity',
+          name: __alloT('stem.weldlab.porosity_2', 'Porosity'),
           icon: '⚪',
           cause: 'Gas trapped during solidification — usually from contaminated base metal (oil, rust, paint), inadequate shielding gas, or moisture in flux.',
           fix: 'Clean base metal to bright steel before welding. Check gas flow (15–25 CFH typical). Replace damp flux. Hold proper torch angle to maintain shielding.'
         },
         undercut: {
-          name: 'Undercut',
+          name: __alloT('stem.weldlab.undercut_2', 'Undercut'),
           icon: '🪚',
           cause: 'A groove melted into the base metal next to the toe of the weld, then left unfilled. Caused by excessive amperage, wrong electrode angle, or travel too fast.',
           fix: 'Reduce amperage. Adjust electrode angle (closer to perpendicular to plate). Slow travel speed slightly. On vertical welds, pause briefly at the edges.'
         },
         lackOfFusion: {
-          name: 'Lack of Fusion',
+          name: __alloT('stem.weldlab.lack_of_fusion_2', 'Lack of Fusion'),
           icon: '🚫',
           cause: 'The weld metal failed to fuse to the base metal or to a previous pass. Caused by insufficient heat, wrong technique, or contaminated surface.',
           fix: 'Increase amperage / heat input. Ensure the arc is striking the joint root, not the side wall. Clean between passes. Use stringer beads for better penetration.'
         },
         coldLap: {
-          name: 'Cold Lap',
+          name: __alloT('stem.weldlab.cold_lap', 'Cold Lap'),
           icon: '🥶',
           cause: 'Weld metal flows over the base metal without fusing — looks like good weld, but isn\'t bonded. Caused by low heat, wrong technique, dirty surface.',
           fix: 'Increase voltage and amperage to raise heat input. Ensure proper electrode-to-work angle. Remove mill scale and rust before welding. Consider preheat on heavy sections.'
         },
         craterCrack: {
-          name: 'Crater Crack',
+          name: __alloT('stem.weldlab.crater_crack', 'Crater Crack'),
           icon: '💥',
           cause: 'A small star-shaped crack at the end of a weld pass where the puddle solidified too quickly with concentrated stress. Common when stopping abruptly.',
           fix: 'Use a backstep crater-fill technique — slow travel and pause at the end. Most modern machines have a "crater" current setting that ramps amperage down. Don\'t snap the arc off.'
         },
         overlap: {
-          name: 'Overlap',
+          name: __alloT('stem.weldlab.overlap_3', 'Overlap'),
           icon: '〰️',
           cause: 'Weld metal protruding beyond the toe without fusing to the base metal. Looks like undercut\'s opposite. Caused by too-low travel speed, excessive deposition.',
           fix: 'Increase travel speed. Reduce wire feed rate (MIG) or amperage. Adjust electrode angle. Use weave technique with proper width control.'
@@ -3044,7 +3045,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       var DEFECT_SAMPLES = [
         {
           id: 'sampleA',
-          name: 'Sample A — Fillet weld on T-joint, mild steel',
+          name: __alloT('stem.weldlab.sample_a_fillet_weld_on_t_joint_mild_s', 'Sample A — Fillet weld on T-joint, mild steel'),
           context: 'Inspection of a 1/4" T-joint fillet weld. Welder reports machine ran fine. What do you see?',
           defects: [
             { id: 'A1', type: 'porosity',     x: 0.18, y: 0.55 },
@@ -3055,7 +3056,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         },
         {
           id: 'sampleB',
-          name: 'Sample B — Butt weld, 3/8" plate',
+          name: __alloT('stem.weldlab.sample_b_butt_weld_3_8_plate', 'Sample B — Butt weld, 3/8" plate'),
           context: 'Square-groove butt weld on heavier plate. Looks shiny. Walk around and inspect carefully.',
           defects: [
             { id: 'B1', type: 'lackOfFusion', x: 0.15, y: 0.60 },
@@ -3066,7 +3067,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         },
         {
           id: 'sampleC',
-          name: 'Sample C — Lap joint, aluminum',
+          name: __alloT('stem.weldlab.sample_c_lap_joint_aluminum', 'Sample C — Lap joint, aluminum'),
           context: 'Aluminum lap joint, MIG welded. Aluminum is unforgiving — find the issues.',
           defects: [
             { id: 'C1', type: 'porosity',     x: 0.20, y: 0.50 },
@@ -3319,12 +3320,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var allFound = foundCount === totalDefects;
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '🔍', title: 'Defect Hunt Lab' }),
+          h(BackBar, { icon: '🔍', title: __alloT('stem.weldlab.defect_hunt_lab_2', 'Defect Hunt Lab') }),
           h('div', { className: 'p-6 max-w-6xl mx-auto space-y-5' },
             // Sample selector
             h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-4' },
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, 'Inspection Sample'),
-              h('div', { 'role': 'radiogroup', 'aria-label': 'Select sample to inspect', className: 'grid grid-cols-1 md:grid-cols-3 gap-2' },
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, __alloT('stem.weldlab.inspection_sample', 'Inspection Sample')),
+              h('div', { 'role': 'radiogroup', 'aria-label': __alloT('stem.weldlab.select_sample_to_inspect', 'Select sample to inspect'), className: 'grid grid-cols-1 md:grid-cols-3 gap-2' },
                 DEFECT_SAMPLES.map(function(s, i) {
                   var sel = (sampleIdx === i);
                   return h('button', {
@@ -3373,14 +3374,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   'aria-disabled': revealAll || foundCount === totalDefects ? 'true' : 'false',
                   className: 'px-3 py-1.5 rounded-lg bg-orange-600 text-white text-xs font-bold border-2 border-orange-700 hover:bg-orange-700 transition focus:outline-none focus:ring-4 ring-orange-500/40 ' +
                     (revealAll || foundCount === totalDefects ? 'opacity-50 cursor-not-allowed' : '')
-                }, '🔎 Inspect next zone (keyboard)'),
-                h('span', { className: 'text-[11px] text-slate-300' }, 'Keyboard alternative — identifies the next un-found defect.')
+                }, __alloT('stem.weldlab.inspect_next_zone_keyboard', '🔎 Inspect next zone (keyboard)')),
+                h('span', { className: 'text-[11px] text-slate-300' }, __alloT('stem.weldlab.keyboard_alternative_identifies_the_ne', 'Keyboard alternative — identifies the next un-found defect.'))
               )
             ),
             // Score + reveal
             h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
-              h(StatCard, { label: 'Defects Found', value: foundCount + '/' + totalDefects, color: 'text-orange-700' }),
-              h(StatCard, { label: 'Score', value: finalScore + '%',
+              h(StatCard, { label: __alloT('stem.weldlab.defects_found', 'Defects Found'), value: foundCount + '/' + totalDefects, color: 'text-orange-700' }),
+              h(StatCard, { label: __alloT('stem.weldlab.score_2', 'Score'), value: finalScore + '%',
                 color: finalScore >= 80 ? 'text-emerald-700' : finalScore >= 60 ? 'text-amber-700' : 'text-rose-700',
                 unit: allFound ? 'all found!' : 'keep looking' }),
               h('button', {
@@ -3404,7 +3405,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             ),
             // Found defects details
             foundDefects.length > 0 && h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-3' }, 'Defect Reports — Cause & Remediation'),
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-3' }, __alloT('stem.weldlab.defect_reports_cause_remediation', 'Defect Reports — Cause & Remediation')),
               h('div', { className: 'space-y-3' },
                 foundDefects.map(function(df) {
                   var info = DEFECT_INFO[df.type];
@@ -3423,7 +3424,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             ),
             // Reference card — all 6 defect types
             h('div', { className: 'bg-blue-50 border-2 border-blue-300 rounded-2xl p-4' },
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-blue-900 mb-2' }, 'Six common defect types — quick reference'),
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-blue-900 mb-2' }, __alloT('stem.weldlab.six_common_defect_types_quick_referenc', 'Six common defect types — quick reference')),
               h('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-2' },
                 Object.keys(DEFECT_INFO).map(function(k) {
                   var info = DEFECT_INFO[k];
@@ -3463,7 +3464,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       // probe in interviews.
       var PROCESS_INFO = {
         mig: {
-          name: 'MIG / GMAW',
+          name: __alloT('stem.weldlab.mig_gmaw_2', 'MIG / GMAW'),
           fullName: 'Gas Metal Arc Welding',
           icon: '🔌',
           color: 'from-orange-500 to-red-600',
@@ -3477,7 +3478,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           example: 'Auto frame repair, sheet-metal HVAC ductwork, light structural in a shop'
         },
         tig: {
-          name: 'TIG / GTAW',
+          name: __alloT('stem.weldlab.tig_gtaw_2', 'TIG / GTAW'),
           fullName: 'Gas Tungsten Arc Welding',
           icon: '🎯',
           color: 'from-amber-500 to-orange-600',
@@ -3491,7 +3492,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           example: 'Stainless food-service tubing, aerospace components, bicycle frames, motorcycle exhaust'
         },
         stick: {
-          name: 'Stick / SMAW',
+          name: __alloT('stem.weldlab.stick_smaw_2', 'Stick / SMAW'),
           fullName: 'Shielded Metal Arc Welding',
           icon: '🪄',
           color: 'from-stone-500 to-slate-700',
@@ -3505,7 +3506,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           example: 'Pipeline construction, structural steel beams, farm equipment repair, ironwork in the field'
         },
         oxy: {
-          name: 'Oxy-Fuel / OFW',
+          name: __alloT('stem.weldlab.oxy_fuel_ofw', 'Oxy-Fuel / OFW'),
           fullName: 'Oxygen-Fuel Welding',
           icon: '🔥',
           color: 'from-blue-600 to-indigo-700',
@@ -3537,21 +3538,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         }
 
         var rows = [
-          { key: 'skill',       label: 'Skill required', max: 5, color: 'bg-orange-500' },
-          { key: 'speed',       label: 'Welding speed',  max: 5, color: 'bg-emerald-500' },
-          { key: 'quality',     label: 'Joint quality',  max: 5, color: 'bg-blue-500' },
-          { key: 'portability', label: 'Portability',    max: 5, color: 'bg-violet-500' },
-          { key: 'equipCost',   label: 'Equipment cost', max: 5, color: 'bg-amber-500' },
-          { key: 'learn',       label: 'Easy to learn',  max: 5, color: 'bg-teal-500' }
+          { key: 'skill',       label: __alloT('stem.weldlab.skill_required', 'Skill required'), max: 5, color: 'bg-orange-500' },
+          { key: 'speed',       label: __alloT('stem.weldlab.welding_speed', 'Welding speed'),  max: 5, color: 'bg-emerald-500' },
+          { key: 'quality',     label: __alloT('stem.weldlab.joint_quality', 'Joint quality'),  max: 5, color: 'bg-blue-500' },
+          { key: 'portability', label: __alloT('stem.weldlab.portability', 'Portability'),    max: 5, color: 'bg-violet-500' },
+          { key: 'equipCost',   label: __alloT('stem.weldlab.equipment_cost', 'Equipment cost'), max: 5, color: 'bg-amber-500' },
+          { key: 'learn',       label: __alloT('stem.weldlab.easy_to_learn', 'Easy to learn'),  max: 5, color: 'bg-teal-500' }
         ];
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '⚖️', title: 'Process Comparison' }),
+          h(BackBar, { icon: '⚖️', title: __alloT('stem.weldlab.process_comparison_2', 'Process Comparison') }),
           h('div', { className: 'p-6 max-w-6xl mx-auto space-y-5' },
             h('div', { className: 'bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-orange-300 rounded-2xl p-5' },
-              h('h2', { className: 'text-lg font-black text-orange-900 mb-2' }, 'Pick the right process for the job'),
+              h('h2', { className: 'text-lg font-black text-orange-900 mb-2' }, __alloT('stem.weldlab.pick_the_right_process_for_the_job', 'Pick the right process for the job')),
               h('p', { className: 'text-sm text-slate-700 leading-relaxed' },
-                'No process is "best" — each one is best for some jobs. Hiring managers test exactly this: "I need to weld 16-gauge stainless for a food-service line. What process and why?" If you can answer questions like that, you know welding.')
+                __alloT('stem.weldlab.no_process_is_best_each_one_is_best_fo', 'No process is "best" — each one is best for some jobs. Hiring managers test exactly this: "I need to weld 16-gauge stainless for a food-service line. What process and why?" If you can answer questions like that, you know welding.'))
             ),
             // Card grid
             h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4' },
@@ -3570,15 +3571,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   h('div', { className: 'bg-gradient-to-br ' + p.color + ' p-4 text-white' },
                     h('div', { className: 'flex items-center justify-between mb-1' },
                       h('span', { className: 'text-3xl' }, p.icon),
-                      h('span', { className: 'text-[10px] font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full' }, 'Process')
+                      h('span', { className: 'text-[10px] font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full' }, __alloT('stem.weldlab.process_2', 'Process'))
                     ),
                     h('div', { className: 'text-lg font-black' }, p.name),
                     h('div', { className: 'text-[11px] opacity-90 font-medium' }, p.tagline)
                   ),
                   h('div', { className: 'p-3' },
-                    h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' }, 'Best For'),
+                    h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' }, __alloT('stem.weldlab.best_for', 'Best For')),
                     h('div', { className: 'text-sm text-slate-800 mb-2' }, p.bestFor),
-                    h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' }, 'Materials'),
+                    h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' }, __alloT('stem.weldlab.materials', 'Materials')),
                     h('div', { className: 'text-sm text-slate-800' }, p.materials)
                   )
                 );
@@ -3586,14 +3587,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             ),
             // Comparison matrix
             h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5 overflow-x-auto' },
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-3' }, 'Side-by-side comparison'),
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-3' }, __alloT('stem.weldlab.side_by_side_comparison', 'Side-by-side comparison')),
               h('table', { className: 'w-full text-sm' },
                 h('thead', null,
                   h('tr', { className: 'border-b-2 border-slate-300' },
-                    h('th', { className: 'text-left p-2 text-xs font-bold uppercase tracking-wider text-slate-700' }, 'Attribute'),
+                    h('th', { className: 'text-left p-2 text-xs font-bold uppercase tracking-wider text-slate-700' }, __alloT('stem.weldlab.attribute', 'Attribute')),
                     h('th', { className: 'p-2 text-xs font-bold uppercase tracking-wider text-orange-700' }, 'MIG'),
                     h('th', { className: 'p-2 text-xs font-bold uppercase tracking-wider text-amber-700' }, 'TIG'),
-                    h('th', { className: 'p-2 text-xs font-bold uppercase tracking-wider text-stone-700' }, 'Stick'),
+                    h('th', { className: 'p-2 text-xs font-bold uppercase tracking-wider text-stone-700' }, __alloT('stem.weldlab.stick', 'Stick')),
                     h('th', { className: 'p-2 text-xs font-bold uppercase tracking-wider text-blue-700' }, 'Oxy')
                   )
                 ),
@@ -3610,7 +3611,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   })
                 )
               ),
-              h('div', { className: 'mt-2 text-xs text-slate-700 italic' }, 'Each row scored 1-5. More dots = more of that attribute.')
+              h('div', { className: 'mt-2 text-xs text-slate-700 italic' }, __alloT('stem.weldlab.each_row_scored_1_5_more_dots_more_of_', 'Each row scored 1-5. More dots = more of that attribute.'))
             ),
             // Detailed expansion
             selected && (function() {
@@ -3625,7 +3626,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 ),
                 h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4' },
                   h('div', null,
-                    h('div', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-700 mb-1' }, '✓ Strengths'),
+                    h('div', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-700 mb-1' }, __alloT('stem.weldlab.strengths', '✓ Strengths')),
                     h('ul', { className: 'space-y-1' },
                       p.pros.map(function(s, i) {
                         return h('li', { key: i, className: 'text-sm text-slate-800 flex items-start gap-1.5' },
@@ -3636,7 +3637,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     )
                   ),
                   h('div', null,
-                    h('div', { className: 'text-xs font-bold uppercase tracking-wider text-rose-700 mb-1' }, '× Limitations'),
+                    h('div', { className: 'text-xs font-bold uppercase tracking-wider text-rose-700 mb-1' }, __alloT('stem.weldlab.limitations', '× Limitations')),
                     h('ul', { className: 'space-y-1' },
                       p.cons.map(function(s, i) {
                         return h('li', { key: i, className: 'text-sm text-slate-800 flex items-start gap-1.5' },
@@ -3648,18 +3649,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   )
                 ),
                 h('div', { className: 'p-3 bg-amber-50 border border-amber-300 rounded-lg' },
-                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-900 mb-1' }, 'Equipment & Setup'),
+                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-900 mb-1' }, __alloT('stem.weldlab.equipment_setup', 'Equipment & Setup')),
                   h('div', { className: 'text-sm text-slate-800' }, p.equipNotes)
                 ),
                 h('div', { className: 'p-3 bg-blue-50 border border-blue-300 rounded-lg' },
-                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-blue-900 mb-1' }, 'Real-world example'),
+                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-blue-900 mb-1' }, __alloT('stem.weldlab.real_world_example', 'Real-world example')),
                   h('div', { className: 'text-sm text-slate-800 italic' }, p.example)
                 )
               );
             })(),
             // Decision guide
             h('div', { className: 'bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-5' },
-              h('h3', { className: 'text-sm font-black uppercase tracking-wider text-emerald-900 mb-3' }, 'Quick decision guide'),
+              h('h3', { className: 'text-sm font-black uppercase tracking-wider text-emerald-900 mb-3' }, __alloT('stem.weldlab.quick_decision_guide', 'Quick decision guide')),
               h('div', { className: 'space-y-2 text-sm' },
                 [
                   ['Production sheet metal, mild steel, indoor', 'MIG'],
@@ -3707,9 +3708,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       // quiz that scrambles diagrams + names and asks the student to pair them.
       var JOINTS = {
         butt: {
-          name: 'Butt Joint',
+          name: __alloT('stem.weldlab.butt_joint', 'Butt Joint'),
           icon: '─',
-          desc: 'Two pieces of metal lying in the same plane, edge-to-edge. The most common joint in pressure vessels, pipe, ship hull plate, and any application where the two pieces must form one continuous surface.',
+          desc: __alloT('stem.weldlab.two_pieces_of_metal_lying_in_the_same_', 'Two pieces of metal lying in the same plane, edge-to-edge. The most common joint in pressure vessels, pipe, ship hull plate, and any application where the two pieces must form one continuous surface.'),
           welds: 'Almost always a groove weld (square-groove, V-groove, bevel, U-groove, or J-groove). Fillet welds are not used on butt joints.',
           uses: 'Pipe welding, pressure vessels, ship hull plate (Bath Iron Works), structural beams, automotive frame rails',
           defects: 'Burn-through (too much heat on thin plate), incomplete penetration, undercut at toes',
@@ -3726,9 +3727,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           }
         },
         lap: {
-          name: 'Lap Joint',
+          name: __alloT('stem.weldlab.lap_joint', 'Lap Joint'),
           icon: '⊏',
-          desc: 'One piece of metal overlapping another, with weld along the edge of the top piece. Common in sheet metal, auto body, and any application where you can\'t fit a butt joint.',
+          desc: __alloT('stem.weldlab.one_piece_of_metal_overlapping_another', 'One piece of metal overlapping another, with weld along the edge of the top piece. Common in sheet metal, auto body, and any application where you can\'t fit a butt joint.'),
           welds: 'Fillet weld along the toe of the overlap. Sometimes plug welds through the top piece into the bottom.',
           uses: 'Auto body panels, HVAC ductwork, sheet metal fabrication, aluminum boat hulls, gussets',
           defects: 'Cold lap (top piece doesn\'t fuse to bottom), overlap, incomplete root fusion',
@@ -3746,7 +3747,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         tjoint: {
           name: 'T-Joint',
           icon: 'T',
-          desc: 'Two pieces meeting perpendicular, forming a T-shape. The "fillet weld" you see on furniture, brackets, gussets, and any structural intersection.',
+          desc: __alloT('stem.weldlab.two_pieces_meeting_perpendicular_formi', 'Two pieces meeting perpendicular, forming a T-shape. The "fillet weld" you see on furniture, brackets, gussets, and any structural intersection.'),
           welds: 'Almost always a fillet weld, one or both sides. For very heavy structural T-joints (like ship frames), a groove weld is sometimes added for full penetration.',
           uses: 'Structural steel framing, machine bases, brackets, gussets, ship frames, table legs',
           defects: 'Undercut along vertical leg, overlap on horizontal leg, lack of root fusion in deep joints',
@@ -3763,9 +3764,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           }
         },
         corner: {
-          name: 'Corner Joint',
+          name: __alloT('stem.weldlab.corner_joint', 'Corner Joint'),
           icon: 'L',
-          desc: 'Two pieces meeting at right angles, at their edges (not perpendicular through the middle like a T-joint). Forms an L-shape. Common in box fabrication.',
+          desc: __alloT('stem.weldlab.two_pieces_meeting_at_right_angles_at_', 'Two pieces meeting at right angles, at their edges (not perpendicular through the middle like a T-joint). Forms an L-shape. Common in box fabrication.'),
           welds: 'Fillet weld inside or outside the corner. Sometimes both. Open corner = fillet on outside; closed corner = full-penetration groove.',
           uses: 'Box fabrication (toolboxes, electrical enclosures), sheet metal cabinets, frame corners, picture-frame style joints',
           defects: 'Burn-through at the corner edge (heat concentrates), gap fit-up issues, root cracking',
@@ -3781,9 +3782,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           }
         },
         edge: {
-          name: 'Edge Joint',
+          name: __alloT('stem.weldlab.edge_joint', 'Edge Joint'),
           icon: '∥',
-          desc: 'Two pieces lying parallel, with their edges aligned and welded along that edge. Used for sealing thin-gauge sheet metal where strength is secondary.',
+          desc: __alloT('stem.weldlab.two_pieces_lying_parallel_with_their_e', 'Two pieces lying parallel, with their edges aligned and welded along that edge. Used for sealing thin-gauge sheet metal where strength is secondary.'),
           welds: 'Square-groove weld along the matched edge, or a "seal weld" — light fillet meant to prevent leaks rather than carry load.',
           uses: 'Sheet metal tanks, food-service stainless containers, thin-gauge HVAC plenums, decorative trim edges',
           defects: 'Burn-through (very thin material), warping due to localized heat, incomplete seal',
@@ -3801,14 +3802,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
 
       // Position codes — fillet (F) and groove (G) variants. AWS spec.
       var POSITIONS = [
-        { code: '1F', name: 'Flat Fillet', desc: 'Joint horizontal, weld at 45° to vertical. Easiest position. Gravity helps.', icon: '⬇️' },
-        { code: '2F', name: 'Horizontal Fillet', desc: 'Joint vertical, but the weld itself runs horizontal along the joint.', icon: '➡️' },
-        { code: '3F', name: 'Vertical Fillet', desc: 'Joint vertical, welder works up or down. Up is harder but stronger.', icon: '⬆️' },
-        { code: '4F', name: 'Overhead Fillet', desc: 'Joint above welder\'s head. Hardest position — molten metal fights gravity.', icon: '🙃' },
-        { code: '1G', name: 'Flat Groove', desc: 'Pipe or plate horizontal. Plate flat on table, pipe rotated under torch.', icon: '⬇️' },
-        { code: '2G', name: 'Horizontal Groove', desc: 'Pipe vertical / plate vertical, weld runs horizontal around / across.', icon: '➡️' },
-        { code: '5G', name: 'Pipe Fixed Horizontal', desc: 'Pipe horizontal, fixed (won\'t rotate). Welder works around — flat → vertical → overhead in one pass.', icon: '🔁' },
-        { code: '6G', name: 'Pipe Fixed 45°', desc: 'Pipe at 45° angle, fixed. The "test" position for AWS pipe certification — combines all difficulties.', icon: '✨' }
+        { code: '1F', name: __alloT('stem.weldlab.flat_fillet', 'Flat Fillet'), desc: __alloT('stem.weldlab.joint_horizontal_weld_at_45_to_vertica', 'Joint horizontal, weld at 45° to vertical. Easiest position. Gravity helps.'), icon: '⬇️' },
+        { code: '2F', name: __alloT('stem.weldlab.horizontal_fillet', 'Horizontal Fillet'), desc: __alloT('stem.weldlab.joint_vertical_but_the_weld_itself_run', 'Joint vertical, but the weld itself runs horizontal along the joint.'), icon: '➡️' },
+        { code: '3F', name: __alloT('stem.weldlab.vertical_fillet', 'Vertical Fillet'), desc: __alloT('stem.weldlab.joint_vertical_welder_works_up_or_down', 'Joint vertical, welder works up or down. Up is harder but stronger.'), icon: '⬆️' },
+        { code: '4F', name: __alloT('stem.weldlab.overhead_fillet', 'Overhead Fillet'), desc: __alloT('stem.weldlab.joint_above_welder_s_head_hardest_posi', 'Joint above welder\'s head. Hardest position — molten metal fights gravity.'), icon: '🙃' },
+        { code: '1G', name: __alloT('stem.weldlab.flat_groove', 'Flat Groove'), desc: __alloT('stem.weldlab.pipe_or_plate_horizontal_plate_flat_on', 'Pipe or plate horizontal. Plate flat on table, pipe rotated under torch.'), icon: '⬇️' },
+        { code: '2G', name: __alloT('stem.weldlab.horizontal_groove', 'Horizontal Groove'), desc: __alloT('stem.weldlab.pipe_vertical_plate_vertical_weld_runs', 'Pipe vertical / plate vertical, weld runs horizontal around / across.'), icon: '➡️' },
+        { code: '5G', name: __alloT('stem.weldlab.pipe_fixed_horizontal', 'Pipe Fixed Horizontal'), desc: __alloT('stem.weldlab.pipe_horizontal_fixed_won_t_rotate_wel', 'Pipe horizontal, fixed (won\'t rotate). Welder works around — flat → vertical → overhead in one pass.'), icon: '🔁' },
+        { code: '6G', name: __alloT('stem.weldlab.pipe_fixed_45', 'Pipe Fixed 45°'), desc: __alloT('stem.weldlab.pipe_at_45_angle_fixed_the_test_positi', 'Pipe at 45° angle, fixed. The "test" position for AWS pipe certification — combines all difficulties.'), icon: '✨' }
       ];
 
       // Quiz items — diagram → name matching
@@ -3877,13 +3878,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           var allChoices = ['butt','lap','tjoint','corner','edge'];
 
           return h('div', { className: 'min-h-screen bg-slate-50' },
-            h(BackBar, { icon: '🔩', title: 'Joint Catalog — Quiz' }),
+            h(BackBar, { icon: '🔩', title: __alloT('stem.weldlab.joint_catalog_quiz', 'Joint Catalog — Quiz') }),
             h('div', { className: 'p-6 max-w-3xl mx-auto space-y-5' },
               h('div', { className: 'flex items-center justify-between' },
                 h('button', {
                   onClick: function() { setQuizMode(false); announce('Returned to catalog'); },
                   className: 'transition-colors px-3 py-1.5 rounded-lg bg-slate-200 hover:bg-slate-300 font-bold text-sm text-slate-800'
-                }, '← Back to Catalog'),
+                }, __alloT('stem.weldlab.back_to_catalog', '← Back to Catalog')),
                 h('div', { className: 'text-sm font-bold text-slate-700' },
                   'Question ' + Math.min(quizIdx + 1, quizPool.length) + ' of ' + quizPool.length + ' · Score: ' + quizScore)
               ),
@@ -3930,7 +3931,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     )
                   ),
                   quizAnswers.length > 0 && h('div', { className: 'px-6 pb-3' },
-                    h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--allo-stem-text-soft, #475569)', marginBottom: 4 } }, 'Your answers'),
+                    h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--allo-stem-text-soft, #475569)', marginBottom: 4 } }, __alloT('stem.weldlab.your_answers', 'Your answers')),
                     h('div', { className: 'flex flex-wrap gap-1' },
                       quizAnswers.map(function(a, ai) {
                         var jointName = (JOINTS[a.key] && JOINTS[a.key].name) || a.key;
@@ -3947,23 +3948,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                       })
                     )
                   ),
-                  pct >= 80 && h('div', { className: 'px-6 py-2 border-t border-slate-200', style: { fontSize: 13, color: '#15803d', fontWeight: 700 } }, '🏅 Badge earned: Joint Reader'),
+                  pct >= 80 && h('div', { className: 'px-6 py-2 border-t border-slate-200', style: { fontSize: 13, color: '#15803d', fontWeight: 700 } }, __alloT('stem.weldlab.badge_earned_joint_reader', '🏅 Badge earned: Joint Reader')),
                   h('div', { className: 'px-6 py-3 border-t border-slate-200' },
                     h('button', {
                       onClick: startQuiz,
                       className: 'px-5 py-2.5 rounded-xl bg-orange-600 text-white font-bold hover:bg-orange-700 transition focus:outline-none focus:ring-4 ring-orange-500/40'
-                    }, '🔄 Retry Quiz')
+                    }, __alloT('stem.weldlab.retry_quiz', '🔄 Retry Quiz'))
                   )
                 );
               })() : h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
-                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, 'Identify this joint'),
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, __alloT('stem.weldlab.identify_this_joint', 'Identify this joint')),
                 h('div', {
                   role: 'img',
-                  'aria-label': 'Cross-section diagram of a welded joint. Identify which joint configuration this represents.',
+                  'aria-label': __alloT('stem.weldlab.cross_section_diagram_of_a_welded_join', 'Cross-section diagram of a welded joint. Identify which joint configuration this represents.'),
                   className: 'bg-slate-100 rounded-xl border-2 border-slate-300 p-4 mb-4 mx-auto',
                   style: { maxWidth: '320px', height: '160px' }
                 }, current.joint.svgRender(h, '#ea580c')),
-                h('div', { 'role': 'radiogroup', 'aria-label': 'Joint type choices', className: 'grid grid-cols-1 md:grid-cols-2 gap-2 mb-3' },
+                h('div', { 'role': 'radiogroup', 'aria-label': __alloT('stem.weldlab.joint_type_choices', 'Joint type choices'), className: 'grid grid-cols-1 md:grid-cols-2 gap-2 mb-3' },
                   allChoices.map(function(ck) {
                     var picked = quizFeedback && quizFeedback.picked === ck;
                     var revealedRight = quizFeedback && quizFeedback.was === ck;
@@ -4005,15 +4006,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         // Catalog mode
         var current = JOINTS[tab];
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '🔩', title: 'Joint Configuration Catalog' }),
+          h(BackBar, { icon: '🔩', title: __alloT('stem.weldlab.joint_configuration_catalog', 'Joint Configuration Catalog') }),
           h('div', { className: 'p-6 max-w-6xl mx-auto space-y-5' },
             h('div', { className: 'bg-gradient-to-r from-stone-50 to-slate-100 border-2 border-stone-300 rounded-2xl p-5' },
-              h('h2', { className: 'text-lg font-black text-stone-900 mb-2' }, 'The five fundamental joint configurations'),
+              h('h2', { className: 'text-lg font-black text-stone-900 mb-2' }, __alloT('stem.weldlab.the_five_fundamental_joint_configurati', 'The five fundamental joint configurations')),
               h('p', { className: 'text-sm text-slate-700 leading-relaxed' },
-                'Every welded structure on Earth is built from some combination of these five joints. Recognize them at a glance and you\'re halfway to reading any blueprint or fabrication drawing.')
+                __alloT('stem.weldlab.every_welded_structure_on_earth_is_bui', 'Every welded structure on Earth is built from some combination of these five joints. Recognize them at a glance and you\'re halfway to reading any blueprint or fabrication drawing.'))
             ),
             // Tab strip
-            h('div', { 'role': 'tablist', 'aria-label': 'Joint type tabs', className: 'flex flex-wrap gap-2' },
+            h('div', { 'role': 'tablist', 'aria-label': __alloT('stem.weldlab.joint_type_tabs', 'Joint type tabs'), className: 'flex flex-wrap gap-2' },
               Object.keys(JOINTS).map(function(jk) {
                 var sel = (tab === jk);
                 return h('button', {
@@ -4039,22 +4040,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 h('h3', { className: 'text-2xl font-black text-slate-800' }, current.name),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, current.desc),
                 h('div', { className: 'p-3 bg-amber-50 border border-amber-300 rounded-lg' },
-                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-900 mb-1' }, 'Weld types used'),
+                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-900 mb-1' }, __alloT('stem.weldlab.weld_types_used', 'Weld types used')),
                   h('div', { className: 'text-sm text-slate-800' }, current.welds)
                 ),
                 h('div', { className: 'p-3 bg-blue-50 border border-blue-300 rounded-lg' },
-                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-blue-900 mb-1' }, 'Common applications'),
+                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-blue-900 mb-1' }, __alloT('stem.weldlab.common_applications', 'Common applications')),
                   h('div', { className: 'text-sm text-slate-800' }, current.uses)
                 ),
                 h('div', { className: 'p-3 bg-rose-50 border border-rose-300 rounded-lg' },
-                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-rose-900 mb-1' }, 'Watch for these defects'),
+                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-rose-900 mb-1' }, __alloT('stem.weldlab.watch_for_these_defects', 'Watch for these defects')),
                   h('div', { className: 'text-sm text-slate-800' }, current.defects)
                 )
               )
             ),
             // Position codes guide
             h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-3' }, 'AWS Position Codes — what 1F / 3G / 6G mean on a print'),
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-3' }, __alloT('stem.weldlab.aws_position_codes_what_1f_3g_6g_mean_', 'AWS Position Codes — what 1F / 3G / 6G mean on a print')),
               h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-3' },
                 POSITIONS.map(function(p) {
                   return h('div', { key: p.code, className: 'p-3 bg-slate-50 rounded-lg border border-slate-300' },
@@ -4068,21 +4069,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 })
               ),
               h('div', { className: 'mt-3 p-3 bg-amber-50 border border-amber-300 rounded text-sm text-slate-800' },
-                h('span', { className: 'font-bold text-amber-900' }, 'AWS certification trivia: '),
-                'A welder certified for ',
+                h('span', { className: 'font-bold text-amber-900' }, __alloT('stem.weldlab.aws_certification_trivia', 'AWS certification trivia: ')),
+                __alloT('stem.weldlab.a_welder_certified_for', 'A welder certified for '),
                 h('span', { className: 'font-mono font-bold' }, '6G'),
-                ' (45° fixed pipe) is automatically qualified for all easier positions. The reverse is not true.')
+                __alloT('stem.weldlab.45_fixed_pipe_is_automatically_qualifi', ' (45° fixed pipe) is automatically qualified for all easier positions. The reverse is not true.'))
             ),
             // Launch quiz
             h('div', { className: 'bg-orange-50 border-2 border-orange-300 rounded-2xl p-5 flex items-center gap-4' },
               h('div', { className: 'flex-1' },
-                h('h3', { className: 'text-base font-black text-orange-900 mb-1' }, 'Test yourself — Joint Matching Quiz'),
-                h('p', { className: 'text-sm text-slate-800' }, '5 randomized cross-section diagrams. Match each to the right joint name. Real welding-test prep.')
+                h('h3', { className: 'text-base font-black text-orange-900 mb-1' }, __alloT('stem.weldlab.test_yourself_joint_matching_quiz', 'Test yourself — Joint Matching Quiz')),
+                h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.5_randomized_cross_section_diagrams_ma', '5 randomized cross-section diagrams. Match each to the right joint name. Real welding-test prep.'))
               ),
               h('button', {
                 onClick: startQuiz,
                 className: 'px-5 py-2.5 rounded-xl bg-orange-600 text-white font-bold hover:bg-orange-700 transition focus:outline-none focus:ring-4 ring-orange-500/40'
-              }, '🎯 Start Quiz')
+              }, __alloT('stem.weldlab.start_quiz', '🎯 Start Quiz'))
             ),
             h(TeacherNotes, {
               standards: ['HS-ETS1-2 (Engineering)', 'AWS QC1 (Joint geometry)', 'CTE Manufacturing 5.2'],
@@ -4115,7 +4116,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
 
       // Symbol anatomy renderer — label each part of a master diagram
       function renderSymbolAnatomy(h) {
-        return h('svg', { viewBox: '0 0 400 220', className: 'w-full max-w-2xl mx-auto', 'aria-label': 'Welding symbol anatomy diagram' },
+        return h('svg', { viewBox: '0 0 400 220', className: 'w-full max-w-2xl mx-auto', 'aria-label': __alloT('stem.weldlab.welding_symbol_anatomy_diagram', 'Welding symbol anatomy diagram') },
           // Reference line (horizontal)
           h('line', { x1: 80, y1: 110, x2: 280, y2: 110, stroke: '#1f2937', strokeWidth: 2 }),
           // Arrow line
@@ -4137,28 +4138,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           h('line', { x1: 280, y1: 110, x2: 305, y2: 120, stroke: '#1f2937', strokeWidth: 2 }),
           h('text', { x: 312, y: 114, fontSize: 11, fontFamily: 'monospace', fill: '#1f2937' }, 'GMAW'),
           // Annotations
-          h('text', { x: 30, y: 175, fontSize: 11, fill: '#dc2626', fontWeight: 'bold' }, 'Arrow → joint'),
+          h('text', { x: 30, y: 175, fontSize: 11, fill: '#dc2626', fontWeight: 'bold' }, __alloT('stem.weldlab.arrow_joint', 'Arrow → joint')),
           h('text', { x: 60, y: 92, fontSize: 11, fill: '#dc2626', fontWeight: 'bold' }, 'All-around'),
-          h('text', { x: 75, y: 80, fontSize: 11, fill: '#dc2626', fontWeight: 'bold' }, '+ Field weld'),
-          h('text', { x: 130, y: 145, fontSize: 11, fill: '#dc2626', fontWeight: 'bold' }, 'Size 6 (mm)'),
-          h('text', { x: 152, y: 140, fontSize: 10, fill: '#dc2626' }, 'Arrow side ↑'),
-          h('text', { x: 192, y: 90, fontSize: 10, fill: '#dc2626' }, 'Other side ↓'),
-          h('text', { x: 305, y: 135, fontSize: 11, fill: '#dc2626', fontWeight: 'bold' }, 'Process: MIG (GMAW)')
+          h('text', { x: 75, y: 80, fontSize: 11, fill: '#dc2626', fontWeight: 'bold' }, __alloT('stem.weldlab.field_weld', '+ Field weld')),
+          h('text', { x: 130, y: 145, fontSize: 11, fill: '#dc2626', fontWeight: 'bold' }, __alloT('stem.weldlab.size_6_mm', 'Size 6 (mm)')),
+          h('text', { x: 152, y: 140, fontSize: 10, fill: '#dc2626' }, __alloT('stem.weldlab.arrow_side', 'Arrow side ↑')),
+          h('text', { x: 192, y: 90, fontSize: 10, fill: '#dc2626' }, __alloT('stem.weldlab.other_side', 'Other side ↓')),
+          h('text', { x: 305, y: 135, fontSize: 11, fill: '#dc2626', fontWeight: 'bold' }, __alloT('stem.weldlab.process_mig_gmaw', 'Process: MIG (GMAW)'))
         );
       }
 
       // Symbol library — common weld symbols with description
       var WELD_SYMBOLS = [
-        { id: 'fillet',     name: 'Fillet weld',          render: function(h) { return h('path', { d: 'M 30 40 L 45 60 L 60 40 Z', fill: 'none', stroke: '#1f2937', strokeWidth: 2 }); }, use: 'T, lap, corner joints' },
-        { id: 'sqGroove',   name: 'Square groove',        render: function(h) { return h('rect', { x: 30, y: 40, width: 30, height: 20, fill: 'none', stroke: '#1f2937', strokeWidth: 2 }); }, use: 'Thin butt joints' },
+        { id: 'fillet',     name: __alloT('stem.weldlab.fillet_weld', 'Fillet weld'),          render: function(h) { return h('path', { d: 'M 30 40 L 45 60 L 60 40 Z', fill: 'none', stroke: '#1f2937', strokeWidth: 2 }); }, use: 'T, lap, corner joints' },
+        { id: 'sqGroove',   name: __alloT('stem.weldlab.square_groove', 'Square groove'),        render: function(h) { return h('rect', { x: 30, y: 40, width: 30, height: 20, fill: 'none', stroke: '#1f2937', strokeWidth: 2 }); }, use: 'Thin butt joints' },
         { id: 'vGroove',    name: 'V-groove',             render: function(h) { return h('path', { d: 'M 30 40 L 45 65 L 60 40', fill: 'none', stroke: '#1f2937', strokeWidth: 2 }); }, use: 'Medium-thick butt joints' },
-        { id: 'bevel',      name: 'Bevel groove',         render: function(h) { return h('path', { d: 'M 30 40 L 45 65 L 60 40 L 60 60', fill: 'none', stroke: '#1f2937', strokeWidth: 2 }); }, use: 'One-sided prep on butt or T' },
+        { id: 'bevel',      name: __alloT('stem.weldlab.bevel_groove', 'Bevel groove'),         render: function(h) { return h('path', { d: 'M 30 40 L 45 65 L 60 40 L 60 60', fill: 'none', stroke: '#1f2937', strokeWidth: 2 }); }, use: 'One-sided prep on butt or T' },
         { id: 'uGroove',    name: 'U-groove',             render: function(h) { return h('path', { d: 'M 30 40 Q 30 65 45 65 Q 60 65 60 40', fill: 'none', stroke: '#1f2937', strokeWidth: 2 }); }, use: 'Heavy-section butt, less filler than V' },
-        { id: 'plug',       name: 'Plug / slot',          render: function(h) { return h('rect', { x: 32, y: 42, width: 26, height: 18, fill: '#94a3b8', stroke: '#1f2937', strokeWidth: 2 }); }, use: 'Lap joints with hole through top piece' },
+        { id: 'plug',       name: __alloT('stem.weldlab.plug_slot', 'Plug / slot'),          render: function(h) { return h('rect', { x: 32, y: 42, width: 26, height: 18, fill: '#94a3b8', stroke: '#1f2937', strokeWidth: 2 }); }, use: 'Lap joints with hole through top piece' },
         { id: 'allAround',  name: 'Weld-all-around',      render: function(h) { return h('circle', { cx: 45, cy: 50, r: 10, fill: 'none', stroke: '#1f2937', strokeWidth: 2 }); }, use: 'Modifier — weld continues all around the joint' },
-        { id: 'field',      name: 'Field weld flag',      render: function(h) { return h('path', { d: 'M 35 35 L 35 65 M 35 35 L 55 42 L 35 49 Z', fill: '#1f2937', stroke: '#1f2937', strokeWidth: 2 }); }, use: 'Modifier — weld done in the field, not the shop' },
-        { id: 'flush',      name: 'Flush contour',        render: function(h) { return h('line', { x1: 30, y1: 50, x2: 60, y2: 50, stroke: '#1f2937', strokeWidth: 2 }); }, use: 'Modifier — finish flush with surface' },
-        { id: 'convex',     name: 'Convex contour',       render: function(h) { return h('path', { d: 'M 30 55 Q 45 40 60 55', fill: 'none', stroke: '#1f2937', strokeWidth: 2 }); }, use: 'Modifier — weld bulges above surface' }
+        { id: 'field',      name: __alloT('stem.weldlab.field_weld_flag', 'Field weld flag'),      render: function(h) { return h('path', { d: 'M 35 35 L 35 65 M 35 35 L 55 42 L 35 49 Z', fill: '#1f2937', stroke: '#1f2937', strokeWidth: 2 }); }, use: 'Modifier — weld done in the field, not the shop' },
+        { id: 'flush',      name: __alloT('stem.weldlab.flush_contour', 'Flush contour'),        render: function(h) { return h('line', { x1: 30, y1: 50, x2: 60, y2: 50, stroke: '#1f2937', strokeWidth: 2 }); }, use: 'Modifier — finish flush with surface' },
+        { id: 'convex',     name: __alloT('stem.weldlab.convex_contour', 'Convex contour'),       render: function(h) { return h('path', { d: 'M 30 55 Q 45 40 60 55', fill: 'none', stroke: '#1f2937', strokeWidth: 2 }); }, use: 'Modifier — weld bulges above surface' }
       ];
 
       // Decoding challenges — progressive difficulty. Each shows a symbol and
@@ -4285,14 +4286,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         });
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '📐', title: 'Welding Symbols Reader' }),
+          h(BackBar, { icon: '📐', title: __alloT('stem.weldlab.welding_symbols_reader_2', 'Welding Symbols Reader') }),
           h('div', { className: 'p-6 max-w-5xl mx-auto space-y-5' },
             // Tab strip
-            h('div', { 'role': 'tablist', 'aria-label': 'Symbol Reader sections', className: 'flex flex-wrap gap-2' },
+            h('div', { 'role': 'tablist', 'aria-label': __alloT('stem.weldlab.symbol_reader_sections', 'Symbol Reader sections'), className: 'flex flex-wrap gap-2' },
               [
-                { id: 'anatomy',  label: '1. Anatomy of a Symbol' },
-                { id: 'library',  label: '2. Common Symbols' },
-                { id: 'practice', label: '3. Decoder Practice' }
+                { id: 'anatomy',  label: __alloT('stem.weldlab.1_anatomy_of_a_symbol', '1. Anatomy of a Symbol') },
+                { id: 'library',  label: __alloT('stem.weldlab.2_common_symbols', '2. Common Symbols') },
+                { id: 'practice', label: __alloT('stem.weldlab.3_decoder_practice', '3. Decoder Practice') }
               ].map(function(t) {
                 var sel = (view === t.id);
                 return h('button', {
@@ -4307,9 +4308,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             ),
             view === 'anatomy' && h('div', { className: 'space-y-4' },
               h('div', { className: 'bg-gradient-to-r from-slate-50 to-blue-50 border-2 border-blue-300 rounded-2xl p-5' },
-                h('h2', { className: 'text-lg font-black text-blue-900 mb-2' }, 'AWS A2.4 — the welding symbol explained'),
+                h('h2', { className: 'text-lg font-black text-blue-900 mb-2' }, __alloT('stem.weldlab.aws_a2_4_the_welding_symbol_explained', 'AWS A2.4 — the welding symbol explained')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  'Every welded part on every engineering drawing in the country uses this same compact language. The reference line is the spine; everything else hangs off it. Master the parts and you can read any print.')
+                  __alloT('stem.weldlab.every_welded_part_on_every_engineering', 'Every welded part on every engineering drawing in the country uses this same compact language. The reference line is the spine; everything else hangs off it. Master the parts and you can read any print.'))
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5 flex justify-center' },
                 renderSymbolAnatomy(h)
@@ -4335,7 +4336,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             ),
             view === 'library' && h('div', { className: 'space-y-4' },
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
-                h('h2', { className: 'text-lg font-black text-slate-800 mb-3' }, 'Common weld symbols — visual reference'),
+                h('h2', { className: 'text-lg font-black text-slate-800 mb-3' }, __alloT('stem.weldlab.common_weld_symbols_visual_reference', 'Common weld symbols — visual reference')),
                 h('div', { className: 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3' },
                   WELD_SYMBOLS.map(function(sym) {
                     return h('div', { key: sym.id, className: 'p-3 bg-slate-50 rounded-lg border border-slate-300 text-center' },
@@ -4356,7 +4357,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 )
               ),
               h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-2xl p-5' },
-                h('h3', { className: 'text-base font-black text-amber-900 mb-2' }, 'Memory hooks for common symbols'),
+                h('h3', { className: 'text-base font-black text-amber-900 mb-2' }, __alloT('stem.weldlab.memory_hooks_for_common_symbols', 'Memory hooks for common symbols')),
                 h('ul', { className: 'space-y-1 text-sm text-slate-800' },
                   [
                     '✺ Fillet = triangle. Like the cross-section of the actual fillet weld.',
@@ -4419,11 +4420,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   })
                 ),
                 allAnswered && h('div', { className: 'p-4 bg-emerald-50 border-2 border-emerald-300 rounded-xl text-emerald-900' },
-                  h('div', { className: 'font-black text-lg' }, '✓ Challenge complete'),
-                  h('p', { className: 'text-sm' }, 'You decoded all parts of this symbol correctly. Move on to the next challenge.')
+                  h('div', { className: 'font-black text-lg' }, __alloT('stem.weldlab.challenge_complete', '✓ Challenge complete')),
+                  h('p', { className: 'text-sm' }, __alloT('stem.weldlab.you_decoded_all_parts_of_this_symbol_c', 'You decoded all parts of this symbol correctly. Move on to the next challenge.'))
                 ),
                 anyAnsweredWrong && !allAnswered && h('div', { className: 'p-3 bg-amber-50 border border-amber-300 rounded-lg text-sm text-slate-800' },
-                  '⚠ One or more answers above are wrong. Re-read the symbol and try again.')
+                  __alloT('stem.weldlab.one_or_more_answers_above_are_wrong_re', '⚠ One or more answers above are wrong. Re-read the symbol and try again.'))
               )
             ),
             h(TeacherNotes, {
@@ -4458,7 +4459,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       var PPE_GEAR = [
         {
           id: 'helmet',
-          name: 'Auto-darkening welding helmet',
+          name: __alloT('stem.weldlab.auto_darkening_welding_helmet', 'Auto-darkening welding helmet'),
           icon: '🪖',
           why: 'Arc UV at welding intensities can cause flash burn ("welder\'s flash") to the retina in seconds — feels like sand in your eyes 4-8 hours later. Untreated repeated exposure leads to permanent vision loss.',
           rule: 'Shade 10-13 lens (auto-darkens within 1ms of arc strike). Cheek and ear coverage required. ANSI Z87.1-2020 stamp.',
@@ -4467,7 +4468,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         },
         {
           id: 'frClothing',
-          name: 'Flame-resistant (FR) jacket / coveralls',
+          name: __alloT('stem.weldlab.flame_resistant_fr_jacket_coveralls', 'Flame-resistant (FR) jacket / coveralls'),
           icon: '🧥',
           why: 'Spatter is molten metal at 2,000°F+. Cotton t-shirt = ignites and clings. Polyester = melts to skin. Leather or proper FR cloth = sheds spatter.',
           rule: 'NFPA 2112 rated FR cotton, denim treated for FR, or split-grain leather. Long sleeves. Cuffless pants over high boots — no cuff to catch a spark.',
@@ -4476,7 +4477,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         },
         {
           id: 'gloves',
-          name: 'Leather welding gloves',
+          name: __alloT('stem.weldlab.leather_welding_gloves', 'Leather welding gloves'),
           icon: '🧤',
           why: 'Heat protection (gauntlet covers wrist), spatter shield, and electrical insulation if touching live electrode holder. Required for every process — even TIG (lower heat but radiation still high).',
           rule: 'Goatskin / pigskin / cowhide. Gauntlet style covering forearm. Stiff for stick/MIG; thinner / tactile for TIG.',
@@ -4485,7 +4486,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         },
         {
           id: 'respirator',
-          name: 'Respirator (when required)',
+          name: __alloT('stem.weldlab.respirator_when_required', 'Respirator (when required)'),
           icon: '😷',
           why: 'Welding fumes are fine particulate metal oxides. Mild steel = manganese (Parkinson\'s-linked at chronic exposure). Galvanized = zinc oxide = "zinc fume fever," flu-like for 24h. Stainless = hexavalent chromium = LUNG CARCINOGEN.',
           rule: 'Half-mask N95 minimum for occasional steel work in ventilated shop. PAPR (powered air-purifying respirator) for stainless or galvanized. Required if local exhaust ventilation can\'t reduce exposure below PEL.',
@@ -4494,7 +4495,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         },
         {
           id: 'ventilation',
-          name: 'Local exhaust ventilation',
+          name: __alloT('stem.weldlab.local_exhaust_ventilation', 'Local exhaust ventilation'),
           icon: '💨',
           why: 'Fume hood / fume extractor pulls fumes AWAY from the welder\'s breathing zone. Without it, even helmet shroud lets you breathe a fume cloud all day.',
           rule: 'Fume extractor positioned within 12-18" of arc, capture velocity 100-150 fpm at the source. Mandatory in confined spaces.',
@@ -4503,7 +4504,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         },
         {
           id: 'fireWatch',
-          name: 'Fire watch + extinguisher',
+          name: __alloT('stem.weldlab.fire_watch_extinguisher', 'Fire watch + extinguisher'),
           icon: '🧯',
           why: 'Welding sparks travel up to 35 feet. They can smolder for hours before flaming. Hot work is a leading cause of industrial fires (hospitals, warehouses, ships). NFPA 51B requires fire watch DURING + 30 minutes AFTER any hot work in fire-prone areas.',
           rule: 'Trained fire watch with ABC extinguisher for the duration of welding plus 30 minutes after. Hot work permit required in many shops.',
@@ -4512,7 +4513,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         },
         {
           id: 'boots',
-          name: 'Steel-toe high-top boots',
+          name: __alloT('stem.weldlab.steel_toe_high_top_boots', 'Steel-toe high-top boots'),
           icon: '🥾',
           why: 'Spatter falls. So do plate, electrodes, tools. Steel toe protects from drops; high-top keeps spatter out of your sock-tops.',
           rule: 'ASTM F2413 rated, 6-8" upper, leather (no synthetic — melts).',
@@ -4528,45 +4529,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       var SAFETY_SCENARIOS = [
         {
           id: 'sc1',
-          title: 'Arc Flash / Bystander Exposure',
+          title: __alloT('stem.weldlab.arc_flash_bystander_exposure', 'Arc Flash / Bystander Exposure'),
           situation: 'You\'re mid-pass on a MIG joint when a co-worker walks into the bay to grab a wrench. They glance at the arc for "just a second" without a helmet. They say "I\'m fine, I didn\'t look right at it."',
           choices: [
-            { text: 'Stop welding, brief them on flash burn risk, set up a portable welding curtain before resuming.', correct: true, fb: 'Correct. Welding curtains (orange / blue tinted PVC) block arc UV from bystanders. ANSI Z49.1 mandates protection for anyone within line-of-sight of the arc. "Just a glance" causes flash burn 4-8h later.' },
-            { text: 'Tell them they\'re probably fine since it was brief. Resume welding.', correct: false, fb: 'Wrong — flash burn is dose-dependent but seconds of unfiltered arc UV can cause keratitis. They may not feel it now but will at 2 a.m. Even if they\'re asymptomatic this time, the next "quick glance" could be worse.' },
-            { text: 'Hand them your spare helmet and continue welding while they walk through.', correct: false, fb: 'Insufficient — helmets only protect the wearer. Anyone else who walks past, looks over, or stands within line-of-sight is still exposed. Curtains protect everyone in the area.' }
+            { text: __alloT('stem.weldlab.stop_welding_brief_them_on_flash_burn_', 'Stop welding, brief them on flash burn risk, set up a portable welding curtain before resuming.'), correct: true, fb: 'Correct. Welding curtains (orange / blue tinted PVC) block arc UV from bystanders. ANSI Z49.1 mandates protection for anyone within line-of-sight of the arc. "Just a glance" causes flash burn 4-8h later.' },
+            { text: __alloT('stem.weldlab.tell_them_they_re_probably_fine_since_', 'Tell them they\'re probably fine since it was brief. Resume welding.'), correct: false, fb: 'Wrong — flash burn is dose-dependent but seconds of unfiltered arc UV can cause keratitis. They may not feel it now but will at 2 a.m. Even if they\'re asymptomatic this time, the next "quick glance" could be worse.' },
+            { text: __alloT('stem.weldlab.hand_them_your_spare_helmet_and_contin', 'Hand them your spare helmet and continue welding while they walk through.'), correct: false, fb: 'Insufficient — helmets only protect the wearer. Anyone else who walks past, looks over, or stands within line-of-sight is still exposed. Curtains protect everyone in the area.' }
           ],
           osha: '29 CFR 1910.252(b)(2)(ii)(C) + ANSI Z49.1'
         },
         {
           id: 'sc2',
-          title: 'Galvanized Steel + No Respirator',
+          title: __alloT('stem.weldlab.galvanized_steel_no_respirator', 'Galvanized Steel + No Respirator'),
           situation: 'A buddy asks you to weld a galvanized fence-post repair in his garage. He doesn\'t have a fume extractor or respirator. "Just a quick weld, you\'ll be fine."',
           choices: [
-            { text: 'Refuse to weld unless you can grind the galvanizing off the joint area first AND have a respirator OR work outdoors with strong wind.', correct: true, fb: 'Correct. Galvanized steel releases zinc oxide fume when welded. "Zinc fume fever" hits 4-12h later: chills, fever, body aches, lasting 24-48h. Repeated exposure causes lung damage. Industry rule: GRIND OFF the galvanizing 2-3" each side of the joint before welding.' },
-            { text: 'Open the garage door for ventilation and weld it quickly.', correct: false, fb: 'Insufficient. Open door may not provide enough air movement, especially if there\'s no cross-breeze. Zinc oxide is dense and settles. The "ventilation" you actually need is local exhaust at the arc — not just an open door 20 feet away.' },
-            { text: 'Hold your breath while welding the bead.', correct: false, fb: 'Wrong — and concerning if you\'re asking. Welding a 6" bead takes 30+ seconds; you can\'t hold your breath through it. Even brief exposure to zinc fume at close range is enough to trigger fume fever.' }
+            { text: __alloT('stem.weldlab.refuse_to_weld_unless_you_can_grind_th', 'Refuse to weld unless you can grind the galvanizing off the joint area first AND have a respirator OR work outdoors with strong wind.'), correct: true, fb: 'Correct. Galvanized steel releases zinc oxide fume when welded. "Zinc fume fever" hits 4-12h later: chills, fever, body aches, lasting 24-48h. Repeated exposure causes lung damage. Industry rule: GRIND OFF the galvanizing 2-3" each side of the joint before welding.' },
+            { text: __alloT('stem.weldlab.open_the_garage_door_for_ventilation_a', 'Open the garage door for ventilation and weld it quickly.'), correct: false, fb: 'Insufficient. Open door may not provide enough air movement, especially if there\'s no cross-breeze. Zinc oxide is dense and settles. The "ventilation" you actually need is local exhaust at the arc — not just an open door 20 feet away.' },
+            { text: __alloT('stem.weldlab.hold_your_breath_while_welding_the_bea', 'Hold your breath while welding the bead.'), correct: false, fb: 'Wrong — and concerning if you\'re asking. Welding a 6" bead takes 30+ seconds; you can\'t hold your breath through it. Even brief exposure to zinc fume at close range is enough to trigger fume fever.' }
           ],
           osha: '29 CFR 1910.252(c)(2) + NIOSH metal-fume guidance'
         },
         {
           id: 'sc3',
-          title: 'Hot Work Without a Fire Watch',
+          title: __alloT('stem.weldlab.hot_work_without_a_fire_watch', 'Hot Work Without a Fire Watch'),
           situation: 'You\'re doing a quick stick weld on a steel beam in a warehouse aisle. There are cardboard boxes on shelves about 20 feet away. The supervisor says "I\'ll be back in 5 minutes — just finish up."',
           choices: [
-            { text: 'Stop. Either move the cardboard, install a spark-blanket curtain, or wait for the supervisor (or another fire watch) to return before continuing.', correct: true, fb: 'Correct. NFPA 51B and OSHA require a dedicated fire watch present DURING all hot work in fire-prone areas + 30 minutes after. Sparks from stick welding fly 30-35 feet. Cardboard at 20 feet is a fire hazard. Hot-work fires are a top cause of industrial losses.' },
-            { text: 'Just finish the bead — it\'s only a few inches.', correct: false, fb: 'Wrong. Sparks from a single bead can smolder in cardboard or insulation for HOURS before flaming up. The 30-minutes-after rule exists because of exactly this. A "quick" weld has burned down warehouses.' },
-            { text: 'Move 5 more feet from the boxes and weld.', correct: false, fb: 'Insufficient — sparks can travel up to 35 feet. You\'re still in the spark cone. Plus, no fire watch means no one with an extinguisher if a smolder starts after you leave.' }
+            { text: __alloT('stem.weldlab.stop_either_move_the_cardboard_install', 'Stop. Either move the cardboard, install a spark-blanket curtain, or wait for the supervisor (or another fire watch) to return before continuing.'), correct: true, fb: 'Correct. NFPA 51B and OSHA require a dedicated fire watch present DURING all hot work in fire-prone areas + 30 minutes after. Sparks from stick welding fly 30-35 feet. Cardboard at 20 feet is a fire hazard. Hot-work fires are a top cause of industrial losses.' },
+            { text: __alloT('stem.weldlab.just_finish_the_bead_it_s_only_a_few_i', 'Just finish the bead — it\'s only a few inches.'), correct: false, fb: 'Wrong. Sparks from a single bead can smolder in cardboard or insulation for HOURS before flaming up. The 30-minutes-after rule exists because of exactly this. A "quick" weld has burned down warehouses.' },
+            { text: __alloT('stem.weldlab.move_5_more_feet_from_the_boxes_and_we', 'Move 5 more feet from the boxes and weld.'), correct: false, fb: 'Insufficient — sparks can travel up to 35 feet. You\'re still in the spark cone. Plus, no fire watch means no one with an extinguisher if a smolder starts after you leave.' }
           ],
           osha: '29 CFR 1910.252(a)(2)(iv) + NFPA 51B'
         },
         {
           id: 'sc4',
-          title: 'Confined Space Welding',
+          title: __alloT('stem.weldlab.confined_space_welding', 'Confined Space Welding'),
           situation: 'You\'re asked to weld a repair inside an empty oil drum at a small shop. The lid is open. The supervisor says it\'s "fine, the drum was steam-cleaned last week."',
           choices: [
-            { text: 'Refuse until proper confined-space entry is set up: atmospheric testing, lockout/tagout, ventilation, attendant outside, retrieval line. "Hot work" + "confined space" + "container that held flammables" requires the strictest protocol.', correct: true, fb: 'Correct. This is one of the deadliest combinations in welding. Drums and tanks that held flammable liquids retain residue / vapor in seams and pores even after cleaning. Welders die every year from explosions in "empty cleaned" tanks. Steam-cleaning is NOT a substitute for a permit-required confined space entry program.' },
-            { text: 'Sniff the drum. If you don\'t smell oil, weld it.', correct: false, fb: 'Wrong. Many flammable vapors are odorless or olfactory-fatigue past their flammable concentration. Smell test is not a confined-space gas test. People have died doing exactly this.' },
-            { text: 'Fill the drum with water first, then weld the dry section above the water line.', correct: false, fb: 'Partial — actually the "water-fill" method IS used in industry, BUT only as part of a full hot-work permit including atmospheric testing. By itself without testing for vapors above the water line, it\'s still risky.' }
+            { text: __alloT('stem.weldlab.refuse_until_proper_confined_space_ent', 'Refuse until proper confined-space entry is set up: atmospheric testing, lockout/tagout, ventilation, attendant outside, retrieval line. "Hot work" + "confined space" + "container that held flammables" requires the strictest protocol.'), correct: true, fb: 'Correct. This is one of the deadliest combinations in welding. Drums and tanks that held flammable liquids retain residue / vapor in seams and pores even after cleaning. Welders die every year from explosions in "empty cleaned" tanks. Steam-cleaning is NOT a substitute for a permit-required confined space entry program.' },
+            { text: __alloT('stem.weldlab.sniff_the_drum_if_you_don_t_smell_oil_', 'Sniff the drum. If you don\'t smell oil, weld it.'), correct: false, fb: 'Wrong. Many flammable vapors are odorless or olfactory-fatigue past their flammable concentration. Smell test is not a confined-space gas test. People have died doing exactly this.' },
+            { text: __alloT('stem.weldlab.fill_the_drum_with_water_first_then_we', 'Fill the drum with water first, then weld the dry section above the water line.'), correct: false, fb: 'Partial — actually the "water-fill" method IS used in industry, BUT only as part of a full hot-work permit including atmospheric testing. By itself without testing for vapors above the water line, it\'s still risky.' }
           ],
           osha: '29 CFR 1910.146 (Confined Space) + 1910.252(a)(3)'
         }
@@ -4613,21 +4614,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         }, 0);
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '🦺', title: 'PPE & Safety' }),
+          h(BackBar, { icon: '🦺', title: __alloT('stem.weldlab.ppe_safety_2', 'PPE & Safety') }),
           h('div', { className: 'p-6 max-w-5xl mx-auto space-y-5' },
             h('div', { className: 'bg-rose-50 border-2 border-rose-300 rounded-2xl p-4 flex items-start gap-3' },
               h('span', { className: 'text-3xl' }, '⚠️'),
               h('div', null,
-                h('div', { className: 'text-sm font-black text-rose-900 mb-1' }, 'Welding can hurt or kill you if you skip the gear.'),
+                h('div', { className: 'text-sm font-black text-rose-900 mb-1' }, __alloT('stem.weldlab.welding_can_hurt_or_kill_you_if_you_sk', 'Welding can hurt or kill you if you skip the gear.')),
                 h('p', { className: 'text-sm text-slate-800' },
-                  'Arc burns the retina in seconds. Galvanized fumes cause "zinc fume fever." Stainless fumes are a known carcinogen (hexavalent chromium). Hot-work sparks travel 30+ feet and smolder for hours. Every PPE rule below has a body count behind it.')
+                  __alloT('stem.weldlab.arc_burns_the_retina_in_seconds_galvan', 'Arc burns the retina in seconds. Galvanized fumes cause "zinc fume fever." Stainless fumes are a known carcinogen (hexavalent chromium). Hot-work sparks travel 30+ feet and smolder for hours. Every PPE rule below has a body count behind it.'))
               )
             ),
-            h('div', { 'role': 'tablist', 'aria-label': 'PPE & Safety sections', className: 'flex flex-wrap gap-2' },
+            h('div', { 'role': 'tablist', 'aria-label': __alloT('stem.weldlab.ppe_safety_sections', 'PPE & Safety sections'), className: 'flex flex-wrap gap-2' },
               [
-                { id: 'gear',      label: '1. Gear Up' },
-                { id: 'scenarios', label: '2. Hazard Scenarios' },
-                { id: 'reference', label: '3. Quick Reference' }
+                { id: 'gear',      label: __alloT('stem.weldlab.1_gear_up', '1. Gear Up') },
+                { id: 'scenarios', label: __alloT('stem.weldlab.2_hazard_scenarios', '2. Hazard Scenarios') },
+                { id: 'reference', label: __alloT('stem.weldlab.3_quick_reference', '3. Quick Reference') }
               ].map(function(t) {
                 var sel = (view === t.id);
                 return h('button', {
@@ -4643,9 +4644,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             // Tab-specific topic-accent hero band
             (function() {
               var TAB_META = {
-                gear:      { accent: '#ea580c', soft: 'rgba(234,88,12,0.10)',  icon: '🦺', title: 'Gear up — every item is non-negotiable', hint: 'Hood, gloves, jacket, boots, respirator (when needed). Skip one and you do not weld today. Arc burns retinas in seconds.' },
-                scenarios: { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '⚠️', title: 'Hazard scenarios — what could go wrong', hint: 'Galvanized fumes, hexavalent chromium from stainless, hot-work sparks at 30+ ft. Each scenario is from a documented incident.' },
-                reference: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '📋', title: 'Quick reference — pin to your locker',     hint: 'Material × process × lethal-fume table, hot-work fire-watch rules, OSHA 1910.252 cheat-sheet — the things you actually look up at 7 AM.' }
+                gear:      { accent: '#ea580c', soft: 'rgba(234,88,12,0.10)',  icon: '🦺', title: __alloT('stem.weldlab.gear_up_every_item_is_non_negotiable', 'Gear up — every item is non-negotiable'), hint: __alloT('stem.weldlab.hood_gloves_jacket_boots_respirator_wh', 'Hood, gloves, jacket, boots, respirator (when needed). Skip one and you do not weld today. Arc burns retinas in seconds.') },
+                scenarios: { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '⚠️', title: __alloT('stem.weldlab.hazard_scenarios_what_could_go_wrong', 'Hazard scenarios — what could go wrong'), hint: __alloT('stem.weldlab.galvanized_fumes_hexavalent_chromium_f', 'Galvanized fumes, hexavalent chromium from stainless, hot-work sparks at 30+ ft. Each scenario is from a documented incident.') },
+                reference: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '📋', title: __alloT('stem.weldlab.quick_reference_pin_to_your_locker', 'Quick reference — pin to your locker'),     hint: __alloT('stem.weldlab.material_process_lethal_fume_table_hot', 'Material × process × lethal-fume table, hot-work fire-watch rules, OSHA 1910.252 cheat-sheet — the things you actually look up at 7 AM.') }
               };
               var meta = TAB_META[view] || TAB_META.gear;
               return h('div', {
@@ -4668,14 +4669,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             view === 'gear' && h('div', { className: 'space-y-4' },
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-4' },
                 h('div', { className: 'flex items-center justify-between mb-2' },
-                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, 'Click each item as you put it on'),
+                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, __alloT('stem.weldlab.click_each_item_as_you_put_it_on', 'Click each item as you put it on')),
                   h('div', { className: 'text-sm font-bold ' + (gearedAllMust ? 'text-emerald-700' : 'text-orange-700') },
                     gearedMustCount + ' / ' + mustItems.length + ' required items checked')
                 ),
                 gearedAllMust && h('div', {
                   'aria-live': 'polite',
                   className: 'p-2 rounded bg-emerald-50 border border-emerald-300 text-sm text-emerald-900 font-bold mb-2'
-                }, '✓ Geared up. Ready to weld.')
+                }, __alloT('stem.weldlab.geared_up_ready_to_weld', '✓ Geared up. Ready to weld.'))
               ),
               h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
                 PPE_GEAR.map(function(g) {
@@ -4695,8 +4696,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                         h('div', { className: 'flex items-center gap-2 mb-1' },
                           h('div', { className: 'font-black text-slate-800' }, g.name),
                           g.must
-                            ? h('span', { className: 'text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-rose-100 text-rose-900' }, 'Required')
-                            : h('span', { className: 'text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-amber-900' }, 'When req.'),
+                            ? h('span', { className: 'text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-rose-100 text-rose-900' }, __alloT('stem.weldlab.required', 'Required'))
+                            : h('span', { className: 'text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-amber-900' }, __alloT('stem.weldlab.when_req', 'When req.')),
                           on && h('span', { className: 'text-emerald-600 font-bold ml-auto' }, '✓')
                         ),
                         h('div', { className: 'text-xs text-slate-700 mb-1' }, g.why),
@@ -4740,7 +4741,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   h('div', { className: 'p-4 bg-slate-100 rounded-xl border border-slate-300' },
                     h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, sc.situation)
                   ),
-                  h('div', { 'role': 'radiogroup', 'aria-label': 'Response choices', className: 'space-y-2' },
+                  h('div', { 'role': 'radiogroup', 'aria-label': __alloT('stem.weldlab.response_choices', 'Response choices'), className: 'space-y-2' },
                     sc.choices.map(function(c, ci) {
                       var sel = (picked === ci);
                       var revealCorrect = picked != null && c.correct;
@@ -4780,7 +4781,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             ),
             view === 'reference' && h('div', { className: 'space-y-4' },
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
-                h('h3', { className: 'text-base font-black text-slate-800 mb-3' }, 'Welding-safety quick reference card'),
+                h('h3', { className: 'text-base font-black text-slate-800 mb-3' }, __alloT('stem.weldlab.welding_safety_quick_reference_card', 'Welding-safety quick reference card')),
                 h('div', { className: 'space-y-3 text-sm text-slate-800' },
                   [
                     { k: 'Lens shade for arc welding', v: 'Shade 10-13 (depends on amperage; 200+ A → 12-13)' },
@@ -4800,7 +4801,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 )
               ),
               h('div', { className: 'bg-blue-50 border-2 border-blue-300 rounded-2xl p-5' },
-                h('h3', { className: 'text-base font-black text-blue-900 mb-2' }, 'Authoritative sources to bookmark'),
+                h('h3', { className: 'text-base font-black text-blue-900 mb-2' }, __alloT('stem.weldlab.authoritative_sources_to_bookmark', 'Authoritative sources to bookmark')),
                 h('ul', { className: 'space-y-2 text-sm text-slate-800' },
                   [
                     ['OSHA 29 CFR 1910.252', 'The legal welding-safety standard. Cited throughout this module.'],
@@ -4847,7 +4848,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       var CERT_LADDER = [
         {
           tier: 1,
-          name: 'Entry / Helper',
+          name: __alloT('stem.weldlab.entry_helper', 'Entry / Helper'),
           time: 'Day 1',
           what: 'No certification yet. Tack-welding, fit-up, grinding, shop helper duties. Learning by watching.',
           pay: '$18-22 / hr  ·  ~$38-46K/yr',
@@ -4855,7 +4856,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         },
         {
           tier: 2,
-          name: 'AWS D1.1 Structural Cert',
+          name: __alloT('stem.weldlab.aws_d1_1_structural_cert', 'AWS D1.1 Structural Cert'),
           time: '6-12 months training',
           what: 'Certified to weld structural steel per AWS D1.1 code. Most common entry-level cert — passes you into shipyards, fab shops, ironwork.',
           pay: '$22-32 / hr  ·  ~$46-66K/yr',
@@ -4863,7 +4864,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         },
         {
           tier: 3,
-          name: '6G Pipe / Stainless Cert',
+          name: __alloT('stem.weldlab.6g_pipe_stainless_cert', '6G Pipe / Stainless Cert'),
           time: '1-3 years experience + cert',
           what: '6G = 45° fixed pipe in TIG or GTAW. Hardest common position. Opens doors to pipeline, refinery, food-grade stainless, aerospace tier-2.',
           pay: '$32-45 / hr  ·  ~$66-94K/yr',
@@ -4871,7 +4872,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         },
         {
           tier: 4,
-          name: 'CWI (Welding Inspector)',
+          name: __alloT('stem.weldlab.cwi_welding_inspector', 'CWI (Welding Inspector)'),
           time: '5+ years welding experience + AWS exam',
           what: 'Certified Welding Inspector. Reads prints, inspects welds, signs off on code-compliant work. Office + field hybrid. Very stable career.',
           pay: '$70-95K / yr  ·  often higher with travel',
@@ -4879,7 +4880,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         },
         {
           tier: 5,
-          name: 'Specialty / Underwater / Aerospace',
+          name: __alloT('stem.weldlab.specialty_underwater_aerospace', 'Specialty / Underwater / Aerospace'),
           time: '5+ years + niche certs',
           what: 'Underwater commercial diver-welder, aerospace D17.1, nuclear N509, military shipyard. Highest pay; specialized credentials and physical demands.',
           pay: '$90-200K+ / yr  ·  varies wildly by specialty',
@@ -4889,33 +4890,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
 
       var ENTRY_PATHS = [
         {
-          name: 'Trade school / community college',
+          name: __alloT('stem.weldlab.trade_school_community_college', 'Trade school / community college'),
           icon: '🎓',
-          desc: 'Eastern Maine Community College (EMCC) in Bangor offers a 2-year Welding Technology AAS program (and a shorter 1-year certificate). Hands-on shop time, AWS certification testing built in. Pell-eligible.',
+          desc: __alloT('stem.weldlab.eastern_maine_community_college_emcc_i', 'Eastern Maine Community College (EMCC) in Bangor offers a 2-year Welding Technology AAS program (and a shorter 1-year certificate). Hands-on shop time, AWS certification testing built in. Pell-eligible.'),
           pros: ['Structured curriculum, immediate AWS testing', 'Career-services help finding shops', 'Pell Grant + state aid often covers most cost'],
           cons: ['Takes 1-2 years before earning full wage', 'Tuition + supplies (~$5-10K total at EMCC)'],
           maine: 'EMCC Welding Technology — emcc.edu/welding-technology'
         },
         {
-          name: 'Apprenticeship',
+          name: __alloT('stem.weldlab.apprenticeship', 'Apprenticeship'),
           icon: '🛠️',
-          desc: 'Earn while you learn. Registered apprenticeships at unions (Iron Workers Local 7), at shops (Cianbro, BIW), or via Maine Apprenticeship Program (state-registered). Paid wages from day one, escalating as you certify.',
+          desc: __alloT('stem.weldlab.earn_while_you_learn_registered_appren', 'Earn while you learn. Registered apprenticeships at unions (Iron Workers Local 7), at shops (Cianbro, BIW), or via Maine Apprenticeship Program (state-registered). Paid wages from day one, escalating as you certify.'),
           pros: ['Paid full-time from day 1', 'No tuition debt', 'Direct path to specific employer'],
           cons: ['Fewer slots — competitive', 'Locked into one shop\'s techniques while training', 'Some unions require dues'],
           maine: 'Maine Apprenticeship Program — maine.gov/labor/jobs_training/apprenticeship'
         },
         {
-          name: 'Military',
+          name: __alloT('stem.weldlab.military', 'Military'),
           icon: '⚓',
-          desc: 'U.S. Navy Hull Maintenance Technician (HT) rate is essentially a paid welding career — Navy pays for training, gives you 4-6 years of experience welding on ships. After service, BIW, Portsmouth Naval, and civilian shipyards actively recruit Navy HTs.',
+          desc: __alloT('stem.weldlab.u_s_navy_hull_maintenance_technician_h', 'U.S. Navy Hull Maintenance Technician (HT) rate is essentially a paid welding career — Navy pays for training, gives you 4-6 years of experience welding on ships. After service, BIW, Portsmouth Naval, and civilian shipyards actively recruit Navy HTs.'),
           pros: ['No tuition; salary + benefits during training', 'GI Bill for follow-on education', 'Direct hiring pipeline to BIW after service'],
           cons: ['Multi-year service commitment', 'Deployments / location not your choice', 'Requires meeting military entry standards'],
           maine: 'Bath Iron Works actively recruits former Navy HTs — biw.com/careers'
         },
         {
-          name: 'Self-taught + certified',
+          name: __alloT('stem.weldlab.self_taught_certified', 'Self-taught + certified'),
           icon: '📚',
-          desc: 'Buy a welder, watch hours of YouTube (Weld.com, Tim Welds, Pacific Arc Tig), practice on scrap. When ready, walk into an AWS-accredited test facility and pay to test. Pass D1.1 = certified, regardless of how you learned.',
+          desc: __alloT('stem.weldlab.buy_a_welder_watch_hours_of_youtube_we', 'Buy a welder, watch hours of YouTube (Weld.com, Tim Welds, Pacific Arc Tig), practice on scrap. When ready, walk into an AWS-accredited test facility and pay to test. Pass D1.1 = certified, regardless of how you learned.'),
           pros: ['Lowest cost path if disciplined', 'Self-paced', 'Builds the actual skill, not just paper'],
           cons: ['No structured feedback — easy to learn bad habits', 'No school / job placement help', 'Burns through equipment and consumables'],
           maine: 'AWS-accredited test facilities in Maine — aws.org/certification'
@@ -4923,12 +4924,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       ];
 
       var ME_EMPLOYERS = [
-        { name: 'Bath Iron Works (Bath)', industry: 'Shipbuilding (US Navy destroyers)', size: '~6,800 employees, welding the largest single trade', site: 'biw.com/careers' },
-        { name: 'Cianbro (Pittsfield + statewide)', industry: 'Heavy civil construction, modular fabrication', size: 'Large self-perform contractor', site: 'cianbro.com/careers' },
-        { name: 'ND Paper (Old Town)', industry: 'Pulp & paper machinery maintenance', size: 'Mill maintenance welder positions', site: 'ndpaper.com' },
-        { name: 'Portland Yacht Services', industry: 'Marine fabrication and repair', size: 'Smaller marine yards across the coast', site: 'portlandyacht.com' },
-        { name: 'Pratt & Whitney (North Berwick)', industry: 'Aerospace component manufacturing', size: 'Specialty welding (D17.1)', site: 'prattwhitney.com/careers' },
-        { name: 'Reed & Reed (Woolwich)', industry: 'Bridges, towers, heavy steel construction', size: 'Field welding + shop fab', site: 'reed-reed.com' }
+        { name: __alloT('stem.weldlab.bath_iron_works_bath', 'Bath Iron Works (Bath)'), industry: 'Shipbuilding (US Navy destroyers)', size: '~6,800 employees, welding the largest single trade', site: 'biw.com/careers' },
+        { name: __alloT('stem.weldlab.cianbro_pittsfield_statewide', 'Cianbro (Pittsfield + statewide)'), industry: 'Heavy civil construction, modular fabrication', size: 'Large self-perform contractor', site: 'cianbro.com/careers' },
+        { name: __alloT('stem.weldlab.nd_paper_old_town', 'ND Paper (Old Town)'), industry: 'Pulp & paper machinery maintenance', size: 'Mill maintenance welder positions', site: 'ndpaper.com' },
+        { name: __alloT('stem.weldlab.portland_yacht_services', 'Portland Yacht Services'), industry: 'Marine fabrication and repair', size: 'Smaller marine yards across the coast', site: 'portlandyacht.com' },
+        { name: __alloT('stem.weldlab.pratt_whitney_north_berwick', 'Pratt & Whitney (North Berwick)'), industry: 'Aerospace component manufacturing', size: 'Specialty welding (D17.1)', site: 'prattwhitney.com/careers' },
+        { name: __alloT('stem.weldlab.reed_reed_woolwich', 'Reed & Reed (Woolwich)'), industry: 'Bridges, towers, heavy steel construction', size: 'Field welding + shop fab', site: 'reed-reed.com' }
       ];
 
       function CareerPathways() {
@@ -4936,26 +4937,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var view = view_state[0], setLocalView = view_state[1];
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '🛠️', title: 'Career Pathways' }),
+          h(BackBar, { icon: '🛠️', title: __alloT('stem.weldlab.career_pathways_2', 'Career Pathways') }),
           h('div', { className: 'p-6 max-w-6xl mx-auto space-y-5' },
             // Hero
             h('div', { className: 'bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-2xl p-6 shadow-lg' },
               h('div', { className: 'flex items-start gap-4' },
                 h('span', { className: 'text-5xl' }, '⚓'),
                 h('div', null,
-                  h('h2', { className: 'text-2xl font-black mb-1' }, 'Welding in Maine'),
+                  h('h2', { className: 'text-2xl font-black mb-1' }, __alloT('stem.weldlab.welding_in_maine', 'Welding in Maine')),
                   h('p', { className: 'text-sm opacity-95 leading-relaxed' },
-                    'Bath Iron Works hires hundreds of welders a year for US Navy destroyer construction. Cianbro, regional marine yards, paper mills, and pipeline contractors all post welding openings. AWS D1.1 certification + a high-school diploma can land a $50-70K job at age 19. 6G TIG cert can push it to $90K+. No four-year degree required.')
+                    __alloT('stem.weldlab.bath_iron_works_hires_hundreds_of_weld', 'Bath Iron Works hires hundreds of welders a year for US Navy destroyer construction. Cianbro, regional marine yards, paper mills, and pipeline contractors all post welding openings. AWS D1.1 certification + a high-school diploma can land a $50-70K job at age 19. 6G TIG cert can push it to $90K+. No four-year degree required.'))
                 )
               )
             ),
             // Tab strip
-            h('div', { 'role': 'tablist', 'aria-label': 'Career pathway sections', className: 'flex flex-wrap gap-2' },
+            h('div', { 'role': 'tablist', 'aria-label': __alloT('stem.weldlab.career_pathway_sections', 'Career pathway sections'), className: 'flex flex-wrap gap-2' },
               [
-                { id: 'overview',  label: '1. Why Welding' },
-                { id: 'ladder',    label: '2. Cert Ladder' },
-                { id: 'paths',     label: '3. Entry Paths' },
-                { id: 'employers', label: '4. ME Employers' }
+                { id: 'overview',  label: __alloT('stem.weldlab.1_why_welding', '1. Why Welding') },
+                { id: 'ladder',    label: __alloT('stem.weldlab.2_cert_ladder', '2. Cert Ladder') },
+                { id: 'paths',     label: __alloT('stem.weldlab.3_entry_paths', '3. Entry Paths') },
+                { id: 'employers', label: __alloT('stem.weldlab.4_me_employers', '4. ME Employers') }
               ].map(function(t) {
                 var sel = (view === t.id);
                 return h('button', {
@@ -4971,9 +4972,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             view === 'overview' && h('div', { className: 'space-y-4' },
               h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
                 [
-                  { stat: '$55-80K', label: 'starting pay with cert', sub: 'AWS D1.1 first job', color: 'text-emerald-700' },
-                  { stat: '$90K+',   label: 'mid-career typical',     sub: '6G + experience',    color: 'text-orange-700' },
-                  { stat: '0',       label: 'four-year degrees needed', sub: 'cert + experience > diploma', color: 'text-blue-700' }
+                  { stat: '$55-80K', label: __alloT('stem.weldlab.starting_pay_with_cert', 'starting pay with cert'), sub: 'AWS D1.1 first job', color: 'text-emerald-700' },
+                  { stat: '$90K+',   label: __alloT('stem.weldlab.mid_career_typical', 'mid-career typical'),     sub: '6G + experience',    color: 'text-orange-700' },
+                  { stat: '0',       label: __alloT('stem.weldlab.four_year_degrees_needed', 'four-year degrees needed'), sub: 'cert + experience > diploma', color: 'text-blue-700' }
                 ].map(function(s, i) {
                   return h('div', { key: i, className: 'bg-white rounded-2xl shadow border border-slate-300 p-5 text-center' },
                     h('div', { className: 'text-4xl font-black ' + s.color }, s.stat),
@@ -4983,26 +4984,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 })
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
-                h('h3', { className: 'text-base font-black text-slate-800 mb-3' }, 'What\'s the day-to-day actually like?'),
+                h('h3', { className: 'text-base font-black text-slate-800 mb-3' }, __alloT('stem.weldlab.what_s_the_day_to_day_actually_like', 'What\'s the day-to-day actually like?')),
                 h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-slate-800' },
                   h('div', { className: 'p-3 bg-emerald-50 rounded-lg border border-emerald-200' },
-                    h('div', { className: 'font-bold text-emerald-800 mb-1' }, '✓ The good'),
+                    h('div', { className: 'font-bold text-emerald-800 mb-1' }, __alloT('stem.weldlab.the_good', '✓ The good')),
                     h('ul', { className: 'space-y-1 list-disc list-inside' },
-                      h('li', null, 'Tangible result every day — you can SEE what you built'),
-                      h('li', null, 'Strong demand, low layoff risk in skilled trades'),
-                      h('li', null, 'Skills transfer geographically — every shipyard / mill needs welders'),
-                      h('li', null, 'Path to your own shop / contractor work after experience'),
-                      h('li', null, 'Overtime + premium pay common in shipyards')
+                      h('li', null, __alloT('stem.weldlab.tangible_result_every_day_you_can_see_', 'Tangible result every day — you can SEE what you built')),
+                      h('li', null, __alloT('stem.weldlab.strong_demand_low_layoff_risk_in_skill', 'Strong demand, low layoff risk in skilled trades')),
+                      h('li', null, __alloT('stem.weldlab.skills_transfer_geographically_every_s', 'Skills transfer geographically — every shipyard / mill needs welders')),
+                      h('li', null, __alloT('stem.weldlab.path_to_your_own_shop_contractor_work_', 'Path to your own shop / contractor work after experience')),
+                      h('li', null, __alloT('stem.weldlab.overtime_premium_pay_common_in_shipyar', 'Overtime + premium pay common in shipyards'))
                     )
                   ),
                   h('div', { className: 'p-3 bg-amber-50 rounded-lg border border-amber-200' },
-                    h('div', { className: 'font-bold text-amber-900 mb-1' }, '⚠ The hard parts'),
+                    h('div', { className: 'font-bold text-amber-900 mb-1' }, __alloT('stem.weldlab.the_hard_parts', '⚠ The hard parts')),
                     h('ul', { className: 'space-y-1 list-disc list-inside' },
-                      h('li', null, 'Physical work — bend, kneel, hold positions, lift'),
-                      h('li', null, 'Hot, sweaty, fume-y environment'),
-                      h('li', null, 'Vision and respiratory health require lifelong PPE discipline'),
-                      h('li', null, 'Shift work common in production shops'),
-                      h('li', null, 'Joint stress (knees, back, shoulders) accumulates over decades')
+                      h('li', null, __alloT('stem.weldlab.physical_work_bend_kneel_hold_position', 'Physical work — bend, kneel, hold positions, lift')),
+                      h('li', null, __alloT('stem.weldlab.hot_sweaty_fume_y_environment', 'Hot, sweaty, fume-y environment')),
+                      h('li', null, __alloT('stem.weldlab.vision_and_respiratory_health_require_', 'Vision and respiratory health require lifelong PPE discipline')),
+                      h('li', null, __alloT('stem.weldlab.shift_work_common_in_production_shops', 'Shift work common in production shops')),
+                      h('li', null, __alloT('stem.weldlab.joint_stress_knees_back_shoulders_accu', 'Joint stress (knees, back, shoulders) accumulates over decades'))
                     )
                   )
                 )
@@ -5015,48 +5016,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 h('div', { className: 'flex items-center gap-2 mb-3' },
                   h('span', { 'aria-hidden': true, className: 'text-2xl' }, '⚓'),
                   h('div', null,
-                    h('div', { className: 'text-xs font-bold uppercase tracking-wider text-blue-700' }, 'A first day on the floor'),
-                    h('div', { className: 'text-lg font-black text-slate-800' }, 'Composite — Bath Iron Works, Maine')
+                    h('div', { className: 'text-xs font-bold uppercase tracking-wider text-blue-700' }, __alloT('stem.weldlab.a_first_day_on_the_floor', 'A first day on the floor')),
+                    h('div', { className: 'text-lg font-black text-slate-800' }, __alloT('stem.weldlab.composite_bath_iron_works_maine', 'Composite — Bath Iron Works, Maine'))
                   )
                 ),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-3' },
-                  h('em', null, 'Composite voice drawn from BIW + EMCC welder accounts. Names changed; everything else is from the floor.')
+                  h('em', null, __alloT('stem.weldlab.composite_voice_drawn_from_biw_emcc_we', 'Composite voice drawn from BIW + EMCC welder accounts. Names changed; everything else is from the floor.'))
                 ),
                 h('div', { className: 'space-y-3 text-sm text-slate-800 leading-relaxed' },
                   h('p', null,
-                    'Six-fifteen on a Monday morning. You park under the gantry crane that built the ',
-                    h('em', null, 'Arleigh Burke'),
-                    '-class hulls and watched ',
-                    h('em', null, 'Zumwalts'),
-                    ' slide down the ways. The shift whistle goes at six-thirty. You\'re early because your dad worked here for thirty-one years and told you, "If you\'re on time, you\'re late."'),
+                    __alloT('stem.weldlab.six_fifteen_on_a_monday_morning_you_pa', 'Six-fifteen on a Monday morning. You park under the gantry crane that built the '),
+                    h('em', null, __alloT('stem.weldlab.arleigh_burke', 'Arleigh Burke')),
+                    __alloT('stem.weldlab.class_hulls_and_watched', '-class hulls and watched '),
+                    h('em', null, __alloT('stem.weldlab.zumwalts', 'Zumwalts')),
+                    __alloT('stem.weldlab.slide_down_the_ways_the_shift_whistle_', ' slide down the ways. The shift whistle goes at six-thirty. You\'re early because your dad worked here for thirty-one years and told you, "If you\'re on time, you\'re late."')),
                   h('p', null,
-                    'Your assignor walks you onto the deck. The ',
+                    __alloT('stem.weldlab.your_assignor_walks_you_onto_the_deck_', 'Your assignor walks you onto the deck. The '),
                     h('em', null, 'DDG'),
-                    ' you\'ll be welding on for the next year is parked on stands the size of school buses. It is bigger than you imagined and somehow also smaller — closer up than the photos. Inside, the smell hits first: hot metal, weld fume, machine oil. The sound second: arc gouging from two bays over (a sound like the world\'s loudest staple gun), grinders, the ventilation rumble.'),
+                    __alloT('stem.weldlab.you_ll_be_welding_on_for_the_next_year', ' you\'ll be welding on for the next year is parked on stands the size of school buses. It is bigger than you imagined and somehow also smaller — closer up than the photos. Inside, the smell hits first: hot metal, weld fume, machine oil. The sound second: arc gouging from two bays over (a sound like the world\'s loudest staple gun), grinders, the ventilation rumble.')),
                   h('p', null,
                     'You are issued a leather kit, an auto-darkening helmet that someone has signed in the brim, FR coveralls a size too big, and a respirator. The lead welder on your bay is a woman named Maria who has been here for nineteen years. She watches you tie your boots and says, "First job today: just observe. Do not touch anything live. Ask before you do anything." She is not unkind. She has lost three apprentices to first-day burns and one to a flash that put him in the ER for three days.'),
                   h('p', null,
-                    'By lunch you have not welded anything. You have learned where the eyewash station is, where the fire extinguishers live, what the alarm signals mean, where to clip your harness when you go up. You have watched Maria run a 6G stainless joint that you could not have done if your life depended on it. She makes it look like she\'s painting a wall.'),
+                    __alloT('stem.weldlab.by_lunch_you_have_not_welded_anything_', 'By lunch you have not welded anything. You have learned where the eyewash station is, where the fire extinguishers live, what the alarm signals mean, where to clip your harness when you go up. You have watched Maria run a 6G stainless joint that you could not have done if your life depended on it. She makes it look like she\'s painting a wall.')),
                   h('p', null,
-                    'After lunch she lets you strike your first arc on a piece of scrap. Your hands shake. The bead looks terrible. She nods once and says, "Better than mine on day one." You spend the rest of the afternoon practicing on scrap, stopping every fifteen minutes to drink water (the booth gets to 90 °F by 3 pm), watching the people around you do something that takes them about three years to learn well.'),
+                    __alloT('stem.weldlab.after_lunch_she_lets_you_strike_your_f', 'After lunch she lets you strike your first arc on a piece of scrap. Your hands shake. The bead looks terrible. She nods once and says, "Better than mine on day one." You spend the rest of the afternoon practicing on scrap, stopping every fifteen minutes to drink water (the booth gets to 90 °F by 3 pm), watching the people around you do something that takes them about three years to learn well.')),
                   h('p', null,
-                    'The shift whistle goes at three. You have a small cut on your wrist where the leather glove rode up. You have not earned anything you could put on a wall. You have learned the layout of the bay, the names of four people, and that this work is going to be harder and slower than every YouTube video made it look. On the way to your car you see the gantry crane swing a bow section toward the dry dock. You will help build that, eventually. Not this week. Maybe not this year. Eventually.')
+                    __alloT('stem.weldlab.the_shift_whistle_goes_at_three_you_ha', 'The shift whistle goes at three. You have a small cut on your wrist where the leather glove rode up. You have not earned anything you could put on a wall. You have learned the layout of the bay, the names of four people, and that this work is going to be harder and slower than every YouTube video made it look. On the way to your car you see the gantry crane swing a bow section toward the dry dock. You will help build that, eventually. Not this week. Maybe not this year. Eventually.'))
                 ),
                 h('div', { className: 'mt-4 pt-3 border-t border-blue-200 grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-slate-700' },
                   h('div', null,
-                    h('div', { className: 'font-bold text-blue-700 uppercase tracking-wider mb-1' }, 'What this captures'),
-                    h('p', { className: 'leading-relaxed' }, 'Pace, scale, sensory load, the specific safety culture of a shipyard. The "do not touch anything" first day is real practice.')),
+                    h('div', { className: 'font-bold text-blue-700 uppercase tracking-wider mb-1' }, __alloT('stem.weldlab.what_this_captures', 'What this captures')),
+                    h('p', { className: 'leading-relaxed' }, __alloT('stem.weldlab.pace_scale_sensory_load_the_specific_s', 'Pace, scale, sensory load, the specific safety culture of a shipyard. The "do not touch anything" first day is real practice.'))),
                   h('div', null,
-                    h('div', { className: 'font-bold text-blue-700 uppercase tracking-wider mb-1' }, 'What it leaves out'),
-                    h('p', { className: 'leading-relaxed' }, 'Union vs non-union politics, shift differentials, deployments to other yards, what happens when a hull is delayed. Real, but not the day-one story.')),
+                    h('div', { className: 'font-bold text-blue-700 uppercase tracking-wider mb-1' }, __alloT('stem.weldlab.what_it_leaves_out', 'What it leaves out')),
+                    h('p', { className: 'leading-relaxed' }, __alloT('stem.weldlab.union_vs_non_union_politics_shift_diff', 'Union vs non-union politics, shift differentials, deployments to other yards, what happens when a hull is delayed. Real, but not the day-one story.'))),
                   h('div', null,
-                    h('div', { className: 'font-bold text-blue-700 uppercase tracking-wider mb-1' }, 'Discussion'),
-                    h('p', { className: 'leading-relaxed' }, 'What in this story would draw you in? What would push you away? What questions would you want to ask Maria before signing on?'))
+                    h('div', { className: 'font-bold text-blue-700 uppercase tracking-wider mb-1' }, __alloT('stem.weldlab.discussion', 'Discussion')),
+                    h('p', { className: 'leading-relaxed' }, __alloT('stem.weldlab.what_in_this_story_would_draw_you_in_w', 'What in this story would draw you in? What would push you away? What questions would you want to ask Maria before signing on?')))
                 )
               )
             ),
             view === 'ladder' && h('div', { className: 'space-y-3' },
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' }, 'Welding career ladder — typical progression'),
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' }, __alloT('stem.weldlab.welding_career_ladder_typical_progress', 'Welding career ladder — typical progression')),
               CERT_LADDER.map(function(c, i) {
                 return h('div', { key: c.tier, className: 'bg-white rounded-2xl shadow border border-slate-300 p-4 flex items-start gap-4' },
                   h('div', { className: 'flex-shrink-0 w-14 h-14 rounded-full bg-gradient-to-br from-orange-500 to-red-600 text-white flex items-center justify-center text-2xl font-black shadow' },
@@ -5069,13 +5070,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     h('div', { className: 'text-[11px] uppercase tracking-wider text-slate-700 font-bold mb-1' }, c.time),
                     h('div', { className: 'text-sm text-slate-800 mb-2' }, c.what),
                     h('div', { className: 'text-xs text-slate-700' },
-                      h('span', { className: 'font-bold text-slate-800' }, 'How to get there: '), c.how)
+                      h('span', { className: 'font-bold text-slate-800' }, __alloT('stem.weldlab.how_to_get_there', 'How to get there: ')), c.how)
                   )
                 );
               }),
               h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 text-sm text-slate-800' },
-                h('div', { className: 'font-bold text-amber-900 mb-1' }, 'About these pay bands'),
-                'Wages are 2025 ranges based on US Bureau of Labor Statistics, AWS surveys, and Maine-specific employer data. Actual pay varies by employer, location, overtime, and whether shop is union. BIW + heavy industrial trends to the higher end of each band.')
+                h('div', { className: 'font-bold text-amber-900 mb-1' }, __alloT('stem.weldlab.about_these_pay_bands', 'About these pay bands')),
+                __alloT('stem.weldlab.wages_are_2025_ranges_based_on_us_bure', 'Wages are 2025 ranges based on US Bureau of Labor Statistics, AWS surveys, and Maine-specific employer data. Actual pay varies by employer, location, overtime, and whether shop is union. BIW + heavy industrial trends to the higher end of each band.'))
             ),
             view === 'paths' && h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4' },
               ENTRY_PATHS.map(function(p, i) {
@@ -5090,7 +5091,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, p.desc),
                     h('div', { className: 'grid grid-cols-1 gap-2' },
                       h('div', null,
-                        h('div', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-700 mb-1' }, '✓ Pros'),
+                        h('div', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-700 mb-1' }, __alloT('stem.weldlab.pros', '✓ Pros')),
                         h('ul', { className: 'space-y-0.5 text-sm text-slate-800' },
                           p.pros.map(function(s, si) {
                             return h('li', { key: si, className: 'flex items-start gap-1.5' },
@@ -5100,7 +5101,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                         )
                       ),
                       h('div', null,
-                        h('div', { className: 'text-xs font-bold uppercase tracking-wider text-rose-700 mb-1' }, '× Cons'),
+                        h('div', { className: 'text-xs font-bold uppercase tracking-wider text-rose-700 mb-1' }, __alloT('stem.weldlab.cons', '× Cons')),
                         h('ul', { className: 'space-y-0.5 text-sm text-slate-800' },
                           p.cons.map(function(s, si) {
                             return h('li', { key: si, className: 'flex items-start gap-1.5' },
@@ -5111,13 +5112,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                       )
                     ),
                     h('div', { className: 'p-2 bg-blue-50 border border-blue-300 rounded text-xs text-slate-800' },
-                      h('span', { className: 'font-bold text-blue-900' }, 'Maine specific: '), p.maine)
+                      h('span', { className: 'font-bold text-blue-900' }, __alloT('stem.weldlab.maine_specific', 'Maine specific: ')), p.maine)
                   )
                 );
               })
             ),
             view === 'employers' && h('div', { className: 'space-y-3' },
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' }, 'Maine welding employers — sample of where welders work in-state'),
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' }, __alloT('stem.weldlab.maine_welding_employers_sample_of_wher', 'Maine welding employers — sample of where welders work in-state')),
               h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
                 ME_EMPLOYERS.map(function(e, i) {
                   return h('div', { key: i, className: 'bg-white rounded-2xl shadow border border-slate-300 p-4' },
@@ -5129,9 +5130,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 })
               ),
               h('div', { className: 'bg-blue-50 border-2 border-blue-300 rounded-2xl p-4' },
-                h('h3', { className: 'text-base font-black text-blue-900 mb-2' }, 'Other places to look'),
+                h('h3', { className: 'text-base font-black text-blue-900 mb-2' }, __alloT('stem.weldlab.other_places_to_look', 'Other places to look')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  'CareerCenter Maine (mainecareercenter.gov) lists open welding positions statewide. Indeed and ZipRecruiter aggregate shop postings. Most large employers (BIW, Cianbro, Pratt) have dedicated career portals where you can apply directly without a recruiter. Many small-town shops still rely on word-of-mouth — walking in and asking is not unusual or unwelcome in this trade.')
+                  __alloT('stem.weldlab.careercenter_maine_mainecareercenter_g', 'CareerCenter Maine (mainecareercenter.gov) lists open welding positions statewide. Indeed and ZipRecruiter aggregate shop postings. Most large employers (BIW, Cianbro, Pratt) have dedicated career portals where you can apply directly without a recruiter. Many small-town shops still rely on word-of-mouth — walking in and asking is not unusual or unwelcome in this trade.'))
               )
             ),
             h(TeacherNotes, {
@@ -5209,7 +5210,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         }
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '🌊', title: 'Underwater Welding' }),
+          h(BackBar, { icon: '🌊', title: __alloT('stem.weldlab.underwater_welding_2', 'Underwater Welding') }),
           h('div', { className: 'p-6 max-w-6xl mx-auto space-y-5' },
             // Hero — cyan/blue ocean gradient with bubbles
             h('div', {
@@ -5236,13 +5237,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               h('div', { className: 'relative flex items-start gap-4' },
                 h('span', { className: 'text-5xl' }, '🤿'),
                 h('div', null,
-                  h('h2', { className: 'text-2xl font-black mb-1' }, 'Welding under the sea'),
+                  h('h2', { className: 'text-2xl font-black mb-1' }, __alloT('stem.weldlab.welding_under_the_sea', 'Welding under the sea')),
                   h('p', { className: 'text-sm opacity-95 leading-relaxed max-w-3xl' },
-                    'Commercial underwater welders earn $80-200K+ but they earn every penny. The work is dangerous, the certifications stack up, and the physics are unforgiving — water cools your weld 5-8 times faster than air, dissolved hydrogen embrittles the steel, and the arc itself is electrically conductive in saltwater. Two techniques dominate: WET (you and the torch are both in the water) and HYPERBARIC (a sealed dry chamber keeps water out).')
+                    __alloT('stem.weldlab.commercial_underwater_welders_earn_80_', 'Commercial underwater welders earn $80-200K+ but they earn every penny. The work is dangerous, the certifications stack up, and the physics are unforgiving — water cools your weld 5-8 times faster than air, dissolved hydrogen embrittles the steel, and the arc itself is electrically conductive in saltwater. Two techniques dominate: WET (you and the torch are both in the water) and HYPERBARIC (a sealed dry chamber keeps water out).'))
                 )
               )
             ),
-            h('div', { 'role': 'tablist', 'aria-label': 'Underwater welding sections', className: 'flex flex-wrap gap-2' },
+            h('div', { 'role': 'tablist', 'aria-label': __alloT('stem.weldlab.underwater_welding_sections', 'Underwater welding sections'), className: 'flex flex-wrap gap-2' },
               tabBtn('intro', '1. Wet vs Dry'),
               tabBtn('pressure', '2. Pressure Lab'),
               tabBtn('safety', '3. Specialty Hazards'),
@@ -5252,44 +5253,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               h('div', { className: 'bg-white rounded-2xl shadow border-2 border-cyan-300 p-5' },
                 h('div', { className: 'flex items-center gap-3 mb-3' },
                   h('span', { className: 'text-3xl' }, '🌊'),
-                  h('h3', { className: 'text-xl font-black text-cyan-900' }, 'Wet Welding')
+                  h('h3', { className: 'text-xl font-black text-cyan-900' }, __alloT('stem.weldlab.wet_welding', 'Wet Welding'))
                 ),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-3' },
-                  'You\'re in the water. The torch is in the water. The metal is in the water. Stick (SMAW) is the dominant process — the flux coating creates a tiny gas bubble around the arc that excludes water just long enough to fuse the metal. Used for emergency repairs, inspection follow-up work, and routine maintenance on offshore structures.'),
+                  __alloT('stem.weldlab.you_re_in_the_water_the_torch_is_in_th', 'You\'re in the water. The torch is in the water. The metal is in the water. Stick (SMAW) is the dominant process — the flux coating creates a tiny gas bubble around the arc that excludes water just long enough to fuse the metal. Used for emergency repairs, inspection follow-up work, and routine maintenance on offshore structures.')),
                 h('div', { className: 'space-y-2' },
                   h('div', { className: 'p-2 bg-emerald-50 rounded border border-emerald-200 text-xs text-slate-800' },
-                    h('span', { className: 'font-bold text-emerald-800' }, '✓ Pros: '),
-                    'Lower setup cost. Fast deployment for emergency repair. Most accessible certification path.'),
+                    h('span', { className: 'font-bold text-emerald-800' }, __alloT('stem.weldlab.pros_2', '✓ Pros: ')),
+                    __alloT('stem.weldlab.lower_setup_cost_fast_deployment_for_e', 'Lower setup cost. Fast deployment for emergency repair. Most accessible certification path.')),
                   h('div', { className: 'p-2 bg-rose-50 rounded border border-rose-200 text-xs text-slate-800' },
-                    h('span', { className: 'font-bold text-rose-800' }, '× Cons: '),
-                    'Lower weld quality (Class B by US Navy spec). Hydrogen embrittlement risk. Practical depth limit ~100 ft. Lower pay than hyperbaric.')
+                    h('span', { className: 'font-bold text-rose-800' }, __alloT('stem.weldlab.cons_2', '× Cons: ')),
+                    __alloT('stem.weldlab.lower_weld_quality_class_b_by_us_navy_', 'Lower weld quality (Class B by US Navy spec). Hydrogen embrittlement risk. Practical depth limit ~100 ft. Lower pay than hyperbaric.'))
                 ),
                 h('div', { className: 'mt-3 p-2 bg-blue-50 rounded border border-blue-200 text-xs text-slate-800' },
-                  h('span', { className: 'font-bold text-blue-900' }, 'Process: '), 'SMAW with E6013 / E7014 waterproofed electrodes')
+                  h('span', { className: 'font-bold text-blue-900' }, 'Process: '), __alloT('stem.weldlab.smaw_with_e6013_e7014_waterproofed_ele', 'SMAW with E6013 / E7014 waterproofed electrodes'))
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border-2 border-blue-400 p-5' },
                 h('div', { className: 'flex items-center gap-3 mb-3' },
                   h('span', { className: 'text-3xl' }, '🛎️'),
-                  h('h3', { className: 'text-xl font-black text-blue-900' }, 'Hyperbaric (Dry) Welding')
+                  h('h3', { className: 'text-xl font-black text-blue-900' }, __alloT('stem.weldlab.hyperbaric_dry_welding', 'Hyperbaric (Dry) Welding'))
                 ),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-3' },
-                  'A sealed pressurized chamber (called a "habitat") is lowered around the joint. Water is displaced by inert gas (argon-helium mix). The diver enters the dry habitat and welds normally — usually GTAW (TIG) for code-quality results. Used for permanent repairs on pipelines, oil rig riser sections, and ship hulls.'),
+                  __alloT('stem.weldlab.a_sealed_pressurized_chamber_called_a_', 'A sealed pressurized chamber (called a "habitat") is lowered around the joint. Water is displaced by inert gas (argon-helium mix). The diver enters the dry habitat and welds normally — usually GTAW (TIG) for code-quality results. Used for permanent repairs on pipelines, oil rig riser sections, and ship hulls.')),
                 h('div', { className: 'space-y-2' },
                   h('div', { className: 'p-2 bg-emerald-50 rounded border border-emerald-200 text-xs text-slate-800' },
-                    h('span', { className: 'font-bold text-emerald-800' }, '✓ Pros: '),
-                    'Code-quality welds (Class A). Works at any practical depth. Can use any process (TIG, MIG, Stick). Highest pay.'),
+                    h('span', { className: 'font-bold text-emerald-800' }, __alloT('stem.weldlab.pros_3', '✓ Pros: ')),
+                    __alloT('stem.weldlab.code_quality_welds_class_a_works_at_an', 'Code-quality welds (Class A). Works at any practical depth. Can use any process (TIG, MIG, Stick). Highest pay.')),
                   h('div', { className: 'p-2 bg-rose-50 rounded border border-rose-200 text-xs text-slate-800' },
-                    h('span', { className: 'font-bold text-rose-800' }, '× Cons: '),
-                    'Massive setup cost (chamber + support ship). Long mobilization time. Decompression schedule for diver. Niche specialty — fewer jobs.')
+                    h('span', { className: 'font-bold text-rose-800' }, __alloT('stem.weldlab.cons_3', '× Cons: ')),
+                    __alloT('stem.weldlab.massive_setup_cost_chamber_support_shi', 'Massive setup cost (chamber + support ship). Long mobilization time. Decompression schedule for diver. Niche specialty — fewer jobs.'))
                 ),
                 h('div', { className: 'mt-3 p-2 bg-blue-50 rounded border border-blue-200 text-xs text-slate-800' },
-                  h('span', { className: 'font-bold text-blue-900' }, 'Process: '), 'GTAW (TIG) most common; SMAW + GMAW also possible in dry chamber')
+                  h('span', { className: 'font-bold text-blue-900' }, 'Process: '), __alloT('stem.weldlab.gtaw_tig_most_common_smaw_gmaw_also_po', 'GTAW (TIG) most common; SMAW + GMAW also possible in dry chamber'))
               )
             ),
             view === 'pressure' && h('div', { className: 'space-y-4' },
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-4' },
-                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, 'Technique'),
-                h('div', { 'role': 'radiogroup', 'aria-label': 'Underwater welding technique', className: 'grid grid-cols-2 gap-2' },
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, __alloT('stem.weldlab.technique', 'Technique')),
+                h('div', { 'role': 'radiogroup', 'aria-label': __alloT('stem.weldlab.underwater_welding_technique', 'Underwater welding technique'), className: 'grid grid-cols-2 gap-2' },
                   ['wet', 'dry'].map(function(t) {
                     var sel = (technique === t);
                     var lbl = t === 'wet' ? '🌊 Wet welding' : '🛎️ Hyperbaric (dry)';
@@ -5305,7 +5306,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 )
               ),
               h(LabeledSlider, {
-                label: 'Depth',
+                label: __alloT('stem.weldlab.depth', 'Depth'),
                 valueText: depth + ' ft (' + pressureATM.toFixed(1) + ' atm)',
                 min: 0, max: 300, step: 5, value: depth, onChange: setDepth,
                 hint: technique === 'wet' ? 'Practical wet welding limit ~100 ft. Beyond that: dry/saturation diving.' : 'Hyperbaric chambers rated to 1000 ft+ depending on equipment.',
@@ -5353,18 +5354,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 ),
                 // Depth scale on the right
                 h('div', { 'aria-hidden': true, className: 'absolute right-2 top-2 bottom-2 flex flex-col justify-between text-[10px] font-mono text-cyan-200' },
-                  h('div', null, '0 ft'),
-                  h('div', null, '100 ft'),
-                  h('div', null, '200 ft'),
-                  h('div', null, '300 ft')
+                  h('div', null, __alloT('stem.weldlab.0_ft', '0 ft')),
+                  h('div', null, __alloT('stem.weldlab.100_ft', '100 ft')),
+                  h('div', null, __alloT('stem.weldlab.200_ft', '200 ft')),
+                  h('div', null, __alloT('stem.weldlab.300_ft', '300 ft'))
                 )
               ),
               // Stat readouts
               h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-3' },
-                h(StatCard, { label: 'Pressure', value: pressureATM.toFixed(1), unit: 'atm', color: 'text-blue-700' }),
-                h(StatCard, { label: 'Cooling Rate', value: coolingMult.toFixed(1) + '×', unit: 'vs air', color: coolingMult > 6 ? 'text-rose-700' : 'text-amber-700' }),
-                h(StatCard, { label: 'Hydrogen Risk', value: Math.round(hydrogenRisk) + '%', unit: 'embrittlement', color: hydrogenRisk > 60 ? 'text-rose-700' : hydrogenRisk > 30 ? 'text-amber-700' : 'text-emerald-700' }),
-                h(StatCard, { label: 'Visibility', value: visibility.toFixed(0), unit: visibility > 5 ? 'ft (workable)' : 'ft (poor)', color: visibility > 5 ? 'text-emerald-700' : 'text-rose-700' })
+                h(StatCard, { label: __alloT('stem.weldlab.pressure', 'Pressure'), value: pressureATM.toFixed(1), unit: 'atm', color: 'text-blue-700' }),
+                h(StatCard, { label: __alloT('stem.weldlab.cooling_rate', 'Cooling Rate'), value: coolingMult.toFixed(1) + '×', unit: 'vs air', color: coolingMult > 6 ? 'text-rose-700' : 'text-amber-700' }),
+                h(StatCard, { label: __alloT('stem.weldlab.hydrogen_risk', 'Hydrogen Risk'), value: Math.round(hydrogenRisk) + '%', unit: 'embrittlement', color: hydrogenRisk > 60 ? 'text-rose-700' : hydrogenRisk > 30 ? 'text-amber-700' : 'text-emerald-700' }),
+                h(StatCard, { label: __alloT('stem.weldlab.visibility', 'Visibility'), value: visibility.toFixed(0), unit: visibility > 5 ? 'ft (workable)' : 'ft (poor)', color: visibility > 5 ? 'text-emerald-700' : 'text-rose-700' })
               ),
               atDepthLimit && h('div', {
                 'aria-live': 'polite',
@@ -5372,13 +5373,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               },
                 h('span', { className: 'text-3xl' }, '⚠️'),
                 h('div', null,
-                  h('div', { className: 'font-black text-rose-900 mb-1' }, 'Beyond practical wet-welding limits'),
+                  h('div', { className: 'font-black text-rose-900 mb-1' }, __alloT('stem.weldlab.beyond_practical_wet_welding_limits', 'Beyond practical wet-welding limits')),
                   h('p', { className: 'text-sm text-slate-800' },
-                    'Past ~100 ft, wet welding becomes commercially impractical. Hydrogen embrittlement risk, narcosis at depth, and code-quality issues mean industry switches to hyperbaric chambers or saturation diving for permanent repairs.')
+                    __alloT('stem.weldlab.past_100_ft_wet_welding_becomes_commer', 'Past ~100 ft, wet welding becomes commercially impractical. Hydrogen embrittlement risk, narcosis at depth, and code-quality issues mean industry switches to hyperbaric chambers or saturation diving for permanent repairs.'))
                 )
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
-                h('h3', { className: 'text-base font-black text-slate-800 mb-2' }, 'Why depth matters so much'),
+                h('h3', { className: 'text-base font-black text-slate-800 mb-2' }, __alloT('stem.weldlab.why_depth_matters_so_much', 'Why depth matters so much')),
                 h('ul', { className: 'space-y-2 text-sm text-slate-800' },
                   [
                     ['Pressure', 'Each 33 ft of seawater adds 1 atm. The arc plume is compressed; visible arc length shortens dramatically. Welder must maintain a tighter arc gap.'],
@@ -5397,19 +5398,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               h('div', { className: 'bg-rose-50 border-2 border-rose-400 rounded-2xl p-5 flex items-start gap-3' },
                 h('span', { className: 'text-3xl' }, '☠️'),
                 h('div', null,
-                  h('div', { className: 'text-sm font-black text-rose-900 mb-1' }, 'Underwater welding fatality rate is among the highest in any trade.'),
+                  h('div', { className: 'text-sm font-black text-rose-900 mb-1' }, __alloT('stem.weldlab.underwater_welding_fatality_rate_is_am', 'Underwater welding fatality rate is among the highest in any trade.')),
                   h('p', { className: 'text-sm text-slate-800' },
-                    'Industry estimates put fatality rates 5-10× higher than topside welding. The hazards stack: drowning + electric shock + decompression sickness + explosion risk + structural collapse + hypothermia. This isn\'t a scare tactic — it\'s why the pay is what it is.')
+                    __alloT('stem.weldlab.industry_estimates_put_fatality_rates_', 'Industry estimates put fatality rates 5-10× higher than topside welding. The hazards stack: drowning + electric shock + decompression sickness + explosion risk + structural collapse + hypothermia. This isn\'t a scare tactic — it\'s why the pay is what it is.'))
                 )
               ),
               h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
                 [
-                  { icon: '⚡', title: 'Electric shock', detail: 'Saltwater conducts. Equipment must be DC negative polarity, fully insulated, with automatic dead-man cutoff. AC welding underwater is illegal — fatal nearly every time.' },
-                  { icon: '💥', title: 'Hydrogen explosion', detail: 'Arc dissociates water into H₂ + O₂. If the gas pocket gets trapped (hull cavity, pipe), it can detonate. Multiple recorded fatalities. Procedures include venting cavities before lighting up.' },
-                  { icon: '🩸', title: 'Decompression sickness', detail: 'Working at depth on compressed gas, the diver-welder must follow strict ascent / decompression schedules. "Bends" can cause permanent neurological damage or death. Hyperbaric work uses saturation diving.' },
-                  { icon: '🥶', title: 'Hypothermia', detail: 'Cold water + long shifts (4-8h underwater is common). Dry suits, hot-water suits, and constant monitoring required.' },
-                  { icon: '🌫️', title: 'Visibility / disorientation', detail: 'Stirred-up sediment can cut visibility to inches. Diver works by feel. Tether lines + comm checks every 60 seconds standard practice.' },
-                  { icon: '⚓', title: 'Object strikes / collapse', detail: 'Strong currents, surge from passing vessels, structural failure of the work piece. Always two divers + topside attendant + retrieval line.' }
+                  { icon: '⚡', title: __alloT('stem.weldlab.electric_shock', 'Electric shock'), detail: __alloT('stem.weldlab.saltwater_conducts_equipment_must_be_d', 'Saltwater conducts. Equipment must be DC negative polarity, fully insulated, with automatic dead-man cutoff. AC welding underwater is illegal — fatal nearly every time.') },
+                  { icon: '💥', title: __alloT('stem.weldlab.hydrogen_explosion', 'Hydrogen explosion'), detail: __alloT('stem.weldlab.arc_dissociates_water_into_h_o_if_the_', 'Arc dissociates water into H₂ + O₂. If the gas pocket gets trapped (hull cavity, pipe), it can detonate. Multiple recorded fatalities. Procedures include venting cavities before lighting up.') },
+                  { icon: '🩸', title: __alloT('stem.weldlab.decompression_sickness', 'Decompression sickness'), detail: __alloT('stem.weldlab.working_at_depth_on_compressed_gas_the', 'Working at depth on compressed gas, the diver-welder must follow strict ascent / decompression schedules. "Bends" can cause permanent neurological damage or death. Hyperbaric work uses saturation diving.') },
+                  { icon: '🥶', title: __alloT('stem.weldlab.hypothermia', 'Hypothermia'), detail: __alloT('stem.weldlab.cold_water_long_shifts_4_8h_underwater', 'Cold water + long shifts (4-8h underwater is common). Dry suits, hot-water suits, and constant monitoring required.') },
+                  { icon: '🌫️', title: __alloT('stem.weldlab.visibility_disorientation', 'Visibility / disorientation'), detail: __alloT('stem.weldlab.stirred_up_sediment_can_cut_visibility', 'Stirred-up sediment can cut visibility to inches. Diver works by feel. Tether lines + comm checks every 60 seconds standard practice.') },
+                  { icon: '⚓', title: __alloT('stem.weldlab.object_strikes_collapse', 'Object strikes / collapse'), detail: __alloT('stem.weldlab.strong_currents_surge_from_passing_ves', 'Strong currents, surge from passing vessels, structural failure of the work piece. Always two divers + topside attendant + retrieval line.') }
                 ].map(function(haz, i) {
                   return h('div', { key: i, className: 'bg-white rounded-xl shadow border border-rose-300 p-4' },
                     h('div', { className: 'flex items-center gap-2 mb-2' },
@@ -5421,7 +5422,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 })
               ),
               h('div', { className: 'bg-blue-50 border-2 border-blue-300 rounded-2xl p-4' },
-                h('h3', { className: 'text-base font-black text-blue-900 mb-1' }, 'The standards that exist for a reason'),
+                h('h3', { className: 'text-base font-black text-blue-900 mb-1' }, __alloT('stem.weldlab.the_standards_that_exist_for_a_reason', 'The standards that exist for a reason')),
                 h('ul', { className: 'space-y-1 text-sm text-slate-800' },
                   [
                     'AWS D3.6M — code for underwater welding (defines Class A, B, O quality tiers)',
@@ -5439,9 +5440,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             view === 'career' && h('div', { className: 'space-y-4' },
               h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
                 [
-                  { stat: '$80-200K+', label: 'commercial diver-welder', sub: 'high range with saturation diving', color: 'text-emerald-700' },
-                  { stat: '~6-9 months', label: 'commercial dive school', sub: 'tuition typically $20-30K', color: 'text-blue-700' },
-                  { stat: '~3-5 yrs', label: 'to journeyman level', sub: 'after dive school + entry job', color: 'text-amber-700' }
+                  { stat: '$80-200K+', label: __alloT('stem.weldlab.commercial_diver_welder', 'commercial diver-welder'), sub: 'high range with saturation diving', color: 'text-emerald-700' },
+                  { stat: '~6-9 months', label: __alloT('stem.weldlab.commercial_dive_school', 'commercial dive school'), sub: 'tuition typically $20-30K', color: 'text-blue-700' },
+                  { stat: '~3-5 yrs', label: __alloT('stem.weldlab.to_journeyman_level', 'to journeyman level'), sub: 'after dive school + entry job', color: 'text-amber-700' }
                 ].map(function(s, i) {
                   return h('div', { key: i, className: 'bg-white rounded-2xl shadow border-2 border-cyan-300 p-5 text-center' },
                     h('div', { className: 'text-3xl font-black ' + s.color }, s.stat),
@@ -5451,7 +5452,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 })
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
-                h('h3', { className: 'text-base font-black text-slate-800 mb-3' }, 'The path — step by step'),
+                h('h3', { className: 'text-base font-black text-slate-800 mb-3' }, __alloT('stem.weldlab.the_path_step_by_step', 'The path — step by step')),
                 h('ol', { className: 'space-y-3 text-sm text-slate-800' },
                   [
                     ['1.', 'Get topside welding experience first', 'Most dive schools require AWS D1.1 cert or equivalent. Spend 1-2 years building solid welding fundamentals topside before adding the dive layer.'],
@@ -5472,9 +5473,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 )
               ),
               h('div', { className: 'bg-blue-50 border-2 border-blue-300 rounded-2xl p-4' },
-                h('h3', { className: 'text-base font-black text-blue-900 mb-1' }, 'Maine-specific note'),
+                h('h3', { className: 'text-base font-black text-blue-900 mb-1' }, __alloT('stem.weldlab.maine_specific_note', 'Maine-specific note')),
                 h('p', { className: 'text-sm text-slate-800' },
-                  'Commercial dive-welding work in Maine is rare — most opportunities are Gulf Coast offshore oil, Pacific Northwest fishing/marine, or pipeline work nationwide. A Maine kid pursuing this path will likely relocate. Bath Iron Works does occasional underwater hull inspection but most repair is dry-docked. Best entry: get topside experience at BIW or Cianbro, then apply to dive school out of state.')
+                  __alloT('stem.weldlab.commercial_dive_welding_work_in_maine_', 'Commercial dive-welding work in Maine is rare — most opportunities are Gulf Coast offshore oil, Pacific Northwest fishing/marine, or pipeline work nationwide. A Maine kid pursuing this path will likely relocate. Bath Iron Works does occasional underwater hull inspection but most repair is dry-docked. Best entry: get topside experience at BIW or Cianbro, then apply to dive school out of state.'))
               )
             ),
             h(TeacherNotes, {
@@ -5507,9 +5508,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       // certified ship-hull welder.
       var SPEED_TIERS = {
         apprentice: {
-          name: 'Apprentice',
+          name: __alloT('stem.weldlab.apprentice', 'Apprentice'),
           icon: '🟢',
-          desc: 'Learning the feel — wide tolerance window, slower travel.',
+          desc: __alloT('stem.weldlab.learning_the_feel_wide_tolerance_windo', 'Learning the feel — wide tolerance window, slower travel.'),
           travel: 8,    // in/min
           tolV: 5,      // ± deviation from optimal
           tolA: 35,
@@ -5521,7 +5522,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         pro: {
           name: 'Pro',
           icon: '🟠',
-          desc: 'Production-grade — tight tolerance, faster travel.',
+          desc: __alloT('stem.weldlab.production_grade_tight_tolerance_faste', 'Production-grade — tight tolerance, faster travel.'),
           travel: 12,
           tolV: 2.5,
           tolA: 18,
@@ -5531,9 +5532,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           ring: 'ring-orange-500/40'
         },
         biw: {
-          name: 'Bath Iron Works',
+          name: __alloT('stem.weldlab.bath_iron_works', 'Bath Iron Works'),
           icon: '🔴',
-          desc: 'Ship-hull certified — minimal margin for error, fastest travel.',
+          desc: __alloT('stem.weldlab.ship_hull_certified_minimal_margin_for', 'Ship-hull certified — minimal margin for error, fastest travel.'),
           travel: 15,
           tolV: 1.2,
           tolA: 10,
@@ -5552,15 +5553,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       // ─────────────────────────────────────────────────────
       function ProcessSleuth() {
         var PROCESSES = [
-          { id: 'mig',  label: 'MIG (GMAW)',          color: '#0ea5e9', icon: '⚡',
+          { id: 'mig',  label: __alloT('stem.weldlab.mig_gmaw_3', 'MIG (GMAW)'),          color: '#0ea5e9', icon: '⚡',
             def: 'Wire-fed, gas-shielded. Fast, high deposition. Sensitive to wind. Shop favorite for steel + aluminum + stainless.' },
-          { id: 'tig',  label: 'TIG (GTAW)',          color: '#a855f7', icon: '✨',
+          { id: 'tig',  label: __alloT('stem.weldlab.tig_gtaw_3', 'TIG (GTAW)'),          color: '#a855f7', icon: '✨',
             def: 'Tungsten electrode + filler rod, gas-shielded. Slow, clean, precise. Best for thin material, stainless, aluminum, sanitary work.' },
-          { id: 'stick', label: 'Stick (SMAW)',       color: '#dc2626', icon: '🔥',
+          { id: 'stick', label: __alloT('stem.weldlab.stick_smaw_3', 'Stick (SMAW)'),       color: '#dc2626', icon: '🔥',
             def: 'Coated electrode that melts into the puddle. Wind-tolerant, no gas needed, cuts through rust + mill scale. Pipeline + structural + farm.' },
-          { id: 'fcaw', label: 'Flux-cored (FCAW)',   color: '#f59e0b', icon: '🌀',
+          { id: 'fcaw', label: __alloT('stem.weldlab.flux_cored_fcaw', 'Flux-cored (FCAW)'),   color: '#f59e0b', icon: '🌀',
             def: 'Wire with flux inside. Like MIG but no external gas needed (self-shielded) or with gas. High deposition. Outdoor-tolerant.' },
-          { id: 'spot', label: 'Resistance / Spot',   color: '#16a34a', icon: '⚙️',
+          { id: 'spot', label: __alloT('stem.weldlab.resistance_spot', 'Resistance / Spot'),   color: '#16a34a', icon: '⚙️',
             def: 'Two electrodes squeeze + electrify thin sheet. Fast, automatable. Automotive body assembly + appliance manufacturing.' }
         ];
         var V = [
@@ -5625,15 +5626,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
 
         if (psIdx < 0) {
           return h('div', { className: 'min-h-screen bg-slate-50' },
-            h(BackBar, { icon: '🕵️', title: 'Process Sleuth' }),
+            h(BackBar, { icon: '🕵️', title: __alloT('stem.weldlab.process_sleuth_2', 'Process Sleuth') }),
             h('div', { className: 'p-6 max-w-3xl mx-auto space-y-5' },
               h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-2xl p-5' },
-                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '10 welding scenarios — pick the right process'),
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, __alloT('stem.weldlab.10_welding_scenarios_pick_the_right_pr', '10 welding scenarios — pick the right process')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  'For each scenario, pick the welding process from MIG / TIG / Stick / FCAW / Resistance. Coaching after each pick names what makes this process the right choice and what would make a different process fit instead.')
+                  __alloT('stem.weldlab.for_each_scenario_pick_the_welding_pro', 'For each scenario, pick the welding process from MIG / TIG / Stick / FCAW / Resistance. Coaching after each pick names what makes this process the right choice and what would make a different process fit instead.'))
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-4' },
-                h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-700 mb-3' }, 'The five processes'),
+                h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-700 mb-3' }, __alloT('stem.weldlab.the_five_processes', 'The five processes')),
                 h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
                   PROCESSES.map(function(pr) {
                     return h('div', { key: pr.id, style: { padding: '8px 10px', borderRadius: 8, background: pr.color + '15', border: '1px solid ' + pr.color + '55' } },
@@ -5649,7 +5650,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               h('button', {
                 onClick: startPs,
                 className: 'transition-colors w-full px-5 py-3 rounded-xl bg-amber-600 text-white font-bold hover:bg-amber-700 focus:outline-none focus:ring-2 ring-amber-400'
-              }, '🕵️ Start — vignette 1 of 10')
+              }, __alloT('stem.weldlab.start_vignette_1_of_10', '🕵️ Start — vignette 1 of 10'))
             )
           );
         }
@@ -5662,15 +5663,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var pickedProc = psPick ? PROCESSES.filter(function(p) { return p.id === psPick; })[0] : null;
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '🕵️', title: 'Process Sleuth' }),
+          h(BackBar, { icon: '🕵️', title: __alloT('stem.weldlab.process_sleuth_3', 'Process Sleuth') }),
           h('div', { className: 'p-6 max-w-3xl mx-auto space-y-4' },
             // Score header
             h('div', { className: 'flex flex-wrap gap-3 items-center text-xs text-slate-700' },
-              h('span', null, 'Vignette ', h('strong', { className: 'text-slate-900' }, psShown.length)),
-              h('span', null, 'Score ', h('strong', { className: 'text-emerald-700' }, psScore + ' / ' + psRounds)),
-              psRounds > 0 && h('span', null, 'Accuracy ', h('strong', { className: 'text-cyan-700' }, pct + '%')),
-              h('span', null, 'Streak ', h('strong', { className: 'text-amber-700' }, psStreak)),
-              h('span', null, 'Best ', h('strong', { className: 'text-fuchsia-700' }, psBest))
+              h('span', null, __alloT('stem.weldlab.vignette', 'Vignette '), h('strong', { className: 'text-slate-900' }, psShown.length)),
+              h('span', null, __alloT('stem.weldlab.score_3', 'Score '), h('strong', { className: 'text-emerald-700' }, psScore + ' / ' + psRounds)),
+              psRounds > 0 && h('span', null, __alloT('stem.weldlab.accuracy', 'Accuracy '), h('strong', { className: 'text-cyan-700' }, pct + '%')),
+              h('span', null, __alloT('stem.weldlab.streak', 'Streak '), h('strong', { className: 'text-amber-700' }, psStreak)),
+              h('span', null, __alloT('stem.weldlab.best', 'Best '), h('strong', { className: 'text-fuchsia-700' }, psBest))
             ),
             // Vignette
             h('section', { className: 'p-5 rounded-2xl bg-amber-50 border-2 border-amber-300' },
@@ -5678,7 +5679,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, v.scenario)
             ),
             // 5 process picker buttons
-            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2', role: 'radiogroup', 'aria-label': 'Pick the right welding process' },
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2', role: 'radiogroup', 'aria-label': __alloT('stem.weldlab.pick_the_right_welding_process', 'Pick the right welding process') },
               PROCESSES.map(function(pr) {
                 var picked = psAns && psPick === pr.id;
                 var isRight = psAns && pr.id === v.correct;
@@ -5722,7 +5723,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               h('p', { className: 'text-xs text-slate-800 leading-relaxed mb-3' }, v.why),
               allDone
                 ? h('div', { className: 'p-3 rounded-lg bg-amber-100 border border-amber-300' },
-                    h('div', { className: 'text-sm font-black text-amber-900 mb-1' }, '🏆 All 10 vignettes complete'),
+                    h('div', { className: 'text-sm font-black text-amber-900 mb-1' }, __alloT('stem.weldlab.all_10_vignettes_complete', '🏆 All 10 vignettes complete')),
                     h('div', { className: 'text-xs text-slate-800 leading-relaxed' },
                       'Final: ', h('strong', null, psScore + ' / ' + V.length + ' (' + Math.round((psScore / V.length) * 100) + '%)'),
                       psScore === V.length ? ' — every process call correct. Ready for AWS SENSE Module 1 process selection.' :
@@ -5733,12 +5734,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     h('button', {
                       onClick: function() { upd('psIdx', -1); upd('psShown', []); upd('psScore', 0); upd('psRounds', 0); upd('psStreak', 0); },
                       className: 'transition-colors mt-3 px-4 py-1.5 rounded-lg bg-amber-600 text-white font-bold text-xs hover:bg-amber-700'
-                    }, '🔄 Restart')
+                    }, __alloT('stem.weldlab.restart', '🔄 Restart'))
                   )
                 : h('button', {
                     onClick: startPs,
                     className: 'transition-colors px-4 py-2 rounded-lg bg-amber-600 text-white font-bold text-sm hover:bg-amber-700 focus:outline-none focus:ring-2 ring-amber-400'
-                  }, '➡️ Next vignette')
+                  }, __alloT('stem.weldlab.next_vignette', '➡️ Next vignette'))
             )
           )
         );
@@ -5753,12 +5754,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       // ─────────────────────────────────────────────────────
       function DefectDiagnose() {
         var CAUSES = [
-          { id: 'heatHigh',    label: 'Heat too high',     color: '#dc2626', icon: '🔥', def: 'Amperage/voltage above the material\'s tolerance. Burns through, undercuts, excess spatter, oxidation, distortion.' },
-          { id: 'heatLow',     label: 'Heat too low',       color: '#0ea5e9', icon: '❄️', def: 'Insufficient amperage to fully fuse the base metal. Lack of fusion, cold lap, narrow weak weld bead.' },
-          { id: 'travelSlow',  label: 'Travel too slow',    color: '#16a34a', icon: '🐢', def: 'Torch lingered; puddle sat too long. Overlap (weld sits ON TOP), excess buildup, burn-through on thin material.' },
-          { id: 'travelFast',  label: 'Travel too fast',    color: '#f59e0b', icon: '🐇', def: 'Torch moved too quickly to develop full fusion. Undercut, narrow bead, lack of penetration.' },
-          { id: 'contamination', label: 'Contamination',     color: '#a855f7', icon: '🦠', def: 'Base metal had paint, oil, rust, mill scale, or moisture. Or shielding gas was lost (wind, leak, no purge). Causes porosity, oxidation, brittleness.' },
-          { id: 'technique',   label: 'Technique error',    color: 'var(--allo-stem-text-soft, #64748b)', icon: '👷', def: 'Wrong angle, no inter-pass cleaning, no taper-off, no preheat, poor sequence. The miscellaneous category that is actually most common.' }
+          { id: 'heatHigh',    label: __alloT('stem.weldlab.heat_too_high', 'Heat too high'),     color: '#dc2626', icon: '🔥', def: 'Amperage/voltage above the material\'s tolerance. Burns through, undercuts, excess spatter, oxidation, distortion.' },
+          { id: 'heatLow',     label: __alloT('stem.weldlab.heat_too_low', 'Heat too low'),       color: '#0ea5e9', icon: '❄️', def: 'Insufficient amperage to fully fuse the base metal. Lack of fusion, cold lap, narrow weak weld bead.' },
+          { id: 'travelSlow',  label: __alloT('stem.weldlab.travel_too_slow', 'Travel too slow'),    color: '#16a34a', icon: '🐢', def: 'Torch lingered; puddle sat too long. Overlap (weld sits ON TOP), excess buildup, burn-through on thin material.' },
+          { id: 'travelFast',  label: __alloT('stem.weldlab.travel_too_fast', 'Travel too fast'),    color: '#f59e0b', icon: '🐇', def: 'Torch moved too quickly to develop full fusion. Undercut, narrow bead, lack of penetration.' },
+          { id: 'contamination', label: __alloT('stem.weldlab.contamination', 'Contamination'),     color: '#a855f7', icon: '🦠', def: 'Base metal had paint, oil, rust, mill scale, or moisture. Or shielding gas was lost (wind, leak, no purge). Causes porosity, oxidation, brittleness.' },
+          { id: 'technique',   label: __alloT('stem.weldlab.technique_error', 'Technique error'),    color: 'var(--allo-stem-text-soft, #64748b)', icon: '👷', def: 'Wrong angle, no inter-pass cleaning, no taper-off, no preheat, poor sequence. The miscellaneous category that is actually most common.' }
         ];
         var V = [
           { id: 1, defect: 'Porosity — gas pockets trapped in the weld, visible as small round holes on the surface or revealed by radiography.', correct: 'contamination',
@@ -5822,15 +5823,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
 
         if (ddIdx2 < 0) {
           return h('div', { className: 'min-h-screen bg-slate-50' },
-            h(BackBar, { icon: '🔬', title: 'Defect Diagnose' }),
+            h(BackBar, { icon: '🔬', title: __alloT('stem.weldlab.defect_diagnose_2', 'Defect Diagnose') }),
             h('div', { className: 'p-6 max-w-3xl mx-auto space-y-5' },
               h('div', { className: 'bg-rose-50 border-2 border-rose-300 rounded-2xl p-5' },
-                h('h2', { className: 'text-lg font-black text-rose-900 mb-2' }, '10 weld defects — identify the root cause'),
+                h('h2', { className: 'text-lg font-black text-rose-900 mb-2' }, __alloT('stem.weldlab.10_weld_defects_identify_the_root_caus', '10 weld defects — identify the root cause')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  'Visual ID is one skill (Defect Hunt teaches it). ROOT-CAUSE diagnosis is the next-level skill that turns welders into CWI inspectors. For each defect, pick the most likely cause from 6 categories. Coaching cites the fix and how to prevent the defect on the next weld.')
+                  __alloT('stem.weldlab.visual_id_is_one_skill_defect_hunt_tea', 'Visual ID is one skill (Defect Hunt teaches it). ROOT-CAUSE diagnosis is the next-level skill that turns welders into CWI inspectors. For each defect, pick the most likely cause from 6 categories. Coaching cites the fix and how to prevent the defect on the next weld.'))
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-4' },
-                h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-700 mb-3' }, 'The six cause categories'),
+                h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-700 mb-3' }, __alloT('stem.weldlab.the_six_cause_categories', 'The six cause categories')),
                 h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
                   CAUSES.map(function(c) {
                     return h('div', { key: c.id, style: { padding: '8px 10px', borderRadius: 8, background: c.color + '15', border: '1px solid ' + c.color + '55' } },
@@ -5846,7 +5847,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               h('button', {
                 onClick: startDd2,
                 className: 'transition-colors w-full px-5 py-3 rounded-xl bg-rose-600 text-white font-bold hover:bg-rose-700 focus:outline-none focus:ring-2 ring-rose-400'
-              }, '🔬 Start — defect 1 of 10')
+              }, __alloT('stem.weldlab.start_defect_1_of_10', '🔬 Start — defect 1 of 10'))
             )
           );
         }
@@ -5859,20 +5860,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var pickedCause = ddPick2 ? CAUSES.filter(function(c) { return c.id === ddPick2; })[0] : null;
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '🔬', title: 'Defect Diagnose' }),
+          h(BackBar, { icon: '🔬', title: __alloT('stem.weldlab.defect_diagnose_3', 'Defect Diagnose') }),
           h('div', { className: 'p-6 max-w-3xl mx-auto space-y-4' },
             h('div', { className: 'flex flex-wrap gap-3 items-center text-xs text-slate-700' },
-              h('span', null, 'Defect ', h('strong', { className: 'text-slate-900' }, ddShown2.length)),
-              h('span', null, 'Score ', h('strong', { className: 'text-emerald-700' }, ddScore2 + ' / ' + ddRounds2)),
-              ddRounds2 > 0 && h('span', null, 'Accuracy ', h('strong', { className: 'text-cyan-700' }, pct + '%')),
-              h('span', null, 'Streak ', h('strong', { className: 'text-amber-700' }, ddStreak2)),
-              h('span', null, 'Best ', h('strong', { className: 'text-fuchsia-700' }, ddBest2))
+              h('span', null, __alloT('stem.weldlab.defect', 'Defect '), h('strong', { className: 'text-slate-900' }, ddShown2.length)),
+              h('span', null, __alloT('stem.weldlab.score_4', 'Score '), h('strong', { className: 'text-emerald-700' }, ddScore2 + ' / ' + ddRounds2)),
+              ddRounds2 > 0 && h('span', null, __alloT('stem.weldlab.accuracy_2', 'Accuracy '), h('strong', { className: 'text-cyan-700' }, pct + '%')),
+              h('span', null, __alloT('stem.weldlab.streak_2', 'Streak '), h('strong', { className: 'text-amber-700' }, ddStreak2)),
+              h('span', null, __alloT('stem.weldlab.best_2', 'Best '), h('strong', { className: 'text-fuchsia-700' }, ddBest2))
             ),
             h('section', { className: 'p-5 rounded-2xl bg-rose-50 border-2 border-rose-300' },
               h('div', { className: 'text-xs font-bold uppercase tracking-widest text-rose-700 mb-2' }, 'Defect ' + ddShown2.length + ' of ' + V.length),
               h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, v.defect)
             ),
-            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2', role: 'radiogroup', 'aria-label': 'Pick the root cause' },
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2', role: 'radiogroup', 'aria-label': __alloT('stem.weldlab.pick_the_root_cause', 'Pick the root cause') },
               CAUSES.map(function(c) {
                 var picked = ddAns2 && ddPick2 === c.id;
                 var isRight = ddAns2 && c.id === v.correct;
@@ -5915,7 +5916,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               h('p', { className: 'text-xs text-slate-800 leading-relaxed mb-3' }, v.why),
               allDone
                 ? h('div', { className: 'p-3 rounded-lg bg-rose-100 border border-rose-300' },
-                    h('div', { className: 'text-sm font-black text-rose-900 mb-1' }, '🏆 All 10 defects diagnosed'),
+                    h('div', { className: 'text-sm font-black text-rose-900 mb-1' }, __alloT('stem.weldlab.all_10_defects_diagnosed', '🏆 All 10 defects diagnosed')),
                     h('div', { className: 'text-xs text-slate-800 leading-relaxed' },
                       'Final: ', h('strong', null, ddScore2 + ' / ' + V.length + ' (' + Math.round((ddScore2 / V.length) * 100) + '%)'),
                       ddScore2 === V.length ? ' — every root cause correctly identified. Ready for AWS CWI exam prep.' :
@@ -5926,12 +5927,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     h('button', {
                       onClick: function() { upd('dd2Idx', -1); upd('dd2Shown', []); upd('dd2Score', 0); upd('dd2Rounds', 0); upd('dd2Streak', 0); },
                       className: 'transition-colors mt-3 px-4 py-1.5 rounded-lg bg-rose-600 text-white font-bold text-xs hover:bg-rose-700'
-                    }, '🔄 Restart')
+                    }, __alloT('stem.weldlab.restart_2', '🔄 Restart'))
                   )
                 : h('button', {
                     onClick: startDd2,
                     className: 'transition-colors px-4 py-2 rounded-lg bg-rose-600 text-white font-bold text-sm hover:bg-rose-700 focus:outline-none focus:ring-2 ring-rose-400'
-                  }, '➡️ Next defect')
+                  }, __alloT('stem.weldlab.next_defect', '➡️ Next defect'))
             )
           )
         );
@@ -6064,17 +6065,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           0, 100)) : 0;
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '⏱️', title: 'Speed Challenge' }),
+          h(BackBar, { icon: '⏱️', title: __alloT('stem.weldlab.speed_challenge_2', 'Speed Challenge') }),
           h('div', { className: 'p-6 max-w-5xl mx-auto space-y-5' },
             h('div', { className: 'bg-gradient-to-r from-fuchsia-50 to-rose-50 border-2 border-rose-300 rounded-2xl p-5' },
-              h('h2', { className: 'text-lg font-black text-rose-900 mb-2' }, 'Time-pressure precision welding'),
+              h('h2', { className: 'text-lg font-black text-rose-900 mb-2' }, __alloT('stem.weldlab.time_pressure_precision_welding', 'Time-pressure precision welding')),
               h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                'The torch travels at tier-specified speed. You adjust voltage and amperage live to keep the bead in spec. Each 250 ms sample is graded; final score = % time in-spec, minus penalty for average deviation. Personal best persists per tier.')
+                __alloT('stem.weldlab.the_torch_travels_at_tier_specified_sp', 'The torch travels at tier-specified speed. You adjust voltage and amperage live to keep the bead in spec. Each 250 ms sample is graded; final score = % time in-spec, minus penalty for average deviation. Personal best persists per tier.'))
             ),
             // Tier picker
             h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-4' },
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, 'Difficulty Tier'),
-              h('div', { 'role': 'radiogroup', 'aria-label': 'Difficulty tier', className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, __alloT('stem.weldlab.difficulty_tier', 'Difficulty Tier')),
+              h('div', { 'role': 'radiogroup', 'aria-label': __alloT('stem.weldlab.difficulty_tier_2', 'Difficulty tier'), className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
                 Object.keys(SPEED_TIERS).map(function(tk) {
                   var t = SPEED_TIERS[tk];
                   var sel = (tier === tk);
@@ -6117,7 +6118,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             // Timer bar
             h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-4' },
               h('div', { className: 'flex items-center justify-between mb-2' },
-                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, 'Run Timer'),
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, __alloT('stem.weldlab.run_timer', 'Run Timer')),
                 h('div', {
                   className: 'text-2xl font-black font-mono ' + (running ? T.accent : 'text-slate-800'),
                   'aria-live': 'polite'
@@ -6173,7 +6174,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               }, '🔥 Start ' + T.name + ' run (' + T.duration + 's)') : h('button', {
                 onClick: stopRun,
                 className: 'flex-1 px-5 py-3 rounded-xl bg-slate-700 text-white font-black text-lg shadow-lg hover:bg-slate-800 transition focus:outline-none focus:ring-4 ring-slate-500/40'
-              }, '⏹ Stop run')
+              }, __alloT('stem.weldlab.stop_run', '⏹ Stop run'))
             ),
             // Result
             done && h('div', {
@@ -6189,9 +6190,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 )
               ),
               h('div', { className: 'grid grid-cols-3 gap-3' },
-                h(StatCard, { label: 'Samples', value: totalSamples, color: 'text-slate-700' }),
+                h(StatCard, { label: __alloT('stem.weldlab.samples', 'Samples'), value: totalSamples, color: 'text-slate-700' }),
                 h(StatCard, { label: 'In-Spec', value: inSpecCount, unit: 'of ' + totalSamples, color: 'text-emerald-700' }),
-                h(StatCard, { label: 'Tier', value: T.name, color: T.accent })
+                h(StatCard, { label: __alloT('stem.weldlab.tier', 'Tier'), value: T.name, color: T.accent })
               ),
               h('p', { className: 'text-sm text-slate-700 italic' },
                 finalScore >= 85 ? 'Outstanding control. You held the parameters right where they belong almost the entire run.' :
@@ -6226,9 +6227,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           h('div', { className: 'p-6 max-w-3xl mx-auto' },
             h('div', { className: 'bg-white rounded-2xl shadow border-2 border-slate-300 p-8 text-center' },
               h('div', { className: 'text-6xl mb-4' }, '🛠️'),
-              h('h2', { className: 'text-2xl font-black text-slate-800 mb-2' }, 'Coming Soon'),
+              h('h2', { className: 'text-2xl font-black text-slate-800 mb-2' }, __alloT('stem.weldlab.coming_soon', 'Coming Soon')),
               h('p', { className: 'text-slate-700 leading-relaxed' }, props.desc),
-              h('p', { className: 'text-xs text-slate-700 mt-4 italic' }, 'Ships in a future WeldLab phase.')
+              h('p', { className: 'text-xs text-slate-700 mt-4 italic' }, __alloT('stem.weldlab.ships_in_a_future_weldlab_phase', 'Ships in a future WeldLab phase.'))
             )
           )
         );
@@ -6256,7 +6257,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var pct = allDefectKeys.length > 0 ? Math.round((foundKeys.length / allDefectKeys.length) * 100) : 0;
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '📔', title: "Welder's Defect Catalog" }),
+          h(BackBar, { icon: '📔', title: __alloT('stem.weldlab.welder_s_defect_catalog_3', "Welder's Defect Catalog") }),
           h('div', { className: 'p-4 max-w-4xl mx-auto space-y-4' },
             // Hero
             h('div', {
@@ -6268,15 +6269,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   h('div', { className: 'text-5xl font-black text-orange-800', 'aria-label': foundKeys.length + ' of ' + allDefectKeys.length + ' defect types identified' },
                     foundKeys.length + ' / ' + allDefectKeys.length
                   ),
-                  h('div', { className: 'text-[10px] uppercase tracking-widest text-slate-700 font-bold mt-1' }, 'defect types ID\'d')
+                  h('div', { className: 'text-[10px] uppercase tracking-widest text-slate-700 font-bold mt-1' }, __alloT('stem.weldlab.defect_types_id_d', 'defect types ID\'d'))
                 ),
                 h('div', { className: 'flex-1 min-w-0 space-y-1' },
                   h('div', { className: 'flex items-center gap-2' },
                     h('span', { 'aria-hidden': 'true', className: 'text-2xl' }, '🔥'),
-                    h('h2', { className: 'text-xl font-black text-slate-800' }, 'Your Defect Catalog')
+                    h('h2', { className: 'text-xl font-black text-slate-800' }, __alloT('stem.weldlab.your_defect_catalog', 'Your Defect Catalog'))
                   ),
                   h('p', { className: 'text-sm text-slate-700 leading-snug' },
-                    "Every welding discontinuity you correctly identify in Defect Hunt Lab lands here. CWI inspectors keep mental catalogs like this their whole careers — yours starts now."
+                    __alloT('stem.weldlab.every_welding_discontinuity_you_correc', "Every welding discontinuity you correctly identify in Defect Hunt Lab lands here. CWI inspectors keep mental catalogs like this their whole careers — yours starts now.")
                   ),
                   h('div', { className: 'h-2 mt-2 bg-white/60 rounded-full overflow-hidden', 'aria-hidden': 'true' },
                     h('div', { className: 'h-full bg-orange-600', style: { width: pct + '%' } })
@@ -6286,7 +6287,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   h('button', {
                     onClick: function () { goto('defectHunt'); },
                     className: 'transition-colors px-4 py-2 rounded-xl bg-orange-700 hover:bg-orange-800 text-white font-black text-sm shadow focus:outline-none focus:ring-4 ring-orange-500/40'
-                  }, 'Start inspecting →')
+                  }, __alloT('stem.weldlab.start_inspecting', 'Start inspecting →'))
                 )
               )
             ),
@@ -6358,7 +6359,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     h('div', { className: 'flex-1 min-w-0' },
                       h('div', { className: 'flex items-baseline gap-2 flex-wrap' },
                         h('h3', { className: 'text-sm font-black text-slate-600' }, info.name),
-                        h('span', { className: 'text-[10px] font-mono uppercase tracking-wider text-slate-500' }, 'Not yet identified')
+                        h('span', { className: 'text-[10px] font-mono uppercase tracking-wider text-slate-500' }, __alloT('stem.weldlab.not_yet_identified', 'Not yet identified'))
                       ),
                       h('div', { className: 'text-[11px] italic text-slate-600 leading-snug' }, 'Hint: ' + info.cause.split('.')[0] + '.')
                     )
@@ -6370,11 +6371,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               h('button', {
                 onClick: function () { goto('defectHunt'); },
                 className: 'transition-colors px-4 py-2 rounded-xl bg-orange-700 hover:bg-orange-800 text-white font-bold text-sm shadow focus:outline-none focus:ring-4 ring-orange-500/40'
-              }, '🔍 Open Defect Hunt'),
+              }, __alloT('stem.weldlab.open_defect_hunt', '🔍 Open Defect Hunt')),
               h('button', {
                 onClick: function () { goto('processCompare'); },
                 className: 'transition-colors px-4 py-2 rounded-xl bg-slate-700 hover:bg-slate-800 text-white font-bold text-sm shadow focus:outline-none focus:ring-4 ring-slate-500/40'
-              }, '⚖️ Process comparison')
+              }, __alloT('stem.weldlab.process_comparison_3', '⚖️ Process comparison'))
             )
           )
         );
@@ -6393,7 +6394,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           h('div', { className: 'bg-gradient-to-r from-amber-400 via-orange-600 to-rose-600 text-white px-6 py-4 rounded-2xl shadow-2xl border-4 border-white flex items-center gap-3' },
             h('span', { className: 'text-3xl', 'aria-hidden': 'true' }, defectCeleb.icon),
             h('div', null,
-              h('div', { className: 'text-[10px] font-black uppercase tracking-widest opacity-95' }, 'New defect identified'),
+              h('div', { className: 'text-[10px] font-black uppercase tracking-widest opacity-95' }, __alloT('stem.weldlab.new_defect_identified', 'New defect identified')),
               h('div', { className: 'text-lg font-black leading-tight' }, defectCeleb.name),
               h('div', { className: 'text-xs opacity-95 italic' }, 'Catalog: ' + defectCeleb.total + ' / ' + totalTypes + ' defect types')
             )
@@ -6416,52 +6417,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var sectionState = usePersistedState('met_sect', 'overview');
         var section = sectionState[0], setSection = sectionState[1];
         var sections = [
-          { id: 'overview',     label: '📋 Overview',                 desc: 'What metallurgy means for welding' },
-          { id: 'phase',        label: '🌡 Phase diagrams',           desc: 'Iron-carbon + austenite + martensite' },
-          { id: 'haz',          label: '🔥 HAZ microstructure',       desc: 'What heat does to the base metal' },
-          { id: 'ce',           label: '🧮 Carbon Equivalent',        desc: 'CE formula for crack-susceptibility' },
-          { id: 'stainless',    label: '🥄 Stainless sensitization',  desc: 'Chromium-carbide precipitation' },
-          { id: 'aluminum',     label: '🌫 Aluminum oxidation',       desc: 'Why aluminum is harder than steel' },
-          { id: 'cracking',     label: '💥 Hot + cold cracking',      desc: 'Two distinct failure modes' },
-          { id: 'pwht',         label: '🌡 PWHT',                     desc: 'Post-weld heat treatment + when needed' }
+          { id: 'overview',     label: __alloT('stem.weldlab.overview', '📋 Overview'),                 desc: __alloT('stem.weldlab.what_metallurgy_means_for_welding', 'What metallurgy means for welding') },
+          { id: 'phase',        label: __alloT('stem.weldlab.phase_diagrams', '🌡 Phase diagrams'),           desc: __alloT('stem.weldlab.iron_carbon_austenite_martensite', 'Iron-carbon + austenite + martensite') },
+          { id: 'haz',          label: __alloT('stem.weldlab.haz_microstructure', '🔥 HAZ microstructure'),       desc: __alloT('stem.weldlab.what_heat_does_to_the_base_metal', 'What heat does to the base metal') },
+          { id: 'ce',           label: __alloT('stem.weldlab.carbon_equivalent', '🧮 Carbon Equivalent'),        desc: __alloT('stem.weldlab.ce_formula_for_crack_susceptibility', 'CE formula for crack-susceptibility') },
+          { id: 'stainless',    label: __alloT('stem.weldlab.stainless_sensitization', '🥄 Stainless sensitization'),  desc: __alloT('stem.weldlab.chromium_carbide_precipitation', 'Chromium-carbide precipitation') },
+          { id: 'aluminum',     label: __alloT('stem.weldlab.aluminum_oxidation', '🌫 Aluminum oxidation'),       desc: __alloT('stem.weldlab.why_aluminum_is_harder_than_steel', 'Why aluminum is harder than steel') },
+          { id: 'cracking',     label: __alloT('stem.weldlab.hot_cold_cracking', '💥 Hot + cold cracking'),      desc: __alloT('stem.weldlab.two_distinct_failure_modes', 'Two distinct failure modes') },
+          { id: 'pwht',         label: __alloT('stem.weldlab.pwht', '🌡 PWHT'),                     desc: __alloT('stem.weldlab.post_weld_heat_treatment_when_needed', 'Post-weld heat treatment + when needed') }
         ];
 
         var content;
         if (section === 'overview') {
           content = h('div', { className: 'space-y-3' },
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'Welding metallurgy is the science of what happens to metal when you heat it past its melting point, mix in filler, and let it cool. Most welding failures happen here — not in arc striking, not in technique — but in metallurgical changes the welder didn\'t understand. A skilled welder + bad metallurgy choices = cracked weld. A novice + correct procedure = sound weld.'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'This module covers the science. The Weld Bead Lab covers the technique. Codes + Standards covers the legal framework. All three are layers in becoming a qualified welder.'),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.welding_metallurgy_is_the_science_of_w', 'Welding metallurgy is the science of what happens to metal when you heat it past its melting point, mix in filler, and let it cool. Most welding failures happen here — not in arc striking, not in technique — but in metallurgical changes the welder didn\'t understand. A skilled welder + bad metallurgy choices = cracked weld. A novice + correct procedure = sound weld.')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.this_module_covers_the_science_the_wel', 'This module covers the science. The Weld Bead Lab covers the technique. Codes + Standards covers the legal framework. All three are layers in becoming a qualified welder.')),
             h('div', { className: 'bg-emerald-50 border-2 border-emerald-300 rounded-xl p-4' },
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-900 mb-2' }, 'Three regions every weld has'),
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-900 mb-2' }, __alloT('stem.weldlab.three_regions_every_weld_has', 'Three regions every weld has')),
               h('ul', { className: 'space-y-1 text-sm text-slate-800' },
-                h('li', null, h('strong', { className: 'text-emerald-900' }, '1. Fusion zone (FZ): '), 'The metal that actually melted + mixed with filler + resolidified. Properties are partly base metal, partly filler metal (dilution).'),
-                h('li', null, h('strong', { className: 'text-emerald-900' }, '2. Heat-Affected Zone (HAZ): '), 'Base metal that didn\'t melt but got hot enough to change microstructure. The most failure-prone region of any weld.'),
-                h('li', null, h('strong', { className: 'text-emerald-900' }, '3. Unaffected base metal (BM): '), 'Cooler region, original properties retained. Should be the strongest region of a well-designed welded part.')
+                h('li', null, h('strong', { className: 'text-emerald-900' }, __alloT('stem.weldlab.1_fusion_zone_fz', '1. Fusion zone (FZ): ')), __alloT('stem.weldlab.the_metal_that_actually_melted_mixed_w', 'The metal that actually melted + mixed with filler + resolidified. Properties are partly base metal, partly filler metal (dilution).')),
+                h('li', null, h('strong', { className: 'text-emerald-900' }, __alloT('stem.weldlab.2_heat_affected_zone_haz', '2. Heat-Affected Zone (HAZ): ')), __alloT('stem.weldlab.base_metal_that_didn_t_melt_but_got_ho', 'Base metal that didn\'t melt but got hot enough to change microstructure. The most failure-prone region of any weld.')),
+                h('li', null, h('strong', { className: 'text-emerald-900' }, __alloT('stem.weldlab.3_unaffected_base_metal_bm', '3. Unaffected base metal (BM): ')), __alloT('stem.weldlab.cooler_region_original_properties_reta', 'Cooler region, original properties retained. Should be the strongest region of a well-designed welded part.'))
               )
             )
           );
         } else if (section === 'phase') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '🌡 The iron-carbon phase diagram (simplified)'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'Steel = iron + carbon (usually 0.05-2% carbon). The phase that\'s stable at any given temperature depends on carbon content + cooling rate. Welding takes the metal through ALL of these phases as it heats up + cools down — that\'s why microstructure changes.'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.the_iron_carbon_phase_diagram_simplifi', '🌡 The iron-carbon phase diagram (simplified)')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.steel_iron_carbon_usually_0_05_2_carbo', 'Steel = iron + carbon (usually 0.05-2% carbon). The phase that\'s stable at any given temperature depends on carbon content + cooling rate. Welding takes the metal through ALL of these phases as it heats up + cools down — that\'s why microstructure changes.')),
             h('div', { className: 'bg-slate-50 border-2 border-slate-300 rounded-xl p-3 space-y-2' },
-              h('div', null, h('strong', { className: 'text-amber-700' }, 'Austenite (γ-Fe): '), 'Above ~1340°F. Face-centered cubic crystal. Dissolves carbon readily. Non-magnetic. Most ductile phase.'),
-              h('div', null, h('strong', { className: 'text-amber-700' }, 'Ferrite (α-Fe): '), 'Below ~1340°F. Body-centered cubic. Low carbon solubility. Magnetic. Soft + ductile.'),
-              h('div', null, h('strong', { className: 'text-amber-700' }, 'Pearlite: '), 'Mixture of ferrite + cementite (Fe3C) in alternating lamellar layers. Forms by slow cooling from austenite.'),
-              h('div', null, h('strong', { className: 'text-amber-700' }, 'Martensite: '), 'Super-saturated body-centered tetragonal phase. Forms when austenite cools too fast for carbon to diffuse out. ', h('strong', null, 'Extremely hard + brittle. The villain of welding.'), ' Most weld cracking is martensite-related.'),
-              h('div', null, h('strong', { className: 'text-amber-700' }, 'Bainite: '), 'Intermediate cooling rate. Acicular structure. Stronger than pearlite, tougher than martensite.')
+              h('div', null, h('strong', { className: 'text-amber-700' }, __alloT('stem.weldlab.austenite_fe', 'Austenite (γ-Fe): ')), __alloT('stem.weldlab.above_1340_f_face_centered_cubic_cryst', 'Above ~1340°F. Face-centered cubic crystal. Dissolves carbon readily. Non-magnetic. Most ductile phase.')),
+              h('div', null, h('strong', { className: 'text-amber-700' }, __alloT('stem.weldlab.ferrite_fe', 'Ferrite (α-Fe): ')), __alloT('stem.weldlab.below_1340_f_body_centered_cubic_low_c', 'Below ~1340°F. Body-centered cubic. Low carbon solubility. Magnetic. Soft + ductile.')),
+              h('div', null, h('strong', { className: 'text-amber-700' }, 'Pearlite: '), __alloT('stem.weldlab.mixture_of_ferrite_cementite_fe3c_in_a', 'Mixture of ferrite + cementite (Fe3C) in alternating lamellar layers. Forms by slow cooling from austenite.')),
+              h('div', null, h('strong', { className: 'text-amber-700' }, 'Martensite: '), __alloT('stem.weldlab.super_saturated_body_centered_tetragon', 'Super-saturated body-centered tetragonal phase. Forms when austenite cools too fast for carbon to diffuse out. '), h('strong', null, __alloT('stem.weldlab.extremely_hard_brittle_the_villain_of_', 'Extremely hard + brittle. The villain of welding.')), __alloT('stem.weldlab.most_weld_cracking_is_martensite_relat', ' Most weld cracking is martensite-related.')),
+              h('div', null, h('strong', { className: 'text-amber-700' }, 'Bainite: '), __alloT('stem.weldlab.intermediate_cooling_rate_acicular_str', 'Intermediate cooling rate. Acicular structure. Stronger than pearlite, tougher than martensite.'))
             ),
             h('div', { className: 'bg-rose-50 border-2 border-rose-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-rose-900 mb-1' }, '⚠ Why this matters for welding'),
-              h('p', { className: 'text-sm text-slate-800' }, 'When you weld carbon steel, the HAZ heats above 1340°F (full austenite). When you stop welding, that region cools. If it cools FAST (thin section, cold base metal, no preheat) — martensite forms in the HAZ → brittle → crack. Higher carbon content = more martensite = more crack risk. ',
-                h('strong', { className: 'text-rose-900' }, 'This is why preheat matters'),
-                ': slowing the cooling rate prevents martensite formation.')
+              h('div', { className: 'text-xs font-bold uppercase text-rose-900 mb-1' }, __alloT('stem.weldlab.why_this_matters_for_welding', '⚠ Why this matters for welding')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.when_you_weld_carbon_steel_the_haz_hea', 'When you weld carbon steel, the HAZ heats above 1340°F (full austenite). When you stop welding, that region cools. If it cools FAST (thin section, cold base metal, no preheat) — martensite forms in the HAZ → brittle → crack. Higher carbon content = more martensite = more crack risk. '),
+                h('strong', { className: 'text-rose-900' }, __alloT('stem.weldlab.this_is_why_preheat_matters', 'This is why preheat matters')),
+                __alloT('stem.weldlab.slowing_the_cooling_rate_prevents_mart', ': slowing the cooling rate prevents martensite formation.'))
             )
           );
         } else if (section === 'haz') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '🔥 HAZ microstructure — what the heat actually does'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'The HAZ is a graded region. Closest to the fusion zone = hottest. Furthest = barely warmed. Each sub-zone has different microstructure:'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.haz_microstructure_what_the_heat_actua', '🔥 HAZ microstructure — what the heat actually does')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.the_haz_is_a_graded_region_closest_to_', 'The HAZ is a graded region. Closest to the fusion zone = hottest. Furthest = barely warmed. Each sub-zone has different microstructure:')),
             h('div', { className: 'space-y-2' },
               ['Coarse-grain HAZ — Closest to fusion. Heated to ~2200-2400°F. Austenite grains grow large. On cooling, large grains = brittle. Most fracture-prone region.',
                'Fine-grain HAZ — Just outside coarse zone. Heated ~1500-1900°F. Austenite forms but grains don\'t coarsen. Cools to fine pearlite/ferrite. Often the toughest region of the weld.',
@@ -6474,25 +6475,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               })
             ),
             h('div', { className: 'bg-emerald-50 border-2 border-emerald-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-emerald-900 mb-1' }, '💡 Practical takeaway'),
-              h('p', { className: 'text-sm text-slate-800' }, 'The HAZ extends ~3-5x the weld bead width into the base metal. Pre-existing flaws (notches, sharp corners, weld toes) within the HAZ are stress concentrators that initiate cracks. Welding inspectors look for HAZ cracking via magnetic particle (MT) or dye penetrant (PT) testing.')
+              h('div', { className: 'text-xs font-bold uppercase text-emerald-900 mb-1' }, __alloT('stem.weldlab.practical_takeaway', '💡 Practical takeaway')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.the_haz_extends_3_5x_the_weld_bead_wid', 'The HAZ extends ~3-5x the weld bead width into the base metal. Pre-existing flaws (notches, sharp corners, weld toes) within the HAZ are stress concentrators that initiate cracks. Welding inspectors look for HAZ cracking via magnetic particle (MT) or dye penetrant (PT) testing.'))
             )
           );
         } else if (section === 'ce') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '🧮 Carbon Equivalent (CE) — predicts crack risk'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'CE is a weighted sum of alloying elements that estimates how susceptible a steel is to hydrogen-induced cracking + martensite formation. Different formulas for different steel families. The most common in welding is the IIW (International Institute of Welding) formula:'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.carbon_equivalent_ce_predicts_crack_ri', '🧮 Carbon Equivalent (CE) — predicts crack risk')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.ce_is_a_weighted_sum_of_alloying_eleme', 'CE is a weighted sum of alloying elements that estimates how susceptible a steel is to hydrogen-induced cracking + martensite formation. Different formulas for different steel families. The most common in welding is the IIW (International Institute of Welding) formula:')),
             h('div', { className: 'bg-slate-100 border-2 border-slate-400 rounded-xl p-4 text-center' },
               h('div', { className: 'font-mono text-base text-slate-900 leading-relaxed' },
-                'CE = C + Mn/6 + (Cr + Mo + V)/5 + (Ni + Cu)/15'
+                __alloT('stem.weldlab.ce_c_mn_6_cr_mo_v_5_ni_cu_15', 'CE = C + Mn/6 + (Cr + Mo + V)/5 + (Ni + Cu)/15')
               ),
-              h('div', { className: 'text-xs text-slate-700 mt-2 italic' }, 'where each element is in weight percent')
+              h('div', { className: 'text-xs text-slate-700 mt-2 italic' }, __alloT('stem.weldlab.where_each_element_is_in_weight_percen', 'where each element is in weight percent'))
             ),
             h('div', { className: 'space-y-2' },
-              [{ ce: '< 0.40', risk: 'LOW', color: 'bg-emerald-100 border-emerald-400', text: 'Weldable without preheat in most conditions. Common mild steel (A36, A572).' },
-               { ce: '0.40 - 0.55', risk: 'MODERATE', color: 'bg-amber-100 border-amber-400', text: 'Preheat may be needed depending on thickness + restraint. Use low-hydrogen electrodes (E7018).' },
-               { ce: '0.55 - 0.70', risk: 'HIGH', color: 'bg-orange-100 border-orange-400', text: 'Preheat required + interpass temperature control. Low-hydrogen practice mandatory. PWHT often required.' },
-               { ce: '> 0.70', risk: 'VERY HIGH', color: 'bg-rose-100 border-rose-400', text: 'Aggressive preheat (~400-600°F). Strict hydrogen control. PWHT mandatory. Often requires special procedures or alternative materials.' }].map(function(row, i) {
+              [{ ce: '< 0.40', risk: 'LOW', color: 'bg-emerald-100 border-emerald-400', text: __alloT('stem.weldlab.weldable_without_preheat_in_most_condi', 'Weldable without preheat in most conditions. Common mild steel (A36, A572).') },
+               { ce: '0.40 - 0.55', risk: 'MODERATE', color: 'bg-amber-100 border-amber-400', text: __alloT('stem.weldlab.preheat_may_be_needed_depending_on_thi', 'Preheat may be needed depending on thickness + restraint. Use low-hydrogen electrodes (E7018).') },
+               { ce: '0.55 - 0.70', risk: 'HIGH', color: 'bg-orange-100 border-orange-400', text: __alloT('stem.weldlab.preheat_required_interpass_temperature', 'Preheat required + interpass temperature control. Low-hydrogen practice mandatory. PWHT often required.') },
+               { ce: '> 0.70', risk: 'VERY HIGH', color: 'bg-rose-100 border-rose-400', text: __alloT('stem.weldlab.aggressive_preheat_400_600_f_strict_hy', 'Aggressive preheat (~400-600°F). Strict hydrogen control. PWHT mandatory. Often requires special procedures or alternative materials.') }].map(function(row, i) {
                 return h('div', { key: i, className: 'border-2 rounded-xl p-3 ' + row.color },
                   h('div', { className: 'flex justify-between items-baseline mb-1' },
                     h('span', { className: 'font-bold text-slate-900' }, 'CE ' + row.ce),
@@ -6503,32 +6504,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               })
             ),
             h('div', { className: 'bg-blue-50 border-2 border-blue-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-blue-900 mb-1' }, '💡 Real-world example'),
-              h('p', { className: 'text-sm text-slate-800' }, 'AISI 4140 (a common alloy steel for shafts + gears): C=0.40, Mn=0.85, Cr=0.95, Mo=0.20. CE = 0.40 + 0.142 + 0.230 = 0.77. VERY HIGH — Bath Iron Works welders working on 4140 components use 300°F preheat + low-hydrogen electrodes + post-weld stress relief. Skipping any of these = cracked weld.')
+              h('div', { className: 'text-xs font-bold uppercase text-blue-900 mb-1' }, __alloT('stem.weldlab.real_world_example_2', '💡 Real-world example')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.aisi_4140_a_common_alloy_steel_for_sha', 'AISI 4140 (a common alloy steel for shafts + gears): C=0.40, Mn=0.85, Cr=0.95, Mo=0.20. CE = 0.40 + 0.142 + 0.230 = 0.77. VERY HIGH — Bath Iron Works welders working on 4140 components use 300°F preheat + low-hydrogen electrodes + post-weld stress relief. Skipping any of these = cracked weld.'))
             )
           );
         } else if (section === 'stainless') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '🥄 Stainless steel sensitization'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'Stainless steel resists corrosion because chromium forms a self-healing oxide layer (Cr2O3) on the surface. But heat between ~800-1500°F causes chromium to combine with carbon to form chromium carbides (Cr23C6) that precipitate at grain boundaries. This locally depletes chromium → the depleted regions are no longer corrosion-resistant → "intergranular corrosion" attacks the part months/years later.'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.stainless_steel_sensitization', '🥄 Stainless steel sensitization')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.stainless_steel_resists_corrosion_beca', 'Stainless steel resists corrosion because chromium forms a self-healing oxide layer (Cr2O3) on the surface. But heat between ~800-1500°F causes chromium to combine with carbon to form chromium carbides (Cr23C6) that precipitate at grain boundaries. This locally depletes chromium → the depleted regions are no longer corrosion-resistant → "intergranular corrosion" attacks the part months/years later.')),
             h('div', { className: 'bg-rose-50 border-2 border-rose-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-rose-900 mb-1' }, '⚠ The 800-1500°F problem'),
-              h('p', { className: 'text-sm text-slate-800 mb-2' }, 'Welding inherently puts the HAZ through this temperature range. The longer it stays there, the more sensitization.'),
-              h('p', { className: 'text-sm text-slate-800' }, 'Three solutions: (1) Low-heat-input welding (TIG, fast travel, no preheat). (2) "L-grade" stainless (304L, 316L) — low carbon (<0.03%) = less carbide formation. (3) "Stabilized" grades (321, 347) — contain Ti or Nb that form carbides preferentially, sparing Cr.')
+              h('div', { className: 'text-xs font-bold uppercase text-rose-900 mb-1' }, __alloT('stem.weldlab.the_800_1500_f_problem', '⚠ The 800-1500°F problem')),
+              h('p', { className: 'text-sm text-slate-800 mb-2' }, __alloT('stem.weldlab.welding_inherently_puts_the_haz_throug', 'Welding inherently puts the HAZ through this temperature range. The longer it stays there, the more sensitization.')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.three_solutions_1_low_heat_input_weldi', 'Three solutions: (1) Low-heat-input welding (TIG, fast travel, no preheat). (2) "L-grade" stainless (304L, 316L) — low carbon (<0.03%) = less carbide formation. (3) "Stabilized" grades (321, 347) — contain Ti or Nb that form carbides preferentially, sparing Cr.'))
             ),
             h('div', { className: 'bg-slate-50 border-2 border-slate-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-slate-900 mb-1' }, '🌡 Sugar / oxidation on the back side'),
-              h('p', { className: 'text-sm text-slate-800' }, 'Stainless TIG welding requires inert gas (argon) on BOTH sides of the joint. If the back side sees air at red heat, the surface oxidizes to a sugary black scale that\'s rust-prone. Sanitary welders use "purging" — flow argon through pipe interior during welding. Critical for food + pharma + nuclear pipe welding.')
+              h('div', { className: 'text-xs font-bold uppercase text-slate-900 mb-1' }, __alloT('stem.weldlab.sugar_oxidation_on_the_back_side', '🌡 Sugar / oxidation on the back side')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.stainless_tig_welding_requires_inert_g', 'Stainless TIG welding requires inert gas (argon) on BOTH sides of the joint. If the back side sees air at red heat, the surface oxidizes to a sugary black scale that\'s rust-prone. Sanitary welders use "purging" — flow argon through pipe interior during welding. Critical for food + pharma + nuclear pipe welding.'))
             )
           );
         } else if (section === 'aluminum') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '🌫 Aluminum oxide layer (why aluminum is hard)'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'Aluminum forms an oxide skin (Al2O3) within MILLISECONDS of exposure to air. The oxide melts at ~3700°F (vs aluminum metal at ~1220°F). If you don\'t remove the oxide first, you\'re trying to melt aluminum through a refractory ceramic shell. Result: incomplete fusion + porosity + ugly bead.'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.aluminum_oxide_layer_why_aluminum_is_h', '🌫 Aluminum oxide layer (why aluminum is hard)')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.aluminum_forms_an_oxide_skin_al2o3_wit', 'Aluminum forms an oxide skin (Al2O3) within MILLISECONDS of exposure to air. The oxide melts at ~3700°F (vs aluminum metal at ~1220°F). If you don\'t remove the oxide first, you\'re trying to melt aluminum through a refractory ceramic shell. Result: incomplete fusion + porosity + ugly bead.')),
             h('div', { className: 'space-y-2' },
-              [{ method: 'Mechanical removal', desc: 'Stainless wire brush IMMEDIATELY before welding. Brush moves only one direction. Use brush DEDICATED to aluminum (mild steel brush = contamination). Brushed surface stays clean for ~30-60 sec, then re-oxidizes.' },
-               { method: 'Chemical etching', desc: 'Aluminum-specific etching solution removes oxide. More thorough but adds prep time. Used for critical aerospace welds.' },
-               { method: 'AC TIG arc cleaning', desc: 'Alternating current TIG includes a "cleaning" half-cycle where electrons flow FROM the workpiece, blasting oxide off via cathodic etching. Visible as bright cleaning zone around the arc. Pure DC TIG can\'t do this — must use AC.' }].map(function(m, i) {
+              [{ method: 'Mechanical removal', desc: __alloT('stem.weldlab.stainless_wire_brush_immediately_befor', 'Stainless wire brush IMMEDIATELY before welding. Brush moves only one direction. Use brush DEDICATED to aluminum (mild steel brush = contamination). Brushed surface stays clean for ~30-60 sec, then re-oxidizes.') },
+               { method: 'Chemical etching', desc: __alloT('stem.weldlab.aluminum_specific_etching_solution_rem', 'Aluminum-specific etching solution removes oxide. More thorough but adds prep time. Used for critical aerospace welds.') },
+               { method: 'AC TIG arc cleaning', desc: __alloT('stem.weldlab.alternating_current_tig_includes_a_cle', 'Alternating current TIG includes a "cleaning" half-cycle where electrons flow FROM the workpiece, blasting oxide off via cathodic etching. Visible as bright cleaning zone around the arc. Pure DC TIG can\'t do this — must use AC.') }].map(function(m, i) {
                 return h('div', { key: i, className: 'bg-cyan-50 border-l-4 border-cyan-400 p-3 rounded' },
                   h('div', { className: 'font-bold text-cyan-900 mb-1' }, m.method),
                   h('p', { className: 'text-sm text-slate-800' }, m.desc)
@@ -6536,39 +6537,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               })
             ),
             h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-amber-900 mb-1' }, '🌡 Thermal conductivity penalty'),
-              h('p', { className: 'text-sm text-slate-800' }, 'Aluminum conducts heat ~2.4× faster than steel. The heat you put in spreads out instead of staying at the joint. You need MORE amperage + thicker filler to compensate, AND you need to weld faster before the heat propagates everywhere + distorts the part. Aluminum welding is fundamentally harder than steel — pay reflects this (specialized aluminum welders earn 15-30% premium).')
+              h('div', { className: 'text-xs font-bold uppercase text-amber-900 mb-1' }, __alloT('stem.weldlab.thermal_conductivity_penalty', '🌡 Thermal conductivity penalty')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.aluminum_conducts_heat_2_4_faster_than', 'Aluminum conducts heat ~2.4× faster than steel. The heat you put in spreads out instead of staying at the joint. You need MORE amperage + thicker filler to compensate, AND you need to weld faster before the heat propagates everywhere + distorts the part. Aluminum welding is fundamentally harder than steel — pay reflects this (specialized aluminum welders earn 15-30% premium).'))
             )
           );
         } else if (section === 'cracking') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '💥 Hot cracking vs cold cracking'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'Welds crack two distinct ways at two distinct times. Confusing them = wrong fix = re-cracked weld.'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.hot_cracking_vs_cold_cracking', '💥 Hot cracking vs cold cracking')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.welds_crack_two_distinct_ways_at_two_d', 'Welds crack two distinct ways at two distinct times. Confusing them = wrong fix = re-cracked weld.')),
             h('div', { className: 'bg-orange-50 border-2 border-orange-300 rounded-xl p-4 space-y-2' },
-              h('div', { className: 'text-base font-bold text-orange-900' }, '🔥 Hot Cracking (Solidification Cracking)'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'When: '), 'During solidification, while metal is still partially molten. Cracks appear immediately after welding.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Where: '), 'Centerline of bead (longitudinal centerline cracks) or crater (at end of run when arc breaks).'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Cause: '), 'Low-melting-point eutectics (sulfur, phosphorus, lead contaminants; or excess sulfur in base metal) remain liquid while surrounding metal solidifies + contracts. Tensile stress pulls the still-liquid film apart.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Fix: '), 'Use cleaner base metal (low-sulfur). Use convex bead profile (not concave — concave allows top-surface tension). Reduce restraint. Cap crater (back up arc into crater before breaking).')
+              h('div', { className: 'text-base font-bold text-orange-900' }, __alloT('stem.weldlab.hot_cracking_solidification_cracking', '🔥 Hot Cracking (Solidification Cracking)')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'When: '), __alloT('stem.weldlab.during_solidification_while_metal_is_s', 'During solidification, while metal is still partially molten. Cracks appear immediately after welding.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Where: '), __alloT('stem.weldlab.centerline_of_bead_longitudinal_center', 'Centerline of bead (longitudinal centerline cracks) or crater (at end of run when arc breaks).')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Cause: '), __alloT('stem.weldlab.low_melting_point_eutectics_sulfur_pho', 'Low-melting-point eutectics (sulfur, phosphorus, lead contaminants; or excess sulfur in base metal) remain liquid while surrounding metal solidifies + contracts. Tensile stress pulls the still-liquid film apart.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Fix: '), __alloT('stem.weldlab.use_cleaner_base_metal_low_sulfur_use_', 'Use cleaner base metal (low-sulfur). Use convex bead profile (not concave — concave allows top-surface tension). Reduce restraint. Cap crater (back up arc into crater before breaking).'))
             ),
             h('div', { className: 'bg-blue-50 border-2 border-blue-300 rounded-xl p-4 space-y-2' },
-              h('div', { className: 'text-base font-bold text-blue-900' }, '❄ Cold Cracking (Hydrogen-Induced Cracking, HIC)'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'When: '), 'Hours to DAYS after welding. Often called "delayed cracking" because it appears overnight or even later.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Where: '), 'HAZ, parallel to fusion line. Hard to see initially; often discovered by inspection.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Cause: '), 'Three things together: (1) hydrogen in the weld pool (from moisture in flux, contaminated wire, base metal), (2) martensitic microstructure in HAZ, (3) tensile residual stress. All three = crack. Remove any one = no crack.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Fix: '), 'Low-hydrogen electrodes (E7018, stored hot). Preheat to slow cooling rate (prevent martensite). Stress relief PWHT. For high-restraint welds use "buttering" technique (build up filler before final pass).')
+              h('div', { className: 'text-base font-bold text-blue-900' }, __alloT('stem.weldlab.cold_cracking_hydrogen_induced_crackin', '❄ Cold Cracking (Hydrogen-Induced Cracking, HIC)')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'When: '), __alloT('stem.weldlab.hours_to_days_after_welding_often_call', 'Hours to DAYS after welding. Often called "delayed cracking" because it appears overnight or even later.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Where: '), __alloT('stem.weldlab.haz_parallel_to_fusion_line_hard_to_se', 'HAZ, parallel to fusion line. Hard to see initially; often discovered by inspection.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Cause: '), __alloT('stem.weldlab.three_things_together_1_hydrogen_in_th', 'Three things together: (1) hydrogen in the weld pool (from moisture in flux, contaminated wire, base metal), (2) martensitic microstructure in HAZ, (3) tensile residual stress. All three = crack. Remove any one = no crack.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Fix: '), __alloT('stem.weldlab.low_hydrogen_electrodes_e7018_stored_h', 'Low-hydrogen electrodes (E7018, stored hot). Preheat to slow cooling rate (prevent martensite). Stress relief PWHT. For high-restraint welds use "buttering" technique (build up filler before final pass).'))
             )
           );
         } else if (section === 'pwht') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '🌡 Post-Weld Heat Treatment (PWHT)'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'PWHT = heating the welded part to a target temperature, holding for a specified time, then slow cooling. Different PWHT types serve different purposes:'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.post_weld_heat_treatment_pwht', '🌡 Post-Weld Heat Treatment (PWHT)')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.pwht_heating_the_welded_part_to_a_targ', 'PWHT = heating the welded part to a target temperature, holding for a specified time, then slow cooling. Different PWHT types serve different purposes:')),
             h('div', { className: 'space-y-2' },
-              [{ name: 'Stress relief', temp: '1100-1250°F', hold: '1 hr per inch of thickness', why: 'Reduces residual tensile stresses from welding. Required for pressure vessels (ASME), thick structural welds, fatigue-loaded parts.' },
-               { name: 'Hydrogen bake-out', temp: '400-600°F', hold: '2-4 hr', why: 'Drives hydrogen out of weld + HAZ before it can cause cold cracking. Done immediately after welding, before part cools.' },
-               { name: 'Normalize', temp: '1600-1700°F (above A3)', hold: '1 hr per inch, then air cool', why: 'Refines grain structure of HAZ. Restores impact toughness. Required for certain pressure vessel codes after thick-section welding.' },
-               { name: 'Anneal', temp: '1500-1700°F', hold: 'long, slow furnace cool', why: 'Maximum softening + grain refinement. Used for parts that will be machined or formed after welding.' },
-               { name: 'Solution treat (stainless)', temp: '1900-2100°F', hold: '30 min, then rapid quench', why: 'Dissolves chromium carbides + restores corrosion resistance after welding of non-stabilized austenitic stainless.' }].map(function(t, i) {
+              [{ name: __alloT('stem.weldlab.stress_relief', 'Stress relief'), temp: '1100-1250°F', hold: '1 hr per inch of thickness', why: 'Reduces residual tensile stresses from welding. Required for pressure vessels (ASME), thick structural welds, fatigue-loaded parts.' },
+               { name: __alloT('stem.weldlab.hydrogen_bake_out', 'Hydrogen bake-out'), temp: '400-600°F', hold: '2-4 hr', why: 'Drives hydrogen out of weld + HAZ before it can cause cold cracking. Done immediately after welding, before part cools.' },
+               { name: __alloT('stem.weldlab.normalize', 'Normalize'), temp: '1600-1700°F (above A3)', hold: '1 hr per inch, then air cool', why: 'Refines grain structure of HAZ. Restores impact toughness. Required for certain pressure vessel codes after thick-section welding.' },
+               { name: __alloT('stem.weldlab.anneal', 'Anneal'), temp: '1500-1700°F', hold: 'long, slow furnace cool', why: 'Maximum softening + grain refinement. Used for parts that will be machined or formed after welding.' },
+               { name: __alloT('stem.weldlab.solution_treat_stainless', 'Solution treat (stainless)'), temp: '1900-2100°F', hold: '30 min, then rapid quench', why: 'Dissolves chromium carbides + restores corrosion resistance after welding of non-stabilized austenitic stainless.' }].map(function(t, i) {
                 return h('div', { key: i, className: 'bg-purple-50 border-2 border-purple-300 rounded-xl p-3' },
                   h('div', { className: 'flex justify-between items-baseline mb-1' },
                     h('span', { className: 'font-bold text-purple-900' }, t.name),
@@ -6579,14 +6580,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               })
             ),
             h('div', { className: 'bg-slate-50 border-2 border-slate-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-slate-900 mb-1' }, '💡 PWHT economics'),
-              h('p', { className: 'text-sm text-slate-800' }, 'PWHT is EXPENSIVE — large parts need walk-in furnaces, slow heat-up + hold + slow cool cycles take days, energy cost is significant. Welding shops factor PWHT into bids ($1-5/lb extra for code work). Some material/joint combinations avoid PWHT specifically to skip this cost (e.g., choosing nickel-based filler that doesn\'t require stress relief).')
+              h('div', { className: 'text-xs font-bold uppercase text-slate-900 mb-1' }, __alloT('stem.weldlab.pwht_economics', '💡 PWHT economics')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.pwht_is_expensive_large_parts_need_wal', 'PWHT is EXPENSIVE — large parts need walk-in furnaces, slow heat-up + hold + slow cool cycles take days, energy cost is significant. Welding shops factor PWHT into bids ($1-5/lb extra for code work). Some material/joint combinations avoid PWHT specifically to skip this cost (e.g., choosing nickel-based filler that doesn\'t require stress relief).'))
             )
           );
         }
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '🧪', title: 'Welding Metallurgy' }),
+          h(BackBar, { icon: '🧪', title: __alloT('stem.weldlab.welding_metallurgy_2', 'Welding Metallurgy') }),
           h('div', { className: 'p-6 max-w-5xl mx-auto space-y-5' },
             h('div', { className: 'flex flex-wrap gap-2' },
               sections.map(function(s) {
@@ -6636,17 +6637,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             published_by: 'American Welding Society (AWS)',
             why: 'The most widely-used welding code in the US. Building inspectors, structural engineers, fabrication shops all reference it. If you\'re welding anything that holds up a building or carries a load, this is the standard.',
             sections: [
-              { num: '1', title: 'General Provisions', body: 'Scope, definitions, contract documents.' },
-              { num: '2', title: 'Design of Welded Connections', body: 'Joint geometry, allowable stresses, fatigue.' },
-              { num: '3', title: 'Pre-Qualified WPS', body: 'Pre-qualified procedures that don\'t require shop qualification.' },
-              { num: '4', title: 'Qualification', body: 'How to qualify a WPS + a welder. THIS is the section every welder lives by.' },
-              { num: '5', title: 'Fabrication', body: 'Workmanship: cleaning, fit-up, preheat, interpass, tacks, cleaning between passes.' },
-              { num: '6', title: 'Inspection', body: 'Who, when, how. VT, MT, PT, UT, RT acceptance criteria.' },
-              { num: '7', title: 'Stud Welding', body: 'Specialty section on shear stud + nelson stud welding.' },
-              { num: '8', title: 'Strengthening + Repair', body: 'How to weld on existing structures.' },
-              { num: '9', title: 'Tubular Structures', body: 'Hollow structural sections (HSS).' },
-              { num: '10', title: 'Statically Loaded Structures', body: 'Buildings, dead-load structures.' },
-              { num: '11', title: 'Cyclically Loaded Structures', body: 'Bridges, cranes, fatigue-driven.' }
+              { num: '1', title: __alloT('stem.weldlab.general_provisions', 'General Provisions'), body: __alloT('stem.weldlab.scope_definitions_contract_documents', 'Scope, definitions, contract documents.') },
+              { num: '2', title: __alloT('stem.weldlab.design_of_welded_connections', 'Design of Welded Connections'), body: __alloT('stem.weldlab.joint_geometry_allowable_stresses_fati', 'Joint geometry, allowable stresses, fatigue.') },
+              { num: '3', title: __alloT('stem.weldlab.pre_qualified_wps', 'Pre-Qualified WPS'), body: __alloT('stem.weldlab.pre_qualified_procedures_that_don_t_re', 'Pre-qualified procedures that don\'t require shop qualification.') },
+              { num: '4', title: __alloT('stem.weldlab.qualification', 'Qualification'), body: __alloT('stem.weldlab.how_to_qualify_a_wps_a_welder_this_is_', 'How to qualify a WPS + a welder. THIS is the section every welder lives by.') },
+              { num: '5', title: __alloT('stem.weldlab.fabrication', 'Fabrication'), body: __alloT('stem.weldlab.workmanship_cleaning_fit_up_preheat_in', 'Workmanship: cleaning, fit-up, preheat, interpass, tacks, cleaning between passes.') },
+              { num: '6', title: __alloT('stem.weldlab.inspection', 'Inspection'), body: __alloT('stem.weldlab.who_when_how_vt_mt_pt_ut_rt_acceptance', 'Who, when, how. VT, MT, PT, UT, RT acceptance criteria.') },
+              { num: '7', title: __alloT('stem.weldlab.stud_welding', 'Stud Welding'), body: __alloT('stem.weldlab.specialty_section_on_shear_stud_nelson', 'Specialty section on shear stud + nelson stud welding.') },
+              { num: '8', title: __alloT('stem.weldlab.strengthening_repair', 'Strengthening + Repair'), body: __alloT('stem.weldlab.how_to_weld_on_existing_structures', 'How to weld on existing structures.') },
+              { num: '9', title: __alloT('stem.weldlab.tubular_structures', 'Tubular Structures'), body: __alloT('stem.weldlab.hollow_structural_sections_hss', 'Hollow structural sections (HSS).') },
+              { num: '10', title: __alloT('stem.weldlab.statically_loaded_structures', 'Statically Loaded Structures'), body: __alloT('stem.weldlab.buildings_dead_load_structures', 'Buildings, dead-load structures.') },
+              { num: '11', title: __alloT('stem.weldlab.cyclically_loaded_structures', 'Cyclically Loaded Structures'), body: __alloT('stem.weldlab.bridges_cranes_fatigue_driven', 'Bridges, cranes, fatigue-driven.') }
             ],
             who_uses: 'Bath Iron Works, structural steel fabricators, bridge builders, building contractors, welding inspectors, anyone bidding government structural projects.'
           },
@@ -6656,11 +6657,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             published_by: 'American Society of Mechanical Engineers (ASME)',
             why: 'The standard for any vessel that holds gas or liquid under pressure. Refineries, chemical plants, power plants, food + pharma processing. Failure of pressure equipment is catastrophic (explosion, scalding, toxic release) — ASME welding qualifications are uncompromising.',
             sections: [
-              { num: 'QW-100', title: 'General Requirements', body: 'Scope + definitions.' },
-              { num: 'QW-200', title: 'Welding Procedure Qualifications', body: 'WPS + PQR requirements. ESSENTIAL variables that require requalification if changed (base metal type, filler metal, electrode classification, joint design, position, electrical characteristics, technique).' },
-              { num: 'QW-300', title: 'Welding Performance Qualifications', body: 'How welders qualify. Performance variables (process, base metal, position, thickness range, backing).' },
-              { num: 'QW-400', title: 'Variables', body: 'Lists ALL variables + whether each is essential, supplementary essential, or nonessential.' },
-              { num: 'QW-500', title: 'Specific Process Requirements', body: 'Process-specific (SMAW, GMAW, GTAW, etc.) rules.' }
+              { num: 'QW-100', title: __alloT('stem.weldlab.general_requirements', 'General Requirements'), body: __alloT('stem.weldlab.scope_definitions', 'Scope + definitions.') },
+              { num: 'QW-200', title: __alloT('stem.weldlab.welding_procedure_qualifications', 'Welding Procedure Qualifications'), body: __alloT('stem.weldlab.wps_pqr_requirements_essential_variabl', 'WPS + PQR requirements. ESSENTIAL variables that require requalification if changed (base metal type, filler metal, electrode classification, joint design, position, electrical characteristics, technique).') },
+              { num: 'QW-300', title: __alloT('stem.weldlab.welding_performance_qualifications', 'Welding Performance Qualifications'), body: __alloT('stem.weldlab.how_welders_qualify_performance_variab', 'How welders qualify. Performance variables (process, base metal, position, thickness range, backing).') },
+              { num: 'QW-400', title: __alloT('stem.weldlab.variables', 'Variables'), body: __alloT('stem.weldlab.lists_all_variables_whether_each_is_es', 'Lists ALL variables + whether each is essential, supplementary essential, or nonessential.') },
+              { num: 'QW-500', title: __alloT('stem.weldlab.specific_process_requirements', 'Specific Process Requirements'), body: __alloT('stem.weldlab.process_specific_smaw_gmaw_gtaw_etc_ru', 'Process-specific (SMAW, GMAW, GTAW, etc.) rules.') }
             ],
             who_uses: 'Pressure vessel shops, refineries, nuclear plants, chemical plants, pharma. ASME-stamped vessels (the "U" or "S" stamp) require Authorized Inspector sign-off on every weld.'
           },
@@ -6670,14 +6671,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             published_by: 'American Petroleum Institute (API)',
             why: 'Pipelines run thousands of miles. A failed weld can rupture in remote area + cause environmental disaster + fatalities. API 1104 is unusually strict on radiographic testing (RT) — most pipeline production welds are 100% X-rayed.',
             sections: [
-              { num: '1-4', title: 'General + Definitions', body: 'Scope, references, terms.' },
-              { num: '5', title: 'Qualification of Welding Procedures', body: 'PQR + WPS for pipeline welds.' },
-              { num: '6', title: 'Qualification of Welders', body: 'Performance test requirements. Bend tests, nick-break tests.' },
-              { num: '7', title: 'Design + Preparation', body: 'Joint geometry for cross-country pipeline.' },
-              { num: '8', title: 'Inspection + Testing', body: 'Visual + radiographic + acceptance criteria. Most stringent X-ray standards in the welding industry.' },
-              { num: '9', title: 'Acceptance Standards', body: 'What constitutes an acceptable weld defect vs reject.' },
-              { num: '10', title: 'Repair + Removal', body: 'How to handle defects without compromising line integrity.' },
-              { num: '11', title: 'Procedures for NDT', body: 'Non-destructive testing methodologies.' }
+              { num: '1-4', title: __alloT('stem.weldlab.general_definitions', 'General + Definitions'), body: __alloT('stem.weldlab.scope_references_terms', 'Scope, references, terms.') },
+              { num: '5', title: __alloT('stem.weldlab.qualification_of_welding_procedures', 'Qualification of Welding Procedures'), body: __alloT('stem.weldlab.pqr_wps_for_pipeline_welds', 'PQR + WPS for pipeline welds.') },
+              { num: '6', title: __alloT('stem.weldlab.qualification_of_welders', 'Qualification of Welders'), body: __alloT('stem.weldlab.performance_test_requirements_bend_tes', 'Performance test requirements. Bend tests, nick-break tests.') },
+              { num: '7', title: __alloT('stem.weldlab.design_preparation', 'Design + Preparation'), body: __alloT('stem.weldlab.joint_geometry_for_cross_country_pipel', 'Joint geometry for cross-country pipeline.') },
+              { num: '8', title: __alloT('stem.weldlab.inspection_testing', 'Inspection + Testing'), body: __alloT('stem.weldlab.visual_radiographic_acceptance_criteri', 'Visual + radiographic + acceptance criteria. Most stringent X-ray standards in the welding industry.') },
+              { num: '9', title: __alloT('stem.weldlab.acceptance_standards', 'Acceptance Standards'), body: __alloT('stem.weldlab.what_constitutes_an_acceptable_weld_de', 'What constitutes an acceptable weld defect vs reject.') },
+              { num: '10', title: __alloT('stem.weldlab.repair_removal', 'Repair + Removal'), body: __alloT('stem.weldlab.how_to_handle_defects_without_compromi', 'How to handle defects without compromising line integrity.') },
+              { num: '11', title: __alloT('stem.weldlab.procedures_for_ndt', 'Procedures for NDT'), body: __alloT('stem.weldlab.non_destructive_testing_methodologies', 'Non-destructive testing methodologies.') }
             ],
             who_uses: 'Pipeline construction companies (Hunt, Michels, Henkels & McCoy), pipeline operators (TransCanada, Enbridge, Williams), API-certified pipeline welders.'
           }
@@ -6686,23 +6687,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var current = codes[codePick];
 
         var wpsExplainer = h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-xl p-4 space-y-3' },
-          h('div', { className: 'text-base font-bold text-amber-900' }, '📋 Welding Procedure Specification (WPS) — the "recipe"'),
-          h('p', { className: 'text-sm text-slate-800' }, 'A WPS is a written procedure that specifies HOW a particular weld must be made. Includes: process, base metal range, filler metal, joint design, preheat, interpass temperature, electrical settings (V, A, polarity), travel speed, position, gas (if applicable), post-weld heat treatment. Every welder on a code job follows a WPS.'),
-          h('div', { className: 'text-base font-bold text-amber-900' }, '📜 Procedure Qualification Record (PQR) — the "proof"'),
-          h('p', { className: 'text-sm text-slate-800' }, 'A PQR documents the actual test welds + mechanical test results that prove the WPS produces sound welds. Includes: actual values used (not ranges), tensile test results, bend test results, charpy impact results, hardness, sometimes macroetch. The PQR validates the WPS — without a PQR, the WPS is just a piece of paper.'),
-          h('div', { className: 'text-base font-bold text-amber-900' }, '🎓 Welder Performance Qualification (WPQ) — the "license"'),
-          h('p', { className: 'text-sm text-slate-800' }, 'A WPQ documents that a specific welder has demonstrated the ability to produce sound welds per a specific WPS, in specific positions + thicknesses. The welder\'s "card." When you hear "I\'m 6G certified," that\'s a WPQ. Expires (must re-test every 6 months unless continuous experience documented).'),
+          h('div', { className: 'text-base font-bold text-amber-900' }, __alloT('stem.weldlab.welding_procedure_specification_wps_th', '📋 Welding Procedure Specification (WPS) — the "recipe"')),
+          h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.a_wps_is_a_written_procedure_that_spec', 'A WPS is a written procedure that specifies HOW a particular weld must be made. Includes: process, base metal range, filler metal, joint design, preheat, interpass temperature, electrical settings (V, A, polarity), travel speed, position, gas (if applicable), post-weld heat treatment. Every welder on a code job follows a WPS.')),
+          h('div', { className: 'text-base font-bold text-amber-900' }, __alloT('stem.weldlab.procedure_qualification_record_pqr_the', '📜 Procedure Qualification Record (PQR) — the "proof"')),
+          h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.a_pqr_documents_the_actual_test_welds_', 'A PQR documents the actual test welds + mechanical test results that prove the WPS produces sound welds. Includes: actual values used (not ranges), tensile test results, bend test results, charpy impact results, hardness, sometimes macroetch. The PQR validates the WPS — without a PQR, the WPS is just a piece of paper.')),
+          h('div', { className: 'text-base font-bold text-amber-900' }, __alloT('stem.weldlab.welder_performance_qualification_wpq_t', '🎓 Welder Performance Qualification (WPQ) — the "license"')),
+          h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.a_wpq_documents_that_a_specific_welder', 'A WPQ documents that a specific welder has demonstrated the ability to produce sound welds per a specific WPS, in specific positions + thicknesses. The welder\'s "card." When you hear "I\'m 6G certified," that\'s a WPQ. Expires (must re-test every 6 months unless continuous experience documented).')),
           h('div', { className: 'mt-2 p-3 bg-amber-100 rounded-lg text-sm text-slate-800' },
-            h('strong', { className: 'text-amber-900' }, 'Workflow: '), 'Engineer writes WPS → shop welds test coupons per WPS → coupons tested + results recorded → if all pass, PQR issued + WPS qualified. Welder welds qualification coupons per WPS → coupons tested → if pass, WPQ issued for that welder + that WPS.')
+            h('strong', { className: 'text-amber-900' }, 'Workflow: '), __alloT('stem.weldlab.engineer_writes_wps_shop_welds_test_co', 'Engineer writes WPS → shop welds test coupons per WPS → coupons tested + results recorded → if all pass, PQR issued + WPS qualified. Welder welds qualification coupons per WPS → coupons tested → if pass, WPQ issued for that welder + that WPS.'))
         );
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '📜', title: 'Codes + Standards' }),
+          h(BackBar, { icon: '📜', title: __alloT('stem.weldlab.codes_standards_2', 'Codes + Standards') }),
           h('div', { className: 'p-6 max-w-5xl mx-auto space-y-5' },
             h('div', { className: 'flex flex-wrap gap-2' },
-              [{ id: 'd1_1', label: 'AWS D1.1', color: 'purple' },
-               { id: 'asme9', label: 'ASME Section IX', color: 'purple' },
-               { id: 'api1104', label: 'API 1104', color: 'purple' }].map(function(c) {
+              [{ id: 'd1_1', label: __alloT('stem.weldlab.aws_d1_1', 'AWS D1.1'), color: 'purple' },
+               { id: 'asme9', label: __alloT('stem.weldlab.asme_section_ix', 'ASME Section IX'), color: 'purple' },
+               { id: 'api1104', label: __alloT('stem.weldlab.api_1104', 'API 1104'), color: 'purple' }].map(function(c) {
                 var sel = (codePick === c.id);
                 return h('button', {
                   key: c.id,
@@ -6718,15 +6719,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 h('div', { className: 'text-xs text-slate-700 mt-1' }, 'Published by: ' + current.published_by)
               ),
               h('div', null,
-                h('div', { className: 'text-xs font-bold uppercase text-slate-700 mb-1' }, 'Scope'),
+                h('div', { className: 'text-xs font-bold uppercase text-slate-700 mb-1' }, __alloT('stem.weldlab.scope', 'Scope')),
                 h('p', { className: 'text-sm text-slate-800' }, current.scope)
               ),
               h('div', null,
-                h('div', { className: 'text-xs font-bold uppercase text-slate-700 mb-1' }, 'Why it matters'),
+                h('div', { className: 'text-xs font-bold uppercase text-slate-700 mb-1' }, __alloT('stem.weldlab.why_it_matters', 'Why it matters')),
                 h('p', { className: 'text-sm text-slate-800' }, current.why)
               ),
               h('div', null,
-                h('div', { className: 'text-xs font-bold uppercase text-slate-700 mb-2' }, 'Section structure'),
+                h('div', { className: 'text-xs font-bold uppercase text-slate-700 mb-2' }, __alloT('stem.weldlab.section_structure', 'Section structure')),
                 h('div', { className: 'space-y-1.5' },
                   current.sections.map(function(s, i) {
                     return h('div', { key: i, className: 'bg-purple-50 border-l-4 border-purple-400 p-2 rounded text-sm' },
@@ -6738,7 +6739,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 )
               ),
               h('div', { className: 'bg-blue-50 border-2 border-blue-300 rounded-xl p-3' },
-                h('div', { className: 'text-xs font-bold uppercase text-blue-900 mb-1' }, 'Who uses it'),
+                h('div', { className: 'text-xs font-bold uppercase text-blue-900 mb-1' }, __alloT('stem.weldlab.who_uses_it', 'Who uses it')),
                 h('p', { className: 'text-sm text-slate-800' }, current.who_uses)
               )
             ),
@@ -6808,36 +6809,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
 
         if (qpView === 'overview') {
           return h('div', { className: 'min-h-screen bg-slate-50' },
-            h(BackBar, { icon: '🎓', title: 'Welder Qualification Prep' }),
+            h(BackBar, { icon: '🎓', title: __alloT('stem.weldlab.welder_qualification_prep_2', 'Welder Qualification Prep') }),
             h('div', { className: 'p-6 max-w-4xl mx-auto space-y-5' },
               h('div', { className: 'flex gap-2' },
                 h('button', {
                   onClick: function() { setQpView('overview'); },
                   className: 'px-4 py-2 rounded-lg bg-sky-600 text-white text-sm font-bold'
-                }, '📋 Overview'),
+                }, __alloT('stem.weldlab.overview_2', '📋 Overview')),
                 h('button', {
                   onClick: function() { setQpView('quiz'); setQuizIdx(0); },
                   className: 'transition-colors px-4 py-2 rounded-lg bg-white border-2 border-slate-300 text-sm font-bold hover:border-sky-400'
-                }, '📝 Practice Quiz (30 q)')
+                }, __alloT('stem.weldlab.practice_quiz_30_q', '📝 Practice Quiz (30 q)'))
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5 space-y-4' },
-                h('h3', { className: 'text-lg font-black text-sky-900' }, 'What is welder qualification?'),
-                h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'Welder qualification = the formal process of proving you can produce welds that meet a specific code (AWS, ASME, API) on specific materials in specific positions. Without current qualification, you cannot legally weld on most jobs that require code-quality work.'),
-                h('h3', { className: 'text-base font-black text-sky-900' }, '🎯 The test process'),
+                h('h3', { className: 'text-lg font-black text-sky-900' }, __alloT('stem.weldlab.what_is_welder_qualification', 'What is welder qualification?')),
+                h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.welder_qualification_the_formal_proces', 'Welder qualification = the formal process of proving you can produce welds that meet a specific code (AWS, ASME, API) on specific materials in specific positions. Without current qualification, you cannot legally weld on most jobs that require code-quality work.')),
+                h('h3', { className: 'text-base font-black text-sky-900' }, __alloT('stem.weldlab.the_test_process', '🎯 The test process')),
                 h('ol', { className: 'list-decimal list-inside space-y-2 text-sm text-slate-800' },
-                  h('li', null, h('strong', null, 'Choose the qualification: '), 'WPS, position (e.g., 6G), material thickness, process. Each combination is its own qualification.'),
-                  h('li', null, h('strong', null, 'Weld test coupons: '), 'Per the WPS, on the specified material + position. Usually 2-3 coupons (one for visual, one or more for bend testing).'),
-                  h('li', null, h('strong', null, 'Visual inspection: '), 'Independent inspector checks for visible defects (cracks, undercut, porosity, incomplete fusion). Must be defect-free per code acceptance criteria.'),
-                  h('li', null, h('strong', null, 'Bend tests: '), 'Cut strips from the weld + bend them around a mandrel. The face + root of the weld are stretched. If they crack open or show fissures larger than allowed, you fail.'),
-                  h('li', null, h('strong', null, 'RT or UT (some certifications): '), 'For pipe + critical applications, X-ray (RT) or ultrasonic (UT) testing replaces or supplements bend tests.'),
-                  h('li', null, h('strong', null, 'Pass = WPQ issued: '), 'You get a Welder Performance Qualification card good for 6 months (extends with documented continuous use).')
+                  h('li', null, h('strong', null, __alloT('stem.weldlab.choose_the_qualification', 'Choose the qualification: ')), __alloT('stem.weldlab.wps_position_e_g_6g_material_thickness', 'WPS, position (e.g., 6G), material thickness, process. Each combination is its own qualification.')),
+                  h('li', null, h('strong', null, __alloT('stem.weldlab.weld_test_coupons', 'Weld test coupons: ')), __alloT('stem.weldlab.per_the_wps_on_the_specified_material_', 'Per the WPS, on the specified material + position. Usually 2-3 coupons (one for visual, one or more for bend testing).')),
+                  h('li', null, h('strong', null, __alloT('stem.weldlab.visual_inspection', 'Visual inspection: ')), __alloT('stem.weldlab.independent_inspector_checks_for_visib', 'Independent inspector checks for visible defects (cracks, undercut, porosity, incomplete fusion). Must be defect-free per code acceptance criteria.')),
+                  h('li', null, h('strong', null, __alloT('stem.weldlab.bend_tests', 'Bend tests: ')), __alloT('stem.weldlab.cut_strips_from_the_weld_bend_them_aro', 'Cut strips from the weld + bend them around a mandrel. The face + root of the weld are stretched. If they crack open or show fissures larger than allowed, you fail.')),
+                  h('li', null, h('strong', null, __alloT('stem.weldlab.rt_or_ut_some_certifications', 'RT or UT (some certifications): ')), __alloT('stem.weldlab.for_pipe_critical_applications_x_ray_r', 'For pipe + critical applications, X-ray (RT) or ultrasonic (UT) testing replaces or supplements bend tests.')),
+                  h('li', null, h('strong', null, __alloT('stem.weldlab.pass_wpq_issued', 'Pass = WPQ issued: ')), __alloT('stem.weldlab.you_get_a_welder_performance_qualifica', 'You get a Welder Performance Qualification card good for 6 months (extends with documented continuous use).'))
                 ),
-                h('h3', { className: 'text-base font-black text-sky-900 mt-4' }, '🪈 Most marketable qualifications'),
+                h('h3', { className: 'text-base font-black text-sky-900 mt-4' }, __alloT('stem.weldlab.most_marketable_qualifications', '🪈 Most marketable qualifications')),
                 h('div', { className: 'space-y-2' },
-                  [{ name: '6G — Pipe at 45° fixed', pay: '$30-50/hr', who: 'Pipeline, refinery, power plant, nuclear', why: 'Most challenging position. Qualifies for ALL other positions. The "ace card."' },
-                   { name: '6GR — Restricted 6G with backing ring', pay: '$35-65/hr', who: 'Refinery, nuclear', why: '6G with a restriction ring forcing tight technique. Even more demanding.' },
-                   { name: 'D1.1 4G (overhead groove)', pay: '$25-40/hr', who: 'Structural, shipyards, bridge', why: 'Overhead is hardest plate position. Qualifies for 1G, 2G, 3G as well.' },
-                   { name: 'ASME 6G TIG root + Stick fill', pay: '$30-55/hr', who: 'Pressure vessel, pharma, food-grade', why: 'TIG root pass on stainless + carbon steel pipe = the gold standard of pipe welding.' }].map(function(q, i) {
+                  [{ name: __alloT('stem.weldlab.6g_pipe_at_45_fixed', '6G — Pipe at 45° fixed'), pay: '$30-50/hr', who: 'Pipeline, refinery, power plant, nuclear', why: 'Most challenging position. Qualifies for ALL other positions. The "ace card."' },
+                   { name: __alloT('stem.weldlab.6gr_restricted_6g_with_backing_ring', '6GR — Restricted 6G with backing ring'), pay: '$35-65/hr', who: 'Refinery, nuclear', why: '6G with a restriction ring forcing tight technique. Even more demanding.' },
+                   { name: __alloT('stem.weldlab.d1_1_4g_overhead_groove', 'D1.1 4G (overhead groove)'), pay: '$25-40/hr', who: 'Structural, shipyards, bridge', why: 'Overhead is hardest plate position. Qualifies for 1G, 2G, 3G as well.' },
+                   { name: __alloT('stem.weldlab.asme_6g_tig_root_stick_fill', 'ASME 6G TIG root + Stick fill'), pay: '$30-55/hr', who: 'Pressure vessel, pharma, food-grade', why: 'TIG root pass on stainless + carbon steel pipe = the gold standard of pipe welding.' }].map(function(q, i) {
                     return h('div', { key: i, className: 'bg-sky-50 border-2 border-sky-300 rounded-xl p-3' },
                       h('div', { className: 'flex justify-between items-baseline mb-1 flex-wrap' },
                         h('span', { className: 'font-black text-sky-900' }, q.name),
@@ -6872,13 +6873,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           var answered = (userAns != null);
           var correctCount = Object.keys(ans).filter(function(k) { return ans[k] === examQuestions[k].correct; }).length;
           return h('div', { className: 'min-h-screen bg-slate-50' },
-            h(BackBar, { icon: '🎓', title: 'Welder Qual Prep — Practice Quiz' }),
+            h(BackBar, { icon: '🎓', title: __alloT('stem.weldlab.welder_qual_prep_practice_quiz', 'Welder Qual Prep — Practice Quiz') }),
             h('div', { className: 'p-6 max-w-3xl mx-auto space-y-5' },
               h('div', { className: 'flex gap-2 items-center' },
                 h('button', {
                   onClick: function() { setQpView('overview'); },
                   className: 'px-3 py-1.5 rounded-lg bg-white border-2 border-slate-300 text-xs font-bold'
-                }, '← Overview'),
+                }, __alloT('stem.weldlab.overview_3', '← Overview')),
                 h('span', { className: 'text-sm text-slate-700 font-bold' },
                   'Question ' + (quizIdx + 1) + ' of ' + examQuestions.length + ' · Score: ' + correctCount + '/' + Object.keys(ans).length)
               ),
@@ -6908,19 +6909,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   })
                 ),
                 answered && h('div', { className: 'mt-3 p-3 rounded-lg bg-blue-50 border-2 border-blue-300 text-sm text-slate-800' },
-                  h('strong', { className: 'text-blue-900' }, '💡 Explanation: '), current.explain
+                  h('strong', { className: 'text-blue-900' }, __alloT('stem.weldlab.explanation', '💡 Explanation: ')), current.explain
                 ),
                 h('div', { className: 'flex gap-2 pt-3 border-t border-slate-200' },
                   h('button', {
                     disabled: quizIdx === 0,
                     onClick: function() { setQuizIdx(quizIdx - 1); },
                     className: 'flex-1 py-2 rounded-lg bg-slate-100 text-slate-800 font-bold text-sm disabled:opacity-40'
-                  }, '← Previous'),
+                  }, __alloT('stem.weldlab.previous', '← Previous')),
                   h('button', {
                     disabled: quizIdx >= examQuestions.length - 1,
                     onClick: function() { setQuizIdx(quizIdx + 1); },
                     className: 'flex-1 py-2 rounded-lg bg-sky-600 text-white font-bold text-sm disabled:opacity-40'
-                  }, 'Next →')
+                  }, __alloT('stem.weldlab.next', 'Next →'))
                 )
               )
             )
@@ -6935,41 +6936,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var pipeSect = usePersistedState('pipe_sect', 'overview');
         var sect = pipeSect[0], setSect = pipeSect[1];
         var sects = [
-          { id: 'overview',     label: '📋 Why pipe is its own world' },
-          { id: 'positions',    label: '🪈 Pipe positions (1G/2G/5G/6G/6GR)' },
-          { id: 'passes',       label: '🥞 Root + hot + fill + cap' },
-          { id: 'updown',       label: '⬆⬇ Uphill vs downhill' },
-          { id: 'pipeline',     label: '🛢 Pipeline welding (cross-country)' },
-          { id: 'orbital',      label: '⚙ Orbital + automated pipe' },
-          { id: 'specialty',    label: '⭐ Specialty pipe work + pay' }
+          { id: 'overview',     label: __alloT('stem.weldlab.why_pipe_is_its_own_world', '📋 Why pipe is its own world') },
+          { id: 'positions',    label: __alloT('stem.weldlab.pipe_positions_1g_2g_5g_6g_6gr', '🪈 Pipe positions (1G/2G/5G/6G/6GR)') },
+          { id: 'passes',       label: __alloT('stem.weldlab.root_hot_fill_cap', '🥞 Root + hot + fill + cap') },
+          { id: 'updown',       label: __alloT('stem.weldlab.uphill_vs_downhill', '⬆⬇ Uphill vs downhill') },
+          { id: 'pipeline',     label: __alloT('stem.weldlab.pipeline_welding_cross_country', '🛢 Pipeline welding (cross-country)') },
+          { id: 'orbital',      label: __alloT('stem.weldlab.orbital_automated_pipe', '⚙ Orbital + automated pipe') },
+          { id: 'specialty',    label: __alloT('stem.weldlab.specialty_pipe_work_pay', '⭐ Specialty pipe work + pay') }
         ];
 
         var content;
         if (sect === 'overview') {
           content = h('div', { className: 'space-y-3' },
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'Pipe welding is its own discipline within the welding trade. The geometry is different (curved surface, not flat), the technique demands constant adjustment as the bead climbs around the circumference, multiple passes build up the joint, and the consequences of a bad weld are higher — a pipe weld holding pressurized gas at 2,000 psi cannot leak.'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'A welder who can do 6G on small-diameter pipe (2-3" Sch 80) with X-ray-quality results is among the highest-paid skilled tradespeople in North America. Pipeline + nuclear + refinery work routinely pays $40-80/hr + per-diem + travel.'),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.pipe_welding_is_its_own_discipline_wit', 'Pipe welding is its own discipline within the welding trade. The geometry is different (curved surface, not flat), the technique demands constant adjustment as the bead climbs around the circumference, multiple passes build up the joint, and the consequences of a bad weld are higher — a pipe weld holding pressurized gas at 2,000 psi cannot leak.')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.a_welder_who_can_do_6g_on_small_diamet', 'A welder who can do 6G on small-diameter pipe (2-3" Sch 80) with X-ray-quality results is among the highest-paid skilled tradespeople in North America. Pipeline + nuclear + refinery work routinely pays $40-80/hr + per-diem + travel.')),
             h('div', { className: 'bg-indigo-50 border-2 border-indigo-300 rounded-xl p-4' },
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-indigo-900 mb-2' }, 'Why pipe is harder than plate'),
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-indigo-900 mb-2' }, __alloT('stem.weldlab.why_pipe_is_harder_than_plate', 'Why pipe is harder than plate')),
               h('ul', { className: 'space-y-1 text-sm text-slate-800' },
-                h('li', null, '• ', h('strong', null, 'Curved surface: '), 'Travel angle continuously changes as bead progresses around. Body position changes too.'),
-                h('li', null, '• ', h('strong', null, 'Multiple passes: '), 'Even thin-wall pipe requires 2-4 passes (root + hot + cap). Each pass must fuse with previous without inclusion.'),
-                h('li', null, '• ', h('strong', null, 'Position constraint: '), 'Pipe often can\'t be repositioned. The welder must adapt to whatever position the joint presents (5G + 6G fixed).'),
-                h('li', null, '• ', h('strong', null, 'X-ray inspection: '), 'Most code pipe welds are 100% radiographed. Inclusions or lack of fusion that wouldn\'t fail plate-weld VT will fail pipe RT.'),
-                h('li', null, '• ', h('strong', null, 'Root + back side: '), 'Pipe joints typically can\'t be welded from inside. The root pass must penetrate fully from outside with no excess or insufficient penetration.')
+                h('li', null, '• ', h('strong', null, __alloT('stem.weldlab.curved_surface', 'Curved surface: ')), __alloT('stem.weldlab.travel_angle_continuously_changes_as_b', 'Travel angle continuously changes as bead progresses around. Body position changes too.')),
+                h('li', null, '• ', h('strong', null, __alloT('stem.weldlab.multiple_passes', 'Multiple passes: ')), __alloT('stem.weldlab.even_thin_wall_pipe_requires_2_4_passe', 'Even thin-wall pipe requires 2-4 passes (root + hot + cap). Each pass must fuse with previous without inclusion.')),
+                h('li', null, '• ', h('strong', null, __alloT('stem.weldlab.position_constraint', 'Position constraint: ')), __alloT('stem.weldlab.pipe_often_can_t_be_repositioned_the_w', 'Pipe often can\'t be repositioned. The welder must adapt to whatever position the joint presents (5G + 6G fixed).')),
+                h('li', null, '• ', h('strong', null, __alloT('stem.weldlab.x_ray_inspection', 'X-ray inspection: ')), __alloT('stem.weldlab.most_code_pipe_welds_are_100_radiograp', 'Most code pipe welds are 100% radiographed. Inclusions or lack of fusion that wouldn\'t fail plate-weld VT will fail pipe RT.')),
+                h('li', null, '• ', h('strong', null, __alloT('stem.weldlab.root_back_side', 'Root + back side: ')), __alloT('stem.weldlab.pipe_joints_typically_can_t_be_welded_', 'Pipe joints typically can\'t be welded from inside. The root pass must penetrate fully from outside with no excess or insufficient penetration.'))
               )
             )
           );
         } else if (sect === 'positions') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '🪈 Pipe position designations'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'Pipe welding adds positions beyond the plate 1G/2G/3G/4G:'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.pipe_position_designations', '🪈 Pipe position designations')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.pipe_welding_adds_positions_beyond_the', 'Pipe welding adds positions beyond the plate 1G/2G/3G/4G:')),
             h('div', { className: 'space-y-2' },
-              [{ pos: '1G', name: 'Horizontal pipe rolled', desc: 'Pipe axis is horizontal; pipe is rotated so weld is always in the flat position. Easiest pipe welding — like welding plate.' },
-               { pos: '2G', name: 'Vertical pipe', desc: 'Pipe axis is vertical; weld runs around the pipe in a horizontal plane. Steady position, but you weld all the way around.' },
-               { pos: '5G', name: 'Horizontal pipe fixed', desc: 'Pipe axis horizontal; pipe CANNOT rotate. Bead must travel from 6 o\'clock UP through 9, 12, 3 back to 6. Must change technique as gravity changes.' },
-               { pos: '6G', name: 'Pipe at 45°, fixed', desc: 'Pipe axis at 45°. Cannot rotate. Most demanding position. Welder constantly adjusts technique, body position, electrode angle. The "challenge" qualification — passes for all other positions.' },
-               { pos: '6GR', name: '6G with restriction ring', desc: '6G position with a metal ring placed around the pipe near the joint, restricting electrode access. The most punishing welding qualification commonly required. Used for nuclear + critical pressure vessel work.' }].map(function(p, i) {
+              [{ pos: '1G', name: __alloT('stem.weldlab.horizontal_pipe_rolled', 'Horizontal pipe rolled'), desc: __alloT('stem.weldlab.pipe_axis_is_horizontal_pipe_is_rotate', 'Pipe axis is horizontal; pipe is rotated so weld is always in the flat position. Easiest pipe welding — like welding plate.') },
+               { pos: '2G', name: __alloT('stem.weldlab.vertical_pipe', 'Vertical pipe'), desc: __alloT('stem.weldlab.pipe_axis_is_vertical_weld_runs_around', 'Pipe axis is vertical; weld runs around the pipe in a horizontal plane. Steady position, but you weld all the way around.') },
+               { pos: '5G', name: __alloT('stem.weldlab.horizontal_pipe_fixed', 'Horizontal pipe fixed'), desc: __alloT('stem.weldlab.pipe_axis_horizontal_pipe_cannot_rotat', 'Pipe axis horizontal; pipe CANNOT rotate. Bead must travel from 6 o\'clock UP through 9, 12, 3 back to 6. Must change technique as gravity changes.') },
+               { pos: '6G', name: __alloT('stem.weldlab.pipe_at_45_fixed', 'Pipe at 45°, fixed'), desc: __alloT('stem.weldlab.pipe_axis_at_45_cannot_rotate_most_dem', 'Pipe axis at 45°. Cannot rotate. Most demanding position. Welder constantly adjusts technique, body position, electrode angle. The "challenge" qualification — passes for all other positions.') },
+               { pos: '6GR', name: __alloT('stem.weldlab.6g_with_restriction_ring', '6G with restriction ring'), desc: __alloT('stem.weldlab.6g_position_with_a_metal_ring_placed_a', '6G position with a metal ring placed around the pipe near the joint, restricting electrode access. The most punishing welding qualification commonly required. Used for nuclear + critical pressure vessel work.') }].map(function(p, i) {
                 return h('div', { key: i, className: 'bg-white border-2 border-indigo-200 rounded-xl p-3' },
                   h('div', { className: 'flex justify-between items-baseline mb-1' },
                     h('span', { className: 'font-mono font-bold text-indigo-900' }, p.pos),
@@ -6982,13 +6983,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           );
         } else if (sect === 'passes') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '🥞 The pass structure of pipe welding'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'Pipe groove welds build up in distinct passes. Each pass has its own purpose + technique:'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.the_pass_structure_of_pipe_welding', '🥞 The pass structure of pipe welding')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.pipe_groove_welds_build_up_in_distinct', 'Pipe groove welds build up in distinct passes. Each pass has its own purpose + technique:')),
             h('div', { className: 'space-y-2' },
-              [{ pass: 'Root', desc: 'First pass at the very bottom of the joint groove. Must fully penetrate without excess + without insufficient penetration. Often TIG (cleanest control) for first pass on quality work. Determines whether the weld will pass X-ray. Most critical + most-attention-paid pass.', process: 'Often TIG; sometimes stick (E6010 root)' },
-               { pass: 'Hot', desc: 'Immediately after root — burns out any inclusions in the root + fuses root face to the groove walls. Slightly hotter than root. Sometimes called "burn-in pass."', process: 'TIG or stick' },
-               { pass: 'Fill', desc: 'Multiple passes (depending on wall thickness) that fill the groove up to ~1/8" below the surface. Higher amperage, faster travel, more material deposited per pass. Pipe up to 1" thick may need 6+ fill passes.', process: 'Stick (E7018) or wire (FCAW)' },
-               { pass: 'Cap', desc: 'Final passes that build the bead slightly above the original surface (reinforcement crown). Smaller passes, weaving for uniform appearance. The "show pass" — what inspectors see first.', process: 'Stick (E7018) — gives clean appearance' }].map(function(p, i) {
+              [{ pass: 'Root', desc: __alloT('stem.weldlab.first_pass_at_the_very_bottom_of_the_j', 'First pass at the very bottom of the joint groove. Must fully penetrate without excess + without insufficient penetration. Often TIG (cleanest control) for first pass on quality work. Determines whether the weld will pass X-ray. Most critical + most-attention-paid pass.'), process: 'Often TIG; sometimes stick (E6010 root)' },
+               { pass: 'Hot', desc: __alloT('stem.weldlab.immediately_after_root_burns_out_any_i', 'Immediately after root — burns out any inclusions in the root + fuses root face to the groove walls. Slightly hotter than root. Sometimes called "burn-in pass."'), process: 'TIG or stick' },
+               { pass: 'Fill', desc: __alloT('stem.weldlab.multiple_passes_depending_on_wall_thic', 'Multiple passes (depending on wall thickness) that fill the groove up to ~1/8" below the surface. Higher amperage, faster travel, more material deposited per pass. Pipe up to 1" thick may need 6+ fill passes.'), process: 'Stick (E7018) or wire (FCAW)' },
+               { pass: 'Cap', desc: __alloT('stem.weldlab.final_passes_that_build_the_bead_sligh', 'Final passes that build the bead slightly above the original surface (reinforcement crown). Smaller passes, weaving for uniform appearance. The "show pass" — what inspectors see first.'), process: 'Stick (E7018) — gives clean appearance' }].map(function(p, i) {
                 return h('div', { key: i, className: 'bg-orange-50 border-l-4 border-orange-400 rounded-r-xl p-3' },
                   h('div', { className: 'flex justify-between items-baseline mb-1' },
                     h('span', { className: 'font-black text-orange-900' }, p.pass + ' pass'),
@@ -6999,95 +7000,95 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               })
             ),
             h('div', { className: 'bg-emerald-50 border-2 border-emerald-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-emerald-900 mb-1' }, '💡 Interpass cleaning'),
-              h('p', { className: 'text-sm text-slate-800' }, 'Between passes, the welder MUST chip slag + grind any defects + wire-brush the previous pass. Slag inclusions caused by skipping interpass cleaning are the #1 cause of pipe weld rejects in X-ray inspection.')
+              h('div', { className: 'text-xs font-bold uppercase text-emerald-900 mb-1' }, __alloT('stem.weldlab.interpass_cleaning', '💡 Interpass cleaning')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.between_passes_the_welder_must_chip_sl', 'Between passes, the welder MUST chip slag + grind any defects + wire-brush the previous pass. Slag inclusions caused by skipping interpass cleaning are the #1 cause of pipe weld rejects in X-ray inspection.'))
             )
           );
         } else if (sect === 'updown') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '⬆⬇ Uphill vs Downhill technique'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'In vertical + 5G/6G pipe positions, the welder chooses whether to weld UPHILL (from 6 o\'clock to 12) or DOWNHILL (from 12 to 6). They\'re completely different techniques.'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.uphill_vs_downhill_technique', '⬆⬇ Uphill vs Downhill technique')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.in_vertical_5g_6g_pipe_positions_the_w', 'In vertical + 5G/6G pipe positions, the welder chooses whether to weld UPHILL (from 6 o\'clock to 12) or DOWNHILL (from 12 to 6). They\'re completely different techniques.')),
             h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
               h('div', { className: 'bg-emerald-50 border-2 border-emerald-300 rounded-xl p-3' },
-                h('h4', { className: 'font-black text-emerald-900 mb-2' }, '⬆ UPHILL'),
+                h('h4', { className: 'font-black text-emerald-900 mb-2' }, __alloT('stem.weldlab.uphill', '⬆ UPHILL')),
                 h('ul', { className: 'text-sm text-slate-800 space-y-1' },
-                  h('li', null, '• Slower travel speed'),
-                  h('li', null, '• Higher heat input per inch'),
-                  h('li', null, '• Better penetration'),
-                  h('li', null, '• Wider bead'),
-                  h('li', null, '• Used for structural + heavier sections (AWS D1.1 + most ASME)'),
-                  h('li', null, '• Better for fill + cap passes')
+                  h('li', null, __alloT('stem.weldlab.slower_travel_speed', '• Slower travel speed')),
+                  h('li', null, __alloT('stem.weldlab.higher_heat_input_per_inch', '• Higher heat input per inch')),
+                  h('li', null, __alloT('stem.weldlab.better_penetration', '• Better penetration')),
+                  h('li', null, __alloT('stem.weldlab.wider_bead', '• Wider bead')),
+                  h('li', null, __alloT('stem.weldlab.used_for_structural_heavier_sections_a', '• Used for structural + heavier sections (AWS D1.1 + most ASME)')),
+                  h('li', null, __alloT('stem.weldlab.better_for_fill_cap_passes', '• Better for fill + cap passes'))
                 )
               ),
               h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-xl p-3' },
-                h('h4', { className: 'font-black text-amber-900 mb-2' }, '⬇ DOWNHILL'),
+                h('h4', { className: 'font-black text-amber-900 mb-2' }, __alloT('stem.weldlab.downhill', '⬇ DOWNHILL')),
                 h('ul', { className: 'text-sm text-slate-800 space-y-1' },
-                  h('li', null, '• Faster travel speed'),
-                  h('li', null, '• Lower heat input per inch'),
-                  h('li', null, '• Less penetration'),
-                  h('li', null, '• Narrower bead'),
-                  h('li', null, '• Used for thin-wall pipe (cross-country pipeline, X65 + X70 grades)'),
-                  h('li', null, '• Better for root passes on high-strength steel — avoids HAZ softening')
+                  h('li', null, __alloT('stem.weldlab.faster_travel_speed', '• Faster travel speed')),
+                  h('li', null, __alloT('stem.weldlab.lower_heat_input_per_inch', '• Lower heat input per inch')),
+                  h('li', null, __alloT('stem.weldlab.less_penetration', '• Less penetration')),
+                  h('li', null, __alloT('stem.weldlab.narrower_bead', '• Narrower bead')),
+                  h('li', null, __alloT('stem.weldlab.used_for_thin_wall_pipe_cross_country_', '• Used for thin-wall pipe (cross-country pipeline, X65 + X70 grades)')),
+                  h('li', null, __alloT('stem.weldlab.better_for_root_passes_on_high_strengt', '• Better for root passes on high-strength steel — avoids HAZ softening'))
                 )
               )
             ),
             h('div', { className: 'bg-rose-50 border-2 border-rose-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-rose-900 mb-1' }, '⚠ Common mistake'),
-              h('p', { className: 'text-sm text-slate-800' }, 'Downhill is FASTER + EASIER but provides LESS penetration. Welders new to pipe often default to downhill, get acceptable visual appearance, but fail X-ray due to lack of fusion at the root. Code-required uphill is uphill for a reason. Check your WPS.')
+              h('div', { className: 'text-xs font-bold uppercase text-rose-900 mb-1' }, __alloT('stem.weldlab.common_mistake', '⚠ Common mistake')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.downhill_is_faster_easier_but_provides', 'Downhill is FASTER + EASIER but provides LESS penetration. Welders new to pipe often default to downhill, get acceptable visual appearance, but fail X-ray due to lack of fusion at the root. Code-required uphill is uphill for a reason. Check your WPS.'))
             )
           );
         } else if (sect === 'pipeline') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '🛢 Cross-country pipeline welding'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'Pipeline welding is its own subculture within pipe welding. Cross-country (oil + gas transmission) pipelines run from gas fields/wellheads to refineries/distribution. The work is mobile (move along the right-of-way as construction progresses), outdoor, often remote, and pays exceptionally well.'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.cross_country_pipeline_welding', '🛢 Cross-country pipeline welding')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.pipeline_welding_is_its_own_subculture', 'Pipeline welding is its own subculture within pipe welding. Cross-country (oil + gas transmission) pipelines run from gas fields/wellheads to refineries/distribution. The work is mobile (move along the right-of-way as construction progresses), outdoor, often remote, and pays exceptionally well.')),
             h('div', { className: 'bg-indigo-50 border-2 border-indigo-300 rounded-xl p-4 space-y-2' },
-              h('div', { className: 'text-sm font-bold text-indigo-900' }, '🔧 The pipeline weld crew structure'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Stringer bead: '), 'First welder lays the root pass on the joint as soon as alignment clamps come off. Usually downhill stick (E6010 cellulosic electrode) for fast root.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Hot pass: '), 'Second welder follows immediately + adds hot pass. Burns out any defects from root.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Filler hands: '), '2-4 welders add fill passes simultaneously (different sides of the joint). Speed is critical — pipeline construction is paid per foot of pipe laid.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Cap hand: '), 'Final welder does cap pass. Cleanest + most visible — also the welder whose work everyone sees.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Tie-in welder: '), 'Specialist who joins separate pipeline sections together. Often the hardest welds (no alignment clamps, must fit existing pipe). Senior position.')
+              h('div', { className: 'text-sm font-bold text-indigo-900' }, __alloT('stem.weldlab.the_pipeline_weld_crew_structure', '🔧 The pipeline weld crew structure')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.stringer_bead', 'Stringer bead: ')), __alloT('stem.weldlab.first_welder_lays_the_root_pass_on_the', 'First welder lays the root pass on the joint as soon as alignment clamps come off. Usually downhill stick (E6010 cellulosic electrode) for fast root.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.hot_pass', 'Hot pass: ')), __alloT('stem.weldlab.second_welder_follows_immediately_adds', 'Second welder follows immediately + adds hot pass. Burns out any defects from root.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.filler_hands', 'Filler hands: ')), __alloT('stem.weldlab.2_4_welders_add_fill_passes_simultaneo', '2-4 welders add fill passes simultaneously (different sides of the joint). Speed is critical — pipeline construction is paid per foot of pipe laid.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.cap_hand', 'Cap hand: ')), __alloT('stem.weldlab.final_welder_does_cap_pass_cleanest_mo', 'Final welder does cap pass. Cleanest + most visible — also the welder whose work everyone sees.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.tie_in_welder', 'Tie-in welder: ')), __alloT('stem.weldlab.specialist_who_joins_separate_pipeline', 'Specialist who joins separate pipeline sections together. Often the hardest welds (no alignment clamps, must fit existing pipe). Senior position.'))
             ),
             h('div', { className: 'bg-slate-50 border-2 border-slate-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-slate-900 mb-1' }, '💰 The pay reality'),
-              h('p', { className: 'text-sm text-slate-800' }, 'Pipeline welders typically earn $40-60/hr + per-diem ($100-150/day for housing + meals) + overtime. A pipeline welder working 60 hr weeks for 6 months can clear $130-180K. The other side: brutal travel (months from home), physical demands (mostly outdoor + manual), industry cycles (boom/bust with oil prices), + safety risks (heavy equipment, gas, isolation).')
+              h('div', { className: 'text-xs font-bold uppercase text-slate-900 mb-1' }, __alloT('stem.weldlab.the_pay_reality', '💰 The pay reality')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.pipeline_welders_typically_earn_40_60_', 'Pipeline welders typically earn $40-60/hr + per-diem ($100-150/day for housing + meals) + overtime. A pipeline welder working 60 hr weeks for 6 months can clear $130-180K. The other side: brutal travel (months from home), physical demands (mostly outdoor + manual), industry cycles (boom/bust with oil prices), + safety risks (heavy equipment, gas, isolation).'))
             ),
             h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-amber-900 mb-1' }, '🎓 How to get into pipeline'),
-              h('p', { className: 'text-sm text-slate-800' }, 'Most pipeline welders come from: (1) Welding schools that specifically prepare pipeline welders (Tulsa Welding School, Pipeliners Local 798 training, Hobart Institute). (2) Union 798 apprenticeship (UA Pipeliners). (3) Non-union "merit shop" companies (Henkels & McCoy, Michels, Hunt). Almost always requires 6G qualification + cellulosic stick experience.')
+              h('div', { className: 'text-xs font-bold uppercase text-amber-900 mb-1' }, __alloT('stem.weldlab.how_to_get_into_pipeline', '🎓 How to get into pipeline')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.most_pipeline_welders_come_from_1_weld', 'Most pipeline welders come from: (1) Welding schools that specifically prepare pipeline welders (Tulsa Welding School, Pipeliners Local 798 training, Hobart Institute). (2) Union 798 apprenticeship (UA Pipeliners). (3) Non-union "merit shop" companies (Henkels & McCoy, Michels, Hunt). Almost always requires 6G qualification + cellulosic stick experience.'))
             )
           );
         } else if (sect === 'orbital') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '⚙ Orbital welding — automated TIG on pipe'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'Orbital welding is automated TIG welding where the torch travels around the pipe on a track. The welder sets parameters (current, travel speed, gas flow, electrode position) and the machine executes the weld with absolute repeatability. Used for high-precision applications where every joint must be identical: semiconductor fab pipe, pharmaceutical clean-in-place piping, nuclear, aerospace.'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.orbital_welding_automated_tig_on_pipe', '⚙ Orbital welding — automated TIG on pipe')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.orbital_welding_is_automated_tig_weldi', 'Orbital welding is automated TIG welding where the torch travels around the pipe on a track. The welder sets parameters (current, travel speed, gas flow, electrode position) and the machine executes the weld with absolute repeatability. Used for high-precision applications where every joint must be identical: semiconductor fab pipe, pharmaceutical clean-in-place piping, nuclear, aerospace.')),
             h('div', { className: 'bg-zinc-50 border-2 border-zinc-300 rounded-xl p-4 space-y-2' },
-              h('div', { className: 'text-sm font-bold text-zinc-900' }, '🔧 How it works'),
-              h('p', { className: 'text-sm text-slate-800' }, '1. Torch is mounted in a "weld head" — small machine that clamps around the pipe + has a track that the torch travels along.'),
-              h('p', { className: 'text-sm text-slate-800' }, '2. Operator (not technically a welder — different certification) programs the weld parameters per pipe size + material.'),
-              h('p', { className: 'text-sm text-slate-800' }, '3. Machine welds the joint while operator observes (sometimes a screen showing weld pool). Operator can intervene if needed.'),
-              h('p', { className: 'text-sm text-slate-800' }, '4. Data logged for every weld — current, voltage, travel speed, time, position. Critical for traceability in regulated industries.')
+              h('div', { className: 'text-sm font-bold text-zinc-900' }, __alloT('stem.weldlab.how_it_works', '🔧 How it works')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.1_torch_is_mounted_in_a_weld_head_smal', '1. Torch is mounted in a "weld head" — small machine that clamps around the pipe + has a track that the torch travels along.')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.2_operator_not_technically_a_welder_di', '2. Operator (not technically a welder — different certification) programs the weld parameters per pipe size + material.')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.3_machine_welds_the_joint_while_operat', '3. Machine welds the joint while operator observes (sometimes a screen showing weld pool). Operator can intervene if needed.')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.4_data_logged_for_every_weld_current_v', '4. Data logged for every weld — current, voltage, travel speed, time, position. Critical for traceability in regulated industries.'))
             ),
             h('div', { className: 'bg-emerald-50 border-2 border-emerald-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-emerald-900 mb-1' }, '💡 Pros + cons'),
-              h('p', { className: 'text-sm text-slate-800 mb-1' }, h('strong', null, 'Pros: '), 'Extreme repeatability. Every weld looks identical. Faster than manual for high-volume work. Less skill required to operate than to manually weld. Comprehensive data logging for quality audit.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Cons: '), 'Capital cost ($30K-150K per system). Setup time per joint can negate speed advantage on small batches. Limited to specific pipe sizes + joint configurations. Doesn\'t handle joint misalignment well (manual welder can compensate).')
+              h('div', { className: 'text-xs font-bold uppercase text-emerald-900 mb-1' }, __alloT('stem.weldlab.pros_cons', '💡 Pros + cons')),
+              h('p', { className: 'text-sm text-slate-800 mb-1' }, h('strong', null, 'Pros: '), __alloT('stem.weldlab.extreme_repeatability_every_weld_looks', 'Extreme repeatability. Every weld looks identical. Faster than manual for high-volume work. Less skill required to operate than to manually weld. Comprehensive data logging for quality audit.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Cons: '), __alloT('stem.weldlab.capital_cost_30k_150k_per_system_setup', 'Capital cost ($30K-150K per system). Setup time per joint can negate speed advantage on small batches. Limited to specific pipe sizes + joint configurations. Doesn\'t handle joint misalignment well (manual welder can compensate).'))
             ),
             h('div', { className: 'bg-blue-50 border-2 border-blue-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-blue-900 mb-1' }, '💰 Career path'),
-              h('p', { className: 'text-sm text-slate-800' }, 'Orbital operator + technician roles pay $35-60/hr. Lower-pressure than pure welding (no body strain) + more analytical (parameters + troubleshooting). Niche skill — Arc Machines + Liburdi + Magnatech are the main equipment OEMs; training programs available through them. Growing fast in semiconductor + biotech + nuclear.')
+              h('div', { className: 'text-xs font-bold uppercase text-blue-900 mb-1' }, __alloT('stem.weldlab.career_path', '💰 Career path')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.orbital_operator_technician_roles_pay_', 'Orbital operator + technician roles pay $35-60/hr. Lower-pressure than pure welding (no body strain) + more analytical (parameters + troubleshooting). Niche skill — Arc Machines + Liburdi + Magnatech are the main equipment OEMs; training programs available through them. Growing fast in semiconductor + biotech + nuclear.'))
             )
           );
         } else if (sect === 'specialty') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '⭐ Specialty pipe + pay scale'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.specialty_pipe_pay_scale', '⭐ Specialty pipe + pay scale')),
             h('div', { className: 'space-y-2' },
-              [{ name: 'Nuclear pipe welder', pay: '$55-95/hr + per-diem', what: 'ASME III Section requires extensive qualifications (Class 1 — primary reactor coolant; Class 2 — auxiliary; Class 3 — service). Every weld X-rayed + ultrasonically tested. Stop work for any irregularity. Among highest-paid welding work.' },
-               { name: 'Pipeline tie-in welder', pay: '$60-90/hr + per-diem', what: 'Joins separate pipeline sections — the hardest welds because there\'s no alignment + restricted access. Often the most experienced welder on a crew. Travel-heavy.' },
-               { name: 'Refinery turnaround welder', pay: '$45-75/hr + 60+ hr weeks', what: 'During refinery shutdowns ("turnarounds"), all process pipe is inspected + repaired. Brief intense work periods (3-8 weeks at one site) earning $40-70K. Welders travel from turnaround to turnaround.' },
-               { name: 'Pharmaceutical clean-room welder', pay: '$40-65/hr', what: 'Sanitary stainless TIG welding for biotech + pharma. Tight tolerance on weld appearance (must be smooth + crevice-free for sterilization). Often orbital welding. Boston/SF/RTP markets have heavy concentration.' },
-               { name: 'Subsea pipeline welder', pay: '$80-200K total', what: 'Combines saturation diving + welding (or hyperbaric chamber welding). Highest-paid welding work in the world. Brief offshore stints, then weeks off. Major decompression health risks.' },
-               { name: 'NDT-certified pipe welder', pay: '$35-65/hr', what: 'Welders also certified to perform non-destructive testing on welds (VT, PT, MT). Two skills = premium pay + more job options. Common in specialty welding shops.' }].map(function(s, i) {
+              [{ name: __alloT('stem.weldlab.nuclear_pipe_welder', 'Nuclear pipe welder'), pay: '$55-95/hr + per-diem', what: 'ASME III Section requires extensive qualifications (Class 1 — primary reactor coolant; Class 2 — auxiliary; Class 3 — service). Every weld X-rayed + ultrasonically tested. Stop work for any irregularity. Among highest-paid welding work.' },
+               { name: __alloT('stem.weldlab.pipeline_tie_in_welder', 'Pipeline tie-in welder'), pay: '$60-90/hr + per-diem', what: 'Joins separate pipeline sections — the hardest welds because there\'s no alignment + restricted access. Often the most experienced welder on a crew. Travel-heavy.' },
+               { name: __alloT('stem.weldlab.refinery_turnaround_welder', 'Refinery turnaround welder'), pay: '$45-75/hr + 60+ hr weeks', what: 'During refinery shutdowns ("turnarounds"), all process pipe is inspected + repaired. Brief intense work periods (3-8 weeks at one site) earning $40-70K. Welders travel from turnaround to turnaround.' },
+               { name: __alloT('stem.weldlab.pharmaceutical_clean_room_welder', 'Pharmaceutical clean-room welder'), pay: '$40-65/hr', what: 'Sanitary stainless TIG welding for biotech + pharma. Tight tolerance on weld appearance (must be smooth + crevice-free for sterilization). Often orbital welding. Boston/SF/RTP markets have heavy concentration.' },
+               { name: __alloT('stem.weldlab.subsea_pipeline_welder', 'Subsea pipeline welder'), pay: '$80-200K total', what: 'Combines saturation diving + welding (or hyperbaric chamber welding). Highest-paid welding work in the world. Brief offshore stints, then weeks off. Major decompression health risks.' },
+               { name: __alloT('stem.weldlab.ndt_certified_pipe_welder', 'NDT-certified pipe welder'), pay: '$35-65/hr', what: 'Welders also certified to perform non-destructive testing on welds (VT, PT, MT). Two skills = premium pay + more job options. Common in specialty welding shops.' }].map(function(s, i) {
                 return h('div', { key: i, className: 'bg-white border-2 border-indigo-200 rounded-xl p-3' },
                   h('div', { className: 'flex justify-between items-baseline mb-1 flex-wrap' },
                     h('span', { className: 'font-black text-indigo-900' }, s.name),
@@ -7101,7 +7102,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         }
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '🪈', title: 'Pipe Welding Deep-Dive' }),
+          h(BackBar, { icon: '🪈', title: __alloT('stem.weldlab.pipe_welding_deep_dive_2', 'Pipe Welding Deep-Dive') }),
           h('div', { className: 'p-6 max-w-5xl mx-auto space-y-5' },
             h('div', { className: 'flex flex-wrap gap-2' },
               sects.map(function(s) {
@@ -7140,53 +7141,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var robSect = usePersistedState('rob_sect', 'overview');
         var sect = robSect[0], setSect = robSect[1];
         var sects = [
-          { id: 'overview',  label: '📋 Overview' },
-          { id: 'brands',    label: '🏭 Major brands' },
-          { id: 'program',   label: '⌨ Programming' },
-          { id: 'vision',    label: '👁 Vision + adaptive control' },
-          { id: 'cobots',    label: '🤝 Collaborative cobots' },
-          { id: 'careers',   label: '💼 Careers in robotic welding' }
+          { id: 'overview',  label: __alloT('stem.weldlab.overview_4', '📋 Overview') },
+          { id: 'brands',    label: __alloT('stem.weldlab.major_brands', '🏭 Major brands') },
+          { id: 'program',   label: __alloT('stem.weldlab.programming', '⌨ Programming') },
+          { id: 'vision',    label: __alloT('stem.weldlab.vision_adaptive_control', '👁 Vision + adaptive control') },
+          { id: 'cobots',    label: __alloT('stem.weldlab.collaborative_cobots', '🤝 Collaborative cobots') },
+          { id: 'careers',   label: __alloT('stem.weldlab.careers_in_robotic_welding', '💼 Careers in robotic welding') }
         ];
 
         var content;
         if (sect === 'overview') {
           content = h('div', { className: 'space-y-3' },
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'Industrial robotic welding has been transforming high-volume manufacturing since the 1980s. Automotive body assembly, appliance fabrication, structural steel, agricultural equipment, defense — all heavily robotic. A robot can weld 24/7 with consistent quality + speed manual welders can\'t match.'),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.industrial_robotic_welding_has_been_tr', 'Industrial robotic welding has been transforming high-volume manufacturing since the 1980s. Automotive body assembly, appliance fabrication, structural steel, agricultural equipment, defense — all heavily robotic. A robot can weld 24/7 with consistent quality + speed manual welders can\'t match.')),
             h('div', { className: 'bg-zinc-50 border-2 border-zinc-300 rounded-xl p-4 space-y-2' },
-              h('div', { className: 'text-sm font-bold text-zinc-900' }, 'What robots do better than humans'),
+              h('div', { className: 'text-sm font-bold text-zinc-900' }, __alloT('stem.weldlab.what_robots_do_better_than_humans', 'What robots do better than humans')),
               h('ul', { className: 'space-y-1 text-sm text-slate-800' },
-                h('li', null, '• ', h('strong', null, 'Repeatability: '), 'Every weld identical to the last. No fatigue-induced variation.'),
-                h('li', null, '• ', h('strong', null, 'Speed: '), '2-5x faster than skilled manual welder for repeating same joint.'),
-                h('li', null, '• ', h('strong', null, 'Heavy/awkward access: '), 'Overhead welds, confined spaces, dangerous atmospheres.'),
-                h('li', null, '• ', h('strong', null, 'Tireless production: '), '24/7 with only routine maintenance breaks.'),
-                h('li', null, '• ', h('strong', null, 'Data logging: '), 'Every weld parameter recorded for traceability.')
+                h('li', null, '• ', h('strong', null, 'Repeatability: '), __alloT('stem.weldlab.every_weld_identical_to_the_last_no_fa', 'Every weld identical to the last. No fatigue-induced variation.')),
+                h('li', null, '• ', h('strong', null, 'Speed: '), __alloT('stem.weldlab.2_5x_faster_than_skilled_manual_welder', '2-5x faster than skilled manual welder for repeating same joint.')),
+                h('li', null, '• ', h('strong', null, __alloT('stem.weldlab.heavy_awkward_access', 'Heavy/awkward access: ')), __alloT('stem.weldlab.overhead_welds_confined_spaces_dangero', 'Overhead welds, confined spaces, dangerous atmospheres.')),
+                h('li', null, '• ', h('strong', null, __alloT('stem.weldlab.tireless_production', 'Tireless production: ')), __alloT('stem.weldlab.24_7_with_only_routine_maintenance_bre', '24/7 with only routine maintenance breaks.')),
+                h('li', null, '• ', h('strong', null, __alloT('stem.weldlab.data_logging', 'Data logging: ')), __alloT('stem.weldlab.every_weld_parameter_recorded_for_trac', 'Every weld parameter recorded for traceability.'))
               )
             ),
             h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-xl p-4 space-y-2' },
-              h('div', { className: 'text-sm font-bold text-amber-900' }, 'What humans still do better'),
+              h('div', { className: 'text-sm font-bold text-amber-900' }, __alloT('stem.weldlab.what_humans_still_do_better', 'What humans still do better')),
               h('ul', { className: 'space-y-1 text-sm text-slate-800' },
-                h('li', null, '• ', h('strong', null, 'Adaptation: '), 'Joint misalignment, varying fit-up, unexpected gaps — manual welder compensates real-time. Most robots cannot.'),
-                h('li', null, '• ', h('strong', null, 'Low-volume work: '), 'Setup + programming time for 1-10 unique pieces > manual welding time.'),
-                h('li', null, '• ', h('strong', null, 'Field work + repair: '), 'Robots can\'t go to a job site to fix a damaged pipeline or weld a structural beam in place.'),
-                h('li', null, '• ', h('strong', null, 'Diagnostic judgment: '), 'When the weld looks wrong, deciding what to do (re-weld? grind out? abort?) requires welding judgment.'),
-                h('li', null, '• ', h('strong', null, 'Variable joints: '), 'Custom fabrication, art metalwork, sculpture, restoration.')
+                h('li', null, '• ', h('strong', null, 'Adaptation: '), __alloT('stem.weldlab.joint_misalignment_varying_fit_up_unex', 'Joint misalignment, varying fit-up, unexpected gaps — manual welder compensates real-time. Most robots cannot.')),
+                h('li', null, '• ', h('strong', null, __alloT('stem.weldlab.low_volume_work', 'Low-volume work: ')), __alloT('stem.weldlab.setup_programming_time_for_1_10_unique', 'Setup + programming time for 1-10 unique pieces > manual welding time.')),
+                h('li', null, '• ', h('strong', null, __alloT('stem.weldlab.field_work_repair', 'Field work + repair: ')), __alloT('stem.weldlab.robots_can_t_go_to_a_job_site_to_fix_a', 'Robots can\'t go to a job site to fix a damaged pipeline or weld a structural beam in place.')),
+                h('li', null, '• ', h('strong', null, __alloT('stem.weldlab.diagnostic_judgment', 'Diagnostic judgment: ')), __alloT('stem.weldlab.when_the_weld_looks_wrong_deciding_wha', 'When the weld looks wrong, deciding what to do (re-weld? grind out? abort?) requires welding judgment.')),
+                h('li', null, '• ', h('strong', null, __alloT('stem.weldlab.variable_joints', 'Variable joints: ')), __alloT('stem.weldlab.custom_fabrication_art_metalwork_sculp', 'Custom fabrication, art metalwork, sculpture, restoration.'))
               )
             ),
             h('div', { className: 'bg-blue-50 border-2 border-blue-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-blue-900 mb-1' }, '💡 Career-impact framing'),
-              h('p', { className: 'text-sm text-slate-800' }, 'Robotic welding doesn\'t eliminate welders — it changes what welders do. Automotive body shops largely run on robots, but every shop still has manual welders for fixtures, prototyping, repair, and complex custom work. The bigger career shift is: ROBOT PROGRAMMERS + TECHNICIANS are a growing role drawing from welding experience + adding programming knowledge.')
+              h('div', { className: 'text-xs font-bold uppercase text-blue-900 mb-1' }, __alloT('stem.weldlab.career_impact_framing', '💡 Career-impact framing')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.robotic_welding_doesn_t_eliminate_weld', 'Robotic welding doesn\'t eliminate welders — it changes what welders do. Automotive body shops largely run on robots, but every shop still has manual welders for fixtures, prototyping, repair, and complex custom work. The bigger career shift is: ROBOT PROGRAMMERS + TECHNICIANS are a growing role drawing from welding experience + adding programming knowledge.'))
             )
           );
         } else if (sect === 'brands') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '🏭 The major industrial robot brands'),
-            h('p', { className: 'text-sm text-slate-800' }, 'Industrial robots are dominated by a handful of OEMs. Each has its own teach-pendant interface + programming language, but core concepts transfer.'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.the_major_industrial_robot_brands', '🏭 The major industrial robot brands')),
+            h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.industrial_robots_are_dominated_by_a_h', 'Industrial robots are dominated by a handful of OEMs. Each has its own teach-pendant interface + programming language, but core concepts transfer.')),
             h('div', { className: 'space-y-2' },
               [{ name: 'FANUC', country: 'Japan', share: '#1 globally', notes: 'Yellow-painted robots ubiquitous in auto plants. ARC Mate series is the welding workhorse. Roboguide simulation software. Programming via teach pendant + offline.' },
                { name: 'ABB', country: 'Switzerland/Sweden', share: '#2 globally', notes: 'Orange robots. IRB 1520ID is the popular arc welding model. RobotStudio simulation. Strong in European auto + appliance industry.' },
                { name: 'KUKA', country: 'Germany (Midea-owned)', share: '#3 globally', notes: 'Orange (more red-orange). KR CYBERTECH for arc welding. KUKA.SimPro simulation. Strong in German auto + aerospace.' },
-               { name: 'Yaskawa Motoman', country: 'Japan', share: '#4 globally', notes: 'Bright blue robots. Motoman MA1440 is popular for welding. MotoSim EG simulation. Strong in US arc-welding cells.' },
-               { name: 'Lincoln + ESAB + Miller', country: 'USA', share: 'Welding-system integrators', notes: 'These weld OEMs partner with robot OEMs to offer turn-key welding cells. Lincoln Power Wave + ESAB Aristo + Miller Auto-Continuum platforms.' }].map(function(b, i) {
+               { name: __alloT('stem.weldlab.yaskawa_motoman', 'Yaskawa Motoman'), country: 'Japan', share: '#4 globally', notes: 'Bright blue robots. Motoman MA1440 is popular for welding. MotoSim EG simulation. Strong in US arc-welding cells.' },
+               { name: __alloT('stem.weldlab.lincoln_esab_miller', 'Lincoln + ESAB + Miller'), country: 'USA', share: 'Welding-system integrators', notes: 'These weld OEMs partner with robot OEMs to offer turn-key welding cells. Lincoln Power Wave + ESAB Aristo + Miller Auto-Continuum platforms.' }].map(function(b, i) {
                 return h('div', { key: i, className: 'bg-zinc-50 border-2 border-zinc-300 rounded-xl p-3' },
                   h('div', { className: 'flex justify-between items-baseline mb-1 flex-wrap' },
                     h('span', { className: 'font-black text-zinc-900' }, b.name),
@@ -7199,12 +7200,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           );
         } else if (sect === 'program') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '⌨ How robotic welding gets programmed'),
-            h('p', { className: 'text-sm text-slate-800' }, 'There are three main approaches, often combined:'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.how_robotic_welding_gets_programmed', '⌨ How robotic welding gets programmed')),
+            h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.there_are_three_main_approaches_often_', 'There are three main approaches, often combined:')),
             h('div', { className: 'space-y-2' },
-              [{ method: '1. Teach pendant (point-by-point)', desc: 'Operator moves robot manually with joystick on teach pendant, recording waypoints. At each waypoint, they specify: position, weld start/stop, weld parameters (V, A, TS), motion type (joint vs linear). Most common for small batch + simpler parts.', pro: 'Intuitive for welders to learn', con: 'Slow for complex parts; requires robot to be available for programming time' },
-               { method: '2. Offline programming (CAD-based)', desc: 'Using software like FANUC Roboguide, ABB RobotStudio, etc., programmer creates the weld path on a virtual model of the robot + part. Tested in simulation. Code uploaded to robot when ready.', pro: 'Programming happens in parallel with production; no robot downtime', con: 'Requires CAD model of part + accurate fixture; works only as well as the CAD' },
-               { method: '3. Path teach via vision/sensor', desc: 'Robot uses sensors (laser scanners, vision systems, touch probes) to find joint location + characteristics, then welds adaptively. Operator sets parameters but robot figures out path.', pro: 'Handles fit-up variation; doesn\'t need precise fixturing', con: 'Expensive (vision systems add $20-50K to cell); requires sensor calibration' }].map(function(m, i) {
+              [{ method: '1. Teach pendant (point-by-point)', desc: __alloT('stem.weldlab.operator_moves_robot_manually_with_joy', 'Operator moves robot manually with joystick on teach pendant, recording waypoints. At each waypoint, they specify: position, weld start/stop, weld parameters (V, A, TS), motion type (joint vs linear). Most common for small batch + simpler parts.'), pro: 'Intuitive for welders to learn', con: 'Slow for complex parts; requires robot to be available for programming time' },
+               { method: '2. Offline programming (CAD-based)', desc: __alloT('stem.weldlab.using_software_like_fanuc_roboguide_ab', 'Using software like FANUC Roboguide, ABB RobotStudio, etc., programmer creates the weld path on a virtual model of the robot + part. Tested in simulation. Code uploaded to robot when ready.'), pro: 'Programming happens in parallel with production; no robot downtime', con: 'Requires CAD model of part + accurate fixture; works only as well as the CAD' },
+               { method: '3. Path teach via vision/sensor', desc: __alloT('stem.weldlab.robot_uses_sensors_laser_scanners_visi', 'Robot uses sensors (laser scanners, vision systems, touch probes) to find joint location + characteristics, then welds adaptively. Operator sets parameters but robot figures out path.'), pro: 'Handles fit-up variation; doesn\'t need precise fixturing', con: 'Expensive (vision systems add $20-50K to cell); requires sensor calibration' }].map(function(m, i) {
                 return h('div', { key: i, className: 'bg-blue-50 border-2 border-blue-300 rounded-xl p-3' },
                   h('div', { className: 'font-bold text-blue-900 mb-1' }, m.method),
                   h('p', { className: 'text-sm text-slate-800 mb-1' }, m.desc),
@@ -7214,19 +7215,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               })
             ),
             h('div', { className: 'bg-slate-50 border-2 border-slate-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-slate-900 mb-1' }, '💡 Practical reality'),
-              h('p', { className: 'text-sm text-slate-800' }, 'Most production welding cells use a combination: offline programming for the bulk of the path + teach pendant fine-tuning at the actual robot + optional vision for parts with known fit-up variation. Welder/programmer/technician roles often combine all three skills.')
+              h('div', { className: 'text-xs font-bold uppercase text-slate-900 mb-1' }, __alloT('stem.weldlab.practical_reality', '💡 Practical reality')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.most_production_welding_cells_use_a_co', 'Most production welding cells use a combination: offline programming for the bulk of the path + teach pendant fine-tuning at the actual robot + optional vision for parts with known fit-up variation. Welder/programmer/technician roles often combine all three skills.'))
             )
           );
         } else if (sect === 'vision') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '👁 Vision + adaptive control'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'The hardest problem in robotic welding is variation — every part isn\'t perfectly identical. Gaps vary, fit-up varies, fixtures drift, parts arrive bent. Vision systems + adaptive control let the robot respond to actual joint conditions instead of blindly following a pre-programmed path.'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.vision_adaptive_control_2', '👁 Vision + adaptive control')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.the_hardest_problem_in_robotic_welding', 'The hardest problem in robotic welding is variation — every part isn\'t perfectly identical. Gaps vary, fit-up varies, fixtures drift, parts arrive bent. Vision systems + adaptive control let the robot respond to actual joint conditions instead of blindly following a pre-programmed path.')),
             h('div', { className: 'space-y-2' },
-              [{ type: 'Laser seam tracking', desc: 'A laser line projected ahead of the torch + a camera detects where the line falls on the part. The control system calculates where the actual joint is + adjusts torch path. Used for long longitudinal welds where part may bow slightly.' },
-               { type: 'Touch sensing (TSS)', desc: 'Robot touches the part with the welding wire (or a separate probe) to establish reference points before welding. Slower setup but very accurate. Used when part position is uncertain.' },
-               { type: 'Arc voltage sensing (through-arc tracking)', desc: 'The robot weaves the arc + monitors voltage. When arc length differs side-to-side, it indicates joint asymmetry. Robot adjusts position. No additional sensor needed — uses the arc itself. Common for fillet welds.' },
-               { type: '3D vision (structured light or stereo)', desc: 'Cameras + projected light pattern build a 3D model of the part in real-time. Robot uses this to plan path. Most advanced + expensive systems ($50-200K added cost).' }].map(function(v, i) {
+              [{ type: 'Laser seam tracking', desc: __alloT('stem.weldlab.a_laser_line_projected_ahead_of_the_to', 'A laser line projected ahead of the torch + a camera detects where the line falls on the part. The control system calculates where the actual joint is + adjusts torch path. Used for long longitudinal welds where part may bow slightly.') },
+               { type: 'Touch sensing (TSS)', desc: __alloT('stem.weldlab.robot_touches_the_part_with_the_weldin', 'Robot touches the part with the welding wire (or a separate probe) to establish reference points before welding. Slower setup but very accurate. Used when part position is uncertain.') },
+               { type: 'Arc voltage sensing (through-arc tracking)', desc: __alloT('stem.weldlab.the_robot_weaves_the_arc_monitors_volt', 'The robot weaves the arc + monitors voltage. When arc length differs side-to-side, it indicates joint asymmetry. Robot adjusts position. No additional sensor needed — uses the arc itself. Common for fillet welds.') },
+               { type: '3D vision (structured light or stereo)', desc: __alloT('stem.weldlab.cameras_projected_light_pattern_build_', 'Cameras + projected light pattern build a 3D model of the part in real-time. Robot uses this to plan path. Most advanced + expensive systems ($50-200K added cost).') }].map(function(v, i) {
                 return h('div', { key: i, className: 'bg-emerald-50 border-l-4 border-emerald-400 rounded-r-xl p-3' },
                   h('div', { className: 'font-bold text-emerald-900 mb-1' }, v.type),
                   h('p', { className: 'text-sm text-slate-800' }, v.desc)
@@ -7236,13 +7237,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           );
         } else if (sect === 'cobots') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '🤝 Collaborative cobots (Universal Robots, etc.)'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'Collaborative robots ("cobots") are lighter, slower, force-limited robots designed to work alongside humans without safety cages. Easier to program (often by guiding the arm with your hand to teach positions). Used widely for low-volume welding in small shops that couldn\'t afford traditional robot cells.'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.collaborative_cobots_universal_robots_', '🤝 Collaborative cobots (Universal Robots, etc.)')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.collaborative_robots_cobots_are_lighte', 'Collaborative robots ("cobots") are lighter, slower, force-limited robots designed to work alongside humans without safety cages. Easier to program (often by guiding the arm with your hand to teach positions). Used widely for low-volume welding in small shops that couldn\'t afford traditional robot cells.')),
             h('div', { className: 'space-y-2' },
-              [{ name: 'Universal Robots (UR)', desc: 'Danish company; UR5e + UR10e + UR16e are popular for welding. PolyScope interface — easiest cobot programming on market. Major adoption in small fab shops.' },
-               { name: 'ABB GoFa', desc: 'ABB\'s cobot line. CRB 15000. Good integration with ABB welding systems.' },
-               { name: 'FANUC CRX', desc: 'FANUC\'s cobot line. CRX-10iA + CRX-25iA. Easier programming than FANUC industrial.' },
-               { name: 'YuMi (ABB)', desc: 'Dual-arm cobot for assembly + delicate work. Less commonly used for welding but emerging.' }].map(function(c, i) {
+              [{ name: __alloT('stem.weldlab.universal_robots_ur', 'Universal Robots (UR)'), desc: __alloT('stem.weldlab.danish_company_ur5e_ur10e_ur16e_are_po', 'Danish company; UR5e + UR10e + UR16e are popular for welding. PolyScope interface — easiest cobot programming on market. Major adoption in small fab shops.') },
+               { name: __alloT('stem.weldlab.abb_gofa', 'ABB GoFa'), desc: __alloT('stem.weldlab.abb_s_cobot_line_crb_15000_good_integr', 'ABB\'s cobot line. CRB 15000. Good integration with ABB welding systems.') },
+               { name: __alloT('stem.weldlab.fanuc_crx', 'FANUC CRX'), desc: __alloT('stem.weldlab.fanuc_s_cobot_line_crx_10ia_crx_25ia_e', 'FANUC\'s cobot line. CRX-10iA + CRX-25iA. Easier programming than FANUC industrial.') },
+               { name: __alloT('stem.weldlab.yumi_abb', 'YuMi (ABB)'), desc: __alloT('stem.weldlab.dual_arm_cobot_for_assembly_delicate_w', 'Dual-arm cobot for assembly + delicate work. Less commonly used for welding but emerging.') }].map(function(c, i) {
                 return h('div', { key: i, className: 'bg-zinc-50 border-2 border-zinc-300 rounded-xl p-3' },
                   h('div', { className: 'font-bold text-zinc-900 mb-1' }, c.name),
                   h('p', { className: 'text-sm text-slate-800' }, c.desc)
@@ -7250,20 +7251,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               })
             ),
             h('div', { className: 'bg-blue-50 border-2 border-blue-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-blue-900 mb-1' }, '💡 Why cobots are democratizing automation'),
-              h('p', { className: 'text-sm text-slate-800' }, 'Traditional welding robots: ~$200K turn-key cell, weeks of programming, safety cage, requires dedicated programmer. Cobots: ~$50K turn-key, hours of programming, no cage needed, programmed by existing welder. Small shops can now afford automation that was previously out of reach. Result: more shops automating, but cobots typically supplement (not replace) skilled manual welders.')
+              h('div', { className: 'text-xs font-bold uppercase text-blue-900 mb-1' }, __alloT('stem.weldlab.why_cobots_are_democratizing_automatio', '💡 Why cobots are democratizing automation')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.traditional_welding_robots_200k_turn_k', 'Traditional welding robots: ~$200K turn-key cell, weeks of programming, safety cage, requires dedicated programmer. Cobots: ~$50K turn-key, hours of programming, no cage needed, programmed by existing welder. Small shops can now afford automation that was previously out of reach. Result: more shops automating, but cobots typically supplement (not replace) skilled manual welders.'))
             )
           );
         } else if (sect === 'careers') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '💼 Careers in robotic + automated welding'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.careers_in_robotic_automated_welding', '💼 Careers in robotic + automated welding')),
             h('div', { className: 'space-y-2' },
-              [{ role: 'Robot welding operator', pay: '$25-40/hr', desc: 'Loads/unloads parts, monitors cell operation, performs minor adjustments + maintenance. Entry-level. Often a starting point.' },
-               { role: 'Robot programmer/technician', pay: '$30-55/hr', desc: 'Programs new parts + teaches paths + troubleshoots. Often a welder who learned programming. Strong demand.' },
-               { role: 'Robotic welding engineer', pay: '$70-120K', desc: 'Designs welding cells, specs equipment, validates processes, manages multiple cells. Engineering degree typical.' },
-               { role: 'Vision/automation integrator', pay: '$75-140K', desc: 'Designs + commissions vision + sensor systems on welding cells. Specialty subset of robotic engineering.' },
-               { role: 'Field service engineer (welding OEM)', pay: '$70-110K + travel', desc: 'Travels to customer sites for installation + commissioning + troubleshooting of robot welding cells. FANUC, ABB, Lincoln Electric, etc.' },
-               { role: 'Cobot welding specialist (small shop)', pay: '$20-35/hr + ownership stake?', desc: 'In a small fab shop, the person who set up + maintains the cobot is often the highest-skilled welder (also programs + maintains). Growing role in small to mid-size fab.' }].map(function(c, i) {
+              [{ role: 'Robot welding operator', pay: '$25-40/hr', desc: __alloT('stem.weldlab.loads_unloads_parts_monitors_cell_oper', 'Loads/unloads parts, monitors cell operation, performs minor adjustments + maintenance. Entry-level. Often a starting point.') },
+               { role: 'Robot programmer/technician', pay: '$30-55/hr', desc: __alloT('stem.weldlab.programs_new_parts_teaches_paths_troub', 'Programs new parts + teaches paths + troubleshoots. Often a welder who learned programming. Strong demand.') },
+               { role: 'Robotic welding engineer', pay: '$70-120K', desc: __alloT('stem.weldlab.designs_welding_cells_specs_equipment_', 'Designs welding cells, specs equipment, validates processes, manages multiple cells. Engineering degree typical.') },
+               { role: 'Vision/automation integrator', pay: '$75-140K', desc: __alloT('stem.weldlab.designs_commissions_vision_sensor_syst', 'Designs + commissions vision + sensor systems on welding cells. Specialty subset of robotic engineering.') },
+               { role: 'Field service engineer (welding OEM)', pay: '$70-110K + travel', desc: __alloT('stem.weldlab.travels_to_customer_sites_for_installa', 'Travels to customer sites for installation + commissioning + troubleshooting of robot welding cells. FANUC, ABB, Lincoln Electric, etc.') },
+               { role: 'Cobot welding specialist (small shop)', pay: '$20-35/hr + ownership stake?', desc: __alloT('stem.weldlab.in_a_small_fab_shop_the_person_who_set', 'In a small fab shop, the person who set up + maintains the cobot is often the highest-skilled welder (also programs + maintains). Growing role in small to mid-size fab.') }].map(function(c, i) {
                 return h('div', { key: i, className: 'bg-white border-2 border-zinc-200 rounded-xl p-3' },
                   h('div', { className: 'flex justify-between items-baseline mb-1 flex-wrap' },
                     h('span', { className: 'font-black text-zinc-900' }, c.role),
@@ -7274,14 +7275,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               })
             ),
             h('div', { className: 'bg-emerald-50 border-2 border-emerald-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-emerald-900 mb-1' }, '💡 Path to robotic welding'),
-              h('p', { className: 'text-sm text-slate-800' }, 'The strongest profile: start as a manual welder (build technique knowledge), then learn one specific robot system (FANUC training, ABB training, etc.). Welding programs at community colleges increasingly include robot programming modules. EMCC in Maine has FANUC-certified instructors. Tulsa Welding School + Lincoln Electric Welding Tech School offer dedicated automation tracks.')
+              h('div', { className: 'text-xs font-bold uppercase text-emerald-900 mb-1' }, __alloT('stem.weldlab.path_to_robotic_welding', '💡 Path to robotic welding')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.the_strongest_profile_start_as_a_manua', 'The strongest profile: start as a manual welder (build technique knowledge), then learn one specific robot system (FANUC training, ABB training, etc.). Welding programs at community colleges increasingly include robot programming modules. EMCC in Maine has FANUC-certified instructors. Tulsa Welding School + Lincoln Electric Welding Tech School offer dedicated automation tracks.'))
             )
           );
         }
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '🤖', title: 'Robotic + Automated Welding' }),
+          h(BackBar, { icon: '🤖', title: __alloT('stem.weldlab.robotic_automated_welding_2', 'Robotic + Automated Welding') }),
           h('div', { className: 'p-6 max-w-5xl mx-auto space-y-5' },
             h('div', { className: 'flex flex-wrap gap-2' },
               sects.map(function(s) {
@@ -7320,141 +7321,141 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var inspSect = usePersistedState('insp_sect', 'overview');
         var sect = inspSect[0], setSect = inspSect[1];
         var sects = [
-          { id: 'overview',    label: '📋 The CWI role' },
-          { id: 'visual',      label: '👁 Visual inspection (VT)' },
-          { id: 'pt_mt',       label: '🪞 PT + MT — surface defects' },
-          { id: 'ut',          label: '📡 Ultrasonic (UT)' },
-          { id: 'rt',          label: '☢ Radiographic (RT)' },
-          { id: 'et',          label: '🧲 Eddy current (ET)' },
-          { id: 'exam',        label: '📝 The CWI exam' }
+          { id: 'overview',    label: __alloT('stem.weldlab.the_cwi_role', '📋 The CWI role') },
+          { id: 'visual',      label: __alloT('stem.weldlab.visual_inspection_vt', '👁 Visual inspection (VT)') },
+          { id: 'pt_mt',       label: __alloT('stem.weldlab.pt_mt_surface_defects', '🪞 PT + MT — surface defects') },
+          { id: 'ut',          label: __alloT('stem.weldlab.ultrasonic_ut', '📡 Ultrasonic (UT)') },
+          { id: 'rt',          label: __alloT('stem.weldlab.radiographic_rt', '☢ Radiographic (RT)') },
+          { id: 'et',          label: __alloT('stem.weldlab.eddy_current_et', '🧲 Eddy current (ET)') },
+          { id: 'exam',        label: __alloT('stem.weldlab.the_cwi_exam', '📝 The CWI exam') }
         ];
 
         var content;
         if (sect === 'overview') {
           content = h('div', { className: 'space-y-3' },
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'The Certified Welding Inspector (CWI) is the gatekeeper between a finished weld and the customer who accepts it. CWIs apply codes (AWS D1.1, ASME, API) to determine acceptance + rejection of welds, oversee non-destructive testing, audit welder qualifications, and sign off on completed work. Often the only path to certify a fabrication shop\'s output.'),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.the_certified_welding_inspector_cwi_is_2', 'The Certified Welding Inspector (CWI) is the gatekeeper between a finished weld and the customer who accepts it. CWIs apply codes (AWS D1.1, ASME, API) to determine acceptance + rejection of welds, oversee non-destructive testing, audit welder qualifications, and sign off on completed work. Often the only path to certify a fabrication shop\'s output.')),
             h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-xl p-4 space-y-2' },
-              h('div', { className: 'text-sm font-bold text-amber-900' }, '💰 CWI pay + career'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Salary range: '), '$60-110K per year typical (US). Senior CWIs at refineries + nuclear plants $100-150K+. Independent CWI consultants often bill $90-200/hr for inspection work.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Work environment: '), 'Mix of shop floor + field + office (writing reports). Less physically demanding than welding. Some travel.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Typical entry: '), 'Experienced welder (5-10 years) who decides to move into inspection. The shift from making welds to judging them.')
+              h('div', { className: 'text-sm font-bold text-amber-900' }, __alloT('stem.weldlab.cwi_pay_career', '💰 CWI pay + career')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.salary_range', 'Salary range: ')), __alloT('stem.weldlab.60_110k_per_year_typical_us_senior_cwi', '$60-110K per year typical (US). Senior CWIs at refineries + nuclear plants $100-150K+. Independent CWI consultants often bill $90-200/hr for inspection work.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.work_environment', 'Work environment: ')), __alloT('stem.weldlab.mix_of_shop_floor_field_office_writing', 'Mix of shop floor + field + office (writing reports). Less physically demanding than welding. Some travel.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.typical_entry', 'Typical entry: ')), __alloT('stem.weldlab.experienced_welder_5_10_years_who_deci', 'Experienced welder (5-10 years) who decides to move into inspection. The shift from making welds to judging them.'))
             ),
             h('div', { className: 'bg-orange-50 border-2 border-orange-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-orange-900 mb-1' }, '🎓 How to become CWI'),
-              h('p', { className: 'text-sm text-slate-800' }, 'AWS Certified Welding Inspector — requires combination of education + welding experience (e.g., 5 yr welding + HS = qualified; 2 yr welding + Associate degree in welding tech = qualified). Pass 3-part exam ($1,150 fee). Renew every 3 yr. Maintained by continuing education + active inspection work.')
+              h('div', { className: 'text-xs font-bold uppercase text-orange-900 mb-1' }, __alloT('stem.weldlab.how_to_become_cwi', '🎓 How to become CWI')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.aws_certified_welding_inspector_requir', 'AWS Certified Welding Inspector — requires combination of education + welding experience (e.g., 5 yr welding + HS = qualified; 2 yr welding + Associate degree in welding tech = qualified). Pass 3-part exam ($1,150 fee). Renew every 3 yr. Maintained by continuing education + active inspection work.'))
             )
           );
         } else if (sect === 'visual') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '👁 Visual inspection (VT) — the first + most-used method'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'Visual is the most-used + most-misunderstood NDT method. Done with the naked eye + simple tools (flashlight, magnifier, weld gauge, mirror). Detects surface-breaking defects only. Despite simplicity, requires extensive training to do reliably.'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.visual_inspection_vt_the_first_most_us', '👁 Visual inspection (VT) — the first + most-used method')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.visual_is_the_most_used_most_misunders', 'Visual is the most-used + most-misunderstood NDT method. Done with the naked eye + simple tools (flashlight, magnifier, weld gauge, mirror). Detects surface-breaking defects only. Despite simplicity, requires extensive training to do reliably.')),
             h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-xl p-4' },
-              h('div', { className: 'text-sm font-bold text-amber-900 mb-2' }, '🔧 The inspector\'s VT toolkit'),
+              h('div', { className: 'text-sm font-bold text-amber-900 mb-2' }, __alloT('stem.weldlab.the_inspector_s_vt_toolkit', '🔧 The inspector\'s VT toolkit')),
               h('ul', { className: 'space-y-1 text-sm text-slate-800' },
-                h('li', null, '• ', h('strong', null, 'Adequate lighting: '), '~50 fc (foot-candles) minimum per AWS B5.1. Often flashlight + ambient room light.'),
-                h('li', null, '• ', h('strong', null, '5-10x magnifier: '), 'For close inspection of small features.'),
-                h('li', null, '• ', h('strong', null, 'Mirror on stick: '), 'For visualizing back side of welds, inside pipe, etc.'),
-                h('li', null, '• ', h('strong', null, 'Weld gauge: '), 'Bridge cam, Cambridge, or fillet gauge. Measures bead reinforcement, undercut depth, fillet leg size.'),
-                h('li', null, '• ', h('strong', null, 'Pit gauge: '), 'Calipers + depth gauge for measuring defect dimensions.'),
-                h('li', null, '• ', h('strong', null, 'Borescope: '), 'For inspecting inside enclosed spaces (pipe, vessel interior).'),
-                h('li', null, '• ', h('strong', null, 'Code book + acceptance criteria: '), 'Reference for what\'s acceptable + what\'s not. Cannot work without this.')
+                h('li', null, '• ', h('strong', null, __alloT('stem.weldlab.adequate_lighting', 'Adequate lighting: ')), __alloT('stem.weldlab.50_fc_foot_candles_minimum_per_aws_b5_', '~50 fc (foot-candles) minimum per AWS B5.1. Often flashlight + ambient room light.')),
+                h('li', null, '• ', h('strong', null, __alloT('stem.weldlab.5_10x_magnifier', '5-10x magnifier: ')), __alloT('stem.weldlab.for_close_inspection_of_small_features', 'For close inspection of small features.')),
+                h('li', null, '• ', h('strong', null, __alloT('stem.weldlab.mirror_on_stick', 'Mirror on stick: ')), __alloT('stem.weldlab.for_visualizing_back_side_of_welds_ins', 'For visualizing back side of welds, inside pipe, etc.')),
+                h('li', null, '• ', h('strong', null, __alloT('stem.weldlab.weld_gauge', 'Weld gauge: ')), __alloT('stem.weldlab.bridge_cam_cambridge_or_fillet_gauge_m', 'Bridge cam, Cambridge, or fillet gauge. Measures bead reinforcement, undercut depth, fillet leg size.')),
+                h('li', null, '• ', h('strong', null, __alloT('stem.weldlab.pit_gauge', 'Pit gauge: ')), __alloT('stem.weldlab.calipers_depth_gauge_for_measuring_def', 'Calipers + depth gauge for measuring defect dimensions.')),
+                h('li', null, '• ', h('strong', null, 'Borescope: '), __alloT('stem.weldlab.for_inspecting_inside_enclosed_spaces_', 'For inspecting inside enclosed spaces (pipe, vessel interior).')),
+                h('li', null, '• ', h('strong', null, __alloT('stem.weldlab.code_book_acceptance_criteria', 'Code book + acceptance criteria: ')), __alloT('stem.weldlab.reference_for_what_s_acceptable_what_s', 'Reference for what\'s acceptable + what\'s not. Cannot work without this.'))
               )
             ),
             h('div', { className: 'bg-slate-50 border-2 border-slate-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-slate-900 mb-1' }, '💡 What VT catches'),
-              h('p', { className: 'text-sm text-slate-800' }, 'Surface-breaking defects: undercut, overlap, excess reinforcement, insufficient reinforcement, surface porosity, surface cracks, weld profile irregularities, lack of fusion at surface, weld dimension non-conformance (leg size, throat). VT cannot see internal defects — that\'s what other NDT methods are for.')
+              h('div', { className: 'text-xs font-bold uppercase text-slate-900 mb-1' }, __alloT('stem.weldlab.what_vt_catches', '💡 What VT catches')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.surface_breaking_defects_undercut_over', 'Surface-breaking defects: undercut, overlap, excess reinforcement, insufficient reinforcement, surface porosity, surface cracks, weld profile irregularities, lack of fusion at surface, weld dimension non-conformance (leg size, throat). VT cannot see internal defects — that\'s what other NDT methods are for.'))
             )
           );
         } else if (sect === 'pt_mt') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '🪞 Surface defect detection — PT + MT'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.surface_defect_detection_pt_mt', '🪞 Surface defect detection — PT + MT')),
             h('div', { className: 'bg-purple-50 border-2 border-purple-300 rounded-xl p-4 space-y-2' },
-              h('div', { className: 'text-sm font-bold text-purple-900' }, 'PT — Liquid Penetrant Testing'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Process: '), 'Clean surface → apply colored or fluorescent penetrant → let it seep into defects → wipe excess → apply developer (white powder) → defects show as colored or fluorescent lines.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Detects: '), 'Surface-breaking defects only. Cracks, porosity, lack of fusion at surface, laps.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Materials: '), 'Any non-porous material. Common on stainless steel, aluminum, nickel alloys. Not useful on porous materials (cast iron).'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Pros: '), 'Cheap, simple, no specialized equipment.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Cons: '), 'Surface only. Time-consuming. Hazardous chemicals.')
+              h('div', { className: 'text-sm font-bold text-purple-900' }, __alloT('stem.weldlab.pt_liquid_penetrant_testing', 'PT — Liquid Penetrant Testing')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Process: '), __alloT('stem.weldlab.clean_surface_apply_colored_or_fluores', 'Clean surface → apply colored or fluorescent penetrant → let it seep into defects → wipe excess → apply developer (white powder) → defects show as colored or fluorescent lines.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Detects: '), __alloT('stem.weldlab.surface_breaking_defects_only_cracks_p', 'Surface-breaking defects only. Cracks, porosity, lack of fusion at surface, laps.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Materials: '), __alloT('stem.weldlab.any_non_porous_material_common_on_stai', 'Any non-porous material. Common on stainless steel, aluminum, nickel alloys. Not useful on porous materials (cast iron).')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Pros: '), __alloT('stem.weldlab.cheap_simple_no_specialized_equipment', 'Cheap, simple, no specialized equipment.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Cons: '), __alloT('stem.weldlab.surface_only_time_consuming_hazardous_', 'Surface only. Time-consuming. Hazardous chemicals.'))
             ),
             h('div', { className: 'bg-orange-50 border-2 border-orange-300 rounded-xl p-4 space-y-2' },
-              h('div', { className: 'text-sm font-bold text-orange-900' }, 'MT — Magnetic Particle Testing'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Process: '), 'Magnetize the part with an electromagnet → apply iron particles (dry powder or wet suspension) → particles cluster at flux leakage (where field exits at defects) → defects show as colored lines.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Detects: '), 'Surface + near-surface (within ~1/8") defects. Cracks oriented perpendicular to magnetic field.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Materials: '), 'Ferromagnetic materials only — carbon steel, alloy steel, some stainless (martensitic). Won\'t work on aluminum, copper, austenitic stainless 304/316.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Pros: '), 'Fast, sensitive, catches near-surface defects PT can\'t.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Cons: '), 'Only works on magnetic materials. Demagnetization needed after test for some applications.')
+              h('div', { className: 'text-sm font-bold text-orange-900' }, __alloT('stem.weldlab.mt_magnetic_particle_testing', 'MT — Magnetic Particle Testing')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Process: '), __alloT('stem.weldlab.magnetize_the_part_with_an_electromagn', 'Magnetize the part with an electromagnet → apply iron particles (dry powder or wet suspension) → particles cluster at flux leakage (where field exits at defects) → defects show as colored lines.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Detects: '), __alloT('stem.weldlab.surface_near_surface_within_1_8_defect', 'Surface + near-surface (within ~1/8") defects. Cracks oriented perpendicular to magnetic field.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Materials: '), __alloT('stem.weldlab.ferromagnetic_materials_only_carbon_st', 'Ferromagnetic materials only — carbon steel, alloy steel, some stainless (martensitic). Won\'t work on aluminum, copper, austenitic stainless 304/316.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Pros: '), __alloT('stem.weldlab.fast_sensitive_catches_near_surface_de', 'Fast, sensitive, catches near-surface defects PT can\'t.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Cons: '), __alloT('stem.weldlab.only_works_on_magnetic_materials_demag', 'Only works on magnetic materials. Demagnetization needed after test for some applications.'))
             ),
             h('div', { className: 'bg-blue-50 border-2 border-blue-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-blue-900 mb-1' }, '💡 PT vs MT selection'),
-              h('p', { className: 'text-sm text-slate-800' }, 'If material is magnetic (carbon steel, alloy steel) — use MT (faster, more sensitive, finds near-surface). If material is non-magnetic (aluminum, copper, austenitic stainless) — must use PT. Some shops use both: MT for production speed, PT for verification of suspect areas.')
+              h('div', { className: 'text-xs font-bold uppercase text-blue-900 mb-1' }, __alloT('stem.weldlab.pt_vs_mt_selection', '💡 PT vs MT selection')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.if_material_is_magnetic_carbon_steel_a', 'If material is magnetic (carbon steel, alloy steel) — use MT (faster, more sensitive, finds near-surface). If material is non-magnetic (aluminum, copper, austenitic stainless) — must use PT. Some shops use both: MT for production speed, PT for verification of suspect areas.'))
             )
           );
         } else if (sect === 'ut') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '📡 Ultrasonic Testing (UT)'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'UT uses high-frequency sound waves (1-10 MHz) injected into the part via a transducer with coupling gel. Sound reflects off defects + back surface. Time-of-flight + amplitude indicate defect depth + size. Most sensitive volumetric NDT method.'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.ultrasonic_testing_ut', '📡 Ultrasonic Testing (UT)')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.ut_uses_high_frequency_sound_waves_1_1', 'UT uses high-frequency sound waves (1-10 MHz) injected into the part via a transducer with coupling gel. Sound reflects off defects + back surface. Time-of-flight + amplitude indicate defect depth + size. Most sensitive volumetric NDT method.')),
             h('div', { className: 'bg-cyan-50 border-2 border-cyan-300 rounded-xl p-4 space-y-2' },
-              h('div', { className: 'text-sm font-bold text-cyan-900' }, '🔧 How UT works'),
-              h('p', { className: 'text-sm text-slate-800' }, '1. Transducer (piezoelectric crystal) pressed against surface with couplant gel.'),
-              h('p', { className: 'text-sm text-slate-800' }, '2. Transducer pulses sound into the part. Sound travels through metal, reflects off opposite surface, returns.'),
-              h('p', { className: 'text-sm text-slate-800' }, '3. Defects in the path also reflect — show up earlier than back surface.'),
-              h('p', { className: 'text-sm text-slate-800' }, '4. CRT screen (or now LCD) shows time-of-flight + amplitude. Skilled operator interprets.'),
-              h('p', { className: 'text-sm text-slate-800' }, '5. Calibration against reference blocks essential — defect size estimates depend on calibration.')
+              h('div', { className: 'text-sm font-bold text-cyan-900' }, __alloT('stem.weldlab.how_ut_works', '🔧 How UT works')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.1_transducer_piezoelectric_crystal_pre', '1. Transducer (piezoelectric crystal) pressed against surface with couplant gel.')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.2_transducer_pulses_sound_into_the_par', '2. Transducer pulses sound into the part. Sound travels through metal, reflects off opposite surface, returns.')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.3_defects_in_the_path_also_reflect_sho', '3. Defects in the path also reflect — show up earlier than back surface.')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.4_crt_screen_or_now_lcd_shows_time_of_', '4. CRT screen (or now LCD) shows time-of-flight + amplitude. Skilled operator interprets.')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.5_calibration_against_reference_blocks', '5. Calibration against reference blocks essential — defect size estimates depend on calibration.'))
             ),
             h('div', { className: 'bg-emerald-50 border-2 border-emerald-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-emerald-900 mb-1' }, '💡 Pros + cons'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Pros: '), 'Detects internal defects + measures depth + size. Sensitive (can find very small defects). Portable. Real-time results. Safe (no radiation).'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Cons: '), 'Requires couplant (gel/oil) so messy. Surface must be smooth. Highly skilled operator needed. Complex geometries (T-joints, intersections) tricky. Doesn\'t produce permanent record (unlike RT).')
+              h('div', { className: 'text-xs font-bold uppercase text-emerald-900 mb-1' }, __alloT('stem.weldlab.pros_cons_2', '💡 Pros + cons')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Pros: '), __alloT('stem.weldlab.detects_internal_defects_measures_dept', 'Detects internal defects + measures depth + size. Sensitive (can find very small defects). Portable. Real-time results. Safe (no radiation).')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Cons: '), __alloT('stem.weldlab.requires_couplant_gel_oil_so_messy_sur', 'Requires couplant (gel/oil) so messy. Surface must be smooth. Highly skilled operator needed. Complex geometries (T-joints, intersections) tricky. Doesn\'t produce permanent record (unlike RT).'))
             ),
             h('div', { className: 'bg-blue-50 border-2 border-blue-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-blue-900 mb-1' }, '🆕 PAUT — Phased Array UT'),
-              h('p', { className: 'text-sm text-slate-800' }, 'Modern UT often uses Phased Array probes (multi-element transducers) + computerized scanning. Generates 2D imagery of defects (vs traditional A-scan single trace). Faster + more visual + better reporting. Increasingly replaces RT for pipe inspection. PAUT certification is the growing path.')
+              h('div', { className: 'text-xs font-bold uppercase text-blue-900 mb-1' }, __alloT('stem.weldlab.paut_phased_array_ut', '🆕 PAUT — Phased Array UT')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.modern_ut_often_uses_phased_array_prob', 'Modern UT often uses Phased Array probes (multi-element transducers) + computerized scanning. Generates 2D imagery of defects (vs traditional A-scan single trace). Faster + more visual + better reporting. Increasingly replaces RT for pipe inspection. PAUT certification is the growing path.'))
             )
           );
         } else if (sect === 'rt') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '☢ Radiographic Testing (RT)'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'RT uses X-rays or gamma rays to image weld interiors. The part is placed between the radiation source + film/digital detector. Denser metal absorbs more radiation → shows as light areas on the film. Defects (less dense) appear as dark areas. The traditional gold standard for pipe weld inspection.'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.radiographic_testing_rt', '☢ Radiographic Testing (RT)')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.rt_uses_x_rays_or_gamma_rays_to_image_', 'RT uses X-rays or gamma rays to image weld interiors. The part is placed between the radiation source + film/digital detector. Denser metal absorbs more radiation → shows as light areas on the film. Defects (less dense) appear as dark areas. The traditional gold standard for pipe weld inspection.')),
             h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-xl p-4 space-y-2' },
-              h('div', { className: 'text-sm font-bold text-amber-900' }, '🔧 Two source types'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'X-ray (electronic): '), 'X-rays generated by accelerating electrons. Source can be turned off when not in use. Used in shops + controlled environments. Better image quality.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Gamma (isotope): '), 'Radioactive isotopes (Ir-192, Se-75, Co-60) emit gamma rays continuously. Used in field for pipeline + remote work. Source MUST be shielded — radiation incidents have killed pipeline workers.')
+              h('div', { className: 'text-sm font-bold text-amber-900' }, __alloT('stem.weldlab.two_source_types', '🔧 Two source types')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.x_ray_electronic', 'X-ray (electronic): ')), __alloT('stem.weldlab.x_rays_generated_by_accelerating_elect', 'X-rays generated by accelerating electrons. Source can be turned off when not in use. Used in shops + controlled environments. Better image quality.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.gamma_isotope', 'Gamma (isotope): ')), __alloT('stem.weldlab.radioactive_isotopes_ir_192_se_75_co_6', 'Radioactive isotopes (Ir-192, Se-75, Co-60) emit gamma rays continuously. Used in field for pipeline + remote work. Source MUST be shielded — radiation incidents have killed pipeline workers.'))
             ),
             h('div', { className: 'bg-rose-50 border-2 border-rose-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-rose-900 mb-1' }, '⚠ Radiation safety'),
-              h('p', { className: 'text-sm text-slate-800' }, 'RT is the most dangerous NDT method. Radiation exposure is cumulative + cancer-causing. Strict procedures: exclusion zones (typically 100+ ft radius), dosimeter badges, lead shielding, only certified RT technicians operate. NRC + OSHA highly regulated.')
+              h('div', { className: 'text-xs font-bold uppercase text-rose-900 mb-1' }, __alloT('stem.weldlab.radiation_safety', '⚠ Radiation safety')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.rt_is_the_most_dangerous_ndt_method_ra', 'RT is the most dangerous NDT method. Radiation exposure is cumulative + cancer-causing. Strict procedures: exclusion zones (typically 100+ ft radius), dosimeter badges, lead shielding, only certified RT technicians operate. NRC + OSHA highly regulated.'))
             ),
             h('div', { className: 'bg-emerald-50 border-2 border-emerald-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-emerald-900 mb-1' }, '💡 Pros + cons'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Pros: '), 'Creates permanent film/digital record (legal documentation). Detects volumetric defects (porosity, slag inclusions, lack of fusion, cracks transverse to bead). Standard for code-required pipe work.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Cons: '), 'Radiation hazard. Requires expensive equipment + lead shielding. Time-consuming setup. Cracks parallel to film direction may not show. Less sensitive than PAUT for many crack types.')
+              h('div', { className: 'text-xs font-bold uppercase text-emerald-900 mb-1' }, __alloT('stem.weldlab.pros_cons_3', '💡 Pros + cons')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Pros: '), __alloT('stem.weldlab.creates_permanent_film_digital_record_', 'Creates permanent film/digital record (legal documentation). Detects volumetric defects (porosity, slag inclusions, lack of fusion, cracks transverse to bead). Standard for code-required pipe work.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Cons: '), __alloT('stem.weldlab.radiation_hazard_requires_expensive_eq', 'Radiation hazard. Requires expensive equipment + lead shielding. Time-consuming setup. Cracks parallel to film direction may not show. Less sensitive than PAUT for many crack types.'))
             )
           );
         } else if (sect === 'et') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '🧲 Eddy Current Testing (ET)'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'ET induces eddy currents in conductive material via electromagnetic coil. Surface + near-surface defects disrupt the eddy current pattern + the coil senses the change. Used heavily in aerospace + nuclear for crack detection + heat exchanger tube inspection.'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.eddy_current_testing_et', '🧲 Eddy Current Testing (ET)')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.et_induces_eddy_currents_in_conductive', 'ET induces eddy currents in conductive material via electromagnetic coil. Surface + near-surface defects disrupt the eddy current pattern + the coil senses the change. Used heavily in aerospace + nuclear for crack detection + heat exchanger tube inspection.')),
             h('div', { className: 'bg-blue-50 border-2 border-blue-300 rounded-xl p-4 space-y-2' },
-              h('div', { className: 'text-sm font-bold text-blue-900' }, '🔧 How ET works'),
-              h('p', { className: 'text-sm text-slate-800' }, '1. Coil generates alternating magnetic field near surface of conductive material.'),
-              h('p', { className: 'text-sm text-slate-800' }, '2. Eddy currents induced in the material flow in circular patterns parallel to surface.'),
-              h('p', { className: 'text-sm text-slate-800' }, '3. Defects (cracks, voids, conductivity changes) disrupt eddy current flow → impedance of coil changes.'),
-              h('p', { className: 'text-sm text-slate-800' }, '4. Coil impedance change is displayed on instrument; operator interprets.')
+              h('div', { className: 'text-sm font-bold text-blue-900' }, __alloT('stem.weldlab.how_et_works', '🔧 How ET works')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.1_coil_generates_alternating_magnetic_', '1. Coil generates alternating magnetic field near surface of conductive material.')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.2_eddy_currents_induced_in_the_materia', '2. Eddy currents induced in the material flow in circular patterns parallel to surface.')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.3_defects_cracks_voids_conductivity_ch', '3. Defects (cracks, voids, conductivity changes) disrupt eddy current flow → impedance of coil changes.')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.4_coil_impedance_change_is_displayed_o', '4. Coil impedance change is displayed on instrument; operator interprets.'))
             ),
             h('div', { className: 'bg-emerald-50 border-2 border-emerald-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-emerald-900 mb-1' }, '💡 Use cases'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Common applications: '), 'Heat exchanger tube inspection (most common ET use), aerospace structural inspection (fast surface crack detection), conductivity measurement (sorting alloys), coating thickness measurement.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Limitations: '), 'Only conductive materials. Depth limited to ~1/4" (skin effect). Surface must be accessible. Calibration sensitive.')
+              h('div', { className: 'text-xs font-bold uppercase text-emerald-900 mb-1' }, __alloT('stem.weldlab.use_cases', '💡 Use cases')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.common_applications_2', 'Common applications: ')), __alloT('stem.weldlab.heat_exchanger_tube_inspection_most_co', 'Heat exchanger tube inspection (most common ET use), aerospace structural inspection (fast surface crack detection), conductivity measurement (sorting alloys), coating thickness measurement.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Limitations: '), __alloT('stem.weldlab.only_conductive_materials_depth_limite', 'Only conductive materials. Depth limited to ~1/4" (skin effect). Surface must be accessible. Calibration sensitive.'))
             )
           );
         } else if (sect === 'exam') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '📝 The AWS CWI Exam'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'The CWI exam is one of the more demanding professional certifications in welding. Three parts, each 2 hours, given over 9 hours one day:'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.the_aws_cwi_exam', '📝 The AWS CWI Exam')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.the_cwi_exam_is_one_of_the_more_demand', 'The CWI exam is one of the more demanding professional certifications in welding. Three parts, each 2 hours, given over 9 hours one day:')),
             h('div', { className: 'space-y-2' },
-              [{ part: 'Part A — Fundamentals', desc: '150 multiple-choice questions. Welding processes, metallurgy, weld design, distortion + residual stress, weld + base metal discontinuities, destructive + non-destructive examination, joint design, welding symbols, basic codes + standards. Open book — bring AWS reference materials.' },
-               { part: 'Part B — Hands-on', desc: '46 multiple choice. Visual inspection of weld samples — identify defects, measure dimensions, apply acceptance criteria. Uses physical weld coupons in the test room. Inspector applies code criteria to actual welds.' },
-               { part: 'Part C — Code book', desc: '60 multiple choice. Based on a code book chosen at registration — usually AWS D1.1 or ASME IX or API 1104. Tests ability to find + apply specific code provisions. Open book — must navigate the code efficiently.' }].map(function(p, i) {
+              [{ part: 'Part A — Fundamentals', desc: __alloT('stem.weldlab.150_multiple_choice_questions_welding_', '150 multiple-choice questions. Welding processes, metallurgy, weld design, distortion + residual stress, weld + base metal discontinuities, destructive + non-destructive examination, joint design, welding symbols, basic codes + standards. Open book — bring AWS reference materials.') },
+               { part: 'Part B — Hands-on', desc: __alloT('stem.weldlab.46_multiple_choice_visual_inspection_o', '46 multiple choice. Visual inspection of weld samples — identify defects, measure dimensions, apply acceptance criteria. Uses physical weld coupons in the test room. Inspector applies code criteria to actual welds.') },
+               { part: 'Part C — Code book', desc: __alloT('stem.weldlab.60_multiple_choice_based_on_a_code_boo', '60 multiple choice. Based on a code book chosen at registration — usually AWS D1.1 or ASME IX or API 1104. Tests ability to find + apply specific code provisions. Open book — must navigate the code efficiently.') }].map(function(p, i) {
                 return h('div', { key: i, className: 'bg-amber-50 border-2 border-amber-300 rounded-xl p-3' },
                   h('div', { className: 'font-black text-amber-900 mb-1' }, p.part),
                   h('p', { className: 'text-sm text-slate-800' }, p.desc)
@@ -7462,24 +7463,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               })
             ),
             h('div', { className: 'bg-rose-50 border-2 border-rose-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-rose-900 mb-1' }, '⚠ Pass rates'),
-              h('p', { className: 'text-sm text-slate-800' }, 'Approximately 50-65% pass on first attempt. Part C (code book) is typically the hardest — many candidates have never used a code book under time pressure. ~$1,150 fee per exam attempt. AWS-approved prep courses ($500-3000) significantly improve pass rates.')
+              h('div', { className: 'text-xs font-bold uppercase text-rose-900 mb-1' }, __alloT('stem.weldlab.pass_rates', '⚠ Pass rates')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.approximately_50_65_pass_on_first_atte', 'Approximately 50-65% pass on first attempt. Part C (code book) is typically the hardest — many candidates have never used a code book under time pressure. ~$1,150 fee per exam attempt. AWS-approved prep courses ($500-3000) significantly improve pass rates.'))
             ),
             h('div', { className: 'bg-emerald-50 border-2 border-emerald-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-emerald-900 mb-1' }, '🎓 Preparation strategy'),
+              h('div', { className: 'text-xs font-bold uppercase text-emerald-900 mb-1' }, __alloT('stem.weldlab.preparation_strategy', '🎓 Preparation strategy')),
               h('ul', { className: 'space-y-1 text-sm text-slate-800' },
-                h('li', null, '1. Buy the AWS WI Manual + Online Self-Assessment ($150). Take + review repeatedly.'),
-                h('li', null, '2. Take an AWS-approved seminar (one week immersive). $1500-3000. Highest ROI for first-time test-takers.'),
-                h('li', null, '3. For Part C: practice with the actual code book you\'ll bring. Tab key sections. Time yourself looking up references.'),
-                h('li', null, '4. For Part B: get hands-on with weld samples + practice applying acceptance criteria. Some local AWS sections offer practice clinics.'),
-                h('li', null, '5. Use AWS QC1 + AWS B5.1 (Specification for the Qualification of Welding Inspectors) as study foundations.')
+                h('li', null, __alloT('stem.weldlab.1_buy_the_aws_wi_manual_online_self_as', '1. Buy the AWS WI Manual + Online Self-Assessment ($150). Take + review repeatedly.')),
+                h('li', null, __alloT('stem.weldlab.2_take_an_aws_approved_seminar_one_wee', '2. Take an AWS-approved seminar (one week immersive). $1500-3000. Highest ROI for first-time test-takers.')),
+                h('li', null, __alloT('stem.weldlab.3_for_part_c_practice_with_the_actual_', '3. For Part C: practice with the actual code book you\'ll bring. Tab key sections. Time yourself looking up references.')),
+                h('li', null, __alloT('stem.weldlab.4_for_part_b_get_hands_on_with_weld_sa', '4. For Part B: get hands-on with weld samples + practice applying acceptance criteria. Some local AWS sections offer practice clinics.')),
+                h('li', null, __alloT('stem.weldlab.5_use_aws_qc1_aws_b5_1_specification_f', '5. Use AWS QC1 + AWS B5.1 (Specification for the Qualification of Welding Inspectors) as study foundations.'))
               )
             )
           );
         }
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '🧐', title: 'Welding Inspection / CWI Prep' }),
+          h(BackBar, { icon: '🧐', title: __alloT('stem.weldlab.welding_inspection_cwi_prep', 'Welding Inspection / CWI Prep') }),
           h('div', { className: 'p-6 max-w-5xl mx-auto space-y-5' },
             h('div', { className: 'flex flex-wrap gap-2' },
               sects.map(function(s) {
@@ -7527,13 +7528,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var consScPicked = consScPickedState[0], setConsScPicked = consScPickedState[1];
 
         var sects = [
-          { id: 'overview',    label: '📋 Overview' },
-          { id: 'sticks',      label: '🪄 Stick electrodes' },
-          { id: 'mig_wires',   label: '🪢 MIG + FCAW wires' },
-          { id: 'tig_rods',    label: '✏ TIG filler rods + tungsten' },
-          { id: 'gases',       label: '💨 Shielding gases' },
-          { id: 'storage',     label: '📦 Storage + handling' },
-          { id: 'cost',        label: '💰 Cost economics' }
+          { id: 'overview',    label: __alloT('stem.weldlab.overview_5', '📋 Overview') },
+          { id: 'sticks',      label: __alloT('stem.weldlab.stick_electrodes', '🪄 Stick electrodes') },
+          { id: 'mig_wires',   label: __alloT('stem.weldlab.mig_fcaw_wires', '🪢 MIG + FCAW wires') },
+          { id: 'tig_rods',    label: __alloT('stem.weldlab.tig_filler_rods_tungsten', '✏ TIG filler rods + tungsten') },
+          { id: 'gases',       label: __alloT('stem.weldlab.shielding_gases', '💨 Shielding gases') },
+          { id: 'storage',     label: __alloT('stem.weldlab.storage_handling', '📦 Storage + handling') },
+          { id: 'cost',        label: __alloT('stem.weldlab.cost_economics', '💰 Cost economics') }
         ];
 
         // ── Pick-the-Right-Consumable scenarios ──
@@ -7541,7 +7542,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         // consumable combo. Wrong picks teach the failure mode.
         var consScenarios = [
           {
-            title: 'Pipeline root pass on cross-country line',
+            title: __alloT('stem.weldlab.pipeline_root_pass_on_cross_country_li', 'Pipeline root pass on cross-country line'),
             scenario: 'You are welding the root pass of a 36" buried gas transmission pipeline. Joint is open V-groove. Position is fixed 5G (rolled by hand). Outdoor work, sometimes windy. Need fast-freeze characteristics so the root doesn\'t sag.',
             options: [
               'E6010 stick electrode on DC+',
@@ -7553,7 +7554,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             explain: 'E6010 (high-cellulose sodium coating) is THE pipeline root electrode. Deep penetration + fast-freeze = root won\'t sag overhead. Wind tolerance is good (no gas to blow away). 7018 is too sluggish for root; MIG needs wind shielding; TIG is too slow for production pipeline.'
           },
           {
-            title: 'Structural beam-to-column weld for high-rise',
+            title: __alloT('stem.weldlab.structural_beam_to_column_weld_for_hig', 'Structural beam-to-column weld for high-rise'),
             scenario: 'You are welding a 3/4" thick W-shape beam to a column flange. AWS D1.1 structural code work. Inspector is on site. Joint is 2F horizontal fillet. Indoor (climate-controlled). Need certifiable low-hydrogen practice.',
             options: [
               'E6011 stick (works on AC)',
@@ -7565,7 +7566,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             explain: 'E7018 is THE structural code electrode. Low-hydrogen coating = no cold cracking risk. AWS D1.1 essentially requires it for important structural work. Must be hot-stored (250°F+) to keep coating dry. E6011 is for repair; E71T-GS is too rough for code; ER70S-3 with CO2 is OK but stick is the inspector\'s default.'
           },
           {
-            title: 'Auto body repair on rusty quarter panel',
+            title: __alloT('stem.weldlab.auto_body_repair_on_rusty_quarter_pane', 'Auto body repair on rusty quarter panel'),
             scenario: 'Customer brings in a 1990s pickup with rust holes in the rear quarter panel. Sheet metal is 20 gauge (thin). Surface is rusty + has some old undercoating. You need a wire that\'s tolerant of contamination.',
             options: [
               'ER70S-2 0.024" wire with C25 gas',
@@ -7577,7 +7578,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             explain: 'ER70S-6 has the highest Mn + Si content = most tolerant of rust + contamination. 0.024" thin wire for sheet metal (avoids burnthrough). C25 gas for smooth bead with minimal spatter. ER4043 is for ALUMINUM only (wrong metal). ER70S-2 also good but typically used for higher-end clean work.'
           },
           {
-            title: 'Stainless food-grade dairy tank repair',
+            title: __alloT('stem.weldlab.stainless_food_grade_dairy_tank_repair', 'Stainless food-grade dairy tank repair'),
             scenario: 'A 304L stainless dairy holding tank has a leak at a weld. Tank thickness 0.10" (light gauge). Repair must be sanitary (smooth bead, no crevices). Indoor. You will use TIG.',
             options: [
               'ER70S-6 TIG rod with C25 gas',
@@ -7589,7 +7590,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             explain: 'ER308L (low-carbon stainless) is the right match for 304L base metal. Low carbon prevents carbide precipitation (sensitization) that would ruin corrosion resistance at the dairy pH + temperature cycling. ER308 (regular carbon) would risk sensitization. 100% argon is standard TIG gas. ER70S is mild steel (wrong); 4043 is aluminum (wrong).'
           },
           {
-            title: 'Aluminum extrusion bracket (6061-T6)',
+            title: __alloT('stem.weldlab.aluminum_extrusion_bracket_6061_t6', 'Aluminum extrusion bracket (6061-T6)'),
             scenario: 'You\'re fabricating brackets from 1/4" 6061-T6 aluminum extrusion. Material is 6000-series (silicon + magnesium alloy). Customer wants smooth appearance and good fatigue resistance. You\'re using MIG.',
             options: [
               'ER4043 wire with 100% argon',
@@ -7601,7 +7602,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             explain: 'ER4043 (Al-Si alloy) is the standard match for 6061 aluminum — easier to use, smoother bead, better cosmetic appearance. ER5356 is stronger but harder to use + slightly grainier bead (better for 5xxx-series marine alloys). ER70S is steel wire (wrong); ER308L is stainless (wrong).'
           },
           {
-            title: 'Welding rebar (#5) for a foundation repair',
+            title: __alloT('stem.weldlab.welding_rebar_5_for_a_foundation_repai', 'Welding rebar (#5) for a foundation repair'),
             scenario: 'A residential foundation needs additional rebar tied into existing structure. Bars are #5 Grade 60 (5/8" diameter mild steel). Indoor crawl space, awkward positions. Quick work — not code/structural inspected.',
             options: [
               'E6011 stick electrode on AC',
@@ -7613,7 +7614,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             explain: 'E6011 is the right call for non-code rebar work. Versatile — runs on cheap AC machines, tolerates dirty/rusty metal (rebar often is). All-positions for the awkward crawl space angles. E7018 is overkill (not code work). MIG is awkward in tight spaces (need to drag the gun + hose).'
           },
           {
-            title: 'TIG-welding 1/8" aluminum boat hull (AC)',
+            title: __alloT('stem.weldlab.tig_welding_1_8_aluminum_boat_hull_ac', 'TIG-welding 1/8" aluminum boat hull (AC)'),
             scenario: 'Boat hull repair on a Lund aluminum fishing boat. 5052 aluminum (marine-grade), 1/8" thick. Boatyard work, climate-controlled. AC TIG (alternating current cleans oxide layer). Need tungsten that handles AC well.',
             options: [
               '2% thoriated tungsten ground to a sharp point',
@@ -7625,7 +7626,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             explain: '1.5% lanthanated (gold tip) is the modern AC-friendly tungsten. Balled tip (not pointed) is correct for AC — the heat from AC reverse-polarity melts the tip into a ball that conducts current cleanly. Sharp-pointed tungsten on AC will erode + spit. Pure tungsten (green) is the old AC standard but lanthanated has replaced it.'
           },
           {
-            title: 'High-production fillet welding on 1/2" plate',
+            title: __alloT('stem.weldlab.high_production_fillet_welding_on_1_2_', 'High-production fillet welding on 1/2" plate'),
             scenario: 'Shop produces snowplow blades. Job: 8 ft of 5/16" fillet weld per blade, flat position. You weld 40 blades per shift. Cost-per-foot matters. The customer doesn\'t care about cosmetic bead — function over form.',
             options: [
               'E7018 stick electrode',
@@ -7663,31 +7664,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var content;
         if (sect === 'overview') {
           content = h('div', { className: 'space-y-3' },
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'Welding consumables (electrodes, wires, rods, gases, flux) are the variable cost of every weld. Picking the right consumable for the job is half the welder\'s skill — wrong electrode + same machine + same hands = bad weld + cracked joint + wasted time + rejected work.'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'This module covers the consumables system in depth: electrode classifications (what the numbers mean), wire selection, shielding gas mixes, storage requirements, cost economics. Every welder needs working fluency.'),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.welding_consumables_electrodes_wires_r', 'Welding consumables (electrodes, wires, rods, gases, flux) are the variable cost of every weld. Picking the right consumable for the job is half the welder\'s skill — wrong electrode + same machine + same hands = bad weld + cracked joint + wasted time + rejected work.')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.this_module_covers_the_consumables_sys', 'This module covers the consumables system in depth: electrode classifications (what the numbers mean), wire selection, shielding gas mixes, storage requirements, cost economics. Every welder needs working fluency.')),
             h('div', { className: 'bg-fuchsia-50 border-2 border-fuchsia-300 rounded-xl p-4 space-y-2' },
-              h('div', { className: 'text-sm font-bold text-fuchsia-900' }, '🎯 Quick consumable map by process'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'SMAW (stick): '), 'Coated electrodes (E6010, 6011, 6013, 7018, 7024). No shielding gas (flux coating provides). Available in 1/16" to 3/16" diameters.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'GMAW (MIG): '), 'Solid wire (ER70S-3, S-6) on spool + shielding gas (CO2, C25, argon mixes). Wire 0.024" to 0.045" typical.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'FCAW (Flux-Cored): '), 'Tubular wire with flux inside. Two types: self-shielded (E71T-11) needs no gas; gas-shielded (E70T-1) uses CO2.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'GTAW (TIG): '), 'Tungsten electrode (non-consumable) + separate filler rod (ER70S-2/3/6, ER308 for stainless, ER4043/5356 for aluminum) + shielding gas (100% argon usually).'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'OFW (Oxy-Fuel): '), 'No electrode — torch combines oxygen + acetylene. Filler rod separate (RG45 for steel, similar to ER70S series).')
+              h('div', { className: 'text-sm font-bold text-fuchsia-900' }, __alloT('stem.weldlab.quick_consumable_map_by_process', '🎯 Quick consumable map by process')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.smaw_stick', 'SMAW (stick): ')), __alloT('stem.weldlab.coated_electrodes_e6010_6011_6013_7018', 'Coated electrodes (E6010, 6011, 6013, 7018, 7024). No shielding gas (flux coating provides). Available in 1/16" to 3/16" diameters.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.gmaw_mig', 'GMAW (MIG): ')), __alloT('stem.weldlab.solid_wire_er70s_3_s_6_on_spool_shield', 'Solid wire (ER70S-3, S-6) on spool + shielding gas (CO2, C25, argon mixes). Wire 0.024" to 0.045" typical.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.fcaw_flux_cored', 'FCAW (Flux-Cored): ')), __alloT('stem.weldlab.tubular_wire_with_flux_inside_two_type', 'Tubular wire with flux inside. Two types: self-shielded (E71T-11) needs no gas; gas-shielded (E70T-1) uses CO2.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.gtaw_tig', 'GTAW (TIG): ')), __alloT('stem.weldlab.tungsten_electrode_non_consumable_sepa', 'Tungsten electrode (non-consumable) + separate filler rod (ER70S-2/3/6, ER308 for stainless, ER4043/5356 for aluminum) + shielding gas (100% argon usually).')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.ofw_oxy_fuel', 'OFW (Oxy-Fuel): ')), __alloT('stem.weldlab.no_electrode_torch_combines_oxygen_ace', 'No electrode — torch combines oxygen + acetylene. Filler rod separate (RG45 for steel, similar to ER70S series).'))
             )
           );
         } else if (sect === 'sticks') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '🪄 Stick (SMAW) electrode classifications — decoding AWS A5.1'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'AWS electrode classification looks like "E7018." Each character means something:'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.stick_smaw_electrode_classifications_d', '🪄 Stick (SMAW) electrode classifications — decoding AWS A5.1')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.aws_electrode_classification_looks_lik', 'AWS electrode classification looks like "E7018." Each character means something:')),
             h('div', { className: 'bg-slate-50 border-2 border-slate-300 rounded-xl p-4' },
-              h('div', { className: 'font-mono text-lg text-center font-bold text-slate-900 mb-2' }, 'E70 18'),
+              h('div', { className: 'font-mono text-lg text-center font-bold text-slate-900 mb-2' }, __alloT('stem.weldlab.e70_18', 'E70 18')),
               h('div', { className: 'text-sm text-slate-800 space-y-1' },
-                h('div', null, h('strong', { className: 'font-mono' }, 'E '), '= Electrode'),
-                h('div', null, h('strong', { className: 'font-mono' }, '70 '), '= 70,000 psi minimum tensile strength (E80 = 80 ksi, etc.)'),
-                h('div', null, h('strong', { className: 'font-mono' }, '1 '), '= All positions (2 = horizontal + flat only, 4 = flat + horizontal + overhead vertical-down)'),
-                h('div', null, h('strong', { className: 'font-mono' }, '8 '), '= Coating type + recommended current — see table below')
+                h('div', null, h('strong', { className: 'font-mono' }, 'E '), __alloT('stem.weldlab.electrode', '= Electrode')),
+                h('div', null, h('strong', { className: 'font-mono' }, '70 '), __alloT('stem.weldlab.70_000_psi_minimum_tensile_strength_e8', '= 70,000 psi minimum tensile strength (E80 = 80 ksi, etc.)')),
+                h('div', null, h('strong', { className: 'font-mono' }, '1 '), __alloT('stem.weldlab.all_positions_2_horizontal_flat_only_4', '= All positions (2 = horizontal + flat only, 4 = flat + horizontal + overhead vertical-down)')),
+                h('div', null, h('strong', { className: 'font-mono' }, '8 '), __alloT('stem.weldlab.coating_type_recommended_current_see_t', '= Coating type + recommended current — see table below'))
               )
             ),
-            h('h4', { className: 'text-sm font-bold text-slate-800 mt-3' }, 'The major stick electrodes you\'ll encounter:'),
+            h('h4', { className: 'text-sm font-bold text-slate-800 mt-3' }, __alloT('stem.weldlab.the_major_stick_electrodes_you_ll_enco', 'The major stick electrodes you\'ll encounter:')),
             h('div', { className: 'space-y-2' },
               [{ name: 'E6010', tens: '60 ksi', pos: 'All positions', current: 'DC+ only (cellulosic)', coating: 'High-cellulose sodium', use: 'Pipeline root pass, structural where penetration matters. Aggressive deep-penetrating arc, "digs" into base metal. Fast-freeze (works overhead). The pipeliner\'s electrode. Iconic for cross-country pipeline.' },
                { name: 'E6011', tens: '60 ksi', pos: 'All positions', current: 'AC, DC+, DC-', coating: 'High-cellulose potassium', use: 'Like 6010 but runs on AC machines too (small farm shop, transformer welder). Slightly less penetration than 6010. Rusty/dirty metal forgiving. The handyman\'s electrode.' },
@@ -7708,53 +7709,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               })
             ),
             h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-amber-900 mb-1' }, '💡 Picking the right stick electrode'),
+              h('div', { className: 'text-xs font-bold uppercase text-amber-900 mb-1' }, __alloT('stem.weldlab.picking_the_right_stick_electrode', '💡 Picking the right stick electrode')),
               h('ul', { className: 'text-sm text-slate-800 space-y-1' },
-                h('li', null, '• ', h('strong', null, 'Quick farm/repair work: '), 'E6011 (works on any machine, dirty metal OK).'),
-                h('li', null, '• ', h('strong', null, 'Pipeline root pass: '), 'E6010 (deep penetration, fast freeze).'),
-                h('li', null, '• ', h('strong', null, 'Structural code work: '), 'E7018 (low hydrogen, smooth bead, AWS-required).'),
-                h('li', null, '• ', h('strong', null, 'Production fillets, flat position: '), 'E7024 (drag-rod speed).'),
-                h('li', null, '• ', h('strong', null, 'Sheet metal cosmetic: '), 'E6013 (smooth, low penetration).'),
-                h('li', null, '• ', h('strong', null, 'High-strength alloy steel: '), 'E8018-B2 or higher with preheat + low-hydrogen practice.')
+                h('li', null, '• ', h('strong', null, __alloT('stem.weldlab.quick_farm_repair_work', 'Quick farm/repair work: ')), __alloT('stem.weldlab.e6011_works_on_any_machine_dirty_metal', 'E6011 (works on any machine, dirty metal OK).')),
+                h('li', null, '• ', h('strong', null, __alloT('stem.weldlab.pipeline_root_pass', 'Pipeline root pass: ')), __alloT('stem.weldlab.e6010_deep_penetration_fast_freeze', 'E6010 (deep penetration, fast freeze).')),
+                h('li', null, '• ', h('strong', null, __alloT('stem.weldlab.structural_code_work', 'Structural code work: ')), __alloT('stem.weldlab.e7018_low_hydrogen_smooth_bead_aws_req', 'E7018 (low hydrogen, smooth bead, AWS-required).')),
+                h('li', null, '• ', h('strong', null, __alloT('stem.weldlab.production_fillets_flat_position', 'Production fillets, flat position: ')), __alloT('stem.weldlab.e7024_drag_rod_speed', 'E7024 (drag-rod speed).')),
+                h('li', null, '• ', h('strong', null, __alloT('stem.weldlab.sheet_metal_cosmetic', 'Sheet metal cosmetic: ')), __alloT('stem.weldlab.e6013_smooth_low_penetration', 'E6013 (smooth, low penetration).')),
+                h('li', null, '• ', h('strong', null, __alloT('stem.weldlab.high_strength_alloy_steel', 'High-strength alloy steel: ')), __alloT('stem.weldlab.e8018_b2_or_higher_with_preheat_low_hy', 'E8018-B2 or higher with preheat + low-hydrogen practice.'))
               )
             )
           );
         } else if (sect === 'mig_wires') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '🪢 MIG (GMAW) + FCAW wire classifications — AWS A5.18 / A5.20'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'MIG wires are solid or composite (FCAW). Both are continuous-feed from a spool. AWS classification looks like "ER70S-6":'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.mig_gmaw_fcaw_wire_classifications_aws', '🪢 MIG (GMAW) + FCAW wire classifications — AWS A5.18 / A5.20')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.mig_wires_are_solid_or_composite_fcaw_', 'MIG wires are solid or composite (FCAW). Both are continuous-feed from a spool. AWS classification looks like "ER70S-6":')),
             h('div', { className: 'bg-slate-50 border-2 border-slate-300 rounded-xl p-4' },
-              h('div', { className: 'font-mono text-lg text-center font-bold text-slate-900 mb-2' }, 'ER 70 S - 6'),
+              h('div', { className: 'font-mono text-lg text-center font-bold text-slate-900 mb-2' }, __alloT('stem.weldlab.er_70_s_6', 'ER 70 S - 6')),
               h('div', { className: 'text-sm text-slate-800 space-y-1' },
-                h('div', null, h('strong', { className: 'font-mono' }, 'ER '), '= Electrode + Rod (solid wire; usable as TIG filler too)'),
-                h('div', null, h('strong', { className: 'font-mono' }, '70 '), '= 70 ksi tensile strength'),
-                h('div', null, h('strong', { className: 'font-mono' }, 'S '), '= Solid wire (vs C for composite/cored)'),
-                h('div', null, h('strong', { className: 'font-mono' }, '6 '), '= Chemistry — different additives (Mn, Si, Ti, Al, Zr) for different needs')
+                h('div', null, h('strong', { className: 'font-mono' }, 'ER '), __alloT('stem.weldlab.electrode_rod_solid_wire_usable_as_tig', '= Electrode + Rod (solid wire; usable as TIG filler too)')),
+                h('div', null, h('strong', { className: 'font-mono' }, '70 '), __alloT('stem.weldlab.70_ksi_tensile_strength', '= 70 ksi tensile strength')),
+                h('div', null, h('strong', { className: 'font-mono' }, 'S '), __alloT('stem.weldlab.solid_wire_vs_c_for_composite_cored', '= Solid wire (vs C for composite/cored)')),
+                h('div', null, h('strong', { className: 'font-mono' }, '6 '), __alloT('stem.weldlab.chemistry_different_additives_mn_si_ti', '= Chemistry — different additives (Mn, Si, Ti, Al, Zr) for different needs'))
               )
             ),
-            h('h4', { className: 'text-sm font-bold text-slate-800 mt-3' }, 'Common solid MIG wires:'),
+            h('h4', { className: 'text-sm font-bold text-slate-800 mt-3' }, __alloT('stem.weldlab.common_solid_mig_wires', 'Common solid MIG wires:')),
             h('div', { className: 'space-y-2' },
-              [{ name: 'ER70S-2', desc: 'Triple-deoxidized (Al, Ti, Zr added). Most clean MIG wire. Best for: contaminated/rusty base metal, primer-coated steel. Often used by farm + repair welders.' },
-               { name: 'ER70S-3', desc: 'Standard MIG wire. Modest deoxidation. Best for: clean, new mild steel in fabrication shops. Most economical.' },
-               { name: 'ER70S-4', desc: 'Higher Mn + Si than S-3. Better for: light mill scale on steel. Slightly stronger weld.' },
-               { name: 'ER70S-6', desc: 'Highest Mn + Si content. Best for: rusty/dirty/galvanized steel, autobody work. The #1-selling MIG wire because it tolerates real-world conditions.' },
-               { name: 'ER70S-7', desc: 'Specialty — high Mn for thicker steel. Less common.' },
-               { name: 'ER308 / 308L', desc: 'Stainless MIG wire for 304/304L stainless. 308 has higher carbon; 308L is low-carbon (recommended for code work to avoid sensitization).' },
-               { name: 'ER316 / 316L', desc: 'Stainless MIG wire for 316/316L (more corrosion-resistant grade — molybdenum added). For marine + chemical applications.' },
-               { name: 'ER4043', desc: 'Aluminum MIG wire — 5% silicon. Best for: 6061 + 6063 aluminum (most extrusions). Easy to use; bead has darker tinge.' },
-               { name: 'ER5356', desc: 'Aluminum MIG wire — 5% magnesium. Best for: 5052 + 5083 + 6061 (some). Stronger than 4043, harder to use. Better for marine + structural.' }].map(function(w, i) {
+              [{ name: 'ER70S-2', desc: __alloT('stem.weldlab.triple_deoxidized_al_ti_zr_added_most_', 'Triple-deoxidized (Al, Ti, Zr added). Most clean MIG wire. Best for: contaminated/rusty base metal, primer-coated steel. Often used by farm + repair welders.') },
+               { name: 'ER70S-3', desc: __alloT('stem.weldlab.standard_mig_wire_modest_deoxidation_b', 'Standard MIG wire. Modest deoxidation. Best for: clean, new mild steel in fabrication shops. Most economical.') },
+               { name: 'ER70S-4', desc: __alloT('stem.weldlab.higher_mn_si_than_s_3_better_for_light', 'Higher Mn + Si than S-3. Better for: light mill scale on steel. Slightly stronger weld.') },
+               { name: 'ER70S-6', desc: __alloT('stem.weldlab.highest_mn_si_content_best_for_rusty_d', 'Highest Mn + Si content. Best for: rusty/dirty/galvanized steel, autobody work. The #1-selling MIG wire because it tolerates real-world conditions.') },
+               { name: 'ER70S-7', desc: __alloT('stem.weldlab.specialty_high_mn_for_thicker_steel_le', 'Specialty — high Mn for thicker steel. Less common.') },
+               { name: __alloT('stem.weldlab.er308_308l', 'ER308 / 308L'), desc: __alloT('stem.weldlab.stainless_mig_wire_for_304_304l_stainl', 'Stainless MIG wire for 304/304L stainless. 308 has higher carbon; 308L is low-carbon (recommended for code work to avoid sensitization).') },
+               { name: __alloT('stem.weldlab.er316_316l', 'ER316 / 316L'), desc: __alloT('stem.weldlab.stainless_mig_wire_for_316_316l_more_c', 'Stainless MIG wire for 316/316L (more corrosion-resistant grade — molybdenum added). For marine + chemical applications.') },
+               { name: 'ER4043', desc: __alloT('stem.weldlab.aluminum_mig_wire_5_silicon_best_for_6', 'Aluminum MIG wire — 5% silicon. Best for: 6061 + 6063 aluminum (most extrusions). Easy to use; bead has darker tinge.') },
+               { name: 'ER5356', desc: __alloT('stem.weldlab.aluminum_mig_wire_5_magnesium_best_for', 'Aluminum MIG wire — 5% magnesium. Best for: 5052 + 5083 + 6061 (some). Stronger than 4043, harder to use. Better for marine + structural.') }].map(function(w, i) {
                 return h('div', { key: i, className: 'bg-fuchsia-50 border-l-4 border-fuchsia-400 rounded-r-xl p-3' },
                   h('div', { className: 'font-mono font-bold text-fuchsia-900 mb-1' }, w.name),
                   h('p', { className: 'text-sm text-slate-800' }, w.desc)
                 );
               })
             ),
-            h('h4', { className: 'text-sm font-bold text-slate-800 mt-3' }, 'FCAW wires (flux-cored):'),
+            h('h4', { className: 'text-sm font-bold text-slate-800 mt-3' }, __alloT('stem.weldlab.fcaw_wires_flux_cored', 'FCAW wires (flux-cored):')),
             h('div', { className: 'space-y-2' },
-              [{ name: 'E70T-1', desc: 'Gas-shielded FCAW. Smooth bead, low spatter, slag covers bead for protection while cooling. Best for: indoor production welding on plate. Faster than solid MIG.' },
-               { name: 'E71T-1', desc: 'Like E70T-1 but all-positions (1 vs 0 in classification = all-position). Common for structural fabrication.' },
-               { name: 'E70T-11', desc: 'Self-shielded FCAW (no gas needed). Best for: outdoor work, field repair, wind-affected environments. Less smooth bead than gas-shielded but no gas cylinder to lug around.' },
-               { name: 'E71T-GS', desc: 'Self-shielded all-positions FCAW. Used in homeowner-grade MIG machines without gas. Cheap + tolerant but bead quality limited.' }].map(function(w, i) {
+              [{ name: 'E70T-1', desc: __alloT('stem.weldlab.gas_shielded_fcaw_smooth_bead_low_spat', 'Gas-shielded FCAW. Smooth bead, low spatter, slag covers bead for protection while cooling. Best for: indoor production welding on plate. Faster than solid MIG.') },
+               { name: 'E71T-1', desc: __alloT('stem.weldlab.like_e70t_1_but_all_positions_1_vs_0_i', 'Like E70T-1 but all-positions (1 vs 0 in classification = all-position). Common for structural fabrication.') },
+               { name: 'E70T-11', desc: __alloT('stem.weldlab.self_shielded_fcaw_no_gas_needed_best_', 'Self-shielded FCAW (no gas needed). Best for: outdoor work, field repair, wind-affected environments. Less smooth bead than gas-shielded but no gas cylinder to lug around.') },
+               { name: 'E71T-GS', desc: __alloT('stem.weldlab.self_shielded_all_positions_fcaw_used_', 'Self-shielded all-positions FCAW. Used in homeowner-grade MIG machines without gas. Cheap + tolerant but bead quality limited.') }].map(function(w, i) {
                 return h('div', { key: i, className: 'bg-purple-50 border-l-4 border-purple-400 rounded-r-xl p-3' },
                   h('div', { className: 'font-mono font-bold text-purple-900 mb-1' }, w.name),
                   h('p', { className: 'text-sm text-slate-800' }, w.desc)
@@ -7762,22 +7763,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               })
             ),
             h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-amber-900 mb-1' }, '💡 Wire diameter selection'),
-              h('p', { className: 'text-sm text-slate-800' }, '0.024" — thin sheet metal (autobody, 22 ga). 0.030" — light gauge (16-12 ga). 0.035" — most common general work (1/8"-3/8"). 0.045" — heavy plate (3/8"+) + production work. Bigger wire = more amperage required = more deposition rate but less control.')
+              h('div', { className: 'text-xs font-bold uppercase text-amber-900 mb-1' }, __alloT('stem.weldlab.wire_diameter_selection', '💡 Wire diameter selection')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.0_024_thin_sheet_metal_autobody_22_ga_', '0.024" — thin sheet metal (autobody, 22 ga). 0.030" — light gauge (16-12 ga). 0.035" — most common general work (1/8"-3/8"). 0.045" — heavy plate (3/8"+) + production work. Bigger wire = more amperage required = more deposition rate but less control.'))
             )
           );
         } else if (sect === 'tig_rods') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '✏ TIG (GTAW) consumables — rods + tungsten + gas'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'TIG uses a non-consumable tungsten electrode (doesn\'t become part of the weld) + a separate filler rod that the welder dips into the puddle. Both selection + tungsten preparation matter.'),
-            h('h4', { className: 'text-sm font-bold text-slate-800' }, 'Tungsten electrodes — color-coded tip!'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.tig_gtaw_consumables_rods_tungsten_gas', '✏ TIG (GTAW) consumables — rods + tungsten + gas')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.tig_uses_a_non_consumable_tungsten_ele', 'TIG uses a non-consumable tungsten electrode (doesn\'t become part of the weld) + a separate filler rod that the welder dips into the puddle. Both selection + tungsten preparation matter.')),
+            h('h4', { className: 'text-sm font-bold text-slate-800' }, __alloT('stem.weldlab.tungsten_electrodes_color_coded_tip', 'Tungsten electrodes — color-coded tip!')),
             h('div', { className: 'space-y-2' },
-              [{ name: '2% Thoriated (EWTh-2)', color: 'Red tip', use: 'Older standard for DC TIG on steel. Slightly radioactive (thorium). Excellent arc starts. Still common but being phased out for safety reasons.' },
-               { name: '2% Lanthanated (EWLa-2)', color: 'Blue tip', use: 'Modern replacement for thoriated. Comparable performance, no radioactivity. Increasingly the default for DC steel work.' },
-               { name: '2% Ceriated (EWCe-2)', color: 'Orange tip', use: 'Good for both AC + DC. Lower amp startup. Used for thin material + aluminum applications.' },
-               { name: '1.5% Lanthanated (EWLa-1.5)', color: 'Gold tip', use: 'General-purpose. Works AC or DC. Good all-around tungsten.' },
-               { name: 'Pure tungsten (EWP)', color: 'Green tip', use: 'Old standard for AC aluminum. Forms a ball at the tip when heated (good for AC current flow). Now being replaced by ceriated/lanthanated.' },
-               { name: '0.8% Zirconiated (EWZr-1)', color: 'White tip', use: 'AC welding aluminum — replacement for pure tungsten. Holds shape better.' }].map(function(t, i) {
+              [{ name: __alloT('stem.weldlab.2_thoriated_ewth_2', '2% Thoriated (EWTh-2)'), color: 'Red tip', use: 'Older standard for DC TIG on steel. Slightly radioactive (thorium). Excellent arc starts. Still common but being phased out for safety reasons.' },
+               { name: __alloT('stem.weldlab.2_lanthanated_ewla_2', '2% Lanthanated (EWLa-2)'), color: 'Blue tip', use: 'Modern replacement for thoriated. Comparable performance, no radioactivity. Increasingly the default for DC steel work.' },
+               { name: __alloT('stem.weldlab.2_ceriated_ewce_2', '2% Ceriated (EWCe-2)'), color: 'Orange tip', use: 'Good for both AC + DC. Lower amp startup. Used for thin material + aluminum applications.' },
+               { name: __alloT('stem.weldlab.1_5_lanthanated_ewla_1_5', '1.5% Lanthanated (EWLa-1.5)'), color: 'Gold tip', use: 'General-purpose. Works AC or DC. Good all-around tungsten.' },
+               { name: __alloT('stem.weldlab.pure_tungsten_ewp', 'Pure tungsten (EWP)'), color: 'Green tip', use: 'Old standard for AC aluminum. Forms a ball at the tip when heated (good for AC current flow). Now being replaced by ceriated/lanthanated.' },
+               { name: __alloT('stem.weldlab.0_8_zirconiated_ewzr_1', '0.8% Zirconiated (EWZr-1)'), color: 'White tip', use: 'AC welding aluminum — replacement for pure tungsten. Holds shape better.' }].map(function(t, i) {
                 return h('div', { key: i, className: 'bg-fuchsia-50 border-2 border-fuchsia-200 rounded-xl p-3' },
                   h('div', { className: 'flex justify-between items-baseline mb-1 flex-wrap' },
                     h('span', { className: 'font-mono font-bold text-fuchsia-900' }, t.name),
@@ -7788,16 +7789,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               })
             ),
             h('div', { className: 'bg-blue-50 border-2 border-blue-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-blue-900 mb-1' }, '💡 Tungsten preparation'),
-              h('p', { className: 'text-sm text-slate-800' }, 'DC TIG: grind tungsten to a sharp point (pencil-tip). Grinding marks should run lengthwise (along electrode), not circumferentially (around). AC TIG: ball the tip by striking arc on scrap; the heat melts the tip into a smooth ball. Dirty/contaminated tungsten = poor arc start + bad weld. Re-grind every time you touch the filler rod by accident.')
+              h('div', { className: 'text-xs font-bold uppercase text-blue-900 mb-1' }, __alloT('stem.weldlab.tungsten_preparation', '💡 Tungsten preparation')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.dc_tig_grind_tungsten_to_a_sharp_point', 'DC TIG: grind tungsten to a sharp point (pencil-tip). Grinding marks should run lengthwise (along electrode), not circumferentially (around). AC TIG: ball the tip by striking arc on scrap; the heat melts the tip into a smooth ball. Dirty/contaminated tungsten = poor arc start + bad weld. Re-grind every time you touch the filler rod by accident.'))
             ),
-            h('h4', { className: 'text-sm font-bold text-slate-800 mt-3' }, 'TIG filler rods:'),
-            h('p', { className: 'text-sm text-slate-800' }, 'TIG filler rods use the same classification as MIG wires (ER70S-2, ER70S-6, ER308, ER4043, etc.). The rod is 36" long, ~1/16" to 3/32" diameter, fed manually into the weld puddle by the welder\'s other hand. The choice depends on base metal + intended weld properties.')
+            h('h4', { className: 'text-sm font-bold text-slate-800 mt-3' }, __alloT('stem.weldlab.tig_filler_rods', 'TIG filler rods:')),
+            h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.tig_filler_rods_use_the_same_classific', 'TIG filler rods use the same classification as MIG wires (ER70S-2, ER70S-6, ER308, ER4043, etc.). The rod is 36" long, ~1/16" to 3/32" diameter, fed manually into the weld puddle by the welder\'s other hand. The choice depends on base metal + intended weld properties.'))
           );
         } else if (sect === 'gases') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '💨 Shielding gas mixes — what to use for what'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'Shielding gas protects the molten weld pool from atmospheric oxygen + nitrogen. The wrong gas = porosity + poor penetration + bad arc characteristics.'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.shielding_gas_mixes_what_to_use_for_wh', '💨 Shielding gas mixes — what to use for what')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.shielding_gas_protects_the_molten_weld', 'Shielding gas protects the molten weld pool from atmospheric oxygen + nitrogen. The wrong gas = porosity + poor penetration + bad arc characteristics.')),
             h('div', { className: 'space-y-2' },
               [{ mix: '100% CO2', proc: 'MIG steel only', cost: 'Cheapest', deep_pen: 'Yes', spatter: 'High', use: 'Budget MIG welding on mild steel. Deep penetration. Lots of spatter (need anti-spatter spray). Old-school standard before C25 became cheap.' },
                { mix: '75% Argon / 25% CO2 (C25)', proc: 'MIG steel', cost: 'Moderate', deep_pen: 'Yes', spatter: 'Low', use: 'THE most common MIG shielding gas. Good penetration with minimal spatter. Default unless project specifies otherwise.' },
@@ -7813,7 +7814,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     h('span', { className: 'text-xs font-mono text-purple-700' }, g.proc + ' · ' + g.cost)
                   ),
                   h('div', { className: 'flex gap-3 text-xs text-slate-700 mb-1' },
-                    h('span', null, h('strong', null, 'Deep pen: '), g.deep_pen),
+                    h('span', null, h('strong', null, __alloT('stem.weldlab.deep_pen', 'Deep pen: ')), g.deep_pen),
                     h('span', null, h('strong', null, 'Spatter: '), g.spatter)
                   ),
                   h('p', { className: 'text-sm text-slate-800' }, g.use)
@@ -7821,14 +7822,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               })
             ),
             h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-amber-900 mb-1' }, '💡 Flow rate basics'),
-              h('p', { className: 'text-sm text-slate-800' }, 'Typical: 20-35 CFH (cubic feet/hour) for MIG. 15-25 CFH for TIG. Too low = porosity. Too high = turbulent flow that SUCKS atmosphere in = porosity. Both extremes cause same defect. Sweet spot is your machine\'s recommended range adjusted for breeze + nozzle distance.')
+              h('div', { className: 'text-xs font-bold uppercase text-amber-900 mb-1' }, __alloT('stem.weldlab.flow_rate_basics', '💡 Flow rate basics')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.typical_20_35_cfh_cubic_feet_hour_for_', 'Typical: 20-35 CFH (cubic feet/hour) for MIG. 15-25 CFH for TIG. Too low = porosity. Too high = turbulent flow that SUCKS atmosphere in = porosity. Both extremes cause same defect. Sweet spot is your machine\'s recommended range adjusted for breeze + nozzle distance.'))
             )
           );
         } else if (sect === 'storage') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '📦 Consumable storage + handling — why it matters'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'Damp consumables cause hydrogen-induced cold cracking. Contaminated consumables cause weld defects. Most "the welder couldn\'t get good penetration" complaints are actually consumable problems.'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.consumable_storage_handling_why_it_mat', '📦 Consumable storage + handling — why it matters')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.damp_consumables_cause_hydrogen_induce', 'Damp consumables cause hydrogen-induced cold cracking. Contaminated consumables cause weld defects. Most "the welder couldn\'t get good penetration" complaints are actually consumable problems.')),
             h('div', { className: 'space-y-2' },
               [{ item: 'Low-hydrogen electrodes (E7018, E7028, E8018)', requirements: 'Hot storage at 250°F minimum. Once removed from sealed can, can be rebaked if back in oven within 4 hr; after that, may be permanently damaged. Many fabricators rebake at 700-800°F for 1-2 hr if reusing.' },
                { item: 'Standard cellulosic electrodes (E6010, E6011)', requirements: 'Dry storage at ambient temperature. The cellulose coating actually NEEDS some moisture to work. Don\'t bake these — you\'ll ruin them. Just keep them dry.' },
@@ -7843,21 +7844,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               })
             ),
             h('div', { className: 'bg-rose-50 border-2 border-rose-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-rose-900 mb-1' }, '⚠ Damp E7018 — the killer'),
-              h('p', { className: 'text-sm text-slate-800' }, 'A welder uses E7018 from a can that\'s been open for 3 days. The coating has absorbed moisture. When struck, the moisture dissociates → hydrogen enters the weld pool → diffuses into HAZ → 24-48 hr later, cold crack. Weld fails inspection or fails in service. NEVER trust E7018 from an unsealed can. When in doubt, rebake.')
+              h('div', { className: 'text-xs font-bold uppercase text-rose-900 mb-1' }, __alloT('stem.weldlab.damp_e7018_the_killer', '⚠ Damp E7018 — the killer')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.a_welder_uses_e7018_from_a_can_that_s_', 'A welder uses E7018 from a can that\'s been open for 3 days. The coating has absorbed moisture. When struck, the moisture dissociates → hydrogen enters the weld pool → diffuses into HAZ → 24-48 hr later, cold crack. Weld fails inspection or fails in service. NEVER trust E7018 from an unsealed can. When in doubt, rebake.'))
             )
           );
         } else if (sect === 'cost') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '💰 Consumable economics — cost per pound of weld'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'For estimating purposes, welders + shops calculate "cost per pound of deposited weld metal." Includes consumable cost + labor cost + machine time. Process choice has huge cost implications.'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.consumable_economics_cost_per_pound_of', '💰 Consumable economics — cost per pound of weld')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.for_estimating_purposes_welders_shops_', 'For estimating purposes, welders + shops calculate "cost per pound of deposited weld metal." Includes consumable cost + labor cost + machine time. Process choice has huge cost implications.')),
             h('div', { className: 'space-y-2' },
-              [{ proc: 'SMAW (stick)', dep_rate: '2-5 lb/hr', eff: '60-75%', cost: '$3-5/lb electrode', total: '~$30-50/lb weld', note: 'Lowest deposit rate. Lots of waste (stubs + flux). But low equipment cost + portable.' },
-               { proc: 'GMAW (MIG, short-circuit)', dep_rate: '4-10 lb/hr', eff: '90-95%', cost: '$2-4/lb wire + gas', total: '~$15-25/lb weld', note: 'Faster than stick. Most popular for plate fabrication. Higher equipment cost (machine + gas).' },
-               { proc: 'GMAW (MIG, spray transfer)', dep_rate: '10-25 lb/hr', eff: '90-95%', cost: '$2-4/lb wire + gas', total: '~$12-20/lb weld', note: 'Much faster than short-circuit. Flat + horizontal only. Heavy fabrication.' },
-               { proc: 'FCAW (flux-cored, gas-shielded)', dep_rate: '8-30 lb/hr', eff: '80-90%', cost: '$2.50-5/lb wire + gas', total: '~$15-30/lb weld', note: 'Fastest of common processes. Heavy industrial work (structural, shipbuilding, mining equipment).' },
-               { proc: 'GTAW (TIG)', dep_rate: '0.5-2 lb/hr', eff: '95-100%', cost: '$8-25/lb filler + gas', total: '~$80-200/lb weld', note: 'Lowest deposit rate, highest cost per pound. ONLY used where quality + appearance + corrosion resistance justify cost.' },
-               { proc: 'SAW (Submerged Arc — automated)', dep_rate: '10-100 lb/hr', eff: '95%+', cost: '$1.50-3/lb wire + flux', total: '~$8-15/lb weld', note: 'Lowest cost per pound. Automated only. Used for huge plates, ships, pipe seam welding.' }].map(function(p, i) {
+              [{ proc: 'SMAW (stick)', dep_rate: '2-5 lb/hr', eff: '60-75%', cost: '$3-5/lb electrode', total: '~$30-50/lb weld', note: __alloT('stem.weldlab.lowest_deposit_rate_lots_of_waste_stub', 'Lowest deposit rate. Lots of waste (stubs + flux). But low equipment cost + portable.') },
+               { proc: 'GMAW (MIG, short-circuit)', dep_rate: '4-10 lb/hr', eff: '90-95%', cost: '$2-4/lb wire + gas', total: '~$15-25/lb weld', note: __alloT('stem.weldlab.faster_than_stick_most_popular_for_pla', 'Faster than stick. Most popular for plate fabrication. Higher equipment cost (machine + gas).') },
+               { proc: 'GMAW (MIG, spray transfer)', dep_rate: '10-25 lb/hr', eff: '90-95%', cost: '$2-4/lb wire + gas', total: '~$12-20/lb weld', note: __alloT('stem.weldlab.much_faster_than_short_circuit_flat_ho', 'Much faster than short-circuit. Flat + horizontal only. Heavy fabrication.') },
+               { proc: 'FCAW (flux-cored, gas-shielded)', dep_rate: '8-30 lb/hr', eff: '80-90%', cost: '$2.50-5/lb wire + gas', total: '~$15-30/lb weld', note: __alloT('stem.weldlab.fastest_of_common_processes_heavy_indu', 'Fastest of common processes. Heavy industrial work (structural, shipbuilding, mining equipment).') },
+               { proc: 'GTAW (TIG)', dep_rate: '0.5-2 lb/hr', eff: '95-100%', cost: '$8-25/lb filler + gas', total: '~$80-200/lb weld', note: __alloT('stem.weldlab.lowest_deposit_rate_highest_cost_per_p', 'Lowest deposit rate, highest cost per pound. ONLY used where quality + appearance + corrosion resistance justify cost.') },
+               { proc: 'SAW (Submerged Arc — automated)', dep_rate: '10-100 lb/hr', eff: '95%+', cost: '$1.50-3/lb wire + flux', total: '~$8-15/lb weld', note: __alloT('stem.weldlab.lowest_cost_per_pound_automated_only_u', 'Lowest cost per pound. Automated only. Used for huge plates, ships, pipe seam welding.') }].map(function(p, i) {
                 return h('div', { key: i, className: 'bg-emerald-50 border-2 border-emerald-200 rounded-xl p-3' },
                   h('div', { className: 'flex justify-between items-baseline mb-1 flex-wrap' },
                     h('span', { className: 'font-bold text-emerald-900' }, p.proc),
@@ -7873,21 +7874,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               })
             ),
             h('div', { className: 'bg-blue-50 border-2 border-blue-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-blue-900 mb-1' }, '💡 Cost vs quality trade-off'),
-              h('p', { className: 'text-sm text-slate-800' }, 'Engineers spec the cheapest process that meets requirements. A non-critical fillet weld on plate = MIG short-circuit. A pressure vessel root pass = TIG (5x cost, but the only way to meet code). A 10,000 ft pipeline = FCAW with mechanized travel. Smart welding shops bid jobs knowing these tradeoffs.')
+              h('div', { className: 'text-xs font-bold uppercase text-blue-900 mb-1' }, __alloT('stem.weldlab.cost_vs_quality_trade_off', '💡 Cost vs quality trade-off')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.engineers_spec_the_cheapest_process_th', 'Engineers spec the cheapest process that meets requirements. A non-critical fillet weld on plate = MIG short-circuit. A pressure vessel root pass = TIG (5x cost, but the only way to meet code). A 10,000 ft pipeline = FCAW with mechanized travel. Smart welding shops bid jobs knowing these tradeoffs.'))
             )
           );
         }
 
         var consModeTabs = [
-          { id: 'browse',    label: '📋 Browse topics' },
-          { id: 'scenarios', label: '🎯 Pick the right consumable' }
+          { id: 'browse',    label: __alloT('stem.weldlab.browse_topics', '📋 Browse topics') },
+          { id: 'scenarios', label: __alloT('stem.weldlab.pick_the_right_consumable', '🎯 Pick the right consumable') }
         ];
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '🧵', title: 'Consumables Deep-Dive' }),
+          h(BackBar, { icon: '🧵', title: __alloT('stem.weldlab.consumables_deep_dive_2', 'Consumables Deep-Dive') }),
           h('div', { className: 'p-6 max-w-5xl mx-auto space-y-5' },
-            h('div', { role: 'tablist', 'aria-label': 'Consumables mode', className: 'flex flex-wrap gap-2' },
+            h('div', { role: 'tablist', 'aria-label': __alloT('stem.weldlab.consumables_mode', 'Consumables mode'), className: 'flex flex-wrap gap-2' },
               consModeTabs.map(function(t) {
                 var sel = (consMode === t.id);
                 return h('button', {
@@ -7919,8 +7920,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               h('div', { className: 'bg-slate-50 border-2 border-slate-300 rounded-xl p-4' },
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, curScenario.scenario)
               ),
-              h('div', { className: 'text-sm font-bold text-slate-800' }, 'Which consumable combination best fits this job?'),
-              h('div', { className: 'space-y-2', role: 'radiogroup', 'aria-label': 'Consumable options' },
+              h('div', { className: 'text-sm font-bold text-slate-800' }, __alloT('stem.weldlab.which_consumable_combination_best_fits', 'Which consumable combination best fits this job?')),
+              h('div', { className: 'space-y-2', role: 'radiogroup', 'aria-label': __alloT('stem.weldlab.consumable_options', 'Consumable options') },
                 curScenario.options.map(function(opt, i) {
                   var picked = (consScPicked === i);
                   var isCorrect = (i === curScenario.correct);
@@ -7941,8 +7942,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     h('span', { className: 'text-sm font-bold text-slate-800' },
                       String.fromCharCode(65 + i) + '. ' + opt
                     ),
-                    consScPicked != null && isCorrect && h('span', { className: 'ml-2 text-emerald-700 font-bold' }, '✓ correct'),
-                    consScPicked != null && picked && !isCorrect && h('span', { className: 'ml-2 text-rose-700 font-bold' }, '✗ your pick')
+                    consScPicked != null && isCorrect && h('span', { className: 'ml-2 text-emerald-700 font-bold' }, __alloT('stem.weldlab.correct', '✓ correct')),
+                    consScPicked != null && picked && !isCorrect && h('span', { className: 'ml-2 text-rose-700 font-bold' }, __alloT('stem.weldlab.your_pick', '✗ your pick'))
                   );
                 })
               ),
@@ -7954,7 +7955,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 h('button', {
                   onClick: resetConsQuiz,
                   className: 'transition-colors text-xs font-bold px-3 py-1.5 rounded-lg border-2 border-slate-300 bg-white hover:bg-slate-50 text-slate-700'
-                }, '↺ Restart scenarios'),
+                }, __alloT('stem.weldlab.restart_scenarios', '↺ Restart scenarios')),
                 consScPicked != null && h('button', {
                   onClick: nextConsScenario,
                   className: 'text-sm font-bold px-4 py-2 rounded-lg bg-fuchsia-700 text-white hover:bg-fuchsia-800 transition'
@@ -7991,13 +7992,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var roadPath = roadPathState[0], setRoadPath = roadPathState[1];
 
         var sects = [
-          { id: 'overview',  label: '🦞 Overview' },
-          { id: 'biw',       label: '🚢 Bath Iron Works' },
-          { id: 'shipyards', label: '⚓ Maine shipyards' },
-          { id: 'training',  label: '🎓 EMCC + training pipelines' },
-          { id: 'employers', label: '🏭 Other Maine employers' },
-          { id: 'unions',    label: '🤝 Unions + apprenticeships' },
-          { id: 'startup',   label: '🛠 Your own shop' }
+          { id: 'overview',  label: __alloT('stem.weldlab.overview_6', '🦞 Overview') },
+          { id: 'biw',       label: __alloT('stem.weldlab.bath_iron_works_2', '🚢 Bath Iron Works') },
+          { id: 'shipyards', label: __alloT('stem.weldlab.maine_shipyards', '⚓ Maine shipyards') },
+          { id: 'training',  label: __alloT('stem.weldlab.emcc_training_pipelines', '🎓 EMCC + training pipelines') },
+          { id: 'employers', label: __alloT('stem.weldlab.other_maine_employers', '🏭 Other Maine employers') },
+          { id: 'unions',    label: __alloT('stem.weldlab.unions_apprenticeships', '🤝 Unions + apprenticeships') },
+          { id: 'startup',   label: __alloT('stem.weldlab.your_own_shop', '🛠 Your own shop') }
         ];
 
         // ── 5-Year Roadmap data ──
@@ -8006,60 +8007,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var roadmapPaths = [
           {
             id: 'biw_internal',
-            title: 'BIW Internal Training → Production welder',
+            title: __alloT('stem.weldlab.biw_internal_training_production_welde', 'BIW Internal Training → Production welder'),
             icon: '🚢',
             blurb: 'Fastest path to a stable union job with pension. No prior welding required. Bath Iron Works pays you while you learn at their own training school, then you join production.',
             years: [
-              { y: 0, age: '18', milestone: 'Graduate HS or CTE. Apply to BIW Welder Training Program (biwjobs.com).', pay: '$0 (job hunt)', note: 'Application + interview process. Drug test + math test typical.' },
-              { y: 0.5, age: '18-19', milestone: 'Accepted into BIW Welder Training (16-week program).', pay: '$18-19/hr while in training', note: 'PAID during the 16-week program. Welding from day one. Cohort-based learning.' },
-              { y: 1, age: '19', milestone: 'Complete training. Qualify for production. Step 1 production welder.', pay: '$22-25/hr base', note: 'On the floor welding hulls, bulkheads, piping. IAM Local S6 member.' },
-              { y: 2, age: '20', milestone: 'Step 2-3 production. Cross-train on second process (often FCAW + SMAW).', pay: '$25-28/hr base + OT', note: 'Annual income ~$60-70K with regular OT. Comfortable life in Bath area.' },
-              { y: 3, age: '21', milestone: 'Step 4-5 production. NAVSEA qualifications building.', pay: '$28-32/hr base + OT', note: 'Annual ~$70-80K. Pension begins vesting at 5 years employment.' },
-              { y: 5, age: '23', milestone: 'Pension VESTS. Step 6-7 senior production. Considered "career-track."', pay: '$31-36/hr base + OT', note: 'Annual $75-95K. Pension is yours regardless of future moves. Healthcare excellent.' }
+              { y: 0, age: '18', milestone: 'Graduate HS or CTE. Apply to BIW Welder Training Program (biwjobs.com).', pay: '$0 (job hunt)', note: __alloT('stem.weldlab.application_interview_process_drug_tes', 'Application + interview process. Drug test + math test typical.') },
+              { y: 0.5, age: '18-19', milestone: 'Accepted into BIW Welder Training (16-week program).', pay: '$18-19/hr while in training', note: __alloT('stem.weldlab.paid_during_the_16_week_program_weldin', 'PAID during the 16-week program. Welding from day one. Cohort-based learning.') },
+              { y: 1, age: '19', milestone: 'Complete training. Qualify for production. Step 1 production welder.', pay: '$22-25/hr base', note: __alloT('stem.weldlab.on_the_floor_welding_hulls_bulkheads_p', 'On the floor welding hulls, bulkheads, piping. IAM Local S6 member.') },
+              { y: 2, age: '20', milestone: 'Step 2-3 production. Cross-train on second process (often FCAW + SMAW).', pay: '$25-28/hr base + OT', note: __alloT('stem.weldlab.annual_income_60_70k_with_regular_ot_c', 'Annual income ~$60-70K with regular OT. Comfortable life in Bath area.') },
+              { y: 3, age: '21', milestone: 'Step 4-5 production. NAVSEA qualifications building.', pay: '$28-32/hr base + OT', note: __alloT('stem.weldlab.annual_70_80k_pension_begins_vesting_a', 'Annual ~$70-80K. Pension begins vesting at 5 years employment.') },
+              { y: 5, age: '23', milestone: 'Pension VESTS. Step 6-7 senior production. Considered "career-track."', pay: '$31-36/hr base + OT', note: __alloT('stem.weldlab.annual_75_95k_pension_is_yours_regardl', 'Annual $75-95K. Pension is yours regardless of future moves. Healthcare excellent.') }
             ],
             tradeoffs: 'PRO: Fast entry, no debt, pension, stable. CON: Shipyard work is physical, mandatory OT, weather (heated tents but cold), strict drug testing.'
           },
           {
             id: 'emcc_boatyard',
-            title: 'EMCC 2-year → Boatyard TIG welder',
+            title: __alloT('stem.weldlab.emcc_2_year_boatyard_tig_welder', 'EMCC 2-year → Boatyard TIG welder'),
             icon: '⚓',
             blurb: 'Community college path into mid-coast boat building. TIG aluminum + stainless work on yachts and commercial vessels. Smaller crews, more variety.',
             years: [
-              { y: 0, age: '18', milestone: 'Enroll at EMCC (Bangor) Welding Technology AAS.', pay: '~$3,500/yr tuition (Maine resident)', note: 'Full-time student. May work part-time. Maine Promise scholarship covers most for income-eligible students.' },
-              { y: 1, age: '19', milestone: 'Year 1 complete. Summer internship at boatyard (Hodgdon, Lyman-Morse, Sabre).', pay: '$15-18/hr summer', note: 'Building TIG skills + portfolio. Networking with shops.' },
-              { y: 2, age: '20', milestone: 'Graduate AAS with AWS quals. Hired at boatyard.', pay: '$22-26/hr start', note: 'Annual $46-54K. Most yards include healthcare. Some bonus on yacht delivery.' },
-              { y: 3, age: '21', milestone: 'Lead-welder track. Take on harder repairs + custom projects.', pay: '$25-30/hr', note: 'Annual $52-62K. Aluminum TIG skill commands premium.' },
-              { y: 5, age: '23', milestone: '5-year journeyman. Could open mobile/side shop OR move to lead position.', pay: '$28-34/hr + bonuses', note: 'Annual $58-70K. Path to lead/foreman opening up.' }
+              { y: 0, age: '18', milestone: 'Enroll at EMCC (Bangor) Welding Technology AAS.', pay: '~$3,500/yr tuition (Maine resident)', note: __alloT('stem.weldlab.full_time_student_may_work_part_time_m', 'Full-time student. May work part-time. Maine Promise scholarship covers most for income-eligible students.') },
+              { y: 1, age: '19', milestone: 'Year 1 complete. Summer internship at boatyard (Hodgdon, Lyman-Morse, Sabre).', pay: '$15-18/hr summer', note: __alloT('stem.weldlab.building_tig_skills_portfolio_networki', 'Building TIG skills + portfolio. Networking with shops.') },
+              { y: 2, age: '20', milestone: 'Graduate AAS with AWS quals. Hired at boatyard.', pay: '$22-26/hr start', note: __alloT('stem.weldlab.annual_46_54k_most_yards_include_healt', 'Annual $46-54K. Most yards include healthcare. Some bonus on yacht delivery.') },
+              { y: 3, age: '21', milestone: 'Lead-welder track. Take on harder repairs + custom projects.', pay: '$25-30/hr', note: __alloT('stem.weldlab.annual_52_62k_aluminum_tig_skill_comma', 'Annual $52-62K. Aluminum TIG skill commands premium.') },
+              { y: 5, age: '23', milestone: '5-year journeyman. Could open mobile/side shop OR move to lead position.', pay: '$28-34/hr + bonuses', note: __alloT('stem.weldlab.annual_58_70k_path_to_lead_foreman_ope', 'Annual $58-70K. Path to lead/foreman opening up.') }
             ],
             tradeoffs: 'PRO: Beautiful work, smaller crews, less industrial. CON: Slower wage climb than BIW, fewer benefits, seasonal cycles in some yards.'
           },
           {
             id: 'ua_apprentice',
-            title: 'UA Local 716 Pipefitter Apprenticeship',
+            title: __alloT('stem.weldlab.ua_local_716_pipefitter_apprenticeship', 'UA Local 716 Pipefitter Apprenticeship'),
             icon: '🤝',
             blurb: 'The highest-pay long-game path. Paid 5-year apprenticeship. Top journeyman wage in Maine welding. Travel is common (paper mill shutdowns, big construction).',
             years: [
-              { y: 0, age: '18-23', milestone: 'Pass aptitude test + interview. Selected from competitive pool (~10-20% accepted).', pay: 'Job hunt + test prep', note: 'Most applicants are 19-25. Some 18-year-olds get in. Apply through UA Local 716 directly.' },
-              { y: 1, age: '19-24', milestone: 'Year 1 apprentice. School nights + on-the-job days.', pay: '$22-26/hr (50% of journey rate)', note: 'Earning while learning. No tuition. Full healthcare from day 1.' },
-              { y: 2, age: '20-25', milestone: 'Year 2 apprentice. 60% of journey rate.', pay: '$26-30/hr', note: 'Annual $54-62K. Per diem on travel work.' },
-              { y: 3, age: '21-26', milestone: 'Year 3 apprentice. Pipe welding qualifications begin.', pay: '$30-35/hr (70% of journey rate)', note: 'Annual $62-72K. 6G pipe qual is the big milestone.' },
-              { y: 4, age: '22-27', milestone: 'Year 4-5 apprentice. Final qualifications.', pay: '$35-40/hr (85% of journey rate)', note: 'Annual $72-82K. Approaching journey rate.' },
-              { y: 5, age: '23-28', milestone: 'Journey out. Full pipefitter wage.', pay: '$42-48/hr + per diem', note: 'Annual $90-120K typical. Top earners $120-150K with travel work. Defined-benefit pension.' }
+              { y: 0, age: '18-23', milestone: 'Pass aptitude test + interview. Selected from competitive pool (~10-20% accepted).', pay: 'Job hunt + test prep', note: __alloT('stem.weldlab.most_applicants_are_19_25_some_18_year', 'Most applicants are 19-25. Some 18-year-olds get in. Apply through UA Local 716 directly.') },
+              { y: 1, age: '19-24', milestone: 'Year 1 apprentice. School nights + on-the-job days.', pay: '$22-26/hr (50% of journey rate)', note: __alloT('stem.weldlab.earning_while_learning_no_tuition_full', 'Earning while learning. No tuition. Full healthcare from day 1.') },
+              { y: 2, age: '20-25', milestone: 'Year 2 apprentice. 60% of journey rate.', pay: '$26-30/hr', note: __alloT('stem.weldlab.annual_54_62k_per_diem_on_travel_work', 'Annual $54-62K. Per diem on travel work.') },
+              { y: 3, age: '21-26', milestone: 'Year 3 apprentice. Pipe welding qualifications begin.', pay: '$30-35/hr (70% of journey rate)', note: __alloT('stem.weldlab.annual_62_72k_6g_pipe_qual_is_the_big_', 'Annual $62-72K. 6G pipe qual is the big milestone.') },
+              { y: 4, age: '22-27', milestone: 'Year 4-5 apprentice. Final qualifications.', pay: '$35-40/hr (85% of journey rate)', note: __alloT('stem.weldlab.annual_72_82k_approaching_journey_rate', 'Annual $72-82K. Approaching journey rate.') },
+              { y: 5, age: '23-28', milestone: 'Journey out. Full pipefitter wage.', pay: '$42-48/hr + per diem', note: __alloT('stem.weldlab.annual_90_120k_typical_top_earners_120', 'Annual $90-120K typical. Top earners $120-150K with travel work. Defined-benefit pension.') }
             ],
             tradeoffs: 'PRO: Top pay in Maine welding, no debt, pension, brotherhood. CON: Competitive entry, travel required, physical work, mandatory OT during shutdowns.'
           },
           {
             id: 'cte_smallshop',
-            title: 'HS CTE → Small fab shop → Mobile welding',
+            title: __alloT('stem.weldlab.hs_cte_small_fab_shop_mobile_welding', 'HS CTE → Small fab shop → Mobile welding'),
             icon: '🛠',
             blurb: 'Lowest-cost path with creative freedom long-term. Get CTE certs in HS, work small shops to build experience, eventually open your own mobile welding business.',
             years: [
-              { y: 0, age: '18', milestone: 'Graduate HS with CTE welding certs (OSHA 10, AWS pre-quals).', pay: '$0 (job hunt)', note: 'No college debt. AWS quals already in pocket.' },
-              { y: 0.25, age: '18', milestone: 'Hired at local fab shop (truck bodies, snow plows, repair).', pay: '$18-22/hr start', note: 'Annual $37-46K. Learning real-world welding speed + variety.' },
-              { y: 2, age: '20', milestone: 'Senior welder at the shop. Sometimes supervising newer hires.', pay: '$22-26/hr', note: 'Annual $46-54K. Considering whether to stay long-term or move on.' },
-              { y: 4, age: '22', milestone: 'Decision point: stay at shop, move to BIW (lateral), or go mobile.', pay: '$24-28/hr (employed) OR $0 startup', note: 'If mobile: invest savings into truck + equipment ($10-20K). High risk; high freedom.' },
-              { y: 5, age: '23', milestone: 'Year 1 mobile welding. Building customer base.', pay: 'Variable: $30-70K (year 1 self-employed)', note: 'Word-of-mouth + Facebook marketplace. First year is hard. Year 2-3 typically much better.' },
-              { y: 7, age: '25', milestone: '3 years mobile. Steady customer base. Charging $70-90/hr.', pay: 'Net $60-90K/yr', note: 'Full freedom over schedule. Hard in lean weeks. Plan for taxes (quarterly).' }
+              { y: 0, age: '18', milestone: 'Graduate HS with CTE welding certs (OSHA 10, AWS pre-quals).', pay: '$0 (job hunt)', note: __alloT('stem.weldlab.no_college_debt_aws_quals_already_in_p', 'No college debt. AWS quals already in pocket.') },
+              { y: 0.25, age: '18', milestone: 'Hired at local fab shop (truck bodies, snow plows, repair).', pay: '$18-22/hr start', note: __alloT('stem.weldlab.annual_37_46k_learning_real_world_weld', 'Annual $37-46K. Learning real-world welding speed + variety.') },
+              { y: 2, age: '20', milestone: 'Senior welder at the shop. Sometimes supervising newer hires.', pay: '$22-26/hr', note: __alloT('stem.weldlab.annual_46_54k_considering_whether_to_s', 'Annual $46-54K. Considering whether to stay long-term or move on.') },
+              { y: 4, age: '22', milestone: 'Decision point: stay at shop, move to BIW (lateral), or go mobile.', pay: '$24-28/hr (employed) OR $0 startup', note: __alloT('stem.weldlab.if_mobile_invest_savings_into_truck_eq', 'If mobile: invest savings into truck + equipment ($10-20K). High risk; high freedom.') },
+              { y: 5, age: '23', milestone: 'Year 1 mobile welding. Building customer base.', pay: 'Variable: $30-70K (year 1 self-employed)', note: __alloT('stem.weldlab.word_of_mouth_facebook_marketplace_fir', 'Word-of-mouth + Facebook marketplace. First year is hard. Year 2-3 typically much better.') },
+              { y: 7, age: '25', milestone: '3 years mobile. Steady customer base. Charging $70-90/hr.', pay: 'Net $60-90K/yr', note: __alloT('stem.weldlab.full_freedom_over_schedule_hard_in_lea', 'Full freedom over schedule. Hard in lean weeks. Plan for taxes (quarterly).') }
             ],
             tradeoffs: 'PRO: No debt, fastest entry, full creative freedom long-term. CON: Lower starting pay, no benefits at small shops, mobile business has variable income.'
           }
@@ -8070,37 +8071,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var content;
         if (sect === 'overview') {
           content = h('div', { className: 'space-y-3' },
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'Maine has one of the densest skilled-trades welding economies in the Northeast. Shipbuilding (Bath Iron Works alone employs ~6,500), boatbuilding (Hodgdon, Sabre, Lyman-Morse), heavy industry (paper mills, food processing), and a thick small-shop ecosystem (fabrication shops, marine repair, custom work) all need welders right now.'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'This module maps where welders work in Maine, what each path actually pays, and how students get in. Real names + real numbers + real entry routes — not generic "you could work in welding" career fluff.'),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.maine_has_one_of_the_densest_skilled_t', 'Maine has one of the densest skilled-trades welding economies in the Northeast. Shipbuilding (Bath Iron Works alone employs ~6,500), boatbuilding (Hodgdon, Sabre, Lyman-Morse), heavy industry (paper mills, food processing), and a thick small-shop ecosystem (fabrication shops, marine repair, custom work) all need welders right now.')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.this_module_maps_where_welders_work_in', 'This module maps where welders work in Maine, what each path actually pays, and how students get in. Real names + real numbers + real entry routes — not generic "you could work in welding" career fluff.')),
             h('div', { className: 'bg-fuchsia-50 border-2 border-fuchsia-300 rounded-xl p-4 space-y-2' },
-              h('div', { className: 'text-sm font-bold text-fuchsia-900' }, '🎯 The Maine welding landscape at a glance'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Shipbuilding: '), 'BIW (Bath) dominates. Designed structural + pipefitting welds for Navy destroyers. ~6,500 employees, IAM Local S6 union. Aggressive hiring.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Boatbuilding (mid-coast): '), 'Hodgdon Yachts (East Boothbay), Lyman-Morse (Thomaston), Sabre (Raymond), Front Street Shipyard (Belfast). Aluminum + stainless TIG primarily. Smaller crews, more variety.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Heavy industry: '), 'Paper mills (Sappi Westbrook, Verso/Pixelle Jay), Cianbro (statewide construction), Reed & Reed (large structural), food processing (Idexx, Tom\'s of Maine).'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Marine + fabrication shops: '), 'Hundreds of small shops. Truck bodies, snow plows, repair welding, custom fab. Often family-owned. Lower formal credentials, faster entry.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Pipeline + cross-country: '), 'Less common in Maine but Maine welders frequently travel — Connecticut, Quebec, Pennsylvania for big-pay union work.')
+              h('div', { className: 'text-sm font-bold text-fuchsia-900' }, __alloT('stem.weldlab.the_maine_welding_landscape_at_a_glanc', '🎯 The Maine welding landscape at a glance')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Shipbuilding: '), __alloT('stem.weldlab.biw_bath_dominates_designed_structural', 'BIW (Bath) dominates. Designed structural + pipefitting welds for Navy destroyers. ~6,500 employees, IAM Local S6 union. Aggressive hiring.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.boatbuilding_mid_coast', 'Boatbuilding (mid-coast): ')), __alloT('stem.weldlab.hodgdon_yachts_east_boothbay_lyman_mor', 'Hodgdon Yachts (East Boothbay), Lyman-Morse (Thomaston), Sabre (Raymond), Front Street Shipyard (Belfast). Aluminum + stainless TIG primarily. Smaller crews, more variety.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.heavy_industry', 'Heavy industry: ')), __alloT('stem.weldlab.paper_mills_sappi_westbrook_verso_pixe', 'Paper mills (Sappi Westbrook, Verso/Pixelle Jay), Cianbro (statewide construction), Reed & Reed (large structural), food processing (Idexx, Tom\'s of Maine).')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.marine_fabrication_shops', 'Marine + fabrication shops: ')), __alloT('stem.weldlab.hundreds_of_small_shops_truck_bodies_s', 'Hundreds of small shops. Truck bodies, snow plows, repair welding, custom fab. Often family-owned. Lower formal credentials, faster entry.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.pipeline_cross_country', 'Pipeline + cross-country: ')), __alloT('stem.weldlab.less_common_in_maine_but_maine_welders', 'Less common in Maine but Maine welders frequently travel — Connecticut, Quebec, Pennsylvania for big-pay union work.'))
             )
           );
         } else if (sect === 'biw') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '🚢 Bath Iron Works (BIW) — Maine\'s anchor employer'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'BIW (a General Dynamics company) builds Arleigh Burke-class destroyers (DDG-51) for the US Navy. Founded 1884. Located on the Kennebec River in Bath. Largest private employer in Maine.'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.bath_iron_works_biw_maine_s_anchor_emp', '🚢 Bath Iron Works (BIW) — Maine\'s anchor employer')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.biw_a_general_dynamics_company_builds_', 'BIW (a General Dynamics company) builds Arleigh Burke-class destroyers (DDG-51) for the US Navy. Founded 1884. Located on the Kennebec River in Bath. Largest private employer in Maine.')),
             h('div', { className: 'bg-fuchsia-50 border-2 border-fuchsia-300 rounded-xl p-4 space-y-2' },
-              h('div', { className: 'text-sm font-bold text-fuchsia-900' }, 'The numbers'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Employees: '), '~6,500 (largest Maine private employer)'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Welders specifically: '), '~600-800 (varies with production cycle). Always hiring.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Wages: '), 'Entry welder (Pay Step 1) ~$22-25/hr + benefits. Top-step structural welder ~$36-42/hr + benefits + shift differential. With OT (common during build push), 6-figure income achievable.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Benefits: '), 'Full health, pension (IAM defined-benefit), 401k match, paid time off. Pension specifically is rare in modern manufacturing — a big draw.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Union: '), 'International Association of Machinists Local S6. Largest single private-sector union local in Maine.')
+              h('div', { className: 'text-sm font-bold text-fuchsia-900' }, __alloT('stem.weldlab.the_numbers', 'The numbers')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Employees: '), __alloT('stem.weldlab.6_500_largest_maine_private_employer', '~6,500 (largest Maine private employer)')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.welders_specifically', 'Welders specifically: ')), __alloT('stem.weldlab.600_800_varies_with_production_cycle_a', '~600-800 (varies with production cycle). Always hiring.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Wages: '), __alloT('stem.weldlab.entry_welder_pay_step_1_22_25_hr_benef', 'Entry welder (Pay Step 1) ~$22-25/hr + benefits. Top-step structural welder ~$36-42/hr + benefits + shift differential. With OT (common during build push), 6-figure income achievable.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Benefits: '), __alloT('stem.weldlab.full_health_pension_iam_defined_benefi', 'Full health, pension (IAM defined-benefit), 401k match, paid time off. Pension specifically is rare in modern manufacturing — a big draw.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Union: '), __alloT('stem.weldlab.international_association_of_machinist', 'International Association of Machinists Local S6. Largest single private-sector union local in Maine.'))
             ),
-            h('h4', { className: 'text-sm font-bold text-slate-800' }, 'What you weld at BIW'),
-            h('p', { className: 'text-sm text-slate-800' }, 'Hull plating (HSLA-65, HSLA-80, HY-80, HY-100 high-strength low-alloy steel). Internal structure (bulkheads, frames). Piping systems (carbon steel + stainless + copper-nickel). Aluminum superstructure (sometimes). Every weld is inspected. Code work: NAVSEA Technical Publication T9074 (Navy welding standards) + AWS D1.6 (stainless) + ASME IX (pipe).'),
-            h('h4', { className: 'text-sm font-bold text-slate-800' }, 'How to get in'),
+            h('h4', { className: 'text-sm font-bold text-slate-800' }, __alloT('stem.weldlab.what_you_weld_at_biw', 'What you weld at BIW')),
+            h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.hull_plating_hsla_65_hsla_80_hy_80_hy_', 'Hull plating (HSLA-65, HSLA-80, HY-80, HY-100 high-strength low-alloy steel). Internal structure (bulkheads, frames). Piping systems (carbon steel + stainless + copper-nickel). Aluminum superstructure (sometimes). Every weld is inspected. Code work: NAVSEA Technical Publication T9074 (Navy welding standards) + AWS D1.6 (stainless) + ASME IX (pipe).')),
+            h('h4', { className: 'text-sm font-bold text-slate-800' }, __alloT('stem.weldlab.how_to_get_in', 'How to get in')),
             h('div', { className: 'space-y-2' },
-              [{ path: 'BIW Internal Welder Training Program', detail: 'BIW runs its own training school. ~16-week program. Paid while you train ($18-19/hr starting). After completion + qualification, you join production. Application: biwjobs.com or BIW HR (207-443-3311). HUGE entry channel — no prior welding required for some entries.' },
-               { path: 'EMCC welding certificate (2 yr) → BIW recruit', detail: 'Eastern Maine Community College welding program (Bangor). 2-year associate. BIW actively recruits EMCC grads. Tuition ~$3,500/yr — Maine residents get further discount.' },
-               { path: 'High school CTE → BIW Training Program', detail: 'Many Maine CTEs (Region 10, Mid-Coast School of Technology, Hancock County Technical Center) feed BIW directly. Counselors have established relationships.' },
-               { path: 'Lateral from another shipyard / fabrication shop', detail: 'Experienced welders with NAVSEA, AWS D1.1 or D1.6 quals can apply directly + skip portions of internal training. Pay starts higher (Step 3-5 depending on experience).' }].map(function(p, i) {
+              [{ path: 'BIW Internal Welder Training Program', detail: __alloT('stem.weldlab.biw_runs_its_own_training_school_16_we', 'BIW runs its own training school. ~16-week program. Paid while you train ($18-19/hr starting). After completion + qualification, you join production. Application: biwjobs.com or BIW HR (207-443-3311). HUGE entry channel — no prior welding required for some entries.') },
+               { path: 'EMCC welding certificate (2 yr) → BIW recruit', detail: __alloT('stem.weldlab.eastern_maine_community_college_weldin', 'Eastern Maine Community College welding program (Bangor). 2-year associate. BIW actively recruits EMCC grads. Tuition ~$3,500/yr — Maine residents get further discount.') },
+               { path: 'High school CTE → BIW Training Program', detail: __alloT('stem.weldlab.many_maine_ctes_region_10_mid_coast_sc', 'Many Maine CTEs (Region 10, Mid-Coast School of Technology, Hancock County Technical Center) feed BIW directly. Counselors have established relationships.') },
+               { path: 'Lateral from another shipyard / fabrication shop', detail: __alloT('stem.weldlab.experienced_welders_with_navsea_aws_d1', 'Experienced welders with NAVSEA, AWS D1.1 or D1.6 quals can apply directly + skip portions of internal training. Pay starts higher (Step 3-5 depending on experience).') }].map(function(p, i) {
                 return h('div', { key: i, className: 'bg-white border-2 border-fuchsia-200 rounded-xl p-3' },
                   h('div', { className: 'font-bold text-fuchsia-900 mb-1' }, p.path),
                   h('p', { className: 'text-sm text-slate-800' }, p.detail)
@@ -8108,52 +8109,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               })
             ),
             h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-amber-900 mb-1' }, '💡 Reality check'),
-              h('p', { className: 'text-sm text-slate-800' }, 'BIW work is hard. Outdoor in Maine winter (heated tents help but cold). Shift work (1st/2nd/3rd, mandatory OT). Strict drug testing (Navy contract). Physical (carrying gear up + down hulls). Trade-offs are real wages, full benefits, pension, and a job that builds Navy ships.')
+              h('div', { className: 'text-xs font-bold uppercase text-amber-900 mb-1' }, __alloT('stem.weldlab.reality_check', '💡 Reality check')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.biw_work_is_hard_outdoor_in_maine_wint', 'BIW work is hard. Outdoor in Maine winter (heated tents help but cold). Shift work (1st/2nd/3rd, mandatory OT). Strict drug testing (Navy contract). Physical (carrying gear up + down hulls). Trade-offs are real wages, full benefits, pension, and a job that builds Navy ships.'))
             )
           );
         } else if (sect === 'shipyards') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '⚓ Maine shipyards + boatbuilders — mid-coast cluster'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'Beyond BIW, Maine\'s mid-coast has one of the densest boatbuilding clusters in North America. Most are aluminum or steel construction; some composite. Welders here typically do TIG (aluminum + stainless), often work alongside designers + engineers, build everything from megayachts to Navy support craft.'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.maine_shipyards_boatbuilders_mid_coast', '⚓ Maine shipyards + boatbuilders — mid-coast cluster')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.beyond_biw_maine_s_mid_coast_has_one_o', 'Beyond BIW, Maine\'s mid-coast has one of the densest boatbuilding clusters in North America. Most are aluminum or steel construction; some composite. Welders here typically do TIG (aluminum + stainless), often work alongside designers + engineers, build everything from megayachts to Navy support craft.')),
             h('div', { className: 'space-y-2' },
-              [{ name: 'Hodgdon Yachts (East Boothbay)', founded: '1816', focus: 'Megayachts (90-200 ft custom), Navy CCM (Combatant Craft Medium) for special operations', welders: 'Aluminum TIG primarily. Heavy custom fitting + structural.', pay: '$22-32/hr + benefits' },
-               { name: 'Lyman-Morse (Thomaston)', founded: '1978', focus: 'Custom yachts (sail + power), composite + aluminum + steel', welders: 'TIG aluminum + stainless. Composite-metal interface work.', pay: '$22-30/hr + benefits' },
-               { name: 'Sabre Yachts (Raymond)', founded: '1970', focus: 'Power yachts (38-66 ft fiberglass)', welders: 'Less primary welding (mostly composite) but stainless + aluminum fittings.', pay: '$20-27/hr + benefits' },
-               { name: 'Front Street Shipyard (Belfast)', founded: '2011', focus: 'New construction + refit; superyacht service', welders: 'TIG aluminum + stainless. Refit work = wide variety.', pay: '$22-30/hr + benefits' },
-               { name: 'Steve French Yacht Services (Brooklin)', founded: '~1990s', focus: 'Wooden + composite repair + custom fab', welders: 'Small shop. Versatile welders who can handle bronze + stainless + aluminum.', pay: '$18-25/hr' },
-               { name: 'Hinckley Yachts (Trenton + Southwest Harbor)', founded: '1928', focus: 'Custom + production luxury yachts', welders: 'Stainless TIG for fittings. Bronze casting work too.', pay: '$22-30/hr + benefits' },
-               { name: 'Brooklin Boat Yard (Brooklin)', founded: '1960', focus: 'Wooden boat restoration + custom builds', welders: 'Less primary welding but bronze + stainless detail work.', pay: '$20-26/hr' },
-               { name: 'Washburn & Doughty (East Boothbay)', founded: '1977', focus: 'Steel commercial vessels — tugs, ferries, fireboats', welders: 'Heavy steel SMAW + FCAW. Marine survey-grade welds.', pay: '$23-32/hr + benefits' }].map(function(s, i) {
+              [{ name: __alloT('stem.weldlab.hodgdon_yachts_east_boothbay', 'Hodgdon Yachts (East Boothbay)'), founded: '1816', focus: 'Megayachts (90-200 ft custom), Navy CCM (Combatant Craft Medium) for special operations', welders: 'Aluminum TIG primarily. Heavy custom fitting + structural.', pay: '$22-32/hr + benefits' },
+               { name: __alloT('stem.weldlab.lyman_morse_thomaston', 'Lyman-Morse (Thomaston)'), founded: '1978', focus: 'Custom yachts (sail + power), composite + aluminum + steel', welders: 'TIG aluminum + stainless. Composite-metal interface work.', pay: '$22-30/hr + benefits' },
+               { name: __alloT('stem.weldlab.sabre_yachts_raymond', 'Sabre Yachts (Raymond)'), founded: '1970', focus: 'Power yachts (38-66 ft fiberglass)', welders: 'Less primary welding (mostly composite) but stainless + aluminum fittings.', pay: '$20-27/hr + benefits' },
+               { name: __alloT('stem.weldlab.front_street_shipyard_belfast', 'Front Street Shipyard (Belfast)'), founded: '2011', focus: 'New construction + refit; superyacht service', welders: 'TIG aluminum + stainless. Refit work = wide variety.', pay: '$22-30/hr + benefits' },
+               { name: __alloT('stem.weldlab.steve_french_yacht_services_brooklin', 'Steve French Yacht Services (Brooklin)'), founded: '~1990s', focus: 'Wooden + composite repair + custom fab', welders: 'Small shop. Versatile welders who can handle bronze + stainless + aluminum.', pay: '$18-25/hr' },
+               { name: __alloT('stem.weldlab.hinckley_yachts_trenton_southwest_harb', 'Hinckley Yachts (Trenton + Southwest Harbor)'), founded: '1928', focus: 'Custom + production luxury yachts', welders: 'Stainless TIG for fittings. Bronze casting work too.', pay: '$22-30/hr + benefits' },
+               { name: __alloT('stem.weldlab.brooklin_boat_yard_brooklin', 'Brooklin Boat Yard (Brooklin)'), founded: '1960', focus: 'Wooden boat restoration + custom builds', welders: 'Less primary welding but bronze + stainless detail work.', pay: '$20-26/hr' },
+               { name: __alloT('stem.weldlab.washburn_doughty_east_boothbay', 'Washburn & Doughty (East Boothbay)'), founded: '1977', focus: 'Steel commercial vessels — tugs, ferries, fireboats', welders: 'Heavy steel SMAW + FCAW. Marine survey-grade welds.', pay: '$23-32/hr + benefits' }].map(function(s, i) {
                 return h('div', { key: i, className: 'bg-fuchsia-50 border-2 border-fuchsia-200 rounded-xl p-3' },
                   h('div', { className: 'flex justify-between items-baseline mb-1 flex-wrap' },
                     h('span', { className: 'font-bold text-fuchsia-900' }, s.name),
                     h('span', { className: 'text-xs text-fuchsia-700' }, 'Est. ' + s.founded)
                   ),
                   h('p', { className: 'text-xs text-slate-700 mb-1' }, h('strong', null, 'Focus: '), s.focus),
-                  h('p', { className: 'text-xs text-slate-700 mb-1' }, h('strong', null, 'Welders do: '), s.welders),
+                  h('p', { className: 'text-xs text-slate-700 mb-1' }, h('strong', null, __alloT('stem.weldlab.welders_do', 'Welders do: ')), s.welders),
                   h('p', { className: 'text-sm font-mono text-emerald-700' }, s.pay)
                 );
               })
             ),
             h('div', { className: 'bg-blue-50 border-2 border-blue-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-blue-900 mb-1' }, '💡 Boatyard vs shipyard culture'),
-              h('p', { className: 'text-sm text-slate-800' }, 'Shipyards (BIW, Washburn & Doughty) = bigger crews, structured shifts, union, strict code work. Boatyards = smaller crews, more creative latitude, often non-union, more variety per project. Both pay well. Personality fit matters as much as skill fit.')
+              h('div', { className: 'text-xs font-bold uppercase text-blue-900 mb-1' }, __alloT('stem.weldlab.boatyard_vs_shipyard_culture', '💡 Boatyard vs shipyard culture')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.shipyards_biw_washburn_doughty_bigger_', 'Shipyards (BIW, Washburn & Doughty) = bigger crews, structured shifts, union, strict code work. Boatyards = smaller crews, more creative latitude, often non-union, more variety per project. Both pay well. Personality fit matters as much as skill fit.'))
             )
           );
         } else if (sect === 'training') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '🎓 Welder training pipelines in Maine'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'Multiple training paths get Maine students into paid welding work within 6 months to 2 years. Most options are inexpensive or free; some are paid-while-you-learn.'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.welder_training_pipelines_in_maine', '🎓 Welder training pipelines in Maine')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.multiple_training_paths_get_maine_stud', 'Multiple training paths get Maine students into paid welding work within 6 months to 2 years. Most options are inexpensive or free; some are paid-while-you-learn.')),
             h('div', { className: 'space-y-2' },
-              [{ name: 'Eastern Maine Community College (EMCC, Bangor)', length: '2-yr Associate in Welding Technology + 1-yr Certificate options', cost: '~$3,500/yr Maine resident', certs: 'AWS qualification testing on-site. NCCER curriculum. Industry placement.', strength: 'Most established Maine welding program. Heavy industry employer connections.' },
-               { name: 'Southern Maine Community College (SMCC, South Portland)', length: '2-yr Associate in Welding/Metal Fabrication', cost: '~$3,500/yr Maine resident', certs: 'AWS quals, MIG/TIG/SMAW/FCAW.', strength: 'Coastal location — easier access to BIW + Portland fab shops.' },
-               { name: 'Washington County Community College (Calais)', length: '1-yr Certificate or 2-yr AAS', cost: '~$3,500/yr Maine resident', certs: 'AWS quals. Pipe welding focus.', strength: 'Rural Maine option. Pipeline + heavy industry feed.' },
-               { name: 'Northern Maine Community College (Presque Isle)', length: '1-yr Certificate', cost: '~$3,500/yr Maine resident', certs: 'AWS quals. Heavy equipment repair focus.', strength: 'Aroostook + agricultural ecosystem. Truck/equipment shops.' },
-               { name: 'CTE high school programs (region by region)', length: '2-yr program junior+senior year', cost: 'FREE (part of HS)', certs: 'OSHA 10, AWS pre-quals, some shops sign students into apprenticeship at graduation.', strength: 'Earn-while-you-learn with no debt. Best for committed sophomore-year choosers. Examples: Region 10 Tech Center (Brunswick), Mid-Coast School of Technology (Rockland), Hancock County Technical Center (Ellsworth), Coastal Washington County Institute of Technology.' },
-               { name: 'BIW Internal Training', length: '~16 weeks', cost: 'FREE (paid while training, ~$18-19/hr)', certs: 'NAVSEA-prep + AWS-prep + BIW-specific.', strength: 'Direct hire pipeline. No prior welding required for some tracks. Best path if you already know you want BIW.' },
-               { name: 'Job Corps welding programs', length: '~12-18 months', cost: 'FREE + room/board if you qualify (income-based, 16-24)', certs: 'NCCER + AWS pre-quals.', strength: 'For students without family financial support who need stability. Maine Job Corps Center in Bangor.' },
-               { name: 'Apprenticeship (union sponsored)', length: '3-4 years', cost: 'FREE + paid wages (start ~$15-18/hr, rising)', certs: 'Full UA, IAM, or IBEW pipefitter/welder apprenticeship. State journeyman card.', strength: 'No debt, paid from day 1, top pay at completion. Application windows competitive — check local UA Local 716 (pipefitters), Boilermakers Local 29, IAM S6.' }].map(function(t, i) {
+              [{ name: __alloT('stem.weldlab.eastern_maine_community_college_emcc_b', 'Eastern Maine Community College (EMCC, Bangor)'), length: '2-yr Associate in Welding Technology + 1-yr Certificate options', cost: '~$3,500/yr Maine resident', certs: 'AWS qualification testing on-site. NCCER curriculum. Industry placement.', strength: 'Most established Maine welding program. Heavy industry employer connections.' },
+               { name: __alloT('stem.weldlab.southern_maine_community_college_smcc_', 'Southern Maine Community College (SMCC, South Portland)'), length: '2-yr Associate in Welding/Metal Fabrication', cost: '~$3,500/yr Maine resident', certs: 'AWS quals, MIG/TIG/SMAW/FCAW.', strength: 'Coastal location — easier access to BIW + Portland fab shops.' },
+               { name: __alloT('stem.weldlab.washington_county_community_college_ca', 'Washington County Community College (Calais)'), length: '1-yr Certificate or 2-yr AAS', cost: '~$3,500/yr Maine resident', certs: 'AWS quals. Pipe welding focus.', strength: 'Rural Maine option. Pipeline + heavy industry feed.' },
+               { name: __alloT('stem.weldlab.northern_maine_community_college_presq', 'Northern Maine Community College (Presque Isle)'), length: '1-yr Certificate', cost: '~$3,500/yr Maine resident', certs: 'AWS quals. Heavy equipment repair focus.', strength: 'Aroostook + agricultural ecosystem. Truck/equipment shops.' },
+               { name: __alloT('stem.weldlab.cte_high_school_programs_region_by_reg', 'CTE high school programs (region by region)'), length: '2-yr program junior+senior year', cost: 'FREE (part of HS)', certs: 'OSHA 10, AWS pre-quals, some shops sign students into apprenticeship at graduation.', strength: 'Earn-while-you-learn with no debt. Best for committed sophomore-year choosers. Examples: Region 10 Tech Center (Brunswick), Mid-Coast School of Technology (Rockland), Hancock County Technical Center (Ellsworth), Coastal Washington County Institute of Technology.' },
+               { name: __alloT('stem.weldlab.biw_internal_training', 'BIW Internal Training'), length: '~16 weeks', cost: 'FREE (paid while training, ~$18-19/hr)', certs: 'NAVSEA-prep + AWS-prep + BIW-specific.', strength: 'Direct hire pipeline. No prior welding required for some tracks. Best path if you already know you want BIW.' },
+               { name: __alloT('stem.weldlab.job_corps_welding_programs', 'Job Corps welding programs'), length: '~12-18 months', cost: 'FREE + room/board if you qualify (income-based, 16-24)', certs: 'NCCER + AWS pre-quals.', strength: 'For students without family financial support who need stability. Maine Job Corps Center in Bangor.' },
+               { name: __alloT('stem.weldlab.apprenticeship_union_sponsored', 'Apprenticeship (union sponsored)'), length: '3-4 years', cost: 'FREE + paid wages (start ~$15-18/hr, rising)', certs: 'Full UA, IAM, or IBEW pipefitter/welder apprenticeship. State journeyman card.', strength: 'No debt, paid from day 1, top pay at completion. Application windows competitive — check local UA Local 716 (pipefitters), Boilermakers Local 29, IAM S6.' }].map(function(t, i) {
                 return h('div', { key: i, className: 'bg-purple-50 border-2 border-purple-200 rounded-xl p-3' },
                   h('div', { className: 'font-bold text-purple-900 mb-1' }, t.name),
                   h('p', { className: 'text-xs text-slate-700 mb-1' }, h('strong', null, 'Length: '), t.length, ' · ', h('strong', null, 'Cost: '), t.cost),
@@ -8163,14 +8164,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               })
             ),
             h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-amber-900 mb-1' }, '💡 Which path for which student'),
-              h('p', { className: 'text-sm text-slate-800' }, 'Knows welding = goal by sophomore year + cost-sensitive: HS CTE → direct hire or BIW Training. Adult learner / career changer: EMCC + SMCC. Wants top pay + no debt: union apprenticeship (highly competitive entry). Wants BIW specifically + soon: BIW Internal Training. No family support + needs structure: Job Corps.')
+              h('div', { className: 'text-xs font-bold uppercase text-amber-900 mb-1' }, __alloT('stem.weldlab.which_path_for_which_student', '💡 Which path for which student')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.knows_welding_goal_by_sophomore_year_c', 'Knows welding = goal by sophomore year + cost-sensitive: HS CTE → direct hire or BIW Training. Adult learner / career changer: EMCC + SMCC. Wants top pay + no debt: union apprenticeship (highly competitive entry). Wants BIW specifically + soon: BIW Internal Training. No family support + needs structure: Job Corps.'))
             )
           );
         } else if (sect === 'employers') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '🏭 Other Maine welding employers beyond shipyards'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'Maine\'s welding workforce extends well beyond shipbuilding. Heavy construction, paper/pulp, food processing, road maintenance, agriculture, custom fab — all hire welders, often year-round, often with shorter training requirements.'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.other_maine_welding_employers_beyond_s', '🏭 Other Maine welding employers beyond shipyards')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.maine_s_welding_workforce_extends_well', 'Maine\'s welding workforce extends well beyond shipbuilding. Heavy construction, paper/pulp, food processing, road maintenance, agriculture, custom fab — all hire welders, often year-round, often with shorter training requirements.')),
             h('div', { className: 'space-y-2' },
               [{ co: 'Cianbro (Pittsfield HQ, statewide)', industry: 'Heavy construction + module fab', what: 'Modular construction (built indoors, shipped to site). Power plants, refineries, hospitals. Welders work in-shop (climate-controlled).', pay: '$25-38/hr + per diem on travel jobs' },
                { co: 'Reed & Reed (Woolwich)', industry: 'Wind turbine erection + heavy structural', what: 'Wind farms, bridges, towers. Crane operations + structural welding.', pay: '$26-36/hr' },
@@ -8196,8 +8197,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           );
         } else if (sect === 'unions') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '🤝 Unions + apprenticeships in Maine'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'Union apprenticeships pay you to learn — usually 3-5 years to journeyman. Top pay nationally is in union work; Maine is a moderate-density union state with several active welding-relevant locals.'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.unions_apprenticeships_in_maine', '🤝 Unions + apprenticeships in Maine')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.union_apprenticeships_pay_you_to_learn', 'Union apprenticeships pay you to learn — usually 3-5 years to journeyman. Top pay nationally is in union work; Maine is a moderate-density union state with several active welding-relevant locals.')),
             h('div', { className: 'space-y-2' },
               [{ union: 'IAM Local S6 (Machinists)', covers: 'BIW (Bath)', members: '~4,000+ at BIW', wages: 'Top step ~$36-42/hr + pension + benefits', entry: 'Hired through BIW. Union membership begins at job start. No formal apprenticeship — internal training.' },
                { union: 'UA Local 716 (Pipefitters)', covers: 'Industrial + commercial piping statewide', members: '~700+ Maine pipefitters', wages: 'Top journeyman ~$38-48/hr + benefits + pension', entry: '5-year apprenticeship. Application windows roughly annually. Competitive — usually 10-20 selected from 100+ applicants. Pipe welding cert during years 3-5.' },
@@ -8216,47 +8217,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               })
             ),
             h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-amber-900 mb-1' }, '💡 Union apprenticeship reality'),
-              h('p', { className: 'text-sm text-slate-800' }, 'Application windows are tight (usually 1-2 weeks each year). Selection is competitive (aptitude test + interview). Once in, you cannot easily switch. Travel is common (jobs follow construction). Pay scales formally each year — you know exactly what you\'ll earn through journey-out. Pension + healthcare are gold-standard. Many of the highest-paid welders in Maine are pipefitters + boilermakers.')
+              h('div', { className: 'text-xs font-bold uppercase text-amber-900 mb-1' }, __alloT('stem.weldlab.union_apprenticeship_reality', '💡 Union apprenticeship reality')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.application_windows_are_tight_usually_', 'Application windows are tight (usually 1-2 weeks each year). Selection is competitive (aptitude test + interview). Once in, you cannot easily switch. Travel is common (jobs follow construction). Pay scales formally each year — you know exactly what you\'ll earn through journey-out. Pension + healthcare are gold-standard. Many of the highest-paid welders in Maine are pipefitters + boilermakers.'))
             )
           );
         } else if (sect === 'startup') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '🛠 Starting your own welding shop in Maine'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'Many Maine welders eventually open their own shops — sometimes after 5-15 years industry experience, sometimes immediately from CTE/EMCC. Small shop welding is hard work but it is one of the lowest-barrier paths to small business ownership.'),
-            h('h4', { className: 'text-sm font-bold text-slate-800' }, 'What you need to start'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.starting_your_own_welding_shop_in_main', '🛠 Starting your own welding shop in Maine')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.many_maine_welders_eventually_open_the', 'Many Maine welders eventually open their own shops — sometimes after 5-15 years industry experience, sometimes immediately from CTE/EMCC. Small shop welding is hard work but it is one of the lowest-barrier paths to small business ownership.')),
+            h('h4', { className: 'text-sm font-bold text-slate-800' }, __alloT('stem.weldlab.what_you_need_to_start', 'What you need to start')),
             h('div', { className: 'space-y-2' },
-              [{ item: 'Equipment ($3,000-15,000 entry)', detail: 'MIG machine (Miller 211 / Lincoln 210MP ~$1,200-1,500), TIG/stick combo (Miller Multimatic 220 ~$2,500), oxy-acetylene rig (~$500), grinder, plasma cutter (~$1,000), helmet, gloves, cart, vise, table. Used equipment cuts cost 30-50%.' },
-               { item: 'Workspace', detail: 'Garage bay (rent or own). 24x24 ft minimum for production work. Concrete floor (NOT wood). Adequate electrical (50A 240V minimum, 100A better). Ventilation. Some welders work outdoors May-Oct + heated bay rest of year.' },
-               { item: 'Insurance', detail: 'General liability (~$600-1200/yr). Workers comp if employees. Some shops add product liability (welds that fail in service).' },
-               { item: 'Business setup', detail: 'Sole proprietorship or LLC ($175 filing in Maine). Sales tax permit (Maine Revenue Services). EIN if hiring. Not complicated.' },
-               { item: 'Customers', detail: 'First year: word of mouth, Facebook marketplace, repair calls, custom truck/trailer work. Mid-coast + rural Maine has steady demand. Marine work seasonal but lucrative spring/fall.' }].map(function(it, i) {
+              [{ item: 'Equipment ($3,000-15,000 entry)', detail: __alloT('stem.weldlab.mig_machine_miller_211_lincoln_210mp_1', 'MIG machine (Miller 211 / Lincoln 210MP ~$1,200-1,500), TIG/stick combo (Miller Multimatic 220 ~$2,500), oxy-acetylene rig (~$500), grinder, plasma cutter (~$1,000), helmet, gloves, cart, vise, table. Used equipment cuts cost 30-50%.') },
+               { item: 'Workspace', detail: __alloT('stem.weldlab.garage_bay_rent_or_own_24x24_ft_minimu', 'Garage bay (rent or own). 24x24 ft minimum for production work. Concrete floor (NOT wood). Adequate electrical (50A 240V minimum, 100A better). Ventilation. Some welders work outdoors May-Oct + heated bay rest of year.') },
+               { item: 'Insurance', detail: __alloT('stem.weldlab.general_liability_600_1200_yr_workers_', 'General liability (~$600-1200/yr). Workers comp if employees. Some shops add product liability (welds that fail in service).') },
+               { item: 'Business setup', detail: __alloT('stem.weldlab.sole_proprietorship_or_llc_175_filing_', 'Sole proprietorship or LLC ($175 filing in Maine). Sales tax permit (Maine Revenue Services). EIN if hiring. Not complicated.') },
+               { item: 'Customers', detail: __alloT('stem.weldlab.first_year_word_of_mouth_facebook_mark', 'First year: word of mouth, Facebook marketplace, repair calls, custom truck/trailer work. Mid-coast + rural Maine has steady demand. Marine work seasonal but lucrative spring/fall.') }].map(function(it, i) {
                 return h('div', { key: i, className: 'bg-purple-50 border-l-4 border-purple-400 rounded-r-xl p-3' },
                   h('div', { className: 'font-bold text-purple-900 mb-1' }, it.item),
                   h('p', { className: 'text-sm text-slate-800' }, it.detail)
                 );
               })
             ),
-            h('h4', { className: 'text-sm font-bold text-slate-800 mt-3' }, 'Pricing your work'),
+            h('h4', { className: 'text-sm font-bold text-slate-800 mt-3' }, __alloT('stem.weldlab.pricing_your_work', 'Pricing your work')),
             h('div', { className: 'bg-emerald-50 border-2 border-emerald-300 rounded-xl p-3' },
-              h('p', { className: 'text-sm text-slate-800' }, 'Shop labor: $60-95/hr (Maine, 2026). Field/mobile work: $85-125/hr + truck charge. Repair welding (often emergencies): premium. Don\'t underprice — your equipment + skill + insurance cost real money. Track time honestly: first hour on every job is usually setup + parts diagnosis.')
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.shop_labor_60_95_hr_maine_2026_field_m', 'Shop labor: $60-95/hr (Maine, 2026). Field/mobile work: $85-125/hr + truck charge. Repair welding (often emergencies): premium. Don\'t underprice — your equipment + skill + insurance cost real money. Track time honestly: first hour on every job is usually setup + parts diagnosis.'))
             ),
             h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-amber-900 mb-1' }, '💡 What goes wrong'),
-              h('p', { className: 'text-sm text-slate-800' }, 'Underpricing (Maine welders chronically underbid each other). No quoting discipline (verbal estimates that become disputes). Equipment failure (one fried machine = month of lost income if no backup). Cash flow gaps (some customers pay 60-90 days). Don\'t take on jobs you don\'t have the right equipment for. Don\'t weld something safety-critical without the qualifications.')
+              h('div', { className: 'text-xs font-bold uppercase text-amber-900 mb-1' }, __alloT('stem.weldlab.what_goes_wrong', '💡 What goes wrong')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.underpricing_maine_welders_chronically', 'Underpricing (Maine welders chronically underbid each other). No quoting discipline (verbal estimates that become disputes). Equipment failure (one fried machine = month of lost income if no backup). Cash flow gaps (some customers pay 60-90 days). Don\'t take on jobs you don\'t have the right equipment for. Don\'t weld something safety-critical without the qualifications.'))
             )
           );
         }
 
         var meModeTabs = [
-          { id: 'browse',  label: '🦞 Browse topics' },
-          { id: 'roadmap', label: '🗺 5-Year Roadmap' }
+          { id: 'browse',  label: __alloT('stem.weldlab.browse_topics_2', '🦞 Browse topics') },
+          { id: 'roadmap', label: __alloT('stem.weldlab.5_year_roadmap', '🗺 5-Year Roadmap') }
         ];
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '🦞', title: 'Maine Welding Ecosystem' }),
+          h(BackBar, { icon: '🦞', title: __alloT('stem.weldlab.maine_welding_ecosystem_2', 'Maine Welding Ecosystem') }),
           h('div', { className: 'p-6 max-w-5xl mx-auto space-y-5' },
-            h('div', { role: 'tablist', 'aria-label': 'Ecosystem mode', className: 'flex flex-wrap gap-2' },
+            h('div', { role: 'tablist', 'aria-label': __alloT('stem.weldlab.ecosystem_mode', 'Ecosystem mode'), className: 'flex flex-wrap gap-2' },
               meModeTabs.map(function(t) {
                 var sel = (meMode === t.id);
                 return h('button', {
@@ -8281,7 +8282,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             meMode === 'browse' && h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' }, content),
             meMode === 'roadmap' && !curRoadmap && h('div', { className: 'space-y-3' },
               h('div', { className: 'bg-fuchsia-50 border-2 border-fuchsia-300 rounded-xl p-4' },
-                h('p', { className: 'text-sm text-slate-800' }, 'Pick a path. We\'ll walk you through year 0 → year 5+ with the realistic milestones, decisions, and pay (2026 Maine dollars). Real progressions drawn from Maine Dept of Labor + AWS workforce data + actual employer pay schedules.')
+                h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.pick_a_path_we_ll_walk_you_through_yea', 'Pick a path. We\'ll walk you through year 0 → year 5+ with the realistic milestones, decisions, and pay (2026 Maine dollars). Real progressions drawn from Maine Dept of Labor + AWS workforce data + actual employer pay schedules.'))
               ),
               h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
                 roadmapPaths.map(function(p) {
@@ -8305,7 +8306,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 h('button', {
                   onClick: function() { setRoadPath(null); announce('Returned to path picker'); },
                   className: 'transition-colors text-xs font-bold px-3 py-1.5 rounded-lg border-2 border-slate-300 bg-white hover:bg-slate-50 text-slate-700'
-                }, '← Pick a different path')
+                }, __alloT('stem.weldlab.pick_a_different_path', '← Pick a different path'))
               ),
               h('div', { className: 'bg-fuchsia-50 border-2 border-fuchsia-300 rounded-xl p-4' },
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, curRoadmap.blurb)
@@ -8327,12 +8328,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 })
               ),
               h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-xl p-4' },
-                h('div', { className: 'text-xs font-bold uppercase text-amber-900 mb-1' }, '⚖ Trade-offs'),
+                h('div', { className: 'text-xs font-bold uppercase text-amber-900 mb-1' }, __alloT('stem.weldlab.trade_offs', '⚖ Trade-offs')),
                 h('p', { className: 'text-sm text-slate-800' }, curRoadmap.tradeoffs)
               ),
               h('div', { className: 'bg-blue-50 border-2 border-blue-300 rounded-xl p-4' },
-                h('div', { className: 'text-xs font-bold uppercase text-blue-900 mb-1' }, '💡 Reality check'),
-                h('p', { className: 'text-sm text-slate-800' }, 'Pay ranges are 2026 Maine averages drawn from BIW/IAM contracts, UA Local 716 wage scales, Maine DOL occupational data, and AWS workforce reports. Real outcomes vary with shift, overtime, employer, and individual performance. Use this as a planning tool, not a guarantee.')
+                h('div', { className: 'text-xs font-bold uppercase text-blue-900 mb-1' }, __alloT('stem.weldlab.reality_check_2', '💡 Reality check')),
+                h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.pay_ranges_are_2026_maine_averages_dra', 'Pay ranges are 2026 Maine averages drawn from BIW/IAM contracts, UA Local 716 wage scales, Maine DOL occupational data, and AWS workforce reports. Real outcomes vary with shift, overtime, employer, and individual performance. Use this as a planning tool, not a guarantee.'))
               )
             ),
             h(TeacherNotes, {
@@ -8365,14 +8366,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var shAudit = shAuditState[0], setShAudit = shAuditState[1];
 
         var sects = [
-          { id: 'overview',  label: '⚕️ Overview' },
-          { id: 'fume',      label: '☁ Fume + lungs' },
-          { id: 'eyes',      label: '👁 Arc flash + eyes' },
-          { id: 'noise',     label: '🔊 Noise + hearing' },
-          { id: 'burns',     label: '🔥 Burns + UV' },
-          { id: 'ergonomics',label: '🦴 Ergonomics + posture' },
-          { id: 'electrical',label: '⚡ Electrical + confined' },
-          { id: 'mental',    label: '🧠 Mental + workplace' }
+          { id: 'overview',  label: __alloT('stem.weldlab.overview_7', '⚕️ Overview') },
+          { id: 'fume',      label: __alloT('stem.weldlab.fume_lungs', '☁ Fume + lungs') },
+          { id: 'eyes',      label: __alloT('stem.weldlab.arc_flash_eyes', '👁 Arc flash + eyes') },
+          { id: 'noise',     label: __alloT('stem.weldlab.noise_hearing', '🔊 Noise + hearing') },
+          { id: 'burns',     label: __alloT('stem.weldlab.burns_uv', '🔥 Burns + UV') },
+          { id: 'ergonomics',label: __alloT('stem.weldlab.ergonomics_posture', '🦴 Ergonomics + posture') },
+          { id: 'electrical',label: __alloT('stem.weldlab.electrical_confined', '⚡ Electrical + confined') },
+          { id: 'mental',    label: __alloT('stem.weldlab.mental_workplace', '🧠 Mental + workplace') }
         ];
 
         // ── Shop Safety Audit data ──
@@ -8380,42 +8381,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         // in place. "no" = gap. Score = % of yes (out of yes+no, NA excluded).
         var auditCategories = [
           {
-            id: 'fume', label: '☁ Fume + ventilation', items: [
+            id: 'fume', label: __alloT('stem.weldlab.fume_ventilation', '☁ Fume + ventilation'), items: [
               { id: 'lev', q: 'Is there local exhaust ventilation (LEV) at the welding station?' },
               { id: 'stainless_ev', q: 'When stainless or galvanized is welded, is extra fume capture used?' },
               { id: 'papr', q: 'For welders who don\'t have LEV at every station, is a PAPR or fit-tested respirator available?' }
             ]
           },
           {
-            id: 'eyes', label: '👁 Vision + arc protection', items: [
+            id: 'eyes', label: __alloT('stem.weldlab.vision_arc_protection', '👁 Vision + arc protection'), items: [
               { id: 'screens', q: 'Are welding screens or curtains in place to protect adjacent workers from flash?' },
               { id: 'helmet', q: 'Do welders have auto-darkening helmets with shade matched to process + amperage?' },
               { id: 'safety_glasses', q: 'Are safety glasses worn at all times in the shop (not just under hood)?' }
             ]
           },
           {
-            id: 'hearing', label: '🔊 Hearing protection', items: [
+            id: 'hearing', label: __alloT('stem.weldlab.hearing_protection', '🔊 Hearing protection'), items: [
               { id: 'hp_available', q: 'Are foam plugs OR muffs available at every station?' },
               { id: 'hp_required', q: 'Is hearing protection actually required when grinding, gouging, or running plasma?' },
               { id: 'hp_double', q: 'Is double protection (plugs + muffs) available for high-noise work (>100 dB)?' }
             ]
           },
           {
-            id: 'electrical', label: '⚡ Electrical + cable safety', items: [
+            id: 'electrical', label: __alloT('stem.weldlab.electrical_cable_safety', '⚡ Electrical + cable safety'), items: [
               { id: 'cables_inspected', q: 'Are welding cables inspected each shift for cracks or exposed copper?' },
               { id: 'dry_gloves', q: 'Are dry gloves used + ground conditions kept dry to prevent shock?' },
               { id: 'work_clamp', q: 'Is the work clamp attached directly to the workpiece (not through staging or ladders)?' }
             ]
           },
           {
-            id: 'fire', label: '🔥 Fire + hot-work', items: [
+            id: 'fire', label: __alloT('stem.weldlab.fire_hot_work', '🔥 Fire + hot-work'), items: [
               { id: 'fire_ext', q: 'Is an ABC fire extinguisher within 35 ft of every welding station?' },
               { id: 'hot_work_watch', q: 'For hot work in non-shop areas, is a fire watch maintained 30+ min after stopping?' },
               { id: 'cylinder_secured', q: 'Are all compressed gas cylinders chained upright with caps when not in use?' }
             ]
           },
           {
-            id: 'ergo', label: '🦴 Ergonomics + breaks', items: [
+            id: 'ergo', label: __alloT('stem.weldlab.ergonomics_breaks', '🦴 Ergonomics + breaks'), items: [
               { id: 'positioner', q: 'Are turning gear or positioners used for long welds rather than awkward positions?' },
               { id: 'mat', q: 'Are anti-fatigue mats provided where welders stand on concrete?' },
               { id: 'breaks', q: 'Do welders take breaks every 30-60 min during sustained work?' }
@@ -8463,25 +8464,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var content;
         if (sect === 'overview') {
           content = h('div', { className: 'space-y-3' },
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'Welding is more hazardous than most people realize. The visible risks (arc flash, burns, fire) are real but actually less likely to disable you than the cumulative ones (fume inhalation, hearing loss, joint damage, vibration). PPE & Safety covered the basics. This module goes deeper into what welders actually get hurt by, and what protects you over a 40-year career.'),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.welding_is_more_hazardous_than_most_pe', 'Welding is more hazardous than most people realize. The visible risks (arc flash, burns, fire) are real but actually less likely to disable you than the cumulative ones (fume inhalation, hearing loss, joint damage, vibration). PPE & Safety covered the basics. This module goes deeper into what welders actually get hurt by, and what protects you over a 40-year career.')),
             h('div', { className: 'bg-rose-50 border-2 border-rose-300 rounded-xl p-4 space-y-2' },
-              h('div', { className: 'text-sm font-bold text-rose-900' }, '⚠ The chronic risks (will affect career-long welders)'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Manganese exposure: '), 'Neurological — Parkinson\'s-like symptoms after years of high exposure. From MIG/stick steel welding fume. NIOSH-cited.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Hexavalent chromium (Cr-VI): '), 'Carcinogenic. From stainless welding fume (hot Cr → Cr-VI). OSHA-regulated since 2006.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Welder\'s lung: '), 'Long-term fume exposure → bronchitis, asthma, increased pneumonia risk.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Noise-induced hearing loss: '), 'Welding itself is moderate (85-95 dB); grinding (95-110 dB) + chipping + adjacent processes push past safe limits.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Joint + back damage: '), 'Awkward positions held for hours. Most welders develop chronic back, shoulder, or knee issues by age 50.')
+              h('div', { className: 'text-sm font-bold text-rose-900' }, __alloT('stem.weldlab.the_chronic_risks_will_affect_career_l', '⚠ The chronic risks (will affect career-long welders)')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.manganese_exposure', 'Manganese exposure: ')), __alloT('stem.weldlab.neurological_parkinson_s_like_symptoms', 'Neurological — Parkinson\'s-like symptoms after years of high exposure. From MIG/stick steel welding fume. NIOSH-cited.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.hexavalent_chromium_cr_vi', 'Hexavalent chromium (Cr-VI): ')), __alloT('stem.weldlab.carcinogenic_from_stainless_welding_fu', 'Carcinogenic. From stainless welding fume (hot Cr → Cr-VI). OSHA-regulated since 2006.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.welder_s_lung', 'Welder\'s lung: ')), __alloT('stem.weldlab.long_term_fume_exposure_bronchitis_ast', 'Long-term fume exposure → bronchitis, asthma, increased pneumonia risk.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.noise_induced_hearing_loss', 'Noise-induced hearing loss: ')), __alloT('stem.weldlab.welding_itself_is_moderate_85_95_db_gr', 'Welding itself is moderate (85-95 dB); grinding (95-110 dB) + chipping + adjacent processes push past safe limits.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.joint_back_damage', 'Joint + back damage: ')), __alloT('stem.weldlab.awkward_positions_held_for_hours_most_', 'Awkward positions held for hours. Most welders develop chronic back, shoulder, or knee issues by age 50.'))
             ),
             h('div', { className: 'bg-emerald-50 border-2 border-emerald-300 rounded-xl p-4' },
-              h('div', { className: 'text-sm font-bold text-emerald-900 mb-2' }, '✓ What protects you (career-long)'),
-              h('p', { className: 'text-sm text-slate-800' }, '1. ALWAYS use local exhaust ventilation (LEV) on every weld, not just stainless. 2. Wear hearing protection on the shop floor, not just when grinding. 3. Take micro-breaks every 30-60 min for posture reset. 4. Get a doctor who knows occupational medicine; do annual spirometry. 5. Know your OSHA right to a clean shop + report violations without retaliation.')
+              h('div', { className: 'text-sm font-bold text-emerald-900 mb-2' }, __alloT('stem.weldlab.what_protects_you_career_long', '✓ What protects you (career-long)')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.1_always_use_local_exhaust_ventilation', '1. ALWAYS use local exhaust ventilation (LEV) on every weld, not just stainless. 2. Wear hearing protection on the shop floor, not just when grinding. 3. Take micro-breaks every 30-60 min for posture reset. 4. Get a doctor who knows occupational medicine; do annual spirometry. 5. Know your OSHA right to a clean shop + report violations without retaliation.'))
             )
           );
         } else if (sect === 'fume') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '☁ Welding fume — what\'s in it + why it matters'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'Welding fume is a complex chemical mix. The base composition depends on (1) base metal, (2) electrode/filler, (3) coatings/contamination, (4) shielding gas. NIOSH + ACGIH track Permissible Exposure Limits (PELs) for each constituent.'),
-            h('h4', { className: 'text-sm font-bold text-slate-800' }, 'Major fume constituents by metal'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.welding_fume_what_s_in_it_why_it_matte', '☁ Welding fume — what\'s in it + why it matters')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.welding_fume_is_a_complex_chemical_mix', 'Welding fume is a complex chemical mix. The base composition depends on (1) base metal, (2) electrode/filler, (3) coatings/contamination, (4) shielding gas. NIOSH + ACGIH track Permissible Exposure Limits (PELs) for each constituent.')),
+            h('h4', { className: 'text-sm font-bold text-slate-800' }, __alloT('stem.weldlab.major_fume_constituents_by_metal', 'Major fume constituents by metal')),
             h('div', { className: 'space-y-2' },
               [{ metal: 'Mild steel (carbon steel)', fume: 'Iron oxide (rust dust — main mass), some manganese, traces of silica + chrome from electrode coating', risk: 'Iron oxide irritates lungs (siderosis — benign but visible on X-ray). Manganese is the bigger long-term concern: cumulative neurotoxicity (Parkinson-like). OSHA PEL: 5 mg/m³ Mn (Cal/OSHA: 0.2 mg/m³ — much stricter).' },
                { metal: 'Stainless steel (300-series, 400-series)', fume: 'Hexavalent chromium (Cr-VI), nickel, manganese, iron oxide', risk: 'Cr-VI is CARCINOGENIC (Group 1, IARC). OSHA-regulated (29 CFR 1910.1026). Cancer risk + asthma + lung damage. Nickel also carcinogenic + dermatitis. STAINLESS WELDING REQUIRES local exhaust ventilation, period.' },
@@ -8492,38 +8493,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                { metal: 'Berylium-copper (some aerospace, some electrical)', fume: 'Beryllium oxide', risk: 'Chronic Beryllium Disease (CBD) — irreversible lung scarring. Genetic susceptibility varies (2-10% of people). Acute exposure can sensitize someone for life. Don\'t weld Be-Cu without specialized training + medical clearance.' }].map(function(m, i) {
                 return h('div', { key: i, className: 'bg-rose-50 border-2 border-rose-200 rounded-xl p-3' },
                   h('div', { className: 'font-bold text-rose-900 mb-1' }, m.metal),
-                  h('p', { className: 'text-xs text-slate-700 mb-1' }, h('strong', null, 'Fume contains: '), m.fume),
+                  h('p', { className: 'text-xs text-slate-700 mb-1' }, h('strong', null, __alloT('stem.weldlab.fume_contains', 'Fume contains: ')), m.fume),
                   h('p', { className: 'text-sm text-slate-800' }, m.risk)
                 );
               })
             ),
-            h('h4', { className: 'text-sm font-bold text-slate-800 mt-3' }, 'Ventilation hierarchy (most → least protective)'),
+            h('h4', { className: 'text-sm font-bold text-slate-800 mt-3' }, __alloT('stem.weldlab.ventilation_hierarchy_most_least_prote', 'Ventilation hierarchy (most → least protective)')),
             h('div', { className: 'bg-fuchsia-50 border-2 border-fuchsia-300 rounded-xl p-4 space-y-2' },
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, '1. Source capture LEV: '), 'Fume extractor with capture hood within 6-12" of the arc. REMOVES fume before it enters breathing zone. Gold standard. Examples: Lincoln X-Tractor, Miller FILTAIR. ~$1,500-5,000.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, '2. On-gun extraction: '), 'MIG gun with built-in extraction port. Heavier gun + needs hose to extractor. Excellent — captures at source.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, '3. Downdraft table / backdraft bench: '), 'Workbench that pulls fume downward. Good for parts you can move to it.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, '4. General room ventilation: '), 'Wall fans, makeup air. Dilutes fume but doesn\'t prevent breathing-zone exposure. MINIMUM acceptable.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, '5. PAPR (Powered Air-Purifying Respirator): '), 'Helmet with HEPA filter blower. WEAR when extraction not feasible. ~$1,200-2,000.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, '6. Half-mask N95/P100: '), 'Fit-tested respirator. Compatible with most welding hoods. Last-resort when LEV not available; uncomfortable for long welds.')
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.1_source_capture_lev', '1. Source capture LEV: ')), __alloT('stem.weldlab.fume_extractor_with_capture_hood_withi', 'Fume extractor with capture hood within 6-12" of the arc. REMOVES fume before it enters breathing zone. Gold standard. Examples: Lincoln X-Tractor, Miller FILTAIR. ~$1,500-5,000.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.2_on_gun_extraction', '2. On-gun extraction: ')), __alloT('stem.weldlab.mig_gun_with_built_in_extraction_port_', 'MIG gun with built-in extraction port. Heavier gun + needs hose to extractor. Excellent — captures at source.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.3_downdraft_table_backdraft_bench', '3. Downdraft table / backdraft bench: ')), __alloT('stem.weldlab.workbench_that_pulls_fume_downward_goo', 'Workbench that pulls fume downward. Good for parts you can move to it.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.4_general_room_ventilation', '4. General room ventilation: ')), __alloT('stem.weldlab.wall_fans_makeup_air_dilutes_fume_but_', 'Wall fans, makeup air. Dilutes fume but doesn\'t prevent breathing-zone exposure. MINIMUM acceptable.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.5_papr_powered_air_purifying_respirato', '5. PAPR (Powered Air-Purifying Respirator): ')), __alloT('stem.weldlab.helmet_with_hepa_filter_blower_wear_wh', 'Helmet with HEPA filter blower. WEAR when extraction not feasible. ~$1,200-2,000.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.6_half_mask_n95_p100', '6. Half-mask N95/P100: ')), __alloT('stem.weldlab.fit_tested_respirator_compatible_with_', 'Fit-tested respirator. Compatible with most welding hoods. Last-resort when LEV not available; uncomfortable for long welds.'))
             )
           );
         } else if (sect === 'eyes') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '👁 Arc flash + eye protection — beyond "wear a hood"'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'Welding produces UV (260-400 nm) + visible (400-700 nm) + IR (700-2500 nm). All three damage eyes. Damage from UV is the most common — arc flash (photokeratitis) feels like sand in your eyes 6-12 hours later. Repeated exposure → cataracts + retinal damage.'),
-            h('h4', { className: 'text-sm font-bold text-slate-800' }, 'Welding helmet shade selection'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.arc_flash_eye_protection_beyond_wear_a', '👁 Arc flash + eye protection — beyond "wear a hood"')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.welding_produces_uv_260_400_nm_visible', 'Welding produces UV (260-400 nm) + visible (400-700 nm) + IR (700-2500 nm). All three damage eyes. Damage from UV is the most common — arc flash (photokeratitis) feels like sand in your eyes 6-12 hours later. Repeated exposure → cataracts + retinal damage.')),
+            h('h4', { className: 'text-sm font-bold text-slate-800' }, __alloT('stem.weldlab.welding_helmet_shade_selection', 'Welding helmet shade selection')),
             h('div', { className: 'space-y-2' },
-              [{ proc: 'Stick (SMAW) <60A', shade: '7-8', note: 'Light farm-grade work, small repairs.' },
-               { proc: 'Stick (SMAW) 60-160A', shade: '10', note: 'Most common — general structural work.' },
-               { proc: 'Stick (SMAW) 160-250A', shade: '11-12', note: 'Heavy plate.' },
-               { proc: 'MIG (GMAW) <100A', shade: '10', note: 'Light auto-body, sheet metal.' },
-               { proc: 'MIG (GMAW) 100-175A', shade: '11', note: 'General plate work.' },
-               { proc: 'MIG (GMAW) 175-300A', shade: '12-13', note: 'Heavy fabrication.' },
-               { proc: 'TIG (GTAW) <50A', shade: '10', note: 'Stainless thin gauge, AC aluminum start.' },
-               { proc: 'TIG (GTAW) 50-150A', shade: '11', note: 'Most common TIG work.' },
-               { proc: 'TIG (GTAW) 150-250A', shade: '12-13', note: 'Heavier TIG.' },
-               { proc: 'Plasma cutting/gouging', shade: '11-14', note: 'Plasma arc is INTENSE — bright + UV-heavy.' },
-               { proc: 'Oxy-acetylene cutting/welding', shade: '4-6', note: 'No electric arc — much less UV; visible flame is what you\'re protecting against.' }].map(function(s, i) {
+              [{ proc: 'Stick (SMAW) <60A', shade: '7-8', note: __alloT('stem.weldlab.light_farm_grade_work_small_repairs', 'Light farm-grade work, small repairs.') },
+               { proc: 'Stick (SMAW) 60-160A', shade: '10', note: __alloT('stem.weldlab.most_common_general_structural_work', 'Most common — general structural work.') },
+               { proc: 'Stick (SMAW) 160-250A', shade: '11-12', note: __alloT('stem.weldlab.heavy_plate', 'Heavy plate.') },
+               { proc: 'MIG (GMAW) <100A', shade: '10', note: __alloT('stem.weldlab.light_auto_body_sheet_metal', 'Light auto-body, sheet metal.') },
+               { proc: 'MIG (GMAW) 100-175A', shade: '11', note: __alloT('stem.weldlab.general_plate_work', 'General plate work.') },
+               { proc: 'MIG (GMAW) 175-300A', shade: '12-13', note: __alloT('stem.weldlab.heavy_fabrication', 'Heavy fabrication.') },
+               { proc: 'TIG (GTAW) <50A', shade: '10', note: __alloT('stem.weldlab.stainless_thin_gauge_ac_aluminum_start', 'Stainless thin gauge, AC aluminum start.') },
+               { proc: 'TIG (GTAW) 50-150A', shade: '11', note: __alloT('stem.weldlab.most_common_tig_work', 'Most common TIG work.') },
+               { proc: 'TIG (GTAW) 150-250A', shade: '12-13', note: __alloT('stem.weldlab.heavier_tig', 'Heavier TIG.') },
+               { proc: 'Plasma cutting/gouging', shade: '11-14', note: __alloT('stem.weldlab.plasma_arc_is_intense_bright_uv_heavy', 'Plasma arc is INTENSE — bright + UV-heavy.') },
+               { proc: 'Oxy-acetylene cutting/welding', shade: '4-6', note: __alloT('stem.weldlab.no_electric_arc_much_less_uv_visible_f', 'No electric arc — much less UV; visible flame is what you\'re protecting against.') }].map(function(s, i) {
                 return h('div', { key: i, className: 'bg-fuchsia-50 border-2 border-fuchsia-200 rounded-xl p-2' },
                   h('div', { className: 'flex justify-between items-center text-sm' },
                     h('span', { className: 'font-bold text-fuchsia-900' }, s.proc),
@@ -8533,26 +8534,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 );
               })
             ),
-            h('h4', { className: 'text-sm font-bold text-slate-800 mt-3' }, 'Auto-darkening helmets — features that matter'),
+            h('h4', { className: 'text-sm font-bold text-slate-800 mt-3' }, __alloT('stem.weldlab.auto_darkening_helmets_features_that_m', 'Auto-darkening helmets — features that matter')),
             h('div', { className: 'bg-purple-50 border-2 border-purple-300 rounded-xl p-4 space-y-2' },
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Switching speed: '), '1/10,000 sec or faster. Older budget helmets at 1/3,600 sec — slow enough to flash your eyes. Spend the money.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Viewing area: '), 'Bigger = better visibility. 4×3" minimum; 4×4" or 5×4" preferred for pipe + structural work.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Sensor count: '), '4 sensors = better for awkward positions. 2 sensors fine for bench work.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Variable shade: '), 'Shade 9-13 range covers all common processes. Lower (5-8) range needed for grinding mode + light TIG.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Solar + battery: '), 'Solar charges battery during arc time. Replaceable batteries (lithium) are better than non-replaceable.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'TRUE COLOR vs amber: '), 'True-color (1/1/1/1 or 1/1/1/2 optical class) = much easier to see puddle + edges. Worth the upgrade.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Brands worth considering: '), 'Lincoln Viking 3350 series, Miller Digital Infinity / Elite, Optrel Crystal 2.0, Speedglas 9100XXi. ~$200-500.')
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.switching_speed', 'Switching speed: ')), __alloT('stem.weldlab.1_10_000_sec_or_faster_older_budget_he', '1/10,000 sec or faster. Older budget helmets at 1/3,600 sec — slow enough to flash your eyes. Spend the money.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.viewing_area', 'Viewing area: ')), __alloT('stem.weldlab.bigger_better_visibility_4_3_minimum_4', 'Bigger = better visibility. 4×3" minimum; 4×4" or 5×4" preferred for pipe + structural work.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.sensor_count', 'Sensor count: ')), __alloT('stem.weldlab.4_sensors_better_for_awkward_positions', '4 sensors = better for awkward positions. 2 sensors fine for bench work.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.variable_shade', 'Variable shade: ')), __alloT('stem.weldlab.shade_9_13_range_covers_all_common_pro', 'Shade 9-13 range covers all common processes. Lower (5-8) range needed for grinding mode + light TIG.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.solar_battery', 'Solar + battery: ')), __alloT('stem.weldlab.solar_charges_battery_during_arc_time_', 'Solar charges battery during arc time. Replaceable batteries (lithium) are better than non-replaceable.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.true_color_vs_amber', 'TRUE COLOR vs amber: ')), __alloT('stem.weldlab.true_color_1_1_1_1_or_1_1_1_2_optical_', 'True-color (1/1/1/1 or 1/1/1/2 optical class) = much easier to see puddle + edges. Worth the upgrade.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.brands_worth_considering', 'Brands worth considering: ')), __alloT('stem.weldlab.lincoln_viking_3350_series_miller_digi', 'Lincoln Viking 3350 series, Miller Digital Infinity / Elite, Optrel Crystal 2.0, Speedglas 9100XXi. ~$200-500.'))
             ),
             h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-amber-900 mb-1' }, '💡 Adjacent-welder protection'),
-              h('p', { className: 'text-sm text-slate-800' }, 'A welder 30 ft away from your arc still gets flashed if line-of-sight. Use welding screens / curtains. If you walk into a shop where someone is welding without a screen, that\'s a real OSHA concern. Photokeratitis is acute + painful — most welders get it at least once early in their career.')
+              h('div', { className: 'text-xs font-bold uppercase text-amber-900 mb-1' }, __alloT('stem.weldlab.adjacent_welder_protection', '💡 Adjacent-welder protection')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.a_welder_30_ft_away_from_your_arc_stil', 'A welder 30 ft away from your arc still gets flashed if line-of-sight. Use welding screens / curtains. If you walk into a shop where someone is welding without a screen, that\'s a real OSHA concern. Photokeratitis is acute + painful — most welders get it at least once early in their career.'))
             )
           );
         } else if (sect === 'noise') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '🔊 Noise exposure + hearing loss — silent career-killer'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'OSHA action level is 85 dBA (8-hr time-weighted). Above that = hearing conservation program required. Welding shops routinely exceed this from adjacent processes — not necessarily from welding itself.'),
-            h('h4', { className: 'text-sm font-bold text-slate-800' }, 'Typical shop noise levels'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.noise_exposure_hearing_loss_silent_car', '🔊 Noise exposure + hearing loss — silent career-killer')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.osha_action_level_is_85_dba_8_hr_time_', 'OSHA action level is 85 dBA (8-hr time-weighted). Above that = hearing conservation program required. Welding shops routinely exceed this from adjacent processes — not necessarily from welding itself.')),
+            h('h4', { className: 'text-sm font-bold text-slate-800' }, __alloT('stem.weldlab.typical_shop_noise_levels', 'Typical shop noise levels')),
             h('div', { className: 'space-y-1' },
               [{ act: 'Conversational speech', db: '60 dBA' },
                { act: 'MIG welding (steady arc)', db: '70-85 dBA' },
@@ -8574,16 +8575,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               })
             ),
             h('div', { className: 'bg-purple-50 border-2 border-purple-300 rounded-xl p-4 mt-3 space-y-2' },
-              h('div', { className: 'text-sm font-bold text-purple-900' }, '💡 Doubling rule'),
-              h('p', { className: 'text-sm text-slate-800' }, 'Every 5 dB increase = HALF the allowed exposure time. 85 dB = 8 hr. 90 dB = 4 hr. 95 dB = 2 hr. 100 dB = 1 hr. 110 dB = 15 min. A welder who spends 2 hours grinding without protection has already exceeded daily safe exposure.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Hearing protection options: '), 'Foam plugs (NRR 28-33, cheap, comfortable for long use). Moldable silicone (NRR 22-27, reusable). Earmuffs (NRR 20-30, easy on/off, can stack over plugs for combined ~35 NRR). Double protection (plugs + muffs) for grinding + air arc gouging.')
+              h('div', { className: 'text-sm font-bold text-purple-900' }, __alloT('stem.weldlab.doubling_rule', '💡 Doubling rule')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.every_5_db_increase_half_the_allowed_e', 'Every 5 dB increase = HALF the allowed exposure time. 85 dB = 8 hr. 90 dB = 4 hr. 95 dB = 2 hr. 100 dB = 1 hr. 110 dB = 15 min. A welder who spends 2 hours grinding without protection has already exceeded daily safe exposure.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.hearing_protection_options', 'Hearing protection options: ')), __alloT('stem.weldlab.foam_plugs_nrr_28_33_cheap_comfortable', 'Foam plugs (NRR 28-33, cheap, comfortable for long use). Moldable silicone (NRR 22-27, reusable). Earmuffs (NRR 20-30, easy on/off, can stack over plugs for combined ~35 NRR). Double protection (plugs + muffs) for grinding + air arc gouging.'))
             )
           );
         } else if (sect === 'burns') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '🔥 Burns, UV, + thermal injury'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'Direct burns from spatter + hot metal are the most common acute injury in welding. UV burns ("sunburn under your shirt") accumulate over a shift. Long-term skin cancer risk for unprotected welders is elevated 2-4× general population.'),
-            h('h4', { className: 'text-sm font-bold text-slate-800' }, 'Burn categories you\'ll encounter'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.burns_uv_thermal_injury', '🔥 Burns, UV, + thermal injury')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.direct_burns_from_spatter_hot_metal_ar', 'Direct burns from spatter + hot metal are the most common acute injury in welding. UV burns ("sunburn under your shirt") accumulate over a shift. Long-term skin cancer risk for unprotected welders is elevated 2-4× general population.')),
+            h('h4', { className: 'text-sm font-bold text-slate-800' }, __alloT('stem.weldlab.burn_categories_you_ll_encounter', 'Burn categories you\'ll encounter')),
             h('div', { className: 'space-y-2' },
               [{ type: 'Spatter burns (1st-2nd degree)', cause: 'Hot spatter on bare skin or through synthetic clothing. Most common in MIG/FCAW.', prevent: 'Long-sleeve cotton/wool (never polyester — melts), leather welding jacket for sustained work, leather sleeves at minimum. Tuck pants over boots, button collar.' },
                { type: 'UV skin burn', cause: 'Arc UV penetrates thin/unbuttoned shirts within ~30 minutes of arc time. Worst on neck, wrists, exposed arms.', prevent: 'Cotton long sleeves buttoned at cuffs, leather collar protection, neck shield on helmet. SPF 30+ on any exposed skin if working outdoors.' },
@@ -8599,15 +8600,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               })
             ),
             h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-amber-900 mb-1' }, '💡 Fire prevention'),
-              h('p', { className: 'text-sm text-slate-800' }, 'Hot work permits are required in many industrial settings. Sweep area before welding (especially flammable debris). Have ABC fire extinguisher within 35 ft. Hot work watch (someone else watching for fire) for 30 min minimum after stopping. Most shop fires start hours after welding from smoldering material — not during welding itself.')
+              h('div', { className: 'text-xs font-bold uppercase text-amber-900 mb-1' }, __alloT('stem.weldlab.fire_prevention', '💡 Fire prevention')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.hot_work_permits_are_required_in_many_', 'Hot work permits are required in many industrial settings. Sweep area before welding (especially flammable debris). Have ABC fire extinguisher within 35 ft. Hot work watch (someone else watching for fire) for 30 min minimum after stopping. Most shop fires start hours after welding from smoldering material — not during welding itself.'))
             )
           );
         } else if (sect === 'ergonomics') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '🦴 Ergonomics + chronic injury — the slow erosion'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'Most welders who leave the trade early do so for orthopedic reasons, not acute injury. Welding positions (overhead, kneeling, bent over) accumulate damage over years. Smart welders protect themselves with deliberate ergonomics from day one.'),
-            h('h4', { className: 'text-sm font-bold text-slate-800' }, 'Highest-risk welding positions'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.ergonomics_chronic_injury_the_slow_ero', '🦴 Ergonomics + chronic injury — the slow erosion')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.most_welders_who_leave_the_trade_early', 'Most welders who leave the trade early do so for orthopedic reasons, not acute injury. Welding positions (overhead, kneeling, bent over) accumulate damage over years. Smart welders protect themselves with deliberate ergonomics from day one.')),
+            h('h4', { className: 'text-sm font-bold text-slate-800' }, __alloT('stem.weldlab.highest_risk_welding_positions', 'Highest-risk welding positions')),
             h('div', { className: 'space-y-2' },
               [{ pos: 'Overhead welding (4G plate, 5G pipe)', risk: 'Cervical spine compression + shoulder rotator cuff damage. Neck looks up for sustained periods. Spatter falls down hood + collar.', mitigate: 'Take breaks every 15-20 min. Use shoulder brace if you do a lot of overhead. Adjust workpiece to come to you when possible (use turning gear, positioners).' },
                { pos: 'Vertical-up welding (3G, 6G pipe)', risk: 'Lower back strain from awkward stance. Shoulder fatigue from sustained gun position.', mitigate: 'Welder seat for sit-down vertical work. Knee pad if kneeling. Keep gun balanced — proper grip prevents wrist strain.' },
@@ -8622,57 +8623,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               })
             ),
             h('div', { className: 'bg-fuchsia-50 border-2 border-fuchsia-300 rounded-xl p-4' },
-              h('div', { className: 'text-sm font-bold text-fuchsia-900 mb-2' }, '💡 Career-preserving habits'),
+              h('div', { className: 'text-sm font-bold text-fuchsia-900 mb-2' }, __alloT('stem.weldlab.career_preserving_habits', '💡 Career-preserving habits')),
               h('ul', { className: 'text-sm text-slate-800 space-y-1' },
-                h('li', null, '• Daily stretching, especially neck + shoulders + lower back (5 min morning + 5 min evening).'),
-                h('li', null, '• Hydrate (welding shops are hot; dehydration multiplies fatigue).'),
-                h('li', null, '• Use the positioner / turning gear EVERY time, not just when supervisor watching.'),
-                h('li', null, '• Welder\'s stool / chair for any bench work that lasts >30 min.'),
-                h('li', null, '• Anti-fatigue mats on concrete floor.'),
-                h('li', null, '• Off-season: weight training (lower back + core), yoga (flexibility), swimming (low-impact cardio).'),
-                h('li', null, '• If something hurts repeatedly: see a doctor BEFORE it becomes a chronic issue.')
+                h('li', null, __alloT('stem.weldlab.daily_stretching_especially_neck_shoul', '• Daily stretching, especially neck + shoulders + lower back (5 min morning + 5 min evening).')),
+                h('li', null, __alloT('stem.weldlab.hydrate_welding_shops_are_hot_dehydrat', '• Hydrate (welding shops are hot; dehydration multiplies fatigue).')),
+                h('li', null, __alloT('stem.weldlab.use_the_positioner_turning_gear_every_', '• Use the positioner / turning gear EVERY time, not just when supervisor watching.')),
+                h('li', null, __alloT('stem.weldlab.welder_s_stool_chair_for_any_bench_wor', '• Welder\'s stool / chair for any bench work that lasts >30 min.')),
+                h('li', null, __alloT('stem.weldlab.anti_fatigue_mats_on_concrete_floor', '• Anti-fatigue mats on concrete floor.')),
+                h('li', null, __alloT('stem.weldlab.off_season_weight_training_lower_back_', '• Off-season: weight training (lower back + core), yoga (flexibility), swimming (low-impact cardio).')),
+                h('li', null, __alloT('stem.weldlab.if_something_hurts_repeatedly_see_a_do', '• If something hurts repeatedly: see a doctor BEFORE it becomes a chronic issue.'))
               )
             )
           );
         } else if (sect === 'electrical') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '⚡ Electrical safety + confined space — the rarely-discussed risks'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'Welding involves significant voltage + current. Most welders never get electrocuted, but the conditions for it exist constantly. Confined-space welding adds atmospheric hazards on top of everything else.'),
-            h('h4', { className: 'text-sm font-bold text-slate-800' }, 'Electrical hazards specific to welding'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.electrical_safety_confined_space_the_r', '⚡ Electrical safety + confined space — the rarely-discussed risks')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.welding_involves_significant_voltage_c', 'Welding involves significant voltage + current. Most welders never get electrocuted, but the conditions for it exist constantly. Confined-space welding adds atmospheric hazards on top of everything else.')),
+            h('h4', { className: 'text-sm font-bold text-slate-800' }, __alloT('stem.weldlab.electrical_hazards_specific_to_welding', 'Electrical hazards specific to welding')),
             h('div', { className: 'space-y-2' },
-              [{ haz: 'Open-circuit voltage (OCV)', detail: 'Welding machines have 60-100V at the electrode when not arcing. Enough to shock you, especially if you\'re sweaty or standing on wet ground. Worse with AC than DC.' },
-               { haz: 'Wet/conductive conditions', detail: 'Welding outside in rain, on damp concrete, in tanks with residual moisture = significantly higher shock risk. Use rubber-soled boots, dry gloves, insulating mats.' },
-               { haz: 'Grounding loops', detail: 'If multiple welding machines share grounds + work clamps are crossed, current can flow through your body. Always work-clamp directly to the workpiece, not through ladders or staging.' },
-               { haz: 'Cable damage', detail: 'Worn welding leads exposing copper, damaged work clamps, cracked electrode holders = direct contact path. Inspect every shift. Replace cables when insulation cracks (don\'t patch).' },
-               { haz: 'Cylinder + arc proximity', detail: 'NEVER strike an arc on a compressed gas cylinder (even empty). Even a brief arc strike can cause failure under pressure.' }].map(function(e, i) {
+              [{ haz: 'Open-circuit voltage (OCV)', detail: __alloT('stem.weldlab.welding_machines_have_60_100v_at_the_e', 'Welding machines have 60-100V at the electrode when not arcing. Enough to shock you, especially if you\'re sweaty or standing on wet ground. Worse with AC than DC.') },
+               { haz: 'Wet/conductive conditions', detail: __alloT('stem.weldlab.welding_outside_in_rain_on_damp_concre', 'Welding outside in rain, on damp concrete, in tanks with residual moisture = significantly higher shock risk. Use rubber-soled boots, dry gloves, insulating mats.') },
+               { haz: 'Grounding loops', detail: __alloT('stem.weldlab.if_multiple_welding_machines_share_gro', 'If multiple welding machines share grounds + work clamps are crossed, current can flow through your body. Always work-clamp directly to the workpiece, not through ladders or staging.') },
+               { haz: 'Cable damage', detail: __alloT('stem.weldlab.worn_welding_leads_exposing_copper_dam', 'Worn welding leads exposing copper, damaged work clamps, cracked electrode holders = direct contact path. Inspect every shift. Replace cables when insulation cracks (don\'t patch).') },
+               { haz: 'Cylinder + arc proximity', detail: __alloT('stem.weldlab.never_strike_an_arc_on_a_compressed_ga', 'NEVER strike an arc on a compressed gas cylinder (even empty). Even a brief arc strike can cause failure under pressure.') }].map(function(e, i) {
                 return h('div', { key: i, className: 'bg-rose-50 border-l-4 border-rose-400 rounded-r-xl p-3' },
                   h('div', { className: 'font-bold text-rose-900 mb-1' }, e.haz),
                   h('p', { className: 'text-sm text-slate-800' }, e.detail)
                 );
               })
             ),
-            h('h4', { className: 'text-sm font-bold text-slate-800 mt-3' }, 'Confined-space welding — the compounded hazard'),
+            h('h4', { className: 'text-sm font-bold text-slate-800 mt-3' }, __alloT('stem.weldlab.confined_space_welding_the_compounded_', 'Confined-space welding — the compounded hazard')),
             h('div', { className: 'bg-rose-50 border-2 border-rose-300 rounded-xl p-4 space-y-2' },
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Definition: '), 'Tanks, ship hulls, boilers, storage vessels — enclosed spaces not designed for human occupancy with limited entry/exit.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'OSHA 29 CFR 1910.146: '), 'Permit-required confined space. Atmosphere testing (O2, LEL, toxics) before + during entry. Continuous ventilation. Rescue plan + standby attendant.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Welding-specific issues: '), 'Shielding gases (argon, CO2) DISPLACE oxygen — silent killer. Heavier-than-air gases pool in low spots. Fume + ozone accumulate fast. Sparks can ignite trapped vapors.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'PROTOCOL: '), '(1) Confined space permit, (2) atmospheric testing, (3) forced ventilation, (4) standby attendant outside with rescue equipment, (5) communication (radio or signal rope), (6) NEVER alone, (7) machine ON/OFF accessible from outside.'),
-              h('p', { className: 'text-sm text-slate-800 font-bold' }, 'Most confined-space fatalities happen to the would-be rescuer who entered without PPE. If something goes wrong, signal — don\'t enter.')
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Definition: '), __alloT('stem.weldlab.tanks_ship_hulls_boilers_storage_vesse', 'Tanks, ship hulls, boilers, storage vessels — enclosed spaces not designed for human occupancy with limited entry/exit.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.osha_29_cfr_1910_146', 'OSHA 29 CFR 1910.146: ')), __alloT('stem.weldlab.permit_required_confined_space_atmosph', 'Permit-required confined space. Atmosphere testing (O2, LEL, toxics) before + during entry. Continuous ventilation. Rescue plan + standby attendant.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.welding_specific_issues', 'Welding-specific issues: ')), __alloT('stem.weldlab.shielding_gases_argon_co2_displace_oxy', 'Shielding gases (argon, CO2) DISPLACE oxygen — silent killer. Heavier-than-air gases pool in low spots. Fume + ozone accumulate fast. Sparks can ignite trapped vapors.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'PROTOCOL: '), __alloT('stem.weldlab.1_confined_space_permit_2_atmospheric_', '(1) Confined space permit, (2) atmospheric testing, (3) forced ventilation, (4) standby attendant outside with rescue equipment, (5) communication (radio or signal rope), (6) NEVER alone, (7) machine ON/OFF accessible from outside.')),
+              h('p', { className: 'text-sm text-slate-800 font-bold' }, __alloT('stem.weldlab.most_confined_space_fatalities_happen_', 'Most confined-space fatalities happen to the would-be rescuer who entered without PPE. If something goes wrong, signal — don\'t enter.'))
             )
           );
         } else if (sect === 'mental') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '🧠 Mental health, workplace dynamics, + the long career'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'Welding shops + shipyards + construction sites have distinct cultures. Some are welcoming + supportive; some are rough + exclusionary. Career-long welders need realistic strategies for the workplace itself, not just the welding.'),
-            h('h4', { className: 'text-sm font-bold text-slate-800' }, 'Mental + emotional realities of trade work'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.mental_health_workplace_dynamics_the_l', '🧠 Mental health, workplace dynamics, + the long career')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.welding_shops_shipyards_construction_s', 'Welding shops + shipyards + construction sites have distinct cultures. Some are welcoming + supportive; some are rough + exclusionary. Career-long welders need realistic strategies for the workplace itself, not just the welding.')),
+            h('h4', { className: 'text-sm font-bold text-slate-800' }, __alloT('stem.weldlab.mental_emotional_realities_of_trade_wo', 'Mental + emotional realities of trade work')),
             h('div', { className: 'space-y-2' },
-              [{ topic: 'Repetitive work + cognitive fatigue', detail: 'Production welding is mentally repetitive. Brain wants stimulation. Common coping: podcasts on Bluetooth bone-conduction headphones (compatible with hood), planning side projects in head, social conversation during breaks. Some welders take additional certifications (CWI inspector path) to add intellectual variety.' },
-               { topic: 'Substance use risk', detail: 'Trade culture historically + still includes drinking, opioid use (often from work-related injuries → pain pills). Risk factor for transitioning off pain meds → alcohol → harder substances. Be aware. Many shops drug-test (especially safety-sensitive work like BIW). Maine SAMHSA helpline: 1-800-499-0027. Free, confidential.' },
-               { topic: 'Suicide rate in construction trades', detail: 'Construction has the highest male suicide rate of any US industry (~53 per 100,000 — about 4× general rate). Combination of isolation, pain, substance use, masculinity culture that discourages help-seeking. AFSP + Construction Industry Alliance for Suicide Prevention have free resources. If you\'re struggling: 988 (Suicide & Crisis Lifeline) — text or call.' },
-               { topic: 'Bullying + hazing', detail: 'Still happens, especially in older shops. New welders often pranked (welded boots to floor, etc.) — usually meant good-naturedly but can cross into harassment. Know your rights: workplace harassment based on protected class (sex, race, disability, sexual orientation) is illegal. Maine Human Rights Commission: 207-624-6290.' },
-               { topic: 'Women + LGBTQ+ welders', detail: 'Maine\'s welding workforce is ~5-7% women (slowly growing). Some shops are excellent; some still have culture work to do. Resources: Women in Welding (national organization), Maine Tradeswomen Association, AWS Women in Welding Committee. LGBTQ+ welders: Pride At Work (AFL-CIO affiliate) has resources for union members.' },
-               { topic: 'Neurodivergent welders', detail: 'Many welders (estimated 20%+) are dyslexic, ADHD, autistic, or have other neurodivergent profiles. Welding rewards visual-spatial thinking + focused attention + tactile skill — often a great fit. Reasonable accommodations are protected by ADA. Common requests: written instructions, quieter break area, predictable schedule.' },
-               { topic: 'Work-life sustainability', detail: 'Welding pays well but can demand: long shifts, OT, travel for shutdown work. Many welders earn high incomes by working unsustainable hours. Plan early career around saving for shop equipment, education, real estate — assets that produce income beyond your body. The welders who do best long-term have a Plan B beyond their hands.' }].map(function(t, i) {
+              [{ topic: 'Repetitive work + cognitive fatigue', detail: __alloT('stem.weldlab.production_welding_is_mentally_repetit', 'Production welding is mentally repetitive. Brain wants stimulation. Common coping: podcasts on Bluetooth bone-conduction headphones (compatible with hood), planning side projects in head, social conversation during breaks. Some welders take additional certifications (CWI inspector path) to add intellectual variety.') },
+               { topic: 'Substance use risk', detail: __alloT('stem.weldlab.trade_culture_historically_still_inclu', 'Trade culture historically + still includes drinking, opioid use (often from work-related injuries → pain pills). Risk factor for transitioning off pain meds → alcohol → harder substances. Be aware. Many shops drug-test (especially safety-sensitive work like BIW). Maine SAMHSA helpline: 1-800-499-0027. Free, confidential.') },
+               { topic: 'Suicide rate in construction trades', detail: __alloT('stem.weldlab.construction_has_the_highest_male_suic', 'Construction has the highest male suicide rate of any US industry (~53 per 100,000 — about 4× general rate). Combination of isolation, pain, substance use, masculinity culture that discourages help-seeking. AFSP + Construction Industry Alliance for Suicide Prevention have free resources. If you\'re struggling: 988 (Suicide & Crisis Lifeline) — text or call.') },
+               { topic: 'Bullying + hazing', detail: __alloT('stem.weldlab.still_happens_especially_in_older_shop', 'Still happens, especially in older shops. New welders often pranked (welded boots to floor, etc.) — usually meant good-naturedly but can cross into harassment. Know your rights: workplace harassment based on protected class (sex, race, disability, sexual orientation) is illegal. Maine Human Rights Commission: 207-624-6290.') },
+               { topic: 'Women + LGBTQ+ welders', detail: __alloT('stem.weldlab.maine_s_welding_workforce_is_5_7_women', 'Maine\'s welding workforce is ~5-7% women (slowly growing). Some shops are excellent; some still have culture work to do. Resources: Women in Welding (national organization), Maine Tradeswomen Association, AWS Women in Welding Committee. LGBTQ+ welders: Pride At Work (AFL-CIO affiliate) has resources for union members.') },
+               { topic: 'Neurodivergent welders', detail: __alloT('stem.weldlab.many_welders_estimated_20_are_dyslexic', 'Many welders (estimated 20%+) are dyslexic, ADHD, autistic, or have other neurodivergent profiles. Welding rewards visual-spatial thinking + focused attention + tactile skill — often a great fit. Reasonable accommodations are protected by ADA. Common requests: written instructions, quieter break area, predictable schedule.') },
+               { topic: 'Work-life sustainability', detail: __alloT('stem.weldlab.welding_pays_well_but_can_demand_long_', 'Welding pays well but can demand: long shifts, OT, travel for shutdown work. Many welders earn high incomes by working unsustainable hours. Plan early career around saving for shop equipment, education, real estate — assets that produce income beyond your body. The welders who do best long-term have a Plan B beyond their hands.') }].map(function(t, i) {
                 return h('div', { key: i, className: 'bg-fuchsia-50 border-2 border-fuchsia-200 rounded-xl p-3' },
                   h('div', { className: 'font-bold text-fuchsia-900 mb-1' }, t.topic),
                   h('p', { className: 'text-sm text-slate-800' }, t.detail)
@@ -8680,15 +8681,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               })
             ),
             h('div', { className: 'bg-emerald-50 border-2 border-emerald-300 rounded-xl p-4' },
-              h('div', { className: 'text-sm font-bold text-emerald-900 mb-2' }, '🟢 Help is available — no stigma needed'),
-              h('p', { className: 'text-sm text-slate-800' }, '988 Suicide & Crisis Lifeline (call or text). SAMHSA National Helpline 1-800-662-4357 (substance use, free, 24/7). Maine 211 (any social service). Most union locals + employers have Employee Assistance Programs (EAPs) — free + confidential counseling, usually 4-8 sessions per issue. Use them. Welders need mental health resources as much as anyone — often more.')
+              h('div', { className: 'text-sm font-bold text-emerald-900 mb-2' }, __alloT('stem.weldlab.help_is_available_no_stigma_needed', '🟢 Help is available — no stigma needed')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.988_suicide_crisis_lifeline_call_or_te', '988 Suicide & Crisis Lifeline (call or text). SAMHSA National Helpline 1-800-662-4357 (substance use, free, 24/7). Maine 211 (any social service). Most union locals + employers have Employee Assistance Programs (EAPs) — free + confidential counseling, usually 4-8 sessions per issue. Use them. Welders need mental health resources as much as anyone — often more.'))
             )
           );
         }
 
         var shModeTabs = [
-          { id: 'browse', label: '⚕️ Browse topics' },
-          { id: 'audit',  label: '🛡 How safe is your shop?' }
+          { id: 'browse', label: __alloT('stem.weldlab.browse_topics_3', '⚕️ Browse topics') },
+          { id: 'audit',  label: __alloT('stem.weldlab.how_safe_is_your_shop', '🛡 How safe is your shop?') }
         ];
 
         function answerButton(qid, val, label, color) {
@@ -8702,9 +8703,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         }
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '⚕️', title: 'Safety + Health Deep-Dive' }),
+          h(BackBar, { icon: '⚕️', title: __alloT('stem.weldlab.safety_health_deep_dive_2', 'Safety + Health Deep-Dive') }),
           h('div', { className: 'p-6 max-w-5xl mx-auto space-y-5' },
-            h('div', { role: 'tablist', 'aria-label': 'Safety mode', className: 'flex flex-wrap gap-2' },
+            h('div', { role: 'tablist', 'aria-label': __alloT('stem.weldlab.safety_mode', 'Safety mode'), className: 'flex flex-wrap gap-2' },
               shModeTabs.map(function(t) {
                 var sel = (shMode === t.id);
                 return h('button', {
@@ -8729,7 +8730,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             shMode === 'browse' && h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' }, content),
             shMode === 'audit' && h('div', { className: 'space-y-4' },
               h('div', { className: 'bg-fuchsia-50 border-2 border-fuchsia-300 rounded-xl p-4' },
-                h('p', { className: 'text-sm text-slate-800' }, 'Walk through your actual shop, classroom shop, or any shop you\'ve worked in. Answer Yes / No / Not applicable for each. We\'ll score your environment overall + by category. Not a replacement for an OSHA-level audit, but a strong starting checklist.')
+                h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.walk_through_your_actual_shop_classroo', 'Walk through your actual shop, classroom shop, or any shop you\'ve worked in. Answer Yes / No / Not applicable for each. We\'ll score your environment overall + by category. Not a replacement for an OSHA-level audit, but a strong starting checklist.'))
               ),
               h('div', { className: 'bg-white rounded-2xl border-2 border-slate-300 p-5 space-y-2' },
                 h('div', { className: 'flex justify-between items-baseline flex-wrap gap-2' },
@@ -8737,7 +8738,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   h('button', {
                     onClick: resetAudit,
                     className: 'transition-colors text-xs font-bold px-3 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700'
-                  }, '↺ Reset audit')
+                  }, __alloT('stem.weldlab.reset_audit', '↺ Reset audit'))
                 ),
                 h('div', { className: 'h-2 bg-slate-200 rounded-full overflow-hidden', 'aria-hidden': true },
                   h('div', { className: 'h-full bg-fuchsia-600 transition-all', style: { width: ((overall.answered / overall.total) * 100) + '%' } })
@@ -8777,7 +8778,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     : '🔴 Significant safety concerns. OSHA-reportable issues likely present. This shop needs an outside safety audit + management commitment.'
                 ),
                 h('div', { className: 'bg-white rounded-xl p-3 text-xs text-slate-700' },
-                  h('strong', null, 'Reporting concerns: '), 'OSHA accepts complaints from any worker or member of the public. Online: osha.gov/workers/file-complaint. Anonymous reports protected by law. State plan in Maine: Maine Department of Labor (also handles state-level safety).'
+                  h('strong', null, __alloT('stem.weldlab.reporting_concerns', 'Reporting concerns: ')), __alloT('stem.weldlab.osha_accepts_complaints_from_any_worke', 'OSHA accepts complaints from any worker or member of the public. Online: osha.gov/workers/file-complaint. Anonymous reports protected by law. State plan in Maine: Maine Department of Labor (also handles state-level safety).')
                 )
               )
             ),
@@ -8815,13 +8816,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var mbQPicked = mbQPickedState[0], setMbQPicked = mbQPickedState[1];
 
         var sects = [
-          { id: 'overview',  label: '📐 Overview' },
-          { id: 'arithmetic',label: '🧮 Shop arithmetic' },
-          { id: 'measure',   label: '📏 Measurement + tolerance' },
-          { id: 'geometry',  label: '📐 Geometry + angles' },
-          { id: 'prints',    label: '📋 Blueprint reading' },
-          { id: 'symbols',   label: '🔣 Symbol fluency' },
-          { id: 'estimate',  label: '🧾 Estimating + bidding' }
+          { id: 'overview',  label: __alloT('stem.weldlab.overview_8', '📐 Overview') },
+          { id: 'arithmetic',label: __alloT('stem.weldlab.shop_arithmetic', '🧮 Shop arithmetic') },
+          { id: 'measure',   label: __alloT('stem.weldlab.measurement_tolerance', '📏 Measurement + tolerance') },
+          { id: 'geometry',  label: __alloT('stem.weldlab.geometry_angles', '📐 Geometry + angles') },
+          { id: 'prints',    label: __alloT('stem.weldlab.blueprint_reading', '📋 Blueprint reading') },
+          { id: 'symbols',   label: __alloT('stem.weldlab.symbol_fluency', '🔣 Symbol fluency') },
+          { id: 'estimate',  label: __alloT('stem.weldlab.estimating_bidding', '🧾 Estimating + bidding') }
         ];
 
         // ── Symbol Match quiz data ──
@@ -8832,7 +8833,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var symbolQuestions = [
           {
             viz: { other: '', arrow: '▲ 1/4', tail: '', junction: '' },
-            prompt: 'What does this symbol mean?',
+            prompt: __alloT('stem.weldlab.what_does_this_symbol_mean', 'What does this symbol mean?'),
             options: [
               'A 1/4-inch fillet weld on arrow side only',
               'A 1/4-inch fillet weld on both sides',
@@ -8844,7 +8845,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           },
           {
             viz: { other: '▲ 1/4', arrow: '▲ 1/4', tail: '', junction: '' },
-            prompt: 'What does this symbol mean?',
+            prompt: __alloT('stem.weldlab.what_does_this_symbol_mean_2', 'What does this symbol mean?'),
             options: [
               '1/4-inch fillet weld on arrow side only',
               '1/4-inch fillet welds on BOTH sides, continuous',
@@ -8856,7 +8857,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           },
           {
             viz: { other: '', arrow: '▲ 3/16-2(6)', tail: '', junction: '' },
-            prompt: 'What does this symbol mean?',
+            prompt: __alloT('stem.weldlab.what_does_this_symbol_mean_3', 'What does this symbol mean?'),
             options: [
               '3/16 fillet, 2" long, 6" deep',
               '3/16 fillet, 2 welds at 6 amps',
@@ -8868,7 +8869,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           },
           {
             viz: { other: '', arrow: '⌵ 60°', tail: '', junction: '' },
-            prompt: 'What does this symbol mean?',
+            prompt: __alloT('stem.weldlab.what_does_this_symbol_mean_4', 'What does this symbol mean?'),
             options: [
               'V-groove weld, 60° bevel angle, arrow side',
               'V-shaped fillet, 60% penetration',
@@ -8880,7 +8881,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           },
           {
             viz: { other: '', arrow: '⌵ 60°', tail: '', junction: '', root: '1/16' },
-            prompt: 'A 1/16 root opening is added to the V-groove. What changes?',
+            prompt: __alloT('stem.weldlab.a_1_16_root_opening_is_added_to_the_v_', 'A 1/16 root opening is added to the V-groove. What changes?'),
             options: [
               'The weld is now stronger',
               'The plates are placed 1/16" apart at the root before welding',
@@ -8892,7 +8893,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           },
           {
             viz: { other: '', arrow: '▲ 1/4', tail: '', junction: '○' },
-            prompt: 'What does the circle at the junction tell the welder?',
+            prompt: __alloT('stem.weldlab.what_does_the_circle_at_the_junction_t', 'What does the circle at the junction tell the welder?'),
             options: [
               'Weld a circle of metal 1/4 thick',
               'This is a circular weld pattern',
@@ -8904,7 +8905,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           },
           {
             viz: { other: '', arrow: '▲ 1/4', tail: '', junction: '●' },
-            prompt: 'What does the filled (black) flag at the junction tell the welder?',
+            prompt: __alloT('stem.weldlab.what_does_the_filled_black_flag_at_the', 'What does the filled (black) flag at the junction tell the welder?'),
             options: [
               'This weld must be inspected before next operation',
               'This weld is made in the field (not in the shop)',
@@ -8916,7 +8917,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           },
           {
             viz: { other: '⌵ 60°', arrow: '⌵ 60°', tail: '', junction: '' },
-            prompt: 'What does this symbol mean?',
+            prompt: __alloT('stem.weldlab.what_does_this_symbol_mean_5', 'What does this symbol mean?'),
             options: [
               'Single V-groove with 120° total angle',
               'Double V-groove (V from both sides) with 60° angle each',
@@ -8928,7 +8929,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           },
           {
             viz: { other: '', arrow: '▲ 1/4', tail: 'GTAW · WPS-22', junction: '' },
-            prompt: 'What does the tail "GTAW · WPS-22" specify?',
+            prompt: __alloT('stem.weldlab.what_does_the_tail_gtaw_wps_22_specify', 'What does the tail "GTAW · WPS-22" specify?'),
             options: [
               'A 22-second welding time',
               'Use TIG (GTAW) process per Welding Procedure Specification #22',
@@ -8940,7 +8941,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           },
           {
             viz: { other: '', arrow: '⌶ 1/4', tail: '', junction: '' },
-            prompt: 'What does this symbol (bevel angle only on arrow plate) mean?',
+            prompt: __alloT('stem.weldlab.what_does_this_symbol_bevel_angle_only', 'What does this symbol (bevel angle only on arrow plate) mean?'),
             options: [
               'A 1/4 fillet weld',
               'A bevel-groove weld — only the arrow-side plate is beveled, 1/4 groove depth',
@@ -8973,7 +8974,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               // Arrow pointing to joint
               h('div', { className: 'flex justify-center' },
                 h('span', { className: 'text-2xl text-slate-700' }, '↓'),
-                h('span', { className: 'text-xs text-slate-600 ml-2 self-center' }, 'arrow → joint')
+                h('span', { className: 'text-xs text-slate-600 ml-2 self-center' }, __alloT('stem.weldlab.arrow_joint_2', 'arrow → joint'))
               ),
               viz.root && h('div', { className: 'text-center text-xs font-mono text-fuchsia-700 mt-1' }, '(root opening: ' + viz.root + '")')
             )
@@ -9005,22 +9006,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var content;
         if (sect === 'overview') {
           content = h('div', { className: 'space-y-3' },
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'A skilled welder reads prints, does shop math, and works in fractions + decimals + angles without slowing down. Most failed welder qualifications + most rejected fabrications fail because of math/measurement errors, not bad welds.'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'This module covers the math you actually use: fractions in fab work, measurement tools + tolerance, geometry for cutting + fitting, blueprint conventions, weld symbol fluency, and estimating jobs.'),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.a_skilled_welder_reads_prints_does_sho', 'A skilled welder reads prints, does shop math, and works in fractions + decimals + angles without slowing down. Most failed welder qualifications + most rejected fabrications fail because of math/measurement errors, not bad welds.')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.this_module_covers_the_math_you_actual', 'This module covers the math you actually use: fractions in fab work, measurement tools + tolerance, geometry for cutting + fitting, blueprint conventions, weld symbol fluency, and estimating jobs.')),
             h('div', { className: 'bg-fuchsia-50 border-2 border-fuchsia-300 rounded-xl p-4 space-y-2' },
-              h('div', { className: 'text-sm font-bold text-fuchsia-900' }, '🎯 What welders actually use'),
-              h('p', { className: 'text-sm text-slate-800' }, '• Fractions (1/16, 3/32, 1/8, 3/16, 1/4, etc.) — everywhere'),
-              h('p', { className: 'text-sm text-slate-800' }, '• Decimals (especially for tolerance: ±0.030)'),
-              h('p', { className: 'text-sm text-slate-800' }, '• Right triangles + Pythagorean theorem (for cuts + miters)'),
-              h('p', { className: 'text-sm text-slate-800' }, '• Trigonometry basics (sin/cos/tan for angled cuts)'),
-              h('p', { className: 'text-sm text-slate-800' }, '• Area + volume (for filler material calcs)'),
-              h('p', { className: 'text-sm text-slate-800' }, '• Cost-per-pound + cost-per-hour (for bidding)')
+              h('div', { className: 'text-sm font-bold text-fuchsia-900' }, __alloT('stem.weldlab.what_welders_actually_use', '🎯 What welders actually use')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.fractions_1_16_3_32_1_8_3_16_1_4_etc_e', '• Fractions (1/16, 3/32, 1/8, 3/16, 1/4, etc.) — everywhere')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.decimals_especially_for_tolerance_0_03', '• Decimals (especially for tolerance: ±0.030)')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.right_triangles_pythagorean_theorem_fo', '• Right triangles + Pythagorean theorem (for cuts + miters)')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.trigonometry_basics_sin_cos_tan_for_an', '• Trigonometry basics (sin/cos/tan for angled cuts)')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.area_volume_for_filler_material_calcs', '• Area + volume (for filler material calcs)')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.cost_per_pound_cost_per_hour_for_biddi', '• Cost-per-pound + cost-per-hour (for bidding)'))
             )
           );
         } else if (sect === 'arithmetic') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '🧮 Shop arithmetic — the daily math'),
-            h('h4', { className: 'text-sm font-bold text-slate-800' }, 'Fraction-decimal conversions (memorize)'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.shop_arithmetic_the_daily_math', '🧮 Shop arithmetic — the daily math')),
+            h('h4', { className: 'text-sm font-bold text-slate-800' }, __alloT('stem.weldlab.fraction_decimal_conversions_memorize', 'Fraction-decimal conversions (memorize)')),
             h('div', { className: 'bg-slate-50 border-2 border-slate-300 rounded-xl p-4 grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm font-mono' },
               [{ f: '1/64', d: '0.0156' },
                { f: '1/32', d: '0.0313' },
@@ -9048,7 +9049,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 );
               })
             ),
-            h('h4', { className: 'text-sm font-bold text-slate-800 mt-3' }, 'Practice problems'),
+            h('h4', { className: 'text-sm font-bold text-slate-800 mt-3' }, __alloT('stem.weldlab.practice_problems', 'Practice problems')),
             h('div', { className: 'space-y-2' },
               [{ q: 'Add: 3/16 + 5/32 + 1/8', a: '3/16 = 6/32 · 1/8 = 4/32 · 6/32 + 5/32 + 4/32 = 15/32 (or 0.469)' },
                { q: 'Subtract: 7/8 - 5/16', a: '7/8 = 14/16 · 14/16 - 5/16 = 9/16 (or 0.5625)' },
@@ -9064,8 +9065,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           );
         } else if (sect === 'measure') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '📏 Measurement tools + tolerance'),
-            h('h4', { className: 'text-sm font-bold text-slate-800' }, 'Tools — when to use what'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.measurement_tools_tolerance', '📏 Measurement tools + tolerance')),
+            h('h4', { className: 'text-sm font-bold text-slate-800' }, __alloT('stem.weldlab.tools_when_to_use_what', 'Tools — when to use what')),
             h('div', { className: 'space-y-2' },
               [{ tool: 'Tape measure (12-25 ft)', use: 'Layout work, rough cuts, structural placement', precision: '~1/16" practical accuracy' },
                { tool: 'Combination square (12")', use: 'Square + 45° angle layout, transfer marks', precision: '~1/64"' },
@@ -9086,28 +9087,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 );
               })
             ),
-            h('h4', { className: 'text-sm font-bold text-slate-800 mt-3' }, 'Tolerance — what ± means'),
+            h('h4', { className: 'text-sm font-bold text-slate-800 mt-3' }, __alloT('stem.weldlab.tolerance_what_means', 'Tolerance — what ± means')),
             h('div', { className: 'bg-fuchsia-50 border-2 border-fuchsia-300 rounded-xl p-4 space-y-2' },
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Bilateral: '), '"24.000 ± 0.030" = 23.970 to 24.030 (60 thou window).'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Unilateral: '), '"24.000 +0.020/-0.000" = 24.000 to 24.020 (20 thou window, only positive allowed).'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Common shop tolerances: '), 'Structural plate ±1/16" length. Pipe cuts ±1/32". Precision fab ±0.020". Aerospace ±0.005".'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Why it matters: '), 'If you make 5 parts each 1/16" oversize, your final 20-ft assembly is 5/16" off — past tolerance, scrap.')
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Bilateral: '), __alloT('stem.weldlab.24_000_0_030_23_970_to_24_030_60_thou_', '"24.000 ± 0.030" = 23.970 to 24.030 (60 thou window).')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Unilateral: '), __alloT('stem.weldlab.24_000_0_020_0_000_24_000_to_24_020_20', '"24.000 +0.020/-0.000" = 24.000 to 24.020 (20 thou window, only positive allowed).')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.common_shop_tolerances', 'Common shop tolerances: ')), __alloT('stem.weldlab.structural_plate_1_16_length_pipe_cuts', 'Structural plate ±1/16" length. Pipe cuts ±1/32". Precision fab ±0.020". Aerospace ±0.005".')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.why_it_matters_2', 'Why it matters: ')), __alloT('stem.weldlab.if_you_make_5_parts_each_1_16_oversize', 'If you make 5 parts each 1/16" oversize, your final 20-ft assembly is 5/16" off — past tolerance, scrap.'))
             )
           );
         } else if (sect === 'geometry') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '📐 Geometry + angles for welders'),
-            h('h4', { className: 'text-sm font-bold text-slate-800' }, 'Pythagorean theorem — daily use'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.geometry_angles_for_welders', '📐 Geometry + angles for welders')),
+            h('h4', { className: 'text-sm font-bold text-slate-800' }, __alloT('stem.weldlab.pythagorean_theorem_daily_use', 'Pythagorean theorem — daily use')),
             h('div', { className: 'bg-fuchsia-50 border-2 border-fuchsia-300 rounded-xl p-4' },
-              h('p', { className: 'text-sm text-slate-800 mb-2' }, 'a² + b² = c² where c is the hypotenuse.'),
-              h('p', { className: 'text-sm text-slate-800 mb-2' }, h('strong', null, 'Example: '), 'Diagonal of a 3 ft × 4 ft rectangle = √(3² + 4²) = √25 = 5 ft. Square check: a frame that measures 3×4 should diagonal exactly 5 (or 5\'-0").'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, '3-4-5 rule: '), 'Field shortcut — any 3-4-5 triangle is square. Measure 3 along one leg + 4 along the other; the diagonal must be exactly 5. Bigger versions: 6-8-10, 9-12-15, 12-16-20.')
+              h('p', { className: 'text-sm text-slate-800 mb-2' }, __alloT('stem.weldlab.a_b_c_where_c_is_the_hypotenuse', 'a² + b² = c² where c is the hypotenuse.')),
+              h('p', { className: 'text-sm text-slate-800 mb-2' }, h('strong', null, 'Example: '), __alloT('stem.weldlab.diagonal_of_a_3_ft_4_ft_rectangle_3_4_', 'Diagonal of a 3 ft × 4 ft rectangle = √(3² + 4²) = √25 = 5 ft. Square check: a frame that measures 3×4 should diagonal exactly 5 (or 5\'-0").')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.3_4_5_rule', '3-4-5 rule: ')), __alloT('stem.weldlab.field_shortcut_any_3_4_5_triangle_is_s', 'Field shortcut — any 3-4-5 triangle is square. Measure 3 along one leg + 4 along the other; the diagonal must be exactly 5. Bigger versions: 6-8-10, 9-12-15, 12-16-20.'))
             ),
-            h('h4', { className: 'text-sm font-bold text-slate-800' }, 'Triangle types you cut'),
+            h('h4', { className: 'text-sm font-bold text-slate-800' }, __alloT('stem.weldlab.triangle_types_you_cut', 'Triangle types you cut')),
             h('div', { className: 'space-y-2' },
-              [{ name: 'Right triangle (90° + 2 others)', use: 'Cutting brackets, gussets, transitions. Use Pythagorean to find missing side.' },
-               { name: 'Isoceles (2 equal sides)', use: 'Symmetric brackets, splice plates. Bisect the apex angle to find centerline.' },
-               { name: 'Equilateral (3 equal sides, all 60°)', use: 'Decorative work, certain structural patterns. All angles 60°.' },
+              [{ name: __alloT('stem.weldlab.right_triangle_90_2_others', 'Right triangle (90° + 2 others)'), use: 'Cutting brackets, gussets, transitions. Use Pythagorean to find missing side.' },
+               { name: __alloT('stem.weldlab.isoceles_2_equal_sides', 'Isoceles (2 equal sides)'), use: 'Symmetric brackets, splice plates. Bisect the apex angle to find centerline.' },
+               { name: __alloT('stem.weldlab.equilateral_3_equal_sides_all_60', 'Equilateral (3 equal sides, all 60°)'), use: 'Decorative work, certain structural patterns. All angles 60°.' },
                { name: '30-60-90', use: 'Cutting hip rafters in steel framing. Side ratios 1 : √3 : 2. If short side = 3", long side = 5.196", hypotenuse = 6".' },
                { name: '45-45-90', use: 'Miter cuts at corners. Both legs equal, hypotenuse = leg × √2. If leg = 4", hypotenuse = 5.657".' }].map(function(tr, i) {
                 return h('div', { key: i, className: 'bg-purple-50 border-l-4 border-purple-400 rounded-r-xl p-3' },
@@ -9116,28 +9117,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 );
               })
             ),
-            h('h4', { className: 'text-sm font-bold text-slate-800 mt-3' }, 'Trigonometry — when you need it'),
+            h('h4', { className: 'text-sm font-bold text-slate-800 mt-3' }, __alloT('stem.weldlab.trigonometry_when_you_need_it', 'Trigonometry — when you need it')),
             h('div', { className: 'bg-fuchsia-50 border-2 border-fuchsia-300 rounded-xl p-4 space-y-2' },
-              h('p', { className: 'text-sm text-slate-800' }, 'SOH-CAH-TOA: sin = opp/hyp, cos = adj/hyp, tan = opp/adj.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Practical example: '), 'You need a brace at 30° from horizontal, climbing 12" vertical. Hypotenuse (brace length) = 12 / sin(30°) = 12 / 0.5 = 24". Horizontal run = 12 / tan(30°) = 12 / 0.577 = 20.78".'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Bevel cut for 30°: '), 'A 1/2" thick plate beveled at 30° from vertical: bevel face = 0.5 / cos(30°) = 0.5 / 0.866 = 0.577" — that\'s the long dimension of the beveled face.')
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.soh_cah_toa_sin_opp_hyp_cos_adj_hyp_ta', 'SOH-CAH-TOA: sin = opp/hyp, cos = adj/hyp, tan = opp/adj.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.practical_example', 'Practical example: ')), __alloT('stem.weldlab.you_need_a_brace_at_30_from_horizontal', 'You need a brace at 30° from horizontal, climbing 12" vertical. Hypotenuse (brace length) = 12 / sin(30°) = 12 / 0.5 = 24". Horizontal run = 12 / tan(30°) = 12 / 0.577 = 20.78".')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.bevel_cut_for_30', 'Bevel cut for 30°: ')), __alloT('stem.weldlab.a_1_2_thick_plate_beveled_at_30_from_v', 'A 1/2" thick plate beveled at 30° from vertical: bevel face = 0.5 / cos(30°) = 0.5 / 0.866 = 0.577" — that\'s the long dimension of the beveled face.'))
             )
           );
         } else if (sect === 'prints') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '📋 Reading blueprints + drawings'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'Most welding mistakes are misread prints, not bad welding. Knowing the conventions saves time + scrap.'),
-            h('h4', { className: 'text-sm font-bold text-slate-800' }, 'Anatomy of a blueprint'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.reading_blueprints_drawings', '📋 Reading blueprints + drawings')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.most_welding_mistakes_are_misread_prin', 'Most welding mistakes are misread prints, not bad welding. Knowing the conventions saves time + scrap.')),
+            h('h4', { className: 'text-sm font-bold text-slate-800' }, __alloT('stem.weldlab.anatomy_of_a_blueprint', 'Anatomy of a blueprint')),
             h('div', { className: 'space-y-2' },
-              [{ part: 'Title block (lower right corner)', detail: 'Drawing number, revision letter (A, B, C...), date, drawn-by, checked-by, scale, material specification, weight. ALWAYS check revision letter — old prints have killed parts.' },
-               { part: 'Revision block (upper right or in title block)', detail: 'Lists each revision with date + description + initials. Compare to your drawing — if the part you\'re holding doesn\'t match the print revision, STOP.' },
-               { part: 'Bill of Materials (BOM)', detail: 'Lists every part by number + quantity + material spec. Cross-reference part labels in the drawing.' },
-               { part: 'Views — top/front/side (orthographic)', detail: 'Standard arrangement: top view above front view, right side view to the right of front view. Third-angle projection (US standard) vs first-angle (European) — verify symbol in title block.' },
-               { part: 'Section views', detail: 'Cutaway showing internal features. Section line on parent view, "A-A" or "B-B" labels identify which cutting plane.' },
-               { part: 'Dimensions', detail: 'In inches (or mm for international). Dimensions to important features, not to arbitrary points. "TYP" or "TYPICAL" = applies to multiple similar features.' },
-               { part: 'Tolerance block', detail: 'Default tolerances stated near title block (e.g., "X.XX = ±0.030 unless noted"). Specific tolerances override defaults.' },
-               { part: 'Weld symbols', detail: 'Per AWS A2.4. Symbol direction matters — see Symbols module. Multiple welds get multiple symbols.' },
-               { part: 'Notes (general + local)', detail: 'GENERAL NOTES near title block apply to whole drawing. LOCAL notes near specific features apply only there. Read them ALL before starting.' }].map(function(p, i) {
+              [{ part: 'Title block (lower right corner)', detail: __alloT('stem.weldlab.drawing_number_revision_letter_a_b_c_d', 'Drawing number, revision letter (A, B, C...), date, drawn-by, checked-by, scale, material specification, weight. ALWAYS check revision letter — old prints have killed parts.') },
+               { part: 'Revision block (upper right or in title block)', detail: __alloT('stem.weldlab.lists_each_revision_with_date_descript', 'Lists each revision with date + description + initials. Compare to your drawing — if the part you\'re holding doesn\'t match the print revision, STOP.') },
+               { part: 'Bill of Materials (BOM)', detail: __alloT('stem.weldlab.lists_every_part_by_number_quantity_ma', 'Lists every part by number + quantity + material spec. Cross-reference part labels in the drawing.') },
+               { part: 'Views — top/front/side (orthographic)', detail: __alloT('stem.weldlab.standard_arrangement_top_view_above_fr', 'Standard arrangement: top view above front view, right side view to the right of front view. Third-angle projection (US standard) vs first-angle (European) — verify symbol in title block.') },
+               { part: 'Section views', detail: __alloT('stem.weldlab.cutaway_showing_internal_features_sect', 'Cutaway showing internal features. Section line on parent view, "A-A" or "B-B" labels identify which cutting plane.') },
+               { part: 'Dimensions', detail: __alloT('stem.weldlab.in_inches_or_mm_for_international_dime', 'In inches (or mm for international). Dimensions to important features, not to arbitrary points. "TYP" or "TYPICAL" = applies to multiple similar features.') },
+               { part: 'Tolerance block', detail: __alloT('stem.weldlab.default_tolerances_stated_near_title_b', 'Default tolerances stated near title block (e.g., "X.XX = ±0.030 unless noted"). Specific tolerances override defaults.') },
+               { part: 'Weld symbols', detail: __alloT('stem.weldlab.per_aws_a2_4_symbol_direction_matters_', 'Per AWS A2.4. Symbol direction matters — see Symbols module. Multiple welds get multiple symbols.') },
+               { part: 'Notes (general + local)', detail: __alloT('stem.weldlab.general_notes_near_title_block_apply_t', 'GENERAL NOTES near title block apply to whole drawing. LOCAL notes near specific features apply only there. Read them ALL before starting.') }].map(function(p, i) {
                 return h('div', { key: i, className: 'bg-fuchsia-50 border-2 border-fuchsia-200 rounded-xl p-3' },
                   h('div', { className: 'font-bold text-fuchsia-900 mb-1' }, p.part),
                   h('p', { className: 'text-sm text-slate-800' }, p.detail)
@@ -9145,29 +9146,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               })
             ),
             h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-amber-900 mb-1' }, '💡 Pre-cut checklist'),
+              h('div', { className: 'text-xs font-bold uppercase text-amber-900 mb-1' }, __alloT('stem.weldlab.pre_cut_checklist', '💡 Pre-cut checklist')),
               h('ul', { className: 'text-sm text-slate-800 space-y-1' },
-                h('li', null, '1. ✓ Revision letter matches BOM + work order'),
-                h('li', null, '2. ✓ Material spec matches stock you\'re cutting from'),
-                h('li', null, '3. ✓ All dimensions noted (no missing measurements)'),
-                h('li', null, '4. ✓ Tolerance understood (default or specific)'),
-                h('li', null, '5. ✓ Weld symbols clear (process, size, length, location)'),
-                h('li', null, '6. ✓ Cut + drill operations sequenced (some must precede others)')
+                h('li', null, __alloT('stem.weldlab.1_revision_letter_matches_bom_work_ord', '1. ✓ Revision letter matches BOM + work order')),
+                h('li', null, __alloT('stem.weldlab.2_material_spec_matches_stock_you_re_c', '2. ✓ Material spec matches stock you\'re cutting from')),
+                h('li', null, __alloT('stem.weldlab.3_all_dimensions_noted_no_missing_meas', '3. ✓ All dimensions noted (no missing measurements)')),
+                h('li', null, __alloT('stem.weldlab.4_tolerance_understood_default_or_spec', '4. ✓ Tolerance understood (default or specific)')),
+                h('li', null, __alloT('stem.weldlab.5_weld_symbols_clear_process_size_leng', '5. ✓ Weld symbols clear (process, size, length, location)')),
+                h('li', null, __alloT('stem.weldlab.6_cut_drill_operations_sequenced_some_', '6. ✓ Cut + drill operations sequenced (some must precede others)'))
               )
             )
           );
         } else if (sect === 'symbols') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '🔣 AWS weld symbol fluency'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'AWS A2.4 weld symbols are a language. Once fluent, you read a symbol in 2 seconds. Until then, every print is a translation exercise. (Symbols Reader module covers each symbol in interactive detail; this section drills the key reading rules.)'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.aws_weld_symbol_fluency', '🔣 AWS weld symbol fluency')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.aws_a2_4_weld_symbols_are_a_language_o', 'AWS A2.4 weld symbols are a language. Once fluent, you read a symbol in 2 seconds. Until then, every print is a translation exercise. (Symbols Reader module covers each symbol in interactive detail; this section drills the key reading rules.)')),
             h('div', { className: 'bg-fuchsia-50 border-2 border-fuchsia-300 rounded-xl p-4 space-y-2' },
-              h('div', { className: 'text-sm font-bold text-fuchsia-900' }, 'The 4 anchor concepts'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, '1. Reference line: '), 'Horizontal line with arrow on one end. This is the structural element of every weld symbol.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, '2. Arrow side vs other side: '), 'Symbols BELOW the line = arrow side (the side the arrow points to). ABOVE the line = other side. BOTH = weld on both sides.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, '3. Symbol shape = weld type: '), 'Triangle = fillet, square = square groove, "V" = V groove, half-V = bevel groove, U = U groove, circle = plug/slot.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, '4. Numbers + tail: '), 'Number left of symbol = size (leg length for fillet, depth for groove). Number right = length / pitch (for intermittent). Tail = specification reference (process, procedure number).')
+              h('div', { className: 'text-sm font-bold text-fuchsia-900' }, __alloT('stem.weldlab.the_4_anchor_concepts', 'The 4 anchor concepts')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.1_reference_line', '1. Reference line: ')), __alloT('stem.weldlab.horizontal_line_with_arrow_on_one_end_', 'Horizontal line with arrow on one end. This is the structural element of every weld symbol.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.2_arrow_side_vs_other_side', '2. Arrow side vs other side: ')), __alloT('stem.weldlab.symbols_below_the_line_arrow_side_the_', 'Symbols BELOW the line = arrow side (the side the arrow points to). ABOVE the line = other side. BOTH = weld on both sides.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.3_symbol_shape_weld_type', '3. Symbol shape = weld type: ')), __alloT('stem.weldlab.triangle_fillet_square_square_groove_v', 'Triangle = fillet, square = square groove, "V" = V groove, half-V = bevel groove, U = U groove, circle = plug/slot.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.4_numbers_tail', '4. Numbers + tail: ')), __alloT('stem.weldlab.number_left_of_symbol_size_leg_length_', 'Number left of symbol = size (leg length for fillet, depth for groove). Number right = length / pitch (for intermittent). Tail = specification reference (process, procedure number).'))
             ),
-            h('h4', { className: 'text-sm font-bold text-slate-800' }, 'Common compound symbols'),
+            h('h4', { className: 'text-sm font-bold text-slate-800' }, __alloT('stem.weldlab.common_compound_symbols', 'Common compound symbols')),
             h('div', { className: 'space-y-2' },
               [{ sym: 'Fillet with both-side triangles + 1/4', meaning: '1/4" leg fillet on both sides of joint, continuous full length' },
                { sym: 'Fillet 3/16 - 2 (10) on arrow side', meaning: '3/16" leg, intermittent 2" long welds spaced 10" center-to-center, on arrow side only' },
@@ -9185,18 +9186,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           );
         } else if (sect === 'estimate') {
           content = h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-base font-bold text-slate-800' }, '🧾 Estimating + bidding work'),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'Whether bidding a job for a customer or estimating internal hours for a supervisor, welders need to translate prints into time + materials. Bad estimates = lost money OR lost bids.'),
-            h('h4', { className: 'text-sm font-bold text-slate-800' }, 'The estimating formula'),
+            h('h3', { className: 'text-base font-bold text-slate-800' }, __alloT('stem.weldlab.estimating_bidding_work', '🧾 Estimating + bidding work')),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.whether_bidding_a_job_for_a_customer_o', 'Whether bidding a job for a customer or estimating internal hours for a supervisor, welders need to translate prints into time + materials. Bad estimates = lost money OR lost bids.')),
+            h('h4', { className: 'text-sm font-bold text-slate-800' }, __alloT('stem.weldlab.the_estimating_formula', 'The estimating formula')),
             h('div', { className: 'bg-fuchsia-50 border-2 border-fuchsia-300 rounded-xl p-4 space-y-2' },
-              h('p', { className: 'text-sm font-mono text-slate-800 bg-white border border-fuchsia-300 rounded p-2 text-center' }, 'Total = (Material × markup) + (Labor hr × rate) + Overhead + Profit'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Material: '), 'Steel + filler + gas + consumables. Add 15-25% markup for handling + waste.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Labor hours: '), 'Time-per-foot of weld × number of feet + setup time + cleanup. Include grinding, fitting, tacking.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Shop rate: '), '$65-95/hr (Maine welding shop, 2026). Includes machinery cost, insurance, utilities, taxes.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Overhead: '), 'Already in shop rate but big jobs may need separate line for travel, permits, special equipment rental.'),
-              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Profit: '), '10-25% on top of cost basis. The "this is worth doing" number.')
+              h('p', { className: 'text-sm font-mono text-slate-800 bg-white border border-fuchsia-300 rounded p-2 text-center' }, __alloT('stem.weldlab.total_material_markup_labor_hr_rate_ov', 'Total = (Material × markup) + (Labor hr × rate) + Overhead + Profit')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Material: '), __alloT('stem.weldlab.steel_filler_gas_consumables_add_15_25', 'Steel + filler + gas + consumables. Add 15-25% markup for handling + waste.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.labor_hours', 'Labor hours: ')), __alloT('stem.weldlab.time_per_foot_of_weld_number_of_feet_s', 'Time-per-foot of weld × number of feet + setup time + cleanup. Include grinding, fitting, tacking.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, __alloT('stem.weldlab.shop_rate', 'Shop rate: ')), __alloT('stem.weldlab.65_95_hr_maine_welding_shop_2026_inclu', '$65-95/hr (Maine welding shop, 2026). Includes machinery cost, insurance, utilities, taxes.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Overhead: '), __alloT('stem.weldlab.already_in_shop_rate_but_big_jobs_may_', 'Already in shop rate but big jobs may need separate line for travel, permits, special equipment rental.')),
+              h('p', { className: 'text-sm text-slate-800' }, h('strong', null, 'Profit: '), __alloT('stem.weldlab.10_25_on_top_of_cost_basis_the_this_is', '10-25% on top of cost basis. The "this is worth doing" number.'))
             ),
-            h('h4', { className: 'text-sm font-bold text-slate-800 mt-3' }, 'Time estimates by process (approximate, plate work)'),
+            h('h4', { className: 'text-sm font-bold text-slate-800 mt-3' }, __alloT('stem.weldlab.time_estimates_by_process_approximate_', 'Time estimates by process (approximate, plate work)')),
             h('div', { className: 'space-y-1' },
               [{ proc: 'MIG short-circuit on 1/4" plate', rate: '8-15 in/min travel', wpd: '15-30 in/min of weld per hour billable' },
                { proc: 'MIG spray transfer on 3/8"+ plate', rate: '15-25 in/min travel', wpd: '30-60 in/min billable' },
@@ -9211,21 +9212,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               })
             ),
             h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold uppercase text-amber-900 mb-1' }, '💡 The estimating mistakes'),
-              h('p', { className: 'text-sm text-slate-800' }, 'Forgetting setup/cleanup (often 20-40% of total time). Forgetting fitting + tacking before welding starts. Underestimating multi-pass welds (root + fill + cap = 3+ passes). Not factoring inspection + repair time. Not pricing in consumables (especially gas cylinder rental + delivery).')
+              h('div', { className: 'text-xs font-bold uppercase text-amber-900 mb-1' }, __alloT('stem.weldlab.the_estimating_mistakes', '💡 The estimating mistakes')),
+              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.forgetting_setup_cleanup_often_20_40_o', 'Forgetting setup/cleanup (often 20-40% of total time). Forgetting fitting + tacking before welding starts. Underestimating multi-pass welds (root + fill + cap = 3+ passes). Not factoring inspection + repair time. Not pricing in consumables (especially gas cylinder rental + delivery).'))
             )
           );
         }
 
         var mbModeTabs = [
-          { id: 'browse', label: '📐 Browse topics' },
-          { id: 'quiz',   label: '🔣 Symbol Match quiz' }
+          { id: 'browse', label: __alloT('stem.weldlab.browse_topics_4', '📐 Browse topics') },
+          { id: 'quiz',   label: __alloT('stem.weldlab.symbol_match_quiz', '🔣 Symbol Match quiz') }
         ];
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '📐', title: 'Welding Math + Blueprints' }),
+          h(BackBar, { icon: '📐', title: __alloT('stem.weldlab.welding_math_blueprints_2', 'Welding Math + Blueprints') }),
           h('div', { className: 'p-6 max-w-5xl mx-auto space-y-5' },
-            h('div', { role: 'tablist', 'aria-label': 'Math + Blueprint mode', className: 'flex flex-wrap gap-2' },
+            h('div', { role: 'tablist', 'aria-label': __alloT('stem.weldlab.math_blueprint_mode', 'Math + Blueprint mode'), className: 'flex flex-wrap gap-2' },
               mbModeTabs.map(function(t) {
                 var sel = (mbMode === t.id);
                 return h('button', {
@@ -9255,7 +9256,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               ),
               h('div', { className: 'text-base font-bold text-slate-900' }, curQ.prompt),
               renderSymbolViz(curQ.viz),
-              h('div', { className: 'space-y-2', role: 'radiogroup', 'aria-label': 'Choose the meaning' },
+              h('div', { className: 'space-y-2', role: 'radiogroup', 'aria-label': __alloT('stem.weldlab.choose_the_meaning', 'Choose the meaning') },
                 curQ.options.map(function(opt, i) {
                   var picked = (mbQPicked === i);
                   var isCorrect = (i === curQ.correct);
@@ -9276,8 +9277,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     h('span', { className: 'text-sm font-bold text-slate-800' },
                       String.fromCharCode(65 + i) + '. ' + opt
                     ),
-                    mbQPicked != null && isCorrect && h('span', { className: 'ml-2 text-emerald-700 font-bold' }, '✓ correct'),
-                    mbQPicked != null && picked && !isCorrect && h('span', { className: 'ml-2 text-rose-700 font-bold' }, '✗ your pick')
+                    mbQPicked != null && isCorrect && h('span', { className: 'ml-2 text-emerald-700 font-bold' }, __alloT('stem.weldlab.correct_2', '✓ correct')),
+                    mbQPicked != null && picked && !isCorrect && h('span', { className: 'ml-2 text-rose-700 font-bold' }, __alloT('stem.weldlab.your_pick_2', '✗ your pick'))
                   );
                 })
               ),
@@ -9289,7 +9290,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 h('button', {
                   onClick: resetQuiz,
                   className: 'transition-colors text-xs font-bold px-3 py-1.5 rounded-lg border-2 border-slate-300 bg-white hover:bg-slate-50 text-slate-700'
-                }, '↺ Restart quiz'),
+                }, __alloT('stem.weldlab.restart_quiz', '↺ Restart quiz')),
                 mbQPicked != null && h('button', {
                   onClick: nextQuestion,
                   className: 'text-sm font-bold px-4 py-2 rounded-lg bg-fuchsia-700 text-white hover:bg-fuchsia-800 transition'
@@ -9320,20 +9321,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       function CareerStories() {
         // tags: { want: ['steady','creative','top_pay','helping'], school: ['fast','cc','bachelor','apprentice'], place: ['big','small','self','outdoor'] }
         var stories = [
-          { name: 'Marcus T.', age: 28, role: 'Structural welder at BIW', path: 'Mid-Coast School of Technology (HS) → BIW Internal Training → 4 years on-floor', pay: '$31/hr base + OT often pushes annual to $80K+', voice: '"I knew sophomore year. I wasn\'t going to college, and my dad welded at BIW for 25 years. CTE got me my OSHA + first AWS quals. I joined BIW training at 18, was on the production floor at 19. Now I\'m running a sub-arc machine on hull plating. Pension vests at 5 years — that\'s the play."', advice: 'Take CTE seriously even if you\'re bored. The certifications matter more than the welding practice you get there.', tags: { want: ['steady'], school: ['fast'], place: ['big'] } },
-          { name: 'Sarah K.', age: 34, role: 'TIG aluminum welder at Hodgdon Yachts', path: 'EMCC welding 2-yr (after 4 yr at retail) → Hodgdon hired her at 26 → 8 years on yachts', pay: '$28/hr + benefits + occasional bonus on yacht delivery', voice: '"Career-changed at 24. I wanted something where I could see what I\'d made at the end of the day. EMCC was hard but cheap. The aluminum work at Hodgdon is meditative — long beads, precision, beautiful results. The boats we build are for owners who paid $20M+. Knowing my welds are on those is satisfying in a way retail never was."', advice: 'It is not too late to change. EMCC has plenty of 25-40 year-old students. The shops want you.', tags: { want: ['creative','steady'], school: ['cc'], place: ['small'] } },
-          { name: 'Diego R.', age: 41, role: 'UA Local 716 pipefitter (journeyman)', path: 'Worked at small fab shop 4 yr after HS → applied to UA apprenticeship at 23 → journey out at 28 → 13 years pipefitting', pay: '$45/hr Maine prevailing + per diem on travel jobs. Annual $120K+ typical.', voice: '"The apprenticeship was the smartest thing I ever did. No college debt. Paid to learn. Pay scale guaranteed each year. I work paper mill shutdowns (Sappi, Verso) plus big construction (Cianbro modules). When the work\'s here, the wages are great. When it\'s not, you travel — Connecticut, Quebec, Pennsylvania."', advice: 'Apply early. Apprenticeship slots are competitive. Show up to information sessions. Bring your aptitude test scores up.', tags: { want: ['top_pay'], school: ['apprentice'], place: ['outdoor'] } },
-          { name: 'Patricia L.', age: 52, role: 'Owns Patty\'s Mobile Welding (Cumberland County)', path: 'EMCC 1-yr cert → 12 yr at small fab shops → opened her own shop at 35 → 17 years self-employed', pay: 'Net $75-95K/yr after expenses (good years). Less in bad years.', voice: '"I went out on my own because the shops I worked at kept underpricing each other. I figured I could do better solo. Some years I do; some years I don\'t. The freedom is real. The 60-hour weeks during busy season are also real. I weld lobster boat rails in spring, snow plow repair in fall, custom truck bodies year-round. Word of mouth + Facebook gets me 80% of my work."', advice: 'Don\'t go out on your own until you have 5+ years experience + a 6-month savings cushion. And know what you\'ll charge BEFORE the phone rings.', tags: { want: ['creative'], school: ['cc'], place: ['self'] } },
-          { name: 'Jamal F.', age: 23, role: 'CWI Inspector apprentice (Cianbro)', path: 'CTE welding + work-study at Cianbro → AWS CWI exam at 22 → inspector path', pay: '$26/hr now; $40+/hr at full CWI', voice: '"I was a decent welder but I noticed I liked checking other welders\' work more than welding myself. CWI (Certified Welding Inspector) is a credential you can earn after several years experience. It pays as much or more than welding. You travel sites, you check codes, you have a clipboard. Some welders hate inspectors; I get that. But the work is interesting."', advice: 'If you can read prints + memorize codes + you don\'t mind being unpopular, inspector path pays well. Study for the CWI early.', tags: { want: ['helping','steady'], school: ['fast'], place: ['outdoor'] } },
-          { name: 'Rebecca W.', age: 36, role: 'Pratt & Whitney aerospace welder (North Berwick)', path: 'SMCC 2-yr → 6 yr at Cianbro module fab → recruited by P&W at 31 → 5 years aerospace', pay: '$38/hr + benefits + 401k match. Annual $90K+', voice: '"Aerospace welding is different. Inconel, titanium, super-alloys. Sometimes you\'re welding a single 6-inch joint that took 8 hours of fit-up. Every weld is inspected. You\'re reading specs that fill a binder. The pay is great and the precision is satisfying, but if you like fast production work, this isn\'t for you."', advice: 'Aerospace shops want welders with proven precision. Build TIG skills early. Take the time to learn one process VERY well before moving on.', tags: { want: ['steady','top_pay'], school: ['cc'], place: ['big'] } },
-          { name: 'Kevin S.', age: 45, role: 'Maine DOT bridge inspector + welder', path: 'EMCC 2-yr → 12 yr at small bridge fab shop → Maine DOT at 32 → 13 years state', pay: '$28/hr + state benefits + pension. Annual $65K + great benefits.', voice: '"State pay isn\'t the highest, but the benefits + pension + work-life balance are excellent. I drive a state truck. I inspect + repair bridges across Maine. Some weeks I\'m in Aroostook; some in Lewiston. I see the whole state. Will retire at 55 with full pension. Wouldn\'t trade it."', advice: 'Don\'t overlook state + federal jobs. Less glamorous than BIW but the pension is gold. Apply at maine.gov/bhr.', tags: { want: ['steady','helping'], school: ['cc'], place: ['outdoor'] } },
-          { name: 'Tyrone J.', age: 30, role: 'Underwater welder (international contracts)', path: 'Navy 6 years → commercial dive school after discharge → underwater welder 5 years', pay: '$80-200K/yr depending on contracts. Highly variable.', voice: '"Underwater welding is dangerous + travel-heavy. I work Gulf of Mexico oil platforms, North Sea, occasionally Asia. I\'m gone 8-10 months a year. Pay is great when working but no work = no pay. Industry has fatalities. I\'m planning to topside-only by 35; the body wears out."', advice: 'Underwater welding is not a safe steady career. It\'s a high-pay-high-risk path with a limited window. Have an exit plan.', tags: { want: ['top_pay'], school: ['fast'], place: ['outdoor'] } },
-          { name: 'Sophie B.', age: 26, role: 'Custom artisan welder + metal artist', path: 'BFA in sculpture → self-taught welding → 4 years building art + custom commissions', pay: 'Net $45-70K/yr (variable). Supplemented by teaching welding classes.', voice: '"Art welding is its own world. I make outdoor sculpture, custom gates, decorative pieces. I sell at craft shows + galleries + commissions. EMCC + welding shop techs aren\'t the only path. I taught myself MIG + plasma + forge work. Maine has a strong artisan-maker community."', advice: 'If art is your goal, look at North Bennet Street School (Boston) or Penland (NC) for craft-focused metalwork training. Maine Crafts Association has a directory of local makers.', tags: { want: ['creative'], school: ['bachelor'], place: ['self'] } },
-          { name: 'Mike H.', age: 58, role: 'Retired welder, now teaches at Mid-Coast School of Technology', path: '30 yr at BIW (started 1988) → retired with pension at 55 → teaching CTE since 2023', pay: '~$50K/yr teaching + BIW pension. Lower than BIW but stress-free + meaningful.', voice: '"BIW for three decades. Hull welder. Saw 35+ destroyers go down the river. Body wore out — knees + back + some hearing loss. Pension covered me. Teaching CTE is the best second career — kids who think they can\'t go to college but love working with their hands. I show them they have a path."', advice: 'BIW pays well but plan for body wear. Get the inspector cert (CWI) as a fallback. Save aggressively in your 20s — your 50s self will thank you.', tags: { want: ['helping','steady'], school: ['fast'], place: ['small'] } },
-          { name: 'Cassidy M.', age: 22, role: 'Boilermaker Local 29 apprentice (year 3 of 4)', path: 'CTE → 1 yr at a small fab shop → Boilermaker apprenticeship at 19 → 3 yr in', pay: '$28/hr apprentice rate now → $45+/hr at journey out next year', voice: '"Boilermaker is mostly traveling shutdown work. I work paper mills, power plants, refineries. Sometimes 2 weeks at a site, sometimes 2 months. Per diem when traveling. The work is hard — confined spaces, heat, overhead welding. The pay is great. The brotherhood is real. Already saving for a house at 22."', advice: 'Boilermaker is high-pay high-effort. You\'ll travel. Body needs to be in good shape. Drug test will happen. If you\'re willing, the wages + pension are top tier.', tags: { want: ['top_pay'], school: ['apprentice'], place: ['outdoor'] } },
-          { name: 'Lin C.', age: 39, role: 'Welding engineer (B.S. Welding Engineering, Ferris State)', path: 'CTE → 2 yr welding work → went back for B.S. at 24 → engineer at 28 → 11 years engineering', pay: '$95K-$130K depending on employer. Currently at major Maine paper mill.', voice: '"I welded for 2 years after CTE. Realized I wanted to design the procedures, not just execute them. Went back for B.S. in Welding Engineering at Ferris State (Michigan — one of few US programs). Now I write WPSs, qualify procedures, troubleshoot weld failures. Office work mostly, but I still don the hood for tests."', advice: 'B.S. Welding Engineering is rare but well-paid. Ferris State, LeTourneau, Ohio State. If you like the science + don\'t mind 4 more years of school, this is the path to design-side work + 6-figure salary.', tags: { want: ['top_pay','steady'], school: ['bachelor'], place: ['big'] } },
-          { name: 'Rosa P.', age: 31, role: 'Mobile food truck welder + entrepreneur (Portland, ME)', path: 'EMCC → 5 yr in production fab → started custom food truck builds at 28 → 3 yr building', pay: 'Net $60-85K/yr (variable). Has 3-month booking backlog.', voice: '"Food trucks are hot right now. I build custom rigs — stainless interiors, equipment mounts, exhaust hoods. Most customers are first-time food entrepreneurs. I charge $40K-80K per build. Margin is decent but cash flow is rough — customers pay deposits + final pay only at delivery. I had to build savings to handle 3-month builds with no income in between."', advice: 'Find a niche. Generic welding is competitive. Niche welding (food trucks, custom motorcycles, art, brewery equipment) commands premium prices + repeat customers.', tags: { want: ['creative'], school: ['cc'], place: ['self'] } },
-          { name: 'Daniel O.', age: 47, role: 'Welder + small farm owner (Downeast Maine)', path: 'Welder 25 years (various shops + freelance) → bought farm at 38 → welding part-time + farming part-time', pay: 'Welding $25-30K + farm net $15-25K (varies). Combined ~$50K + lifestyle benefits.', voice: '"I weld 2-3 days/week (mobile + small shop in barn) + farm 4-5 days/week. The welding pays the bills + insurance + equipment. The farm is the life. Most Maine farmers I know have a side trade — welding, carpentry, plumbing. The land doesn\'t feed you alone in Maine."', advice: 'If you want a Maine homestead, having a portable trade is huge. Welding scales down well — small shop in a barn covers a lot of mobile work.', tags: { want: ['creative'], school: ['fast'], place: ['self'] } }
+          { name: __alloT('stem.weldlab.marcus_t', 'Marcus T.'), age: 28, role: 'Structural welder at BIW', path: 'Mid-Coast School of Technology (HS) → BIW Internal Training → 4 years on-floor', pay: '$31/hr base + OT often pushes annual to $80K+', voice: '"I knew sophomore year. I wasn\'t going to college, and my dad welded at BIW for 25 years. CTE got me my OSHA + first AWS quals. I joined BIW training at 18, was on the production floor at 19. Now I\'m running a sub-arc machine on hull plating. Pension vests at 5 years — that\'s the play."', advice: 'Take CTE seriously even if you\'re bored. The certifications matter more than the welding practice you get there.', tags: { want: ['steady'], school: ['fast'], place: ['big'] } },
+          { name: __alloT('stem.weldlab.sarah_k', 'Sarah K.'), age: 34, role: 'TIG aluminum welder at Hodgdon Yachts', path: 'EMCC welding 2-yr (after 4 yr at retail) → Hodgdon hired her at 26 → 8 years on yachts', pay: '$28/hr + benefits + occasional bonus on yacht delivery', voice: '"Career-changed at 24. I wanted something where I could see what I\'d made at the end of the day. EMCC was hard but cheap. The aluminum work at Hodgdon is meditative — long beads, precision, beautiful results. The boats we build are for owners who paid $20M+. Knowing my welds are on those is satisfying in a way retail never was."', advice: 'It is not too late to change. EMCC has plenty of 25-40 year-old students. The shops want you.', tags: { want: ['creative','steady'], school: ['cc'], place: ['small'] } },
+          { name: __alloT('stem.weldlab.diego_r', 'Diego R.'), age: 41, role: 'UA Local 716 pipefitter (journeyman)', path: 'Worked at small fab shop 4 yr after HS → applied to UA apprenticeship at 23 → journey out at 28 → 13 years pipefitting', pay: '$45/hr Maine prevailing + per diem on travel jobs. Annual $120K+ typical.', voice: '"The apprenticeship was the smartest thing I ever did. No college debt. Paid to learn. Pay scale guaranteed each year. I work paper mill shutdowns (Sappi, Verso) plus big construction (Cianbro modules). When the work\'s here, the wages are great. When it\'s not, you travel — Connecticut, Quebec, Pennsylvania."', advice: 'Apply early. Apprenticeship slots are competitive. Show up to information sessions. Bring your aptitude test scores up.', tags: { want: ['top_pay'], school: ['apprentice'], place: ['outdoor'] } },
+          { name: __alloT('stem.weldlab.patricia_l', 'Patricia L.'), age: 52, role: 'Owns Patty\'s Mobile Welding (Cumberland County)', path: 'EMCC 1-yr cert → 12 yr at small fab shops → opened her own shop at 35 → 17 years self-employed', pay: 'Net $75-95K/yr after expenses (good years). Less in bad years.', voice: '"I went out on my own because the shops I worked at kept underpricing each other. I figured I could do better solo. Some years I do; some years I don\'t. The freedom is real. The 60-hour weeks during busy season are also real. I weld lobster boat rails in spring, snow plow repair in fall, custom truck bodies year-round. Word of mouth + Facebook gets me 80% of my work."', advice: 'Don\'t go out on your own until you have 5+ years experience + a 6-month savings cushion. And know what you\'ll charge BEFORE the phone rings.', tags: { want: ['creative'], school: ['cc'], place: ['self'] } },
+          { name: __alloT('stem.weldlab.jamal_f', 'Jamal F.'), age: 23, role: 'CWI Inspector apprentice (Cianbro)', path: 'CTE welding + work-study at Cianbro → AWS CWI exam at 22 → inspector path', pay: '$26/hr now; $40+/hr at full CWI', voice: '"I was a decent welder but I noticed I liked checking other welders\' work more than welding myself. CWI (Certified Welding Inspector) is a credential you can earn after several years experience. It pays as much or more than welding. You travel sites, you check codes, you have a clipboard. Some welders hate inspectors; I get that. But the work is interesting."', advice: 'If you can read prints + memorize codes + you don\'t mind being unpopular, inspector path pays well. Study for the CWI early.', tags: { want: ['helping','steady'], school: ['fast'], place: ['outdoor'] } },
+          { name: __alloT('stem.weldlab.rebecca_w', 'Rebecca W.'), age: 36, role: 'Pratt & Whitney aerospace welder (North Berwick)', path: 'SMCC 2-yr → 6 yr at Cianbro module fab → recruited by P&W at 31 → 5 years aerospace', pay: '$38/hr + benefits + 401k match. Annual $90K+', voice: '"Aerospace welding is different. Inconel, titanium, super-alloys. Sometimes you\'re welding a single 6-inch joint that took 8 hours of fit-up. Every weld is inspected. You\'re reading specs that fill a binder. The pay is great and the precision is satisfying, but if you like fast production work, this isn\'t for you."', advice: 'Aerospace shops want welders with proven precision. Build TIG skills early. Take the time to learn one process VERY well before moving on.', tags: { want: ['steady','top_pay'], school: ['cc'], place: ['big'] } },
+          { name: __alloT('stem.weldlab.kevin_s', 'Kevin S.'), age: 45, role: 'Maine DOT bridge inspector + welder', path: 'EMCC 2-yr → 12 yr at small bridge fab shop → Maine DOT at 32 → 13 years state', pay: '$28/hr + state benefits + pension. Annual $65K + great benefits.', voice: '"State pay isn\'t the highest, but the benefits + pension + work-life balance are excellent. I drive a state truck. I inspect + repair bridges across Maine. Some weeks I\'m in Aroostook; some in Lewiston. I see the whole state. Will retire at 55 with full pension. Wouldn\'t trade it."', advice: 'Don\'t overlook state + federal jobs. Less glamorous than BIW but the pension is gold. Apply at maine.gov/bhr.', tags: { want: ['steady','helping'], school: ['cc'], place: ['outdoor'] } },
+          { name: __alloT('stem.weldlab.tyrone_j', 'Tyrone J.'), age: 30, role: 'Underwater welder (international contracts)', path: 'Navy 6 years → commercial dive school after discharge → underwater welder 5 years', pay: '$80-200K/yr depending on contracts. Highly variable.', voice: '"Underwater welding is dangerous + travel-heavy. I work Gulf of Mexico oil platforms, North Sea, occasionally Asia. I\'m gone 8-10 months a year. Pay is great when working but no work = no pay. Industry has fatalities. I\'m planning to topside-only by 35; the body wears out."', advice: 'Underwater welding is not a safe steady career. It\'s a high-pay-high-risk path with a limited window. Have an exit plan.', tags: { want: ['top_pay'], school: ['fast'], place: ['outdoor'] } },
+          { name: __alloT('stem.weldlab.sophie_b', 'Sophie B.'), age: 26, role: 'Custom artisan welder + metal artist', path: 'BFA in sculpture → self-taught welding → 4 years building art + custom commissions', pay: 'Net $45-70K/yr (variable). Supplemented by teaching welding classes.', voice: '"Art welding is its own world. I make outdoor sculpture, custom gates, decorative pieces. I sell at craft shows + galleries + commissions. EMCC + welding shop techs aren\'t the only path. I taught myself MIG + plasma + forge work. Maine has a strong artisan-maker community."', advice: 'If art is your goal, look at North Bennet Street School (Boston) or Penland (NC) for craft-focused metalwork training. Maine Crafts Association has a directory of local makers.', tags: { want: ['creative'], school: ['bachelor'], place: ['self'] } },
+          { name: __alloT('stem.weldlab.mike_h', 'Mike H.'), age: 58, role: 'Retired welder, now teaches at Mid-Coast School of Technology', path: '30 yr at BIW (started 1988) → retired with pension at 55 → teaching CTE since 2023', pay: '~$50K/yr teaching + BIW pension. Lower than BIW but stress-free + meaningful.', voice: '"BIW for three decades. Hull welder. Saw 35+ destroyers go down the river. Body wore out — knees + back + some hearing loss. Pension covered me. Teaching CTE is the best second career — kids who think they can\'t go to college but love working with their hands. I show them they have a path."', advice: 'BIW pays well but plan for body wear. Get the inspector cert (CWI) as a fallback. Save aggressively in your 20s — your 50s self will thank you.', tags: { want: ['helping','steady'], school: ['fast'], place: ['small'] } },
+          { name: __alloT('stem.weldlab.cassidy_m', 'Cassidy M.'), age: 22, role: 'Boilermaker Local 29 apprentice (year 3 of 4)', path: 'CTE → 1 yr at a small fab shop → Boilermaker apprenticeship at 19 → 3 yr in', pay: '$28/hr apprentice rate now → $45+/hr at journey out next year', voice: '"Boilermaker is mostly traveling shutdown work. I work paper mills, power plants, refineries. Sometimes 2 weeks at a site, sometimes 2 months. Per diem when traveling. The work is hard — confined spaces, heat, overhead welding. The pay is great. The brotherhood is real. Already saving for a house at 22."', advice: 'Boilermaker is high-pay high-effort. You\'ll travel. Body needs to be in good shape. Drug test will happen. If you\'re willing, the wages + pension are top tier.', tags: { want: ['top_pay'], school: ['apprentice'], place: ['outdoor'] } },
+          { name: __alloT('stem.weldlab.lin_c', 'Lin C.'), age: 39, role: 'Welding engineer (B.S. Welding Engineering, Ferris State)', path: 'CTE → 2 yr welding work → went back for B.S. at 24 → engineer at 28 → 11 years engineering', pay: '$95K-$130K depending on employer. Currently at major Maine paper mill.', voice: '"I welded for 2 years after CTE. Realized I wanted to design the procedures, not just execute them. Went back for B.S. in Welding Engineering at Ferris State (Michigan — one of few US programs). Now I write WPSs, qualify procedures, troubleshoot weld failures. Office work mostly, but I still don the hood for tests."', advice: 'B.S. Welding Engineering is rare but well-paid. Ferris State, LeTourneau, Ohio State. If you like the science + don\'t mind 4 more years of school, this is the path to design-side work + 6-figure salary.', tags: { want: ['top_pay','steady'], school: ['bachelor'], place: ['big'] } },
+          { name: __alloT('stem.weldlab.rosa_p', 'Rosa P.'), age: 31, role: 'Mobile food truck welder + entrepreneur (Portland, ME)', path: 'EMCC → 5 yr in production fab → started custom food truck builds at 28 → 3 yr building', pay: 'Net $60-85K/yr (variable). Has 3-month booking backlog.', voice: '"Food trucks are hot right now. I build custom rigs — stainless interiors, equipment mounts, exhaust hoods. Most customers are first-time food entrepreneurs. I charge $40K-80K per build. Margin is decent but cash flow is rough — customers pay deposits + final pay only at delivery. I had to build savings to handle 3-month builds with no income in between."', advice: 'Find a niche. Generic welding is competitive. Niche welding (food trucks, custom motorcycles, art, brewery equipment) commands premium prices + repeat customers.', tags: { want: ['creative'], school: ['cc'], place: ['self'] } },
+          { name: __alloT('stem.weldlab.daniel_o', 'Daniel O.'), age: 47, role: 'Welder + small farm owner (Downeast Maine)', path: 'Welder 25 years (various shops + freelance) → bought farm at 38 → welding part-time + farming part-time', pay: 'Welding $25-30K + farm net $15-25K (varies). Combined ~$50K + lifestyle benefits.', voice: '"I weld 2-3 days/week (mobile + small shop in barn) + farm 4-5 days/week. The welding pays the bills + insurance + equipment. The farm is the life. Most Maine farmers I know have a side trade — welding, carpentry, plumbing. The land doesn\'t feed you alone in Maine."', advice: 'If you want a Maine homestead, having a portable trade is huge. Welding scales down well — small shop in a barn covers a lot of mobile work.', tags: { want: ['creative'], school: ['fast'], place: ['self'] } }
         ];
 
         var sSel = usePersistedState('cs_sel', 0);
@@ -9367,22 +9368,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var matches = quizComplete ? topMatches() : [];
 
         var wantOpts = [
-          { id: 'steady',   label: '🛡 Steady work, great benefits', hint: 'Pension, healthcare, predictable schedule' },
-          { id: 'creative', label: '🎨 Hands-on creative work, no boss', hint: 'Build things, set your own hours, varied projects' },
-          { id: 'top_pay',  label: '💰 Highest pay even if I travel', hint: 'Top dollar, willing to be away from home for it' },
-          { id: 'helping',  label: '🤝 Help or teach others', hint: 'Inspector, teacher, mentor roles' }
+          { id: 'steady',   label: __alloT('stem.weldlab.steady_work_great_benefits', '🛡 Steady work, great benefits'), hint: __alloT('stem.weldlab.pension_healthcare_predictable_schedul', 'Pension, healthcare, predictable schedule') },
+          { id: 'creative', label: __alloT('stem.weldlab.hands_on_creative_work_no_boss', '🎨 Hands-on creative work, no boss'), hint: __alloT('stem.weldlab.build_things_set_your_own_hours_varied', 'Build things, set your own hours, varied projects') },
+          { id: 'top_pay',  label: __alloT('stem.weldlab.highest_pay_even_if_i_travel', '💰 Highest pay even if I travel'), hint: __alloT('stem.weldlab.top_dollar_willing_to_be_away_from_hom', 'Top dollar, willing to be away from home for it') },
+          { id: 'helping',  label: __alloT('stem.weldlab.help_or_teach_others', '🤝 Help or teach others'), hint: __alloT('stem.weldlab.inspector_teacher_mentor_roles', 'Inspector, teacher, mentor roles') }
         ];
         var schoolOpts = [
-          { id: 'fast',       label: '⚡ Start working ASAP after HS', hint: 'CTE + direct-hire training (BIW, small shops)' },
-          { id: 'cc',         label: '🎓 ~2 years of community college', hint: 'EMCC, SMCC, county college welding programs' },
-          { id: 'apprentice', label: '🤝 Paid apprenticeship (3-5 yrs)', hint: 'Union: UA pipefitter, Boilermaker, IAM' },
-          { id: 'bachelor',   label: '📚 4-year bachelor\'s degree', hint: 'Welding engineering, art/sculpture, design-side' }
+          { id: 'fast',       label: __alloT('stem.weldlab.start_working_asap_after_hs', '⚡ Start working ASAP after HS'), hint: __alloT('stem.weldlab.cte_direct_hire_training_biw_small_sho', 'CTE + direct-hire training (BIW, small shops)') },
+          { id: 'cc',         label: __alloT('stem.weldlab.2_years_of_community_college', '🎓 ~2 years of community college'), hint: __alloT('stem.weldlab.emcc_smcc_county_college_welding_progr', 'EMCC, SMCC, county college welding programs') },
+          { id: 'apprentice', label: __alloT('stem.weldlab.paid_apprenticeship_3_5_yrs', '🤝 Paid apprenticeship (3-5 yrs)'), hint: __alloT('stem.weldlab.union_ua_pipefitter_boilermaker_iam', 'Union: UA pipefitter, Boilermaker, IAM') },
+          { id: 'bachelor',   label: __alloT('stem.weldlab.4_year_bachelor_s_degree', '📚 4-year bachelor\'s degree'), hint: __alloT('stem.weldlab.welding_engineering_art_sculpture_desi', 'Welding engineering, art/sculpture, design-side') }
         ];
         var placeOpts = [
-          { id: 'big',     label: '🏭 Big shipyard or factory', hint: 'BIW, Pratt & Whitney, Cianbro modules' },
-          { id: 'small',   label: '🛠 Small shop or boatyard', hint: 'Hodgdon, mid-coast boat builders, family fab shops' },
-          { id: 'self',    label: '🚐 My own truck, my own customers', hint: 'Mobile welding, custom builds, food trucks' },
-          { id: 'outdoor', label: '🌲 Outdoor, varied locations', hint: 'Bridges, pipelines, traveling shutdown work' }
+          { id: 'big',     label: __alloT('stem.weldlab.big_shipyard_or_factory', '🏭 Big shipyard or factory'), hint: __alloT('stem.weldlab.biw_pratt_whitney_cianbro_modules', 'BIW, Pratt & Whitney, Cianbro modules') },
+          { id: 'small',   label: __alloT('stem.weldlab.small_shop_or_boatyard', '🛠 Small shop or boatyard'), hint: __alloT('stem.weldlab.hodgdon_mid_coast_boat_builders_family', 'Hodgdon, mid-coast boat builders, family fab shops') },
+          { id: 'self',    label: __alloT('stem.weldlab.my_own_truck_my_own_customers', '🚐 My own truck, my own customers'), hint: __alloT('stem.weldlab.mobile_welding_custom_builds_food_truc', 'Mobile welding, custom builds, food trucks') },
+          { id: 'outdoor', label: __alloT('stem.weldlab.outdoor_varied_locations', '🌲 Outdoor, varied locations'), hint: __alloT('stem.weldlab.bridges_pipelines_traveling_shutdown_w', 'Bridges, pipelines, traveling shutdown work') }
         ];
 
         function questionBlock(title, opts, value, setter) {
@@ -9407,17 +9408,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         }
 
         var modeTabs = [
-          { id: 'browse', label: '📖 Browse all profiles' },
-          { id: 'fit',    label: '🎯 Find Your Fit' }
+          { id: 'browse', label: __alloT('stem.weldlab.browse_all_profiles', '📖 Browse all profiles') },
+          { id: 'fit',    label: __alloT('stem.weldlab.find_your_fit', '🎯 Find Your Fit') }
         ];
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '📖', title: 'Welder Career Stories' }),
+          h(BackBar, { icon: '📖', title: __alloT('stem.weldlab.welder_career_stories_2', 'Welder Career Stories') }),
           h('div', { className: 'p-6 max-w-5xl mx-auto space-y-5' },
             h('div', { className: 'bg-fuchsia-50 border-2 border-fuchsia-300 rounded-xl p-4' },
-              h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, 'Real welders. Real paths. Real wages. These profiles are composites drawn from documented Maine + New England welding career patterns + AWS workforce reports + Maine Department of Labor occupational data. Each one represents a viable path — not the only path, but proven ones. Names are pseudonyms; situations are representative.')
+              h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, __alloT('stem.weldlab.real_welders_real_paths_real_wages_the', 'Real welders. Real paths. Real wages. These profiles are composites drawn from documented Maine + New England welding career patterns + AWS workforce reports + Maine Department of Labor occupational data. Each one represents a viable path — not the only path, but proven ones. Names are pseudonyms; situations are representative.'))
             ),
-            h('div', { role: 'tablist', 'aria-label': 'Career Stories mode', className: 'flex flex-wrap gap-2' },
+            h('div', { role: 'tablist', 'aria-label': __alloT('stem.weldlab.career_stories_mode', 'Career Stories mode'), className: 'flex flex-wrap gap-2' },
               modeTabs.map(function(t) {
                 var sel = (mode === t.id);
                 return h('button', {
@@ -9431,20 +9432,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               })
             ),
             mode === 'fit' && h('div', { className: 'bg-white rounded-2xl shadow border-2 border-fuchsia-300 p-5 space-y-5' },
-              h('div', { className: 'text-sm text-slate-700' }, 'Answer 3 quick questions. We\'ll show you the welders whose paths fit your answers best — not the only fits, just the closest matches in this set of 14.'),
+              h('div', { className: 'text-sm text-slate-700' }, __alloT('stem.weldlab.answer_3_quick_questions_we_ll_show_yo', 'Answer 3 quick questions. We\'ll show you the welders whose paths fit your answers best — not the only fits, just the closest matches in this set of 14.')),
               questionBlock('1. What do you want most from your work?', wantOpts, qWant, setQWant),
               questionBlock('2. How much school can you imagine doing?', schoolOpts, qSchool, setQSchool),
               questionBlock('3. Where do you want to work?', placeOpts, qPlace, setQPlace),
               quizComplete && h('div', { className: 'space-y-3 pt-3 border-t-2 border-fuchsia-200' },
                 h('div', { className: 'flex justify-between items-baseline flex-wrap gap-2' },
-                  h('h3', { className: 'text-lg font-black text-fuchsia-900' }, '🎯 Your top matches'),
+                  h('h3', { className: 'text-lg font-black text-fuchsia-900' }, __alloT('stem.weldlab.your_top_matches', '🎯 Your top matches')),
                   h('button', {
                     onClick: function() { resetQuiz(); announce('Quiz reset'); },
                     className: 'transition-colors text-xs font-bold px-3 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700'
-                  }, '↺ Start over')
+                  }, __alloT('stem.weldlab.start_over', '↺ Start over'))
                 ),
                 matches.length === 0
-                  ? h('div', { className: 'text-sm text-slate-700 italic' }, 'No matches — try different answers.')
+                  ? h('div', { className: 'text-sm text-slate-700 italic' }, __alloT('stem.weldlab.no_matches_try_different_answers', 'No matches — try different answers.'))
                   : h('div', { className: 'space-y-2' },
                       matches.map(function(m, i) {
                         return h('div', { key: m.i, className: 'bg-fuchsia-50 border-2 border-fuchsia-300 rounded-xl p-4 flex items-start gap-3 flex-wrap' },
@@ -9456,14 +9457,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                             h('button', {
                               onClick: function() { setIdx(m.i); setMode('browse'); announce('Showing ' + m.st.name); },
                               className: 'text-xs font-bold px-3 py-1.5 rounded-lg bg-fuchsia-700 text-white hover:bg-fuchsia-800 transition'
-                            }, 'Read full profile →')
+                            }, __alloT('stem.weldlab.read_full_profile', 'Read full profile →'))
                           ),
                           h('div', { className: 'text-xs font-mono text-fuchsia-700' }, 'match: ' + m.sc + '/7')
                         );
                       })
                     ),
                 h('div', { className: 'bg-amber-50 border-l-4 border-amber-400 rounded-r p-3 text-sm text-slate-700' },
-                  h('strong', null, 'Reality check: '), 'These are starting points, not destinations. Most welders end up somewhere none of these 14 quite predicted. The quiz tells you which paths are worth researching first — not which one you must take.'
+                  h('strong', null, __alloT('stem.weldlab.reality_check_3', 'Reality check: ')), __alloT('stem.weldlab.these_are_starting_points_not_destinat', 'These are starting points, not destinations. Most welders end up somewhere none of these 14 quite predicted. The quiz tells you which paths are worth researching first — not which one you must take.')
                 )
               )
             ),
@@ -9484,7 +9485,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 h('div', { className: 'text-sm font-bold text-slate-700 mt-1' }, s.role)
               ),
               h('div', null,
-                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' }, 'Path'),
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' }, __alloT('stem.weldlab.path', 'Path')),
                 h('p', { className: 'text-sm text-slate-800' }, s.path)
               ),
               h('div', null,
@@ -9492,11 +9493,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 h('p', { className: 'text-sm font-mono text-emerald-700' }, s.pay)
               ),
               h('div', null,
-                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' }, 'In their words'),
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' }, __alloT('stem.weldlab.in_their_words', 'In their words')),
                 h('p', { className: 'text-sm text-slate-800 italic leading-relaxed' }, s.voice)
               ),
               h('div', { className: 'bg-amber-50 border-l-4 border-amber-400 rounded-r p-3' },
-                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-900 mb-1' }, '💡 Advice for students'),
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-900 mb-1' }, __alloT('stem.weldlab.advice_for_students', '💡 Advice for students')),
                 h('p', { className: 'text-sm text-slate-800' }, s.advice)
               )
             ),
@@ -9562,10 +9563,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         else if (heatInput < 3.5) state = 'hot';
         else state = 'burnthrough';
         var sm = {
-          cold:         { label: '🧊 Cold weld (insufficient fusion)', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Not enough heat. Cold lap defects, poor penetration.' },
-          optimal:      { label: '🟢 Optimal heat input', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Good penetration, fusion, minimal distortion.' },
-          hot:          { label: '🟠 Excessive heat', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'High distortion, wide HAZ, possible undercut.' },
-          burnthrough:  { label: '🔥 Burn-through risk', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Excessive — base metal melts through.' }
+          cold:         { label: __alloT('stem.weldlab.cold_weld_insufficient_fusion', '🧊 Cold weld (insufficient fusion)'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: __alloT('stem.weldlab.not_enough_heat_cold_lap_defects_poor_', 'Not enough heat. Cold lap defects, poor penetration.') },
+          optimal:      { label: __alloT('stem.weldlab.optimal_heat_input', '🟢 Optimal heat input'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.weldlab.good_penetration_fusion_minimal_distor', 'Good penetration, fusion, minimal distortion.') },
+          hot:          { label: __alloT('stem.weldlab.excessive_heat', '🟠 Excessive heat'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.weldlab.high_distortion_wide_haz_possible_unde', 'High distortion, wide HAZ, possible undercut.') },
+          burnthrough:  { label: __alloT('stem.weldlab.burn_through_risk', '🔥 Burn-through risk'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.weldlab.excessive_base_metal_melts_through', 'Excessive — base metal melts through.') }
         }[state];
         var H = React.createElement;
         return H('div', { style: { padding: 20, maxWidth: 900, margin: '0 auto' } },
@@ -9593,7 +9594,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               H('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ a: iq.amperage, t: iq.travelSpeed, v: iq.voltage, h: heatInput.toFixed(2), st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
               H('button', { onClick: function() { setIQ({ amperage: 150, travelSpeed: 8, voltage: 22, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset')
             ),
-            H('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: How does travel speed compensate for amperage?',
+            H('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.weldlab.hypothesis_how_does_travel_speed_compe', 'Hypothesis: How does travel speed compensate for amperage?'),
               style: { width: '100%', minHeight: 50, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 8 }, rows: 2 }),
             !iq.stuckRevealed && H('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, '🤔 Stuck — show open prompts'),
             iq.stuckRevealed && H('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: '#cbd5e1', marginBottom: 8 } },
@@ -9602,7 +9603,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 H('li', null, 'Doubling speed at same amps — what changes?'))),
             H('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
               H('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand — explain in own words'),
-            iq.understood && H('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how amperage, voltage, and speed compose heat input.',
+            iq.understood && H('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.weldlab.explain_how_amperage_voltage_and_speed', 'Explain how amperage, voltage, and speed compose heat input.'),
               style: { width: '100%', minHeight: 60, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 3 }),
             H('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: '#64748b' } }, 'Design note: discrete 4-state heat-input marker; no quality score; no reveal — by design.')
           )
