@@ -10,6 +10,7 @@ import { resolve } from 'node:path';
 const ce = readFileSync(resolve(process.cwd(), 'content_engine_source.jsx'), 'utf8');
 const pipe = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
 const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+const audit = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
 
 // ── x.com host-anchored reject (mirror of the new pattern) ──
 const X_REJECT = /\/\/(?:[^/]*\.)?(?:twitter|x)\.com(?:[/:?#]|$)/i;
@@ -83,5 +84,25 @@ describe('anti-drift: generated-document accessibility fixes (doc_pipeline) + ho
   it('the host bibliography wrapper default is aligned to Referenced Sources', () => {
     expect(anti).toMatch(/title = 'Referenced Sources'\) => \{/);
     expect(anti).not.toMatch(/title = 'Verified Sources'\) => \{/);
+  });
+});
+
+describe('anti-drift: Document Builder block library ships literal aria-labels, not raw t() tokens', () => {
+  // The block-library `html:` strings are inserted via execCommand('insertHTML') — raw HTML, not
+  // JSX — so any `aria-label={t("…")}` would ship verbatim and a screen reader would announce the
+  // i18n token. The whole library must use English literals (the Columns exemplar style).
+  it('has NO double-quoted t() interpolations anywhere (the block-library injection form)', () => {
+    const leaks = audit.match(/=\{t\("[^"]+"\)\}/g) || [];
+    expect(leaks).toEqual([]);
+  });
+  it('the codemod left real, readable English literals in the block HTML', () => {
+    expect(audit).toContain('aria-label="Remove callout"');
+    expect(audit).toContain('aria-label="Section divider"');
+    expect(audit).toContain('aria-label="Scoring rubric"');
+    expect(audit).toContain('aria-label="Data table"');
+    expect(audit).toContain('placeholder="Write your reflection here…"');
+  });
+  it('the Columns exemplar (already-correct literal) is untouched', () => {
+    expect(audit).toContain('aria-label="Remove columns"');
   });
 });
