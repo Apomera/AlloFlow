@@ -19513,9 +19513,9 @@ var d = labToolData.cell || {};
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
+              React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "transition-colors p-1.5 hover:bg-slate-100 rounded-lg active:scale-[0.97]", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83D\uDD2C Cell Simulator"),
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800 tracking-tight" }, "\uD83D\uDD2C Cell Simulator"),
 
               React.createElement("span", { className: "px-2 py-0.5 bg-teal-100 text-teal-800 text-[11px] font-bold rounded-full" }, "CELL v3"),
 
@@ -19575,7 +19575,7 @@ var d = labToolData.cell || {};
                 els.push(React.createElement('div', { key: 'top', className: 'flex flex-wrap items-center gap-2 w-full mb-2' },
                   React.createElement('button', {
                     onClick: function() { setCat(null); upd('_cellPicked', false); },
-                    className: 'px-3 py-1 rounded-lg text-xs font-bold focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-1 ' + (atHub ? 'bg-green-700 text-white' : 'bg-slate-100 text-green-700 hover:bg-green-50 border border-green-300')
+                    className: 'px-3 py-1 rounded-lg text-xs font-bold focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-1 ' + (atHub ? 'bg-green-700 text-white' : 'transition-colors bg-slate-100 text-green-700 hover:bg-green-50 border border-green-300 active:scale-[0.97]')
                   }, '🏠 Hub'),
                   activeCat && !atHub && React.createElement('span', { className: 'text-xs text-slate-500' }, '/'),
                   activeCat && !atHub && React.createElement('span', { className: 'px-2 py-1 rounded-lg text-xs font-bold bg-slate-50 text-green-700 border border-green-200' }, activeCat.icon + ' ' + activeCat.label),
@@ -19598,7 +19598,7 @@ var d = labToolData.cell || {};
                             key: m,
                             'aria-current': d.mode === m ? 'true' : undefined,
                             onClick: function() { setMode(m); upd('_cellSearch', ''); },
-                            className: 'px-2 py-1 rounded text-xs font-bold bg-white border border-slate-300 text-slate-700 hover:bg-green-50 hover:border-green-500'
+                            className: 'transition-colors px-2 py-1 rounded text-xs font-bold bg-white border border-slate-300 text-slate-700 hover:bg-green-50 hover:border-green-500 active:scale-[0.97]'
                           }, CELL_MODE_LABELS[m] || m);
                         })
                   ));
@@ -19611,7 +19611,7 @@ var d = labToolData.cell || {};
                       return React.createElement('button', {
                         key: c.id,
                         onClick: function() { setCat(c.id); setMode(c.modes[0]); },
-                        className: 'text-left p-3 rounded-xl bg-white border-2 border-' + c.color + '-200 hover:border-' + c.color + '-500 hover:bg-' + c.color + '-50 transition-all'
+                        className: 'text-left p-3 rounded-xl bg-white border-2 border-' + c.color + 'transition-colors -200 hover:border-' + c.color + 'transition-colors -500 hover:bg- active:scale-[0.97]' + c.color + '-50 transition-all'
                       },
                         React.createElement('div', { className: 'text-2xl mb-1' }, c.icon),
                         React.createElement('div', { className: 'text-sm font-bold text-' + c.color + '-700 mb-1' }, c.label),
@@ -19634,7 +19634,7 @@ var d = labToolData.cell || {};
                         className: 'px-3 py-1 rounded-lg text-xs font-bold ' +
                           (isActive
                             ? 'bg-' + activeCat.color + '-700 text-white'
-                            : 'bg-slate-100 text-slate-600 hover:bg-' + activeCat.color + '-50')
+                            : 'transition-colors bg-slate-100 text-slate-600 hover:bg- active:scale-[0.97]' + activeCat.color + '-50')
                       }, CELL_MODE_LABELS[m] || m);
                     })
                   ));
@@ -19949,7 +19949,7 @@ var d = labToolData.cell || {};
 
                     },
 
-                    className: "text-[10px] font-bold text-green-600 hover:text-green-800 px-2 py-0.5 bg-green-50 rounded hover:bg-green-100 transition-all border border-green-200"
+                    className: "text-[10px] font-bold text-green-600 hover:text-green-800 px-2 py-0.5 bg-green-50 rounded hover:bg-green-100 transition-all border border-green-200 active:scale-[0.97]"
 
                   }, "Show All"),
 
@@ -19975,7 +19975,7 @@ var d = labToolData.cell || {};
 
                     },
 
-                    className: "text-[10px] font-bold text-slate-500 hover:text-slate-700 px-2 py-0.5 bg-slate-100 rounded hover:bg-slate-200 transition-all border border-slate-200"
+                    className: "text-[10px] font-bold text-slate-500 hover:text-slate-700 px-2 py-0.5 bg-slate-100 rounded hover:bg-slate-200 transition-all border border-slate-200 active:scale-[0.97]"
 
                   }, "Clear All")
 
@@ -20279,7 +20279,7 @@ var d = labToolData.cell || {};
 
                       },
 
-                      className: "hover:bg-slate-50 active:bg-slate-100 rounded-lg w-full text-left"
+                      className: "transition-colors hover:bg-slate-50 active:bg-slate-100 rounded-lg w-full text-left active:scale-[0.97]"
 
                     },
 
@@ -20291,7 +20291,7 @@ var d = labToolData.cell || {};
 
                         React.createElement("span", { className: "text-slate-600 leading-relaxed" }, a.fn),
 
-                        React.createElement("span", { className: "text-[9px] text-green-700 font-bold ml-1.5 inline-flex items-center gap-0.5 hover:text-green-800" }, "🔍 [Locate]")
+                        React.createElement("span", { className: "transition-colors text-[9px] text-green-700 font-bold ml-1.5 inline-flex items-center gap-0.5 hover:text-green-800" }, "🔍 [Locate]")
 
                       )
 
@@ -20410,7 +20410,7 @@ var d = labToolData.cell || {};
                             ? (isCorrect
                               ? "border-green-400 bg-green-50 text-green-700"
                               : (isSelected ? "border-red-400 bg-red-50 text-red-700" : "border-slate-200 bg-white text-slate-500"))
-                            : "border-purple-200 bg-white text-slate-700 hover:border-purple-400")
+                            : "transition-colors border-purple-200 bg-white text-slate-700 hover:border-purple-400")
 
                       }, opt);
 
@@ -20473,7 +20473,7 @@ var d = labToolData.cell || {};
                             ? (isCorrect
                               ? "border-green-400 bg-green-50 text-green-700"
                               : (isSelected ? "border-red-400 bg-red-50 text-red-700" : "border-slate-200 bg-white text-slate-500"))
-                            : "border-purple-200 bg-white text-slate-700 hover:border-purple-400")
+                            : "transition-colors border-purple-200 bg-white text-slate-700 hover:border-purple-400")
 
                       }, org.icon + " " + org.label);
 
@@ -20494,7 +20494,7 @@ var d = labToolData.cell || {};
                     React.createElement("div", { className: "flex flex-wrap gap-2 pt-1" },
                       quizQuestion.concept && React.createElement("button", {
                         onClick: function() { upd("_studyConcept", quizQuestion.concept); },
-                        className: "px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-600 rounded font-bold text-xs hover:bg-emerald-100 transition-all"
+                        className: "px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-600 rounded font-bold text-xs hover:bg-emerald-100 transition-all active:scale-[0.97]"
                       }, "📖 Study " + (CELL_VOCAB[quizQuestion.concept] ? CELL_VOCAB[quizQuestion.concept].term : quizQuestion.concept) + " (+5 RP)"),
                       React.createElement("button", {
                         onClick: function () {
@@ -20507,7 +20507,7 @@ var d = labToolData.cell || {};
                             cel._selectedOption = null;
                             return Object.assign({}, p, { cell: cel });
                           });
-                        }, className: "px-2.5 py-1 bg-purple-600 text-white rounded font-bold text-xs hover:bg-purple-700 transition-all"
+                        }, className: "px-2.5 py-1 bg-purple-600 text-white rounded font-bold text-xs hover:bg-purple-700 transition-all active:scale-[0.97]"
                       }, "Continue →")
                     )
                   ),
@@ -20524,7 +20524,7 @@ var d = labToolData.cell || {};
                           cel._selectedOption = null;
                           return Object.assign({}, p, { cell: cel });
                         });
-                      }, className: "px-2.5 py-1 bg-purple-600 text-white rounded font-bold text-xs hover:bg-purple-700 transition-all"
+                      }, className: "px-2.5 py-1 bg-purple-600 text-white rounded font-bold text-xs hover:bg-purple-700 transition-all active:scale-[0.97]"
                     }, "Next →")
                   )
 
@@ -20537,7 +20537,7 @@ var d = labToolData.cell || {};
             d._cellShowBadges && React.createElement("div", { className: "mt-3 bg-amber-50 rounded-xl border-2 border-amber-200 p-4 animate-in fade-in" },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("p", { className: "text-xs font-bold text-amber-700" }, "\uD83C\uDFC5 Badges (" + ext.badges.length + "/" + Object.keys(cellBadges).length + ")"),
-                React.createElement("button", { "aria-label": "Close badges", onClick: function () { upd('_cellShowBadges', false); }, className: "text-amber-600 hover:text-amber-700" }, React.createElement(X, { size: 14 }))
+                React.createElement("button", { "aria-label": "Close badges", onClick: function () { upd('_cellShowBadges', false); }, className: "transition-colors text-amber-600 hover:text-amber-700" }, React.createElement(X, { size: 14 }))
               ),
               React.createElement("div", { className: "grid grid-cols-2 gap-2" },
                 Object.keys(cellBadges).map(function (key) {
@@ -20558,7 +20558,7 @@ var d = labToolData.cell || {};
             d._cellShowAI && React.createElement("div", { className: "mt-3 bg-blue-50 rounded-xl border-2 border-blue-200 p-4 animate-in fade-in" },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("p", { className: "text-xs font-bold text-blue-700" }, "\uD83E\uDD16 AI Biology Tutor"),
-                React.createElement("button", { "aria-label": "Close AI tutor", onClick: function () { upd('_cellShowAI', false); }, className: "text-blue-600 hover:text-blue-700" }, React.createElement(X, { size: 14 }))
+                React.createElement("button", { "aria-label": "Close AI tutor", onClick: function () { upd('_cellShowAI', false); }, className: "transition-colors text-blue-600 hover:text-blue-700" }, React.createElement(X, { size: 14 }))
               ),
               React.createElement("div", { className: "flex gap-2" },
                 React.createElement("input", {
@@ -20568,7 +20568,7 @@ var d = labToolData.cell || {};
                   onKeyDown: function (e) { if (e.key === 'Enter') askAI(d._cellAIQ); },
                   className: "flex-1 px-3 py-1.5 text-xs rounded-lg border border-blue-200 focus:border-blue-400"
                 }),
-                React.createElement("button", { onClick: function () { askAI(d._cellAIQ); }, 'aria-busy': d._cellAILoading, 'aria-label': d._cellAILoading ? 'Asking AI tutor' : 'Ask AI tutor', className: "px-3 py-1.5 text-xs font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700", disabled: d._cellAILoading }, d._cellAILoading ? '...' : 'Ask')
+                React.createElement("button", { onClick: function () { askAI(d._cellAIQ); }, 'aria-busy': d._cellAILoading, 'aria-label': d._cellAILoading ? 'Asking AI tutor' : 'Ask AI tutor', className: "transition-colors px-3 py-1.5 text-xs font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 active:scale-[0.97]", disabled: d._cellAILoading }, d._cellAILoading ? '...' : 'Ask')
               ),
               d._cellAIResp && React.createElement("div", { role: "status", "aria-live": "polite", className: "mt-2 p-2 bg-white rounded-lg text-xs text-slate-700 leading-relaxed border border-blue-100" }, d._cellAIResp)
             ),
@@ -20579,8 +20579,8 @@ var d = labToolData.cell || {};
 
             React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
 
-              React.createElement("button", { "aria-label": "Toggle badges panel", "aria-expanded": !!d._cellShowBadges, onClick: function () { upd('_cellShowBadges', !d._cellShowBadges); }, className: "px-3 py-2 text-xs font-bold rounded-full " + (d._cellShowBadges ? "bg-amber-700 text-white" : "bg-amber-100 text-amber-700 hover:bg-amber-200") }, "\uD83C\uDFC5 Badges " + ext.badges.length + "/" + Object.keys(cellBadges).length),
-              React.createElement("button", { "aria-label": "AI Tutor", "aria-expanded": !!d._cellShowAI, onClick: function () { upd('_cellShowAI', !d._cellShowAI); }, className: "px-3 py-2 text-xs font-bold rounded-full " + (d._cellShowAI ? "bg-blue-700 text-white" : "bg-blue-100 text-blue-700 hover:bg-blue-200") }, "\uD83E\uDD16 AI Tutor"),
+              React.createElement("button", { "aria-label": "Toggle badges panel", "aria-expanded": !!d._cellShowBadges, onClick: function () { upd('_cellShowBadges', !d._cellShowBadges); }, className: "px-3 py-2 text-xs font-bold rounded-full " + (d._cellShowBadges ? "bg-amber-700 text-white" : "transition-colors bg-amber-100 text-amber-700 hover:bg-amber-200 active:scale-[0.97]") }, "\uD83C\uDFC5 Badges " + ext.badges.length + "/" + Object.keys(cellBadges).length),
+              React.createElement("button", { "aria-label": "AI Tutor", "aria-expanded": !!d._cellShowAI, onClick: function () { upd('_cellShowAI', !d._cellShowAI); }, className: "px-3 py-2 text-xs font-bold rounded-full " + (d._cellShowAI ? "bg-blue-700 text-white" : "transition-colors bg-blue-100 text-blue-700 hover:bg-blue-200 active:scale-[0.97]") }, "\uD83E\uDD16 AI Tutor"),
 
               React.createElement("button", { "aria-label": "Snapshot", onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'ce-' + Date.now(), tool: 'cell', label: 'Cell Simulator' + (d.selectedOrganism ? ': ' + d.selectedOrganism : ''), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
 
@@ -20643,18 +20643,18 @@ var d = labToolData.cell || {};
                 React.createElement('div', { className: 'flex flex-wrap gap-1' },
                   kingdoms.map(function(k) {
                     var sel = filterK === k;
-                    return React.createElement('button', { key: k, onClick: function() { upd('_encyclopediaFilter', k); upd('_encyclopediaIdx', 0); }, className: 'px-2 py-1 rounded text-xs font-bold transition-all ' + (sel ? 'bg-green-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-green-100') }, k);
+                    return React.createElement('button', { key: k, onClick: function() { upd('_encyclopediaFilter', k); upd('_encyclopediaIdx', 0); }, className: 'px-2 py-1 rounded text-xs font-bold transition-all ' + (sel ? 'bg-green-600 text-white shadow-sm' : 'transition-colors bg-slate-100 text-slate-700 hover:bg-green-100 active:scale-[0.97]') }, k);
                   })
                 ),
                 React.createElement('div', { className: 'flex flex-wrap gap-1 max-h-32 overflow-y-auto p-2 bg-slate-50 rounded border border-slate-200' },
                   filtered.map(function(o, i) {
                     var sel = idx === i;
-                    return React.createElement('button', { key: o.id, onClick: function() { upd('_encyclopediaIdx', i); }, className: 'px-2 py-1 rounded text-[10px] font-bold transition-all ' + (sel ? 'bg-green-700 text-white shadow-sm' : 'bg-white text-slate-700 border border-slate-300 hover:bg-green-50 hover:border-green-400'), title: o.name }, o.name);
+                    return React.createElement('button', { key: o.id, onClick: function() { upd('_encyclopediaIdx', i); }, className: 'px-2 py-1 rounded text-[10px] font-bold transition-all ' + (sel ? 'bg-green-700 text-white shadow-sm' : 'transition-colors bg-white text-slate-700 border border-slate-300 hover:bg-green-50 hover:border-green-400 active:scale-[0.97]'), title: o.name }, o.name);
                   })
                 ),
                 item && React.createElement('div', { className: 'border-2 rounded-xl p-4 space-y-3 shadow-inner ' + theme.bg + ' ' + theme.border },
                   React.createElement('div', { className: 'flex flex-wrap items-baseline justify-between gap-2 border-b pb-2 ' + theme.border },
-                    React.createElement('h4', { className: 'text-xl font-bold ' + theme.text }, item.name),
+                    React.createElement('h4', { className: 'text-xl font-bold  tracking-tight' + theme.text }, item.name),
                     React.createElement('div', { className: 'flex gap-1.5' },
                       React.createElement('span', { className: 'text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm ' + theme.badge }, item.kingdom),
                       React.createElement('span', { className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-white border border-slate-300 text-slate-700' }, item.cellType)
@@ -20717,7 +20717,7 @@ var d = labToolData.cell || {};
                         return React.createElement('button', {
                           key: key,
                           onClick: function() { upd('_studyConcept', key); },
-                          className: 'px-2.5 py-1 text-[9px] bg-white text-emerald-800 border border-emerald-400 rounded-lg font-bold hover:bg-emerald-50 hover:scale-[1.02] shadow-sm transition-all flex items-center gap-1'
+                          className: 'px-2.5 py-1 text-[9px] bg-white text-emerald-800 border border-emerald-400 rounded-lg font-bold hover:bg-emerald-50 hover:scale-[1.02] shadow-sm transition-all flex items-center gap-1 active:scale-[0.97]'
                         }, '📖 Study ' + CELL_VOCAB[key].term + ' (+5 RP)');
                       })
                     );
@@ -20733,12 +20733,12 @@ var d = labToolData.cell || {};
             d.mode === 'filter' && (function() {
               function getKingdomTheme(k) {
                 var lower = (k || '').toLowerCase();
-                if (lower.indexOf('protist') !== -1) return { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', hover: 'hover:border-emerald-500' };
-                if (lower.indexOf('bacteria') !== -1 || lower.indexOf('bacterium') !== -1) return { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', hover: 'hover:border-amber-500' };
-                if (lower.indexOf('animal') !== -1) return { bg: 'bg-sky-50', border: 'border-sky-200', text: 'text-sky-700', hover: 'hover:border-sky-500' };
-                if (lower.indexOf('plant') !== -1) return { bg: 'bg-lime-50', border: 'border-lime-200', text: 'text-lime-700', hover: 'hover:border-lime-500' };
-                if (lower.indexOf('algae') !== -1) return { bg: 'bg-cyan-50', border: 'border-cyan-200', text: 'text-cyan-700', hover: 'hover:border-cyan-500' };
-                return { bg: 'bg-slate-50', border: 'border-slate-200', text: 'text-slate-700', hover: 'hover:border-slate-500' };
+                if (lower.indexOf('protist') !== -1) return { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', hover: 'transition-colors hover:border-emerald-500' };
+                if (lower.indexOf('bacteria') !== -1 || lower.indexOf('bacterium') !== -1) return { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', hover: 'transition-colors hover:border-amber-500' };
+                if (lower.indexOf('animal') !== -1) return { bg: 'bg-sky-50', border: 'border-sky-200', text: 'text-sky-700', hover: 'transition-colors hover:border-sky-500' };
+                if (lower.indexOf('plant') !== -1) return { bg: 'bg-lime-50', border: 'border-lime-200', text: 'text-lime-700', hover: 'transition-colors hover:border-lime-500' };
+                if (lower.indexOf('algae') !== -1) return { bg: 'bg-cyan-50', border: 'border-cyan-200', text: 'text-cyan-700', hover: 'transition-colors hover:border-cyan-500' };
+                return { bg: 'bg-slate-50', border: 'border-slate-200', text: 'text-slate-700', hover: 'transition-colors hover:border-slate-500' };
               }
 
               var byKingdom = {};
@@ -20851,7 +20851,7 @@ var d = labToolData.cell || {};
                                 return React.createElement('button', {
                                   key: key,
                                   onClick: function() { upd('_studyConcept', key); },
-                                  className: 'px-1.5 py-0.5 text-[8px] bg-emerald-50 text-emerald-800 border border-emerald-300 rounded font-bold hover:bg-emerald-100'
+                                  className: 'transition-colors px-1.5 py-0.5 text-[8px] bg-emerald-50 text-emerald-800 border border-emerald-300 rounded font-bold hover:bg-emerald-100 active:scale-[0.97]'
                                 }, '📖 Study ' + CELL_VOCAB[key].term);
                               })
                             );
@@ -20867,7 +20867,7 @@ var d = labToolData.cell || {};
                                 return React.createElement('button', {
                                   key: key,
                                   onClick: function() { upd('_studyConcept', key); },
-                                  className: 'px-1.5 py-0.5 text-[8px] bg-emerald-50 text-emerald-800 border border-emerald-300 rounded font-bold hover:bg-emerald-100'
+                                  className: 'transition-colors px-1.5 py-0.5 text-[8px] bg-emerald-50 text-emerald-800 border border-emerald-300 rounded font-bold hover:bg-emerald-100 active:scale-[0.97]'
                                 }, '📖 Study ' + CELL_VOCAB[key].term);
                               })
                             );
@@ -20996,7 +20996,7 @@ var d = labToolData.cell || {};
             // ═══════════════════════════════════════════════════════════
             d.mode === 'finale' && React.createElement('div', { className: 'mt-4 bg-gradient-to-br from-yellow-50 to-amber-50 rounded-xl border-2 border-amber-400 p-6 text-center' },
               React.createElement('div', { className: 'text-6xl mb-2' }, '🎆'),
-              React.createElement('h3', { className: 'text-2xl font-bold text-amber-800 mb-2' }, 'Cell Master Achievement'),
+              React.createElement('h3', { className: 'text-2xl font-bold text-amber-800 mb-2 tracking-tight' }, 'Cell Master Achievement'),
               React.createElement('p', { className: 'text-sm text-amber-700 italic' }, 'You explored a microscopic universe of life.')
             ),
 
@@ -21094,12 +21094,12 @@ var d = labToolData.cell || {};
                   React.createElement('button', {
                     autoFocus: true,
                     onClick: function() { upd('_studyConcept', null); },
-                    className: 'absolute top-3 right-3 text-slate-600 hover:text-slate-900 font-bold p-1 rounded-lg hover:bg-slate-100',
+                    className: 'transition-colors absolute top-3 right-3 text-slate-600 hover:text-slate-900 font-bold p-1 rounded-lg hover:bg-slate-100 active:scale-[0.97]',
                     'aria-label': 'Close flashcard'
                   }, '✕'),
                   React.createElement('div', { className: 'text-center' },
                     React.createElement('span', { className: 'text-4xl mb-3 inline-block' }, '📇'),
-                    React.createElement('h4', { id: 'cell-flashcard-title', className: 'text-lg font-bold text-emerald-800 mb-2' }, vocabInfo.term),
+                    React.createElement('h4', { id: 'cell-flashcard-title', className: 'text-lg font-bold text-emerald-800 mb-2 tracking-tight' }, vocabInfo.term),
                     React.createElement('div', { className: 'bg-emerald-50 rounded-xl p-4 border border-emerald-100 text-xs text-slate-700 leading-relaxed mb-4 text-left' },
                       vocabInfo.def
                     ),
@@ -21125,7 +21125,7 @@ var d = labToolData.cell || {};
                       React.createElement('p', { className: 'text-xs text-emerald-600 font-bold mb-3' }, '✓ You have already studied this term!'),
                       React.createElement('button', {
                         onClick: function() { upd('_studyConcept', null); },
-                        className: 'w-full py-2 px-4 text-xs font-bold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 transition-all'
+                        className: 'w-full py-2 px-4 text-xs font-bold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 transition-all active:scale-[0.97]'
                       }, 'Close')
                     )
                   )

@@ -6978,7 +6978,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🦅'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-amber-200' }, 'Raptor Hunt: Predator Physics + Biology'),
+                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, 'Raptor Hunt: Predator Physics + Biology'),
                 h('div', { className: 'text-sm text-amber-100/80 mt-1' }, 'Hunt as a peregrine at 240 mph. Crush bones at 530 psi as a harpy. See vole urine trails in UV like a kestrel. Glide silently on owl feathers. Then study the biology that makes it all possible.'),
                 h('div', { className: 'text-xs text-amber-300/70 mt-2 italic' }, '25 sections · 20 species · 6 interactive labs · anatomy + acuity demo · case studies · 42-term glossary · 70-question quiz')
               )
@@ -7050,7 +7050,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 return h('button', {
                   key: t.id,
                   onClick: function() { setRH({ activeSection: t.id }); },
-                  className: 'text-left p-3 rounded-lg bg-slate-800/50 border border-slate-700/50 hover:bg-slate-700/50 hover:border-amber-600/40 transition-all',
+                  className: 'text-left p-3 rounded-lg bg-slate-800/50 border border-slate-700/50 hover:bg-slate-700/50 hover:border-amber-600/40 transition-all active:scale-[0.97]',
                   'aria-label': t.label
                 },
                   h('div', { className: 'text-xl mb-1' }, t.icon),
@@ -7096,7 +7096,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   !revealed && h('div', { className: 'flex gap-2 flex-wrap' },
                     h('button', {
                       onClick: function() { setRH({ challengeRevealed: daySeed }); rhAnnounce('Answer revealed'); },
-                      className: 'transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-purple-700 text-amber-100 hover:bg-purple-600',
+                      className: 'transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-purple-700 text-amber-100 hover:bg-purple-600 active:scale-[0.97]',
                       'aria-label': 'Show answer'
                     }, '👁 Show Answer'),
                     h('button', {
@@ -7165,7 +7165,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                         return Object.assign({}, cur, { activeSection: sid, visited: visited, recentlyViewed: newRecent });
                       });
                     },
-                    className: 'transition-colors px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-amber-200 hover:bg-slate-700 border border-slate-700',
+                    className: 'transition-colors px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-amber-200 hover:bg-slate-700 border border-slate-700 active:scale-[0.97]',
                     'aria-label': 'Jump back to ' + sec.label
                   }, sec.icon + ' ' + sec.label);
                 })
@@ -7226,8 +7226,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                           },
                           'aria-label': 'Go to ' + sec.label + (seen ? ' (visited)' : ' (not yet visited)'),
                           className: 'flex items-center gap-1 px-2 py-1 rounded text-[10px] transition-all ' + (seen
-                            ? 'bg-emerald-900/40 text-emerald-200 border border-emerald-700/50 hover:bg-emerald-800/50'
-                            : 'bg-slate-800/60 text-slate-400 border border-slate-700 hover:bg-slate-700/60 hover:text-slate-200')
+                            ? 'transition-colors bg-emerald-900/40 text-emerald-200 border border-emerald-700/50 hover:bg-emerald-800/50 active:scale-[0.97]'
+                            : 'transition-colors bg-slate-800/60 text-slate-400 border border-slate-700 hover:bg-slate-700/60 hover:text-slate-200 active:scale-[0.97]')
                         },
                           h('span', null, seen ? '✓' : '○'),
                           h('span', null, sec.icon),
@@ -7312,7 +7312,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   onClick: function() { setRosterView(v); },
                   className: 'px-3 py-1 rounded text-xs font-bold transition-all ' + (active
                     ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white'
-                    : 'text-slate-300 hover:text-amber-200'),
+                    : 'transition-colors text-slate-300 hover:text-amber-200'),
                   'aria-label': v === 'cards' ? 'Show as cards' : v === 'table' ? 'Show as comparison table' : '2-species side-by-side duel',
                   'aria-pressed': active
                 }, labels[v]);
@@ -7412,7 +7412,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 });
                 var winner = aWins > bWins ? 'A' : (bWins > aWins ? 'B' : null);
                 return h('div', { className: 'bg-gradient-to-br from-' + (winner === 'A' ? 'emerald' : winner === 'B' ? 'amber' : 'slate') + '-900/30 to-slate-900/30 border border-amber-700/40 rounded-xl p-4 text-center' },
-                  h('div', { className: 'text-lg font-bold text-amber-300 mb-1' }, '🏆 Stat-Sheet Winner'),
+                  h('div', { className: 'text-lg font-bold text-amber-300 mb-1 tracking-tight' }, '🏆 Stat-Sheet Winner'),
                   h('div', { className: 'text-2xl my-1' }, winner === 'A' ? spA.emoji + ' ' + spA.name : winner === 'B' ? spB.emoji + ' ' + spB.name : '⚖ Tied'),
                   h('div', { className: 'text-xs text-slate-300' }, aWins + ' stats vs ' + bWins + ' stats out of ' + stats.length),
                   h('div', { className: 'text-[10px] text-slate-500 italic mt-2' }, 'Note: "winning" on stats ≠ winning in nature. Each species evolved for its specific niche. A peregrine in a forest loses to a goshawk; a harpy in open desert loses to a golden eagle.')
@@ -7422,12 +7422,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'flex gap-2 justify-center' },
                 h('button', {
                   onClick: function() { setRH({ selectedSpecies: duelA }); rhAnnounce(spA.name + ' selected for Hunt Sim'); },
-                  className: 'transition-colors px-4 py-2 rounded-lg text-xs font-bold bg-slate-700 text-amber-300 hover:bg-slate-600',
+                  className: 'transition-colors px-4 py-2 rounded-lg text-xs font-bold bg-slate-700 text-amber-300 hover:bg-slate-600 active:scale-[0.97]',
                   'aria-label': 'Select A for Hunt Sim'
                 }, '→ Use ' + spA.name + ' in Hunt Sim'),
                 h('button', {
                   onClick: function() { setRH({ selectedSpecies: duelB }); rhAnnounce(spB.name + ' selected for Hunt Sim'); },
-                  className: 'transition-colors px-4 py-2 rounded-lg text-xs font-bold bg-slate-700 text-orange-300 hover:bg-slate-600',
+                  className: 'transition-colors px-4 py-2 rounded-lg text-xs font-bold bg-slate-700 text-orange-300 hover:bg-slate-600 active:scale-[0.97]',
                   'aria-label': 'Select B for Hunt Sim'
                 }, '→ Use ' + spB.name + ' in Hunt Sim')
               )
@@ -7460,7 +7460,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     return h('tr', {
                       key: s.id,
                       onClick: function() { setRH({ selectedSpecies: s.id }); rhAnnounce(s.name + ' selected'); },
-                      className: 'transition-colors border-b border-slate-800/50 cursor-pointer hover:bg-slate-800/40 ' + (isActive ? 'bg-amber-900/20 ring-1 ring-amber-500/50' : ''),
+                      className: 'transition-colors border-b border-slate-800/50 cursor-pointer hover:bg-slate-800/40  active:scale-[0.97]' + (isActive ? 'bg-amber-900/20 ring-1 ring-amber-500/50' : ''),
                       'aria-label': 'Select ' + s.name + (isActive ? ' (currently active)' : '')
                     },
                       h('td', { className: 'py-1.5 px-2' },
@@ -7493,7 +7493,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 onClick: function() { setRH({ selectedSpecies: s.id }); rhAnnounce(s.name + ' selected'); },
                 className: 'text-left p-4 rounded-xl border transition-all ' + (isActive
                   ? 'bg-gradient-to-br from-amber-800/50 to-orange-800/50 border-amber-400/70 ring-2 ring-amber-400/50'
-                  : 'bg-slate-800/50 border-slate-700/50 hover:bg-slate-700/50 hover:border-amber-600/40'),
+                  : 'transition-colors bg-slate-800/50 border-slate-700/50 hover:bg-slate-700/50 hover:border-amber-600/40 active:scale-[0.97]'),
                 'aria-label': 'Select ' + s.name
               },
                 h('div', { className: 'flex items-start gap-3' },
@@ -7525,7 +7525,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'bg-gradient-to-br from-amber-950/40 to-orange-950/40 border border-amber-700/40 rounded-xl p-5 space-y-3' },
             h('div', { className: 'flex items-baseline gap-3' },
               h('div', { className: 'text-2xl' }, sp.emoji),
-              h('div', { className: 'text-xl font-bold text-amber-200' }, sp.name),
+              h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, sp.name),
               h('div', { className: 'text-sm italic text-slate-400' }, sp.scientific)
             ),
             h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2' },
@@ -7855,7 +7855,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   onClick: function() { setRH({ activeMission: m.id }); rhAnnounce(m.name + ' selected'); },
                   className: 'text-left p-3 rounded-lg border-2 transition-all ' + (isActive
                     ? 'bg-amber-700/40 border-amber-400 ring-2 ring-amber-300/40'
-                    : 'bg-slate-800/50 border-slate-700 hover:border-amber-600/60 hover:bg-slate-700/50'),
+                    : 'transition-colors bg-slate-800/50 border-slate-700 hover:border-amber-600/60 hover:bg-slate-700/50 active:scale-[0.97]'),
                   'aria-label': 'Select mission: ' + m.name + ' — ' + m.difficulty,
                   'aria-pressed': isActive
                 },
@@ -8049,19 +8049,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               // Aggregate stats
               h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2 mb-3 text-center text-xs' },
                 h('div', { className: 'bg-emerald-900/30 border border-emerald-700/40 rounded p-2' },
-                  h('div', { className: 'text-xl font-bold text-emerald-300' }, allCatches),
+                  h('div', { className: 'text-xl font-bold text-emerald-300 tracking-tight' }, allCatches),
                   h('div', { className: 'text-[10px] text-emerald-200 uppercase' }, 'Total catches')
                 ),
                 h('div', { className: 'bg-blue-900/30 border border-blue-700/40 rounded p-2' },
-                  h('div', { className: 'text-xl font-bold text-blue-300' }, accuracy + '%'),
+                  h('div', { className: 'text-xl font-bold text-blue-300 tracking-tight' }, accuracy + '%'),
                   h('div', { className: 'text-[10px] text-blue-200 uppercase' }, 'Hit rate')
                 ),
                 h('div', { className: 'bg-amber-900/30 border border-amber-700/40 rounded p-2' },
-                  h('div', { className: 'text-xl font-bold text-amber-300' }, bestRunAllSpecies),
+                  h('div', { className: 'text-xl font-bold text-amber-300 tracking-tight' }, bestRunAllSpecies),
                   h('div', { className: 'text-[10px] text-amber-200 uppercase' }, 'Best run')
                 ),
                 h('div', { className: 'bg-purple-900/30 border border-purple-700/40 rounded p-2' },
-                  h('div', { className: 'text-xl font-bold text-purple-300' }, speciesHunted + '/8'),
+                  h('div', { className: 'text-xl font-bold text-purple-300 tracking-tight' }, speciesHunted + '/8'),
                   h('div', { className: 'text-[10px] text-purple-200 uppercase' }, 'Species used')
                 )
               ),
@@ -10193,7 +10193,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var maxPsi = 1500;
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-red-900/40 to-orange-900/40 border border-red-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-red-200 mb-2' }, TALON_FACTS.header),
+            h('div', { className: 'text-lg font-bold text-red-200 mb-2 tracking-tight' }, TALON_FACTS.header),
             h('div', { className: 'text-sm text-red-100/90 leading-relaxed' }, TALON_FACTS.overview)
           ),
           // PSI comparison chart
@@ -10329,7 +10329,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               // Verdict
               h('div', { className: 'bg-' + verdictColor + '-900/40 border-2 border-' + verdictColor + '-500 rounded-xl p-4 text-center' },
                 h('div', { className: 'text-4xl mb-1' }, verdictEmoji),
-                h('div', { className: 'text-lg font-bold text-' + verdictColor + '-300 mb-2' }, verdict),
+                h('div', { className: 'text-lg font-bold text- tracking-tight' + verdictColor + '-300 mb-2' }, verdict),
                 h('div', { className: 'text-xs text-' + verdictColor + '-100/90 leading-relaxed' }, verdictDetail)
               ),
               // Pedagogical note
@@ -10347,7 +10347,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       function renderVision() {
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-indigo-900/40 to-violet-900/40 border border-indigo-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-indigo-200 mb-2' }, VISION_FACTS.header),
+            h('div', { className: 'text-lg font-bold text-indigo-200 mb-2 tracking-tight' }, VISION_FACTS.header),
             h('div', { className: 'text-sm text-indigo-100/90 leading-relaxed' }, VISION_FACTS.overview)
           ),
           // Acuity comparison
@@ -10480,7 +10480,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       function renderFlight() {
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-cyan-900/40 to-sky-900/40 border border-cyan-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-cyan-200 mb-2' }, FLIGHT_FACTS.header),
+            h('div', { className: 'text-lg font-bold text-cyan-200 mb-2 tracking-tight' }, FLIGHT_FACTS.header),
             h('div', { className: 'text-sm text-cyan-100/90 leading-relaxed' }, FLIGHT_FACTS.overview)
           ),
           // Wing loading vs AR scatter
@@ -10600,22 +10600,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2' },
                 h('div', { className: 'bg-slate-800/40 rounded p-2 text-center' },
                   h('div', { className: 'text-[10px] uppercase tracking-wider text-cyan-400' }, 'L/D Ratio'),
-                  h('div', { className: 'text-xl font-bold text-amber-300' }, glideRatio.toFixed(1)),
+                  h('div', { className: 'text-xl font-bold text-amber-300 tracking-tight' }, glideRatio.toFixed(1)),
                   h('div', { className: 'text-[10px] text-slate-500' }, 'from AR ' + sp2.aspectRatio)
                 ),
                 h('div', { className: 'bg-slate-800/40 rounded p-2 text-center' },
                   h('div', { className: 'text-[10px] uppercase tracking-wider text-cyan-400' }, 'Still-air distance'),
-                  h('div', { className: 'text-xl font-bold text-amber-300' }, distanceKm.toFixed(1) + ' km'),
+                  h('div', { className: 'text-xl font-bold text-amber-300 tracking-tight' }, distanceKm.toFixed(1) + ' km'),
                   h('div', { className: 'text-[10px] text-slate-500' }, '(' + distanceMi.toFixed(1) + ' miles)')
                 ),
                 h('div', { className: 'bg-slate-800/40 rounded p-2 text-center' },
                   h('div', { className: 'text-[10px] uppercase tracking-wider text-cyan-400' }, 'With thermal'),
-                  h('div', { className: 'text-xl font-bold text-amber-300' }, infiniteGlide ? '∞' : enhancedDistanceKm.toFixed(1) + ' km'),
+                  h('div', { className: 'text-xl font-bold text-amber-300 tracking-tight' }, infiniteGlide ? '∞' : enhancedDistanceKm.toFixed(1) + ' km'),
                   h('div', { className: 'text-[10px] text-slate-500' }, infiniteGlide ? 'lift exceeds sink' : 'extended')
                 ),
                 h('div', { className: 'bg-slate-800/40 rounded p-2 text-center' },
                   h('div', { className: 'text-[10px] uppercase tracking-wider text-cyan-400' }, 'Net sink'),
-                  h('div', { className: 'text-xl font-bold text-amber-300' }, infiniteGlide ? '↑ lift wins' : netSink.toFixed(1) + ' m/s'),
+                  h('div', { className: 'text-xl font-bold text-amber-300 tracking-tight' }, infiniteGlide ? '↑ lift wins' : netSink.toFixed(1) + ' m/s'),
                   h('div', { className: 'text-[10px] text-slate-500' }, 'after thermal')
                 )
               ),
@@ -10665,7 +10665,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var ke = 0.5 * v.mass * vTerminal * vTerminal;
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-orange-900/40 to-red-900/40 border border-orange-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-orange-200 mb-2' }, STOOP_FACTS.header),
+            h('div', { className: 'text-lg font-bold text-orange-200 mb-2 tracking-tight' }, STOOP_FACTS.header),
             h('div', { className: 'text-sm text-orange-100/90 leading-relaxed' }, STOOP_FACTS.overview)
           ),
           // Formula card
@@ -10724,7 +10724,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 // Reset to selected species' true values
                 setRH({ stoopSimVars: { mass: sp.massKg, cd: 0.18, area: sp.wingAreaSqM * 0.06, altitudeM: 600 } });
               },
-              className: 'transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-700 text-amber-300 hover:bg-slate-600',
+              className: 'transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-700 text-amber-300 hover:bg-slate-600 active:scale-[0.97]',
               'aria-label': 'Load active species presets'
             }, '↺ Load ' + sp.name + ' presets')
           ),
@@ -10732,17 +10732,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
             h('div', { className: 'bg-gradient-to-br from-red-900/40 to-orange-900/40 border border-red-700/40 rounded-xl p-4 text-center' },
               h('div', { className: 'text-xs text-red-200' }, 'Terminal Velocity'),
-              h('div', { className: 'text-3xl font-bold text-amber-300 my-1' }, vTerminalMph.toFixed(0)),
+              h('div', { className: 'text-3xl font-bold text-amber-300 my-1 tracking-tight' }, vTerminalMph.toFixed(0)),
               h('div', { className: 'text-xs text-slate-400' }, 'mph (' + vTerminal.toFixed(0) + ' m/s)')
             ),
             h('div', { className: 'bg-gradient-to-br from-orange-900/40 to-yellow-900/40 border border-orange-700/40 rounded-xl p-4 text-center' },
               h('div', { className: 'text-xs text-orange-200' }, 'Time to ~Terminal'),
-              h('div', { className: 'text-3xl font-bold text-amber-300 my-1' }, tToTerminal.toFixed(1)),
+              h('div', { className: 'text-3xl font-bold text-amber-300 my-1 tracking-tight' }, tToTerminal.toFixed(1)),
               h('div', { className: 'text-xs text-slate-400' }, 'seconds (v_t / g)')
             ),
             h('div', { className: 'bg-gradient-to-br from-yellow-900/40 to-amber-900/40 border border-amber-700/40 rounded-xl p-4 text-center' },
               h('div', { className: 'text-xs text-yellow-200' }, 'Kinetic Energy'),
-              h('div', { className: 'text-3xl font-bold text-amber-300 my-1' }, ke.toFixed(0)),
+              h('div', { className: 'text-3xl font-bold text-amber-300 my-1 tracking-tight' }, ke.toFixed(0)),
               h('div', { className: 'text-xs text-slate-400' }, 'joules at impact')
             )
           ),
@@ -10847,15 +10847,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('div', { className: 'grid grid-cols-3 gap-2 mt-2 text-center' },
                   h('div', { className: 'bg-slate-800/40 rounded p-2' },
                     h('div', { className: 'text-xs text-slate-400' }, 'Time to 90% terminal'),
-                    h('div', { className: 'text-lg font-bold text-amber-300' }, t90 ? t90.t.toFixed(1) + 's' : '—')
+                    h('div', { className: 'text-lg font-bold text-amber-300 tracking-tight' }, t90 ? t90.t.toFixed(1) + 's' : '—')
                   ),
                   h('div', { className: 'bg-slate-800/40 rounded p-2' },
                     h('div', { className: 'text-xs text-slate-400' }, 'Altitude lost @ 90%'),
-                    h('div', { className: 'text-lg font-bold text-amber-300' }, t90 ? Math.round(altMax - t90.alt) + ' m' : '—')
+                    h('div', { className: 'text-lg font-bold text-amber-300 tracking-tight' }, t90 ? Math.round(altMax - t90.alt) + ' m' : '—')
                   ),
                   h('div', { className: 'bg-slate-800/40 rounded p-2' },
                     h('div', { className: 'text-xs text-slate-400' }, 'Peak velocity'),
-                    h('div', { className: 'text-lg font-bold text-amber-300' }, velMax.toFixed(0) + ' mph')
+                    h('div', { className: 'text-lg font-bold text-amber-300 tracking-tight' }, velMax.toFixed(0) + ' mph')
                   )
                 )
               ),
@@ -10873,7 +10873,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       function renderSilent() {
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-violet-900/40 to-indigo-900/40 border border-violet-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-violet-200 mb-2' }, SILENT_FACTS.header),
+            h('div', { className: 'text-lg font-bold text-violet-200 mb-2 tracking-tight' }, SILENT_FACTS.header),
             h('div', { className: 'text-sm text-violet-100/90 leading-relaxed' }, SILENT_FACTS.overview)
           ),
           // Diagram (text-based "anatomy of an owl feather")
@@ -10999,7 +10999,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       function renderSenses() {
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-slate-900/50 to-indigo-900/40 border border-indigo-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-indigo-200 mb-2' }, SENSES_FACTS.header),
+            h('div', { className: 'text-lg font-bold text-indigo-200 mb-2 tracking-tight' }, SENSES_FACTS.header),
             h('div', { className: 'text-sm text-indigo-100/90 leading-relaxed' }, SENSES_FACTS.overview)
           ),
           // ── NEW v0.9: Eye cross-section SVG comparison ──
@@ -11297,7 +11297,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-emerald-900/40 to-teal-900/40 border border-emerald-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-emerald-200 mb-2' }, '🌍 Conservation: From DDT to today'),
+            h('div', { className: 'text-lg font-bold text-emerald-200 mb-2 tracking-tight' }, '🌍 Conservation: From DDT to today'),
             h('div', { className: 'text-sm text-emerald-100/90 leading-relaxed' }, CONSERVATION.overview)
           ),
 
@@ -11345,7 +11345,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 Object.keys(counts).map(function(code) {
                   var col = iucnColor(code);
                   return h('div', { key: code, className: 'bg-' + col + '-900/30 border border-' + col + '-700/40 rounded p-2' },
-                    h('div', { className: 'text-lg font-bold text-' + col + '-300' }, counts[code]),
+                    h('div', { className: 'text-lg font-bold text- tracking-tight' + col + '-300' }, counts[code]),
                     h('div', { className: 'text-[10px] text-' + col + '-200 uppercase tracking-wider' }, code)
                   );
                 })
@@ -11456,7 +11456,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               // Results card
               h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2' },
                 h('div', { className: 'bg-' + vc + '-900/40 border border-' + vc + '-700/50 rounded p-3 text-center' },
-                  h('div', { className: 'text-2xl font-bold text-' + vc + '-300' }, effLambda.toFixed(3)),
+                  h('div', { className: 'text-2xl font-bold text- tracking-tight' + vc + '-300' }, effLambda.toFixed(3)),
                   h('div', { className: 'text-[10px] text-' + vc + '-200 uppercase tracking-wider' }, 'Effective λ')
                 ),
                 h('div', { className: 'bg-' + vc + '-900/40 border border-' + vc + '-700/50 rounded p-3 text-center' },
@@ -11694,7 +11694,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-yellow-900/40 to-amber-900/40 border border-yellow-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-yellow-200 mb-2' }, '🔍 Field Identification: Wing Shape + Flight Pattern'),
+            h('div', { className: 'text-lg font-bold text-yellow-200 mb-2 tracking-tight' }, '🔍 Field Identification: Wing Shape + Flight Pattern'),
             h('div', { className: 'text-sm text-yellow-100/90 leading-relaxed' }, 'You almost never get a clear close-up of a raptor in the wild. Field ID works on ', h('span', { className: 'font-bold' }, 'gestalt — silhouette + flight pattern + behavior'), '. Color comes last. Learn the 8 silhouette groups below and you can ID 90% of North American raptors at a quarter mile.')
           ),
           // Silhouette cards (now with inline SVGs!)
@@ -11746,7 +11746,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       function renderMigration() {
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-cyan-900/40 to-teal-900/40 border border-cyan-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-cyan-200 mb-2' }, '🧭 Migration: 5 Million Birds, 5 Major Flyways'),
+            h('div', { className: 'text-lg font-bold text-cyan-200 mb-2 tracking-tight' }, '🧭 Migration: 5 Million Birds, 5 Major Flyways'),
             h('div', { className: 'text-sm text-cyan-100/90 leading-relaxed' }, MIGRATION.overview)
           ),
 
@@ -11921,7 +11921,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     onClick: function() { setAtlasView(r); },
                     className: 'px-2 py-0.5 rounded text-[10px] font-bold transition-all ' + (active
                       ? 'bg-cyan-600 text-white'
-                      : 'bg-slate-800 text-cyan-200 hover:bg-slate-700'),
+                      : 'transition-colors bg-slate-800 text-cyan-200 hover:bg-slate-700 active:scale-[0.97]'),
                     'aria-label': r + ' filter'
                   }, r === 'all' ? '🌎 All' : r);
                 })
@@ -12172,7 +12172,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'flex items-start gap-3' },
                 h('div', { className: 'text-5xl' }, '🎓'),
                 h('div', { className: 'flex-1' },
-                  h('div', { className: 'text-xl font-bold text-amber-200' }, 'Field ID Quiz'),
+                  h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, 'Field ID Quiz'),
                   h('div', { className: 'text-sm text-amber-100/80 mt-1' }, 'Active retrieval practice across silhouettes, behavior, talon mechanics, vision, flight physics, and conservation. Each question has a detailed explanation — wrong answers are the best teachers.'),
                   h('div', { className: 'text-xs text-amber-300/70 mt-2 italic' }, '18 questions · 3 difficulty bands · explanations included')
                 )
@@ -12194,7 +12194,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     onClick: function() { setQuiz({ difficulty: d.id }); },
                     className: 'p-3 rounded-lg border transition-all text-left ' + (active
                       ? 'bg-amber-700/50 border-amber-400 ring-2 ring-amber-400/40'
-                      : 'bg-slate-800/50 border-slate-700/50 hover:border-amber-600/40'),
+                      : 'transition-colors bg-slate-800/50 border-slate-700/50 hover:border-amber-600/40'),
                     'aria-label': d.label + ' · ' + d.count + ' questions'
                   },
                     h('div', { className: 'text-sm font-bold text-amber-200' }, d.label + ' (' + d.count + ')'),
@@ -12222,7 +12222,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     var color = d === 'easy' ? 'emerald' : d === 'medium' ? 'amber' : 'red';
                     return h('div', { key: d, className: 'bg-slate-800/40 rounded p-2.5 text-center border border-' + color + '-700/40' },
                       h('div', { className: 'text-[10px] uppercase tracking-wider text-' + color + '-300 font-bold' }, d),
-                      h('div', { className: 'text-xl font-bold text-amber-300 my-1' }, pct + '%'),
+                      h('div', { className: 'text-xl font-bold text-amber-300 my-1 tracking-tight' }, pct + '%'),
                       h('div', { className: 'text-[10px] text-slate-400' }, s.correct + ' / ' + s.total + ' correct')
                     );
                   })
@@ -12264,8 +12264,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           return h('div', { className: 'space-y-4' },
             h('div', { className: 'bg-gradient-to-br from-' + verdict.color + '-900/50 to-' + verdict.color + '-800/30 border border-' + verdict.color + '-700/50 rounded-xl p-6 text-center' },
               h('div', { className: 'text-6xl mb-3' }, verdict.emoji),
-              h('div', { className: 'text-2xl font-bold text-' + verdict.color + '-200 mb-1' }, quizState.score + ' / ' + total + ' correct'),
-              h('div', { className: 'text-3xl font-bold text-' + verdict.color + '-300 mb-2' }, pct + '%'),
+              h('div', { className: 'text-2xl font-bold text- tracking-tight' + verdict.color + '-200 mb-1' }, quizState.score + ' / ' + total + ' correct'),
+              h('div', { className: 'text-3xl font-bold text- tracking-tight' + verdict.color + '-300 mb-2' }, pct + '%'),
               h('div', { className: 'text-base text-' + verdict.color + '-100/90 italic' }, verdict.txt)
             ),
             h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
@@ -12275,7 +12275,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   var newRuns = quizState.completedRuns + 1;
                   setQuiz({ started: false, missedReviewMode: false, ix: 0, score: 0, selected: -1, answered: false, bestScore: newBest, completedRuns: newRuns });
                 },
-                className: 'px-4 py-3 rounded-lg text-sm font-bold bg-slate-700 text-amber-300 hover:bg-slate-600 transition-all',
+                className: 'px-4 py-3 rounded-lg text-sm font-bold bg-slate-700 text-amber-300 hover:bg-slate-600 transition-all active:scale-[0.97]',
                 'aria-label': 'Back to quiz menu'
               }, '↶ Quiz Menu'),
               // ── NEW v0.11: Review missed questions button ──
@@ -12433,7 +12433,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-indigo-900/40 to-violet-900/40 border border-indigo-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-indigo-200 mb-2' }, '🦻 Owl Hearing Lab: Find the Mouse'),
+            h('div', { className: 'text-lg font-bold text-indigo-200 mb-2 tracking-tight' }, '🦻 Owl Hearing Lab: Find the Mouse'),
             h('div', { className: 'text-sm text-indigo-100/90 leading-relaxed' },
               'In 1962, Roger Payne placed a barn owl in a totally dark room with a mouse on a leaf-litter floor. The owl could hear the leaves rustle but see nothing. He recorded ~17 silent strikes — every one a kill, accurate to ~1° elevation + azimuth. This works because barn owls have ',
               h('span', { className: 'font-bold text-violet-300' }, 'asymmetric ear openings'),
@@ -12626,7 +12626,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 setHL({ attempts: 0, hits: 0, totalErr: 0, bestErr: null, lastErr: null, started: false });
                 rhAnnounce('Stats reset');
               },
-              className: 'px-4 py-2 rounded-lg text-sm font-bold bg-slate-700 text-amber-300 hover:bg-slate-600 transition-all',
+              className: 'px-4 py-2 rounded-lg text-sm font-bold bg-slate-700 text-amber-300 hover:bg-slate-600 transition-all active:scale-[0.97]',
               'aria-label': 'Reset stats'
             }, '↺ Reset Stats')
           ),
@@ -12634,15 +12634,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // Stats panel
           h('div', { className: 'grid grid-cols-3 gap-2 text-center' },
             h('div', { className: 'bg-emerald-900/30 border border-emerald-700/40 rounded p-3' },
-              h('div', { className: 'text-2xl font-bold text-emerald-300' }, hl.attempts > 0 ? Math.round(hl.hits / hl.attempts * 100) + '%' : '—'),
+              h('div', { className: 'text-2xl font-bold text-emerald-300 tracking-tight' }, hl.attempts > 0 ? Math.round(hl.hits / hl.attempts * 100) + '%' : '—'),
               h('div', { className: 'text-[10px] text-emerald-200 uppercase tracking-wider' }, 'Strike Rate')
             ),
             h('div', { className: 'bg-indigo-900/30 border border-indigo-700/40 rounded p-3' },
-              h('div', { className: 'text-2xl font-bold text-indigo-300' }, hl.attempts),
+              h('div', { className: 'text-2xl font-bold text-indigo-300 tracking-tight' }, hl.attempts),
               h('div', { className: 'text-[10px] text-indigo-200 uppercase tracking-wider' }, 'Attempts')
             ),
             h('div', { className: 'bg-amber-900/30 border border-amber-700/40 rounded p-3' },
-              h('div', { className: 'text-2xl font-bold text-amber-300' }, hl.bestErr !== null ? (hl.bestErr * 100).toFixed(0) + '%' : '—'),
+              h('div', { className: 'text-2xl font-bold text-amber-300 tracking-tight' }, hl.bestErr !== null ? (hl.bestErr * 100).toFixed(0) + '%' : '—'),
               h('div', { className: 'text-[10px] text-amber-200 uppercase tracking-wider' }, 'Best Error')
             )
           ),
@@ -12667,7 +12667,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       function renderPellet() {
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-amber-900/40 to-yellow-900/40 border border-amber-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-amber-200 mb-2' }, '🥚 Pellet Lab: The Owl\'s Trash, the Scientist\'s Treasure'),
+            h('div', { className: 'text-lg font-bold text-amber-200 mb-2 tracking-tight' }, '🥚 Pellet Lab: The Owl\'s Trash, the Scientist\'s Treasure'),
             h('div', { className: 'text-sm text-amber-100/90 leading-relaxed' }, PELLET_DATA.overview)
           ),
 
@@ -12818,7 +12818,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                         return h('button', {
                           key: oi,
                           onClick: function() { identifyBone(activeBone, guessId); setPD({ activeBone: null }); },
-                          className: 'px-3 py-2 rounded-lg text-xs font-bold bg-slate-800 text-amber-200 hover:bg-amber-900/40 hover:text-amber-100 transition-all border border-slate-700',
+                          className: 'px-3 py-2 rounded-lg text-xs font-bold bg-slate-800 text-amber-200 hover:bg-amber-900/40 hover:text-amber-100 transition-all border border-slate-700 active:scale-[0.97]',
                           'aria-label': 'Identify as ' + opt
                         }, opt);
                       })
@@ -12837,15 +12837,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   h('div', { className: 'text-sm font-bold text-emerald-300' }, '📊 Pellet Analysis Results'),
                   h('div', { className: 'grid grid-cols-3 gap-2 text-center' },
                     h('div', { className: 'bg-slate-800/40 rounded p-2' },
-                      h('div', { className: 'text-xl font-bold text-amber-300' }, totalBones),
+                      h('div', { className: 'text-xl font-bold text-amber-300 tracking-tight' }, totalBones),
                       h('div', { className: 'text-[10px] text-slate-400 uppercase' }, 'Prey items')
                     ),
                     h('div', { className: 'bg-slate-800/40 rounded p-2' },
-                      h('div', { className: 'text-xl font-bold text-amber-300' }, uniqueSpecies),
+                      h('div', { className: 'text-xl font-bold text-amber-300 tracking-tight' }, uniqueSpecies),
                       h('div', { className: 'text-[10px] text-slate-400 uppercase' }, 'Species')
                     ),
                     h('div', { className: 'bg-slate-800/40 rounded p-2' },
-                      h('div', { className: 'text-xl font-bold text-amber-300' }, biomass + 'g'),
+                      h('div', { className: 'text-xl font-bold text-amber-300 tracking-tight' }, biomass + 'g'),
                       h('div', { className: 'text-[10px] text-slate-400 uppercase' }, 'Biomass')
                     )
                   ),
@@ -12862,12 +12862,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('div', { className: 'flex gap-2 justify-center pt-2' },
                   h('button', {
                     onClick: startDx,
-                    className: 'transition-colors px-4 py-2 rounded-lg text-xs font-bold bg-slate-700 text-amber-300 hover:bg-slate-600',
+                    className: 'transition-colors px-4 py-2 rounded-lg text-xs font-bold bg-slate-700 text-amber-300 hover:bg-slate-600 active:scale-[0.97]',
                     'aria-label': 'Generate another pellet'
                   }, '🔁 New Pellet'),
                   h('button', {
                     onClick: function() { setPD({ started: false, bones: null, identified: {}, complete: false, activeBone: null }); },
-                    className: 'transition-colors px-4 py-2 rounded-lg text-xs font-bold bg-slate-700 text-slate-300 hover:bg-slate-600',
+                    className: 'transition-colors px-4 py-2 rounded-lg text-xs font-bold bg-slate-700 text-slate-300 hover:bg-slate-600 active:scale-[0.97]',
                     'aria-label': 'Close dissection'
                   }, '✕ Close')
                 )
@@ -12910,7 +12910,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       function renderFalconry() {
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-orange-900/40 to-red-900/40 border border-orange-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-orange-200 mb-2' }, '🤝 Falconry & Humans: 4,000 Years of Hunting Together'),
+            h('div', { className: 'text-lg font-bold text-orange-200 mb-2 tracking-tight' }, '🤝 Falconry & Humans: 4,000 Years of Hunting Together'),
             h('div', { className: 'text-sm text-orange-100/90 leading-relaxed' }, FALCONRY_DATA.overview)
           ),
 
@@ -13123,7 +13123,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'bg-gradient-to-br from-amber-900/40 to-yellow-900/40 border border-amber-700/40 rounded-xl p-4' },
             h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-lg font-bold text-amber-200 mb-2' }, '🦴 Raptor Anatomy'),
+                h('div', { className: 'text-lg font-bold text-amber-200 mb-2 tracking-tight' }, '🦴 Raptor Anatomy'),
                 h('div', { className: 'text-sm text-amber-100/90 leading-relaxed' }, ANATOMY.intro)
               ),
               // ── NEW v0.12: Mode toggle ──
@@ -13135,7 +13135,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     onClick: function() { setAnatomyMode(m); },
                     className: 'px-3 py-1 rounded text-xs font-bold transition-all ' + (active
                       ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white'
-                      : 'text-amber-200 hover:text-amber-100'),
+                      : 'transition-colors text-amber-200 hover:text-amber-100'),
                     'aria-label': m === 'explore' ? 'Explore mode' : 'Quiz mode',
                     'aria-pressed': active
                   }, m === 'explore' ? '👁 Explore' : '🎯 Quiz');
@@ -13157,7 +13157,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 return h('button', {
                   key: optId,
                   onClick: function() { submitGuess(optId); },
-                  className: 'px-3 py-2 rounded-lg text-xs font-bold bg-slate-800/50 text-amber-200 hover:bg-amber-900/40 hover:text-amber-100 border border-slate-700 transition-all',
+                  className: 'px-3 py-2 rounded-lg text-xs font-bold bg-slate-800/50 text-amber-200 hover:bg-amber-900/40 hover:text-amber-100 border border-slate-700 transition-all active:scale-[0.97]',
                   'aria-label': 'Guess ' + optPart.label
                 }, optPart.label);
               })
@@ -13447,7 +13447,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     onClick: function() { setCompareKey(c.id); },
                     className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (active
                       ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white'
-                      : 'bg-slate-800 text-amber-200 hover:bg-slate-700 border border-slate-700'),
+                      : 'transition-colors bg-slate-800 text-amber-200 hover:bg-slate-700 border border-slate-700 active:scale-[0.97]'),
                     'aria-label': c.label + ': ' + c.desc,
                     'aria-pressed': active
                   }, c.label);
@@ -13506,7 +13506,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-emerald-900/40 to-teal-900/40 border border-emerald-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-emerald-200 mb-2' }, '🐣 Lifecycle & Demographics'),
+            h('div', { className: 'text-lg font-bold text-emerald-200 mb-2 tracking-tight' }, '🐣 Lifecycle & Demographics'),
             h('div', { className: 'text-sm text-emerald-100/90 leading-relaxed' }, LIFECYCLE.overview)
           ),
 
@@ -13746,15 +13746,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             // Results
             h('div', { className: 'grid grid-cols-3 gap-2 text-center' },
               h('div', { className: 'bg-' + trendColor + '-900/30 border border-' + trendColor + '-700/40 rounded p-3' },
-                h('div', { className: 'text-2xl font-bold text-' + trendColor + '-300' }, lambda.toFixed(3)),
+                h('div', { className: 'text-2xl font-bold text- tracking-tight' + trendColor + '-300' }, lambda.toFixed(3)),
                 h('div', { className: 'text-[10px] text-' + trendColor + '-200 uppercase tracking-wider' }, 'λ (lambda)')
               ),
               h('div', { className: 'bg-' + trendColor + '-900/30 border border-' + trendColor + '-700/40 rounded p-3' },
-                h('div', { className: 'text-2xl font-bold text-' + trendColor + '-300' }, trend),
+                h('div', { className: 'text-2xl font-bold text- tracking-tight' + trendColor + '-300' }, trend),
                 h('div', { className: 'text-[10px] text-' + trendColor + '-200 uppercase tracking-wider' }, 'Trajectory')
               ),
               h('div', { className: 'bg-slate-800/60 border border-slate-700/40 rounded p-3' },
-                h('div', { className: 'text-2xl font-bold text-amber-300' }, Math.round(finalPop)),
+                h('div', { className: 'text-2xl font-bold text-amber-300 tracking-tight' }, Math.round(finalPop)),
                 h('div', { className: 'text-[10px] text-slate-300 uppercase tracking-wider' }, 'Pop @ year ' + pop.years)
               )
             )
@@ -13781,7 +13781,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-orange-900/40 to-red-900/40 border border-orange-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-orange-200 mb-2' }, '🌀 Stoop Trajectory Visualizer'),
+            h('div', { className: 'text-lg font-bold text-orange-200 mb-2 tracking-tight' }, '🌀 Stoop Trajectory Visualizer'),
             h('div', { className: 'text-sm text-orange-100/90 leading-relaxed' },
               'Tucker (1998) modeled the falcon\'s stoop trajectory and showed that peregrines fly a ',
               h('span', { className: 'font-bold text-amber-300' }, 'logarithmic spiral'),
@@ -13835,7 +13835,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               }, '▶ Replay'),
               h('button', {
                 onClick: function() { setSV({ paused: !sv.paused }); },
-                className: 'transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-700 text-amber-300 hover:bg-slate-600',
+                className: 'transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-700 text-amber-300 hover:bg-slate-600 active:scale-[0.97]',
                 'aria-label': sv.paused ? 'Resume' : 'Pause'
               }, sv.paused ? '⏵ Resume' : '⏸ Pause')
             )
@@ -14158,7 +14158,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-violet-900/40 to-indigo-900/40 border border-violet-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-violet-200 mb-2' }, '👁️‍🗨️ Vision Acuity Demo'),
+            h('div', { className: 'text-lg font-bold text-violet-200 mb-2 tracking-tight' }, '👁️‍🗨️ Vision Acuity Demo'),
             h('div', { className: 'text-sm text-violet-100/90 leading-relaxed' },
               'Acuity multipliers are abstract until you ',
               h('span', { className: 'font-bold text-amber-300' }, 'see'),
@@ -14197,7 +14197,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   onClick: function() { setAV({ zoom: p.zoom }); rhAnnounce('Zoom set to ' + p.label + ': ' + p.zoom + 'x'); },
                   className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (active
                     ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-md ring-2 ring-amber-400/50'
-                    : 'bg-slate-800/50 text-amber-200 hover:bg-slate-700/50 hover:text-amber-100'),
+                    : 'transition-colors bg-slate-800/50 text-amber-200 hover:bg-slate-700/50 hover:text-amber-100 active:scale-[0.97]'),
                   'aria-label': p.label + ' acuity ' + p.zoom + 'x',
                   'aria-pressed': active
                 }, p.label + ' (' + p.zoom + '×)');
@@ -14444,7 +14444,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-emerald-900/40 to-cyan-900/40 border border-emerald-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-emerald-200 mb-2' }, '🏆 Recovery Case Studies'),
+            h('div', { className: 'text-lg font-bold text-emerald-200 mb-2 tracking-tight' }, '🏆 Recovery Case Studies'),
             h('div', { className: 'text-sm text-emerald-100/90 leading-relaxed' },
               RECOVERIES.intro,
               h('span', { className: 'font-bold text-amber-300' }, RECOVERIES.introBold)
@@ -14458,7 +14458,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 // Header
                 h('div', { className: 'flex items-baseline gap-3 mb-3' },
                   h('div', { className: 'text-3xl' }, c.emoji),
-                  h('div', { className: 'text-lg font-bold text-amber-200' }, c.title)
+                  h('div', { className: 'text-lg font-bold text-amber-200 tracking-tight' }, c.title)
                 ),
                 // ── NEW v0.8: Population trajectory plot ──
                 trajectories[c.id] && h('div', { className: 'bg-slate-950/60 border border-amber-700/30 rounded-lg p-2 mb-3' },
@@ -14571,7 +14571,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-cyan-900/40 to-sky-900/40 border border-cyan-700/40 rounded-xl p-4' },
             h('div', { className: 'flex items-start justify-between gap-3 flex-wrap mb-2' },
-              h('div', { className: 'text-lg font-bold text-cyan-200' }, '🪂 Wing-Loading Predictor'),
+              h('div', { className: 'text-lg font-bold text-cyan-200 tracking-tight' }, '🪂 Wing-Loading Predictor'),
               // ── NEW v0.16: Mode toggle ──
               h('div', { className: 'flex gap-1 bg-slate-900/60 rounded-lg p-1' },
                 [{ id: 'design', label: '🎚 Design' }, { id: 'franken', label: '🧬 Frankenraptor' }].map(function(m) {
@@ -14581,7 +14581,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     onClick: function() { setPredictorMode(m.id); },
                     className: 'px-3 py-1 rounded text-xs font-bold transition-all ' + (active
                       ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white'
-                      : 'text-cyan-200 hover:text-cyan-100'),
+                      : 'transition-colors text-cyan-200 hover:text-cyan-100'),
                     'aria-label': m.id === 'design' ? 'Design from sliders' : 'Frankenraptor: blend 2 species',
                     'aria-pressed': active
                   }, m.label);
@@ -14676,12 +14676,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
             h('div', { className: 'bg-slate-900/40 border border-slate-700/50 rounded-lg p-3 text-center' },
               h('div', { className: 'text-[10px] uppercase tracking-wider text-slate-400' }, 'Wing Loading'),
-              h('div', { className: 'text-2xl font-bold text-amber-300 my-1' }, wingLoading.toFixed(1)),
+              h('div', { className: 'text-2xl font-bold text-amber-300 my-1 tracking-tight' }, wingLoading.toFixed(1)),
               h('div', { className: 'text-[10px] text-slate-400' }, 'kg / m²')
             ),
             h('div', { className: 'bg-slate-900/40 border border-slate-700/50 rounded-lg p-3 text-center' },
               h('div', { className: 'text-[10px] uppercase tracking-wider text-slate-400' }, 'Aspect Ratio'),
-              h('div', { className: 'text-2xl font-bold text-amber-300 my-1' }, aspectRatio.toFixed(1)),
+              h('div', { className: 'text-2xl font-bold text-amber-300 my-1 tracking-tight' }, aspectRatio.toFixed(1)),
               h('div', { className: 'text-[10px] text-slate-400' }, 'wingspan² / area')
             )
           ),
@@ -14692,7 +14692,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'text-3xl' }, styleEmoji),
               h('div', null,
                 h('div', { className: 'text-[10px] uppercase tracking-wider text-' + styleColor + '-300' }, 'Predicted hunt style'),
-                h('div', { className: 'text-lg font-bold text-' + styleColor + '-200' }, huntStyle)
+                h('div', { className: 'text-lg font-bold text- tracking-tight' + styleColor + '-200' }, huntStyle)
               )
             ),
             h('div', { className: 'text-sm text-' + styleColor + '-100/90 leading-relaxed' }, styleDesc)
@@ -14727,7 +14727,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               ].map(function(p) {
                 return h('button', { key: p.label,
                   onClick: function() { setPR({ mass: p.mass, wingspan: p.wingspan, wingArea: p.wingArea }); rhAnnounce('Loaded ' + p.label + ' dimensions'); },
-                  className: 'transition-colors px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-amber-200 hover:bg-slate-700 hover:text-amber-100',
+                  className: 'transition-colors px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-amber-200 hover:bg-slate-700 hover:text-amber-100 active:scale-[0.97]',
                   'aria-label': 'Load ' + p.label + ' dimensions'
                 }, p.label);
               })
@@ -14777,7 +14777,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var pw = 700, ph = 240;
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-purple-900/40 to-fuchsia-900/40 border border-purple-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-purple-200 mb-2' }, '⭐ Famous Birds & Cultural Symbols'),
+            h('div', { className: 'text-lg font-bold text-purple-200 mb-2 tracking-tight' }, '⭐ Famous Birds & Cultural Symbols'),
             h('div', { className: 'text-sm text-purple-100/90 leading-relaxed' }, FAMOUS.intro)
           ),
 
@@ -14884,7 +14884,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🏥'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-emerald-200' }, 'Wildlife Rehabilitation & Veterinary Care'),
+                h('div', { className: 'text-xl font-bold text-emerald-200 tracking-tight' }, 'Wildlife Rehabilitation & Veterinary Care'),
                 h('div', { className: 'text-sm text-emerald-100/85 mt-1' }, REHAB_ENCYCLOPEDIA.overview)
               )
             )
@@ -14898,7 +14898,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 onClick: function() { setRehabTab(t.id); },
                 className: 'px-3 py-1.5 rounded text-xs font-bold transition-all ' + (active
                   ? 'bg-emerald-600 text-white'
-                  : 'text-emerald-200 hover:text-emerald-100'),
+                  : 'transition-colors text-emerald-200 hover:text-emerald-100'),
                 role: 'tab',
                 'aria-selected': active
               }, t.label);
@@ -15028,7 +15028,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '📜'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-amber-200' }, 'History of Raptor Science'),
+                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, 'History of Raptor Science'),
                 h('div', { className: 'text-sm text-amber-100/85 mt-1' }, '5,000 years of human relationship with raptors — from Horus to eBird. ' + HISTORY_TIMELINE.length + ' key events.')
               )
             )
@@ -15077,7 +15077,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '📡'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-cyan-200' }, 'Tracking Technology'),
+                h('div', { className: 'text-xl font-bold text-cyan-200 tracking-tight' }, 'Tracking Technology'),
                 h('div', { className: 'text-sm text-cyan-100/85 mt-1' }, TRACKING_TECH.intro)
               )
             )
@@ -15091,14 +15091,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 onClick: function() { setMethod(i); },
                 className: 'px-3 py-1.5 rounded text-xs font-bold ' + (selected
                   ? 'bg-cyan-600 text-white'
-                  : 'transition-colors bg-slate-800/60 text-cyan-200 hover:bg-slate-700/60'),
+                  : 'transition-colors bg-slate-800/60 text-cyan-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': selected
               }, m.name.replace(/\s*\(.*\)/, ''));
             })
           ),
           // Active method detail
           h('div', { className: 'bg-slate-800/40 border border-cyan-700/40 rounded-xl p-4 space-y-3' },
-            h('div', { className: 'text-lg font-bold text-cyan-300' }, active.name),
+            h('div', { className: 'text-lg font-bold text-cyan-300 tracking-tight' }, active.name),
             h('div', { className: 'grid md:grid-cols-4 gap-2 text-xs' },
               h('div', { className: 'bg-slate-900/60 rounded p-2' },
                 h('div', { className: 'text-slate-400 mb-1' }, 'Cost'),
@@ -15152,7 +15152,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🌐'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-purple-200' }, 'Raptor Folklore by Culture'),
+                h('div', { className: 'text-xl font-bold text-purple-200 tracking-tight' }, 'Raptor Folklore by Culture'),
                 h('div', { className: 'text-sm text-purple-100/85 mt-1' }, FOLKLORE_BY_CULTURE.intro)
               )
             )
@@ -15166,14 +15166,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 onClick: function() { setCulture(i); },
                 className: 'px-3 py-1.5 rounded text-xs font-bold ' + (selected
                   ? 'bg-purple-600 text-white'
-                  : 'transition-colors bg-slate-800/60 text-purple-200 hover:bg-slate-700/60'),
+                  : 'transition-colors bg-slate-800/60 text-purple-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': selected
               }, c.culture.replace(/\s*\(.*\)/, '').slice(0, 24));
             })
           ),
           // Active culture detail
           h('div', { className: 'bg-slate-800/40 border border-purple-700/40 rounded-xl p-4 space-y-3' },
-            h('div', { className: 'text-lg font-bold text-purple-300' }, active.culture),
+            h('div', { className: 'text-lg font-bold text-purple-300 tracking-tight' }, active.culture),
             h('div', { className: 'bg-purple-900/30 border border-purple-700/40 rounded p-3' },
               h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, '⭐ Symbol'),
               h('div', { className: 'text-sm text-amber-100 italic' }, active.symbol)
@@ -15210,7 +15210,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '📷'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-slate-200' }, 'Raptor Photography Masterclass'),
+                h('div', { className: 'text-xl font-bold text-slate-200 tracking-tight' }, 'Raptor Photography Masterclass'),
                 h('div', { className: 'text-sm text-slate-300 mt-1' }, PHOTOGRAPHY_GUIDE.intro)
               )
             )
@@ -15261,7 +15261,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 return h('button', {
                   key: i,
                   onClick: function() { setPhotoSpecies(i); },
-                  className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-cyan-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-slate-300 hover:bg-slate-700/60'),
+                  className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-cyan-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-slate-300 hover:bg-slate-700/60 active:scale-[0.97]'),
                   'aria-pressed': sel
                 }, s.species);
               })
@@ -15304,7 +15304,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '📹'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-blue-200' }, 'Nest Cam Directory'),
+                h('div', { className: 'text-xl font-bold text-blue-200 tracking-tight' }, 'Nest Cam Directory'),
                 h('div', { className: 'text-sm text-blue-100/85 mt-1' }, NEST_CAMS.intro)
               )
             )
@@ -15318,7 +15318,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 onClick: function() { setCamFilter(s); },
                 className: 'px-3 py-1 rounded text-xs ' + (active
                   ? 'bg-blue-600 text-white font-bold'
-                  : 'transition-colors bg-slate-800/60 text-blue-200 hover:bg-slate-700/60'),
+                  : 'transition-colors bg-slate-800/60 text-blue-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': active
               }, s === 'all' ? 'All Cams' : s);
             })
@@ -15361,7 +15361,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🔊'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-pink-200' }, 'Raptor Calls & Vocalizations'),
+                h('div', { className: 'text-xl font-bold text-pink-200 tracking-tight' }, 'Raptor Calls & Vocalizations'),
                 h('div', { className: 'text-sm text-pink-100/85 mt-1' }, RAPTOR_CALLS.intro)
               )
             )
@@ -15385,7 +15385,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setCallSpecies(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-pink-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-pink-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-pink-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-pink-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': sel
               }, s.species);
             })
@@ -15436,7 +15436,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🎯'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-red-200' }, 'Hunting Strategies'),
+                h('div', { className: 'text-xl font-bold text-red-200 tracking-tight' }, 'Hunting Strategies'),
                 h('div', { className: 'text-sm text-red-100/85 mt-1' }, HUNTING_STRATEGIES.intro)
               )
             )
@@ -15448,7 +15448,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setHuntIdx(i); },
-                className: 'px-3 py-1.5 rounded text-xs ' + (sel ? 'bg-red-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-red-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1.5 rounded text-xs ' + (sel ? 'bg-red-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-red-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': sel
               }, s.name);
             })
@@ -15456,7 +15456,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // Active strategy detail
           h('div', { className: 'bg-slate-800/40 border border-red-700/40 rounded-xl p-4 space-y-3' },
             h('div', null,
-              h('div', { className: 'text-lg font-bold text-red-300' }, active.name),
+              h('div', { className: 'text-lg font-bold text-red-300 tracking-tight' }, active.name),
               h('div', { className: 'text-xs italic text-amber-200/80' }, 'Practiced by: ' + active.usedBy)
             ),
             h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
@@ -15516,7 +15516,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🌗'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-indigo-200' }, 'Behavior Repertoire'),
+                h('div', { className: 'text-xl font-bold text-indigo-200 tracking-tight' }, 'Behavior Repertoire'),
                 h('div', { className: 'text-sm text-indigo-100/85 mt-1' }, BEHAVIOR_REPERTOIRE.intro)
               )
             )
@@ -15531,7 +15531,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 onClick: function() { setBehCat(c.id); },
                 className: 'px-3 py-1 rounded text-xs ' + (active
                   ? 'bg-indigo-600 text-white font-bold'
-                  : 'transition-colors bg-slate-800/60 text-indigo-200 hover:bg-slate-700/60'),
+                  : 'transition-colors bg-slate-800/60 text-indigo-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': active
               }, c.label + ' (' + count + ')');
             })
@@ -15574,7 +15574,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🏙'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-zinc-200' }, 'Urban Raptors'),
+                h('div', { className: 'text-xl font-bold text-zinc-200 tracking-tight' }, 'Urban Raptors'),
                 h('div', { className: 'text-sm text-zinc-300 mt-1' }, URBAN_RAPTORS.intro)
               )
             )
@@ -15600,13 +15600,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 return h('button', {
                   key: i,
                   onClick: function() { setUrbanSp(i); },
-                  className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-zinc-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-zinc-200 hover:bg-slate-700/60'),
+                  className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-zinc-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-zinc-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                   'aria-pressed': sel
                 }, s.name);
               })
             ),
             h('div', { className: 'bg-slate-800/40 border border-zinc-600/40 rounded-xl p-4 space-y-2' },
-              h('div', { className: 'text-lg font-bold text-zinc-200' }, sp.name),
+              h('div', { className: 'text-lg font-bold text-zinc-200 tracking-tight' }, sp.name),
               h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-2 text-xs' },
                 h('div', { className: 'font-bold text-emerald-300 mb-1' }, '📈 Status'),
                 h('div', { className: 'text-emerald-100/90' }, sp.urbanStatus)
@@ -15674,7 +15674,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🌡'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-orange-200' }, 'Climate Change Impact on Raptors'),
+                h('div', { className: 'text-xl font-bold text-orange-200 tracking-tight' }, 'Climate Change Impact on Raptors'),
                 h('div', { className: 'text-sm text-orange-100/85 mt-1' }, CLIMATE_IMPACT.intro)
               )
             )
@@ -15757,7 +15757,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '❤️'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-rose-200' }, 'Physiology Deep Dive'),
+                h('div', { className: 'text-xl font-bold text-rose-200 tracking-tight' }, 'Physiology Deep Dive'),
                 h('div', { className: 'text-sm text-rose-100/85 mt-1' }, PHYSIOLOGY.intro)
               )
             )
@@ -15769,14 +15769,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setSys(i); },
-                className: 'px-3 py-1.5 rounded text-xs ' + (sel ? 'bg-rose-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-rose-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1.5 rounded text-xs ' + (sel ? 'bg-rose-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-rose-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': sel
               }, s.icon + ' ' + s.name);
             })
           ),
           // Active system
           h('div', { className: 'bg-slate-800/40 border border-rose-700/40 rounded-xl p-4 space-y-3' },
-            h('div', { className: 'text-lg font-bold text-rose-300' }, sys.icon + ' ' + sys.name + ' System'),
+            h('div', { className: 'text-lg font-bold text-rose-300 tracking-tight' }, sys.icon + ' ' + sys.name + ' System'),
             h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
               h('div', { className: 'text-xs font-bold text-cyan-300 mb-2' }, '📋 Key Facts'),
               h('ul', { className: 'space-y-1 list-disc list-inside text-sm text-slate-100' },
@@ -15824,7 +15824,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🕸'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-green-200' }, 'Ecology & Food Webs'),
+                h('div', { className: 'text-xl font-bold text-green-200 tracking-tight' }, 'Ecology & Food Webs'),
                 h('div', { className: 'text-sm text-green-100/85 mt-1' }, ECOLOGY.intro)
               )
             )
@@ -15858,13 +15858,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 return h('button', {
                   key: i,
                   onClick: function() { setHab(i); },
-                  className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-green-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-green-200 hover:bg-slate-700/60'),
+                  className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-green-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-green-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                   'aria-pressed': sel
                 }, f.habitat);
               })
             ),
             h('div', { className: 'bg-slate-800/40 border border-green-700/40 rounded-xl p-4 space-y-2' },
-              h('div', { className: 'text-lg font-bold text-green-300' }, hab.habitat),
+              h('div', { className: 'text-lg font-bold text-green-300 tracking-tight' }, hab.habitat),
               h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
                 h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, '🦅 Primary Raptors'),
                 h('div', { className: 'text-sm text-amber-100/90' }, hab.primaryRaptors.join(' · '))
@@ -15916,7 +15916,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🧬'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-violet-200' }, 'Evolution & Taxonomy'),
+                h('div', { className: 'text-xl font-bold text-violet-200 tracking-tight' }, 'Evolution & Taxonomy'),
                 h('div', { className: 'text-sm text-violet-100/85 mt-1' }, EVOLUTION_TAX.intro)
               )
             )
@@ -16007,7 +16007,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '📓'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-emerald-200' }, 'Field Naturalist'),
+                h('div', { className: 'text-xl font-bold text-emerald-200 tracking-tight' }, 'Field Naturalist'),
                 h('div', { className: 'text-sm text-emerald-100/85 mt-1' }, FIELD_NATURALIST.intro)
               )
             )
@@ -16085,7 +16085,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🔬'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-amber-200' }, 'Pellet ID Key'),
+                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, 'Pellet ID Key'),
                 h('div', { className: 'text-sm text-amber-100/85 mt-1' }, PELLET_ID_KEY.intro)
               )
             )
@@ -16174,7 +16174,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🔭'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-cyan-200' }, 'Birding Gear Guide'),
+                h('div', { className: 'text-xl font-bold text-cyan-200 tracking-tight' }, 'Birding Gear Guide'),
                 h('div', { className: 'text-sm text-cyan-100/85 mt-1' }, GEAR_GUIDE.intro)
               )
             )
@@ -16186,14 +16186,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setGearCat(i); },
-                className: 'px-3 py-1.5 rounded text-xs ' + (sel ? 'bg-cyan-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-cyan-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1.5 rounded text-xs ' + (sel ? 'bg-cyan-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-cyan-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': sel
               }, c.category);
             })
           ),
           // Active category
           h('div', { className: 'bg-slate-800/40 border border-cyan-700/40 rounded-xl p-4 space-y-3' },
-            h('div', { className: 'text-lg font-bold text-cyan-300' }, cat.category),
+            h('div', { className: 'text-lg font-bold text-cyan-300 tracking-tight' }, cat.category),
             h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
               h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '💡 Why it matters'),
               h('div', { className: 'text-sm text-slate-100 leading-relaxed' }, cat.whyItMatters)
@@ -16232,7 +16232,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '💼'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-yellow-200' }, 'Careers in Raptor Biology'),
+                h('div', { className: 'text-xl font-bold text-yellow-200 tracking-tight' }, 'Careers in Raptor Biology'),
                 h('div', { className: 'text-sm text-yellow-100/85 mt-1' }, CAREERS.intro)
               )
             )
@@ -16244,14 +16244,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setCareerIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-yellow-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-yellow-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-yellow-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-yellow-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': sel
               }, career.title);
             })
           ),
           // Active career
           h('div', { className: 'bg-slate-800/40 border border-yellow-700/40 rounded-xl p-4 space-y-2' },
-            h('div', { className: 'text-lg font-bold text-yellow-300' }, c.title),
+            h('div', { className: 'text-lg font-bold text-yellow-300 tracking-tight' }, c.title),
             h('div', { className: 'grid md:grid-cols-2 gap-2' },
               h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
                 h('div', { className: 'font-bold text-cyan-300 mb-1' }, '🎓 Education'),
@@ -16312,7 +16312,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '📚'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-orange-200' }, 'Falconry Curriculum'),
+                h('div', { className: 'text-xl font-bold text-orange-200 tracking-tight' }, 'Falconry Curriculum'),
                 h('div', { className: 'text-sm text-orange-100/85 mt-1' }, FALCONRY_CURRICULUM.intro)
               )
             )
@@ -16338,13 +16338,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 return h('button', {
                   key: i,
                   onClick: function() { setLevel(i); },
-                  className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-orange-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-orange-200 hover:bg-slate-700/60'),
+                  className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-orange-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-orange-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                   'aria-pressed': sel
                 }, l.level);
               })
             ),
             h('div', { className: 'bg-slate-800/40 border border-orange-700/40 rounded-xl p-4 space-y-2' },
-              h('div', { className: 'text-lg font-bold text-orange-300' }, lvl.level),
+              h('div', { className: 'text-lg font-bold text-orange-300 tracking-tight' }, lvl.level),
               h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
                 h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, '📋 Requirements'),
                 h('ul', { className: 'space-y-1 list-disc list-inside text-xs text-cyan-100/90' },
@@ -16446,7 +16446,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🦴'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-stone-200' }, 'Anatomy Atlas'),
+                h('div', { className: 'text-xl font-bold text-stone-200 tracking-tight' }, 'Anatomy Atlas'),
                 h('div', { className: 'text-sm text-stone-300 mt-1' }, ANATOMY_ATLAS.intro)
               )
             )
@@ -16458,14 +16458,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setView(i); },
-                className: 'px-3 py-1.5 rounded text-xs ' + (sel ? 'bg-stone-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-stone-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1.5 rounded text-xs ' + (sel ? 'bg-stone-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-stone-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': sel
               }, view.icon + ' ' + view.name);
             })
           ),
           // Active view
           h('div', { className: 'bg-slate-800/40 border border-stone-600/40 rounded-xl p-4 space-y-3' },
-            h('div', { className: 'text-lg font-bold text-stone-200' }, v.icon + ' ' + v.name),
+            h('div', { className: 'text-lg font-bold text-stone-200 tracking-tight' }, v.icon + ' ' + v.name),
             h('div', { className: 'text-sm text-slate-100 italic leading-relaxed' }, v.description),
             h('div', { className: 'space-y-2' },
               h('div', { className: 'text-sm font-bold text-amber-300' }, 'Key Structures'),
@@ -16498,7 +16498,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🐭'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-amber-200' }, 'Prey Atlas'),
+                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, 'Prey Atlas'),
                 h('div', { className: 'text-sm text-amber-100/85 mt-1' }, PREY_ATLAS.intro + ' (' + PREY_ATLAS.prey.length + ' prey entries)')
               )
             )
@@ -16515,7 +16515,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             }),
             preySearch && h('button', {
               onClick: function() { setPreySearch(''); },
-              className: 'transition-colors px-3 py-2 bg-slate-700 text-slate-200 rounded text-xs hover:bg-slate-600',
+              className: 'transition-colors px-3 py-2 bg-slate-700 text-slate-200 rounded text-xs hover:bg-slate-600 active:scale-[0.97]',
               'aria-label': 'Clear search'
             }, 'Clear'),
             h('div', { className: 'text-xs text-amber-200 font-mono' }, filtered.length + ' shown')
@@ -16553,7 +16553,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🦖'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-stone-200' }, 'Fossil Record'),
+                h('div', { className: 'text-xl font-bold text-stone-200 tracking-tight' }, 'Fossil Record'),
                 h('div', { className: 'text-sm text-stone-300 mt-1' }, FOSSIL_RECORD.intro)
               )
             )
@@ -16617,7 +16617,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '📊'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-teal-200' }, 'Population & Demographics'),
+                h('div', { className: 'text-xl font-bold text-teal-200 tracking-tight' }, 'Population & Demographics'),
                 h('div', { className: 'text-sm text-teal-100/85 mt-1' }, DEMOGRAPHICS.intro)
               )
             )
@@ -16707,7 +16707,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🏞'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-green-200' }, 'Habitat Atlas'),
+                h('div', { className: 'text-xl font-bold text-green-200 tracking-tight' }, 'Habitat Atlas'),
                 h('div', { className: 'text-sm text-green-100/85 mt-1' }, HABITAT_ATLAS.intro)
               )
             )
@@ -16719,14 +16719,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setHabIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-green-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-green-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-green-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-green-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': sel
               }, b.name);
             })
           ),
           // Active habitat
           h('div', { className: 'bg-slate-800/40 border border-green-700/40 rounded-xl p-4 space-y-2' },
-            h('div', { className: 'text-lg font-bold text-green-300' }, hab.name),
+            h('div', { className: 'text-lg font-bold text-green-300 tracking-tight' }, hab.name),
             h('div', { className: 'text-xs italic text-amber-200/80' }, '📍 ' + hab.states),
             h('div', { className: 'text-xs italic text-cyan-200/80 mb-2' }, '🌡 ' + hab.climate),
             h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
@@ -16769,7 +16769,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🎒'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-blue-200' }, 'Lesson Plan Library'),
+                h('div', { className: 'text-xl font-bold text-blue-200 tracking-tight' }, 'Lesson Plan Library'),
                 h('div', { className: 'text-sm text-blue-100/85 mt-1' }, LESSON_PLANS.intro)
               )
             )
@@ -16781,7 +16781,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setLessonIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-blue-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-blue-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-blue-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-blue-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': sel
               }, p.title);
             })
@@ -16789,7 +16789,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // Active lesson
           h('div', { className: 'bg-slate-800/40 border border-blue-700/40 rounded-xl p-4 space-y-3' },
             h('div', null,
-              h('div', { className: 'text-lg font-bold text-blue-300' }, lp.title),
+              h('div', { className: 'text-lg font-bold text-blue-300 tracking-tight' }, lp.title),
               h('div', { className: 'text-xs italic text-amber-200/80' }, lp.grade + ' · ' + lp.subject + ' · ' + lp.duration)
             ),
             h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-3' },
@@ -16858,7 +16858,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🕵'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-purple-200' }, 'ID Mystery Cases'),
+                h('div', { className: 'text-xl font-bold text-purple-200 tracking-tight' }, 'ID Mystery Cases'),
                 h('div', { className: 'text-sm text-purple-100/85 mt-1' }, MYSTERY_CASES.intro)
               )
             )
@@ -16871,7 +16871,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setCaseIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-purple-600 text-white font-bold' : (solved ? 'bg-emerald-900/60 text-emerald-200' : 'transition-colors bg-slate-800/60 text-purple-200 hover:bg-slate-700/60')),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-purple-600 text-white font-bold' : (solved ? 'bg-emerald-900/60 text-emerald-200' : 'transition-colors bg-slate-800/60 text-purple-200 hover:bg-slate-700/60 active:scale-[0.97]')),
                 'aria-pressed': sel
               }, '#' + cs.number + (solved ? ' ✓' : ''));
             })
@@ -16879,7 +16879,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // Active case
           h('div', { className: 'bg-slate-800/40 border border-purple-700/40 rounded-xl p-4 space-y-3' },
             h('div', { className: 'flex items-baseline justify-between' },
-              h('div', { className: 'text-lg font-bold text-purple-300' }, 'Case #' + c.number),
+              h('div', { className: 'text-lg font-bold text-purple-300 tracking-tight' }, 'Case #' + c.number),
               h('div', { className: 'text-xs font-mono px-2 py-1 rounded ' + (c.difficulty === 'Easy' ? 'bg-emerald-900/40 text-emerald-300' : c.difficulty === 'Medium' ? 'bg-amber-900/40 text-amber-300' : c.difficulty === 'Hard' ? 'bg-rose-900/40 text-rose-300' : 'bg-purple-900/40 text-purple-300') }, c.difficulty)
             ),
             h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
@@ -16936,7 +16936,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🗺'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-amber-200' }, 'Regional Field Guides'),
+                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, 'Regional Field Guides'),
                 h('div', { className: 'text-sm text-amber-100/85 mt-1' }, REGIONAL_GUIDES.intro)
               )
             )
@@ -16948,14 +16948,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setRegionIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-amber-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-amber-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-amber-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-amber-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': sel
               }, reg.name.split(' (')[0]);
             })
           ),
           // Active region
           h('div', { className: 'bg-slate-800/40 border border-amber-700/40 rounded-xl p-4 space-y-3' },
-            h('div', { className: 'text-lg font-bold text-amber-300' }, r.name),
+            h('div', { className: 'text-lg font-bold text-amber-300 tracking-tight' }, r.name),
             h('div', { className: 'text-sm italic text-cyan-200/90' }, r.characteristic),
             h('div', { className: 'grid md:grid-cols-2 gap-2' },
               h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-2 text-xs' },
@@ -17003,7 +17003,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🌍'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-blue-200' }, 'World Tour'),
+                h('div', { className: 'text-xl font-bold text-blue-200 tracking-tight' }, 'World Tour'),
                 h('div', { className: 'text-sm text-blue-100/85 mt-1' }, WORLD_TOUR.intro)
               )
             )
@@ -17014,7 +17014,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setWtIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-blue-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-blue-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-blue-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-blue-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': sel
               }, dest.flag + ' ' + dest.name.split(',')[0]);
             })
@@ -17022,7 +17022,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'bg-slate-800/40 border border-blue-700/40 rounded-xl p-4 space-y-2' },
             h('div', { className: 'flex items-baseline gap-2' },
               h('div', { className: 'text-2xl' }, d.flag),
-              h('div', { className: 'text-lg font-bold text-blue-300' }, d.name)
+              h('div', { className: 'text-lg font-bold text-blue-300 tracking-tight' }, d.name)
             ),
             h('div', { className: 'text-xs italic text-amber-200/80' }, '📅 ' + d.season),
             h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-2 text-xs' },
@@ -17060,7 +17060,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🏅'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-yellow-200' }, 'Raptor Records & Superlatives'),
+                h('div', { className: 'text-xl font-bold text-yellow-200 tracking-tight' }, 'Raptor Records & Superlatives'),
                 h('div', { className: 'text-sm text-yellow-100/85 mt-1' }, RAPTOR_RECORDS.intro)
               )
             )
@@ -17091,7 +17091,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '⚠️'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-rose-200' }, 'Threats Database'),
+                h('div', { className: 'text-xl font-bold text-rose-200 tracking-tight' }, 'Threats Database'),
                 h('div', { className: 'text-sm text-rose-100/85 mt-1' }, THREATS_DB.intro)
               )
             )
@@ -17102,13 +17102,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setThreatIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-rose-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-rose-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-rose-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-rose-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': sel
               }, th.threat.split(' ')[0] + ' ' + (th.threat.split(' ')[1] || ''));
             })
           ),
           h('div', { className: 'bg-slate-800/40 border border-rose-700/40 rounded-xl p-4 space-y-2' },
-            h('div', { className: 'text-lg font-bold text-rose-300' }, '⚠ ' + t.threat),
+            h('div', { className: 'text-lg font-bold text-rose-300 tracking-tight' }, '⚠ ' + t.threat),
             h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-2 text-xs' },
               h('div', { className: 'font-bold text-amber-300 mb-1' }, '🎯 Affects'),
               h('div', { className: 'text-amber-100/90' }, t.affects)
@@ -17145,7 +17145,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🧑‍🔬'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-violet-200' }, 'Expert Spotlights'),
+                h('div', { className: 'text-xl font-bold text-violet-200 tracking-tight' }, 'Expert Spotlights'),
                 h('div', { className: 'text-sm text-violet-100/85 mt-1' }, EXPERT_SPOTLIGHTS.intro)
               )
             )
@@ -17156,14 +17156,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setExpertIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-violet-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-violet-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-violet-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-violet-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': sel
               }, ex.name.split(' ').pop());
             })
           ),
           h('div', { className: 'bg-slate-800/40 border border-violet-700/40 rounded-xl p-4 space-y-2' },
             h('div', { className: 'flex items-baseline justify-between gap-2' },
-              h('div', { className: 'text-lg font-bold text-violet-300' }, e.name),
+              h('div', { className: 'text-lg font-bold text-violet-300 tracking-tight' }, e.name),
               h('div', { className: 'text-xs text-amber-200 font-mono' }, e.country + ' · ' + e.years)
             ),
             h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
@@ -17197,7 +17197,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🌲'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-green-200' }, 'Field Scenarios'),
+                h('div', { className: 'text-xl font-bold text-green-200 tracking-tight' }, 'Field Scenarios'),
                 h('div', { className: 'text-sm text-green-100/85 mt-1' }, FIELD_SCENARIOS.intro)
               )
             )
@@ -17208,13 +17208,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setScIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-green-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-green-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-green-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-green-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': sel
               }, '#' + (i + 1));
             })
           ),
           h('div', { className: 'bg-slate-800/40 border border-green-700/40 rounded-xl p-4 space-y-3' },
-            h('div', { className: 'text-lg font-bold text-green-300' }, s.title),
+            h('div', { className: 'text-lg font-bold text-green-300 tracking-tight' }, s.title),
             h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
               h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, '📜 Setting'),
               h('div', { className: 'text-sm text-slate-100 leading-relaxed' }, s.setting)
@@ -17229,7 +17229,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 return h('button', {
                   key: i,
                   onClick: function() { pickChoice(letter); },
-                  className: 'transition-colors w-full text-left px-3 py-2 bg-slate-900/40 hover:bg-slate-800/60 border border-slate-700/40 rounded-lg text-sm text-slate-100',
+                  className: 'transition-colors w-full text-left px-3 py-2 bg-slate-900/40 hover:bg-slate-800/60 border border-slate-700/40 rounded-lg text-sm text-slate-100 active:scale-[0.97]',
                   'aria-label': 'Choose ' + opt
                 }, opt);
               })
@@ -17269,7 +17269,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🐦'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-amber-200' }, 'Species Profile Library'),
+                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, 'Species Profile Library'),
                 h('div', { className: 'text-sm text-amber-100/85 mt-1' }, SPECIES_PROFILES.intro)
               )
             )
@@ -17280,13 +17280,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setSpIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-amber-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-amber-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-amber-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-amber-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': sel
               }, s.name.split(' (')[0]);
             })
           ),
           h('div', { className: 'bg-slate-800/40 border border-amber-700/40 rounded-xl p-4 space-y-2' },
-            h('div', { className: 'text-lg font-bold text-amber-300' }, sp.name),
+            h('div', { className: 'text-lg font-bold text-amber-300 tracking-tight' }, sp.name),
             h('div', { className: 'grid md:grid-cols-2 gap-2' },
               h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
                 h('div', { className: 'font-bold text-cyan-300 mb-1' }, '📏 Wingspan'),
@@ -17341,7 +17341,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '⚖'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-pink-200' }, 'Comparative Anatomy'),
+                h('div', { className: 'text-xl font-bold text-pink-200 tracking-tight' }, 'Comparative Anatomy'),
                 h('div', { className: 'text-sm text-pink-100/85 mt-1' }, COMPARATIVE_ANATOMY.intro)
               )
             )
@@ -17352,13 +17352,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setPairIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-pink-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-pink-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-pink-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-pink-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': sel
               }, pair.a.split(' ')[0] + ' vs ' + pair.b.split(' ')[0]);
             })
           ),
           h('div', { className: 'bg-slate-800/40 border border-pink-700/40 rounded-xl p-4 space-y-2' },
-            h('div', { className: 'text-center text-lg font-bold' },
+            h('div', { className: 'text-center text-lg font-bold tracking-tight' },
               h('span', { className: 'text-amber-300' }, p.a),
               h('span', { className: 'text-slate-400 mx-2' }, 'vs'),
               h('span', { className: 'text-cyan-300' }, p.b)
@@ -17398,7 +17398,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '💥'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-orange-200' }, 'Raptor Mythbusters'),
+                h('div', { className: 'text-xl font-bold text-orange-200 tracking-tight' }, 'Raptor Mythbusters'),
                 h('div', { className: 'text-sm text-orange-100/85 mt-1' }, MYTHBUSTERS.intro)
               )
             )
@@ -17430,7 +17430,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🔬'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-indigo-200' }, 'Active Research Stations'),
+                h('div', { className: 'text-xl font-bold text-indigo-200 tracking-tight' }, 'Active Research Stations'),
                 h('div', { className: 'text-sm text-indigo-100/85 mt-1' }, RESEARCH_STATIONS.intro)
               )
             )
@@ -17460,7 +17460,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🏛'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-emerald-200' }, 'Conservation Organizations'),
+                h('div', { className: 'text-xl font-bold text-emerald-200 tracking-tight' }, 'Conservation Organizations'),
                 h('div', { className: 'text-sm text-emerald-100/85 mt-1' }, CONSERVATION_ORGS.intro)
               )
             )
@@ -17491,7 +17491,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🏛'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-amber-200' }, 'Raptor Museums'),
+                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, 'Raptor Museums'),
                 h('div', { className: 'text-sm text-amber-100/85 mt-1' }, RAPTOR_MUSEUMS.intro)
               )
             )
@@ -17524,7 +17524,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '📕'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-purple-200' }, 'Recommended Reading'),
+                h('div', { className: 'text-xl font-bold text-purple-200 tracking-tight' }, 'Recommended Reading'),
                 h('div', { className: 'text-sm text-purple-100/85 mt-1' }, BOOK_LIBRARY.intro)
               )
             )
@@ -17535,7 +17535,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setBookCat(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-purple-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-purple-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-purple-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-purple-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': sel
               }, c.category);
             })
@@ -17565,7 +17565,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🎥'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-red-200' }, 'Documentaries & Films'),
+                h('div', { className: 'text-xl font-bold text-red-200 tracking-tight' }, 'Documentaries & Films'),
                 h('div', { className: 'text-sm text-red-100/85 mt-1' }, DOCUMENTARIES.intro)
               )
             )
@@ -17598,7 +17598,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🪺'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-amber-200' }, 'Nest-Build Cookbook'),
+                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, 'Nest-Build Cookbook'),
                 h('div', { className: 'text-sm text-amber-100/85 mt-1' }, NEST_COOKBOOK.intro)
               )
             )
@@ -17609,13 +17609,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setCookIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-amber-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-amber-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-amber-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-amber-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': sel
               }, nest.species);
             })
           ),
           h('div', { className: 'bg-slate-800/40 border border-amber-700/40 rounded-xl p-4 space-y-2' },
-            h('div', { className: 'text-lg font-bold text-amber-300' }, '🪺 ' + n.species),
+            h('div', { className: 'text-lg font-bold text-amber-300 tracking-tight' }, '🪺 ' + n.species),
             h('div', { className: 'grid md:grid-cols-2 gap-2' },
               h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
                 h('div', { className: 'font-bold text-cyan-300 mb-1' }, '📍 Location'),
@@ -17665,7 +17665,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🧮'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-blue-200' }, 'Raptor Math Lab'),
+                h('div', { className: 'text-xl font-bold text-blue-200 tracking-tight' }, 'Raptor Math Lab'),
                 h('div', { className: 'text-sm text-blue-100/85 mt-1' }, MATH_LAB.intro)
               )
             )
@@ -17676,7 +17676,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setMathIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-blue-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-blue-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-blue-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-blue-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': sel
               }, '#' + (i + 1));
             })
@@ -17728,7 +17728,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '📢'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-emerald-200' }, 'Public Engagement'),
+                h('div', { className: 'text-xl font-bold text-emerald-200 tracking-tight' }, 'Public Engagement'),
                 h('div', { className: 'text-sm text-emerald-100/85 mt-1' }, PUBLIC_ENGAGEMENT.intro)
               )
             )
@@ -17760,7 +17760,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🅱'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-indigo-200' }, 'Deep Glossary B'),
+                h('div', { className: 'text-xl font-bold text-indigo-200 tracking-tight' }, 'Deep Glossary B'),
                 h('div', { className: 'text-sm text-indigo-100/85 mt-1' }, DEEP_GLOSSARY_B.intro)
               )
             )
@@ -17794,7 +17794,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-orange-900/40 via-amber-900/40 to-yellow-900/40 border border-amber-700/40 rounded-xl p-6 text-center' },
             h('div', { className: 'text-7xl mb-4' }, '🌅'),
-            h('div', { className: 'text-2xl font-bold text-amber-100' }, 'You Are Now A Raptor Scholar'),
+            h('div', { className: 'text-2xl font-bold text-amber-100 tracking-tight' }, 'You Are Now A Raptor Scholar'),
             h('div', { className: 'text-sm text-amber-200/80 mt-2 italic' }, '60+ sections · 20+ species · 100s of facts · centuries of knowledge')
           ),
           h('div', { className: 'bg-slate-800/40 border border-amber-700/40 rounded-xl p-5 space-y-3' },
@@ -17865,7 +17865,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🚑'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-red-200' }, 'Rescue Decision Tree'),
+                h('div', { className: 'text-xl font-bold text-red-200 tracking-tight' }, 'Rescue Decision Tree'),
                 h('div', { className: 'text-sm text-red-100/85 mt-1' }, RESCUE_TREE.intro)
               )
             )
@@ -17876,7 +17876,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setRescueIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-red-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-red-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-red-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-red-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': sel
               }, '#' + (i + 1));
             })
@@ -17911,7 +17911,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🎨'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-fuchsia-200' }, 'Age & Plumage Guide'),
+                h('div', { className: 'text-xl font-bold text-fuchsia-200 tracking-tight' }, 'Age & Plumage Guide'),
                 h('div', { className: 'text-sm text-fuchsia-100/85 mt-1' }, AGE_PLUMAGE.intro)
               )
             )
@@ -17922,14 +17922,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setApIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-fuchsia-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-fuchsia-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-fuchsia-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-fuchsia-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': sel
               }, sp.species);
             })
           ),
           h('div', { className: 'bg-slate-800/40 border border-fuchsia-700/40 rounded-xl p-4 space-y-2' },
             h('div', { className: 'flex items-baseline justify-between' },
-              h('div', { className: 'text-lg font-bold text-fuchsia-300' }, '🦅 ' + s.species),
+              h('div', { className: 'text-lg font-bold text-fuchsia-300 tracking-tight' }, '🦅 ' + s.species),
               h('div', { className: 'text-xs text-amber-300 font-mono' }, 'Mature at ' + s.maturity)
             ),
             h('div', { className: 'grid md:grid-cols-3 gap-2' },
@@ -17963,7 +17963,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🪶'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-stone-200' }, 'Molt Atlas'),
+                h('div', { className: 'text-xl font-bold text-stone-200 tracking-tight' }, 'Molt Atlas'),
                 h('div', { className: 'text-sm text-stone-300 mt-1' }, MOLT_ATLAS.intro)
               )
             )
@@ -18002,7 +18002,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '📐'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-blue-200' }, 'Wing Formula Calculator'),
+                h('div', { className: 'text-xl font-bold text-blue-200 tracking-tight' }, 'Wing Formula Calculator'),
                 h('div', { className: 'text-sm text-blue-100/85 mt-1' }, WING_FORMULA.intro)
               )
             )
@@ -18052,7 +18052,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '📋'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-slate-200' }, 'Data Reference Tables'),
+                h('div', { className: 'text-xl font-bold text-slate-200 tracking-tight' }, 'Data Reference Tables'),
                 h('div', { className: 'text-sm text-slate-300 mt-1' }, DATA_TABLES.intro)
               )
             )
@@ -18063,7 +18063,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setTableIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-slate-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-slate-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-slate-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-slate-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': sel
               }, '📊 ' + table.title.split(' ')[0]);
             })
@@ -18106,7 +18106,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🏷'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-gray-200' }, 'Banding Codes'),
+                h('div', { className: 'text-xl font-bold text-gray-200 tracking-tight' }, 'Banding Codes'),
                 h('div', { className: 'text-sm text-gray-300 mt-1' }, BANDING_CODES.intro)
               )
             )
@@ -18125,7 +18125,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'grid md:grid-cols-3 gap-2' },
             filtered.map(function(c, i) {
               return h('div', { key: i, className: 'bg-slate-800/40 border border-gray-600/30 rounded-lg p-3' },
-                h('div', { className: 'text-lg font-bold text-amber-300 font-mono' }, c.code),
+                h('div', { className: 'text-lg font-bold text-amber-300 font-mono tracking-tight' }, c.code),
                 h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, c.species),
                 h('div', { className: 'text-[10px] italic text-cyan-200/80 mt-1' }, c.usage)
               );
@@ -18146,7 +18146,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🎵'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-pink-200' }, 'Sonogram & Audio Guide'),
+                h('div', { className: 'text-xl font-bold text-pink-200 tracking-tight' }, 'Sonogram & Audio Guide'),
                 h('div', { className: 'text-sm text-pink-100/85 mt-1' }, AUDIO_GUIDE.intro)
               )
             )
@@ -18157,13 +18157,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setAgIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-pink-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-pink-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-pink-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-pink-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': sel
               }, sp.species);
             })
           ),
           h('div', { className: 'bg-slate-800/40 border border-pink-700/40 rounded-xl p-4 space-y-2' },
-            h('div', { className: 'text-lg font-bold text-pink-300' }, '🔊 ' + a.species),
+            h('div', { className: 'text-lg font-bold text-pink-300 tracking-tight' }, '🔊 ' + a.species),
             h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
               h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, '🎤 Call'),
               h('div', { className: 'text-sm text-cyan-100 italic font-mono' }, a.call)
@@ -18203,7 +18203,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '📍'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-teal-200' }, 'Local Hot Spots Guide'),
+                h('div', { className: 'text-xl font-bold text-teal-200 tracking-tight' }, 'Local Hot Spots Guide'),
                 h('div', { className: 'text-sm text-teal-100/85 mt-1' }, LOCAL_HOTSPOTS.intro)
               )
             )
@@ -18235,7 +18235,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '❓'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-violet-200' }, 'Frequently Asked Questions'),
+                h('div', { className: 'text-xl font-bold text-violet-200 tracking-tight' }, 'Frequently Asked Questions'),
                 h('div', { className: 'text-sm text-violet-100/85 mt-1' }, FAQ.intro)
               )
             )
@@ -18246,7 +18246,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('div', { key: i, className: 'bg-slate-800/40 border border-violet-700/30 rounded-lg overflow-hidden' },
                 h('button', {
                   onClick: function() { toggleQA(i); },
-                  className: 'transition-colors w-full text-left p-3 hover:bg-slate-700/40 flex items-start gap-2',
+                  className: 'transition-colors w-full text-left p-3 hover:bg-slate-700/40 flex items-start gap-2 active:scale-[0.97]',
                   'aria-expanded': open,
                   'aria-label': qa.q
                 },
@@ -18271,7 +18271,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🌳'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-green-200' }, 'Backyard Feeder Hawks'),
+                h('div', { className: 'text-xl font-bold text-green-200 tracking-tight' }, 'Backyard Feeder Hawks'),
                 h('div', { className: 'text-sm text-green-100/85 mt-1' }, FEEDER_HAWKS.intro)
               )
             )
@@ -18325,7 +18325,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🖼'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-amber-200' }, 'Illustration Gallery'),
+                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, 'Illustration Gallery'),
                 h('div', { className: 'text-sm text-amber-100/85 mt-1' }, ILLUSTRATIONS.intro)
               )
             )
@@ -18336,13 +18336,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setIllIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-amber-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-amber-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-amber-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-amber-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': sel
               }, '🖼 #' + (i + 1));
             })
           ),
           h('div', { className: 'bg-slate-800/40 border border-amber-700/40 rounded-xl p-4 space-y-3' },
-            h('div', { className: 'text-lg font-bold text-amber-300' }, '🖼 ' + ill.title),
+            h('div', { className: 'text-lg font-bold text-amber-300 tracking-tight' }, '🖼 ' + ill.title),
             h('div', { className: 'text-xs italic text-cyan-300' }, ill.subject),
             h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-4' },
               h('div', { className: 'aspect-square bg-gradient-to-br from-slate-700 to-slate-900 rounded flex items-center justify-center' },
@@ -18373,7 +18373,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '📜'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-purple-200' }, 'Songs, Poems, Slogans'),
+                h('div', { className: 'text-xl font-bold text-purple-200 tracking-tight' }, 'Songs, Poems, Slogans'),
                 h('div', { className: 'text-sm text-purple-100/85 mt-1' }, SONG_SCRIPTS.intro)
               )
             )
@@ -18406,7 +18406,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🧘'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-indigo-200' }, 'Field Meditations'),
+                h('div', { className: 'text-xl font-bold text-indigo-200 tracking-tight' }, 'Field Meditations'),
                 h('div', { className: 'text-sm text-indigo-100/85 mt-1' }, FIELD_MEDITATIONS.intro)
               )
             )
@@ -18417,14 +18417,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setMedIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-indigo-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-indigo-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-indigo-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-indigo-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': sel
               }, '#' + med.number);
             })
           ),
           h('div', { className: 'bg-slate-800/40 border border-indigo-700/40 rounded-xl p-6 text-center' },
             h('div', { className: 'text-base text-indigo-300 font-bold mb-2' }, 'Meditation #' + m.number),
-            h('div', { className: 'text-2xl font-bold text-amber-200 mb-4' }, m.title),
+            h('div', { className: 'text-2xl font-bold text-amber-200 mb-4 tracking-tight' }, m.title),
             h('div', { className: 'text-sm text-slate-100 leading-relaxed italic max-w-2xl mx-auto' }, m.text)
           )
         );
@@ -18442,7 +18442,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🌾'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-lime-200' }, 'Habitat Restoration Cookbook'),
+                h('div', { className: 'text-xl font-bold text-lime-200 tracking-tight' }, 'Habitat Restoration Cookbook'),
                 h('div', { className: 'text-sm text-lime-100/85 mt-1' }, HABITAT_COOKBOOK.intro)
               )
             )
@@ -18453,13 +18453,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setProjIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-lime-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-lime-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-lime-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-lime-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': sel
               }, pr.name);
             })
           ),
           h('div', { className: 'bg-slate-800/40 border border-lime-700/40 rounded-xl p-4 space-y-2' },
-            h('div', { className: 'text-lg font-bold text-lime-300' }, '🌱 ' + p.name),
+            h('div', { className: 'text-lg font-bold text-lime-300 tracking-tight' }, '🌱 ' + p.name),
             h('div', { className: 'grid md:grid-cols-3 gap-2' },
               h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
                 h('div', { className: 'font-bold text-cyan-300 mb-1' }, '📐 Size'),
@@ -18510,7 +18510,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🎨'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-rose-200' }, 'Kids Activities'),
+                h('div', { className: 'text-xl font-bold text-rose-200 tracking-tight' }, 'Kids Activities'),
                 h('div', { className: 'text-sm text-rose-100/85 mt-1' }, KIDS_ACTIVITIES.intro)
               )
             )
@@ -18521,7 +18521,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: a.id,
                 onClick: function() { setAgeFilter(a.id); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-rose-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-rose-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-rose-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-rose-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': sel
               }, a.label);
             })
@@ -18553,7 +18553,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '📚'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-cyan-200' }, 'Reading Levels'),
+                h('div', { className: 'text-xl font-bold text-cyan-200 tracking-tight' }, 'Reading Levels'),
                 h('div', { className: 'text-sm text-cyan-100/85 mt-1' }, READING_LEVELS.intro)
               )
             )
@@ -18564,13 +18564,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setRlIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-cyan-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-cyan-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-cyan-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-cyan-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': sel
               }, sm.topic);
             })
           ),
           h('div', { className: 'bg-slate-800/40 border border-cyan-700/40 rounded-xl p-4 space-y-3' },
-            h('div', { className: 'text-lg font-bold text-cyan-300' }, '📚 ' + s.topic),
+            h('div', { className: 'text-lg font-bold text-cyan-300 tracking-tight' }, '📚 ' + s.topic),
             h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-3' },
               h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '🌱 K-2 (Kindergarten through 2nd)'),
               h('div', { className: 'text-sm text-emerald-100/90 leading-relaxed' }, s.k2)
@@ -18604,7 +18604,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '❓'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-amber-200' }, 'Question Bank'),
+                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, 'Question Bank'),
                 h('div', { className: 'text-sm text-amber-100/85 mt-1' }, QUESTION_BANK.intro)
               )
             )
@@ -18615,7 +18615,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: c,
                 onClick: function() { setQbCat(c); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-amber-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-amber-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-amber-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-amber-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': sel
               }, c);
             })
@@ -18650,7 +18650,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🛡'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-rose-200' }, 'IUCN Red List Status Atlas'),
+                h('div', { className: 'text-xl font-bold text-rose-200 tracking-tight' }, 'IUCN Red List Status Atlas'),
                 h('div', { className: 'text-sm text-rose-100/85 mt-1' }, IUCN_ATLAS.intro)
               )
             )
@@ -18661,7 +18661,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: s,
                 onClick: function() { setIucnFilter(s); },
-                className: 'px-3 py-1 rounded text-xs font-mono ' + (sel ? 'bg-rose-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-rose-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs font-mono ' + (sel ? 'bg-rose-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-rose-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': sel
               }, s === 'all' ? 'All' : s + ' (' + statusLabels[s] + ')');
             })
@@ -18695,7 +18695,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '✈'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-sky-200' }, 'Flight Dynamics'),
+                h('div', { className: 'text-xl font-bold text-sky-200 tracking-tight' }, 'Flight Dynamics'),
                 h('div', { className: 'text-sm text-sky-100/85 mt-1' }, FLIGHT_DYNAMICS.intro)
               )
             )
@@ -18706,13 +18706,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setModeIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-sky-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-sky-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-sky-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-sky-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': sel
               }, mo.name);
             })
           ),
           h('div', { className: 'bg-slate-800/40 border border-sky-700/40 rounded-xl p-4 space-y-3' },
-            h('div', { className: 'text-lg font-bold text-sky-300' }, '✈ ' + m.name),
+            h('div', { className: 'text-lg font-bold text-sky-300 tracking-tight' }, '✈ ' + m.name),
             h('div', { className: 'text-sm italic text-cyan-200 leading-relaxed' }, m.description),
             h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
               h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, '⚛ Physics'),
@@ -18739,7 +18739,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '📱'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-indigo-200' }, 'Social Media for Raptor Science'),
+                h('div', { className: 'text-xl font-bold text-indigo-200 tracking-tight' }, 'Social Media for Raptor Science'),
                 h('div', { className: 'text-sm text-indigo-100/85 mt-1' }, SOCIAL_MEDIA.intro)
               )
             )
@@ -18772,14 +18772,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-amber-900/40 via-orange-900/40 to-yellow-900/40 border border-amber-700/40 rounded-xl p-5 text-center' },
             h('div', { className: 'text-6xl mb-2' }, '🏆'),
-            h('div', { className: 'text-2xl font-bold text-amber-200' }, 'Master Index'),
+            h('div', { className: 'text-2xl font-bold text-amber-200 tracking-tight' }, 'Master Index'),
             h('div', { className: 'text-sm text-amber-100/85 mt-1' }, MASTER_INDEX.intro)
           ),
           // Stats
           h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2' },
             MASTER_INDEX.stats.map(function(s, i) {
               return h('div', { key: i, className: 'bg-slate-800/40 border border-amber-700/30 rounded-lg p-3 text-center' },
-                h('div', { className: 'text-2xl font-bold text-amber-300' }, s.value),
+                h('div', { className: 'text-2xl font-bold text-amber-300 tracking-tight' }, s.value),
                 h('div', { className: 'text-xs text-slate-300' }, s.metric)
               );
             })
@@ -18816,7 +18816,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '💾'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-cyan-200' }, 'Open Datasets'),
+                h('div', { className: 'text-xl font-bold text-cyan-200 tracking-tight' }, 'Open Datasets'),
                 h('div', { className: 'text-sm text-cyan-100/85 mt-1' }, DATASETS.intro)
               )
             )
@@ -18848,7 +18848,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🏅'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-yellow-200' }, 'Achievements & Quests'),
+                h('div', { className: 'text-xl font-bold text-yellow-200 tracking-tight' }, 'Achievements & Quests'),
                 h('div', { className: 'text-sm text-yellow-100/85 mt-1' }, ACHIEVEMENTS.intro)
               )
             )
@@ -18900,7 +18900,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-violet-900/40 via-purple-900/40 to-indigo-900/40 border border-violet-700/40 rounded-xl p-6 text-center' },
             h('div', { className: 'text-7xl mb-4' }, '🌟'),
-            h('div', { className: 'text-3xl font-bold text-violet-200' }, 'You\'ve Reached the End'),
+            h('div', { className: 'text-3xl font-bold text-violet-200 tracking-tight' }, 'You\'ve Reached the End'),
             h('div', { className: 'text-base text-violet-100/85 mt-3 italic' }, '80+ sections · 19,500+ lines · 5,000+ years of human-raptor relationship · 60M+ years of raptor evolution')
           ),
           h('div', { className: 'bg-slate-800/40 border border-violet-700/40 rounded-xl p-5 space-y-3' },
@@ -18972,7 +18972,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🧑'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-amber-200' }, 'Hero Biographies'),
+                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, 'Hero Biographies'),
                 h('div', { className: 'text-sm text-amber-100/85 mt-1' }, HERO_BIOGRAPHIES.intro)
               )
             )
@@ -18983,13 +18983,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return h('button', {
                 key: i,
                 onClick: function() { setBioIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-amber-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-amber-200 hover:bg-slate-700/60'),
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-amber-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-amber-200 hover:bg-slate-700/60 active:scale-[0.97]'),
                 'aria-pressed': sel
               }, bio.name.split(' (')[0].split(' ').slice(0,2).join(' '));
             })
           ),
           h('div', { className: 'bg-slate-800/40 border border-amber-700/40 rounded-xl p-4 space-y-3' },
-            h('div', { className: 'text-lg font-bold text-amber-300' }, '🧑 ' + b.name),
+            h('div', { className: 'text-lg font-bold text-amber-300 tracking-tight' }, '🧑 ' + b.name),
             h('div', { className: 'text-xs italic text-cyan-300' }, b.country + ' · ' + b.role),
             h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
               h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, '📖 Story'),
@@ -19016,7 +19016,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🔗'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-blue-200' }, 'Curated Links'),
+                h('div', { className: 'text-xl font-bold text-blue-200 tracking-tight' }, 'Curated Links'),
                 h('div', { className: 'text-sm text-blue-100/85 mt-1' }, CURATED_LINKS.intro)
               )
             )
@@ -19047,7 +19047,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '💬'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-purple-200' }, 'Big Quotes'),
+                h('div', { className: 'text-xl font-bold text-purple-200 tracking-tight' }, 'Big Quotes'),
                 h('div', { className: 'text-sm text-purple-100/85 mt-1' }, BIG_QUOTES.intro)
               )
             )
@@ -19077,7 +19077,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🔤'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-teal-200' }, 'Final Vocabulary'),
+                h('div', { className: 'text-xl font-bold text-teal-200 tracking-tight' }, 'Final Vocabulary'),
                 h('div', { className: 'text-sm text-teal-100/85 mt-1' }, GLOSSARY_C.intro)
               )
             )
@@ -19111,7 +19111,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-yellow-900/60 via-orange-900/60 to-red-900/60 border border-amber-700/60 rounded-xl p-8 text-center' },
             h('div', { className: 'text-8xl mb-4' }, '🎆'),
-            h('div', { className: 'text-4xl font-bold text-amber-200 mb-2' }, '20,000 Lines'),
+            h('div', { className: 'text-4xl font-bold text-amber-200 mb-2 tracking-tight' }, '20,000 Lines'),
             h('div', { className: 'text-xl text-amber-100/90' }, 'The Largest Single Educational Raptor Tool Ever Built'),
             h('div', { className: 'text-sm text-amber-200/80 mt-3 italic' }, '90+ sections · 200+ data structures · 20+ species deep profiles · 60M+ years of raptor evolution distilled')
           ),
@@ -19133,7 +19133,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 { label: 'Cultures', value: '12' }
               ].map(function(s, i) {
                 return h('div', { key: i, className: 'bg-slate-900/40 border border-amber-700/30 rounded-lg p-3 text-center' },
-                  h('div', { className: 'text-2xl font-bold text-amber-300' }, s.value),
+                  h('div', { className: 'text-2xl font-bold text-amber-300 tracking-tight' }, s.value),
                   h('div', { className: 'text-xs text-slate-300' }, s.label)
                 );
               })
@@ -19245,7 +19245,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'bg-gradient-to-br from-slate-800/40 to-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
             h('div', { className: 'flex items-start justify-between gap-3 flex-wrap mb-2' },
               h('div', null,
-                h('div', { className: 'text-lg font-bold text-amber-200 mb-1' }, '📖 Raptor Glossary'),
+                h('div', { className: 'text-lg font-bold text-amber-200 mb-1 tracking-tight' }, '📖 Raptor Glossary'),
                 h('div', { className: 'text-sm text-slate-300 leading-relaxed' }, GLOSSARY.length + ' terms — A-Z reference covering anatomy, behavior, conservation, falconry, taxonomy, and physics.')
               ),
               // ── NEW v0.17: Mode toggle ──
@@ -19257,7 +19257,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     onClick: function() { setGlossMode(m.id); },
                     className: 'px-3 py-1 rounded text-xs font-bold transition-all ' + (active
                       ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white'
-                      : 'text-amber-200 hover:text-amber-100'),
+                      : 'transition-colors text-amber-200 hover:text-amber-100'),
                     'aria-label': m.id === 'list' ? 'List view' : 'Flashcards view',
                     'aria-pressed': active
                   }, m.label);
@@ -19296,7 +19296,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'relative', style: { minHeight: '240px', perspective: '1000px' } },
                 h('button', {
                   onClick: function() { setFC({ flipped: !fc.flipped }); },
-                  className: 'w-full text-left p-6 rounded-2xl shadow-xl cursor-pointer transition-all transform hover:scale-[1.01] ' + (fc.flipped
+                  className: 'w-full text-left p-6 rounded-2xl shadow-xl cursor-pointer transition-all transform hover:scale-[1.01]  hover:shadow-md hover:-translate-y-0.5' + (fc.flipped
                     ? 'bg-gradient-to-br from-emerald-900/60 to-teal-900/60 border-2 border-emerald-500'
                     : 'bg-gradient-to-br from-amber-900/60 to-orange-900/60 border-2 border-amber-500'),
                   style: { minHeight: '240px' },
@@ -19304,12 +19304,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 },
                   fc.flipped ? h('div', { className: 'space-y-3' },
                     h('div', { className: 'text-[10px] uppercase tracking-wider text-emerald-300 font-bold' }, 'Definition'),
-                    h('div', { className: 'text-xl font-bold text-emerald-200' }, card.term),
+                    h('div', { className: 'text-xl font-bold text-emerald-200 tracking-tight' }, card.term),
                     h('div', { className: 'text-sm text-emerald-100/90 leading-relaxed' }, card.def),
                     h('div', { className: 'text-[10px] text-emerald-300 italic mt-3' }, '↻ Click card to flip back')
                   ) : h('div', { className: 'space-y-3 text-center py-8' },
                     h('div', { className: 'text-[10px] uppercase tracking-wider text-amber-300 font-bold' }, 'Term'),
-                    h('div', { className: 'text-3xl font-bold text-amber-200' }, card.term),
+                    h('div', { className: 'text-3xl font-bold text-amber-200 tracking-tight' }, card.term),
                     h('div', { className: 'text-xs text-amber-300/70 italic' }, 'Try to define this term, then click to flip')
                   )
                 )
@@ -19325,7 +19325,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     setFC({ knownIds: newKnown, reviewedIds: newReviewed, deckIdx: fc.deckIdx + 1, flipped: false });
                     rhAnnounce("Marked: didn't know. Next card.");
                   },
-                  className: 'transition-colors px-3 py-2 rounded-lg text-xs font-bold bg-red-900/40 text-red-200 hover:bg-red-800/50 border border-red-700/40',
+                  className: 'transition-colors px-3 py-2 rounded-lg text-xs font-bold bg-red-900/40 text-red-200 hover:bg-red-800/50 border border-red-700/40 active:scale-[0.97]',
                   'aria-label': "Didn't know"
                 }, "✗ Didn't Know"),
                 h('button', {
@@ -19335,7 +19335,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     setFC({ reviewedIds: newReviewed, deckIdx: fc.deckIdx + 1, flipped: false });
                     rhAnnounce('Marked: still learning. Next card.');
                   },
-                  className: 'transition-colors px-3 py-2 rounded-lg text-xs font-bold bg-amber-900/40 text-amber-200 hover:bg-amber-800/50 border border-amber-700/40',
+                  className: 'transition-colors px-3 py-2 rounded-lg text-xs font-bold bg-amber-900/40 text-amber-200 hover:bg-amber-800/50 border border-amber-700/40 active:scale-[0.97]',
                   'aria-label': 'Still learning'
                 }, '? Still Learning'),
                 h('button', {
@@ -19348,14 +19348,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     rhAnnounce('Marked as known. Next card.');
                     if (ctx.awardXP) ctx.awardXP(1, 'Glossary flashcard: known');
                   },
-                  className: 'transition-colors px-3 py-2 rounded-lg text-xs font-bold bg-emerald-900/40 text-emerald-200 hover:bg-emerald-800/50 border border-emerald-700/40',
+                  className: 'transition-colors px-3 py-2 rounded-lg text-xs font-bold bg-emerald-900/40 text-emerald-200 hover:bg-emerald-800/50 border border-emerald-700/40 active:scale-[0.97]',
                   'aria-label': 'Mark as known'
                 }, '✓ Knew It')
               ),
               // Skip button (always)
               !fc.flipped && h('button', {
                 onClick: function() { setFC({ deckIdx: fc.deckIdx + 1, flipped: false }); rhAnnounce('Skipped to next card'); },
-                className: 'transition-colors w-full px-3 py-2 rounded-lg text-xs font-bold bg-slate-700 text-slate-200 hover:bg-slate-600',
+                className: 'transition-colors w-full px-3 py-2 rounded-lg text-xs font-bold bg-slate-700 text-slate-200 hover:bg-slate-600 active:scale-[0.97]',
                 'aria-label': 'Skip card'
               }, '➡ Skip — next card'),
               // Help
@@ -19387,7 +19387,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 onClick: function() { setCat(c.id); },
                 className: 'px-3 py-1 rounded-full text-xs font-bold transition-all ' + (active
                   ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-md'
-                  : 'bg-slate-800 text-amber-200 hover:bg-slate-700 border border-slate-700'),
+                  : 'transition-colors bg-slate-800 text-amber-200 hover:bg-slate-700 border border-slate-700 active:scale-[0.97]'),
                 'aria-label': c.label + ' filter (' + count + ' terms)',
                 'aria-pressed': active
               }, c.label + ' (' + count + ')');
@@ -19485,7 +19485,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
         return h('div', { className: 'space-y-3' },
           h('div', { className: 'bg-gradient-to-br from-slate-800/40 to-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-amber-200 mb-1' }, '📚 Resources + Citizen Science'),
+            h('div', { className: 'text-lg font-bold text-amber-200 mb-1 tracking-tight' }, '📚 Resources + Citizen Science'),
             h('div', { className: 'text-sm text-slate-300' }, 'Where to keep learning + how to contribute real data to raptor research.')
           ),
 
@@ -19515,7 +19515,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   onClick: function() { setRegion(r.id); },
                   className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (active
                     ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-md'
-                    : 'bg-slate-800 text-amber-200 hover:bg-slate-700 border border-slate-700'),
+                    : 'transition-colors bg-slate-800 text-amber-200 hover:bg-slate-700 border border-slate-700 active:scale-[0.97]'),
                   'aria-label': r.label + ': ' + r.desc,
                   'aria-pressed': active
                 }, r.label);
@@ -19530,7 +19530,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
               regionalForCurrent.map(function(r, i) {
                 return h('a', { key: i, href: r.url, target: '_blank', rel: 'noopener noreferrer',
-                  className: 'block bg-cyan-900/20 border border-cyan-700/40 hover:border-cyan-500/70 hover:bg-cyan-800/30 rounded-lg p-3 transition-all',
+                  className: 'block bg-cyan-900/20 border border-cyan-700/40 hover:border-cyan-500/70 hover:bg-cyan-800/30 rounded-lg p-3 transition-all active:scale-[0.97]',
                   'aria-label': r.name + ' — opens in new tab'
                 },
                   h('div', { className: 'text-sm font-bold text-cyan-300 mb-1' }, r.name + ' ↗'),
@@ -19546,7 +19546,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
               RESOURCES.map(function(r, i) {
                 return h('a', { key: i, href: r.url, target: '_blank', rel: 'noopener noreferrer',
-                  className: 'block bg-slate-800/40 border border-slate-700/50 hover:border-amber-600/60 hover:bg-slate-700/40 rounded-lg p-3 transition-all',
+                  className: 'block bg-slate-800/40 border border-slate-700/50 hover:border-amber-600/60 hover:bg-slate-700/40 rounded-lg p-3 transition-all active:scale-[0.97]',
                   'aria-label': r.name + ' — opens in new tab'
                 },
                   h('div', { className: 'text-sm font-bold text-amber-300 mb-1' }, r.name + ' ↗'),
@@ -20341,7 +20341,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('button', {
               onClick: function() { setCategory(null); goSection('hub'); },
               'aria-label': 'Go to Hub',
-              className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (atHub ? 'bg-amber-600 text-white' : 'transition-colors bg-slate-800 text-amber-200 hover:bg-slate-700')
+              className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (atHub ? 'bg-amber-600 text-white' : 'transition-colors bg-slate-800 text-amber-200 hover:bg-slate-700 active:scale-[0.97]')
             }, '🏠 Hub'),
             activeCategory && h('span', { className: 'text-xs text-slate-400' }, '/'),
             activeCategory && h('span', { className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800/60 text-amber-200' }, activeCategory.icon + ' ' + activeCategory.label),
@@ -20367,7 +20367,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     return h('button', {
                       key: s.id,
                       onClick: function() { goSection(s.id); setRH(function(cur) { return Object.assign({}, cur, { sectionSearch: '' }); }); },
-                      className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-slate-800 text-amber-200 hover:bg-amber-700/40'
+                      className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-slate-800 text-amber-200 hover:bg-amber-700/40 active:scale-[0.97]'
                     }, s.icon + ' ' + s.label);
                   })
             ));
@@ -20380,7 +20380,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 return h('button', {
                   key: c.id,
                   onClick: function() { setCategory(c.id); goSection(c.sections[0]); },
-                  className: 'transition-colors text-left p-3 rounded-xl bg-slate-800/40 hover:bg-slate-700/60 border border-' + c.color + 'transition-colors -700/40 hover:border-' + c.color + '-500 transition-all'
+                  className: 'transition-colors text-left p-3 rounded-xl bg-slate-800/40 hover:bg-slate-700/60 border border- active:scale-[0.97]' + c.color + 'transition-colors -700/40 hover:border-' + c.color + '-500 transition-all'
                 },
                   h('div', { className: 'text-2xl mb-1' }, c.icon),
                   h('div', { className: 'text-sm font-bold text-' + c.color + '-200 mb-1' }, c.label),
@@ -20405,7 +20405,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   className: 'px-2.5 py-1.5 rounded text-[11px] font-bold transition-all ' +
                     (active
                       ? 'bg-gradient-to-r from-' + activeCategory.color + '-600 to-' + activeCategory.color + '-700 text-white shadow'
-                      : 'bg-slate-800/60 text-' + activeCategory.color + '-200/80 hover:bg-slate-700/60')
+                      : 'bg-slate-800/60 text-' + activeCategory.color + 'transition-colors -200/80 hover:bg-slate-700/60 active:scale-[0.97]')
                 }, s.icon + ' ' + s.label);
               })
             ));

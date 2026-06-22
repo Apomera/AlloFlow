@@ -803,11 +803,11 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex items-center gap-3 mb-3 flex-wrap' },
               h('button', {
                 onClick: function() { if (typeof setStemLabTool === 'function') setStemLabTool(null); },
-                className: 'p-1.5 hover:bg-slate-800 rounded-lg transition-all',
+                className: 'p-1.5 hover:bg-slate-800 rounded-lg transition-all active:scale-[0.97]',
                 'aria-label': 'Back to tools'
               }, h(ArrowLeft, { size: 18, className: 'text-slate-400' })),
 
-              h('h3', { className: 'text-lg font-bold text-white' }, '\uD83D\uDD0C Circuit Builder'),
+              h('h3', { className: 'text-lg font-bold text-white tracking-tight' }, '\uD83D\uDD0C Circuit Builder'),
 
               h('span', { className: 'px-2 py-0.5 bg-yellow-950/60 text-yellow-400 text-[10px] font-black rounded-full border border-yellow-500/20' }, 'INTERACTIVE'),
 
@@ -816,13 +816,13 @@ window.StemLab = window.StemLab || {
               // Badge toggle
               h('button', { 'aria-label': 'Badges',
                 onClick: function() { upd('showBadges', !showBadges); },
-                className: 'px-2.5 py-1 text-xs rounded-lg transition-all font-semibold ' + (showBadges ? 'bg-amber-950/40 text-amber-400 border border-amber-600/40' : 'bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-white')
+                className: 'px-2.5 py-1 text-xs rounded-lg transition-all font-semibold ' + (showBadges ? 'bg-amber-950/40 text-amber-400 border border-amber-600/40' : 'transition-colors bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-white active:scale-[0.97]')
               }, '\uD83C\uDFC5 Badges'),
 
               // AI toggle
               h('button', { 'aria-label': 'AI Tutor',
                 onClick: function() { upd('showAI', !showAI); },
-                className: 'px-2.5 py-1 text-xs rounded-lg transition-all font-semibold ' + (showAI ? 'bg-blue-950/40 text-blue-400 border border-blue-600/40' : 'bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-white')
+                className: 'px-2.5 py-1 text-xs rounded-lg transition-all font-semibold ' + (showAI ? 'bg-blue-950/40 text-blue-400 border border-blue-600/40' : 'transition-colors bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-white active:scale-[0.97]')
               }, '\uD83E\uDD16 AI Tutor'),
 
               // Mode buttons
@@ -830,7 +830,7 @@ window.StemLab = window.StemLab || {
                 ['series', 'parallel'].map(function(m) {
                   return h('button', { key: m, 'aria-pressed': mode === m,
                     onClick: function() { upd('mode', m); },
-                    className: 'px-3 py-1.5 rounded-lg text-xs font-bold capitalize transition-all ' + (mode === m ? 'bg-yellow-500 text-slate-950 shadow-md shadow-yellow-500/25' : 'bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-slate-200')
+                    className: 'px-3 py-1.5 rounded-lg text-xs font-bold capitalize transition-all ' + (mode === m ? 'bg-yellow-500 text-slate-950 shadow-md shadow-yellow-500/25' : 'transition-colors bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-slate-200 active:scale-[0.97]')
                   }, m);
                 })
               )
@@ -1228,42 +1228,42 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex flex-wrap gap-2 mt-4 mb-4 justify-center sm:justify-start' },
               h('button', { 'aria-label': 'Resistor',
                 onClick: function() { addComponent('resistor', 100); },
-                className: 'px-3 py-1.5 bg-yellow-950/20 hover:bg-yellow-500/20 text-yellow-400 font-bold rounded-lg text-xs border border-yellow-500/30 hover:border-yellow-400 transition-all glow-button'
+                className: 'px-3 py-1.5 bg-yellow-950/20 hover:bg-yellow-500/20 text-yellow-400 font-bold rounded-lg text-xs border border-yellow-500/30 hover:border-yellow-400 transition-all glow-button active:scale-[0.97]'
               }, '\u2795 Resistor'),
 
               h('button', { 'aria-label': 'Bulb',
                 onClick: function() { addComponent('bulb', 50); },
-                className: 'px-3 py-1.5 bg-amber-950/20 hover:bg-amber-500/20 text-amber-400 font-bold rounded-lg text-xs border border-amber-500/30 hover:border-amber-400 transition-all glow-button'
+                className: 'px-3 py-1.5 bg-amber-950/20 hover:bg-amber-500/20 text-amber-400 font-bold rounded-lg text-xs border border-amber-500/30 hover:border-amber-400 transition-all glow-button active:scale-[0.97]'
               }, '\uD83D\uDCA1 Bulb'),
 
               h('button', { 'aria-label': 'Switch',
                 onClick: function() { addComponent('switch', 0, { closed: true }); },
-                className: 'px-3 py-1.5 bg-emerald-950/20 hover:bg-emerald-500/20 text-emerald-400 font-bold rounded-lg text-xs border border-emerald-500/30 hover:border-emerald-400 transition-all glow-button'
+                className: 'px-3 py-1.5 bg-emerald-950/20 hover:bg-emerald-500/20 text-emerald-400 font-bold rounded-lg text-xs border border-emerald-500/30 hover:border-emerald-400 transition-all glow-button active:scale-[0.97]'
               }, '\uD83D\uDD18 Switch'),
 
               h('button', { 'aria-label': 'LED',
                 onClick: function() { addComponent('led', 40, { ledColor: '#ef4444' }); },
-                className: 'px-3 py-1.5 bg-rose-950/20 hover:bg-rose-500/20 text-rose-400 font-bold rounded-lg text-xs border border-rose-500/30 hover:border-rose-400 transition-all glow-button'
+                className: 'px-3 py-1.5 bg-rose-950/20 hover:bg-rose-500/20 text-rose-400 font-bold rounded-lg text-xs border border-rose-500/30 hover:border-rose-400 transition-all glow-button active:scale-[0.97]'
               }, '\uD83D\uDD34 LED'),
 
               h('button', { 'aria-label': 'Ammeter',
                 onClick: function() { addComponent('ammeter', 0); },
-                className: 'px-3 py-1.5 bg-cyan-950/20 hover:bg-cyan-500/20 text-cyan-400 font-bold rounded-lg text-xs border border-cyan-500/30 hover:border-cyan-400 transition-all glow-button'
+                className: 'px-3 py-1.5 bg-cyan-950/20 hover:bg-cyan-500/20 text-cyan-400 font-bold rounded-lg text-xs border border-cyan-500/30 hover:border-cyan-400 transition-all glow-button active:scale-[0.97]'
               }, '\u26A1 Ammeter'),
 
               h('button', { 'aria-label': 'Voltmeter',
                 onClick: function() { addComponent('voltmeter', 0); },
-                className: 'px-3 py-1.5 bg-orange-950/20 hover:bg-orange-500/20 text-orange-400 font-bold rounded-lg text-xs border border-orange-500/30 hover:border-orange-400 transition-all glow-button'
+                className: 'px-3 py-1.5 bg-orange-950/20 hover:bg-orange-500/20 text-orange-400 font-bold rounded-lg text-xs border border-orange-500/30 hover:border-orange-400 transition-all glow-button active:scale-[0.97]'
               }, '\uD83D\uDD0B Voltmeter'),
 
               h('button', { 'aria-label': 'Capacitor',
                 onClick: function() { addComponent('capacitor', 100); },
-                className: 'px-3 py-1.5 bg-sky-950/20 hover:bg-sky-500/20 text-sky-400 font-bold rounded-lg text-xs border border-sky-500/30 hover:border-sky-400 transition-all glow-button'
+                className: 'px-3 py-1.5 bg-sky-950/20 hover:bg-sky-500/20 text-sky-400 font-bold rounded-lg text-xs border border-sky-500/30 hover:border-sky-400 transition-all glow-button active:scale-[0.97]'
               }, '\u2E28 Capacitor'),
 
               h('button', { 'aria-label': 'Clear',
                 onClick: clearComponents,
-                className: 'px-3 py-1.5 bg-red-950/30 hover:bg-red-500/30 text-red-400 font-bold rounded-lg text-xs border border-red-500/30 hover:border-red-400 transition-all'
+                className: 'px-3 py-1.5 bg-red-950/30 hover:bg-red-500/30 text-red-400 font-bold rounded-lg text-xs border border-red-500/30 hover:border-red-400 transition-all active:scale-[0.97]'
               }, '\uD83D\uDDD1 Clear'),
 
               components.length > 0 && h('span', { className: 'self-center text-xs text-slate-400 ml-auto font-mono' }, components.length + ' component' + (components.length > 1 ? 's' : ''))
@@ -1359,7 +1359,7 @@ window.StemLab = window.StemLab || {
                     // Switch toggle button
                     comp.type === 'switch' && h('button', { 'aria-label': 'Toggle Switch',
                       onClick: function() { toggleSwitch(comp.id); },
-                      className: 'px-2 py-1 text-xs font-bold rounded border transition-all ' + (comp.closed ? 'bg-emerald-950/30 text-emerald-400 border-emerald-800 hover:bg-emerald-900/40' : 'bg-red-950/30 text-red-400 border-red-800 hover:bg-red-900/40')
+                      className: 'px-2 py-1 text-xs font-bold rounded border transition-all ' + (comp.closed ? 'transition-colors bg-emerald-950/30 text-emerald-400 border-emerald-800 hover:bg-emerald-900/40 active:scale-[0.97]' : 'transition-colors bg-red-950/30 text-red-400 border-red-800 hover:bg-red-900/40 active:scale-[0.97]')
                     }, comp.closed ? 'Close' : 'Open'),
 
                     // LED color cycle button
@@ -1372,7 +1372,7 @@ window.StemLab = window.StemLab || {
                     // Remove button
                     h('button', { 'aria-label': 'Remove Component',
                       onClick: function() { removeComponent(i); },
-                      className: 'text-slate-500 hover:text-red-400 ml-auto font-bold text-lg px-1'
+                      className: 'transition-colors text-slate-500 hover:text-red-400 ml-auto font-bold text-lg px-1 tracking-tight'
                     }, '\u00D7')
                   );
                 })
@@ -1546,7 +1546,7 @@ window.StemLab = window.StemLab || {
                   return h('button', { 'aria-label': 'Load Preset',
                     key: preset.id,
                     onClick: function() { loadPreset(preset); },
-                    className: 'px-3 py-2 rounded-lg text-xs border border-slate-800 bg-slate-950/60 hover:bg-slate-800 transition-all text-left w-full sm:w-auto',
+                    className: 'px-3 py-2 rounded-lg text-xs border border-slate-800 bg-slate-950/60 hover:bg-slate-800 transition-all text-left w-full sm:w-auto active:scale-[0.97]',
                     title: preset.desc
                   },
                     h('span', { className: 'font-bold text-slate-200 block' }, preset.label),
@@ -1586,7 +1586,7 @@ window.StemLab = window.StemLab || {
                         upd('challenge', ch);
                       }
                     },
-                    className: 'px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ' + (close ? 'bg-emerald-950/30 text-emerald-400 border-emerald-500/40 shadow-sm' : challengesDoneSet[ci] ? 'bg-emerald-950/20 text-emerald-400/80 border-emerald-700' : 'bg-slate-900 border-slate-800 text-amber-500 hover:bg-slate-800')
+                    className: 'px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ' + (close ? 'bg-emerald-950/30 text-emerald-400 border-emerald-500/40 shadow-sm' : challengesDoneSet[ci] ? 'bg-emerald-950/20 text-emerald-400/80 border-emerald-700' : 'transition-colors bg-slate-900 border-slate-800 text-amber-500 hover:bg-slate-800 active:scale-[0.97]')
                   }, (close || challengesDoneSet[ci] ? '\u2705 ' : '\uD83C\uDFAF ') + ch.label);
                 })
               )
@@ -1599,7 +1599,7 @@ window.StemLab = window.StemLab || {
               return h('div', { className: 'mt-4 bg-blue-950/10 border border-blue-500/20 p-4 rounded-xl backdrop-blur-md' },
                 h('div', { className: 'flex items-center gap-2 mb-3' },
                   h('button', { onClick: function() { var q = makeOhmQuestion(); upd('ohmQuiz', q); },
-                    className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (ohmQuiz ? 'bg-blue-900/40 text-blue-300 border border-blue-800' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20')
+                    className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (ohmQuiz ? 'bg-blue-900/40 text-blue-300 border border-blue-800' : 'transition-colors bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20 active:scale-[0.97]')
                   }, ohmQuiz ? '\uD83D\uDD04 Next Question' : '\u26A1 Ohm\'s Law Quiz'),
                   ohmScore > 0 && h('span', { className: 'text-xs font-bold text-emerald-400' }, '\u2B50 ' + ohmScore + ' correct'),
                   ohmStreak > 1 && h('span', { className: 'text-xs font-bold text-orange-400 animate-pulse' }, '\uD83D\uDD25 ' + ohmStreak + ' streak')
@@ -1630,7 +1630,7 @@ window.StemLab = window.StemLab || {
                           }
                           checkBadges(getBadgeUpdates({ quizScore: newScore, quizStreak: newStreak }));
                         },
-                        className: 'px-3 py-2 rounded-lg text-xs font-bold border border-slate-800 bg-slate-900 text-slate-200 hover:border-blue-500 hover:bg-blue-950/30 transition-all'
+                        className: 'px-3 py-2 rounded-lg text-xs font-bold border border-slate-800 bg-slate-900 text-slate-200 hover:border-blue-500 hover:bg-blue-950/30 transition-all active:scale-[0.97]'
                       }, opt + ohmQuiz.unit);
                     })
                   )
@@ -1687,7 +1687,7 @@ window.StemLab = window.StemLab || {
                 h('button', { 'aria-label': aiLoading ? 'AI is thinking' : 'Ask the AI tutor', 'aria-busy': aiLoading,
                   onClick: askAI,
                   disabled: aiLoading,
-                  className: 'px-4 py-2 text-xs font-bold rounded-lg transition-all ' + (aiLoading ? 'bg-slate-800 text-slate-600' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-600/10')
+                  className: 'px-4 py-2 text-xs font-bold rounded-lg transition-all ' + (aiLoading ? 'bg-slate-800 text-slate-600' : 'transition-colors bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-600/10 active:scale-[0.97]')
                 }, aiLoading ? 'Thinking...' : 'Ask')
               ),
               aiLoading && h('div', { className: 'mt-2 text-xs text-blue-400 animate-pulse' }, 'AI is thinking...'),
@@ -1698,7 +1698,7 @@ window.StemLab = window.StemLab || {
                   return h('button', { 'aria-label': 'Ask question',
                     key: q,
                     onClick: function() { updMulti({ aiQuestion: q }); },
-                    className: 'px-2.5 py-1 text-[10px] bg-slate-950/60 text-blue-400 border border-blue-900/50 rounded-full hover:bg-blue-950/30 hover:text-blue-300 transition-all'
+                    className: 'px-2.5 py-1 text-[10px] bg-slate-950/60 text-blue-400 border border-blue-900/50 rounded-full hover:bg-blue-950/30 hover:text-blue-300 transition-all active:scale-[0.97]'
                   }, q);
                 })
               )
@@ -1957,7 +1957,7 @@ window.StemLab = window.StemLab || {
                     return h('button', { key: type,
                       onClick: function() { upd('_selectedComp', active ? null : type); },
                       className: 'px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all border ' +
-                        (active ? 'text-slate-950 font-extrabold shadow-sm' : 'bg-slate-950/60 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-300'),
+                        (active ? 'text-slate-950 font-extrabold shadow-sm' : 'transition-colors bg-slate-950/60 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-300'),
                       style: active ? { background: info.color, borderColor: info.color } : {}
                     }, info.icon + ' ' + info.name);
                   })
@@ -1975,7 +1975,7 @@ window.StemLab = window.StemLab || {
                   ),
                   typeof callTTS === 'function' ? h('button', { 'aria-label': 'Read aloud',
                     onClick: function() { callTTS(physics.name + '. ' + physics.how + ' ' + physics.analogy); },
-                    className: 'mt-2 text-[10px] text-yellow-500 hover:text-yellow-400 font-bold'
+                    className: 'transition-colors mt-2 text-[10px] text-yellow-500 hover:text-yellow-400 font-bold'
                   }, '\uD83D\uDD0A Read aloud') : null
                 ) : h('p', { className: 'text-[10px] text-slate-500 italic' }, 'Tap a component above to learn how it works inside!')
               );
@@ -1999,7 +1999,7 @@ window.StemLab = window.StemLab || {
                   return h('button', { key: app.name, 'aria-expanded': expanded,
                     onClick: function() { upd('_expandedApp', expanded ? null : app.name); },
                     className: 'text-left rounded-lg p-2.5 border transition-all ' +
-                      (expanded ? 'bg-slate-950/80 border-cyan-500/40 shadow-md shadow-cyan-500/5' : 'bg-slate-950/40 border-slate-800 hover:border-slate-700')
+                      (expanded ? 'bg-slate-950/80 border-cyan-500/40 shadow-md shadow-cyan-500/5' : 'transition-colors bg-slate-950/40 border-slate-800 hover:border-slate-700')
                   },
                     h('div', { className: 'flex items-center gap-2.5 mb-1.5' },
                       h('span', { className: 'text-base' }, app.emoji),
@@ -2049,7 +2049,7 @@ window.StemLab = window.StemLab || {
                   if (isOpen) summary += ' Circuit is open, no current flowing.';
                   callTTS(summary);
                 },
-                className: 'px-4 py-2 text-xs font-bold text-slate-300 bg-slate-900/60 rounded-full hover:bg-slate-800 transition-all border border-slate-800'
+                className: 'px-4 py-2 text-xs font-bold text-slate-300 bg-slate-900/60 rounded-full hover:bg-slate-800 transition-all border border-slate-800 active:scale-[0.97]'
               }, '\uD83D\uDD0A Read Aloud')
             ),
 
@@ -2182,7 +2182,7 @@ window.StemLab = window.StemLab || {
           ),
           expSection && h('button', {
             onClick: function() { setExp({ expSection: null }); },
-            className: 'px-3 py-1 rounded-md text-xs font-bold bg-white border border-amber-300 text-amber-700 hover:bg-amber-100'
+            className: 'transition-colors px-3 py-1 rounded-md text-xs font-bold bg-white border border-amber-300 text-amber-700 hover:bg-amber-100 active:scale-[0.97]'
           }, '✕ Close section')
         );
       }
@@ -2256,7 +2256,7 @@ window.StemLab = window.StemLab || {
           return h('button', {
             key: s.id,
             onClick: function() { setExp({ expSection: active ? null : s.id }); },
-            className: 'px-2 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (active ? 'bg-' + accent + '-600 text-white border-' + accent + '-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-' + accent + '-50 hover:border-' + accent + '-300')
+            className: 'px-2 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (active ? 'bg-' + accent + '-600 text-white border-' + accent + '-700' : 'transition-colors bg-white text-slate-700 border-slate-300 hover:bg- active:scale-[0.97]' + accent + 'transition-colors -50 hover:border-' + accent + '-300')
           }, s.icon + ' ' + s.label);
         }
         return h('div', { className: 'mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200 flex flex-col gap-1.5' },
@@ -2505,7 +2505,7 @@ window.StemLab = window.StemLab || {
                   var correct = scenario.answerIndex === oi;
                   var bg = revealed
                     ? (correct ? 'bg-green-600 text-white border-green-700' : (picked ? 'bg-red-100 text-red-800 border-red-300 line-through' : 'bg-white text-slate-500 border-slate-200'))
-                    : (picked ? 'bg-amber-200 text-amber-900 border-amber-400' : 'bg-white text-slate-600 border-slate-200 hover:bg-amber-50');
+                    : (picked ? 'bg-amber-200 text-amber-900 border-amber-400' : 'transition-colors bg-white text-slate-600 border-slate-200 hover:bg-amber-50 active:scale-[0.97]');
                   return h('button', {
                     key: oi,
                     disabled: revealed,
@@ -2528,7 +2528,7 @@ window.StemLab = window.StemLab || {
                     var bonus = scenario.answerIndex === stg.picked ? 1 : 0;
                     setPoe({ stage: newStage, score: (state.score || 0) + bonus });
                   },
-                  className: 'px-3 py-1 rounded-md text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-amber-400 focus:outline-none'
+                  className: 'transition-colors px-3 py-1 rounded-md text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-amber-400 focus:outline-none active:scale-[0.97]'
                 }, stg.revealed ? '✓ Revealed' : 'Show answer'),
                 stg.revealed && h('span', { className: 'text-[11px] ' + (scenario.answerIndex === stg.picked ? 'text-green-700 font-bold' : 'text-rose-700 font-bold') },
                   scenario.answerIndex === stg.picked ? '✓ Correct' : '✗ Try the reasoning')
@@ -2719,7 +2719,7 @@ window.StemLab = window.StemLab || {
                     return h('button', {
                       key: opt.id,
                       onClick: function() { handlePick(opt.id); },
-                      className: 'px-2 py-1 rounded text-[11px] font-bold border bg-white text-slate-600 border-slate-300 hover:bg-amber-50 hover:border-amber-300 focus:ring-2 focus:ring-amber-400 focus:outline-none'
+                      className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold border bg-white text-slate-600 border-slate-300 hover:bg-amber-50 hover:border-amber-300 focus:ring-2 focus:ring-amber-400 focus:outline-none active:scale-[0.97]'
                     }, opt.label);
                   })
                 ),

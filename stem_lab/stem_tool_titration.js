@@ -858,7 +858,7 @@ if (!safetyChecked) {
         style: { background:'rgba(0,0,0,0.4)', borderBottom:'1px solid ' + stationBorders[safetyStation] }
       },
         React.createElement("div", { style: { fontSize:'28px', marginBottom:'4px' } }, "\u26A0\uFE0F"),
-        React.createElement("h2", { className: "text-xl font-black", style: { color: stationDefs[safetyStation-1].color } }, "Lab Safety Briefing"),
+        React.createElement("h2", { className: "text-xl font-black tracking-tight", style: { color: stationDefs[safetyStation-1].color } }, "Lab Safety Briefing"),
         React.createElement("p", { className: "text-[11px] mt-1", style: { color: 'rgba(255,255,255,0.5)' } },
           "Complete all 4 safety stations before entering the Virtual " + preset.acidName.split(' ')[0] + " Lab")
       ),
@@ -1552,12 +1552,12 @@ return React.createElement("div", {
     React.createElement("button", { "aria-label": "Safety Info",
       onClick: function () { upd('showSafetyRef', !showSafetyRef); },
       className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " +
-        (showSafetyRef ? "bg-amber-500/20 text-amber-300 ring-1 ring-amber-500/40" : "text-amber-500/60 hover:text-amber-400 hover:bg-amber-500/10")
+        (showSafetyRef ? "bg-amber-500/20 text-amber-300 ring-1 ring-amber-500/40" : "transition-colors text-amber-500/60 hover:text-amber-400 hover:bg-amber-500/10 active:scale-[0.97]")
     }, "\u26A0\uFE0F Safety Info"),
     React.createElement("button", { "aria-label": "Hazards",
       onClick: function () { upd('showHazards', !showHazards); },
       className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " +
-        (showHazards ? "bg-red-500/20 text-red-300 ring-1 ring-red-500/40" : "text-red-500/60 hover:text-red-400 hover:bg-red-500/10")
+        (showHazards ? "bg-red-500/20 text-red-300 ring-1 ring-red-500/40" : "transition-colors text-red-500/60 hover:text-red-400 hover:bg-red-500/10 active:scale-[0.97]")
     }, "\u2623\uFE0F Hazards")
   ),
 
@@ -1644,7 +1644,7 @@ return React.createElement("div", {
 
       }, "\u2190 Back"),
 
-      React.createElement("h3", { className: "text-lg font-black text-white" }, "\uD83E\uDDEA Virtual Titration Lab"),
+      React.createElement("h3", { className: "text-lg font-black text-white tracking-tight" }, "\uD83E\uDDEA Virtual Titration Lab"),
       React.createElement("span", { className: "text-[11px] text-slate-600 ml-1" }, "v2.0")
 
     ),
@@ -1674,7 +1674,7 @@ return React.createElement("div", {
         'aria-selected': active,
         onClick: function() { upd('labTab', tab.id); },
         className: "px-3 py-1.5 rounded-full text-[11px] font-bold transition-all " +
-          (active ? "text-white shadow-lg scale-105" : "text-slate-200 hover:text-white bg-slate-800/50 hover:bg-slate-700/60 border border-slate-700"),
+          (active ? "text-white shadow-lg scale-105" : "transition-colors text-slate-200 hover:text-white bg-slate-800/50 hover:bg-slate-700/60 border border-slate-700 active:scale-[0.97]"),
         style: active ? { background: tab.color, boxShadow: '0 0 12px ' + tab.color + '40' } : {}
       }, tab.label);
     })
@@ -1734,7 +1734,7 @@ return React.createElement("div", {
 
         className: "px-3 py-1.5 rounded-full text-xs font-bold transition-all " +
 
-          (active ? "text-white shadow-lg scale-105" : "text-slate-300 hover:text-white bg-slate-800/60 hover:bg-slate-700/80 border border-slate-600"),
+          (active ? "text-white shadow-lg scale-105" : "transition-colors text-slate-300 hover:text-white bg-slate-800/60 hover:bg-slate-700/80 border border-slate-600 active:scale-[0.97]"),
 
         style: active ? { background: p.color, boxShadow: '0 0 12px ' + p.color + '60' } : {}
 
@@ -1764,7 +1764,7 @@ return React.createElement("div", {
 
         className: "px-2.5 py-1 rounded-full text-[11px] font-bold transition-all " +
 
-          (active ? "text-white bg-slate-700 ring-2 ring-cyan-400" : "text-slate-200 bg-slate-800/50 hover:bg-slate-700/60 border border-slate-700")
+          (active ? "text-white bg-slate-700 ring-2 ring-cyan-400" : "transition-colors text-slate-200 bg-slate-800/50 hover:bg-slate-700/60 border border-slate-700 active:scale-[0.97]")
 
       }, ind.label);
 
@@ -1857,14 +1857,14 @@ return React.createElement("div", {
         return React.createElement("button", { "aria-label": "Add " + amt + " milliliters of titrant",
           key: amt,
           onClick: function () { updMulti({ volumeAdded: Math.min(maxVol, Math.round((volumeAdded + amt) * 10) / 10), _prevVolume: volumeAdded }); },
-          className: "px-2 py-1 rounded-lg text-[11px] font-bold text-cyan-300 bg-cyan-900/30 hover:bg-cyan-800/50 border border-cyan-800/40 transition-all hover:scale-105",
+          className: "px-2 py-1 rounded-lg text-[11px] font-bold text-cyan-300 bg-cyan-900/30 hover:bg-cyan-800/50 border border-cyan-800/40 transition-all hover:scale-105 active:scale-[0.97]",
           title: amt <= 0.5 ? 'Drop-by-drop (precise)' : 'Stream (fast)'
         }, dropIcon + " +" + amt);
       }),
 
       React.createElement("button", { "aria-label": "Reset titration volume to zero",
         onClick: function () { updMulti({ volumeAdded: 0, _reachedEquiv: false, _prevVolume: 0 }); if (addToast) addToast('♻️ ' + safetyTips.reset.text, 'info'); },
-        className: "px-2 py-1 rounded-lg text-[11px] font-bold text-amber-300 bg-amber-900/30 hover:bg-amber-800/50 border border-amber-800/40 transition-all hover:scale-105"
+        className: "px-2 py-1 rounded-lg text-[11px] font-bold text-amber-300 bg-amber-900/30 hover:bg-amber-800/50 border border-amber-800/40 transition-all hover:scale-105 active:scale-[0.97]"
       }, "↺ Reset")
 
     )
@@ -2045,7 +2045,7 @@ return React.createElement("div", {
 
         React.createElement("span", {
 
-          className: "text-2xl font-black tabular-nums",
+          className: "text-2xl font-black tabular-nums tracking-tight",
 
           style: { color: currentColor, transition: 'color 0.5s ease' }
 
@@ -2299,7 +2299,7 @@ return React.createElement("div", {
 
       React.createElement("div", { className: "text-[11px] font-bold text-slate-200 mb-1" }, "CURRENT pH"),
 
-      React.createElement("div", { className: "text-xl font-black tabular-nums", style: { color: currentColor } }, currentPH.toFixed(2)),
+      React.createElement("div", { className: "text-xl font-black tabular-nums tracking-tight", style: { color: currentColor } }, currentPH.toFixed(2)),
 
       React.createElement("div", {
 
@@ -2335,7 +2335,7 @@ return React.createElement("div", {
 
       React.createElement("div", { className: "text-[11px] font-bold text-slate-200 mb-1" }, "VOLUME ADDED"),
 
-      React.createElement("div", { className: "text-xl font-black tabular-nums text-cyan-400" }, volumeAdded.toFixed(1) + " mL"),
+      React.createElement("div", { className: "text-xl font-black tabular-nums text-cyan-400 tracking-tight" }, volumeAdded.toFixed(1) + " mL"),
 
       React.createElement("div", { className: "text-[11px] text-slate-600 mt-1" }, "V\u2091 = " + Veq.toFixed(1) + " mL")
 
@@ -2353,7 +2353,7 @@ return React.createElement("div", {
 
       React.createElement("div", { className: "text-[11px] font-bold text-slate-200 mb-1" }, "EQUIVALENCE POINT"),
 
-      React.createElement("div", { className: "text-lg font-black tabular-nums " + (pastEquivalence ? 'text-red-400' : 'text-slate-300') },
+      React.createElement("div", { className: "text-lg font-black tabular-nums  tracking-tight" + (pastEquivalence ? 'text-red-400' : 'text-slate-300') },
 
         "pH " + equivPH.toFixed(2)
 
@@ -2562,7 +2562,7 @@ return React.createElement("div", {
               onClick: function () { upd('aiLevel', L.id); },
               "aria-label": "Reading level: " + L.label + (active ? " (selected)" : ""),
               "aria-pressed": active,
-              className: "px-2 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-purple-900/50')
+              className: "px-2 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-purple-600 text-white' : 'transition-colors bg-slate-800 text-slate-300 hover:bg-purple-900/50 active:scale-[0.97]')
             }, L.label);
           })
         ),
@@ -2570,7 +2570,7 @@ return React.createElement("div", {
           onClick: explain,
           disabled: aiLoading,
           "aria-label": "Generate AI explanation at " + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + " level",
-          className: "px-3 py-1 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50"
+          className: "transition-colors px-3 py-1 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 active:scale-[0.97]"
         }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain'))
       ),
       aiError && React.createElement("p", { className: "text-[11px] text-rose-400", role: "alert" }, aiError),
@@ -2616,7 +2616,7 @@ return React.createElement("div", {
             if (showResult && isSelected && isCorrect) cls += "bg-emerald-700 text-white ring-2 ring-emerald-400";
             else if (showResult && isSelected && !isCorrect) cls += "bg-red-600 text-white";
             else if (showResult && isCorrect) cls += "bg-emerald-600/20 text-emerald-300 border border-emerald-500";
-            else cls += "bg-slate-800/60 text-slate-200 hover:bg-slate-700/80 border border-slate-600 hover:border-slate-400";
+            else cls += "transition-colors bg-slate-800/60 text-slate-200 hover:bg-slate-700/80 border border-slate-600 hover:border-slate-400 active:scale-[0.97]";
             return React.createElement("button", { "aria-label": "Select answer: " + opt,
               key: opt, disabled: showResult,
               onClick: function() {
@@ -2678,7 +2678,7 @@ return React.createElement("div", {
           onClick: function() { updMulti({ incidentIdx: i, incidentAnswer: null }); },
           className: "w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all " +
             (i === incidentIdx ? "ring-2 ring-offset-1 ring-offset-slate-900 ring-red-400 " : "") +
-            (completed ? "bg-emerald-700 text-white" : "bg-slate-800 text-slate-200 border border-slate-600 hover:border-slate-400"),
+            (completed ? "bg-emerald-700 text-white" : "transition-colors bg-slate-800 text-slate-200 border border-slate-600 hover:border-slate-400"),
           title: sc.title
         }, completed ? "\u2714" : sc.icon);
       })
@@ -2710,7 +2710,7 @@ return React.createElement("div", {
             if (showResult && isSelected && opt.correct) cls += "bg-emerald-700 text-white ring-2 ring-emerald-400";
             else if (showResult && isSelected && !opt.correct) cls += "bg-red-600 text-white";
             else if (showResult && opt.correct) cls += "bg-emerald-600/20 text-emerald-300 border border-emerald-500";
-            else cls += "bg-slate-800/60 text-slate-200 hover:bg-slate-700/80 border border-slate-600 hover:border-slate-400";
+            else cls += "transition-colors bg-slate-800/60 text-slate-200 hover:bg-slate-700/80 border border-slate-600 hover:border-slate-400 active:scale-[0.97]";
             return React.createElement("button", { "aria-label": "Select emergency response: " + opt.label,
               key: opt.id, disabled: showResult,
               onClick: function() {
@@ -2766,7 +2766,7 @@ return React.createElement("div", {
           key: eq.id,
           onClick: function() { upd('selectedEquip', isSelected ? null : eq.id); if (!isSelected && typeof awardStemXP === 'function') awardStemXP('equip-' + eq.id, 5, 'Studied ' + eq.name); },
           className: "text-left p-3 rounded-xl border transition-all " +
-            (isSelected ? "bg-emerald-900/30 border-emerald-500/50 ring-1 ring-emerald-500/30" : "bg-slate-800/40 border-slate-700 hover:border-slate-500")
+            (isSelected ? "bg-emerald-900/30 border-emerald-500/50 ring-1 ring-emerald-500/30" : "transition-colors bg-slate-800/40 border-slate-700 hover:border-slate-500")
         },
           React.createElement("div", { className: "flex items-center gap-2 mb-1" },
             React.createElement("span", { className: "text-lg" }, eq.icon),
@@ -2848,7 +2848,7 @@ return React.createElement("div", {
         ),
         React.createElement("label", { className: "block" },
           React.createElement("span", { className: "text-[11px] text-slate-200" }, "V\u2081 (Volume needed)"),
-          React.createElement("div", { className: "text-lg font-black text-violet-300 mt-1" },
+          React.createElement("div", { className: "text-lg font-black text-violet-300 mt-1 tracking-tight" },
             (molarityCalcC2 * molarityCalcV1 / molarityCalcC1).toFixed(2) + " mL"
           ),
           React.createElement("span", { className: "text-[11px] text-slate-200" }, "Calculated from C\u2082V\u2082/C\u2081")
@@ -3155,9 +3155,9 @@ return React.createElement("div", {
         })
       ),
       React.createElement('div', { className: 'flex gap-2 items-center mb-3 flex-wrap' },
-        React.createElement('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-[11px] font-bold text-slate-200 border border-slate-600' }, '📋 Log observation'),
+        React.createElement('button', { onClick: logObs, className: 'transition-colors px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-[11px] font-bold text-slate-200 border border-slate-600 active:scale-[0.97]' }, '📋 Log observation'),
         React.createElement('button', { onClick: function() { setBF({ ka: 1e-5, ratio: 1.0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
-          className: 'px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[11px] font-semibold text-slate-300 border border-slate-600' }, '↺ Reset'),
+          className: 'transition-colors px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[11px] font-semibold text-slate-300 border border-slate-600 active:scale-[0.97]' }, '↺ Reset'),
         (bf.log || []).length > 0 && React.createElement('span', { className: 'text-[10px] text-slate-400 italic' }, (bf.log || []).length + ' observations logged')
       ),
       (bf.log || []).length > 0 && React.createElement('div', { className: 'mb-3 overflow-x-auto' },
@@ -3186,7 +3186,7 @@ return React.createElement("div", {
       ),
       React.createElement('div', { className: 'mb-3' },
         !bf.stuckRevealed && React.createElement('button', { onClick: function() { setBF({ stuckRevealed: true }); },
-          className: 'px-2 py-1 rounded bg-amber-900/30 hover:bg-amber-800/40 text-[11px] font-bold text-amber-300 border border-amber-700' },
+          className: 'transition-colors px-2 py-1 rounded bg-amber-900/30 hover:bg-amber-800/40 text-[11px] font-bold text-amber-300 border border-amber-700 active:scale-[0.97]' },
           '🤔 I\'m stuck — show me questions to think about (no answers)'),
         bf.stuckRevealed && React.createElement('div', { className: 'p-3 rounded bg-amber-900/20 border border-amber-700 text-[11px] text-slate-300 leading-relaxed' },
           React.createElement('div', { className: 'font-bold text-amber-300 mb-1' }, 'Open questions — investigate by manipulating:'),

@@ -1345,10 +1345,10 @@
           h('div', { className: 'flex items-center gap-3 mb-3' },
             h('button', {
               onClick: function() { setStemLabTool(null); },
-              className: 'p-1.5 hover:bg-slate-100 rounded-lg',
+              className: 'transition-colors p-1.5 hover:bg-slate-100 rounded-lg active:scale-[0.97]',
               'aria-label': 'Back to tools'
             }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
-            h('h3', { className: 'text-lg font-bold text-slate-800' }, '\u2697\uFE0F Material Decomposer'),
+            h('h3', { className: 'text-lg font-bold text-slate-800 tracking-tight' }, '\u2697\uFE0F Material Decomposer'),
             h('span', { className: 'px-2 py-0.5 bg-amber-100 text-amber-700 text-[11px] font-bold rounded-full' },
               totalAtoms + ' ATOMS'
             ),
@@ -1365,7 +1365,7 @@
             h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, gradeBandIntro()),
             h('button', { 'aria-label': 'Read aloud',
               onClick: function() { speakText(gradeBandIntro()); },
-              className: 'mt-1 text-[11px] text-amber-600 hover:text-amber-800 font-bold'
+              className: 'transition-colors mt-1 text-[11px] text-amber-600 hover:text-amber-800 font-bold'
             }, '\uD83D\uDD0A Read aloud')
           ),
 
@@ -1408,7 +1408,7 @@
                 className: 'flex-1 py-2 rounded-lg text-xs font-bold transition-all '
                   + (active
                     ? 'bg-white text-slate-800 shadow-sm'
-                    : 'text-slate-600 hover:text-slate-700 hover:bg-slate-50')
+                    : 'transition-colors text-slate-600 hover:text-slate-700 hover:bg-slate-50 active:scale-[0.97]')
               }, t.label);
             })
           ),
@@ -1455,7 +1455,7 @@
                 className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all '
                   + (sel.name === m.name
                     ? 'text-white shadow-md scale-105'
-                    : 'bg-slate-50 text-slate-600 border border-slate-400 hover:border-amber-600'),
+                    : 'transition-colors bg-slate-50 text-slate-600 border border-slate-400 hover:border-amber-600'),
                 style: sel.name === m.name ? { background: m.color } : {}
               }, m.emoji + ' ' + m.name);
             })
@@ -1474,7 +1474,7 @@
                 h('span', { className: 'text-4xl' }, sel.emoji),
                 h('div', { className: 'flex-1' },
                   h('div', { className: 'flex items-center gap-2' },
-                    h('h4', { className: 'font-bold text-slate-800 text-lg' }, sel.name),
+                    h('h4', { className: 'font-bold text-slate-800 text-lg tracking-tight' }, sel.name),
                     h('span', { className: 'px-2 py-0.5 bg-white rounded-full text-sm font-mono font-bold text-slate-700 border border-slate-400 shadow-sm' }, sel.formula)
                   ),
                   h('p', { className: 'text-xs text-slate-600 mt-1 leading-relaxed' }, sel.desc),
@@ -1519,7 +1519,7 @@
                         }
                       },
                         h('div', {
-                          className: 'w-14 h-14 rounded-xl flex items-center justify-center text-white font-black text-lg shadow-lg border-2 border-white/30',
+                          className: 'w-14 h-14 rounded-xl flex items-center justify-center text-white font-black text-lg shadow-lg border-2 border-white/30 tracking-tight',
                           style: { background: el.color }
                         }, el.sym),
                         h('span', { className: 'text-[11px] font-bold text-slate-600 mt-1' }, el.name),
@@ -1589,7 +1589,7 @@
                       SOUNDS.compare();
                       updMulti({ compareMode: true, compareTo: MATERIALS[1].name });
                     },
-                    className: 'w-full py-2 bg-indigo-50 text-indigo-700 font-bold text-sm rounded-xl border border-indigo-200 hover:bg-indigo-100 transition-all'
+                    className: 'w-full py-2 bg-indigo-50 text-indigo-700 font-bold text-sm rounded-xl border border-indigo-200 hover:bg-indigo-100 transition-all active:scale-[0.97]'
                   }, '\u2696 Compare Molecules')
                 );
               }
@@ -1611,7 +1611,7 @@
                   ),
                   h('button', { 'aria-label': 'Close',
                     onClick: function() { upd('compareMode', false); },
-                    className: 'ml-auto text-xs text-indigo-400 hover:text-indigo-600'
+                    className: 'transition-colors ml-auto text-xs text-indigo-400 hover:text-indigo-600'
                   }, '\u2715 Close')
                 ),
                 h('div', { className: 'grid grid-cols-2 gap-3' },
@@ -1668,7 +1668,7 @@
                 h('p', { className: 'text-[11px] font-bold text-cyan-600 uppercase tracking-wider mb-1' }, '\uD83C\uDF0D Real World'),
                 h('button', { 'aria-label': 'Speak Text',
                   onClick: function() { speakText(sel.realUse); },
-                  className: 'text-[11px] text-cyan-500 hover:text-cyan-700 font-bold'
+                  className: 'transition-colors text-[11px] text-cyan-500 hover:text-cyan-700 font-bold'
                 }, '\uD83D\uDD0A')
               ),
               h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, sel.realUse)
@@ -1692,7 +1692,7 @@
                   h('span', { className: 'text-[11px] font-bold text-violet-600 uppercase tracking-wider' }, '\uD83D\uDCA1 Did You Know?'),
                   h('button', { 'aria-label': 'Next',
                     onClick: function() { upd('_factIdx', factIdx + 1); },
-                    className: 'text-[11px] text-violet-500 hover:text-violet-700 font-bold'
+                    className: 'transition-colors text-[11px] text-violet-500 hover:text-violet-700 font-bold'
                   }, 'Next \u2192')
                 ),
                 h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, facts[fi]),
@@ -1715,7 +1715,7 @@
                       style: { background: el.color }
                     },
                       h('span', { className: 'text-[11px] opacity-70' }, el.num),
-                      h('span', { className: 'text-lg font-black leading-none' }, el.sym),
+                      h('span', { className: 'text-lg font-black leading-none tracking-tight' }, el.sym),
                       h('span', { className: 'text-[11px] opacity-80' }, el.mass + ' u')
                     ),
                     h('div', { className: 'flex-1' },
@@ -1776,7 +1776,7 @@
                   h('span', { style: { position: 'absolute', fontSize: 34, top: '5%', right: '25%' } }, '\uD83D\uDD2C')
                 ),
                 h('div', { className: 'relative text-center' },
-                  h('h4', { className: 'text-xl font-black text-white mb-1 flex items-center justify-center gap-2' }, '\uD83E\uDDEA Chemistry Hunt'),
+                  h('h4', { className: 'text-xl font-black text-white mb-1 flex items-center justify-center gap-2 tracking-tight' }, '\uD83E\uDDEA Chemistry Hunt'),
                   h('p', { className: 'text-xs text-indigo-300 leading-relaxed max-w-sm mx-auto' }, 'Explore real-world scenes. Can you find the object that contains each chemical compound?'),
                   huntScore > 0 ? h('div', { className: 'flex items-center justify-center gap-3 mt-3' },
                     h('span', { className: 'px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-900 border border-amber-500/30' }, '\u2B50 Score: ' + huntScore),
@@ -1801,7 +1801,7 @@
                       updMulti({ activeScene: scene.id, scenesVisited: visited, selectedSceneObj: null, huntTarget: target ? target.id : null, huntWrongGuess: null });
                     },
                     className: 'group relative rounded-2xl p-4 text-left border-2 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 ' +
-                      (complete ? 'border-emerald-400 bg-gradient-to-br from-emerald-50 to-teal-50' : 'border-slate-200 bg-white hover:border-indigo-600'),
+                      (complete ? 'border-emerald-400 bg-gradient-to-br from-emerald-50 to-teal-50' : 'transition-colors border-slate-200 bg-white hover:border-indigo-600'),
                     style: { borderLeftWidth: '6px', borderLeftColor: scene.accent, overflow: 'hidden' }
                   },
                     // Background scene tint
@@ -1891,7 +1891,7 @@
               return h('div', null,
                 // Scene header
                 h('div', { className: 'flex items-center gap-3 mb-4 rounded-2xl p-3', style: { background: 'linear-gradient(135deg, ' + scene.bgColor + ', ' + scene.accent + '15)' } },
-                  h('button', { 'aria-label': 'Exit decomposition scene', onClick: function() { updMulti({ activeScene: null, selectedSceneObj: null, huntTarget: null, huntWrongGuess: null }); }, className: 'p-2 hover:bg-white/60 rounded-xl transition-colors' }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
+                  h('button', { 'aria-label': 'Exit decomposition scene', onClick: function() { updMulti({ activeScene: null, selectedSceneObj: null, huntTarget: null, huntWrongGuess: null }); }, className: 'p-2 hover:bg-white/60 rounded-xl transition-colors active:scale-[0.97]' }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
                   h('div', {
                     className: 'flex items-center justify-center shrink-0 rounded-xl',
                     style: { width: 44, height: 44, background: 'white', border: '2px solid ' + scene.accent + '40', boxShadow: '0 2px 8px ' + scene.accent + '20' }
@@ -1922,7 +1922,7 @@
                   h('div', { className: 'absolute bottom-1 left-2 text-sm opacity-10 pointer-events-none' }, '\uD83E\uDDEA'),
                   h('p', { className: 'text-[11px] font-bold text-indigo-400 uppercase tracking-[0.15em] mb-2' }, '\uD83D\uDD0E Chemistry Challenge'),
                   h('div', { className: 'inline-flex items-center gap-3 px-5 py-2 rounded-xl', style: { background: 'white', boxShadow: '0 2px 12px rgba(99,102,241,0.15)' } },
-                    h('span', { className: 'text-2xl font-mono font-black', style: { color: '#312e81' } }, targetMat.formula),
+                    h('span', { className: 'text-2xl font-mono font-black tracking-tight', style: { color: '#312e81' } }, targetMat.formula),
                     h('div', { className: 'w-px h-6', style: { background: '#c7d2fe' } }),
                     h('span', { className: 'text-sm font-bold text-indigo-700' }, targetMat.name)
                   ),
@@ -1941,7 +1941,7 @@
                     h('span', { style: { position: 'absolute', fontSize: 28, top: '10%', right: '20%', opacity: 0.06 } }, '\uD83C\uDF1F')
                   ),
                   h('p', { className: 'text-2xl mb-1' }, '\uD83C\uDF89'),
-                  h('p', { className: 'text-lg font-black text-emerald-800' }, 'Scene Complete!'),
+                  h('p', { className: 'text-lg font-black text-emerald-800 tracking-tight' }, 'Scene Complete!'),
                   h('p', { className: 'text-xs text-emerald-600 mt-1' }, 'You identified every compound in the ' + scene.name + '.'),
                   h('div', { className: 'flex items-center justify-center gap-2 mt-3' },
                     scene.objects.map(function(o) { return h('span', { key: o.id, className: 'text-lg', title: o.name }, o.emoji); })
@@ -1959,7 +1959,7 @@
                       h('p', { className: 'text-xs font-bold text-red-700' }, 'Not quite! ' + wrongObj.name + ' contains:'),
                       h('p', { className: 'text-sm font-mono font-bold text-red-800 mt-0.5' }, wrongMat.formula + ' \u2014 ' + wrongMat.name)
                     ),
-                    h('button', { onClick: function() { upd('huntWrongGuess', null); }, className: 'p-1.5 hover:bg-red-100 rounded-lg transition-colors' }, h(X, { size: 14, className: 'text-red-400' }))
+                    h('button', { onClick: function() { upd('huntWrongGuess', null); }, className: 'p-1.5 hover:bg-red-100 rounded-lg transition-colors active:scale-[0.97]' }, h(X, { size: 14, className: 'text-red-400' }))
                   ),
                   targetMat ? h('p', { className: 'text-[11px] text-red-500 mt-2 font-medium pl-[52px]' }, '\uD83D\uDCA1 Keep looking for ' + targetMat.formula + ' (' + targetMat.name + ')') : null
                 ) : null,
@@ -2321,7 +2321,7 @@
                       h('h4', { className: 'font-bold text-slate-800' }, selObj.name),
                       h('span', { className: 'px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[11px] font-bold rounded-full' }, '\u2705 Identified')
                     ),
-                    h('button', { onClick: function() { upd('selectedSceneObj', null); }, className: 'p-1 hover:bg-slate-100 rounded' }, h(X, { size: 14, className: 'text-slate-600' }))
+                    h('button', { onClick: function() { upd('selectedSceneObj', null); }, className: 'transition-colors p-1 hover:bg-slate-100 rounded active:scale-[0.97]' }, h(X, { size: 14, className: 'text-slate-600' }))
                   ),
                   h('div', { className: 'bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg p-3 border border-amber-200' },
                     h('div', { className: 'flex items-center gap-2 mb-2' },
@@ -2345,9 +2345,9 @@
                       })
                     ),
                     h('div', { className: 'flex gap-2 mt-3' },
-                      h('button', { 'aria-label': 'Explore', onClick: function() { updMulti({ selected: linkedMat.name, decomposed: false, tab: 'explore' }); }, className: 'flex-1 py-2 bg-amber-700 text-white font-bold text-xs rounded-lg hover:bg-amber-600 transition-all' }, '\u2697\uFE0F Explore'),
-                      h('button', { 'aria-label': 'Visualize', onClick: function() { updMulti({ selected: linkedMat.name, decomposed: false, tab: 'visualize' }); }, className: 'flex-1 py-2 bg-indigo-500 text-white font-bold text-xs rounded-lg hover:bg-indigo-600 transition-all' }, '\uD83C\uDFA8 Visualize'),
-                      h('button', { 'aria-label': 'Speak Text', onClick: function() { speakText(selObj.name + ' contains ' + linkedMat.name + '. ' + linkedMat.desc); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 font-bold text-xs rounded-lg hover:bg-slate-200 transition-all' }, '\uD83D\uDD0A')
+                      h('button', { 'aria-label': 'Explore', onClick: function() { updMulti({ selected: linkedMat.name, decomposed: false, tab: 'explore' }); }, className: 'flex-1 py-2 bg-amber-700 text-white font-bold text-xs rounded-lg hover:bg-amber-600 transition-all active:scale-[0.97]' }, '\u2697\uFE0F Explore'),
+                      h('button', { 'aria-label': 'Visualize', onClick: function() { updMulti({ selected: linkedMat.name, decomposed: false, tab: 'visualize' }); }, className: 'flex-1 py-2 bg-indigo-500 text-white font-bold text-xs rounded-lg hover:bg-indigo-600 transition-all active:scale-[0.97]' }, '\uD83C\uDFA8 Visualize'),
+                      h('button', { 'aria-label': 'Speak Text', onClick: function() { speakText(selObj.name + ' contains ' + linkedMat.name + '. ' + linkedMat.desc); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 font-bold text-xs rounded-lg hover:bg-slate-200 transition-all active:scale-[0.97]' }, '\uD83D\uDD0A')
                     )
                   )
                 ) : null,
@@ -2361,7 +2361,7 @@
                       return h('button', { key: obj.id,
                         onClick: function() { SOUNDS.elementClick(); upd('selectedSceneObj', selectedSceneObj === obj.id ? null : obj.id); },
                         className: 'px-2 py-1 rounded-lg text-[11px] font-bold border transition-all ' +
-                          (selectedSceneObj === obj.id ? 'bg-amber-100 border-amber-400 text-amber-800' : 'bg-white border-slate-200 text-slate-600 hover:border-amber-600')
+                          (selectedSceneObj === obj.id ? 'bg-amber-100 border-amber-400 text-amber-800' : 'transition-colors bg-white border-slate-200 text-slate-600 hover:border-amber-600')
                       }, obj.emoji + ' ' + (mat ? mat.formula : obj.name));
                     })
                   )
@@ -2376,7 +2376,7 @@
              ═══════════════════════════════════════════════════ */
           tab === 'reactions' && h('div', null,
             h('div', { className: 'text-center mb-4' },
-              h('h4', { className: 'text-lg font-bold text-slate-800' }, '\uD83C\uDF0B Reaction Lab'),
+              h('h4', { className: 'text-lg font-bold text-slate-800 tracking-tight' }, '\uD83C\uDF0B Reaction Lab'),
               h('p', { className: 'text-xs text-slate-600 mt-1' }, 'Pick two materials and see what happens when they react!')
             ),
 
@@ -2415,7 +2415,7 @@
                     else if (!isA && !isB) { updMulti({ reactantA: m.name, reactantB: null, activeReaction: null }); }
                   },
                   className: 'px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all ' +
-                    (isA ? 'bg-indigo-500 text-white' : isB ? 'bg-rose-700 text-white' : 'bg-slate-50 text-slate-600 border border-slate-400 hover:border-amber-600')
+                    (isA ? 'bg-indigo-500 text-white' : isB ? 'bg-rose-700 text-white' : 'transition-colors bg-slate-50 text-slate-600 border border-slate-400 hover:border-amber-600')
                 }, m.emoji + ' ' + m.name);
               })
             ),
@@ -2456,7 +2456,7 @@
                   h('div', { className: 'flex items-center gap-3 mb-3' },
                     h('span', { className: 'text-3xl' }, activeReaction.emoji),
                     h('div', null,
-                      h('h4', { className: 'font-bold text-slate-800 text-lg' }, activeReaction.name),
+                      h('h4', { className: 'font-bold text-slate-800 text-lg tracking-tight' }, activeReaction.name),
                       h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700' }, activeReaction.type)
                     )
                   ),
@@ -2476,11 +2476,11 @@
                   h('div', { className: 'flex gap-2' },
                     h('button', { 'aria-label': 'Listen',
                       onClick: function() { speakText(activeReaction.name + '. ' + activeReaction.desc); },
-                      className: 'px-3 py-2 bg-slate-100 text-slate-600 font-bold text-xs rounded-lg hover:bg-slate-200'
+                      className: 'transition-colors px-3 py-2 bg-slate-100 text-slate-600 font-bold text-xs rounded-lg hover:bg-slate-200 active:scale-[0.97]'
                     }, '\uD83D\uDD0A Listen'),
                     h('button', { 'aria-label': 'Try Another Combo',
                       onClick: function() { updMulti({ reactantA: null, reactantB: null, activeReaction: null }); },
-                      className: 'flex-1 py-2 bg-amber-700 text-white font-bold text-xs rounded-lg hover:bg-amber-600'
+                      className: 'transition-colors flex-1 py-2 bg-amber-700 text-white font-bold text-xs rounded-lg hover:bg-amber-600 active:scale-[0.97]'
                     }, '\uD83D\uDD04 Try Another Combo')
                   )
                 ) : null
@@ -2509,7 +2509,7 @@
              ═══════════════════════════════════════════════════ */
           tab === 'states' && h('div', null,
             h('div', { className: 'text-center mb-3' },
-              h('h4', { className: 'text-lg font-bold text-slate-800' }, '\uD83C\uDF21\uFE0F States of Matter'),
+              h('h4', { className: 'text-lg font-bold text-slate-800 tracking-tight' }, '\uD83C\uDF21\uFE0F States of Matter'),
               h('p', { className: 'text-xs text-slate-600 mt-1' }, 'See how ' + sel.name + ' particles behave as a solid, liquid, or gas. Drag the temperature slider!')
             ),
 
@@ -2714,7 +2714,7 @@
               ),
               h('button', { 'aria-label': 'Listen',
                 onClick: function() { speakText('In a solid, particles vibrate in fixed positions. In a liquid, they slide past each other. In a gas, they fly freely and fill the container. Temperature controls how fast they move.'); },
-                className: 'mt-2 text-[11px] text-sky-600 hover:text-sky-800 font-bold'
+                className: 'transition-colors mt-2 text-[11px] text-sky-600 hover:text-sky-800 font-bold'
               }, '\uD83D\uDD0A Listen')
             )
           ),
@@ -2752,12 +2752,12 @@
                 },
                 className: 'flex-1 py-2.5 rounded-xl text-sm font-bold transition-all '
                   + (decomposed
-                    ? 'bg-red-700 text-white shadow-lg hover:bg-red-600'
+                    ? 'transition-colors bg-red-700 text-white shadow-lg hover:bg-red-600 active:scale-[0.97]'
                     : 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600 shadow-md')
               }, decomposed ? '\uD83D\uDD04 Reassemble' : '\u26A1 Decompose'),
               h('button', { 'aria-label': 'Describe',
                 onClick: function() { speakText(sel.name + ' has the formula ' + sel.formula + '. ' + sel.desc); },
-                className: 'px-4 py-2.5 bg-indigo-50 text-indigo-700 font-bold text-sm rounded-xl border border-indigo-200 hover:bg-indigo-100'
+                className: 'transition-colors px-4 py-2.5 bg-indigo-50 text-indigo-700 font-bold text-sm rounded-xl border border-indigo-200 hover:bg-indigo-100 active:scale-[0.97]'
               }, '\uD83D\uDD0A Describe')
             ),
 
@@ -2791,19 +2791,19 @@
             /* Molecule stats card */
             h('div', { className: 'grid grid-cols-4 gap-2 mb-3' },
               h('div', { className: 'bg-white rounded-xl border border-slate-400 p-2 text-center' },
-                h('div', { className: 'text-lg font-black text-slate-800' }, totalAtoms),
+                h('div', { className: 'text-lg font-black text-slate-800 tracking-tight' }, totalAtoms),
                 h('div', { className: 'text-[11px] font-bold text-slate-600' }, 'Total Atoms')
               ),
               h('div', { className: 'bg-white rounded-xl border border-slate-400 p-2 text-center' },
-                h('div', { className: 'text-lg font-black text-slate-800' }, sel.elements.length),
+                h('div', { className: 'text-lg font-black text-slate-800 tracking-tight' }, sel.elements.length),
                 h('div', { className: 'text-[11px] font-bold text-slate-600' }, 'Elements')
               ),
               h('div', { className: 'bg-white rounded-xl border border-slate-400 p-2 text-center' },
-                h('div', { className: 'text-lg font-black text-slate-800' }, sel.bondType.split(' ')[0]),
+                h('div', { className: 'text-lg font-black text-slate-800 tracking-tight' }, sel.bondType.split(' ')[0]),
                 h('div', { className: 'text-[11px] font-bold text-slate-600' }, 'Bond Type')
               ),
               h('div', { className: 'bg-white rounded-xl border border-slate-400 p-2 text-center' },
-                h('div', { className: 'text-lg font-black text-slate-800' }, sel.state),
+                h('div', { className: 'text-lg font-black text-slate-800 tracking-tight' }, sel.state),
                 h('div', { className: 'text-[11px] font-bold text-slate-600' }, 'State')
               )
             )
@@ -2853,7 +2853,7 @@
                   var isCorrect = opt === quizQ.answer;
                   var wasChosen = quizQ.chosen === opt;
                   var cls = !quizQ.answered
-                    ? 'bg-white text-slate-700 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50'
+                    ? 'transition-colors bg-white text-slate-700 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 active:scale-[0.97]'
                     : isCorrect
                       ? 'bg-emerald-100 text-emerald-800 border-emerald-600'
                       : wasChosen && !isCorrect
@@ -2925,7 +2925,7 @@
                       onClick: function() {
                         studyDecomposerVocab(concept);
                       },
-                      className: 'px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-[10px] shrink-0 self-start sm:self-center transition-all hover:scale-105'
+                      className: 'px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-[10px] shrink-0 self-start sm:self-center transition-all hover:scale-105 active:scale-[0.97]'
                     }, '📖 Study Term (+5 RP)')
                   );
                 })()
@@ -2934,22 +2934,22 @@
               /* Next question button (after answer) */
               quizQ.answered && h('button', { 'aria-label': 'Next Question',
                 onClick: function() { upd('quizQ', makeQuiz()); },
-                className: 'w-full py-2.5 bg-indigo-600 text-white font-bold text-sm rounded-xl hover:bg-indigo-700 transition-all'
+                className: 'w-full py-2.5 bg-indigo-600 text-white font-bold text-sm rounded-xl hover:bg-indigo-700 transition-all active:scale-[0.97]'
               }, '\u27A1 Next Question')
             ),
 
             /* Quiz stats panel */
             quizScore > 0 && h('div', { className: 'grid grid-cols-3 gap-2 mb-3' },
               h('div', { className: 'bg-emerald-50 rounded-xl border border-emerald-200 p-3 text-center' },
-                h('div', { className: 'text-2xl font-black text-emerald-700' }, quizScore),
+                h('div', { className: 'text-2xl font-black text-emerald-700 tracking-tight' }, quizScore),
                 h('div', { className: 'text-[11px] font-bold text-emerald-500' }, 'Correct')
               ),
               h('div', { className: 'bg-orange-50 rounded-xl border border-orange-200 p-3 text-center' },
-                h('div', { className: 'text-2xl font-black text-orange-700' }, quizStreak),
+                h('div', { className: 'text-2xl font-black text-orange-700 tracking-tight' }, quizStreak),
                 h('div', { className: 'text-[11px] font-bold text-orange-500' }, 'Current Streak')
               ),
               h('div', { className: 'bg-purple-50 rounded-xl border border-purple-200 p-3 text-center' },
-                h('div', { className: 'text-2xl font-black text-purple-700' }, bestStreak),
+                h('div', { className: 'text-2xl font-black text-purple-700 tracking-tight' }, bestStreak),
                 h('div', { className: 'text-[11px] font-bold text-purple-500' }, 'Best Streak')
               )
             ),
@@ -2959,7 +2959,7 @@
               onClick: function() {
                 updMulti({ quizScore: 0, quizStreak: 0, quizQ: null, quizMode: false });
               },
-              className: 'text-xs text-slate-600 hover:text-slate-800 font-bold'
+              className: 'transition-colors text-xs text-slate-600 hover:text-slate-800 font-bold'
             }, '\uD83D\uDD04 Reset Quiz')
           ),
 
@@ -2995,7 +2995,7 @@
                     msg.text,
                     !isUser && h('button', { 'aria-label': 'Speak Text',
                       onClick: function() { speakText(msg.text); },
-                      className: 'ml-2 text-[11px] text-purple-400 hover:text-purple-600'
+                      className: 'transition-colors ml-2 text-[11px] text-purple-400 hover:text-purple-600'
                     }, '\uD83D\uDD0A')
                   )
                 );
@@ -3025,7 +3025,7 @@
                   if (aiInput.trim()) handleAiQuestion(aiInput.trim());
                 },
                 disabled: !aiInput.trim() || aiLoading,
-                className: 'px-4 py-2 bg-purple-600 text-white font-bold text-sm rounded-xl hover:bg-purple-700 transition-all disabled:opacity-50'
+                className: 'px-4 py-2 bg-purple-600 text-white font-bold text-sm rounded-xl hover:bg-purple-700 transition-all disabled:opacity-50 active:scale-[0.97]'
               }, '\u2191')
             ),
 
@@ -3040,7 +3040,7 @@
                 return h('button', { 'aria-label': 'Ask question',
                   key: i,
                   onClick: function() { handleAiQuestion(q); },
-                  className: 'px-2.5 py-1 bg-purple-50 text-purple-700 text-[11px] font-bold rounded-lg border border-purple-200 hover:bg-purple-100 transition-all'
+                  className: 'px-2.5 py-1 bg-purple-50 text-purple-700 text-[11px] font-bold rounded-lg border border-purple-200 hover:bg-purple-100 transition-all active:scale-[0.97]'
                 }, q);
               })
             )

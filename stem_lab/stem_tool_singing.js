@@ -2689,11 +2689,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         var headingClass = isDark ? 'text-white font-bold' : 'text-slate-900 font-bold';
         var subTextClass = isDark ? 'text-slate-200 text-xs' : 'text-slate-600 text-xs';
         var btnPrimary = 'px-4 py-2 rounded-lg font-bold text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ' +
-          (isDark ? 'bg-rose-600 hover:bg-rose-700 text-white focus:ring-rose-400' : 'bg-rose-600 hover:bg-rose-700 text-white focus:ring-rose-500');
+          (isDark ? 'transition-colors bg-rose-600 hover:bg-rose-700 text-white focus:ring-rose-400 active:scale-[0.97]' : 'transition-colors bg-rose-600 hover:bg-rose-700 text-white focus:ring-rose-500 active:scale-[0.97]');
         var btnSecondary = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors focus:outline-none focus:ring-2 ' +
-          (isDark ? 'bg-slate-700 hover:bg-slate-600 text-slate-200 focus:ring-slate-500' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 focus:ring-slate-400');
+          (isDark ? 'transition-colors bg-slate-700 hover:bg-slate-600 text-slate-200 focus:ring-slate-500 active:scale-[0.97]' : 'transition-colors bg-slate-100 hover:bg-slate-200 text-slate-700 focus:ring-slate-400 active:scale-[0.97]');
         var btnDanger = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors focus:outline-none focus:ring-2 ' +
-          (isDark ? 'bg-red-700 hover:bg-red-600 text-white focus:ring-red-400' : 'bg-red-100 hover:bg-red-200 text-red-700 focus:ring-red-400');
+          (isDark ? 'transition-colors bg-red-700 hover:bg-red-600 text-white focus:ring-red-400 active:scale-[0.97]' : 'transition-colors bg-red-100 hover:bg-red-200 text-red-700 focus:ring-red-400 active:scale-[0.97]');
 
         // ════════════════════════════════════════
         // Mic toggle button (shared across tabs)
@@ -2808,7 +2808,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                     className: 'px-2 py-1.5 rounded text-xs font-mono font-bold transition-colors ' +
                       (isActive
                         ? 'bg-rose-700 text-white ring-2 ring-rose-300'
-                        : (isDark ? 'bg-slate-700 hover:bg-slate-600 text-slate-200' : 'bg-slate-100 hover:bg-slate-200 text-slate-700')),
+                        : (isDark ? 'transition-colors bg-slate-700 hover:bg-slate-600 text-slate-200 active:scale-[0.97]' : 'transition-colors bg-slate-100 hover:bg-slate-200 text-slate-700 active:scale-[0.97]')),
                     onClick: function() {
                       if (isActive) {
                         stopRefTone();
@@ -2860,7 +2860,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
               pitchMatchMode === 'playing' && h('div', { className: 'space-y-2' },
                 h('div', {
-                  className: 'text-center text-3xl font-black ' + (isDark ? 'text-rose-300' : 'text-rose-600'),
+                  className: 'text-center text-3xl font-black  tracking-tight' + (isDark ? 'text-rose-300' : 'text-rose-600'),
                   role: 'status'
                 }, 'Match: ' + (pitchMatchTarget ? midiToNoteName(pitchMatchTarget).str : '')),
                 h('div', { className: 'text-center ' + subTextClass },
@@ -2878,7 +2878,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
               pitchMatchMode === 'matched' && h('div', { className: 'space-y-2 text-center' },
                 h('div', {
-                  className: 'text-2xl font-black ' + (isDark ? 'text-green-400' : 'text-green-600')
+                  className: 'text-2xl font-black  tracking-tight' + (isDark ? 'text-green-400' : 'text-green-600')
                 }, '\u2705 Matched!'),
                 h('div', { className: headingClass + ' text-lg' },
                   'Score: ' + pitchMatchScore),
@@ -2943,7 +2943,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   h('div', { className: subTextClass + ' mt-1' },
                     'Hold the note steady for about 1 second.'),
                   currentNote.midi > 0 && h('div', {
-                    className: 'mt-2 text-lg font-bold',
+                    className: 'mt-2 text-lg font-bold tracking-tight',
                     style: { color: '#3b82f6' }
                   }, 'Detecting: ' + currentNote.note + currentNote.octave)
                 ),
@@ -2965,7 +2965,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                     'Hold it steady for about 1 second. Low note captured: ' +
                     (rangeLowTemp ? midiToNoteName(rangeLowTemp).str : '...')),
                   currentNote.midi > 0 && h('div', {
-                    className: 'mt-2 text-lg font-bold',
+                    className: 'mt-2 text-lg font-bold tracking-tight',
                     style: { color: '#a855f7' }
                   }, 'Detecting: ' + currentNote.note + currentNote.octave)
                 ),
@@ -3168,7 +3168,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               h('div', { className: cardClass + ' text-center' },
                 h('div', { className: subTextClass + ' mb-1' }, 'Quality'),
                 h('div', {
-                  className: 'text-lg font-bold',
+                  className: 'text-lg font-bold tracking-tight',
                   style: { color: quality.color }
                 }, quality.label),
                 h('div', { className: subTextClass }, quality.desc))
@@ -3187,7 +3187,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                     className: 'text-left p-3 rounded-lg border transition-colors ' +
                       (isActive
                         ? (isDark ? 'border-rose-500 bg-rose-900/30' : 'border-rose-400 bg-rose-50')
-                        : (isDark ? 'border-slate-600 bg-slate-700 hover:bg-slate-600' : 'border-slate-200 bg-slate-50 hover:bg-slate-100')),
+                        : (isDark ? 'transition-colors border-slate-600 bg-slate-700 hover:bg-slate-600 active:scale-[0.97]' : 'transition-colors border-slate-200 bg-slate-50 hover:bg-slate-100 active:scale-[0.97]')),
                     onClick: function() {
                       setVibratoExercise(isActive ? null : ex.id);
                       setVibratoHistory([]);
@@ -3328,7 +3328,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   className: 'text-center p-4 rounded-lg ' +
                     (isDark ? 'bg-rose-900/30 border border-rose-700' : 'bg-rose-50 border border-rose-200')
                 },
-                  h('div', { className: 'text-lg font-bold ' + (isDark ? 'text-rose-300' : 'text-rose-600') },
+                  h('div', { className: 'text-lg font-bold  tracking-tight' + (isDark ? 'text-rose-300' : 'text-rose-600') },
                     'Sing a ' + intervalActive.interval.name + ' ' + intervalActive.direction.toUpperCase()),
                   h('div', { className: headingClass + ' text-2xl mt-2' },
                     'From: ' + midiToNoteName(intervalActive.refMidi).str + ' \u2192 Target: ' + midiToNoteName(intervalActive.targetMidi).str),
@@ -3599,7 +3599,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                         className: 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border ' +
                           (isActive
                             ? (isDark ? 'bg-rose-600 border-rose-500 text-white' : 'bg-rose-600 border-rose-500 text-white')
-                            : (isDark ? 'bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100')),
+                            : (isDark ? 'transition-colors bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600 active:scale-[0.97]' : 'transition-colors bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 active:scale-[0.97]')),
                         onClick: function() { setAnatomyAnim(mode); }
                       }, icons[mode] + ' ' + labels[mode]);
                     })
@@ -3652,7 +3652,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                         className: 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border-2 ' +
                           (isActive
                             ? 'text-white shadow-md'
-                            : (isDark ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-900')),
+                            : (isDark ? 'transition-colors text-slate-300 hover:text-white' : 'transition-colors text-slate-600 hover:text-slate-900')),
                         style: isActive
                           ? { backgroundColor: region.color, borderColor: region.color }
                           : { borderColor: region.color + '60', backgroundColor: 'transparent' },
@@ -3855,7 +3855,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   return h('button', {
                     key: ex.id,
                     className: 'text-left p-3 rounded-lg border transition-colors ' +
-                      (isDark ? 'border-slate-600 bg-slate-700 hover:bg-slate-600' : 'border-slate-200 bg-slate-50 hover:bg-slate-100'),
+                      (isDark ? 'transition-colors border-slate-600 bg-slate-700 hover:bg-slate-600 active:scale-[0.97]' : 'transition-colors border-slate-200 bg-slate-50 hover:bg-slate-100 active:scale-[0.97]'),
                     onClick: function() { startWarmup(ex); }
                   },
                     h('div', { className: 'flex items-center gap-2 mb-1' },
@@ -4135,21 +4135,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ' +
                     (srSource === 'generate'
                       ? (isDark ? 'bg-rose-600 text-white' : 'bg-rose-700 text-white')
-                      : (isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')),
+                      : (isDark ? 'transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600 active:scale-[0.97]' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]')),
                   onClick: function() { setSrSource('generate'); }
                 }, 'Random'),
                 h('button', {
                   className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ' +
                     (srSource === 'melody'
                       ? (isDark ? 'bg-rose-600 text-white' : 'bg-rose-700 text-white')
-                      : (isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')),
+                      : (isDark ? 'transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600 active:scale-[0.97]' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]')),
                   onClick: function() { setSrSource('melody'); }
                 }, 'Melodies'),
                 callGemini && h('button', {
                   className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ' +
                     (srSource === 'ai'
                       ? (isDark ? 'bg-rose-600 text-white' : 'bg-rose-700 text-white')
-                      : (isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')),
+                      : (isDark ? 'transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600 active:scale-[0.97]' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]')),
                   onClick: function() { setSrSource('ai'); }
                 }, 'AI Generate')
               ),
@@ -4166,7 +4166,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                       className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ' +
                         (isActive
                           ? 'text-white'
-                          : (isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')),
+                          : (isDark ? 'transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600 active:scale-[0.97]' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]')),
                       style: isActive ? { backgroundColor: colors[lvl] } : {},
                       onClick: function() { setSrDifficulty(lvl); }
                     }, lvl.charAt(0).toUpperCase() + lvl.slice(1));
@@ -4190,7 +4190,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                       className: 'text-left px-3 py-2 rounded-lg text-xs font-semibold transition-colors ' +
                         (isActive
                           ? (isDark ? 'bg-rose-600 text-white' : 'bg-rose-700 text-white')
-                          : (isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')),
+                          : (isDark ? 'transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600 active:scale-[0.97]' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]')),
                       onClick: function() { setSrMelodyId(mel.id); }
                     },
                       h('span', null, mel.label),
@@ -4239,7 +4239,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 currentNote.midi > 0 && h('div', null,
                   h('span', { className: subTextClass }, 'You: '),
                   h('span', {
-                    className: 'font-bold text-lg',
+                    className: 'font-bold text-lg tracking-tight',
                     style: { color: Math.abs(currentNote.midi - srNotes[srCurrentIdx].midi) * 100 <= 25 ? '#22c55e' : '#ef4444' }
                   }, currentNote.note + currentNote.octave)),
                 h('div', null,
@@ -4480,7 +4480,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 className: 'flex-1 px-2 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-rose-400 ' +
                   (isActive
                     ? (isDark ? 'bg-rose-600 text-white shadow-sm' : 'bg-white text-rose-700 shadow-sm')
-                    : (isDark ? 'text-slate-200 hover:bg-slate-700 hover:text-white' : 'text-slate-600 hover:text-slate-700')),
+                    : (isDark ? 'transition-colors text-slate-200 hover:bg-slate-700 hover:text-white active:scale-[0.97]' : 'transition-colors text-slate-600 hover:text-slate-700')),
                 onClick: function() { setActiveTab(tab.id); },
                 onKeyDown: function(e) {
                   var tabIds = TABS.map(function(t) { return t.id; });

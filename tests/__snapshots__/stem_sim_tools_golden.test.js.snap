@@ -18,10 +18,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for anato
   "buttons": 63,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 149,
+  "lengthBucket": 159,
   "paths": 0,
   "selects": 0,
-  "sha": "57ae1f979331c0ec",
+  "sha": "abf9ce8d9b94311e",
   "svgs": 0,
 }
 `;
@@ -96,10 +96,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for cell 
   "buttons": 34,
   "canvases": 1,
   "inputs": 3,
-  "lengthBucket": 71,
+  "lengthBucket": 73,
   "paths": 0,
   "selects": 0,
-  "sha": "f8d1824b413b4c0d",
+  "sha": "050c3e619d19b6ad",
   "svgs": 0,
 }
 `;
@@ -252,10 +252,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for molec
   "buttons": 97,
   "canvases": 0,
   "inputs": 1,
-  "lengthBucket": 129,
+  "lengthBucket": 152,
   "paths": 0,
   "selects": 0,
-  "sha": "041e97fc76ecc7a4",
+  "sha": "8466e5d9249a036a",
   "svgs": 1,
 }
 `;
@@ -304,10 +304,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for rockC
   "buttons": 13,
   "canvases": 1,
   "inputs": 0,
-  "lengthBucket": 27,
+  "lengthBucket": 28,
   "paths": 0,
   "selects": 1,
-  "sha": "e7972c44071af6dd",
+  "sha": "10a3f87b3898bf2d",
   "svgs": 0,
 }
 `;
@@ -317,10 +317,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for rocks
   "buttons": 8,
   "canvases": 1,
   "inputs": 0,
-  "lengthBucket": 28,
+  "lengthBucket": 29,
   "paths": 0,
   "selects": 0,
-  "sha": "1b6ce7cfb5d2edf8",
+  "sha": "f47433afc45a5189",
   "svgs": 0,
 }
 `;
@@ -385,7 +385,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for titra
   "lengthBucket": 59,
   "paths": 0,
   "selects": 0,
-  "sha": "74cf4952fdb3a8fd",
+  "sha": "0406e1a84a738883",
   "svgs": 0,
 }
 `;
@@ -395,10 +395,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for water
   "buttons": 17,
   "canvases": 1,
   "inputs": 4,
-  "lengthBucket": 77,
+  "lengthBucket": 78,
   "paths": 0,
   "selects": 0,
-  "sha": "8a62b7672cebc3b8",
+  "sha": "7c73531b2bd6b0c1",
   "svgs": 0,
 }
 `;
@@ -408,10 +408,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for wave 
   "buttons": 68,
   "canvases": 1,
   "inputs": 8,
-  "lengthBucket": 114,
+  "lengthBucket": 130,
   "paths": 0,
   "selects": 0,
-  "sha": "a2741ec0d94e53f5",
+  "sha": "8420e1a41ac6aed8",
   "svgs": 0,
 }
 `;

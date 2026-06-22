@@ -7726,10 +7726,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           h('button', {
             onClick: function() { setView('menu'); upd('view', 'menu'); },
             'aria-label': 'Back to BirdLab menu',
-            className: 'px-3 py-1.5 rounded-lg bg-white/20 hover:bg-white/30 font-bold text-sm transition-colors'
+            className: 'px-3 py-1.5 rounded-lg bg-white/20 hover:bg-white/30 font-bold text-sm transition-colors active:scale-[0.97]'
           }, '← Menu'),
           h('span', { className: 'text-3xl' }, props.icon),
-          h('h1', { className: 'text-xl font-black flex-1' }, props.title)
+          h('h1', { className: 'text-xl font-black flex-1 tracking-tight' }, props.title)
         );
       }
 
@@ -7800,11 +7800,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var links = birdLinks(name, sciName);
         var btnSize = size === 'xs' ? 'px-2 py-0.5 text-[10px]' : 'px-2.5 py-1 text-xs';
         var ITEMS = [
-          { key: 'ebird', label: '📊 eBird', url: links.ebird, color: 'transition-colors bg-sky-100 text-sky-800 border-sky-400 hover:bg-sky-200' },
-          { key: 'allAboutBirds', label: '🦅 All About Birds', url: links.allAboutBirds, color: 'transition-colors bg-amber-100 text-amber-800 border-amber-400 hover:bg-amber-200' },
-          { key: 'audubon', label: '🐦 Audubon', url: links.audubon, color: 'transition-colors bg-emerald-100 text-emerald-800 border-emerald-400 hover:bg-emerald-200' },
-          { key: 'wikipedia', label: '📖 Wikipedia', url: links.wikipedia, color: 'transition-colors bg-slate-100 text-slate-800 border-slate-400 hover:bg-slate-200' },
-          { key: 'inaturalist', label: '🔎 iNaturalist', url: links.inaturalist, color: 'transition-colors bg-violet-100 text-violet-800 border-violet-400 hover:bg-violet-200' }
+          { key: 'ebird', label: '📊 eBird', url: links.ebird, color: 'transition-colors bg-sky-100 text-sky-800 border-sky-400 hover:bg-sky-200 active:scale-[0.97]' },
+          { key: 'allAboutBirds', label: '🦅 All About Birds', url: links.allAboutBirds, color: 'transition-colors bg-amber-100 text-amber-800 border-amber-400 hover:bg-amber-200 active:scale-[0.97]' },
+          { key: 'audubon', label: '🐦 Audubon', url: links.audubon, color: 'transition-colors bg-emerald-100 text-emerald-800 border-emerald-400 hover:bg-emerald-200 active:scale-[0.97]' },
+          { key: 'wikipedia', label: '📖 Wikipedia', url: links.wikipedia, color: 'transition-colors bg-slate-100 text-slate-800 border-slate-400 hover:bg-slate-200 active:scale-[0.97]' },
+          { key: 'inaturalist', label: '🔎 iNaturalist', url: links.inaturalist, color: 'transition-colors bg-violet-100 text-violet-800 border-violet-400 hover:bg-violet-200 active:scale-[0.97]' }
         ];
         return h('div', { className: 'flex flex-wrap gap-1.5', role: 'group', 'aria-label': 'External resources for ' + name },
           ITEMS.map(function(item) {
@@ -7920,7 +7920,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               'aria-label': 'Print this module page',
               onClick: function(e) { e.preventDefault(); e.stopPropagation(); try { window.print(); } catch (_) {} },
               onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); try { window.print(); } catch (_) {} } },
-              className: 'transition-colors birdlab-no-print text-xs font-semibold normal-case px-2 py-1 rounded bg-white border border-amber-300 hover:bg-amber-100 text-amber-800'
+              className: 'transition-colors birdlab-no-print text-xs font-semibold normal-case px-2 py-1 rounded bg-white border border-amber-300 hover:bg-amber-100 text-amber-800 active:scale-[0.97]'
             }, '🖨️ Print')
           ),
           h('div', { className: 'mt-3 space-y-3 text-sm' },
@@ -8990,7 +8990,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 h('span', { className: isBig ? 'text-5xl' : 'text-4xl' }, c.icon),
                 h('span', { className: 'bg-white/20 backdrop-blur px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider' }, isBig ? 'Core' : 'Lab')
               ),
-              h('h2', { className: isBig ? 'text-2xl font-black' : 'text-xl font-black' }, c.title),
+              h('h2', { className: isBig ? 'text-2xl font-black tracking-tight' : 'text-xl font-black tracking-tight' }, c.title),
               h('p', { className: 'text-sm opacity-90 font-medium' }, c.subtitle)
             ),
             h('div', { className: 'p-5' },
@@ -9169,7 +9169,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 // CTA arrow
                 h('span', {
                   'aria-hidden': 'true',
-                  className: 'text-2xl text-amber-700 font-black flex-shrink-0',
+                  className: 'text-2xl text-amber-700 font-black flex-shrink-0 tracking-tight',
                   style: { textShadow: '0 1px 0 rgba(255,255,255,0.85)' }
                 }, '→')
               ),
@@ -9207,7 +9207,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             },
               h('div', { className: 'p-4 flex items-center gap-4 flex-wrap' },
                 h('div', { className: 'flex-shrink-0 text-center', style: { minWidth: 86 } },
-                  h('div', { className: 'text-3xl font-black text-emerald-800 leading-none' }, spottedCount + ' / ' + allKeys.length),
+                  h('div', { className: 'text-3xl font-black text-emerald-800 leading-none tracking-tight' }, spottedCount + ' / ' + allKeys.length),
                   h('div', { className: 'text-[9px] uppercase tracking-widest text-slate-700 font-bold mt-1' }, 'Life List')
                 ),
                 h('div', { className: 'flex-1 min-w-0' },
@@ -9227,7 +9227,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                         : 'Keep spotting to build your list.')
                   )
                 ),
-                h('span', { 'aria-hidden': true, className: 'text-2xl text-emerald-700 font-black flex-shrink-0' }, '→')
+                h('span', { 'aria-hidden': true, className: 'text-2xl text-emerald-700 font-black flex-shrink-0 tracking-tight' }, '→')
               ),
               h('div', { className: 'px-4 py-2 bg-white/60 border-t border-emerald-300 text-xs text-emerald-900 font-bold' },
                 ctaLabel
@@ -9836,7 +9836,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               h('span', { className: 'text-3xl', 'aria-hidden': 'true' }, '🎉'),
               h('div', null,
                 h('div', { className: 'text-[10px] font-black uppercase tracking-widest opacity-90' }, 'New lifer'),
-                h('div', { className: 'text-lg font-black leading-tight' }, liferCelebration.species.name),
+                h('div', { className: 'text-lg font-black leading-tight tracking-tight' }, liferCelebration.species.name),
                 h('div', { className: 'text-xs opacity-95 italic' }, 'Added to your life list (' + (Object.keys(d.blLifeList || {}).length) + ' / ' + totalSpecies + ')')
               )
             )
@@ -9905,24 +9905,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     h('button', {
                       onClick: openSpotterDiary,
                       'aria-label': 'Open Spotter\'s Diary — printable summary of your achievements',
-                      className: 'transition-colors text-[10px] px-2 py-0.5 rounded border bg-white border-emerald-300 text-emerald-800 hover:bg-emerald-50 normal-case tracking-normal font-bold focus:outline-none focus:ring-2 ring-emerald-500/40',
+                      className: 'transition-colors text-[10px] px-2 py-0.5 rounded border bg-white border-emerald-300 text-emerald-800 hover:bg-emerald-50 normal-case tracking-normal font-bold focus:outline-none focus:ring-2 ring-emerald-500/40 active:scale-[0.97]',
                       title: 'Open your Spotter\'s Diary — print or save a summary'
                     }, '📔 Diary')
                   ),
                   h('div', { className: 'flex items-center gap-3 flex-wrap text-center' },
                     h('div', { className: 'flex-shrink-0', 'aria-label': 'Lifers: ' + totalLifers + ' unique species' },
-                      h('div', { className: 'text-xl font-black text-emerald-700', 'aria-hidden': 'true' }, totalLifers),
+                      h('div', { className: 'text-xl font-black text-emerald-700 tracking-tight', 'aria-hidden': 'true' }, totalLifers),
                       h('div', { className: 'text-[9px] uppercase tracking-wider text-slate-700' }, 'lifers')
                     ),
                     h('div', { className: 'w-px h-8 bg-slate-300', 'aria-hidden': 'true' }),
                     h('div', { className: 'flex-shrink-0', 'aria-label': 'Best streak: ' + bestStreak + ' in a row' },
-                      h('div', { className: 'text-xl font-black ' + (bestStreak >= 10 ? 'text-amber-700' : bestStreak >= 5 ? 'text-orange-700' : 'text-slate-700'), 'aria-hidden': 'true' },
+                      h('div', { className: 'text-xl font-black  tracking-tight' + (bestStreak >= 10 ? 'text-amber-700' : bestStreak >= 5 ? 'text-orange-700' : 'text-slate-700'), 'aria-hidden': 'true' },
                         (bestStreak >= 10 ? '🦅 ' : bestStreak >= 5 ? '🔥 ' : '') + bestStreak),
                       h('div', { className: 'text-[9px] uppercase tracking-wider text-slate-700' }, 'best streak')
                     ),
                     h('div', { className: 'w-px h-8 bg-slate-300', 'aria-hidden': 'true' }),
                     h('div', { className: 'flex-shrink-0', 'aria-label': 'Clean habitats: ' + cleanCount + ' of ' + totalHabitats },
-                      h('div', { className: 'text-xl font-black ' + (allHabitatsClean ? 'text-amber-700' : 'text-slate-700'), 'aria-hidden': 'true' },
+                      h('div', { className: 'text-xl font-black  tracking-tight' + (allHabitatsClean ? 'text-amber-700' : 'text-slate-700'), 'aria-hidden': 'true' },
                         (allHabitatsClean ? '🏆 ' : '') + cleanCount + '/' + totalHabitats),
                       // Mini medal tally — shows distribution of tier achievements
                       cleanCount > 0 && h('div', { className: 'text-[10px] text-slate-600 mt-0.5', 'aria-hidden': 'true' },
@@ -10021,7 +10021,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       : 'bg-white border-slate-300'),
                   'aria-label': 'Spotter streak: ' + spotStreak + ' in a row. Personal best ' + bestStreak + '.'
                 },
-                  h('div', { className: 'text-xl font-black ' + (spotStreak >= 5 ? 'text-amber-700' : spotStreak >= 3 ? 'text-orange-700' : 'text-slate-700'),
+                  h('div', { className: 'text-xl font-black  tracking-tight' + (spotStreak >= 5 ? 'text-amber-700' : spotStreak >= 3 ? 'text-orange-700' : 'text-slate-700'),
                     'aria-hidden': 'true'
                   }, (spotStreak >= 10 ? '🦅 ' : spotStreak >= 5 ? '🔥 ' : '') + spotStreak),
                   h('div', { className: 'text-[9px] uppercase tracking-wider text-slate-700', 'aria-hidden': 'true' }, 'streak'),
@@ -10029,7 +10029,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 ),
                 // Find counter
                 h('div', { className: 'text-center flex-shrink-0' },
-                  h('div', { className: 'text-3xl font-black text-emerald-700' }, foundCount + ' / ' + totalBirds),
+                  h('div', { className: 'text-3xl font-black text-emerald-700 tracking-tight' }, foundCount + ' / ' + totalBirds),
                   h('div', { className: 'text-[10px] uppercase tracking-wider text-slate-700' }, 'birds found')
                 )
               )
@@ -10085,7 +10085,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     cleanCelebration.medal || '🏆'),
                   h('div', { className: 'text-[10px] font-black uppercase tracking-widest text-amber-700 mb-1' },
                     (cleanCelebration.isUpgrade ? 'TIER UPGRADED — ' : '') + (cleanCelebration.tierLabel || 'Clean') + ' Tier'),
-                  h('div', { className: 'text-xl font-black text-slate-900 mb-1' },
+                  h('div', { className: 'text-xl font-black text-slate-900 mb-1 tracking-tight' },
                     cleanCelebration.habitatName + (cleanCelebration.isUpgrade ? ' re-cleared!' : ' cleared!')),
                   h('div', { className: 'text-sm text-slate-700 mb-2' },
                     'All ' + cleanCelebration.birdCount + ' birds spotted ',
@@ -10324,7 +10324,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   ),
                   h('div', { className: 'flex-1 min-w-0', style: { paddingTop: 8 } },
                     h('h2', {
-                      className: 'text-2xl font-black text-slate-800',
+                      className: 'text-2xl font-black text-slate-800 tracking-tight',
                       style: { textShadow: '0 1px 0 rgba(255,255,255,0.85)', lineHeight: 1.1 }
                     }, picked.name),
                     h('div', {
@@ -10556,7 +10556,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   onClick: function() { pickSpecies(s.id); },
                   role: 'tab', 'aria-selected': sel ? 'true' : 'false',
                   className: 'px-3 py-2 rounded-lg text-sm font-bold transition-colors focus:outline-none focus:ring-2 ring-sky-500 ' +
-                    (sel ? 'bg-sky-700 text-white shadow' : 'bg-white text-slate-800 hover:bg-sky-50 border border-slate-300')
+                    (sel ? 'bg-sky-700 text-white shadow' : 'bg-white text-slate-800 hover:bg-sky-50 border border-slate-300 active:scale-[0.97]')
                 }, s.icon + ' ' + s.label);
               })
             ),
@@ -10689,7 +10689,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       }
                     }, '🪶 Field mark detail'),
                     h('h2', {
-                      className: 'text-2xl font-black text-slate-800',
+                      className: 'text-2xl font-black text-slate-800 tracking-tight',
                       style: { textShadow: '0 1px 0 rgba(255,255,255,0.85)', lineHeight: 1.1 }
                     }, picked.label),
                     h('div', { className: 'flex items-center gap-2 mt-2 flex-wrap' },
@@ -10996,7 +10996,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           h(BackBar, { icon: '🦴', title: 'Beak & Feet Lab' }),
           h('div', { className: 'p-6 max-w-5xl mx-auto space-y-5' },
             h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-2xl p-5' },
-              h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, 'Bills and feet are evolution\'s tool kit'),
+              h('h2', { className: 'text-lg font-black text-amber-900 mb-2 tracking-tight' }, 'Bills and feet are evolution\'s tool kit'),
               h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
                 'A bird\'s bill tells you what it eats. Its feet tell you where it lives. Look at any bird and you can read its lifestyle from those two parts alone — without ever seeing it eat or move. This module shows the eight common bill shapes and six common foot patterns, and which species in BirdLab\'s habitats use each.')
             ),
@@ -11677,7 +11677,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           h(BackBar, { icon: '🎶', title: 'Bird Call Trainer' }),
           h('div', { className: 'p-6 max-w-5xl mx-auto space-y-5' },
             h('div', { className: 'bg-violet-50 border-2 border-violet-300 rounded-2xl p-5' },
-              h('h2', { className: 'text-lg font-black text-violet-900 mb-2' }, 'Songs in plain English'),
+              h('h2', { className: 'text-lg font-black text-violet-900 mb-2 tracking-tight' }, 'Songs in plain English'),
               h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
                 'Real birders identify 80%+ of birds by SOUND — visual ID is for confirming. The trick is mnemonic phrases that match the bird\'s rhythm: "drink-your-tea" for towhee, "who-cooks-for-you" for Barred Owl. Once you hear it as those words, you can never un-hear it.')
             ),
@@ -11730,7 +11730,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     h('span', { className: 'text-xs font-bold uppercase tracking-widest text-emerald-700' }, 'For actual audio'),
                     h('span', { className: 'inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300' }, '✓ Free · Cornell Lab')
                   ),
-                  h('h3', { className: 'text-xl md:text-2xl font-black text-slate-800', style: { lineHeight: 1.1 } }, 'Get Merlin Bird ID'),
+                  h('h3', { className: 'text-xl md:text-2xl font-black text-slate-800 tracking-tight', style: { lineHeight: 1.1 } }, 'Get Merlin Bird ID'),
                   h('p', { className: 'text-sm text-slate-800 leading-snug mt-1 mb-3' },
                     'Cornell Lab\'s free app has professional recordings of every common North American bird, plus real-time ',
                     h('strong', { className: 'text-emerald-800' }, 'Sound ID'),
@@ -11740,7 +11740,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     h('a', {
                       href: 'https://apps.apple.com/us/app/merlin-bird-id-by-cornell-lab/id773457673',
                       target: '_blank', rel: 'noopener noreferrer',
-                      className: 'inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition focus:outline-none focus:ring-4 ring-emerald-500/40',
+                      className: 'inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition focus:outline-none focus:ring-4 ring-emerald-500/40 active:scale-[0.97]',
                       style: { textDecoration: 'none' }
                     },
                       h('span', { 'aria-hidden': true, style: { fontSize: 18 } }, '🍎'),
@@ -11749,7 +11749,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     h('a', {
                       href: 'https://play.google.com/store/apps/details?id=com.labs.merlinbirdid.app',
                       target: '_blank', rel: 'noopener noreferrer',
-                      className: 'inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition focus:outline-none focus:ring-4 ring-emerald-500/40',
+                      className: 'inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition focus:outline-none focus:ring-4 ring-emerald-500/40 active:scale-[0.97]',
                       style: { textDecoration: 'none' }
                     },
                       h('span', { 'aria-hidden': true, style: { fontSize: 18 } }, '▶'),
@@ -11811,8 +11811,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                           'aria-label': (isPlaying ? 'Stop tone sketch' : 'Play tone sketch') + ' for ' + c.species,
                           className: 'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold transition focus:outline-none focus:ring-2 ring-violet-500/40 ' +
                             (isPlaying
-                              ? 'bg-rose-600 text-white border-2 border-rose-700 hover:bg-rose-700'
-                              : 'bg-violet-600 text-white border-2 border-violet-700 hover:bg-violet-700'),
+                              ? 'bg-rose-600 text-white border-2 border-rose-700 hover:bg-rose-700 active:scale-[0.97]'
+                              : 'bg-violet-600 text-white border-2 border-violet-700 hover:bg-violet-700 active:scale-[0.97]'),
                           title: 'Synthesized rhythm, not a real recording. Use Merlin Bird ID for actual audio.'
                         },
                           h('span', { 'aria-hidden': true, style: { fontSize: 10 } }, isPlaying ? '■' : '▶'),
@@ -11852,7 +11852,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 ),
                 h('button', {
                   onClick: restartQuiz,
-                  className: 'px-3 py-1.5 rounded-lg bg-slate-200 text-slate-800 text-xs font-bold hover:bg-slate-300 transition focus:outline-none focus:ring-2 ring-slate-400'
+                  className: 'px-3 py-1.5 rounded-lg bg-slate-200 text-slate-800 text-xs font-bold hover:bg-slate-300 transition focus:outline-none focus:ring-2 ring-slate-400 active:scale-[0.97]'
                 }, '🔄 Restart with new questions')
               ),
               !quizComplete && (function() {
@@ -11870,8 +11870,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                         'aria-label': (isQuizPlaying ? 'Stop tone sketch' : 'Play tone sketch'),
                         className: 'inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition focus:outline-none focus:ring-2 ring-violet-500/40 ' +
                           (isQuizPlaying
-                            ? 'bg-rose-600 text-white border-2 border-rose-700 hover:bg-rose-700'
-                            : 'bg-violet-600 text-white border-2 border-violet-700 hover:bg-violet-700'),
+                            ? 'bg-rose-600 text-white border-2 border-rose-700 hover:bg-rose-700 active:scale-[0.97]'
+                            : 'bg-violet-600 text-white border-2 border-violet-700 hover:bg-violet-700 active:scale-[0.97]'),
                         title: 'Synthesized rhythm only — not a real recording.'
                       },
                         h('span', { 'aria-hidden': true }, isQuizPlaying ? '■' : '▶'),
@@ -11917,7 +11917,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   picked != null && quizIdx + 1 < quizPool.length && h('div', { className: 'flex justify-end' },
                     h('button', {
                       onClick: function() { setQuizIdx(quizIdx + 1); },
-                      className: 'px-4 py-2 rounded-xl bg-violet-600 text-white font-bold text-sm hover:bg-violet-700 transition focus:outline-none focus:ring-4 ring-violet-500/40'
+                      className: 'px-4 py-2 rounded-xl bg-violet-600 text-white font-bold text-sm hover:bg-violet-700 transition focus:outline-none focus:ring-4 ring-violet-500/40 active:scale-[0.97]'
                     }, 'Next question →')
                   )
                 );
@@ -11965,7 +11965,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     // Tier message
                     h('div', { className: 'flex-1 text-center md:text-left' },
                       h('div', { className: 'text-4xl mb-1', 'aria-hidden': true }, tierIcon),
-                      h('h2', { className: 'text-2xl font-black mb-1', style: { color: tierColor } }, tierTitle),
+                      h('h2', { className: 'text-2xl font-black mb-1 tracking-tight', style: { color: tierColor } }, tierTitle),
                       h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, tierMsg)
                     )
                   ),
@@ -11991,7 +11991,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   h('div', { className: 'p-4 bg-white/70 border-t flex gap-2 flex-wrap justify-center', style: { borderColor: tierColor + '40' } },
                     h('button', {
                       onClick: restartQuiz,
-                      className: 'px-5 py-2.5 rounded-xl bg-violet-600 text-white font-bold hover:bg-violet-700 transition focus:outline-none focus:ring-4 ring-violet-500/40'
+                      className: 'px-5 py-2.5 rounded-xl bg-violet-600 text-white font-bold hover:bg-violet-700 transition focus:outline-none focus:ring-4 ring-violet-500/40 active:scale-[0.97]'
                     }, '🔄 New quiz with fresh questions'),
                     h('button', {
                       onClick: function() { setMode('reference'); announce('Reference mode'); },
@@ -12039,7 +12039,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       setListenState(newListenRound({ score: 0, attempts: 0, streak: 0, bestStreak: 0 }));
                       announce('Reset');
                     },
-                    className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-200 text-slate-800 hover:bg-slate-300 transition focus:outline-none focus:ring-2 ring-slate-400'
+                    className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-200 text-slate-800 hover:bg-slate-300 transition focus:outline-none focus:ring-2 ring-slate-400 active:scale-[0.97]'
                   }, '🔄 Reset score')
                 ),
                 // Listen prompt
@@ -12116,7 +12116,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       onClick: function() {
                         setListenState(newListenRound(lt));
                       },
-                      className: 'px-5 py-2 rounded-xl bg-violet-700 text-white font-bold text-sm hover:bg-violet-800 transition focus:outline-none focus:ring-4 ring-violet-500/40'
+                      className: 'px-5 py-2 rounded-xl bg-violet-700 text-white font-bold text-sm hover:bg-violet-800 transition focus:outline-none focus:ring-4 ring-violet-500/40 active:scale-[0.97]'
                     }, '↻ Next call →')
                   )
                 ),
@@ -12216,7 +12216,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           h(BackBar, { icon: '🌲', title: 'Habitat Match' }),
           h('div', { className: 'p-6 max-w-5xl mx-auto space-y-5' },
             h('div', { className: 'bg-lime-50 border-2 border-lime-400 rounded-2xl p-5' },
-              h('h2', { className: 'text-lg font-black text-lime-900 mb-2' }, 'Birds and habitats are matched pairs'),
+              h('h2', { className: 'text-lg font-black text-lime-900 mb-2 tracking-tight' }, 'Birds and habitats are matched pairs'),
               h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
                 'A bird\'s body is shaped to fit a specific habitat — feet, bill, body shape, behavior. Once you know a species\' habitat, you can predict where to look for it. Once you know a habitat, you can predict which species you\'ll find there. Real birders use both directions of this reasoning.')
             ),
@@ -12262,13 +12262,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       onClick: function() { setB2hIdx(Math.max(0, b2hIdx - 1)); },
                       'aria-disabled': b2hIdx === 0 ? 'true' : 'false',
                       className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition focus:outline-none focus:ring-2 ring-lime-400 ' +
-                        (b2hIdx === 0 ? 'bg-slate-200 text-slate-700 cursor-not-allowed' : 'bg-lime-600 text-white hover:bg-lime-700')
+                        (b2hIdx === 0 ? 'bg-slate-200 text-slate-700 cursor-not-allowed' : 'bg-lime-600 text-white hover:bg-lime-700 active:scale-[0.97]')
                     }, '← Prev'),
                     h('button', {
                       onClick: function() { setB2hIdx(Math.min(BIRD_TO_HABITAT.length - 1, b2hIdx + 1)); },
                       'aria-disabled': b2hIdx === BIRD_TO_HABITAT.length - 1 ? 'true' : 'false',
                       className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition focus:outline-none focus:ring-2 ring-lime-400 ' +
-                        (b2hIdx === BIRD_TO_HABITAT.length - 1 ? 'bg-slate-200 text-slate-700 cursor-not-allowed' : 'bg-lime-600 text-white hover:bg-lime-700')
+                        (b2hIdx === BIRD_TO_HABITAT.length - 1 ? 'bg-slate-200 text-slate-700 cursor-not-allowed' : 'bg-lime-600 text-white hover:bg-lime-700 active:scale-[0.97]')
                     }, 'Next →')
                   )
                 ),
@@ -12304,7 +12304,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 return h('div', { className: 'bg-white rounded-2xl border-2 border-lime-300 shadow p-5 space-y-4' },
                   h('div', { className: 'text-center' },
                     h('div', { className: 'text-xs font-bold uppercase tracking-wider text-lime-700 mb-1' }, 'Where would you find this species?'),
-                    h('h3', { className: 'text-2xl font-black text-slate-800' }, current.bird)
+                    h('h3', { className: 'text-2xl font-black text-slate-800 tracking-tight' }, current.bird)
                   ),
                   h('div', { 'role': 'radiogroup', 'aria-label': 'Habitat choices', className: 'grid grid-cols-2 md:grid-cols-5 gap-2' },
                     habitatChoices.map(function(hid) {
@@ -12464,7 +12464,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   ),
                   // ── Body ──
                   h('div', { className: 'p-5 space-y-4' },
-                  h('h3', { className: 'text-xl font-black text-slate-800' },
+                  h('h3', { className: 'text-xl font-black text-slate-800 tracking-tight' },
                     hab.icon + ' ' + hab.label,
                     h('span', { className: 'ml-2 text-sm font-normal text-slate-700' }, '(pick all the species you\'d find here)')
                   ),
@@ -12506,12 +12506,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   h('div', { className: 'flex justify-end gap-2' },
                     revealed ? h('button', {
                       onClick: resetH2b,
-                      className: 'px-4 py-2 rounded-xl bg-slate-200 text-slate-800 font-bold text-sm hover:bg-slate-300 transition focus:outline-none focus:ring-2 ring-slate-400'
+                      className: 'px-4 py-2 rounded-xl bg-slate-200 text-slate-800 font-bold text-sm hover:bg-slate-300 transition focus:outline-none focus:ring-2 ring-slate-400 active:scale-[0.97]'
                     }, '🔄 Reset this habitat') : h('button', {
                       onClick: revealH2b,
                       'aria-disabled': pickedTotal === 0 ? 'true' : 'false',
                       className: 'px-4 py-2 rounded-xl font-bold text-sm transition focus:outline-none focus:ring-4 ring-lime-500/40 ' +
-                        (pickedTotal === 0 ? 'bg-slate-200 text-slate-700 cursor-not-allowed' : 'bg-lime-600 text-white hover:bg-lime-700')
+                        (pickedTotal === 0 ? 'bg-slate-200 text-slate-700 cursor-not-allowed' : 'bg-lime-600 text-white hover:bg-lime-700 active:scale-[0.97]')
                     }, 'Check answers')
                   ),
                   revealed && h('div', { className: 'p-3 bg-blue-50 border border-blue-300 rounded-lg text-sm text-slate-800', 'aria-live': 'polite' },
@@ -12597,7 +12597,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           h(BackBar, { icon: '🌲', title: 'Maine Birds Spotlight' }),
           h('div', { className: 'p-6 max-w-6xl mx-auto space-y-5' },
             h('div', { className: 'bg-stone-100 border-2 border-stone-300 rounded-2xl p-5' },
-              h('h2', { className: 'text-lg font-black text-stone-900 mb-2' }, 'Maine birds — 25 species, real Maine stories'),
+              h('h2', { className: 'text-lg font-black text-stone-900 mb-2 tracking-tight' }, 'Maine birds — 25 species, real Maine stories'),
               h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
                 '25 iconic Maine species with year-round status, where to see them, real Maine conservation stories (Project Puffin, Bald Eagle DDT recovery, Wood Thrush decline), and Maine Audubon-aligned hotspot suggestions. Click any card to see its full story.')
             ),
@@ -12643,7 +12643,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     fontSize: 14, fontWeight: 700, color: 'var(--allo-stem-text-soft, #64748b)',
                     padding: '4px 8px', borderRadius: 6
                   },
-                  className: 'transition-colors hover:bg-slate-100'
+                  className: 'transition-colors hover:bg-slate-100 active:scale-[0.97]'
                 }, '✕')
               ),
               // Status filter
@@ -12688,7 +12688,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 h('div', { className: 'flex gap-2 flex-wrap justify-center' },
                   qNorm && h('button', {
                     onClick: function() { setSearchQ(''); },
-                    className: 'transition-colors px-4 py-2 rounded-xl bg-amber-700 text-white text-sm font-bold hover:bg-amber-800 focus:outline-none focus:ring-4 ring-amber-500/40'
+                    className: 'transition-colors px-4 py-2 rounded-xl bg-amber-700 text-white text-sm font-bold hover:bg-amber-800 focus:outline-none focus:ring-4 ring-amber-500/40 active:scale-[0.97]'
                   }, '✕ Clear search'),
                   filter !== 'all' && h('button', {
                     onClick: function() { setFilter('all'); },
@@ -13217,7 +13217,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           h(BackBar, { icon: '🗺️', title: 'Migration Patterns' }),
           h('div', { className: 'p-6 max-w-6xl mx-auto space-y-5' },
             h('div', { className: 'bg-orange-50 border-2 border-orange-300 rounded-2xl p-5' },
-              h('h2', { className: 'text-lg font-black text-orange-900 mb-2' }, 'Why birds move'),
+              h('h2', { className: 'text-lg font-black text-orange-900 mb-2 tracking-tight' }, 'Why birds move'),
               h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-2' },
                 'Migration is one of the most dramatic phenomena in biology. Some birds fly continents twice a year, navigating by stars, magnetic fields, smell, and learned landmarks. Most don\'t. The patterns matter for both science and conservation: a species that breeds in Maine and winters in Costa Rica needs BOTH habitats intact.'),
               h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
@@ -13412,7 +13412,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               (function() {
                 var f = FLYWAYS.filter(function(x) { return x.id === pickedFlyway; })[0];
                 return h('div', { className: 'bg-white rounded-2xl border-2 border-orange-300 shadow p-5', 'aria-live': 'polite' },
-                  h('h3', { className: 'text-xl font-black text-slate-800 mb-2' }, f.label),
+                  h('h3', { className: 'text-xl font-black text-slate-800 mb-2 tracking-tight' }, f.label),
                   h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-3' },
                     h('strong', null, 'Path: '), f.desc),
                   h('div', { className: 'p-3 bg-amber-50 border border-amber-300 rounded-lg' },
@@ -13573,7 +13573,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     }, '📍 You are here'),
                     h('div', { className: 'flex items-baseline gap-3 mb-2 flex-wrap' },
                       h('span', { className: 'text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ' + sa.bg + ' text-slate-800' }, m.season),
-                      h('h3', { className: 'text-lg font-black text-slate-800' }, m.month),
+                      h('h3', { className: 'text-lg font-black text-slate-800 tracking-tight' }, m.month),
                       // Intensity meter — small
                       h('div', { className: 'flex-1 flex items-center gap-2 min-w-0', style: { minWidth: 120 } },
                         h('span', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-700 flex-shrink-0' }, 'Activity'),
@@ -14017,7 +14017,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 h('div', { className: 'p-5 bg-gradient-to-br from-emerald-50 to-amber-50 border-b-2 border-emerald-300 flex items-start gap-3' },
                   h('span', { 'aria-hidden': true, style: { fontSize: 36, lineHeight: 1, flexShrink: 0 } }, '💡'),
                   h('div', { className: 'flex-1' },
-                    h('h3', { className: 'text-lg font-black text-emerald-900' }, 'The takeaway is hopeful, not grim'),
+                    h('h3', { className: 'text-lg font-black text-emerald-900 tracking-tight' }, 'The takeaway is hopeful, not grim'),
                     h('p', { className: 'text-sm text-slate-800 leading-relaxed mt-1' },
                       h('strong', null, 'The losses are NOT evenly distributed.'),
                       ' This is a roadmap for what works.')
@@ -14147,7 +14147,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     // Title block
                     h('div', { className: 'flex-1 min-w-0' },
                       h('h3', {
-                        className: 'text-xl md:text-2xl font-black text-slate-800',
+                        className: 'text-xl md:text-2xl font-black text-slate-800 tracking-tight',
                         style: { textShadow: '0 1px 0 rgba(255,255,255,0.85)', lineHeight: 1.15 }
                       }, pickedSpecies.species),
                       h('div', { className: 'text-sm italic text-slate-700' }, pickedSpecies.sciName),
@@ -14165,7 +14165,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     h('div', { className: 'flex items-baseline gap-2 flex-wrap' },
                       h('span', { className: 'text-xs font-bold uppercase tracking-wider', style: { color: trend.text } }, '📊 Key stat:'),
                       h('span', { className: 'text-base font-mono font-bold text-slate-700' }, ks.from),
-                      h('span', { className: 'text-lg font-bold', style: { color: trend.color } }, trend.arrow),
+                      h('span', { className: 'text-lg font-bold tracking-tight', style: { color: trend.color } }, trend.arrow),
                       h('span', { className: 'text-base font-mono font-bold', style: { color: trend.color } }, ks.to),
                       h('span', { className: 'text-sm text-slate-700' }, ks.unit)
                     ),
@@ -14288,7 +14288,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             ),
             view === 'careers' && h('div', { className: 'space-y-4' },
               h('div', { className: 'bg-blue-50 border-2 border-blue-300 rounded-2xl p-5' },
-                h('h2', { className: 'text-lg font-black text-blue-900 mb-2' }, '9 ways to make birds your work'),
+                h('h2', { className: 'text-lg font-black text-blue-900 mb-2 tracking-tight' }, '9 ways to make birds your work'),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-2' },
                   'Bird-related careers cluster into research, conservation, education, and applied fields. Most are passion-driven — pay is modest until senior levels — but the work is meaningful and the community is unusually supportive.'),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
@@ -14382,7 +14382,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                           textTransform: 'uppercase', color: cat.text, marginBottom: 4
                         }
                       }, cat.label),
-                      h('h3', { className: 'text-xl md:text-2xl font-black text-slate-800', style: { lineHeight: 1.15 } }, pickedCareer.role),
+                      h('h3', { className: 'text-xl md:text-2xl font-black text-slate-800 tracking-tight', style: { lineHeight: 1.15 } }, pickedCareer.role),
                       h('div', { className: 'text-sm font-bold mt-1', style: { color: cat.accent } }, '💰 ' + pickedCareer.payRange)
                     )
                   ),
@@ -14642,7 +14642,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           h(BackBar, { icon: '📡', title: 'Citizen Science Bridge' }),
           h('div', { className: 'p-6 max-w-5xl mx-auto space-y-5' },
             h('div', { className: 'bg-sky-50 border-2 border-sky-300 rounded-2xl p-5' },
-              h('h2', { className: 'text-lg font-black text-sky-900 mb-2' }, '🌍 Real research runs on volunteers'),
+              h('h2', { className: 'text-lg font-black text-sky-900 mb-2 tracking-tight' }, '🌍 Real research runs on volunteers'),
               h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-2' },
                 'Bird science at scale — population trends, range shifts, climate-impact tracking, conservation prioritization — runs on the data that ordinary people contribute. Every checklist on eBird, every CBC tally, every nest you monitor becomes a data point in published research.'),
               h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
@@ -14721,7 +14721,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     }, picked.icon),
                     h('div', { className: 'flex-1 min-w-0', style: { paddingTop: 4 } },
                       h('h2', {
-                        className: 'text-xl md:text-2xl font-black text-slate-800',
+                        className: 'text-xl md:text-2xl font-black text-slate-800 tracking-tight',
                         style: { textShadow: '0 1px 0 rgba(255,255,255,0.85)', lineHeight: 1.15 }
                       }, picked.name),
                       h('p', {
@@ -14751,7 +14751,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     href: picked.url.indexOf('http') === 0 ? picked.url : 'https://' + picked.url,
                     target: '_blank',
                     rel: 'noopener noreferrer',
-                    className: 'flex items-center justify-between gap-3 p-3 rounded-xl border-2 border-sky-400 hover:border-sky-600 hover:bg-sky-50 transition focus:outline-none focus:ring-4 ring-sky-500/40',
+                    className: 'flex items-center justify-between gap-3 p-3 rounded-xl border-2 border-sky-400 hover:border-sky-600 hover:bg-sky-50 transition focus:outline-none focus:ring-4 ring-sky-500/40 active:scale-[0.97]',
                     style: { textDecoration: 'none', background: 'linear-gradient(90deg, #f0f9ff 0%, #ffffff 100%)' }
                   },
                     h('div', { className: 'flex items-center gap-2 min-w-0 flex-1' },
@@ -14774,7 +14774,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 var top = t.top.map(function(id) { return PROJECTS.filter(function(p) { return p.id === id; })[0]; }).filter(Boolean);
                 return h('div', { className: 'space-y-4', 'aria-live': 'polite' },
                   h('div', { className: 'bg-emerald-50 border-2 border-emerald-500 rounded-2xl p-5' },
-                    h('h3', { className: 'text-lg font-black text-emerald-900 mb-2' }, '🎯 Your top matches'),
+                    h('h3', { className: 'text-lg font-black text-emerald-900 mb-2 tracking-tight' }, '🎯 Your top matches'),
                     h('p', { className: 'text-sm text-slate-800 mb-4' },
                       'Based on your answers, these two projects fit you best. Start with the first one — it\'s the strongest match. The second is a good "after that" or alternative.'
                     ),
@@ -14808,7 +14808,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   h('div', { className: 'flex gap-2 flex-wrap' },
                     h('button', {
                       onClick: function() { setQuiz({ idx: 0, score: 0, answers: [], done: false }); },
-                      className: 'transition-colors px-4 py-2 rounded-xl bg-sky-700 text-white text-sm font-bold hover:bg-sky-800'
+                      className: 'transition-colors px-4 py-2 rounded-xl bg-sky-700 text-white text-sm font-bold hover:bg-sky-800 active:scale-[0.97]'
                     }, '🔁 Take the quiz again'),
                     h('button', {
                       onClick: function() { setSubView('projects'); },
@@ -14844,7 +14844,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                           }
                         },
                         className: 'block w-full text-left p-3 rounded-xl border-2 transition focus:outline-none focus:ring-2 ring-sky-500/40 ' +
-                          (sel ? 'bg-sky-100 border-sky-600 font-bold' : 'bg-white border-slate-300 hover:border-sky-500 hover:bg-sky-50')
+                          (sel ? 'bg-sky-100 border-sky-600 font-bold' : 'bg-white border-slate-300 hover:border-sky-500 hover:bg-sky-50 active:scale-[0.97]')
                       }, opt.label);
                     })
                   ),
@@ -15132,7 +15132,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             h(BackBar, { icon: '🔭', title: 'Field Observation Challenge' }),
             h('div', { className: 'p-6 max-w-3xl mx-auto space-y-5' },
               h('div', { className: 'bg-teal-50 border-2 border-teal-300 rounded-2xl p-5' },
-                h('h2', { className: 'text-lg font-black text-teal-900 mb-2' }, '🔭 Real birding is three skills, in order'),
+                h('h2', { className: 'text-lg font-black text-teal-900 mb-2 tracking-tight' }, '🔭 Real birding is three skills, in order'),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-2' },
                   'Anyone can spot a bird. The harder skills are: ',
                   h('strong', null, 'holding focus'),
@@ -15155,7 +15155,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               h('div', { className: 'flex flex-wrap gap-2' },
                 h('button', {
                   onClick: startTracking,
-                  className: 'transition-colors px-5 py-3 rounded-xl bg-teal-700 text-white text-base font-bold hover:bg-teal-800 focus:outline-none focus:ring-4 ring-teal-500/40'
+                  className: 'transition-colors px-5 py-3 rounded-xl bg-teal-700 text-white text-base font-bold hover:bg-teal-800 focus:outline-none focus:ring-4 ring-teal-500/40 active:scale-[0.97]'
                 }, '🔭 Begin observation'),
                 notebook.length > 0 && h('button', {
                   onClick: function() { setStep('notebook'); },
@@ -15428,22 +15428,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 )
               ),
               h('div', { className: 'bg-amber-50 border-2 border-amber-400 rounded-2xl p-5' },
-                h('h2', { className: 'text-lg font-black text-amber-900 mb-2 text-center' }, __headline),
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2 text-center tracking-tight' }, __headline),
                 // Big visible time stat (turn the failure into useful data)
                 h('div', { className: 'flex items-center justify-center gap-3 mb-3 p-3 bg-white rounded-xl' },
                   h('div', { className: 'flex flex-col items-center px-4' },
-                    h('div', { className: 'text-3xl font-black font-mono ' + (__pct >= 70 ? 'text-emerald-700' : __pct >= 40 ? 'text-amber-700' : 'text-rose-700') },
+                    h('div', { className: 'text-3xl font-black font-mono  tracking-tight' + (__pct >= 70 ? 'text-emerald-700' : __pct >= 40 ? 'text-amber-700' : 'text-rose-700') },
                       (onTargetMs / 1000).toFixed(1) + 's'),
                     h('div', { className: 'text-[10px] uppercase tracking-wider text-slate-700 font-bold' }, 'On target')
                   ),
                   h('div', { className: 'text-3xl text-slate-500 font-light' }, '/'),
                   h('div', { className: 'flex flex-col items-center px-4' },
-                    h('div', { className: 'text-3xl font-black font-mono text-slate-700' }, (GOAL_MS / 1000) + 's'),
+                    h('div', { className: 'text-3xl font-black font-mono text-slate-700 tracking-tight' }, (GOAL_MS / 1000) + 's'),
                     h('div', { className: 'text-[10px] uppercase tracking-wider text-slate-700 font-bold' }, 'Goal')
                   ),
                   h('div', { className: 'text-3xl text-slate-500 font-light' }, '='),
                   h('div', { className: 'flex flex-col items-center px-4' },
-                    h('div', { className: 'text-3xl font-black font-mono ' + (__pct >= 70 ? 'text-emerald-700' : __pct >= 40 ? 'text-amber-700' : 'text-rose-700') },
+                    h('div', { className: 'text-3xl font-black font-mono  tracking-tight' + (__pct >= 70 ? 'text-emerald-700' : __pct >= 40 ? 'text-amber-700' : 'text-rose-700') },
                       __pct + '%'),
                     h('div', { className: 'text-[10px] uppercase tracking-wider text-slate-700 font-bold' }, 'Of goal')
                   )
@@ -15461,7 +15461,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               ),
               h('div', { className: 'flex gap-2 flex-wrap' },
                 h('button', { onClick: startTracking,
-                  className: 'flex-1 px-5 py-3 rounded-xl bg-teal-700 text-white text-base font-bold hover:bg-teal-800 focus:outline-none focus:ring-4 ring-teal-500/40 shadow-md hover:shadow-lg transition-all'
+                  className: 'flex-1 px-5 py-3 rounded-xl bg-teal-700 text-white text-base font-bold hover:bg-teal-800 focus:outline-none focus:ring-4 ring-teal-500/40 shadow-md hover:shadow-lg transition-all active:scale-[0.97]'
                 }, '🔁 Try again with a fresh bird'),
                 h('button', { onClick: function() { setStep('intro'); },
                   className: 'transition-colors px-5 py-3 rounded-xl bg-white text-slate-800 border-2 border-slate-300 text-base font-bold hover:border-slate-500 focus:outline-none focus:ring-4 ring-slate-400/40'
@@ -15568,7 +15568,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   h('div', null,
                     h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-emerald-800' }, 'Time on target'),
                     h('div', { className: 'flex items-baseline gap-1' },
-                      h('span', { className: 'text-3xl font-black text-emerald-700 font-mono' }, __lockSec),
+                      h('span', { className: 'text-3xl font-black text-emerald-700 font-mono tracking-tight' }, __lockSec),
                       h('span', { className: 'text-sm text-emerald-700 font-bold' }, ' / ' + (GOAL_MS / 1000) + ' s ✓')
                     )
                   ),
@@ -15580,7 +15580,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               h('div', { className: 'bg-white rounded-2xl border-2 border-emerald-400 shadow p-4 flex items-start gap-3' },
                 h('span', { 'aria-hidden': true, className: 'text-4xl' }, sb.icon),
                 h('div', { className: 'flex-1' },
-                  h('h3', { className: 'text-lg font-black text-slate-800' }, sb.name),
+                  h('h3', { className: 'text-lg font-black text-slate-800 tracking-tight' }, sb.name),
                   sb.sci && h('p', { className: 'text-xs italic text-slate-700 mb-1' }, sb.sci),
                   sb.fieldMark && h('p', { className: 'text-xs text-slate-700 leading-relaxed' },
                     h('strong', null, '👁️ Field marks: '), sb.fieldMark)
@@ -15663,7 +15663,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     disabled: !canSubmit,
                     'aria-disabled': !canSubmit,
                     className: 'px-5 py-3 rounded-xl text-white text-base font-bold focus:outline-none focus:ring-4 ring-teal-500/40 ' +
-                      (canSubmit ? 'transition-colors bg-teal-700 hover:bg-teal-800' : 'bg-slate-300 cursor-not-allowed')
+                      (canSubmit ? 'transition-colors bg-teal-700 hover:bg-teal-800 active:scale-[0.97]' : 'bg-slate-300 cursor-not-allowed')
                   }, 'Continue to reflection →'),
                   !canSubmit && h('p', { className: 'text-xs text-slate-700 self-center italic' }, 'Add a location to continue.')
                 )
@@ -15797,7 +15797,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   disabled: !canFinish,
                   'aria-disabled': !canFinish,
                   className: 'px-5 py-3 rounded-xl text-white text-base font-bold focus:outline-none focus:ring-4 ring-violet-500/40 ' +
-                    (canFinish ? 'transition-colors bg-violet-700 hover:bg-violet-800' : 'bg-slate-300 cursor-not-allowed')
+                    (canFinish ? 'transition-colors bg-violet-700 hover:bg-violet-800 active:scale-[0.97]' : 'bg-slate-300 cursor-not-allowed')
                 }, '💾 Save to my field notebook'),
                 h('button', {
                   onClick: function() { setStep('log'); },
@@ -15904,21 +15904,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 // Banner below scene
                 h('div', { className: 'bg-gradient-to-r from-emerald-50 to-amber-50 px-5 py-3 border-t-2 border-emerald-400 flex items-center justify-between gap-3 flex-wrap' },
                   h('div', null,
-                    h('div', { className: 'text-2xl font-black text-emerald-900', style: { lineHeight: 1.1 } }, 'Entry saved!'),
+                    h('div', { className: 'text-2xl font-black text-emerald-900 tracking-tight', style: { lineHeight: 1.1 } }, 'Entry saved!'),
                     h('div', { className: 'text-sm text-slate-800' },
                       h('strong', { className: 'text-emerald-800' }, sb2.name),
                       ' is now in your field notebook.')
                   ),
                   h('div', { className: 'text-right' },
                     h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-emerald-700' }, 'Total entries'),
-                    h('div', { className: 'text-3xl font-black text-emerald-700 font-mono' }, notebook.length)
+                    h('div', { className: 'text-3xl font-black text-emerald-700 font-mono tracking-tight' }, notebook.length)
                   )
                 )
               ),
               // Action buttons
               h('div', { className: 'flex gap-2 flex-wrap justify-center' },
                 h('button', { onClick: startOver,
-                  className: 'transition-colors px-5 py-3 rounded-xl bg-teal-700 text-white text-base font-bold hover:bg-teal-800 focus:outline-none focus:ring-4 ring-teal-500/40'
+                  className: 'transition-colors px-5 py-3 rounded-xl bg-teal-700 text-white text-base font-bold hover:bg-teal-800 focus:outline-none focus:ring-4 ring-teal-500/40 active:scale-[0.97]'
                 }, '🔭 Start another observation'),
                 h('button', { onClick: function() { setStep('notebook'); },
                   className: 'transition-colors px-5 py-3 rounded-xl bg-white text-emerald-800 border-2 border-emerald-500 text-base font-bold hover:border-emerald-700 focus:outline-none focus:ring-4 ring-emerald-500/40'
@@ -16026,7 +16026,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             h(BackBar, { icon: '📓', title: 'My Field Notebook' }),
             h('div', { className: 'p-6 max-w-3xl mx-auto space-y-4' },
               h('div', { className: 'flex items-center justify-between flex-wrap gap-2' },
-                h('h2', { className: 'text-lg font-black text-slate-800' },
+                h('h2', { className: 'text-lg font-black text-slate-800 tracking-tight' },
                   notebook.length + ' observation' + (notebook.length === 1 ? '' : 's')),
                 h('div', { className: 'flex flex-wrap gap-2 birdlab-no-print' },
                   notebook.length > 0 && h('button', {
@@ -16048,7 +16048,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     className: 'transition-colors px-3 py-2 rounded-xl bg-white text-slate-700 border-2 border-slate-300 text-sm font-bold hover:border-slate-500 focus:outline-none focus:ring-2 ring-slate-400'
                   }, '🖨 Print'),
                   h('button', { onClick: startOver,
-                    className: 'transition-colors px-4 py-2 rounded-xl bg-teal-700 text-white text-sm font-bold hover:bg-teal-800 focus:outline-none focus:ring-2 ring-teal-500/40'
+                    className: 'transition-colors px-4 py-2 rounded-xl bg-teal-700 text-white text-sm font-bold hover:bg-teal-800 focus:outline-none focus:ring-2 ring-teal-500/40 active:scale-[0.97]'
                   }, '+ New observation')
                 )
               ),
@@ -16119,7 +16119,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       h('path', { d: 'M 35 9 Q 42 3 50 9', stroke: '#0d9488', strokeWidth: 1.5, fill: 'none', strokeLinecap: 'round' })
                     ),
                     h('div', { className: 'text-5xl mb-3', 'aria-hidden': true }, '📓'),
-                    h('h3', { className: 'text-lg font-black text-teal-900 mb-2' }, 'Your field notebook is empty'),
+                    h('h3', { className: 'text-lg font-black text-teal-900 mb-2 tracking-tight' }, 'Your field notebook is empty'),
                     h('p', { className: 'text-sm text-slate-700 leading-relaxed max-w-md mx-auto mb-1' },
                       'Once you complete a tracking observation or save an AI photo ID, your sightings appear here as a chronological log.'),
                     h('p', { className: 'text-xs text-slate-600 italic' },
@@ -16229,7 +16229,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                           h('div', { className: 'flex gap-2 flex-wrap pt-1' },
                             h('button', {
                               onClick: saveEditEntry,
-                              className: 'transition-colors px-4 py-2 rounded-xl bg-amber-700 text-white text-sm font-bold hover:bg-amber-800 focus:outline-none focus:ring-4 ring-amber-500/40'
+                              className: 'transition-colors px-4 py-2 rounded-xl bg-amber-700 text-white text-sm font-bold hover:bg-amber-800 focus:outline-none focus:ring-4 ring-amber-500/40 active:scale-[0.97]'
                             }, '💾 Save changes'),
                             h('button', {
                               onClick: cancelEditEntry,
@@ -16253,13 +16253,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                               onClick: function() { startEditEntry(entry); },
                               'aria-label': 'Edit entry from ' + dt,
                               title: 'Edit',
-                              className: 'transition-colors px-2 py-1 rounded text-amber-700 hover:bg-amber-100 hover:text-amber-900 text-sm font-bold focus:outline-none focus:ring-2 ring-amber-500/40'
+                              className: 'transition-colors px-2 py-1 rounded text-amber-700 hover:bg-amber-100 hover:text-amber-900 text-sm font-bold focus:outline-none focus:ring-2 ring-amber-500/40 active:scale-[0.97]'
                             }, '✏'),
                             h('button', {
                               onClick: function() { if (window.confirm('Delete this observation?')) deleteEntry(entry.id); },
                               'aria-label': 'Delete entry from ' + dt,
                               title: 'Delete',
-                              className: 'transition-colors px-2 py-1 rounded text-rose-600 hover:bg-rose-100 hover:text-rose-800 text-sm font-bold focus:outline-none focus:ring-2 ring-rose-500/40'
+                              className: 'transition-colors px-2 py-1 rounded text-rose-600 hover:bg-rose-100 hover:text-rose-800 text-sm font-bold focus:outline-none focus:ring-2 ring-rose-500/40 active:scale-[0.97]'
                             }, '✕')
                           )
                         ),
@@ -16592,7 +16592,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 h('div', { className: 'text-6xl relative', 'aria-hidden': true }, '📸'),
                 h('div', { className: 'text-2xl absolute', 'aria-hidden': true, style: { top: -6, right: -8 } }, '🐦')
               ),
-              h('h3', { className: 'text-lg font-black text-violet-900 mb-2' }, 'Pick a photo to start'),
+              h('h3', { className: 'text-lg font-black text-violet-900 mb-2 tracking-tight' }, 'Pick a photo to start'),
               h('p', { className: 'text-xs text-slate-700 mb-5 max-w-sm mx-auto leading-relaxed' },
                 'JPEG, PNG, or HEIC. Up to 6 MB. Closer + sharper photos work better. Side-angle shots show field marks AI can use.'),
               h('label', { htmlFor: 'birdPhoto-input',
@@ -16616,7 +16616,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 h('div', { className: 'flex-1 min-w-[180px] space-y-3' },
                   h('div', { className: 'text-xs text-slate-700' }, h('strong', null, '📁 ' + photo.fileName)),
                   !result && !loading && h('button', { onClick: identify,
-                    className: 'transition-colors w-full px-5 py-3 rounded-xl bg-violet-700 text-white text-base font-bold hover:bg-violet-800 focus:outline-none focus:ring-4 ring-violet-500/40'
+                    className: 'transition-colors w-full px-5 py-3 rounded-xl bg-violet-700 text-white text-base font-bold hover:bg-violet-800 focus:outline-none focus:ring-4 ring-violet-500/40 active:scale-[0.97]'
                   }, '🔬 Identify this bird'),
                   loading && h('div', { className: 'p-4 bg-violet-50 border border-violet-300 rounded-xl text-center', 'aria-live': 'polite', 'aria-busy': 'true' },
                     h('div', { className: 'text-2xl mb-1 animate-pulse' }, '🔬'),
@@ -16704,7 +16704,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     h('div', { className: 'flex items-center gap-2 mb-2 flex-wrap justify-end' },
                       h('span', { className: 'text-xs font-bold ' + conflabel.tone }, conflabel.icon + ' ' + conflabel.text)
                     ),
-                    h('h4', { className: 'text-lg font-black text-slate-800' }, cand.name),
+                    h('h4', { className: 'text-lg font-black text-slate-800 tracking-tight' }, cand.name),
                     cand.sciName && h('p', { className: 'text-sm italic text-slate-700 mb-2' }, cand.sciName),
                     h('div', { className: 'mb-2' }, confidenceBar(cand.confidence)),
                     cand.rationale && h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-3' },
@@ -16743,7 +16743,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               // ── Save-to-notebook flow: prompt → save → confirmed ──
               saveState === null && h('div', { className: 'flex gap-2 flex-wrap' },
                 h('button', { onClick: clearPhoto,
-                  className: 'transition-colors px-4 py-2 rounded-xl bg-violet-700 text-white text-sm font-bold hover:bg-violet-800'
+                  className: 'transition-colors px-4 py-2 rounded-xl bg-violet-700 text-white text-sm font-bold hover:bg-violet-800 active:scale-[0.97]'
                 }, '📷 Identify another photo'),
                 result && result.hasBird && result.candidates && result.candidates.length > 0 && h('button', {
                   onClick: function() { setSaveState('prompt'); },
@@ -16766,7 +16766,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 }),
                 h('div', { className: 'flex gap-2 flex-wrap' },
                   h('button', { onClick: saveAsNotebookEntry,
-                    className: 'transition-colors px-5 py-2 rounded-xl bg-violet-700 text-white text-sm font-bold hover:bg-violet-800 focus:outline-none focus:ring-4 ring-violet-500/40'
+                    className: 'transition-colors px-5 py-2 rounded-xl bg-violet-700 text-white text-sm font-bold hover:bg-violet-800 focus:outline-none focus:ring-4 ring-violet-500/40 active:scale-[0.97]'
                   }, '💾 Save entry'),
                   h('button', { onClick: function() { setSaveState(null); },
                     className: 'transition-colors px-5 py-2 rounded-xl bg-white text-slate-700 border-2 border-slate-300 text-sm font-bold hover:border-slate-500'
@@ -16849,7 +16849,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   h('div', { className: 'flex gap-2 flex-wrap' },
                     h('button', {
                       onClick: function() { setView('fieldObs'); upd('view', 'fieldObs'); },
-                      className: 'transition-colors px-4 py-2 rounded-xl bg-emerald-700 text-white text-sm font-bold hover:bg-emerald-800 focus:outline-none focus:ring-4 ring-emerald-500/40'
+                      className: 'transition-colors px-4 py-2 rounded-xl bg-emerald-700 text-white text-sm font-bold hover:bg-emerald-800 focus:outline-none focus:ring-4 ring-emerald-500/40 active:scale-[0.97]'
                     }, '📓 Open field notebook'),
                     h('button', {
                       onClick: function() { clearPhoto(); setSaveState(null); setSaveLocation(''); },
@@ -16929,7 +16929,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   h('div', { className: 'flex-1 min-w-0' },
                     h('div', { className: 'text-[10px] font-bold uppercase tracking-widest', style: { color: side === 'left' ? '#0f766e' : '#5b21b6' } },
                       side === 'left' ? '🟢 Left' : '🟣 Right'),
-                    h('h3', { className: 'text-xl font-black text-slate-800', style: { lineHeight: 1.15 } }, bird.name),
+                    h('h3', { className: 'text-xl font-black text-slate-800 tracking-tight', style: { lineHeight: 1.15 } }, bird.name),
                     h('div', { className: 'text-sm italic text-slate-700' }, bird.sciName),
                     h('div', { className: 'text-xs text-slate-700 font-mono mt-1' }, bird.size)
                   )
@@ -16958,7 +16958,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           h('div', { className: 'p-6 max-w-6xl mx-auto space-y-5' },
             // Intro
             h('div', { className: 'bg-teal-50 border-2 border-teal-300 rounded-2xl p-5' },
-              h('h2', { className: 'text-lg font-black text-teal-900 mb-2' }, 'Compare any two species side-by-side'),
+              h('h2', { className: 'text-lg font-black text-teal-900 mb-2 tracking-tight' }, 'Compare any two species side-by-side'),
               h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-2' },
                 'Real birding ID is comparison: not "what bird is this," but "is it the chickadee or the junco?" Pick any two species below to see their field marks, habitats, calls, and movement signatures lined up — the way an experienced birder evaluates a confusing sighting.'),
               h('p', { className: 'text-xs text-slate-700 italic' },
@@ -17185,7 +17185,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 h('div', { className: 'flex-1 min-w-0 space-y-1' },
                   h('div', { className: 'flex items-center gap-2' },
                     h('span', { 'aria-hidden': 'true', className: 'text-2xl' }, '🪶'),
-                    h('h2', { className: 'text-xl font-black text-slate-800' }, 'Your Life List')
+                    h('h2', { className: 'text-xl font-black text-slate-800 tracking-tight' }, 'Your Life List')
                   ),
                   h('p', { className: 'text-sm text-slate-700 leading-snug' },
                     'Every species you identify across every habitat lands here. Real birders keep a life list their whole lives — yours starts now.'
@@ -17202,7 +17202,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 spottedKeys.length === 0 && h('div', { className: 'flex-shrink-0' },
                   h('button', {
                     onClick: function () { goto('ispy'); },
-                    className: 'transition-colors px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-sm shadow focus:outline-none focus:ring-4 ring-emerald-500/40'
+                    className: 'transition-colors px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-sm shadow focus:outline-none focus:ring-4 ring-emerald-500/40 active:scale-[0.97]'
                   }, 'Start spotting →')
                 )
               )
@@ -17232,11 +17232,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             h('div', { className: 'flex flex-wrap gap-2 pt-2' },
               h('button', {
                 onClick: function () { goto('ispy'); },
-                className: 'transition-colors px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm shadow focus:outline-none focus:ring-4 ring-emerald-500/40'
+                className: 'transition-colors px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm shadow focus:outline-none focus:ring-4 ring-emerald-500/40 active:scale-[0.97]'
               }, '🔍 Open I-Spy'),
               h('button', {
                 onClick: function () { goto('compare'); },
-                className: 'transition-colors px-4 py-2 rounded-xl bg-violet-700 hover:bg-violet-800 text-white font-bold text-sm shadow focus:outline-none focus:ring-4 ring-violet-500/40'
+                className: 'transition-colors px-4 py-2 rounded-xl bg-violet-700 hover:bg-violet-800 text-white font-bold text-sm shadow focus:outline-none focus:ring-4 ring-violet-500/40 active:scale-[0.97]'
               }, '🔁 Compare two species')
             )
           )
@@ -17299,9 +17299,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
         return h('div', { className: 'p-4 max-w-6xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🪺 Nest Gallery — Maine Breeding Birds'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🪺 Nest Gallery — Maine Breeding Birds'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')
           ),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Click any species to see its nest structure, dimensions, materials, eggs, and story. Maine\'s 20 breeding species + nest profiles.'),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-4' },
@@ -17310,11 +17310,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 var active = n.id === sel;
                 return h('button', { key: n.id, onClick: function() { setSel(n.id); },
                   className: 'w-full text-left px-3 py-2 rounded-lg mb-1.5 text-sm transition ' +
-                    (active ? 'bg-amber-100 border-amber-500 border-2 font-bold text-amber-900' : 'bg-slate-50 hover:bg-amber-50 border border-slate-200 text-slate-800')
+                    (active ? 'bg-amber-100 border-amber-500 border-2 font-bold text-amber-900' : 'bg-slate-50 hover:bg-amber-50 border border-slate-200 text-slate-800 active:scale-[0.97]')
                 }, n.species);
               })),
             h('div', { className: 'md:col-span-2 bg-white rounded-xl shadow border border-slate-200 p-4' },
-              h('h2', { className: 'text-xl font-black text-amber-900 mb-2' }, picked.species),
+              h('h2', { className: 'text-xl font-black text-amber-900 mb-2 tracking-tight' }, picked.species),
               h('div', { className: 'mb-3' }, renderNestSVG(picked.svg)),
               h('div', { className: 'space-y-2 text-sm' },
                 h('div', null, h('b', null, 'Type: '), picked.type),
@@ -17375,9 +17375,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
         return h('div', { className: 'p-4 max-w-6xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🥚 Egg Gallery — Maine Bird Eggs to Scale'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🥚 Egg Gallery — Maine Bird Eggs to Scale'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')
           ),
           h('p', { className: 'text-sm text-slate-700 italic mb-3' }, 'Eggs shown to relative scale. Click any egg to read its species story.'),
           h('div', { className: 'flex gap-2 mb-3' },
@@ -17390,7 +17390,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             sorted.map(function(e, i) {
               var picked = detail && detail.species === e.species;
               return h('button', { key: i, onClick: function() { setDetail(e); },
-                className: 'flex flex-col items-center p-2 rounded-lg ' + (picked ? 'bg-amber-200 ring-2 ring-amber-600' : 'transition-colors bg-white hover:bg-amber-100') + ' transition border border-amber-200'
+                className: 'flex flex-col items-center p-2 rounded-lg ' + (picked ? 'bg-amber-200 ring-2 ring-amber-600' : 'transition-colors bg-white hover:bg-amber-100 active:scale-[0.97]') + ' transition border border-amber-200'
               },
                 renderEgg(e, 1.5),
                 h('div', { className: 'text-[10px] text-center mt-1 font-bold text-slate-800' }, e.species),
@@ -17400,7 +17400,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             h('div', { className: 'flex items-center gap-4 mb-3' },
               h('div', null, renderEgg(detail, 3)),
               h('div', null,
-                h('h2', { className: 'text-xl font-black text-amber-900' }, detail.species),
+                h('h2', { className: 'text-xl font-black text-amber-900 tracking-tight' }, detail.species),
                 h('div', { className: 'text-sm text-slate-700' }, h('b', null, 'Dimensions: '), detail.dimensions),
                 h('div', { className: 'text-sm text-slate-700' }, h('b', null, 'Clutch size: '), detail.clutch),
                 h('div', { className: 'text-sm text-slate-700' }, h('b', null, 'Pattern: '), detail.pattern))),
@@ -17417,9 +17417,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🪶 Feather Anatomy Interactive Lab'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🪶 Feather Anatomy Interactive Lab'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')
           ),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Click any labeled part of the feather to learn its name and function. Feathers are the most complex structure ever evolved.'),
           h('div', { className: 'grid grid-cols-1 lg:grid-cols-2 gap-6' },
@@ -17452,7 +17452,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             h('div', { className: 'space-y-3' },
               picked
                 ? h('div', { className: 'bg-white rounded-xl shadow p-4 border-2 border-amber-300' },
-                    h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, picked.label),
+                    h('h2', { className: 'text-lg font-black text-amber-900 mb-2 tracking-tight' }, picked.label),
                     h('div', { className: 'p-3 bg-amber-50 rounded mb-2' },
                       h('div', { className: 'text-xs font-bold text-amber-800 uppercase tracking-wider mb-1' }, 'What it is'),
                       h('p', { className: 'text-sm text-slate-700' }, picked.what)),
@@ -17524,9 +17524,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
         return h('div', { className: 'p-4 max-w-4xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🌑 Silhouette Quiz'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🌑 Silhouette Quiz'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')
           ),
           h('p', { className: 'text-sm text-slate-700 italic mb-3' }, 'Identify the bird from its silhouette. ' + SILHOUETTES.length + ' species. Score: ' + score + ' / ' + attempted),
           h('div', { className: 'bg-amber-50 rounded-xl p-6 mb-3' },
@@ -17543,13 +17543,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 } else {
                   setFeedback({ ok: false, msg: '✗ That was ' + c.name + '. Correct: ' + cur.name + ' — ' + cur.clue });
                 }
-              }, className: 'transition-colors p-3 rounded-lg font-bold text-sm bg-white hover:bg-amber-100 border-2 border-amber-300 text-slate-800' }, c.name);
+              }, className: 'transition-colors p-3 rounded-lg font-bold text-sm bg-white hover:bg-amber-100 border-2 border-amber-300 text-slate-800 active:scale-[0.97]' }, c.name);
             })),
           feedback && h('div', { className: 'p-3 rounded-lg mb-3 ' + (feedback.ok ? 'bg-emerald-100 border-2 border-emerald-500' : 'bg-rose-100 border-2 border-rose-500') }, feedback.msg),
           h('button', { onClick: function() {
             setIdx((idx + 1) % SILHOUETTES.length);
             setFeedback(null);
-          }, className: 'transition-colors w-full p-3 rounded-lg bg-sky-700 hover:bg-sky-800 text-white font-bold' }, 'Next silhouette →')
+          }, className: 'transition-colors w-full p-3 rounded-lg bg-sky-700 hover:bg-sky-800 text-white font-bold active:scale-[0.97]' }, 'Next silhouette →')
         );
       }
 
@@ -17561,19 +17561,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🍂 Seasonal Plumage + Molt'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🍂 Seasonal Plumage + Molt'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')
           ),
           h('p', { className: 'text-sm text-slate-700 italic mb-3' }, 'How birds change feathers seasonally. Molt timing, breeding vs non-breeding, and species-specific patterns.'),
           h('div', { className: 'flex gap-2 flex-wrap mb-3' },
             PLUMAGE_CYCLES.map(function(p, i) {
               return h('button', { key: i, onClick: function() { setIdx(i); },
-                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-amber-700 text-white' : 'transition-colors bg-amber-100 text-amber-900 hover:bg-amber-200')
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-amber-700 text-white' : 'transition-colors bg-amber-100 text-amber-900 hover:bg-amber-200 active:scale-[0.97]')
               }, p.species);
             })),
           h('div', { className: 'bg-white rounded-xl shadow border-2 border-amber-200 p-5' },
-            h('h2', { className: 'text-xl font-black text-amber-900 mb-3' }, cur.species),
+            h('h2', { className: 'text-xl font-black text-amber-900 mb-3 tracking-tight' }, cur.species),
             h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4 mb-3' },
               h('div', { className: 'p-4 bg-gradient-to-br from-rose-100 to-amber-100 rounded-xl' },
                 h('div', { className: 'font-bold text-rose-800 mb-2 uppercase text-xs tracking-wider' }, '☀️ Breeding plumage'),
@@ -17598,19 +17598,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '👣 Tracks + Sign — Reading Bird Evidence'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '👣 Tracks + Sign — Reading Bird Evidence'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')
           ),
           h('p', { className: 'text-sm text-slate-700 italic mb-3' }, 'Tracking + reading sign reveals birds you never see. Footprints, droppings, feeding evidence, pellets — each tells a story.'),
           h('div', { className: 'flex gap-2 flex-wrap mb-3' },
             TRACKS_SIGN.map(function(t, i) {
               return h('button', { key: i, onClick: function() { setIdx(i); },
-                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-emerald-700 text-white' : 'transition-colors bg-emerald-100 text-emerald-900 hover:bg-emerald-200')
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-emerald-700 text-white' : 'transition-colors bg-emerald-100 text-emerald-900 hover:bg-emerald-200 active:scale-[0.97]')
               }, t.name);
             })),
           h('div', { className: 'bg-white rounded-xl shadow border-2 border-emerald-200 p-5' },
-            h('h2', { className: 'text-xl font-black text-emerald-900 mb-3' }, cur.name),
+            h('h2', { className: 'text-xl font-black text-emerald-900 mb-3 tracking-tight' }, cur.name),
             h('div', { className: 'space-y-3' },
               h('div', { className: 'p-3 bg-amber-50 rounded-lg border-l-4 border-amber-500' },
                 h('div', { className: 'font-bold text-amber-800 text-xs uppercase mb-1' }, '👣 Tracks'),
@@ -17631,15 +17631,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function FlightPatternsView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '✈️ Flight Patterns + Wing Shape'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '✈️ Flight Patterns + Wing Shape'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')
           ),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Behavior in flight is a field mark. How a bird moves through air — wing shape + beats + altitude pattern — identifies it from far away.'),
           h('div', { className: 'space-y-4' },
             FLIGHT_PATTERNS.map(function(fp, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-sky-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-sky-900 mb-2' }, '✈️ ' + fp.name),
+                h('h2', { className: 'text-lg font-black text-sky-900 mb-2 tracking-tight' }, '✈️ ' + fp.name),
                 h('p', { className: 'text-sm text-slate-700 mb-2' }, h('b', null, 'Pattern: '), fp.pattern),
                 h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-slate-700' },
                   h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, 'Species: '), fp.species),
@@ -17658,19 +17658,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🦉 Maine Owls Deep Dive'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🦉 Maine Owls Deep Dive'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')
           ),
           h('p', { className: 'text-sm text-slate-700 italic mb-3' }, 'Maine\'s ' + OWL_PROFILES.length + ' owl species — year-round residents, winter visitors, breeders, secretive specialists.'),
           h('div', { className: 'flex gap-2 flex-wrap mb-3' },
             OWL_PROFILES.map(function(o, i) {
               return h('button', { key: i, onClick: function() { setIdx(i); },
-                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-indigo-700 text-white' : 'transition-colors bg-indigo-100 text-indigo-900 hover:bg-indigo-200')
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-indigo-700 text-white' : 'transition-colors bg-indigo-100 text-indigo-900 hover:bg-indigo-200 active:scale-[0.97]')
               }, o.name.split(' (')[0]);
             })),
           h('div', { className: 'bg-white rounded-xl shadow-lg border-2 border-indigo-200 p-5' },
-            h('h2', { className: 'text-xl font-black text-indigo-900 mb-2' }, '🦉 ' + cur.name),
+            h('h2', { className: 'text-xl font-black text-indigo-900 mb-2 tracking-tight' }, '🦉 ' + cur.name),
             h('div', { className: 'grid grid-cols-2 gap-2 mb-3' },
               h('div', { className: 'p-2 bg-indigo-50 rounded text-xs' }, h('b', null, 'Size: '), cur.size),
               h('div', { className: 'p-2 bg-indigo-50 rounded text-xs' }, h('b', null, 'Wingspan: '), cur.wingspan)),
@@ -17692,19 +17692,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🦅 Maine Raptors Deep Dive'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🦅 Maine Raptors Deep Dive'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')
           ),
           h('p', { className: 'text-sm text-slate-700 italic mb-3' }, 'Hawks, eagles, falcons, harriers, vultures — Maine\'s ' + RAPTOR_PROFILES.length + ' birds-of-prey species. Each with hunting + breeding + conservation profile.'),
           h('div', { className: 'flex gap-2 flex-wrap mb-3' },
             RAPTOR_PROFILES.map(function(r, i) {
               return h('button', { key: i, onClick: function() { setIdx(i); },
-                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-rose-700 text-white' : 'transition-colors bg-rose-100 text-rose-900 hover:bg-rose-200')
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-rose-700 text-white' : 'transition-colors bg-rose-100 text-rose-900 hover:bg-rose-200 active:scale-[0.97]')
               }, r.name.split(' (')[0]);
             })),
           h('div', { className: 'bg-white rounded-xl shadow-lg border-2 border-rose-200 p-5' },
-            h('h2', { className: 'text-xl font-black text-rose-900 mb-2' }, '🦅 ' + cur.name),
+            h('h2', { className: 'text-xl font-black text-rose-900 mb-2 tracking-tight' }, '🦅 ' + cur.name),
             h('div', { className: 'p-2 bg-rose-50 rounded text-xs mb-3' }, h('b', null, 'Group: '), cur.group),
             h('div', { className: 'grid grid-cols-2 gap-2 mb-3' },
               h('div', { className: 'p-2 bg-rose-50 rounded text-xs' }, h('b', null, 'Size: '), cur.size),
@@ -17727,19 +17727,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🌈 Maine Warblers Deep Dive'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🌈 Maine Warblers Deep Dive'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')
           ),
           h('p', { className: 'text-sm text-slate-700 italic mb-3' }, 'Warblers — the hardest ID family for new birders. ' + WARBLER_PROFILES.length + ' Maine breeders. Each tiny, fast-moving, and seasonal. Master them and you\'ve made it.'),
           h('div', { className: 'flex gap-2 flex-wrap mb-3' },
             WARBLER_PROFILES.map(function(w, i) {
               return h('button', { key: i, onClick: function() { setIdx(i); },
-                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-yellow-700 text-white' : 'transition-colors bg-yellow-100 text-yellow-900 hover:bg-yellow-200')
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-yellow-700 text-white' : 'transition-colors bg-yellow-100 text-yellow-900 hover:bg-yellow-200 active:scale-[0.97]')
               }, w.name);
             })),
           h('div', { className: 'bg-white rounded-xl shadow-lg border-2 border-yellow-300 p-5' },
-            h('h2', { className: 'text-xl font-black text-yellow-900 mb-1' }, '🌈 ' + cur.name),
+            h('h2', { className: 'text-xl font-black text-yellow-900 mb-1 tracking-tight' }, '🌈 ' + cur.name),
             h('div', { className: 'text-xs italic text-slate-600 mb-3' }, cur.sci),
             h('div', { className: 'space-y-2 text-sm text-slate-700' },
               h('div', { className: 'p-2 bg-yellow-50 rounded' }, h('b', null, '👁 Key mark: '), cur.mark),
@@ -17756,9 +17756,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function OpticsView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🔭 Birding Optics + Gear'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🔭 Birding Optics + Gear'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')
           ),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Binoculars, scopes, apps, and field gear for birders. From budget starter to premium gear.'),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
@@ -17779,9 +17779,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function EthicsView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🛡️ Birding Ethics'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🛡️ Birding Ethics'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')
           ),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'The American Birding Association Code of Birding Ethics — eight principles for birders. The bird comes first.'),
           h('div', { className: 'space-y-3' },
@@ -17798,9 +17798,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function WeatherView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '⛅ Weather + Birding'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '⛅ Weather + Birding'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')
           ),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Birds respond to weather. Knowing what to expect when the forecast says X is half the battle.'),
           h('div', { className: 'space-y-3' },
@@ -17817,14 +17817,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function FaqView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '❓ Birding FAQ'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '❓ Birding FAQ'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')
           ),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Common questions from new birders. Plain answers + Maine context.'),
           h('div', { className: 'space-y-3' },
             BIRDING_FAQ.map(function(f, i) {
-              return h('details', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-violet-500 p-4 cursor-pointer' },
+              return h('details', { key: i, className: 'transition-all bg-white rounded-xl shadow border-l-4 border-violet-500 p-4 cursor-pointer hover:shadow-md hover:-translate-y-0.5' },
                 h('summary', { className: 'text-sm font-black text-violet-900' }, '❓ ' + f.q),
                 h('p', { className: 'mt-3 text-sm text-slate-700 leading-relaxed' }, f.a));
             }))
@@ -17842,18 +17842,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var cur = WATERFOWL[idx];
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🦆 Maine Waterfowl Deep Dive'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🦆 Maine Waterfowl Deep Dive'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-3' }, 'Maine\'s ' + WATERFOWL.length + ' waterfowl species — dabblers, divers, mergansers, sea ducks, geese, swans.'),
           h('div', { className: 'flex gap-2 flex-wrap mb-3' },
             WATERFOWL.map(function(w, i) {
               return h('button', { key: i, onClick: function() { setIdx(i); },
-                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-sky-700 text-white' : 'transition-colors bg-sky-100 text-sky-900 hover:bg-sky-200')
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-sky-700 text-white' : 'transition-colors bg-sky-100 text-sky-900 hover:bg-sky-200 active:scale-[0.97]')
               }, w.name.split(' (')[0]);
             })),
           h('div', { className: 'bg-white rounded-xl shadow border-2 border-sky-200 p-5' },
-            h('h2', { className: 'text-xl font-black text-sky-900 mb-1' }, '🦆 ' + cur.name),
+            h('h2', { className: 'text-xl font-black text-sky-900 mb-1 tracking-tight' }, '🦆 ' + cur.name),
             h('div', { className: 'text-xs italic text-slate-600 mb-3' }, 'Type: ' + cur.type),
             h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3 mb-3' },
               h('div', { className: 'p-3 bg-sky-50 rounded' }, h('b', null, '♂ Male: '), cur.male),
@@ -17873,18 +17873,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var cur = SHOREBIRDS[idx];
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🦴 Maine Shorebirds Deep Dive'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🦴 Maine Shorebirds Deep Dive'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-3' }, 'Maine\'s ' + SHOREBIRDS.length + ' shorebird species — plovers, sandpipers, yellowlegs, snipe. Mostly migrants; some breeders.'),
           h('div', { className: 'flex gap-2 flex-wrap mb-3' },
             SHOREBIRDS.map(function(s, i) {
               return h('button', { key: i, onClick: function() { setIdx(i); },
-                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-amber-700 text-white' : 'transition-colors bg-amber-100 text-amber-900 hover:bg-amber-200')
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-amber-700 text-white' : 'transition-colors bg-amber-100 text-amber-900 hover:bg-amber-200 active:scale-[0.97]')
               }, s.name);
             })),
           h('div', { className: 'bg-white rounded-xl shadow border-2 border-amber-200 p-5' },
-            h('h2', { className: 'text-xl font-black text-amber-900 mb-1' }, '🦴 ' + cur.name),
+            h('h2', { className: 'text-xl font-black text-amber-900 mb-1 tracking-tight' }, '🦴 ' + cur.name),
             h('div', { className: 'text-xs italic text-slate-600 mb-3' }, cur.sci + ' · ' + cur.size),
             h('div', { className: 'space-y-2 text-sm text-slate-700' },
               h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, '🌳 Habitat: '), cur.habitat),
@@ -17900,18 +17900,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var cur = SEABIRDS[idx];
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🌊 Gulf of Maine Seabirds Deep Dive'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🌊 Gulf of Maine Seabirds Deep Dive'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-3' }, 'Gulf of Maine seabirds — alcids (puffin/razorbill/murre/guillemot), pelagic species, terns.'),
           h('div', { className: 'flex gap-2 flex-wrap mb-3' },
             SEABIRDS.map(function(s, i) {
               return h('button', { key: i, onClick: function() { setIdx(i); },
-                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-cyan-700 text-white' : 'transition-colors bg-cyan-100 text-cyan-900 hover:bg-cyan-200')
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-cyan-700 text-white' : 'transition-colors bg-cyan-100 text-cyan-900 hover:bg-cyan-200 active:scale-[0.97]')
               }, s.name);
             })),
           h('div', { className: 'bg-white rounded-xl shadow border-2 border-cyan-200 p-5' },
-            h('h2', { className: 'text-xl font-black text-cyan-900 mb-1' }, '🌊 ' + cur.name),
+            h('h2', { className: 'text-xl font-black text-cyan-900 mb-1 tracking-tight' }, '🌊 ' + cur.name),
             h('div', { className: 'text-xs italic text-slate-600 mb-3' }, cur.sci + ' · ' + cur.size),
             h('div', { className: 'space-y-2 text-sm text-slate-700' },
               h('div', null, h('b', null, '🌊 Habitat: '), cur.habitat),
@@ -17924,14 +17924,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function WingTypesView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🪶 Wing Types — Shape Predicts Flight'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🪶 Wing Types — Shape Predicts Flight'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '5 main wing shapes + the birds that use them. Wing shape is one of the strongest predictors of how a bird flies + what it eats + where it lives.'),
           h('div', { className: 'space-y-3' },
             WING_TYPES.map(function(w, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-sky-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-sky-900 mb-2' }, '🪶 ' + w.type),
+                h('h2', { className: 'text-lg font-black text-sky-900 mb-2 tracking-tight' }, '🪶 ' + w.type),
                 h('p', { className: 'text-sm text-slate-700 mb-2 italic' }, w.shape_desc),
                 h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-slate-700' },
                   h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, 'Birds: '), w.birds),
@@ -17944,14 +17944,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function FootTypesView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🦶 Foot Types — Form + Function'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🦶 Foot Types — Form + Function'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '8 foot types from perching to swimming to climbing to wading. Foot shape adapts to habitat + diet.'),
           h('div', { className: 'space-y-3' },
             FOOT_TYPES.map(function(f, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '🦶 ' + f.type),
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2 tracking-tight' }, '🦶 ' + f.type),
                 h('div', { className: 'text-sm text-slate-700 mb-2' }, h('b', null, 'Shape: '), f.shape),
                 h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-slate-700' },
                   h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Birds: '), f.birds),
@@ -17967,18 +17967,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var cur = BEHAVIORS[idx];
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🧠 Bird Behavior Deep Dive'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🧠 Bird Behavior Deep Dive'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-3' }, 'Courtship, territory, parenting, migration, communication — the behaviors that shape bird life.'),
           h('div', { className: 'flex gap-2 flex-wrap mb-3' },
             BEHAVIORS.map(function(b, i) {
               return h('button', { key: i, onClick: function() { setIdx(i); },
-                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-violet-700 text-white' : 'transition-colors bg-violet-100 text-violet-900 hover:bg-violet-200')
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-violet-700 text-white' : 'transition-colors bg-violet-100 text-violet-900 hover:bg-violet-200 active:scale-[0.97]')
               }, b.topic);
             })),
           h('div', { className: 'bg-white rounded-xl shadow border-2 border-violet-200 p-5' },
-            h('h2', { className: 'text-xl font-black text-violet-900 mb-2' }, '🧠 ' + cur.topic),
+            h('h2', { className: 'text-xl font-black text-violet-900 mb-2 tracking-tight' }, '🧠 ' + cur.topic),
             h('div', { className: 'space-y-2 text-sm text-slate-700' },
               h('div', { className: 'p-3 bg-violet-50 rounded' }, h('b', null, 'Mechanism: '), cur.mechanism),
               h('div', { className: 'p-3 bg-amber-50 rounded' }, h('b', null, 'Examples: '), cur.examples),
@@ -17990,14 +17990,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function PhysiologyView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🫀 Bird Physiology'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🫀 Bird Physiology'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Heart, lungs, bones, vision, hearing, navigation. Birds are physiological athletes — every system optimized for flight.'),
           h('div', { className: 'space-y-3' },
             PHYSIOLOGY.map(function(p, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-rose-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-rose-900 mb-2' }, '🫀 ' + p.topic),
+                h('h2', { className: 'text-lg font-black text-rose-900 mb-2 tracking-tight' }, '🫀 ' + p.topic),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-rose-50 rounded' }, h('b', null, 'Detail: '), p.detail),
                   h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, 'Function: '), p.function),
@@ -18009,9 +18009,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function EvolutionView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🦖 Bird Evolution — Dinosaurs to Today'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🦖 Bird Evolution — Dinosaurs to Today'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Birds are dinosaurs. The path from feathered theropods 160 million years ago to today\'s 10,500+ species.'),
           h('div', { className: 'space-y-3' },
             EVOLUTION.map(function(e, i) {
@@ -18028,9 +18028,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function ScientistsView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '👩‍🔬 Bird Scientists'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '👩‍🔬 Bird Scientists'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Historical + contemporary figures whose work shaped bird science + conservation.'),
           h('div', { className: 'space-y-3' },
             BIRD_SCIENTISTS.map(function(s, i) {
@@ -18050,18 +18050,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var cur = GULL_ID[idx];
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🐦 Gull ID — Maine\'s Hardest Group'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🐦 Gull ID — Maine\'s Hardest Group'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-3' }, '7 Maine gull species. Birders consider gulls among hardest ID — multiple plumages over 3–4 years.'),
           h('div', { className: 'flex gap-2 flex-wrap mb-3' },
             GULL_ID.map(function(g, i) {
               return h('button', { key: i, onClick: function() { setIdx(i); },
-                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-stone-700 text-white' : 'transition-colors bg-stone-100 text-stone-900 hover:bg-stone-200')
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-stone-700 text-white' : 'transition-colors bg-stone-100 text-stone-900 hover:bg-stone-200 active:scale-[0.97]')
               }, g.name);
             })),
           h('div', { className: 'bg-white rounded-xl shadow border-2 border-stone-200 p-5' },
-            h('h2', { className: 'text-xl font-black text-stone-900 mb-1' }, '🐦 ' + cur.name),
+            h('h2', { className: 'text-xl font-black text-stone-900 mb-1 tracking-tight' }, '🐦 ' + cur.name),
             h('div', { className: 'text-xs italic text-slate-600 mb-3' }, cur.sci + ' · ' + cur.size),
             h('div', { className: 'space-y-2 text-sm text-slate-700' },
               h('div', { className: 'p-2 bg-stone-50 rounded' }, h('b', null, '❄️ Adult winter: '), cur.adult_winter),
@@ -18076,14 +18076,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function IrruptionsView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '❄️ Irruptive Winter Visitors'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '❄️ Irruptive Winter Visitors'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Birds that arrive in unpredictable years — driven by food crop variations in northern + boreal habitats. Some winters bring spectacular numbers; other winters very few.'),
           h('div', { className: 'space-y-3' },
             IRRUPTIONS.map(function(ir, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-indigo-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-indigo-900 mb-2' }, '❄️ ' + ir.species),
+                h('h2', { className: 'text-lg font-black text-indigo-900 mb-2 tracking-tight' }, '❄️ ' + ir.species),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-indigo-50 rounded' }, h('b', null, 'Irrupts when: '), ir.irrupt_when),
                   h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, 'Pattern: '), ir.pattern),
@@ -18096,14 +18096,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function EndangeredView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🛡️ Endangered Maine Birds'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🛡️ Endangered Maine Birds'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Maine\'s state + federally listed species. Each with current status, threats, Maine population, and conservation actions.'),
           h('div', { className: 'space-y-3' },
             ENDANGERED_SPECIES.map(function(e, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-rose-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-rose-900 mb-1' }, '🛡️ ' + e.name),
+                h('h2', { className: 'text-lg font-black text-rose-900 mb-1 tracking-tight' }, '🛡️ ' + e.name),
                 h('div', { className: 'text-xs italic text-slate-600 mb-2' }, e.sci),
                 h('div', { className: 'inline-block px-2 py-1 bg-rose-700 text-white text-xs font-bold rounded mb-2' }, e.status),
                 h('div', { className: 'space-y-1 text-sm text-slate-700' },
@@ -18120,18 +18120,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var cur = HOTSPOTS_DEEP[idx];
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '📍 Maine Birding Hotspots — Extended'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '📍 Maine Birding Hotspots — Extended'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-3' }, '12 Maine birding hotspots — saltmarshes, offshore islands, mountains, river restorations, hawkwatches.'),
           h('div', { className: 'flex gap-2 flex-wrap mb-3' },
             HOTSPOTS_DEEP.map(function(h2, i) {
               return h('button', { key: i, onClick: function() { setIdx(i); },
-                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-emerald-700 text-white' : 'transition-colors bg-emerald-100 text-emerald-900 hover:bg-emerald-200')
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-emerald-700 text-white' : 'transition-colors bg-emerald-100 text-emerald-900 hover:bg-emerald-200 active:scale-[0.97]')
               }, h2.name.split(' (')[0]);
             })),
           h('div', { className: 'bg-white rounded-xl shadow border-2 border-emerald-200 p-5' },
-            h('h2', { className: 'text-xl font-black text-emerald-900 mb-2' }, '📍 ' + cur.name),
+            h('h2', { className: 'text-xl font-black text-emerald-900 mb-2 tracking-tight' }, '📍 ' + cur.name),
             h('div', { className: 'space-y-2 text-sm text-slate-700' },
               h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, 'Type: '), cur.type + (cur.size ? ' · ' + cur.size : '')),
               h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, '🐦 Key species: '), cur.key_species),
@@ -18144,14 +18144,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function DuckIdView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🦆 Duck ID — Dabbler vs Diver'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🦆 Duck ID — Dabbler vs Diver'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Maine ducks split by feeding strategy. Anatomy + behavior + flight tells you which.'),
           h('div', { className: 'space-y-3' },
             DUCK_ID_GUIDE.map(function(d, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-sky-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-sky-900 mb-2' }, '🦆 ' + d.topic),
+                h('h2', { className: 'text-lg font-black text-sky-900 mb-2 tracking-tight' }, '🦆 ' + d.topic),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', null, h('b', null, 'Examples: '), d.examples),
                   h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, 'Anatomy: '), d.anatomy),
@@ -18166,14 +18166,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function VocalDeepView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🎵 Bird Vocalizations Deep'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🎵 Bird Vocalizations Deep'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'How birds vocalize, why they sing, what makes a song a song.'),
           h('div', { className: 'space-y-3' },
             VOCAL_DEEP.map(function(v, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-purple-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-purple-900 mb-2' }, '🎵 ' + v.topic),
+                h('h2', { className: 'text-lg font-black text-purple-900 mb-2 tracking-tight' }, '🎵 ' + v.topic),
                 h('div', { className: 'space-y-1 text-sm text-slate-700' },
                   v.song ? h('div', null, h('b', null, 'Song: '), v.song) : null,
                   v.call ? h('div', null, h('b', null, 'Call: '), v.call) : null,
@@ -18196,14 +18196,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function ReproDeepView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🥚 Bird Reproduction Deep'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🥚 Bird Reproduction Deep'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'How birds make eggs, brood them, hatch chicks, raise young. The biology of bird reproduction.'),
           h('div', { className: 'space-y-3' },
             REPRO_DEEP.map(function(r, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '🥚 ' + r.topic),
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2 tracking-tight' }, '🥚 ' + r.topic),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   r.process ? h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Process: '), r.process) : null,
                   r.mechanism ? h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Mechanism: '), r.mechanism) : null,
@@ -18280,18 +18280,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           var bg = accent.replace('bg-', '').split('-')[0];
           return h('div', { className: 'p-4 max-w-5xl mx-auto' },
             h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-              h('h1', { className: 'text-2xl font-black text-stone-800' }, icon + ' ' + title),
+              h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, icon + ' ' + title),
               h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-                className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+                className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
             h('p', { className: 'text-sm text-slate-700 italic mb-3' }, items.length + ' species in this group.'),
             h('div', { className: 'flex gap-2 flex-wrap mb-3' },
               items.map(function(it, i) {
                 return h('button', { key: i, onClick: function() { setIdx(i); },
-                  className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? accent + ' text-white' : 'bg-' + bg + '-100 text-' + bg + 'transition-colors -900 hover:bg-' + bg + '-200')
+                  className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? accent + ' text-white' : 'bg-' + bg + '-100 text-' + bg + 'transition-colors -900 hover:bg- active:scale-[0.97]' + bg + '-200')
                 }, it.name);
               })),
             h('div', { className: 'bg-white rounded-xl shadow border-2 border-' + bg + '-200 p-5' },
-              h('h2', { className: 'text-xl font-black text-' + bg + '-900 mb-1' }, icon + ' ' + cur.name),
+              h('h2', { className: 'text-xl font-black text- tracking-tight' + bg + '-900 mb-1' }, icon + ' ' + cur.name),
               h('div', { className: 'text-xs italic text-slate-600 mb-3' }, cur.sci + (cur.size ? ' · ' + cur.size : '')),
               h('div', { className: 'space-y-2 text-sm text-slate-700' },
                 cur.habitat ? h('div', { className: 'p-2 bg-' + bg + '-50 rounded' }, h('b', null, '🌳 Habitat: '), cur.habitat) : null,
@@ -18331,9 +18331,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var picked = pick ? TOPOLOGY.find(function(t) { return t.id === pick; }) : null;
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🦴 Bird Topography Lab'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🦴 Bird Topography Lab'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'The body parts birders use for ID. Click each region of the bird to learn its name + when it matters.'),
           h('div', { className: 'grid grid-cols-1 lg:grid-cols-2 gap-6' },
             h('div', { className: 'bg-gradient-to-b from-sky-100 to-amber-50 rounded-xl p-6 shadow' },
@@ -18363,7 +18363,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             h('div', { className: 'space-y-3' },
               picked
                 ? h('div', { className: 'bg-white rounded-xl shadow p-4 border-2 border-amber-300' },
-                    h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, picked.label),
+                    h('h2', { className: 'text-lg font-black text-amber-900 mb-2 tracking-tight' }, picked.label),
                     h('p', { className: 'text-sm text-slate-700' }, picked.what))
                 : h('div', { className: 'bg-amber-50 rounded-xl p-6 text-center text-slate-600 italic' },
                     '👈 Click a number on the bird to learn that region'),
@@ -18380,18 +18380,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var cur = HABITATS_DEEP[idx];
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🌲 Maine Habitats Deep Dive'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🌲 Maine Habitats Deep Dive'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-3' }, HABITATS_DEEP.length + ' Maine ecosystems — northern hardwood, spruce-fir, salt marsh, freshwater marsh, grassland, mixed forest, young second-growth, river corridor, lake, pelagic, suburban, beach + dune.'),
           h('div', { className: 'flex gap-2 flex-wrap mb-3' },
             HABITATS_DEEP.map(function(h2, i) {
               return h('button', { key: i, onClick: function() { setIdx(i); },
-                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-emerald-700 text-white' : 'transition-colors bg-emerald-100 text-emerald-900 hover:bg-emerald-200')
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-emerald-700 text-white' : 'transition-colors bg-emerald-100 text-emerald-900 hover:bg-emerald-200 active:scale-[0.97]')
               }, h2.name);
             })),
           h('div', { className: 'bg-white rounded-xl shadow border-2 border-emerald-200 p-5' },
-            h('h2', { className: 'text-xl font-black text-emerald-900 mb-2' }, '🌲 ' + cur.name),
+            h('h2', { className: 'text-xl font-black text-emerald-900 mb-2 tracking-tight' }, '🌲 ' + cur.name),
             h('p', { className: 'text-sm text-slate-700 italic mb-3' }, cur.description),
             h('div', { className: 'space-y-2 text-sm' },
               h('div', { className: 'p-3 bg-emerald-50 rounded' }, h('b', null, '🐦 Key birds: '), cur.key_birds),
@@ -18403,14 +18403,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function ClimateBirdsView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🌡️ Climate Change + Maine Birds'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🌡️ Climate Change + Maine Birds'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'How climate change is reshaping Maine bird populations. Gulf of Maine is warming 4× global ocean average. Birds are moving + adapting + failing.'),
           h('div', { className: 'space-y-3' },
             CLIMATE_BIRDS.map(function(c, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-rose-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-rose-900 mb-2' }, '🌡️ ' + c.topic),
+                h('h2', { className: 'text-lg font-black text-rose-900 mb-2 tracking-tight' }, '🌡️ ' + c.topic),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-rose-50 rounded' }, h('b', null, 'What: '), c.what),
                   h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Example: '), c.example),
@@ -18423,14 +18423,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function FeederView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🏠 Backyard Feeder Guide'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🏠 Backyard Feeder Guide'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Feeder types + foods + birds + setup tips for your Maine backyard.'),
           h('div', { className: 'space-y-3' },
             FEEDER_GUIDE.map(function(f, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '🏠 ' + f.feeder_type),
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2 tracking-tight' }, '🏠 ' + f.feeder_type),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, '🌾 Foods: '), f.foods),
                   h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, '🐦 Birds: '), f.birds),
@@ -18445,18 +18445,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var cur = NESTBOX_GUIDE[idx];
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🪺 Nest Box Guide'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🪺 Nest Box Guide'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-3' }, 'Nest box specifications for ' + NESTBOX_GUIDE.length + ' Maine species. Size matters — wrong dimensions = wrong species.'),
           h('div', { className: 'flex gap-2 flex-wrap mb-3' },
             NESTBOX_GUIDE.map(function(n, i) {
               return h('button', { key: i, onClick: function() { setIdx(i); },
-                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-amber-700 text-white' : 'transition-colors bg-amber-100 text-amber-900 hover:bg-amber-200')
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-amber-700 text-white' : 'transition-colors bg-amber-100 text-amber-900 hover:bg-amber-200 active:scale-[0.97]')
               }, n.species);
             })),
           h('div', { className: 'bg-white rounded-xl shadow border-2 border-amber-200 p-5' },
-            h('h2', { className: 'text-xl font-black text-amber-900 mb-2' }, '🪺 ' + cur.species),
+            h('h2', { className: 'text-xl font-black text-amber-900 mb-2 tracking-tight' }, '🪺 ' + cur.species),
             h('div', { className: 'space-y-2 text-sm text-slate-700' },
               h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, '📏 Box: '), cur.box_size + ' · Entry: ' + cur.entry),
               h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, '⬆️ Height + habitat: '), cur.height),
@@ -18469,14 +18469,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function DietsView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🍽️ Bird Diets + Foraging'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🍽️ Bird Diets + Foraging'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '9 dietary categories — granivores, insectivores, nectarivores, frugivores, piscivores, carnivores, scavengers, mollusk specialists, aquatic plant eaters. What birds eat shapes what they look like.'),
           h('div', { className: 'space-y-3' },
             DIETS.map(function(d, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-emerald-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, '🍽️ ' + d.type),
+                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2 tracking-tight' }, '🍽️ ' + d.type),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', null, h('b', null, 'Examples: '), d.examples),
                   h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, 'Adaptations: '), d.adaptations),
@@ -18492,18 +18492,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var cur = MIGRATION_DEEP[idx];
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🛫 Migration — The Deep Science'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🛫 Migration — The Deep Science'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-3' }, 'Why birds migrate, how they prepare, how they navigate, hazards they face, and Maine\'s migration calendar.'),
           h('div', { className: 'flex gap-2 flex-wrap mb-3' },
             MIGRATION_DEEP.map(function(m, i) {
               return h('button', { key: i, onClick: function() { setIdx(i); },
-                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-orange-700 text-white' : 'transition-colors bg-orange-100 text-orange-900 hover:bg-orange-200')
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-orange-700 text-white' : 'transition-colors bg-orange-100 text-orange-900 hover:bg-orange-200 active:scale-[0.97]')
               }, m.topic);
             })),
           h('div', { className: 'bg-white rounded-xl shadow border-2 border-orange-200 p-5' },
-            h('h2', { className: 'text-xl font-black text-orange-900 mb-3' }, '🛫 ' + cur.topic),
+            h('h2', { className: 'text-xl font-black text-orange-900 mb-3 tracking-tight' }, '🛫 ' + cur.topic),
             h('div', { className: 'space-y-2 text-sm text-slate-700' },
               cur.what ? h('div', { className: 'p-3 bg-orange-50 rounded' }, h('b', null, 'What: '), cur.what) : null,
               cur.example ? h('div', { className: 'p-3 bg-amber-50 rounded' }, h('b', null, 'Example: '), cur.example) : null,
@@ -18549,9 +18549,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         });
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '📖 Complete Birding Glossary'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '📖 Complete Birding Glossary'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-3' }, COMPLETE_GLOSSARY.length + ' birding terms — the vocabulary you need.'),
           h('input', { type: 'text', value: q, onInput: function(e) { setQ(e.target.value); },
             placeholder: 'Search terms or definitions...',
@@ -18588,9 +18588,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
         return h('div', { className: 'p-4 max-w-3xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🔑 Dichotomous Key — Walk Through ID'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🔑 Dichotomous Key — Walk Through ID'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Step-by-step bird identification. Answer questions about the bird you saw + reach a likely species ID.'),
           history.length > 0 && h('div', { className: 'mb-3' },
             h('button', { onClick: function() {
@@ -18600,16 +18600,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             }, className: 'px-3 py-1 rounded bg-stone-200 text-stone-700 text-xs font-bold' }, '← Back')),
           node ? h('div', { className: 'bg-white rounded-xl shadow-lg border-2 border-violet-300 p-5' },
             node.question ? h('div', null,
-              h('h2', { className: 'text-lg font-black text-violet-900 mb-4' }, '❓ ' + node.question),
+              h('h2', { className: 'text-lg font-black text-violet-900 mb-4 tracking-tight' }, '❓ ' + node.question),
               h('div', { className: 'space-y-2' },
                 node.choices.map(function(c, i) {
                   return h('button', { key: i, onClick: function() {
                     setHistory(history.concat([step]));
                     setStep(c.next);
-                  }, className: 'transition-colors w-full p-3 rounded-lg bg-white hover:bg-violet-100 border-2 border-violet-300 text-left text-sm text-slate-800 font-bold' }, c.label);
+                  }, className: 'transition-colors w-full p-3 rounded-lg bg-white hover:bg-violet-100 border-2 border-violet-300 text-left text-sm text-slate-800 font-bold active:scale-[0.97]' }, c.label);
                 }))) : null,
             node.result ? h('div', null,
-              h('h2', { className: 'text-lg font-black text-emerald-900 mb-3' }, '✓ Likely Identification'),
+              h('h2', { className: 'text-lg font-black text-emerald-900 mb-3 tracking-tight' }, '✓ Likely Identification'),
               h('p', { className: 'text-sm text-slate-700 mb-4 p-3 bg-emerald-50 rounded' }, node.result),
               h('button', { onClick: function() { setStep('start'); setHistory([]); },
                 className: 'px-4 py-2 rounded-lg bg-emerald-700 text-white font-bold text-sm' }, 'Start Over')) : null) : null);
@@ -18622,18 +18622,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var cur = SEASONAL_GUIDE[idx];
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🗓 Maine Birding by Season'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🗓 Maine Birding by Season'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-3' }, 'Year-round Maine birding guide. Each season has its own bird community + birding strategy.'),
           h('div', { className: 'flex gap-2 flex-wrap mb-3' },
             SEASONAL_GUIDE.map(function(s, i) {
               return h('button', { key: i, onClick: function() { setIdx(i); },
-                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-amber-700 text-white' : 'transition-colors bg-amber-100 text-amber-900 hover:bg-amber-200')
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-amber-700 text-white' : 'transition-colors bg-amber-100 text-amber-900 hover:bg-amber-200 active:scale-[0.97]')
               }, s.season.split(' — ')[0]);
             })),
           h('div', { className: 'bg-white rounded-xl shadow border-2 border-amber-200 p-5' },
-            h('h2', { className: 'text-xl font-black text-amber-900 mb-2' }, '🗓 ' + cur.season),
+            h('h2', { className: 'text-xl font-black text-amber-900 mb-2 tracking-tight' }, '🗓 ' + cur.season),
             h('p', { className: 'text-sm text-slate-700 italic mb-3' }, cur.character),
             h('div', { className: 'space-y-2 text-sm text-slate-700' },
               h('div', { className: 'p-3 bg-amber-50 rounded' }, h('b', null, '🐦 Species: '), cur.species),
@@ -18646,14 +18646,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function PhotoView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '📸 Bird Photography'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '📸 Bird Photography'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Equipment, settings, composition, ethics, action shots, editing, sharing. Photography techniques for bird photographers.'),
           h('div', { className: 'space-y-3' },
             PHOTO_TIPS.map(function(p, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-violet-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-violet-900 mb-2' }, '📸 ' + p.topic),
+                h('h2', { className: 'text-lg font-black text-violet-900 mb-2 tracking-tight' }, '📸 ' + p.topic),
                 h('p', { className: 'text-sm text-slate-700 mb-2' }, p.details),
                 p.cost && p.cost !== '—' ? h('div', { className: 'p-2 bg-violet-50 text-xs italic' }, h('b', null, '💰 Cost: '), p.cost) : null);
             })));
@@ -18663,14 +18663,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function ResourcesView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '📚 Birding Resources'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '📚 Birding Resources'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Apps, field guides, organizations, citizen science, books, tours, festivals. Everything to get started + go deeper.'),
           h('div', { className: 'space-y-3' },
             RESOURCES.map(function(r, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-emerald-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, '📚 ' + r.category),
+                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2 tracking-tight' }, '📚 ' + r.category),
                 h('p', { className: 'text-sm text-slate-700' }, r.items));
             })));
       }
@@ -18679,14 +18679,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function AgeSexIdView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🎂 Aging + Sexing Birds'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🎂 Aging + Sexing Birds'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '8 topics on aging + sexing — songbirds, raptors, gulls, waterfowl. The skills experienced birders use.'),
           h('div', { className: 'space-y-3' },
             AGE_SEX_ID.map(function(a, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '🎂 ' + a.topic),
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2 tracking-tight' }, '🎂 ' + a.topic),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Detail: '), a.detail),
                   h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, 'Example: '), a.example)));
@@ -18697,14 +18697,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function ShapeDiffView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '📐 Bird Shape + Size Quick Reference'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '📐 Bird Shape + Size Quick Reference'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '8 morphological features for ID at a glance — bill length + shape, wing shape, tail length + shape, body size + shape, leg length.'),
           h('div', { className: 'space-y-3' },
             SHAPE_DIFF.map(function(s, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-sky-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-sky-900 mb-2' }, '📐 ' + s.feature),
+                h('h2', { className: 'text-lg font-black text-sky-900 mb-2 tracking-tight' }, '📐 ' + s.feature),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, 'What: '), s.what),
                   h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '💡 Diagnostic: '), s.diagnostic)));
@@ -18718,18 +18718,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var cur = ICONIC_MAINE[idx];
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🌟 Iconic Maine Birds'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🌟 Iconic Maine Birds'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-3' }, '10 Maine birds with deep cultural + ecological significance to the state.'),
           h('div', { className: 'flex gap-2 flex-wrap mb-3' },
             ICONIC_MAINE.map(function(i2, i) {
               return h('button', { key: i, onClick: function() { setIdx(i); },
-                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-emerald-700 text-white' : 'transition-colors bg-emerald-100 text-emerald-900 hover:bg-emerald-200')
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-emerald-700 text-white' : 'transition-colors bg-emerald-100 text-emerald-900 hover:bg-emerald-200 active:scale-[0.97]')
               }, i2.name.split(' (')[0]);
             })),
           h('div', { className: 'bg-white rounded-xl shadow border-2 border-emerald-200 p-5' },
-            h('h2', { className: 'text-xl font-black text-emerald-900 mb-3' }, '🌟 ' + cur.name),
+            h('h2', { className: 'text-xl font-black text-emerald-900 mb-3 tracking-tight' }, '🌟 ' + cur.name),
             h('div', { className: 'space-y-2 text-sm text-slate-700' },
               h('div', { className: 'p-3 bg-emerald-50 rounded' }, h('b', null, '🌟 Why iconic: '), cur.why_iconic),
               h('div', { className: 'p-3 bg-amber-50 rounded' }, h('b', null, '🏛 Cultural significance: '), cur.cultural),
@@ -18756,14 +18756,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var filtered = cat === 'All' ? BIRD_FACTS : BIRD_FACTS.filter(function(f) { return f.category === cat; });
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '💡 100 Bird Facts'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '💡 100 Bird Facts'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-3' }, BIRD_FACTS.length + ' remarkable facts about birds. Filter by category.'),
           h('div', { className: 'flex gap-2 flex-wrap mb-4' },
             cats.map(function(c, i) {
               return h('button', { key: i, onClick: function() { setCat(c); },
-                className: 'px-3 py-1 rounded text-xs font-bold ' + (cat === c ? 'bg-violet-700 text-white' : 'transition-colors bg-violet-100 text-violet-900 hover:bg-violet-200')
+                className: 'px-3 py-1 rounded text-xs font-bold ' + (cat === c ? 'bg-violet-700 text-white' : 'transition-colors bg-violet-100 text-violet-900 hover:bg-violet-200 active:scale-[0.97]')
               }, c);
             })),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
@@ -18778,14 +18778,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function ExtinctView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🦤 Historically Extinct Birds'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🦤 Historically Extinct Birds'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '8 birds extinct in historical times. Great Auk + Passenger Pigeon + Carolina Parakeet + Labrador Duck + others — each species\' loss + lessons.'),
           h('div', { className: 'space-y-3' },
             HISTORICAL_EXTINCT.map(function(e, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-stone-700 p-4' },
-                h('h2', { className: 'text-lg font-black text-stone-900 mb-2' }, '🦤 ' + e.species),
+                h('h2', { className: 'text-lg font-black text-stone-900 mb-2 tracking-tight' }, '🦤 ' + e.species),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-stone-100 rounded' }, h('b', null, 'Extinction: '), e.extinction),
                   h('div', { className: 'p-2 bg-rose-50 rounded' }, h('b', null, 'Reason: '), e.reason),
@@ -18798,14 +18798,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function ConfusingPairsView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🔀 Common Confusing Pairs'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🔀 Common Confusing Pairs'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '10 Maine bird pairs that are easily mistaken. Each pair with key distinguishing features.'),
           h('div', { className: 'space-y-3' },
             CONFUSING_PAIRS.map(function(p, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '🔀 ' + p.pair),
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2 tracking-tight' }, '🔀 ' + p.pair),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Similarity: '), p.similarity),
                   h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, '✓ Key difference: '), p.key_diff)));
@@ -18816,14 +18816,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function FamiliesView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '📚 Bird Families Overview'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '📚 Bird Families Overview'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '12 major bird orders/families. The taxonomic tree birders use to organize 10,500+ species.'),
           h('div', { className: 'space-y-3' },
             FAMILIES.map(function(f, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-emerald-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, '📚 ' + f.family),
+                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2 tracking-tight' }, '📚 ' + f.family),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', null, h('b', null, 'Common name: '), f.common),
                   h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, '📍 Maine: '), f.maine),
@@ -18835,14 +18835,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function KidsBirdingView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🧒 Birding with Kids'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🧒 Birding with Kids'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Age-appropriate approaches to bird-watching with kids — toddler to teen.'),
           h('div', { className: 'space-y-3' },
             BIRDING_WITH_KIDS.map(function(b, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '🧒 ' + b.age),
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2 tracking-tight' }, '🧒 ' + b.age),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, '⏱ Attention span: '), b.attention),
                   h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, '✓ Approach: '), b.approach),
@@ -18855,14 +18855,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function AccessibilityView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '♿ Accessible Birding'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '♿ Accessible Birding'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Birding for everyone. Autistic birders, mobility limitations, vision + hearing differences, cost accessibility, ADHD-friendly approaches.'),
           h('div', { className: 'space-y-3' },
             ACCESSIBILITY.map(function(a, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-violet-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-violet-900 mb-2' }, '♿ ' + a.topic),
+                h('h2', { className: 'text-lg font-black text-violet-900 mb-2 tracking-tight' }, '♿ ' + a.topic),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-violet-50 rounded' }, h('b', null, 'Details: '), a.details),
                   h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Tools: '), a.tools),
@@ -18876,14 +18876,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function TeachingView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '👨‍🏫 Teaching Birding'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '👨‍🏫 Teaching Birding'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Teacher resources for bringing birds into classroom + curriculum. NGSS-aligned. Maine-relevant. Cross-curricular.'),
           h('div', { className: 'space-y-3' },
             TEACHING_TIPS.map(function(t, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-emerald-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, '👨‍🏫 ' + t.topic),
+                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2 tracking-tight' }, '👨‍🏫 ' + t.topic),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, 'Details: '), t.details),
                   t.curriculum ? h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, '📚 Curriculum: '), t.curriculum) : null,
@@ -18914,14 +18914,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function WabanakiView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🪶 Wabanaki Birds + Indigenous Knowledge'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🪶 Wabanaki Birds + Indigenous Knowledge'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Wabanaki peoples — Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq, Abenaki — have lived alongside Maine birds for ~13,000 years. This module references general cultural knowledge with respect; for primary sources contact specific tribal cultural authorities. Aligns with Maine LD 291 (Indigenous Studies in K-12 curriculum).'),
           h('div', { className: 'space-y-3' },
             WABANAKI_BIRDS.map(function(w, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '🪶 ' + w.species),
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2 tracking-tight' }, '🪶 ' + w.species),
                 w.penobscot_name ? h('div', { className: 'text-xs italic text-slate-600 mb-2' }, 'Naming: ' + w.penobscot_name) : null,
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Cultural: '), w.cultural),
@@ -18934,9 +18934,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function LiteratureView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '📜 Birds in Literature'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '📜 Birds in Literature'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Birds in poetry, nature writing, scientific literature. From Poe\'s Raven to Mary Oliver\'s wild geese to Heinrich\'s Maine ravens.'),
           h('div', { className: 'space-y-3' },
             BIRDS_LITERATURE.map(function(b, i) {
@@ -18951,14 +18951,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function AchievementsLifeView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🏆 Birding Lifetime Achievements'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🏆 Birding Lifetime Achievements'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Milestones + tiers + benchmarks from beginner to expert. Where are you on your birding journey?'),
           h('div', { className: 'space-y-3' },
             ACHIEVEMENTS_LIFE.map(function(a, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '🏆 ' + a.tier),
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2 tracking-tight' }, '🏆 ' + a.tier),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, '🎯 Goals: '), a.goals),
                   h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '📊 Benchmark: '), a.benchmark)));
@@ -18969,14 +18969,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function HawkwatchView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🦅 Maine Hawkwatch Guide'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🦅 Maine Hawkwatch Guide'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Bradbury Mountain (Pownal) is Maine\'s premier hawkwatch. Sept-Oct migration peaks. Citizen science + viewing.'),
           h('div', { className: 'space-y-3' },
             HAWKWATCH_GUIDE.map(function(h2, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-orange-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-orange-900 mb-2' }, '🦅 ' + h2.topic),
+                h('h2', { className: 'text-lg font-black text-orange-900 mb-2 tracking-tight' }, '🦅 ' + h2.topic),
                 h('p', { className: 'text-sm text-slate-700 mb-2' }, h2.details),
                 h2.season ? h('div', { className: 'p-2 bg-orange-50 rounded text-xs' }, h('b', null, '📅 Season: '), h2.season) : null,
                 h2.timing ? h('div', { className: 'p-2 bg-orange-50 rounded text-xs' }, h('b', null, '⏰ Timing: '), h2.timing) : null,
@@ -18991,14 +18991,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function CbcView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🎄 Christmas Bird Count Guide'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🎄 Christmas Bird Count Guide'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Maine\'s most-rewarding winter citizen-science event. Mid-Dec to early Jan. ~30 Maine circles. Begun 1900.'),
           h('div', { className: 'space-y-3' },
             CBC_GUIDE.map(function(c, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-emerald-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, '🎄 ' + c.topic),
+                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2 tracking-tight' }, '🎄 ' + c.topic),
                 h('p', { className: 'text-sm text-slate-700 mb-2' }, c.details),
                 c.history ? h('div', { className: 'p-2 bg-emerald-50 rounded text-xs' }, h('b', null, '📚 History: '), c.history) : null,
                 c.science ? h('div', { className: 'p-2 bg-amber-50 rounded text-xs' }, h('b', null, '🔬 Science: '), c.science) : null,
@@ -19015,14 +19015,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function SuperstitionsView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🪄 Bird Superstitions + Lore'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🪄 Bird Superstitions + Lore'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Cultural lore + folk beliefs about birds. Sometimes containing ecological insight; sometimes pure folklore.'),
           h('div', { className: 'space-y-3' },
             SUPERSTITIONS.map(function(s, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-violet-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-violet-900 mb-2' }, '🪄 ' + s.lore),
+                h('h2', { className: 'text-lg font-black text-violet-900 mb-2 tracking-tight' }, '🪄 ' + s.lore),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-violet-50 rounded' }, h('b', null, '📜 Origin: '), s.origin),
                   h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '🔬 Reality: '), s.truth)));
@@ -19033,14 +19033,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function EtiquetteDeepView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🤝 Birding Etiquette Deep'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🤝 Birding Etiquette Deep'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '10 specific birding situations + how to handle each respectfully. Beyond the basic ABA Code.'),
           h('div', { className: 'space-y-3' },
             ETIQUETTE_DEEP.map(function(e, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-emerald-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, '🤝 ' + e.situation),
+                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2 tracking-tight' }, '🤝 ' + e.situation),
                 h('p', { className: 'text-sm text-slate-700 mb-2' }, h('b', null, 'Etiquette: '), e.etiquette),
                 e.maine_specifics ? h('div', { className: 'p-2 bg-sky-50 italic rounded text-xs' }, h('b', null, '📍 Maine: '), e.maine_specifics) : null,
                 e.maine_examples ? h('div', { className: 'p-2 bg-sky-50 italic rounded text-xs' }, h('b', null, '📍 Examples: '), e.maine_examples) : null,
@@ -19058,14 +19058,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function HawkwatchDataView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '📊 Hawkwatch Science Data'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '📊 Hawkwatch Science Data'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Bradbury Mountain Hawkwatch + Maine raptor migration data. 30+ years of citizen-science records.'),
           h('div', { className: 'space-y-3' },
             HAWKWATCH_DATA.map(function(d, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-orange-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-orange-900 mb-2' }, '📊 ' + d.year),
+                h('h2', { className: 'text-lg font-black text-orange-900 mb-2 tracking-tight' }, '📊 ' + d.year),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-orange-50 rounded' }, h('b', null, '🦅 Total count: '), d.total_count),
                   h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, '⭐ Peak day: '), d.peak_day),
@@ -19077,14 +19077,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function UrbanView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🏙 Urban Birding — Maine Cities'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🏙 Urban Birding — Maine Cities'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Maine\'s cities have surprising bird diversity. Birding without leaving the city.'),
           h('div', { className: 'space-y-3' },
             URBAN_BIRDS.map(function(u, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-sky-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-sky-900 mb-2' }, '🏙 ' + u.city_area),
+                h('h2', { className: 'text-lg font-black text-sky-900 mb-2 tracking-tight' }, '🏙 ' + u.city_area),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, '🐦 Species: '), u.species),
                   h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, '📅 Best seasons: '), u.best_seasons),
@@ -19096,14 +19096,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function LogTemplateView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '📓 Daily Birding Log Template'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '📓 Daily Birding Log Template'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'What to record on a typical day of birding. Use this template for your journal or eBird submissions.'),
           h('div', { className: 'space-y-3' },
             LOG_TEMPLATE.map(function(t, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-emerald-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, '📓 ' + t.field),
+                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2 tracking-tight' }, '📓 ' + t.field),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, 'Example: '), t.example),
                   h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'What: '), t.what)));
@@ -19129,14 +19129,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function IntelligenceView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🧠 Bird Intelligence + Cognition'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🧠 Bird Intelligence + Cognition'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '8 dimensions of bird cognition — tool use, language, self-recognition, caching, long-term memory, theory of mind, communication, migration memory. Birds are smarter than once thought.'),
           h('div', { className: 'space-y-3' },
             INTELLIGENCE.map(function(i2, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-purple-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-purple-900 mb-2' }, '🧠 ' + i2.topic),
+                h('h2', { className: 'text-lg font-black text-purple-900 mb-2 tracking-tight' }, '🧠 ' + i2.topic),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-purple-50 rounded' }, h('b', null, 'Details: '), i2.details),
                   h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, '🔬 Research: '), i2.research),
@@ -19148,14 +19148,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function EcoServicesView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🌍 Birds + Ecosystem Services'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🌍 Birds + Ecosystem Services'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Pollination, seed dispersal, pest control, carrion removal, ecosystem engineering, nutrient cycling, recreation, education. Birds make critical contributions.'),
           h('div', { className: 'space-y-3' },
             ECOSYSTEM_SERVICES.map(function(e, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-emerald-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, '🌍 ' + e.service),
+                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2 tracking-tight' }, '🌍 ' + e.service),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, '🐦 Birds: '), e.birds),
                   h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Details: '), e.details),
@@ -19167,14 +19167,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function RecoveryView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🏥 Conservation Recovery Stories'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🏥 Conservation Recovery Stories'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Bald Eagle, Peregrine Falcon, Atlantic Puffin, Brown Pelican, Whooping Crane, California Condor, Wild Turkey, Eastern Bluebird. Conservation works.'),
           h('div', { className: 'space-y-3' },
             RECOVERY_STORIES.map(function(r, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-emerald-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, '🏥 ' + r.species),
+                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2 tracking-tight' }, '🏥 ' + r.species),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-rose-50 rounded' }, h('b', null, '⬇️ Decline: '), r.decline),
                   h('div', { className: 'p-2 bg-rose-50 rounded' }, h('b', null, '⚠️ Causes: '), r.causes),
@@ -19188,14 +19188,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function WindEnergyView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '⚡ Wind Energy + Birds'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '⚡ Wind Energy + Birds'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Wind turbines kill birds + bats. Climate change kills far more. The complex science + ethics of renewable energy + bird conservation.'),
           h('div', { className: 'space-y-3' },
             WIND_ENERGY.map(function(w, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-sky-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-sky-900 mb-2' }, '⚡ ' + w.topic),
+                h('h2', { className: 'text-lg font-black text-sky-900 mb-2 tracking-tight' }, '⚡ ' + w.topic),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, 'Details: '), w.details),
                   h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, '🔬 Research: '), w.research),
@@ -19207,14 +19207,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function ResearchTechView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🔬 Bird Research Technology'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🔬 Bird Research Technology'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '10 research methods modern ornithologists use to study birds. From bands to AI sound recognition to citizen science apps.'),
           h('div', { className: 'space-y-3' },
             BIRD_RESEARCH_TECH.map(function(r, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-violet-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-violet-900 mb-2' }, '🔬 ' + r.method),
+                h('h2', { className: 'text-lg font-black text-violet-900 mb-2 tracking-tight' }, '🔬 ' + r.method),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-violet-50 rounded' }, h('b', null, 'What: '), r.what),
                   h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, '🎯 Purpose: '), r.research_purpose),
@@ -19226,14 +19226,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function FestivalsView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🎉 Maine Birding Events + Festivals'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🎉 Maine Birding Events + Festivals'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '10 Maine birding events + festivals year-round. From Acadia Birding Festival to Christmas Bird Counts to weekly Maine Audubon walks.'),
           h('div', { className: 'space-y-3' },
             FESTIVALS.map(function(f, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '🎉 ' + f.event),
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2 tracking-tight' }, '🎉 ' + f.event),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Details: '), f.details),
                   h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, '👥 Audience: '), f.audience),
@@ -19256,9 +19256,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function Backyard30View() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🏡 30 Common Maine Backyard Birds'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🏡 30 Common Maine Backyard Birds'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Maine\'s 30 most-commonly-seen backyard + feeder birds. Season, visit frequency, recommended feeder + food.'),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'w-full text-sm' },
@@ -19284,18 +19284,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var cur = MONTHLY_CALENDAR[idx];
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '📅 Maine Monthly Bird Calendar'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '📅 Maine Monthly Bird Calendar'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-3' }, '12 months of Maine birding — what to expect, key species, activities, tips.'),
           h('div', { className: 'flex gap-1 flex-wrap mb-3' },
             MONTHLY_CALENDAR.map(function(m, i) {
               return h('button', { key: i, onClick: function() { setIdx(i); },
-                className: 'px-3 py-1 rounded text-xs font-bold ' + (i === idx ? 'bg-emerald-700 text-white' : 'transition-colors bg-emerald-100 text-emerald-900 hover:bg-emerald-200')
+                className: 'px-3 py-1 rounded text-xs font-bold ' + (i === idx ? 'bg-emerald-700 text-white' : 'transition-colors bg-emerald-100 text-emerald-900 hover:bg-emerald-200 active:scale-[0.97]')
               }, m.month);
             })),
           h('div', { className: 'bg-white rounded-xl shadow border-2 border-emerald-200 p-5' },
-            h('h2', { className: 'text-xl font-black text-emerald-900 mb-3' }, '📅 ' + cur.month),
+            h('h2', { className: 'text-xl font-black text-emerald-900 mb-3 tracking-tight' }, '📅 ' + cur.month),
             h('div', { className: 'space-y-2 text-sm text-slate-700' },
               h('div', { className: 'p-3 bg-emerald-50 rounded' }, h('b', null, '🐦 Species: '), cur.species),
               h('div', { className: 'p-3 bg-amber-50 rounded' }, h('b', null, '🎯 Activities: '), cur.activities),
@@ -19306,14 +19306,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function NamingView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🏷 Bird Naming + Taxonomy'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🏷 Bird Naming + Taxonomy'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Why birds have both common + scientific names. How scientific names work. The story behind bird naming + ongoing taxonomic revisions.'),
           h('div', { className: 'space-y-3' },
             BIRD_NAMING.map(function(b, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-violet-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-violet-900 mb-2' }, '🏷 ' + b.topic),
+                h('h2', { className: 'text-lg font-black text-violet-900 mb-2 tracking-tight' }, '🏷 ' + b.topic),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-violet-50 rounded' }, h('b', null, 'Details: '), b.details),
                   h('div', { className: 'p-2 bg-amber-50 italic rounded' }, h('b', null, 'Example: '), b.example)));
@@ -19324,14 +19324,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function DrawingView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '✏ Bird Drawing + Journaling'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '✏ Bird Drawing + Journaling'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Field sketching builds observation + ID skills better than photo alone. How to start a bird journal.'),
           h('div', { className: 'space-y-3' },
             DRAWING_TIPS.map(function(d, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '✏ ' + d.topic),
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2 tracking-tight' }, '✏ ' + d.topic),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Details: '), d.details),
                   h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '✓ Benefit: '), d.benefit)));
@@ -19342,14 +19342,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function EconomyView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '💰 Birds + Maine Economy'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '💰 Birds + Maine Economy'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Birds + birding contribute meaningfully to Maine\'s economy. Tourism, gear, jobs, conservation funding.'),
           h('div', { className: 'space-y-3' },
             BIRDS_ECONOMY.map(function(b, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-emerald-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, '💰 ' + b.topic),
+                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2 tracking-tight' }, '💰 ' + b.topic),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, 'Data: '), b.data),
                   h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Examples: '), b.examples),
@@ -19361,14 +19361,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function BeginnerTipsView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🌱 Beginner Birding Tips'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🌱 Beginner Birding Tips'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '10 essential tips for new birders. From "where to start" to "how to learn from mistakes."'),
           h('div', { className: 'space-y-3' },
             BEGINNER_TIPS.map(function(b, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-sky-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-sky-900 mb-2' }, '🌱 ' + b.tip),
+                h('h2', { className: 'text-lg font-black text-sky-900 mb-2 tracking-tight' }, '🌱 ' + b.tip),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, 'Details: '), b.details),
                   h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '✓ Benefit: '), b.benefit)));
@@ -19379,14 +19379,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function MentalHealthView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🌿 Birding + Mental Health'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🌿 Birding + Mental Health'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '8 mental health benefits of birding — stress reduction, mindfulness, sense of place, slow living, community, purpose, aesthetic reward, reduced depression + anxiety.'),
           h('div', { className: 'space-y-3' },
             BIRDING_MENTAL_HEALTH.map(function(m, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-emerald-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, '🌿 ' + m.benefit),
+                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2 tracking-tight' }, '🌿 ' + m.benefit),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, '🔬 Research: '), m.research),
                   h('div', { className: 'p-2 bg-sky-50 italic rounded' }, h('b', null, '📍 Maine: '), m.maine_specific)));
@@ -19414,13 +19414,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var cur = QUIZ_BANK[qi];
         return h('div', { className: 'p-4 max-w-3xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🎓 Bird Quiz Bank — 50 Questions'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🎓 Bird Quiz Bank — 50 Questions'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-3' }, '50 quiz questions for testing your knowledge. Question ' + (qi+1) + ' of ' + QUIZ_BANK.length + '.'),
           h('div', { className: 'bg-white rounded-xl shadow-lg border-2 border-violet-300 p-6 mb-3' },
             h('div', { className: 'text-xs uppercase tracking-wider text-violet-600 mb-2 font-bold' }, cur.topic),
-            h('h2', { className: 'text-lg font-black text-violet-900 mb-4' }, '❓ ' + cur.q),
+            h('h2', { className: 'text-lg font-black text-violet-900 mb-4 tracking-tight' }, '❓ ' + cur.q),
             !show && h('button', { onClick: function() { setShow(true); },
               className: 'px-4 py-2 rounded bg-emerald-600 text-white font-bold' }, 'Show answer'),
             show && h('div', { className: 'p-4 bg-emerald-50 rounded text-sm text-slate-700' },
@@ -19436,14 +19436,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function DailyRoutineView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🌅 A Bird\'s Day'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🌅 A Bird\'s Day'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Hour-by-hour what birds do — from pre-dawn chorus through midday rest through evening songs to overnight migration.'),
           h('div', { className: 'space-y-3' },
             DAILY_ROUTINE.map(function(d, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '🌅 ' + d.time),
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2 tracking-tight' }, '🌅 ' + d.time),
                 h('p', { className: 'text-sm text-slate-700 mb-2' }, h('b', null, 'Activity: '), d.activity),
                 h('div', { className: 'p-2 bg-emerald-50 italic rounded text-xs' }, h('b', null, '🐦 Species example: '), d.species_example));
             })));
@@ -19453,14 +19453,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function ThermoView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🌡️ Bird Thermoregulation'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🌡️ Bird Thermoregulation'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'How birds maintain ~104-108°F body temperature in Maine\'s -30°F to 100°F range. Feathers, behavior, torpor, group roosting, gular fluttering, migration.'),
           h('div', { className: 'space-y-3' },
             THERMOREGULATION.map(function(t, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-rose-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-rose-900 mb-2' }, '🌡️ ' + t.topic),
+                h('h2', { className: 'text-lg font-black text-rose-900 mb-2 tracking-tight' }, '🌡️ ' + t.topic),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-rose-50 rounded' }, h('b', null, 'Details: '), t.details),
                   h('div', { className: 'p-2 bg-amber-50 italic rounded' }, h('b', null, 'Method: '), t.method)));
@@ -19471,14 +19471,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function DawnChorusView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🌄 Dawn Chorus Science'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🌄 Dawn Chorus Science'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Why birds sing at dawn. Maine\'s peak dawn chorus is late May to early June.'),
           h('div', { className: 'space-y-3' },
             DAWN_CHORUS.map(function(d, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '🌄 ' + d.topic),
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2 tracking-tight' }, '🌄 ' + d.topic),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Details: '), d.details),
                   h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '📍 Maine: '), d.maine_specific)));
@@ -19489,14 +19489,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function BirdsByColorView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🎨 Birds By Color — Visual ID'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🎨 Birds By Color — Visual ID'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '7 color groups + Maine birds with each. Color is one of the first cues but never the only one.'),
           h('div', { className: 'space-y-3' },
             BIRDS_BY_COLOR.map(function(c, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-orange-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-orange-900 mb-2' }, '🎨 ' + c.color),
+                h('h2', { className: 'text-lg font-black text-orange-900 mb-2 tracking-tight' }, '🎨 ' + c.color),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-orange-50 rounded' }, h('b', null, '🐦 Birds: '), c.birds),
                   h('div', { className: 'p-2 bg-amber-50 italic rounded' }, h('b', null, '💡 Tip: '), c.tip)));
@@ -19507,9 +19507,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function BehaviorGlossView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🧠 Bird Behavior Glossary'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🧠 Bird Behavior Glossary'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '25 behavior terms birders use — mobbing, caching, lekking, philopatry, anting, mantling + more.'),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
             BEHAVIOR_GLOSSARY.map(function(g, i) {
@@ -19523,14 +19523,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function BirdsToolsView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🛠 Birds + Tools — What to Use'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🛠 Birds + Tools — What to Use'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '10 birding goals + the tools each requires. From beginner to pelagic photography.'),
           h('div', { className: 'space-y-3' },
             BIRDS_AND_TOOLS.map(function(b, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-sky-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-sky-900 mb-2' }, '🛠 ' + b.goal),
+                h('h2', { className: 'text-lg font-black text-sky-900 mb-2 tracking-tight' }, '🛠 ' + b.goal),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, 'Tools: '), b.tools),
                   h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, '💰 Cost: '), b.cost),
@@ -19542,14 +19542,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function BirdFriendlyView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🏡 Bird-Friendly Home + Yard'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🏡 Bird-Friendly Home + Yard'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '10 practical actions for making your Maine home bird-friendly. From native plants to nest boxes to keeping cats indoors.'),
           h('div', { className: 'space-y-3' },
             BIRD_FRIENDLY_HOME.map(function(b, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-emerald-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, '🏡 ' + b.action),
+                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2 tracking-tight' }, '🏡 ' + b.action),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, 'Details: '), b.details),
                   h('div', { className: 'p-2 bg-amber-50 italic rounded' }, h('b', null, '✓ Benefit: '), b.benefit)));
@@ -19573,9 +19573,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function SpringArrivalsView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🌱 Maine Spring Arrival Dates'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🌱 Maine Spring Arrival Dates'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Approximate arrival dates for 30+ Maine breeding species. Mark your calendar.'),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'w-full text-sm' },
@@ -19596,14 +19596,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function FallMigrationView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🍂 Fall Migration Strategies'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🍂 Fall Migration Strategies'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '8 strategies for fall migration birding in Maine — when, where, weather, ID challenges.'),
           h('div', { className: 'space-y-3' },
             FALL_MIGRATION_TIPS.map(function(f, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-orange-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-orange-900 mb-2' }, '🍂 ' + f.topic),
+                h('h2', { className: 'text-lg font-black text-orange-900 mb-2 tracking-tight' }, '🍂 ' + f.topic),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-orange-50 rounded' }, h('b', null, 'Details: '), f.details),
                   h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '📍 Maine: '), f.maine_specific)));
@@ -19614,14 +19614,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function NightBirdingView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🌙 Night Birding'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🌙 Night Birding'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '7 night-birding approaches in Maine — owls, nightjars, nocturnal flight calls, owl banding, photography, equipment, safety.'),
           h('div', { className: 'space-y-3' },
             NIGHT_BIRDING.map(function(n, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-indigo-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-indigo-900 mb-2' }, '🌙 ' + n.topic),
+                h('h2', { className: 'text-lg font-black text-indigo-900 mb-2 tracking-tight' }, '🌙 ' + n.topic),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-indigo-50 rounded' }, h('b', null, 'Details: '), n.details),
                   n.species ? h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Species: '), n.species) : null,
@@ -19633,14 +19633,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function InternationalView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🌍 Birding Beyond Maine'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🌍 Birding Beyond Maine'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '10 destinations beyond Maine for serious birders. Costa Rica, Texas Gulf Coast, Iceland, Africa, India + more.'),
           h('div', { className: 'space-y-3' },
             BIRDING_INTERNATIONAL.map(function(b, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-sky-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-sky-900 mb-2' }, '🌍 ' + b.region),
+                h('h2', { className: 'text-lg font-black text-sky-900 mb-2 tracking-tight' }, '🌍 ' + b.region),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, '🐦 Species: '), b.species),
                   h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, '📅 Best time: '), b.best_time),
@@ -19652,14 +19652,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function BirdingGamesView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🎲 Birding Games for Groups + Kids'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🎲 Birding Games for Groups + Kids'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '11 birding games for groups, classrooms, families, scouts. From I-Spy to Bingo to Migration Race.'),
           h('div', { className: 'space-y-3' },
             BIRDING_GAMES.map(function(g, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '🎲 ' + g.game),
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2 tracking-tight' }, '🎲 ' + g.game),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Details: '), g.details),
                   h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '👥 Age: '), g.age)));
@@ -19670,14 +19670,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function BirdSoundView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🎧 Bird Sound + Birding by Ear'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🎧 Bird Sound + Birding by Ear'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '10 tips for learning bird songs + identifying birds by ear.'),
           h('div', { className: 'space-y-3' },
             BIRD_SOUND_TIPS.map(function(t, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-purple-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-purple-900 mb-2' }, '🎧 ' + t.tip),
+                h('h2', { className: 'text-lg font-black text-purple-900 mb-2 tracking-tight' }, '🎧 ' + t.tip),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-purple-50 rounded' }, h('b', null, 'Details: '), t.details),
                   h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '✓ Benefit: '), t.benefit)));
@@ -19699,14 +19699,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function DiseasesView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🦠 Birds + Disease'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🦠 Birds + Disease'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '8 bird diseases + their impact + prevention. Public health concerns. Maine status.'),
           h('div', { className: 'space-y-3' },
             BIRD_DISEASES.map(function(d, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-rose-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-rose-900 mb-2' }, '🦠 ' + d.disease),
+                h('h2', { className: 'text-lg font-black text-rose-900 mb-2 tracking-tight' }, '🦠 ' + d.disease),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-rose-50 rounded' }, h('b', null, 'Affected: '), d.affected),
                   h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Symptoms: '), d.symptoms),
@@ -19719,14 +19719,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function DisabilityBirdingView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '♿ Inclusive Birding Resources'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '♿ Inclusive Birding Resources'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '10 inclusive birding resources — accessibility for mobility, vision, hearing, neurodiversity, cost, LGBTQ+, Indigenous birders, wellness.'),
           h('div', { className: 'space-y-3' },
             DISABILITY_BIRDING.map(function(d, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-violet-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-violet-900 mb-2' }, '♿ ' + d.topic),
+                h('h2', { className: 'text-lg font-black text-violet-900 mb-2 tracking-tight' }, '♿ ' + d.topic),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-violet-50 rounded' }, h('b', null, 'Tools: '), d.tools),
                   h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, '💡 Tips: '), d.tips),
@@ -19738,14 +19738,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function StoriesView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '📖 Bird Conservation Stories'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '📖 Bird Conservation Stories'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '10 epic bird conservation stories. Project Puffin, eBird revolution, DDT/Bald Eagle recovery, Maine Loon, Wild Turkey restoration + more.'),
           h('div', { className: 'space-y-3' },
             BIRD_STORIES.map(function(s, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '📖 ' + s.story),
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2 tracking-tight' }, '📖 ' + s.story),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Details: '), s.details),
                   h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, 'Development: '), s.development),
@@ -19757,14 +19757,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function TrailsView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🗺 Maine Birding Trail Regions'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🗺 Maine Birding Trail Regions'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '10 Maine birding trail regions. Each with key sites, species, access notes.'),
           h('div', { className: 'space-y-3' },
             BIRDING_TRAILS.map(function(t, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-emerald-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, '🗺 ' + t.region),
+                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2 tracking-tight' }, '🗺 ' + t.region),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, '📍 Sites: '), t.sites),
                   h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, '🐦 Species: '), t.species),
@@ -19776,14 +19776,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function SafetyEthicsView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🛡 Safety + Ethics — Comprehensive'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🛡 Safety + Ethics — Comprehensive'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '10 safety + ethics topics — personal, wildlife, tick, sun, bird welfare, property, sound, sensitive locations, photography, citizen science.'),
           h('div', { className: 'space-y-3' },
             SAFETY_ETHICS.map(function(s, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '🛡 ' + s.topic),
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2 tracking-tight' }, '🛡 ' + s.topic),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Details: '), s.details),
                   h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '📍 Maine: '), s.maine_specific)));
@@ -19803,14 +19803,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function AtlasView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🗂 Bird Atlas Projects'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🗂 Bird Atlas Projects'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '4 major bird atlas + survey projects — Maine + national breeding bird atlases, BBS, eBird.'),
           h('div', { className: 'space-y-3' },
             BIRD_ATLASES.map(function(a, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-emerald-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, '🗂 ' + a.topic),
+                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2 tracking-tight' }, '🗂 ' + a.topic),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, 'Details: '), a.details),
                   h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Years: '), a.years),
@@ -19821,14 +19821,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function MaineChangesView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '📊 Maine Bird Population Changes'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '📊 Maine Bird Population Changes'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'How 10 Maine birds have changed over the past century — recoveries + losses + climate-driven shifts.'),
           h('div', { className: 'space-y-3' },
             MAINE_BIRD_CHANGES.map(function(m, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '📊 ' + m.species),
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2 tracking-tight' }, '📊 ' + m.species),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-rose-50 rounded' }, h('b', null, 'Historic: '), m.historic),
                   h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, 'Modern: '), m.modern),
@@ -19839,14 +19839,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function VoiceTypesView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🎵 Bird Voice Types — Categorize Sounds'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🎵 Bird Voice Types — Categorize Sounds'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '12 categories of bird sounds — whistled, buzzed, repeated phrase, jumble, trill, mournful, liquid, insect-like, mechanical, cackle, caw, hoot.'),
           h('div', { className: 'space-y-3' },
             VOICE_TYPES.map(function(v, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-purple-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-purple-900 mb-2' }, '🎵 ' + v.type),
+                h('h2', { className: 'text-lg font-black text-purple-900 mb-2 tracking-tight' }, '🎵 ' + v.type),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-purple-50 rounded' }, h('b', null, 'Description: '), v.description),
                   h('div', { className: 'p-2 bg-amber-50 italic rounded' }, h('b', null, 'Examples: '), v.examples)));
@@ -19856,14 +19856,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function DetailedCalendarView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '📆 Detailed Birding Calendar'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '📆 Detailed Birding Calendar'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Week-by-week Maine bird calendar with bird activity + recommended birder actions.'),
           h('div', { className: 'space-y-3' },
             DETAILED_CALENDAR.map(function(d, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-emerald-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, '📆 ' + d.window),
+                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2 tracking-tight' }, '📆 ' + d.window),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, '🐦 Activity: '), d.activity),
                   h('div', { className: 'p-2 bg-amber-50 italic rounded' }, h('b', null, '✓ Action: '), d.action)));
@@ -19882,14 +19882,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function ArtView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🎨 Bird Art + Aesthetic History'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🎨 Bird Art + Aesthetic History'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '7 eras of bird visual representation — from Indigenous art through Audubon through modern AI.'),
           h('div', { className: 'space-y-3' },
             BIRD_ART.map(function(b, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-violet-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-violet-900 mb-2' }, '🎨 ' + b.period),
+                h('h2', { className: 'text-lg font-black text-violet-900 mb-2 tracking-tight' }, '🎨 ' + b.period),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-violet-50 rounded' }, h('b', null, 'Details: '), b.details),
                   h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '📍 Maine: '), b.maine)));
@@ -19899,14 +19899,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function PhilosophyView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '💭 Birding Philosophy + Meaning'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '💭 Birding Philosophy + Meaning'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '8 deeper reflections on what birding can mean. The long game, birds as teachers, belonging, citizen science, indicators, active hope, community, intergenerational.'),
           h('div', { className: 'space-y-3' },
             BIRDING_PHILOSOPHY.map(function(p, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '💭 ' + p.idea),
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2 tracking-tight' }, '💭 ' + p.idea),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Details: '), p.details),
                   h('div', { className: 'p-3 bg-emerald-50 italic rounded font-medium text-emerald-900' }, h('b', null, '📚 Lesson: '), p.lesson)));
@@ -19916,15 +19916,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function MaineStatsView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '📊 Maine Birds in Numbers'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '📊 Maine Birds in Numbers'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '15 statistics about Maine\'s birds + birding.'),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
             MAINE_BIRD_STATS.map(function(s, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-emerald-500 p-4' },
                 h('h2', { className: 'text-sm font-bold text-emerald-900 mb-1' }, s.stat),
-                h('div', { className: 'text-2xl font-black text-amber-700 mb-2' }, s.number),
+                h('div', { className: 'text-2xl font-black text-amber-700 mb-2 tracking-tight' }, s.number),
                 h('div', { className: 'text-xs text-slate-600 italic' }, s.context));
             })));
       }
@@ -19936,13 +19936,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function FaqEssentialsView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '❓ Essential Birding FAQ'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '❓ Essential Birding FAQ'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '10 essential questions about Maine birding answered.'),
           h('div', { className: 'space-y-3' },
             FAQ_ESSENTIALS.map(function(f, i) {
-              return h('details', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-violet-500 p-4 cursor-pointer' },
+              return h('details', { key: i, className: 'transition-all bg-white rounded-xl shadow border-l-4 border-violet-500 p-4 cursor-pointer hover:shadow-md hover:-translate-y-0.5' },
                 h('summary', { className: 'text-sm font-black text-violet-900' }, '❓ ' + f.q),
                 h('p', { className: 'mt-3 text-sm text-slate-700 leading-relaxed' }, f.a));
             })));
@@ -19953,14 +19953,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function MilestonesView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🎯 Birding Milestones'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '🎯 Birding Milestones'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '14 birding milestones from your very first bird to lifetime achievement. Goals + benchmarks + tips for each stage.'),
           h('div', { className: 'space-y-3' },
             BIRDING_MILESTONES.map(function(m, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
-                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '🎯 ' + m.milestone),
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2 tracking-tight' }, '🎯 ' + m.milestone),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, '📅 Stage: '), m.stage),
                   h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '💡 Tip: '), m.tip)));
@@ -19972,9 +19972,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function QuotesView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
-            h('h1', { className: 'text-2xl font-black text-stone-800' }, '💬 Birding Wisdom + Quotes'),
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, '💬 Birding Wisdom + Quotes'),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, '← Menu')),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '10 quotes about birds + birding from naturalists, poets, scientists.'),
           h('div', { className: 'space-y-3' },
             BIRDING_QUOTES.map(function(q, i) {

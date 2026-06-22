@@ -3589,11 +3589,11 @@ var d = labToolData.brainAtlas || {};
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
+              React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "transition-colors p-1.5 hover:bg-slate-100 rounded-lg active:scale-[0.97]", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
               React.createElement("div", null,
 
-                React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83E\uDDE0 Brain Atlas"),
+                React.createElement("h3", { className: "text-lg font-bold text-slate-800 tracking-tight" }, "\uD83E\uDDE0 Brain Atlas"),
 
                 React.createElement("p", { className: "text-xs text-slate-600" }, currentView.desc)
 
@@ -3714,7 +3714,7 @@ var d = labToolData.brainAtlas || {};
 
                   onClick: function () { upd('view', key); upd('viewsExplored', (function () { var o = Object.assign({}, d.viewsExplored); o[key] = true; return o; })()); upd('selectedRegion', null); upd('quizMode', false); upd('search', ''); },
 
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (viewKey === key ? 'bg-purple-600 text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-purple-50 border border-slate-400')
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (viewKey === key ? 'bg-purple-600 text-white shadow-sm' : 'transition-colors bg-slate-50 text-slate-600 hover:bg-purple-50 border border-slate-400 active:scale-[0.97]')
 
                 }, v.name);
 
@@ -3775,7 +3775,7 @@ var d = labToolData.brainAtlas || {};
 
               React.createElement("button", { onClick: function () { upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null); },
 
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.quizMode ? 'bg-green-700 text-white' : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100')
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.quizMode ? 'bg-green-700 text-white' : 'transition-colors bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 active:scale-[0.97]')
 
               }, d.quizMode ? '\u2705 Quiz On' : '\uD83E\uDDEA Quiz'),
 
@@ -3988,7 +3988,7 @@ var d = labToolData.brainAtlas || {};
 
                     className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all border-2 " +
 
-                      (isActive ? 'text-white shadow-lg' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'),
+                      (isActive ? 'text-white shadow-lg' : 'transition-colors bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50 active:scale-[0.97]'),
 
                     style: isActive ? { background: s.color, borderColor: s.color } : {}
 
@@ -4116,7 +4116,7 @@ var d = labToolData.brainAtlas || {};
                         return React.createElement("button", { key: oi, role: "radio", "aria-checked": !!wasChosen, disabled: show,
                           onClick: function () { upd('stimFeedback', { chosen: oi, correct: isCorrect }); if (isCorrect) upd('stimScore', (d.stimScore || 0) + 1); if (typeof announceToSR === 'function') announceToSR(isCorrect ? 'Correct.' : 'Not quite.'); },
                           className: "w-full text-left px-3 py-2 rounded-lg text-[11px] font-medium border-2 transition-all " +
-                            (show && isCorrect ? 'border-green-400 bg-green-50 text-green-800' : show && wasChosen ? 'border-red-400 bg-red-50 text-red-700' : 'border-slate-200 hover:border-amber-300 text-slate-600 hover:bg-amber-50')
+                            (show && isCorrect ? 'border-green-400 bg-green-50 text-green-800' : show && wasChosen ? 'border-red-400 bg-red-50 text-red-700' : 'transition-colors border-slate-200 hover:border-amber-300 text-slate-600 hover:bg-amber-50 active:scale-[0.97]')
                         }, (show && isCorrect ? '\u2705 ' : show && wasChosen ? '\u274C ' : '') + optText);
                       })
                     ),
@@ -4126,7 +4126,7 @@ var d = labToolData.brainAtlas || {};
                     ),
                     show && React.createElement('button', { 'aria-label': 'Next stimulation',
                       onClick: function () { upd('stimIdx', (d.stimIdx || 0) + 1); upd('stimFeedback', null); },
-                      className: 'w-full py-2 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-800' }, 'Next \u2192')
+                      className: 'transition-colors w-full py-2 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-800 active:scale-[0.97]' }, 'Next \u2192')
                   );
                 })()
               ),
@@ -4141,7 +4141,7 @@ var d = labToolData.brainAtlas || {};
                 (function () {
                   var loading = !!d.patientLoading; var text = d.patientText || ""; var opts = d.patientOpts || []; var guess = d.patientGuess;
                   var show = guess !== null && guess !== undefined;
-                  if (!text && !loading) { return React.createElement("button", { onClick: startPatient, className: "w-full py-2 rounded-lg text-xs font-bold bg-sky-700 text-white hover:bg-sky-800" }, "\u26A1 Stimulate the patient"); }
+                  if (!text && !loading) { return React.createElement("button", { onClick: startPatient, className: "transition-colors w-full py-2 rounded-lg text-xs font-bold bg-sky-700 text-white hover:bg-sky-800 active:scale-[0.97]" }, "\u26A1 Stimulate the patient"); }
                   if (loading) { return React.createElement("p", { className: "text-xs text-sky-700 italic py-2" }, "\u23F3 The patient is responding..."); }
                   return React.createElement("div", { className: "space-y-2" },
                     React.createElement("div", { className: "rounded-lg bg-sky-50 border border-sky-200 p-3" },
@@ -4155,7 +4155,7 @@ var d = labToolData.brainAtlas || {};
                         return React.createElement("button", { key: oi, role: "radio", "aria-checked": !!wasChosen, disabled: show,
                           onClick: function () { upd('patientGuess', { chosen: optTarget, correct: isCorrect }); if (isCorrect) upd('patientScore', (d.patientScore || 0) + 1); if (typeof announceToSR === 'function') announceToSR(isCorrect ? 'Correct.' : 'Not quite.'); },
                           className: "w-full text-left px-3 py-2 rounded-lg text-[11px] font-medium border-2 transition-all " +
-                            (show && isCorrect ? 'border-green-400 bg-green-50 text-green-800' : show && wasChosen ? 'border-red-400 bg-red-50 text-red-700' : 'border-slate-200 hover:border-sky-300 text-slate-600 hover:bg-sky-50')
+                            (show && isCorrect ? 'border-green-400 bg-green-50 text-green-800' : show && wasChosen ? 'border-red-400 bg-red-50 text-red-700' : 'transition-colors border-slate-200 hover:border-sky-300 text-slate-600 hover:bg-sky-50 active:scale-[0.97]')
                         }, (show && isCorrect ? '\u2705 ' : show && wasChosen ? '\u274C ' : '') + optTarget);
                       })
                     ),
@@ -4165,7 +4165,7 @@ var d = labToolData.brainAtlas || {};
                     ),
                     show && React.createElement('button', { 'aria-label': 'New patient',
                       onClick: function () { upd('patientIdx', (d.patientIdx || 0) + 1); upd('patientText', ''); upd('patientGuess', null); upd('patientOpts', []); },
-                      className: 'w-full py-2 rounded-lg text-xs font-bold bg-sky-700 text-white hover:bg-sky-800' }, 'New patient \u2192')
+                      className: 'transition-colors w-full py-2 rounded-lg text-xs font-bold bg-sky-700 text-white hover:bg-sky-800 active:scale-[0.97]' }, 'New patient \u2192')
                   );
                 })()
               ),
@@ -4218,7 +4218,7 @@ var d = labToolData.brainAtlas || {};
 
                             showResult && wasChosen && !isCorrect ? 'border-red-400 bg-red-50 text-red-700' :
 
-                              'border-slate-200 hover:border-slate-300 text-slate-600 hover:bg-slate-50')
+                              'transition-colors border-slate-200 hover:border-slate-300 text-slate-600 hover:bg-slate-50 active:scale-[0.97]')
 
                       }, (showResult && isCorrect ? '\u2705 ' : showResult && wasChosen ? '\u274C ' : '') + (opt.damage || '').substring(0, 100) + ((opt.damage || '').length > 100 ? '...' : ''));
 
@@ -4242,7 +4242,7 @@ var d = labToolData.brainAtlas || {};
 
                     onClick: function () { upd('quizIdx', (d.quizIdx || 0) + 1); upd('quizFeedback', null); },
 
-                    className: "w-full py-2 mt-2 rounded-lg text-xs font-bold bg-green-700 text-white hover:bg-green-800"
+                    className: "transition-colors w-full py-2 mt-2 rounded-lg text-xs font-bold bg-green-700 text-white hover:bg-green-800 active:scale-[0.97]"
 
                   }, "Next Question \u2192")
 
@@ -4292,7 +4292,7 @@ var d = labToolData.brainAtlas || {};
 
                           onClick: function () { upd('brainwaveType', waveType); },
 
-                          className: "px-2 py-1 rounded-md text-[11px] font-bold transition-all " + (isActive ? 'text-white shadow-lg' : 'text-white/70 hover:text-white/90'),
+                          className: "px-2 py-1 rounded-md text-[11px] font-bold transition-all " + (isActive ? 'text-white shadow-lg' : 'transition-colors text-white/70 hover:text-white/90'),
 
                           style: isActive ? { background: meta.color } : {}
 
@@ -4585,7 +4585,7 @@ var d = labToolData.brainAtlas || {};
 
                       React.createElement("h4", { className: "text-base font-black text-purple-700" }, sel.name),
 
-                      React.createElement("button", { "aria-label": "Close region detail panel", onClick: function () { upd('selectedRegion', null); }, className: "p-1 hover:bg-slate-100 rounded" }, React.createElement(X, { size: 14, className: "text-slate-600" }))
+                      React.createElement("button", { "aria-label": "Close region detail panel", onClick: function () { upd('selectedRegion', null); }, className: "transition-colors p-1 hover:bg-slate-100 rounded active:scale-[0.97]" }, React.createElement(X, { size: 14, className: "text-slate-600" }))
 
                     ),
 
@@ -4775,7 +4775,7 @@ var d = labToolData.brainAtlas || {};
 
                                   "aria-pressed": active,
 
-                                  className: "px-2 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-purple-50')
+                                  className: "px-2 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-purple-600 text-white' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-purple-50 active:scale-[0.97]')
 
                                 }, L.label);
 
@@ -4791,7 +4791,7 @@ var d = labToolData.brainAtlas || {};
 
                               "aria-label": "Generate AI explanation for " + sel.name + " at " + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + " level",
 
-                              className: "px-2.5 py-1 rounded text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-1"
+                              className: "transition-colors px-2.5 py-1 rounded text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-1 active:scale-[0.97]"
 
                             }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain'))
 
@@ -4823,7 +4823,7 @@ var d = labToolData.brainAtlas || {};
 
                         className: "w-full text-left px-3 py-2 rounded-lg text-xs transition-all hover:shadow-sm " +
 
-                          (d.selectedRegion === r.id ? 'font-bold border-2 border-purple-400 bg-purple-50' : 'bg-slate-50 hover:bg-white border border-slate-400')
+                          (d.selectedRegion === r.id ? 'font-bold border-2 border-purple-400 bg-purple-50' : 'transition-colors bg-slate-50 hover:bg-white border border-slate-400 active:scale-[0.97]')
 
                       },
 

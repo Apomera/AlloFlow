@@ -1352,9 +1352,9 @@ const d = labToolData.waterCycle || {};
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                   h('button', {
                     onClick: function() { switchMode('explorer'); },
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-slate-800 text-sky-400 border border-slate-700 hover:bg-slate-700" : "bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300")
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors bg-slate-800 text-sky-400 border border-slate-700 hover:bg-slate-700 active:scale-[0.97]" : "transition-colors bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300 active:scale-[0.97]")
                   }, '← Water Cycle Explorer'),
-                  h('h3', { className: 'text-lg font-bold ' + (isDark ? 'text-slate-100' : 'text-slate-800') }, '💧 Watershed Steward: Maine campaign')
+                  h('h3', { className: 'text-lg font-bold  tracking-tight' + (isDark ? 'text-slate-100' : 'text-slate-800') }, '💧 Watershed Steward: Maine campaign')
                 ),
                 h('div', {
                   style: {
@@ -1494,9 +1494,9 @@ const d = labToolData.waterCycle || {};
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                   h('button', {
                     onClick: function() { switchMode('explorer'); },
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-slate-800 text-sky-400 border border-slate-700 hover:bg-slate-700" : "bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300")
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors bg-slate-800 text-sky-400 border border-slate-700 hover:bg-slate-700 active:scale-[0.97]" : "transition-colors bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300 active:scale-[0.97]")
                   }, '← Water Cycle Explorer'),
-                  h('h3', { className: 'text-lg font-bold ' + (isDark ? 'text-slate-100' : 'text-slate-800') }, '💧 Watershed Steward: Debrief')
+                  h('h3', { className: 'text-lg font-bold  tracking-tight' + (isDark ? 'text-slate-100' : 'text-slate-800') }, '💧 Watershed Steward: Debrief')
                 ),
                 h('div', {
                   style: {
@@ -1595,11 +1595,11 @@ const d = labToolData.waterCycle || {};
                 h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
                   h('button', {
                     onClick: resetSteward,
-                    className: "px-4 py-2 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-slate-800 text-slate-200 hover:bg-slate-700" : "bg-slate-200 text-slate-800 hover:bg-slate-300")
+                    className: "px-4 py-2 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors bg-slate-800 text-slate-200 hover:bg-slate-700 active:scale-[0.97]" : "transition-colors bg-slate-200 text-slate-800 hover:bg-slate-300 active:scale-[0.97]")
                   }, '↻ New campaign'),
                   h('button', {
                     onClick: function() { startStewardCampaign({ seed: steward.seed, difficulty: steward.difficulty }); },
-                    className: "px-4 py-2 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-sky-950/60 text-sky-400 border border-sky-900/50 hover:bg-sky-900/40" : "bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300")
+                    className: "px-4 py-2 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors bg-sky-950/60 text-sky-400 border border-sky-900/50 hover:bg-sky-900/40 active:scale-[0.97]" : "transition-colors bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300 active:scale-[0.97]")
                   }, '🔁 Replay same conditions')
                 ),
                 h('div', { style: { padding: 8, background: isDark ? 'rgba(15,23,42,0.6)' : '#f8fafc', border: isDark ? '1px solid #334155' : '1px solid #cbd5e1', borderRadius: 8, fontSize: 11.5, color: isDark ? '#cbd5e1' : '#334155', fontFamily: 'ui-monospace, monospace' } },
@@ -1618,9 +1618,9 @@ const d = labToolData.waterCycle || {};
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                   h('button', {
                     onClick: function() { switchMode('explorer'); },
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-slate-800 text-sky-400 border border-slate-700 hover:bg-slate-700" : "bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300")
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors bg-slate-800 text-sky-400 border border-slate-700 hover:bg-slate-700 active:scale-[0.97]" : "transition-colors bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300 active:scale-[0.97]")
                   }, '← Water Cycle Explorer'),
-                  h('h3', { className: 'text-lg font-bold ' + (isDark ? 'text-slate-100' : 'text-slate-800') }, '💧 Year ' + steward.year + ' review')
+                  h('h3', { className: 'text-lg font-bold  tracking-tight' + (isDark ? 'text-slate-100' : 'text-slate-800') }, '💧 Year ' + steward.year + ' review')
                 ),
                 h('div', {
                   style: {
@@ -1693,9 +1693,9 @@ const d = labToolData.waterCycle || {};
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                 h('button', {
                   onClick: function() { switchMode('explorer'); },
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-slate-800 text-sky-400 border border-slate-700 hover:bg-slate-700" : "bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300")
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors bg-slate-800 text-sky-400 border border-slate-700 hover:bg-slate-700 active:scale-[0.97]" : "transition-colors bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300 active:scale-[0.97]")
                 }, '← Water Cycle Explorer'),
-                h('h3', { className: 'text-lg font-bold ' + (isDark ? 'text-slate-100' : 'text-slate-800') }, '💧 Watershed Steward · Year ' + steward.year)
+                h('h3', { className: 'text-lg font-bold  tracking-tight' + (isDark ? 'text-slate-100' : 'text-slate-800') }, '💧 Watershed Steward · Year ' + steward.year)
               ),
               coachingTip ? h('div', {
                 role: 'note',
@@ -3630,11 +3630,11 @@ const d = labToolData.waterCycle || {};
 
               React.createElement("button", { 
                 onClick: () => setStemLabTool(null), 
-                className: "p-1.5 rounded-lg transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "hover:bg-slate-800 text-slate-350" : "hover:bg-slate-100 text-slate-600"), 
+                className: "p-1.5 rounded-lg transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors hover:bg-slate-800 text-slate-350 active:scale-[0.97]" : "transition-colors hover:bg-slate-100 text-slate-600 active:scale-[0.97]"), 
                 'aria-label': 'Back to tools' 
               }, React.createElement(ArrowLeft, { size: 18, className: isDark ? "text-slate-350" : "text-slate-600" })),
 
-              React.createElement("h3", { className: "text-lg font-bold " + (isDark ? "text-slate-100" : "text-slate-800") }, "\uD83C\uDF0A Water Cycle"),
+              React.createElement("h3", { className: "text-lg font-bold  tracking-tight" + (isDark ? "text-slate-100" : "text-slate-800") }, "\uD83C\uDF0A Water Cycle"),
 
               React.createElement("span", { className: "px-2 py-0.5 text-[11px] font-bold rounded-full " + (isDark ? "bg-sky-950/50 text-sky-400 border border-sky-900/50" : "bg-sky-100 text-sky-700") }, "ANIMATED"),
 
@@ -3662,7 +3662,7 @@ const d = labToolData.waterCycle || {};
                     upd('wcGradeOverride', gb);
                     addToast('\uD83C\uDF93 Grade set to ' + gb + ' - content complexity updated!', 'success');
                   },
-                  className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (gradeBand === gb ? 'bg-indigo-600 text-white shadow-md' : (isDark ? 'bg-slate-800/80 text-slate-300 hover:bg-slate-700 border border-slate-700/60' : 'bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400'))
+                  className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (gradeBand === gb ? 'bg-indigo-600 text-white shadow-md' : (isDark ? 'transition-colors bg-slate-800/80 text-slate-300 hover:bg-slate-700 border border-slate-700/60 active:scale-[0.97]' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 active:scale-[0.97]'))
                 }, gb);
               }),
               React.createElement("span", { className: "ml-auto px-2 py-0.5 text-[11px] font-bold rounded-full border " + (isDark ? "bg-indigo-950/40 text-indigo-400 border-indigo-900/50" : "bg-indigo-50 text-indigo-600 border-indigo-200") },
@@ -3840,7 +3840,7 @@ const d = labToolData.waterCycle || {};
                           if (cv) { cv.dataset.journeyState = 'idle'; }
                           if (typeof announceToSR === 'function') announceToSR('Journey ended.');
                         },
-                        className: "px-3 py-1.5 bg-slate-600 text-white text-[11px] font-bold rounded-lg hover:bg-slate-500 transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none"
+                        className: "px-3 py-1.5 bg-slate-600 text-white text-[11px] font-bold rounded-lg hover:bg-slate-500 transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none active:scale-[0.97]"
                       }, "\u23F9 End Journey (J)")
                     )
               ),
@@ -3880,7 +3880,7 @@ const d = labToolData.waterCycle || {};
                         if (cv) { cv.dataset.journeyState = 'river_runoff'; if (cv._onJourneyTransition) cv._onJourneyTransition('river_runoff'); }
                         if (typeof announceToSR === 'function') announceToSR('Path chosen: River Runoff.');
                       },
-                      className: "p-2 rounded-lg text-center border-2 transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-blue-950/40 border-blue-800 hover:bg-blue-900/40 text-blue-300" : "bg-blue-50 border-blue-600 hover:bg-blue-100 text-blue-700")
+                      className: "p-2 rounded-lg text-center border-2 transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors bg-blue-950/40 border-blue-800 hover:bg-blue-900/40 text-blue-300 active:scale-[0.97]" : "transition-colors bg-blue-50 border-blue-600 hover:bg-blue-100 text-blue-700 active:scale-[0.97]")
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83C\uDF0A"),
                       React.createElement("p", { className: "text-[11px] font-bold" }, "River Runoff (R)"),
@@ -3894,7 +3894,7 @@ const d = labToolData.waterCycle || {};
                         if (cv) { cv.dataset.journeyState = 'infiltrating'; if (cv._onJourneyTransition) cv._onJourneyTransition('infiltrating'); }
                         if (typeof announceToSR === 'function') announceToSR('Path chosen: Underground infiltration.');
                       },
-                      className: "p-2 rounded-lg text-center border-2 transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-amber-950/40 border-amber-800 hover:bg-amber-900/40 text-amber-300" : "bg-amber-50 border-amber-600 hover:bg-amber-100 text-amber-700")
+                      className: "p-2 rounded-lg text-center border-2 transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors bg-amber-950/40 border-amber-800 hover:bg-amber-900/40 text-amber-300 active:scale-[0.97]" : "transition-colors bg-amber-50 border-amber-600 hover:bg-amber-100 text-amber-700 active:scale-[0.97]")
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83E\uDEB4"),
                       React.createElement("p", { className: "text-[11px] font-bold" }, "Underground (U)"),
@@ -3908,7 +3908,7 @@ const d = labToolData.waterCycle || {};
                         if (cv) { cv.dataset.journeyState = 'plant_absorb'; if (cv._onJourneyTransition) cv._onJourneyTransition('plant_absorb'); }
                         if (typeof announceToSR === 'function') announceToSR('Path chosen: Plant absorption.');
                       },
-                      className: "p-2 rounded-lg text-center border-2 transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-emerald-950/40 border-emerald-800 hover:bg-emerald-900/40 text-emerald-300" : "bg-emerald-50 border-emerald-600 hover:bg-emerald-100 text-emerald-700")
+                      className: "p-2 rounded-lg text-center border-2 transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors bg-emerald-950/40 border-emerald-800 hover:bg-emerald-900/40 text-emerald-300 active:scale-[0.97]" : "transition-colors bg-emerald-50 border-emerald-600 hover:bg-emerald-100 text-emerald-700 active:scale-[0.97]")
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83C\uDF3F"),
                       React.createElement("p", { className: "text-[11px] font-bold" }, "Enter Plant (P)"),
@@ -3990,7 +3990,7 @@ const d = labToolData.waterCycle || {};
                 React.createElement("button", {
                   disabled: d.hydrologistLoading,
                   onClick: askHydrologist,
-                  className: "px-3 py-1.5 bg-sky-600 text-white rounded-lg text-xs font-bold hover:bg-sky-700 transition-all disabled:opacity-50 focus:ring-2 focus:ring-yellow-500 focus:outline-none"
+                  className: "px-3 py-1.5 bg-sky-600 text-white rounded-lg text-xs font-bold hover:bg-sky-700 transition-all disabled:opacity-50 focus:ring-2 focus:ring-yellow-500 focus:outline-none active:scale-[0.97]"
                 }, d.hydrologistLoading ? "Thinking..." : "Ask")
               ),
               d.hydrologistReply && React.createElement("div", { className: "mt-2 p-2.5 rounded-lg border animate-in slide-in-from-top-1 " + (isDark ? "bg-sky-950/40 border-sky-900/50 text-slate-200" : "bg-sky-50 border-sky-100 text-slate-700") },
@@ -4016,7 +4016,7 @@ const d = labToolData.waterCycle || {};
                 var gwRecharge = Math.max(0, 100 - runoffPct); // true partition: of rain reaching the ground, runoff + infiltration = 100% (water is conserved, just redirected)
                 return React.createElement("div", null, React.createElement("div", { className: "grid grid-cols-4 gap-2" },
                   React.createElement("div", { className: "rounded-lg p-2 text-center border " + (isDark ? "bg-slate-900/60 border-amber-950/50" : "bg-white border-amber-100") },
-                    React.createElement("p", { className: "text-lg font-bold text-amber-500" }, (evapRate * 100).toFixed(0) + "%"),
+                    React.createElement("p", { className: "text-lg font-bold text-amber-500 tracking-tight" }, (evapRate * 100).toFixed(0) + "%"),
                     React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-amber-600" : "text-amber-500") }, "Evaporation")
                   ),
                   React.createElement("div", { className: "rounded-lg p-2 text-center border " + (isDark ? "bg-slate-900/60 border-blue-950/50" : "bg-white border-blue-100") },
@@ -4024,11 +4024,11 @@ const d = labToolData.waterCycle || {};
                     React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-blue-600" : "text-blue-500") }, "Precip Type")
                   ),
                   React.createElement("div", { className: "rounded-lg p-2 text-center border " + (isDark ? "bg-slate-900/60 border-cyan-950/50" : "bg-white border-cyan-100") },
-                    React.createElement("p", { className: "text-lg font-bold text-cyan-500" }, runoffPct.toFixed(0) + "%"),
+                    React.createElement("p", { className: "text-lg font-bold text-cyan-500 tracking-tight" }, runoffPct.toFixed(0) + "%"),
                     React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-cyan-600" : "text-cyan-500") }, "Runoff")
                   ),
                   React.createElement("div", { className: "rounded-lg p-2 text-center border " + (isDark ? "bg-slate-900/60 border-emerald-950/50" : "bg-white border-emerald-100") },
-                    React.createElement("p", { className: "text-lg font-bold text-emerald-500" }, gwRecharge.toFixed(0) + "%"),
+                    React.createElement("p", { className: "text-lg font-bold text-emerald-500 tracking-tight" }, gwRecharge.toFixed(0) + "%"),
                     React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-emerald-600" : "text-emerald-500") }, "GW Recharge")
                   )
                   ),
@@ -4133,8 +4133,8 @@ const d = labToolData.waterCycle || {};
 
                     var cls = !d.wcQuiz.answered
                       ? (isDark
-                         ? 'bg-slate-900 border-slate-800 text-slate-300 hover:border-sky-550 hover:bg-sky-950/40 hover:shadow-sm'
-                         : 'bg-white border-slate-200 hover:border-sky-400 hover:bg-sky-50 hover:shadow-sm text-slate-800')
+                         ? 'transition-colors bg-slate-900 border-slate-800 text-slate-300 hover:border-sky-550 hover:bg-sky-950/40 hover:shadow-sm active:scale-[0.97]'
+                         : 'transition-colors bg-white border-slate-200 hover:border-sky-400 hover:bg-sky-50 hover:shadow-sm text-slate-800 active:scale-[0.97]')
                       : isCorrect
                         ? (isDark ? 'bg-emerald-950/60 border-emerald-800 text-emerald-400 shadow-sm' : 'bg-emerald-100 border-emerald-400 shadow-sm text-emerald-900')
                         : wasChosen
@@ -4218,7 +4218,7 @@ const d = labToolData.waterCycle || {};
                         onClick: function() {
                           studyVocab(concept);
                         },
-                        className: "px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-[10px] shrink-0 self-start sm:self-center transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none"
+                        className: "px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-[10px] shrink-0 self-start sm:self-center transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none active:scale-[0.97]"
                       }, "📖 Study Term (+5 RP)")
                     );
                   })()

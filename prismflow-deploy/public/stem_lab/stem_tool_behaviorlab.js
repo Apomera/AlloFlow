@@ -3212,6 +3212,7 @@ dataRef.current = d;
                       fontFamily: 'ui-monospace, Menlo, monospace'
                     } }, 'Level ' + blLevel + ' / ' + LEVELS.length)
                   ),
+                  React.createElement("div", { style: { height: 3, width: 48, borderRadius: 999, marginBottom: 6, background: 'linear-gradient(90deg, #fbbf24, #f59e0b)' } }),
                   React.createElement("div", { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 600, lineHeight: 1.5 } },
                     currentLevel.title + ' \u2014 ', React.createElement("span", { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, currentLevel.concept)
                   )
@@ -3268,7 +3269,7 @@ dataRef.current = d;
 
                         isComplete ? 'bg-emerald-600/30 text-emerald-300 border border-emerald-500/50' :
 
-                          unlocked ? 'bg-slate-700 text-slate-100 hover:bg-slate-600' :
+                          unlocked ? 'transition-colors bg-slate-700 text-slate-100 hover:bg-slate-600 active:scale-[0.97]' :
 
                             'bg-slate-800 text-slate-200 cursor-not-allowed')
 
@@ -3380,7 +3381,7 @@ dataRef.current = d;
 
                             "aria-pressed": active,
 
-                            className: "px-2 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-purple-600 text-white' : 'bg-slate-700 text-purple-200 hover:bg-slate-600 border border-purple-500/30')
+                            className: "px-2 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-purple-600 text-white' : 'transition-colors bg-slate-700 text-purple-200 hover:bg-slate-600 border border-purple-500/30 active:scale-[0.97]')
 
                           }, L.label);
 
@@ -3396,7 +3397,7 @@ dataRef.current = d;
 
                         "aria-label": "Generate AI explanation at " + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + " level",
 
-                        className: "px-2.5 py-1 rounded text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50"
+                        className: "transition-colors px-2.5 py-1 rounded text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 active:scale-[0.97]"
 
                       }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain'))
 
@@ -3627,7 +3628,7 @@ dataRef.current = d;
 
                     className: "px-2.5 py-1 font-bold transition-all " +
 
-                      (blSpeed === sp ? 'bg-amber-700 text-white' : 'bg-slate-800 text-slate-200 hover:bg-slate-700')
+                      (blSpeed === sp ? 'bg-amber-700 text-white' : 'transition-colors bg-slate-800 text-slate-200 hover:bg-slate-700 active:scale-[0.97]')
 
                   }, sp + '\u00D7');
 
@@ -3643,7 +3644,7 @@ dataRef.current = d;
 
                 className: "px-2 py-1 rounded-lg text-sm transition-all " +
 
-                  (blSoundOn ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'),
+                  (blSoundOn ? 'transition-colors bg-slate-700 text-white hover:bg-slate-600 active:scale-[0.97]' : 'transition-colors bg-slate-800 text-slate-200 hover:bg-slate-700 active:scale-[0.97]'),
 
                 'aria-label': blSoundOn ? 'Mute' : 'Unmute', title: blSoundOn ? 'Sound On' : 'Sound Off'
 
@@ -3655,7 +3656,7 @@ dataRef.current = d;
 
                 onClick: function () { upd('blPaused', !blPaused); if (announceToSR) announceToSR(blPaused ? 'Simulation resumed' : 'Simulation paused'); },
 
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (blPaused ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-100 hover:bg-slate-600')
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (blPaused ? 'bg-emerald-700 text-white' : 'transition-colors bg-slate-700 text-slate-100 hover:bg-slate-600 active:scale-[0.97]')
 
               }, blPaused ? '\u25B6 Resume' : '\u23F8 Pause')
 
@@ -3733,7 +3734,7 @@ dataRef.current = d;
 
               })(),
 
-              React.createElement("p", { className: "text-lg font-extrabold text-emerald-300 text-center mb-3" }, "\uD83C\uDF89 Level " + blLevel + " Complete!"),
+              React.createElement("p", { className: "text-lg font-extrabold text-emerald-300 text-center mb-3 tracking-tight" }, "\uD83C\uDF89 Level " + blLevel + " Complete!"),
 
               React.createElement("p", { className: "text-sm text-emerald-200 text-center mb-4" }, "You demonstrated " + currentLevel.concept + "!"),
 
@@ -3743,7 +3744,7 @@ dataRef.current = d;
 
                 React.createElement("div", { className: "bg-slate-900/50 rounded-xl p-3 text-center border border-slate-700/40" },
 
-                  React.createElement("p", { className: "text-lg font-extrabold text-amber-400" }, '' + blReinforcements),
+                  React.createElement("p", { className: "text-lg font-extrabold text-amber-400 tracking-tight" }, '' + blReinforcements),
 
                   React.createElement("p", { className: "text-[11px] text-slate-200" }, "Reinforcements")
 
@@ -3751,7 +3752,7 @@ dataRef.current = d;
 
                 React.createElement("div", { className: "bg-slate-900/50 rounded-xl p-3 text-center border border-slate-700/40" },
 
-                  React.createElement("p", { className: "text-lg font-extrabold text-indigo-400" }, '' + blTick),
+                  React.createElement("p", { className: "text-lg font-extrabold text-indigo-400 tracking-tight" }, '' + blTick),
 
                   React.createElement("p", { className: "text-[11px] text-slate-200" }, "Ticks to Complete")
 
@@ -3759,7 +3760,7 @@ dataRef.current = d;
 
                 React.createElement("div", { className: "bg-slate-900/50 rounded-xl p-3 text-center border border-slate-700/40" },
 
-                  React.createElement("p", { className: "text-lg font-extrabold text-emerald-400" },
+                  React.createElement("p", { className: "text-lg font-extrabold text-emerald-400 tracking-tight" },
 
                     blTick > 0 ? (blLevelScore / blTick * 60).toFixed(1) : '0.0'),
 
@@ -3769,7 +3770,7 @@ dataRef.current = d;
 
                 blLatencies.length > 0 && React.createElement("div", { className: "bg-slate-900/50 rounded-xl p-3 text-center border border-slate-700/40" },
 
-                  React.createElement("p", { className: "text-lg font-extrabold text-purple-400" },
+                  React.createElement("p", { className: "text-lg font-extrabold text-purple-400 tracking-tight" },
 
                     (blLatencies.reduce(function (a, b) { return a + b; }, 0) / blLatencies.length).toFixed(1)),
 
@@ -3823,7 +3824,7 @@ dataRef.current = d;
 
                     else if (isSelected) btnClass += 'bg-indigo-600/40 text-indigo-200 border-indigo-400/50';
 
-                    else btnClass += 'bg-slate-800/60 text-slate-100 border-slate-600/30 hover:bg-slate-700/60';
+                    else btnClass += 'transition-colors bg-slate-800/60 text-slate-100 border-slate-600/30 hover:bg-slate-700/60 active:scale-[0.97]';
 
                     return React.createElement("button", { "aria-label": "Quiz answer: " + opt,
 
@@ -4097,7 +4098,7 @@ dataRef.current = d;
 
                 },
 
-                className: "flex-1 py-2.5 rounded-xl bg-red-600 text-white font-bold text-sm hover:bg-red-700 transition-colors shadow-md"
+                className: "flex-1 py-2.5 rounded-xl bg-red-600 text-white font-bold text-sm hover:bg-red-700 transition-colors shadow-md active:scale-[0.97]"
 
               }, "\uD83D\uDEAB Start Extinction"),
 
@@ -4119,7 +4120,7 @@ dataRef.current = d;
 
                 'aria-label': 'Target behavior selector',
 
-                className: "px-3 py-2 rounded-xl text-xs font-bold bg-slate-800 text-indigo-300 border border-indigo-500/30 cursor-pointer",
+                className: "transition-all px-3 py-2 rounded-xl text-xs font-bold bg-slate-800 text-indigo-300 border border-indigo-500/30 cursor-pointer hover:shadow-md hover:-translate-y-0.5",
 
                 style: Object.assign({}, glass)
 
@@ -4779,7 +4780,7 @@ dataRef.current = d;
 
                   },
 
-                  className: "px-3 py-1 rounded-lg text-[11px] font-bold bg-slate-700 text-slate-100 hover:bg-slate-600 transition-all border border-slate-600/40"
+                  className: "px-3 py-1 rounded-lg text-[11px] font-bold bg-slate-700 text-slate-100 hover:bg-slate-600 transition-all border border-slate-600/40 active:scale-[0.97]"
 
                 }, "\uD83D\uDCE5 Export CSV")
 
@@ -4843,7 +4844,7 @@ dataRef.current = d;
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h3", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\uD83D\uDCA1 Four Functions of Behavior (FBA)"),
                 React.createElement("button", { onClick: function() { upd('blShowFunctions', !d.blShowFunctions); },
-                  className: "text-[11px] text-blue-400 hover:text-blue-300"
+                  className: "transition-colors text-[11px] text-blue-400 hover:text-blue-300"
                 }, d.blShowFunctions ? 'Hide' : 'Learn \u2192')
               ),
               d.blShowFunctions && React.createElement("div", null,
@@ -4853,7 +4854,7 @@ dataRef.current = d;
                     var isActive = d.blFuncIdx === ffi;
                     return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: ffi,
                       onClick: function() { upd('blFuncIdx', isActive ? null : ffi); },
-                      className: "cursor-pointer rounded-xl p-3 border-2 transition-all " + (isActive ? 'border-opacity-100' : 'border-opacity-30 hover:border-opacity-60'),
+                      className: "cursor-pointer rounded-xl p-3 border-2 transition-all  hover:shadow-md hover:-translate-y-0.5" + (isActive ? 'border-opacity-100' : 'transition-colors border-opacity-30 hover:border-opacity-60'),
                       style: { borderColor: ff.color, background: isActive ? ff.color + '15' : 'rgba(30,41,59,0.4)' }
                     },
                       React.createElement("div", { className: "text-center mb-1" },
@@ -4925,7 +4926,7 @@ dataRef.current = d;
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "🧭 Beyond Pure ABA — neurodiversity-affirming + trauma-informed"),
                 React.createElement("button", { onClick: function() { upd('blShowBeyond', !d.blShowBeyond); },
-                  className: "text-[11px] text-purple-400 hover:text-purple-300"
+                  className: "transition-colors text-[11px] text-purple-400 hover:text-purple-300"
                 }, d.blShowBeyond ? 'Hide' : 'View →')
               ),
               d.blShowBeyond && React.createElement("div", null,
@@ -5023,7 +5024,7 @@ dataRef.current = d;
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\uD83D\uDCC8 Schedule Comparison"),
                 React.createElement("button", { onClick: function() { upd('blSchedCanvas', !blSchedCanvas); },
-                  className: "text-[11px] text-amber-400 hover:text-amber-300"
+                  className: "transition-colors text-[11px] text-amber-400 hover:text-amber-300"
                 }, blSchedCanvas ? 'Hide' : 'Compare Schedules \u2192')
               ),
               blSchedCanvas && React.createElement("div", null,
@@ -5129,7 +5130,7 @@ dataRef.current = d;
                   }, blSchedPaused ? '\u25B6 Play' : '\u23F8 Pause'),
                   React.createElement("button", { "aria-label": "Reset schedule animation",
                     onClick: function() { upd('blSchedTick', 0); upd('blSchedPaused', false); },
-                    className: "px-3 py-1 rounded-lg text-[11px] font-bold bg-slate-700 text-slate-100 hover:bg-slate-600 focus:ring-2 focus:ring-cyan-400 focus:outline-none"
+                    className: "transition-colors px-3 py-1 rounded-lg text-[11px] font-bold bg-slate-700 text-slate-100 hover:bg-slate-600 focus:ring-2 focus:ring-cyan-400 focus:outline-none active:scale-[0.97]"
                   }, '\u21BB Reset')
                 ),
                 // Schedule details
@@ -5163,7 +5164,7 @@ dataRef.current = d;
                 React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\uD83D\uDD75\uFE0F Schedule Sleuth \u2014 identify the schedule from its curve"),
                 React.createElement("button", {
                   onClick: function() { upd('blShowSleuth', !d.blShowSleuth); },
-                  className: "text-[11px] text-amber-400 hover:text-amber-300"
+                  className: "transition-colors text-[11px] text-amber-400 hover:text-amber-300"
                 }, d.blShowSleuth ? 'Hide' : 'Play \u2192')
               ),
               d.blShowSleuth && (function() {
@@ -5190,7 +5191,7 @@ dataRef.current = d;
                     React.createElement("button", {
                       onClick: startRound,
                       "aria-label": "Start Schedule Sleuth",
-                      className: "px-4 py-2 rounded-lg bg-amber-600 text-white font-bold text-[11px] hover:bg-amber-500 focus:outline-none focus:ring-2 ring-amber-300"
+                      className: "transition-colors px-4 py-2 rounded-lg bg-amber-600 text-white font-bold text-[11px] hover:bg-amber-500 focus:outline-none focus:ring-2 ring-amber-300 active:scale-[0.97]"
                     }, "\uD83D\uDD75\uFE0F Start the game")
                   );
                 }
@@ -5362,7 +5363,7 @@ dataRef.current = d;
                     React.createElement("button", {
                       onClick: startRound,
                       "aria-label": "Next round",
-                      className: "px-4 py-1.5 rounded-lg bg-amber-600 text-white font-bold text-[11px] hover:bg-amber-500 focus:outline-none focus:ring-2 ring-amber-300"
+                      className: "transition-colors px-4 py-1.5 rounded-lg bg-amber-600 text-white font-bold text-[11px] hover:bg-amber-500 focus:outline-none focus:ring-2 ring-amber-300 active:scale-[0.97]"
                     }, "\u27A1\uFE0F Next round")
                   )
                 );
@@ -5382,7 +5383,7 @@ dataRef.current = d;
                 React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "🔍 Function Sleuth — what is the behavior getting?"),
                 React.createElement("button", {
                   onClick: function() { upd('blShowFnSleuth', !d.blShowFnSleuth); },
-                  className: "text-[11px] text-blue-400 hover:text-blue-300"
+                  className: "transition-colors text-[11px] text-blue-400 hover:text-blue-300"
                 }, d.blShowFnSleuth ? 'Hide' : 'Play →')
               ),
               d.blShowFnSleuth && (function() {
@@ -5483,7 +5484,7 @@ dataRef.current = d;
                       React.createElement("button", {
                         onClick: startFn,
                         "aria-label": "Start Function Sleuth",
-                        className: "px-4 py-2 rounded-lg bg-blue-600 text-white font-bold text-[11px] hover:bg-blue-500 focus:outline-none focus:ring-2 ring-blue-300"
+                        className: "transition-colors px-4 py-2 rounded-lg bg-blue-600 text-white font-bold text-[11px] hover:bg-blue-500 focus:outline-none focus:ring-2 ring-blue-300 active:scale-[0.97]"
                       }, "🔍 Start the game")
                     )
                   );
@@ -5553,12 +5554,12 @@ dataRef.current = d;
                           ),
                           React.createElement("button", {
                             onClick: function() { upd('blFnIdx', -1); upd('blFnShown', []); upd('blFnScore', 0); upd('blFnRounds', 0); upd('blFnStreak', 0); },
-                            className: "mt-2 px-3 py-1.5 rounded-lg bg-blue-600 text-white font-bold text-[11px] hover:bg-blue-500"
+                            className: "transition-colors mt-2 px-3 py-1.5 rounded-lg bg-blue-600 text-white font-bold text-[11px] hover:bg-blue-500 active:scale-[0.97]"
                           }, '🔄 Restart')
                         )
                       : React.createElement("button", {
                           onClick: startFn,
-                          className: "px-4 py-1.5 rounded-lg bg-blue-600 text-white font-bold text-[11px] hover:bg-blue-500 focus:outline-none focus:ring-2 ring-blue-300"
+                          className: "transition-colors px-4 py-1.5 rounded-lg bg-blue-600 text-white font-bold text-[11px] hover:bg-blue-500 focus:outline-none focus:ring-2 ring-blue-300 active:scale-[0.97]"
                         }, '➡️ Next vignette')
                   )
                 );
@@ -5584,7 +5585,7 @@ dataRef.current = d;
                   var isActive = blMatrixIdx === m.id;
                   return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: m.id,
                     onClick: function() { upd('blMatrixIdx', isActive ? null : m.id); },
-                    className: "cursor-pointer rounded-xl p-2 border-2 text-center transition-all " + (isActive ? 'scale-105 shadow-lg' : 'hover:scale-[1.02]'),
+                    className: "cursor-pointer rounded-xl p-2 border-2 text-center transition-all  hover:shadow-md hover:-translate-y-0.5" + (isActive ? 'scale-105 shadow-lg' : 'hover:scale-[1.02]'),
                     style: { borderColor: isActive ? m.color : m.color + '40', background: isActive ? m.color + '20' : 'rgba(30,41,59,0.6)' }
                   },
                     React.createElement("div", { className: "text-xl mb-0.5" }, m.icon),
@@ -5600,7 +5601,7 @@ dataRef.current = d;
                   var isActive = blMatrixIdx === m.id;
                   return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: m.id,
                     onClick: function() { upd('blMatrixIdx', isActive ? null : m.id); },
-                    className: "cursor-pointer rounded-xl p-2 border-2 text-center transition-all " + (isActive ? 'scale-105 shadow-lg' : 'hover:scale-[1.02]'),
+                    className: "cursor-pointer rounded-xl p-2 border-2 text-center transition-all  hover:shadow-md hover:-translate-y-0.5" + (isActive ? 'scale-105 shadow-lg' : 'hover:scale-[1.02]'),
                     style: { borderColor: isActive ? m.color : m.color + '40', background: isActive ? m.color + '20' : 'rgba(30,41,59,0.6)' }
                   },
                     React.createElement("div", { className: "text-xl mb-0.5" }, m.icon),
@@ -5646,7 +5647,7 @@ dataRef.current = d;
                 React.createElement("div", { className: "text-2xl" }, '\uD83E\uDE99'),
                 React.createElement("div", { className: "text-center" },
                   React.createElement("div", { className: "text-[11px] text-slate-200 uppercase tracking-wider" }, 'Token Balance'),
-                  React.createElement("div", { className: "text-2xl font-black text-amber-400" }, blTokenBalance)
+                  React.createElement("div", { className: "text-2xl font-black text-amber-400 tracking-tight" }, blTokenBalance)
                 ),
                 React.createElement("div", { className: "text-2xl" }, '\uD83E\uDE99')
               ),
@@ -5664,7 +5665,7 @@ dataRef.current = d;
                         upd('blTokenLog', newLog);
                         if (addToast) addToast('\uD83E\uDE99 +' + item.tokens + ' tokens for ' + item.name + '!', 'success');
                       },
-                      className: "flex items-center gap-1.5 p-1.5 rounded-lg text-left transition-all bg-emerald-900/20 border border-emerald-700/30 hover:bg-emerald-900/40 hover:scale-[1.02]"
+                      className: "flex items-center gap-1.5 p-1.5 rounded-lg text-left transition-all bg-emerald-900/20 border border-emerald-700/30 hover:bg-emerald-900/40 hover:scale-[1.02] active:scale-[0.97]"
                     },
                       React.createElement("span", { className: "text-lg" }, item.icon),
                       React.createElement("div", null,
@@ -5694,7 +5695,7 @@ dataRef.current = d;
                         upd('blTokenRewards', newRew);
                         if (addToast) addToast('\uD83C\uDF89 Redeemed ' + rew.name + '!', 'success');
                       },
-                      className: "flex items-center gap-1.5 p-1.5 rounded-lg text-left transition-all border " + (canAfford ? 'bg-amber-900/20 border-amber-700/30 hover:bg-amber-900/40 hover:scale-[1.02]' : 'bg-slate-800/40 border-slate-700/20 opacity-50 cursor-not-allowed'),
+                      className: "flex items-center gap-1.5 p-1.5 rounded-lg text-left transition-all border " + (canAfford ? 'transition-colors bg-amber-900/20 border-amber-700/30 hover:bg-amber-900/40 hover:scale-[1.02] active:scale-[0.97]' : 'bg-slate-800/40 border-slate-700/20 opacity-50 cursor-not-allowed'),
                       disabled: !canAfford
                     },
                       React.createElement("span", { className: "text-lg" }, rew.icon),
@@ -5730,7 +5731,7 @@ dataRef.current = d;
                 React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\uD83D\uDD2C Operant vs Classical Conditioning"),
                 React.createElement("button", { "aria-label": "Aspect",
                   onClick: function() { upd('blShowCondCompare', !blShowCondCompare); },
-                  className: "text-[11px] text-violet-400 hover:text-violet-300"
+                  className: "transition-colors text-[11px] text-violet-400 hover:text-violet-300"
                 }, blShowCondCompare ? 'Hide' : 'Compare \u2192')
               ),
               blShowCondCompare && React.createElement("div", null,
@@ -5760,7 +5761,7 @@ dataRef.current = d;
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\uD83D\uDCCB Behavior Intervention Plan (BIP) Builder"),
                 React.createElement("button", { onClick: function() { upd('blShowBipPlanner', !blShowBipPlanner); },
-                  className: "text-[11px] text-red-400 hover:text-red-300"
+                  className: "transition-colors text-[11px] text-red-400 hover:text-red-300"
                 }, blShowBipPlanner ? 'Hide' : 'Build a BIP \u2192')
               ),
               blShowBipPlanner && React.createElement("div", null,
@@ -5814,7 +5815,7 @@ dataRef.current = d;
                       React.createElement("div", { className: "flex gap-2 justify-end" },
                         blBipStep > 0 && React.createElement("button", { "aria-label": "Back",
                           onClick: function() { upd('blBipStep', blBipStep - 1); },
-                          className: "px-3 py-1 rounded-lg text-[11px] font-bold bg-slate-700 text-slate-100 hover:bg-slate-600 focus:ring-2 focus:ring-cyan-400 focus:outline-none"
+                          className: "transition-colors px-3 py-1 rounded-lg text-[11px] font-bold bg-slate-700 text-slate-100 hover:bg-slate-600 focus:ring-2 focus:ring-cyan-400 focus:outline-none active:scale-[0.97]"
                         }, '\u2190 Back'),
                         React.createElement("button", { "aria-label": "Next",
                           onClick: function() {
@@ -5827,7 +5828,7 @@ dataRef.current = d;
                             upd('blBipStep', blBipStep + 1);
                             if (addToast) addToast('\u2705 Step ' + (blBipStep + 1) + ' complete!', 'success');
                           },
-                          className: "px-3 py-1 rounded-lg text-[11px] font-bold bg-red-600 text-white hover:bg-red-500 focus:ring-2 focus:ring-red-400 focus:outline-none transition-all"
+                          className: "px-3 py-1 rounded-lg text-[11px] font-bold bg-red-600 text-white hover:bg-red-500 focus:ring-2 focus:ring-red-400 focus:outline-none transition-all active:scale-[0.97]"
                         }, 'Next \u2192')
                       )
                     );
@@ -5852,11 +5853,11 @@ dataRef.current = d;
                       React.createElement("div", { className: "flex gap-2 justify-center" },
                         React.createElement("button", { "aria-label": "Edit",
                           onClick: function() { upd('blBipStep', 0); },
-                          className: "px-3 py-1 rounded-lg text-[11px] font-bold bg-slate-700 text-slate-100 hover:bg-slate-600 focus:ring-2 focus:ring-cyan-400 focus:outline-none"
+                          className: "transition-colors px-3 py-1 rounded-lg text-[11px] font-bold bg-slate-700 text-slate-100 hover:bg-slate-600 focus:ring-2 focus:ring-cyan-400 focus:outline-none active:scale-[0.97]"
                         }, '\u270F\uFE0F Edit'),
                         React.createElement("button", { "aria-label": "New Plan",
                           onClick: function() { upd('blBipStep', 0); upd('blBipData', { behavior: '', antecedent: '', consequence: '', func: '', replacement: '', strategy: '' }); },
-                          className: "px-3 py-1 rounded-lg text-[11px] font-bold bg-red-700 text-white hover:bg-red-600"
+                          className: "transition-colors px-3 py-1 rounded-lg text-[11px] font-bold bg-red-700 text-white hover:bg-red-600 active:scale-[0.97]"
                         }, '\uD83D\uDD04 New Plan')
                       )
                     );
@@ -5898,7 +5899,7 @@ dataRef.current = d;
                     sc.options.map(function(opt, oi) {
                       var isSelected = blScenarioAnswer === oi;
                       var isRight = oi === sc.correct;
-                      var bgClass = !answered ? 'bg-slate-800/40 border-slate-600 hover:border-slate-400 cursor-pointer' :
+                      var bgClass = !answered ? 'transition-colors bg-slate-800/40 border-slate-600 hover:border-slate-400 cursor-pointer' :
                         isRight ? 'bg-emerald-900/30 border-emerald-500' :
                         isSelected && !isRight ? 'bg-red-900/30 border-red-500' : 'bg-slate-800/20 border-slate-700 opacity-40';
                       return React.createElement("button", { key: oi,
@@ -5958,7 +5959,7 @@ dataRef.current = d;
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\uD83D\uDCC5 ABA History Timeline"),
                 React.createElement("button", { onClick: function() { upd('blShowTimeline', !blShowTimeline); },
-                  className: "text-[11px] text-blue-400 hover:text-blue-300"
+                  className: "transition-colors text-[11px] text-blue-400 hover:text-blue-300"
                 }, blShowTimeline ? 'Hide' : 'Explore \u2192')
               ),
               blShowTimeline && React.createElement("div", { className: "relative ml-4" },
@@ -6005,7 +6006,7 @@ dataRef.current = d;
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\uD83D\uDCCB Quick Reference Cards"),
                 React.createElement("button", { onClick: function() { upd('blShowQuickRef', !blShowQuickRef); },
-                  className: "text-[11px] text-emerald-400 hover:text-emerald-300"
+                  className: "transition-colors text-[11px] text-emerald-400 hover:text-emerald-300"
                 }, blShowQuickRef ? 'Hide' : 'View \u2192')
               ),
               blShowQuickRef && React.createElement("div", { className: "grid grid-cols-2 gap-2" },
@@ -6032,7 +6033,7 @@ dataRef.current = d;
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\uD83D\uDCD6 ABA Glossary (" + ABA_GLOSSARY.length + " terms)"),
                 React.createElement("button", { onClick: function() { upd('blShowGlossary', !d.blShowGlossary); },
-                  className: "text-[11px] text-slate-200 hover:text-slate-100"
+                  className: "transition-colors text-[11px] text-slate-200 hover:text-slate-100"
                 }, d.blShowGlossary ? 'Hide' : 'Browse \u2192')
               ),
               d.blShowGlossary && React.createElement("div", null,
@@ -6041,7 +6042,7 @@ dataRef.current = d;
                     var isActive = d.blGlossaryIdx === gli;
                     return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: gli,
                       onClick: function() { upd('blGlossaryIdx', isActive ? null : gli); },
-                      className: "cursor-pointer rounded-lg p-1.5 border transition-all " + (isActive ? 'bg-slate-700 border-amber-500/50' : 'bg-slate-700/20 border-slate-700 hover:border-slate-500')
+                      className: "cursor-pointer rounded-lg p-1.5 border transition-all " + (isActive ? 'bg-slate-700 border-amber-500/50' : 'transition-colors bg-slate-700/20 border-slate-700 hover:border-slate-500')
                     },
                       React.createElement("div", { className: "text-[11px] font-bold " + (isActive ? 'text-amber-300' : 'text-slate-100') }, gl.term),
                       isActive && React.createElement("div", { className: "text-[11px] text-slate-200 mt-0.5" }, gl.def)
@@ -6072,7 +6073,7 @@ dataRef.current = d;
 
                 ),
 
-                React.createElement("span", { className: "text-indigo-400 text-lg font-bold" }, "\u2192"),
+                React.createElement("span", { className: "text-indigo-400 text-lg font-bold tracking-tight" }, "\u2192"),
 
                 React.createElement("div", { className: "bg-amber-900/40 rounded-lg px-3 py-2 text-center border border-amber-700/30 min-w-[80px]" },
 
@@ -6082,7 +6083,7 @@ dataRef.current = d;
 
                 ),
 
-                React.createElement("span", { className: "text-indigo-400 text-lg font-bold" }, "\u2192"),
+                React.createElement("span", { className: "text-indigo-400 text-lg font-bold tracking-tight" }, "\u2192"),
 
                 React.createElement("div", { className: "bg-emerald-900/40 rounded-lg px-3 py-2 text-center border border-emerald-700/30 min-w-[80px]" },
 

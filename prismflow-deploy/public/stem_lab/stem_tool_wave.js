@@ -1633,9 +1633,9 @@ const d = labToolData.wave;
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
+              React.createElement("button", { onClick: () => setStemLabTool(null), className: "transition-colors p-1.5 hover:bg-slate-100 rounded-lg active:scale-[0.97]", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0A Wave Simulator"),
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800 tracking-tight" }, "\uD83C\uDF0A Wave Simulator"),
 
               React.createElement("span", { className: "px-2 py-0.5 bg-cyan-100 text-cyan-700 text-[11px] font-bold rounded-full" }, "ANIMATED")
 
@@ -1658,7 +1658,7 @@ const d = labToolData.wave;
                       terse: m[1]
                     });
                   }
-                }, className: "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-1 " + (waveMode === m[0] ? 'bg-cyan-700 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-cyan-50') }, m[1]);
+                }, className: "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-1 " + (waveMode === m[0] ? 'bg-cyan-700 text-white shadow-md' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-cyan-50 active:scale-[0.97]') }, m[1]);
 
               }),
 
@@ -1666,7 +1666,7 @@ const d = labToolData.wave;
 
                 onClick: toggleSound,
 
-                className: "ml-auto px-4 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.soundPlaying ? 'bg-emerald-700 text-white animate-pulse' : 'bg-slate-100 text-slate-600 hover:bg-emerald-50')
+                className: "ml-auto px-4 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.soundPlaying ? 'bg-emerald-700 text-white animate-pulse' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-emerald-50 active:scale-[0.97]')
 
               }, d.soundPlaying ? '\uD83D\uDD0A Stop Sound' : '\uD83D\uDD08 Play Sound (' + (d.frequency * 100) + 'Hz)')
 
@@ -1766,7 +1766,7 @@ const d = labToolData.wave;
 
                 React.createElement("button", { key: wt, onClick: () => upd('waveType', wt),
 
-                  className: "px-2.5 py-1 rounded-lg text-xs font-bold transition-all " + ((d.waveType || 'sine') === wt ? 'bg-cyan-700 text-white shadow-md' : 'bg-cyan-50 text-cyan-700 border border-cyan-600 hover:bg-cyan-100')
+                  className: "px-2.5 py-1 rounded-lg text-xs font-bold transition-all " + ((d.waveType || 'sine') === wt ? 'bg-cyan-700 text-white shadow-md' : 'transition-colors bg-cyan-50 text-cyan-700 border border-cyan-600 hover:bg-cyan-100 active:scale-[0.97]')
 
                 }, wt.charAt(0).toUpperCase() + wt.slice(1))
 
@@ -1782,7 +1782,7 @@ const d = labToolData.wave;
 
               [1, 2, 3, 4, 5, 6].map(function (h) {
 
-                return React.createElement("button", { key: h, onClick: function () { upd('harmonic', h); }, className: "w-9 h-9 rounded-lg text-sm font-black transition-all " + ((d.harmonic || 1) === h ? 'bg-cyan-700 text-white shadow-md scale-110' : 'bg-cyan-50 text-cyan-700 border border-cyan-600 hover:bg-cyan-100') }, h);
+                return React.createElement("button", { key: h, onClick: function () { upd('harmonic', h); }, className: "w-9 h-9 rounded-lg text-sm font-black transition-all " + ((d.harmonic || 1) === h ? 'bg-cyan-700 text-white shadow-md scale-110' : 'transition-colors bg-cyan-50 text-cyan-700 border border-cyan-600 hover:bg-cyan-100 active:scale-[0.97]') }, h);
 
               }),
 
@@ -1948,7 +1948,7 @@ const d = labToolData.wave;
                   if (c && c._drag) { c._drag.ripple1 = null; c._drag.ripple2 = null; }
                   if (typeof addToast === 'function') addToast('Sources reset to defaults', 'info');
                 },
-                className: "px-3 py-1 rounded-md text-[11px] font-bold bg-indigo-600 text-white hover:bg-indigo-700",
+                className: "transition-colors px-3 py-1 rounded-md text-[11px] font-bold bg-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.97]",
                 'aria-label': 'Reset source positions to defaults'
               }, '↻ Reset sources'),
               React.createElement("span", { className: "text-[10px] text-indigo-700 italic ml-auto" }, '💡 Drag the red sources on the canvas')
@@ -1965,7 +1965,7 @@ const d = labToolData.wave;
                     return React.createElement('button', {
                       key: et,
                       onClick: function() { upd('reflectionEnd', et); },
-                      className: 'px-2.5 py-1 text-[11px] font-bold transition ' + (active ? (et === 'fixed' ? 'bg-red-600 text-white' : 'bg-emerald-600 text-white') : 'bg-white text-slate-600 hover:bg-amber-100'),
+                      className: 'px-2.5 py-1 text-[11px] font-bold transition ' + (active ? (et === 'fixed' ? 'bg-red-600 text-white' : 'bg-emerald-600 text-white') : 'transition-colors bg-white text-slate-600 hover:bg-amber-100 active:scale-[0.97]'),
                       'aria-pressed': active,
                       'aria-label': et === 'fixed' ? 'Fixed end (string tied down — phase inverts on reflection)' : 'Free end (string free to move — phase preserved on reflection)'
                     }, et === 'fixed' ? '🔒 Fixed' : '🪁 Free');
@@ -1983,7 +1983,7 @@ const d = labToolData.wave;
                   if (c && c._drag) { c._drag.wallX = null; }
                   if (typeof addToast === 'function') addToast('Wall reset to 75% across', 'info');
                 },
-                className: "px-3 py-1 rounded-md text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700",
+                className: "transition-colors px-3 py-1 rounded-md text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700 active:scale-[0.97]",
                 'aria-label': 'Reset wall position'
               }, '↻ Reset wall'),
               React.createElement("span", { className: "text-[10px] text-amber-800 italic ml-auto" }, '💡 Drag the gold wall on the canvas')
@@ -2037,7 +2037,7 @@ const d = labToolData.wave;
 
                   React.createElement("p", { className: "text-[11px] font-bold text-purple-300 uppercase tracking-wider mb-1" }, "Target Equation:"),
 
-                  React.createElement("div", { className: "text-lg font-mono font-bold opacity-90" }, 
+                  React.createElement("div", { className: "text-lg font-mono font-bold opacity-90 tracking-tight" }, 
 
                       renderEq(d.matchTarget.amp, d.matchTarget.freq, true, false)
 
@@ -2064,7 +2064,7 @@ const d = labToolData.wave;
 
               ),
 
-              React.createElement("div", { className: "text-lg font-mono font-bold" },
+              React.createElement("div", { className: "text-lg font-mono font-bold tracking-tight" },
 
                   renderEq(d.amplitude, d.frequency, false, true)
 
@@ -2178,7 +2178,7 @@ const d = labToolData.wave;
 
                 onClick: function () { upd('matchTarget', null); upd('matchXpClaimed', false); },
 
-                className: "px-2 py-1 rounded-lg text-xs text-slate-600 hover:bg-slate-100"
+                className: "transition-colors px-2 py-1 rounded-lg text-xs text-slate-600 hover:bg-slate-100 active:scale-[0.97]"
 
               }, "\u2715 Clear"),
 
@@ -2198,7 +2198,7 @@ const d = labToolData.wave;
 
                   var wasChosen = d.quiz.chosen === opt;
 
-                  var cls = !d.quiz.answered ? 'bg-white border-slate-200 hover:border-cyan-400' : isCorrect ? 'bg-emerald-100 border-emerald-600' : wasChosen ? 'bg-red-100 border-red-600' : 'bg-slate-50 border-slate-200 opacity-50';
+                  var cls = !d.quiz.answered ? 'transition-colors bg-white border-slate-200 hover:border-cyan-400' : isCorrect ? 'bg-emerald-100 border-emerald-600' : wasChosen ? 'bg-red-100 border-red-600' : 'bg-slate-50 border-slate-200 opacity-50';
 
                   return React.createElement("button", { "aria-label": "Select answer: " + opt,
 
@@ -2267,7 +2267,7 @@ const d = labToolData.wave;
                         onClick: function () { setAiLevel(L.id); },
                         "aria-label": "Reading level: " + L.label + (active ? " (selected)" : ""),
                         "aria-pressed": active,
-                        className: "px-2 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-purple-600 text-white' : 'bg-white text-purple-700 border border-purple-600 hover:bg-purple-100')
+                        className: "px-2 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-purple-600 text-white' : 'transition-colors bg-white text-purple-700 border border-purple-600 hover:bg-purple-100 active:scale-[0.97]')
                       }, L.label);
                     })
                   ),
@@ -2275,7 +2275,7 @@ const d = labToolData.wave;
                     onClick: explain,
                     disabled: aiLoading,
                     "aria-label": "Generate AI explanation at " + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + " level",
-                    className: "px-3 py-1 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50"
+                    className: "transition-colors px-3 py-1 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 active:scale-[0.97]"
                   }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain'))
                 ),
                 aiError && React.createElement("p", { className: "text-[11px] text-rose-600", role: "alert" }, aiError),
@@ -2425,7 +2425,7 @@ const d = labToolData.wave;
           ),
           expSection && React.createElement('button', {
             onClick: function() { setExp({ expSection: null }); },
-            className: 'px-3 py-1 rounded-md text-xs font-bold bg-white border border-cyan-300 text-cyan-700 hover:bg-cyan-100'
+            className: 'transition-colors px-3 py-1 rounded-md text-xs font-bold bg-white border border-cyan-300 text-cyan-700 hover:bg-cyan-100 active:scale-[0.97]'
           }, '✕ Close section')
         );
       }
@@ -2504,7 +2504,7 @@ const d = labToolData.wave;
           return React.createElement('button', {
             key: s.id,
             onClick: function() { setExp({ expSection: active ? null : s.id }); },
-            className: 'px-2 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (active ? 'bg-' + accent + '-600 text-white border-' + accent + '-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-' + accent + '-50 hover:border-' + accent + '-300')
+            className: 'px-2 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (active ? 'bg-' + accent + '-600 text-white border-' + accent + '-700' : 'transition-colors bg-white text-slate-700 border-slate-300 hover:bg- active:scale-[0.97]' + accent + 'transition-colors -50 hover:border-' + accent + '-300')
           }, s.icon + ' ' + s.label);
         }
         return React.createElement('div', { className: 'mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200 flex flex-col gap-1.5' },
@@ -2545,7 +2545,7 @@ const d = labToolData.wave;
             WAVE_QUANTITIES.map(function(q, i) {
               return React.createElement('div', { key: 'q'+i, className: 'p-2.5 rounded-lg bg-slate-50 border border-slate-200' },
                 React.createElement('div', { className: 'flex items-baseline gap-2 mb-1' },
-                  React.createElement('span', { className: 'text-lg font-black text-cyan-700 font-mono min-w-[24px]' }, q.sym),
+                  React.createElement('span', { className: 'text-lg font-black text-cyan-700 font-mono min-w-[24px] tracking-tight' }, q.sym),
                   React.createElement('span', { className: 'text-[12px] font-bold text-slate-800' }, q.name),
                   React.createElement('span', { className: 'text-[10px] text-slate-500 ml-auto' }, q.units)
                 ),
@@ -2578,7 +2578,7 @@ const d = labToolData.wave;
             INTERFERENCE_PATTERNS.map(function(p, i) {
               return React.createElement('div', { key: 'p'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 React.createElement('div', { className: 'flex items-baseline gap-2 mb-1' },
-                  React.createElement('span', { className: 'text-2xl font-black text-cyan-700' }, p.icon),
+                  React.createElement('span', { className: 'text-2xl font-black text-cyan-700 tracking-tight' }, p.icon),
                   React.createElement('span', { className: 'text-sm font-black text-slate-800' }, p.type),
                   React.createElement('span', { className: 'text-[10px] text-slate-500 ml-auto font-mono' }, p.condition)
                 ),
@@ -2805,9 +2805,9 @@ const d = labToolData.wave;
               h('input', { id: 'discTen', type: 'range', min: 10, max: 200, step: 5, value: lab.tension, onChange: function(e) { setLab({ tension: parseInt(e.target.value, 10) }); }, className: 'w-full', 'aria-label': 'Tension in newtons' }),
               h('p', { className: 'text-[10px] text-slate-500 italic mt-1' }, '(string mass density μ fixed at 0.01 kg/m)'),
               h('div', { className: 'flex gap-2 mt-2 flex-wrap' },
-                h('button', { onClick: logObservation, className: 'px-2 py-1 rounded text-[11px] font-bold bg-cyan-600 text-white hover:bg-cyan-700 focus:ring-2 focus:ring-cyan-400 focus:outline-none' }, '📝 Log observation'),
-                h('button', { onClick: reveal, disabled: lab.discovered, className: 'px-2 py-1 rounded text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-amber-400 focus:outline-none' }, lab.discovered ? '✓ Revealed' : '💡 I see it'),
-                h('button', { onClick: reset, className: 'px-2 py-1 rounded text-[11px] font-bold bg-slate-200 text-slate-700 hover:bg-slate-300 focus:ring-2 focus:ring-slate-400 focus:outline-none' }, '↻ Reset')
+                h('button', { onClick: logObservation, className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-cyan-600 text-white hover:bg-cyan-700 focus:ring-2 focus:ring-cyan-400 focus:outline-none active:scale-[0.97]' }, '📝 Log observation'),
+                h('button', { onClick: reveal, disabled: lab.discovered, className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-amber-400 focus:outline-none active:scale-[0.97]' }, lab.discovered ? '✓ Revealed' : '💡 I see it'),
+                h('button', { onClick: reset, className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-slate-200 text-slate-700 hover:bg-slate-300 focus:ring-2 focus:ring-slate-400 focus:outline-none active:scale-[0.97]' }, '↻ Reset')
               ),
               (lab.observationsLogged || []).length > 0 && h('div', { className: 'mt-2' },
                 h('div', { className: 'text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1' }, 'Your observations'),
@@ -2940,11 +2940,11 @@ const d = labToolData.wave;
           h('div', { className: 'flex flex-wrap items-center gap-2 mb-3' },
             h('button', {
               onClick: logObservation,
-              className: 'px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 border border-slate-300'
+              className: 'transition-colors px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 border border-slate-300 active:scale-[0.97]'
             }, '📋 Log this observation'),
             h('button', {
               onClick: function() { setLab({ tension: 50, freq: 4, observationsLogged: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
-              className: 'px-2 py-1 rounded bg-white hover:bg-slate-50 text-[11px] font-semibold text-slate-600 border border-slate-300'
+              className: 'transition-colors px-2 py-1 rounded bg-white hover:bg-slate-50 text-[11px] font-semibold text-slate-600 border border-slate-300 active:scale-[0.97]'
             }, '↺ Reset'),
             (lab.observationsLogged || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (lab.observationsLogged || []).length + ' observation(s) logged')
           ),
@@ -2989,7 +2989,7 @@ const d = labToolData.wave;
           h('div', { className: 'mb-3' },
             !lab.stuckRevealed && h('button', {
               onClick: function() { setLab({ stuckRevealed: true }); },
-              className: 'px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[11px] font-bold text-amber-800 border border-amber-300'
+              className: 'transition-colors px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[11px] font-bold text-amber-800 border border-amber-300 active:scale-[0.97]'
             }, '🤔 I\'m stuck — show me some questions to think about (no answers)'),
             lab.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
               h('div', { className: 'font-bold text-amber-900 mb-1' }, 'Open questions (no answers — investigate by manipulating):'),

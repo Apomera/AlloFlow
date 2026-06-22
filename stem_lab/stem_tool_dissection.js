@@ -5823,7 +5823,7 @@ var d = labToolData.dissection || {};
                     upd('specimen', sk); upd('activeLayer', (sp.layers && sp.layers[0] ? sp.layers[0].id : 'skin')); upd('selectedOrgan', null); upd('specimensViewed', Object.assign({}, d.specimensViewed, (function(){ var o = {}; o[sk] = true; return o; })()));
                     if (typeof canvasNarrate === 'function') canvasNarrate('dissection', 'specimenSelect', 'Selected ' + sp.name + '. ' + sp.desc, { debounce: 500 });
                   },
-                  className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap transition-all " + (isActive ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-400')
+                  className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap transition-all " + (isActive ? 'bg-blue-600 text-white shadow-md' : 'transition-colors bg-white text-slate-600 hover:bg-slate-100 border border-slate-400 active:scale-[0.97]')
                 }, sp.icon + ' ' + sp.name);
               })
             ),
@@ -5835,19 +5835,19 @@ var d = labToolData.dissection || {};
               // ── View toggle ──
               React.createElement("button", { "aria-label": "Toggle View toolbar",
                 onClick: function () { upd('toolbarViewOpen', !d.toolbarViewOpen); upd('toolbarToolsOpen', false); upd('toolbarStudyOpen', false); },
-                className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarViewOpen ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-400 hover:bg-blue-50')
+                className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarViewOpen ? 'bg-blue-600 text-white shadow-md' : 'transition-colors bg-white text-slate-600 border border-slate-400 hover:bg-blue-50 active:scale-[0.97]')
               }, '\uD83D\uDC41 View ' + (d.toolbarViewOpen ? '\u25B2' : '\u25BC')),
 
               // ── Tools toggle ──
               React.createElement("button", { "aria-label": "Toggle Tools toolbar",
                 onClick: function () { upd('toolbarToolsOpen', !d.toolbarToolsOpen); upd('toolbarViewOpen', false); upd('toolbarStudyOpen', false); },
-                className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarToolsOpen ? 'bg-emerald-700 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-400 hover:bg-emerald-50')
+                className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarToolsOpen ? 'bg-emerald-700 text-white shadow-md' : 'transition-colors bg-white text-slate-600 border border-slate-400 hover:bg-emerald-50 active:scale-[0.97]')
               }, '\uD83D\uDEE0 Tools ' + (d.toolbarToolsOpen ? '\u25B2' : '\u25BC')),
 
               // ── Study toggle ──
               React.createElement("button", { "aria-label": "Toggle Study toolbar",
                 onClick: function () { upd('toolbarStudyOpen', !d.toolbarStudyOpen); upd('toolbarViewOpen', false); upd('toolbarToolsOpen', false); },
-                className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarStudyOpen ? 'bg-amber-700 text-white shadow-md' : (d.quizMode || d.flashcardMode || d.guidedMode || d.compareMode || d.practicalMode ? 'bg-amber-100 text-amber-700 border border-amber-600' : 'bg-white text-slate-600 border border-slate-400 hover:bg-amber-50'))
+                className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarStudyOpen ? 'bg-amber-700 text-white shadow-md' : (d.quizMode || d.flashcardMode || d.guidedMode || d.compareMode || d.practicalMode ? 'bg-amber-100 text-amber-700 border border-amber-600' : 'transition-colors bg-white text-slate-600 border border-slate-400 hover:bg-amber-50 active:scale-[0.97]'))
               }, '\uD83D\uDCDA Study ' + (d.toolbarStudyOpen ? '\u25B2' : '\u25BC'))
 
             ),
@@ -5858,37 +5858,37 @@ var d = labToolData.dissection || {};
               React.createElement("button", { "aria-label": "Toggle organ name labels",
                 onClick: function () { var m = d.labelMode === 'show' ? 'hidden' : 'show'; upd('labelMode', m); },
                 title: 'Labels' + ' — Toggle organ name labels on the canvas',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.labelMode !== 'hidden' ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200 hover:bg-blue-100')
+                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.labelMode !== 'hidden' ? 'bg-blue-600 text-white' : 'transition-colors bg-white text-blue-700 border border-blue-200 hover:bg-blue-100 active:scale-[0.97]')
               }, '\uD83C\uDFF7 ' + 'Labels'),
 
               React.createElement("button", { "aria-label": "Toggle high contrast mode",
                 onClick: function () { upd('highContrast', !d.highContrast); },
                 title: 'Hi-Con' + ' — Enhance colors for accessibility',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.highContrast ? 'bg-yellow-500 text-black' : 'bg-white text-blue-700 border border-blue-200 hover:bg-blue-100')
+                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.highContrast ? 'bg-yellow-500 text-black' : 'transition-colors bg-white text-blue-700 border border-blue-200 hover:bg-blue-100 active:scale-[0.97]')
               }, '\u2600 ' + 'Hi-Con'),
 
               React.createElement("button", { "aria-label": "Switch anatomical view: dorsal or ventral",
                 onClick: function () { upd('viewDorsal', !d.viewDorsal); },
                 title: (d.viewDorsal ? 'Ventral' : 'Dorsal') + ' — Switch anatomical view orientation',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.viewDorsal ? 'bg-indigo-500 text-white' : 'bg-white text-blue-700 border border-blue-200 hover:bg-blue-100')
+                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.viewDorsal ? 'bg-indigo-500 text-white' : 'transition-colors bg-white text-blue-700 border border-blue-200 hover:bg-blue-100 active:scale-[0.97]')
               }, d.viewDorsal ? '\uD83D\uDD04 Ventral' : '\uD83D\uDD04 Dorsal'),
 
               React.createElement("button", { "aria-label": "Enter fullscreen canvas mode",
                 onClick: function () { try { var c = document.querySelector('[data-diss-canvas]'); if (c && c.requestFullscreen) c.requestFullscreen(); } catch (e) {} },
                 title: 'Fullscreen' + ' — Expand canvas to full screen',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200 hover:bg-blue-100 transition-all"
+                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200 hover:bg-blue-100 transition-all active:scale-[0.97]"
               }, '\u26F6 ' + 'Fullscreen'),
 
               React.createElement("button", { "aria-label": "Animation Speed — Cycle: normal / slow / fast",
                 onClick: function () { var s = d.animSpeed === 'fast' ? 'normal' : (d.animSpeed === 'normal' ? 'slow' : 'fast'); upd('animSpeed', s); },
                 title: 'Animation Speed — Cycle: normal / slow / fast',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200 hover:bg-blue-100 transition-all"
+                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200 hover:bg-blue-100 transition-all active:scale-[0.97]"
               }, '\u23E9 ' + (d.animSpeed === 'slow' ? 'Slow' : d.animSpeed === 'fast' ? 'Fast' : 'Normal')),
 
               React.createElement("button", { "aria-label": "Print",
                 onClick: function () { upd('printMode', !d.printMode); },
                 title: 'Print / Clean View — Remove UI chrome for printing',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.printMode ? 'bg-slate-700 text-white' : 'bg-white text-blue-700 border border-blue-200 hover:bg-blue-100')
+                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.printMode ? 'bg-slate-700 text-white' : 'transition-colors bg-white text-blue-700 border border-blue-200 hover:bg-blue-100 active:scale-[0.97]')
               }, '\uD83D\uDDA8 Print')
 
             ),
@@ -5899,13 +5899,13 @@ var d = labToolData.dissection || {};
               React.createElement("button", { "aria-label": "Ruler",
                 onClick: function () { upd('rulerMode', !d.rulerMode); if (!d.rulerMode) upd('annotateMode', false); },
                 title: 'Ruler' + ' — Measure distances on the specimen',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.rulerMode ? 'bg-emerald-700 text-white' : 'bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100')
+                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.rulerMode ? 'bg-emerald-700 text-white' : 'transition-colors bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100 active:scale-[0.97]')
               }, '\uD83D\uDCCF ' + 'Ruler'),
 
               React.createElement("button", { "aria-label": "Annotate",
                 onClick: function () { upd('annotateMode', !d.annotateMode); if (!d.annotateMode) upd('rulerMode', false); },
                 title: 'Annotate' + ' — Draw annotations on the canvas',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.annotateMode ? 'bg-emerald-700 text-white' : 'bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100')
+                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.annotateMode ? 'bg-emerald-700 text-white' : 'transition-colors bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100 active:scale-[0.97]')
               }, '\u270F ' + 'Annotate'),
 
               React.createElement("button", { "aria-label": "Screenshot",
@@ -5916,7 +5916,7 @@ var d = labToolData.dissection || {};
                   } catch (e) { if (addToast) addToast('Screenshot failed', 'error'); }
                 },
                 title: 'Screenshot' + ' — Save the current canvas view',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all"
+                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all active:scale-[0.97]"
               }, '\uD83D\uDCF8 ' + 'Screenshot'),
 
               React.createElement("button", { "aria-label": "Copy lab report to clipboard",
@@ -5932,7 +5932,7 @@ var d = labToolData.dissection || {};
                   try { navigator.clipboard.writeText(report); if (addToast) addToast('\uD83D\uDCCB Lab report copied!', 'success'); } catch (e) {}
                 },
                 title: 'Lab Report' + ' — Generate and copy a summary lab report',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all"
+                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all active:scale-[0.97]"
               }, '\uD83D\uDCCB ' + 'Lab Report'),
 
               React.createElement("button", { "aria-label": "Reset dissection view",
@@ -5945,7 +5945,7 @@ var d = labToolData.dissection || {};
                   if (addToast) addToast('\u21BA ' + 'Reset Complete', 'info');
                 },
                 title: 'Reset' + ' — Reset all settings for this specimen',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-red-600 border border-red-200 hover:bg-red-50 transition-all"
+                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-red-600 border border-red-200 hover:bg-red-50 transition-all active:scale-[0.97]"
               }, '\u21BA ' + 'Reset')
 
             ),
@@ -5956,25 +5956,25 @@ var d = labToolData.dissection || {};
               React.createElement("button", { "aria-label": "Quiz",
                 onClick: function () { upd('quizMode', !d.quizMode); if (!d.quizMode) { upd('quizIdx', 0); upd('quizScore', 0); upd('quizTotal', 0); upd('quizFeedback', null); } },
                 title: 'Quiz' + ' — Test your knowledge of organ identification',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.quizMode ? 'bg-amber-700 text-white' : 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-100')
+                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.quizMode ? 'bg-amber-700 text-white' : 'transition-colors bg-white text-amber-700 border border-amber-200 hover:bg-amber-100 active:scale-[0.97]')
               }, '\uD83E\uDDE0 ' + 'Quiz'),
 
               React.createElement("button", { "aria-label": "Flashcard",
                 onClick: function () { upd('flashcardMode', !d.flashcardMode); if (!d.flashcardMode) { upd('flashcardIdx', 0); upd('flashcardFlipped', false); } },
                 title: 'Flashcard' + ' — Review organs with flip cards',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.flashcardMode ? 'bg-violet-600 text-white' : 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-100')
+                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.flashcardMode ? 'bg-violet-600 text-white' : 'transition-colors bg-white text-amber-700 border border-amber-200 hover:bg-amber-100 active:scale-[0.97]')
               }, '\uD83C\uDCCF ' + 'Flashcard'),
 
               React.createElement("button", { "aria-label": "Guided",
                 onClick: function () { upd('guidedMode', !d.guidedMode); if (!d.guidedMode) upd('guidedStep', 0); },
                 title: 'Guided' + ' — Follow a step-by-step organ tour',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.guidedMode ? 'bg-teal-700 text-white' : 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-100')
+                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.guidedMode ? 'bg-teal-700 text-white' : 'transition-colors bg-white text-amber-700 border border-amber-200 hover:bg-amber-100 active:scale-[0.97]')
               }, '\uD83E\uDDED ' + 'Guided'),
 
               React.createElement("button", { "aria-label": "Compare",
                 onClick: function () { upd('compareMode', !d.compareMode); },
                 title: 'Compare' + ' — Compare organs across specimens',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.compareMode ? 'bg-cyan-700 text-white' : 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-100')
+                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.compareMode ? 'bg-cyan-700 text-white' : 'transition-colors bg-white text-amber-700 border border-amber-200 hover:bg-amber-100 active:scale-[0.97]')
               }, '\uD83D\uDD0D ' + 'Compare'),
 
               React.createElement("button", { "aria-label": "Toggle practical exam mode",
@@ -6006,7 +6006,7 @@ var d = labToolData.dissection || {};
                   }
                 },
                 title: 'Practical' + ' — Timed practical exam mode',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.practicalMode ? 'bg-red-600 text-white animate-pulse' : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-100')
+                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.practicalMode ? 'bg-red-600 text-white animate-pulse' : 'transition-colors bg-white text-orange-700 border border-orange-200 hover:bg-orange-100 active:scale-[0.97]')
               }, d.practicalMode ? '\u23F0 ' + Math.floor((d.practicalTimer || 0) / 60) + ':' + String((d.practicalTimer || 0) % 60).padStart(2, '0') : '\u23F1 ' + 'Practical')
 
             ),
@@ -6092,16 +6092,16 @@ var d = labToolData.dissection || {};
                 React.createElement("div", { className: "flex items-center justify-center gap-2 mt-1.5 py-1 px-2 rounded-lg bg-slate-100 border border-slate-400" },
                   React.createElement("button", { "aria-label": "Zoom out canvas",
                     onClick: function () { var z = Math.max(0.5, (d.canvasZoom || 1) - 0.25); upd('canvasZoom', z); },
-                    className: "px-2 py-0.5 rounded text-xs font-bold bg-white border border-slate-400 hover:bg-slate-50"
+                    className: "transition-colors px-2 py-0.5 rounded text-xs font-bold bg-white border border-slate-400 hover:bg-slate-50 active:scale-[0.97]"
                   }, '\u2796'),
                   React.createElement("span", { className: "text-[11px] font-mono text-slate-600 min-w-[40px] text-center" }, Math.round((d.canvasZoom || 1) * 100) + '%'),
                   React.createElement("button", { "aria-label": "Zoom in canvas",
                     onClick: function () { var z = Math.min(3, (d.canvasZoom || 1) + 0.25); upd('canvasZoom', z); },
-                    className: "px-2 py-0.5 rounded text-xs font-bold bg-white border border-slate-400 hover:bg-slate-50"
+                    className: "transition-colors px-2 py-0.5 rounded text-xs font-bold bg-white border border-slate-400 hover:bg-slate-50 active:scale-[0.97]"
                   }, '\u2795'),
                   (d.canvasZoom || 1) !== 1 ? React.createElement("button", { "aria-label": "100%",
                     onClick: function () { upd('canvasZoom', 1); upd('canvasPanX', 0); upd('canvasPanY', 0); },
-                    className: "px-2 py-0.5 rounded text-[11px] font-bold bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200"
+                    className: "transition-colors px-2 py-0.5 rounded text-[11px] font-bold bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 active:scale-[0.97]"
                   }, '\u21BA 100%') : null
                 ),
 
@@ -6294,7 +6294,7 @@ var d = labToolData.dissection || {};
 
                         },
 
-                        className: "w-6 h-6 rounded bg-slate-100 text-slate-600 text-xs hover:bg-slate-200 flex items-center justify-center"
+                        className: "transition-colors w-6 h-6 rounded bg-slate-100 text-slate-600 text-xs hover:bg-slate-200 flex items-center justify-center active:scale-[0.97]"
 
                       }, '\u25C0'),
 
@@ -6308,7 +6308,7 @@ var d = labToolData.dissection || {};
 
                         },
 
-                        className: "w-6 h-6 rounded bg-slate-100 text-slate-600 text-xs hover:bg-slate-200 flex items-center justify-center"
+                        className: "transition-colors w-6 h-6 rounded bg-slate-100 text-slate-600 text-xs hover:bg-slate-200 flex items-center justify-center active:scale-[0.97]"
 
                       }, '\u25B6')
 
@@ -6555,7 +6555,7 @@ var d = labToolData.dissection || {};
 
                       },
 
-                      className: "px-2 py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      className: "transition-colors px-2 py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]"
 
                     }, '\uD83D\uDCCB ' + 'Copy')
 
@@ -6636,7 +6636,7 @@ var d = labToolData.dissection || {};
                           if (typeof canvasNarrate === 'function') canvasNarrate('dissection', 'organSelect', 'Selected ' + org.name + '. ' + org.fn.split('.')[0] + '.', { debounce: 500 });
                         },
 
-                        className: "w-full text-left px-2 py-1.5 rounded-lg text-xs hover:bg-slate-50 transition-all flex items-center gap-1.5 " + (d.selectedOrgan === org.id ? 'bg-amber-50 border border-amber-200 font-bold text-amber-800' : 'text-slate-600')
+                        className: "w-full text-left px-2 py-1.5 rounded-lg text-xs hover:bg-slate-50 transition-all flex items-center gap-1.5  active:scale-[0.97]" + (d.selectedOrgan === org.id ? 'bg-amber-50 border border-amber-200 font-bold text-amber-800' : 'text-slate-600')
 
                       },
 
@@ -6701,7 +6701,7 @@ var d = labToolData.dissection || {};
 
                         },
 
-                        className: "px-2 py-1.5 rounded-lg text-[11px] font-bold border transition-all " + (isCorrect ? 'border-green-400 bg-green-50 text-green-700' : isWrong ? 'border-red-400 bg-red-50 text-red-600' : fb ? 'border-slate-200 bg-slate-50 text-slate-600' : 'border-amber-200 bg-white text-slate-700 hover:border-amber-400')
+                        className: "px-2 py-1.5 rounded-lg text-[11px] font-bold border transition-all " + (isCorrect ? 'border-green-400 bg-green-50 text-green-700' : isWrong ? 'border-red-400 bg-red-50 text-red-600' : fb ? 'border-slate-200 bg-slate-50 text-slate-600' : 'transition-colors border-amber-200 bg-white text-slate-700 hover:border-amber-400')
 
                       }, opt.name);
 
@@ -6713,7 +6713,7 @@ var d = labToolData.dissection || {};
 
                     onClick: function () { upd('quizIdx', (d.quizIdx || 0) + 1); upd('quizFeedback', null); upd('quizExplanation', null); },
 
-                    className: "w-full mt-2 py-1.5 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-700"
+                    className: "transition-colors w-full mt-2 py-1.5 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-700 active:scale-[0.97]"
 
                   }, 'Next Question' + ' \u2192'),
 
@@ -6893,7 +6893,7 @@ var d = labToolData.dissection || {};
 
                     React.createElement("div", null,
 
-                      React.createElement("div", { className: "text-lg font-bold text-blue-600" }, String(totalOrgansInSpecimen)),
+                      React.createElement("div", { className: "text-lg font-bold text-blue-600 tracking-tight" }, String(totalOrgansInSpecimen)),
 
                       React.createElement("div", { className: "text-[11px] text-slate-600" }, 'Structures')
 
@@ -6901,7 +6901,7 @@ var d = labToolData.dissection || {};
 
                     React.createElement("div", null,
 
-                      React.createElement("div", { className: "text-lg font-bold text-emerald-600" }, String(spec.layers.length)),
+                      React.createElement("div", { className: "text-lg font-bold text-emerald-600 tracking-tight" }, String(spec.layers.length)),
 
                       React.createElement("div", { className: "text-[11px] text-slate-600" }, 'Layers')
 
@@ -6909,7 +6909,7 @@ var d = labToolData.dissection || {};
 
                     React.createElement("div", null,
 
-                      React.createElement("div", { className: "text-lg font-bold text-amber-600" }, String(d.quizScore || 0)),
+                      React.createElement("div", { className: "text-lg font-bold text-amber-600 tracking-tight" }, String(d.quizScore || 0)),
 
                       React.createElement("div", { className: "text-[11px] text-slate-600" }, 'Quiz Score')
 
@@ -6917,7 +6917,7 @@ var d = labToolData.dissection || {};
 
                     React.createElement("div", null,
 
-                      React.createElement("div", { className: "text-lg font-bold text-violet-600" }, (function () {
+                      React.createElement("div", { className: "text-lg font-bold text-violet-600 tracking-tight" }, (function () {
 
                         var ts = d.timeSpent || 0;
 
@@ -6981,7 +6981,7 @@ var d = labToolData.dissection || {};
 
                         },
 
-                        className: "flex items-start gap-1.5 text-[11px] cursor-pointer hover:bg-emerald-100 rounded px-1 py-0.5"
+                        className: "transition-colors flex items-start gap-1.5 text-[11px] cursor-pointer hover:bg-emerald-100 rounded px-1 py-0.5 active:scale-[0.97]"
 
                       },
 

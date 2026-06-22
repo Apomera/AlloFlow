@@ -1663,9 +1663,9 @@ const d = labToolData.rocks || {};
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
+              React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "transition-colors p-1.5 hover:bg-slate-100 rounded-lg active:scale-[0.97]", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83E\uDEA8 Rocks & Minerals Explorer"),
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800 tracking-tight" }, "\uD83E\uDEA8 Rocks & Minerals Explorer"),
 
               React.createElement("div", { className: "flex gap-1 ml-auto" },
 
@@ -1685,7 +1685,7 @@ const d = labToolData.rocks || {};
 
                       if (typeof canvasNarrate === 'function') { canvasNarrate('rocks', 'mode_switch', { first: 'Switched to ' + modeLabel + ' mode.', repeat: modeLabel + ' mode.', terse: m + '.' }, { debounce: 500 }); }
 
-                    }, className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + (mode === m ? 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
+                    }, className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + (mode === m ? 'bg-amber-700 text-white' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]')
 
                   },
 
@@ -1840,7 +1840,7 @@ const d = labToolData.rocks || {};
 
                     className: "px-3 py-1 rounded-full text-xs font-bold transition-all " +
 
-                      ((d.selectedType || null) === (t === 'all' ? null : t) ? 'text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'),
+                      ((d.selectedType || null) === (t === 'all' ? null : t) ? 'text-white shadow-md' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]'),
 
                     style: (d.selectedType || null) === (t === 'all' ? null : t) ? { background: t === 'all' ? '#78716c' : ROCK_TYPES[t]?.color || '#78716c' } : {}
 
@@ -2080,7 +2080,7 @@ const d = labToolData.rocks || {};
                         React.createElement("button", {
                           disabled: isAnimActive,
                           onClick: startCooling,
-                          className: "mt-2 px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded text-[10px] shadow-sm disabled:opacity-50"
+                          className: "transition-colors mt-2 px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded text-[10px] shadow-sm disabled:opacity-50 active:scale-[0.97]"
                         }, isAnimActive ? "Cooling..." : "⚡ Run Solidification")
                       ),
                       React.createElement("div", { className: "flex-1 w-full" },
@@ -2090,7 +2090,7 @@ const d = labToolData.rocks || {};
                               key: s.id,
                               onClick: function() { updMulti({ coolingSpeed: s.id, coolingProgress: 0, coolingAnimActive: false }); sfxRockClick(); },
                               className: "p-1 rounded text-[9px] font-bold text-center border transition-all " +
-                                (coolingSpeed === s.id ? "bg-amber-100 border-amber-500 text-amber-800" : "bg-slate-50 border-slate-200 text-slate-600 hover:border-amber-200")
+                                (coolingSpeed === s.id ? "bg-amber-100 border-amber-500 text-amber-800" : "transition-colors bg-slate-50 border-slate-200 text-slate-600 hover:border-amber-200")
                             }, s.label);
                           })
                         ),
@@ -2142,7 +2142,7 @@ const d = labToolData.rocks || {};
                           updMulti({ fizzAnimActive: false, fizzResult: res });
                         }, 1200);
                       },
-                      className: "px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-lg text-xs transition-all shadow-sm disabled:opacity-50"
+                      className: "px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-lg text-xs transition-all shadow-sm disabled:opacity-50 active:scale-[0.97]"
                     }, d.fizzAnimActive ? "🫧 Dropping Acid..." : "🧪 Drop HCl Acid"),
                     d.fizzAnimActive && React.createElement("div", { className: "flex items-center gap-1 animate-pulse" },
                       React.createElement("span", { className: "text-lg" }, "🫧"),
@@ -2175,7 +2175,7 @@ const d = labToolData.rocks || {};
                     React.createElement("button", {
                       disabled: d.aiLoading,
                       onClick: askPetrologist,
-                      className: "px-3 py-1 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 transition-all disabled:opacity-50"
+                      className: "px-3 py-1 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 transition-all disabled:opacity-50 active:scale-[0.97]"
                     }, d.aiLoading ? "Thinking..." : "Ask")
                   ),
                   d.aiAnswer && React.createElement("div", { className: "mt-2 p-2.5 bg-slate-50 border rounded-lg animate-in slide-in-from-top-1" },
@@ -2750,7 +2750,7 @@ const d = labToolData.rocks || {};
                   MINERALS.map(function (mineral) {
                     return React.createElement("button", { key: mineral.id, onClick: function () { upd("selectedMineral", d.selectedMineral === mineral.id ? null : mineral.id); upd("selectedRock", null); },
                       className: "p-2 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 text-center " +
-                        (d.selectedMineral === mineral.id ? 'bg-white shadow-lg border-violet-400' : 'bg-slate-50 border-slate-200 hover:border-violet-200'),
+                        (d.selectedMineral === mineral.id ? 'bg-white shadow-lg border-violet-400' : 'transition-colors bg-slate-50 border-slate-200 hover:border-violet-200'),
                       style: d.selectedMineral === mineral.id ? { borderColor: '#8b5cf6', color: '#6d28d9' } : {}
                     },
                       React.createElement("div", { className: "w-5 h-5 rounded-full mx-auto mb-1 border border-slate-400", style: { background: mineral.color } }),
@@ -2889,7 +2889,7 @@ const d = labToolData.rocks || {};
                           sfxRockClick();
                         },
                         className: "p-1.5 rounded-lg border-2 text-[10px] font-bold text-center transition-all " +
-                          (isSelected ? "bg-violet-100 border-violet-500 text-violet-800" : "bg-slate-50 border-slate-200 text-slate-600 hover:border-violet-200")
+                          (isSelected ? "bg-violet-100 border-violet-500 text-violet-800" : "transition-colors bg-slate-50 border-slate-200 text-slate-600 hover:border-violet-200")
                       },
                         React.createElement("div", null, tool.label),
                         React.createElement("div", { className: "text-[9px] text-slate-400 font-mono mt-0.5" }, "H: " + tool.h)
@@ -2935,7 +2935,7 @@ const d = labToolData.rocks || {};
                         React.createElement("span", { className: "text-[11px] font-bold text-slate-700" }, "Active Tool: " + toolData.label + " (Hardness " + toolData.h + ")"),
                         animProgress === 0 && React.createElement("button", {
                           onClick: runTest,
-                          className: "px-3 py-1 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-[10px] font-bold transition-all shadow-sm"
+                          className: "px-3 py-1 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-[10px] font-bold transition-all shadow-sm active:scale-[0.97]"
                         }, "⚡ Run Scratch Test")
                       ),
                       animProgress > 0 && animProgress < 100 && React.createElement("div", { className: "w-full bg-slate-200 h-2.5 rounded-full overflow-hidden mb-2" },
@@ -2972,7 +2972,7 @@ const d = labToolData.rocks || {};
                           updMulti({ streakAnimActive: false, streakResult: res });
                         }, 800);
                       },
-                      className: "px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-lg text-xs transition-all shadow-sm disabled:opacity-50"
+                      className: "px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-lg text-xs transition-all shadow-sm disabled:opacity-50 active:scale-[0.97]"
                     }, d.streakAnimActive ? "✏️ Scratching plate..." : "🍽️ Perform Streak Test"),
                     d.streakResult && (function() {
                       var streakColors = { 'White': '#f8fafc', 'Greenish-black': '#1a3a1a', 'Black': '#1e1e1e', 'Red-brown': '#8b3a2a', 'Lead-gray': '#94a3b8', 'White-yellow': '#fef9c3', 'None (too hard)': '#94a3b8' };
@@ -3030,7 +3030,7 @@ const d = labToolData.rocks || {};
                           updMulti({ fizzAnimActive: false, fizzResult: res });
                         }, 1200);
                       },
-                      className: "px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-lg text-xs transition-all shadow-sm disabled:opacity-50"
+                      className: "px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-lg text-xs transition-all shadow-sm disabled:opacity-50 active:scale-[0.97]"
                     }, d.fizzAnimActive ? "🫧 Dropping Acid..." : "🧪 Drop HCl Acid"),
                     d.fizzAnimActive && React.createElement("div", { className: "flex items-center gap-1 animate-pulse" },
                       React.createElement("span", { className: "text-lg" }, "🫧"),
@@ -3063,7 +3063,7 @@ const d = labToolData.rocks || {};
                     React.createElement("button", {
                       disabled: d.aiLoading,
                       onClick: askPetrologist,
-                      className: "px-3 py-1 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 transition-all disabled:opacity-50"
+                      className: "px-3 py-1 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 transition-all disabled:opacity-50 active:scale-[0.97]"
                     }, d.aiLoading ? "Thinking..." : "Ask")
                   ),
                   d.aiAnswer && React.createElement("div", { className: "mt-2 p-2.5 bg-slate-50 border rounded-lg animate-in slide-in-from-top-1" },
@@ -3265,7 +3265,7 @@ const d = labToolData.rocks || {};
 
                       "aria-label": "Reveal next clue",
 
-                      className: "mt-1 px-3 py-1 text-[11px] font-bold bg-amber-100 text-amber-800 rounded-lg hover:bg-amber-200"
+                      className: "transition-colors mt-1 px-3 py-1 text-[11px] font-bold bg-amber-100 text-amber-800 rounded-lg hover:bg-amber-200 active:scale-[0.97]"
 
                     }, "+ Reveal next clue")
 
@@ -3291,7 +3291,7 @@ const d = labToolData.rocks || {};
 
                       "aria-label": "Start a new Mystery Rock challenge",
 
-                      className: "mt-2 px-3 py-1 text-[11px] font-bold bg-amber-700 text-white rounded-lg hover:bg-amber-800"
+                      className: "transition-colors mt-2 px-3 py-1 text-[11px] font-bold bg-amber-700 text-white rounded-lg hover:bg-amber-800 active:scale-[0.97]"
 
                     }, "🎲 New Mystery")
 
@@ -3319,7 +3319,7 @@ const d = labToolData.rocks || {};
 
                           className: "p-2 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 text-center " +
 
-                            (wasWrong ? "bg-red-50 border-red-600 text-red-700" : "bg-slate-50 border-slate-200 text-slate-700 hover:border-amber-400")
+                            (wasWrong ? "bg-red-50 border-red-600 text-red-700" : "transition-colors bg-slate-50 border-slate-200 text-slate-700 hover:border-amber-400")
 
                         },
 
@@ -3337,7 +3337,7 @@ const d = labToolData.rocks || {};
 
                       "aria-label": "Give up and reveal the answer",
 
-                      className: "px-3 py-1 text-[11px] font-bold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200"
+                      className: "transition-colors px-3 py-1 text-[11px] font-bold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 active:scale-[0.97]"
 
                     }, "🤷 Give up · show answer")
 
@@ -3420,7 +3420,7 @@ const d = labToolData.rocks || {};
                         sfxRockCrack();
                       }
                     }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] flex items-center gap-2 " +
-                      (d.quizFeedback ? (opt === quizQ.a ? "border-green-400 bg-green-50 text-green-700" : isChosen ? "border-red-400 bg-red-50 text-red-700" : "border-slate-200 bg-white text-slate-600") : "border-amber-200 bg-white text-slate-700 hover:border-amber-400")
+                      (d.quizFeedback ? (opt === quizQ.a ? "border-green-400 bg-green-50 text-green-700" : isChosen ? "border-red-400 bg-red-50 text-red-700" : "border-slate-200 bg-white text-slate-600") : "transition-colors border-amber-200 bg-white text-slate-700 hover:border-amber-400")
                   },
                     React.createElement("span", { className: "inline-flex items-center justify-center w-5 h-5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 shrink-0", "aria-hidden": "true" }, shortcut),
                     React.createElement("span", null, opt));
@@ -3451,7 +3451,7 @@ const d = labToolData.rocks || {};
                         var nextState = Object.assign({}, d, { vocabLookedUp: newList });
                         setTimeout(function() { checkRocksChallenges(nextState); }, 50);
                       },
-                      className: "px-3 py-1.5 bg-amber-700 hover:bg-amber-800 text-white font-bold rounded-lg text-[10px] shrink-0 self-start sm:self-center transition-all hover:scale-105"
+                      className: "px-3 py-1.5 bg-amber-700 hover:bg-amber-800 text-white font-bold rounded-lg text-[10px] shrink-0 self-start sm:self-center transition-all hover:scale-105 active:scale-[0.97]"
                     }, "📖 Study Term (+5 RP)")
                   );
                 })(),
@@ -3460,7 +3460,7 @@ const d = labToolData.rocks || {};
                     onClick: function () {
                       const nextIdx = ((d.quizIdx || 0) + 1) % QUIZ_BANK.length;
                       upd("quizIdx", nextIdx); upd("quizFeedback", null);
-                    }, className: "px-4 py-1.5 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 transition-all"
+                    }, className: "px-4 py-1.5 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 transition-all active:scale-[0.97]"
                   }, "Next Question \u2192 (N)")
                 )
               )
@@ -4429,9 +4429,9 @@ const d = labToolData.rockCycle || {};
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
+              React.createElement("button", { onClick: () => setStemLabTool(null), className: "transition-colors p-1.5 hover:bg-slate-100 rounded-lg active:scale-[0.97]", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83E\uDEA8 Rock Cycle"),
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800 tracking-tight" }, "\uD83E\uDEA8 Rock Cycle"),
 
               React.createElement("span", { className: "px-2 py-0.5 bg-orange-100 text-orange-700 text-[11px] font-bold rounded-full" }, "ANIMATED")
 
@@ -4469,7 +4469,7 @@ const d = labToolData.rockCycle || {};
 
                 React.createElement("div", null,
 
-                  React.createElement("h4", { className: "text-lg font-black", style: { color: sel.color } }, sel.label + " Rocks"),
+                  React.createElement("h4", { className: "text-lg font-black tracking-tight", style: { color: sel.color } }, sel.label + " Rocks"),
 
                   React.createElement("p", { className: "text-[11px] text-slate-600" }, sel.examples)
 
@@ -4534,7 +4534,7 @@ const d = labToolData.rockCycle || {};
 
                   return React.createElement("button", { key: i, onClick: function () { upd('selectedProcess', proc); },
 
-                    className: "p-2 rounded-lg text-left border transition-all " + (isActive ? 'bg-orange-100 border-orange-400 shadow-md' : 'bg-slate-50 border-slate-200 hover:bg-orange-50')
+                    className: "p-2 rounded-lg text-left border transition-all " + (isActive ? 'bg-orange-100 border-orange-400 shadow-md' : 'transition-colors bg-slate-50 border-slate-200 hover:bg-orange-50 active:scale-[0.97]')
 
                   },
 
@@ -4608,7 +4608,7 @@ const d = labToolData.rockCycle || {};
                         key: agent.id,
                         onClick: function() { upd("geologicalAgent", agent.id); sfxRockClick(); },
                         className: "p-1 rounded text-[9px] font-black text-center border transition-all " +
-                          (isSel ? "bg-orange-100 border-orange-500 text-orange-800" : "bg-slate-50 border-slate-200 text-slate-600 hover:border-orange-200")
+                          (isSel ? "bg-orange-100 border-orange-500 text-orange-800" : "transition-colors bg-slate-50 border-slate-200 text-slate-600 hover:border-orange-200")
                       }, agent.label);
                     })
                   )
@@ -4715,7 +4715,7 @@ const d = labToolData.rockCycle || {};
                         }
                       }, 100);
                     },
-                    className: "w-full py-1.5 bg-orange-700 hover:bg-orange-800 text-white font-bold rounded-lg text-xs transition-all disabled:opacity-50"
+                    className: "w-full py-1.5 bg-orange-700 hover:bg-orange-800 text-white font-bold rounded-lg text-xs transition-all disabled:opacity-50 active:scale-[0.97]"
                   }, d.transformationAnimActive ? "Transforming..." : "⚡ Transform!")
                 )
               ),
@@ -4866,7 +4866,7 @@ const d = labToolData.rockCycle || {};
                   d.rcQuiz.opts.map(function (opt, i) {
                     var isCorrect = opt === d.rcQuiz.a;
                     var wasChosen = d.rcQuiz.chosen === opt;
-                    var cls = !d.rcQuiz.answered ? 'bg-white border-slate-200 hover:border-orange-400' : isCorrect ? 'bg-emerald-100 border-emerald-600 text-emerald-800' : wasChosen ? 'bg-red-100 border-red-600 text-red-800' : 'bg-slate-50 border-slate-200 opacity-50';
+                    var cls = !d.rcQuiz.answered ? 'transition-colors bg-white border-slate-200 hover:border-orange-400' : isCorrect ? 'bg-emerald-100 border-emerald-600 text-emerald-800' : wasChosen ? 'bg-red-100 border-red-600 text-red-800' : 'bg-slate-50 border-slate-200 opacity-50';
 
                     return React.createElement("button", { "aria-label": "Select answer: " + opt,
                       key: opt, disabled: d.rcQuiz.answered, onClick: function () {
@@ -4945,7 +4945,7 @@ const d = labToolData.rockCycle || {};
                           if (typeof awardStemXP === 'function') awardStemXP(5, 'Concept studied: ' + d.rcQuiz.concept);
                           if (typeof addToast === 'function') addToast({ type: 'success', title: 'Concept Studied!', message: 'You studied ' + d.rcQuiz.concept + ' (+5 RP)' });
                         },
-                        className: "px-2 py-1 bg-orange-700 hover:bg-orange-800 text-white font-bold rounded text-[9px] shrink-0 self-start sm:self-center transition-all hover:scale-105"
+                        className: "px-2 py-1 bg-orange-700 hover:bg-orange-800 text-white font-bold rounded text-[9px] shrink-0 self-start sm:self-center transition-all hover:scale-105 active:scale-[0.97]"
                       }, "📖 Study Term (+5 RP)")
                     );
                   })()
