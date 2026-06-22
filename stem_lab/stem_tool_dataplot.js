@@ -209,6 +209,7 @@ window.StemLab = window.StemLab || {
       { id: 'view_residuals', label: 'View residuals to evaluate fit quality', icon: '\uD83D\uDD2C', check: function(d) { return d.showResiduals || false; }, progress: function(d) { return d.showResiduals ? 'Viewing!' : 'Toggle residuals'; } }
     ],
     render: function(ctx) {
+      var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = ctx.React;
       var h = React.createElement;
       var setStemLabTool = ctx.setStemLabTool;
@@ -716,7 +717,7 @@ window.StemLab = window.StemLab || {
             if (opts2.indexOf(fake) === -1 && Math.abs(fake - actualR2) > 0.1) opts2.push(fake);
           }
           opts2.sort(function() { return Math.random() - 0.5; });
-          updMulti({ dpQuiz: { type: 'guessR2', text: 'Estimate the R\u00B2 for this scatter plot', answer: actualR2.toFixed(2), pts: pts2, opts: opts2.map(function(o) { return o.toFixed(2); }), answered: false }, points: pts2, quizTypesUsed: used });
+          updMulti({ dpQuiz: { type: 'guessR2', text: t('stem.dataplot.estimate_the_r_for_this_scatter_plot', 'Estimate the R\u00B2 for this scatter plot'), answer: actualR2.toFixed(2), pts: pts2, opts: opts2.map(function(o) { return o.toFixed(2); }), answered: false }, points: pts2, quizTypesUsed: used });
         } else if (quizType === 'matchChart') {
           var mc = matchChartScenarios[Math.floor(Math.random() * matchChartScenarios.length)];
           updMulti({ dpQuiz: { type: 'matchChart', text: mc.q, answer: mc.a, opts: mc.opts.slice().sort(function() { return Math.random() - 0.5; }), answered: false }, quizTypesUsed: used });
@@ -801,27 +802,27 @@ window.StemLab = window.StemLab || {
 
         // ── Header ──
         h('div', { className: 'flex items-center gap-3 flex-wrap' },
-          h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back' }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
-          h('h3', { className: 'text-lg font-bold text-slate-800' }, '\uD83D\uDCCA Data Plotter'),
+          h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': t('stem.dataplot.back', 'Back') }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
+          h('h3', { className: 'text-lg font-bold text-slate-800' }, t('stem.dataplot.data_plotter', '\uD83D\uDCCA Data Plotter')),
           h('span', { className: 'text-xs text-slate-600' }, n + ' pts' + (stepMode ? ' (' + stepIdx + '/' + points.length + ')' : '')),
           n >= 2 && h('span', { className: 'text-xs font-bold ' + (Math.max(0, regR2) > 0.8 ? 'text-emerald-600' : Math.max(0, regR2) > 0.5 ? 'text-yellow-600' : 'text-red-500') }, 'R\u00B2=' + regR2.toFixed(3)),
           h('div', { className: 'ml-auto flex gap-1.5' },
             h('button', { onClick: function() { upd('showBadges', !showBadges); }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border transition-all ' + (showBadges ? 'bg-amber-100 border-amber-600 text-amber-700' : 'bg-slate-100 border-slate-200 text-slate-600') }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + badgeDefs.length),
             h('button', { onClick: function() { upd('showShortcuts', !showShortcuts); }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border ' + (showShortcuts ? 'bg-sky-100 border-sky-600 text-sky-700' : 'bg-slate-100 border-slate-200 text-slate-600') }, '\u2328\uFE0F'),
             h('button', { onClick: function() { upd('soundEnabled', !soundEnabled); }, className: 'text-sm px-1' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
-            h('button', { 'aria-label': 'Set Tool Snapshots', onClick: function() { setToolSnapshots(function(prev) { return prev.concat([{ id: 'dp-' + Date.now(), tool: 'dataPlot', label: n + ' pts r\u00B2=' + regR2.toFixed(2), data: { points: points.slice() }, timestamp: Date.now() }]); }); if (addToast) addToast('\uD83D\uDCF8 Snapshot!', 'success'); }, className: 'text-[11px] font-bold bg-slate-100 hover:bg-slate-200 border border-slate-400 rounded-full px-2 py-0.5' }, '\uD83D\uDCF8')
+            h('button', { 'aria-label': t('stem.dataplot.set_tool_snapshots', 'Set Tool Snapshots'), onClick: function() { setToolSnapshots(function(prev) { return prev.concat([{ id: 'dp-' + Date.now(), tool: 'dataPlot', label: n + ' pts r\u00B2=' + regR2.toFixed(2), data: { points: points.slice() }, timestamp: Date.now() }]); }); if (addToast) addToast('\uD83D\uDCF8 Snapshot!', 'success'); }, className: 'text-[11px] font-bold bg-slate-100 hover:bg-slate-200 border border-slate-400 rounded-full px-2 py-0.5' }, '\uD83D\uDCF8')
           )
         ),
 
         // ── Keyboard Shortcuts Panel ──
         showShortcuts && h('div', { className: 'bg-sky-50 rounded-xl p-3 border border-sky-200' },
-          h('div', { className: 'text-xs font-bold text-sky-700 uppercase mb-2' }, '\u2328\uFE0F Keyboard Shortcuts'),
+          h('div', { className: 'text-xs font-bold text-sky-700 uppercase mb-2' }, t('stem.dataplot.keyboard_shortcuts', '\u2328\uFE0F Keyboard Shortcuts')),
           h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-1.5' },
             [
-              { key: 'Ctrl+Z', desc: 'Undo' }, { key: 'Delete', desc: 'Remove last' },
-              { key: 'G', desc: 'Toggle grid' }, { key: 'L', desc: 'Toggle labels' },
-              { key: 'R', desc: 'Toggle residuals' }, { key: 'O', desc: 'Toggle outliers' },
-              { key: 'C', desc: 'Toggle CI band' }, { key: '\u2192', desc: 'Step next' }
+              { key: 'Ctrl+Z', desc: t('stem.dataplot.undo', 'Undo') }, { key: 'Delete', desc: t('stem.dataplot.remove_last', 'Remove last') },
+              { key: 'G', desc: t('stem.dataplot.toggle_grid', 'Toggle grid') }, { key: 'L', desc: t('stem.dataplot.toggle_labels', 'Toggle labels') },
+              { key: 'R', desc: t('stem.dataplot.toggle_residuals', 'Toggle residuals') }, { key: 'O', desc: t('stem.dataplot.toggle_outliers', 'Toggle outliers') },
+              { key: 'C', desc: t('stem.dataplot.toggle_ci_band', 'Toggle CI band') }, { key: '\u2192', desc: t('stem.dataplot.step_next', 'Step next') }
             ].map(function(s) {
               return h('div', { key: s.key, className: 'flex items-center gap-2' },
                 h('kbd', { className: 'text-[11px] font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-sky-200 text-sky-700' }, s.key),
@@ -833,7 +834,7 @@ window.StemLab = window.StemLab || {
 
         // ── Badges drawer ──
         showBadges && h('div', { className: 'bg-amber-50 rounded-xl p-3 border border-amber-200' },
-          h('div', { className: 'text-xs font-bold text-amber-700 uppercase mb-2' }, '\uD83C\uDFC5 Badges'),
+          h('div', { className: 'text-xs font-bold text-amber-700 uppercase mb-2' }, t('stem.dataplot.badges', '\uD83C\uDFC5 Badges')),
           h('div', { className: 'grid grid-cols-3 sm:grid-cols-4 gap-2' },
             badgeDefs.map(function(badge) {
               var earned = !!earnedBadges[badge.id];
@@ -852,13 +853,13 @@ window.StemLab = window.StemLab || {
         stepMode && h('div', { className: 'bg-violet-50 rounded-xl p-3 border border-violet-200 flex items-center gap-3' },
           h('span', { className: 'text-xs font-bold text-violet-700' }, '\uD83D\uDC63 Step-Through Mode: ' + stepIdx + '/' + points.length),
           h('button', { onClick: stepNext, className: 'px-3 py-1 bg-violet-600 text-white font-bold rounded-lg text-xs hover:bg-violet-700' }, stepIdx >= points.length ? '\u2705 Done' : '\u27A1 Next Point'),
-          h('button', { 'aria-label': 'Stop', onClick: stopStep, className: 'px-3 py-1 bg-white text-violet-600 font-bold rounded-lg text-xs border border-violet-600' }, '\u2716 Stop'),
+          h('button', { 'aria-label': t('stem.dataplot.stop', 'Stop'), onClick: stopStep, className: 'px-3 py-1 bg-white text-violet-600 font-bold rounded-lg text-xs border border-violet-600' }, t('stem.dataplot.stop_2', '\u2716 Stop')),
           n >= 2 && h('span', { className: 'text-[11px] text-violet-500 ml-auto' }, 'R\u00B2=' + regR2.toFixed(3) + ' | Mean=' + meanY.toFixed(1)),
-          h('span', { className: 'text-[11px] text-violet-400' }, '(or press \u2192)')
+          h('span', { className: 'text-[11px] text-violet-400' }, t('stem.dataplot.or_press', '(or press \u2192)'))
         ),
 
         // ── Tab nav ──
-        h('div', { className: 'flex gap-2 flex-wrap', role: 'tablist', 'aria-label': 'Data Plot sections' },
+        h('div', { className: 'flex gap-2 flex-wrap', role: 'tablist', 'aria-label': t('stem.dataplot.data_plot_sections', 'Data Plot sections') },
           tabBtn('chart', 'Chart', '\uD83D\uDCCA'),
           tabBtn('stats', 'Statistics', '\uD83D\uDCC8'),
           tabBtn('quiz', 'Quiz', '\uD83C\uDFAF'),
@@ -869,11 +870,11 @@ window.StemLab = window.StemLab || {
         // ── Topic-accent hero band per tab ──
         (function() {
           var TAB_META = {
-            chart: { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\uD83D\uDCCA', title: 'Chart \u2014 pick the right visualization', hint: 'Scatter for relationships, line for time, bar for categories, histogram for distribution shape, box plot for spread + outliers, ogive for cumulative. Choosing the wrong chart type usually misleads more than it informs.' },
-            stats: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCC8', title: 'Statistics \u2014 center, spread, shape',  hint: 'Mean vs median (median wins for skewed data), standard deviation vs IQR (IQR wins for non-normal), correlation vs causation (low correlation does NOT prove no causal link).' },
-            quiz:  { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83C\uDFAF', title: 'Quiz \u2014 practice + apply',           hint: 'AP Stats / data-literacy items. Each question links back to the active dataset so you can verify visually before answering.' },
-            tools: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDEE0\uFE0F', title: 'Tools \u2014 load + clean + export',  hint: 'Paste from Google Sheets, generate sample data, export as PNG/CSV. Most students underestimate how much real-world data analysis is data CLEANING (~70% of total time).' },
-            inquiry: { accent: '#8b5cf6', soft: 'rgba(139,92,246,0.10)', icon: '\uD83D\uDD2C', title: 'Inquiry \u2014 when samples mislead', hint: 'Set a true population r, then watch how sample size, noise, and outliers distort the observed r. No score, no reveal \u2014 form a hypothesis and explore.' }
+            chart: { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\uD83D\uDCCA', title: t('stem.dataplot.chart_pick_the_right_visualization', 'Chart \u2014 pick the right visualization'), hint: t('stem.dataplot.scatter_for_relationships_line_for_tim', 'Scatter for relationships, line for time, bar for categories, histogram for distribution shape, box plot for spread + outliers, ogive for cumulative. Choosing the wrong chart type usually misleads more than it informs.') },
+            stats: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCC8', title: t('stem.dataplot.statistics_center_spread_shape', 'Statistics \u2014 center, spread, shape'),  hint: t('stem.dataplot.mean_vs_median_median_wins_for_skewed_', 'Mean vs median (median wins for skewed data), standard deviation vs IQR (IQR wins for non-normal), correlation vs causation (low correlation does NOT prove no causal link).') },
+            quiz:  { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83C\uDFAF', title: t('stem.dataplot.quiz_practice_apply', 'Quiz \u2014 practice + apply'),           hint: t('stem.dataplot.ap_stats_data_literacy_items_each_ques', 'AP Stats / data-literacy items. Each question links back to the active dataset so you can verify visually before answering.') },
+            tools: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDEE0\uFE0F', title: t('stem.dataplot.tools_load_clean_export', 'Tools \u2014 load + clean + export'),  hint: t('stem.dataplot.paste_from_google_sheets_generate_samp', 'Paste from Google Sheets, generate sample data, export as PNG/CSV. Most students underestimate how much real-world data analysis is data CLEANING (~70% of total time).') },
+            inquiry: { accent: '#8b5cf6', soft: 'rgba(139,92,246,0.10)', icon: '\uD83D\uDD2C', title: t('stem.dataplot.inquiry_when_samples_mislead', 'Inquiry \u2014 when samples mislead'), hint: t('stem.dataplot.set_a_true_population_r_then_watch_how', 'Set a true population r, then watch how sample size, noise, and outliers distort the observed r. No score, no reveal \u2014 form a hypothesis and explore.') }
           };
           var meta = TAB_META[activeTab] || TAB_META.chart;
           return h('div', {
@@ -903,19 +904,19 @@ window.StemLab = window.StemLab || {
           // Chart type selector (7 types now)
           h('div', { className: 'flex gap-1.5 flex-wrap' },
             [
-              { id: 'scatter', icon: '\u2022', label: 'Scatter' },
-              { id: 'line', icon: '\uD83D\uDCC8', label: 'Line' },
+              { id: 'scatter', icon: '\u2022', label: t('stem.dataplot.scatter', 'Scatter') },
+              { id: 'line', icon: '\uD83D\uDCC8', label: t('stem.dataplot.line', 'Line') },
               { id: 'bar', icon: '\uD83D\uDCCA', label: 'Bar' },
               { id: 'pie', icon: '\uD83E\uDD67', label: 'Pie' },
-              { id: 'histogram', icon: '\uD83D\uDCF6', label: 'Histogram' },
-              { id: 'boxplot', icon: '\uD83D\uDCE6', label: 'Box Plot' },
-              { id: 'ogive', icon: '\uD83D\uDCC9', label: 'Ogive' }
+              { id: 'histogram', icon: '\uD83D\uDCF6', label: t('stem.dataplot.histogram', 'Histogram') },
+              { id: 'boxplot', icon: '\uD83D\uDCE6', label: t('stem.dataplot.box_plot', 'Box Plot') },
+              { id: 'ogive', icon: '\uD83D\uDCC9', label: t('stem.dataplot.ogive', 'Ogive') }
             ].map(function(ct) {
-              return h('button', { 'aria-label': 'Switch Chart', key: ct.id, onClick: function() { switchChart(ct.id); },
+              return h('button', { 'aria-label': t('stem.dataplot.switch_chart', 'Switch Chart'), key: ct.id, onClick: function() { switchChart(ct.id); },
                 className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all ' + (chartType === ct.id ? 'bg-teal-700 text-white shadow' : 'bg-teal-50 text-teal-700 border border-teal-600 hover:bg-teal-100')
               }, ct.icon + ' ' + ct.label);
             }),
-            h('select', { value: paletteId, onChange: function(e) { upd('paletteId', e.target.value); }, 'aria-label': 'Color palette', className: 'ml-auto text-[11px] px-2 py-1 rounded-lg border border-slate-400 outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' },
+            h('select', { value: paletteId, onChange: function(e) { upd('paletteId', e.target.value); }, 'aria-label': t('stem.dataplot.color_palette', 'Color palette'), className: 'ml-auto text-[11px] px-2 py-1 rounded-lg border border-slate-400 outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' },
               palettes.map(function(p) { return h('option', { key: p.id, value: p.id }, '\uD83C\uDFA8 ' + p.name); })
             )
           ),
@@ -924,14 +925,14 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex gap-1.5 flex-wrap' },
             h('span', { className: 'text-[11px] font-bold text-slate-600 self-center' }, 'Datasets:'),
             datasetLibrary.map(function(ds) {
-              return h('button', { 'aria-label': 'Load Dataset', key: ds.label, onClick: function() { loadDataset(ds); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-teal-50 text-teal-700 border border-teal-600 hover:bg-teal-100 transition-all' }, ds.label);
+              return h('button', { 'aria-label': t('stem.dataplot.load_dataset', 'Load Dataset'), key: ds.label, onClick: function() { loadDataset(ds); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-teal-50 text-teal-700 border border-teal-600 hover:bg-teal-100 transition-all' }, ds.label);
             })
           ),
 
           // Axis labels
           h('div', { className: 'flex gap-2' },
-            h('input', { type: 'text', value: xLabel, onChange: function(e) { upd('xLabel', e.target.value); }, placeholder: 'X-axis label', 'aria-label': 'X-axis label', className: 'flex-1 px-2 py-1 text-xs border border-teal-600 rounded-lg outline-none focus:ring-1 focus:ring-teal-400' }),
-            h('input', { type: 'text', value: yLabel, onChange: function(e) { upd('yLabel', e.target.value); }, placeholder: 'Y-axis label', 'aria-label': 'Y-axis label', className: 'flex-1 px-2 py-1 text-xs border border-teal-600 rounded-lg outline-none focus:ring-1 focus:ring-teal-400' })
+            h('input', { type: 'text', value: xLabel, onChange: function(e) { upd('xLabel', e.target.value); }, placeholder: t('stem.dataplot.x_axis_label', 'X-axis label'), 'aria-label': t('stem.dataplot.x_axis_label_2', 'X-axis label'), className: 'flex-1 px-2 py-1 text-xs border border-teal-600 rounded-lg outline-none focus:ring-1 focus:ring-teal-400' }),
+            h('input', { type: 'text', value: yLabel, onChange: function(e) { upd('yLabel', e.target.value); }, placeholder: t('stem.dataplot.y_axis_label', 'Y-axis label'), 'aria-label': t('stem.dataplot.y_axis_label_2', 'Y-axis label'), className: 'flex-1 px-2 py-1 text-xs border border-teal-600 rounded-lg outline-none focus:ring-1 focus:ring-teal-400' })
           ),
 
           // ── SVG Chart (scatter / line / bar) ──
@@ -996,7 +997,7 @@ window.StemLab = window.StemLab || {
             var maxR = Math.max.apply(null, residuals.map(function(r) { return Math.abs(r.r); }).concat([1]));
             var rToSY = function(r) { return rH/2 + 10 - (r / maxR) * (rH/2 - 15); };
             return h('div', { className: 'space-y-1' },
-              h('div', { className: 'text-[11px] font-bold text-violet-600 uppercase' }, '\uD83D\uDCC9 Residual Plot'),
+              h('div', { className: 'text-[11px] font-bold text-violet-600 uppercase' }, t('stem.dataplot.residual_plot', '\uD83D\uDCC9 Residual Plot')),
               h('svg', { viewBox: '0 0 ' + W + ' ' + rH, className: 'w-full bg-white rounded-lg border border-violet-200', style: { maxHeight: '140px' } },
                 // Zero line
                 h('line', { x1: pad, y1: rH/2+10, x2: W-pad, y2: rH/2+10, stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '4 4' }),
@@ -1141,37 +1142,37 @@ window.StemLab = window.StemLab || {
 
           // ── Controls row ──
           h('div', { className: 'flex gap-2 flex-wrap items-center' },
-            h('button', { onClick: doUndo, disabled: !undoStack.length, className: 'px-3 py-1.5 bg-slate-100 text-slate-600 font-bold rounded-lg text-sm disabled:opacity-40' }, '\u21A9 Undo'),
-            h('button', { 'aria-label': 'Clear', onClick: clearAll, disabled: !points.length, className: 'px-3 py-1.5 bg-red-50 text-red-600 font-bold rounded-lg text-sm disabled:opacity-40' }, '\uD83D\uDDD1\uFE0F Clear'),
+            h('button', { onClick: doUndo, disabled: !undoStack.length, className: 'px-3 py-1.5 bg-slate-100 text-slate-600 font-bold rounded-lg text-sm disabled:opacity-40' }, t('stem.dataplot.undo_2', '\u21A9 Undo')),
+            h('button', { 'aria-label': t('stem.dataplot.clear', 'Clear'), onClick: clearAll, disabled: !points.length, className: 'px-3 py-1.5 bg-red-50 text-red-600 font-bold rounded-lg text-sm disabled:opacity-40' }, t('stem.dataplot.clear_2', '\uD83D\uDDD1\uFE0F Clear')),
             h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-violet-600 cursor-pointer' },
-              h('input', { type: 'checkbox', checked: showResiduals, onChange: function() { upd('showResiduals', !showResiduals); }, className: 'accent-violet-600' }), 'Residuals'),
+              h('input', { type: 'checkbox', checked: showResiduals, onChange: function() { upd('showResiduals', !showResiduals); }, className: 'accent-violet-600' }), t('stem.dataplot.residuals', 'Residuals')),
             h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-teal-600 cursor-pointer' },
-              h('input', { type: 'checkbox', checked: showLabels, onChange: function() { upd('showLabels', !showLabels); }, className: 'accent-teal-600' }), 'Labels'),
+              h('input', { type: 'checkbox', checked: showLabels, onChange: function() { upd('showLabels', !showLabels); }, className: 'accent-teal-600' }), t('stem.dataplot.labels', 'Labels')),
             h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-sky-600 cursor-pointer' },
-              h('input', { type: 'checkbox', checked: showGrid, onChange: function() { upd('showGrid', !showGrid); }, className: 'accent-sky-600' }), 'Grid'),
+              h('input', { type: 'checkbox', checked: showGrid, onChange: function() { upd('showGrid', !showGrid); }, className: 'accent-sky-600' }), t('stem.dataplot.grid', 'Grid')),
             h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-red-500 cursor-pointer' },
               h('input', { type: 'checkbox', checked: showOutliers, onChange: function() { upd('showOutliers', !showOutliers); if (!showOutliers && outliers.length > 0) checkBadges({}); }, className: 'accent-red-500' }), 'Outliers' + (outliers.length > 0 ? ' (' + outliers.length + ')' : '')),
             h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-rose-500 cursor-pointer' },
-              h('input', { type: 'checkbox', checked: showCI, onChange: function() { upd('showCI', !showCI); }, className: 'accent-rose-500' }), '95% CI'),
+              h('input', { type: 'checkbox', checked: showCI, onChange: function() { upd('showCI', !showCI); }, className: 'accent-rose-500' }), t('stem.dataplot.95_ci', '95% CI')),
             h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-violet-500 cursor-pointer' },
-              h('input', { type: 'checkbox', checked: showResidualPlot, onChange: function() { upd('showResidualPlot', !showResidualPlot); }, className: 'accent-violet-500' }), 'Resid Plot'),
+              h('input', { type: 'checkbox', checked: showResidualPlot, onChange: function() { upd('showResidualPlot', !showResidualPlot); }, className: 'accent-violet-500' }), t('stem.dataplot.resid_plot', 'Resid Plot')),
             chartType === 'histogram' && h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-purple-500 cursor-pointer' },
-              h('input', { type: 'checkbox', checked: showNormalOverlay, onChange: function() { upd('showNormalOverlay', !showNormalOverlay); }, className: 'accent-purple-500' }), 'Normal Curve'),
+              h('input', { type: 'checkbox', checked: showNormalOverlay, onChange: function() { upd('showNormalOverlay', !showNormalOverlay); }, className: 'accent-purple-500' }), t('stem.dataplot.normal_curve', 'Normal Curve')),
             h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-slate-600 cursor-pointer' },
-              h('input', { type: 'checkbox', checked: tableMode, onChange: function() { upd('tableMode', !tableMode); }, className: 'accent-teal-600' }), 'Table'),
+              h('input', { type: 'checkbox', checked: tableMode, onChange: function() { upd('tableMode', !tableMode); }, className: 'accent-teal-600' }), t('stem.dataplot.table', 'Table')),
             h('div', { className: 'ml-auto flex gap-1.5' },
-              h('button', { onClick: exportCSV, disabled: !n, className: 'px-2 py-1 text-[11px] font-bold bg-teal-50 text-teal-700 border border-teal-600 rounded-lg disabled:opacity-40' }, '\uD83D\uDCE5 CSV'),
-              h('button', { onClick: exportSVG, disabled: !n, className: 'px-2 py-1 text-[11px] font-bold bg-teal-50 text-teal-700 border border-teal-600 rounded-lg disabled:opacity-40' }, '\uD83D\uDCD0 SVG'),
-              h('button', { 'aria-label': 'Save', onClick: saveChart, disabled: !n, className: 'px-2 py-1 text-[11px] font-bold bg-teal-50 text-teal-700 border border-teal-600 rounded-lg disabled:opacity-40' }, '\uD83D\uDCBE Save')
+              h('button', { onClick: exportCSV, disabled: !n, className: 'px-2 py-1 text-[11px] font-bold bg-teal-50 text-teal-700 border border-teal-600 rounded-lg disabled:opacity-40' }, t('stem.dataplot.csv', '\uD83D\uDCE5 CSV')),
+              h('button', { onClick: exportSVG, disabled: !n, className: 'px-2 py-1 text-[11px] font-bold bg-teal-50 text-teal-700 border border-teal-600 rounded-lg disabled:opacity-40' }, t('stem.dataplot.svg', '\uD83D\uDCD0 SVG')),
+              h('button', { 'aria-label': t('stem.dataplot.save', 'Save'), onClick: saveChart, disabled: !n, className: 'px-2 py-1 text-[11px] font-bold bg-teal-50 text-teal-700 border border-teal-600 rounded-lg disabled:opacity-40' }, t('stem.dataplot.save_2', '\uD83D\uDCBE Save'))
             )
           ),
 
           // ── Table input ──
           tableMode && h('div', { className: 'bg-slate-50 rounded-lg p-3' },
             h('div', { className: 'flex gap-2 items-end mb-2' },
-              h('div', null, h('label', { htmlFor: 'dp-x-input', className: 'text-[11px] font-bold text-slate-600 block' }, 'X'), h('input', { type: 'number', step: '0.1', id: 'dp-x-input', 'aria-label': 'X coordinate for new data point', className: 'w-20 px-2 py-1 text-sm border rounded text-center font-mono', placeholder: '0' })),
-              h('div', null, h('label', { htmlFor: 'dp-y-input', className: 'text-[11px] font-bold text-slate-600 block' }, 'Y'), h('input', { type: 'number', step: '0.1', id: 'dp-y-input', 'aria-label': 'Y coordinate for new data point', className: 'w-20 px-2 py-1 text-sm border rounded text-center font-mono', placeholder: '0' })),
-              h('button', { 'aria-label': '+ Add', onClick: function() { var xi = document.getElementById('dp-x-input'), yi = document.getElementById('dp-y-input'); if (xi && yi && xi.value && yi.value) { addPoint(parseFloat(xi.value), parseFloat(yi.value)); xi.value = ''; yi.value = ''; } }, className: 'px-3 py-1 bg-teal-700 text-white font-bold rounded text-sm hover:bg-teal-800' }, '+ Add')
+              h('div', null, h('label', { htmlFor: 'dp-x-input', className: 'text-[11px] font-bold text-slate-600 block' }, 'X'), h('input', { type: 'number', step: '0.1', id: 'dp-x-input', 'aria-label': t('stem.dataplot.x_coordinate_for_new_data_point', 'X coordinate for new data point'), className: 'w-20 px-2 py-1 text-sm border rounded text-center font-mono', placeholder: '0' })),
+              h('div', null, h('label', { htmlFor: 'dp-y-input', className: 'text-[11px] font-bold text-slate-600 block' }, 'Y'), h('input', { type: 'number', step: '0.1', id: 'dp-y-input', 'aria-label': t('stem.dataplot.y_coordinate_for_new_data_point', 'Y coordinate for new data point'), className: 'w-20 px-2 py-1 text-sm border rounded text-center font-mono', placeholder: '0' })),
+              h('button', { 'aria-label': t('stem.dataplot.add', '+ Add'), onClick: function() { var xi = document.getElementById('dp-x-input'), yi = document.getElementById('dp-y-input'); if (xi && yi && xi.value && yi.value) { addPoint(parseFloat(xi.value), parseFloat(yi.value)); xi.value = ''; yi.value = ''; } }, className: 'px-3 py-1 bg-teal-700 text-white font-bold rounded text-sm hover:bg-teal-800' }, t('stem.dataplot.add_2', '+ Add'))
             ),
             n > 0 && h('div', { className: 'max-h-24 overflow-y-auto text-xs font-mono text-slate-600' },
               visiblePoints.map(function(p, i) { return h('span', { key: i, role: 'button', tabIndex: 0, 'aria-label': 'Remove point (' + p.x + ', ' + p.y + ')', className: 'inline-block mr-2 bg-white px-1.5 py-0.5 rounded border mb-1 cursor-pointer hover:bg-red-50', onClick: function() { removePoint(i); }, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); removePoint(i); } } }, '(' + p.x + ',' + p.y + ')'); })
@@ -1183,17 +1184,17 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex gap-2 items-center mb-1.5 flex-wrap' },
               h('span', { className: 'text-[11px] font-bold text-slate-600' }, 'Regression:'),
               ['linear', 'quadratic', 'exponential', 'logarithmic'].map(function(rt) {
-                return h('button', { 'aria-label': 'Pearson r / Spearman \u03C1', key: rt, onClick: function() { upd('regressionType', rt); },
+                return h('button', { 'aria-label': t('stem.dataplot.pearson_r_spearman', 'Pearson r / Spearman \u03C1'), key: rt, onClick: function() { upd('regressionType', rt); },
                   className: 'px-2 py-0.5 rounded text-[11px] font-bold transition-all ' + (regressionType === rt ? 'bg-teal-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
                 }, rt.charAt(0).toUpperCase() + rt.slice(1));
               })
             ),
             h('div', { className: 'flex items-center gap-3 flex-wrap' },
               h('span', { className: 'text-xs font-mono text-slate-700' }, regEq),
-              h('span', { className: 'text-[11px] font-bold text-slate-500', title: 'Sample size — interpret R² with n in mind' }, 'n = ' + n),
+              h('span', { className: 'text-[11px] font-bold text-slate-500', title: t('stem.dataplot.sample_size_interpret_r_with_n_in_mind', 'Sample size — interpret R² with n in mind') }, 'n = ' + n),
               h('span', { className: 'text-xs font-bold ' + (Math.max(0, regR2) > 0.8 ? 'text-emerald-600' : Math.max(0, regR2) > 0.5 ? 'text-yellow-600' : 'text-red-500') }, 'R\u00B2 = ' + regR2.toFixed(4)),
               h('span', { className: 'text-[11px] text-slate-600' }, slope > 0 ? '\u2197 Positive' : slope < 0 ? '\u2198 Negative' : '\u2794 None'),
-              n >= 3 && h('span', { className: 'text-[11px] font-bold text-indigo-500', title: 'Pearson r / Spearman \u03C1', onClick: function() { checkBadges({ spearmanViewed: true }); } }, 'r=' + pearsonR.toFixed(3) + ' | \u03C1=' + spearmanR.toFixed(3))
+              n >= 3 && h('span', { className: 'text-[11px] font-bold text-indigo-500', title: t('stem.dataplot.pearson_r_spearman_2', 'Pearson r / Spearman \u03C1'), onClick: function() { checkBadges({ spearmanViewed: true }); } }, 'r=' + pearsonR.toFixed(3) + ' | \u03C1=' + spearmanR.toFixed(3))
             ),
             // Correlation strength bar
             h('div', { className: 'flex items-center gap-2 mt-1.5' },
@@ -1208,16 +1209,16 @@ window.StemLab = window.StemLab || {
 
           // ── Gallery ──
           showGallery && h('div', { className: 'bg-slate-50 rounded-xl p-3 border border-slate-400' },
-            h('div', { className: 'text-xs font-bold text-slate-600 uppercase mb-2' }, '\uD83D\uDCBE Saved Charts'),
+            h('div', { className: 'text-xs font-bold text-slate-600 uppercase mb-2' }, t('stem.dataplot.saved_charts', '\uD83D\uDCBE Saved Charts')),
             galleryItems.length === 0
-              ? h('div', { className: 'text-xs text-slate-600 text-center py-2' }, 'No saved charts yet')
+              ? h('div', { className: 'text-xs text-slate-600 text-center py-2' }, t('stem.dataplot.no_saved_charts_yet', 'No saved charts yet'))
               : h('div', { className: 'space-y-1.5' }, galleryItems.map(function(item) {
                   return h('div', { key: item.id, className: 'flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-400' },
                     h('span', { className: 'text-xs font-bold text-slate-700' }, item.n + ' pts'),
                     h('span', { className: 'text-[11px] text-slate-600' }, 'R\u00B2=' + (item.r2||0).toFixed(3)),
                     h('span', { className: 'text-[11px] text-slate-600 ml-auto' }, new Date(item.timestamp).toLocaleDateString()),
-                    h('button', { onClick: function() { loadChart(item); }, className: 'px-2 py-0.5 text-[11px] font-bold bg-teal-50 text-teal-600 rounded hover:bg-teal-100' }, 'Load'),
-                    h('button', { 'aria-label': 'Remove item', onClick: function() { deleteChart(item.id); }, className: 'px-2 py-0.5 text-[11px] font-bold text-red-400 hover:text-red-600' }, '\u2715')
+                    h('button', { onClick: function() { loadChart(item); }, className: 'px-2 py-0.5 text-[11px] font-bold bg-teal-50 text-teal-600 rounded hover:bg-teal-100' }, t('stem.dataplot.load', 'Load')),
+                    h('button', { 'aria-label': t('stem.dataplot.remove_item', 'Remove item'), onClick: function() { deleteChart(item.id); }, className: 'px-2 py-0.5 text-[11px] font-bold text-red-400 hover:text-red-600' }, '\u2715')
                   );
                 }))
           ),
@@ -1229,28 +1230,28 @@ window.StemLab = window.StemLab || {
         // ══════════════════════════════════════════════════════════
         activeTab === 'stats' && h('div', { className: 'space-y-3' },
           n === 0
-            ? h('div', { className: 'text-center text-sm text-slate-600 py-8' }, 'Add data points to see statistics')
+            ? h('div', { className: 'text-center text-sm text-slate-600 py-8' }, t('stem.dataplot.add_data_points_to_see_statistics', 'Add data points to see statistics'))
             : h('div', { className: 'space-y-3' },
 
               // Summary stats grid (expanded)
               h('div', { className: 'grid grid-cols-3 sm:grid-cols-4 gap-2' },
                 [
-                  { label: 'Count', value: n, icon: '\uD83D\uDCCA' },
-                  { label: 'Mean Y', value: meanY.toFixed(2), icon: '\uD83D\uDCCF' },
-                  { label: 'Median Y', value: yMedian.toFixed(2), icon: '\u2796' },
-                  { label: 'Mode Y', value: modeVal, icon: '\uD83D\uDD01' },
-                  { label: 'Std Dev', value: stdDev.toFixed(2), icon: '\uD83D\uDCC9' },
-                  { label: 'Min Y', value: yMin_.toFixed(2), icon: '\u2B07\uFE0F' },
-                  { label: 'Max Y', value: yMax_.toFixed(2), icon: '\u2B06\uFE0F' },
-                  { label: 'Range', value: yRange.toFixed(2), icon: '\u2194\uFE0F' },
+                  { label: t('stem.dataplot.count', 'Count'), value: n, icon: '\uD83D\uDCCA' },
+                  { label: t('stem.dataplot.mean_y', 'Mean Y'), value: meanY.toFixed(2), icon: '\uD83D\uDCCF' },
+                  { label: t('stem.dataplot.median_y', 'Median Y'), value: yMedian.toFixed(2), icon: '\u2796' },
+                  { label: t('stem.dataplot.mode_y', 'Mode Y'), value: modeVal, icon: '\uD83D\uDD01' },
+                  { label: t('stem.dataplot.std_dev', 'Std Dev'), value: stdDev.toFixed(2), icon: '\uD83D\uDCC9' },
+                  { label: t('stem.dataplot.min_y', 'Min Y'), value: yMin_.toFixed(2), icon: '\u2B07\uFE0F' },
+                  { label: t('stem.dataplot.max_y', 'Max Y'), value: yMax_.toFixed(2), icon: '\u2B06\uFE0F' },
+                  { label: t('stem.dataplot.range', 'Range'), value: yRange.toFixed(2), icon: '\u2194\uFE0F' },
                   { label: 'Q1', value: q1.toFixed(2), icon: '\uD83D\uDCD0' },
                   { label: 'Q3', value: q3.toFixed(2), icon: '\uD83D\uDCD0' },
                   { label: 'IQR', value: iqr.toFixed(2), icon: '\uD83D\uDCE6' },
-                  { label: 'Outliers', value: outliers.length, icon: '\u26A0\uFE0F' },
-                  { label: 'Mean X', value: meanX.toFixed(2), icon: '\uD83D\uDCCF' },
-                  { label: 'Slope', value: slope.toFixed(4), icon: '\uD83D\uDCC8' },
-                  { label: 'Pearson r', value: pearsonR.toFixed(4), icon: '\uD83D\uDD17' },
-                  { label: 'Spearman \u03C1', value: spearmanR.toFixed(4), icon: '\uD83C\uDFC5' }
+                  { label: t('stem.dataplot.outliers', 'Outliers'), value: outliers.length, icon: '\u26A0\uFE0F' },
+                  { label: t('stem.dataplot.mean_x', 'Mean X'), value: meanX.toFixed(2), icon: '\uD83D\uDCCF' },
+                  { label: t('stem.dataplot.slope', 'Slope'), value: slope.toFixed(4), icon: '\uD83D\uDCC8' },
+                  { label: t('stem.dataplot.pearson_r', 'Pearson r'), value: pearsonR.toFixed(4), icon: '\uD83D\uDD17' },
+                  { label: t('stem.dataplot.spearman', 'Spearman \u03C1'), value: spearmanR.toFixed(4), icon: '\uD83C\uDFC5' }
                 ].map(function(stat) {
                   return h('div', { key: stat.label, className: 'p-2 bg-white rounded-lg border border-teal-100 text-center', onClick: stat.label === 'Spearman \u03C1' ? function() { checkBadges({ spearmanViewed: true }); } : undefined },
                     h('div', { className: 'text-[11px] font-bold text-teal-600 uppercase' }, stat.icon + ' ' + stat.label),
@@ -1261,7 +1262,7 @@ window.StemLab = window.StemLab || {
 
               // Correlation explainer
               n >= 3 && h('div', { className: 'bg-indigo-50 rounded-xl p-3 border border-indigo-200' },
-                h('div', { className: 'text-xs font-bold text-indigo-700 uppercase mb-1' }, '\uD83D\uDD17 Pearson vs Spearman'),
+                h('div', { className: 'text-xs font-bold text-indigo-700 uppercase mb-1' }, t('stem.dataplot.pearson_vs_spearman', '\uD83D\uDD17 Pearson vs Spearman')),
                 h('div', { className: 'text-[11px] text-indigo-600 leading-relaxed' },
                   'Pearson r (' + pearsonR.toFixed(3) + ') measures linear correlation. Spearman \u03C1 (' + spearmanR.toFixed(3) + ') measures monotonic (rank-based) correlation. '
                   + (Math.abs(spearmanR) > Math.abs(pearsonR) + 0.1 ? 'Spearman is higher \u2014 your data may have a non-linear but monotonic trend!' : Math.abs(pearsonR) > Math.abs(spearmanR) + 0.1 ? 'Pearson is higher \u2014 the linear relationship is stronger than the rank relationship.' : 'Both are similar \u2014 the relationship is approximately linear.')
@@ -1270,17 +1271,17 @@ window.StemLab = window.StemLab || {
 
               // Regression comparison
               n >= 2 && h('div', { className: 'bg-white rounded-xl p-3 border border-teal-200' },
-                h('div', { className: 'text-xs font-bold text-teal-700 uppercase mb-2' }, '\uD83D\uDD2C Regression Comparison'),
+                h('div', { className: 'text-xs font-bold text-teal-700 uppercase mb-2' }, t('stem.dataplot.regression_comparison', '\uD83D\uDD2C Regression Comparison')),
                 h('div', { className: 'space-y-1.5' },
                   [
-                    { name: 'Linear', eq: 'y = ' + slope.toFixed(2) + 'x + ' + intercept.toFixed(2), r2: r2 },
-                    n >= 3 ? { name: 'Quadratic', eq: 'y = ' + quadA.toFixed(4) + 'x\u00B2 + ' + quadB.toFixed(2) + 'x + ' + quadC.toFixed(2), r2: quadR2 } : null,
-                    expA ? { name: 'Exponential', eq: 'y = ' + expA.toFixed(2) + 'e^(' + expB.toFixed(4) + 'x)', r2: expR2 } : null,
-                    logB ? { name: 'Logarithmic', eq: 'y = ' + logA.toFixed(2) + ' + ' + logB.toFixed(2) + 'ln(x)', r2: logR2 } : null
+                    { name: t('stem.dataplot.linear', 'Linear'), eq: 'y = ' + slope.toFixed(2) + 'x + ' + intercept.toFixed(2), r2: r2 },
+                    n >= 3 ? { name: t('stem.dataplot.quadratic', 'Quadratic'), eq: 'y = ' + quadA.toFixed(4) + 'x\u00B2 + ' + quadB.toFixed(2) + 'x + ' + quadC.toFixed(2), r2: quadR2 } : null,
+                    expA ? { name: t('stem.dataplot.exponential', 'Exponential'), eq: 'y = ' + expA.toFixed(2) + 'e^(' + expB.toFixed(4) + 'x)', r2: expR2 } : null,
+                    logB ? { name: t('stem.dataplot.logarithmic', 'Logarithmic'), eq: 'y = ' + logA.toFixed(2) + ' + ' + logB.toFixed(2) + 'ln(x)', r2: logR2 } : null
                   ].filter(Boolean).sort(function(a, b) { return Math.abs(b.r2) - Math.abs(a.r2); }).map(function(reg) {
                     var best = reg.r2 === Math.max(r2, quadR2, expR2, logR2);
                     return h('div', { key: reg.name, className: 'flex items-center gap-2 p-2 rounded-lg ' + (best ? 'bg-emerald-50 border border-emerald-200' : 'bg-slate-50') },
-                      best && h('span', { className: 'text-[11px] font-bold text-emerald-600' }, '\u2B50 Best'),
+                      best && h('span', { className: 'text-[11px] font-bold text-emerald-600' }, t('stem.dataplot.best', '\u2B50 Best')),
                       h('span', { className: 'text-xs font-bold text-slate-700 w-20' }, reg.name),
                       h('span', { className: 'text-[11px] font-mono text-slate-600 flex-1' }, reg.eq),
                       h('span', { className: 'text-xs font-bold ' + (Math.abs(reg.r2) > 0.8 ? 'text-emerald-600' : 'text-yellow-600') }, 'R\u00B2=' + reg.r2.toFixed(4))
@@ -1291,12 +1292,12 @@ window.StemLab = window.StemLab || {
 
               // Five-number summary
               h('div', { className: 'bg-white rounded-xl p-3 border border-teal-200' },
-                h('div', { className: 'text-xs font-bold text-teal-700 uppercase mb-2' }, '\uD83D\uDCE6 Five-Number Summary (Y)'),
+                h('div', { className: 'text-xs font-bold text-teal-700 uppercase mb-2' }, t('stem.dataplot.five_number_summary_y', '\uD83D\uDCE6 Five-Number Summary (Y)')),
                 h('div', { className: 'flex gap-2 justify-around text-center' },
                   [
                     { label: 'Min', value: yMin_.toFixed(1) },
                     { label: 'Q1', value: q1.toFixed(1) },
-                    { label: 'Median', value: yMedian.toFixed(1) },
+                    { label: t('stem.dataplot.median', 'Median'), value: yMedian.toFixed(1) },
                     { label: 'Q3', value: q3.toFixed(1) },
                     { label: 'Max', value: yMax_.toFixed(1) }
                   ].map(function(s) {
@@ -1310,20 +1311,20 @@ window.StemLab = window.StemLab || {
 
               // Z-Score Calculator
               h('div', { className: 'bg-white rounded-xl p-3 border border-cyan-200' },
-                h('div', { className: 'text-xs font-bold text-cyan-700 uppercase mb-2' }, '\uD83D\uDCD0 Z-Score Calculator'),
+                h('div', { className: 'text-xs font-bold text-cyan-700 uppercase mb-2' }, t('stem.dataplot.z_score_calculator', '\uD83D\uDCD0 Z-Score Calculator')),
                 stdDev === 0
-                  ? h('div', { className: 'text-xs text-slate-600' }, 'Need variation in Y values')
+                  ? h('div', { className: 'text-xs text-slate-600' }, t('stem.dataplot.need_variation_in_y_values', 'Need variation in Y values'))
                   : h('div', { className: 'space-y-2' },
                     h('div', { className: 'flex gap-2 items-center' },
-                      h('span', { className: 'text-xs font-bold text-cyan-600' }, 'Y value:'),
-                      h('input', { type: 'number', step: '0.1', value: zScoreInput, onChange: function(e) { upd('zScoreInput', e.target.value); checkBadges({ zScoreUsed: true }); }, placeholder: meanY.toFixed(1), 'aria-label': 'Y value for z-score calculation', className: 'w-24 px-2 py-1.5 border-2 border-cyan-600 rounded-lg text-sm font-bold text-cyan-800 text-center focus:border-cyan-400' }),
+                      h('span', { className: 'text-xs font-bold text-cyan-600' }, t('stem.dataplot.y_value', 'Y value:')),
+                      h('input', { type: 'number', step: '0.1', value: zScoreInput, onChange: function(e) { upd('zScoreInput', e.target.value); checkBadges({ zScoreUsed: true }); }, placeholder: meanY.toFixed(1), 'aria-label': t('stem.dataplot.y_value_for_z_score_calculation', 'Y value for z-score calculation'), className: 'w-24 px-2 py-1.5 border-2 border-cyan-600 rounded-lg text-sm font-bold text-cyan-800 text-center focus:border-cyan-400' }),
                       zScoreInput !== '' && !isNaN(parseFloat(zScoreInput)) && (function() {
                         var zVal = (parseFloat(zScoreInput) - meanY) / stdDev;
                         var pct = zToPercentile(zVal);
                         return h('div', { className: 'flex gap-3 items-center' },
                           h('div', { className: 'px-3 py-1.5 rounded-lg text-sm font-bold text-center ' + (Math.abs(zVal) > 2 ? 'bg-red-50 text-red-700 border border-red-200' : Math.abs(zVal) > 1 ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200') }, 'z = ' + zVal.toFixed(3)),
                           h('div', { className: 'px-3 py-1.5 bg-cyan-50 border border-cyan-200 rounded-lg text-sm font-bold text-cyan-800' }, pct.toFixed(1) + 'th percentile'),
-                          Math.abs(zVal) > 2 && h('span', { className: 'text-[11px] text-red-500 font-bold' }, '\u26A0\uFE0F Unusual!')
+                          Math.abs(zVal) > 2 && h('span', { className: 'text-[11px] text-red-500 font-bold' }, t('stem.dataplot.unusual', '\u26A0\uFE0F Unusual!'))
                         );
                       })()
                     ),
@@ -1350,12 +1351,12 @@ window.StemLab = window.StemLab || {
 
               // Stem-and-Leaf Display
               h('div', null,
-                h('button', { 'aria-label': 'Stem', onClick: function() { upd('showStemLeaf', !showStemLeaf); }, className: 'text-[11px] font-bold ' + (showStemLeaf ? 'text-teal-600' : 'text-slate-600') + ' hover:text-teal-600' }, (showStemLeaf ? '\u25B2' : '\u25BC') + ' \uD83C\uDF3F Stem-and-Leaf Plot'),
+                h('button', { 'aria-label': t('stem.dataplot.stem', 'Stem'), onClick: function() { upd('showStemLeaf', !showStemLeaf); }, className: 'text-[11px] font-bold ' + (showStemLeaf ? 'text-teal-600' : 'text-slate-600') + ' hover:text-teal-600' }, (showStemLeaf ? '\u25B2' : '\u25BC') + ' \uD83C\uDF3F Stem-and-Leaf Plot'),
                 showStemLeaf && stemLeafData.length > 0 && h('div', { className: 'bg-white rounded-xl p-3 border border-teal-200 mt-1.5 font-mono text-sm' },
                   h('div', { className: 'flex gap-1 mb-2' },
-                    h('span', { className: 'text-[11px] font-bold text-teal-600 font-sans' }, 'Stem'),
+                    h('span', { className: 'text-[11px] font-bold text-teal-600 font-sans' }, t('stem.dataplot.stem_2', 'Stem')),
                     h('span', { className: 'text-[11px] text-slate-600 font-sans' }, '|'),
-                    h('span', { className: 'text-[11px] font-bold text-teal-600 font-sans' }, 'Leaf')
+                    h('span', { className: 'text-[11px] font-bold text-teal-600 font-sans' }, t('stem.dataplot.leaf', 'Leaf'))
                   ),
                   stemLeafData.map(function(row) {
                     return h('div', { key: row.stem, className: 'flex gap-1 items-center py-0.5' },
@@ -1364,7 +1365,7 @@ window.StemLab = window.StemLab || {
                       h('span', { className: 'text-slate-600 tracking-wider' }, row.leaves.join(' '))
                     );
                   }),
-                  h('div', { className: 'text-[11px] text-slate-600 font-sans mt-2' }, 'Key: stem|leaf = stem\u00D710 + leaf (e.g. 7|3 = 73)')
+                  h('div', { className: 'text-[11px] text-slate-600 font-sans mt-2' }, t('stem.dataplot.key_stem_leaf_stem_10_leaf_e_g_7_3_73', 'Key: stem|leaf = stem\u00D710 + leaf (e.g. 7|3 = 73)'))
                 )
               )
             )
@@ -1378,14 +1379,14 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex gap-2 flex-wrap items-center' },
             h('span', { className: 'text-[11px] font-bold text-slate-600' }, 'Type:'),
             [
-              { id: 'correlation', icon: '\uD83D\uDCC8', label: 'Correlation' },
-              { id: 'guessR2', icon: '\uD83C\uDFAF', label: 'Guess R\u00B2' },
-              { id: 'matchChart', icon: '\uD83D\uDCCA', label: 'Match Chart' },
-              { id: 'outlier', icon: '\uD83D\uDD0D', label: 'Find Outlier' }
+              { id: 'correlation', icon: '\uD83D\uDCC8', label: t('stem.dataplot.correlation', 'Correlation') },
+              { id: 'guessR2', icon: '\uD83C\uDFAF', label: t('stem.dataplot.guess_r', 'Guess R\u00B2') },
+              { id: 'matchChart', icon: '\uD83D\uDCCA', label: t('stem.dataplot.match_chart', 'Match Chart') },
+              { id: 'outlier', icon: '\uD83D\uDD0D', label: t('stem.dataplot.find_outlier', 'Find Outlier') }
             ].map(function(qt) {
               var active = quizType === qt.id;
               var used = !!quizTypesUsed[qt.id];
-              return h('button', { 'aria-label': 'Make Quiz', key: qt.id, onClick: function() { upd('quizType', qt.id); },
+              return h('button', { 'aria-label': t('stem.dataplot.make_quiz', 'Make Quiz'), key: qt.id, onClick: function() { upd('quizType', qt.id); },
                 className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ' + (active ? 'bg-teal-700 text-white shadow' : 'bg-white text-teal-700 border border-teal-600 hover:bg-teal-50') + (used ? '' : '')
               }, qt.icon + ' ' + qt.label + (used ? ' \u2713' : ''));
             }),
@@ -1393,7 +1394,7 @@ window.StemLab = window.StemLab || {
             dpStreak > 1 && h('span', { className: 'text-xs font-bold text-orange-500' }, '\uD83D\uDD25 ' + dpStreak)
           ),
 
-          h('button', { 'aria-label': 'Make Quiz', onClick: makeQuiz, className: 'px-4 py-2 rounded-lg text-sm font-bold ' + (dpQuiz ? 'bg-teal-100 text-teal-700' : 'bg-teal-700 text-white') + ' hover:opacity-90 transition-all' },
+          h('button', { 'aria-label': t('stem.dataplot.make_quiz_2', 'Make Quiz'), onClick: makeQuiz, className: 'px-4 py-2 rounded-lg text-sm font-bold ' + (dpQuiz ? 'bg-teal-100 text-teal-700' : 'bg-teal-700 text-white') + ' hover:opacity-90 transition-all' },
             dpQuiz ? '\uD83D\uDD04 New Question' : '\uD83C\uDFAF Start Quiz'
           ),
 
@@ -1430,10 +1431,10 @@ window.StemLab = window.StemLab || {
               var ansText = dpQuiz.type === 'outlier' ? 'Point #' + (dpQuiz.answer + 1) : dpQuiz.answer;
               return isRight ? '\u2705 Correct! ' + ansText : '\u274C Answer: ' + ansText;
             })(),
-            h('button', { 'aria-label': 'Next', onClick: makeQuiz, className: 'ml-3 text-xs font-bold underline' }, '\u27A1 Next')
+            h('button', { 'aria-label': t('stem.dataplot.next', 'Next'), onClick: makeQuiz, className: 'ml-3 text-xs font-bold underline' }, t('stem.dataplot.next_2', '\u27A1 Next'))
           ),
 
-          !dpQuiz && h('div', { className: 'text-center text-sm text-slate-600 py-4' }, 'Select a quiz type and click "Start Quiz"!')
+          !dpQuiz && h('div', { className: 'text-center text-sm text-slate-600 py-4' }, t('stem.dataplot.select_a_quiz_type_and_click_start_qui', 'Select a quiz type and click "Start Quiz"!'))
         ),
 
         // ══════════════════════════════════════════════════════════
@@ -1443,15 +1444,15 @@ window.StemLab = window.StemLab || {
 
           // ── Prediction tool (with interpolation/extrapolation) ──
           h('div', { className: 'bg-white rounded-xl p-4 border border-indigo-200' },
-            h('div', { className: 'text-xs font-bold text-indigo-700 uppercase mb-2' }, '\uD83D\uDD2E Prediction Tool'),
+            h('div', { className: 'text-xs font-bold text-indigo-700 uppercase mb-2' }, t('stem.dataplot.prediction_tool', '\uD83D\uDD2E Prediction Tool')),
             n < 2
-              ? h('div', { className: 'text-xs text-slate-600' }, 'Need 2+ points to predict')
+              ? h('div', { className: 'text-xs text-slate-600' }, t('stem.dataplot.need_2_points_to_predict', 'Need 2+ points to predict'))
               : h('div', null,
                   h('div', { className: 'text-[11px] text-slate-600 mb-2' }, 'Using ' + regressionType + ': ' + regEq),
                   h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                    h('span', { className: 'text-xs font-bold text-indigo-600' }, 'If X ='),
-                    h('input', { type: 'number', step: '0.1', value: predX, onChange: function(e) { upd('predX', e.target.value); checkBadges({ predicted: true }); }, 'aria-label': 'X value for prediction', className: 'w-24 px-2 py-1.5 border-2 border-indigo-600 rounded-lg text-sm font-bold text-indigo-800 text-center focus:border-indigo-400', placeholder: '?' }),
-                    h('span', { className: 'text-xs font-bold text-indigo-600' }, 'then Y \u2248'),
+                    h('span', { className: 'text-xs font-bold text-indigo-600' }, t('stem.dataplot.if_x', 'If X =')),
+                    h('input', { type: 'number', step: '0.1', value: predX, onChange: function(e) { upd('predX', e.target.value); checkBadges({ predicted: true }); }, 'aria-label': t('stem.dataplot.x_value_for_prediction', 'X value for prediction'), className: 'w-24 px-2 py-1.5 border-2 border-indigo-600 rounded-lg text-sm font-bold text-indigo-800 text-center focus:border-indigo-400', placeholder: '?' }),
+                    h('span', { className: 'text-xs font-bold text-indigo-600' }, t('stem.dataplot.then_y', 'then Y \u2248')),
                     h('div', { className: 'px-3 py-1.5 border rounded-lg text-sm font-bold text-center min-w-[60px] ' + (predIsExtrapolation ? 'bg-red-50 border-red-200 text-red-700' : 'bg-indigo-50 border-indigo-200 text-indigo-800') }, predResult || '?'),
                     predX !== '' && predResult && h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full ' + (predIsExtrapolation ? 'bg-red-100 text-red-600' : 'bg-emerald-100 text-emerald-600') },
                       predIsExtrapolation ? '\u26A0\uFE0F Extrapolation (outside data range!)' : '\u2705 Interpolation (within data range)')
@@ -1462,7 +1463,7 @@ window.StemLab = window.StemLab || {
           // ── AI Data Analyst ──
           callGemini && h('div', { className: 'bg-pink-50 rounded-xl p-4 border border-pink-200' },
             h('div', { className: 'flex items-center gap-2 mb-2' },
-              h('span', { className: 'text-xs font-bold text-pink-600 uppercase' }, '\uD83E\uDD16 AI Data Analyst'),
+              h('span', { className: 'text-xs font-bold text-pink-600 uppercase' }, t('stem.dataplot.ai_data_analyst', '\uD83E\uDD16 AI Data Analyst')),
               h('button', { onClick: askAI, disabled: aiLoading || n < 2, className: 'ml-auto px-3 py-1 text-[11px] font-bold rounded-full transition-all ' + (aiLoading ? 'bg-pink-200 text-pink-400 cursor-wait' : 'bg-pink-700 text-white hover:bg-pink-600') },
                 aiLoading ? '\u23F3 Analyzing...' : '\u2728 Analyze Data')
             ),
@@ -1473,32 +1474,32 @@ window.StemLab = window.StemLab || {
 
           // ── Data Transformations ──
           h('div', { className: 'bg-white rounded-xl p-4 border border-amber-200' },
-            h('div', { className: 'text-xs font-bold text-amber-700 uppercase mb-2' }, '\uD83D\uDD04 Data Transformations'),
+            h('div', { className: 'text-xs font-bold text-amber-700 uppercase mb-2' }, t('stem.dataplot.data_transformations', '\uD83D\uDD04 Data Transformations')),
             points.length === 0
-              ? h('div', { className: 'text-xs text-slate-600' }, 'Add data points first')
+              ? h('div', { className: 'text-xs text-slate-600' }, t('stem.dataplot.add_data_points_first', 'Add data points first'))
               : h('div', { className: 'space-y-2' },
                 h('div', { className: 'flex gap-1.5 flex-wrap' },
                   [
-                    { id: 'normalize', icon: '\uD83D\uDCCF', label: 'Normalize (0\u2013100)', desc: 'Scale Y to 0\u2013100' },
-                    { id: 'standardize', icon: '\uD83D\uDCC0', label: 'Standardize (Z)', desc: 'Z-score transform Y' },
-                    { id: 'log', icon: '\uD83D\uDCC9', label: 'Log Transform', desc: 'ln(Y) for positive values' },
-                    { id: 'noise', icon: '\uD83C\uDF2A\uFE0F', label: 'Add Noise', desc: 'Random noise \u00B120% stdDev' },
-                    { id: 'sort', icon: '\uD83D\uDD22', label: 'Sort by X', desc: 'Sort points by X value' },
-                    { id: 'flipXY', icon: '\uD83D\uDD00', label: 'Flip X\u2194Y', desc: 'Swap X and Y values' }
+                    { id: 'normalize', icon: '\uD83D\uDCCF', label: t('stem.dataplot.normalize_0_100', 'Normalize (0\u2013100)'), desc: t('stem.dataplot.scale_y_to_0_100', 'Scale Y to 0\u2013100') },
+                    { id: 'standardize', icon: '\uD83D\uDCC0', label: t('stem.dataplot.standardize_z', 'Standardize (Z)'), desc: t('stem.dataplot.z_score_transform_y', 'Z-score transform Y') },
+                    { id: 'log', icon: '\uD83D\uDCC9', label: t('stem.dataplot.log_transform', 'Log Transform'), desc: t('stem.dataplot.ln_y_for_positive_values', 'ln(Y) for positive values') },
+                    { id: 'noise', icon: '\uD83C\uDF2A\uFE0F', label: t('stem.dataplot.add_noise', 'Add Noise'), desc: t('stem.dataplot.random_noise_20_stddev', 'Random noise \u00B120% stdDev') },
+                    { id: 'sort', icon: '\uD83D\uDD22', label: t('stem.dataplot.sort_by_x', 'Sort by X'), desc: t('stem.dataplot.sort_points_by_x_value', 'Sort points by X value') },
+                    { id: 'flipXY', icon: '\uD83D\uDD00', label: t('stem.dataplot.flip_x_y', 'Flip X\u2194Y'), desc: t('stem.dataplot.swap_x_and_y_values', 'Swap X and Y values') }
                   ].map(function(tr) {
-                    return h('button', { 'aria-label': 'Transform Data', key: tr.id, onClick: function() { transformData(tr.id); }, title: tr.desc,
+                    return h('button', { 'aria-label': t('stem.dataplot.transform_data', 'Transform Data'), key: tr.id, onClick: function() { transformData(tr.id); }, title: tr.desc,
                       className: 'px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-600 hover:bg-amber-100 transition-all'
                     }, tr.icon + ' ' + tr.label);
                   })
                 ),
-                h('div', { className: 'text-[11px] text-amber-500' }, '\uD83D\uDCA1 Transformations modify data in-place. Use Undo (\u21A9) to revert.')
+                h('div', { className: 'text-[11px] text-amber-500' }, t('stem.dataplot.transformations_modify_data_in_place_u', '\uD83D\uDCA1 Transformations modify data in-place. Use Undo (\u21A9) to revert.'))
               )
           ),
 
           // ── Random Data Generator ──
           h('div', { className: 'bg-white rounded-xl p-4 border border-violet-200' },
-            h('div', { className: 'text-xs font-bold text-violet-700 uppercase mb-2' }, '\uD83C\uDFB2 Random Data Generator'),
-            h('div', { className: 'text-[11px] text-violet-500 mb-2' }, 'Generate 20 points with a target correlation strength:'),
+            h('div', { className: 'text-xs font-bold text-violet-700 uppercase mb-2' }, t('stem.dataplot.random_data_generator', '\uD83C\uDFB2 Random Data Generator')),
+            h('div', { className: 'text-[11px] text-violet-500 mb-2' }, t('stem.dataplot.generate_20_points_with_a_target_corre', 'Generate 20 points with a target correlation strength:')),
             h('div', { className: 'flex gap-1.5 flex-wrap' },
               [
                 { r: 0.95, label: 'r\u22480.95', color: 'emerald' },
@@ -1517,22 +1518,22 @@ window.StemLab = window.StemLab || {
 
           // ── Step-Through Mode ──
           h('div', { className: 'bg-white rounded-xl p-4 border border-violet-200' },
-            h('div', { className: 'text-xs font-bold text-violet-700 uppercase mb-2' }, '\uD83D\uDC63 Step-Through Mode'),
-            h('div', { className: 'text-[11px] text-violet-500 mb-2' }, 'Watch how statistics change as each point is revealed one-by-one.'),
+            h('div', { className: 'text-xs font-bold text-violet-700 uppercase mb-2' }, t('stem.dataplot.step_through_mode', '\uD83D\uDC63 Step-Through Mode')),
+            h('div', { className: 'text-[11px] text-violet-500 mb-2' }, t('stem.dataplot.watch_how_statistics_change_as_each_po', 'Watch how statistics change as each point is revealed one-by-one.')),
             !stepMode
               ? h('button', { onClick: startStepThrough, disabled: points.length < 2, className: 'px-4 py-2 bg-violet-600 text-white font-bold rounded-lg text-sm hover:bg-violet-700 disabled:opacity-40' }, '\u25B6 Start Step-Through (' + points.length + ' points)')
               : h('div', { className: 'flex items-center gap-3' },
                 h('span', { className: 'text-sm font-bold text-violet-700' }, stepIdx + ' / ' + points.length + ' revealed'),
                 h('button', { onClick: stepNext, className: 'px-3 py-1 bg-violet-600 text-white font-bold rounded-lg text-xs' }, stepIdx >= points.length ? '\u2705 Done' : '\u27A1 Next'),
-                h('button', { 'aria-label': 'Stop', onClick: stopStep, className: 'px-3 py-1 bg-white text-violet-600 font-bold rounded-lg text-xs border border-violet-600' }, 'Stop')
+                h('button', { 'aria-label': t('stem.dataplot.stop_3', 'Stop'), onClick: stopStep, className: 'px-3 py-1 bg-white text-violet-600 font-bold rounded-lg text-xs border border-violet-600' }, t('stem.dataplot.stop_4', 'Stop'))
               )
           ),
 
           // ── CSV Import ──
           h('div', { className: 'bg-white rounded-xl p-4 border border-slate-400' },
-            h('div', { className: 'text-xs font-bold text-slate-700 uppercase mb-2' }, '\uD83D\uDCCB Import Data (CSV)'),
-            h('textarea', { id: 'dp-import-csv', placeholder: 'Paste CSV data:\nx,y\n1,5\n2,8\n3,12', className: 'w-full h-20 px-3 py-2 text-xs font-mono border border-slate-400 rounded-lg outline-none focus:ring-1 focus:ring-teal-400 resize-none', rows: 4 }),
-            h('button', { 'aria-label': 'Import', onClick: function() {
+            h('div', { className: 'text-xs font-bold text-slate-700 uppercase mb-2' }, t('stem.dataplot.import_data_csv', '\uD83D\uDCCB Import Data (CSV)')),
+            h('textarea', { id: 'dp-import-csv', placeholder: t('stem.dataplot.paste_csv_data_x_y_1_5_2_8_3_12', 'Paste CSV data:\nx,y\n1,5\n2,8\n3,12'), className: 'w-full h-20 px-3 py-2 text-xs font-mono border border-slate-400 rounded-lg outline-none focus:ring-1 focus:ring-teal-400 resize-none', rows: 4 }),
+            h('button', { 'aria-label': t('stem.dataplot.import', 'Import'), onClick: function() {
               var el = document.getElementById('dp-import-csv');
               if (!el || !el.value.trim()) return;
               var lines = el.value.trim().split('\n');
@@ -1549,7 +1550,7 @@ window.StemLab = window.StemLab || {
               } else {
                 if (addToast) addToast('\u26A0\uFE0F No valid data found. Format: x,y per line', 'error');
               }
-            }, className: 'mt-2 px-4 py-1.5 bg-teal-700 text-white font-bold rounded-lg text-sm hover:bg-teal-800' }, '\u21E9 Import')
+            }, className: 'mt-2 px-4 py-1.5 bg-teal-700 text-white font-bold rounded-lg text-sm hover:bg-teal-800' }, t('stem.dataplot.import_2', '\u21E9 Import'))
           )
         ),
 
@@ -1591,14 +1592,14 @@ window.StemLab = window.StemLab || {
           var diff = Math.abs(observedR - iq.trueR);
           var state = diff < 0.05 ? 'agree' : diff < 0.15 ? 'noisy' : diff < 0.30 ? 'masked' : 'misleading';
           var sm = ({
-            agree: { label: 'Sample reflects truth', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Observed r matches the true population r within 0.05.' },
-            noisy: { label: 'Noisy estimate', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Observed r is off by 0.05-0.15. Expected for small n or moderate noise.' },
-            masked: { label: 'Truth obscured', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'Observed r differs by 0.15-0.30. A real effect can look weak (or vice versa).' },
-            misleading: { label: 'Misleading sample', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Observed r is wildly off (>0.30). Outliers or tiny n can completely flip apparent direction.' }
+            agree: { label: t('stem.dataplot.sample_reflects_truth', 'Sample reflects truth'), color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: t('stem.dataplot.observed_r_matches_the_true_population', 'Observed r matches the true population r within 0.05.') },
+            noisy: { label: t('stem.dataplot.noisy_estimate', 'Noisy estimate'), color: '#facc15', bg: '#2a2410', border: '#eab308', desc: t('stem.dataplot.observed_r_is_off_by_0_05_0_15_expecte', 'Observed r is off by 0.05-0.15. Expected for small n or moderate noise.') },
+            masked: { label: t('stem.dataplot.truth_obscured', 'Truth obscured'), color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: t('stem.dataplot.observed_r_differs_by_0_15_0_30_a_real', 'Observed r differs by 0.15-0.30. A real effect can look weak (or vice versa).') },
+            misleading: { label: t('stem.dataplot.misleading_sample', 'Misleading sample'), color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: t('stem.dataplot.observed_r_is_wildly_off_0_30_outliers', 'Observed r is wildly off (>0.30). Outliers or tiny n can completely flip apparent direction.') }
           })[state];
           return h('div', { className: 'p-3 rounded-xl', style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
-            h('h4', { className: 'text-xs font-black uppercase tracking-wider mb-1', style: { color: sm.color } }, '\uD83D\uDD2C Correlation Inquiry - When Samples Mislead'),
-            h('p', { className: 'text-[10px] opacity-85 mb-2 leading-snug' }, 'Set true population r, sample size, noise, outliers. Predict how far observed r drifts. No score, no reveal.'),
+            h('h4', { className: 'text-xs font-black uppercase tracking-wider mb-1', style: { color: sm.color } }, t('stem.dataplot.correlation_inquiry_when_samples_misle', '\uD83D\uDD2C Correlation Inquiry - When Samples Mislead')),
+            h('p', { className: 'text-[10px] opacity-85 mb-2 leading-snug' }, t('stem.dataplot.set_true_population_r_sample_size_nois', 'Set true population r, sample size, noise, outliers. Predict how far observed r drifts. No score, no reveal.')),
             h('div', { className: 'inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2', style: { background: sm.color, color: '#000' } }, sm.label + ' \u00B7 true r=' + iq.trueR.toFixed(2) + ', observed r=' + observedR.toFixed(2)),
             h('p', { className: 'text-[10px] opacity-80 mb-2' }, sm.desc),
             h('svg', { width: '100%', height: 200, viewBox: '0 0 320 200', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
@@ -1615,19 +1616,19 @@ window.StemLab = window.StemLab || {
             ),
             h('div', { className: 'grid grid-cols-2 gap-2 mb-2' },
               h('label', { className: 'text-[10px]' },
-                h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, 'True population r'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.trueR.toFixed(2))),
+                h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, t('stem.dataplot.true_population_r', 'True population r')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.trueR.toFixed(2))),
                 h('input', { type: 'range', min: -1, max: 1, step: 0.05, value: iq.trueR, onChange: function(e) { setKey('trueR', parseFloat(e.target.value)); }, className: 'w-full' })
               ),
               h('label', { className: 'text-[10px]' },
-                h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, 'Sample size n'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.n)),
+                h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, t('stem.dataplot.sample_size_n', 'Sample size n')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.n)),
                 h('input', { type: 'range', min: 5, max: 200, step: 1, value: iq.n, onChange: function(e) { setKey('n', parseInt(e.target.value, 10)); }, className: 'w-full' })
               ),
               h('label', { className: 'text-[10px]' },
-                h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, 'Noise SD'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.noiseSD.toFixed(1))),
+                h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, t('stem.dataplot.noise_sd', 'Noise SD')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.noiseSD.toFixed(1))),
                 h('input', { type: 'range', min: 0, max: 3, step: 0.1, value: iq.noiseSD, onChange: function(e) { setKey('noiseSD', parseFloat(e.target.value)); }, className: 'w-full' })
               ),
               h('label', { className: 'text-[10px]' },
-                h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, 'Outliers'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.outlierCount)),
+                h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, t('stem.dataplot.outliers_2', 'Outliers')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.outlierCount)),
                 h('input', { type: 'range', min: 0, max: 10, step: 1, value: iq.outlierCount, onChange: function(e) { setKey('outlierCount', parseInt(e.target.value, 10)); }, className: 'w-full' })
               )
             ),
@@ -1635,30 +1636,30 @@ window.StemLab = window.StemLab || {
               h('button', { onClick: function() {
                 var t = new Date().toISOString().slice(11, 19);
                 setIQ({ log: iq.log.concat([{ t: t, tr: iq.trueR.toFixed(2), n: iq.n, sd: iq.noiseSD.toFixed(1), out: iq.outlierCount, obs: observedR.toFixed(2), state: sm.label }]) });
-              }, className: 'flex-1 px-2 py-1 rounded text-[10px] font-bold', style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, '\uD83D\uDCCB Log this draw'),
-              h('button', { onClick: function() { setIQ({ trueR: 0.7, n: 30, noiseSD: 1.0, outlierCount: 0 }); }, className: 'px-2 py-1 rounded text-[10px]', style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, 'Reset')
+              }, className: 'flex-1 px-2 py-1 rounded text-[10px] font-bold', style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, t('stem.dataplot.log_this_draw', '\uD83D\uDCCB Log this draw')),
+              h('button', { onClick: function() { setIQ({ trueR: 0.7, n: 30, noiseSD: 1.0, outlierCount: 0 }); }, className: 'px-2 py-1 rounded text-[10px]', style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, t('stem.dataplot.reset', 'Reset'))
             ),
             iq.log.length > 0 && h('div', { className: 'p-1.5 rounded text-[9px] font-mono mb-2', style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
               iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' \u00B7 tr' + e.tr + ' n' + e.n + ' sd' + e.sd + ' out' + e.out + ' \u2192 obs ' + e.obs); })
             ),
-            h('label', { className: 'block text-[10px] font-bold opacity-85 mb-1' }, 'Your hypothesis (which single change most distorts the observed r?)'),
-            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., 2 outliers at n=20 do more damage than 10 outliers at n=200...', className: 'w-full p-1.5 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded text-[10px] font-bold mb-2', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, "\uD83E\uDD14 I'm stuck - show open questions"),
+            h('label', { className: 'block text-[10px] font-bold opacity-85 mb-1' }, t('stem.dataplot.your_hypothesis_which_single_change_mo', 'Your hypothesis (which single change most distorts the observed r?)')),
+            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: t('stem.dataplot.e_g_2_outliers_at_n_20_do_more_damage_', 'e.g., 2 outliers at n=20 do more damage than 10 outliers at n=200...'), className: 'w-full p-1.5 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded text-[10px] font-bold mb-2', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, t('stem.dataplot.i_m_stuck_show_open_questions', "\uD83E\uDD14 I'm stuck - show open questions")),
             iq.stuckRevealed && h('div', { className: 'p-2 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
-              h('div', { className: 'font-bold mb-1', style: { color: sm.color } }, 'Open questions (no answer key)'),
+              h('div', { className: 'font-bold mb-1', style: { color: sm.color } }, t('stem.dataplot.open_questions_no_answer_key', 'Open questions (no answer key)')),
               h('ul', { className: 'pl-4 m-0' },
-                h('li', null, 'Can outliers FLIP the sign of r? Try true r=+0.7 with 3 outliers.'),
-                h('li', null, 'How does increasing n reduce the noisy-estimate state?'),
-                h('li', null, 'When does noise SD swamp the true signal entirely - what does r look like then?'),
-                h('li', null, 'Why is r alone never enough to publish? What else should accompany it (CI, scatter, robustness check)?')
+                h('li', null, t('stem.dataplot.can_outliers_flip_the_sign_of_r_try_tr', 'Can outliers FLIP the sign of r? Try true r=+0.7 with 3 outliers.')),
+                h('li', null, t('stem.dataplot.how_does_increasing_n_reduce_the_noisy', 'How does increasing n reduce the noisy-estimate state?')),
+                h('li', null, t('stem.dataplot.when_does_noise_sd_swamp_the_true_sign', 'When does noise SD swamp the true signal entirely - what does r look like then?')),
+                h('li', null, t('stem.dataplot.why_is_r_alone_never_enough_to_publish', 'Why is r alone never enough to publish? What else should accompany it (CI, scatter, robustness check)?'))
               )
             ),
             h('label', { className: 'flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1' },
               h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
-              h('span', null, 'I can explain why this combination of n, noise, and outliers produces this divergence.')
+              h('span', null, t('stem.dataplot.i_can_explain_why_this_combination_of_', 'I can explain why this combination of n, noise, and outliers produces this divergence.'))
             ),
-            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', className: 'w-full p-1.5 rounded text-[10px] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-            h('p', { className: 'm-0 text-[9px] italic opacity-60' }, 'Inquiry widget - no score, no reveal, no answer dump. Synthetic data uses a deterministic seed from sliders, so the same slider position always reproduces the same draw. Real studies see one draw and have to reason about uncertainty.')
+            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: t('stem.dataplot.explain_in_your_own_words', 'Explain in your own words...'), className: 'w-full p-1.5 rounded text-[10px] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+            h('p', { className: 'm-0 text-[9px] italic opacity-60' }, t('stem.dataplot.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget - no score, no reveal, no answer dump. Synthetic data uses a deterministic seed from sliders, so the same slider position always reproduces the same draw. Real studies see one draw and have to reason about uncertainty.'))
           );
         })()
       );
