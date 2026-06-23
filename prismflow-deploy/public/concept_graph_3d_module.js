@@ -269,18 +269,27 @@
     return p.then(function () { return !!(THREE.UnrealBloomPass && THREE.EffectComposer && THREE.RenderPass); }).catch(function () { return false; });
   }
 
+  function _roundRect(ctx, x, y, w, h, r) {
+    if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.fill(); return; }
+    ctx.beginPath();
+    ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); ctx.fill();
+  }
   function makeLabelSprite(THREE, text, hex) {
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
-    var font = 26, pad = 10;
+    var font = 26, padX = 14, padY = 9;
     ctx.font = '600 ' + font + 'px sans-serif';
     var tw = Math.ceil(ctx.measureText(text || '').width);
-    canvas.width = Math.max(2, tw + pad * 2); canvas.height = font + pad * 2;
+    canvas.width = Math.max(2, tw + padX * 2); canvas.height = font + padY * 2;
     ctx.font = '600 ' + font + 'px sans-serif';
-    ctx.fillStyle = 'rgba(15,23,42,0.88)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#3b4252'; ctx.fillRect(0, canvas.height - 4, canvas.width, 4);  // accent underline slot
-    ctx.fillStyle = hex || '#ffffff'; ctx.fillRect(0, canvas.height - 4, canvas.width, 4);
-    ctx.fillStyle = '#ffffff'; ctx.textBaseline = 'middle'; ctx.fillText(text || '', pad, canvas.height / 2 - 2);
+    var rad = canvas.height / 2;
+    ctx.fillStyle = 'rgba(8,12,26,0.86)'; _roundRect(ctx, 0, 0, canvas.width, canvas.height, rad);   // rounded pill
+    ctx.strokeStyle = hex || 'rgba(148,163,184,0.6)'; ctx.lineWidth = 2.5;                            // strand-coloured border
+    ctx.beginPath();
+    if (ctx.roundRect) { ctx.roundRect(1.25, 1.25, canvas.width - 2.5, canvas.height - 2.5, rad - 1); } else { ctx.arc(canvas.width / 2, canvas.height / 2, rad - 2, 0, Math.PI * 2); }
+    ctx.stroke();
+    ctx.fillStyle = '#ffffff'; ctx.textBaseline = 'middle'; ctx.fillText(text || '', padX, canvas.height / 2 + 1);
     var tex = new THREE.CanvasTexture(canvas);
     if (THREE.sRGBEncoding) tex.encoding = THREE.sRGBEncoding;
     var sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
@@ -317,6 +326,12 @@
     holder.appendChild(renderer.domElement);
     state.renderer = renderer;
 
+    // cinematic vignette (pure DOM, can't break GL) — darkens corners to frame the scene
+    var vignette = document.createElement('div');
+    vignette.setAttribute('aria-hidden', 'true');
+    vignette.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:1;background:radial-gradient(ellipse at center, rgba(0,0,0,0) 56%, rgba(2,6,23,0.5) 100%);';
+    holder.appendChild(vignette);
+
     var root = new THREE.Scene();
     root.background = new THREE.Color(BG);
     var camera = new THREE.PerspectiveCamera(55, w / hgt, 0.1, 200000);
@@ -344,12 +359,21 @@
     var spanX = Math.max(1, scene.bounds.max.x - scene.bounds.min.x);
     var spanY = Math.max(1, scene.bounds.max.y - scene.bounds.min.y);
     var planeW = spanX * 1.3 + 240, planeH = spanY * 1.3 + 240;
+    // soft radial-fade texture so depth planes read as glowing discs, not hard rectangles
+    var planeTex = (function () {
+      try {
+        var c = document.createElement('canvas'); c.width = c.height = 256; var g = c.getContext('2d');
+        var grd = g.createRadialGradient(128, 128, 0, 128, 128, 128);
+        grd.addColorStop(0, 'rgba(255,255,255,0.9)'); grd.addColorStop(0.7, 'rgba(255,255,255,0.22)'); grd.addColorStop(1, 'rgba(255,255,255,0)');
+        g.fillStyle = grd; g.fillRect(0, 0, 256, 256); return new THREE.CanvasTexture(c);
+      } catch (e) { return null; }
+    })();
     (scene.lanePlanes || []).forEach(function (lp) {
       var mesh = new THREE.Mesh(new THREE.PlaneGeometry(planeW, planeH),
-        new THREE.MeshBasicMaterial({ color: new THREE.Color(lp.color), transparent: true, opacity: 0.07, side: THREE.DoubleSide }));
+        new THREE.MeshBasicMaterial({ color: new THREE.Color(lp.color), map: planeTex || undefined, transparent: true, opacity: planeTex ? 0.11 : 0.07, side: THREE.DoubleSide, depthWrite: false }));
       mesh.position.set(0, 0, lp.z);   // depth plane at constant z
       group.add(mesh);
-      if (lp.label) { var tag = makeLabelSprite(THREE, lp.label, lp.color); tag.position.set(-planeW / 2 + 60, planeH / 2 - 40, lp.z); group.add(tag); }
+      if (lp.label) { var tag = makeLabelSprite(THREE, lp.label, lp.color); tag.position.set(-planeW / 2 + 80, planeH / 2 - 40, lp.z); group.add(tag); }
     });
 
     var nodeMeshes = [], nodeById3d = {};
@@ -366,6 +390,19 @@
       var ref = { node: n, sphere: sphere, glow: glow, label: label, baseGlow: rad * 6, baseEmissive: 0.7 };
       nodeMeshes.push(ref); nodeById3d[n.id] = ref;
     });
+
+    // Visible focus/selection ring (WCAG 2.4.7 focus-visible for keyboard nav) — a
+    // billboarded additive ring shown on the selected node; gently rotates (motion-safe).
+    var focusRing = (function () {
+      try {
+        var c = document.createElement('canvas'); c.width = c.height = 128; var g = c.getContext('2d');
+        g.strokeStyle = '#ffffff'; g.lineWidth = 9; g.beginPath(); g.arc(64, 64, 52, 0.15, Math.PI * 0.85); g.stroke();
+        g.beginPath(); g.arc(64, 64, 52, Math.PI * 1.15, Math.PI * 1.85); g.stroke();   // two arcs = a "targeting" reticle
+        var tex = new THREE.CanvasTexture(c);
+        var sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, color: 0xffffff, transparent: true, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending }));
+        sp.visible = false; group.add(sp); return sp;
+      } catch (e) { return null; }
+    })();
 
     var nodeColorById = {}; scene.nodes.forEach(function (n) { nodeColorById[n.id] = n.color; });
     var flowMats = [], edgeObjs = [];
@@ -439,7 +476,9 @@
       var hits = raycaster.intersectObjects(spheres, false);
       return hits.length ? hits[0].object.userData.nodeId : null;
     }
+    var highlightActive = false;   // true while a hover/selection/chain keep-set is applied
     function setKeep(keep, hotId) {   // keep: map of kept ids (null = keep all)
+      highlightActive = !!keep;
       nodeMeshes.forEach(function (m) {
         var on = !keep || keep[m.node.id], isHot = hotId && m.node.id === hotId;
         m.sphere.material.opacity = on ? 1 : 0.16;
@@ -485,6 +524,15 @@
     function selectNode(id) {
       selectedId = id || null;
       applyHighlight(hoveredId || selectedId);
+      if (focusRing) {
+        if (selectedId && nodeById3d[selectedId]) {
+          var fn = nodeById3d[selectedId].node;
+          focusRing.position.set(fn.sx, fn.sy, fn.sz);
+          var fr = 9 * (fn.size || 1) * 3.2; focusRing.scale.set(fr, fr, 1);
+          try { focusRing.material.color.set(fn.color); } catch (e) {}
+          focusRing.visible = true;
+        } else { focusRing.visible = false; }
+      }
       if (!selectedId || !nodeById3d[selectedId]) { panel.style.display = 'none'; return; }
       var n = nodeById3d[selectedId].node;
       panel.innerHTML = '';
@@ -653,6 +701,7 @@
       try { if (resetBtn.parentNode) resetBtn.parentNode.removeChild(resetBtn); } catch (e) {}
       try { if (instr.parentNode) instr.parentNode.removeChild(instr); } catch (e) {}
       try { if (live.parentNode) live.parentNode.removeChild(live); } catch (e) {}
+      try { if (vignette.parentNode) vignette.parentNode.removeChild(vignette); } catch (e) {}
       try { if (composer && composer.dispose) composer.dispose(); } catch (e) {}
     });
 
@@ -664,9 +713,18 @@
       radius += (tRadius - radius) * 0.08;
       target.lerp(tTarget, 0.1);                 // ease the focus point (click-to-focus)
       applyCamera();
+      // declutter: fade labels by camera distance when nothing is hover/selected
+      if (!highlightActive) {
+        var fadeDen = scene.bounds.radius * 3.2 + 1;
+        for (var di = 0; di < nodeMeshes.length; di++) {
+          var lm = nodeMeshes[di]; var dd = camera.position.distanceTo(lm.sphere.position);
+          lm.label.material.opacity = Math.max(0.18, Math.min(1, 1.25 - dd / fadeDen));
+        }
+      }
       if (!reduce) {
         for (var fi = 0; fi < flowMats.length; fi++) { flowMats[fi].dashOffset = (flowMats[fi].dashOffset || 0) - 0.4; }   // teaching-order flow
         if (stars) stars.rotation.y += 0.0003;
+        if (focusRing && focusRing.visible) focusRing.material.rotation += 0.02;   // gentle reticle spin
       }
       if (composer) composer.render(); else renderer.render(root, camera);
       if (gizmoScene) {
