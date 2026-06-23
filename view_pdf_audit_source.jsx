@@ -1938,6 +1938,22 @@ function PdfAuditView(props) {
   const [_appliedPalette, setAppliedPalette] = useState(null);  // { id, name, worst, allPass }
   const [_paletteBusy, setPaletteBusy] = useState(false);
   const [_paletteIntent, setPaletteIntent] = useState('');      // slice-3: AI palette intent (mood/brand text)
+  // Freehand region-select (S1, 2026-06-23): arm a drag-to-select-a-region mode over the preview, then scope
+  // an AI edit to just that block. The marquee lives INSIDE the iframe (all geometry in iframe space); the
+  // box is handed to _regionHandlerRef.current so the iframe's once-bound listener always calls the latest
+  // handler (never a stale closure). The selected region opens in the editor keyed off '__region__'.
+  const [_regionArmed, setRegionArmed] = useState(false);
+  const _regionHandlerRef = useRef(null);
+  // Mirror the armed flag into the live preview window (the in-iframe marquee listener reads it) and show a
+  // crosshair so it's obvious the next drag selects a region. Disarming clears both.
+  useEffect(() => {
+    try {
+      const cw = pdfPreviewRef.current && pdfPreviewRef.current.contentWindow;
+      const doc = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
+      if (cw) cw.__alloflowRegionArmed = !!_regionArmed;
+      if (doc && doc.body) doc.body.style.cursor = _regionArmed ? 'crosshair' : '';
+    } catch (_) {}
+  }, [_regionArmed]);
   const runVeraPdfValidation = (bytes) => new Promise((resolve, reject) => {
     let win = null;
     try { win = window.open(VERAPDF_VALIDATOR_URL, 'alloflow-verapdf', 'width=480,height=380'); } catch (e) {}
@@ -2863,6 +2879,45 @@ function PdfAuditView(props) {
     return { ok: true, html: html.slice(0, idx) + draft + html.slice(idx + original.length) };
   };
 
+  // S1 region-select hit-test (2026-06-23). The deterministic core behind freehand drag-to-select-a-region:
+  // given a preview document and a drag box {left,top,right,bottom} in getBoundingClientRect() coordinates,
+  // return the TOP-MOST block elements at least HALF covered by the box (a box edge clipping a giant
+  // container won't grab it; ≥50% coverage means "the user meant this block"). Children of an already-hit
+  // block are dropped, so a box over a whole <section> yields the section, not every paragraph inside it.
+  // Pure geometry → unit-testable with mocked rects; the marquee + coordinate plumbing is the Canvas-smoke
+  // part. Returns [{ el, area }] (area = the in-box pixel area, so _dominantBlock can pick the main one).
+  const _elementsInBox = (doc, box) => {
+    const out = [];
+    if (!doc || !doc.body || !box) return out;
+    let nodes; try { nodes = doc.body.querySelectorAll('p,li,h1,h2,h3,h4,h5,h6,blockquote,figure,figcaption,img,table,tr,td,th,ul,ol,dl,dt,dd,pre,aside,section,article,header,footer,div'); } catch (_) { return out; }
+    const hits = [];
+    for (const el of nodes) {
+      let r; try { r = el.getBoundingClientRect(); } catch (_) { continue; }
+      if (!r) continue;
+      const w = r.width || (r.right - r.left), h = r.height || (r.bottom - r.top);
+      if (w <= 0 || h <= 0) continue;
+      const ix = Math.max(0, Math.min(r.right, box.right) - Math.max(r.left, box.left));
+      const iy = Math.max(0, Math.min(r.bottom, box.bottom) - Math.max(r.top, box.top));
+      if (ix <= 0 || iy <= 0) continue;                       // no overlap
+      if ((ix * iy) / (w * h) >= 0.5) hits.push({ el: el, area: ix * iy }); // ≥half the element inside the box
+    }
+    const set = hits.map((x) => x.el);
+    for (const x of hits) {
+      let anc = x.el.parentElement, nested = false;
+      while (anc) { if (set.indexOf(anc) !== -1) { nested = true; break; } anc = anc.parentElement; }
+      if (!nested) out.push(x);                               // keep only top-most hits
+    }
+    return out;
+  };
+  // From the hit-test result, the single best region target: the block with the largest in-box area (when a
+  // box spans several top-level blocks, that's the one the user mostly covered). Pure → testable.
+  const _dominantBlock = (hits) => {
+    if (!hits || !hits.length) return null;
+    let best = hits[0];
+    for (const x of hits) if (x.area > best.area) best = x;
+    return best.el;
+  };
+
   // Direct expert-edit (2026-06-22): apply the expert's hand-edited block HTML in place of the located
   // original via _spliceBlock, then run the SAME mini-audit as the Workbench. No AI call, so it works
   // even when Canvas is throttling. Snapshots _preCmdHtml so the existing one-click revert covers it too.
@@ -2928,6 +2983,45 @@ function PdfAuditView(props) {
     addToast(t('pdf_audit.issue.ai_applied') || '✨ Applied to this section — re-checking…', 'success');
     await _reauditAndScore(sp.html, null);
   };
+
+  // S1 freehand region-select (2026-06-23). The user drags a box over the preview; this resolves it to the
+  // dominant block under the box (deterministic _elementsInBox/_dominantBlock), then bridges that LIVE element
+  // back to the STORED source: it re-finds the block in an off-screen DOMParser doc parsed from accessibleHtml
+  // (matched by anchor text, preferring the same tag) so `original` matches the stored string — never the
+  // live DOM, which carries injected outlines/palette styles a splice could never find. It then opens the
+  // region editor pointed at that block, reusing the proven _applyScopedIntent / _saveManualEdit path keyed
+  // off the reserved '__region__' key. So the drag is just a NEW WAY to scope; the bounded apply is unchanged.
+  const _runRegionSelect = async (box) => {
+    setRegionArmed(false);                                    // one-shot: each drag arms once
+    const live = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
+    if (!live || !live.body || !pdfFixResult || !pdfFixResult.accessibleHtml) { addToast(t('pdf_audit.region.no_preview') || 'Open the preview first, then drag a box over a block.', 'info'); return; }
+    if (!box || (box.right - box.left) < 8 || (box.bottom - box.top) < 8) { addToast(t('pdf_audit.region.too_small') || 'Draw a box over a paragraph or heading to select it.', 'info'); return; }
+    const hits = _elementsInBox(live, box);
+    const el = _dominantBlock(hits);
+    if (!el) { addToast(t('pdf_audit.region.empty') || 'No block was at least half inside that box — try a box that covers a paragraph or heading.', 'info'); return; }
+    const norm = (x) => String(x == null ? '' : x).replace(/\s+/g, ' ').trim().toLowerCase();
+    const anchor = norm(el.textContent).slice(0, 80);
+    let original = '';
+    try {
+      if (anchor && anchor.length >= 6 && typeof DOMParser !== 'undefined') {
+        const dom = new DOMParser().parseFromString(pdfFixResult.accessibleHtml, 'text/html');
+        if (dom.body) {
+          const tag = el.tagName;
+          const blocks = dom.body.querySelectorAll('p,li,h1,h2,h3,h4,h5,h6,blockquote,figure,figcaption,img,table,tr,td,th,ul,ol,dl,dt,dd,pre,aside,section,article,header,footer,div');
+          let found = null, sameTag = null;
+          for (const b of blocks) { if (norm(b.textContent).indexOf(anchor) !== -1) { if (!found) found = b; if (b.tagName === tag) { sameTag = b; break; } } }
+          const pick = sameTag || found;
+          if (pick && pick.outerHTML) original = pick.outerHTML;
+        }
+      }
+    } catch (_) {}
+    if (!original) original = el.outerHTML;                   // fallback (may carry live styles → splice may not-find → graceful)
+    _setIssueEdit((prev) => ({ ...prev, ['__region__']: { original: original, draft: original, intent: '', _region: true, tag: (el.tagName || '').toLowerCase(), preview: norm(el.textContent).slice(0, 140) } }));
+    try { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); const _prev = el.style.outline; el.style.outline = '3px solid #4f46e5'; el.style.outlineOffset = '2px'; setTimeout(() => { try { el.style.outline = _prev; el.style.outlineOffset = ''; } catch (_) {} }, 3000); } catch (_) {}
+    try { const p = document.getElementById('allo-region-editor'); if (p) p.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
+    addToast(t('pdf_audit.region.selected') || '▭ Region selected — describe the change, then Apply with AI (scoped to just this block).', 'info');
+  };
+  _regionHandlerRef.current = _runRegionSelect;               // keep the iframe's once-bound listener calling the LATEST handler (never stale)
 
   // Recovery residual source (Option B, 2026-06-22): decide what missing-token list drives the Tier-B
   // "Re-run with restoration" UI. PREFER the tagged-PDF round-trip snapshot (tokens lost in PDF tagging)
@@ -11216,6 +11310,13 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 className={`w-full px-3 py-2 rounded-lg text-xs font-bold border transition-all flex items-center gap-2 ${pdfPreviewA11yInspect ? 'bg-violet-100 border-violet-400 text-violet-800' : 'bg-white border-slate-200 text-slate-600 hover:border-violet-300'}`}>
                 🔍 A11y Inspect {pdfPreviewA11yInspect ? 'ON' : 'OFF'}
               </button>
+              {/* S1 region-select arm (2026-06-23): drag a box over the preview to scope an AI edit to one block */}
+              <button onClick={() => setRegionArmed((v) => !v)}
+                aria-pressed={_regionArmed}
+                title={t('pdf_audit.region.arm_title') || 'Drag a box over the preview to pick a block, then describe a change the AI applies to ONLY that region (bounded — accept or revert).'}
+                className={`w-full px-3 py-2 rounded-lg text-xs font-bold border transition-all flex items-center gap-2 ${_regionArmed ? 'bg-indigo-100 border-indigo-400 text-indigo-800' : 'bg-white border-slate-200 text-slate-600 hover:border-indigo-300'}`}>
+                ▭ {_regionArmed ? (t('pdf_audit.region.arm_on') || 'Drawing — drag a box') : (t('pdf_audit.region.arm_off') || 'Select a region')}
+              </button>
               {pdfPreviewA11yInspect && (
                 <div className="text-[11px] text-slate-600 space-y-0.5 bg-slate-50 rounded-lg p-2">
                   <div><span className="inline-block w-3 h-2 bg-violet-600 rounded mr-1"></span> {t('pdf_audit.a11y_inspect.headings') || 'Headings (H1-H6)'}</div>
@@ -13787,6 +13888,42 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   </div>
                 </div>
               )}
+              {/* S1 region editor (2026-06-23): appears after a drag-region selection. Scopes an AI edit (or a
+                  hand-edit) to JUST the selected block — same bounded apply + accept/revert as the per-issue
+                  path (keyed off '__region__'). */}
+              {_issueEdit['__region__'] && (() => { const _rgn = _issueEdit['__region__']; return (
+                <div id="allo-region-editor" className="border-b border-indigo-300 bg-indigo-50 p-3 space-y-2" role="region" aria-label={t('pdf_audit.region.editor_aria') || 'Selected-region editor'}>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-black text-indigo-800">▭ {t('pdf_audit.region.editor_heading') || 'Selected region'}{_rgn.tag ? (' · <' + _rgn.tag + '>') : ''}</span>
+                    <button onClick={() => _setIssueEdit((prev) => { const n = { ...prev }; delete n['__region__']; return n; })} className="text-indigo-600 hover:text-indigo-900 font-bold px-1" aria-label={t('pdf_audit.region.editor_close') || 'Clear region selection'}>✕</button>
+                  </div>
+                  {_rgn.preview && (<div className="text-[11px] text-indigo-700 bg-white/70 border border-indigo-200 rounded px-2 py-1 truncate" title={_rgn.preview}>“{_rgn.preview}”</div>)}
+                  <input value={_rgn.intent || ''} onChange={(e) => { const v = e.target.value; _setIssueEdit((prev) => ({ ...prev, ['__region__']: { ...prev['__region__'], intent: v } })); }}
+                    onKeyDown={(e) => { if (e.key === 'Enter' && typeof processExpertCommand === 'function' && (_rgn.intent || '').trim() && !_rgn.saving) { e.preventDefault(); _applyScopedIntent(null, '__region__'); } }}
+                    placeholder={t('pdf_audit.region.intent_ph') || 'Describe the change for this block — e.g. “make this a bulleted list”, “turn this into a callout”, “simplify the wording”'}
+                    className="w-full text-xs border border-indigo-300 rounded-lg p-2 bg-white text-slate-800 placeholder:text-slate-500" />
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {typeof processExpertCommand === 'function' && (
+                      <button onClick={() => _applyScopedIntent(null, '__region__')} disabled={!!_rgn.saving || !((_rgn.intent) || '').trim()}
+                        className={'px-3 py-1 rounded bg-indigo-600 text-white text-xs font-bold ' + ((_rgn.saving || !((_rgn.intent) || '').trim()) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-700')}>
+                        {_rgn.saving ? ('⏳ ' + (t('pdf_audit.region.applying') || 'Applying…')) : ('✨ ' + (t('pdf_audit.region.apply_ai') || 'Apply with AI'))}
+                      </button>
+                    )}
+                    <details className="text-[11px]">
+                      <summary className="cursor-pointer text-indigo-700 font-bold">{t('pdf_audit.region.edit_html') || '✏ Or edit the HTML yourself'}</summary>
+                      <div className="mt-1 space-y-1">
+                        <textarea value={_rgn.draft == null ? '' : _rgn.draft} onChange={(e) => { const v = e.target.value; _setIssueEdit((prev) => ({ ...prev, ['__region__']: { ...prev['__region__'], draft: v } })); }} rows={4}
+                          className="w-full text-[11px] font-mono border border-indigo-300 rounded p-2 bg-white text-slate-800" />
+                        <button onClick={() => _saveManualEdit(null, '__region__')} disabled={!!_rgn.saving || (String(_rgn.draft || '').trim() === String(_rgn.original || '').trim())}
+                          className={'px-3 py-1 rounded bg-emerald-600 text-white text-xs font-bold ' + ((_rgn.saving || String(_rgn.draft || '').trim() === String(_rgn.original || '').trim()) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-emerald-700')}>
+                          💾 {t('pdf_audit.region.save_recheck') || 'Save & re-check (no AI)'}
+                        </button>
+                      </div>
+                    </details>
+                  </div>
+                  <span className="text-[10px] text-indigo-700 block">{t('pdf_audit.region.honesty') || 'Bounded to this block only — the rest of the document is untouched. Re-checks after applying; one-click revert if you don’t like it.'}</span>
+                </div>
+              ); })()}
               <iframe ref={pdfPreviewRef} title={t('pdf_audit.preview.iframe_title') || 'Accessible document preview'} className="flex-1 w-full border-0"
                 sandbox="allow-same-origin allow-scripts allow-forms allow-modals"
                 onLoad={() => {
@@ -13822,6 +13959,34 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         else if (e.shiftKey && (e.key === 'o' || e.key === 'O')) { e.preventDefault(); doc.execCommand('insertOrderedList', false, null); }
                       }
                     });
+                    // S1 region-select marquee (2026-06-23): when armed (cw.__alloflowRegionArmed, set by the
+                    // toolbar toggle), a drag draws a dashed box INSIDE the iframe (so coords == the iframe's
+                    // own getBoundingClientRect space — no cross-frame mapping) and hands the box to the latest
+                    // React handler (_regionHandlerRef.current). One-shot: it disarms itself on release.
+                    try {
+                      var _rsMarq = null, _rsX = 0, _rsY = 0, _rsDrag = false;
+                      doc.addEventListener('pointerdown', function(e) {
+                        if (!cw || !cw.__alloflowRegionArmed) return;
+                        _rsDrag = true; _rsX = e.clientX; _rsY = e.clientY;
+                        _rsMarq = doc.createElement('div');
+                        _rsMarq.setAttribute('data-allo-region-marquee', '1');
+                        _rsMarq.style.cssText = 'position:fixed;z-index:2147483646;border:2px dashed #4f46e5;background:rgba(79,70,229,0.12);pointer-events:none;left:' + _rsX + 'px;top:' + _rsY + 'px;width:0;height:0;';
+                        try { doc.body.appendChild(_rsMarq); } catch (_) {}
+                        e.preventDefault();
+                      }, true);
+                      doc.addEventListener('pointermove', function(e) {
+                        if (!_rsDrag || !_rsMarq) return;
+                        var l = Math.min(_rsX, e.clientX), tp = Math.min(_rsY, e.clientY), w = Math.abs(e.clientX - _rsX), h = Math.abs(e.clientY - _rsY);
+                        _rsMarq.style.left = l + 'px'; _rsMarq.style.top = tp + 'px'; _rsMarq.style.width = w + 'px'; _rsMarq.style.height = h + 'px';
+                      }, true);
+                      doc.addEventListener('pointerup', function(e) {
+                        if (!_rsDrag) return; _rsDrag = false;
+                        var box = { left: Math.min(_rsX, e.clientX), top: Math.min(_rsY, e.clientY), right: Math.max(_rsX, e.clientX), bottom: Math.max(_rsY, e.clientY) };
+                        if (_rsMarq) { try { _rsMarq.remove(); } catch (_) {} _rsMarq = null; }
+                        try { cw.__alloflowRegionArmed = false; doc.body.style.cursor = ''; } catch (_) {}
+                        if (_regionHandlerRef && typeof _regionHandlerRef.current === 'function') { try { _regionHandlerRef.current(box); } catch (_) {} }
+                      }, true);
+                    } catch (_) {}
                   }
                 }} />
             </div>

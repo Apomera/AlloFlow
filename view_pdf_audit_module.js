@@ -1946,6 +1946,17 @@ function PdfAuditView(props) {
   const [_appliedPalette, setAppliedPalette] = useState(null);
   const [_paletteBusy, setPaletteBusy] = useState(false);
   const [_paletteIntent, setPaletteIntent] = useState("");
+  const [_regionArmed, setRegionArmed] = useState(false);
+  const _regionHandlerRef = useRef(null);
+  useEffect(() => {
+    try {
+      const cw = pdfPreviewRef.current && pdfPreviewRef.current.contentWindow;
+      const doc = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
+      if (cw) cw.__alloflowRegionArmed = !!_regionArmed;
+      if (doc && doc.body) doc.body.style.cursor = _regionArmed ? "crosshair" : "";
+    } catch (_) {
+    }
+  }, [_regionArmed]);
   const runVeraPdfValidation = (bytes) => new Promise((resolve, reject) => {
     let win = null;
     try {
@@ -3159,6 +3170,51 @@ function PdfAuditView(props) {
     if (html.indexOf(original, idx + original.length) !== -1) return { ok: false, reason: "ambiguous" };
     return { ok: true, html: html.slice(0, idx) + draft + html.slice(idx + original.length) };
   };
+  const _elementsInBox = (doc, box) => {
+    const out = [];
+    if (!doc || !doc.body || !box) return out;
+    let nodes;
+    try {
+      nodes = doc.body.querySelectorAll("p,li,h1,h2,h3,h4,h5,h6,blockquote,figure,figcaption,img,table,tr,td,th,ul,ol,dl,dt,dd,pre,aside,section,article,header,footer,div");
+    } catch (_) {
+      return out;
+    }
+    const hits = [];
+    for (const el of nodes) {
+      let r;
+      try {
+        r = el.getBoundingClientRect();
+      } catch (_) {
+        continue;
+      }
+      if (!r) continue;
+      const w = r.width || r.right - r.left, h = r.height || r.bottom - r.top;
+      if (w <= 0 || h <= 0) continue;
+      const ix = Math.max(0, Math.min(r.right, box.right) - Math.max(r.left, box.left));
+      const iy = Math.max(0, Math.min(r.bottom, box.bottom) - Math.max(r.top, box.top));
+      if (ix <= 0 || iy <= 0) continue;
+      if (ix * iy / (w * h) >= 0.5) hits.push({ el, area: ix * iy });
+    }
+    const set = hits.map((x) => x.el);
+    for (const x of hits) {
+      let anc = x.el.parentElement, nested = false;
+      while (anc) {
+        if (set.indexOf(anc) !== -1) {
+          nested = true;
+          break;
+        }
+        anc = anc.parentElement;
+      }
+      if (!nested) out.push(x);
+    }
+    return out;
+  };
+  const _dominantBlock = (hits) => {
+    if (!hits || !hits.length) return null;
+    let best = hits[0];
+    for (const x of hits) if (x.area > best.area) best = x;
+    return best.el;
+  };
   const _saveManualEdit = async (issue, key) => {
     const ed = _issueEdit[key];
     if (!ed || ed.saving || !pdfFixResult || !pdfFixResult.accessibleHtml) return;
@@ -3244,6 +3300,72 @@ function PdfAuditView(props) {
     addToast(t("pdf_audit.issue.ai_applied") || "\u2728 Applied to this section \u2014 re-checking\u2026", "success");
     await _reauditAndScore(sp.html, null);
   };
+  const _runRegionSelect = async (box) => {
+    setRegionArmed(false);
+    const live = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
+    if (!live || !live.body || !pdfFixResult || !pdfFixResult.accessibleHtml) {
+      addToast(t("pdf_audit.region.no_preview") || "Open the preview first, then drag a box over a block.", "info");
+      return;
+    }
+    if (!box || box.right - box.left < 8 || box.bottom - box.top < 8) {
+      addToast(t("pdf_audit.region.too_small") || "Draw a box over a paragraph or heading to select it.", "info");
+      return;
+    }
+    const hits = _elementsInBox(live, box);
+    const el = _dominantBlock(hits);
+    if (!el) {
+      addToast(t("pdf_audit.region.empty") || "No block was at least half inside that box \u2014 try a box that covers a paragraph or heading.", "info");
+      return;
+    }
+    const norm = (x) => String(x == null ? "" : x).replace(/\s+/g, " ").trim().toLowerCase();
+    const anchor = norm(el.textContent).slice(0, 80);
+    let original = "";
+    try {
+      if (anchor && anchor.length >= 6 && typeof DOMParser !== "undefined") {
+        const dom = new DOMParser().parseFromString(pdfFixResult.accessibleHtml, "text/html");
+        if (dom.body) {
+          const tag = el.tagName;
+          const blocks = dom.body.querySelectorAll("p,li,h1,h2,h3,h4,h5,h6,blockquote,figure,figcaption,img,table,tr,td,th,ul,ol,dl,dt,dd,pre,aside,section,article,header,footer,div");
+          let found = null, sameTag = null;
+          for (const b of blocks) {
+            if (norm(b.textContent).indexOf(anchor) !== -1) {
+              if (!found) found = b;
+              if (b.tagName === tag) {
+                sameTag = b;
+                break;
+              }
+            }
+          }
+          const pick = sameTag || found;
+          if (pick && pick.outerHTML) original = pick.outerHTML;
+        }
+      }
+    } catch (_) {
+    }
+    if (!original) original = el.outerHTML;
+    _setIssueEdit((prev) => ({ ...prev, ["__region__"]: { original, draft: original, intent: "", _region: true, tag: (el.tagName || "").toLowerCase(), preview: norm(el.textContent).slice(0, 140) } }));
+    try {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      const _prev = el.style.outline;
+      el.style.outline = "3px solid #4f46e5";
+      el.style.outlineOffset = "2px";
+      setTimeout(() => {
+        try {
+          el.style.outline = _prev;
+          el.style.outlineOffset = "";
+        } catch (_) {
+        }
+      }, 3e3);
+    } catch (_) {
+    }
+    try {
+      const p = document.getElementById("allo-region-editor");
+      if (p) p.scrollIntoView({ behavior: "smooth", block: "center" });
+    } catch (_) {
+    }
+    addToast(t("pdf_audit.region.selected") || "\u25AD Region selected \u2014 describe the change, then Apply with AI (scoped to just this block).", "info");
+  };
+  _regionHandlerRef.current = _runRegionSelect;
   const _recoveryResidualSource = (td, sourceText, finalText) => {
     const _normTokenForDiff = (s) => String(s || "").toLowerCase().replace(/[\u200b\u200c\u200d\ufeff]/g, "").replace(/\ufb00/g, "ff").replace(/\ufb01/g, "fi").replace(/\ufb02/g, "fl").replace(/\ufb03/g, "ffi").replace(/\ufb04/g, "ffl").replace(/[\u2018\u2019]/g, "'").replace(/[\u201c\u201d]/g, '"').replace(/(\p{L})[-\u00ad\u2010\u2011](\p{L})/gu, "$1$2").replace(/\u00ad/g, "").replace(/\s+/g, "");
     const _normalize = (s) => String(s || "").toLowerCase().replace(/\s+/g, " ").trim();
@@ -9333,6 +9455,16 @@ Return ONLY JSON:
       },
       "\u{1F50D} A11y Inspect ",
       pdfPreviewA11yInspect ? "ON" : "OFF"
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => setRegionArmed((v) => !v),
+        "aria-pressed": _regionArmed,
+        title: t("pdf_audit.region.arm_title") || "Drag a box over the preview to pick a block, then describe a change the AI applies to ONLY that region (bounded \u2014 accept or revert).",
+        className: `w-full px-3 py-2 rounded-lg text-xs font-bold border transition-all flex items-center gap-2 ${_regionArmed ? "bg-indigo-100 border-indigo-400 text-indigo-800" : "bg-white border-slate-200 text-slate-600 hover:border-indigo-300"}`
+      },
+      "\u25AD ",
+      _regionArmed ? t("pdf_audit.region.arm_on") || "Drawing \u2014 drag a box" : t("pdf_audit.region.arm_off") || "Select a region"
     ), pdfPreviewA11yInspect && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 space-y-0.5 bg-slate-50 rounded-lg p-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-3 h-2 bg-violet-600 rounded mr-1" }), " ", t("pdf_audit.a11y_inspect.headings") || "Headings (H1-H6)"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-3 h-2 bg-blue-600 rounded mr-1" }), " ", t("pdf_audit.a11y_inspect.images") || "Images + alt text"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-3 h-2 bg-emerald-600 rounded mr-1" }), " ", t("pdf_audit.a11y_inspect.tables") || "Tables + headers"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-3 h-2 bg-cyan-600 rounded mr-1" }), " ", t("pdf_audit.a11y_inspect.figures") || "Figures + captions"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-3 h-2 bg-green-600 rounded mr-1" }), " ", t("pdf_audit.a11y_inspect.main_landmark") || "Main landmark"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-3 h-2 bg-orange-600 rounded mr-1" }), " ", t("pdf_audit.a11y_inspect.aria_roles") || "ARIA roles"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-3 h-2 bg-slate-900 rounded mr-1" }), " ", t("pdf_audit.a11y_inspect.reading_order") || "Reading order (#1, #2 \u2026 \u2014 the order a screen reader walks the blocks)")), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const doc = pdfPreviewRef.current?.contentDocument;
       if (!doc) return;
@@ -12268,7 +12400,59 @@ Return ONLY JSON:
         className: "px-4 py-1.5 bg-violet-600 text-white rounded-lg text-xs font-bold hover:bg-violet-700 disabled:opacity-50 transition-colors"
       },
       smartTableBusy ? "\u23F3 " + (t("pdf_audit.smart_table.busy") || "Structuring\u2026") : "\u{1F4CA} " + (t("pdf_audit.smart_table.build") || "Build table at cursor")
-    ), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-violet-700" }, t("pdf_audit.smart_table.honesty") || "Clean rows parse instantly with no AI. Messy data goes to AI with one hard rule: only YOUR values, never invented \u2014 blanks stay blank. Review the result; every cell stays editable."))), /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-violet-700" }, t("pdf_audit.smart_table.honesty") || "Clean rows parse instantly with no AI. Messy data goes to AI with one hard rule: only YOUR values, never invented \u2014 blanks stay blank. Review the result; every cell stays editable."))), _issueEdit["__region__"] && (() => {
+      const _rgn = _issueEdit["__region__"];
+      return /* @__PURE__ */ React.createElement("div", { id: "allo-region-editor", className: "border-b border-indigo-300 bg-indigo-50 p-3 space-y-2", role: "region", "aria-label": t("pdf_audit.region.editor_aria") || "Selected-region editor" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-black text-indigo-800" }, "\u25AD ", t("pdf_audit.region.editor_heading") || "Selected region", _rgn.tag ? " \xB7 <" + _rgn.tag + ">" : ""), /* @__PURE__ */ React.createElement("button", { onClick: () => _setIssueEdit((prev) => {
+        const n = { ...prev };
+        delete n["__region__"];
+        return n;
+      }), className: "text-indigo-600 hover:text-indigo-900 font-bold px-1", "aria-label": t("pdf_audit.region.editor_close") || "Clear region selection" }, "\u2715")), _rgn.preview && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-indigo-700 bg-white/70 border border-indigo-200 rounded px-2 py-1 truncate", title: _rgn.preview }, "\u201C", _rgn.preview, "\u201D"), /* @__PURE__ */ React.createElement(
+        "input",
+        {
+          value: _rgn.intent || "",
+          onChange: (e) => {
+            const v = e.target.value;
+            _setIssueEdit((prev) => ({ ...prev, ["__region__"]: { ...prev["__region__"], intent: v } }));
+          },
+          onKeyDown: (e) => {
+            if (e.key === "Enter" && typeof processExpertCommand === "function" && (_rgn.intent || "").trim() && !_rgn.saving) {
+              e.preventDefault();
+              _applyScopedIntent(null, "__region__");
+            }
+          },
+          placeholder: t("pdf_audit.region.intent_ph") || "Describe the change for this block \u2014 e.g. \u201Cmake this a bulleted list\u201D, \u201Cturn this into a callout\u201D, \u201Csimplify the wording\u201D",
+          className: "w-full text-xs border border-indigo-300 rounded-lg p-2 bg-white text-slate-800 placeholder:text-slate-500"
+        }
+      ), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, typeof processExpertCommand === "function" && /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: () => _applyScopedIntent(null, "__region__"),
+          disabled: !!_rgn.saving || !(_rgn.intent || "").trim(),
+          className: "px-3 py-1 rounded bg-indigo-600 text-white text-xs font-bold " + (_rgn.saving || !(_rgn.intent || "").trim() ? "opacity-50 cursor-not-allowed" : "hover:bg-indigo-700")
+        },
+        _rgn.saving ? "\u23F3 " + (t("pdf_audit.region.applying") || "Applying\u2026") : "\u2728 " + (t("pdf_audit.region.apply_ai") || "Apply with AI")
+      ), /* @__PURE__ */ React.createElement("details", { className: "text-[11px]" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-indigo-700 font-bold" }, t("pdf_audit.region.edit_html") || "\u270F Or edit the HTML yourself"), /* @__PURE__ */ React.createElement("div", { className: "mt-1 space-y-1" }, /* @__PURE__ */ React.createElement(
+        "textarea",
+        {
+          value: _rgn.draft == null ? "" : _rgn.draft,
+          onChange: (e) => {
+            const v = e.target.value;
+            _setIssueEdit((prev) => ({ ...prev, ["__region__"]: { ...prev["__region__"], draft: v } }));
+          },
+          rows: 4,
+          className: "w-full text-[11px] font-mono border border-indigo-300 rounded p-2 bg-white text-slate-800"
+        }
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: () => _saveManualEdit(null, "__region__"),
+          disabled: !!_rgn.saving || String(_rgn.draft || "").trim() === String(_rgn.original || "").trim(),
+          className: "px-3 py-1 rounded bg-emerald-600 text-white text-xs font-bold " + (_rgn.saving || String(_rgn.draft || "").trim() === String(_rgn.original || "").trim() ? "opacity-50 cursor-not-allowed" : "hover:bg-emerald-700")
+        },
+        "\u{1F4BE} ",
+        t("pdf_audit.region.save_recheck") || "Save & re-check (no AI)"
+      )))), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-indigo-700 block" }, t("pdf_audit.region.honesty") || "Bounded to this block only \u2014 the rest of the document is untouched. Re-checks after applying; one-click revert if you don\u2019t like it."));
+    })(), /* @__PURE__ */ React.createElement(
       "iframe",
       {
         ref: pdfPreviewRef,
@@ -12328,6 +12512,55 @@ Return ONLY JSON:
                 }
               }
             });
+            try {
+              var _rsMarq = null, _rsX = 0, _rsY = 0, _rsDrag = false;
+              doc.addEventListener("pointerdown", function(e) {
+                if (!cw || !cw.__alloflowRegionArmed) return;
+                _rsDrag = true;
+                _rsX = e.clientX;
+                _rsY = e.clientY;
+                _rsMarq = doc.createElement("div");
+                _rsMarq.setAttribute("data-allo-region-marquee", "1");
+                _rsMarq.style.cssText = "position:fixed;z-index:2147483646;border:2px dashed #4f46e5;background:rgba(79,70,229,0.12);pointer-events:none;left:" + _rsX + "px;top:" + _rsY + "px;width:0;height:0;";
+                try {
+                  doc.body.appendChild(_rsMarq);
+                } catch (_) {
+                }
+                e.preventDefault();
+              }, true);
+              doc.addEventListener("pointermove", function(e) {
+                if (!_rsDrag || !_rsMarq) return;
+                var l = Math.min(_rsX, e.clientX), tp = Math.min(_rsY, e.clientY), w = Math.abs(e.clientX - _rsX), h = Math.abs(e.clientY - _rsY);
+                _rsMarq.style.left = l + "px";
+                _rsMarq.style.top = tp + "px";
+                _rsMarq.style.width = w + "px";
+                _rsMarq.style.height = h + "px";
+              }, true);
+              doc.addEventListener("pointerup", function(e) {
+                if (!_rsDrag) return;
+                _rsDrag = false;
+                var box = { left: Math.min(_rsX, e.clientX), top: Math.min(_rsY, e.clientY), right: Math.max(_rsX, e.clientX), bottom: Math.max(_rsY, e.clientY) };
+                if (_rsMarq) {
+                  try {
+                    _rsMarq.remove();
+                  } catch (_) {
+                  }
+                  _rsMarq = null;
+                }
+                try {
+                  cw.__alloflowRegionArmed = false;
+                  doc.body.style.cursor = "";
+                } catch (_) {
+                }
+                if (_regionHandlerRef && typeof _regionHandlerRef.current === "function") {
+                  try {
+                    _regionHandlerRef.current(box);
+                  } catch (_) {
+                  }
+                }
+              }, true);
+            } catch (_) {
+            }
           }
         }
       }
