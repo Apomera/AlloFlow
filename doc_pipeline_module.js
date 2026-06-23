@@ -499,6 +499,55 @@ function buildPaletteCss(palette, opts) {
   return _r;
 }
 
+// Deterministic reading-order preservation guard (S3, 2026-06-23). A block-restyle / restructure must NOT
+// reorder or drop content — doing so silently corrupts the screen-reader reading order and the tagged-PDF
+// MCID linkage (the b0d24ae3 content-loss scar class). This certifies a structure transform WITHOUT trusting
+// the (throttle-prone, possibly-partial) AI audit: it walks the DOCUMENT-ORDER text of BEFORE and AFTER and
+// checks the BEFORE reading-order token sequence is still a SUBSEQUENCE of AFTER's — i.e. every original
+// token still appears, in the same order. Additive wrapping/labels (a paragraph → <aside> with a heading)
+// are fine (extra tokens allowed); REORDERING or DROPPING content breaks the subsequence → ok:false, so the
+// caller reverts. For STRUCTURE transforms (not content rewrites — wording changes will read as a drop, by
+// design). Pure + deterministic → testable. Returns { ok, reason, droppedToken, beforeCount, afterCount }.
+function checkReadingOrderPreserved(beforeHtml, afterHtml) {
+  if (typeof DOMParser === 'undefined') { var _skip = { ok: true, reason: 'no-domparser-skip', droppedToken: null, beforeCount: 0, afterCount: 0 }; return _skip; }
+  var _tokens = function (html) {
+    var out = [];
+    try {
+      var doc = new DOMParser().parseFromString(String(html || ''), 'text/html');
+      var root = doc.body || doc.documentElement;
+      if (!root || !doc.createTreeWalker) return out;
+      var SKIP = { SCRIPT: 1, STYLE: 1, NOSCRIPT: 1, HEAD: 1, TEMPLATE: 1 };
+      var w = doc.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+      var n;
+      while ((n = w.nextNode())) {
+        var p = n.parentNode, skip = false;
+        while (p && p.nodeType === 1) { if (SKIP[p.tagName]) { skip = true; break; } p = p.parentNode; }
+        if (skip) continue;
+        var norm = String(n.nodeValue || '').toLowerCase().replace(/[^a-z0-9À-ɏ]+/g, ' ').trim();
+        if (!norm) continue;
+        var parts = norm.split(/\s+/);
+        for (var k = 0; k < parts.length; k++) if (parts[k].length >= 2) out.push(parts[k]);
+      }
+    } catch (_) {}
+    return out;
+  };
+  var before = _tokens(beforeHtml), after = _tokens(afterHtml);
+  // before must be a SUBSEQUENCE of after (order preserved, nothing dropped; additions allowed).
+  var i = 0, j = 0;
+  while (i < before.length && j < after.length) {
+    if (before[i] === after[j]) { i++; j++; } else { j++; }
+  }
+  var ok = i >= before.length;
+  var _r = {
+    ok: ok,
+    reason: ok ? 'preserved' : 'reading order changed or content dropped',
+    droppedToken: ok ? null : (before[i] || null),
+    beforeCount: before.length,
+    afterCount: after.length,
+  };
+  return _r;
+}
+
 // Convert an INTERACTIVE image-placeholder <figure> (upload buttons, drop zone, on* handlers, the resize
 // bar) into a clean STATIC figure that preserves the description — for the AUDIT and EXPORT, never the
 // live preview. Two callers: (1) the leaked-handler repair below, and (2) the audit chrome-strip. The
@@ -27338,6 +27387,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     applyPaletteToHtml: applyPaletteToHtml,
     proposePaletteFromIntent: proposePaletteFromIntent,
     palettePresets: PALETTE_PRESETS,
+    checkReadingOrderPreserved: checkReadingOrderPreserved,
     runPdfAccessibilityAudit: _wrapAsync(runPdfAccessibilityAudit),
     auditOutputAccessibility: _wrapAsync(auditOutputAccessibility),
     runAxeAudit: _wrapAsync(runAxeAudit),
