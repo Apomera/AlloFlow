@@ -1,6 +1,6 @@
 # Region-Scoped Multimodal Refinement — Design Spec
 
-**Status:** Draft roadmap (2026-06-23). No code changes proposed here beyond what is already shipped.
+**Status:** Roadmap (2026-06-23). **SHIPPED so far:** S2 palette-with-guaranteed-contrast (all 4 slices), S1 scoped-intent + freehand drag-region select, and the S3 prerequisite `checkReadingOrderPreserved` reading-order guard. All local/unpushed, deploy held; Canvas-smoke pending for the UI surfaces.
 **One-line vision:** *Direct, multimodal annotation on the live document → an agent interprets intent → it executes via region-scoped deterministic micro-tools, with readback + per-region accept/revert.*
 
 This is **not a rebuild.** It is three additive things on top of machinery that already exists and is tested:
@@ -58,9 +58,10 @@ Ordered by **value-to-risk**, not by ambition. Palette is deliberately early bec
 The expert-direct-edit path. Establishes the pattern. *Done.*
 
 ### S1 — Box → scope → typed/spoken intent
-- **New:** a box-draw overlay on the preview; hit-test region → element set; route `{region, intent-text}` into `processExpertCommand` scoped to the region.
-- **Voice** is just speech-to-text into the same intent field (reuse the command-palette/bot voice infra) — *not* a separate backend.
-- **Enforcement gate:** the surgical tools already run on a fragment; constrain their selectors to the region; `_reauditAndScore` on the region after.
+- **Slice 1 SHIPPED (`878b6f14`):** located-block scope → intent → `processExpertCommand` on the block fragment → `_spliceBlock` → `_reauditAndScore` → per-region revert (the "✨ Apply with AI" control in the Source panel).
+- **Slice 2 SHIPPED (`08b5c678`) — freehand drag-region:** a marquee that lives *inside* the preview iframe (so all geometry is in the iframe's own `getBoundingClientRect` space — no cross-frame mapping) → `_elementsInBox` (top-most blocks ≥50% covered) + `_dominantBlock` (largest in-box area) → bridge the live element back to the stored `accessibleHtml` source by anchor text → open the region editor keyed off `'__region__'`, **reusing** the slice-1 `_applyScopedIntent` + the throttle-proof `_saveManualEdit`. The drag only *scopes*; the bounded apply is the proven path. Hit-test = 13 unit tests (mocked rects); marquee geometry = Canvas-smoke.
+- **Voice** is just speech-to-text into the same intent field (reuse the command-palette/bot voice infra) — *not* a separate backend. *(Not yet wired.)*
+- **Enforcement gate:** the surgical tools already run on a fragment; constrain their selectors to the region; `_reauditAndScore` on the region after. **(Now also: `checkReadingOrderPreserved` is available to certify the region edit didn't reorder/drop — see S3.)**
 - **Value:** high (the generalization of S0 to arbitrary regions + voice). **Risk:** low-moderate (mostly UI + scoping).
 
 ### S2 — Palette with **guaranteed** contrast  ← recommended build-first "wow"
@@ -77,9 +78,10 @@ The expert-direct-edit path. Establishes the pattern. *Done.*
 ### S3 — Block restyling for engagement (behind a deterministic reading-order guard)
 - **AI analysis pass** (an audit-like pass for *visual rhythm*): propose where a vetted block helps — key takeaway → callout (`<aside>` with a real heading), definition → sidebar, item-wall → card grid (still a `<ul>`), stat → pull-quote (`<blockquote>` that does **not** duplicate content into the reading order). Surfaced as a **plan for accept/revert**, never auto-applied.
 - **Curated, vetted block library only** — the AI **selects and parameterizes**; it does **not** author freeform HTML. *Non-negotiable.* Freeform model markup = pretty divs that break the tagged-PDF structure and the screen-reader reading order, which defeats the tool's reason to exist.
-- **Enforcement gate — the hard part:** restructuring is *exactly* the operation that silently corrupts reading order / MCID linkage (the `b0d24ae3` scar). Re-running the AI audit is **not sufficient** — this session proved the audit can be throttled, partial, and non-authoritative. The accept gate must be a **deterministic structure/reading-order preservation check**: same content leaves, same document order, no content duplicated into the flow. That check is *new infrastructure* (it doesn't fully exist yet) and is the prerequisite for this slice.
+- **Enforcement gate — the hard part:** restructuring is *exactly* the operation that silently corrupts reading order / MCID linkage (the `b0d24ae3` scar). Re-running the AI audit is **not sufficient** — this session proved the audit can be throttled, partial, and non-authoritative. The accept gate must be a **deterministic structure/reading-order preservation check**: same content leaves, same document order, no content duplicated into the flow.
+- **Prerequisite NOW BUILT (`280d4d14`):** `checkReadingOrderPreserved(beforeHtml, afterHtml)` — walks document-order text of both sides and asserts the BEFORE reading-order token sequence is still a **subsequence** of AFTER's (additive wrapping/labels OK; reorder or drop → `ok:false`). Pure + deterministic (15 tests), exported on the doc-pipeline factory, and independently hardens the whole pipeline against the `b0d24ae3` scar class. Block-restyle's accept gate is now just: run the transform → `checkReadingOrderPreserved` → if not ok, revert.
 - **UDL caveat:** "engaging" is not universally good — some learners need uncluttered, low-load pages. So: offered transform + preview, conservative default, ideally profile-aware.
-- **Value:** high (real differentiator). **Risk:** moderate-high until the deterministic reading-order guard exists. **Guarded build.**
+- **Value:** high (real differentiator). **Risk:** moderate (the deterministic reading-order guard now exists; remaining risk is the curated block library + UDL defaults). **Guarded build — gate is ready.**
 
 ### S4 — Freehand sketch → intent (assistive frontier)
 - Interpret a sketch over a region screenshot via `callGeminiVision`; treat strictly as **assistive** — "here's what I think you meant — confirm" — because sketch→intent is genuinely error-prone.
@@ -123,7 +125,7 @@ Recommended posture:
 1. **Build order confirm:** S2 (palette) before S1 (box)? Palette has lower risk + higher immediate "wow," but S1 is the structural generalization. (Recommend: palette first.)
 2. **Profile-awareness for S3** — should engagement transforms be suppressed/softened for low-load UDL profiles by default?
 3. **FERPA toggle scope** — does image generation (S5) get disabled wholesale in FERPA-strict mode, or allowed for decorative-only with a hard "no document content egress" boundary?
-4. **The deterministic reading-order guard** (S3 prerequisite) — is that worth building as standalone infrastructure first (it also hardens the existing pipeline against the `b0d24ae3` scar class), independent of block restyling?
+4. ~~**The deterministic reading-order guard** (S3 prerequisite) — is that worth building as standalone infrastructure first?~~ **ANSWERED + BUILT (`280d4d14`):** `checkReadingOrderPreserved` shipped as standalone infrastructure; it hardens the existing pipeline against the `b0d24ae3` scar class independent of block restyling. Open follow-up: wire it as a post-apply assertion on the *existing* transforms (region edit, restoration) now that it exists.
 5. **Voice input** — reuse the command-palette/bot STT verbatim, or a dedicated dictation surface?
 
 ---
