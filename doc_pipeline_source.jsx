@@ -21017,6 +21017,75 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     return { tokens: tokens };
   };
 
+  // S3 block-restyle slice 2 (2026-06-23): AI "where would a callout/list help?" proposal pass. The model's
+  // ONLY job is SELECTION — it returns refs + kind + a reason, never HTML (it cannot author markup, which is
+  // what breaks tagged-PDF structure). Every suggestion is then run through the deterministic restyleBlock
+  // triple-gate (reading order + link/image fidelity + valid-nesting context); a pick that would change
+  // content or produce invalid nesting is AUTO-REJECTED here and never surfaced. So the AI can suggest but
+  // can't corrupt. FERPA: this sends block TEXT SNIPPETS (truncated) to the model — the same egress class as
+  // remediation, and selection-only — never the document HTML. Graceful: any failure → null. Returns
+  // { proposals:[{ref,kind,reason,original,html,preview,tag}], considered, suggested }.
+  const proposeRestyles = async (html, opts) => {
+    if (!callGemini || !html || typeof DOMParser === 'undefined') return null;
+    var max = (opts && opts.max) || 10;
+    var src = String(html);
+    var dom;
+    try { dom = new DOMParser().parseFromString(src, 'text/html'); } catch (_) { return null; }
+    if (!dom.body) return null;
+    var all = Array.prototype.slice.call(dom.body.querySelectorAll('p,blockquote'));
+    var candidates = [], byRef = {};
+    for (var i = 0; i < all.length; i++) {
+      var el = all[i];
+      if (el.querySelector('p,blockquote')) continue;  // LEAF-MOST only: a blockquote wrapping a <p> would
+                                                        // otherwise list the same text twice (ancestor + child)
+                                                        // and overlap splice targets — keep the inner block.
+      var text = String(el.textContent || '').replace(/\s+/g, ' ').trim();
+      if (text.length < 40) continue;                 // too short to benefit from a structure change
+      // Only offer a block we can ACTUALLY apply: its serialized markup must occur EXACTLY ONCE in the stored
+      // string. accessibleHtml is raw model output (not a DOMParser round-trip), so a block authored with
+      // non-canonical markup (uppercase tag, single-quoted attr, &nbsp; vs U+00A0) won't byte-match the
+      // re-serialized outerHTML — surfacing it would produce a dead "block changed" suggestion. Skip those,
+      // and skip duplicate-markup blocks (the splice can't disambiguate them). Honest graceful degradation.
+      var outer = el.outerHTML;
+      var at = src.indexOf(outer);
+      if (at === -1 || src.indexOf(outer, at + outer.length) !== -1) continue;
+      var c = { ref: i, tag: el.tagName.toLowerCase(), text: text.slice(0, 180), el: el, original: outer };
+      candidates.push(c); byRef[i] = c;
+      if (candidates.length >= 60) break;             // cap prompt size
+    }
+    if (!candidates.length) { return { proposals: [], considered: 0, suggested: 0 }; }
+    var listing = candidates.map(function (x) { return '#' + x.ref + ' [' + x.tag + '] ' + x.text; }).join('\n');
+    var prompt = 'You are improving the visual rhythm of an ACCESSIBLE document. Below are numbered text blocks.\n'
+      + 'Pick AT MOST ' + max + ' blocks where a structure change would clearly help a reader:\n'
+      + '- "callout": a key takeaway / note / warning that deserves visual emphasis.\n'
+      + '- "list": prose that is really a sequence of items and would read better as a bulleted list.\n'
+      + 'RULES: do NOT rewrite, summarize, or invent any text — only SELECT existing blocks by their number. '
+      + 'Most blocks need NO change; be selective (quality over quantity).\n'
+      + 'Return ONLY a JSON array: [{"ref":<number>,"kind":"callout"|"list","reason":"<short why>"}]. No prose, no markdown.\n\n'
+      + 'BLOCKS:\n' + listing;
+    var resp;
+    try { resp = await callGemini(prompt); } catch (_) { return null; }
+    var parsed = null;
+    try { parsed = JSON.parse(stripFence(String(resp || ''))); } catch (_) { return null; }
+    if (!Array.isArray(parsed)) return null;
+    var proposals = [], seen = {}, suggested = 0;
+    for (var j = 0; j < parsed.length; j++) {
+      var p = parsed[j];
+      if (!p || typeof p !== 'object') continue;
+      var ref = (typeof p.ref === 'number') ? p.ref : parseInt(p.ref, 10);
+      var kind = (p.kind === 'callout' || p.kind === 'list') ? p.kind : null;
+      if (!kind || !Object.prototype.hasOwnProperty.call(byRef, ref) || seen[ref]) continue;
+      seen[ref] = 1; suggested++;
+      var cand = byRef[ref];
+      var original = cand.original;                    // the exact, uniquely-locatable stored substring
+      var res = restyleBlock(original, kind, {});     // DETERMINISTIC GATE — drop a pick that can't apply safely
+      if (!res || !res.ok) continue;
+      proposals.push({ ref: ref, kind: kind, reason: String(p.reason || '').slice(0, 140), original: original, html: res.html, preview: cand.text.slice(0, 120), tag: cand.tag });
+      if (proposals.length >= max) break;
+    }
+    return { proposals: proposals, considered: candidates.length, suggested: suggested, kept: proposals.length };
+  };
+
   // ── PDF Preview: Update iframe content ──
   // Accept overrides to avoid stale closure — state may not have updated yet when called from setTimeout
   // ── Word-like drag-resize for preview images (2026-06-11, maintainer ask) ──
@@ -27550,6 +27619,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     buildPaletteCss: buildPaletteCss,
     applyPaletteToHtml: applyPaletteToHtml,
     proposePaletteFromIntent: proposePaletteFromIntent,
+    proposeRestyles: proposeRestyles,
     palettePresets: PALETTE_PRESETS,
     checkReadingOrderPreserved: checkReadingOrderPreserved,
     restyleBlock: restyleBlock,

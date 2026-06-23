@@ -1944,6 +1944,11 @@ function PdfAuditView(props) {
   // handler (never a stale closure). The selected region opens in the editor keyed off '__region__'.
   const [_regionArmed, setRegionArmed] = useState(false);
   const _regionHandlerRef = useRef(null);
+  // S3 block-restyle slice 2 (2026-06-23): AI suggests WHERE a callout/list helps; each suggestion is
+  // already gated by restyleBlock (proposeRestyles drops unsafe picks), so this is an accept/revert plan.
+  const [_restyleProposals, setRestyleProposals] = useState(null);   // null = not run; [] = ran, none
+  const [_restyleProposalsBusy, setRestyleProposalsBusy] = useState(false);
+  const [_restyleDropped, setRestyleDropped] = useState(0);          // model picks filtered out (gate / not safely locatable)
   // Mirror the armed flag into the live preview window (the in-iframe marquee listener reads it) and show a
   // crosshair so it's obvious the next drag selects a region. Disarming clears both.
   useEffect(() => {
@@ -3086,6 +3091,46 @@ function PdfAuditView(props) {
     const _rescore = await _reauditAndScore(sp.html, null);
     // R11: don't leave the headline score silently stale if the re-audit was throttled — say so (parity with _saveManualEdit).
     if (_rescore && _rescore.ok === false) addToast(t('pdf_audit.region.restyle_norescore') || '✨ Restyle applied. Couldn’t re-score automatically (the checker was busy) — the document is updated; re-run the audit when ready.', 'info');
+  };
+
+  // S3 block-restyle slice 2 (2026-06-23): ask the AI WHERE a callout/list would help. proposeRestyles sends
+  // only block text snippets (selection-only — the model returns refs+kind, never HTML) and pre-filters every
+  // pick through the deterministic restyleBlock gate, so what comes back is already a list of SAFE,
+  // accept/revert-ready edits. Graceful under throttle.
+  const _suggestRestyles = async () => {
+    if (_restyleProposalsBusy || !pdfFixResult || !pdfFixResult.accessibleHtml) return;
+    if (!_docPipeline || typeof _docPipeline.proposeRestyles !== 'function') { addToast(t('pdf_audit.region.suggest_unavailable') || 'Suggestion tools are still loading — try again in a moment.', 'info'); return; }
+    setRestyleProposalsBusy(true);
+    addToast(t('pdf_audit.region.suggesting') || '✨ Looking for blocks that would read better as callouts or lists…', 'info');
+    let r = null;
+    try { r = await _docPipeline.proposeRestyles(pdfFixResult.accessibleHtml, { max: 10 }); } catch (_) {}
+    setRestyleProposalsBusy(false);
+    if (!r) { addToast(t('pdf_audit.region.suggest_failed') || 'Couldn’t get suggestions right now (the AI may be busy) — try again later.', 'info'); setRestyleProposals(null); return; }
+    setRestyleProposals(r.proposals || []);
+    // Honest accounting: the AI may pick more than we surface — some are filtered by the safety gate or
+    // because their markup can't be located/applied unambiguously. Show how many were dropped (finding 4).
+    setRestyleDropped(Math.max(0, (r.suggested || 0) - ((r.proposals || []).length)));
+    if (!r.proposals || !r.proposals.length) addToast(t('pdf_audit.region.suggest_none') || 'No structure changes suggested — the document already reads cleanly.', 'info');
+  };
+  // Apply one AI suggestion. Its candidate HTML was ALREADY gated by restyleBlock at proposal time; here we
+  // only splice it in (single-occurrence, refuses ambiguous/moved), snapshot for revert, and re-audit.
+  const _applyProposal = async (p) => {
+    if (!p || !pdfFixResult || !pdfFixResult.accessibleHtml) return;
+    const sp = _spliceBlock(pdfFixResult.accessibleHtml, p.original, p.html);
+    if (!sp.ok) {
+      addToast(sp.reason === 'ambiguous'
+        ? (t('pdf_audit.issue.edit_ambiguous') || 'This exact markup appears more than once — use the Expert Workbench for a targeted fix instead.')
+        : (t('pdf_audit.region.suggest_stale') || 'That block changed since the suggestion was made — re-run “Suggest” to refresh.'),
+        sp.reason === 'ambiguous' ? 'info' : 'error');
+      setRestyleProposals((prev) => prev ? prev.filter((x) => x !== p) : prev);   // drop the now-stale suggestion
+      return;
+    }
+    const _before = pdfFixResult.accessibleHtml;
+    setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: sp.html, _preCmdHtml: _before } : prev);
+    setRestyleProposals((prev) => prev ? prev.filter((x) => x !== p) : prev);
+    addToast(t('pdf_audit.region.suggest_applied') || '✨ Applied — re-checking…', 'success');
+    const _rs = await _reauditAndScore(sp.html, null);
+    if (_rs && _rs.ok === false) addToast(t('pdf_audit.region.restyle_norescore') || '✨ Applied. Couldn’t re-score automatically (the checker was busy) — the document is updated; re-run the audit when ready.', 'info');
   };
 
   // Recovery residual source (Option B, 2026-06-22): decide what missing-token list drives the Tier-B
@@ -10034,6 +10079,47 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               </form>
                             )}
                             <p className="text-[10px] text-slate-400 italic">{t('pdf_audit.palette.note') || 'The AI contributes taste only — every colour is still clamped to meet WCAG before it is applied. Presets work with no AI at all, even when the AI service is busy.'}</p>
+                          </div>
+                        </details>
+                      )}
+
+                      {/* S3 block-restyle slice 2: AI engagement suggestions (callout/list) — accept/revert plan */}
+                      {_docPipeline && typeof _docPipeline.proposeRestyles === 'function' && pdfFixResult && pdfFixResult.accessibleHtml && (
+                        <details data-help-key="pdf_audit_restyle_suggest" className="bg-indigo-50 rounded-lg border border-indigo-200 overflow-hidden group">
+                          <summary className="cursor-pointer p-2.5 text-[11px] font-bold text-indigo-800 uppercase tracking-widest flex items-center gap-2 list-none select-none hover:bg-indigo-100/60">
+                            <span className="inline-block transition-transform group-open:rotate-90 text-indigo-400">▸</span>
+                            ✨ {t('pdf_audit.region.suggest_heading') || 'Suggest engagement edits'}
+                            {Array.isArray(_restyleProposals) && _restyleProposals.length > 0 && <span className="text-[10px] bg-indigo-200 text-indigo-800 px-1.5 py-0.5 rounded-full normal-case">{_restyleProposals.length}</span>}
+                          </summary>
+                          <div className="px-3 pb-3 space-y-2">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <button onClick={_suggestRestyles} disabled={_restyleProposalsBusy}
+                                className={'px-3 py-1 rounded-lg text-[11px] font-bold bg-indigo-600 text-white ' + (_restyleProposalsBusy ? 'opacity-50 cursor-wait' : 'hover:bg-indigo-700')}>
+                                {_restyleProposalsBusy ? ('⏳ ' + (t('pdf_audit.region.suggest_busy') || 'Analyzing…')) : ('✨ ' + (t('pdf_audit.region.suggest_btn') || 'Suggest callouts & lists'))}
+                              </button>
+                            </div>
+                            <p className="text-[10px] text-indigo-700 italic">{t('pdf_audit.region.suggest_note') || 'The AI only PICKS blocks — it never rewrites your text. Each suggestion is applied by the same safe transform and refused if it would change content. Block text is sent to the AI (as during remediation).'}</p>
+                            {Array.isArray(_restyleProposals) && _restyleProposals.length > 0 && (
+                              <ul className="space-y-1.5">
+                                {_restyleProposals.map((p, idx) => (
+                                  <li key={idx} className="bg-white border border-indigo-200 rounded-lg p-2 flex items-start gap-2">
+                                    <span className={'shrink-0 px-1.5 py-0.5 rounded text-[10px] font-bold ' + (p.kind === 'callout' ? 'bg-amber-100 text-amber-800' : 'bg-sky-100 text-sky-800')}>{p.kind === 'callout' ? ('📌 ' + (t('pdf_audit.region.make_callout') || 'Make a callout')) : ('• ' + (t('pdf_audit.region.make_list') || 'Make a list'))}</span>
+                                    <div className="min-w-0 flex-1">
+                                      {p.reason && <div className="text-[11px] text-slate-700">{p.reason}</div>}
+                                      <div className="text-[10px] text-slate-500 truncate" title={p.preview}>“{p.preview}”</div>
+                                    </div>
+                                    <button onClick={() => _applyProposal(p)} className="shrink-0 px-2 py-0.5 rounded bg-indigo-600 text-white text-[11px] font-bold hover:bg-indigo-700">{t('pdf_audit.region.suggest_apply') || 'Apply'}</button>
+                                    <button onClick={() => setRestyleProposals((prev) => prev ? prev.filter((x) => x !== p) : prev)} className="shrink-0 px-1.5 py-0.5 rounded text-slate-500 text-[11px] font-bold hover:bg-slate-100" aria-label={t('pdf_audit.region.suggest_dismiss') || 'Dismiss this suggestion'}>✕</button>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                            {Array.isArray(_restyleProposals) && _restyleProposals.length === 0 && (
+                              <p className="text-[11px] text-slate-500">{t('pdf_audit.region.suggest_none_inline') || 'No structure changes suggested — the document already reads cleanly.'}</p>
+                            )}
+                            {Array.isArray(_restyleProposals) && _restyleDropped > 0 && (
+                              <p className="text-[10px] text-slate-500 italic">{'✓ ' + _restyleDropped + ' ' + (t('pdf_audit.region.suggest_filtered') || 'more AI suggestion(s) were filtered out — they couldn’t be applied here without changing content.')}</p>
+                            )}
                           </div>
                         </details>
                       )}
