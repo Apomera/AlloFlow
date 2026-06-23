@@ -2,10 +2,10 @@
 
 exports[`Throughline render goldens > Generate-Unit button is disabled in a live class session (hard block) 1`] = `
 {
-  "buttons": 10,
+  "buttons": 11,
   "inputs": 1,
-  "lengthBucket": 25,
-  "sha": "82208e66ded31b17",
+  "lengthBucket": 26,
+  "sha": "76ff46e766d922e9",
   "svgs": 1,
   "textareas": 0,
 }
@@ -13,10 +13,10 @@ exports[`Throughline render goldens > Generate-Unit button is disabled in a live
 
 exports[`Throughline render goldens > Generate-Unit capability wired → toolbar shows the ✨ button 1`] = `
 {
-  "buttons": 10,
+  "buttons": 11,
   "inputs": 1,
-  "lengthBucket": 25,
-  "sha": "cd728c28226672c6",
+  "lengthBucket": 26,
+  "sha": "e364833e298b3344",
   "svgs": 1,
   "textareas": 0,
 }
@@ -24,10 +24,10 @@ exports[`Throughline render goldens > Generate-Unit capability wired → toolbar
 
 exports[`Throughline render goldens > host-wired empty (history + currentLesson + onOpenLesson) 1`] = `
 {
-  "buttons": 9,
+  "buttons": 10,
   "inputs": 1,
-  "lengthBucket": 23,
-  "sha": "298b754d0ce02e0f",
+  "lengthBucket": 24,
+  "sha": "df54bff8ff2b512a",
   "svgs": 1,
   "textareas": 0,
 }
@@ -35,10 +35,10 @@ exports[`Throughline render goldens > host-wired empty (history + currentLesson 
 
 exports[`Throughline render goldens > manual mode (5 props, empty) — empty state + manual-import hint 1`] = `
 {
-  "buttons": 8,
+  "buttons": 9,
   "inputs": 1,
-  "lengthBucket": 22,
-  "sha": "03519051a89a1b88",
+  "lengthBucket": 23,
+  "sha": "df8f12c91e61be1d",
   "svgs": 1,
   "textareas": 0,
 }
@@ -46,10 +46,10 @@ exports[`Throughline render goldens > manual mode (5 props, empty) — empty sta
 
 exports[`Throughline render goldens > populated unit (seeded localStorage + matching history) — cards + edges 1`] = `
 {
-  "buttons": 13,
+  "buttons": 15,
   "inputs": 1,
-  "lengthBucket": 35,
-  "sha": "930842ceada6b487",
+  "lengthBucket": 38,
+  "sha": "0c4bcec267db074c",
   "svgs": 1,
   "textareas": 0,
 }
@@ -57,10 +57,10 @@ exports[`Throughline render goldens > populated unit (seeded localStorage + matc
 
 exports[`Throughline render goldens > populated unit tolerates a dangling lessonId without crashing (normalize guard) 1`] = `
 {
-  "buttons": 15,
+  "buttons": 17,
   "inputs": 1,
-  "lengthBucket": 42,
-  "sha": "cc06612b6f5805c2",
+  "lengthBucket": 45,
+  "sha": "cf7f59ec8d1390d4",
   "svgs": 1,
   "textareas": 0,
 }
@@ -68,10 +68,10 @@ exports[`Throughline render goldens > populated unit tolerates a dangling lesson
 
 exports[`Throughline render goldens > units-aware empty (history with unitId + units prop) 1`] = `
 {
-  "buttons": 9,
+  "buttons": 10,
   "inputs": 1,
-  "lengthBucket": 23,
-  "sha": "298b754d0ce02e0f",
+  "lengthBucket": 24,
+  "sha": "df54bff8ff2b512a",
   "svgs": 1,
   "textareas": 0,
 }

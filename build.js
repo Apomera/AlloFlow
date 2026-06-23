@@ -459,6 +459,21 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        // Shared ConceptGraph format + spine + adapters (acg/v1). No loadModule()
+        // call in AlloFlowANTI.txt — Throughline lazy-loads it from the CDN at
+        // click time; this entry just gets it copied to prismflow-deploy/public.
+        name: 'ConceptGraphEngine',
+        filename: 'concept_graph_engine_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        // Orbitable WebGL 3D renderer for acg/v1 (lazy-loaded by Throughline's
+        // "View in 3D"; lazy-loads three.js itself, falls back to the outline).
+        name: 'ConceptGraph3D',
+        filename: 'concept_graph_3d_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'VisualPanelModule',
         filename: 'visual_panel_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'

@@ -57,6 +57,15 @@
   var NODE_H = 120;
   var CANVAS_W = 2400;
   var CANVAS_H = 1400;
+  // ── Swim-lanes (the meaningful 2nd axis: strand / UbD phase / UDL mode / tier) ──
+  // node.category (already persisted + round-tripped, previously never rendered) is
+  // surfaced as horizontal lane bands. The lane INDEX is the single source of
+  // grouping, and is also the depth-plane a future optional 3D view projects onto —
+  // so 2D lanes and a 3D "floors" view stay one consistent model.
+  var LANE_TOP = 40;
+  var LANE_H = NODE_H + 80;                 // tall enough for one row of cards + a label
+  var LANE_TINTS = ['#f8fafc', '#eef2f7'];  // subtle, AA-safe alternating bands
+  var LANE_BAND_Y = 28;                      // node y offset within its band when tidied
 
   // Canonical type badges — mirrors the app's typeIcons map so badges match the
   // rest of AlloFlow (view_misc_panels typeIcons).
@@ -255,6 +264,66 @@
     return { order: order, hasCycle: false };
   }
 
+  // ── Lanes: distinct categories among nodes → ordered bands ──────────
+  // First-appearance order; uncategorized nodes (category null/'') fall into a
+  // single trailing "Ungrouped" lane. The returned index is the band position AND
+  // the depth plane a 3D view would stack on.
+  function deriveLanes(unit) {
+    var order = [], seen = {}, hasUngrouped = false;
+    (unit.nodes || []).forEach(function (n) {
+      var c = (n && typeof n.category === 'string' && n.category) ? n.category : null;
+      if (c === null) { hasUngrouped = true; return; }
+      if (!seen[c]) { seen[c] = true; order.push(c); }
+    });
+    var lanes = order.map(function (c, i) { return { key: c, index: i }; });
+    if (hasUngrouped || lanes.length === 0) lanes.push({ key: null, index: lanes.length });
+    return lanes;
+  }
+
+  // ── Lazy-load the shared ConceptGraph engine + 3D renderer ──────────
+  // Loaded from the SAME CDN path this module was served from, so "View in 3D"
+  // works in the deployed Canvas with no host wiring. Resolves false if the
+  // modules can't be reached (the overlay then shows a graceful message).
+  var CG_CDN_FALLBACK = 'https://alloflow-cdn.pages.dev/';
+  function _cgSelfBase() {
+    try {
+      var scripts = document.getElementsByTagName('script');
+      for (var i = 0; i < scripts.length; i++) {
+        var src = scripts[i].src || '';
+        var idx = src.indexOf('mind_map_module.js');
+        if (idx >= 0) return { base: src.slice(0, idx), query: src.slice(idx + 'mind_map_module.js'.length) };
+      }
+    } catch (e) {}
+    return { base: CG_CDN_FALLBACK, query: '' };
+  }
+  function _loadScriptOnce(url) {
+    return new Promise(function (resolve, reject) {
+      try {
+        var sel = 'script[data-cg-src="' + url + '"]';
+        var existing = document.querySelector(sel);
+        if (existing) {
+          if (existing.getAttribute('data-cg-loaded') === '1') return resolve();
+          existing.addEventListener('load', function () { resolve(); });
+          existing.addEventListener('error', function () { reject(new Error('load failed')); });
+          return;
+        }
+        var s = document.createElement('script');
+        s.src = url; s.async = true; s.setAttribute('data-cg-src', url);
+        s.onload = function () { s.setAttribute('data-cg-loaded', '1'); resolve(); };
+        s.onerror = function () { reject(new Error('load failed: ' + url)); };
+        document.head.appendChild(s);
+      } catch (e) { reject(e); }
+    });
+  }
+  function ensureConceptGraph() {
+    if (window.AlloModules && window.AlloModules.ConceptGraph3D && window.AlloModules.ConceptGraphEngine) return Promise.resolve(true);
+    var loc = _cgSelfBase();
+    return _loadScriptOnce(loc.base + 'concept_graph_engine_module.js' + loc.query)
+      .then(function () { return _loadScriptOnce(loc.base + 'concept_graph_3d_module.js' + loc.query); })
+      .then(function () { return !!(window.AlloModules && window.AlloModules.ConceptGraph3D && window.AlloModules.ConceptGraphEngine); })
+      .catch(function () { return false; });
+  }
+
   // ── Component ───────────────────────────────────────────────────────
   function ThroughlineModal(props) {
     var isOpen = props.isOpen;
@@ -292,6 +361,16 @@
     var outlineHook = useState(false); var showOutline = outlineHook[0]; var setShowOutline = outlineHook[1];
     var headerHook = useState(false); var editingHeader = headerHook[0]; var setEditingHeader = headerHook[1];
     var quotaHook = useState(false); var quotaFailed = quotaHook[0]; var setQuotaFailed = quotaHook[1];
+    var lanesHook = useState(false); var showLanes = lanesHook[0]; var setShowLanes = lanesHook[1];
+    // pendingEdge holds the two endpoints awaiting an accessible sequence-vs-prereq
+    // choice (replaces the SR-hostile window.confirm in connect mode).
+    var pendingEdgeHook = useState(null); var pendingEdge = pendingEdgeHook[0]; var setPendingEdge = pendingEdgeHook[1];
+    // 3D view overlay: cg3dState idle|loading|ready|error; graph3d = the acg graph
+    // currently shown (re-set when "Arrange by meaning" rewrites its axisValues).
+    var show3DHook = useState(false); var show3D = show3DHook[0]; var setShow3D = show3DHook[1];
+    var cg3dHook = useState('idle'); var cg3dState = cg3dHook[0]; var setCg3dState = cg3dHook[1];
+    var graph3dHook = useState(null); var graph3d = graph3dHook[0]; var setGraph3d = graph3dHook[1];
+    var aiBusyHook = useState(false); var aiBusy = aiBusyHook[0]; var setAiBusy = aiBusyHook[1];
 
     // ── Generate Unit machine. `gen` null = closed. When set, holds the whole
     //    flow (setup → proposing → review → generating → done). The async driver
@@ -303,6 +382,7 @@
 
     var svgRef = useRef(null);
     var fileInputRef = useRef(null);
+    var cardRefs = useRef({});            // nodeId -> card DOM, for arrow-key roving focus
     var genRef = useRef(null);            // latest `gen` for the async loop
     var mountedRef = useRef(true);        // false after unmount → loop bails
     var abortRef = useRef(null);          // AbortController for the active run
@@ -663,16 +743,92 @@
       if (mode === 'connect') {
         if (!pendingFrom) { setPendingFrom(node.nodeId); }
         else if (pendingFrom !== node.nodeId) {
-          // default to sequence; offer prerequisite via a quick prompt
-          var pre = window.confirm(t('throughline.edge_kind_prompt') ||
-            'Connect as a SEQUENCE (teach next)?\n\nOK = sequence,  Cancel = prerequisite gate');
-          addEdge(pendingFrom, node.nodeId, pre ? 'sequence' : 'prerequisite');
-          setPendingFrom(null);
-          setMode('view');
+          // open the accessible inline sequence-vs-prerequisite choice (no window.confirm)
+          setPendingEdge({ from: pendingFrom, to: node.nodeId });
         }
       } else if (mode === 'delete') {
         deleteNode(node.nodeId);
       }
+    }
+
+    // Resolve the pending connect-mode edge with the chosen type (accessible path).
+    function resolvePendingEdge(type) {
+      if (!pendingEdge) return;
+      addEdge(pendingEdge.from, pendingEdge.to, type);
+      setPendingEdge(null); setPendingFrom(null); setMode('view');
+    }
+    function cancelPendingEdge() { setPendingEdge(null); setPendingFrom(null); setMode('view'); }
+
+    // Arrow-key roving focus across cards, following the derived teaching order so
+    // keyboard users traverse the canvas in the same sequence the outline reads.
+    function focusAdjacentCard(nodeId, dir) {
+      var ord = deriveOutline(unit).order;
+      var i = ord.indexOf(nodeId);
+      if (i < 0) return;
+      var j = i + dir;
+      if (j < 0 || j >= ord.length) return;
+      var el = cardRefs.current[ord[j]];
+      if (el && el.focus) el.focus();
+    }
+
+    // A category may be a unitId (auto-set on import/seed) or a free-text strand the
+    // teacher typed; show the unit's friendly name when known, else the raw label.
+    function laneLabel(key) {
+      if (key == null) return (t('throughline.lane_ungrouped') || 'Ungrouped');
+      for (var i = 0; i < hostUnits.length; i++) { if (hostUnits[i] && hostUnits[i].id === key) return hostUnits[i].name || 'Unit'; }
+      return key;
+    }
+
+    // Tidy nodes into their lane bands (keeps x = teaching order; sets y per lane).
+    function arrangeIntoLanes() {
+      var lanes = deriveLanes(unit);
+      var idxOf = {}; lanes.forEach(function (l) { idxOf[l.key == null ? ' none' : l.key] = l.index; });
+      setUnit(function (u) {
+        return Object.assign({}, u, {
+          nodes: u.nodes.map(function (n) {
+            var key = (typeof n.category === 'string' && n.category) ? n.category : ' none';
+            var li = idxOf[key] || 0;
+            return Object.assign({}, n, { y: LANE_TOP + li * LANE_H + LANE_BAND_Y });
+          })
+        });
+      });
+      addToast(t('throughline.lanes_arranged') || 'Arranged into lanes', 'success');
+    }
+
+    // ── 3D view ───────────────────────────────────────────────────
+    // Build an acg graph from the current unit, with each node labelled by its
+    // resolved lesson title (so the 3D scene + the a11y outline read meaningfully).
+    function buildGraphForView() {
+      var E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+      if (!E) return null;
+      var g = E.fromThroughlineUnit(unit);
+      g.nodes.forEach(function (n) {
+        var item = resolveLesson(n.lessonId);
+        n.label = item ? (item.title || typeLabel(item.type)) : (n.description || (t('throughline.planned') || 'Planned lesson'));
+      });
+      return g;
+    }
+    function open3D() {
+      setShow3D(true); setCg3dState('loading');
+      ensureConceptGraph().then(function (ok) {
+        if (!mountedRef.current) return;
+        if (!ok) { setCg3dState('error'); return; }
+        setGraph3d(buildGraphForView()); setCg3dState('ready');
+      });
+    }
+    function close3D() { setShow3D(false); setCg3dState('idle'); setGraph3d(null); setAiBusy(false); }
+    // Ask Gemini to score nodes on named axes (x=sequence, y=Bloom, z=strand), then
+    // re-render the 3D scene from those — so position carries real meaning.
+    function arrange3DByMeaning() {
+      var E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+      if (!E || typeof window.callGemini !== 'function' || !graph3d) {
+        addToast(t('throughline.ai_unavailable') || 'AI arrange is not available here.', 'info'); return;
+      }
+      setAiBusy(true);
+      E.layoutWithGemini(graph3d, window.callGemini, { topic: unit.title || '', gradeLevel: '' })
+        .then(function (merged) { if (mountedRef.current) { setGraph3d(merged); addToast(t('throughline.ai_arranged') || 'Arranged by meaning', 'success'); } })
+        .catch(function (e) { if (mountedRef.current) addToast((t('throughline.ai_arrange_failed') || 'AI arrange failed') + ': ' + (e && e.message ? e.message : ''), 'error'); })
+        .then(function () { if (mountedRef.current) setAiBusy(false); });
     }
 
     // ── Generate Unit engine ──────────────────────────────────────
@@ -1053,11 +1209,14 @@
       var border = pendingThis ? '#d97706' : (planned ? '#cbd5e1' : '#475569');
       var bg = pendingThis ? '#fffbeb' : '#ffffff';
       // keyboard summary + ops so the canvas is operable without a mouse (WCAG 2.1.1)
-      var cardAria = planned
-        ? ((t('throughline.empty_node') || 'Attach a lesson') + (n.description ? ': ' + n.description : '') + '. ' + (t('throughline.aria_planned_hint') || 'Press Enter to attach a lesson, E to edit, Delete to remove.'))
-        : ((item ? (typeLabel(item.type) + ': ' + (item.title || typeLabel(item.type))) : (t('throughline.lesson_missing_short') || 'Lesson missing')) + '. ' + (t('throughline.aria_lesson_hint') || 'Press Enter to open, E to edit, Delete to remove.'));
+      var laneSuffix = (showLanes && typeof n.category === 'string' && n.category)
+        ? (' ' + (t('throughline.lane_label_short') || 'Lane') + ': ' + laneLabel(n.category) + '.') : '';
+      var cardAria = (planned
+        ? ((t('throughline.empty_node') || 'Attach a lesson') + (n.description ? ': ' + n.description : '') + '. ' + (t('throughline.aria_planned_hint') || 'Press Enter to attach a lesson, E to edit, Delete to remove. Arrow keys move between lessons.'))
+        : ((item ? (typeLabel(item.type) + ': ' + (item.title || typeLabel(item.type))) : (t('throughline.lesson_missing_short') || 'Lesson missing')) + '. ' + (t('throughline.aria_lesson_hint') || 'Press Enter to open, E to edit, Delete to remove. Arrow keys move between lessons.'))) + laneSuffix;
       return h('div', {
         key: n.nodeId,
+        ref: function (el) { if (el) cardRefs.current[n.nodeId] = el; else delete cardRefs.current[n.nodeId]; },
         tabIndex: 0,
         role: 'group',
         'aria-label': cardAria,
@@ -1069,6 +1228,8 @@
             else if (planned && hostHistory.length) { e.preventDefault(); setPickerForNode(n.nodeId); }
           } else if (e.key === 'e' || e.key === 'E' || e.key === 'F2') { e.preventDefault(); setEditingNode(n.nodeId); }
           else if (e.key === 'Delete') { e.preventDefault(); deleteNode(n.nodeId); }
+          else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); focusAdjacentCard(n.nodeId, 1); }
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); focusAdjacentCard(n.nodeId, -1); }
         },
         style: {
           position: 'absolute', left: n.x, top: n.y, width: NODE_W, minHeight: NODE_H,
@@ -1117,6 +1278,7 @@
     });
 
     var outline = deriveOutline(unit);
+    var lanes = deriveLanes(unit);
 
     // header bar
     var topBar = h('div', { style: { background: '#fff', borderBottom: '1px solid #cbd5e1', padding: '10px 18px', display: 'flex', alignItems: 'center', gap: 12 } },
@@ -1159,12 +1321,15 @@
         }
       }, '✨ ' + (t('throughline.gen_btn') || 'Generate unit')),
       canGenerate && h('div', { style: { width: 1, height: 20, background: '#cbd5e1', margin: '0 2px' } }),
-      tbBtn('➕ ' + (t('throughline.add_node') || 'Add node'), mode === 'addNode', function () { setMode(mode === 'addNode' ? 'view' : 'addNode'); setPendingFrom(null); }),
-      tbBtn('🔗 ' + (t('throughline.connect') || 'Connect'), mode === 'connect', function () { setMode(mode === 'connect' ? 'view' : 'connect'); setPendingFrom(null); }),
-      tbBtn('🗑 ' + (t('throughline.delete') || 'Delete'), mode === 'delete', function () { setMode(mode === 'delete' ? 'view' : 'delete'); setPendingFrom(null); }),
+      tbBtn('➕ ' + (t('throughline.add_node') || 'Add node'), mode === 'addNode', function () { setMode(mode === 'addNode' ? 'view' : 'addNode'); setPendingFrom(null); setPendingEdge(null); }),
+      tbBtn('🔗 ' + (t('throughline.connect') || 'Connect'), mode === 'connect', function () { setMode(mode === 'connect' ? 'view' : 'connect'); setPendingFrom(null); setPendingEdge(null); }),
+      tbBtn('🗑 ' + (t('throughline.delete') || 'Delete'), mode === 'delete', function () { setMode(mode === 'delete' ? 'view' : 'delete'); setPendingFrom(null); setPendingEdge(null); }),
       h('div', { style: { width: 1, height: 20, background: '#cbd5e1', margin: '0 2px' } }),
       (hostHistory.length > 0) && tbBtn('📥 ' + (t('throughline.add_lessons') || 'Add my lessons'), false, function () { setPickerForNode('BULK'); }, t('throughline.add_lessons_title') || 'Add lessons from your history into this unit'),
       tbBtn('🧾 ' + (t('throughline.outline') || 'Outline'), showOutline, function () { setShowOutline(!showOutline); }, t('throughline.outline_title') || 'Printable scope & sequence'),
+      tbBtn('🛤 ' + (t('throughline.lanes') || 'Lanes'), showLanes, function () { setShowLanes(!showLanes); }, t('throughline.lanes_title') || 'Group lessons into strands / phases (swim-lanes)'),
+      showLanes && tbBtn('↕ ' + (t('throughline.arrange_lanes') || 'Arrange into lanes'), false, arrangeIntoLanes, t('throughline.arrange_lanes_title') || 'Tidy each lesson into its lane band (keeps left-to-right teaching order)'),
+      (unit.nodes.length > 0) && tbBtn('🧊 ' + (t('throughline.view_3d') || 'View in 3D'), show3D, open3D, t('throughline.view_3d_title') || 'See this unit as an orbitable 3D concept map (strands become depth)'),
       h('div', { style: { width: 1, height: 20, background: '#cbd5e1', margin: '0 2px' } }),
       tbBtn('💾 ' + (t('throughline.export') || 'Export unit'), false, exportUnit, t('throughline.export_title') || 'Download this unit as one file'),
       tbBtn('📂 ' + (t('throughline.import') || 'Import'), false, function () { if (fileInputRef.current) fileInputRef.current.click(); }, t('throughline.import_title') || 'Open a unit or lesson-pack file'),
@@ -1179,6 +1344,26 @@
       : mode === 'connect' ? (pendingFrom ? (t('throughline.hint_connect2') || 'Click a second node. You will choose sequence vs prerequisite.') : (t('throughline.hint_connect1') || 'Click the first node of the connection.'))
       : mode === 'delete' ? (t('throughline.hint_delete') || 'Click a node to remove it from the unit (the lesson itself is not deleted).')
       : (t('throughline.hint_view') || 'Left-to-right reads as teaching order. Drag to arrange, click a node to edit, Open to launch the lesson. The exported file is the durable copy.')
+    );
+
+    // Accessible inline replacement for the old window.confirm in connect mode:
+    // a focusable choice bar (Escape cancels) so the sequence-vs-prerequisite
+    // decision is operable by keyboard / screen reader.
+    var connectChoice = pendingEdge && h('div', {
+      role: 'dialog', 'aria-label': t('throughline.edge_choose_aria') || 'Choose how to connect these two lessons',
+      onKeyDown: function (e) { if (e.key === 'Escape') { e.preventDefault(); cancelPendingEdge(); } },
+      style: { background: '#eef2ff', borderBottom: '1px solid #c7d2fe', padding: '8px 18px', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }
+    },
+      h('span', { style: { fontSize: 12, fontWeight: 800, color: '#3730a3' } }, t('throughline.edge_choose') || 'Connect these lessons as:'),
+      h('button', { autoFocus: true, onClick: function () { resolvePendingEdge('sequence'); },
+        style: { fontSize: 12, fontWeight: 800, padding: '5px 12px', borderRadius: 7, border: 'none', background: '#4f46e5', color: '#fff', cursor: 'pointer' } },
+        '→ ' + (t('throughline.edge_sequence') || 'Teach next (sequence)')),
+      h('button', { onClick: function () { resolvePendingEdge('prerequisite'); },
+        style: { fontSize: 12, fontWeight: 700, padding: '5px 12px', borderRadius: 7, border: '1px solid #d97706', background: '#fff', color: '#b45309', cursor: 'pointer' } },
+        '⛔ ' + (t('throughline.edge_prereq') || 'Prerequisite gate')),
+      h('button', { onClick: cancelPendingEdge,
+        style: { fontSize: 12, fontWeight: 700, padding: '5px 12px', borderRadius: 7, border: '1px solid #cbd5e1', background: '#fff', color: '#475569', cursor: 'pointer' } },
+        t('common.cancel') || 'Cancel')
     );
 
     var quotaNudge = quotaFailed && h('div', { style: { background: '#fef2f2', borderBottom: '1px solid #fecaca', padding: '6px 18px', fontSize: 11, color: '#991b1b', fontWeight: 700 } },
@@ -1198,6 +1383,14 @@
             h('path', { d: 'M 28 0 L 0 0 0 28', fill: 'none', stroke: '#f1f5f9', strokeWidth: 1 }))
         ),
         h('rect', { x: 0, y: 0, width: CANVAS_W, height: CANVAS_H, fill: 'url(#tl-grid)' }),
+        // swim-lane bands (the 2nd meaningful axis; also the depth planes a 3D view stacks)
+        showLanes && lanes.map(function (lane, i) {
+          var y = LANE_TOP + lane.index * LANE_H;
+          return h('g', { key: 'lane' + i, 'aria-hidden': 'true' },
+            h('rect', { x: 0, y: y, width: CANVAS_W, height: LANE_H, fill: LANE_TINTS[i % 2], opacity: 0.7, stroke: '#e2e8f0', strokeWidth: 1 }),
+            h('text', { x: 14, y: y + 22, fontSize: 13, fontWeight: 700, fill: '#64748b' }, laneLabel(lane.key))
+          );
+        }),
         edgeEls
       ),
       // HTML card overlay (same scroll container, reads same x/y as edges)
@@ -1229,7 +1422,11 @@
           var item = resolveLesson(n.lessonId);
           var prereqFor = unit.edges.filter(function (e) { return e.from === nid && e.type === 'prerequisite'; }).length;
           var needsPrereq = unit.edges.filter(function (e) { return e.to === nid && e.type === 'prerequisite'; });
-          return h('div', { key: nid, style: { padding: '6px 16px', borderBottom: '1px solid #f1f5f9', fontSize: 12 } },
+          return h('div', { key: nid, tabIndex: 0, role: 'button',
+            'aria-label': (i + 1) + '. ' + (item ? (item.title || typeLabel(item.type)) : (t('throughline.planned') || 'Planned lesson')) + '. ' + (t('throughline.outline_row_hint') || 'Press Enter to focus this lesson on the canvas.'),
+            onClick: function () { var el = cardRefs.current[nid]; if (el && el.focus) el.focus(); },
+            onKeyDown: function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); var el = cardRefs.current[nid]; if (el && el.focus) el.focus(); } },
+            style: { padding: '6px 16px', borderBottom: '1px solid #f1f5f9', fontSize: 12, cursor: 'pointer' } },
             h('div', { style: { display: 'flex', gap: 8 } },
               h('span', { style: { fontWeight: 800, color: '#6366f1', minWidth: 18 } }, (i + 1) + '.'),
               h('div', { style: { flex: 1 } },
@@ -1343,6 +1540,13 @@
           placeholder: t('throughline.description_ph') || 'e.g. Hook — surfaces prior knowledge. Gates the exit ticket.',
           style: { width: '100%', padding: 8, border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 13, boxSizing: 'border-box', resize: 'vertical' }
         }),
+        h('label', { htmlFor: 'tl-node-lane', style: { fontSize: 11, fontWeight: 700, color: '#475569', display: 'block', margin: '12px 0 4px' } },
+          t('throughline.lane_label') || 'Lane / strand (groups this lesson — UbD phase, UDL mode, content strand…)'),
+        h('input', { id: 'tl-node-lane', value: (typeof editNode.category === 'string' ? editNode.category : ''), list: 'tl-lane-list',
+          onChange: function (e) { var v = (e.target.value || '').trim(); setNodeFields(editNode.nodeId, { category: v || null }); },
+          placeholder: t('throughline.lane_ph') || 'e.g. Acquire · Make-Meaning · Transfer',
+          style: { width: '100%', padding: 8, border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 13, boxSizing: 'border-box' } }),
+        h('datalist', { id: 'tl-lane-list' }, lanes.filter(function (l) { return l.key != null; }).map(function (l) { return h('option', { key: l.key, value: l.key }); })),
         h('div', { style: { marginTop: 12, padding: 10, background: '#f8fafc', borderRadius: 8 } },
           h('div', { style: { fontSize: 11, fontWeight: 700, color: '#475569', marginBottom: 6 } }, t('throughline.lesson_label') || 'Lesson'),
           editNode.lessonId && resolveLesson(editNode.lessonId)
@@ -1590,10 +1794,44 @@
       );
     })();
 
+    // ── 3D view overlay ───────────────────────────────────────────
+    var CG3D = window.AlloModules && window.AlloModules.ConceptGraph3D;
+    var _cg3dCenter = { position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 24, color: '#cbd5e1', fontSize: 14, lineHeight: 1.5 };
+    var threeDModal = show3D && h('div', {
+      style: { position: 'fixed', inset: 0, background: 'rgba(2,6,23,0.94)', zIndex: 140, display: 'flex', flexDirection: 'column' },
+      role: 'dialog', 'aria-modal': 'true', 'aria-label': t('throughline.view_3d') || 'View in 3D',
+      onKeyDown: function (e) { if (e.key === 'Escape') { e.preventDefault(); close3D(); } }
+    },
+      h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', background: '#0b1020', borderBottom: '1px solid #1e293b', color: '#e2e8f0' } },
+        h('span', { style: { fontSize: 18 }, 'aria-hidden': 'true' }, '🧊'),
+        h('div', { style: { flex: 1, minWidth: 0 } },
+          h('div', { style: { fontWeight: 800, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } },
+            (unit.title || (t('throughline.untitled_unit') || 'Untitled unit')) + ' — ' + (t('throughline.view_3d') || '3D concept map')),
+          h('div', { style: { fontSize: 11, color: '#94a3b8' } },
+            t('throughline.view_3d_controls') || 'Drag to orbit · scroll to zoom · depth = strand. A reading-order outline stays available to screen readers.')),
+        (typeof window.callGemini === 'function') && h('button', {
+          onClick: arrange3DByMeaning, disabled: aiBusy || cg3dState !== 'ready',
+          title: t('throughline.ai_arrange_title') || 'Use AI to position lessons by meaning: left→right = sequence, up = cognitive depth, depth = strand',
+          style: { fontSize: 12, fontWeight: 800, padding: '6px 12px', borderRadius: 8, border: 'none', whiteSpace: 'nowrap',
+            background: (aiBusy || cg3dState !== 'ready') ? '#334155' : 'linear-gradient(90deg,#7c3aed,#4f46e5)',
+            color: '#fff', cursor: (aiBusy || cg3dState !== 'ready') ? 'default' : 'pointer' }
+        }, aiBusy ? ('… ' + (t('throughline.ai_arranging') || 'Arranging')) : ('✨ ' + (t('throughline.ai_arrange') || 'Arrange by meaning'))),
+        h('button', { onClick: close3D, 'aria-label': t('common.close') || 'Close',
+          style: { border: 'none', background: 'transparent', color: '#cbd5e1', cursor: 'pointer', fontSize: 18, padding: 4 } }, '✕')
+      ),
+      h('div', { style: { flex: 1, position: 'relative', minHeight: 0 } },
+        cg3dState === 'loading' ? h('div', { style: _cg3dCenter }, '🧭 ' + (t('throughline.view_3d_loading') || 'Loading the 3D view…'))
+        : cg3dState === 'error' ? h('div', { style: _cg3dCenter }, '⚠️ ' + (t('throughline.view_3d_failed') || 'The 3D view could not load here. Open the latest Canvas link and try again — the outline view still works.'))
+        : (cg3dState === 'ready' && CG3D && CG3D.View && graph3d)
+          ? h(CG3D.View, { graph: graph3d, t: t, height: '100%' })
+          : h('div', { style: _cg3dCenter }, t('throughline.view_3d_unavailable') || '3D view unavailable.')
+      )
+    );
+
     return h('div', { style: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.85)', zIndex: 100, display: 'flex', flexDirection: 'column' }, role: 'dialog', 'aria-modal': 'true', 'aria-label': TOOL_NAME },
-      topBar, toolbar, quotaNudge, hint,
+      topBar, toolbar, quotaNudge, hint, connectChoice,
       h('div', { style: { flex: 1, position: 'relative', display: 'flex' } }, canvas, outlinePanel),
-      pickerModal, editModal, headerModal, genModal
+      pickerModal, editModal, headerModal, genModal, threeDModal
     );
   }
 

@@ -1149,6 +1149,106 @@ const renderOutlineContent = (deps) => {
   }
   return /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl mx-auto" }, /* @__PURE__ */ React.createElement(MainTitle, null), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-6" }, branches.map((b, i) => /* @__PURE__ */ React.createElement(BranchItem, { key: i, branch: b, bIdx: i }))));
 };
+// ── "View in 3D" for the Visual Organizer concept map ──────────────
+// Self-contained: builds an acg graph from the current map and opens an imperative
+// overlay via the shared ConceptGraph3D renderer (lazy-loaded from this module's own
+// CDN path), so no host state / AlloFlowANTI.txt wiring is needed. Falls back to the
+// reading-order outline if WebGL or the modules are unavailable.
+var _VO_CG3D_CDN_FALLBACK = 'https://alloflow-cdn.pages.dev/';
+function _voCg3dSelfBase() {
+  try {
+    var scripts = document.getElementsByTagName('script');
+    for (var i = 0; i < scripts.length; i++) {
+      var src = scripts[i].src || '';
+      var idx = src.indexOf('view_renderers_module.js');
+      if (idx >= 0) return { base: src.slice(0, idx), query: src.slice(idx + 'view_renderers_module.js'.length) };
+    }
+  } catch (e) {}
+  return { base: _VO_CG3D_CDN_FALLBACK, query: '' };
+}
+function _voCg3dLoadScript(url) {
+  return new Promise(function (resolve, reject) {
+    try {
+      var ex = document.querySelector('script[data-cg-src="' + url + '"]');
+      if (ex) { if (ex.getAttribute('data-cg-loaded') === '1') return resolve(); ex.addEventListener('load', function () { resolve(); }); ex.addEventListener('error', function () { reject(new Error('load failed')); }); return; }
+      var s = document.createElement('script'); s.src = url; s.async = true; s.setAttribute('data-cg-src', url);
+      s.onload = function () { s.setAttribute('data-cg-loaded', '1'); resolve(); };
+      s.onerror = function () { reject(new Error('load failed: ' + url)); };
+      document.head.appendChild(s);
+    } catch (e) { reject(e); }
+  });
+}
+function _voCg3dEnsure() {
+  if (window.AlloModules && window.AlloModules.ConceptGraph3D && window.AlloModules.ConceptGraphEngine) return Promise.resolve(true);
+  var loc = _voCg3dSelfBase();
+  return _voCg3dLoadScript(loc.base + 'concept_graph_engine_module.js' + loc.query)
+    .then(function () { return _voCg3dLoadScript(loc.base + 'concept_graph_3d_module.js' + loc.query); })
+    .then(function () { return !!(window.AlloModules && window.AlloModules.ConceptGraph3D && window.AlloModules.ConceptGraphEngine); })
+    .catch(function () { return false; });
+}
+function openConceptMap3D(opts) {
+  opts = opts || {};
+  var t = opts.t || function (k) { return k; };
+  var addToast = opts.addToast || function () {};
+  var nodes = Array.isArray(opts.nodes) ? opts.nodes : [];
+  if (!nodes.length) { addToast(t('concept_map.view_3d_empty') || 'Add some concepts first.', 'info'); return function () {}; }
+  var overlay = document.createElement('div');
+  overlay.setAttribute('role', 'dialog'); overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-label', t('concept_map.view_3d') || 'View concept map in 3D');
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:1000;background:rgba(2,6,23,0.94);display:flex;flex-direction:column;';
+  var header = document.createElement('div');
+  header.style.cssText = 'display:flex;align-items:center;gap:12px;padding:10px 16px;background:#0b1020;border-bottom:1px solid #1e293b;color:#e2e8f0;';
+  var titleWrap = document.createElement('div'); titleWrap.style.cssText = 'flex:1;min-width:0;';
+  var title = document.createElement('div'); title.style.cssText = 'font-weight:800;font-size:14px;'; title.textContent = '\u{1F9CA} ' + (t('concept_map.view_3d') || '3D concept map');
+  var hint = document.createElement('div'); hint.style.cssText = 'font-size:11px;color:#94a3b8;'; hint.textContent = t('concept_map.view_3d_controls') || 'Drag to orbit · scroll to zoom · depth = strand';
+  titleWrap.appendChild(title); titleWrap.appendChild(hint);
+  var closeBtn = document.createElement('button');
+  closeBtn.setAttribute('aria-label', t('common.close') || 'Close'); closeBtn.textContent = '✕';
+  closeBtn.style.cssText = 'border:none;background:transparent;color:#cbd5e1;cursor:pointer;font-size:18px;padding:4px;';
+  header.appendChild(titleWrap); header.appendChild(closeBtn);
+  var body = document.createElement('div'); body.style.cssText = 'flex:1;position:relative;min-height:0;';
+  var status = document.createElement('div'); status.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;color:#cbd5e1;font-size:14px;line-height:1.5;';
+  status.textContent = '\u{1F9ED} ' + (t('concept_map.view_3d_loading') || 'Loading the 3D view…');
+  body.appendChild(status);
+  overlay.appendChild(header); overlay.appendChild(body);
+  document.body.appendChild(overlay);
+  var handle = null, aiBtn = null;
+  function destroy() {
+    try { if (handle && handle.destroy) handle.destroy(); } catch (e) {}
+    try { document.removeEventListener('keydown', onKey, true); } catch (e) {}
+    try { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); } catch (e) {}
+  }
+  function onKey(e) { if (e.key === 'Escape') { e.preventDefault(); destroy(); } }
+  document.addEventListener('keydown', onKey, true);
+  closeBtn.onclick = destroy;
+  _voCg3dEnsure().then(function (ok) {
+    if (!overlay.parentNode) return;
+    var E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+    var CG3D = window.AlloModules && window.AlloModules.ConceptGraph3D;
+    if (!ok || !E || !CG3D) { status.textContent = '⚠️ ' + (t('concept_map.view_3d_failed') || 'The 3D view could not load here. Open the latest Canvas link and try again — the outline still works.'); return; }
+    var graph = E.fromConceptMap(nodes, Array.isArray(opts.edges) ? opts.edges : [], opts.structureType || null);
+    if (status.parentNode) status.parentNode.removeChild(status);
+    if (typeof window.callGemini === 'function') {
+      aiBtn = document.createElement('button');
+      aiBtn.textContent = '✨ ' + (t('concept_map.view_3d_arrange') || 'Arrange by meaning');
+      aiBtn.style.cssText = 'font-size:12px;font-weight:800;padding:6px 12px;border-radius:8px;border:none;white-space:nowrap;background:linear-gradient(90deg,#7c3aed,#4f46e5);color:#fff;cursor:pointer;';
+      header.insertBefore(aiBtn, closeBtn);
+      aiBtn.onclick = function () {
+        aiBtn.disabled = true; var prev = aiBtn.textContent; aiBtn.textContent = '… ' + (t('concept_map.view_3d_arranging') || 'Arranging');
+        E.layoutWithGemini(graph, window.callGemini, { topic: opts.title || '' }).then(function (merged) {
+          if (!overlay.parentNode) return;
+          graph = merged;
+          try { if (handle && handle.destroy) handle.destroy(); } catch (e) {}
+          handle = CG3D.render(body, graph, { t: t });
+        }).catch(function () { addToast(t('concept_map.view_3d_arrange_failed') || 'AI arrange failed', 'error'); })
+          .then(function () { if (aiBtn) { aiBtn.disabled = false; aiBtn.textContent = prev; } });
+      };
+    }
+    handle = CG3D.render(body, graph, { t: t });
+  });
+  return destroy;
+}
+
 const renderInteractiveMap = (deps) => {
   const { ConfettiExplosion, STYLE_TEXT_SHADOW_WHITE, VENN_ZONES, activeChallengeMode, challengeFeedback, challengeModeType, generatedContent, isChallengeActive, isCheckingChallenge, isProcessing, isTeacherMode, letterSpacing, nodeInputText, isMapLocked, connectingSourceId, conceptMapNodes, conceptMapEdges, draggedNodeId, setChallengeModeType, setConnectingSourceId, setIsInteractiveMap, setIsInteractiveVenn, setNodeInputText, mapContainerRef, addToast, getElbowPath, handleAddManualNode, handleAutoLayout, handleCheckChallengeRouter, handleClearEdges, handleCreateChallenge, handleDeleteEdge, handleDeleteNode, handleExitChallenge, handleNodeClick, handleNodeMouseDown, handleResetLayout, handleRetryChallenge, handleSetIsConceptMapReadyToFalse, handleToggleIsMapLocked, renderFlowShape, setConceptMapNodes, t } = deps;
   try {
@@ -1301,6 +1401,16 @@ const renderInteractiveMap = (deps) => {
     },
     isMapLocked ? /* @__PURE__ */ React.createElement(Lock, { size: 14 }) : /* @__PURE__ */ React.createElement(Unlock, { size: 14 }),
     isMapLocked ? t("concept_map.toolbar.locked_label") : t("concept_map.toolbar.unlocked_label")
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => openConceptMap3D({ nodes: conceptMapNodes, edges: conceptMapEdges, structureType: generatedContent?.data?.structureType, title: generatedContent?.data?.main || generatedContent?.title || "", t, addToast }),
+      className: "flex items-center gap-1 bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-3 py-1.5 rounded-full text-xs font-bold transition-colors shadow-sm",
+      title: t("concept_map.toolbar.view_3d_tooltip") || "See this concept map as an orbitable 3D view (depth = strand)",
+      "aria-label": t("concept_map.toolbar.view_3d_tooltip") || "View in 3D"
+    },
+    "\u{1F9CA} ",
+    /* @__PURE__ */ React.createElement("span", { className: "hidden sm:inline" }, t("concept_map.toolbar.view_3d") || "View in 3D")
   )), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 border-l border-slate-300 pl-2" }, !isChallengeActive && isTeacherMode ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
     "select",
     {

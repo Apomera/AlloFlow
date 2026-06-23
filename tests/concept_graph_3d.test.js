@@ -1,0 +1,136 @@
+// Tests for concept_graph_3d_module.js — the orbitable WebGL renderer for acg/v1.
+//
+// jsdom has no WebGL, so the actual GL draw is NOT exercised here (it needs a live
+// Canvas/browser smoke). What IS pinned: (1) buildScene() is pure and deterministic —
+// semantic axes → centered 3D coords, depth separation by strand, edge wiring, lane
+// planes; (2) the graceful-degradation contract — no WebGL ⇒ visible reading-order
+// outline + notice, never a crash; (3) teardown doesn't throw; (4) the React <View>
+// SSR placeholder always renders the accessible outline.
+
+import { describe, it, expect, beforeAll } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
+const MODULES_DIR = resolve(process.cwd(), 'prismflow-deploy/node_modules');
+const React = require(resolve(MODULES_DIR, 'react'));
+const ReactDOMServer = require(resolve(MODULES_DIR, 'react-dom/server'));
+
+let CG3D;
+beforeAll(() => {
+  window.AlloModules = window.AlloModules || {};
+  delete window.AlloModules.ConceptGraphEngine;
+  delete window.AlloModules.ConceptGraph3D;
+  // eslint-disable-next-line no-new-func
+  new Function(readFileSync(resolve(process.cwd(), 'concept_graph_engine_module.js'), 'utf8'))();
+  // eslint-disable-next-line no-new-func
+  new Function(readFileSync(resolve(process.cwd(), 'concept_graph_3d_module.js'), 'utf8'))();
+  CG3D = window.AlloModules.ConceptGraph3D;
+  window.React = React;
+  if (!CG3D) throw new Error('ConceptGraph3D did not register');
+});
+
+// acg graph with a categorical z axis so project() separates strands into depth planes.
+function axisGraph() {
+  return {
+    version: 'acg/v1',
+    axes: { z: { kind: 'categorical', categories: ['Bio', 'Chem'] } },
+    nodes: [
+      { id: 'a', category: 'Bio', x: 0, y: 0, z: 0, label: 'A', axisValues: { x: 0, y: 0, z: 'Bio' } },
+      { id: 'b', category: 'Chem', x: 0, y: 0, z: 0, label: 'B', axisValues: { x: 1, y: 1, z: 'Chem' } },
+    ],
+    edges: [{ fromId: 'a', toId: 'b', type: 'prerequisite' }],
+    layers: [],
+  };
+}
+
+describe('ConceptGraph3D.buildScene (pure scene model)', () => {
+  it('projects semantic axes to centered 3D coords with depth separation by strand', () => {
+    const s = CG3D.buildScene(axisGraph(), { width: 1000, height: 800, planeGap: 300 });
+    // centered at origin: a at (0,0,0)→(-500, +400, -150); b at (1000,800,300)→(+500,-400,+150)
+    expect(s.nodes[0]).toMatchObject({ id: 'a', sx: -500, sy: 400, sz: -150, color: '#6366f1' });
+    expect(s.nodes[1]).toMatchObject({ id: 'b', sx: 500, sy: -400, sz: 150, color: '#f59e0b' });
+    // the whole point: strands occupy DIFFERENT depths
+    expect(s.nodes[0].sz).not.toBe(s.nodes[1].sz);
+  });
+
+  it('wires edges to node positions and dashes prerequisites in amber', () => {
+    const s = CG3D.buildScene(axisGraph(), { width: 1000, height: 800, planeGap: 300 });
+    expect(s.links.length).toBe(1);
+    expect(s.links[0]).toMatchObject({ fromId: 'a', toId: 'b', type: 'prerequisite', dashed: true, color: '#d97706' });
+    expect(s.links[0].from.z).toBe(-150);
+    expect(s.links[0].to.z).toBe(150);
+  });
+
+  it('emits one depth plane per strand', () => {
+    const s = CG3D.buildScene(axisGraph(), { width: 1000, height: 800, planeGap: 300 });
+    expect(s.lanePlanes.map((p) => p.key)).toEqual(['Bio', 'Chem']);
+    expect(s.lanePlanes.map((p) => p.z)).toEqual([-150, 150]);
+  });
+
+  it('scales node size from importance (0.7..2.0; default 1)', () => {
+    const g = {
+      version: 'acg/v1', nodes: [
+        { id: 'big', x: 0, y: 0, z: 0, importance: 1 },
+        { id: 'small', x: 10, y: 0, z: 0, importance: 0 },
+        { id: 'plain', x: 20, y: 0, z: 0 },
+      ], edges: [], layers: [],
+    };
+    const s = CG3D.buildScene(g, { project: false });
+    const by = {}; s.nodes.forEach((n) => { by[n.id] = n; });
+    expect(by.big.size).toBeCloseTo(2.0);
+    expect(by.small.size).toBeCloseTo(0.7);
+    expect(by.plain.size).toBe(1);
+  });
+
+  it('survives an empty graph', () => {
+    const s = CG3D.buildScene({ nodes: [], edges: [] });
+    expect(s.nodes.length).toBe(0);
+    expect(s.links.length).toBe(0);
+    expect(s.bounds.radius).toBe(1);
+  });
+
+  it('gives categorized swim-lane data real depth even without axisValues', () => {
+    // a Throughline unit (categories, no axisValues) — normalizeGraph routes it
+    const unit = {
+      schemaVersion: 1, title: 'U',
+      nodes: [
+        { nodeId: 'n1', lessonId: 'h1', x: 80, y: 120, description: '', role: '', status: 'draft', category: 'Acquire' },
+        { nodeId: 'n2', lessonId: 'h2', x: 350, y: 120, description: '', role: '', status: 'draft', category: 'Transfer' },
+      ],
+      edges: [{ from: 'n1', to: 'n2', type: 'sequence' }],
+    };
+    const s = CG3D.buildScene(unit, { planeGap: 300 });
+    expect(s.lanePlanes.map((p) => p.key)).toEqual(['Acquire', 'Transfer']);
+    expect(s.nodes[0].sz).not.toBe(s.nodes[1].sz);   // the swim-lane index became the depth plane
+  });
+});
+
+describe('ConceptGraph3D — graceful degradation (no WebGL in jsdom)', () => {
+  it('isWebGLAvailable() is false under jsdom', () => {
+    expect(CG3D.isWebGLAvailable()).toBe(false);
+  });
+
+  it('render() falls back to a VISIBLE reading-order outline + notice, never crashes', () => {
+    const div = document.createElement('div'); document.body.appendChild(div);
+    const handle = CG3D.render(div, axisGraph(), { width: 1000, height: 800, planeGap: 300, t: (k) => k });
+    expect(handle.fellBack).toBe(true);
+    expect(div.querySelector('[role="status"]')).toBeTruthy();          // the fallback notice
+    const items = Array.prototype.slice.call(div.querySelectorAll('ol li')).map((li) => li.textContent);
+    expect(items.length).toBe(2);
+    expect(items.join(' | ')).toMatch(/A — Bio/);
+    expect(() => handle.destroy()).not.toThrow();                       // teardown is safe
+    div.remove();
+  });
+});
+
+describe('ConceptGraph3D.View (React SSR placeholder)', () => {
+  it('SSR renders the accessible outline so there is content without/ before JS', () => {
+    const html = ReactDOMServer.renderToStaticMarkup(
+      React.createElement(CG3D.View, { graph: axisGraph(), t: (k) => k }));
+    expect(html).toMatch(/<ol/);
+    expect(html).toMatch(/A — Bio/);
+    expect(html).toMatch(/B — Chem/);
+  });
+});
