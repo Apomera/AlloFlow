@@ -201,8 +201,22 @@
     scene.fog = new THREE.Fog(0x0a1322, 30, 70);
     var camera = new THREE.PerspectiveCamera(55, 1, 0.1, 200);
     camera.position.set(NX * 1.15, NY * 1.05, NZ * 1.4);
-    var controls = THREE.OrbitControls ? new THREE.OrbitControls(camera, renderer.domElement) : null;
-    if (controls) { controls.enableDamping = true; controls.dampingFactor = 0.08; controls.target.set(0, -NY * 0.05, 0); controls.minDistance = 8; controls.maxDistance = 60; }
+    var TARGET = new THREE.Vector3(0, -NY * 0.05, 0);
+    camera.lookAt(TARGET); // aim at the block immediately — keeps it CENTRED even if OrbitControls never loads
+    var controls = null, orbitTried = false;
+    function ensureControls() {
+      if (controls) return;
+      if (THREE.OrbitControls) {
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true; controls.dampingFactor = 0.08; controls.target.copy(TARGET); controls.minDistance = 8; controls.maxDistance = 60;
+        controls.update();
+      } else if (!orbitTried) {
+        // host may have set _threeLoaded without OrbitControls (stem_lab_module.js:1492) — load it ourselves
+        orbitTried = true;
+        try { var s = document.createElement('script'); s.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js'; document.head.appendChild(s); } catch (e) {}
+      }
+    }
+    ensureControls();
     scene.add(new THREE.AmbientLight(0xffffff, 0.42));
     scene.add(new THREE.HemisphereLight(0xbcd4ff, 0x6b5640, 0.55)); // sky-blue from above, warm ground-bounce below → dimensional shading
     var keyL = new THREE.DirectionalLight(0xfff1d0, 1.0); keyL.position.set(12, 20, 14); scene.add(keyL);
@@ -402,6 +416,7 @@
       underGlow.material.opacity = 0.15 + Math.sin(t * 1.7) * 0.05;              // pulsing deep-heat glow
       if (waterMesh.visible) waterMesh.material.opacity = 0.34 + Math.sin(t * 1.6) * 0.07; // water shimmer
       try { updateEruption(); } catch (e) {}
+      if (!controls) ensureControls();   // OrbitControls may load a moment after the engine starts
       if (controls) controls.update(); renderer.render(scene, camera);
     }
     loop();
