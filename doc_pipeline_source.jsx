@@ -21752,6 +21752,23 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     // orange Content Recovery appendix as orphan-word bullets.
     const orphanSentenceIndices = new Set();
     const orphanByWord = [];
+    // (2026-06-23) Reject a sentence-insertion target where grafting a sibling <p> would be STRUCTURALLY
+    // invalid — a <p> can't be a child of <tr>/<ul>/<ol>/<dl>, so a <p> after a <td>/<th>/<li>/<dt>/<dd>/
+    // <caption> is malformed — or SEMANTICALLY isolated (inside a table/quote/figure/nav, or a references/
+    // footnotes/bibliography region), where a paraphrased body sentence reads as unrelated. Such matches
+    // (common on the weak fallback tier) are routed to the Preserved-source-content section instead, so
+    // nothing is lost and nothing lands in a wrong/invalid spot.
+    const _unsafeSentenceTarget = (el) => {
+      if (!el || !el.tagName) return true;
+      if (/^(TD|TH|LI|DT|DD|CAPTION)$/.test(el.tagName)) return true;          // sibling <p> would be invalid here
+      try { if (el.closest && el.closest('table, blockquote, aside, figure, nav')) return true; } catch (_) {}
+      try {
+        const sec = el.closest && el.closest('section[aria-label], [role="doc-bibliography"], [role="doc-endnotes"]');
+        const lbl = sec ? String((sec.getAttribute('aria-label') || sec.getAttribute('role') || '')).toLowerCase() : '';
+        if (/reference|bibliograph|footnote|endnote|citation|works cited/.test(lbl)) return true;
+      } catch (_) {}
+      return false;
+    };
     for (const m of missingList) {
       const raw = m && m.word ? String(m.word).toLowerCase() : '';
       if (!raw) continue;
@@ -21788,7 +21805,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
         }
         return bestSc >= minScore ? { block: best, score: bestSc } : null;
       };
-      const matched = pickBest(0.6) || pickBest(0.4);
+      const matched = pickBest(0.6) || pickBest(0.5); // raised 0.4→0.5 (2026-06-23): a sub-50% anchor is too weak to graft into; route to Preserved instead
       if (!matched) {
         // Even without an anchor, check whole-doc presence before treating as orphan —
         // the sentence may already be in the References section (common) or elsewhere in
@@ -21835,15 +21852,20 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
           continue;
         }
       }
-      const newP = doc.createElement('p');
-      newP.setAttribute('data-source-restored', 'true');
-      newP.textContent = targetSentence;
-      if (bestBlock.el.parentNode) {
+      if (bestBlock.el.parentNode && !_unsafeSentenceTarget(bestBlock.el)) {
+        const newP = doc.createElement('p');
+        newP.setAttribute('data-source-restored', 'true');
+        newP.textContent = targetSentence;
         bestBlock.el.parentNode.insertBefore(newP, bestBlock.el.nextSibling);
         usedSentenceIndices.add(sentIdx);
         restored.push({ word: m.word, sentence: targetSentence, anchorScore: Math.round(bestScore * 100) / 100 });
         // Refresh the inserted block's word set so subsequent anchors can match it if needed
         blocks.push({ el: newP, words: wordSet(targetSentence) });
+      } else {
+        // Unsafe/invalid insert target (would break structure or land in an isolated zone) → preserve it
+        // in the end-of-doc "Preserved source content" section rather than grafting it into a wrong spot.
+        orphanSentenceIndices.add(sentIdx);
+        orphanByWord.push({ word: m.word, sentIdx });
       }
     }
     // End-of-doc "Preserved source content" section for sentences that failed to anchor. Groups
