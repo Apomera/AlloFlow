@@ -2893,6 +2893,42 @@ function PdfAuditView(props) {
     else addToast(t('pdf_audit.issue.edit_applied_no_reaudit') || '✏ Edit applied. (Couldn’t re-score automatically — the preview is updated; re-run audit when ready.)', 'info');
   };
 
+  // S1 (2026-06-23): scope → intent → AGENT apply. The expert describes a fix in words; the agent edits
+  // ONLY this located block (passed as a fragment), and the result is spliced back via _spliceBlock — so
+  // the agent's blast radius is BOUNDED to the region (the box=blast-radius primitive, here using the
+  // located block as the region; freehand region-select is the next S1 increment). Unwraps any <body> the
+  // agent adds, refuses moved/ambiguous, re-audits, and snapshots for one-click revert. Graceful on failure.
+  const _applyScopedIntent = async (issue, key) => {
+    const ed = _issueEdit[key];
+    const intent = ed && ed.intent ? String(ed.intent).trim() : '';
+    if (!intent || (ed && ed.saving) || !pdfFixResult || !pdfFixResult.accessibleHtml) return;
+    if (typeof processExpertCommand !== 'function') { addToast(t('pdf_audit.issue.ai_unavailable') || 'The AI agent is unavailable right now — edit the HTML directly above instead.', 'info'); return; }
+    const original = String((ed && ed.original) || '');
+    if (!original) return;
+    _setIssueEdit((prev) => ({ ...prev, [key]: { ...prev[key], saving: true } }));
+    addToast(t('pdf_audit.issue.ai_running') || '✨ Asking the AI to apply that to this section…', 'info');
+    let result = null;
+    try { result = await processExpertCommand(intent, original, {}); } catch (_) {}
+    let edited = result && result.html ? result.html : null;
+    if (edited && /<body[\s>]/i.test(edited)) { const m = edited.match(/<body[^>]*>([\s\S]*?)<\/body>/i); if (m) edited = m[1].trim(); } // unwrap if the agent returned a full doc
+    if (!edited || edited === original) { _setIssueEdit((prev) => ({ ...prev, [key]: { ...prev[key], saving: false } })); addToast(t('pdf_audit.issue.ai_nochange') || 'The AI made no change here (or it was busy) — rephrase, or edit the HTML directly above.', 'info'); return; }
+    const sp = _spliceBlock(pdfFixResult.accessibleHtml, original, edited);
+    if (!sp.ok) {
+      _setIssueEdit((prev) => ({ ...prev, [key]: { ...prev[key], saving: false } }));
+      addToast(sp.reason === 'ambiguous'
+        ? (t('pdf_audit.issue.edit_ambiguous') || 'This exact markup appears more than once — use the Expert Workbench for a targeted fix instead.')
+        : (t('pdf_audit.issue.edit_moved') || 'That section changed since you opened it — close and reopen Source, then try again.'),
+        sp.reason === 'ambiguous' ? 'info' : 'error');
+      return;
+    }
+    const _before = pdfFixResult.accessibleHtml;
+    setPdfFixResult((p) => p ? { ...p, accessibleHtml: sp.html, _preCmdHtml: _before } : p);
+    _setIssueEdit((prev) => { const n = { ...prev }; delete n[key]; return n; });
+    _setIssueSourceOpen((prev) => ({ ...prev, [key]: false }));
+    addToast(t('pdf_audit.issue.ai_applied') || '✨ Applied to this section — re-checking…', 'success');
+    await _reauditAndScore(sp.html, null);
+  };
+
   // Recovery residual source (Option B, 2026-06-22): decide what missing-token list drives the Tier-B
   // "Re-run with restoration" UI. PREFER the tagged-PDF round-trip snapshot (tokens lost in PDF tagging)
   // when it's fresh; otherwise — e.g. after the auto-continue loop, which updates the document but never
@@ -7349,6 +7385,19 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                                   <button onClick={() => _setIssueEdit(prev => { const n = { ...prev }; delete n[_srcKey]; return n; })} disabled={!!_issueEdit[_srcKey].saving} className="px-2 py-0.5 rounded bg-white border border-slate-300 text-slate-600 font-bold hover:bg-slate-100">{t('pdf_audit.issue.edit_cancel') || 'Cancel'}</button>
                                                   <span className="text-[10px] text-slate-400 italic">{t('pdf_audit.issue.edit_hint') || 'Edits the HTML directly, then runs the same check the Workbench uses — no AI.'}</span>
                                                 </div>
+                                                {/* S1: or describe the fix in words — the agent edits ONLY this section (bounded), then re-checks. */}
+                                                {typeof processExpertCommand === 'function' && (
+                                                  <div className="mt-1.5 pt-1.5 border-t border-slate-200">
+                                                    <div className="flex items-center gap-1.5">
+                                                      <input type="text" value={(_issueEdit[_srcKey] && _issueEdit[_srcKey].intent) || ''} onChange={(e) => { const v = e.target.value; _setIssueEdit((prev) => ({ ...prev, [_srcKey]: { ...prev[_srcKey], intent: v } })); }} disabled={!!_issueEdit[_srcKey].saving}
+                                                        placeholder={t('pdf_audit.issue.ai_placeholder') || 'or describe the fix — the AI edits just this section'}
+                                                        aria-label={(t('pdf_audit.issue.ai_aria') || 'Describe a fix for this section for the AI') + ': ' + issue.issue}
+                                                        className="flex-1 min-w-0 px-2 py-1 text-[10px] border border-indigo-300 rounded focus:ring-2 focus:ring-indigo-400" />
+                                                      <button onClick={() => _applyScopedIntent(issue, _srcKey)} disabled={!!_issueEdit[_srcKey].saving || !((_issueEdit[_srcKey] && _issueEdit[_srcKey].intent) || '').trim()} className={'px-2 py-0.5 rounded bg-indigo-600 text-white font-bold shrink-0 ' + ((_issueEdit[_srcKey].saving || !((_issueEdit[_srcKey] && _issueEdit[_srcKey].intent) || '').trim()) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-700')} title={t('pdf_audit.issue.ai_btn_title') || 'The AI edits ONLY this section (bounded), then re-checks — accept or revert.'}>✨ {t('pdf_audit.issue.ai_btn') || 'Apply with AI'}</button>
+                                                    </div>
+                                                    <span className="text-[10px] text-slate-400 italic">{t('pdf_audit.issue.ai_scoped_hint') || 'Scoped to this section only — bounded so the agent can’t touch the rest of the document.'}</span>
+                                                  </div>
+                                                )}
                                               </>
                                             ) : (
                                               <pre className="whitespace-pre-wrap break-words bg-slate-50 border border-slate-200 rounded p-1.5 max-h-48 overflow-auto font-mono text-[10px] leading-snug">{_src.html}</pre>
