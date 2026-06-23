@@ -16128,9 +16128,13 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       let finalAfterScore = verification ? verification.score : afterScore;
       const axeScoreAvailable = axeResults && typeof axeResults.score === 'number';
       const eaScoreAvailable = eaResults && typeof eaResults.score === 'number';
-      const deterministicScore = axeScoreAvailable
-        ? (eaScoreAvailable ? Math.min(axeResults.score, eaResults.score) : axeResults.score)
-        : null;
+      // Use whichever deterministic engine produced a score — min() when both ran. (2026-06-22 fix: this
+      // was axe-ONLY, so when axe-core failed but Equal Access succeeded, deterministicScore went null and
+      // the headline fell through to the AI-ONLY branch — showing e.g. 100 while the caption correctly said
+      // the governing layer was automated/90. Equal Access alone now still governs the headline.)
+      const deterministicScore = (axeScoreAvailable && eaScoreAvailable)
+        ? Math.min(axeResults.score, eaResults.score)
+        : (axeScoreAvailable ? axeResults.score : (eaScoreAvailable ? eaResults.score : null));
       let axeCoreFailed = false;
       // Degraded AI (2026-06-20): the AI rubric did NOT produce a trustworthy score this run — no audit,
       // a null/NaN score, the partial-audit floor tripped, or a synthesized axe-only stand-in. NOT keyed
@@ -16141,7 +16145,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // didn't finish).
       let _aiVerificationIncomplete = false;
       const _aiDegraded = !verification || verification.score === null || verification._scoreDegraded || verification.synthesized;
-      if (finalAfterScore !== null && !_aiDegraded && axeScoreAvailable) {
+      if (finalAfterScore !== null && !_aiDegraded && deterministicScore !== null) {
         // Weakest-layer-governs (2026-06-21): the headline is min(AI rubric, deterministic engines), NOT
         // their mean. Averaging two scores that measure different things (the AI reads content/semantics;
         // axe runs on the HTML RECONSTRUCTION — _stripChromeForAudit(accessibleHtml) — which passes "by
@@ -16154,16 +16158,17 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         const governingFinal = _alloComputeHeadline(finalAfterScore, deterministicScore);
         warnLog(`[PDF Fix] Final headline (weakest-layer): min(AI ${finalAfterScore}, deterministic ${deterministicScore} [axe ${axeResults.score}${eaScoreAvailable ? ', EqualAccess ' + eaResults.score + ', using the more conservative' : ', EA unavailable'}]) = ${governingFinal}`);
         finalAfterScore = governingFinal;
-      } else if (_aiDegraded && axeScoreAvailable) {
-        // AI semantic audit incomplete but the deterministic engines DID run → headline = the reliable
-        // structural score (min of axe/EA), flagged so the UI labels it honestly (not a blend, not green).
+      } else if (_aiDegraded && deterministicScore !== null) {
+        // AI semantic audit incomplete but a deterministic engine DID run → headline = the reliable
+        // structural score (min of axe/EA, or whichever ran), flagged so the UI labels it honestly.
         finalAfterScore = deterministicScore;
         _aiVerificationIncomplete = true;
-        warnLog('[PDF Fix] AI semantic audit incomplete (degraded/partial/synthesized) — headline = deterministic structural ' + deterministicScore + ' (min of axe/EqualAccess); re-run for a full AI-verified score.');
-      } else if (!axeScoreAvailable) {
-        // Dual-engine guarantee is broken — surface this to the UI so the banner can warn users.
+        warnLog('[PDF Fix] AI semantic audit incomplete (degraded/partial/synthesized) — headline = deterministic structural ' + deterministicScore + ' (min of axe/EqualAccess, whichever ran); re-run for a full AI-verified score.');
+      } else if (deterministicScore === null) {
+        // No deterministic engine produced a score (axe AND Equal Access both unavailable) — the
+        // dual-engine guarantee is broken, so the headline is AI-only. Surface it so the UI can warn.
         axeCoreFailed = true;
-        warnLog(`[PDF Fix] WARNING: axe-core score unavailable — final score is AI-only (${finalAfterScore}). Results may be less reliable.`);
+        warnLog(`[PDF Fix] WARNING: no deterministic engine score available (axe + Equal Access both failed) — final score is AI-only (${finalAfterScore}). Results may be less reliable.`);
       }
 
       // Score divergence check

@@ -57,8 +57,19 @@ describe('anti-drift: pipeline ships the degraded flag + deterministic fallback'
     expect(pipeSrc).not.toMatch(/_aiDegraded =[^\n]*_partialAudit/);
   });
   it('the deterministic-fallback branch sets finalAfterScore + the incomplete flag', () => {
-    expect(pipeSrc).toMatch(/\} else if \(_aiDegraded && axeScoreAvailable\) \{/);
+    expect(pipeSrc).toMatch(/\} else if \(_aiDegraded && deterministicScore !== null\) \{/);
     expect(pipeSrc).toMatch(/finalAfterScore = deterministicScore;\s*\n\s*_aiVerificationIncomplete = true;/);
+  });
+  it('(2026-06-22) the headline governs off ANY deterministic engine (axe OR Equal Access), not axe-only', () => {
+    // The bug: deterministicScore was computed axe-ONLY, so when axe failed but EA succeeded it went null,
+    // the blend gate (which required axeScoreAvailable) was skipped, and the big AFTER number showed the
+    // raw AI score (e.g. 100) while the caption correctly said the governing layer was automated (90).
+    expect(pipeSrc).toMatch(/const deterministicScore = \(axeScoreAvailable && eaScoreAvailable\)/);
+    expect(pipeSrc).toMatch(/axeScoreAvailable \? axeResults\.score : \(eaScoreAvailable \? eaResults\.score : null\)/);
+    // both the blend gate and the AI-only fallback now key off deterministicScore, not axeScoreAvailable
+    expect(pipeSrc).toMatch(/if \(finalAfterScore !== null && !_aiDegraded && deterministicScore !== null\) \{/);
+    expect(pipeSrc).toMatch(/\} else if \(deterministicScore === null\) \{/);
+    expect(pipeSrc).not.toMatch(/!_aiDegraded && axeScoreAvailable\) \{/); // old axe-only gate is gone
   });
   it('the result object carries the flags + de-blends when incomplete', () => {
     expect(pipeSrc).toMatch(/_scoreIsBlended: !axeCoreFailed && !_aiVerificationIncomplete/);
