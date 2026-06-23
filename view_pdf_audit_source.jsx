@@ -6854,7 +6854,22 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         </>);
                       })()}
                       <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-bold text-emerald-800 flex items-center gap-2 flex-1">✅ {t('pdf_audit.results.ready_heading') || 'Your accessible copy is ready'}</h4>
+                        {/* Honest headline (2026-06-22): don't say an unqualified "ready" while the
+                            auto-continue loop is still grinding below target, or when content fidelity is
+                            in question — that conflates "a downloadable copy exists" with "done + safe to
+                            share". Mirror the fidelity-aware "What now?" strip below. */}
+                        {(() => {
+                          const _stillWorking = pdfAutoContinueRunning || pdfFixLoading;
+                          const _fidelity = !!(pdfFixResult && pdfFixResult.fidelityLimited);
+                          const _label = _stillWorking
+                            ? (t('pdf_audit.results.ready_heading_working') || 'Draft accessible copy ready — still improving…')
+                            : _fidelity
+                              ? (t('pdf_audit.results.ready_heading_verify') || 'Accessible copy ready — verify content before sharing')
+                              : (t('pdf_audit.results.ready_heading') || 'Your accessible copy is ready');
+                          const _icon = _stillWorking ? '⏳' : _fidelity ? '⚠️' : '✅';
+                          const _color = _stillWorking ? 'text-indigo-800' : _fidelity ? 'text-amber-800' : 'text-emerald-800';
+                          return <h4 className={'text-sm font-bold flex items-center gap-2 flex-1 ' + _color}>{_icon} {_label}</h4>;
+                        })()}
                         {/* While the auto-continue loop is grinding (legitimately, for minutes), this
                             button used to just look dead. Make it an ACTIONABLE Stop instead — once the
                             loop ends it reverts to Start New Audit. (Stop only sets the abort flag, so

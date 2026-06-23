@@ -77,6 +77,13 @@ describe('anti-drift: the view renders it honestly', () => {
     expect(viewSrc).toMatch(/structural\/automated checks only; AI semantic audit incomplete/);
     expect(viewSrc).toMatch(/pdfFixResult\._aiVerificationIncomplete[\s\S]{0,200}AI semantic verification incomplete/);
   });
+  it('(2026-06-22) the "ready" headline is qualified while still-working / fidelity-limited (not an unconditional "ready")', () => {
+    expect(viewSrc).toMatch(/const _stillWorking = pdfAutoContinueRunning \|\| pdfFixLoading;/);
+    expect(viewSrc).toMatch(/pdf_audit\.results\.ready_heading_working/);
+    expect(viewSrc).toMatch(/pdf_audit\.results\.ready_heading_verify/);
+    // the still-working / fidelity branches must be chosen BEFORE the plain 'ready' fallback
+    expect(viewSrc).toMatch(/_stillWorking[\s\S]{0,160}ready_heading_working[\s\S]{0,200}_fidelity[\s\S]{0,160}ready_heading_verify[\s\S]{0,200}ready_heading'\)/);
+  });
   it('a section with no score renders neutral "not scored", not red 0; and the loop bails when AI-throttled + axe-clean', () => {
     expect(viewSrc).toMatch(/const _hasScore = typeof chunk\.score === 'number'/);
     expect(viewSrc).toMatch(/_hasScore \? chunk\.score \+ '\/100' : \(t\('pdf_audit\.live_chunk\.not_scored'\)/);
