@@ -782,11 +782,11 @@
     // Tidy nodes into their lane bands (keeps x = teaching order; sets y per lane).
     function arrangeIntoLanes() {
       var lanes = deriveLanes(unit);
-      var idxOf = {}; lanes.forEach(function (l) { idxOf[l.key == null ? ' none' : l.key] = l.index; });
+      var idxOf = {}; lanes.forEach(function (l) { idxOf[l.key == null ? '__none' : l.key] = l.index; });
       setUnit(function (u) {
         return Object.assign({}, u, {
           nodes: u.nodes.map(function (n) {
-            var key = (typeof n.category === 'string' && n.category) ? n.category : ' none';
+            var key = (typeof n.category === 'string' && n.category) ? n.category : '__none';
             var li = idxOf[key] || 0;
             return Object.assign({}, n, { y: LANE_TOP + li * LANE_H + LANE_BAND_Y });
           })
