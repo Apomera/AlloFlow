@@ -198,13 +198,14 @@
     camera.position.set(NX * 1.15, NY * 1.05, NZ * 1.4);
     var controls = THREE.OrbitControls ? new THREE.OrbitControls(camera, renderer.domElement) : null;
     if (controls) { controls.enableDamping = true; controls.dampingFactor = 0.08; controls.target.set(0, -NY * 0.18, 0); controls.minDistance = 8; controls.maxDistance = 56; }
-    scene.add(new THREE.AmbientLight(0xffffff, 0.55));
-    var keyL = new THREE.DirectionalLight(0xfff1d0, 0.95); keyL.position.set(12, 20, 14); scene.add(keyL);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.42));
+    scene.add(new THREE.HemisphereLight(0xbcd4ff, 0x6b5640, 0.55)); // sky-blue from above, warm ground-bounce below → dimensional shading
+    var keyL = new THREE.DirectionalLight(0xfff1d0, 1.0); keyL.position.set(12, 20, 14); scene.add(keyL);
     var fillL = new THREE.DirectionalLight(0x90b4ff, 0.35); fillL.position.set(-14, 6, -10); scene.add(fillL);
-    var magmaGlow = new THREE.PointLight(0xff5522, 1.4, 34); magmaGlow.position.set(0, -NY * 0.5, 0); scene.add(magmaGlow);
+    var magmaGlow = new THREE.PointLight(0xff5522, 1.8, 44); magmaGlow.position.set(0, -NY * 0.5, 0); scene.add(magmaGlow);
 
     var voxels = [];
-    for (var y = 0; y < NY; y++) for (var x = 0; x < NX; x++) for (var z = 0; z < NZ; z++) voxels.push({ x: x, y: y, z: z, key: rockKeyAt(x, y, z) });
+    for (var y = 0; y < NY; y++) for (var x = 0; x < NX; x++) for (var z = 0; z < NZ; z++) voxels.push({ x: x, y: y, z: z, key: rockKeyAt(x, y, z), j: 0.87 + (((x * 41 + y * 71 + z * 13) % 100) / 100) * 0.26 });
     var removed = {};
     function vkey(v) { return v.x + ',' + v.y + ',' + v.z; }
     function worldPos(v) { return [(v.x - (NX - 1) / 2), ((NY - 1) / 2 - v.y), (v.z - (NZ - 1) / 2)]; }
@@ -290,6 +291,8 @@
         var p = worldPos(v); dummy.position.set(p[0], p[1], p[2]); dummy.updateMatrix();
         mesh.setMatrixAt(i, dummy.matrix);
         col.setHex(ROCKS[v.key].color);
+        col.multiplyScalar(v.j || 1);                     // per-voxel grain → natural, non-plastic rock texture
+        if (v.key === 'magma') col.multiplyScalar(1.22);  // molten rock reads hotter / glowing
         // when a rock type is selected, make every voxel of that type glow and let
         // the rest recede — so its distribution through the crust pops out.
         if (highlightKey) { if (v.key === highlightKey) col.lerp(WHITE, 0.42); else col.multiplyScalar(0.5); }
@@ -370,7 +373,7 @@
     try { requestAnimationFrame(function () { if (!eng.disposed) resize(); }); } catch (e) {}
 
     var t = 0, raf = null;
-    function loop() { if (eng.disposed) return; raf = requestAnimationFrame(loop); t += 0.016; magmaGlow.intensity = 1.5 + Math.sin(t * 2) * 0.3; try { updateEruption(); } catch (e) {} if (controls) controls.update(); renderer.render(scene, camera); }
+    function loop() { if (eng.disposed) return; raf = requestAnimationFrame(loop); t += 0.016; magmaGlow.intensity = 1.9 + Math.sin(t * 2) * 0.4; try { updateEruption(); } catch (e) {} if (controls) controls.update(); renderer.render(scene, camera); }
     loop();
 
     eng.setSlice = function (z) { sliceZ = z | 0; waterMesh.scale.z = (NZ - sliceZ) / NZ; waterMesh.position.z = sliceZ / 2; rebuild(); };
