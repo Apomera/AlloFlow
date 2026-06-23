@@ -1823,7 +1823,10 @@
         cg3dState === 'loading' ? h('div', { style: _cg3dCenter }, '🧭 ' + (t('throughline.view_3d_loading') || 'Loading the 3D view…'))
         : cg3dState === 'error' ? h('div', { style: _cg3dCenter }, '⚠️ ' + (t('throughline.view_3d_failed') || 'The 3D view could not load here. Open the latest Canvas link and try again — the outline view still works.'))
         : (cg3dState === 'ready' && CG3D && CG3D.View && graph3d)
-          ? h(CG3D.View, { graph: graph3d, t: t, height: '100%' })
+          ? h(CG3D.View, { graph: graph3d, t: t, height: '100%', onOpenNode: function (id) {
+              var nd = null; unit.nodes.forEach(function (n) { if (n.nodeId === id) nd = n; });
+              if (nd && nd.lessonId) { close3D(); openNodeLesson(nd); }
+            } })
           : h('div', { style: _cg3dCenter }, t('throughline.view_3d_unavailable') || '3D view unavailable.')
       )
     );

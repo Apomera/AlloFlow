@@ -84,6 +84,12 @@ describe('ConceptGraph3D.buildScene (pure scene model)', () => {
     expect(by.plain.size).toBe(1);
   });
 
+  it('builds undirected adjacency (powers hover neighbour-focus)', () => {
+    const s = CG3D.buildScene(axisGraph(), { width: 1000, height: 800, planeGap: 300 });
+    expect(s.adjacency.a).toEqual(['b']);
+    expect(s.adjacency.b).toEqual(['a']);
+  });
+
   it('survives an empty graph', () => {
     const s = CG3D.buildScene({ nodes: [], edges: [] });
     expect(s.nodes.length).toBe(0);
