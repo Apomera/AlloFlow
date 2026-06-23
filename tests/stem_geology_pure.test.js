@@ -15,7 +15,7 @@ beforeAll(() => {
   P = window.__alloGeologyPure;
   if (!P) throw new Error('geology pure hook not exposed (window.__alloGeologyPure)');
 });
-beforeEach(() => { P.setGrid('standard'); });   // every test starts at the default detail
+beforeEach(() => { if (P.setScene) P.setScene('crust'); P.setGrid('standard'); });   // every test starts at the default scene + detail
 
 describe('Geology Explorer — strata generator (characterization lock)', () => {
   it('default grid is 14×12×14 with 0.9 km/voxel', () => {
@@ -77,6 +77,45 @@ describe('Geology Explorer — resolution / detail refactor (world↔voxel decou
     expect(P.rockKeyAt(1, g.NY - 1, 1)).toBe('magma');                    // bottom
     const cx = Math.round((g.NX - 1) / 2);
     expect(P.rockKeyAt(cx, Math.round(g.NY * 0.6), cx)).toBe('intrusion'); // pluton still down the centre
+  });
+});
+
+describe('Geology Explorer — scene registry + Crystal Cavern (geode)', () => {
+  it('crust stays the default scene and its generator is unchanged (registry is behavior-preserving)', () => {
+    expect(P.sceneId()).toBe('crust');
+    expect(P.scenes()).toEqual(['crust', 'geode']);
+    P.setScene('crust');
+    expect(P.rockKeyAt(1, 0, 1)).toBe('soil');
+    expect(P.rockKeyAt(7, 7, 7)).toBe('intrusion');
+    P.setScene('crust');
+  });
+
+  it('crust geotherm matches the original linear shallow-crust model (no regression)', () => {
+    // tempC = 15 + depthKm*25, presMPa = depthKm*27
+    expect(P.crustGeotherm(2.7, 'shale')).toEqual({ tempC: 83, presMPa: 73, state: 'solid' });
+    expect(P.crustGeotherm(10, 'magma').tempC).toBe('≈ 1000+');
+  });
+
+  it('geode generator carves a hollow void, lines it with crystal, and hosts it in limestone', () => {
+    P.setScene('geode'); P.setGrid('standard');
+    const g = P.grid();
+    const cx = Math.round((g.NX - 1) / 2), cy = Math.round((g.NY - 1) / 2), cz = Math.round((g.NZ - 1) / 2);
+    expect(P.geodeKeyAt(cx, cy, cz)).toBe('void');                 // hollow centre
+    const corner = P.geodeKeyAt(0, 0, 0);
+    expect(corner).toBe('limestone');                              // host rock at the edges
+    // some crystal/rind exists between the void and the host
+    const keys = {};
+    for (let x = 0; x < g.NX; x++) for (let y = 0; y < g.NY; y++) for (let z = 0; z < g.NZ; z++) keys[P.geodeKeyAt(x, y, z)] = 1;
+    expect(keys.void && keys.limestone && (keys.amethyst || keys.quartz) && (keys.agate || keys.chalcedony)).toBeTruthy();
+    P.setScene('crust');
+  });
+
+  it('the geode scene uses a shallower depth scale than the crust', () => {
+    P.setScene('geode'); P.setGrid('standard');
+    const geodeKm = P.grid().KM_PER_VOXEL;
+    P.setScene('crust'); P.setGrid('standard');
+    expect(geodeKm).toBeLessThan(P.grid().KM_PER_VOXEL);   // 2.0/NY < 10.8/NY
+    P.setScene('crust');
   });
 });
 

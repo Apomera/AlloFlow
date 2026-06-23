@@ -83,7 +83,7 @@
     NY = Math.max(7, Math.round(WORLD.h * m));
     NZ = Math.max(8, Math.round(WORLD.d * m));
     VOXEL = WORLD.w / NX;
-    KM_PER_VOXEL = KM_PER_WORLD_H / NY;        // depth/temp/pressure stay physically constant
+    KM_PER_VOXEL = ((SCENE && SCENE.kmPerWorldH) || KM_PER_WORLD_H) / NY;   // per-scene depth scale; depth/temp/pressure physically constant across detail
   }
   setGrid('standard');                         // default — byte-identical to the original 14×12×14 @0.9
 
@@ -124,7 +124,7 @@
   function computeCore(x, z) {
     var segs = [], prev = null;
     for (var y = 0; y < NY; y++) {
-      var k = rockKeyAt(x, y, z);
+      var k = SCENE.gen(x, y, z);
       if (!prev || prev.key !== k) { prev = { key: k, y0: y, y1: y }; segs.push(prev); }
       else prev.y1 = y;
     }
@@ -138,11 +138,10 @@
   ];
   function hex(n) { return '#' + ('000000' + n.toString(16)).slice(-6); }
   function rockFacts(key, y) {
-    var R = ROCKS[key];
-    var depthKm = (y * KM_PER_VOXEL).toFixed(1);
-    var tempC = key === 'magma' ? '≈ 1000+' : Math.round(15 + y * KM_PER_VOXEL * 25);
-    var presMPa = Math.round(y * KM_PER_VOXEL * 27);
-    return { key: key, R: R, depthKm: depthKm, tempC: tempC, presMPa: presMPa };
+    var R = (SCENE && SCENE.palette[key]) || ROCKS[key];
+    var depthRaw = y * KM_PER_VOXEL;
+    var g = (SCENE ? SCENE.geotherm : crustGeotherm)(depthRaw, key);
+    return { key: key, R: R, depthKm: depthRaw.toFixed(1), tempC: g.tempC, presMPa: g.presMPa, state: g.state };
   }
 
   // Representative depth (voxel rows) for a rock picked from the list / cycle, so
@@ -214,6 +213,58 @@
     { fb: 'Same magma, two fates: erupted = fast-cooled BASALT (tiny crystals); trapped underground = slow-cooled GRANITE (big crystals). A new volcanic layer forms — the rock cycle turns.' }
   ];
 
+  // ── SCENE REGISTRY ──────────────────────────────────────────────────────────
+  // Each scene is a pluggable voxel WORLD: a pure generator + palette + geotherm +
+  // which features apply. The crust is the default and is byte-identical to before.
+  // Geotherm = temp/pressure vs depth. The crust uses the original LINEAR shallow-crust
+  // model (valid in the upper crust + the shallow geode); deep scenes (next) MUST
+  // declare their own NON-linear geotherm — the linear one overshoots ~50× at the core.
+  function crustGeotherm(depthKm, key) {
+    if (key === 'magma') return { tempC: '≈ 1000+', presMPa: Math.round(depthKm * 27), state: 'molten' };
+    return { tempC: Math.round(15 + depthKm * 25), presMPa: Math.round(depthKm * 27), state: 'solid' };
+  }
+
+  // Crystal Cavern (geode): acidic groundwater dissolved a karst VOID in limestone;
+  // mineral-rich water then precipitated a chalcedony/agate rind and grew quartz +
+  // amethyst crystals INWARD into the open space (slow growth + room = big crystals —
+  // the same rule the granite teaches). Amethyst purple = trace iron + irradiation.
+  var GEODE_ROCKS = {
+    limestone:  ROCKS.limestone,
+    chalcedony: { name: 'Chalcedony rind', type: 'Mineral (silica)', color: 0x8fb0a8, formation: 'Microcrystalline silica lining the cavity wall — the first layer to precipitate from mineral-rich water.', minerals: 'Cryptocrystalline quartz', age: 'Grew inward from the wall over millennia.' },
+    agate:      { name: 'Agate banding',   type: 'Mineral (silica)', color: 0xc98a5a, formation: 'Concentric bands deposited as mineral-rich water pulsed through — each band is one growth episode.', minerals: 'Banded chalcedony', age: 'Oldest band at the wall, youngest toward the centre.' },
+    quartz:     { name: 'Quartz crystal',  type: 'Mineral',          color: 0xd9d6ea, formation: 'Clear quartz that grew slowly into the OPEN cavity — slow growth + space = big euhedral crystals.', minerals: 'SiO₂', age: '10³–10⁶ years to grow.' },
+    amethyst:   { name: 'Amethyst',        type: 'Mineral (quartz)', color: 0x9b6dd6, formation: 'Purple quartz — colour from trace IRON plus natural irradiation; grew inward into the void.', minerals: 'SiO₂ + Fe', age: '10³–10⁶ years to grow.' }
+  };
+  function geodeKeyAt(x, y, z) {
+    var cx = (NX - 1) / 2, cy = (NY - 1) / 2, cz = (NZ - 1) / 2;
+    var dx = x - cx, dy = y - cy, dz = z - cz;
+    var r = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    var minN = Math.min(NX, NY, NZ);
+    var Rc = minN * 0.32, lining = Math.max(1.0, minN * 0.08), rind = minN * 0.16;
+    if (r < Rc - lining) return 'void';                                   // hollow interior (skipped)
+    if (r < Rc) return ((x * 7 + y * 5 + z * 3) % 5 === 0) ? 'quartz' : 'amethyst';   // crystal lining (inward)
+    if (r < Rc + rind) return (Math.round(r) % 2 === 0) ? 'agate' : 'chalcedony';     // banded rind
+    return 'limestone';                                                  // host rock
+  }
+
+  var SCENES = {
+    crust: {
+      id: 'crust', label: '⛰️ Layered crust', gen: rockKeyAt, palette: ROCKS, order: ROCK_ORDER, voxelKeys: ROCK_ORDER,
+      geotherm: crustGeotherm, kmPerWorldH: 10.8,
+      features: { volcano: 1, water: 1, fossils: 1, cores: 1, cycle: 1, dating: 1, quiz: 1, crossSection: 1, history: 1 },
+      blurb: ''
+    },
+    geode: {
+      id: 'geode', label: '💎 Crystal cavern', gen: geodeKeyAt, palette: GEODE_ROCKS,
+      order: ['limestone', 'chalcedony', 'agate', 'quartz', 'amethyst'], voxelKeys: ['limestone', 'chalcedony', 'agate', 'quartz', 'amethyst'],
+      geotherm: crustGeotherm, kmPerWorldH: 2.0,
+      features: {},
+      blurb: 'Acidic groundwater dissolved a VOID in limestone (karst); mineral-rich water then precipitated a chalcedony/agate rind and grew quartz & amethyst crystals INWARD into the open space. Slow growth + room = big crystals — the same rule that makes granite coarse. Amethyst’s purple = trace iron + natural irradiation. Geodes take 10³–10⁶ years.'
+    }
+  };
+  var SCENE = SCENES.crust;
+  function setScene(id) { SCENE = SCENES[id] || SCENES.crust; }
+
   // ── three.js engine (imperative; lives on window[ENGINE_KEY]) ───────────────
   function initEngine(container, opts) {
     var THREE = window.THREE;
@@ -259,7 +310,7 @@
     var underGlow = new THREE.Mesh(underGlowGeo, underGlowMat); underGlow.position.set(0, -(NY - 1) / 2 * VOXEL - 1.6, 0); scene.add(underGlow);
 
     var voxels = [];
-    for (var y = 0; y < NY; y++) for (var x = 0; x < NX; x++) for (var z = 0; z < NZ; z++) voxels.push({ x: x, y: y, z: z, key: rockKeyAt(x, y, z), j: 0.87 + (((x * 41 + y * 71 + z * 13) % 100) / 100) * 0.26 });
+    for (var y = 0; y < NY; y++) for (var x = 0; x < NX; x++) for (var z = 0; z < NZ; z++) voxels.push({ x: x, y: y, z: z, key: SCENE.gen(x, y, z), j: 0.87 + (((x * 41 + y * 71 + z * 13) % 100) / 100) * 0.26 });
     var removed = {};
     function vkey(v) { return v.x + ',' + v.y + ',' + v.z; }
     function worldPos(v) { return [(v.x - (NX - 1) / 2) * VOXEL, ((NY - 1) / 2 - v.y) * VOXEL, (v.z - (NZ - 1) / 2) * VOXEL]; }
@@ -337,7 +388,7 @@
       if (eruptT > 7.2) { eruptT = -1; lavaPts.visible = false; ashPts.visible = false; ventLight.visible = false; craterGlow.visible = false; erupted = true; lavaFlow.visible = true; }
     }
 
-    function visible(v) { return !removed[vkey(v)] && v.z >= sliceZ && FORMED_AT[v.key] <= showStage; }
+    function visible(v) { if (v.key === 'void') return false; var fa = FORMED_AT[v.key]; if (fa == null) fa = 0; return !removed[vkey(v)] && v.z >= sliceZ && fa <= showStage; }
     function rebuild() {
       var i = 0; instanceToVoxel.length = 0;
       // presence pass first → per-voxel ambient occlusion (depth/structure cue)
@@ -347,7 +398,7 @@
         var v = voxels[k]; if (!visible(v)) continue;
         var p = worldPos(v); dummy.position.set(p[0], p[1], p[2]); dummy.updateMatrix();
         mesh.setMatrixAt(i, dummy.matrix);
-        col.setHex(ROCKS[v.key].color);
+        col.setHex((SCENE.palette[v.key] || ROCKS[v.key] || { color: 0x888888 }).color);
         col.multiplyScalar(v.j || 1);                     // per-voxel grain → natural, non-plastic rock texture
         // ambient occlusion (enclosed → darker) + gentle depth shade (deeper → darker)
         var ao = 1 - 0.42 * (aoCount(present, v.x, v.y, v.z) / 6);
@@ -472,7 +523,7 @@
     eng.setExcavate = function (b) { excavate = !!b; };
     eng.setWaterTable = function (b) { waterMesh.visible = !!b; };
     eng.erupt = function () { startEruption(); };
-    eng.setHighlight = function (k) { highlightKey = (k && FORMED_AT[k] != null) ? k : null; rebuild(); };
+    eng.setHighlight = function (k) { highlightKey = (k && SCENE.voxelKeys && SCENE.voxelKeys.indexOf(k) >= 0) ? k : null; rebuild(); };
     eng.setStage = function (n) { showStage = (n == null) ? 99 : n; rebuild(); };
     eng.reset = function () { removed = {}; sliceZ = 0; rebuild(); };
     eng.dispose = function () {
@@ -491,8 +542,9 @@
   // baseline that locks current strata before the upcoming resolution refactor.
   try {
     window.__alloGeologyPure = {
-      rockKeyAt: rockKeyAt, hasFossilAt: hasFossilAt, computeCore: computeCore, rockFacts: rockFacts, aoCount: aoCount,
-      setGrid: setGrid, RES_MULT: RES_MULT, WORLD: WORLD,
+      rockKeyAt: rockKeyAt, geodeKeyAt: geodeKeyAt, hasFossilAt: hasFossilAt, computeCore: computeCore, rockFacts: rockFacts, aoCount: aoCount,
+      crustGeotherm: crustGeotherm, setGrid: setGrid, setScene: setScene, RES_MULT: RES_MULT, WORLD: WORLD,
+      scenes: function () { return Object.keys(SCENES); }, sceneId: function () { return SCENE.id; },
       grid: function () { return { NX: NX, NY: NY, NZ: NZ, KM_PER_VOXEL: KM_PER_VOXEL, VOXEL: VOXEL }; }
     };
   } catch (e) {}
@@ -545,7 +597,9 @@
       var eruptTimer = React.useRef(null);
       var threeReady = !!(ctx.toolData && ctx.toolData._threeLoaded) && !!window.THREE;
       var rsr = React.useState((d.res === 'low' || d.res === 'high') ? d.res : 'standard'); var res = rsr[0], setRes = rsr[1];
-      setGrid(res);   // keep the module grid (NX/NY/NZ/VOXEL/KM_PER_VOXEL) in sync with the chosen detail before render + effects read it
+      var scn = React.useState((d.scene && SCENES[d.scene]) ? d.scene : 'crust'); var scene = scn[0], setSceneState = scn[1];
+      setScene(scene); setGrid(res);   // sync active scene + module grid (NX/NY/NZ/VOXEL/KM_PER_VOXEL) before render + effects read them
+      var feat = SCENE.features;
 
       function announce(msg) { try { var lr = document.getElementById('allo-live-geology'); if (lr) { lr.textContent = ''; setTimeout(function () { lr.textContent = String(msg || ''); }, 30); } } catch (e) {} }
       function selectRock(facts, viaCycle, msg) {
@@ -619,8 +673,8 @@
 
       React.useEffect(function () {
         if (!threeReady || webglError || !containerRef.current) return;
-        setGrid(res);   // build at the chosen detail level
-        if (window[ENGINE_KEY]) { try { window[ENGINE_KEY].dispose(); } catch (e) {} window[ENGINE_KEY] = null; }   // rebuild on detail change
+        setScene(scene); setGrid(res);   // build the chosen scene at the chosen detail level
+        if (window[ENGINE_KEY]) { try { window[ENGINE_KEY].dispose(); } catch (e) {} window[ENGINE_KEY] = null; }   // rebuild on scene/detail change
         try {
           window[ENGINE_KEY] = initEngine(containerRef.current, {
             onSelect: function (facts) { selectRock(facts); },
@@ -630,7 +684,7 @@
           });
         } catch (e) { setWebglError(true); }
         return function () { try { if (window[ENGINE_KEY]) { window[ENGINE_KEY].dispose(); window[ENGINE_KEY] = null; } } catch (e) {} };
-      }, [threeReady, webglError, res]);
+      }, [threeReady, webglError, res, scene]);
 
       // ── styling helpers ──
       var cardBg = isDark ? 'bg-slate-800/70 border-slate-700 shadow-md shadow-black/20' : 'bg-white border-slate-200 shadow-sm';
@@ -833,8 +887,8 @@
       }
       function strataList() {
         return h('div', { role: 'group', 'aria-label': 'Rock types — select to learn more', className: 'grid grid-cols-2 gap-1.5' },
-          ROCK_ORDER.map(function (k) {
-            var R = ROCKS[k];
+          SCENE.order.map(function (k) {
+            var R = SCENE.palette[k];
             return h('button', {
               key: k, type: 'button',
               onClick: function () { selectRock(rockFacts(k, DEPTH_GUESS[k] || 4)); },
@@ -887,11 +941,21 @@
             h('h2', { className: 'text-lg font-black tracking-tight ' + ink }, '⛰️ ' + t('stem.geology.title', 'Geology Explorer')),
             h('div', { className: 'h-[3px] w-12 rounded-full mt-1', style: { background: 'linear-gradient(90deg,#f59e0b,#a855f7)' } }),
             h('p', { className: 'text-[11px] mt-1 ' + muted }, t('stem.geology.subtitle', 'Dig a cross-section of the crust. Identify rocks, read the layers, find the pluton that cuts them.')))),
+        // scene picker (worlds) — switching rebuilds the 3D voxel scene
+        h('div', { className: 'flex flex-wrap items-center gap-1.5', role: 'tablist', 'aria-label': t('stem.geology.scene', 'Scene') },
+          Object.keys(SCENES).map(function (sid) {
+            var on = scene === sid;
+            return h('button', {
+              key: sid, type: 'button', role: 'tab', 'aria-selected': on ? 'true' : 'false',
+              onClick: function () { if (sid === scene) return; setSceneState(sid); upd('scene', sid); setSlice(0); setExcavate(false); setSelected(null); setWaterOn(false); },
+              className: 'transition-colors active:scale-[0.97] text-xs font-bold px-3 py-1.5 rounded-lg border ' + (on ? 'bg-violet-600 border-violet-500 text-white' : (isDark ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100'))
+            }, SCENES[sid].label);
+          })),
         // main: viewport + controls (left) | info + cross-section + list (right)
         h('div', { className: 'grid gap-3', style: { gridTemplateColumns: 'minmax(0,1.4fr) minmax(0,1fr)' } },
           h('div', { className: 'space-y-2' },
-            historyBar(),
-            eruptionBar(),
+            feat.history ? historyBar() : null,
+            feat.volcano ? eruptionBar() : null,
             viewport(),
             // controls
             h('div', { className: 'flex flex-wrap items-center gap-2' },
@@ -900,29 +964,31 @@
                 h('input', { type: 'range', min: 0, max: NZ - 1, value: slice, disabled: histStage >= 0 || eruptStage >= 0 || !threeReady || webglError, 'aria-label': 'Cross-section slice depth', onChange: function (e) { var v = +e.target.value; setSlice(v); if (window[ENGINE_KEY]) window[ENGINE_KEY].setSlice(v); } })),
               h('button', { type: 'button', disabled: histStage >= 0 || eruptStage >= 0 || !threeReady || webglError, onClick: function () { var nv = !excavate; setExcavate(nv); if (window[ENGINE_KEY]) window[ENGINE_KEY].setExcavate(nv); }, 'aria-pressed': excavate ? 'true' : 'false', className: btn + (excavate ? 'bg-amber-500 border-amber-400 text-amber-950' : btnIdle) }, '⛏️ ' + t('stem.geology.excavate', 'Excavate') + ': ' + (excavate ? t('stem.on', 'ON') : t('stem.off', 'OFF'))),
               h('button', { type: 'button', disabled: histStage >= 0 || eruptStage >= 0 || !threeReady || webglError, onClick: function () { setSlice(0); setExcavate(false); if (window[ENGINE_KEY]) { window[ENGINE_KEY].reset(); window[ENGINE_KEY].setExcavate(false); } }, className: btn + btnIdle }, '↺ ' + t('stem.geology.reset', 'Reset')),
-              h('button', { type: 'button', disabled: eruptStage >= 0, onClick: function () { if (histStage >= 0) { stopHistory(); } else { playHistory(); } }, 'aria-pressed': histStage >= 0 ? 'true' : 'false', title: t('stem.geology.play_history_tip', 'Watch the cross-section build in the order it formed'), className: btn + (histStage >= 0 ? 'bg-violet-500 border-violet-400 text-violet-50' : btnIdle) }, histStage >= 0 ? '■ ' + t('stem.geology.stop', 'Stop') : '▶ ' + t('stem.geology.play_history', 'Play history')),
-              h('button', { type: 'button', disabled: histStage >= 0 || eruptStage >= 0, onClick: function () { var nv = !waterOn; setWaterOn(nv); if (window[ENGINE_KEY]) window[ENGINE_KEY].setWaterTable(nv); if (nv) announce('Water table on. Rain soaks through permeable rock like sandstone and is trapped by the impermeable shale; the water table is the top of the saturated zone. Slice the block or read the cross-section to see it.'); }, 'aria-pressed': waterOn ? 'true' : 'false', title: t('stem.geology.water_tip', 'Show the water table and which layers hold groundwater'), className: btn + (waterOn ? 'bg-blue-500 border-blue-400 text-blue-50' : btnIdle) }, '💧 ' + t('stem.geology.water', 'Water table') + ': ' + (waterOn ? t('stem.on', 'ON') : t('stem.off', 'OFF'))),
-              h('button', { type: 'button', disabled: histStage >= 0 || eruptStage >= 0 || !threeReady || webglError, onClick: function () { playEruption(); }, title: t('stem.geology.erupt_tip', 'Watch a volcano erupt — magma reaches the surface and cools fast into basalt'), className: btn + (eruptStage >= 0 ? 'bg-orange-500 border-orange-400 text-orange-50' : btnIdle) }, eruptStage >= 0 ? '🌋 ' + t('stem.geology.erupting_short', 'Erupting…') : '🌋 ' + t('stem.geology.erupt', 'Erupt')),
+              feat.history && h('button', { type: 'button', disabled: eruptStage >= 0, onClick: function () { if (histStage >= 0) { stopHistory(); } else { playHistory(); } }, 'aria-pressed': histStage >= 0 ? 'true' : 'false', title: t('stem.geology.play_history_tip', 'Watch the cross-section build in the order it formed'), className: btn + (histStage >= 0 ? 'bg-violet-500 border-violet-400 text-violet-50' : btnIdle) }, histStage >= 0 ? '■ ' + t('stem.geology.stop', 'Stop') : '▶ ' + t('stem.geology.play_history', 'Play history')),
+              feat.water && h('button', { type: 'button', disabled: histStage >= 0 || eruptStage >= 0, onClick: function () { var nv = !waterOn; setWaterOn(nv); if (window[ENGINE_KEY]) window[ENGINE_KEY].setWaterTable(nv); if (nv) announce('Water table on. Rain soaks through permeable rock like sandstone and is trapped by the impermeable shale; the water table is the top of the saturated zone. Slice the block or read the cross-section to see it.'); }, 'aria-pressed': waterOn ? 'true' : 'false', title: t('stem.geology.water_tip', 'Show the water table and which layers hold groundwater'), className: btn + (waterOn ? 'bg-blue-500 border-blue-400 text-blue-50' : btnIdle) }, '💧 ' + t('stem.geology.water', 'Water table') + ': ' + (waterOn ? t('stem.on', 'ON') : t('stem.off', 'OFF'))),
+              feat.volcano && h('button', { type: 'button', disabled: histStage >= 0 || eruptStage >= 0 || !threeReady || webglError, onClick: function () { playEruption(); }, title: t('stem.geology.erupt_tip', 'Watch a volcano erupt — magma reaches the surface and cools fast into basalt'), className: btn + (eruptStage >= 0 ? 'bg-orange-500 border-orange-400 text-orange-50' : btnIdle) }, eruptStage >= 0 ? '🌋 ' + t('stem.geology.erupting_short', 'Erupting…') : '🌋 ' + t('stem.geology.erupt', 'Erupt')),
               h('span', { className: 'text-[11px] ' + muted }, threeReady && !webglError ? t('stem.geology.tip', 'Drag to orbit · click a block to identify') : '')),
             infoPanel(),
-            datingPanel(),
-            cyclePanel()),
+            feat.dating ? datingPanel() : null,
+            feat.cycle ? cyclePanel() : null),
           h('div', { className: 'space-y-2' },
-            h('div', { className: 'flex items-start gap-3' },
-              crossSectionSVG(),
-              h('p', { className: 'text-[11px] leading-relaxed ' + muted }, t('stem.geology.teach', 'Deeper sedimentary layers are older (superposition). The granite pluton is YOUNGER than the layers it cuts (cross-cutting), and it bakes a metamorphic rim (contact metamorphism). Heat + pressure rise with depth toward the magma — where the rock cycle restarts.'))),
-            h('div', { className: 'text-[11px] font-bold ' + muted }, t('stem.geology.rocks', 'Rock types')),
+            feat.crossSection
+              ? h('div', { className: 'flex items-start gap-3' },
+                  crossSectionSVG(),
+                  h('p', { className: 'text-[11px] leading-relaxed ' + muted }, t('stem.geology.teach', 'Deeper sedimentary layers are older (superposition). The granite pluton is YOUNGER than the layers it cuts (cross-cutting), and it bakes a metamorphic rim (contact metamorphism). Heat + pressure rise with depth toward the magma — where the rock cycle restarts.')))
+              : (SCENE.blurb ? h('div', { className: 'p-2.5 rounded-xl border ' + cardBg, role: 'region', 'aria-label': 'About this scene' }, h('div', { className: 'text-[11px] leading-relaxed ' + ink }, SCENE.blurb)) : null),
+            h('div', { className: 'text-[11px] font-bold ' + muted }, feat.crossSection ? t('stem.geology.rocks', 'Rock types') : t('stem.geology.minerals', 'Minerals')),
             strataList(),
-            fossilStrip(),
-            h('div', { className: 'space-y-1.5' },
+            feat.fossils ? fossilStrip() : null,
+            feat.cores ? h('div', { className: 'space-y-1.5' },
               h('div', { className: 'text-[11px] font-bold ' + muted }, '🪛 ' + t('stem.geology.core_title', 'Drill a core sample')),
               h('div', { className: 'flex flex-wrap gap-1.5' },
                 CORE_SITES.map(function (site) {
                   var on = core && core.id === site.id;
                   return h('button', { key: site.id, type: 'button', onClick: function () { takeCore(site); }, 'aria-pressed': on ? 'true' : 'false', title: site.blurb, className: 'transition-colors active:scale-[0.97] text-[11px] font-bold px-2.5 py-1.5 rounded-lg border ' + (on ? 'bg-amber-500 border-amber-400 text-amber-950' : (isDark ? 'bg-slate-800 border-slate-600 text-slate-100 hover:bg-slate-700 hover:border-amber-400' : 'bg-white border-slate-300 text-slate-700 hover:bg-amber-50 hover:border-amber-400')) }, site.icon + ' ' + t('stem.geology.core_' + site.id, site.label));
                 })),
-              corePanel())))
-        , quizPanel()
+              corePanel()) : null))
+        , feat.quiz ? quizPanel() : null
       );
     }
   });
