@@ -88,6 +88,21 @@
   // deterministic: ~1/3 of sedimentary voxels host a fossil, so digging feels like discovery
   function hasFossilAt(x, y, z) { return (((x + 1) * 13 + (z + 1) * 7 + y * 5) % 3) === 0; }
 
+  // Per-voxel ambient occlusion: how many of the 6 face-neighbours are present (a
+  // `present` map keyed 'x,y,z'). Flat per-face lighting is what makes voxels read as
+  // "Minecrafty"; darkening enclosed voxels makes crevices, strata boundaries and the
+  // metamorphic aureole pop. PURE — unit-tested.
+  function aoCount(present, x, y, z) {
+    var n = 0;
+    if (present[(x + 1) + ',' + y + ',' + z]) n++;
+    if (present[(x - 1) + ',' + y + ',' + z]) n++;
+    if (present[x + ',' + (y + 1) + ',' + z]) n++;
+    if (present[x + ',' + (y - 1) + ',' + z]) n++;
+    if (present[x + ',' + y + ',' + (z + 1)]) n++;
+    if (present[x + ',' + y + ',' + (z - 1)]) n++;
+    return n;
+  }
+
   // A drill core: the vertical rock sequence at one (x,z), merged into bands.
   function computeCore(x, z) {
     var segs = [], prev = null;
@@ -308,13 +323,20 @@
     function visible(v) { return !removed[vkey(v)] && v.z >= sliceZ && FORMED_AT[v.key] <= showStage; }
     function rebuild() {
       var i = 0; instanceToVoxel.length = 0;
+      // presence pass first → per-voxel ambient occlusion (depth/structure cue)
+      var present = {};
+      for (var pk = 0; pk < voxels.length; pk++) { var pv = voxels[pk]; if (visible(pv)) present[pv.x + ',' + pv.y + ',' + pv.z] = 1; }
       for (var k = 0; k < voxels.length; k++) {
         var v = voxels[k]; if (!visible(v)) continue;
         var p = worldPos(v); dummy.position.set(p[0], p[1], p[2]); dummy.updateMatrix();
         mesh.setMatrixAt(i, dummy.matrix);
         col.setHex(ROCKS[v.key].color);
         col.multiplyScalar(v.j || 1);                     // per-voxel grain → natural, non-plastic rock texture
-        if (v.key === 'magma') col.multiplyScalar(1.22);  // molten rock reads hotter / glowing
+        // ambient occlusion (enclosed → darker) + gentle depth shade (deeper → darker)
+        var ao = 1 - 0.42 * (aoCount(present, v.x, v.y, v.z) / 6);
+        var depthShade = 0.74 + 0.26 * (1 - v.y / Math.max(1, NY - 1));
+        col.multiplyScalar(ao * depthShade);
+        if (v.key === 'magma') col.multiplyScalar(1.5);   // molten rock reads hotter / glowing (re-boosted past the depth shade)
         // when a rock type is selected, make every voxel of that type glow and let
         // the rest recede — so its distribution through the crust pops out.
         if (highlightKey) { if (v.key === highlightKey) col.lerp(WHITE, 0.42); else col.multiplyScalar(0.5); }
@@ -446,6 +468,16 @@
     };
     return eng;
   }
+
+  // Test hook: expose the PURE generators/helpers so the science + AO logic can be
+  // unit-tested in jsdom (the WebGL itself is Canvas-smoke-only). Also a characterization
+  // baseline that locks current strata before the upcoming resolution refactor.
+  try {
+    window.__alloGeologyPure = {
+      rockKeyAt: rockKeyAt, hasFossilAt: hasFossilAt, computeCore: computeCore, rockFacts: rockFacts, aoCount: aoCount,
+      grid: function () { return { NX: NX, NY: NY, NZ: NZ, KM_PER_VOXEL: KM_PER_VOXEL }; }
+    };
+  } catch (e) {}
 
   window.StemLab.registerTool('geologyExplorer', {
     name: 'Geology Explorer',
