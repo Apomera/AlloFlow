@@ -10322,6 +10322,12 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     // audit half of the view so re-entry renders identically, not from a thin summary).
     if (pdfAuditResult && !pdfAuditResult._choosing) lastPdfAuditResultRef.current = pdfAuditResult;
     setPdfAuditResult(null); // close modal; result survives in pdfFixResult (re-openable via the Return-to-remediation pill)
+    // Make re-entry discoverable (2026-06-22): the remediation survives and the floating "Return to
+    // remediation" pill reopens it, but a silent close (Esc / backdrop click) gave the user no hint it
+    // was still there — they could assume the work was lost. Surface the pill on a re-openable result.
+    if (pdfFixResult && (pdfFixResult.accessibleHtml || pdfFixResult.afterScore != null)) {
+      addToast(t('toasts.remediation_reopen_hint') || '↩ Your remediation is still here — reopen it anytime with the “Return to remediation” pill (bottom-right).', 'info');
+    }
   };
   // Guarded close: if there's audit work that hasn't been saved as a Project,
   // prompt with Save / Discard / Cancel before letting the modal close.
