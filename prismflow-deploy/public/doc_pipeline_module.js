@@ -1960,7 +1960,7 @@ var createDocPipeline = function(deps) {
     pdfExperimentMode = s.pdfExperimentMode;
     pdfExperimentRuns = s.pdfExperimentRuns;
     customExportCSS = s.customExportCSS; exportStylePrompt = s.exportStylePrompt;
-    pdfFixModeRef = s.pdfFixModeRef; pdfPreviewRef = s.pdfPreviewRef; pdfTargetScore = s.pdfTargetScore || 90;
+    pdfFixModeRef = s.pdfFixModeRef; pdfPreviewRef = s.pdfPreviewRef; pdfTargetScore = s.pdfTargetScore || 95;
     setPdfAuditResult = s.setPdfAuditResult; setPdfAuditLoading = s.setPdfAuditLoading;
     setPdfFixResult = s.setPdfFixResult; setPdfFixLoading = s.setPdfFixLoading;
     setPdfFixStep = s.setPdfFixStep; setPendingPdfBase64 = s.setPendingPdfBase64;
@@ -7304,7 +7304,7 @@ var createDocPipeline = function(deps) {
     const hash = await _sha256Hex(sample);
     if (!hash) return null;
     const lang = (outLang || 'en').toLowerCase().replace(/[^a-z0-9-]/g, '_');
-    return `pdf_remed_${_PIPELINE_PROMPT_VERSION}_${hash}_n${numAuditors}_${lang}_t${targetScore || 90}_p${autoFixPasses || 0}`;
+    return `pdf_remed_${_PIPELINE_PROMPT_VERSION}_${hash}_n${numAuditors}_${lang}_t${targetScore || 95}_p${autoFixPasses || 0}`;
   };
   const _readRemediationCache = async (key) => {
     if (!key || typeof window === 'undefined' || !window.idbKeyval) return null;
@@ -9144,7 +9144,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
 
         log(`Pass ${fp + 1}: AI ${newAi}/100, axe ${newAxe} violations`);
 
-        const targetScore = pdfTargetScore || 90;
+        const targetScore = pdfTargetScore || 95;
         if (newAxe === 0 && newAi >= targetScore) { log(`Target score ${targetScore} reached (${newAi}) with 0 violations \u2014 stopping`); break; }
         const bMinDet = Math.max(2, Math.round(rvSEM * 1.5));
         if (newAxe >= bestAxeViolations && newAi <= bestAiScore + bMinDet && fp > 0) { log(`Plateau (SEM\u00b1${rvSEM.toFixed(1)}, threshold=${bMinDet}) \u2014 stopping`); break; }
@@ -16031,7 +16031,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
 
       const _aiIssueCount = verification && verification.issues ? verification.issues.length : 0;
       const _totalIssues = bestAxeViolations + _aiIssueCount;
-      const _targetScore = pdfTargetScore || 90;
+      const _targetScore = pdfTargetScore || 95;
       if (maxFixPasses > 0 && _totalIssues > 0 && (bestAxeViolations > 0 || bestAiScore < _targetScore)) {
         // Emit live remediation session start so UI shows progress panel
         warnLog(`[Auto-fix] Starting fix loop: ${_totalIssues} issues (${bestAxeViolations} axe, ${_aiIssueCount} AI), score ${bestAiScore}, target ${_targetScore}`);
@@ -16233,7 +16233,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           }
 
           // If BOTH engines are satisfied, stop
-          const targetScore = pdfTargetScore || 90;
+          const targetScore = pdfTargetScore || 95;
           if (newAxeViolations === 0 && !_rePartial && newAiScore >= targetScore) {
             warnLog(`[Auto-fix] Excellent: axe clean + AI ${newAiScore}/100 (target ${targetScore}) — stopping`);
             break;
@@ -21518,7 +21518,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     options = options || {};
     const surgicalTools = SHARED_SURGICAL_TOOLS;
     const maxPasses = options.maxPasses || 5;
-    const targetScore = options.targetScore || 90;
+    const targetScore = options.targetScore || 95;
     const onProgress = options.onProgress || function() {};
     const onActivity = options.onActivity || function() {};
 

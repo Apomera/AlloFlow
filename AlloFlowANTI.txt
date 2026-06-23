@@ -10569,7 +10569,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [pdfAuditorCount, setPdfAuditorCount] = useState(5);
   const [pdfPolishPasses, setPdfPolishPasses] = useState(2);
   const [pdfAutoFixPasses, setPdfAutoFixPasses] = useState(8);
-  const [pdfTargetScore, setPdfTargetScore] = useState(90);
+  const [pdfTargetScore, setPdfTargetScore] = useState(95); // default raised 90→95 (2026-06-23, maintainer ask): auto-remediation aims for "Near-perfect" by default. Bounded by pdfAutoFixPasses (8) — docs that plateau below 95 return best-effort, they don't fail.
   // OCR language override (2026-06-20): '' = auto-detect (a Vision call picks the ISO code). A manual
   // choice lets a teacher tell the pipeline a scanned handout is e.g. Somali so Tesseract uses the right
   // model — its word boxes drive the searchable text layer, and 'eng' mis-segments non-Latin scripts.
