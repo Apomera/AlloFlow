@@ -202,7 +202,7 @@
     var camera = new THREE.PerspectiveCamera(55, 1, 0.1, 200);
     camera.position.set(NX * 1.15, NY * 1.05, NZ * 1.4);
     var controls = THREE.OrbitControls ? new THREE.OrbitControls(camera, renderer.domElement) : null;
-    if (controls) { controls.enableDamping = true; controls.dampingFactor = 0.08; controls.target.set(0, -NY * 0.18, 0); controls.minDistance = 8; controls.maxDistance = 56; }
+    if (controls) { controls.enableDamping = true; controls.dampingFactor = 0.08; controls.target.set(0, -NY * 0.05, 0); controls.minDistance = 8; controls.maxDistance = 60; }
     scene.add(new THREE.AmbientLight(0xffffff, 0.42));
     scene.add(new THREE.HemisphereLight(0xbcd4ff, 0x6b5640, 0.55)); // sky-blue from above, warm ground-bounce below → dimensional shading
     var keyL = new THREE.DirectionalLight(0xfff1d0, 1.0); keyL.position.set(12, 20, 14); scene.add(keyL);
@@ -387,19 +387,16 @@
     function onLost(e) { e.preventDefault(); if (opts.onContextLost) opts.onContextLost(); }
     cnv.addEventListener('webglcontextlost', onLost, false);
 
-    function resize() { var w = container.clientWidth || 600, h = container.clientHeight || 420; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+    var lastW = 0, lastH = 0;
+    function resize() { var w = container.clientWidth || 600, h = container.clientHeight || 420; lastW = w; lastH = h; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
     resize();
     var ro = null; try { ro = new ResizeObserver(resize); ro.observe(container); } catch (e) {}
-    // the flex container may not have its final size on the first frame (canvas
-    // renders tiny / in a corner); re-measure after layout settles + on fullscreen.
     eng.resize = function () { if (!eng.disposed) resize(); };
-    setTimeout(function () { if (!eng.disposed) resize(); }, 60);
-    setTimeout(function () { if (!eng.disposed) resize(); }, 250);
-    try { requestAnimationFrame(function () { if (!eng.disposed) resize(); }); } catch (e) {}
 
     var t = 0, raf = null;
     function loop() {
       if (eng.disposed) return; raf = requestAnimationFrame(loop); t += 0.016;
+      if (container.clientWidth > 0 && (container.clientWidth !== lastW || container.clientHeight !== lastH)) resize(); // keep the canvas fitted to its container (robust in sandboxed iframes / late layout)
       magmaGlow.intensity = 1.9 + Math.sin(t * 2) * 0.4;
       magmaGlow.color.setRGB(1, 0.32 + Math.sin(t * 5) * 0.05, 0.13);            // subtle fire flicker
       underGlow.material.opacity = 0.15 + Math.sin(t * 1.7) * 0.05;              // pulsing deep-heat glow
@@ -539,19 +536,19 @@
         eruptTimer.current = setTimeout(tick, 1500);
       }
       React.useEffect(function () { return function () { if (histTimer.current) clearTimeout(histTimer.current); if (eruptTimer.current) clearTimeout(eruptTimer.current); }; }, []);
+      // CSS-based fullscreen: the real Fullscreen API is blocked by the Canvas
+      // iframe's permissions policy (it rejects with "Disallowed by permissions
+      // policy"), so we expand to a fixed-position overlay instead — works anywhere.
       function toggleFullscreen() {
-        try {
-          var el = fsRef.current; if (!el) return;
-          var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
-          if (!fsEl) { (el.requestFullscreen || el.webkitRequestFullscreen || function () {}).call(el); }
-          else { (document.exitFullscreen || document.webkitExitFullscreen || function () {}).call(document); }
-        } catch (e) {}
+        setIsFs(function (v) { return !v; });
+        setTimeout(function () { try { if (window[ENGINE_KEY] && window[ENGINE_KEY].resize) window[ENGINE_KEY].resize(); } catch (e) {} }, 70);
       }
       React.useEffect(function () {
-        function onFs() { setIsFs(!!(document.fullscreenElement || document.webkitFullscreenElement)); try { if (window[ENGINE_KEY] && window[ENGINE_KEY].resize) setTimeout(window[ENGINE_KEY].resize, 80); } catch (e) {} }
-        try { document.addEventListener('fullscreenchange', onFs); document.addEventListener('webkitfullscreenchange', onFs); } catch (e) {}
-        return function () { try { document.removeEventListener('fullscreenchange', onFs); document.removeEventListener('webkitfullscreenchange', onFs); } catch (e) {} };
-      }, []);
+        if (!isFs) return;
+        function onKey(e) { if (e.key === 'Escape') setIsFs(false); }
+        try { document.addEventListener('keydown', onKey); } catch (e) {}
+        return function () { try { document.removeEventListener('keydown', onKey); } catch (e) {} };
+      }, [isFs]);
 
       React.useEffect(function () {
         if (!threeReady || webglError || !containerRef.current || window[ENGINE_KEY]) return;
@@ -795,7 +792,7 @@
               h('div', { className: 'text-2xl mb-2 animate-pulse' }, '🔷'),
               h('div', { className: 'text-sm ' + muted }, t('stem.geology.loading3d', 'Loading the 3D engine…'))));
         }
-        return h('div', { ref: fsRef, className: 'relative rounded-xl overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+        return h('div', { ref: fsRef, className: (isFs ? 'fixed inset-0 z-[9999] overflow-hidden bg-[#060913]' : 'relative rounded-xl overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300')) },
           h('div', { ref: containerRef, style: { height: isFs ? '100vh' : 'min(58vh, 460px)', minHeight: 320, background: '#060913', cursor: excavate ? 'crosshair' : 'grab' }, role: 'img', 'aria-label': 'Interactive 3D voxel cross-section of the crust. Use the rock list below for a non-visual version.' }),
           h('div', { className: 'absolute top-2 left-2 z-10 flex gap-1' },
             [['iso', '3D'], ['front', 'Front'], ['top', 'Top']].map(function (vw) {
