@@ -306,19 +306,36 @@
     rebuild();
 
     // simple low-poly trees on the surface — a "this is the top, down is deep" cue
-    (function buildTrees() {
-      var cells = [[2, 3], [4, 10], [8, 2], [11, 9], [5, 6], [10, 4]];
-      var trunkGeo = new THREE.CylinderGeometry(0.08, 0.12, 0.5, 5), trunkMat = new THREE.MeshStandardMaterial({ color: 0x6b4423, roughness: 0.9 });
-      var leafGeo = new THREE.ConeGeometry(0.34, 0.78, 7), leafMat = new THREE.MeshStandardMaterial({ color: 0x3f7d3a, roughness: 0.8 });
+    (function buildSurface() {
+      // trees — varied height + foliage colour + a layered top for a natural look (clear of the central volcano)
+      var cells = [[2, 3], [4, 10], [10, 2], [11, 9], [1, 11], [12, 4], [3, 12], [12, 6], [1, 5]];
+      var trunkGeo = new THREE.CylinderGeometry(0.08, 0.13, 0.55, 5), trunkMat = new THREE.MeshStandardMaterial({ color: 0x6b4423, roughness: 0.9 });
+      var leafGeo = new THREE.ConeGeometry(0.36, 0.82, 8);
+      var leafMats = [new THREE.MeshStandardMaterial({ color: 0x3f7d3a, roughness: 0.8 }), new THREE.MeshStandardMaterial({ color: 0x4f9442, roughness: 0.8 }), new THREE.MeshStandardMaterial({ color: 0x357036, roughness: 0.8 })];
       for (var i = 0; i < cells.length; i++) {
         var x = cells[i][0], z = cells[i][1], p = worldPos({ x: x, y: 0, z: z });
+        var sc = 0.78 + (((x * 13 + z * 7) % 10) / 10) * 0.5;
+        var lm = leafMats[(x + z) % 3];
         var g = new THREE.Group();
-        var trunk = new THREE.Mesh(trunkGeo, trunkMat); trunk.position.y = 0.25;
-        var leaf = new THREE.Mesh(leafGeo, leafMat); leaf.position.y = 0.78;
-        g.add(trunk); g.add(leaf); g.position.set(p[0], p[1] + 0.5, p[2]); g.userData = { x: x, z: z };
+        var trunk = new THREE.Mesh(trunkGeo, trunkMat); trunk.position.y = 0.27;
+        var leaf = new THREE.Mesh(leafGeo, lm); leaf.position.y = 0.82;
+        var leaf2 = new THREE.Mesh(leafGeo, lm); leaf2.position.y = 1.18; leaf2.scale.set(0.68, 0.68, 0.68);
+        g.add(trunk); g.add(leaf); g.add(leaf2); g.scale.set(sc, sc, sc);
+        g.position.set(p[0], p[1] + 0.5, p[2]); g.userData = { x: x, z: z };
         scene.add(g); treeMeshes.push(g);
       }
-      eng._treeGeo = [trunkGeo, leafGeo]; eng._treeMat = [trunkMat, leafMat];
+      // boulders — a few scattered rocks for surface detail
+      var rockGeo = new THREE.DodecahedronGeometry(0.32, 0), rockMat = new THREE.MeshStandardMaterial({ color: 0x8a8576, roughness: 1.0, flatShading: true });
+      var rockCells = [[6, 10], [1, 7], [10, 11]];
+      for (var r = 0; r < rockCells.length; r++) {
+        var rx = rockCells[r][0], rz = rockCells[r][1], rp = worldPos({ x: rx, y: 0, z: rz });
+        var rs = 0.7 + (((rx * 5 + rz * 3) % 10) / 10) * 0.6;
+        var rock = new THREE.Mesh(rockGeo, rockMat);
+        rock.scale.set(rs, rs * 0.7, rs); rock.rotation.set(rx, rz, rx + rz);
+        rock.position.set(rp[0], rp[1] + 0.6, rp[2]); rock.userData = { x: rx, z: rz };
+        scene.add(rock); treeMeshes.push(rock);
+      }
+      eng._treeGeo = [trunkGeo, leafGeo, rockGeo]; eng._treeMat = [trunkMat, rockMat].concat(leafMats);
     })();
 
     var raycaster = new THREE.Raycaster(), pointer = new THREE.Vector2(), down = null;
