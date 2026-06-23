@@ -556,7 +556,7 @@
       }, [threeReady, webglError]);
 
       // ── styling helpers ──
-      var cardBg = isDark ? 'bg-slate-800/70 border-slate-700' : 'bg-white border-slate-200';
+      var cardBg = isDark ? 'bg-slate-800/70 border-slate-700 shadow-md shadow-black/20' : 'bg-white border-slate-200 shadow-sm';
       var muted = isDark ? 'text-slate-400' : 'text-slate-500';
       var ink = isDark ? 'text-slate-100' : 'text-slate-800';
 
@@ -564,7 +564,7 @@
       function infoPanel() {
         if (!selected) return h('div', { className: 'text-xs ' + muted + ' p-3 rounded-xl border ' + cardBg }, t('stem.geology.pick_hint', 'Pick a rock — in the 3D block or the list below — to see its type, depth, temperature/pressure, how it forms, and its age relationship.'));
         var f = selected, R = f.R, tc = TYPE_COLOR[R.type] || '#64748b', F = FOSSILS[f.key];
-        return h('div', { className: 'p-3 rounded-xl border ' + cardBg, role: 'region', 'aria-label': 'Selected rock details' },
+        return h('div', { className: 'p-3 rounded-xl border ' + cardBg, style: { borderLeft: '3px solid ' + tc }, role: 'region', 'aria-label': 'Selected rock details' },
           h('div', { className: 'text-base font-extrabold tracking-tight ' + ink }, R.name),
           h('span', { className: 'inline-block text-[11px] font-bold px-2 py-0.5 rounded-full mt-1 mb-2', style: { color: tc, background: tc + '22', border: '1px solid ' + tc + '55' } }, R.type),
           h('div', { className: 'grid gap-1 text-[12px] ' + ink, style: { gridTemplateColumns: '64px 1fr' } },
