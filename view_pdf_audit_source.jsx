@@ -6557,10 +6557,16 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           const isWorking = chunk.status === 'working';
                           const isRejected = !!liveChunkRejected[chunk.index];
                           const isExpanded = !!liveChunkExpanded[chunk.index];
-                          const scoreColor = chunk.score >= 80 ? 'green' : chunk.score >= 60 ? 'amber' : 'red';
-                          const scoreBg = scoreColor === 'green' ? 'bg-green-50 border-green-200' : scoreColor === 'amber' ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200';
-                          const scoreText = scoreColor === 'green' ? 'text-green-600' : scoreColor === 'amber' ? 'text-amber-600' : 'text-red-600';
-                          const scoreDot = scoreColor === 'green' ? 'bg-green-500' : scoreColor === 'amber' ? 'bg-amber-500' : 'bg-red-500';
+                          // (2026-06-22) A section whose per-chunk audit didn't return a number (AI throttled /
+                          // partial coverage → score NULLED) must NOT render as a blank red "/100" — that reads
+                          // as "scored zero / broken" when it's just "not scored". Mirror the sister list view
+                          // (line ~5334): neutral slate + an honest "not scored" label.
+                          const _hasScore = typeof chunk.score === 'number';
+                          const _noChanges = !isWorking && !chunk.usedOriginal && ((chunk.deterministicFixCount || 0) + (chunk.surgicalFixCount || 0)) === 0;
+                          const scoreColor = !_hasScore ? 'slate' : chunk.score >= 80 ? 'green' : chunk.score >= 60 ? 'amber' : 'red';
+                          const scoreBg = scoreColor === 'green' ? 'bg-green-50 border-green-200' : scoreColor === 'amber' ? 'bg-amber-50 border-amber-200' : scoreColor === 'slate' ? 'bg-slate-50 border-slate-200' : 'bg-red-50 border-red-200';
+                          const scoreText = scoreColor === 'green' ? 'text-green-600' : scoreColor === 'amber' ? 'text-amber-600' : scoreColor === 'slate' ? 'text-slate-500' : 'text-red-600';
+                          const scoreDot = scoreColor === 'green' ? 'bg-green-500' : scoreColor === 'amber' ? 'bg-amber-500' : scoreColor === 'slate' ? 'bg-slate-400' : 'bg-red-500';
 
                           return (
                             <div key={chunk.index} className={`border-2 rounded-xl transition-all duration-300 ${isRejected ? 'bg-slate-50 border-slate-300 opacity-60' : isWorking ? 'bg-indigo-50 border-indigo-200' : scoreBg}`}>
@@ -6577,14 +6583,17 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     {!isWorking && (chunk.surgicalFixCount > 0) && <span className="text-[11px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-bold" title={t('pdf_audit.live_chunk.targeted_title') || 'AI-diagnosed targeted micro-fixes applied via deterministic tools (content-preserving)'}>{chunk.surgicalFixCount} targeted</span>}
                                     {!isWorking && chunk.usedOriginal && <span className="text-[11px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold" title={t('pdf_audit.live_chunk.ai_skipped_short_title') || 'AI rewrite failed or was rejected for this section — only rule-based fixes were applied. Still more accessible than the original.'}>{t('pdf_audit.live_chunk.ai_skipped_short') || 'AI skipped'}</span>}
                                     {!isWorking && chunk.wasRetried && !chunk.usedOriginal && <span className="text-[11px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded font-bold">retried</span>}
-                                    {!isWorking && chunk.aiVerified && <span className="text-[11px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-bold" title={t('pdf_audit.live_chunk.verified_title') || 'AI verified content preserved'}>✓ verified</span>}
+                                    {_noChanges && <span className="text-[11px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-bold italic" title={t('pdf_audit.live_chunk.no_changes_card_title') || 'No changes were made to this section this run. The green badges below confirm its content is intact — not that it was edited.'}>{t('pdf_audit.live_chunk.no_changes_card') || 'no changes'}</span>}
+                                    {!isWorking && chunk.aiVerified && <span className="text-[11px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-bold" title={t('pdf_audit.live_chunk.verified_title') || 'AI verified content preserved (not necessarily edited)'}>✓ verified</span>}
                                     {!isWorking && chunk.integrityPassed && <span className="text-[11px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold" title={t('pdf_audit.live_chunk.integrity_title') || 'Word overlap integrity check passed'}>integrity ✓</span>}
                                     {isRejected && <span className="text-[11px] bg-slate-300 text-slate-700 px-1.5 py-0.5 rounded font-bold">rejected</span>}
                                   </div>
                                 </div>
                                 {!isWorking && (
                                   <div className={`text-base font-black shrink-0 ${scoreText}`}>
-                                    {chunk.score}<span className="text-[11px] opacity-60">/100</span>
+                                    {_hasScore
+                                      ? <>{chunk.score}<span className="text-[11px] opacity-60">/100</span></>
+                                      : <span className="text-[11px] font-bold">{t('pdf_audit.live_chunk.not_scored') || 'not scored (AI throttled)'}</span>}
                                   </div>
                                 )}
                               </div>

@@ -82,4 +82,15 @@ describe('anti-drift: the view renders it honestly', () => {
     expect(viewSrc).toMatch(/_hasScore \? chunk\.score \+ '\/100' : \(t\('pdf_audit\.live_chunk\.not_scored'\)/);
     expect(viewSrc).toMatch(/const _aiThrottledClean = !!\(r && r\._aiVerificationIncomplete && r\.axeAudit && r\.axeAudit\.totalViolations === 0\)/);
   });
+  it('(2026-06-22) the review-card render site ALSO guards the score (no blank red /100) and flags 0-change sections', () => {
+    // neutral slate branch added to the card's scoreColor ladder when the chunk has no numeric score
+    expect(viewSrc).toMatch(/scoreColor = !_hasScore \? 'slate' :/);
+    expect(viewSrc).toMatch(/scoreColor === 'slate' \? 'bg-slate-50 border-slate-200'/);
+    // the card renders the honest "not scored" label instead of an empty {chunk.score} + red /100
+    expect(viewSrc).toMatch(/_hasScore[\s\S]{0,40}\? <>\{chunk\.score\}<span className="text-\[11px\] opacity-60">\/100/);
+    expect((viewSrc.match(/t\('pdf_audit\.live_chunk\.not_scored'\)/g) || []).length).toBeGreaterThanOrEqual(2); // sister list + card both guard
+    // a section that passed integrity but had 0 fixes gets a "no changes" pill so green badges don't read as "edited"
+    expect(viewSrc).toMatch(/const _noChanges = !isWorking && !chunk\.usedOriginal && \(\(chunk\.deterministicFixCount \|\| 0\) \+ \(chunk\.surgicalFixCount \|\| 0\)\) === 0/);
+    expect(viewSrc).toMatch(/pdf_audit\.live_chunk\.no_changes_card/);
+  });
 });
