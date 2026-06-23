@@ -1942,6 +1942,9 @@ function PdfAuditView(props) {
   };
   const [_issueSourceOpen, _setIssueSourceOpen] = useState({});
   const [_issueEdit, _setIssueEdit] = useState({});
+  const _paletteSnapshotRef = useRef(null);
+  const [_appliedPalette, setAppliedPalette] = useState(null);
+  const [_paletteBusy, setPaletteBusy] = useState(false);
   const runVeraPdfValidation = (bytes) => new Promise((resolve, reject) => {
     let win = null;
     try {
@@ -3213,6 +3216,47 @@ function PdfAuditView(props) {
       return { missingTokens: uniq, residual: uniq.length, freshMode: true };
     }
     return { missingTokens: [], residual: 0, freshMode: false };
+  };
+  const _applyPalette = async (preset) => {
+    if (!preset || _paletteBusy || !pdfFixResult || !pdfFixResult.accessibleHtml) return;
+    if (!_docPipeline || typeof _docPipeline.applyPaletteToHtml !== "function") {
+      addToast(t("pdf_audit.palette.unavailable") || "Palette tools are still loading \u2014 try again in a moment.", "info");
+      return;
+    }
+    const origin = _paletteSnapshotRef.current || pdfFixResult.accessibleHtml;
+    setPaletteBusy(true);
+    try {
+      const built = typeof _docPipeline.buildPaletteCss === "function" ? _docPipeline.buildPaletteCss(preset.tokens) : null;
+      const newHtml = _docPipeline.applyPaletteToHtml(origin, preset.tokens);
+      if (newHtml && newHtml !== pdfFixResult.accessibleHtml) {
+        if (!_paletteSnapshotRef.current) _paletteSnapshotRef.current = pdfFixResult.accessibleHtml;
+        const worst = built && built.report && built.report.length ? Math.round(Math.min.apply(null, built.report.map((r) => r.after)) * 10) / 10 : null;
+        const _snap = _paletteSnapshotRef.current;
+        setPdfFixResult((p) => p ? { ...p, accessibleHtml: newHtml, _preCmdHtml: _snap } : p);
+        setAppliedPalette({ id: preset.id, name: preset.name, worst, allPass: built ? built.allPass : true });
+        addToast((t("pdf_audit.palette.applied") || "\u{1F3A8} Applied palette:") + " " + preset.name + " \u2014 re-checking contrast\u2026", "info");
+        await _reauditAndScore(newHtml, null);
+      } else {
+        setAppliedPalette({ id: preset.id, name: preset.name, worst: null, allPass: true });
+      }
+    } catch (e) {
+      addToast((t("pdf_audit.palette.failed") || "Palette apply failed:") + " " + (e && e.message || "unknown"), "error");
+    }
+    setPaletteBusy(false);
+  };
+  const _revertPalette = async () => {
+    const snap = _paletteSnapshotRef.current;
+    if (!snap || _paletteBusy || !pdfFixResult) return;
+    setPaletteBusy(true);
+    setPdfFixResult((p) => p ? { ...p, accessibleHtml: snap } : p);
+    _paletteSnapshotRef.current = null;
+    setAppliedPalette(null);
+    addToast(t("pdf_audit.palette.reverted") || "\u21A9 Reverted to the original colours.", "info");
+    try {
+      await _reauditAndScore(snap, null);
+    } catch (_) {
+    }
+    setPaletteBusy(false);
   };
   const _axeTarget = (v) => {
     const nd = v && Array.isArray(v.nodeDetails) ? v.nodeDetails[0] : null;
@@ -7890,7 +7934,19 @@ Return ONLY JSON:
         b.scrollIntoView({ behavior: "smooth", block: "center" });
         b.click();
       } else if (addToast) addToast(t("toasts.audio_unavailable_now") || "Audio is unavailable right now (a job may be running, or the voice service is off).", "info");
-    }, className: "w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2", title: t("pdf_audit.export_menu.audio_sr_title") || "Same voice, but announcing structure the way a screen reader would (heading levels, list counts, table rows, image alts)." }, "\u{1F9BB} ", t("pdf_audit.export_menu.audio_sr") || "Audio (screen-reader style)"))), /* @__PURE__ */ React.createElement("details", { id: "allo-sec-workbench", className: "bg-gradient-to-r from-slate-800 to-slate-900 border border-slate-600 rounded-xl group" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer p-3 text-[11px] font-bold text-purple-700 uppercase tracking-widest flex items-center gap-2 list-none select-none hover:bg-slate-800/50 rounded-xl" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block transition-transform group-open:rotate-90 text-slate-600" }, "\u25B8"), "\u{1F916} Expert Workbench", isAgentRunning && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-amber-700 animate-pulse ml-1" }, "Running..."), /* @__PURE__ */ React.createElement("span", { className: "ml-auto text-[10px] text-slate-500 font-normal normal-case tracking-normal" }, agentActivityLog.length > 0 ? `${agentActivityLog.length} event${agentActivityLog.length === 1 ? "" : "s"}` : "idle")), /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-3 space-y-2" }, /* @__PURE__ */ React.createElement("form", { className: "flex gap-1", onSubmit: async (e) => {
+    }, className: "w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2", title: t("pdf_audit.export_menu.audio_sr_title") || "Same voice, but announcing structure the way a screen reader would (heading levels, list counts, table rows, image alts)." }, "\u{1F9BB} ", t("pdf_audit.export_menu.audio_sr") || "Audio (screen-reader style)"))), _docPipeline && Array.isArray(_docPipeline.palettePresets) && _docPipeline.palettePresets.length > 0 && pdfFixResult && pdfFixResult.accessibleHtml && /* @__PURE__ */ React.createElement("details", { className: "bg-white border-2 border-violet-200 rounded-xl group" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer p-3 text-[11px] font-bold text-violet-700 uppercase tracking-widest flex items-center gap-2 list-none select-none hover:bg-violet-50 rounded-xl" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block transition-transform group-open:rotate-90 text-violet-400", "aria-hidden": "true" }, "\u25B8"), "\u{1F3A8} ", t("pdf_audit.palette.heading") || "Document colours", _appliedPalette && /* @__PURE__ */ React.createElement("span", { className: "text-[10px] bg-violet-100 text-violet-700 px-1.5 py-0.5 rounded-full normal-case font-bold" }, _appliedPalette.name), _appliedPalette && typeof _appliedPalette.worst === "number" && /* @__PURE__ */ React.createElement("span", { className: "ml-auto text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-bold normal-case", title: t("pdf_audit.palette.badge_title") || "Contrast is guaranteed: every text/surface pair was clamped to meet WCAG (4.5:1 body text, 3:1 large text + UI)." }, "\u2713 ", t("pdf_audit.palette.badge") || "contrast guaranteed", " (worst ", _appliedPalette.worst, ":1)")), /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-3 space-y-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, t("pdf_audit.palette.lead") || "Recolour the document with a vetted palette. Contrast is GUARANTEED \u2014 each colour is automatically nudged to meet WCAG before it is applied, and links keep their underline so colour never carries meaning alone."), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, _docPipeline.palettePresets.map((preset) => /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: preset.id,
+        onClick: () => _applyPalette(preset),
+        disabled: _paletteBusy,
+        "aria-pressed": !!(_appliedPalette && _appliedPalette.id === preset.id),
+        className: "px-2.5 py-1 rounded-full text-[11px] font-bold border transition-colors inline-flex items-center gap-1.5 " + (_appliedPalette && _appliedPalette.id === preset.id ? "bg-violet-600 text-white border-violet-600" : "bg-white text-slate-700 border-slate-300 hover:bg-violet-50") + (_paletteBusy ? " opacity-50 cursor-wait" : ""),
+        title: t("pdf_audit.palette.apply_title") || "Apply this palette (contrast guaranteed) and re-check"
+      },
+      preset.tokens && /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { display: "inline-block", width: 11, height: 11, borderRadius: 9999, background: preset.tokens.accent || preset.tokens.heading || "#666", border: "1px solid rgba(0,0,0,0.15)" } }),
+      preset.name
+    )), _appliedPalette && /* @__PURE__ */ React.createElement("button", { onClick: _revertPalette, disabled: _paletteBusy, className: "px-2.5 py-1 rounded-full text-[11px] font-bold border border-slate-300 bg-white text-slate-600 hover:bg-slate-100 " + (_paletteBusy ? "opacity-50 cursor-wait" : ""), title: t("pdf_audit.palette.revert_title") || "Restore the original colours" }, "\u21A9 ", t("pdf_audit.palette.revert") || "Revert")), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-400 italic" }, t("pdf_audit.palette.note") || "Deterministic \u2014 no AI, so it works even when the AI service is busy. AI-suggested palettes are coming next."))), /* @__PURE__ */ React.createElement("details", { id: "allo-sec-workbench", className: "bg-gradient-to-r from-slate-800 to-slate-900 border border-slate-600 rounded-xl group" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer p-3 text-[11px] font-bold text-purple-700 uppercase tracking-widest flex items-center gap-2 list-none select-none hover:bg-slate-800/50 rounded-xl" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block transition-transform group-open:rotate-90 text-slate-600" }, "\u25B8"), "\u{1F916} Expert Workbench", isAgentRunning && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-amber-700 animate-pulse ml-1" }, "Running..."), /* @__PURE__ */ React.createElement("span", { className: "ml-auto text-[10px] text-slate-500 font-normal normal-case tracking-normal" }, agentActivityLog.length > 0 ? `${agentActivityLog.length} event${agentActivityLog.length === 1 ? "" : "s"}` : "idle")), /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-3 space-y-2" }, /* @__PURE__ */ React.createElement("form", { className: "flex gap-1", onSubmit: async (e) => {
       e.preventDefault();
       if (!expertCommandInput.trim() || isAgentRunning || !pdfFixResult?.accessibleHtml) return;
       const cmd = expertCommandInput.trim();

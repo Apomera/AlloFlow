@@ -1931,6 +1931,12 @@ function PdfAuditView(props) {
   // { original, draft, saving }. The mini-audit (auditOutputAccessibility + recomputeIssueResolution) is
   // shared with the Expert Workbench via _reauditAndScore below.
   const [_issueEdit, _setIssueEdit] = useState({});
+  // Palette (S2 slice-4, 2026-06-23): recolour the document with a vetted, contrast-GUARANTEED palette.
+  // Fully deterministic (the clamp engine guarantees WCAG) → AI-free + throttle-immune. Snapshot the
+  // pre-palette html for one-click revert; re-audit after each apply via _reauditAndScore.
+  const _paletteSnapshotRef = useRef(null);                     // pre-palette accessibleHtml, for revert
+  const [_appliedPalette, setAppliedPalette] = useState(null);  // { id, name, worst, allPass }
+  const [_paletteBusy, setPaletteBusy] = useState(false);
   const runVeraPdfValidation = (bytes) => new Promise((resolve, reject) => {
     let win = null;
     try { win = window.open(VERAPDF_VALIDATOR_URL, 'alloflow-verapdf', 'width=480,height=380'); } catch (e) {}
@@ -2910,6 +2916,44 @@ function PdfAuditView(props) {
       return { missingTokens: uniq, residual: uniq.length, freshMode: true };
     }
     return { missingTokens: [], residual: 0, freshMode: false };
+  };
+
+  // Apply a vetted palette preset to the document (S2 slice-4). buildPaletteCss/applyPaletteToHtml CLAMP
+  // the palette so contrast is GUARANTEED before it touches the doc; we always re-apply onto the ORIGINAL
+  // pre-palette html (so switching presets can't stack), snapshot it for one-click revert (and set
+  // _preCmdHtml so the generic revert covers it too), then re-audit so the score reflects the recolour.
+  const _applyPalette = async (preset) => {
+    if (!preset || _paletteBusy || !pdfFixResult || !pdfFixResult.accessibleHtml) return;
+    if (!_docPipeline || typeof _docPipeline.applyPaletteToHtml !== 'function') { addToast(t('pdf_audit.palette.unavailable') || 'Palette tools are still loading — try again in a moment.', 'info'); return; }
+    const origin = _paletteSnapshotRef.current || pdfFixResult.accessibleHtml;
+    setPaletteBusy(true);
+    try {
+      const built = (typeof _docPipeline.buildPaletteCss === 'function') ? _docPipeline.buildPaletteCss(preset.tokens) : null;
+      const newHtml = _docPipeline.applyPaletteToHtml(origin, preset.tokens);
+      if (newHtml && newHtml !== pdfFixResult.accessibleHtml) {
+        if (!_paletteSnapshotRef.current) _paletteSnapshotRef.current = pdfFixResult.accessibleHtml; // first apply → snapshot the pre-palette state
+        const worst = (built && built.report && built.report.length) ? Math.round(Math.min.apply(null, built.report.map((r) => r.after)) * 10) / 10 : null;
+        const _snap = _paletteSnapshotRef.current;
+        setPdfFixResult((p) => p ? { ...p, accessibleHtml: newHtml, _preCmdHtml: _snap } : p);
+        setAppliedPalette({ id: preset.id, name: preset.name, worst: worst, allPass: built ? built.allPass : true });
+        addToast((t('pdf_audit.palette.applied') || '🎨 Applied palette:') + ' ' + preset.name + ' — re-checking contrast…', 'info');
+        await _reauditAndScore(newHtml, null);
+      } else {
+        setAppliedPalette({ id: preset.id, name: preset.name, worst: null, allPass: true });
+      }
+    } catch (e) { addToast((t('pdf_audit.palette.failed') || 'Palette apply failed:') + ' ' + ((e && e.message) || 'unknown'), 'error'); }
+    setPaletteBusy(false);
+  };
+  const _revertPalette = async () => {
+    const snap = _paletteSnapshotRef.current;
+    if (!snap || _paletteBusy || !pdfFixResult) return;
+    setPaletteBusy(true);
+    setPdfFixResult((p) => p ? { ...p, accessibleHtml: snap } : p);
+    _paletteSnapshotRef.current = null;
+    setAppliedPalette(null);
+    addToast(t('pdf_audit.palette.reverted') || '↩ Reverted to the original colours.', 'info');
+    try { await _reauditAndScore(snap, null); } catch (_) {}
+    setPaletteBusy(false);
   };
 
   // Same actions for an axe violation — its nodeDetails[0].target is an EXACT CSS selector (more
@@ -9727,6 +9771,38 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           </button>
                         </div>
                       </details>
+
+                      {/* Document colours (S2): pick a vetted palette — contrast is GUARANTEED (every colour
+                          is clamped to meet WCAG before it's applied). Deterministic + AI-free → works under
+                          a Canvas throttle. AI-suggested palettes come in a later slice. */}
+                      {_docPipeline && Array.isArray(_docPipeline.palettePresets) && _docPipeline.palettePresets.length > 0 && pdfFixResult && pdfFixResult.accessibleHtml && (
+                        <details className="bg-white border-2 border-violet-200 rounded-xl group">
+                          <summary className="cursor-pointer p-3 text-[11px] font-bold text-violet-700 uppercase tracking-widest flex items-center gap-2 list-none select-none hover:bg-violet-50 rounded-xl">
+                            <span className="inline-block transition-transform group-open:rotate-90 text-violet-400" aria-hidden="true">▸</span>
+                            🎨 {t('pdf_audit.palette.heading') || 'Document colours'}
+                            {_appliedPalette && <span className="text-[10px] bg-violet-100 text-violet-700 px-1.5 py-0.5 rounded-full normal-case font-bold">{_appliedPalette.name}</span>}
+                            {_appliedPalette && typeof _appliedPalette.worst === 'number' && <span className="ml-auto text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-bold normal-case" title={t('pdf_audit.palette.badge_title') || 'Contrast is guaranteed: every text/surface pair was clamped to meet WCAG (4.5:1 body text, 3:1 large text + UI).'}>✓ {t('pdf_audit.palette.badge') || 'contrast guaranteed'} (worst {_appliedPalette.worst}:1)</span>}
+                          </summary>
+                          <div className="px-3 pb-3 space-y-2">
+                            <p className="text-[11px] text-slate-600">{t('pdf_audit.palette.lead') || 'Recolour the document with a vetted palette. Contrast is GUARANTEED — each colour is automatically nudged to meet WCAG before it is applied, and links keep their underline so colour never carries meaning alone.'}</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {_docPipeline.palettePresets.map((preset) => (
+                                <button key={preset.id} onClick={() => _applyPalette(preset)} disabled={_paletteBusy}
+                                  aria-pressed={!!(_appliedPalette && _appliedPalette.id === preset.id)}
+                                  className={'px-2.5 py-1 rounded-full text-[11px] font-bold border transition-colors inline-flex items-center gap-1.5 ' + (_appliedPalette && _appliedPalette.id === preset.id ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-slate-700 border-slate-300 hover:bg-violet-50') + (_paletteBusy ? ' opacity-50 cursor-wait' : '')}
+                                  title={t('pdf_audit.palette.apply_title') || 'Apply this palette (contrast guaranteed) and re-check'}>
+                                  {preset.tokens && <span aria-hidden="true" style={{ display: 'inline-block', width: 11, height: 11, borderRadius: 9999, background: preset.tokens.accent || preset.tokens.heading || '#666', border: '1px solid rgba(0,0,0,0.15)' }} />}
+                                  {preset.name}
+                                </button>
+                              ))}
+                              {_appliedPalette && (
+                                <button onClick={_revertPalette} disabled={_paletteBusy} className={'px-2.5 py-1 rounded-full text-[11px] font-bold border border-slate-300 bg-white text-slate-600 hover:bg-slate-100 ' + (_paletteBusy ? 'opacity-50 cursor-wait' : '')} title={t('pdf_audit.palette.revert_title') || 'Restore the original colours'}>↩ {t('pdf_audit.palette.revert') || 'Revert'}</button>
+                              )}
+                            </div>
+                            <p className="text-[10px] text-slate-400 italic">{t('pdf_audit.palette.note') || 'Deterministic — no AI, so it works even when the AI service is busy. AI-suggested palettes are coming next.'}</p>
+                          </div>
+                        </details>
+                      )}
 
                       {/* Expert Workbench — Advanced Remediation Command Bar (collapsible) */}
                       <details id="allo-sec-workbench" className="bg-gradient-to-r from-slate-800 to-slate-900 border border-slate-600 rounded-xl group">
