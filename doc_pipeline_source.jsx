@@ -8730,6 +8730,14 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
       }
     }
 
+    // Increment 2 (table-caption cascade, AI tier): caption-less tables with NO adjacent heading
+    // (deterministic heading-inference can't reach them) get a Gemini-authored caption from the
+    // table's own data, so the "missing table caption" finding clears BEFORE the final audit below.
+    try {
+      const _capRes = await addAiTableCaptions(accessibleHtml);
+      if (_capRes.fixCount > 0) { accessibleHtml = _capRes.html; log(`  AI: authored ${_capRes.fixCount} table caption(s) for headingless tables`); }
+    } catch (_capErr) { warnLog('[Batch] addAiTableCaptions failed (non-fatal): ' + (_capErr && _capErr.message)); }
+
     // ── Final authoritative audit: full audit (not quickMode) for accurate scoring ──
     // quickMode only samples head+tail of long docs, missing violations in the middle
     try {
@@ -11055,6 +11063,63 @@ HTML section ${chunkNum}/${chunks.length}:
 
     if (fixCount > 0) warnLog(`[Complex Tables] Applied ${fixCount} complex-table fixes deterministically`);
     return { html: fixed, fixCount };
+  };
+
+  // ── addAiTableCaptions (Increment 2, 2026-06-22): the AI tier of the table-caption cascade.
+  // fixTableCaptionsFromHeadings (deterministic) already captioned tables with an adjacent heading;
+  // this handles the REMAINDER — caption-less tables with NO nearby heading, where only reading the
+  // data yields a description. Gemini authors a concise caption from each table's OWN html (a focused,
+  // windowed call — NOT the whole document, matching the auto-fix path's locator-scoped pattern),
+  // inserted via the same safe DOM path the fix_table_caption surgical tool uses (textContent
+  // auto-escapes — no markup injection). Gated on callGemini, bounded to MAX tables (cost), fully
+  // fail-safe (any error skips that table). FERPA: the table already egresses to Gemini during
+  // remediation, so this adds no new egress surface. ──
+  const addAiTableCaptions = async (html) => {
+    if (!callGemini || !html || typeof DOMParser === 'undefined') return { html, fixCount: 0 };
+    const _hasDirectCaption = (tbl) => {
+      for (let i = 0; i < tbl.children.length; i++) if (tbl.children[i].tagName === 'CAPTION') return true;
+      return false;
+    };
+    let scan;
+    try { scan = new DOMParser().parseFromString(String(html), 'text/html'); } catch (_) { return { html, fixCount: 0 }; }
+    // GLOBAL indices of caption-less tables (index is stable — we only ADD a caption child, never reorder).
+    const targets = [];
+    Array.from(scan.querySelectorAll('table')).forEach((t, idx) => { if (!_hasDirectCaption(t)) targets.push(idx); });
+    if (!targets.length) return { html, fixCount: 0 };
+    const MAX = 12; // bound AI cost so a table-heavy doc can't fan out unbounded
+    const work = targets.slice(0, MAX);
+    if (targets.length > MAX) warnLog(`[Table Captions] ${targets.length} caption-less tables; AI-captioning the first ${MAX}`);
+    let result = html;
+    let fixCount = 0;
+    for (const idx of work) {
+      try {
+        const doc = new DOMParser().parseFromString(String(result), 'text/html');
+        const tbl = doc.querySelectorAll('table')[idx];
+        if (!tbl || _hasDirectCaption(tbl)) continue; // gone, or already captioned by a concurrent step
+        const tableHtml = String(tbl.outerHTML || '').slice(0, 2400); // bounded window, not the whole doc
+        if (!tableHtml) continue;
+        const prompt = 'Write a concise, descriptive caption (a short title) for this HTML data table that summarizes what data it presents. Maximum 100 characters. Return ONLY the caption text — no quotes, no HTML tags, no "Caption:" prefix.\n\n' + tableHtml;
+        let resp = '';
+        try { resp = String(await callGemini(prompt) || ''); } catch (_) { continue; }
+        const caption = resp
+          .replace(/<\/?[a-zA-Z][^>]*>/g, ' ')    // strip real HTML tags, but keep text like "<2024>"
+          .replace(/\s+/g, ' ')
+          .trim()
+          .replace(/^["']+|["']+$/g, '')          // outer quotes the model may wrap the caption in
+          .replace(/^\s*caption\s*[:\-]\s*/i, '') // a leading "Caption:" label
+          .replace(/^["']+|["']+$/g, '')          // quotes sitting inside that label
+          .trim()
+          .slice(0, 120);
+        if (!caption) continue;
+        const cap = doc.createElement('caption');
+        cap.textContent = caption;                              // textContent auto-escapes
+        tbl.insertBefore(cap, tbl.firstChild);                  // caption must be the first child
+        result = _serializeDomEdit(result, doc);
+        fixCount++;
+      } catch (_) { /* skip this table, keep going */ }
+    }
+    if (fixCount > 0) warnLog(`[Table Captions] AI-authored ${fixCount} caption(s) for headingless tables`);
+    return { html: result, fixCount };
   };
 
   // ── fixLangSpans: wrap non-Latin script runs with <span lang="..."> (WCAG 3.1.2) ──
