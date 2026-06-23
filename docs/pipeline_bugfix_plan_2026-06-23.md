@@ -4,6 +4,8 @@ I have all the confirmed findings I need. Let me write the prioritized bug-fix p
 
 # AlloFlow Bug-Fix Plan
 
+> **Status (updated 2026-06-23, @99e7a7e1):** FIXED — **H-1** (stale OCR globals / cross-doc bleed), **H-2** (image pdf.js worker leak), **H-3** (PII in diagnostics buffer), **H-4** (reading-order WARN now wired into `aiFixChunked` + `acceptFixedHtml` — *non-blocking*; making it blocking is deferred until a Canvas smoke on multi-section docs calibrates false-revert risk). REMAINING HIGH: **H-5** tagged-PDF order verification (+ multi-column golden), **H-6** chunk-split mid-table, **H-7** designMode/Ctrl edits lost on save/export, **H-8** cross-document state bleed (remount `PdfAuditView` on Load Project), **H-9** `_reauditAndScore` stale-HTML guard, **H-10** partial-audit honesty (needs Aaron's threshold call). All MEDIUM/LOW (M-*/L-*) still open. See `pipeline_next_directions_2026-06-23.md` for the strategic ordering (D1–D7).
+
 Derived from confirmed findings (each `realVotes: 3`). Grouped by severity; within each tier, highest-ROI quick wins first. All locations are in the `.jsx` source-of-truth files; the `*_module.js` artifacts are regenerated from them. Read by line ranges with `-a` (rare U+0000 sentinels).
 
 ---
