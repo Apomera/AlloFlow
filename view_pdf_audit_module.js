@@ -3194,7 +3194,7 @@ function PdfAuditView(props) {
     else addToast(t("pdf_audit.issue.edit_applied_no_reaudit") || "\u270F Edit applied. (Couldn\u2019t re-score automatically \u2014 the preview is updated; re-run audit when ready.)", "info");
   };
   const _recoveryResidualSource = (td, sourceText, finalText) => {
-    const _normTokenForDiff = (s) => String(s || "").toLowerCase().replace(/(\p{L})[-­](\p{L})/gu, "$1$2").replace(/­/g, "").replace(/\s+/g, "");
+    const _normTokenForDiff = (s) => String(s || "").toLowerCase().replace(/[\u200b\u200c\u200d\ufeff]/g, "").replace(/\ufb00/g, "ff").replace(/\ufb01/g, "fi").replace(/\ufb02/g, "fl").replace(/\ufb03/g, "ffi").replace(/\ufb04/g, "ffl").replace(/[\u2018\u2019]/g, "'").replace(/[\u201c\u201d]/g, '"').replace(/(\p{L})[-\u00ad\u2010\u2011](\p{L})/gu, "$1$2").replace(/\u00ad/g, "").replace(/\s+/g, "");
     const _normalize = (s) => String(s || "").toLowerCase().replace(/\s+/g, " ").trim();
     const snap = td && typeof td.residualMissingCount === "number" ? td.residualMissingCount : null;
     if (td && snap && snap > 0 && Array.isArray(td.missingTokens)) {
@@ -7218,7 +7218,7 @@ Return ONLY JSON:
         try {
           setTierBStage("word-splice");
           setPdfFixStep && setPdfFixStep("Restoring (1/3): word-level splice\u2026");
-          const _normTokenForDiff = (s) => String(s || "").toLowerCase().replace(/(\p{L})[-­](\p{L})/gu, "$1$2").replace(/­/g, "").replace(/\s+/g, "");
+          const _normTokenForDiff = (s) => String(s || "").toLowerCase().replace(/[\u200b\u200c\u200d\ufeff]/g, "").replace(/\ufb00/g, "ff").replace(/\ufb01/g, "fi").replace(/\ufb02/g, "fl").replace(/\ufb03/g, "ffi").replace(/\ufb04/g, "ffl").replace(/[\u2018\u2019]/g, "'").replace(/[\u201c\u201d]/g, '"').replace(/(\p{L})[-\u00ad\u2010\u2011](\p{L})/gu, "$1$2").replace(/\u00ad/g, "").replace(/\s+/g, "");
           const shipNorm = /* @__PURE__ */ new Set();
           const _normalize = (s) => String(s).toLowerCase().replace(/\s+/g, " ").trim();
           const shipTokens = _normalize(pdfFixResult.finalText || "").split(" ").filter((t2) => t2.length >= 3);

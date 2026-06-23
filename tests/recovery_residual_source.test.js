@@ -65,4 +65,13 @@ describe('anti-drift: Recovery wiring + the re-tag-failure desync guard', () => 
     expect(src).toMatch(/_lastTaggedBytesRef\.current = null/);
     expect(src).toMatch(/_staleAfterRestore: true/);
   });
+  it('(2026-06-23) both view-side _normTokenForDiff copies are synced to the enhanced cosmetic folds', () => {
+    // Option-B fresh mode + the Tier-B onClick re-filter must fold the same cosmetic variants the
+    // authoritative round-trip residual computation does (ligatures, zero-width, smart quotes, hyphen-variants).
+    const copies = src.match(/const _normTokenForDiff = \(s\) =>/g) || [];
+    expect(copies.length).toBe(2);
+    expect((src.match(/\\ufb01/g) || []).length).toBeGreaterThanOrEqual(2);   // ligature fold in both
+    expect((src.match(/\\u200b/g) || []).length).toBeGreaterThanOrEqual(2);   // zero-width strip in both
+    expect(src).not.toMatch(/\(s\) => String\(s \|\| ''\)\.toLowerCase\(\)\.replace\(\/\(\\p\{L\}\)\[-/); // old weak one-liner is gone
+  });
 });

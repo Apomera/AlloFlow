@@ -2893,7 +2893,7 @@ function PdfAuditView(props) {
   // remediation) so Recovery is runnable any time after remediation, not only right after a Tagged PDF
   // export. Pure (no closure deps) → testable. Returns { missingTokens, residual, freshMode }.
   const _recoveryResidualSource = (td, sourceText, finalText) => {
-    const _normTokenForDiff = (s) => String(s || '').toLowerCase().replace(/(\p{L})[-­](\p{L})/gu, '$1$2').replace(/­/g, '').replace(/\s+/g, '');
+    const _normTokenForDiff = (s) => String(s || '').toLowerCase().replace(/[\u200b\u200c\u200d\ufeff]/g, '').replace(/\ufb00/g, 'ff').replace(/\ufb01/g, 'fi').replace(/\ufb02/g, 'fl').replace(/\ufb03/g, 'ffi').replace(/\ufb04/g, 'ffl').replace(/[\u2018\u2019]/g, "'").replace(/[\u201c\u201d]/g, '"').replace(/(\p{L})[-\u00ad\u2010\u2011](\p{L})/gu, '$1$2').replace(/\u00ad/g, '').replace(/\s+/g, '');
     const _normalize = (s) => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
     const snap = td && typeof td.residualMissingCount === 'number' ? td.residualMissingCount : null;
     if (td && snap && snap > 0 && Array.isArray(td.missingTokens)) {
@@ -9037,7 +9037,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     setPdfFixStep && setPdfFixStep('Restoring (1/3): word-level splice…');
                                     // Re-derive residual tokens from the textDiff. The same normalization
                                     // check used by the surface layer; agree-with-Tier-A floor.
-                                    const _normTokenForDiff = (s) => String(s || '').toLowerCase().replace(/(\p{L})[-­](\p{L})/gu, '$1$2').replace(/­/g, '').replace(/\s+/g, '');
+                                    const _normTokenForDiff = (s) => String(s || '').toLowerCase().replace(/[\u200b\u200c\u200d\ufeff]/g, '').replace(/\ufb00/g, 'ff').replace(/\ufb01/g, 'fi').replace(/\ufb02/g, 'fl').replace(/\ufb03/g, 'ffi').replace(/\ufb04/g, 'ffl').replace(/[\u2018\u2019]/g, "'").replace(/[\u201c\u201d]/g, '"').replace(/(\p{L})[-\u00ad\u2010\u2011](\p{L})/gu, '$1$2').replace(/\u00ad/g, '').replace(/\s+/g, '');
                                     const shipNorm = new Set();
                                     const _normalize = (s) => String(s).toLowerCase().replace(/\s+/g, ' ').trim();
                                     const shipTokens = _normalize(pdfFixResult.finalText || '').split(' ').filter(t => t.length >= 3);
