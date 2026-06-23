@@ -83,7 +83,7 @@ describe('Geology Explorer — resolution / detail refactor (world↔voxel decou
 describe('Geology Explorer — scene registry + Crystal Cavern (geode)', () => {
   it('crust stays the default scene and its generator is unchanged (registry is behavior-preserving)', () => {
     expect(P.sceneId()).toBe('crust');
-    expect(P.scenes()).toEqual(['crust', 'geode']);
+    expect(P.scenes()).toEqual(['crust', 'geode', 'deepEarth']);
     P.setScene('crust');
     expect(P.rockKeyAt(1, 0, 1)).toBe('soil');
     expect(P.rockKeyAt(7, 7, 7)).toBe('intrusion');
@@ -115,6 +115,56 @@ describe('Geology Explorer — scene registry + Crystal Cavern (geode)', () => {
     const geodeKm = P.grid().KM_PER_VOXEL;
     P.setScene('crust'); P.setGrid('standard');
     expect(geodeKm).toBeLessThan(P.grid().KM_PER_VOXEL);   // 2.0/NY < 10.8/NY
+    P.setScene('crust');
+  });
+});
+
+describe('Geology Explorer — Deep Earth scene (radial structure + honest geotherm)', () => {
+  it('is registered as a third scene without disturbing the crust default', () => {
+    expect(P.scenes()).toEqual(['crust', 'geode', 'deepEarth']);
+    expect(P.sceneId()).toBe('crust');                       // still the default after beforeEach
+  });
+
+  it('classifies a radial shell sequence from the centre outward', () => {
+    P.setScene('deepEarth'); P.setGrid('standard');
+    const g = P.grid();
+    const cx = Math.round((g.NX - 1) / 2), cy = Math.round((g.NY - 1) / 2), cz = Math.round((g.NZ - 1) / 2);
+    expect(P.deepEarthKeyAt(cx, cy, cz)).toBe('innerCore');  // centre
+    expect(P.deepEarthKeyAt(0, 0, 0)).toBe('crust');         // surface corner
+    // every shell is reachable somewhere in the grid
+    const keys = {};
+    for (let x = 0; x < g.NX; x++) for (let y = 0; y < g.NY; y++) for (let z = 0; z < g.NZ; z++) keys[P.deepEarthKeyAt(x, y, z)] = 1;
+    ['crust', 'upperMantle', 'lowerMantle', 'outerCore', 'innerCore'].forEach((k) => expect(keys[k]).toBe(1));
+    P.setScene('crust');
+  });
+
+  it('uses a NON-linear geotherm — no ~160,000°C extrapolation artifact', () => {
+    ['crust', 'upperMantle', 'lowerMantle', 'outerCore', 'innerCore'].forEach((k) => {
+      const g = P.deepEarthGeotherm(0, k);
+      expect(g.tempC).toBeLessThan(6000);                    // linear 25°C/km would read ~160,000°C at the core
+      expect(g.tempC).toBeGreaterThan(0);
+    });
+  });
+
+  it('teaches the two core misconceptions: liquid outer core, solid-yet-hottest inner core', () => {
+    const outer = P.deepEarthGeotherm(0, 'outerCore');
+    const inner = P.deepEarthGeotherm(0, 'innerCore');
+    expect(outer.state).toBe('liquid');                      // liquid iron–nickel = the geodynamo
+    expect(inner.state).toBe('solid');                       // solid despite being hotter (pressure)
+    expect(inner.tempC).toBeGreaterThan(outer.tempC);        // inner core IS hotter
+  });
+
+  it('the mantle is modelled as SOLID (convecting), not molten', () => {
+    expect(P.deepEarthGeotherm(0, 'upperMantle').state).toMatch(/solid/);
+    expect(P.deepEarthGeotherm(0, 'lowerMantle').state).toMatch(/solid/);
+  });
+
+  it('rockFacts reads radial per-layer depth in Deep Earth, not row depth', () => {
+    P.setScene('deepEarth'); P.setGrid('standard');
+    const f = P.rockFacts('innerCore', 0);                   // y=0 but depth must come from the layer (5500 km)
+    expect(Number(f.depthKm)).toBeGreaterThan(5000);
+    expect(f.state).toBe('solid');
+    expect(f.tempC).toBeGreaterThan(5000);
     P.setScene('crust');
   });
 });

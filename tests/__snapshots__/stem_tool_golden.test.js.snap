@@ -72,10 +72,10 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for geologyExplorer 1`] = `
 {
-  "buttons": 21,
+  "buttons": 22,
   "inputs": 1,
-  "lengthBucket": 57,
-  "sha": "d9660daa31d9edd1",
+  "lengthBucket": 58,
+  "sha": "3e69d74e17f2c31a",
   "svgs": 1,
 }
 `;
