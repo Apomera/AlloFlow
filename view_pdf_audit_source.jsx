@@ -1926,6 +1926,11 @@ function PdfAuditView(props) {
     return _taggedModDateRef.current.date;
   };
   const [_issueSourceOpen, _setIssueSourceOpen] = useState({}); // per-issue "peek source" inline expand (keyed 'ai'+i / 'axe'+i)
+  // Direct expert-edit drafts (2026-06-22): an expert who knows the fix can edit a located block's HTML
+  // and re-check it WITHOUT the AI (matters under Canvas throttle storms). Keyed like _issueSourceOpen →
+  // { original, draft, saving }. The mini-audit (auditOutputAccessibility + recomputeIssueResolution) is
+  // shared with the Expert Workbench via _reauditAndScore below.
+  const [_issueEdit, _setIssueEdit] = useState({});
   const runVeraPdfValidation = (bytes) => new Promise((resolve, reject) => {
     let win = null;
     try { win = window.open(VERAPDF_VALIDATOR_URL, 'alloflow-verapdf', 'width=480,height=380'); } catch (e) {}
@@ -2804,12 +2809,83 @@ function PdfAuditView(props) {
             found = el; break;
           } }
           if (!found) { const blocks = dom.body.querySelectorAll('h1,h2,h3,h4,h5,h6,p,li,td,th,figcaption,blockquote,caption,a'); for (const b of blocks) { if (norm(b.textContent).indexOf(needle) !== -1) { found = b; break; } } }
-          if (found && found.outerHTML) out.html = found.outerHTML.length > 4000 ? (found.outerHTML.slice(0, 4000) + '…') : found.outerHTML;
+          if (found && found.outerHTML) { out.fullHtml = found.outerHTML; out.html = found.outerHTML.length > 4000 ? (found.outerHTML.slice(0, 4000) + '…') : found.outerHTML; }
         }
       } catch (_) {}
     }
     return out;
   };
+  // Shared mini-audit (2026-06-22): re-audit `newHtml` and fold the result into pdfFixResult — score
+  // (weakest-layer min), verificationAudit, axe, and the resolved/persisted/introduced lists. Used by
+  // BOTH the Expert Workbench AI command and the direct expert-edit path, so they score identically and
+  // can't drift. Non-fatal (swallows errors → returns {ok:false}); onActivity is an optional logger.
+  const _reauditAndScore = async (newHtml, onActivity) => {
+    try {
+      if (onActivity) onActivity({ text: '🔍 Re-auditing to refresh score + remaining-issues count…', type: 'audit', time: new Date().toLocaleTimeString() });
+      const [_wv, _wa] = await Promise.all([auditOutputAccessibility(newHtml), runAxeAudit(newHtml)]);
+      if (_wv && Number.isFinite(_wv.score)) {
+        const _wdet = (_wa && typeof _wa.score === 'number') ? _wa.score : null;
+        const _wscore = (_wdet !== null) ? _computeHeadline(_wv.score, _wdet) : _wv.score; // weakest-layer-governs (shared)
+        setPdfFixResult(prev => prev ? ({ ...prev,
+          verificationAudit: _wv,
+          afterScore: _wscore,
+          _scoreIsBlended: _wdet !== null,
+          // A complete re-audit clears any stale throttle-degraded flag (VDH-1).
+          _aiVerificationIncomplete: false,
+          _scoreSource: _wdet !== null ? 'min' : 'content-only',
+          axeAudit: _wa || prev.axeAudit,
+          axeViolations: _wa ? _wa.totalViolations : prev.axeViolations,
+          issueResolution: (typeof recomputeIssueResolution === 'function') ? (recomputeIssueResolution(prev.issueResolution, _wv) || prev.issueResolution) : prev.issueResolution,
+        }) : prev);
+        if (onActivity) onActivity({ text: '📊 Updated: ' + _wscore + '/100 · ' + ((_wv.issues || []).length) + ' issue(s) remaining', type: 'score', time: new Date().toLocaleTimeString() });
+        return { ok: true, score: _wscore, issues: (_wv.issues || []).length };
+      }
+    } catch (_) {}
+    return { ok: false };
+  };
+
+  // Pure single-occurrence block splice (testable): replace the located ORIGINAL outerHTML with the
+  // expert's DRAFT in the full document, touching nothing else. Refuses when the original isn't found
+  // (it moved) or appears more than once (ambiguous → can't be sure which one). Minimal mutation =
+  // content-preservation safe (the b0d24ae3 scar).
+  const _spliceBlock = (html, original, draft) => {
+    if (!html || !original) return { ok: false, reason: 'no-input' };
+    const idx = html.indexOf(original);
+    if (idx === -1) return { ok: false, reason: 'not-found' };
+    if (html.indexOf(original, idx + original.length) !== -1) return { ok: false, reason: 'ambiguous' };
+    return { ok: true, html: html.slice(0, idx) + draft + html.slice(idx + original.length) };
+  };
+
+  // Direct expert-edit (2026-06-22): apply the expert's hand-edited block HTML in place of the located
+  // original via _spliceBlock, then run the SAME mini-audit as the Workbench. No AI call, so it works
+  // even when Canvas is throttling. Snapshots _preCmdHtml so the existing one-click revert covers it too.
+  const _saveManualEdit = async (issue, key) => {
+    const ed = _issueEdit[key];
+    if (!ed || ed.saving || !pdfFixResult || !pdfFixResult.accessibleHtml) return;
+    const original = String(ed.original || '');
+    const draft = String(ed.draft == null ? '' : ed.draft);
+    const html = pdfFixResult.accessibleHtml;
+    if (!original) return;
+    if (draft.trim() === original.trim()) { addToast(t('pdf_audit.issue.edit_nochange') || 'No change to save.', 'info'); _setIssueEdit(prev => { const n = { ...prev }; delete n[key]; return n; }); return; }
+    const sp = _spliceBlock(html, original, draft);
+    if (!sp.ok) {
+      addToast(sp.reason === 'ambiguous'
+        ? (t('pdf_audit.issue.edit_ambiguous') || 'This exact markup appears more than once — use the Expert Workbench for a targeted fix instead.')
+        : (t('pdf_audit.issue.edit_moved') || 'That section changed since you opened it — close and reopen Source, then try again.'),
+        sp.reason === 'ambiguous' ? 'info' : 'error');
+      return;
+    }
+    _setIssueEdit(prev => ({ ...prev, [key]: { ...prev[key], saving: true } }));
+    const newHtml = sp.html;
+    setPdfFixResult(prev => prev ? ({ ...prev, accessibleHtml: newHtml, _preCmdHtml: html, _lastCmdDiff: null }) : prev);
+    addToast(t('pdf_audit.issue.edit_saved') || '✏ Manual edit applied — re-checking…', 'info');
+    const res = await _reauditAndScore(newHtml, null);
+    _setIssueEdit(prev => { const n = { ...prev }; delete n[key]; return n; });   // close the editor
+    _setIssueSourceOpen(prev => ({ ...prev, [key]: false }));                      // collapse the source panel
+    if (res && res.ok) addToast((t('pdf_audit.issue.edit_rechecked') || '📊 Re-checked: ') + res.score + '/100 · ' + res.issues + ' issue(s) remaining', 'success');
+    else addToast(t('pdf_audit.issue.edit_applied_no_reaudit') || '✏ Edit applied. (Couldn’t re-score automatically — the preview is updated; re-run audit when ready.)', 'info');
+  };
+
   // Same actions for an axe violation — its nodeDetails[0].target is an EXACT CSS selector (more
   // precise than the AI text-anchor search), so Find resolves it directly against the live preview.
   const _axeTarget = (v) => {
@@ -6806,7 +6882,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 document's per-issue pile can't bury them. Presence only — never a conformance score. */}
                             {_structuralFoundations && _structuralFoundations.present && _structuralFoundations.present.length > 0 && (
                               <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap bg-sky-100 text-sky-800"
-                                title={(t('pdf_audit.dashboard.foundations_title') || 'HTML structural foundations DETECTED in the remediated document (lang, title, landmarks, headings, lists, etc.) — presence only, not validated for correctness. This is DIFFERENT from the “PDF/UA self-check” chip, which checks the EXPORTED PDF’s byte-level structure — the two happen to both count to 18 but measure different things. Present:') + ' ' + _structuralFoundations.present.join('; ')}>
+                                title={(t('pdf_audit.dashboard.foundations_title') || 'HTML structural foundations DETECTED in the remediated document (lang, title, landmarks, headings, lists, etc.) — presence only, not validated for correctness, and separate from the per-issue content score above. Also DIFFERENT from the “PDF/UA self-check” chip, which checks the EXPORTED PDF’s byte-level structure — the two happen to both count to 18 but measure different things. Present:') + ' ' + _structuralFoundations.present.join('; ')}>
                                 🏗️ {_structuralFoundations.present.length}{_structuralFoundations.checked ? '/' + _structuralFoundations.checked : ''} {t('pdf_audit.dashboard.foundations') || 'HTML foundations'}
                               </span>
                             )}
@@ -7172,8 +7248,24 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       <div className="mt-1 mb-1.5 rounded-lg border border-amber-200 bg-white p-2 text-[11px] text-slate-700" role="region" aria-label={(t('pdf_audit.issue.source_region') || 'Source of issue') + ': ' + issue.issue}>
                                         {_src.html ? (
                                           <>
-                                            <div className="font-bold text-slate-500 mb-1">{t('pdf_audit.issue.source_html') || 'Source (from the remediated document)'}{_src.pages ? ' · ' + (t('pdf_audit.issue.source_page') || 'page') + ' ' + _src.pages.join(', ') : ''}</div>
-                                            <pre className="whitespace-pre-wrap break-words bg-slate-50 border border-slate-200 rounded p-1.5 max-h-48 overflow-auto font-mono text-[10px] leading-snug">{_src.html}</pre>
+                                            <div className="font-bold text-slate-500 mb-1 flex items-center gap-2">
+                                              <span className="flex-1">{t('pdf_audit.issue.source_html') || 'Source (from the remediated document)'}{_src.pages ? ' · ' + (t('pdf_audit.issue.source_page') || 'page') + ' ' + _src.pages.join(', ') : ''}</span>
+                                              {!_issueEdit[_srcKey] && _src.fullHtml && _src.fullHtml.length <= 8000 && (
+                                                <button onClick={() => _setIssueEdit(prev => ({ ...prev, [_srcKey]: { original: _src.fullHtml, draft: _src.fullHtml } }))} className="shrink-0 px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 hover:bg-emerald-200 font-bold normal-case" title={t('pdf_audit.issue.edit_title') || 'Edit this section’s HTML yourself and re-check — a direct expert path that does not use the AI (works even when the AI is rate-limited).'}>✏ {t('pdf_audit.issue.edit') || 'Edit & re-check'}</button>
+                                              )}
+                                            </div>
+                                            {_issueEdit[_srcKey] ? (
+                                              <>
+                                                <textarea value={_issueEdit[_srcKey].draft} onChange={(e) => { const v = e.target.value; _setIssueEdit(prev => ({ ...prev, [_srcKey]: { ...prev[_srcKey], draft: v } })); }} spellCheck={false} rows={6} className="w-full bg-slate-50 border border-emerald-300 rounded p-1.5 font-mono text-[10px] leading-snug resize-y" aria-label={(t('pdf_audit.issue.edit_aria') || 'Edit the HTML for this issue') + ': ' + issue.issue} />
+                                                <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                                                  <button onClick={() => _saveManualEdit(issue, _srcKey)} disabled={!!_issueEdit[_srcKey].saving} className={'px-2 py-0.5 rounded bg-emerald-600 text-white font-bold ' + (_issueEdit[_srcKey].saving ? 'opacity-50 cursor-wait' : 'hover:bg-emerald-700')}>{_issueEdit[_srcKey].saving ? (t('pdf_audit.issue.edit_saving') || 'Re-checking…') : ('✓ ' + (t('pdf_audit.issue.edit_save') || 'Save & re-check'))}</button>
+                                                  <button onClick={() => _setIssueEdit(prev => { const n = { ...prev }; delete n[_srcKey]; return n; })} disabled={!!_issueEdit[_srcKey].saving} className="px-2 py-0.5 rounded bg-white border border-slate-300 text-slate-600 font-bold hover:bg-slate-100">{t('pdf_audit.issue.edit_cancel') || 'Cancel'}</button>
+                                                  <span className="text-[10px] text-slate-400 italic">{t('pdf_audit.issue.edit_hint') || 'Edits the HTML directly, then runs the same check the Workbench uses — no AI.'}</span>
+                                                </div>
+                                              </>
+                                            ) : (
+                                              <pre className="whitespace-pre-wrap break-words bg-slate-50 border border-slate-200 rounded p-1.5 max-h-48 overflow-auto font-mono text-[10px] leading-snug">{_src.html}</pre>
+                                            )}
                                           </>
                                         ) : _src.exact ? (
                                           <>
@@ -9636,32 +9728,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               // Newly-Introduced list reflect THIS Workbench fix (the mini-audit only verifies
                               // axe STRUCTURE; the panel was otherwise stale until a full re-run). The fix is
                               // already applied above, so any re-audit failure is non-fatal — keep prior numbers.
-                              try {
-                                setAgentActivityLog(prev => [...prev, { text: '🔍 Re-auditing to refresh score + remaining-issues count…', type: 'audit', time: new Date().toLocaleTimeString() }]);
-                                const [_wv, _wa] = await Promise.all([auditOutputAccessibility(result.html), runAxeAudit(result.html)]);
-                                if (_wv && Number.isFinite(_wv.score)) {
-                                  const _wdet = (_wa && typeof _wa.score === 'number') ? _wa.score : null;
-                                  const _wscore = (_wdet !== null) ? _computeHeadline(_wv.score, _wdet) : _wv.score; // weakest-layer-governs (shared)
-                                  setPdfFixResult(prev => prev ? ({ ...prev,
-                                    verificationAudit: _wv,
-                                    afterScore: _wscore,
-                                    _scoreIsBlended: _wdet !== null,
-                                    // This re-audit produced a COMPLETE AI score — clear any stale throttle-degraded
-                                    // flag from the original run so the headline stops showing "AI incomplete" /
-                                    // structural-only on a now-fully-verified score. (VDH-1, 2026-06-21)
-                                    _aiVerificationIncomplete: false,
-                                    _scoreSource: _wdet !== null ? 'min' : 'content-only',
-                                    axeAudit: _wa || prev.axeAudit,
-                                    axeViolations: _wa ? _wa.totalViolations : prev.axeViolations,
-                                    issueResolution: (typeof recomputeIssueResolution === 'function') ? (recomputeIssueResolution(prev.issueResolution, _wv) || prev.issueResolution) : prev.issueResolution,
-                                  }) : prev);
-                                  setAgentActivityLog(prev => [...prev, { text: '📊 Updated: ' + _wscore + '/100 · ' + ((_wv.issues || []).length) + ' issue(s) remaining', type: 'score', time: new Date().toLocaleTimeString() }]);
-                                } else if (result.score !== undefined) {
-                                  setAgentActivityLog(prev => [...prev, { text: '📊 Score: ' + result.score + '/100', type: 'score', time: new Date().toLocaleTimeString() }]);
-                                }
-                              } catch (_) {
-                                if (result.score !== undefined) setAgentActivityLog(prev => [...prev, { text: '📊 Score: ' + result.score + '/100', type: 'score', time: new Date().toLocaleTimeString() }]);
-                              }
+                              // Re-audit + recompute via the shared mini-audit (same path the direct
+                              // expert-edit uses). Non-fatal: on failure keep the prior numbers + log the
+                              // command's own score if it returned one.
+                              const _ra = await _reauditAndScore(result.html, (entry) => setAgentActivityLog(prev => [...prev, entry]));
+                              if (!_ra.ok && result.score !== undefined) setAgentActivityLog(prev => [...prev, { text: '📊 Score: ' + result.score + '/100', type: 'score', time: new Date().toLocaleTimeString() }]);
                               console.info('[ExpertWorkbench] complete command=' + JSON.stringify(cmd) + ' score=' + (result.score !== undefined ? result.score : 'n/a') + ' miniAudit=' + (result.miniAudit ? result.miniAudit.verdict : 'none'));
                               if (result.miniAudit && result.miniAudit.verdict === 'regressed') {
                                 addToast((t('toasts.command_applied_regressed') || 'Applied, but it introduced new issues — review or revert below.'), 'error');
