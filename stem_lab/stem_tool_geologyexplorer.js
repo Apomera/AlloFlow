@@ -589,6 +589,7 @@
       var fos = React.useState(d.fossils || {}); var found = fos[0], setFound = fos[1];
       var fossilsRef = React.useRef(found); fossilsRef.current = found;
       var cr = React.useState(null); var core = cr[0], setCore = cr[1];
+      var cmp = React.useState([]); var compareList = cmp[0], setCompareList = cmp[1];
       var qz = React.useState(false); var quizOn = qz[0], setQuizOn = qz[1];
       var qi = React.useState(0); var quizI = qi[0], setQuizI = qi[1];
       var qa = React.useState(null); var quizAns = qa[0], setQuizAns = qa[1];
@@ -713,7 +714,8 @@
           h('div', { className: 'mt-1 text-[11.5px] ' + ink }, h('span', { 'aria-hidden': 'true' }, '📅 '),
             DATING[f.key]
               ? h('span', null, h('span', { className: 'font-semibold' }, 'Datable'), h('span', { className: muted }, ' — ' + DATING[f.key].parent + ' → ' + DATING[f.key].daughter + ', half-life ' + DATING[f.key].hl.toLocaleString() + ' Ma'))
-              : h('span', { className: muted }, datingNote(f)))
+              : h('span', { className: muted }, datingNote(f))),
+          h('button', { type: 'button', onClick: function () { setCompareList(function (prev) { var i = prev.indexOf(f.key); if (i >= 0) return prev.filter(function (k) { return k !== f.key; }); return prev.concat([f.key]).slice(-2); }); }, 'aria-pressed': compareList.indexOf(f.key) >= 0 ? 'true' : 'false', className: 'mt-2 transition-colors active:scale-[0.97] text-[11px] font-bold px-2.5 py-1 rounded-lg border ' + (compareList.indexOf(f.key) >= 0 ? 'bg-indigo-500 border-indigo-400 text-indigo-50' : (isDark ? 'bg-slate-800 border-slate-600 text-slate-100 hover:bg-slate-700' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100')) }, '📊 ' + (compareList.indexOf(f.key) >= 0 ? t('stem.geology.comparing', 'Pinned to compare ✓') : t('stem.geology.compare', 'Compare')))
         );
       }
 
@@ -724,6 +726,41 @@
         if (ty === 'Surface') return 'Forming today — far too young; radiometric clocks suit million-to-billion-year spans.';
         if (ty.indexOf('Metamorphic') >= 0) return 'Dating gives the metamorphism age (when it was baked), not the original rock.';
         return 'Not dated directly — its grains are older than the rock. Geologists bracket it with datable igneous layers + index fossils.';
+      }
+      // ── compare two rocks side by side (pin via the info panel's 📊 button) ──
+      function compareInsight(a, b) {
+        var key = [a, b].sort().join('+');
+        return {
+          'basalt+basement': 'Same magma, opposite cooling: basalt erupted and cooled fast (crystals too tiny to see); granite cooled slowly underground (big interlocking crystals).',
+          'basalt+intrusion': 'Same magma, opposite cooling: basalt erupted and cooled fast (tiny crystals); the granite pluton cooled slowly underground (big crystals).',
+          'limestone+marble': 'Marble IS limestone — recrystallised by the pluton’s heat (contact metamorphism). Same chemistry, brand-new texture.',
+          'basement+intrusion': 'Both granite, but the basement is ancient while the pluton is YOUNGER — it cuts across the layers (cross-cutting).',
+          'hornfels+shale': 'Hornfels IS shale, baked hard beside the pluton (contact metamorphism).',
+          'limestone+sandstone': 'Both sedimentary, but limestone is built from sea shells (warm shallow sea) and sandstone from sand grains (rivers, dunes, beaches).'
+        }[key] || 'Compare their type, how they form, and their age relationship above — what’s the same, and what changed?';
+      }
+      function comparePanel() {
+        if (compareList.length < 2) return null;
+        var a = compareList[0], b = compareList[1], RA = ROCKS[a], RB = ROCKS[b];
+        if (!RA || !RB) return null;
+        var cols = { gridTemplateColumns: '58px 1fr 1fr' };
+        function row(label, va, vb) {
+          return h('div', { className: 'grid gap-2 py-1 border-t text-[11px] ' + (isDark ? 'border-slate-700 ' : 'border-slate-200 ') + ink, style: cols },
+            h('span', { className: muted }, label), h('span', null, va), h('span', null, vb));
+        }
+        return h('div', { className: 'p-3 rounded-xl border ' + cardBg, role: 'region', 'aria-label': 'Compare two rocks' },
+          h('div', { className: 'flex items-center justify-between mb-1' },
+            h('span', { className: 'text-[12px] font-extrabold ' + ink }, '📊 ' + t('stem.geology.compare_title', 'Compare')),
+            h('button', { type: 'button', onClick: function () { setCompareList([]); }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg border ' + (isDark ? 'bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700' : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-100') }, '✕ ' + t('stem.geology.clear', 'Clear'))),
+          h('div', { className: 'grid gap-2 text-[12px] font-extrabold pb-1', style: cols },
+            h('span', null, ''), h('span', { style: { color: TYPE_COLOR[RA.type] || ink } }, RA.name), h('span', { style: { color: TYPE_COLOR[RB.type] || ink } }, RB.name)),
+          row('Type', RA.type, RB.type),
+          row('Forms by', RA.formation, RB.formation),
+          row('Minerals', RA.minerals, RB.minerals),
+          row('Dating', DATING[a] ? DATING[a].parent + '→' + DATING[a].daughter : 'indirect', DATING[b] ? DATING[b].parent + '→' + DATING[b].daughter : 'indirect'),
+          row('Water', GROUNDWATER[a] ? GROUNDWATER[a].perm : '—', GROUNDWATER[b] ? GROUNDWATER[b].perm : '—'),
+          h('div', { className: 'mt-2 text-[11px] leading-snug ' + ink }, '💡 ' + compareInsight(a, b))
+        );
       }
       function datingPanel() {
         if (!selected) return null;
@@ -970,7 +1007,8 @@
               h('span', { className: 'text-[11px] ' + muted }, threeReady && !webglError ? t('stem.geology.tip', 'Drag to orbit · click a block to identify') : '')),
             infoPanel(),
             feat.dating ? datingPanel() : null,
-            feat.cycle ? cyclePanel() : null),
+            feat.cycle ? cyclePanel() : null,
+            comparePanel()),
           h('div', { className: 'space-y-2' },
             feat.crossSection
               ? h('div', { className: 'flex items-start gap-3' },
