@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -546,6 +546,78 @@ function checkReadingOrderPreserved(beforeHtml, afterHtml) {
     afterCount: after.length,
   };
   return _r;
+}
+
+// S3 block-restyle (2026-06-23): a CURATED, content-preserving structure-transform library. The AI's role
+// (a later slice) is only to SELECT + PARAMETERIZE one of these — it never authors freeform HTML, which is
+// exactly what breaks tagged-PDF structure + screen-reader reading order (the reason this tool exists).
+// Every transform is structure-only and SELF-GATED by checkReadingOrderPreserved: it builds a candidate,
+// then REFUSES (ok:false, reason:'reading-order') if the candidate reordered or dropped any content. Pure +
+// deterministic → testable + throttle-immune. Contrast-safe by construction (decorative left-border + the
+// original ink unchanged — no text/background recolour that could drop below the WCAG floor). restyleBlock
+// dispatches by kind; each returns { ok, html, kind, reason }.
+function _restyleEscHtml(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function _restyleEscAttr(s) { return _restyleEscHtml(s).replace(/"/g, '&quot;'); }
+function _restyleParseBlock(blockHtml) {
+  // Parse the fragment in a known wrapper so we can read its first element + its inner markup.
+  if (typeof DOMParser === 'undefined') return null;
+  try {
+    var doc = new DOMParser().parseFromString('<div id="__allorestyle__">' + String(blockHtml || '') + '</div>', 'text/html');
+    return doc.getElementById('__allorestyle__');
+  } catch (_) { return null; }
+}
+function _restyleToCallout(blockHtml, opts) {
+  var wrap = _restyleParseBlock(blockHtml);
+  if (!wrap) { var _np = { ok: false, reason: 'no-domparser' }; return _np; }
+  if (!wrap.firstElementChild) { var _nb = { ok: false, reason: 'no-block' }; return _nb; }
+  var label = (opts && typeof opts.label === 'string') ? opts.label.trim() : '';
+  var labelHtml = label ? ('<p class="allo-callout-label" style="font-weight:700;margin:0 0 4px 0;">' + _restyleEscHtml(label) + '</p>') : '';
+  var aria = label ? (' aria-label="' + _restyleEscAttr(label) + '"') : '';
+  // Decorative left-border only (no background fill) → the original text colour is untouched, so contrast
+  // cannot regress. role="note" gives the callout a landmark; the optional label is its accessible name.
+  var html = '<aside class="allo-callout" role="note"' + aria + ' style="border-left:4px solid #4f46e5;padding:8px 12px;margin:12px 0;">' + labelHtml + wrap.innerHTML + '</aside>';
+  var ck = checkReadingOrderPreserved(blockHtml, html);
+  if (!ck.ok) { var _f = { ok: false, reason: 'reading-order' }; return _f; }
+  var _r = { ok: true, html: html, kind: 'callout', reason: 'ok' };
+  return _r;
+}
+function _restyleToList(blockHtml, opts) {
+  var wrap = _restyleParseBlock(blockHtml);
+  if (!wrap) { var _np = { ok: false, reason: 'no-domparser' }; return _np; }
+  var block = wrap.firstElementChild;
+  if (!block) { var _nb = { ok: false, reason: 'no-block' }; return _nb; }
+  if (block.tagName === 'UL' || block.tagName === 'OL') { var _al = { ok: false, reason: 'already-list' }; return _al; }
+  // Strip a leading bullet/dash glyph (decorative, not content) from each candidate item.
+  var _stripBullet = function (s) { return String(s || '').replace(/^[\s•·‣▪–‐‑-]+/, '').trim(); };
+  var items = null;
+  var inner = block.innerHTML;
+  var brSegs = inner.split(/<br\s*\/?>/i).map(function (s) { return _stripBullet(s); }).filter(function (s) { return s && s.replace(/<[^>]*>/g, '').trim(); });
+  if (brSegs.length >= 2) {
+    items = brSegs;                                  // <br>-separated → keep inline markup per item
+  } else {
+    var text = String(block.textContent || '').trim();
+    if (text.indexOf(';') !== -1) {
+      var semi = text.split(';').map(function (s) { return _stripBullet(s); }).filter(Boolean);
+      if (semi.length >= 2) items = semi.map(_restyleEscHtml);
+    }
+    if (!items && /[•·‣▪]/.test(text)) {
+      var bul = text.split(/[•·‣▪]/).map(function (s) { return _stripBullet(s); }).filter(Boolean);
+      if (bul.length >= 2) items = bul.map(_restyleEscHtml);
+    }
+  }
+  if (!items || items.length < 2) { var _nd = { ok: false, reason: 'no-delimiter' }; return _nd; }
+  var html = '<ul style="margin:8px 0;padding-left:24px;">' + items.map(function (it) { return '<li>' + it + '</li>'; }).join('') + '</ul>';
+  var ck = checkReadingOrderPreserved(blockHtml, html);
+  if (!ck.ok) { var _f = { ok: false, reason: 'reading-order' }; return _f; }
+  var _r = { ok: true, html: html, kind: 'list', reason: 'ok' };
+  return _r;
+}
+function restyleBlock(blockHtml, kind, opts) {
+  if (!blockHtml || !kind) { var _b = { ok: false, reason: 'no-input' }; return _b; }
+  if (kind === 'callout') return _restyleToCallout(blockHtml, opts);
+  if (kind === 'list') return _restyleToList(blockHtml, opts);
+  var _u = { ok: false, reason: 'unknown-kind' };
+  return _u;
 }
 
 // Convert an INTERACTIVE image-placeholder <figure> (upload buttons, drop zone, on* handlers, the resize
@@ -27388,6 +27460,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     proposePaletteFromIntent: proposePaletteFromIntent,
     palettePresets: PALETTE_PRESETS,
     checkReadingOrderPreserved: checkReadingOrderPreserved,
+    restyleBlock: restyleBlock,
     runPdfAccessibilityAudit: _wrapAsync(runPdfAccessibilityAudit),
     auditOutputAccessibility: _wrapAsync(auditOutputAccessibility),
     runAxeAudit: _wrapAsync(runAxeAudit),
@@ -27484,6 +27557,11 @@ window.AlloModules.createDocPipeline.ocrBlockLayout = _alloOcrBlockLayout; // st
 window.AlloModules.createDocPipeline.structuralFoundations = _alloStructuralFoundations; // static: exposed for tests
 window.AlloModules.createDocPipeline.weightedDeductions = _alloWeightedDeductions; // static: exposed for tests (#5)
 window.AlloModules.createDocPipeline.contrastFixPair = _alloContrastFixPair; // static: exposed for tests (contrast pair-fixer)
+window.AlloModules.DocPipelineModule = true;
+console.log('[DocPipelineModule] Pipeline factory registered');
+
+window.AlloModules = window.AlloModules || {};
+window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 })();

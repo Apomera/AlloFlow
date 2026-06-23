@@ -3366,6 +3366,45 @@ function PdfAuditView(props) {
     addToast(t("pdf_audit.region.selected") || "\u25AD Region selected \u2014 describe the change, then Apply with AI (scoped to just this block).", "info");
   };
   _regionHandlerRef.current = _runRegionSelect;
+  const _restyleRegion = async (kind) => {
+    const rgn = _issueEdit["__region__"];
+    if (!rgn || rgn.saving || !pdfFixResult || !pdfFixResult.accessibleHtml) return;
+    if (!_docPipeline || typeof _docPipeline.restyleBlock !== "function") {
+      addToast(t("pdf_audit.region.unavailable") || "Restyle tools are still loading \u2014 try again in a moment.", "info");
+      return;
+    }
+    const original = String(rgn.original || "");
+    if (!original) return;
+    let res = null;
+    try {
+      res = _docPipeline.restyleBlock(original, kind, {});
+    } catch (_) {
+    }
+    if (!res || !res.ok) {
+      const why = res && res.reason;
+      const msg = why === "reading-order" ? t("pdf_audit.region.restyle_ro") || "Skipped \u2014 that restyle would have changed the reading order, so it was refused (content safety)." : why === "no-delimiter" ? t("pdf_audit.region.restyle_nolist") || "Couldn\u2019t find list items here \u2014 separate items with line breaks, \u201C;\u201D, or bullets first." : why === "already-list" ? t("pdf_audit.region.restyle_already") || "This block is already a list." : t("pdf_audit.region.restyle_cant") || "Couldn\u2019t restyle this block.";
+      addToast(msg, "info");
+      return;
+    }
+    const sp = _spliceBlock(pdfFixResult.accessibleHtml, original, res.html);
+    if (!sp.ok) {
+      addToast(
+        sp.reason === "ambiguous" ? t("pdf_audit.issue.edit_ambiguous") || "This exact markup appears more than once \u2014 use the Expert Workbench for a targeted fix instead." : t("pdf_audit.issue.edit_moved") || "That section changed since you opened it \u2014 close and reopen Source, then try again.",
+        sp.reason === "ambiguous" ? "info" : "error"
+      );
+      return;
+    }
+    _setIssueEdit((prev) => ({ ...prev, ["__region__"]: { ...prev["__region__"], saving: true } }));
+    const _before = pdfFixResult.accessibleHtml;
+    setPdfFixResult((p) => p ? { ...p, accessibleHtml: sp.html, _preCmdHtml: _before } : p);
+    _setIssueEdit((prev) => {
+      const n = { ...prev };
+      delete n["__region__"];
+      return n;
+    });
+    addToast(t("pdf_audit.region.restyled") || "\u2728 Restyled this block \u2014 re-checking\u2026", "success");
+    await _reauditAndScore(sp.html, null);
+  };
   const _recoveryResidualSource = (td, sourceText, finalText) => {
     const _normTokenForDiff = (s) => String(s || "").toLowerCase().replace(/[\u200b\u200c\u200d\ufeff]/g, "").replace(/\ufb00/g, "ff").replace(/\ufb01/g, "fi").replace(/\ufb02/g, "fl").replace(/\ufb03/g, "ffi").replace(/\ufb04/g, "ffl").replace(/[\u2018\u2019]/g, "'").replace(/[\u201c\u201d]/g, '"').replace(/(\p{L})[-\u00ad\u2010\u2011](\p{L})/gu, "$1$2").replace(/\u00ad/g, "").replace(/\s+/g, "");
     const _normalize = (s) => String(s || "").toLowerCase().replace(/\s+/g, " ").trim();
@@ -12423,7 +12462,7 @@ Return ONLY JSON:
           placeholder: t("pdf_audit.region.intent_ph") || "Describe the change for this block \u2014 e.g. \u201Cmake this a bulleted list\u201D, \u201Cturn this into a callout\u201D, \u201Csimplify the wording\u201D",
           className: "w-full text-xs border border-indigo-300 rounded-lg p-2 bg-white text-slate-800 placeholder:text-slate-500"
         }
-      ), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, typeof processExpertCommand === "function" && /* @__PURE__ */ React.createElement(
+      ), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 flex-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-indigo-700" }, t("pdf_audit.region.restyle_label") || "Quick restyle (no AI):"), /* @__PURE__ */ React.createElement("button", { onClick: () => _restyleRegion("callout"), disabled: !!_rgn.saving, className: "px-2 py-0.5 rounded border border-indigo-300 bg-white text-indigo-700 text-[11px] font-bold " + (_rgn.saving ? "opacity-50 cursor-not-allowed" : "hover:bg-indigo-100"), title: t("pdf_audit.region.make_callout_title") || "Wrap this block as a callout \u2014 content unchanged; refused if it would alter reading order." }, "\u{1F4CC} ", t("pdf_audit.region.make_callout") || "Make a callout"), /* @__PURE__ */ React.createElement("button", { onClick: () => _restyleRegion("list"), disabled: !!_rgn.saving, className: "px-2 py-0.5 rounded border border-indigo-300 bg-white text-indigo-700 text-[11px] font-bold " + (_rgn.saving ? "opacity-50 cursor-not-allowed" : "hover:bg-indigo-100"), title: t("pdf_audit.region.make_list_title") || "Turn line-broken / \u201C;\u201D / bulleted text into a real list \u2014 content unchanged." }, "\u2022 ", t("pdf_audit.region.make_list") || "Make a list")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, typeof processExpertCommand === "function" && /* @__PURE__ */ React.createElement(
         "button",
         {
           onClick: () => _applyScopedIntent(null, "__region__"),
