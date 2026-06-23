@@ -1948,6 +1948,9 @@ function PdfAuditView(props) {
   const [_paletteIntent, setPaletteIntent] = useState("");
   const [_regionArmed, setRegionArmed] = useState(false);
   const _regionHandlerRef = useRef(null);
+  const [_restyleProposals, setRestyleProposals] = useState(null);
+  const [_restyleProposalsBusy, setRestyleProposalsBusy] = useState(false);
+  const [_restyleDropped, setRestyleDropped] = useState(0);
   useEffect(() => {
     try {
       const cw = pdfPreviewRef.current && pdfPreviewRef.current.contentWindow;
@@ -3413,6 +3416,47 @@ function PdfAuditView(props) {
     addToast(t("pdf_audit.region.restyled") || "\u2728 Restyled this block \u2014 re-checking\u2026", "success");
     const _rescore = await _reauditAndScore(sp.html, null);
     if (_rescore && _rescore.ok === false) addToast(t("pdf_audit.region.restyle_norescore") || "\u2728 Restyle applied. Couldn\u2019t re-score automatically (the checker was busy) \u2014 the document is updated; re-run the audit when ready.", "info");
+  };
+  const _suggestRestyles = async () => {
+    if (_restyleProposalsBusy || !pdfFixResult || !pdfFixResult.accessibleHtml) return;
+    if (!_docPipeline || typeof _docPipeline.proposeRestyles !== "function") {
+      addToast(t("pdf_audit.region.suggest_unavailable") || "Suggestion tools are still loading \u2014 try again in a moment.", "info");
+      return;
+    }
+    setRestyleProposalsBusy(true);
+    addToast(t("pdf_audit.region.suggesting") || "\u2728 Looking for blocks that would read better as callouts or lists\u2026", "info");
+    let r = null;
+    try {
+      r = await _docPipeline.proposeRestyles(pdfFixResult.accessibleHtml, { max: 10 });
+    } catch (_) {
+    }
+    setRestyleProposalsBusy(false);
+    if (!r) {
+      addToast(t("pdf_audit.region.suggest_failed") || "Couldn\u2019t get suggestions right now (the AI may be busy) \u2014 try again later.", "info");
+      setRestyleProposals(null);
+      return;
+    }
+    setRestyleProposals(r.proposals || []);
+    setRestyleDropped(Math.max(0, (r.suggested || 0) - (r.proposals || []).length));
+    if (!r.proposals || !r.proposals.length) addToast(t("pdf_audit.region.suggest_none") || "No structure changes suggested \u2014 the document already reads cleanly.", "info");
+  };
+  const _applyProposal = async (p) => {
+    if (!p || !pdfFixResult || !pdfFixResult.accessibleHtml) return;
+    const sp = _spliceBlock(pdfFixResult.accessibleHtml, p.original, p.html);
+    if (!sp.ok) {
+      addToast(
+        sp.reason === "ambiguous" ? t("pdf_audit.issue.edit_ambiguous") || "This exact markup appears more than once \u2014 use the Expert Workbench for a targeted fix instead." : t("pdf_audit.region.suggest_stale") || "That block changed since the suggestion was made \u2014 re-run \u201CSuggest\u201D to refresh.",
+        sp.reason === "ambiguous" ? "info" : "error"
+      );
+      setRestyleProposals((prev) => prev ? prev.filter((x) => x !== p) : prev);
+      return;
+    }
+    const _before = pdfFixResult.accessibleHtml;
+    setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: sp.html, _preCmdHtml: _before } : prev);
+    setRestyleProposals((prev) => prev ? prev.filter((x) => x !== p) : prev);
+    addToast(t("pdf_audit.region.suggest_applied") || "\u2728 Applied \u2014 re-checking\u2026", "success");
+    const _rs = await _reauditAndScore(sp.html, null);
+    if (_rs && _rs.ok === false) addToast(t("pdf_audit.region.restyle_norescore") || "\u2728 Applied. Couldn\u2019t re-score automatically (the checker was busy) \u2014 the document is updated; re-run the audit when ready.", "info");
   };
   const _recoveryResidualSource = (td, sourceText, finalText) => {
     const _normTokenForDiff = (s) => String(s || "").toLowerCase().replace(/[\u200b\u200c\u200d\ufeff]/g, "").replace(/\ufb00/g, "ff").replace(/\ufb01/g, "fi").replace(/\ufb02/g, "fl").replace(/\ufb03/g, "ffi").replace(/\ufb04/g, "ffl").replace(/[\u2018\u2019]/g, "'").replace(/[\u201c\u201d]/g, '"').replace(/(\p{L})[-\u00ad\u2010\u2011](\p{L})/gu, "$1$2").replace(/\u00ad/g, "").replace(/\s+/g, "");
@@ -8213,7 +8257,15 @@ Return ONLY JSON:
         "aria-label": t("pdf_audit.palette.ai_aria") || "Describe a palette for the AI to suggest (contrast is still guaranteed)",
         className: "flex-1 min-w-0 px-2 py-1 text-[11px] border border-violet-300 rounded-lg focus:ring-2 focus:ring-violet-400"
       }
-    ), /* @__PURE__ */ React.createElement("button", { type: "submit", disabled: _paletteBusy || !String(_paletteIntent || "").trim(), className: "px-2.5 py-1 rounded-lg text-[11px] font-bold bg-violet-600 text-white shrink-0 " + (_paletteBusy || !String(_paletteIntent || "").trim() ? "opacity-50 cursor-not-allowed" : "hover:bg-violet-700"), title: t("pdf_audit.palette.ai_btn_title") || "The AI suggests colours for the mood; we still clamp them to meet WCAG before applying." }, "\u2728 ", t("pdf_audit.palette.ai_btn") || "Suggest")), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-400 italic" }, t("pdf_audit.palette.note") || "The AI contributes taste only \u2014 every colour is still clamped to meet WCAG before it is applied. Presets work with no AI at all, even when the AI service is busy."))), /* @__PURE__ */ React.createElement("details", { id: "allo-sec-workbench", className: "bg-gradient-to-r from-slate-800 to-slate-900 border border-slate-600 rounded-xl group" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer p-3 text-[11px] font-bold text-purple-700 uppercase tracking-widest flex items-center gap-2 list-none select-none hover:bg-slate-800/50 rounded-xl" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block transition-transform group-open:rotate-90 text-slate-600" }, "\u25B8"), "\u{1F916} Expert Workbench", isAgentRunning && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-amber-700 animate-pulse ml-1" }, "Running..."), /* @__PURE__ */ React.createElement("span", { className: "ml-auto text-[10px] text-slate-500 font-normal normal-case tracking-normal" }, agentActivityLog.length > 0 ? `${agentActivityLog.length} event${agentActivityLog.length === 1 ? "" : "s"}` : "idle")), /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-3 space-y-2" }, /* @__PURE__ */ React.createElement("form", { className: "flex gap-1", onSubmit: async (e) => {
+    ), /* @__PURE__ */ React.createElement("button", { type: "submit", disabled: _paletteBusy || !String(_paletteIntent || "").trim(), className: "px-2.5 py-1 rounded-lg text-[11px] font-bold bg-violet-600 text-white shrink-0 " + (_paletteBusy || !String(_paletteIntent || "").trim() ? "opacity-50 cursor-not-allowed" : "hover:bg-violet-700"), title: t("pdf_audit.palette.ai_btn_title") || "The AI suggests colours for the mood; we still clamp them to meet WCAG before applying." }, "\u2728 ", t("pdf_audit.palette.ai_btn") || "Suggest")), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-400 italic" }, t("pdf_audit.palette.note") || "The AI contributes taste only \u2014 every colour is still clamped to meet WCAG before it is applied. Presets work with no AI at all, even when the AI service is busy."))), _docPipeline && typeof _docPipeline.proposeRestyles === "function" && pdfFixResult && pdfFixResult.accessibleHtml && /* @__PURE__ */ React.createElement("details", { "data-help-key": "pdf_audit_restyle_suggest", className: "bg-indigo-50 rounded-lg border border-indigo-200 overflow-hidden group" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer p-2.5 text-[11px] font-bold text-indigo-800 uppercase tracking-widest flex items-center gap-2 list-none select-none hover:bg-indigo-100/60" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block transition-transform group-open:rotate-90 text-indigo-400" }, "\u25B8"), "\u2728 ", t("pdf_audit.region.suggest_heading") || "Suggest engagement edits", Array.isArray(_restyleProposals) && _restyleProposals.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[10px] bg-indigo-200 text-indigo-800 px-1.5 py-0.5 rounded-full normal-case" }, _restyleProposals.length)), /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-3 space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: _suggestRestyles,
+        disabled: _restyleProposalsBusy,
+        className: "px-3 py-1 rounded-lg text-[11px] font-bold bg-indigo-600 text-white " + (_restyleProposalsBusy ? "opacity-50 cursor-wait" : "hover:bg-indigo-700")
+      },
+      _restyleProposalsBusy ? "\u23F3 " + (t("pdf_audit.region.suggest_busy") || "Analyzing\u2026") : "\u2728 " + (t("pdf_audit.region.suggest_btn") || "Suggest callouts & lists")
+    )), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-indigo-700 italic" }, t("pdf_audit.region.suggest_note") || "The AI only PICKS blocks \u2014 it never rewrites your text. Each suggestion is applied by the same safe transform and refused if it would change content. Block text is sent to the AI (as during remediation)."), Array.isArray(_restyleProposals) && _restyleProposals.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5" }, _restyleProposals.map((p, idx) => /* @__PURE__ */ React.createElement("li", { key: idx, className: "bg-white border border-indigo-200 rounded-lg p-2 flex items-start gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "shrink-0 px-1.5 py-0.5 rounded text-[10px] font-bold " + (p.kind === "callout" ? "bg-amber-100 text-amber-800" : "bg-sky-100 text-sky-800") }, p.kind === "callout" ? "\u{1F4CC} " + (t("pdf_audit.region.make_callout") || "Make a callout") : "\u2022 " + (t("pdf_audit.region.make_list") || "Make a list")), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, p.reason && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-700" }, p.reason), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 truncate", title: p.preview }, "\u201C", p.preview, "\u201D")), /* @__PURE__ */ React.createElement("button", { onClick: () => _applyProposal(p), className: "shrink-0 px-2 py-0.5 rounded bg-indigo-600 text-white text-[11px] font-bold hover:bg-indigo-700" }, t("pdf_audit.region.suggest_apply") || "Apply"), /* @__PURE__ */ React.createElement("button", { onClick: () => setRestyleProposals((prev) => prev ? prev.filter((x) => x !== p) : prev), className: "shrink-0 px-1.5 py-0.5 rounded text-slate-500 text-[11px] font-bold hover:bg-slate-100", "aria-label": t("pdf_audit.region.suggest_dismiss") || "Dismiss this suggestion" }, "\u2715")))), Array.isArray(_restyleProposals) && _restyleProposals.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500" }, t("pdf_audit.region.suggest_none_inline") || "No structure changes suggested \u2014 the document already reads cleanly."), Array.isArray(_restyleProposals) && _restyleDropped > 0 && /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 italic" }, "\u2713 " + _restyleDropped + " " + (t("pdf_audit.region.suggest_filtered") || "more AI suggestion(s) were filtered out \u2014 they couldn\u2019t be applied here without changing content.")))), /* @__PURE__ */ React.createElement("details", { id: "allo-sec-workbench", className: "bg-gradient-to-r from-slate-800 to-slate-900 border border-slate-600 rounded-xl group" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer p-3 text-[11px] font-bold text-purple-700 uppercase tracking-widest flex items-center gap-2 list-none select-none hover:bg-slate-800/50 rounded-xl" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block transition-transform group-open:rotate-90 text-slate-600" }, "\u25B8"), "\u{1F916} Expert Workbench", isAgentRunning && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-amber-700 animate-pulse ml-1" }, "Running..."), /* @__PURE__ */ React.createElement("span", { className: "ml-auto text-[10px] text-slate-500 font-normal normal-case tracking-normal" }, agentActivityLog.length > 0 ? `${agentActivityLog.length} event${agentActivityLog.length === 1 ? "" : "s"}` : "idle")), /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-3 space-y-2" }, /* @__PURE__ */ React.createElement("form", { className: "flex gap-1", onSubmit: async (e) => {
       e.preventDefault();
       if (!expertCommandInput.trim() || isAgentRunning || !pdfFixResult?.accessibleHtml) return;
       const cmd = expertCommandInput.trim();
