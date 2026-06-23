@@ -7,6 +7,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const dp = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+const view = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
 const gem = readFileSync(resolve(process.cwd(), 'gemini_api_source.jsx'), 'utf8');
 const dpMod = readFileSync(resolve(process.cwd(), 'doc_pipeline_module.js'), 'utf8');
 const gemMod = readFileSync(resolve(process.cwd(), 'gemini_api_module.js'), 'utf8');
@@ -78,5 +79,27 @@ describe('H-4 behavior: a block reorder that preserves char/word totals raises r
     const r = accept(original, original, {});
     expect(r.accepted).toBe(true);
     expect(r.readingOrderWarn).toBeNull();
+  });
+});
+
+describe('H-9: _reauditAndScore drops a stale write (score must describe the bytes in state)', () => {
+  it('the terminal setPdfFixResult bails when the audited html is no longer current', () => {
+    const fn = view.slice(view.indexOf('const _reauditAndScore = async'), view.indexOf('const _spliceBlock = '));
+    expect(fn).toMatch(/if \(prev\.accessibleHtml !== newHtml\) return prev;/); // stale guard inside the functional updater
+    expect(fn).toMatch(/_applied = true;/);
+    expect(fn).toMatch(/stale: !_applied/);                                     // reported to callers
+  });
+});
+
+describe('H-8: Load Project resets per-document holdovers (no cross-document state bleed)', () => {
+  it('the results-screen loader clears the palette snapshot ref + the other per-doc state before continuing', () => {
+    const _s = view.indexOf('// H-8 (audit 2026-06-23): the component never remounts on Load Project');
+    const h = view.slice(_s, _s + 1500);
+    expect(h).toMatch(/_paletteSnapshotRef\.current = null;/);   // the dangerous one — stale snapshot drove the doc-A-over-doc-B Revert
+    expect(h).toMatch(/_lastTaggedBytesRef\.current = null;/);
+    expect(h).toMatch(/setAppliedPalette\(null\);/);
+    expect(h).toMatch(/_setIssueEdit\(\{\}\);/);
+    expect(h).toMatch(/setRestyleProposals\(null\);/);
+    expect(h).toMatch(/setTagOutline\(null\);/);
   });
 });

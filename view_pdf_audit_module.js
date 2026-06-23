@@ -3147,20 +3147,26 @@ function PdfAuditView(props) {
       if (_wv && Number.isFinite(_wv.score)) {
         const _wdet = _wa && typeof _wa.score === "number" ? _wa.score : null;
         const _wscore = _wdet !== null ? _computeHeadline(_wv.score, _wdet) : _wv.score;
-        setPdfFixResult((prev) => prev ? {
-          ...prev,
-          verificationAudit: _wv,
-          afterScore: _wscore,
-          _scoreIsBlended: _wdet !== null,
-          // A complete re-audit clears any stale throttle-degraded flag (VDH-1).
-          _aiVerificationIncomplete: false,
-          _scoreSource: _wdet !== null ? "min" : "content-only",
-          axeAudit: _wa || prev.axeAudit,
-          axeViolations: _wa ? _wa.totalViolations : prev.axeViolations,
-          issueResolution: typeof recomputeIssueResolution === "function" ? recomputeIssueResolution(prev.issueResolution, _wv) || prev.issueResolution : prev.issueResolution
-        } : prev);
+        let _applied = false;
+        setPdfFixResult((prev) => {
+          if (!prev) return prev;
+          if (prev.accessibleHtml !== newHtml) return prev;
+          _applied = true;
+          return {
+            ...prev,
+            verificationAudit: _wv,
+            afterScore: _wscore,
+            _scoreIsBlended: _wdet !== null,
+            // A complete re-audit clears any stale throttle-degraded flag (VDH-1).
+            _aiVerificationIncomplete: false,
+            _scoreSource: _wdet !== null ? "min" : "content-only",
+            axeAudit: _wa || prev.axeAudit,
+            axeViolations: _wa ? _wa.totalViolations : prev.axeViolations,
+            issueResolution: typeof recomputeIssueResolution === "function" ? recomputeIssueResolution(prev.issueResolution, _wv) || prev.issueResolution : prev.issueResolution
+          };
+        });
         if (onActivity) onActivity({ text: "\u{1F4CA} Updated: " + _wscore + "/100 \xB7 " + (_wv.issues || []).length + " issue(s) remaining", type: "score", time: (/* @__PURE__ */ new Date()).toLocaleTimeString() });
-        return { ok: true, score: _wscore, issues: (_wv.issues || []).length };
+        return { ok: true, score: _wscore, issues: (_wv.issues || []).length, stale: !_applied };
       }
     } catch (_) {
     }
@@ -7944,6 +7950,15 @@ Return ONLY JSON:
             _translation: project._translation || null,
             _plainLanguage: project._plainLanguage || null
           });
+          _paletteSnapshotRef.current = null;
+          _lastTaggedBytesRef.current = null;
+          setAppliedPalette(null);
+          setPaletteIntent("");
+          _setIssueEdit({});
+          setRestyleProposals(null);
+          setRestyleDropped(0);
+          setRegionArmed(false);
+          setTagOutline(null);
           setPendingPdfFile({ name: project.fileName || "loaded-project.pdf", size: project.multiSession?.fileSize || 0 });
           try {
             if (Array.isArray(project.runHistory) && typeof setPdfRunHistory === "function") setPdfRunHistory(project.runHistory.slice(-200));

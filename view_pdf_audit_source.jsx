@@ -2854,19 +2854,29 @@ function PdfAuditView(props) {
       if (_wv && Number.isFinite(_wv.score)) {
         const _wdet = (_wa && typeof _wa.score === 'number') ? _wa.score : null;
         const _wscore = (_wdet !== null) ? _computeHeadline(_wv.score, _wdet) : _wv.score; // weakest-layer-governs (shared)
-        setPdfFixResult(prev => prev ? ({ ...prev,
-          verificationAudit: _wv,
-          afterScore: _wscore,
-          _scoreIsBlended: _wdet !== null,
-          // A complete re-audit clears any stale throttle-degraded flag (VDH-1).
-          _aiVerificationIncomplete: false,
-          _scoreSource: _wdet !== null ? 'min' : 'content-only',
-          axeAudit: _wa || prev.axeAudit,
-          axeViolations: _wa ? _wa.totalViolations : prev.axeViolations,
-          issueResolution: (typeof recomputeIssueResolution === 'function') ? (recomputeIssueResolution(prev.issueResolution, _wv) || prev.issueResolution) : prev.issueResolution,
-        }) : prev);
+        // H-9 (audit 2026-06-23): stale-HTML guard. This re-audit is fire-and-forget from 7 call sites; if a
+        // SECOND edit stored newer bytes while this audit was in flight, writing this score would make the
+        // headline + issue list attest to a document no longer shipped. The functional updater always sees the
+        // latest `prev`, so bail when it no longer holds the bytes we audited (mirrors runAutoFixLoop's run-gen).
+        let _applied = false;
+        setPdfFixResult(prev => {
+          if (!prev) return prev;
+          if (prev.accessibleHtml !== newHtml) return prev; // superseded by a newer edit — drop this stale write
+          _applied = true;
+          return ({ ...prev,
+            verificationAudit: _wv,
+            afterScore: _wscore,
+            _scoreIsBlended: _wdet !== null,
+            // A complete re-audit clears any stale throttle-degraded flag (VDH-1).
+            _aiVerificationIncomplete: false,
+            _scoreSource: _wdet !== null ? 'min' : 'content-only',
+            axeAudit: _wa || prev.axeAudit,
+            axeViolations: _wa ? _wa.totalViolations : prev.axeViolations,
+            issueResolution: (typeof recomputeIssueResolution === 'function') ? (recomputeIssueResolution(prev.issueResolution, _wv) || prev.issueResolution) : prev.issueResolution,
+          });
+        });
         if (onActivity) onActivity({ text: '📊 Updated: ' + _wscore + '/100 · ' + ((_wv.issues || []).length) + ' issue(s) remaining', type: 'score', time: new Date().toLocaleTimeString() });
-        return { ok: true, score: _wscore, issues: (_wv.issues || []).length };
+        return { ok: true, score: _wscore, issues: (_wv.issues || []).length, stale: !_applied };
       }
     } catch (_) {}
     return { ok: false };
@@ -9753,6 +9763,22 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             _translation: project._translation || null,
                             _plainLanguage: project._plainLanguage || null,
                                 });
+                                // H-8 (audit 2026-06-23): the component never remounts on Load Project, so
+                                // per-document refs/state from the PREVIOUS doc survive — most dangerously
+                                // _paletteSnapshotRef (a ref), whose stale snapshot lets palette Revert
+                                // OVERWRITE this freshly-loaded doc with the prior one. Reset every
+                                // per-document holdover so the loaded doc starts clean. (The fully-robust fix
+                                // is a key= remount on PdfAuditView in the host; done here at the load entry
+                                // point to avoid editing the concurrently-edited host file.)
+                                _paletteSnapshotRef.current = null;
+                                _lastTaggedBytesRef.current = null;
+                                setAppliedPalette(null);
+                                setPaletteIntent('');
+                                _setIssueEdit({});
+                                setRestyleProposals(null);
+                                setRestyleDropped(0);
+                                setRegionArmed(false);
+                                setTagOutline(null);
                                 setPendingPdfFile({ name: project.fileName || 'loaded-project.pdf', size: project.multiSession?.fileSize || 0 });
                                 // Restore run history + pipeline prefs (see the other
                                 // Load Project site for rationale).
