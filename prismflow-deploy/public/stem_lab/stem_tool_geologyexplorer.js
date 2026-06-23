@@ -70,19 +70,36 @@
     intrusion: { parent: 'Uranium-238', daughter: 'Lead-206', hl: 4470, note: 'Dating the pluton tells you when this magma froze — so it post-dates the layers it cuts.' },
     basalt:    { parent: 'Potassium-40', daughter: 'Argon-40', hl: 1250, note: 'Erupted lava traps potassium; the argon it decays to builds up from zero as it ages.' }
   };
-  var NX = 14, NY = 12, NZ = 14, KM_PER_VOXEL = 0.9;
+  // World extent is FIXED; the detail level only changes how finely it is voxelized, so
+  // higher detail = SHARPER (smaller cubes), NOT a bigger block. Camera/lights/surface
+  // anchor to WORLD (not the grid count), so framing is identical across detail levels.
+  var WORLD = { w: 14, h: 12, d: 14 };
+  var KM_PER_WORLD_H = 10.8;                  // 12 * 0.9 — total crust depth (kept constant across detail)
+  var RES_MULT = { low: 0.72, standard: 1, high: 1.55 };
+  var NX = 14, NY = 12, NZ = 14, KM_PER_VOXEL = 0.9, VOXEL = 1;   // set by setGrid()
+  function setGrid(res) {
+    var m = (RES_MULT[res] != null) ? RES_MULT[res] : 1;
+    NX = Math.max(8, Math.round(WORLD.w * m));
+    NY = Math.max(7, Math.round(WORLD.h * m));
+    NZ = Math.max(8, Math.round(WORLD.d * m));
+    VOXEL = WORLD.w / NX;
+    KM_PER_VOXEL = KM_PER_WORLD_H / NY;        // depth/temp/pressure stay physically constant
+  }
+  setGrid('standard');                         // default — byte-identical to the original 14×12×14 @0.9
 
   function rockKeyAt(x, y, z) {
     var cx = (NX - 1) / 2, cz = (NZ - 1) / 2;
+    var sx = NX / 14;                          // radial scale vs the canonical 14-wide grid
     var r = Math.sqrt((x - cx) * (x - cx) + (z - cz) * (z - cz));
-    var intrusionR = 1.2 + (y / NY) * 2.6;
-    if (y >= 3 && r < intrusionR) return 'intrusion';
-    if (y >= 3 && y < NY - 1 && r < intrusionR + 1.05) return (y >= 6 && y <= 8) ? 'marble' : 'hornfels';
-    if (y === 0) return 'soil';
-    if (y <= 2) return 'sandstone';
-    if (y <= 4) return 'shale';
-    if (y <= 6) return 'limestone';
-    if (y <= 9) return 'basement';
+    var Y = Math.floor(y * 12 / NY); if (Y > 11) Y = 11;   // map to the canonical 12-row strata
+    var intrusionR = (1.2 + (Y / 12) * 2.6) * sx;
+    if (Y >= 3 && r < intrusionR) return 'intrusion';
+    if (Y >= 3 && Y < 11 && r < intrusionR + 1.05 * sx) return (Y >= 6 && Y <= 8) ? 'marble' : 'hornfels';
+    if (Y === 0) return 'soil';
+    if (Y <= 2) return 'sandstone';
+    if (Y <= 4) return 'shale';
+    if (Y <= 6) return 'limestone';
+    if (Y <= 9) return 'basement';
     return 'magma';
   }
   // deterministic: ~1/3 of sedimentary voxels host a fossil, so digging feels like discovery
@@ -215,8 +232,8 @@
     scene.background = bgTex;
     scene.fog = new THREE.Fog(0x0a1322, 30, 70);
     var camera = new THREE.PerspectiveCamera(55, 1, 0.1, 200);
-    camera.position.set(NX * 1.15, NY * 1.05, NZ * 1.4);
-    var TARGET = new THREE.Vector3(0, -NY * 0.05, 0);
+    camera.position.set(WORLD.w * 1.15, WORLD.h * 1.05, WORLD.d * 1.4);
+    var TARGET = new THREE.Vector3(0, -WORLD.h * 0.05, 0);
     camera.lookAt(TARGET); // aim at the block immediately — keeps it CENTRED even if OrbitControls never loads
     var controls = null, orbitTried = false;
     function ensureControls() {
@@ -236,18 +253,18 @@
     scene.add(new THREE.HemisphereLight(0xbcd4ff, 0x6b5640, 0.55)); // sky-blue from above, warm ground-bounce below → dimensional shading
     var keyL = new THREE.DirectionalLight(0xfff1d0, 1.0); keyL.position.set(12, 20, 14); scene.add(keyL);
     var fillL = new THREE.DirectionalLight(0x90b4ff, 0.35); fillL.position.set(-14, 6, -10); scene.add(fillL);
-    var magmaGlow = new THREE.PointLight(0xff5522, 1.8, 44); magmaGlow.position.set(0, -NY * 0.5, 0); scene.add(magmaGlow);
+    var magmaGlow = new THREE.PointLight(0xff5522, 1.8, 44); magmaGlow.position.set(0, -WORLD.h * 0.5, 0); scene.add(magmaGlow);
     // soft additive heat-glow radiating from beneath the crust (the magma source)
     var underGlowGeo = new THREE.SphereGeometry(3.6, 16, 12), underGlowMat = new THREE.MeshBasicMaterial({ color: 0xff5a1a, transparent: true, opacity: 0.16, blending: THREE.AdditiveBlending, depthWrite: false });
-    var underGlow = new THREE.Mesh(underGlowGeo, underGlowMat); underGlow.position.set(0, -(NY - 1) / 2 - 1.6, 0); scene.add(underGlow);
+    var underGlow = new THREE.Mesh(underGlowGeo, underGlowMat); underGlow.position.set(0, -(NY - 1) / 2 * VOXEL - 1.6, 0); scene.add(underGlow);
 
     var voxels = [];
     for (var y = 0; y < NY; y++) for (var x = 0; x < NX; x++) for (var z = 0; z < NZ; z++) voxels.push({ x: x, y: y, z: z, key: rockKeyAt(x, y, z), j: 0.87 + (((x * 41 + y * 71 + z * 13) % 100) / 100) * 0.26 });
     var removed = {};
     function vkey(v) { return v.x + ',' + v.y + ',' + v.z; }
-    function worldPos(v) { return [(v.x - (NX - 1) / 2), ((NY - 1) / 2 - v.y), (v.z - (NZ - 1) / 2)]; }
+    function worldPos(v) { return [(v.x - (NX - 1) / 2) * VOXEL, ((NY - 1) / 2 - v.y) * VOXEL, (v.z - (NZ - 1) / 2) * VOXEL]; }
 
-    var geo = new THREE.BoxGeometry(1, 1, 1);
+    var geo = new THREE.BoxGeometry(VOXEL, VOXEL, VOXEL);
     var mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.85, metalness: 0.05 });
     var mesh = new THREE.InstancedMesh(geo, mat, voxels.length);
     mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
@@ -255,15 +272,15 @@
     var dummy = new THREE.Object3D(), col = new THREE.Color(), WHITE = new THREE.Color(0xffffff);
     var instanceToVoxel = [];
     var sliceZ = 0, excavate = false, highlightKey = null, showStage = 99;
-    var hoverBox = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1.04, 1.04, 1.04)), new THREE.LineBasicMaterial({ color: 0xfff0c0, transparent: true, opacity: 0.85 }));
+    var hoverBox = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(VOXEL * 1.04, VOXEL * 1.04, VOXEL * 1.04)), new THREE.LineBasicMaterial({ color: 0xfff0c0, transparent: true, opacity: 0.85 }));
     hoverBox.visible = false; hoverBox.renderOrder = 2; scene.add(hoverBox);
     var treeMeshes = [], lastHover = 0;
-    var WATER_Y = (NY - 1) / 2 - 1.8; // water table perched in the sandstone, above the shale
-    var waterMesh = new THREE.Mesh(new THREE.PlaneGeometry(NX, NZ), new THREE.MeshStandardMaterial({ color: 0x3b82f6, transparent: true, opacity: 0.4, roughness: 0.25, metalness: 0.15, side: THREE.DoubleSide }));
+    var WATER_Y = ((NY - 1) / 2 - 1.8 * NY / 12) * VOXEL; // water table perched in the sandstone, above the shale (depth scales with detail)
+    var waterMesh = new THREE.Mesh(new THREE.PlaneGeometry(WORLD.w, WORLD.d), new THREE.MeshStandardMaterial({ color: 0x3b82f6, transparent: true, opacity: 0.4, roughness: 0.25, metalness: 0.15, side: THREE.DoubleSide }));
     waterMesh.rotation.x = -Math.PI / 2; waterMesh.position.set(0, WATER_Y, 0); waterMesh.visible = false; waterMesh.renderOrder = 1; scene.add(waterMesh);
 
     // ── Volcano: the EXTRUSIVE counterpart to the intrusive pluton (erupt() animates it) ──
-    var surfTopY = (NY - 1) / 2 + 0.5;   // world Y of the ground surface
+    var surfTopY = ((NY - 1) / 2 + 0.5) * VOXEL;   // world Y of the ground surface
     var ventY = surfTopY + 2.0;          // vent at the top of the cone
     var eruptT = -1, erupted = false;
     var volcano = new THREE.Group();
@@ -357,7 +374,7 @@
       var leafGeo = new THREE.ConeGeometry(0.36, 0.82, 8);
       var leafMats = [new THREE.MeshStandardMaterial({ color: 0x3f7d3a, roughness: 0.8 }), new THREE.MeshStandardMaterial({ color: 0x4f9442, roughness: 0.8 }), new THREE.MeshStandardMaterial({ color: 0x357036, roughness: 0.8 })];
       for (var i = 0; i < cells.length; i++) {
-        var x = cells[i][0], z = cells[i][1], p = worldPos({ x: x, y: 0, z: z });
+        var x = Math.round(cells[i][0] * NX / 14), z = Math.round(cells[i][1] * NZ / 14), p = worldPos({ x: x, y: 0, z: z });
         var sc = 0.78 + (((x * 13 + z * 7) % 10) / 10) * 0.5;
         var lm = leafMats[(x + z) % 3];
         var g = new THREE.Group();
@@ -372,7 +389,7 @@
       var rockGeo = new THREE.DodecahedronGeometry(0.32, 0), rockMat = new THREE.MeshStandardMaterial({ color: 0x8a8576, roughness: 1.0, flatShading: true });
       var rockCells = [[6, 10], [1, 7], [10, 11]];
       for (var r = 0; r < rockCells.length; r++) {
-        var rx = rockCells[r][0], rz = rockCells[r][1], rp = worldPos({ x: rx, y: 0, z: rz });
+        var rx = Math.round(rockCells[r][0] * NX / 14), rz = Math.round(rockCells[r][1] * NZ / 14), rp = worldPos({ x: rx, y: 0, z: rz });
         var rs = 0.7 + (((rx * 5 + rz * 3) % 10) / 10) * 0.6;
         var rock = new THREE.Mesh(rockGeo, rockMat);
         rock.scale.set(rs, rs * 0.7, rs); rock.rotation.set(rx, rz, rx + rz);
@@ -451,7 +468,7 @@
       controls.target.set(V[1][0], V[1][1], V[1][2]);
       controls.update();
     };
-    eng.setSlice = function (z) { sliceZ = z | 0; waterMesh.scale.z = (NZ - sliceZ) / NZ; waterMesh.position.z = sliceZ / 2; rebuild(); };
+    eng.setSlice = function (z) { sliceZ = z | 0; waterMesh.scale.z = (NZ - sliceZ) / NZ; waterMesh.position.z = sliceZ / 2 * VOXEL; rebuild(); };
     eng.setExcavate = function (b) { excavate = !!b; };
     eng.setWaterTable = function (b) { waterMesh.visible = !!b; };
     eng.erupt = function () { startEruption(); };
@@ -475,7 +492,8 @@
   try {
     window.__alloGeologyPure = {
       rockKeyAt: rockKeyAt, hasFossilAt: hasFossilAt, computeCore: computeCore, rockFacts: rockFacts, aoCount: aoCount,
-      grid: function () { return { NX: NX, NY: NY, NZ: NZ, KM_PER_VOXEL: KM_PER_VOXEL }; }
+      setGrid: setGrid, RES_MULT: RES_MULT, WORLD: WORLD,
+      grid: function () { return { NX: NX, NY: NY, NZ: NZ, KM_PER_VOXEL: KM_PER_VOXEL, VOXEL: VOXEL }; }
     };
   } catch (e) {}
 
@@ -526,6 +544,8 @@
       var erp = React.useState(-1); var eruptStage = erp[0], setEruptStage = erp[1];
       var eruptTimer = React.useRef(null);
       var threeReady = !!(ctx.toolData && ctx.toolData._threeLoaded) && !!window.THREE;
+      var rsr = React.useState((d.res === 'low' || d.res === 'high') ? d.res : 'standard'); var res = rsr[0], setRes = rsr[1];
+      setGrid(res);   // keep the module grid (NX/NY/NZ/VOXEL/KM_PER_VOXEL) in sync with the chosen detail before render + effects read it
 
       function announce(msg) { try { var lr = document.getElementById('allo-live-geology'); if (lr) { lr.textContent = ''; setTimeout(function () { lr.textContent = String(msg || ''); }, 30); } } catch (e) {} }
       function selectRock(facts, viaCycle, msg) {
@@ -598,7 +618,9 @@
       }, [isFs]);
 
       React.useEffect(function () {
-        if (!threeReady || webglError || !containerRef.current || window[ENGINE_KEY]) return;
+        if (!threeReady || webglError || !containerRef.current) return;
+        setGrid(res);   // build at the chosen detail level
+        if (window[ENGINE_KEY]) { try { window[ENGINE_KEY].dispose(); } catch (e) {} window[ENGINE_KEY] = null; }   // rebuild on detail change
         try {
           window[ENGINE_KEY] = initEngine(containerRef.current, {
             onSelect: function (facts) { selectRock(facts); },
@@ -608,7 +630,7 @@
           });
         } catch (e) { setWebglError(true); }
         return function () { try { if (window[ENGINE_KEY]) { window[ENGINE_KEY].dispose(); window[ENGINE_KEY] = null; } } catch (e) {} };
-      }, [threeReady, webglError]);
+      }, [threeReady, webglError, res]);
 
       // ── styling helpers ──
       var cardBg = isDark ? 'bg-slate-800/70 border-slate-700 shadow-md shadow-black/20' : 'bg-white border-slate-200 shadow-sm';
@@ -845,7 +867,11 @@
             [['iso', '3D'], ['front', 'Front'], ['top', 'Top']].map(function (vw) {
               return h('button', { key: vw[0], type: 'button', onClick: function () { try { if (window[ENGINE_KEY] && window[ENGINE_KEY].setView) window[ENGINE_KEY].setView(vw[0]); } catch (e) {} }, 'aria-label': 'Camera view: ' + vw[1], className: 'transition-colors active:scale-[0.97] text-[10px] font-bold px-2 py-1 rounded-md border ' + (isDark ? 'bg-slate-900/75 border-slate-600 text-slate-100 hover:bg-slate-800' : 'bg-white/80 border-slate-300 text-slate-700 hover:bg-white') }, vw[1]);
             })),
-          h('button', { type: 'button', onClick: toggleFullscreen, title: isFs ? t('stem.geology.exit_fullscreen', 'Exit fullscreen') : t('stem.geology.fullscreen', 'Fullscreen'), 'aria-label': isFs ? 'Exit fullscreen 3D view' : 'Fullscreen 3D view', className: 'absolute top-2 right-2 z-10 transition-colors active:scale-[0.97] text-base leading-none px-2 py-1.5 rounded-lg border ' + (isDark ? 'bg-slate-900/80 border-slate-600 text-slate-100 hover:bg-slate-800' : 'bg-white/85 border-slate-300 text-slate-700 hover:bg-white') }, isFs ? '✕' : '⛶'));
+          h('button', { type: 'button', onClick: toggleFullscreen, title: isFs ? t('stem.geology.exit_fullscreen', 'Exit fullscreen') : t('stem.geology.fullscreen', 'Fullscreen'), 'aria-label': isFs ? 'Exit fullscreen 3D view' : 'Fullscreen 3D view', className: 'absolute top-2 right-2 z-10 transition-colors active:scale-[0.97] text-base leading-none px-2 py-1.5 rounded-lg border ' + (isDark ? 'bg-slate-900/80 border-slate-600 text-slate-100 hover:bg-slate-800' : 'bg-white/85 border-slate-300 text-slate-700 hover:bg-white') }, isFs ? '✕' : '⛶'),
+          h('select', { value: res, 'aria-label': t('stem.geology.detail', 'Voxel detail level'), title: t('stem.geology.detail_tip', 'Higher detail = smaller, sharper voxels (heavier on weak devices)'), onChange: function (e) { var v = e.target.value; setRes(v); upd('res', v); setSlice(0); setExcavate(false); }, className: 'absolute bottom-2 left-2 z-10 text-[10px] font-bold px-1.5 py-1 rounded-md border cursor-pointer ' + (isDark ? 'bg-slate-900/80 border-slate-600 text-slate-100' : 'bg-white/85 border-slate-300 text-slate-700') },
+            h('option', { value: 'low' }, t('stem.geology.detail_low', 'Detail: Low')),
+            h('option', { value: 'standard' }, t('stem.geology.detail_std', 'Detail: Standard')),
+            h('option', { value: 'high' }, t('stem.geology.detail_high', 'Detail: High'))));
       }
 
       var btn = 'transition-colors active:scale-[0.97] text-xs font-bold px-3 py-2 rounded-lg border ';
