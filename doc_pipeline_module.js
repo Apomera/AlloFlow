@@ -2314,6 +2314,14 @@ var createDocPipeline = function(deps) {
     if (!(fixed.includes('<!DOCTYPE') || fixed.includes('<html') || fixed.includes('<main') || fixed.includes('<body'))) {
       return { accepted: false, reason: 'no-doc-markers' };
     }
+    // Reading-order WARN (H-4, audit 2026-06-23): the size/text magnitude checks above CANNOT see a block
+    // REORDER — they pass as long as char/word totals hold. Attach a non-blocking `readingOrderWarn` (mirrors
+    // the fabrication WARN pattern below) so a reorder is SURFACED, not silently shipped with a high score.
+    // Intentionally WARN-only for now: checkReadingOrderPreserved is a strict token-subsequence check and a
+    // legitimate remediation pass can lightly reflow; making it BLOCKING is a follow-up after Canvas
+    // calibration on real multi-section docs. (checkReadingOrderPreserved is top-level in this module.)
+    let _roWarn = null;
+    try { var _ro = checkReadingOrderPreserved(original, fixed); if (_ro && _ro.ok === false) _roWarn = { droppedToken: _ro.droppedToken, beforeCount: _ro.beforeCount, afterCount: _ro.afterCount }; } catch (_) {}
     // Content-fabrication (hallucination) signal — WARN-ONLY, faithful path only. Attaches
     // a `fabrication` report to the accepted decision; never flips `accepted` (see
     // detectFabrication). The caller surfaces it so the teacher can verify before
@@ -2321,18 +2329,21 @@ var createDocPipeline = function(deps) {
     if (opts && opts.mode === 'faithful') {
       try {
         const _fab = detectFabrication(fixed, original, opts);
-        if (_fab && _fab.suspected) return { accepted: true, fabrication: _fab, sizeRatio, textRatio: (origText > 0 ? fixedText / origText : 1), textLost: Math.max(0, origText - fixedText) };
+        if (_fab && _fab.suspected) return { accepted: true, fabrication: _fab, readingOrderWarn: _roWarn, sizeRatio, textRatio: (origText > 0 ? fixedText / origText : 1), textLost: Math.max(0, origText - fixedText) };
       } catch (_) {}
     }
     // 2026-06-07: always return ratios in the success branch so the caller can
     // surface accepted-but-shrunk passes (textRatio in [0.97, 1.0) was previously
     // silent — the textFloor 0.97 was a hard reject, anything above was invisible).
-    return { accepted: true, sizeRatio, textRatio: (origText > 0 ? fixedText / origText : 1), textLost: Math.max(0, origText - fixedText) };
+    return { accepted: true, readingOrderWarn: _roWarn, sizeRatio, textRatio: (origText > 0 ? fixedText / origText : 1), textLost: Math.max(0, origText - fixedText) };
   };
   const acceptFixedHtml = (fixed, original, opts) => {
     const r = acceptFixedHtmlDetailed(fixed, original, opts);
     if (r && r.accepted && typeof r.textRatio === 'number' && r.textRatio < 1.0 && r.textLost > 0) {
       try { warnLog('[acceptFixedHtml] Accepted with text-shrink: textRatio=' + r.textRatio.toFixed(4) + ' textLost=' + r.textLost + ' (within textFloor — surfaced for audit)'); } catch (_) {}
+    }
+    if (r && r.accepted && r.readingOrderWarn) { // H-4: reading order changed but content magnitude held — surface it (was silent)
+      try { warnLog('[acceptFixedHtml] reading-order WARN — a block may have moved or dropped (token "' + (r.readingOrderWarn.droppedToken || '') + '"; ' + r.readingOrderWarn.beforeCount + '->' + r.readingOrderWarn.afterCount + '). Char/word checks passed but ORDER was not preserved — review before distributing.'); } catch (_) {}
     }
     return r.accepted;
   };
@@ -3029,7 +3040,14 @@ var createDocPipeline = function(deps) {
         return _restoreImages(html);
       }
     }
-    return _restoreImages(fixed.join(''));
+    const _joined = fixed.join('');
+    // H-4 (audit 2026-06-23): the per-chunk + aggregate gates above are MAGNITUDE-only — a block reorder (or a
+    // mid-table chunk split that re-interleaves rows) passes silently. Surface a reading-order WARN on the
+    // assembled doc vs the source so it isn't shipped unnoticed with a high score. Non-blocking for now
+    // (strict token-subsequence; blocking is a follow-up after Canvas calibration). Chunked-split correctness
+    // itself is tracked separately (H-6).
+    try { var _roj = checkReadingOrderPreserved(html, _joined); if (_roj && _roj.ok === false) warnLog(`[aiFixChunked:${label}] reading-order WARN — content reordered/dropped vs source (token "${_roj.droppedToken || ''}"; ${_roj.beforeCount}->${_roj.afterCount}). Magnitude checks passed but ORDER not preserved; review before distributing.`); } catch (_) {}
+    return _restoreImages(_joined);
   };
 
   // Strip Markdown triple-backtick code fences from a Gemini response so the
@@ -13452,6 +13470,13 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       window.__lastGroundTruthMethod = null;
       window.__lastOcrPageErrors = []; // audit #17: per-page extraction failures, fresh each run
       window.__lastOcrLowConfidencePages = []; // B5 (2026-06-20): per-page low OCR confidence, fresh each run
+      // H-1 (audit 2026-06-23): these dual-OCR globals are SET only in the scanned path (~13879) but READ by
+      // isScanned (~14346) + AutoRestore (~16602); a born-digital doc that skips OCR would otherwise inherit
+      // the PRIOR scanned doc's text (cross-document bleed) and be mislabeled scanned. Reset them per run.
+      window.__lastOcrTesseractText = '';
+      window.__lastOcrVisionText = '';
+      window.__lastOcrDisagreements = [];
+      window.__lastOcrMethod = null;
       window.__lastExtractEncrypted = false; // password-cause (2026-06-20): true when a password-protected PDF was detected, so the <20-char abort can name the real cause
       window.__lastIncompleteProject = null; // resumable-incomplete-project (2026-06-20): the catch refills this if a hard AI failure hits after extraction
       // Force-OCR escape hatch (2026-06-20): the "Re-scan with OCR" button sets window.__alloForceOcr
@@ -14044,6 +14069,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           // No API calls needed — renders PDF pages to canvas, captures as base64
           if (extractedImages.length > 0) {
             updateProgress(1, `Extracting ${extractedImages.length} images from PDF pages...`);
+            let pdfDoc = null; // H-2 (audit 2026-06-23): hoisted so the finally can destroy() it — this was the only getDocument site that leaked the pdf.js worker/transport (Canvas-iframe OOM contributor)
             try {
               // Load PDF.js from CDN if not already available
               if (!window.pdfjsLib) {
@@ -14066,7 +14092,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               }
               // Convert base64 PDF to Uint8Array (capped at _MAX_PDF_BYTES — was uncapped atob)
               const pdfBytes = _b64ToBytes(_base64);
-              const pdfDoc = await _withTimeout(window.pdfjsLib.getDocument({ data: pdfBytes }).promise, 60000, 'pdf.js getDocument (image extract)');
+              pdfDoc = await _withTimeout(window.pdfjsLib.getDocument({ data: pdfBytes }).promise, 60000, 'pdf.js getDocument (image extract)');
 
               // Group images by page for efficient rendering
               const pageGroups = {};
@@ -14279,6 +14305,8 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                   } catch(genErr) { _imageFailureCount++; }
                 }
               }
+            } finally {
+              if (pdfDoc) { try { pdfDoc.destroy(); } catch (_) {} pdfDoc = null; } // H-2: release the pdf.js worker/transport on every path (success, per-page error, throw)
             }
           }
         }

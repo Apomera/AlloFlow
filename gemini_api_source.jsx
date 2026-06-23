@@ -612,7 +612,7 @@ const createGeminiAPI = (deps) => {
           const partialMatch = rawText.match(/"text"\s*:\s*"([\s\S]*?)(?:"|$)/);
           if (partialMatch) {
             const partial = partialMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\t/g, '\t');
-            warnLog("[Vision] Recovered partial text:", partial.substring(0, 100));
+            warnLog("[Vision] Recovered partial text:", partial.length + ' chars'); // H-3 (audit 2026-06-23): log LENGTH only — this is OCR'd document text (potential student PII) and warnLog feeds the copyable in-app diagnostics buffer (FERPA: egress to Gemini is permitted, replication into a sharable artifact is not)
             return partial + '\n\n[Note: Document was partially extracted. Some content may be missing due to document size.]';
           }
           throw new Error("Vision API returned invalid response. The document may be too large — try a shorter PDF.");
