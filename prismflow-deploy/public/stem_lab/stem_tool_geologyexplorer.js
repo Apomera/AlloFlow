@@ -208,6 +208,9 @@
     var keyL = new THREE.DirectionalLight(0xfff1d0, 1.0); keyL.position.set(12, 20, 14); scene.add(keyL);
     var fillL = new THREE.DirectionalLight(0x90b4ff, 0.35); fillL.position.set(-14, 6, -10); scene.add(fillL);
     var magmaGlow = new THREE.PointLight(0xff5522, 1.8, 44); magmaGlow.position.set(0, -NY * 0.5, 0); scene.add(magmaGlow);
+    // soft additive heat-glow radiating from beneath the crust (the magma source)
+    var underGlowGeo = new THREE.SphereGeometry(3.6, 16, 12), underGlowMat = new THREE.MeshBasicMaterial({ color: 0xff5a1a, transparent: true, opacity: 0.16, blending: THREE.AdditiveBlending, depthWrite: false });
+    var underGlow = new THREE.Mesh(underGlowGeo, underGlowMat); underGlow.position.set(0, -(NY - 1) / 2 - 1.6, 0); scene.add(underGlow);
 
     var voxels = [];
     for (var y = 0; y < NY; y++) for (var x = 0; x < NX; x++) for (var z = 0; z < NZ; z++) voxels.push({ x: x, y: y, z: z, key: rockKeyAt(x, y, z), j: 0.87 + (((x * 41 + y * 71 + z * 13) % 100) / 100) * 0.26 });
@@ -395,7 +398,15 @@
     try { requestAnimationFrame(function () { if (!eng.disposed) resize(); }); } catch (e) {}
 
     var t = 0, raf = null;
-    function loop() { if (eng.disposed) return; raf = requestAnimationFrame(loop); t += 0.016; magmaGlow.intensity = 1.9 + Math.sin(t * 2) * 0.4; try { updateEruption(); } catch (e) {} if (controls) controls.update(); renderer.render(scene, camera); }
+    function loop() {
+      if (eng.disposed) return; raf = requestAnimationFrame(loop); t += 0.016;
+      magmaGlow.intensity = 1.9 + Math.sin(t * 2) * 0.4;
+      magmaGlow.color.setRGB(1, 0.32 + Math.sin(t * 5) * 0.05, 0.13);            // subtle fire flicker
+      underGlow.material.opacity = 0.15 + Math.sin(t * 1.7) * 0.05;              // pulsing deep-heat glow
+      if (waterMesh.visible) waterMesh.material.opacity = 0.34 + Math.sin(t * 1.6) * 0.07; // water shimmer
+      try { updateEruption(); } catch (e) {}
+      if (controls) controls.update(); renderer.render(scene, camera);
+    }
     loop();
 
     eng.setView = function (name) {
@@ -418,7 +429,7 @@
       cnv.removeEventListener('pointerdown', onDown); cnv.removeEventListener('pointerup', onUp); cnv.removeEventListener('webglcontextlost', onLost);
       cnv.removeEventListener('pointermove', onMoveHover); cnv.removeEventListener('pointerleave', onLeaveHover);
       if (ro) try { ro.disconnect(); } catch (e) {}
-      try { geo.dispose(); mat.dispose(); renderer.dispose(); hoverBox.geometry.dispose(); hoverBox.material.dispose(); waterMesh.geometry.dispose(); waterMesh.material.dispose(); if (eng._treeGeo) eng._treeGeo.forEach(function (g) { g.dispose(); }); if (eng._treeMat) eng._treeMat.forEach(function (m) { m.dispose(); }); if (eng._volcanoDispose) eng._volcanoDispose.forEach(function (x) { x.dispose(); }); if (bgTex) bgTex.dispose(); } catch (e) {}
+      try { geo.dispose(); mat.dispose(); renderer.dispose(); hoverBox.geometry.dispose(); hoverBox.material.dispose(); waterMesh.geometry.dispose(); waterMesh.material.dispose(); if (eng._treeGeo) eng._treeGeo.forEach(function (g) { g.dispose(); }); if (eng._treeMat) eng._treeMat.forEach(function (m) { m.dispose(); }); if (eng._volcanoDispose) eng._volcanoDispose.forEach(function (x) { x.dispose(); }); if (bgTex) bgTex.dispose(); underGlowGeo.dispose(); underGlowMat.dispose(); } catch (e) {}
       if (cnv.parentNode) cnv.parentNode.removeChild(cnv);
     };
     return eng;
