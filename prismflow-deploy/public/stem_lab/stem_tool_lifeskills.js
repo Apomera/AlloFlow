@@ -475,6 +475,7 @@ window.StemLab = window.StemLab || {
     category: 'Life Skills',
     gradeRange: 'K-12',
     render: function(ctx) {
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var h = React.createElement;
       var d = (ctx.toolData && ctx.toolData.lifeSkills) || {};
       var callGemini = ctx.callGemini;
@@ -557,7 +558,7 @@ window.StemLab = window.StemLab || {
       // DECISION MATRIX STATE
       // ══════════════════════════════════════════
       var dmOptions = d.dmOptions || ['Option A', 'Option B', 'Option C'];
-      var dmCriteria = d.dmCriteria || [{ name: 'Cost', weight: 3 }, { name: 'Quality', weight: 4 }, { name: 'Time', weight: 2 }];
+      var dmCriteria = d.dmCriteria || [{ name: __alloT('stem.lifeskills.cost', 'Cost'), weight: 3 }, { name: __alloT('stem.lifeskills.quality', 'Quality'), weight: 4 }, { name: __alloT('stem.lifeskills.time', 'Time'), weight: 2 }];
       var dmScores = d.dmScores || {};
       var dmTotals = dmOptions.map(function(opt, oi) {
         var total = 0;
@@ -819,7 +820,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 rounded-2xl p-5 text-white shadow-lg' },
           h('div', { className: 'flex items-center justify-between flex-wrap gap-2' },
             h('div', null,
-              h('h3', { className: 'text-base font-bold flex items-center gap-2' }, '\uD83E\uDDED Life Skills Lab'),
+              h('h3', { className: 'text-base font-bold flex items-center gap-2' }, __alloT('stem.lifeskills.life_skills_lab', '\uD83E\uDDED Life Skills Lab')),
               h('p', { className: 'text-[11px] opacity-90' }, gradeText(gradeBand,
                 'Learn about money, safety, and how things work!',
                 'Essential knowledge: taxes, data analysis, home science',
@@ -847,21 +848,21 @@ window.StemLab = window.StemLab || {
         // ═══ Topic-accent hero band per sub-tool ═══
         (function() {
           var TAB_META = {
-            paycheck:   { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\uD83E\uDDFE', title: 'Paycheck + tax math',     hint: 'Federal marginal brackets, FICA cap (6.2% Social Security up to $168,600), state withholding. Effective rate \u2260 marginal rate \u2014 most students conflate them.' },
-            data:       { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCCA', title: 'Data literacy',           hint: 'Spot-check claims with order-of-magnitude reasoning. Per-capita vs total. Mean vs median. Sample size and selection bias \u2014 the four most-misrepresented quantities in everyday news.' },
-            decision:   { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83E\uDDE0', title: 'Decision frameworks',     hint: 'Pros/cons + opportunity cost + reversibility. Annie Duke\'s decision-quality model: "good decision" \u2260 "good outcome." Decide on process, not outcome.' },
-            contract:   { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDCDD', title: 'Contracts + agreements',  hint: 'Read the whole thing before signing. Watch for arbitration clauses, auto-renewal, early-termination fees, and limit-of-liability caps. "Click to agree" is a contract.' },
-            insurance:  { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83C\uDFE5', title: 'Insurance basics',        hint: 'Premium / deductible / out-of-pocket max / network. Insurance protects against catastrophic loss \u2014 not against everyday cost. High-deductible plans + HSA can beat low-deductible for healthy people.' },
-            science:    { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83D\uDD2C', title: 'Applied science at home', hint: 'Pressure cookers, microwaves, refrigeration, thermostats, water heaters \u2014 the physics is in your kitchen. Knowing the principle saves you from googling "why is my fridge warm" at 2 AM.' },
-            carcare:    { accent: '#1f2937', soft: 'rgba(31,41,55,0.10)',   icon: '\uD83D\uDE97', title: 'Car care basics',         hint: 'Oil + tire pressure + battery + brakes + fluids. Maintenance prevents 80% of breakdowns. Pairs with the Auto Repair Shop tool for deeper dives.' },
-            homerepair: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDD27', title: 'Home repair basics',      hint: 'Toilet flapper, faucet washers, drywall patches, GFCI resets, breaker tripping. Five repairs a homeowner does themselves vs five they call a pro for.' },
-            homesys:    { accent: '#06b6d4', soft: 'rgba(6,182,212,0.10)',  icon: '\uD83C\uDFE0', title: 'Home systems',            hint: 'Where the water main is. Where the breaker panel is. How HVAC + electrical + plumbing actually work. The five things every renter and homeowner should know on day one.' },
-            budget:     { accent: '#22c55e', soft: 'rgba(34,197,94,0.10)',  icon: '\uD83D\uDCB0', title: 'Budgeting',               hint: '50/30/20 rule (needs/wants/save+debt). Fixed vs variable. Sinking funds for predictable irregulars (car insurance, holiday gifts). Cash-flow timing > total spend.' },
-            credit:     { accent: '#8b5cf6', soft: 'rgba(139,92,246,0.10)', icon: '\uD83D\uDCB3', title: 'Credit + debt',           hint: 'FICO factors: payment history (35%), utilization (30%), age (15%), mix (10%), inquiries (10%). Pay statement balance in full each cycle = no interest. Minimum payment = decades of debt.' },
-            cooking:    { accent: '#f97316', soft: 'rgba(249,115,22,0.10)', icon: '\uD83C\uDF73', title: 'Cooking fundamentals',    hint: 'Heat control, knife skills, salt timing, food safety (40\u2013140\u00B0F danger zone, 165\u00B0F poultry-safe). Five techniques cover 80% of home recipes \u2014 sear, simmer, roast, steam, saut\u00e9.' },
-            challenge:  { accent: '#fbbf24', soft: 'rgba(251,191,36,0.10)', icon: '\uD83C\uDFAF', title: 'Daily challenge',         hint: 'A new life-skills puzzle every session \u2014 calculate a tip, decode a credit-card APR, debug a leaking faucet. Streak counter tracks daily wins.' },
-            battle:     { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\u2694\uFE0F',  title: 'Speed battle',            hint: 'Time-pressure quiz across multiple sub-tools. Tests whether the math + frameworks are automatic, not just recognized.' },
-            learn:      { accent: '#64748b', soft: 'rgba(100,116,139,0.10)', icon: '\uD83D\uDCDA', title: 'Reference + glossary',    hint: 'Tax brackets, FICO factor weights, food-safe temp table, electrical breaker color-codes \u2014 the reference card you keep coming back to.' }
+            paycheck:   { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\uD83E\uDDFE', title: __alloT('stem.lifeskills.paycheck_tax_math', 'Paycheck + tax math'),     hint: __alloT('stem.lifeskills.federal_marginal_brackets_fica_cap_6_2', 'Federal marginal brackets, FICA cap (6.2% Social Security up to $168,600), state withholding. Effective rate \u2260 marginal rate \u2014 most students conflate them.') },
+            data:       { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCCA', title: __alloT('stem.lifeskills.data_literacy', 'Data literacy'),           hint: __alloT('stem.lifeskills.spot_check_claims_with_order_of_magnit', 'Spot-check claims with order-of-magnitude reasoning. Per-capita vs total. Mean vs median. Sample size and selection bias \u2014 the four most-misrepresented quantities in everyday news.') },
+            decision:   { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83E\uDDE0', title: __alloT('stem.lifeskills.decision_frameworks', 'Decision frameworks'),     hint: __alloT('stem.lifeskills.pros_cons_opportunity_cost_reversibili', 'Pros/cons + opportunity cost + reversibility. Annie Duke\'s decision-quality model: "good decision" \u2260 "good outcome." Decide on process, not outcome.') },
+            contract:   { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDCDD', title: __alloT('stem.lifeskills.contracts_agreements', 'Contracts + agreements'),  hint: __alloT('stem.lifeskills.read_the_whole_thing_before_signing_wa', 'Read the whole thing before signing. Watch for arbitration clauses, auto-renewal, early-termination fees, and limit-of-liability caps. "Click to agree" is a contract.') },
+            insurance:  { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83C\uDFE5', title: __alloT('stem.lifeskills.insurance_basics', 'Insurance basics'),        hint: __alloT('stem.lifeskills.premium_deductible_out_of_pocket_max_n', 'Premium / deductible / out-of-pocket max / network. Insurance protects against catastrophic loss \u2014 not against everyday cost. High-deductible plans + HSA can beat low-deductible for healthy people.') },
+            science:    { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83D\uDD2C', title: __alloT('stem.lifeskills.applied_science_at_home', 'Applied science at home'), hint: __alloT('stem.lifeskills.pressure_cookers_microwaves_refrigerat', 'Pressure cookers, microwaves, refrigeration, thermostats, water heaters \u2014 the physics is in your kitchen. Knowing the principle saves you from googling "why is my fridge warm" at 2 AM.') },
+            carcare:    { accent: '#1f2937', soft: 'rgba(31,41,55,0.10)',   icon: '\uD83D\uDE97', title: __alloT('stem.lifeskills.car_care_basics', 'Car care basics'),         hint: __alloT('stem.lifeskills.oil_tire_pressure_battery_brakes_fluid', 'Oil + tire pressure + battery + brakes + fluids. Maintenance prevents 80% of breakdowns. Pairs with the Auto Repair Shop tool for deeper dives.') },
+            homerepair: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDD27', title: __alloT('stem.lifeskills.home_repair_basics', 'Home repair basics'),      hint: __alloT('stem.lifeskills.toilet_flapper_faucet_washers_drywall_', 'Toilet flapper, faucet washers, drywall patches, GFCI resets, breaker tripping. Five repairs a homeowner does themselves vs five they call a pro for.') },
+            homesys:    { accent: '#06b6d4', soft: 'rgba(6,182,212,0.10)',  icon: '\uD83C\uDFE0', title: __alloT('stem.lifeskills.home_systems', 'Home systems'),            hint: __alloT('stem.lifeskills.where_the_water_main_is_where_the_brea', 'Where the water main is. Where the breaker panel is. How HVAC + electrical + plumbing actually work. The five things every renter and homeowner should know on day one.') },
+            budget:     { accent: '#22c55e', soft: 'rgba(34,197,94,0.10)',  icon: '\uD83D\uDCB0', title: __alloT('stem.lifeskills.budgeting', 'Budgeting'),               hint: __alloT('stem.lifeskills.50_30_20_rule_needs_wants_save_debt_fi', '50/30/20 rule (needs/wants/save+debt). Fixed vs variable. Sinking funds for predictable irregulars (car insurance, holiday gifts). Cash-flow timing > total spend.') },
+            credit:     { accent: '#8b5cf6', soft: 'rgba(139,92,246,0.10)', icon: '\uD83D\uDCB3', title: __alloT('stem.lifeskills.credit_debt', 'Credit + debt'),           hint: __alloT('stem.lifeskills.fico_factors_payment_history_35_utiliz', 'FICO factors: payment history (35%), utilization (30%), age (15%), mix (10%), inquiries (10%). Pay statement balance in full each cycle = no interest. Minimum payment = decades of debt.') },
+            cooking:    { accent: '#f97316', soft: 'rgba(249,115,22,0.10)', icon: '\uD83C\uDF73', title: __alloT('stem.lifeskills.cooking_fundamentals', 'Cooking fundamentals'),    hint: __alloT('stem.lifeskills.heat_control_knife_skills_salt_timing_', 'Heat control, knife skills, salt timing, food safety (40\u2013140\u00B0F danger zone, 165\u00B0F poultry-safe). Five techniques cover 80% of home recipes \u2014 sear, simmer, roast, steam, saut\u00e9.') },
+            challenge:  { accent: '#fbbf24', soft: 'rgba(251,191,36,0.10)', icon: '\uD83C\uDFAF', title: __alloT('stem.lifeskills.daily_challenge', 'Daily challenge'),         hint: __alloT('stem.lifeskills.a_new_life_skills_puzzle_every_session', 'A new life-skills puzzle every session \u2014 calculate a tip, decode a credit-card APR, debug a leaking faucet. Streak counter tracks daily wins.') },
+            battle:     { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\u2694\uFE0F',  title: __alloT('stem.lifeskills.speed_battle', 'Speed battle'),            hint: __alloT('stem.lifeskills.time_pressure_quiz_across_multiple_sub', 'Time-pressure quiz across multiple sub-tools. Tests whether the math + frameworks are automatic, not just recognized.') },
+            learn:      { accent: '#64748b', soft: 'rgba(100,116,139,0.10)', icon: '\uD83D\uDCDA', title: __alloT('stem.lifeskills.reference_glossary', 'Reference + glossary'),    hint: __alloT('stem.lifeskills.tax_brackets_fico_factor_weights_food_', 'Tax brackets, FICO factor weights, food-safe temp table, electrical breaker color-codes \u2014 the reference card you keep coming back to.') }
           };
           var meta = TAB_META[tab] || TAB_META.paycheck;
           return h('div', {
@@ -885,42 +886,42 @@ window.StemLab = window.StemLab || {
         // ═══ PAYCHECK TAB ═══
         tab === 'paycheck' && h('div', { className: 'space-y-4' },
           h('div', { className: glassCard + ' space-y-3' },
-            h('h4', { className: 'text-sm font-bold text-slate-700' }, '\uD83E\uDDFE Paycheck & Tax Calculator'),
+            h('h4', { className: 'text-sm font-bold text-slate-700' }, __alloT('stem.lifeskills.paycheck_tax_calculator', '\uD83E\uDDFE Paycheck & Tax Calculator')),
             h('p', { className: 'text-xs text-slate-600' }, gradeText(gradeBand, 'See how much money you get to keep!', 'See what happens between gross pay and your bank account.', 'Calculate federal marginal tax, FICA, and state withholding.', 'Progressive marginal taxation with bracket visualization, FICA cap analysis, and effective rate computation.')),
             h('div', { className: 'grid grid-cols-2 sm:grid-cols-5 gap-2' },
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Hourly Rate'), h('input', { type: 'number', step: '0.5', value: payRate, onChange: function(e) { upd('payRate', Math.max(0, parseFloat(e.target.value) || 0)); checkBadge('firstPay'); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' })),
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, __alloT('stem.lifeskills.hourly_rate', 'Hourly Rate')), h('input', { type: 'number', step: '0.5', value: payRate, onChange: function(e) { upd('payRate', Math.max(0, parseFloat(e.target.value) || 0)); checkBadge('firstPay'); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' })),
               h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Hours/Week'), h('input', { type: 'number', value: payHours, onChange: function(e) { upd('payHours', Math.max(0, parseFloat(e.target.value) || 0)); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' })),
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Pay Period'), h('select', { value: payFreq, onChange: function(e) { upd('payFreq', e.target.value); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' }, h('option', { value: 'weekly' }, 'Weekly'), h('option', { value: 'biweekly' }, 'Bi-weekly'), h('option', { value: 'monthly' }, 'Monthly'))),
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'State'), h('select', { value: payState, onChange: function(e) { upd('payState', e.target.value); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' }, h('option', { value: 'none' }, 'No State Tax'), h('option', { value: 'CA' }, 'California'), h('option', { value: 'NY' }, 'New York'), h('option', { value: 'TX' }, 'Texas (0%)'), h('option', { value: 'FL' }, 'Florida (0%)'), h('option', { value: 'IL' }, 'Illinois'), h('option', { value: 'PA' }, 'Pennsylvania'), h('option', { value: 'MA' }, 'Massachusetts'), h('option', { value: 'OH' }, 'Ohio'))),
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Filing'), h('select', { value: payFiling, onChange: function(e) { upd('payFiling', e.target.value); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' }, h('option', { value: 'single' }, 'Single'), h('option', { value: 'married' }, 'Married')))
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, __alloT('stem.lifeskills.pay_period', 'Pay Period')), h('select', { value: payFreq, onChange: function(e) { upd('payFreq', e.target.value); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' }, h('option', { value: 'weekly' }, __alloT('stem.lifeskills.weekly', 'Weekly')), h('option', { value: 'biweekly' }, 'Bi-weekly'), h('option', { value: 'monthly' }, __alloT('stem.lifeskills.monthly', 'Monthly')))),
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, __alloT('stem.lifeskills.state', 'State')), h('select', { value: payState, onChange: function(e) { upd('payState', e.target.value); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' }, h('option', { value: 'none' }, __alloT('stem.lifeskills.no_state_tax', 'No State Tax')), h('option', { value: 'CA' }, __alloT('stem.lifeskills.california', 'California')), h('option', { value: 'NY' }, __alloT('stem.lifeskills.new_york', 'New York')), h('option', { value: 'TX' }, __alloT('stem.lifeskills.texas_0', 'Texas (0%)')), h('option', { value: 'FL' }, __alloT('stem.lifeskills.florida_0', 'Florida (0%)')), h('option', { value: 'IL' }, __alloT('stem.lifeskills.illinois', 'Illinois')), h('option', { value: 'PA' }, __alloT('stem.lifeskills.pennsylvania', 'Pennsylvania')), h('option', { value: 'MA' }, __alloT('stem.lifeskills.massachusetts', 'Massachusetts')), h('option', { value: 'OH' }, __alloT('stem.lifeskills.ohio', 'Ohio')))),
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, __alloT('stem.lifeskills.filing', 'Filing')), h('select', { value: payFiling, onChange: function(e) { upd('payFiling', e.target.value); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' }, h('option', { value: 'single' }, __alloT('stem.lifeskills.single', 'Single')), h('option', { value: 'married' }, __alloT('stem.lifeskills.married', 'Married'))))
             )
           ),
           // Results
           h('div', { className: 'grid grid-cols-3 gap-2' },
             h('div', { className: glassCard + ' text-center' }, h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, 'Gross (' + payFreq + ')'), h('p', { className: 'text-xl font-bold text-emerald-600' }, fmtMoney(grossPer))),
-            h('div', { className: glassCard + ' text-center' }, h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, 'Taxes Taken'), h('p', { className: 'text-xl font-bold text-red-500' }, '-' + fmtMoney(totalTax / freqMult)), h('p', { className: 'text-[11px] text-red-400' }, Math.round(effectiveRate) + '% effective rate')),
-            h('div', { className: glassCard + ' text-center border-2 border-emerald-300' }, h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, 'Take Home'), h('p', { className: 'text-xl font-bold text-emerald-600' }, fmtMoney(netPer)), h('p', { className: 'text-[11px] text-emerald-500' }, fmtMoney(netAnnual) + '/year'))
+            h('div', { className: glassCard + ' text-center' }, h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, __alloT('stem.lifeskills.taxes_taken', 'Taxes Taken')), h('p', { className: 'text-xl font-bold text-red-500' }, '-' + fmtMoney(totalTax / freqMult)), h('p', { className: 'text-[11px] text-red-400' }, Math.round(effectiveRate) + '% effective rate')),
+            h('div', { className: glassCard + ' text-center border-2 border-emerald-300' }, h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, __alloT('stem.lifeskills.take_home', 'Take Home')), h('p', { className: 'text-xl font-bold text-emerald-600' }, fmtMoney(netPer)), h('p', { className: 'text-[11px] text-emerald-500' }, fmtMoney(netAnnual) + '/year'))
           ),
           // Breakdown bar
           grossAnnual > 0 && h('div', { className: glassCard },
-            h('p', { className: 'text-[11px] font-bold text-slate-600 mb-1' }, 'Where every dollar goes:'),
+            h('p', { className: 'text-[11px] font-bold text-slate-600 mb-1' }, __alloT('stem.lifeskills.where_every_dollar_goes', 'Where every dollar goes:')),
             h('div', { className: 'h-6 rounded-full overflow-hidden flex' },
-              h('div', { style: { width: Math.round(netAnnual / grossAnnual * 100) + '%', background: 'linear-gradient(90deg, #10b981, #059669)' }, className: 'h-full flex items-center justify-center text-[11px] text-white font-bold' }, 'Take Home'),
+              h('div', { style: { width: Math.round(netAnnual / grossAnnual * 100) + '%', background: 'linear-gradient(90deg, #10b981, #059669)' }, className: 'h-full flex items-center justify-center text-[11px] text-white font-bold' }, __alloT('stem.lifeskills.take_home_2', 'Take Home')),
               h('div', { style: { width: Math.round(fedResult.tax / grossAnnual * 100) + '%', background: '#ef4444' }, className: 'h-full flex items-center justify-center text-[11px] text-white font-bold' }, 'Fed'),
               h('div', { style: { width: Math.round(ficaTotal / grossAnnual * 100) + '%', background: '#f97316' }, className: 'h-full flex items-center justify-center text-[11px] text-white font-bold' }, 'FICA'),
-              stateTax > 0 && h('div', { style: { width: Math.round(stateTax / grossAnnual * 100) + '%', background: '#a855f7' }, className: 'h-full flex items-center justify-center text-[11px] text-white font-bold' }, 'State')
+              stateTax > 0 && h('div', { style: { width: Math.round(stateTax / grossAnnual * 100) + '%', background: '#a855f7' }, className: 'h-full flex items-center justify-center text-[11px] text-white font-bold' }, __alloT('stem.lifeskills.state_2', 'State'))
             )
           ),
           // Bracket table
           (gradeBand === '6-8' || gradeBand === '9-12') && h('div', { className: glassCard },
-            h('p', { className: 'text-[11px] font-bold text-slate-600 mb-1' }, '\uD83D\uDCCA Federal Tax Brackets:'),
+            h('p', { className: 'text-[11px] font-bold text-slate-600 mb-1' }, __alloT('stem.lifeskills.federal_tax_brackets', '\uD83D\uDCCA Federal Tax Brackets:')),
             h('table', { className: 'w-full text-[11px]' },
-              h('caption', { className: 'sr-only' }, 'lifeskills data table'), h('thead', null, h('tr', { className: 'border-b border-slate-200' }, h('th', { scope: 'col', className: 'px-2 py-1 text-left' }, 'Rate'), h('th', { className: 'px-2 py-1 text-right' }, 'Taxable'), h('th', { className: 'px-2 py-1 text-right text-red-500' }, 'Tax'))),
+              h('caption', { className: 'sr-only' }, __alloT('stem.lifeskills.lifeskills_data_table', 'lifeskills data table')), h('thead', null, h('tr', { className: 'border-b border-slate-200' }, h('th', { scope: 'col', className: 'px-2 py-1 text-left' }, __alloT('stem.lifeskills.rate', 'Rate')), h('th', { className: 'px-2 py-1 text-right' }, __alloT('stem.lifeskills.taxable', 'Taxable')), h('th', { className: 'px-2 py-1 text-right text-red-500' }, 'Tax'))),
               h('tbody', null,
                 fedResult.breakdown.map(function(b, i) {
                   return h('tr', { key: i, className: i % 2 === 0 ? '' : 'bg-slate-50' }, h('td', { className: 'px-2 py-1 font-bold' }, b.rate + '%'), h('td', { className: 'px-2 py-1 text-right' }, fmtMoney(b.amount)), h('td', { className: 'px-2 py-1 text-right font-bold text-red-500' }, fmtMoney(b.tax)));
                 }),
-                h('tr', { className: 'bg-orange-50 border-t' }, h('td', { className: 'px-2 py-1 font-bold text-orange-600', colSpan: 2 }, 'FICA (SS 6.2% + Medicare 1.45%)'), h('td', { className: 'px-2 py-1 text-right font-bold text-orange-500' }, fmtMoney(ficaTotal)))
+                h('tr', { className: 'bg-orange-50 border-t' }, h('td', { className: 'px-2 py-1 font-bold text-orange-600', colSpan: 2 }, __alloT('stem.lifeskills.fica_ss_6_2_medicare_1_45', 'FICA (SS 6.2% + Medicare 1.45%)')), h('td', { className: 'px-2 py-1 text-right font-bold text-orange-500' }, fmtMoney(ficaTotal)))
               )
             )
           )
@@ -929,7 +930,7 @@ window.StemLab = window.StemLab || {
         // ═══ DATA LITERACY TAB ═══
         tab === 'data' && h('div', { className: 'space-y-4' },
           h('div', { className: glassCard },
-            h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\uD83D\uDCCA Data Literacy & Media Analysis'),
+            h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, __alloT('stem.lifeskills.data_literacy_media_analysis', '\uD83D\uDCCA Data Literacy & Media Analysis')),
             h('p', { className: 'text-xs text-slate-600' }, 'Can you spot the deception? Score: ' + dlScore + '/' + DL_SCENARIOS.length)
           ),
           h('div', { className: glassCard },
@@ -955,8 +956,8 @@ window.StemLab = window.StemLab || {
                     h('text', { x: padL + 69, y: H - 4, fontSize: 7, fill: INK, textAnchor: 'middle' }, '2024'));
                 };
                 return h('div', { className: 'grid grid-cols-2 gap-3 my-3' },
-                  h('div', null, h('div', { className: 'text-[10px] font-bold text-red-600 mb-1' }, '😱 Y-axis starts at 950'), mkBars(950, 1000), h('div', { className: 'text-[9px] text-slate-500 text-center mt-0.5' }, 'Looks like a HUGE jump')),
-                  h('div', null, h('div', { className: 'text-[10px] font-bold text-emerald-600 mb-1' }, '✅ Y-axis starts at 0'), mkBars(0, 1000), h('div', { className: 'text-[9px] text-slate-500 text-center mt-0.5' }, 'Same data — barely +2%')));
+                  h('div', null, h('div', { className: 'text-[10px] font-bold text-red-600 mb-1' }, __alloT('stem.lifeskills.y_axis_starts_at_950', '😱 Y-axis starts at 950')), mkBars(950, 1000), h('div', { className: 'text-[9px] text-slate-500 text-center mt-0.5' }, __alloT('stem.lifeskills.looks_like_a_huge_jump', 'Looks like a HUGE jump'))),
+                  h('div', null, h('div', { className: 'text-[10px] font-bold text-emerald-600 mb-1' }, __alloT('stem.lifeskills.y_axis_starts_at_0', '✅ Y-axis starts at 0')), mkBars(0, 1000), h('div', { className: 'text-[9px] text-slate-500 text-center mt-0.5' }, __alloT('stem.lifeskills.same_data_barely_2', 'Same data — barely +2%'))));
               }
               if (dlScenario === 2) { // Vanishing baseline: $3M(2022) -> $1M(2023) -> $2M(2024)
                 var mkLine = function(pts) {
@@ -971,8 +972,8 @@ window.StemLab = window.StemLab || {
                     pts.map(function(p, i) { return h('text', { key: 't' + i, x: px(i), y: H - 4, fontSize: 7, fill: INK, textAnchor: 'middle' }, p[0]); }));
                 };
                 return h('div', { className: 'grid grid-cols-2 gap-3 my-3' },
-                  h('div', null, h('div', { className: 'text-[10px] font-bold text-red-600 mb-1' }, '😱 Cherry-picked window'), mkLine([['2023', 1], ['2024', 2]]), h('div', { className: 'text-[9px] text-slate-500 text-center mt-0.5' }, '"Revenue DOUBLED!"')),
-                  h('div', null, h('div', { className: 'text-[10px] font-bold text-emerald-600 mb-1' }, '✅ Full history'), mkLine([['2022', 3], ['2023', 1], ['2024', 2]]), h('div', { className: 'text-[9px] text-slate-500 text-center mt-0.5' }, 'Down from $3M — not "doubled"')));
+                  h('div', null, h('div', { className: 'text-[10px] font-bold text-red-600 mb-1' }, __alloT('stem.lifeskills.cherry_picked_window', '😱 Cherry-picked window')), mkLine([['2023', 1], ['2024', 2]]), h('div', { className: 'text-[9px] text-slate-500 text-center mt-0.5' }, __alloT('stem.lifeskills.revenue_doubled', '"Revenue DOUBLED!"'))),
+                  h('div', null, h('div', { className: 'text-[10px] font-bold text-emerald-600 mb-1' }, __alloT('stem.lifeskills.full_history', '✅ Full history')), mkLine([['2022', 3], ['2023', 1], ['2024', 2]]), h('div', { className: 'text-[9px] text-slate-500 text-center mt-0.5' }, __alloT('stem.lifeskills.down_from_3m_not_doubled', 'Down from $3M — not "doubled"'))));
               }
               if (dlScenario === 5) { // 3D pie distortion: same data, but a 3D tilt makes the front 30% slice look bigger than the back 35% ones
                 var slices = [{ v: 30, c: '#6366f1' }, { v: 35, c: '#10b981' }, { v: 35, c: '#f59e0b' }];
@@ -990,14 +991,14 @@ window.StemLab = window.StemLab || {
                 };
                 return h('div', { className: 'grid grid-cols-2 gap-3 my-3 items-end' },
                   h('div', { className: 'text-center' },
-                    h('div', { className: 'text-[10px] font-bold text-red-600 mb-2' }, '😱 Same pie, 3D-tilted'),
+                    h('div', { className: 'text-[10px] font-bold text-red-600 mb-2' }, __alloT('stem.lifeskills.same_pie_3d_tilted', '😱 Same pie, 3D-tilted')),
                     h('div', { style: { perspective: '240px', display: 'flex', justifyContent: 'center', height: 80 } },
                       h('div', { style: { transform: 'rotateX(58deg)', transformOrigin: 'center bottom' } }, pie())),
-                    h('div', { className: 'text-[9px] text-slate-500 mt-1' }, 'front 30% slice looks the biggest')),
+                    h('div', { className: 'text-[9px] text-slate-500 mt-1' }, __alloT('stem.lifeskills.front_30_slice_looks_the_biggest', 'front 30% slice looks the biggest'))),
                   h('div', { className: 'text-center' },
-                    h('div', { className: 'text-[10px] font-bold text-emerald-600 mb-2' }, '✅ Flat 2D'),
+                    h('div', { className: 'text-[10px] font-bold text-emerald-600 mb-2' }, __alloT('stem.lifeskills.flat_2d', '✅ Flat 2D')),
                     h('div', { style: { display: 'flex', justifyContent: 'center' } }, pie()),
-                    h('div', { className: 'text-[9px] text-slate-500 mt-1' }, 'the two 35% slices are actually biggest')));
+                    h('div', { className: 'text-[9px] text-slate-500 mt-1' }, __alloT('stem.lifeskills.the_two_35_slices_are_actually_biggest', 'the two 35% slices are actually biggest'))));
               }
               return null;
             })(),
@@ -1020,20 +1021,20 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'text-xs font-bold ' + (dlAnswer === dlCurrent.correct ? 'text-emerald-700' : 'text-red-700') }, dlAnswer === dlCurrent.correct ? '\u2705 Correct!' : '\u274C Incorrect'),
               h('p', { className: 'text-xs text-slate-600 mt-1' }, dlCurrent.explain)
             ),
-            dlRevealed && h('button', { 'aria-label': 'Next Scenario', onClick: function() { updMulti({ dlScenario: dlScenario + 1, dlAnswer: null, dlRevealed: false }); }, className: 'mt-2 px-4 py-2 text-xs font-bold bg-indigo-600 text-white rounded-xl' }, 'Next Scenario \u27A1')
+            dlRevealed && h('button', { 'aria-label': __alloT('stem.lifeskills.next_scenario', 'Next Scenario'), onClick: function() { updMulti({ dlScenario: dlScenario + 1, dlAnswer: null, dlRevealed: false }); }, className: 'mt-2 px-4 py-2 text-xs font-bold bg-indigo-600 text-white rounded-xl' }, __alloT('stem.lifeskills.next_scenario_2', 'Next Scenario \u27A1'))
           )
         ),
 
         // ═══ DECISIONS TAB ═══
         tab === 'decision' && h('div', { className: 'space-y-4' },
           h('div', { className: glassCard },
-            h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\uD83E\uDDE0 Decision Matrix'),
-            h('p', { className: 'text-xs text-slate-600' }, 'Rate each option on each criterion (1-5). Weights determine importance.')
+            h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, __alloT('stem.lifeskills.decision_matrix', '\uD83E\uDDE0 Decision Matrix')),
+            h('p', { className: 'text-xs text-slate-600' }, __alloT('stem.lifeskills.rate_each_option_on_each_criterion_1_5', 'Rate each option on each criterion (1-5). Weights determine importance.'))
           ),
           h('div', { className: glassCard },
             h('table', { className: 'w-full text-[11px]' },
-              h('caption', { className: 'sr-only' }, '\uD83E\uDDE0 Decision Matrix'), h('thead', null, h('tr', { className: 'border-b border-slate-200' },
-                h('th', { scope: 'col', className: 'px-2 py-1 text-left' }, 'Criteria (weight)'),
+              h('caption', { className: 'sr-only' }, __alloT('stem.lifeskills.decision_matrix_2', '\uD83E\uDDE0 Decision Matrix')), h('thead', null, h('tr', { className: 'border-b border-slate-200' },
+                h('th', { scope: 'col', className: 'px-2 py-1 text-left' }, __alloT('stem.lifeskills.criteria_weight', 'Criteria (weight)')),
                 dmOptions.map(function(opt, oi) { return h('th', { scope: 'col', key: oi, className: 'px-2 py-1 text-center' }, opt); })
               )),
               h('tbody', null,
@@ -1043,7 +1044,7 @@ window.StemLab = window.StemLab || {
                     dmOptions.map(function(opt, oi) {
                       var key = oi + '-' + ci;
                       return h('td', { key: oi, className: 'px-2 py-1 text-center' },
-                        h('input', { type: 'range', 'aria-label': 'dm scores', min: 1, max: 5, value: dmScores[key] || 3, onChange: function(e) {
+                        h('input', { type: 'range', 'aria-label': __alloT('stem.lifeskills.dm_scores', 'dm scores'), min: 1, max: 5, value: dmScores[key] || 3, onChange: function(e) {
                           var s = Object.assign({}, dmScores); s[key] = parseInt(e.target.value); upd('dmScores', s); checkBadge('decisionPro');
                         }, className: 'w-full', 'aria-label': opt + ' ' + c.name }),
                         h('span', { className: 'text-[11px] font-mono' }, dmScores[key] || 3)
@@ -1071,7 +1072,7 @@ window.StemLab = window.StemLab || {
         // ═══ CONTRACTS TAB ═══
         tab === 'contract' && h('div', { className: 'space-y-4' },
           h('div', { className: glassCard },
-            h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\uD83D\uDCDD Contract Trap Finder'),
+            h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, __alloT('stem.lifeskills.contract_trap_finder', '\uD83D\uDCDD Contract Trap Finder')),
             h('p', { className: 'text-xs text-slate-600' }, 'Read the fine print. Find all ' + crCurrent.traps.length + ' hidden traps!')
           ),
           h('div', { className: 'flex gap-1.5 mb-2' },
@@ -1105,8 +1106,8 @@ window.StemLab = window.StemLab || {
         // ═══ INSURANCE TAB ═══
         tab === 'insurance' && h('div', { className: 'space-y-4' },
           h('div', { className: glassCard },
-            h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\uD83C\uDFE5 Health Insurance Comparison'),
-            h('p', { className: 'text-xs text-slate-600' }, 'Compare two plans at different usage levels.')
+            h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, __alloT('stem.lifeskills.health_insurance_comparison', '\uD83C\uDFE5 Health Insurance Comparison')),
+            h('p', { className: 'text-xs text-slate-600' }, __alloT('stem.lifeskills.compare_two_plans_at_different_usage_l', 'Compare two plans at different usage levels.'))
           ),
           h('div', { className: glassCard + ' space-y-2' },
             h('div', { className: 'flex gap-2' },
@@ -1117,7 +1118,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-[11px] text-slate-600' }, 'Scenario: ' + hiScene.visits + ' doctor visits + ' + fmtMoney(hiScene.bills) + ' in medical bills')
           ),
           h('div', { className: 'grid grid-cols-2 gap-3' },
-            [{ label: 'Plan A', cost: hiCostA, plan: hiPlanA, color: '#3b82f6' }, { label: 'Plan B', cost: hiCostB, plan: hiPlanB, color: '#8b5cf6' }].map(function(p) {
+            [{ label: __alloT('stem.lifeskills.plan_a', 'Plan A'), cost: hiCostA, plan: hiPlanA, color: '#3b82f6' }, { label: __alloT('stem.lifeskills.plan_b', 'Plan B'), cost: hiCostB, plan: hiPlanB, color: '#8b5cf6' }].map(function(p) {
               var isBetter = (p.label === 'Plan A' ? hiCostA.total <= hiCostB.total : hiCostB.total < hiCostA.total);
               return h('div', { key: p.label, className: glassCard + (isBetter ? ' ring-2 ring-emerald-300' : '') },
                 h('p', { className: 'text-xs font-bold text-slate-700 mb-2' }, p.label + (isBetter ? ' \u2705 Better' : '')),
@@ -1140,12 +1141,12 @@ window.StemLab = window.StemLab || {
         // ═══ APPLIED SCIENCE TAB ═══
         tab === 'science' && h('div', { className: 'space-y-4' },
           h('div', { className: glassCard },
-            h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\uD83D\uDD2C Applied Science'),
-            h('p', { className: 'text-xs text-slate-600' }, 'Science you use every day \u2014 cooking, tires, circuits')
+            h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, __alloT('stem.lifeskills.applied_science', '\uD83D\uDD2C Applied Science')),
+            h('p', { className: 'text-xs text-slate-600' }, __alloT('stem.lifeskills.science_you_use_every_day_cooking_tire', 'Science you use every day \u2014 cooking, tires, circuits'))
           ),
           // Cooking Chemistry
           h('div', { className: glassCard },
-            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, '\uD83C\uDF73 Cooking Chemistry'),
+            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, __alloT('stem.lifeskills.cooking_chemistry', '\uD83C\uDF73 Cooking Chemistry')),
             slider('Oven Temperature (\u00B0F)', asCookTemp, 100, 500, 10, 'asCookTemp', function(v) { return v + '\u00B0F'; }),
             h('div', { className: 'mt-2 space-y-1' },
               COOK_REACTIONS.map(function(r) {
@@ -1159,7 +1160,7 @@ window.StemLab = window.StemLab || {
           ),
           // Circuit Breaker
           h('div', { className: glassCard },
-            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, '\u26A1 Circuit Load Calculator'),
+            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, __alloT('stem.lifeskills.circuit_load_calculator', '\u26A1 Circuit Load Calculator')),
             h('p', { className: 'text-xs text-slate-600 mb-2' }, 'Circuit: ' + asVolts + 'V \u00D7 ' + asAmps + 'A = ' + asWatts + 'W max'),
             h('div', { className: 'flex flex-wrap gap-1.5' },
               COMMON_DEVICES.map(function(dev) {
@@ -1183,13 +1184,13 @@ window.StemLab = window.StemLab || {
           ),
           // Tire Pressure
           h('div', { className: glassCard },
-            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, '\uD83D\uDE97 Tire Pressure & Gay-Lussac\'s Law'),
+            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, __alloT('stem.lifeskills.tire_pressure_gay_lussac_s_law', '\uD83D\uDE97 Tire Pressure & Gay-Lussac\'s Law')),
             slider('Fill Pressure (PSI)', asTireP1, 28, 44, 1, 'asTireP1'),
             slider('Fill Temperature (\u00B0F)', asTireT1, 0, 120, 5, 'asTireT1'),
             slider('Current Temperature (\u00B0F)', asTireT2, -20, 120, 5, 'asTireT2'),
             h('div', { className: 'mt-2 grid grid-cols-2 gap-2' },
-              h('div', { className: 'text-center p-2 bg-blue-50 rounded-xl' }, h('p', { className: 'text-[11px] font-bold text-slate-600' }, 'Current PSI'), h('p', { className: 'text-lg font-bold text-blue-600' }, asTireP2.toFixed(1))),
-              h('div', { className: 'text-center p-2 bg-amber-50 rounded-xl' }, h('p', { className: 'text-[11px] font-bold text-slate-600' }, 'PSI Change'), h('p', { className: 'text-lg font-bold ' + (asTireP2 < asTireP1 ? 'text-red-600' : 'text-emerald-600') }, (asTireP2 - asTireP1 > 0 ? '+' : '') + (asTireP2 - asTireP1).toFixed(1)))
+              h('div', { className: 'text-center p-2 bg-blue-50 rounded-xl' }, h('p', { className: 'text-[11px] font-bold text-slate-600' }, __alloT('stem.lifeskills.current_psi', 'Current PSI')), h('p', { className: 'text-lg font-bold text-blue-600' }, asTireP2.toFixed(1))),
+              h('div', { className: 'text-center p-2 bg-amber-50 rounded-xl' }, h('p', { className: 'text-[11px] font-bold text-slate-600' }, __alloT('stem.lifeskills.psi_change', 'PSI Change')), h('p', { className: 'text-lg font-bold ' + (asTireP2 < asTireP1 ? 'text-red-600' : 'text-emerald-600') }, (asTireP2 - asTireP1 > 0 ? '+' : '') + (asTireP2 - asTireP1).toFixed(1)))
             ),
             (gradeBand === '6-8' || gradeBand === '9-12') && h('p', { className: 'text-[11px] text-slate-600 mt-1 font-mono' }, 'P\u2081/T\u2081 = P\u2082/T\u2082 | ' + asTireP1 + '/' + t1K.toFixed(1) + 'K = ' + asTireP2.toFixed(1) + '/' + t2K.toFixed(1) + 'K')
           )
@@ -1198,12 +1199,12 @@ window.StemLab = window.StemLab || {
         // ═══ CAR CARE TAB ═══
         tab === 'carcare' && h('div', { className: 'space-y-4' },
           h('div', { className: glassCard },
-            h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\uD83D\uDE97 Car Care Science'),
-            h('p', { className: 'text-xs text-slate-600' }, 'Oil, tires, battery, maintenance, and dashboard lights')
+            h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, __alloT('stem.lifeskills.car_care_science', '\uD83D\uDE97 Car Care Science')),
+            h('p', { className: 'text-xs text-slate-600' }, __alloT('stem.lifeskills.oil_tires_battery_maintenance_and_dash', 'Oil, tires, battery, maintenance, and dashboard lights'))
           ),
           // Oil Viscosity
           h('div', { className: glassCard },
-            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, '\uD83D\uDEE2\uFE0F Oil Viscosity Guide'),
+            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, __alloT('stem.lifeskills.oil_viscosity_guide', '\uD83D\uDEE2\uFE0F Oil Viscosity Guide')),
             slider('Climate Temperature (\u00B0F)', ccOilTemp, -40, 120, 5, 'ccOilTemp'),
             h('div', { className: 'space-y-1 mt-2' },
               OIL_GRADES.map(function(g) {
@@ -1211,14 +1212,14 @@ window.StemLab = window.StemLab || {
                 return h('div', { key: g.grade, className: 'flex items-center gap-2 p-1.5 rounded-lg ' + (inRange ? 'bg-emerald-50 border border-emerald-200' : 'opacity-40') },
                   h('span', { className: 'text-xs font-bold w-16 ' + (inRange ? 'text-emerald-700' : 'text-slate-600') }, g.grade),
                   h('span', { className: 'text-[11px] text-slate-600 flex-1' }, g.desc),
-                  inRange && h('span', { className: 'text-[11px] font-bold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded' }, '\u2705 RECOMMENDED')
+                  inRange && h('span', { className: 'text-[11px] font-bold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded' }, __alloT('stem.lifeskills.recommended', '\u2705 RECOMMENDED'))
                 );
               })
             )
           ),
           // Tire Tread
           h('div', { className: glassCard },
-            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, '\uD83D\uDEB2 Tire Tread Depth'),
+            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, __alloT('stem.lifeskills.tire_tread_depth', '\uD83D\uDEB2 Tire Tread Depth')),
             slider('Tread Depth (32nds inch)', ccTread, 0, 10, 1, 'ccTread'),
             h('div', { className: 'flex items-center gap-3 mt-2' },
               h('div', { className: 'flex-1 h-4 bg-slate-200 rounded-full overflow-hidden' },
@@ -1226,12 +1227,12 @@ window.StemLab = window.StemLab || {
               ),
               h('span', { className: 'text-xs font-bold', style: { color: treadColor } }, treadStatus + ' (' + ccTread + '/32")')
             ),
-            ccTread <= 2 && h('p', { className: 'text-[11px] font-bold text-red-600 mt-1' }, '\u26A0\uFE0F UNSAFE: Below legal minimum (2/32"). Replace immediately!')
+            ccTread <= 2 && h('p', { className: 'text-[11px] font-bold text-red-600 mt-1' }, __alloT('stem.lifeskills.unsafe_below_legal_minimum_2_32_replac', '\u26A0\uFE0F UNSAFE: Below legal minimum (2/32"). Replace immediately!'))
           ),
           // Dashboard Lights Quiz
           h('div', { className: glassCard },
-            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, '\uD83D\uDEA8 Dashboard Light Quiz'),
-            h('div', { className: 'text-center mb-3' }, h('span', { className: 'text-4xl' }, ccCurrentDash.icon), h('p', { className: 'text-xs font-bold text-slate-700 mt-1' }, 'What does this warning light mean?')),
+            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, __alloT('stem.lifeskills.dashboard_light_quiz', '\uD83D\uDEA8 Dashboard Light Quiz')),
+            h('div', { className: 'text-center mb-3' }, h('span', { className: 'text-4xl' }, ccCurrentDash.icon), h('p', { className: 'text-xs font-bold text-slate-700 mt-1' }, __alloT('stem.lifeskills.what_does_this_warning_light_mean', 'What does this warning light mean?'))),
             h('div', { className: 'grid grid-cols-2 gap-2' },
               ccCurrentDash.choices.map(function(c, i) {
                 return h('button', { key: i, onClick: function() {
@@ -1243,11 +1244,11 @@ window.StemLab = window.StemLab || {
               })
             ),
             d.ccDashFb && h('p', { className: 'text-[11px] font-bold mt-2 p-2 rounded-lg ' + (d.ccDashFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700') }, d.ccDashFb),
-            h('button', { 'aria-label': 'Next Light', onClick: function() { updMulti({ ccDashQ: ccDashQ + 1, ccDashFb: null }); }, className: 'mt-2 px-3 py-1.5 text-[11px] font-bold bg-teal-700 text-white rounded-xl' }, 'Next Light \u27A1')
+            h('button', { 'aria-label': __alloT('stem.lifeskills.next_light', 'Next Light'), onClick: function() { updMulti({ ccDashQ: ccDashQ + 1, ccDashFb: null }); }, className: 'mt-2 px-3 py-1.5 text-[11px] font-bold bg-teal-700 text-white rounded-xl' }, __alloT('stem.lifeskills.next_light_2', 'Next Light \u27A1'))
           ),
           // Maintenance Schedule
           h('div', { className: glassCard },
-            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, '\uD83D\uDD27 Maintenance Schedule'),
+            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, __alloT('stem.lifeskills.maintenance_schedule', '\uD83D\uDD27 Maintenance Schedule')),
             slider('Current Mileage', ccMileage, 0, 150000, 5000, 'ccMileage', function(v) { return v.toLocaleString() + ' mi'; }),
             h('div', { className: 'space-y-1 mt-2' },
               upcomingMaint.slice(0, 5).map(function(m) {
@@ -1265,12 +1266,12 @@ window.StemLab = window.StemLab || {
         // ═══ HOME REPAIR TAB ═══
         tab === 'homerepair' && h('div', { className: 'space-y-4' },
           h('div', { className: glassCard },
-            h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\uD83D\uDD27 Home Repair'),
-            h('p', { className: 'text-xs text-slate-600' }, 'Plumbing, paint calculator, and DIY diagnostics')
+            h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, __alloT('stem.lifeskills.home_repair', '\uD83D\uDD27 Home Repair')),
+            h('p', { className: 'text-xs text-slate-600' }, __alloT('stem.lifeskills.plumbing_paint_calculator_and_diy_diag', 'Plumbing, paint calculator, and DIY diagnostics'))
           ),
           // Toilet Diagnosis
           h('div', { className: glassCard },
-            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, '\uD83D\uDEBD Toilet Diagnosis'),
+            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, __alloT('stem.lifeskills.toilet_diagnosis', '\uD83D\uDEBD Toilet Diagnosis')),
             h('p', { className: 'text-xs text-slate-700 mb-2' }, '\uD83D\uDD0D Symptom: "' + plumbCurrent.symptom + '"'),
             h('div', { className: 'grid grid-cols-3 gap-1.5' },
               TOILET_PARTS.map(function(part) {
@@ -1285,23 +1286,23 @@ window.StemLab = window.StemLab || {
               })
             ),
             d.plumbFb && h('p', { className: 'text-[11px] font-bold mt-2 p-2 rounded-lg ' + (d.plumbFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700') }, d.plumbFb),
-            h('button', { 'aria-label': 'Next Problem', onClick: function() { updMulti({ plumbQ: plumbQ + 1, plumbFb: null }); }, className: 'mt-2 px-3 py-1.5 text-[11px] font-bold bg-teal-700 text-white rounded-xl' }, 'Next Problem \u27A1')
+            h('button', { 'aria-label': __alloT('stem.lifeskills.next_problem', 'Next Problem'), onClick: function() { updMulti({ plumbQ: plumbQ + 1, plumbFb: null }); }, className: 'mt-2 px-3 py-1.5 text-[11px] font-bold bg-teal-700 text-white rounded-xl' }, __alloT('stem.lifeskills.next_problem_2', 'Next Problem \u27A1'))
           ),
           // Paint Calculator
           h('div', { className: glassCard },
-            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, '\uD83C\uDFA8 Paint Calculator'),
+            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, __alloT('stem.lifeskills.paint_calculator', '\uD83C\uDFA8 Paint Calculator')),
             h('div', { className: 'grid grid-cols-3 gap-2' },
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Length (ft)'), h('input', { type: 'number', value: paintL, onChange: function(e) { upd('paintL', parseInt(e.target.value) || 0); }, className: 'w-full px-2 py-1 border border-slate-400 rounded-lg text-sm mt-1' })),
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Width (ft)'), h('input', { type: 'number', value: paintW, onChange: function(e) { upd('paintW', parseInt(e.target.value) || 0); }, className: 'w-full px-2 py-1 border border-slate-400 rounded-lg text-sm mt-1' })),
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Height (ft)'), h('input', { type: 'number', value: paintH, onChange: function(e) { upd('paintH', parseInt(e.target.value) || 0); }, className: 'w-full px-2 py-1 border border-slate-400 rounded-lg text-sm mt-1' }))
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, __alloT('stem.lifeskills.length_ft', 'Length (ft)')), h('input', { type: 'number', value: paintL, onChange: function(e) { upd('paintL', parseInt(e.target.value) || 0); }, className: 'w-full px-2 py-1 border border-slate-400 rounded-lg text-sm mt-1' })),
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, __alloT('stem.lifeskills.width_ft', 'Width (ft)')), h('input', { type: 'number', value: paintW, onChange: function(e) { upd('paintW', parseInt(e.target.value) || 0); }, className: 'w-full px-2 py-1 border border-slate-400 rounded-lg text-sm mt-1' })),
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, __alloT('stem.lifeskills.height_ft', 'Height (ft)')), h('input', { type: 'number', value: paintH, onChange: function(e) { upd('paintH', parseInt(e.target.value) || 0); }, className: 'w-full px-2 py-1 border border-slate-400 rounded-lg text-sm mt-1' }))
             ),
             slider('Coats', paintCoats, 1, 3, 1, 'paintCoats'),
             slider('Windows', paintWindows, 0, 6, 1, 'paintWindows'),
             slider('Doors', paintDoors, 0, 4, 1, 'paintDoors'),
             h('div', { className: 'mt-2 grid grid-cols-3 gap-2 text-center' },
-              h('div', { className: 'bg-slate-50 rounded-xl p-2' }, h('p', { className: 'text-[11px] font-bold text-slate-600' }, 'Net Area'), h('p', { className: 'text-sm font-bold' }, paintNetArea + ' sqft')),
-              h('div', { className: 'bg-slate-50 rounded-xl p-2' }, h('p', { className: 'text-[11px] font-bold text-slate-600' }, 'Gallons Needed'), h('p', { className: 'text-sm font-bold text-teal-600' }, paintGallons)),
-              h('div', { className: 'bg-slate-50 rounded-xl p-2' }, h('p', { className: 'text-[11px] font-bold text-slate-600' }, 'Est. Cost'), h('p', { className: 'text-sm font-bold' }, fmtMoney(paintGallons * 30) + '-' + fmtMoney(paintGallons * 55)))
+              h('div', { className: 'bg-slate-50 rounded-xl p-2' }, h('p', { className: 'text-[11px] font-bold text-slate-600' }, __alloT('stem.lifeskills.net_area', 'Net Area')), h('p', { className: 'text-sm font-bold' }, paintNetArea + ' sqft')),
+              h('div', { className: 'bg-slate-50 rounded-xl p-2' }, h('p', { className: 'text-[11px] font-bold text-slate-600' }, __alloT('stem.lifeskills.gallons_needed', 'Gallons Needed')), h('p', { className: 'text-sm font-bold text-teal-600' }, paintGallons)),
+              h('div', { className: 'bg-slate-50 rounded-xl p-2' }, h('p', { className: 'text-[11px] font-bold text-slate-600' }, __alloT('stem.lifeskills.est_cost', 'Est. Cost')), h('p', { className: 'text-sm font-bold' }, fmtMoney(paintGallons * 30) + '-' + fmtMoney(paintGallons * 55)))
             )
           )
         ),
@@ -1309,18 +1310,18 @@ window.StemLab = window.StemLab || {
         // ═══ HOME SYSTEMS TAB ═══
         tab === 'homesys' && h('div', { className: 'space-y-4' },
           h('div', { className: glassCard },
-            h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\uD83C\uDFE0 Home Systems'),
-            h('p', { className: 'text-xs text-slate-600' }, 'HVAC, electrical, fire safety, and energy')
+            h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, __alloT('stem.lifeskills.home_systems_2', '\uD83C\uDFE0 Home Systems')),
+            h('p', { className: 'text-xs text-slate-600' }, __alloT('stem.lifeskills.hvac_electrical_fire_safety_and_energy', 'HVAC, electrical, fire safety, and energy'))
           ),
           // Quick links to AI analysis
           callGemini && h('div', { className: glassCard },
-            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, '\uD83E\uDDE0 AI Home Advisor'),
-            h('p', { className: 'text-xs text-slate-600 mb-2' }, 'Ask AI about any home system question:'),
+            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, __alloT('stem.lifeskills.ai_home_advisor', '\uD83E\uDDE0 AI Home Advisor')),
+            h('p', { className: 'text-xs text-slate-600 mb-2' }, __alloT('stem.lifeskills.ask_ai_about_any_home_system_question', 'Ask AI about any home system question:')),
             h('div', { className: 'flex gap-2' },
               h('input', { type: 'text', value: d.homeQ || '', onChange: function(e) { upd('homeQ', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter' && d.homeQ) {
                 upd('homeALoading', true);
                 callGemini('Answer this home maintenance question for a ' + gradeBand + ' student in 2-3 sentences: ' + d.homeQ).then(function(r) { updMulti({ homeA: r, homeALoading: false }); }).catch(function() { upd('homeALoading', false); });
-              }}, placeholder: 'e.g. "Why does my furnace make a clicking sound?"', className: 'flex-1 px-3 py-2 border border-slate-400 rounded-xl text-xs' }),
+              }}, placeholder: __alloT('stem.lifeskills.e_g_why_does_my_furnace_make_a_clickin', 'e.g. "Why does my furnace make a clicking sound?"'), className: 'flex-1 px-3 py-2 border border-slate-400 rounded-xl text-xs' }),
               h('button', { onClick: function() {
                 if (!d.homeQ) return;
                 upd('homeALoading', true);
@@ -1332,39 +1333,39 @@ window.StemLab = window.StemLab || {
           // Quick info cards
           h('div', { className: 'grid grid-cols-2 gap-3' },
             h('div', { className: glassCard },
-              h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, '\uD83D\uDD25 HVAC Tips'),
+              h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, __alloT('stem.lifeskills.hvac_tips', '\uD83D\uDD25 HVAC Tips')),
               h('ul', { className: 'text-[11px] text-slate-600 space-y-1' },
-                h('li', null, '\u2022 Change air filter every 90 days'),
-                h('li', null, '\u2022 MERV 8-11 is best for most homes'),
-                h('li', null, '\u2022 Set thermostat to 68\u00B0F winter / 78\u00B0F summer'),
-                h('li', null, '\u2022 Annual tune-up saves 5-15% on energy')
+                h('li', null, __alloT('stem.lifeskills.change_air_filter_every_90_days', '\u2022 Change air filter every 90 days')),
+                h('li', null, __alloT('stem.lifeskills.merv_8_11_is_best_for_most_homes', '\u2022 MERV 8-11 is best for most homes')),
+                h('li', null, __alloT('stem.lifeskills.set_thermostat_to_68_f_winter_78_f_sum', '\u2022 Set thermostat to 68\u00B0F winter / 78\u00B0F summer')),
+                h('li', null, __alloT('stem.lifeskills.annual_tune_up_saves_5_15_on_energy', '\u2022 Annual tune-up saves 5-15% on energy'))
               )
             ),
             h('div', { className: glassCard },
-              h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, '\u26A1 Electrical Safety'),
+              h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, __alloT('stem.lifeskills.electrical_safety', '\u26A1 Electrical Safety')),
               h('ul', { className: 'text-[11px] text-slate-600 space-y-1' },
-                h('li', null, '\u2022 GFCI required in wet areas (bathroom, kitchen)'),
-                h('li', null, '\u2022 AFCI required in bedrooms (since 2002)'),
-                h('li', null, '\u2022 Never exceed circuit capacity (P=V\u00D7I)'),
-                h('li', null, '\u2022 Know your main breaker location')
+                h('li', null, __alloT('stem.lifeskills.gfci_required_in_wet_areas_bathroom_ki', '\u2022 GFCI required in wet areas (bathroom, kitchen)')),
+                h('li', null, __alloT('stem.lifeskills.afci_required_in_bedrooms_since_2002', '\u2022 AFCI required in bedrooms (since 2002)')),
+                h('li', null, __alloT('stem.lifeskills.never_exceed_circuit_capacity_p_v_i', '\u2022 Never exceed circuit capacity (P=V\u00D7I)')),
+                h('li', null, __alloT('stem.lifeskills.know_your_main_breaker_location', '\u2022 Know your main breaker location'))
               )
             ),
             h('div', { className: glassCard },
-              h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, '\uD83D\uDD25 Fire Safety'),
+              h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, __alloT('stem.lifeskills.fire_safety', '\uD83D\uDD25 Fire Safety')),
               h('ul', { className: 'text-[11px] text-slate-600 space-y-1' },
-                h('li', null, '\u2022 Smoke detector in every bedroom + hallway'),
-                h('li', null, '\u2022 CO detector on every floor'),
-                h('li', null, '\u2022 Replace detectors every 10 years'),
-                h('li', null, '\u2022 Test monthly, change batteries yearly')
+                h('li', null, __alloT('stem.lifeskills.smoke_detector_in_every_bedroom_hallwa', '\u2022 Smoke detector in every bedroom + hallway')),
+                h('li', null, __alloT('stem.lifeskills.co_detector_on_every_floor', '\u2022 CO detector on every floor')),
+                h('li', null, __alloT('stem.lifeskills.replace_detectors_every_10_years', '\u2022 Replace detectors every 10 years')),
+                h('li', null, __alloT('stem.lifeskills.test_monthly_change_batteries_yearly', '\u2022 Test monthly, change batteries yearly'))
               )
             ),
             h('div', { className: glassCard },
-              h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, '\u2600\uFE0F Energy Savings'),
+              h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, __alloT('stem.lifeskills.energy_savings', '\u2600\uFE0F Energy Savings')),
               h('ul', { className: 'text-[11px] text-slate-600 space-y-1' },
-                h('li', null, '\u2022 LED bulbs save 75% vs incandescent'),
-                h('li', null, '\u2022 Heat pumps are 300% efficient (COP 3.0)'),
-                h('li', null, '\u2022 Insulation R-value: higher = better'),
-                h('li', null, '\u2022 30% federal solar tax credit (ITC)')
+                h('li', null, __alloT('stem.lifeskills.led_bulbs_save_75_vs_incandescent', '\u2022 LED bulbs save 75% vs incandescent')),
+                h('li', null, __alloT('stem.lifeskills.heat_pumps_are_300_efficient_cop_3_0', '\u2022 Heat pumps are 300% efficient (COP 3.0)')),
+                h('li', null, __alloT('stem.lifeskills.insulation_r_value_higher_better', '\u2022 Insulation R-value: higher = better')),
+                h('li', null, __alloT('stem.lifeskills.30_federal_solar_tax_credit_itc', '\u2022 30% federal solar tax credit (ITC)'))
               )
             )
           )
@@ -1373,12 +1374,12 @@ window.StemLab = window.StemLab || {
         // ═══ BUDGET TAB ═══
         tab === 'budget' && h('div', { className: 'space-y-4' },
           h('div', { className: glassCard },
-            h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\uD83D\uDCB0 Monthly Budget Builder'),
+            h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, __alloT('stem.lifeskills.monthly_budget_builder', '\uD83D\uDCB0 Monthly Budget Builder')),
             h('p', { className: 'text-xs text-slate-600' }, gradeText(gradeBand, 'Plan how to spend your money!', 'Build a budget using the 50/30/20 rule.', 'Create a zero-based monthly budget with needs, wants, and savings.', 'Zero-based budgeting: every dollar gets a job. Analyze your spending against the 50/30/20 framework.'))
           ),
           h('div', { className: glassCard + ' space-y-3' },
             h('div', { className: 'flex items-center gap-3 mb-2' },
-              h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, 'Monthly Income'),
+              h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, __alloT('stem.lifeskills.monthly_income', 'Monthly Income')),
               h('input', { type: 'number', step: '100', value: budgetIncome, onChange: function(e) { upd('budgetIncome', Math.max(0, parseInt(e.target.value) || 0)); checkBadge('budgeteer'); }, className: 'w-32 px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold' }),
               h('span', { className: 'text-xs font-bold text-slate-600' }, fmtMoney(budgetIncome) + '/month')
             ),
@@ -1416,9 +1417,9 @@ window.StemLab = window.StemLab || {
             ),
             // Summary
             h('div', { className: 'grid grid-cols-3 gap-2 mt-3' },
-              h('div', { className: 'text-center p-2 rounded-xl bg-blue-50' }, h('p', { className: 'text-[11px] font-bold text-blue-500 uppercase' }, 'Needs'), h('p', { className: 'text-sm font-bold text-blue-700' }, fmtMoney(needsTotal)), h('p', { className: 'text-[11px] ' + (budgetNeedsPct <= 50 ? 'text-emerald-500' : 'text-red-500') }, budgetNeedsPct + '% of income')),
-              h('div', { className: 'text-center p-2 rounded-xl bg-purple-50' }, h('p', { className: 'text-[11px] font-bold text-purple-500 uppercase' }, 'Wants'), h('p', { className: 'text-sm font-bold text-purple-700' }, fmtMoney(wantsTotal)), h('p', { className: 'text-[11px] ' + (budgetWantsPct <= 30 ? 'text-emerald-500' : 'text-red-500') }, budgetWantsPct + '% of income')),
-              h('div', { className: 'text-center p-2 rounded-xl bg-emerald-50' }, h('p', { className: 'text-[11px] font-bold text-emerald-500 uppercase' }, 'Savings'), h('p', { className: 'text-sm font-bold text-emerald-700' }, fmtMoney(savesTotal)), h('p', { className: 'text-[11px] ' + (budgetSavesPct >= 20 ? 'text-emerald-500' : 'text-amber-500') }, budgetSavesPct + '% of income'))
+              h('div', { className: 'text-center p-2 rounded-xl bg-blue-50' }, h('p', { className: 'text-[11px] font-bold text-blue-500 uppercase' }, __alloT('stem.lifeskills.needs', 'Needs')), h('p', { className: 'text-sm font-bold text-blue-700' }, fmtMoney(needsTotal)), h('p', { className: 'text-[11px] ' + (budgetNeedsPct <= 50 ? 'text-emerald-500' : 'text-red-500') }, budgetNeedsPct + '% of income')),
+              h('div', { className: 'text-center p-2 rounded-xl bg-purple-50' }, h('p', { className: 'text-[11px] font-bold text-purple-500 uppercase' }, __alloT('stem.lifeskills.wants', 'Wants')), h('p', { className: 'text-sm font-bold text-purple-700' }, fmtMoney(wantsTotal)), h('p', { className: 'text-[11px] ' + (budgetWantsPct <= 30 ? 'text-emerald-500' : 'text-red-500') }, budgetWantsPct + '% of income')),
+              h('div', { className: 'text-center p-2 rounded-xl bg-emerald-50' }, h('p', { className: 'text-[11px] font-bold text-emerald-500 uppercase' }, __alloT('stem.lifeskills.savings', 'Savings')), h('p', { className: 'text-sm font-bold text-emerald-700' }, fmtMoney(savesTotal)), h('p', { className: 'text-[11px] ' + (budgetSavesPct >= 20 ? 'text-emerald-500' : 'text-amber-500') }, budgetSavesPct + '% of income'))
             ),
             budgetRemaining !== 0 && h('div', { className: 'text-center p-2 rounded-xl mt-2 ' + (budgetRemaining > 0 ? 'bg-emerald-50 border border-emerald-200' : 'bg-red-50 border border-red-200') },
               h('p', { className: 'text-xs font-bold ' + (budgetRemaining > 0 ? 'text-emerald-700' : 'text-red-700') }, budgetRemaining > 0 ? fmtMoney(budgetRemaining) + ' unassigned \u2014 add to savings!' : fmtMoney(Math.abs(budgetRemaining)) + ' OVER BUDGET!')
@@ -1426,11 +1427,11 @@ window.StemLab = window.StemLab || {
           ),
           // Savings Goal Calculator
           h('div', { className: glassCard + ' space-y-3' },
-            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, '\uD83C\uDFE6 Savings Goal Calculator'),
+            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, __alloT('stem.lifeskills.savings_goal_calculator', '\uD83C\uDFE6 Savings Goal Calculator')),
             h('div', { className: 'grid grid-cols-3 gap-2' },
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Goal Amount'), h('input', { type: 'number', step: '1000', value: savingsGoal, onChange: function(e) { upd('savingsGoal', Math.max(0, parseInt(e.target.value) || 0)); checkBadge('saver'); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' })),
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Monthly Savings'), h('input', { type: 'number', step: '25', value: savingsMonthly, onChange: function(e) { upd('savingsMonthly', Math.max(0, parseInt(e.target.value) || 0)); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' })),
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Interest Rate (%)'), h('input', { type: 'number', step: '0.5', value: savingsRate, onChange: function(e) { upd('savingsRate', Math.max(0, parseFloat(e.target.value) || 0)); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' }))
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, __alloT('stem.lifeskills.goal_amount', 'Goal Amount')), h('input', { type: 'number', step: '1000', value: savingsGoal, onChange: function(e) { upd('savingsGoal', Math.max(0, parseInt(e.target.value) || 0)); checkBadge('saver'); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' })),
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, __alloT('stem.lifeskills.monthly_savings', 'Monthly Savings')), h('input', { type: 'number', step: '25', value: savingsMonthly, onChange: function(e) { upd('savingsMonthly', Math.max(0, parseInt(e.target.value) || 0)); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' })),
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, __alloT('stem.lifeskills.interest_rate', 'Interest Rate (%)')), h('input', { type: 'number', step: '0.5', value: savingsRate, onChange: function(e) { upd('savingsRate', Math.max(0, parseFloat(e.target.value) || 0)); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' }))
             ),
             monthsToGoal > 0 && monthsToGoal < 600 && h('div', { className: 'text-center p-3 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl' },
               h('p', { className: 'text-lg font-bold text-emerald-700' }, Math.floor(monthsToGoal / 12) + ' years, ' + (monthsToGoal % 12) + ' months'),
@@ -1449,15 +1450,15 @@ window.StemLab = window.StemLab || {
             else if (iq.needsPct > 60) state = 'stretched';
             else state = 'balanced';
             var sm = {
-              balanced:       { label: '\uD83D\uDFE2 Balanced budget', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: '50/30/20 sustainable.' },
-              stretched:      { label: '\uD83D\uDFE1 Stretched (needs >60%)', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'High fixed costs.' },
-              noSavings:      { label: '\u26A0\uFE0F No savings (<10%)', color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: 'Paycheck-to-paycheck risk.' },
-              overspending:   { label: '\uD83D\uDEA8 Over-allocated (>110%)', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Debt-financed.' },
-              underAllocated: { label: '\uD83E\uDD14 Under-allocated (<90%)', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Surplus uncategorized.' }
+              balanced:       { label: __alloT('stem.lifeskills.balanced_budget', '\uD83D\uDFE2 Balanced budget'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.lifeskills.50_30_20_sustainable', '50/30/20 sustainable.') },
+              stretched:      { label: __alloT('stem.lifeskills.stretched_needs_60', '\uD83D\uDFE1 Stretched (needs >60%)'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.lifeskills.high_fixed_costs', 'High fixed costs.') },
+              noSavings:      { label: __alloT('stem.lifeskills.no_savings_10', '\u26A0\uFE0F No savings (<10%)'), color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: __alloT('stem.lifeskills.paycheck_to_paycheck_risk', 'Paycheck-to-paycheck risk.') },
+              overspending:   { label: __alloT('stem.lifeskills.over_allocated_110', '\uD83D\uDEA8 Over-allocated (>110%)'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Debt-financed.' },
+              underAllocated: { label: __alloT('stem.lifeskills.under_allocated_90', '\uD83E\uDD14 Under-allocated (<90%)'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: __alloT('stem.lifeskills.surplus_uncategorized', 'Surplus uncategorized.') }
             }[state];
             return h('div', { className: glassCard + ' mt-3 space-y-3' },
-              h('h4', { className: 'text-sm font-bold text-emerald-700' }, '\uD83C\uDFAF Budget allocation discovery'),
-              h('p', { className: 'text-[11px] text-slate-600' }, '5 sliders + SVG stacked bar. 5-state classification. No score, no reveal.'),
+              h('h4', { className: 'text-sm font-bold text-emerald-700' }, __alloT('stem.lifeskills.budget_allocation_discovery', '\uD83C\uDFAF Budget allocation discovery')),
+              h('p', { className: 'text-[11px] text-slate-600' }, __alloT('stem.lifeskills.5_sliders_svg_stacked_bar_5_state_clas', '5 sliders + SVG stacked bar. 5-state classification. No score, no reveal.')),
               h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
                 h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
                 h('div', { className: 'text-[11px] text-slate-700 mt-1' }, sm.desc),
@@ -1470,7 +1471,7 @@ window.StemLab = window.StemLab || {
                   h('rect', { x: 10 + Math.min(300, iq.needsPct * 3), y: 20, width: Math.max(0, Math.min(300 - iq.needsPct * 3, iq.wantsPct * 3)), height: 25, fill: '#f59e0b' }),
                   h('rect', { x: 10 + Math.min(300, (iq.needsPct + iq.wantsPct) * 3), y: 20, width: Math.max(0, Math.min(300 - (iq.needsPct + iq.wantsPct) * 3, iq.savesPct * 3)), height: 25, fill: '#059669' }),
                   h('line', { x1: 160, y1: 15, x2: 160, y2: 50, stroke: '#475569', strokeWidth: 1, strokeDasharray: '3 3' }),
-                  h('text', { x: 160, y: 60, fontSize: 9, fill: '#475569', textAnchor: 'middle' }, '50% reference')
+                  h('text', { x: 160, y: 60, fontSize: 9, fill: '#475569', textAnchor: 'middle' }, __alloT('stem.lifeskills.50_reference', '50% reference'))
                 )
               ),
               h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
@@ -1487,22 +1488,22 @@ window.StemLab = window.StemLab || {
                 })
               ),
               h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ i: iq.income, n: iq.needsPct, w: iq.wantsPct, s: iq.savesPct, t: total, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '\uD83D\uDCCB Log'),
-                h('button', { onClick: function() { setIQ({ income: 4000, needsPct: 50, wantsPct: 30, savesPct: 20, monthlySave: 500, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '\u21BA Reset')
+                h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ i: iq.income, n: iq.needsPct, w: iq.wantsPct, s: iq.savesPct, t: total, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.lifeskills.log', '\uD83D\uDCCB Log')),
+                h('button', { onClick: function() { setIQ({ income: 4000, needsPct: 50, wantsPct: 30, savesPct: 20, monthlySave: 500, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.lifeskills.reset', '\u21BA Reset'))
               ),
-              h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: At what income does 50/30/20 become hard?',
+              h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.lifeskills.hypothesis_at_what_income_does_50_30_2', 'Hypothesis: At what income does 50/30/20 become hard?'),
                 className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
-              !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '\uD83E\uDD14 Stuck \u2014 show open prompts'),
+              !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.lifeskills.stuck_show_open_prompts', '\uD83E\uDD14 Stuck \u2014 show open prompts')),
               iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700' },
                 h('ul', { className: 'list-disc pl-5 space-y-1' },
-                  h('li', null, 'Are there other budget heuristics besides 50/30/20?'),
-                  h('li', null, 'What if needs > 70% \u2014 is the 50/30/20 rule applicable?'))),
+                  h('li', null, __alloT('stem.lifeskills.are_there_other_budget_heuristics_besi', 'Are there other budget heuristics besides 50/30/20?')),
+                  h('li', null, __alloT('stem.lifeskills.what_if_needs_70_is_the_50_30_20_rule_', 'What if needs > 70% \u2014 is the 50/30/20 rule applicable?')))),
               h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
                 h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
-                'I understand \u2014 explain'),
-              iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how income level affects budget feasibility.',
+                __alloT('stem.lifeskills.i_understand_explain', 'I understand \u2014 explain')),
+              iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.lifeskills.explain_how_income_level_affects_budge', 'Explain how income level affects budget feasibility.'),
                 className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
-              h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 5-state budget marker; SVG stacked bar; no allocation score \u2014 by design.')
+              h('div', { className: 'text-[10px] italic text-slate-500' }, __alloT('stem.lifeskills.design_note_discrete_5_state_budget_ma', 'Design note: discrete 5-state budget marker; SVG stacked bar; no allocation score \u2014 by design.'))
             );
           })()
         ),
@@ -1510,13 +1511,13 @@ window.StemLab = window.StemLab || {
         // ═══ CREDIT TAB ═══
         tab === 'credit' && h('div', { className: 'space-y-4' },
           h('div', { className: glassCard },
-            h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\uD83D\uDCB3 Credit & Loans'),
+            h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, __alloT('stem.lifeskills.credit_loans', '\uD83D\uDCB3 Credit & Loans')),
             h('p', { className: 'text-xs text-slate-600' }, gradeText(gradeBand, 'Borrowing money costs extra \u2014 that\'s called interest!', 'Learn what makes a good credit score and how loans work.', 'Explore FICO score factors, compound interest, and loan amortization.', 'Credit optimization, compound interest modeling, amortization schedules, and debt cost analysis.'))
           ),
           // FICO Score Builder
           h('div', { className: glassCard + ' space-y-3' },
-            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, '\uD83D\uDCCA FICO Score Builder'),
-            h('p', { className: 'text-xs text-slate-600 mb-2' }, 'Rate each factor 1-5 to see how your score changes:'),
+            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, __alloT('stem.lifeskills.fico_score_builder', '\uD83D\uDCCA FICO Score Builder')),
+            h('p', { className: 'text-xs text-slate-600 mb-2' }, __alloT('stem.lifeskills.rate_each_factor_1_5_to_see_how_your_s', 'Rate each factor 1-5 to see how your score changes:')),
             CREDIT_FACTORS.map(function(f) {
               var rating = creditRatings[f.name] || 3;
               var labels = ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
@@ -1561,42 +1562,42 @@ window.StemLab = window.StemLab || {
           ),
           // Compound Interest Calculator
           h('div', { className: glassCard + ' space-y-3' },
-            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, '\uD83D\uDCC8 Compound Interest \u2014 "The 8th Wonder of the World"'),
+            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, __alloT('stem.lifeskills.compound_interest_the_8th_wonder_of_th', '\uD83D\uDCC8 Compound Interest \u2014 "The 8th Wonder of the World"')),
             h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Starting $'), h('input', { type: 'number', step: '500', value: ciPrincipal, onChange: function(e) { upd('ciPrincipal', Math.max(0, parseInt(e.target.value) || 0)); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' })),
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Monthly Add'), h('input', { type: 'number', step: '25', value: ciMonthly, onChange: function(e) { upd('ciMonthly', Math.max(0, parseInt(e.target.value) || 0)); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' })),
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Rate (%)'), h('input', { type: 'number', step: '0.5', value: ciRate, onChange: function(e) { upd('ciRate', Math.max(0, parseFloat(e.target.value) || 0)); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' })),
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Years'), h('input', { type: 'number', step: '1', value: ciYears, onChange: function(e) { upd('ciYears', Math.max(1, Math.min(50, parseInt(e.target.value) || 1))); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' }))
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, __alloT('stem.lifeskills.starting', 'Starting $')), h('input', { type: 'number', step: '500', value: ciPrincipal, onChange: function(e) { upd('ciPrincipal', Math.max(0, parseInt(e.target.value) || 0)); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' })),
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, __alloT('stem.lifeskills.monthly_add', 'Monthly Add')), h('input', { type: 'number', step: '25', value: ciMonthly, onChange: function(e) { upd('ciMonthly', Math.max(0, parseInt(e.target.value) || 0)); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' })),
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, __alloT('stem.lifeskills.rate_2', 'Rate (%)')), h('input', { type: 'number', step: '0.5', value: ciRate, onChange: function(e) { upd('ciRate', Math.max(0, parseFloat(e.target.value) || 0)); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' })),
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, __alloT('stem.lifeskills.years', 'Years')), h('input', { type: 'number', step: '1', value: ciYears, onChange: function(e) { upd('ciYears', Math.max(1, Math.min(50, parseInt(e.target.value) || 1))); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' }))
             ),
             h('div', { className: 'grid grid-cols-3 gap-2 mt-2' },
-              h('div', { className: 'text-center p-2 rounded-xl bg-blue-50' }, h('p', { className: 'text-[11px] font-bold text-blue-500 uppercase' }, 'You Put In'), h('p', { className: 'text-sm font-bold text-blue-700' }, fmtMoney(ciResult.contributed))),
-              h('div', { className: 'text-center p-2 rounded-xl bg-emerald-50' }, h('p', { className: 'text-[11px] font-bold text-emerald-500 uppercase' }, 'Interest Earned'), h('p', { className: 'text-sm font-bold text-emerald-700' }, fmtMoney(ciResult.interest))),
-              h('div', { className: 'text-center p-2 rounded-xl bg-gradient-to-r from-blue-50 to-emerald-50 border-2 border-emerald-300' }, h('p', { className: 'text-[11px] font-bold text-teal-600 uppercase' }, 'Total Value'), h('p', { className: 'text-lg font-bold text-teal-700' }, fmtMoney(ciResult.balance)))
+              h('div', { className: 'text-center p-2 rounded-xl bg-blue-50' }, h('p', { className: 'text-[11px] font-bold text-blue-500 uppercase' }, __alloT('stem.lifeskills.you_put_in', 'You Put In')), h('p', { className: 'text-sm font-bold text-blue-700' }, fmtMoney(ciResult.contributed))),
+              h('div', { className: 'text-center p-2 rounded-xl bg-emerald-50' }, h('p', { className: 'text-[11px] font-bold text-emerald-500 uppercase' }, __alloT('stem.lifeskills.interest_earned', 'Interest Earned')), h('p', { className: 'text-sm font-bold text-emerald-700' }, fmtMoney(ciResult.interest))),
+              h('div', { className: 'text-center p-2 rounded-xl bg-gradient-to-r from-blue-50 to-emerald-50 border-2 border-emerald-300' }, h('p', { className: 'text-[11px] font-bold text-teal-600 uppercase' }, __alloT('stem.lifeskills.total_value', 'Total Value')), h('p', { className: 'text-lg font-bold text-teal-700' }, fmtMoney(ciResult.balance)))
             ),
             // Visual bar
             ciResult.balance > 0 && h('div', { className: 'h-5 rounded-full overflow-hidden flex mt-2' },
-              h('div', { style: { width: Math.round(ciResult.contributed / ciResult.balance * 100) + '%', background: '#3b82f6' }, className: 'h-full flex items-center justify-center text-[11px] text-white font-bold' }, 'Contributed'),
-              h('div', { style: { width: Math.round(ciResult.interest / ciResult.balance * 100) + '%', background: '#059669' }, className: 'h-full flex items-center justify-center text-[11px] text-white font-bold' }, 'Interest')
+              h('div', { style: { width: Math.round(ciResult.contributed / ciResult.balance * 100) + '%', background: '#3b82f6' }, className: 'h-full flex items-center justify-center text-[11px] text-white font-bold' }, __alloT('stem.lifeskills.contributed', 'Contributed')),
+              h('div', { style: { width: Math.round(ciResult.interest / ciResult.balance * 100) + '%', background: '#059669' }, className: 'h-full flex items-center justify-center text-[11px] text-white font-bold' }, __alloT('stem.lifeskills.interest', 'Interest'))
             )
           ),
           // Loan Calculator
           h('div', { className: glassCard + ' space-y-3' },
-            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, '\uD83C\uDFE0 Loan Payment Calculator'),
+            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, __alloT('stem.lifeskills.loan_payment_calculator', '\uD83C\uDFE0 Loan Payment Calculator')),
             h('div', { className: 'grid grid-cols-3 gap-2' },
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Loan Amount'), h('input', { type: 'number', step: '1000', value: loanPrincipal, onChange: function(e) { upd('loanPrincipal', Math.max(0, parseInt(e.target.value) || 0)); checkBadge('loanCalc'); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' })),
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'APR (%)'), h('input', { type: 'number', step: '0.25', value: loanRate, onChange: function(e) { upd('loanRate', Math.max(0, parseFloat(e.target.value) || 0)); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' })),
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Years'), h('select', { value: loanTerm, onChange: function(e) { upd('loanTerm', parseInt(e.target.value)); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' },
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, __alloT('stem.lifeskills.loan_amount', 'Loan Amount')), h('input', { type: 'number', step: '1000', value: loanPrincipal, onChange: function(e) { upd('loanPrincipal', Math.max(0, parseInt(e.target.value) || 0)); checkBadge('loanCalc'); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' })),
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, __alloT('stem.lifeskills.apr', 'APR (%)')), h('input', { type: 'number', step: '0.25', value: loanRate, onChange: function(e) { upd('loanRate', Math.max(0, parseFloat(e.target.value) || 0)); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' })),
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, __alloT('stem.lifeskills.years_2', 'Years')), h('select', { value: loanTerm, onChange: function(e) { upd('loanTerm', parseInt(e.target.value)); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' },
                 [1, 2, 3, 5, 7, 10, 15, 20, 30].map(function(y) { return h('option', { key: y, value: y }, y + ' years'); })
               ))
             ),
             h('div', { className: 'grid grid-cols-3 gap-2 mt-2' },
-              h('div', { className: 'text-center p-2 rounded-xl bg-blue-50' }, h('p', { className: 'text-[11px] font-bold text-blue-500 uppercase' }, 'Monthly Payment'), h('p', { className: 'text-lg font-bold text-blue-700' }, fmtMoney(loanResult.monthly))),
-              h('div', { className: 'text-center p-2 rounded-xl bg-red-50' }, h('p', { className: 'text-[11px] font-bold text-red-500 uppercase' }, 'Total Interest'), h('p', { className: 'text-lg font-bold text-red-600' }, fmtMoney(loanResult.totalInterest))),
-              h('div', { className: 'text-center p-2 rounded-xl bg-slate-100' }, h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, 'Total Paid'), h('p', { className: 'text-sm font-bold text-slate-700' }, fmtMoney(loanResult.totalPaid)))
+              h('div', { className: 'text-center p-2 rounded-xl bg-blue-50' }, h('p', { className: 'text-[11px] font-bold text-blue-500 uppercase' }, __alloT('stem.lifeskills.monthly_payment', 'Monthly Payment')), h('p', { className: 'text-lg font-bold text-blue-700' }, fmtMoney(loanResult.monthly))),
+              h('div', { className: 'text-center p-2 rounded-xl bg-red-50' }, h('p', { className: 'text-[11px] font-bold text-red-500 uppercase' }, __alloT('stem.lifeskills.total_interest', 'Total Interest')), h('p', { className: 'text-lg font-bold text-red-600' }, fmtMoney(loanResult.totalInterest))),
+              h('div', { className: 'text-center p-2 rounded-xl bg-slate-100' }, h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, __alloT('stem.lifeskills.total_paid', 'Total Paid')), h('p', { className: 'text-sm font-bold text-slate-700' }, fmtMoney(loanResult.totalPaid)))
             ),
             loanResult.totalInterest > 0 && h('div', { className: 'h-4 rounded-full overflow-hidden flex mt-2' },
-              h('div', { style: { width: Math.round(loanPrincipal / loanResult.totalPaid * 100) + '%', background: '#3b82f6' }, className: 'h-full flex items-center justify-center text-[11px] text-white font-bold' }, 'Principal'),
-              h('div', { style: { width: Math.round(loanResult.totalInterest / loanResult.totalPaid * 100) + '%', background: '#ef4444' }, className: 'h-full flex items-center justify-center text-[11px] text-white font-bold' }, 'Interest')
+              h('div', { style: { width: Math.round(loanPrincipal / loanResult.totalPaid * 100) + '%', background: '#3b82f6' }, className: 'h-full flex items-center justify-center text-[11px] text-white font-bold' }, __alloT('stem.lifeskills.principal', 'Principal')),
+              h('div', { style: { width: Math.round(loanResult.totalInterest / loanResult.totalPaid * 100) + '%', background: '#ef4444' }, className: 'h-full flex items-center justify-center text-[11px] text-white font-bold' }, __alloT('stem.lifeskills.interest_2', 'Interest'))
             ),
             (gradeBand === '6-8' || gradeBand === '9-12') && h('p', { className: 'text-[11px] text-slate-600 mt-1' }, '\uD83D\uDCA1 That ' + loanRate + '% rate costs you ' + fmtMoney(loanResult.totalInterest) + ' extra \u2014 a ' + (loanPrincipal > 0 ? Math.round(loanResult.totalInterest / loanPrincipal * 100) : 0) + '% markup on the loan.')
           )
@@ -1605,12 +1606,12 @@ window.StemLab = window.StemLab || {
         // ═══ COOKING TAB ═══
         tab === 'cooking' && h('div', { className: 'space-y-4' },
           h('div', { className: glassCard },
-            h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\uD83C\uDF73 Cooking & Food Safety'),
+            h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, __alloT('stem.lifeskills.cooking_food_safety', '\uD83C\uDF73 Cooking & Food Safety')),
             h('p', { className: 'text-xs text-slate-600' }, gradeText(gradeBand, 'Cooking is science you can eat!', 'Learn food safety temps, scale recipes, and read nutrition labels.', 'Kitchen STEM: food safety microbiology, recipe ratios, and nutrition label analysis.', 'Food science: safe internal temps, danger zone microbiology, recipe scaling algebra, and FDA nutrition label literacy.'))
           ),
           // Recipe Scaler
           h('div', { className: glassCard + ' space-y-3' },
-            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, '\uD83D\uDCCF Recipe Scaler'),
+            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, __alloT('stem.lifeskills.recipe_scaler', '\uD83D\uDCCF Recipe Scaler')),
             h('div', { className: 'flex gap-2 mb-2' },
               RECIPES.map(function(r, i) {
                 return h('button', { 'aria-label': 'Select recipe: ' + r.name, key: i, onClick: function() { updMulti({ cookRecipeIdx: i, cookScale: 1 }); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold ' + (cookRecipeIdx % RECIPES.length === i ? 'bg-teal-700 text-white' : 'bg-white border border-slate-400') }, r.icon + ' ' + r.name);
@@ -1625,7 +1626,7 @@ window.StemLab = window.StemLab || {
             slider('Servings', cookScale, 0.25, 4, 0.25, 'cookScale', function(v) { return Math.round(cookRecipe.servings * v) + ' servings (' + v + 'x)'; }),
             h('div', { className: 'mt-2' },
               h('table', { className: 'w-full text-[11px]' },
-                h('caption', { className: 'sr-only' }, 'Servings'), h('thead', null, h('tr', { className: 'border-b border-slate-200' }, h('th', { scope: 'col', className: 'px-2 py-1 text-left' }, 'Ingredient'), h('th', { className: 'px-2 py-1 text-right' }, 'Original'), h('th', { className: 'px-2 py-1 text-right text-teal-600 font-bold' }, 'Scaled'))),
+                h('caption', { className: 'sr-only' }, __alloT('stem.lifeskills.servings', 'Servings')), h('thead', null, h('tr', { className: 'border-b border-slate-200' }, h('th', { scope: 'col', className: 'px-2 py-1 text-left' }, __alloT('stem.lifeskills.ingredient', 'Ingredient')), h('th', { className: 'px-2 py-1 text-right' }, __alloT('stem.lifeskills.original', 'Original')), h('th', { className: 'px-2 py-1 text-right text-teal-600 font-bold' }, __alloT('stem.lifeskills.scaled', 'Scaled')))),
                 h('tbody', null,
                   cookRecipe.ingredients.map(function(ing, i) {
                     var scaled = ing.amount * cookScale;
@@ -1643,7 +1644,7 @@ window.StemLab = window.StemLab || {
           ),
           // Nutrition Label Quiz
           h('div', { className: glassCard + ' space-y-3' },
-            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, '\uD83C\uDF4E Nutrition Label Quiz'),
+            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, __alloT('stem.lifeskills.nutrition_label_quiz', '\uD83C\uDF4E Nutrition Label Quiz')),
             h('p', { className: 'text-xs text-slate-600' }, 'Score: ' + nutritionScore + '/' + NUTRITION_LABELS.length),
             h('div', { className: 'bg-white rounded-xl p-3 border border-slate-400 font-mono text-[11px] space-y-0.5' },
               h('p', { className: 'text-xs font-bold text-center border-b border-slate-300 pb-1' }, '\uD83C\uDF4F ' + nutritionCurrent.title),
@@ -1664,20 +1665,20 @@ window.StemLab = window.StemLab || {
                   stemBeep(correct);
                   updMulti({ nutritionFb: correct ? '\u2705 Correct! ' + nutritionCurrent.explain : '\u274C Answer: ' + nutritionCurrent.answer + '. ' + nutritionCurrent.explain, nutritionScore: nutritionScore + (correct ? 1 : 0) });
                 }
-              }, placeholder: 'Your answer...', className: 'flex-1 px-3 py-2 border border-slate-400 rounded-xl text-sm font-mono' }),
-              h('button', { 'aria-label': 'Check', onClick: function() {
+              }, placeholder: __alloT('stem.lifeskills.your_answer', 'Your answer...'), className: 'flex-1 px-3 py-2 border border-slate-400 rounded-xl text-sm font-mono' }),
+              h('button', { 'aria-label': __alloT('stem.lifeskills.check', 'Check'), onClick: function() {
                 if (!nutritionAnswer.trim()) return;
                 var correct = nutritionAnswer.trim().replace(/[^0-9.]/g, '') === nutritionCurrent.answer;
                 stemBeep(correct);
                 updMulti({ nutritionFb: correct ? '\u2705 Correct! ' + nutritionCurrent.explain : '\u274C Answer: ' + nutritionCurrent.answer + '. ' + nutritionCurrent.explain, nutritionScore: nutritionScore + (correct ? 1 : 0) });
-              }, className: 'px-4 py-2 text-xs font-bold bg-teal-700 text-white rounded-xl' }, 'Check')
+              }, className: 'px-4 py-2 text-xs font-bold bg-teal-700 text-white rounded-xl' }, __alloT('stem.lifeskills.check_2', 'Check'))
             ),
             nutritionFb && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (nutritionFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700') }, nutritionFb),
-            h('button', { 'aria-label': 'Next Label', onClick: function() { updMulti({ nutritionIdx: nutritionIdx + 1, nutritionAnswer: '', nutritionFb: '' }); }, className: 'px-3 py-1.5 text-[11px] font-bold bg-slate-100 text-slate-600 rounded-xl' }, 'Next Label \u27A1')
+            h('button', { 'aria-label': __alloT('stem.lifeskills.next_label', 'Next Label'), onClick: function() { updMulti({ nutritionIdx: nutritionIdx + 1, nutritionAnswer: '', nutritionFb: '' }); }, className: 'px-3 py-1.5 text-[11px] font-bold bg-slate-100 text-slate-600 rounded-xl' }, __alloT('stem.lifeskills.next_label_2', 'Next Label \u27A1'))
           ),
           // Food Safety Temps
           h('div', { className: glassCard + ' space-y-3' },
-            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, '\uD83C\uDF21\uFE0F Safe Internal Temperatures'),
+            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, __alloT('stem.lifeskills.safe_internal_temperatures', '\uD83C\uDF21\uFE0F Safe Internal Temperatures')),
             h('p', { className: 'text-xs text-slate-600' }, 'Food safety score: ' + foodSafetyScore),
             h('div', { className: 'space-y-1' },
               FOOD_SAFETY.map(function(f) {
@@ -1706,7 +1707,7 @@ window.StemLab = window.StemLab || {
                 })
               ),
               d.foodSafetyFb && h('p', { className: 'text-[11px] font-bold mt-2 p-2 rounded-lg ' + (d.foodSafetyFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700') }, d.foodSafetyFb),
-              h('button', { 'aria-label': 'Next Food', onClick: function() { updMulti({ foodSafetyQ: foodSafetyQ + 1, foodSafetyFb: null }); }, className: 'mt-2 px-3 py-1.5 text-[11px] font-bold bg-amber-100 text-amber-700 rounded-xl' }, 'Next Food \u27A1')
+              h('button', { 'aria-label': __alloT('stem.lifeskills.next_food', 'Next Food'), onClick: function() { updMulti({ foodSafetyQ: foodSafetyQ + 1, foodSafetyFb: null }); }, className: 'mt-2 px-3 py-1.5 text-[11px] font-bold bg-amber-100 text-amber-700 rounded-xl' }, __alloT('stem.lifeskills.next_food_2', 'Next Food \u27A1'))
             )
           )
         ),
@@ -1714,7 +1715,7 @@ window.StemLab = window.StemLab || {
         // ═══ CHALLENGE TAB ═══
         tab === 'challenge' && h('div', { className: 'space-y-4' },
           h('div', { className: glassCard },
-            h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\uD83C\uDFAF Life Skills Challenge'),
+            h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, __alloT('stem.lifeskills.life_skills_challenge', '\uD83C\uDFAF Life Skills Challenge')),
             h('div', { className: 'flex gap-2 mb-3' },
               [1, 2, 3].map(function(t) {
                 var labels = { 1: 'Easy', 2: 'Medium', 3: 'Hard' };
@@ -1730,11 +1731,11 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: glassCard + ' space-y-3' },
             chalQ && h('p', { className: 'text-sm font-medium text-slate-700' }, chalQ.q),
-            h('input', { type: 'text', value: chalAnswer, onChange: function(e) { upd('chalAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') chalCheck(); }, placeholder: 'Type your answer...', className: 'w-full px-4 py-2 border border-slate-400 rounded-xl text-sm focus:border-teal-400', 'aria-label': 'Answer' }),
+            h('input', { type: 'text', value: chalAnswer, onChange: function(e) { upd('chalAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') chalCheck(); }, placeholder: __alloT('stem.lifeskills.type_your_answer', 'Type your answer...'), className: 'w-full px-4 py-2 border border-slate-400 rounded-xl text-sm focus:border-teal-400', 'aria-label': __alloT('stem.lifeskills.answer', 'Answer') }),
             h('div', { className: 'flex gap-2' },
-              h('button', { onClick: chalCheck, className: 'px-4 py-2 text-sm font-bold bg-teal-700 hover:bg-teal-800 active:scale-95 transition-all text-white rounded-xl' }, 'Check'),
-              h('button', { onClick: function() { upd('chalFeedback', '\uD83D\uDCA1 ' + (chalQ.h || 'No hint')); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-600 rounded-xl' }, '\uD83D\uDCA1 Hint'),
-              h('button', { onClick: function() { updMulti({ chalIdx: chalIdx + 1, chalFeedback: '', chalAnswer: '' }); }, className: 'px-3 py-2 text-sm font-bold bg-slate-100 text-slate-600 rounded-xl' }, 'Skip \u27A1'),
+              h('button', { onClick: chalCheck, className: 'px-4 py-2 text-sm font-bold bg-teal-700 hover:bg-teal-800 active:scale-95 transition-all text-white rounded-xl' }, __alloT('stem.lifeskills.check_3', 'Check')),
+              h('button', { onClick: function() { upd('chalFeedback', '\uD83D\uDCA1 ' + (chalQ.h || 'No hint')); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-600 rounded-xl' }, __alloT('stem.lifeskills.hint', '\uD83D\uDCA1 Hint')),
+              h('button', { onClick: function() { updMulti({ chalIdx: chalIdx + 1, chalFeedback: '', chalAnswer: '' }); }, className: 'px-3 py-2 text-sm font-bold bg-slate-100 text-slate-600 rounded-xl' }, __alloT('stem.lifeskills.skip', 'Skip \u27A1')),
               callGemini && h('button', { onClick: function() {
                 upd('chalAILoading', true);
                 var tierLabel = chalTier === 1 ? 'easy' : chalTier === 2 ? 'medium' : 'hard';
@@ -1750,41 +1751,41 @@ window.StemLab = window.StemLab || {
         // ═══ BATTLE TAB ═══
         tab === 'battle' && h('div', { className: 'space-y-4' },
           h('div', { className: glassCard },
-            h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\u2694\uFE0F Adulting Defense'),
-            h('p', { className: 'text-xs text-slate-600' }, 'Fight ignorance with knowledge! Answer life skills questions to defeat the Adulting Boss.')
+            h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, __alloT('stem.lifeskills.adulting_defense', '\u2694\uFE0F Adulting Defense')),
+            h('p', { className: 'text-xs text-slate-600' }, __alloT('stem.lifeskills.fight_ignorance_with_knowledge_answer_', 'Fight ignorance with knowledge! Answer life skills questions to defeat the Adulting Boss.'))
           ),
           !battleActive ? h('div', { className: glassCard + ' text-center space-y-3' },
             h('div', { className: 'text-5xl mb-2' }, '\uD83E\uDDED'),
-            h('p', { className: 'text-sm font-bold text-slate-700' }, 'The Adulting Boss challenges you!'),
+            h('p', { className: 'text-sm font-bold text-slate-700' }, __alloT('stem.lifeskills.the_adulting_boss_challenges_you', 'The Adulting Boss challenges you!')),
             h('div', { className: 'flex gap-2 justify-center' },
-              h('button', { onClick: function() { startBattle(false); }, className: 'px-4 py-2 text-sm font-bold bg-teal-700 hover:bg-teal-800 active:scale-95 transition-all text-white rounded-xl' }, '\u2694\uFE0F Start Battle'),
-              callGemini && h('button', { 'aria-label': 'AI Battle', onClick: function() { startBattle(true); }, className: 'px-4 py-2 text-sm font-bold bg-purple-600 text-white rounded-xl' }, '\uD83E\uDDE0 AI Battle')
+              h('button', { onClick: function() { startBattle(false); }, className: 'px-4 py-2 text-sm font-bold bg-teal-700 hover:bg-teal-800 active:scale-95 transition-all text-white rounded-xl' }, __alloT('stem.lifeskills.start_battle', '\u2694\uFE0F Start Battle')),
+              callGemini && h('button', { 'aria-label': __alloT('stem.lifeskills.ai_battle', 'AI Battle'), onClick: function() { startBattle(true); }, className: 'px-4 py-2 text-sm font-bold bg-purple-600 text-white rounded-xl' }, __alloT('stem.lifeskills.ai_battle_2', '\uD83E\uDDE0 AI Battle'))
             )
           ) : h('div', { className: glassCard },
             h('div', { className: 'space-y-2 mb-4' },
-              h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'text-xs font-bold text-emerald-600 w-16' }, '\uD83D\uDEE1\uFE0F You'), h('div', { className: 'flex-1 h-4 bg-slate-200 rounded-full overflow-hidden' }, h('div', { className: 'h-full rounded-full transition-all', style: { width: battlePlayerHP + '%', background: battlePlayerHP > 50 ? '#22c55e' : '#f59e0b' } })), h('span', { className: 'text-xs font-mono font-bold w-10 text-right' }, battlePlayerHP + '%')),
-              h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'text-xs font-bold text-red-600 w-16' }, '\uD83D\uDC7E Boss'), h('div', { className: 'flex-1 h-4 bg-slate-200 rounded-full overflow-hidden' }, h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'h-full bg-red-500 rounded-full transition-all', style: { width: battleEnemyHP + '%' } })), h('span', { className: 'text-xs font-mono font-bold w-10 text-right' }, battleEnemyHP + '%'))
+              h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'text-xs font-bold text-emerald-600 w-16' }, __alloT('stem.lifeskills.you', '\uD83D\uDEE1\uFE0F You')), h('div', { className: 'flex-1 h-4 bg-slate-200 rounded-full overflow-hidden' }, h('div', { className: 'h-full rounded-full transition-all', style: { width: battlePlayerHP + '%', background: battlePlayerHP > 50 ? '#22c55e' : '#f59e0b' } })), h('span', { className: 'text-xs font-mono font-bold w-10 text-right' }, battlePlayerHP + '%')),
+              h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'text-xs font-bold text-red-600 w-16' }, __alloT('stem.lifeskills.boss', '\uD83D\uDC7E Boss')), h('div', { className: 'flex-1 h-4 bg-slate-200 rounded-full overflow-hidden' }, h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'h-full bg-red-500 rounded-full transition-all', style: { width: battleEnemyHP + '%' } })), h('span', { className: 'text-xs font-mono font-bold w-10 text-right' }, battleEnemyHP + '%'))
             ),
             battleOver ? h('div', { className: 'text-center py-4 space-y-2' },
               h('div', { className: 'text-4xl' }, battleWon ? '\uD83C\uDFC6' : '\uD83D\uDC7E'),
               h('p', { className: 'text-lg font-bold ' + (battleWon ? 'text-emerald-700' : 'text-red-700') }, battleWon ? 'You adulted successfully!' : 'The boss wins this round!'),
               battleFeedback && h('p', { className: 'text-xs ' + (battleFeedback[0] === '\u2705' ? 'text-emerald-600' : 'text-red-600') }, battleFeedback),
               h('div', { className: 'flex gap-2 justify-center mt-2' },
-                h('button', { onClick: function() { startBattle(false); }, className: 'px-4 py-2 text-sm font-bold bg-teal-700 hover:bg-teal-800 active:scale-95 transition-all text-white rounded-xl' }, '\u21BA Again'),
-                callGemini && h('button', { 'aria-label': 'AI Rematch', onClick: function() { startBattle(true); }, className: 'px-4 py-2 text-sm font-bold bg-purple-600 text-white rounded-xl' }, '\u2728 AI Rematch')
+                h('button', { onClick: function() { startBattle(false); }, className: 'px-4 py-2 text-sm font-bold bg-teal-700 hover:bg-teal-800 active:scale-95 transition-all text-white rounded-xl' }, __alloT('stem.lifeskills.again', '\u21BA Again')),
+                callGemini && h('button', { 'aria-label': __alloT('stem.lifeskills.ai_rematch', 'AI Rematch'), onClick: function() { startBattle(true); }, className: 'px-4 py-2 text-sm font-bold bg-purple-600 text-white rounded-xl' }, __alloT('stem.lifeskills.ai_rematch_2', '\u2728 AI Rematch'))
               )
             ) : h('div', { className: 'space-y-3' },
               (function() {
-                if (battleUseAI && d.battleAILoading) return h('div', { className: 'text-center py-4' }, h('div', { className: 'text-2xl animate-pulse' }, '\uD83E\uDDE0'), h('p', { className: 'text-xs text-purple-600 font-bold' }, 'AI generating...'));
+                if (battleUseAI && d.battleAILoading) return h('div', { className: 'text-center py-4' }, h('div', { className: 'text-2xl animate-pulse' }, '\uD83E\uDDE0'), h('p', { className: 'text-xs text-purple-600 font-bold' }, __alloT('stem.lifeskills.ai_generating', 'AI generating...')));
                 var q = getCurrentBattleQ();
                 if (!q) return null;
                 return h('div', { className: 'space-y-3' },
-                  battleUseAI && h('span', { className: 'px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[11px] font-bold rounded-full' }, '\uD83E\uDDE0 AI'),
+                  battleUseAI && h('span', { className: 'px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[11px] font-bold rounded-full' }, __alloT('stem.lifeskills.ai', '\uD83E\uDDE0 AI')),
                   h('p', { className: 'text-sm font-medium text-slate-700' }, q.q),
                   h('input', { type: 'text', value: battleAnswer, onChange: function(e) { upd('battleAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') battleAttack(); }, placeholder: 'Answer...', className: 'w-full px-4 py-2 border border-slate-400 rounded-xl text-sm font-mono focus:border-red-400' }),
                   h('div', { className: 'flex gap-2' },
-                    h('button', { onClick: battleAttack, className: 'px-4 py-2 text-sm font-bold bg-red-600 hover:bg-red-700 active:scale-95 transition-all text-white rounded-xl' }, '\u2694\uFE0F Attack!'),
-                    h('button', { 'aria-label': 'Hint', onClick: function() { upd('battleFeedback', '\uD83D\uDCA1 ' + (q.h || 'No hint')); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-600 rounded-xl' }, '\uD83D\uDCA1 Hint')
+                    h('button', { onClick: battleAttack, className: 'px-4 py-2 text-sm font-bold bg-red-600 hover:bg-red-700 active:scale-95 transition-all text-white rounded-xl' }, __alloT('stem.lifeskills.attack', '\u2694\uFE0F Attack!')),
+                    h('button', { 'aria-label': __alloT('stem.lifeskills.hint_2', 'Hint'), onClick: function() { upd('battleFeedback', '\uD83D\uDCA1 ' + (q.h || 'No hint')); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-600 rounded-xl' }, __alloT('stem.lifeskills.hint_3', '\uD83D\uDCA1 Hint'))
                   ),
                   battleFeedback && h('p', { className: 'text-sm font-bold p-2 rounded-lg ' + (battleFeedback[0] === '\u2705' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700') }, battleFeedback)
                 );
@@ -1796,7 +1797,7 @@ window.StemLab = window.StemLab || {
         // ═══ LEARN TAB ═══
         tab === 'learn' && h('div', { className: 'space-y-4' },
           h('div', { className: glassCard },
-            h('h4', { className: 'text-sm font-bold text-slate-700 mb-3' }, '\uD83D\uDCDA Learn \u2014 Life Skills Concepts'),
+            h('h4', { className: 'text-sm font-bold text-slate-700 mb-3' }, __alloT('stem.lifeskills.learn_life_skills_concepts', '\uD83D\uDCDA Learn \u2014 Life Skills Concepts')),
             h('p', { className: 'text-xs text-slate-600 mb-4' }, 'Explore key topics adapted to your grade level (' + gradeBand + ').')
           ),
           LEARN_TOPICS.map(function(topic) {
@@ -1805,8 +1806,8 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'text-lg' }, topic.icon), h('h5', { className: 'text-sm font-bold text-slate-700' }, topic.title)),
               h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, content),
               h('div', { className: 'flex gap-2 pt-2 border-t border-slate-100' },
-                h('button', { 'aria-label': 'Try It', onClick: function() { markLearnRead(topic.title); updMulti({ tab: topic.tryIt }); }, className: 'px-3 py-1.5 text-[11px] font-bold bg-violet-50 text-violet-600 rounded-lg' }, '\uD83D\uDD2C Try It'),
-                callTTS && h('button', { 'aria-label': 'Read Aloud', onClick: function() { markLearnRead(topic.title); callTTS(content); }, className: 'px-3 py-1.5 text-[11px] font-bold bg-blue-50 text-blue-600 rounded-lg' }, '\uD83D\uDD0A Read Aloud')
+                h('button', { 'aria-label': __alloT('stem.lifeskills.try_it', 'Try It'), onClick: function() { markLearnRead(topic.title); updMulti({ tab: topic.tryIt }); }, className: 'px-3 py-1.5 text-[11px] font-bold bg-violet-50 text-violet-600 rounded-lg' }, __alloT('stem.lifeskills.try_it_2', '\uD83D\uDD2C Try It')),
+                callTTS && h('button', { 'aria-label': __alloT('stem.lifeskills.read_aloud', 'Read Aloud'), onClick: function() { markLearnRead(topic.title); callTTS(content); }, className: 'px-3 py-1.5 text-[11px] font-bold bg-blue-50 text-blue-600 rounded-lg' }, __alloT('stem.lifeskills.read_aloud_2', '\uD83D\uDD0A Read Aloud'))
               )
             );
           })
@@ -1820,7 +1821,7 @@ window.StemLab = window.StemLab || {
               var earned = d.badges && d.badges[b.id];
               return h('div', { key: b.id, className: 'flex items-center gap-2 p-2 rounded-lg ' + (earned ? 'bg-amber-50 border border-amber-200' : 'bg-slate-50 border border-slate-400 opacity-50') },
                 h('span', { className: 'text-lg' + (earned ? '' : ' grayscale') }, b.icon),
-                h('div', null, h('p', { className: 'text-[11px] font-bold ' + (earned ? 'text-amber-700' : 'text-slate-600') }, b.name), h('p', { className: 'text-[11px] text-slate-600' }, b.desc))
+                h('div', null, h('p', { className: 'text-[11px] font-bold ' + (earned ? 'text-amber-700' : 'text-slate-600') }, b.name), h('p', { className: 'text-[11px] text-slate-600' }, __alloT('stem.lifeskills.' + (b.id) + '_desc', b.desc)))
               );
             })
           )
@@ -1831,7 +1832,7 @@ window.StemLab = window.StemLab || {
 
         // Footer
         h('div', { className: 'text-center' },
-          h('p', { className: 'text-[11px] text-slate-600' }, 'Tax calculations are simplified estimates for educational purposes.')
+          h('p', { className: 'text-[11px] text-slate-600' }, __alloT('stem.lifeskills.tax_calculations_are_simplified_estima', 'Tax calculations are simplified estimates for educational purposes.'))
         )
       );
     }

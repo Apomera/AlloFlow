@@ -93,6 +93,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('companionPlant
       var setToolSnapshots = ctx.setToolSnapshots;
       var addToast = ctx.addToast;
       var t = ctx.t;
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var ArrowLeft = ctx.icons.ArrowLeft;
       var Calculator = ctx.icons.Calculator;
       var Sparkles = ctx.icons.Sparkles;
@@ -289,19 +290,19 @@ var d = (labToolData.companionPlanting) || {};
 
           var _EVENTS = [
 
-            { id: 'rain', emoji: '🌧️', title: 'Heavy Rain', desc: 'A downpour soaks the soil! Nitrogen leaches with runoff.', effects: { moisture: 40, nitrogenLevel: -5 }, lesson: 'Nutrient leaching: Heavy rain washes soluble nitrogen deeper into soil, away from plant roots. Cover crops and mulch help prevent this.' },
+            { id: 'rain', emoji: '🌧️', title: __alloT('stem.companionplanting.heavy_rain', 'Heavy Rain'), desc: __alloT('stem.companionplanting.a_downpour_soaks_the_soil_nitrogen_lea', 'A downpour soaks the soil! Nitrogen leaches with runoff.'), effects: { moisture: 40, nitrogenLevel: -5 }, lesson: 'Nutrient leaching: Heavy rain washes soluble nitrogen deeper into soil, away from plant roots. Cover crops and mulch help prevent this.' },
 
-            { id: 'aphids', emoji: '🐛', title: 'Aphid Outbreak', desc: 'Aphids swarm the garden!', effects: { pestPressure: 30 }, lesson: 'Biological pest control: Aphids feed on plant sap. Ladybugs, lacewings, and parasitic wasps are natural predators that control aphid populations without chemicals.' },
+            { id: 'aphids', emoji: '🐛', title: __alloT('stem.companionplanting.aphid_outbreak', 'Aphid Outbreak'), desc: __alloT('stem.companionplanting.aphids_swarm_the_garden', 'Aphids swarm the garden!'), effects: { pestPressure: 30 }, lesson: 'Biological pest control: Aphids feed on plant sap. Ladybugs, lacewings, and parasitic wasps are natural predators that control aphid populations without chemicals.' },
 
-            { id: 'pollinators', emoji: '🐝', title: 'Pollinator Visit', desc: 'Bees and butterflies visit the garden!', effects: { plantHealth: 15 }, lesson: 'Pollination biology: Squash flowers especially depend on pollinators. Companion planting attracts diverse pollinators, improving fruit set across all crops.' },
+            { id: 'pollinators', emoji: '🐝', title: __alloT('stem.companionplanting.pollinator_visit', 'Pollinator Visit'), desc: __alloT('stem.companionplanting.bees_and_butterflies_visit_the_garden', 'Bees and butterflies visit the garden!'), effects: { plantHealth: 15 }, lesson: 'Pollination biology: Squash flowers especially depend on pollinators. Companion planting attracts diverse pollinators, improving fruit set across all crops.' },
 
-            { id: 'wind', emoji: '🌪️', title: 'Wind Storm', desc: 'Strong winds stress the plants.', effects: { plantHealth: -10, moisture: -10 }, lesson: 'Windbreak design: Dense planting and tall stalks (like corn) create natural windbreaks. Bean vines wrapped around corn stalks add structural stability.' },
+            { id: 'wind', emoji: '🌪️', title: __alloT('stem.companionplanting.wind_storm', 'Wind Storm'), desc: __alloT('stem.companionplanting.strong_winds_stress_the_plants', 'Strong winds stress the plants.'), effects: { plantHealth: -10, moisture: -10 }, lesson: 'Windbreak design: Dense planting and tall stalks (like corn) create natural windbreaks. Bean vines wrapped around corn stalks add structural stability.' },
 
-            { id: 'ladybugs', emoji: '🐞', title: 'Ladybug Arrival', desc: 'Ladybugs colonize the garden!', effects: { pestPressure: -25 }, lesson: 'Beneficial insects: A single ladybug eats ~5,000 aphids in its lifetime. Companion planting creates habitat diversity that attracts these natural pest controllers.' },
+            { id: 'ladybugs', emoji: '🐞', title: __alloT('stem.companionplanting.ladybug_arrival', 'Ladybug Arrival'), desc: __alloT('stem.companionplanting.ladybugs_colonize_the_garden', 'Ladybugs colonize the garden!'), effects: { pestPressure: -25 }, lesson: 'Beneficial insects: A single ladybug eats ~5,000 aphids in its lifetime. Companion planting creates habitat diversity that attracts these natural pest controllers.' },
 
-            { id: 'heatwave', emoji: '☀️', title: 'Heat Wave', desc: 'Scorching heat dries the soil.', effects: { moisture: -20, soilTemp: 5 }, lesson: 'Microclimate management: Squash leaves shade the soil, reducing temperature by up to 10°F and cutting evaporation by 50%. This living mulch is nature\'s AC.' },
+            { id: 'heatwave', emoji: '☀️', title: __alloT('stem.companionplanting.heat_wave', 'Heat Wave'), desc: __alloT('stem.companionplanting.scorching_heat_dries_the_soil', 'Scorching heat dries the soil.'), effects: { moisture: -20, soilTemp: 5 }, lesson: 'Microclimate management: Squash leaves shade the soil, reducing temperature by up to 10°F and cutting evaporation by 50%. This living mulch is nature\'s AC.' },
 
-            { id: 'mycorrhiza', emoji: '🍄', title: 'Mycorrhizal Bloom', desc: 'Beneficial fungi spread through the root zone!', effects: { nitrogenLevel: 15, plantHealth: 10 }, lesson: 'Fungal symbiosis: Mycorrhizal fungi extend plant root systems 100-1000×, trading soil minerals for plant sugars. This underground network connects all three sisters.' }
+            { id: 'mycorrhiza', emoji: '🍄', title: __alloT('stem.companionplanting.mycorrhizal_bloom', 'Mycorrhizal Bloom'), desc: __alloT('stem.companionplanting.beneficial_fungi_spread_through_the_ro', 'Beneficial fungi spread through the root zone!'), effects: { nitrogenLevel: 15, plantHealth: 10 }, lesson: 'Fungal symbiosis: Mycorrhizal fungi extend plant root systems 100-1000×, trading soil minerals for plant sugars. This underground network connects all three sisters.' }
 
           ];
 
@@ -311,15 +312,15 @@ var d = (labToolData.companionPlanting) || {};
 
           var _ACTIONS = [
 
-            { id: 'water', emoji: '💧', label: 'Water', effect: function () { return { moisture: 25 }; }, cooldownDays: 4, tip: 'Irrigate the soil' },
+            { id: 'water', emoji: '💧', label: __alloT('stem.companionplanting.water', 'Water'), effect: function () { return { moisture: 25 }; }, cooldownDays: 4, tip: __alloT('stem.companionplanting.irrigate_the_soil', 'Irrigate the soil') },
 
-            { id: 'compost', emoji: '🧱', label: 'Compost', effect: function () { return { nitrogenLevel: 20, plantHealth: 5 }; }, cooldownDays: 6, tip: 'Add organic compost' },
+            { id: 'compost', emoji: '🧱', label: __alloT('stem.companionplanting.compost', 'Compost'), effect: function () { return { nitrogenLevel: 20, plantHealth: 5 }; }, cooldownDays: 6, tip: __alloT('stem.companionplanting.add_organic_compost', 'Add organic compost') },
 
-            { id: 'weed', emoji: '🧹', label: 'Weed', effect: function () { return { weedCover: -30, pestPressure: -10 }; }, cooldownDays: 3, tip: 'Remove weeds' },
+            { id: 'weed', emoji: '🧹', label: __alloT('stem.companionplanting.weed', 'Weed'), effect: function () { return { weedCover: -30, pestPressure: -10 }; }, cooldownDays: 3, tip: __alloT('stem.companionplanting.remove_weeds', 'Remove weeds') },
 
-            { id: 'inspect', emoji: '🔍', label: 'Inspect', effect: function () { return { pestPressure: -5 }; }, cooldownDays: 2, tip: 'Check for pests' },
+            { id: 'inspect', emoji: '🔍', label: __alloT('stem.companionplanting.inspect', 'Inspect'), effect: function () { return { pestPressure: -5 }; }, cooldownDays: 2, tip: __alloT('stem.companionplanting.check_for_pests', 'Check for pests') },
 
-            { id: 'mulch', emoji: '🍂', label: 'Mulch', effect: function () { return { weedCover: -15, moisture: 10 }; }, cooldownDays: 5, tip: 'Spread organic mulch' }
+            { id: 'mulch', emoji: '🍂', label: __alloT('stem.companionplanting.mulch', 'Mulch'), effect: function () { return { weedCover: -15, moisture: 10 }; }, cooldownDays: 5, tip: __alloT('stem.companionplanting.spread_organic_mulch', 'Spread organic mulch') }
 
           ];
 
@@ -423,136 +424,136 @@ var d = (labToolData.companionPlanting) || {};
 
           // === Wave 1: PLANT_FAMILIES ===
           var PLANT_FAMILIES = [
-            { name: 'Solanaceae (Nightshade)', icon: '\uD83C\uDF45', members: 'Tomato, pepper, potato, eggplant', rotation: 'Never follow with another nightshade! 3-year rotation minimum.', nutrients: 'Heavy feeders \u2014 need lots of nitrogen and phosphorus.', color: '#ef4444' },
-            { name: 'Fabaceae (Legume)', icon: '\uD83E\uDED8', members: 'Bean, pea, lentil, clover', rotation: 'Plant AFTER heavy feeders to replenish nitrogen. Great cover crop.', nutrients: 'Nitrogen fixers \u2014 add 50-200 lbs N/acre to soil!', color: '#22c55e' },
-            { name: 'Brassicaceae (Cabbage)', icon: '\uD83E\uDD6C', members: 'Broccoli, cabbage, kale, radish, turnip', rotation: 'Avoid following with other brassicas. Susceptible to clubroot.', nutrients: 'Heavy feeders \u2014 need calcium and sulfur.', color: '#3b82f6' },
-            { name: 'Cucurbitaceae (Gourd)', icon: '\uD83C\uDF83', members: 'Squash, cucumber, melon, zucchini', rotation: 'Rotate every 2 years. Susceptible to powdery mildew.', nutrients: 'Heavy feeders \u2014 need compost-rich, well-drained soil.', color: '#f59e0b' },
-            { name: 'Poaceae (Grass)', icon: '\uD83C\uDF3E', members: 'Corn, wheat, rice, oats', rotation: 'Follow with legumes to rebuild nitrogen.', nutrients: 'Very heavy feeders \u2014 corn removes 150+ lbs N/acre.', color: '#8b5cf6' },
-            { name: 'Apiaceae (Carrot)', icon: '\uD83E\uDD55', members: 'Carrot, parsley, dill, celery, fennel', rotation: '2-3 year rotation. Attract beneficial insects when flowering.', nutrients: 'Light feeders \u2014 too much nitrogen causes forking in root crops.', color: '#f97316' },
-            { name: 'Allium (Onion)', icon: '\uD83E\uDDC5', members: 'Onion, garlic, leek, chive, shallot', rotation: 'Good rotation crop \u2014 sulfur compounds suppress soil diseases.', nutrients: 'Moderate feeders \u2014 need potassium for bulb development.', color: '#ec4899' },
-            { name: 'Asteraceae (Daisy)', icon: '\uD83C\uDF3B', members: 'Sunflower, lettuce, artichoke, marigold', rotation: 'Sunflowers can deplete soil; follow with legumes.', nutrients: 'Variable \u2014 sunflowers are heavy feeders, lettuce is light.', color: '#14b8a6' }
+            { name: __alloT('stem.companionplanting.solanaceae_nightshade', 'Solanaceae (Nightshade)'), icon: '\uD83C\uDF45', members: 'Tomato, pepper, potato, eggplant', rotation: 'Never follow with another nightshade! 3-year rotation minimum.', nutrients: 'Heavy feeders \u2014 need lots of nitrogen and phosphorus.', color: '#ef4444' },
+            { name: __alloT('stem.companionplanting.fabaceae_legume', 'Fabaceae (Legume)'), icon: '\uD83E\uDED8', members: 'Bean, pea, lentil, clover', rotation: 'Plant AFTER heavy feeders to replenish nitrogen. Great cover crop.', nutrients: 'Nitrogen fixers \u2014 add 50-200 lbs N/acre to soil!', color: '#22c55e' },
+            { name: __alloT('stem.companionplanting.brassicaceae_cabbage', 'Brassicaceae (Cabbage)'), icon: '\uD83E\uDD6C', members: 'Broccoli, cabbage, kale, radish, turnip', rotation: 'Avoid following with other brassicas. Susceptible to clubroot.', nutrients: 'Heavy feeders \u2014 need calcium and sulfur.', color: '#3b82f6' },
+            { name: __alloT('stem.companionplanting.cucurbitaceae_gourd', 'Cucurbitaceae (Gourd)'), icon: '\uD83C\uDF83', members: 'Squash, cucumber, melon, zucchini', rotation: 'Rotate every 2 years. Susceptible to powdery mildew.', nutrients: 'Heavy feeders \u2014 need compost-rich, well-drained soil.', color: '#f59e0b' },
+            { name: __alloT('stem.companionplanting.poaceae_grass', 'Poaceae (Grass)'), icon: '\uD83C\uDF3E', members: 'Corn, wheat, rice, oats', rotation: 'Follow with legumes to rebuild nitrogen.', nutrients: 'Very heavy feeders \u2014 corn removes 150+ lbs N/acre.', color: '#8b5cf6' },
+            { name: __alloT('stem.companionplanting.apiaceae_carrot', 'Apiaceae (Carrot)'), icon: '\uD83E\uDD55', members: 'Carrot, parsley, dill, celery, fennel', rotation: '2-3 year rotation. Attract beneficial insects when flowering.', nutrients: 'Light feeders \u2014 too much nitrogen causes forking in root crops.', color: '#f97316' },
+            { name: __alloT('stem.companionplanting.allium_onion', 'Allium (Onion)'), icon: '\uD83E\uDDC5', members: 'Onion, garlic, leek, chive, shallot', rotation: 'Good rotation crop \u2014 sulfur compounds suppress soil diseases.', nutrients: 'Moderate feeders \u2014 need potassium for bulb development.', color: '#ec4899' },
+            { name: __alloT('stem.companionplanting.asteraceae_daisy', 'Asteraceae (Daisy)'), icon: '\uD83C\uDF3B', members: 'Sunflower, lettuce, artichoke, marigold', rotation: 'Sunflowers can deplete soil; follow with legumes.', nutrients: 'Variable \u2014 sunflowers are heavy feeders, lettuce is light.', color: '#14b8a6' }
           ];
 
           // === Wave 1: SOIL_TYPES ===
           var SOIL_TYPES = [
-            { name: 'Sandy', icon: '\uD83C\uDFD6\uFE0F', texture: 'Large particles, gritty', drainage: 'Excellent (too fast!)', nutrients: 'Low retention \u2014 nutrients wash through', bestFor: 'Root crops (carrots, radishes), herbs', improve: 'Add compost and mulch to retain moisture', color: '#f59e0b' },
-            { name: 'Clay', icon: '\uD83E\uDEA8', texture: 'Tiny particles, sticky when wet', drainage: 'Poor (waterlogged)', nutrients: 'High retention but hard for roots to access', bestFor: 'Brassicas, beans (once improved)', improve: 'Add gypsum, compost, and sand to improve drainage', color: '#6366f1' },
-            { name: 'Loam', icon: '\u2B50', texture: 'Perfect mix of sand, silt, clay', drainage: 'Ideal balance', nutrients: 'Excellent retention and availability', bestFor: 'Almost everything! The gardener\'s dream soil', improve: 'Maintain with regular compost additions', color: '#22c55e' },
-            { name: 'Silt', icon: '\uD83C\uDF0A', texture: 'Fine particles, smooth/silky', drainage: 'Moderate', nutrients: 'Good retention, fertile', bestFor: 'Most vegetables, especially moisture-lovers', improve: 'Add organic matter to prevent compaction', color: '#3b82f6' },
-            { name: 'Peat', icon: '\uD83E\uDEB5', texture: 'Dark, spongy organic matter', drainage: 'Retains too much water', nutrients: 'Very acidic (pH 3.5-4.5), low in minerals', bestFor: 'Blueberries, azaleas, acid-loving plants', improve: 'Add lime to raise pH, sand for drainage', color: '#854d0e' },
-            { name: 'Chalky', icon: '\u26AA', texture: 'Rocky, alkaline, white fragments', drainage: 'Very free-draining', nutrients: 'Alkaline (pH 7.5-8.5), can lock out iron and manganese', bestFor: 'Lavender, spinach, beets, cabbage', improve: 'Add sulfur to lower pH, lots of organic matter', color: 'var(--allo-stem-text-soft, #94a3b8)' }
+            { name: __alloT('stem.companionplanting.sandy', 'Sandy'), icon: '\uD83C\uDFD6\uFE0F', texture: 'Large particles, gritty', drainage: 'Excellent (too fast!)', nutrients: 'Low retention \u2014 nutrients wash through', bestFor: 'Root crops (carrots, radishes), herbs', improve: 'Add compost and mulch to retain moisture', color: '#f59e0b' },
+            { name: __alloT('stem.companionplanting.clay', 'Clay'), icon: '\uD83E\uDEA8', texture: 'Tiny particles, sticky when wet', drainage: 'Poor (waterlogged)', nutrients: 'High retention but hard for roots to access', bestFor: 'Brassicas, beans (once improved)', improve: 'Add gypsum, compost, and sand to improve drainage', color: '#6366f1' },
+            { name: __alloT('stem.companionplanting.loam', 'Loam'), icon: '\u2B50', texture: 'Perfect mix of sand, silt, clay', drainage: 'Ideal balance', nutrients: 'Excellent retention and availability', bestFor: 'Almost everything! The gardener\'s dream soil', improve: 'Maintain with regular compost additions', color: '#22c55e' },
+            { name: __alloT('stem.companionplanting.silt', 'Silt'), icon: '\uD83C\uDF0A', texture: 'Fine particles, smooth/silky', drainage: 'Moderate', nutrients: 'Good retention, fertile', bestFor: 'Most vegetables, especially moisture-lovers', improve: 'Add organic matter to prevent compaction', color: '#3b82f6' },
+            { name: __alloT('stem.companionplanting.peat', 'Peat'), icon: '\uD83E\uDEB5', texture: 'Dark, spongy organic matter', drainage: 'Retains too much water', nutrients: 'Very acidic (pH 3.5-4.5), low in minerals', bestFor: 'Blueberries, azaleas, acid-loving plants', improve: 'Add lime to raise pH, sand for drainage', color: '#854d0e' },
+            { name: __alloT('stem.companionplanting.chalky', 'Chalky'), icon: '\u26AA', texture: 'Rocky, alkaline, white fragments', drainage: 'Very free-draining', nutrients: 'Alkaline (pH 7.5-8.5), can lock out iron and manganese', bestFor: 'Lavender, spinach, beets, cabbage', improve: 'Add sulfur to lower pH, lots of organic matter', color: 'var(--allo-stem-text-soft, #94a3b8)' }
           ];
 
           // === Wave 1: GARDEN_PESTS ===
           var GARDEN_PESTS = [
-            { name: 'Aphids', icon: '\uD83D\uDC1B', damage: 'Suck plant sap, curl leaves, spread viruses', organic: 'Ladybugs, lacewings, neem oil, strong water spray', companion: 'Plant garlic, chives, or nasturtiums nearby' },
-            { name: 'Cabbage Worm', icon: '\uD83D\uDC1B', damage: 'Chew large holes in brassica leaves', organic: 'Bt (Bacillus thuringiensis) spray, row covers, hand-pick', companion: 'Plant dill or thyme to attract parasitic wasps' },
-            { name: 'Tomato Hornworm', icon: '\uD83D\uDC1B', damage: 'Devour entire tomato plants overnight', organic: 'Hand-pick (look for white cocoons = braconid wasp eggs!), Bt', companion: 'Plant borage and dill to attract predator wasps' },
-            { name: 'Squash Bug', icon: '\uD83D\uDC1E', damage: 'Pierce stems, cause wilting and plant death', organic: 'Hand-pick eggs (copper-colored, on leaf undersides), neem oil', companion: 'Plant radishes and nasturtiums as trap crops' },
-            { name: 'Japanese Beetle', icon: '\uD83D\uDC1E', damage: 'Skeletonize leaves of roses, beans, grapes', organic: 'Hand-pick into soapy water, milky spore for grubs, neem', companion: 'Plant garlic and chives; avoid linden trees nearby' },
+            { name: __alloT('stem.companionplanting.aphids', 'Aphids'), icon: '\uD83D\uDC1B', damage: 'Suck plant sap, curl leaves, spread viruses', organic: 'Ladybugs, lacewings, neem oil, strong water spray', companion: 'Plant garlic, chives, or nasturtiums nearby' },
+            { name: __alloT('stem.companionplanting.cabbage_worm', 'Cabbage Worm'), icon: '\uD83D\uDC1B', damage: 'Chew large holes in brassica leaves', organic: 'Bt (Bacillus thuringiensis) spray, row covers, hand-pick', companion: 'Plant dill or thyme to attract parasitic wasps' },
+            { name: __alloT('stem.companionplanting.tomato_hornworm', 'Tomato Hornworm'), icon: '\uD83D\uDC1B', damage: 'Devour entire tomato plants overnight', organic: 'Hand-pick (look for white cocoons = braconid wasp eggs!), Bt', companion: 'Plant borage and dill to attract predator wasps' },
+            { name: __alloT('stem.companionplanting.squash_bug', 'Squash Bug'), icon: '\uD83D\uDC1E', damage: 'Pierce stems, cause wilting and plant death', organic: 'Hand-pick eggs (copper-colored, on leaf undersides), neem oil', companion: 'Plant radishes and nasturtiums as trap crops' },
+            { name: __alloT('stem.companionplanting.japanese_beetle', 'Japanese Beetle'), icon: '\uD83D\uDC1E', damage: 'Skeletonize leaves of roses, beans, grapes', organic: 'Hand-pick into soapy water, milky spore for grubs, neem', companion: 'Plant garlic and chives; avoid linden trees nearby' },
             { name: 'Slug/Snail', icon: '\uD83D\uDC0C', damage: 'Chew irregular holes, leave slime trails, night feeders', organic: 'Beer traps, copper barriers, diatomaceous earth, iron phosphate', companion: 'Plant rosemary, lavender; avoid moist mulch near susceptible plants' },
-            { name: 'Flea Beetle', icon: '\uD83D\uDC1E', damage: 'Tiny holes ("shotgun" pattern) in leaves of brassicas, eggplant', organic: 'Row covers, sticky traps, neem oil, kaolin clay', companion: 'Plant radishes as trap crop; interplant with catnip' },
-            { name: 'Carrot Rust Fly', icon: '\uD83E\uDEB0', damage: 'Larvae tunnel into carrot roots, causing rust-colored damage', organic: 'Row covers (most effective), delayed planting, sand barriers', companion: 'Plant onions or leeks between carrot rows' },
-            { name: 'Spider Mites', icon: '\uD83D\uDD77\uFE0F', damage: 'Stippled/yellowed leaves, fine webbing, thrive in hot dry weather', organic: 'Strong water spray, neem oil, predatory mites', companion: 'Increase humidity; plant coriander and dill for predators' },
-            { name: 'Root-Knot Nematode', icon: '\uD83E\uDDA0', damage: 'Galls on roots, stunted growth, yellowing (invisible above ground)', organic: 'French marigolds (kill nematodes!), solarization, crop rotation', companion: 'Plant marigolds for at least one full season before planting susceptibles' }
+            { name: __alloT('stem.companionplanting.flea_beetle', 'Flea Beetle'), icon: '\uD83D\uDC1E', damage: 'Tiny holes ("shotgun" pattern) in leaves of brassicas, eggplant', organic: 'Row covers, sticky traps, neem oil, kaolin clay', companion: 'Plant radishes as trap crop; interplant with catnip' },
+            { name: __alloT('stem.companionplanting.carrot_rust_fly', 'Carrot Rust Fly'), icon: '\uD83E\uDEB0', damage: 'Larvae tunnel into carrot roots, causing rust-colored damage', organic: 'Row covers (most effective), delayed planting, sand barriers', companion: 'Plant onions or leeks between carrot rows' },
+            { name: __alloT('stem.companionplanting.spider_mites', 'Spider Mites'), icon: '\uD83D\uDD77\uFE0F', damage: 'Stippled/yellowed leaves, fine webbing, thrive in hot dry weather', organic: 'Strong water spray, neem oil, predatory mites', companion: 'Increase humidity; plant coriander and dill for predators' },
+            { name: __alloT('stem.companionplanting.root_knot_nematode', 'Root-Knot Nematode'), icon: '\uD83E\uDDA0', damage: 'Galls on roots, stunted growth, yellowing (invisible above ground)', organic: 'French marigolds (kill nematodes!), solarization, crop rotation', companion: 'Plant marigolds for at least one full season before planting susceptibles' }
           ];
 
           // === Wave 1: BENEFICIAL_INSECTS ===
           var BENEFICIAL_INSECTS = [
-            { name: 'Ladybug', icon: '\uD83D\uDC1E', role: 'Eats 5,000+ aphids in its lifetime', attract: 'Dill, fennel, yarrow, dandelion', color: '#ef4444' },
-            { name: 'Honeybee', icon: '\uD83D\uDC1D', role: 'Pollinates 80% of flowering plants', attract: 'Lavender, sunflower, borage, clover', color: '#f59e0b' },
-            { name: 'Green Lacewing', icon: '\uD83E\uDD97', role: '"Aphid lion" \u2014 larvae eat 200+ aphids/week', attract: 'Coreopsis, cosmos, sweet alyssum', color: '#22c55e' },
-            { name: 'Praying Mantis', icon: '\uD83E\uDD97', role: 'Ambush predator of large garden pests', attract: 'Tall grasses, shrubs for egg cases', color: '#8b5cf6' },
-            { name: 'Ground Beetle', icon: '\uD83D\uDC1E', role: 'Nocturnal predator of slugs, cutworms, root maggots', attract: 'Mulch, ground cover, logs for shelter', color: '#3b82f6' },
-            { name: 'Braconid Wasp', icon: '\uD83D\uDC1D', role: 'Parasitizes hornworms, aphids, caterpillars', attract: 'Dill, parsley, yarrow, wild carrot', color: '#f97316' },
-            { name: 'Hoverfly', icon: '\uD83D\uDC1D', role: 'Larvae eat aphids; adults are excellent pollinators', attract: 'Alyssum, calendula, fennel', color: '#14b8a6' },
-            { name: 'Earthworm', icon: '\uD83E\uDEB1', role: 'Aerates soil, creates castings (best fertilizer!)', attract: 'Organic matter, mulch, no-till practices', color: '#854d0e' }
+            { name: __alloT('stem.companionplanting.ladybug', 'Ladybug'), icon: '\uD83D\uDC1E', role: 'Eats 5,000+ aphids in its lifetime', attract: 'Dill, fennel, yarrow, dandelion', color: '#ef4444' },
+            { name: __alloT('stem.companionplanting.honeybee', 'Honeybee'), icon: '\uD83D\uDC1D', role: 'Pollinates 80% of flowering plants', attract: 'Lavender, sunflower, borage, clover', color: '#f59e0b' },
+            { name: __alloT('stem.companionplanting.green_lacewing', 'Green Lacewing'), icon: '\uD83E\uDD97', role: '"Aphid lion" \u2014 larvae eat 200+ aphids/week', attract: 'Coreopsis, cosmos, sweet alyssum', color: '#22c55e' },
+            { name: __alloT('stem.companionplanting.praying_mantis', 'Praying Mantis'), icon: '\uD83E\uDD97', role: 'Ambush predator of large garden pests', attract: 'Tall grasses, shrubs for egg cases', color: '#8b5cf6' },
+            { name: __alloT('stem.companionplanting.ground_beetle', 'Ground Beetle'), icon: '\uD83D\uDC1E', role: 'Nocturnal predator of slugs, cutworms, root maggots', attract: 'Mulch, ground cover, logs for shelter', color: '#3b82f6' },
+            { name: __alloT('stem.companionplanting.braconid_wasp', 'Braconid Wasp'), icon: '\uD83D\uDC1D', role: 'Parasitizes hornworms, aphids, caterpillars', attract: 'Dill, parsley, yarrow, wild carrot', color: '#f97316' },
+            { name: __alloT('stem.companionplanting.hoverfly', 'Hoverfly'), icon: '\uD83D\uDC1D', role: 'Larvae eat aphids; adults are excellent pollinators', attract: 'Alyssum, calendula, fennel', color: '#14b8a6' },
+            { name: __alloT('stem.companionplanting.earthworm', 'Earthworm'), icon: '\uD83E\uDEB1', role: 'Aerates soil, creates castings (best fertilizer!)', attract: 'Organic matter, mulch, no-till practices', color: '#854d0e' }
           ];
 
           // === Wave 2: NITROGEN_CYCLE ===
           var NITROGEN_CYCLE = [
-            { step: 1, name: 'Atmospheric N\u2082', icon: '\u2601\uFE0F', desc: '78% of air is nitrogen gas (N\u2082), but plants can\'t use it directly.', color: 'var(--allo-stem-text-soft, #94a3b8)' },
-            { step: 2, name: 'Nitrogen Fixation', icon: '\uD83E\uDDA0', desc: 'Rhizobium bacteria in bean root nodules convert N\u2082 \u2192 NH\u2083 (ammonia).', color: '#22c55e' },
-            { step: 3, name: 'Nitrification', icon: '\u2699\uFE0F', desc: 'Soil bacteria convert NH\u2083 \u2192 NO\u2082\u207B \u2192 NO\u2083\u207B (nitrate) \u2014 the form plants absorb.', color: '#3b82f6' },
-            { step: 4, name: 'Plant Uptake', icon: '\uD83C\uDF31', desc: 'Roots absorb NO\u2083\u207B from soil water. Used to build amino acids and proteins.', color: '#10b981' },
-            { step: 5, name: 'Decomposition', icon: '\uD83C\uDF42', desc: 'Dead plants/animals decompose. Decomposers release N back as NH\u2083.', color: '#f59e0b' },
-            { step: 6, name: 'Denitrification', icon: '\uD83D\uDCA8', desc: 'Anaerobic bacteria convert NO\u2083\u207B back to N\u2082 gas (lost to atmosphere).', color: '#ef4444' }
+            { step: 1, name: __alloT('stem.companionplanting.atmospheric_n', 'Atmospheric N\u2082'), icon: '\u2601\uFE0F', desc: __alloT('stem.companionplanting.78_of_air_is_nitrogen_gas_n_but_plants', '78% of air is nitrogen gas (N\u2082), but plants can\'t use it directly.'), color: 'var(--allo-stem-text-soft, #94a3b8)' },
+            { step: 2, name: __alloT('stem.companionplanting.nitrogen_fixation', 'Nitrogen Fixation'), icon: '\uD83E\uDDA0', desc: __alloT('stem.companionplanting.rhizobium_bacteria_in_bean_root_nodule', 'Rhizobium bacteria in bean root nodules convert N\u2082 \u2192 NH\u2083 (ammonia).'), color: '#22c55e' },
+            { step: 3, name: __alloT('stem.companionplanting.nitrification', 'Nitrification'), icon: '\u2699\uFE0F', desc: __alloT('stem.companionplanting.soil_bacteria_convert_nh_no_no_nitrate', 'Soil bacteria convert NH\u2083 \u2192 NO\u2082\u207B \u2192 NO\u2083\u207B (nitrate) \u2014 the form plants absorb.'), color: '#3b82f6' },
+            { step: 4, name: __alloT('stem.companionplanting.plant_uptake', 'Plant Uptake'), icon: '\uD83C\uDF31', desc: __alloT('stem.companionplanting.roots_absorb_no_from_soil_water_used_t', 'Roots absorb NO\u2083\u207B from soil water. Used to build amino acids and proteins.'), color: '#10b981' },
+            { step: 5, name: __alloT('stem.companionplanting.decomposition', 'Decomposition'), icon: '\uD83C\uDF42', desc: __alloT('stem.companionplanting.dead_plants_animals_decompose_decompos', 'Dead plants/animals decompose. Decomposers release N back as NH\u2083.'), color: '#f59e0b' },
+            { step: 6, name: __alloT('stem.companionplanting.denitrification', 'Denitrification'), icon: '\uD83D\uDCA8', desc: __alloT('stem.companionplanting.anaerobic_bacteria_convert_no_back_to_', 'Anaerobic bacteria convert NO\u2083\u207B back to N\u2082 gas (lost to atmosphere).'), color: '#ef4444' }
           ];
 
           // === Wave 2: COMPOSTING_GUIDE ===
           var COMPOST_GREENS = [
-            { name: 'Fruit/veggie scraps', icon: '\uD83C\uDF4E', nitrogen: 'high' },
-            { name: 'Coffee grounds', icon: '\u2615', nitrogen: 'high' },
-            { name: 'Fresh grass clippings', icon: '\uD83C\uDF3F', nitrogen: 'high' },
-            { name: 'Plant trimmings', icon: '\u2702\uFE0F', nitrogen: 'medium' },
-            { name: 'Eggshells (calcium!)', icon: '\uD83E\uDD5A', nitrogen: 'low' },
-            { name: 'Tea bags', icon: '\uD83C\uDF75', nitrogen: 'medium' }
+            { name: __alloT('stem.companionplanting.fruit_veggie_scraps', 'Fruit/veggie scraps'), icon: '\uD83C\uDF4E', nitrogen: 'high' },
+            { name: __alloT('stem.companionplanting.coffee_grounds', 'Coffee grounds'), icon: '\u2615', nitrogen: 'high' },
+            { name: __alloT('stem.companionplanting.fresh_grass_clippings', 'Fresh grass clippings'), icon: '\uD83C\uDF3F', nitrogen: 'high' },
+            { name: __alloT('stem.companionplanting.plant_trimmings', 'Plant trimmings'), icon: '\u2702\uFE0F', nitrogen: 'medium' },
+            { name: __alloT('stem.companionplanting.eggshells_calcium', 'Eggshells (calcium!)'), icon: '\uD83E\uDD5A', nitrogen: 'low' },
+            { name: __alloT('stem.companionplanting.tea_bags', 'Tea bags'), icon: '\uD83C\uDF75', nitrogen: 'medium' }
           ];
           var COMPOST_BROWNS = [
-            { name: 'Dry leaves', icon: '\uD83C\uDF42', carbon: 'high' },
+            { name: __alloT('stem.companionplanting.dry_leaves', 'Dry leaves'), icon: '\uD83C\uDF42', carbon: 'high' },
             { name: 'Cardboard/paper', icon: '\uD83D\uDCE6', carbon: 'high' },
             { name: 'Straw/hay', icon: '\uD83C\uDF3E', carbon: 'high' },
-            { name: 'Wood chips', icon: '\uD83E\uDEB5', carbon: 'high' },
-            { name: 'Dryer lint', icon: '\uD83E\uDDF5', carbon: 'medium' },
-            { name: 'Sawdust', icon: '\uD83E\uDE9A', carbon: 'high' }
+            { name: __alloT('stem.companionplanting.wood_chips', 'Wood chips'), icon: '\uD83E\uDEB5', carbon: 'high' },
+            { name: __alloT('stem.companionplanting.dryer_lint', 'Dryer lint'), icon: '\uD83E\uDDF5', carbon: 'medium' },
+            { name: __alloT('stem.companionplanting.sawdust', 'Sawdust'), icon: '\uD83E\uDE9A', carbon: 'high' }
           ];
           var COMPOST_NEVER = ['Meat/dairy', 'Diseased plants', 'Pet waste', 'Treated wood', 'Coal ash', 'Glossy paper'];
 
           // === Wave 2: SEASONAL_CALENDAR ===
           var SEASONAL_CALENDAR = [
-            { season: 'Early Spring', icon: '\u2744\uFE0F\u2192\uD83C\uDF31', months: 'Feb-Mar', plants: ['Peas', 'Lettuce', 'Spinach', 'Radish', 'Onion sets'], tasks: 'Start seeds indoors, prepare beds, add compost', tip: 'Cool-season crops can handle light frost!' },
-            { season: 'Late Spring', icon: '\uD83C\uDF31', months: 'Apr-May', plants: ['Tomato transplants', 'Peppers', 'Beans', 'Corn', 'Squash'], tasks: 'Direct sow after last frost, mulch heavily', tip: 'The Three Sisters go in NOW after soil reaches 60\u00B0F' },
-            { season: 'Summer', icon: '\u2600\uFE0F', months: 'Jun-Aug', plants: ['Succession plant beans/lettuce', 'Start fall brassicas indoors'], tasks: 'Water deeply, manage pests, harvest regularly', tip: 'Morning watering reduces disease. Harvest daily to keep plants producing!' },
-            { season: 'Fall', icon: '\uD83C\uDF42', months: 'Sep-Nov', plants: ['Garlic (plant now!)', 'Kale', 'Spinach', 'Cover crops'], tasks: 'Plant cover crops, collect seeds, add mulch', tip: 'Garlic planted in fall produces the biggest bulbs. Cover crops prevent erosion!' },
-            { season: 'Winter', icon: '\u2744\uFE0F', months: 'Dec-Jan', plants: ['Plan next year!', 'Order seeds', 'Indoor microgreens'], tasks: 'Soil test, clean tools, review garden journal', tip: 'Use this time to design companion planting layouts for spring.' }
+            { season: 'Early Spring', icon: '\u2744\uFE0F\u2192\uD83C\uDF31', months: 'Feb-Mar', plants: ['Peas', 'Lettuce', 'Spinach', 'Radish', 'Onion sets'], tasks: 'Start seeds indoors, prepare beds, add compost', tip: __alloT('stem.companionplanting.cool_season_crops_can_handle_light_fro', 'Cool-season crops can handle light frost!') },
+            { season: 'Late Spring', icon: '\uD83C\uDF31', months: 'Apr-May', plants: ['Tomato transplants', 'Peppers', 'Beans', 'Corn', 'Squash'], tasks: 'Direct sow after last frost, mulch heavily', tip: __alloT('stem.companionplanting.the_three_sisters_go_in_now_after_soil', 'The Three Sisters go in NOW after soil reaches 60\u00B0F') },
+            { season: 'Summer', icon: '\u2600\uFE0F', months: 'Jun-Aug', plants: ['Succession plant beans/lettuce', 'Start fall brassicas indoors'], tasks: 'Water deeply, manage pests, harvest regularly', tip: __alloT('stem.companionplanting.morning_watering_reduces_disease_harve', 'Morning watering reduces disease. Harvest daily to keep plants producing!') },
+            { season: 'Fall', icon: '\uD83C\uDF42', months: 'Sep-Nov', plants: ['Garlic (plant now!)', 'Kale', 'Spinach', 'Cover crops'], tasks: 'Plant cover crops, collect seeds, add mulch', tip: __alloT('stem.companionplanting.garlic_planted_in_fall_produces_the_bi', 'Garlic planted in fall produces the biggest bulbs. Cover crops prevent erosion!') },
+            { season: 'Winter', icon: '\u2744\uFE0F', months: 'Dec-Jan', plants: ['Plan next year!', 'Order seeds', 'Indoor microgreens'], tasks: 'Soil test, clean tools, review garden journal', tip: __alloT('stem.companionplanting.use_this_time_to_design_companion_plan', 'Use this time to design companion planting layouts for spring.') }
           ];
 
           // === Wave 2: PH_SCALE ===
           var PH_PLANTS = [
-            { name: 'Blueberry', ph: [4.5, 5.5], icon: '\uD83E\uDED0' },
-            { name: 'Potato', ph: [5.0, 6.0], icon: '\uD83E\uDD54' },
-            { name: 'Strawberry', ph: [5.5, 6.5], icon: '\uD83C\uDF53' },
-            { name: 'Tomato', ph: [6.0, 7.0], icon: '\uD83C\uDF45' },
-            { name: 'Corn', ph: [6.0, 7.0], icon: '\uD83C\uDF3D' },
-            { name: 'Beans', ph: [6.0, 7.5], icon: '\uD83E\uDED8' },
-            { name: 'Squash', ph: [6.0, 7.0], icon: '\uD83C\uDF83' },
-            { name: 'Lettuce', ph: [6.0, 7.0], icon: '\uD83E\uDD6C' },
-            { name: 'Garlic', ph: [6.0, 7.0], icon: '\uD83E\uDDC4' },
-            { name: 'Asparagus', ph: [6.5, 8.0], icon: '\uD83E\uDD66' },
-            { name: 'Cabbage', ph: [6.5, 7.5], icon: '\uD83E\uDD6C' },
-            { name: 'Lavender', ph: [6.5, 8.0], icon: '\uD83D\uDC9C' }
+            { name: __alloT('stem.companionplanting.blueberry', 'Blueberry'), ph: [4.5, 5.5], icon: '\uD83E\uDED0' },
+            { name: __alloT('stem.companionplanting.potato', 'Potato'), ph: [5.0, 6.0], icon: '\uD83E\uDD54' },
+            { name: __alloT('stem.companionplanting.strawberry', 'Strawberry'), ph: [5.5, 6.5], icon: '\uD83C\uDF53' },
+            { name: __alloT('stem.companionplanting.tomato', 'Tomato'), ph: [6.0, 7.0], icon: '\uD83C\uDF45' },
+            { name: __alloT('stem.companionplanting.corn', 'Corn'), ph: [6.0, 7.0], icon: '\uD83C\uDF3D' },
+            { name: __alloT('stem.companionplanting.beans', 'Beans'), ph: [6.0, 7.5], icon: '\uD83E\uDED8' },
+            { name: __alloT('stem.companionplanting.squash', 'Squash'), ph: [6.0, 7.0], icon: '\uD83C\uDF83' },
+            { name: __alloT('stem.companionplanting.lettuce', 'Lettuce'), ph: [6.0, 7.0], icon: '\uD83E\uDD6C' },
+            { name: __alloT('stem.companionplanting.garlic', 'Garlic'), ph: [6.0, 7.0], icon: '\uD83E\uDDC4' },
+            { name: __alloT('stem.companionplanting.asparagus', 'Asparagus'), ph: [6.5, 8.0], icon: '\uD83E\uDD66' },
+            { name: __alloT('stem.companionplanting.cabbage', 'Cabbage'), ph: [6.5, 7.5], icon: '\uD83E\uDD6C' },
+            { name: __alloT('stem.companionplanting.lavender', 'Lavender'), ph: [6.5, 8.0], icon: '\uD83D\uDC9C' }
           ];
 
           // === Wave 3: GARDEN_SCENARIOS ===
           var GARDEN_SCENARIOS = [
-            { id: 1, scenario: 'Your tomato leaves have yellow spots and curling. The underside of leaves shows tiny white insects that fly when disturbed.', question: 'What pest is this, and what\'s the best companion planting solution?',
+            { id: 1, scenario: 'Your tomato leaves have yellow spots and curling. The underside of leaves shows tiny white insects that fly when disturbed.', question: __alloT('stem.companionplanting.what_pest_is_this_and_what_s_the_best_', 'What pest is this, and what\'s the best companion planting solution?'),
               options: ['Aphids \u2014 plant marigolds', 'Whiteflies \u2014 plant basil and nasturtiums', 'Spider mites \u2014 spray water', 'Leaf miners \u2014 remove leaves'], correct: 1,
               explain: 'Whiteflies! Basil\'s volatile oils repel whiteflies from tomatoes, and nasturtiums act as trap crops. This is why "tomato + basil" is the #1 companion planting pair.', concept: 'Trap Cropping & Volatile Oils' },
-            { id: 2, scenario: 'You planted beans and onions in the same bed. The beans are stunted and yellow despite good soil.', question: 'What went wrong?',
+            { id: 2, scenario: 'You planted beans and onions in the same bed. The beans are stunted and yellow despite good soil.', question: __alloT('stem.companionplanting.what_went_wrong', 'What went wrong?'),
               options: ['Too much water', 'Onions inhibit bean nitrogen fixation', 'Beans need more sun', 'Not enough compost'], correct: 1,
               explain: 'Allium compounds from onions suppress Rhizobium bacteria in bean root nodules, blocking nitrogen fixation. NEVER plant beans next to onions, garlic, or leeks!', concept: 'Allelopathic Interference' },
-            { id: 3, scenario: 'It\'s mid-summer, 95\u00B0F, and your lettuce is bolting (going to seed) and turning bitter.', question: 'What companion planting strategy could have prevented this?',
+            { id: 3, scenario: 'It\'s mid-summer, 95\u00B0F, and your lettuce is bolting (going to seed) and turning bitter.', question: __alloT('stem.companionplanting.what_companion_planting_strategy_could', 'What companion planting strategy could have prevented this?'),
               options: ['Plant lettuce with sunflowers for shade', 'Add more fertilizer', 'Water more frequently', 'Plant lettuce with beans'], correct: 0,
               explain: 'Tall companions (sunflowers, corn, pole beans on trellises) create afternoon shade that keeps lettuce cool. Lettuce bolts when soil temperature exceeds 80\u00B0F. Intercropping creates beneficial microclimates!', concept: 'Microclimate Management' },
-            { id: 4, scenario: 'Your garden has poor, compacted clay soil with low nitrogen. You can\'t add compost this year.', question: 'Which cover crop combination would best improve this soil?',
+            { id: 4, scenario: 'Your garden has poor, compacted clay soil with low nitrogen. You can\'t add compost this year.', question: __alloT('stem.companionplanting.which_cover_crop_combination_would_bes', 'Which cover crop combination would best improve this soil?'),
               options: ['Crimson clover + annual ryegrass', 'Sunflowers + corn', 'Tomatoes + peppers', 'Lettuce + spinach'], correct: 0,
               explain: 'Clover (legume) fixes nitrogen while ryegrass\'s deep roots break up clay compaction. Together, they add 100+ lbs N/acre and improve soil structure. This is companion planting for the SOIL!', concept: 'Cover Cropping & Soil Building' },
-            { id: 5, scenario: 'Cabbage moths are devastating your broccoli. You want to avoid all pesticides, even organic ones.', question: 'What biological control strategy uses companion planting?',
+            { id: 5, scenario: 'Cabbage moths are devastating your broccoli. You want to avoid all pesticides, even organic ones.', question: __alloT('stem.companionplanting.what_biological_control_strategy_uses_', 'What biological control strategy uses companion planting?'),
               options: ['Plant mint everywhere', 'Plant dill and yarrow to attract parasitic wasps', 'Plant more broccoli', 'Move broccoli indoors'], correct: 1,
               explain: 'Dill and yarrow attract braconid wasps, which lay eggs inside cabbage moth caterpillars (biological control). The wasps are harmless to humans but devastating to pests. This is called "farmscaping."', concept: 'Biological Control & Farmscaping' },
-            { id: 6, scenario: 'You notice your squash plants have flowers but no fruit is forming.', question: 'What\'s the most likely problem?',
+            { id: 6, scenario: 'You notice your squash plants have flowers but no fruit is forming.', question: __alloT('stem.companionplanting.what_s_the_most_likely_problem', 'What\'s the most likely problem?'),
               options: ['Too much nitrogen', 'Lack of pollinators', 'Wrong soil pH', 'Overwatering'], correct: 1,
               explain: 'Squash requires insect pollination! Each flower opens for just one day. Plant borage, lavender, or sunflowers nearby to attract bees. In small gardens, you can hand-pollinate with a paintbrush.', concept: 'Pollination Ecology' },
-            { id: 7, scenario: 'After 3 years of growing tomatoes in the same spot, yields are declining and plants show disease.', question: 'What principle have you violated?',
+            { id: 7, scenario: 'After 3 years of growing tomatoes in the same spot, yields are declining and plants show disease.', question: __alloT('stem.companionplanting.what_principle_have_you_violated', 'What principle have you violated?'),
               options: ['Companion planting', 'Crop rotation', 'Succession planting', 'Intercropping'], correct: 1,
               explain: 'Crop rotation! Growing the same family in the same spot builds up soil-borne diseases (especially Fusarium, Verticillium). Rotate nightshades (tomato, pepper, potato) with legumes, then brassicas, then root crops.', concept: 'Crop Rotation & Disease Prevention' },
-            { id: 8, scenario: 'Your neighbor planted a black walnut tree 20 feet from your garden fence. Your tomatoes near the fence are dying.', question: 'What is killing your tomatoes?',
+            { id: 8, scenario: 'Your neighbor planted a black walnut tree 20 feet from your garden fence. Your tomatoes near the fence are dying.', question: __alloT('stem.companionplanting.what_is_killing_your_tomatoes', 'What is killing your tomatoes?'),
               options: ['Shade from the tree', 'Juglone toxicity from walnut roots', 'Root competition for water', 'Walnut pollen allergy'], correct: 1,
               explain: 'Black walnuts produce juglone, a chemical that kills tomatoes, peppers, potatoes, and azaleas within the root zone (50-80 feet!). This is allelopathy \u2014 chemical warfare between plants. Plant walnut-tolerant species instead.', concept: 'Allelopathy' },
-            { id: 9, scenario: 'You have a 4x8 raised bed and want to maximize food production using companion planting.', question: 'Which combination produces the most food per square foot?',
+            { id: 9, scenario: 'You have a 4x8 raised bed and want to maximize food production using companion planting.', question: __alloT('stem.companionplanting.which_combination_produces_the_most_fo', 'Which combination produces the most food per square foot?'),
               options: ['Only tomatoes (monoculture)', 'Three Sisters (corn, beans, squash)', 'Just lettuce rows', 'Separate crops in each quadrant'], correct: 1,
               explain: 'The Three Sisters polyculture produces 20-30% MORE calories per acre than monoculture corn alone! Vertical stacking (corn), nitrogen fixation (beans), and ground cover (squash) maximize every dimension of the growing space.', concept: 'Polyculture Yield Advantage' },
-            { id: 10, scenario: 'You want to reduce your garden\'s water usage by 40% without losing production.', question: 'Which companion planting strategy helps the most with water conservation?',
+            { id: 10, scenario: 'You want to reduce your garden\'s water usage by 40% without losing production.', question: __alloT('stem.companionplanting.which_companion_planting_strategy_help', 'Which companion planting strategy helps the most with water conservation?'),
               options: ['Plant drought-resistant varieties only', 'Use squash as living mulch between rows', 'Water at night', 'Dig deeper beds'], correct: 1,
               explain: 'Living mulch (squash, clover, sweet potato vines) shades soil, reducing evaporation by 40-60% and soil temperature by 10\u00B0F. This is exactly why squash is a "Sister" \u2014 it\'s nature\'s mulch!', concept: 'Living Mulch & Water Conservation' }
           ];
@@ -575,14 +576,14 @@ var d = (labToolData.companionPlanting) || {};
 
           // === Wave 3: GARDEN_QUICK_REF ===
           var GARDEN_QUICK_REF = [
-            { title: 'The Three Sisters', content: 'Corn (structure) + Beans (nitrogen) + Squash (mulch). 7,000 year-old polyculture.', icon: '\uD83C\uDF3D', color: '#22c55e' },
-            { title: 'Crop Rotation Rule', content: 'Legumes \u2192 Brassicas \u2192 Nightshades \u2192 Root crops. Never repeat a family in the same spot!', icon: '\uD83D\uDD04', color: '#3b82f6' },
-            { title: 'Compost Ratio', content: '3 parts Brown (carbon) : 1 part Green (nitrogen). Keep moist, turn weekly.', icon: '\u267B\uFE0F', color: '#f59e0b' },
-            { title: 'Soil pH Sweet Spot', content: 'Most vegetables prefer pH 6.0-7.0. Test annually. Add lime to raise, sulfur to lower.', icon: '\u2696\uFE0F', color: '#8b5cf6' },
-            { title: 'Watering Rule', content: 'Deep and infrequent > shallow and often. Morning watering prevents fungal disease.', icon: '\uD83D\uDCA7', color: '#06b6d4' },
-            { title: 'Pest Control Ladder', content: 'Prevention \u2192 Companion planting \u2192 Beneficial insects \u2192 Physical barriers \u2192 Organic sprays (last resort).', icon: '\uD83D\uDC1E', color: '#ef4444' },
-            { title: 'Succession Planting', content: 'Plant new seeds every 2-3 weeks for continuous harvest instead of one big crop.', icon: '\uD83D\uDCC5', color: '#10b981' },
-            { title: 'Mulch Everything', content: '2-4 inches of organic mulch retains moisture, suppresses weeds, and feeds soil as it decomposes.', icon: '\uD83C\uDF42', color: '#854d0e' }
+            { title: __alloT('stem.companionplanting.the_three_sisters', 'The Three Sisters'), content: __alloT('stem.companionplanting.corn_structure_beans_nitrogen_squash_m', 'Corn (structure) + Beans (nitrogen) + Squash (mulch). 7,000 year-old polyculture.'), icon: '\uD83C\uDF3D', color: '#22c55e' },
+            { title: __alloT('stem.companionplanting.crop_rotation_rule', 'Crop Rotation Rule'), content: __alloT('stem.companionplanting.legumes_brassicas_nightshades_root_cro', 'Legumes \u2192 Brassicas \u2192 Nightshades \u2192 Root crops. Never repeat a family in the same spot!'), icon: '\uD83D\uDD04', color: '#3b82f6' },
+            { title: __alloT('stem.companionplanting.compost_ratio', 'Compost Ratio'), content: __alloT('stem.companionplanting.3_parts_brown_carbon_1_part_green_nitr', '3 parts Brown (carbon) : 1 part Green (nitrogen). Keep moist, turn weekly.'), icon: '\u267B\uFE0F', color: '#f59e0b' },
+            { title: __alloT('stem.companionplanting.soil_ph_sweet_spot', 'Soil pH Sweet Spot'), content: __alloT('stem.companionplanting.most_vegetables_prefer_ph_6_0_7_0_test', 'Most vegetables prefer pH 6.0-7.0. Test annually. Add lime to raise, sulfur to lower.'), icon: '\u2696\uFE0F', color: '#8b5cf6' },
+            { title: __alloT('stem.companionplanting.watering_rule', 'Watering Rule'), content: __alloT('stem.companionplanting.deep_and_infrequent_shallow_and_often_', 'Deep and infrequent > shallow and often. Morning watering prevents fungal disease.'), icon: '\uD83D\uDCA7', color: '#06b6d4' },
+            { title: __alloT('stem.companionplanting.pest_control_ladder', 'Pest Control Ladder'), content: __alloT('stem.companionplanting.prevention_companion_planting_benefici', 'Prevention \u2192 Companion planting \u2192 Beneficial insects \u2192 Physical barriers \u2192 Organic sprays (last resort).'), icon: '\uD83D\uDC1E', color: '#ef4444' },
+            { title: __alloT('stem.companionplanting.succession_planting', 'Succession Planting'), content: __alloT('stem.companionplanting.plant_new_seeds_every_2_3_weeks_for_co', 'Plant new seeds every 2-3 weeks for continuous harvest instead of one big crop.'), icon: '\uD83D\uDCC5', color: '#10b981' },
+            { title: __alloT('stem.companionplanting.mulch_everything', 'Mulch Everything'), content: __alloT('stem.companionplanting.2_4_inches_of_organic_mulch_retains_mo', '2-4 inches of organic mulch retains moisture, suppresses weeds, and feeds soil as it decomposes.'), icon: '\uD83C\uDF42', color: '#854d0e' }
           ];
 
           // Wave 3 state
@@ -596,32 +597,32 @@ var d = (labToolData.companionPlanting) || {};
 
           // === Wave 4: FARMING_COMPARISON ===
           var FARMING_SYSTEMS = [
-            { id: 'industrial', name: 'Industrial Monoculture', icon: '\uD83C\uDFED', color: '#ef4444',
+            { id: 'industrial', name: __alloT('stem.companionplanting.industrial_monoculture', 'Industrial Monoculture'), icon: '\uD83C\uDFED', color: '#ef4444',
               energy: { input: 10, output: 1, unit: 'calories fossil fuel per calorie food', eroi: 0.1 },
               water: { usage: 'High (irrigation-dependent)', efficiency: '40-60% reaches crop' },
               chemicals: { fertilizer: '150-200 lbs N/acre synthetic', pesticides: '2-5 lbs/acre/year', herbicides: 'Heavy (Roundup-dependent)' },
               carbon: { emission: '+3.5 tons CO\u2082/acre/year', sequestration: 'None (releases soil carbon)', net: 'Large net emitter' },
-              biodiversity: { score: 15, desc: '1 crop species, few insects, depleted soil life' },
+              biodiversity: { score: 15, desc: __alloT('stem.companionplanting.1_crop_species_few_insects_depleted_so', '1 crop species, few insects, depleted soil life') },
               soil: { health: 'Declining (compaction, erosion)', organic: 'Drops 50% in 50 years' },
               yield: { short: 'High (with inputs)', long: 'Declining without increasing inputs' },
               pros: ['High short-term yield', 'Mechanization efficient', 'Cheap per calorie (subsidized)'],
               cons: ['Fossil fuel dependent', 'Soil degradation', 'Water pollution', 'Biodiversity loss', 'Antibiotic resistance'] },
-            { id: 'companion', name: 'Companion Planting / Polyculture', icon: '\uD83C\uDF3D', color: '#22c55e',
+            { id: 'companion', name: __alloT('stem.companionplanting.companion_planting_polyculture', 'Companion Planting / Polyculture'), icon: '\uD83C\uDF3D', color: '#22c55e',
               energy: { input: 1, output: 3, unit: 'calories fossil fuel per calorie food', eroi: 3.0 },
               water: { usage: 'Low-moderate (living mulch conserves)', efficiency: '80-95% reaches crop' },
               chemicals: { fertilizer: '0 synthetic (nitrogen-fixing legumes)', pesticides: '0 synthetic (biological control)', herbicides: '0 (living mulch suppresses weeds)' },
               carbon: { emission: '-1.5 tons CO\u2082/acre/year', sequestration: 'Active (soil carbon building)', net: 'Net carbon sink!' },
-              biodiversity: { score: 85, desc: '10+ species, diverse insects, rich soil microbiome' },
+              biodiversity: { score: 85, desc: __alloT('stem.companionplanting.10_species_diverse_insects_rich_soil_m', '10+ species, diverse insects, rich soil microbiome') },
               soil: { health: 'Improving (root diversity, organic matter)', organic: 'Increases 1-2% per decade' },
               yield: { short: 'Moderate per crop (but total higher)', long: 'Increasing as soil improves' },
               pros: ['Builds soil', 'No chemical inputs', 'Water efficient', 'Carbon negative', 'Resilient to pests'],
               cons: ['More labor-intensive', 'Harder to mechanize', 'Requires knowledge', 'Lower per-crop yield'] },
-            { id: 'regenerative', name: 'Regenerative Agriculture', icon: '\uD83C\uDF31', color: '#10b981',
+            { id: 'regenerative', name: __alloT('stem.companionplanting.regenerative_agriculture', 'Regenerative Agriculture'), icon: '\uD83C\uDF31', color: '#10b981',
               energy: { input: 1, output: 5, unit: 'calories fossil fuel per calorie food', eroi: 5.0 },
               water: { usage: 'Very low (soil holds 20,000 gal/acre per 1% OM)', efficiency: '90%+ (healthy soil = sponge)' },
               chemicals: { fertilizer: '0 (compost + cover crops)', pesticides: '0 (integrated pest management)', herbicides: '0 (cover crop suppression)' },
               carbon: { emission: '-3.0 tons CO\u2082/acre/year', sequestration: 'Maximum (no-till + cover crops + compost)', net: 'Powerful carbon sink' },
-              biodiversity: { score: 95, desc: 'Maximized above and below ground; wildlife corridors' },
+              biodiversity: { score: 95, desc: __alloT('stem.companionplanting.maximized_above_and_below_ground_wildl', 'Maximized above and below ground; wildlife corridors') },
               soil: { health: 'Rapidly improving', organic: 'Can increase 1% per year with best practices' },
               yield: { short: 'Lower in transition (years 1-3)', long: 'Matches or exceeds conventional after year 5' },
               pros: ['Reverses climate change', 'Eliminates input costs', 'Drought resilient', 'Maximum nutrition', 'Profitable long-term'],
@@ -642,18 +643,18 @@ var d = (labToolData.companionPlanting) || {};
 
           // === Wave 4: PERMACULTURE_PRINCIPLES ===
           var PERMACULTURE_PRINCIPLES = [
-            { num: 1, name: 'Observe & Interact', icon: '\uD83D\uDC41\uFE0F', desc: 'Spend a full year observing your land before making major changes. Where does water flow? Where is sun/shade? What already grows?', example: 'Watch where puddles form after rain \u2014 that\'s where to plant water-loving crops.' },
-            { num: 2, name: 'Catch & Store Energy', icon: '\u2600\uFE0F', desc: 'Harvest energy when abundant (sun, rain, fertility) and store for times of need.', example: 'Rain barrels catch water; compost stores nutrients; root cellars store food.' },
-            { num: 3, name: 'Obtain a Yield', icon: '\uD83C\uDF3E', desc: 'Ensure you\'re getting useful output from your work. Every element should serve a function.', example: 'A fence could also be a trellis for beans, producing food AND boundary.' },
-            { num: 4, name: 'Apply Self-Regulation', icon: '\u267B\uFE0F', desc: 'Create systems that self-correct. Reduce the need for external inputs.', example: 'Companion planting creates pest control that works automatically.' },
-            { num: 5, name: 'Use Renewable Resources', icon: '\uD83C\uDF3F', desc: 'Prefer renewable over non-renewable. Sunlight, compost, rainwater over fossil fuels.', example: 'Use composted leaves instead of synthetic fertilizer; saves $200+/year.' },
-            { num: 6, name: 'Produce No Waste', icon: '\u2740', desc: 'Every output becomes input for another element. "Waste" is just a resource without a user.', example: 'Kitchen scraps \u2192 compost \u2192 soil \u2192 vegetables \u2192 kitchen scraps (closed loop).' },
-            { num: 7, name: 'Design from Patterns', icon: '\uD83C\uDF00', desc: 'Learn nature\'s patterns (spirals, branches, waves) and apply them to garden design.', example: 'Herb spirals use vertical space efficiently; keyhole gardens maximize edge effect.' },
-            { num: 8, name: 'Integrate, Don\'t Segregate', icon: '\uD83E\uDD1D', desc: 'Place elements so they support each other. Every element serves multiple functions.', example: 'The Three Sisters: each plant serves 2-3 functions for the others.' },
-            { num: 9, name: 'Small & Slow Solutions', icon: '\uD83D\uDC22', desc: 'Start small. Small systems are easier to maintain and adapt.', example: 'Start with one 4\u00D78 bed, not an acre. Master that first.' },
-            { num: 10, name: 'Use & Value Diversity', icon: '\uD83C\uDF08', desc: 'Diversity = resilience. Monocultures fail; polycultures thrive.', example: '20 crop species resist disease better than 1. If one fails, others compensate.' },
-            { num: 11, name: 'Use Edges & Margins', icon: '\u3030\uFE0F', desc: 'The edge between two ecosystems is the most productive zone.', example: 'Forest edges, pond margins, and garden borders support the most biodiversity.' },
-            { num: 12, name: 'Creatively Use Change', icon: '\uD83C\uDF0A', desc: 'Embrace succession and change. Design for evolution, not stasis.', example: 'A fallen tree becomes habitat for fungi, insects, and new plants.' }
+            { num: 1, name: __alloT('stem.companionplanting.observe_interact', 'Observe & Interact'), icon: '\uD83D\uDC41\uFE0F', desc: __alloT('stem.companionplanting.spend_a_full_year_observing_your_land_', 'Spend a full year observing your land before making major changes. Where does water flow? Where is sun/shade? What already grows?'), example: 'Watch where puddles form after rain \u2014 that\'s where to plant water-loving crops.' },
+            { num: 2, name: __alloT('stem.companionplanting.catch_store_energy', 'Catch & Store Energy'), icon: '\u2600\uFE0F', desc: __alloT('stem.companionplanting.harvest_energy_when_abundant_sun_rain_', 'Harvest energy when abundant (sun, rain, fertility) and store for times of need.'), example: 'Rain barrels catch water; compost stores nutrients; root cellars store food.' },
+            { num: 3, name: __alloT('stem.companionplanting.obtain_a_yield', 'Obtain a Yield'), icon: '\uD83C\uDF3E', desc: __alloT('stem.companionplanting.ensure_you_re_getting_useful_output_fr', 'Ensure you\'re getting useful output from your work. Every element should serve a function.'), example: 'A fence could also be a trellis for beans, producing food AND boundary.' },
+            { num: 4, name: __alloT('stem.companionplanting.apply_self_regulation', 'Apply Self-Regulation'), icon: '\u267B\uFE0F', desc: __alloT('stem.companionplanting.create_systems_that_self_correct_reduc', 'Create systems that self-correct. Reduce the need for external inputs.'), example: 'Companion planting creates pest control that works automatically.' },
+            { num: 5, name: __alloT('stem.companionplanting.use_renewable_resources', 'Use Renewable Resources'), icon: '\uD83C\uDF3F', desc: __alloT('stem.companionplanting.prefer_renewable_over_non_renewable_su', 'Prefer renewable over non-renewable. Sunlight, compost, rainwater over fossil fuels.'), example: 'Use composted leaves instead of synthetic fertilizer; saves $200+/year.' },
+            { num: 6, name: __alloT('stem.companionplanting.produce_no_waste', 'Produce No Waste'), icon: '\u2740', desc: __alloT('stem.companionplanting.every_output_becomes_input_for_another', 'Every output becomes input for another element. "Waste" is just a resource without a user.'), example: 'Kitchen scraps \u2192 compost \u2192 soil \u2192 vegetables \u2192 kitchen scraps (closed loop).' },
+            { num: 7, name: __alloT('stem.companionplanting.design_from_patterns', 'Design from Patterns'), icon: '\uD83C\uDF00', desc: __alloT('stem.companionplanting.learn_nature_s_patterns_spirals_branch', 'Learn nature\'s patterns (spirals, branches, waves) and apply them to garden design.'), example: 'Herb spirals use vertical space efficiently; keyhole gardens maximize edge effect.' },
+            { num: 8, name: __alloT('stem.companionplanting.integrate_don_t_segregate', 'Integrate, Don\'t Segregate'), icon: '\uD83E\uDD1D', desc: __alloT('stem.companionplanting.place_elements_so_they_support_each_ot', 'Place elements so they support each other. Every element serves multiple functions.'), example: 'The Three Sisters: each plant serves 2-3 functions for the others.' },
+            { num: 9, name: __alloT('stem.companionplanting.small_slow_solutions', 'Small & Slow Solutions'), icon: '\uD83D\uDC22', desc: __alloT('stem.companionplanting.start_small_small_systems_are_easier_t', 'Start small. Small systems are easier to maintain and adapt.'), example: 'Start with one 4\u00D78 bed, not an acre. Master that first.' },
+            { num: 10, name: __alloT('stem.companionplanting.use_value_diversity', 'Use & Value Diversity'), icon: '\uD83C\uDF08', desc: __alloT('stem.companionplanting.diversity_resilience_monocultures_fail', 'Diversity = resilience. Monocultures fail; polycultures thrive.'), example: '20 crop species resist disease better than 1. If one fails, others compensate.' },
+            { num: 11, name: __alloT('stem.companionplanting.use_edges_margins', 'Use Edges & Margins'), icon: '\u3030\uFE0F', desc: __alloT('stem.companionplanting.the_edge_between_two_ecosystems_is_the', 'The edge between two ecosystems is the most productive zone.'), example: 'Forest edges, pond margins, and garden borders support the most biodiversity.' },
+            { num: 12, name: __alloT('stem.companionplanting.creatively_use_change', 'Creatively Use Change'), icon: '\uD83C\uDF0A', desc: __alloT('stem.companionplanting.embrace_succession_and_change_design_f', 'Embrace succession and change. Design for evolution, not stasis.'), example: 'A fallen tree becomes habitat for fungi, insects, and new plants.' }
           ];
 
           // === Wave 4: WATER_FOOTPRINT ===
@@ -672,16 +673,16 @@ var d = (labToolData.companionPlanting) || {};
 
           // === Wave 4: REGEN_PRACTICES ===
           var REGEN_PRACTICES = [
-            { name: 'No-Till / Minimal Tillage', icon: '\uD83D\uDEAB', benefit: 'Preserves soil structure, mycorrhizal networks, and earthworm tunnels. Reduces CO\u2082 release.', impact: 'Saves 1 ton CO\u2082/acre/year. Reduces erosion 90%.', difficulty: 'Medium' },
-            { name: 'Cover Cropping', icon: '\uD83C\uDF3F', benefit: 'Living roots feed soil biology year-round. Prevents erosion. Fixes nitrogen (legume covers).', impact: 'Adds 50-150 lbs N/acre free. Increases organic matter 0.5%/year.', difficulty: 'Easy' },
-            { name: 'Composting', icon: '\u267B\uFE0F', benefit: 'Recycles nutrients, feeds soil microbiome, improves water retention.', impact: '1 inch of compost holds 20,000 extra gallons water/acre.', difficulty: 'Easy' },
-            { name: 'Crop Rotation', icon: '\uD83D\uDD04', benefit: 'Breaks pest/disease cycles. Balances nutrient demands. Builds diverse soil biology.', impact: 'Reduces pesticide need 50-80%. Increases yield 10-25%.', difficulty: 'Easy' },
-            { name: 'Mulching', icon: '\uD83C\uDF42', benefit: 'Suppresses weeds, retains moisture, moderates temperature, feeds soil as it decomposes.', impact: 'Cuts water use 40-60%. Eliminates most weeding.', difficulty: 'Easy' },
-            { name: 'Agroforestry', icon: '\uD83C\uDF33', benefit: 'Trees + crops together. Shade, windbreaks, deep nutrient cycling, carbon storage.', impact: 'Sequesters 5-10 tons CO\u2082/acre/year. Creates microclimates.', difficulty: 'Hard' },
-            { name: 'Integrated Pest Management', icon: '\uD83D\uDC1E', benefit: 'Biological control first, chemicals last resort. Preserves beneficial insects.', impact: 'Reduces pesticide use 70-90%. Saves $50-200/acre.', difficulty: 'Medium' },
-            { name: 'Rainwater Harvesting', icon: '\uD83D\uDCA7', benefit: 'Capture roof/land runoff for irrigation. Reduces municipal water dependence.', impact: '1 inch rain on 1,000 sq ft roof = 623 gallons free water.', difficulty: 'Medium' },
-            { name: 'Biochar', icon: '\uD83D\uDD25', benefit: 'Charcoal added to soil stores carbon for 1000+ years and improves nutrient retention.', impact: 'Sequesters carbon permanently. Improves CEC (nutrient holding capacity).', difficulty: 'Medium' },
-            { name: 'Silvopasture', icon: '\uD83D\uDC04', benefit: 'Trees + livestock + pasture. Animals fertilize trees; trees shade animals; grass feeds both.', impact: 'Most carbon-sequestering agricultural practice on Earth.', difficulty: 'Hard' }
+            { name: __alloT('stem.companionplanting.no_till_minimal_tillage', 'No-Till / Minimal Tillage'), icon: '\uD83D\uDEAB', benefit: 'Preserves soil structure, mycorrhizal networks, and earthworm tunnels. Reduces CO\u2082 release.', impact: 'Saves 1 ton CO\u2082/acre/year. Reduces erosion 90%.', difficulty: 'Medium' },
+            { name: __alloT('stem.companionplanting.cover_cropping', 'Cover Cropping'), icon: '\uD83C\uDF3F', benefit: 'Living roots feed soil biology year-round. Prevents erosion. Fixes nitrogen (legume covers).', impact: 'Adds 50-150 lbs N/acre free. Increases organic matter 0.5%/year.', difficulty: 'Easy' },
+            { name: __alloT('stem.companionplanting.composting', 'Composting'), icon: '\u267B\uFE0F', benefit: 'Recycles nutrients, feeds soil microbiome, improves water retention.', impact: '1 inch of compost holds 20,000 extra gallons water/acre.', difficulty: 'Easy' },
+            { name: __alloT('stem.companionplanting.crop_rotation', 'Crop Rotation'), icon: '\uD83D\uDD04', benefit: 'Breaks pest/disease cycles. Balances nutrient demands. Builds diverse soil biology.', impact: 'Reduces pesticide need 50-80%. Increases yield 10-25%.', difficulty: 'Easy' },
+            { name: __alloT('stem.companionplanting.mulching', 'Mulching'), icon: '\uD83C\uDF42', benefit: 'Suppresses weeds, retains moisture, moderates temperature, feeds soil as it decomposes.', impact: 'Cuts water use 40-60%. Eliminates most weeding.', difficulty: 'Easy' },
+            { name: __alloT('stem.companionplanting.agroforestry', 'Agroforestry'), icon: '\uD83C\uDF33', benefit: 'Trees + crops together. Shade, windbreaks, deep nutrient cycling, carbon storage.', impact: 'Sequesters 5-10 tons CO\u2082/acre/year. Creates microclimates.', difficulty: 'Hard' },
+            { name: __alloT('stem.companionplanting.integrated_pest_management', 'Integrated Pest Management'), icon: '\uD83D\uDC1E', benefit: 'Biological control first, chemicals last resort. Preserves beneficial insects.', impact: 'Reduces pesticide use 70-90%. Saves $50-200/acre.', difficulty: 'Medium' },
+            { name: __alloT('stem.companionplanting.rainwater_harvesting', 'Rainwater Harvesting'), icon: '\uD83D\uDCA7', benefit: 'Capture roof/land runoff for irrigation. Reduces municipal water dependence.', impact: '1 inch rain on 1,000 sq ft roof = 623 gallons free water.', difficulty: 'Medium' },
+            { name: __alloT('stem.companionplanting.biochar', 'Biochar'), icon: '\uD83D\uDD25', benefit: 'Charcoal added to soil stores carbon for 1000+ years and improves nutrient retention.', impact: 'Sequesters carbon permanently. Improves CEC (nutrient holding capacity).', difficulty: 'Medium' },
+            { name: __alloT('stem.companionplanting.silvopasture', 'Silvopasture'), icon: '\uD83D\uDC04', benefit: 'Trees + livestock + pasture. Animals fertilize trees; trees shade animals; grass feeds both.', impact: 'Most carbon-sequestering agricultural practice on Earth.', difficulty: 'Hard' }
           ];
 
 
@@ -2206,13 +2207,13 @@ var d = (labToolData.companionPlanting) || {};
 
                 var _seasonOverlays = [
 
-                  { color: 'rgba(100,200,100,', emoji: '🌱', name: 'Spring' },
+                  { color: 'rgba(100,200,100,', emoji: '🌱', name: __alloT('stem.companionplanting.spring', 'Spring') },
 
-                  { color: 'rgba(255,200,50,', emoji: '☀️', name: 'Summer' },
+                  { color: 'rgba(255,200,50,', emoji: '☀️', name: __alloT('stem.companionplanting.summer', 'Summer') },
 
-                  { color: 'rgba(180,120,50,', emoji: '🍂', name: 'Autumn' },
+                  { color: 'rgba(180,120,50,', emoji: '🍂', name: __alloT('stem.companionplanting.autumn', 'Autumn') },
 
-                  { color: 'rgba(180,200,230,', emoji: '❄️', name: 'Winter' }
+                  { color: 'rgba(180,200,230,', emoji: '❄️', name: __alloT('stem.companionplanting.winter', 'Winter') }
 
                 ];
 
@@ -2347,155 +2348,155 @@ var d = (labToolData.companionPlanting) || {};
 
           // ── Plant Database ──
           var CG_PLANTS = {
-            tomato:    { emoji: '🍅', label: 'Tomato',    days: 80, water: 3, sun: 3, nEffect: -1, family: 'nightshade', harvest: 15, cost: 8, needsPoll: false, pollinator: false, desc: 'Heavy feeder, needs support. Mild drought stress improves flavor.' },
-            corn:      { emoji: '🌽', label: 'Corn',      days: 90, water: 2, sun: 3, nEffect: -1, family: 'grass', harvest: 12, cost: 5, needsPoll: false, pollinator: false, desc: 'Wind-pollinated. Plant in blocks. Provides trellis for beans.' },
-            beans:     { emoji: '🫘', label: 'Beans',     days: 60, water: 2, sun: 2, nEffect: 2,  family: 'legume', harvest: 10, cost: 4, needsPoll: false, pollinator: false, desc: 'Nitrogen fixer via rhizobium bacteria in root nodules.' },
-            squash:    { emoji: '🎃', label: 'Squash',    days: 95, water: 3, sun: 3, nEffect: -1, family: 'cucurbit', harvest: 14, cost: 7, needsPoll: true,  pollinator: false, desc: 'Needs pollinators. Living mulch suppresses weeds.' },
-            lettuce:   { emoji: '🥬', label: 'Lettuce',   days: 30, water: 3, sun: 1, nEffect: 0,  family: 'daisy', harvest: 5, cost: 3, needsPoll: false, pollinator: false, desc: 'Fast cool crop. Bolts in heat >75°F. Perfect for shade.' },
-            carrot:    { emoji: '🥕', label: 'Carrot',    days: 70, water: 2, sun: 2, nEffect: 0,  family: 'umbel', harvest: 8, cost: 3, needsPoll: false, pollinator: false, desc: 'Deep roots break compaction. High N causes forking.' },
-            pepper:    { emoji: '🌶️', label: 'Pepper',    days: 75, water: 2, sun: 3, nEffect: -1, family: 'nightshade', harvest: 12, cost: 7, needsPoll: false, pollinator: false, desc: 'Water stress increases capsaicin (heat). Needs warm soil.' },
-            onion:     { emoji: '🧅', label: 'Onion',     days: 65, water: 2, sun: 2, nEffect: 0,  family: 'allium', harvest: 7, cost: 3, needsPoll: false, pollinator: false, desc: 'Sulfur compounds repel carrot fly, aphids, beetles.' },
-            potato:    { emoji: '🥔', label: 'Potato',    days: 85, water: 3, sun: 2, nEffect: -1, family: 'nightshade', harvest: 13, cost: 5, needsPoll: false, pollinator: false, desc: 'Heavy feeder. Blight risk if near tomatoes. Prefers acidic soil.' },
-            cucumber:  { emoji: '🥒', label: 'Cucumber',  days: 55, water: 3, sun: 2, nEffect: 0,  family: 'cucurbit', harvest: 9, cost: 5, needsPoll: true,  pollinator: false, desc: 'Needs pollinators for fruit. Water stress causes bitterness.' },
-            peas:      { emoji: '🟢', label: 'Peas',      days: 55, water: 2, sun: 2, nEffect: 2,  family: 'legume', harvest: 8, cost: 4, needsPoll: false, pollinator: false, desc: 'Cool season nitrogen fixer. Dies in summer heat.' },
-            broccoli:  { emoji: '🥦', label: 'Broccoli',  days: 65, water: 3, sun: 2, nEffect: -1, family: 'brassica', harvest: 11, cost: 5, needsPoll: false, pollinator: false, desc: 'Cool crop. Bolts in heat >80°F. Cabbage moth target.' },
-            basil:     { emoji: '🌿', label: 'Basil',     days: 40, water: 2, sun: 3, nEffect: 0,  family: 'mint', harvest: 6, cost: 3, needsPoll: false, pollinator: false, desc: 'Repels thrips, whiteflies. Classic tomato companion.' },
-            marigold:  { emoji: '🌼', label: 'Marigold',  days: 45, water: 1, sun: 3, nEffect: 0,  family: 'daisy', harvest: 3, cost: 2, needsPoll: false, pollinator: true,  desc: 'Root exudates kill nematodes. Best utility flower.' },
-            sunflower: { emoji: '🌻', label: 'Sunflower', days: 70, water: 2, sun: 3, nEffect: 0,  family: 'daisy', harvest: 7, cost: 3, needsPoll: false, pollinator: true,  desc: 'Top pollinator attractor. Allelopathic to some plants.' },
-            mint:      { emoji: '🍃', label: 'Mint',      days: 35, water: 3, sun: 1, nEffect: 0,  family: 'mint', harvest: 4, cost: 2, needsPoll: false, pollinator: false, desc: 'Repels aphids — WARNING: spreads via underground runners!' },
-            dill:      { emoji: '🌾', label: 'Dill',      days: 40, water: 1, sun: 2, nEffect: 0,  family: 'umbel', harvest: 5, cost: 2, needsPoll: false, pollinator: true,  desc: 'Attracts ladybugs, lacewings, parasitic wasps.' },
-            rosemary:  { emoji: '🫒', label: 'Rosemary',  days: 90, water: 1, sun: 3, nEffect: 0,  family: 'mint', harvest: 6, cost: 4, needsPoll: false, pollinator: false, desc: 'Perennial. Deters cabbage moth, bean beetles.' },
-            lavender:  { emoji: '💜', label: 'Lavender',  days: 80, water: 1, sun: 3, nEffect: 0,  family: 'mint', harvest: 5, cost: 4, needsPoll: false, pollinator: true,  desc: 'Exceptional bee attractor. Deters moths, fleas.' },
-            nasturtium:{ emoji: '🧡', label: 'Nasturtium',days: 35, water: 2, sun: 2, nEffect: 0,  family: 'nasturtium', harvest: 3, cost: 2, needsPoll: false, pollinator: true,  desc: 'Trap crop — aphids colonize it instead of veggies. Edible!' },
-            clover:    { emoji: '☘️', label: 'Clover',    days: 25, water: 1, sun: 1, nEffect: 3,  family: 'legume', harvest: 1, cost: 1, needsPoll: false, pollinator: true,  regen: true, desc: 'Cover crop: fixes nitrogen + living mulch + attracts bees.' },
-            radish:    { emoji: '🔴', label: 'Radish',    days: 25, water: 2, sun: 2, nEffect: 0,  family: 'brassica', harvest: 3, cost: 1, needsPoll: false, pollinator: false, desc: 'Fastest crop. Trap crop for flea beetles. Loosens soil.' },
-            borage:    { emoji: '💙', label: 'Borage',    days: 60, water: 1, sun: 3, nEffect: 0,  family: 'borage', harvest: 4, cost: 2, needsPoll: false, pollinator: true,  regen: true, native: true, desc: 'Top bee attractor. Deep taproots mine minerals from subsoil. Edible flowers. Self-seeds.' },
-            comfrey:   { emoji: '🌿', label: 'Comfrey',   days: 50, water: 2, sun: 2, nEffect: 1,  family: 'borage', harvest: 2, cost: 2, needsPoll: false, pollinator: true,  regen: true, desc: 'Dynamic accumulator — deep roots pull nutrients up. Cut-and-drop mulch. Permaculture staple.' },
-            buckwheat: { emoji: '🌾', label: 'Buckwheat', days: 30, water: 1, sun: 3, nEffect: 0,  family: 'buckwheat', harvest: 2, cost: 1, needsPoll: false, pollinator: true,  regen: true, desc: 'Fast cover crop. Suppresses weeds, attracts hoverflies, phosphorus accumulator. Till in as green manure.' },
-            yarrow:    { emoji: '🤍', label: 'Yarrow',    days: 70, water: 1, sun: 3, nEffect: 0,  family: 'daisy', harvest: 3, cost: 2, needsPoll: false, pollinator: true,  regen: true, native: true, desc: 'Native perennial. Attracts ladybugs, lacewings, parasitic wasps. Medicinal. Drought-proof.' },
-            bee_hotel: { emoji: '🏨', label: 'Bee Hotel',  days: 10, water: 0, sun: 2, nEffect: 0,  family: 'structure', harvest: 0, cost: 5, needsPoll: false, pollinator: true, regen: true, isStructure: true, desc: 'Nesting habitat for solitary bees (mason bees, leafcutter bees). Boosts pollination in a 3-cell radius. Solitary bees pollinate 95% of wild plants!' },
-            compost_bin: { emoji: '♻️', label: 'Compost Bin', days: 15, water: 0, sun: 0, nEffect: 2, family: 'structure', harvest: 0, cost: 4, needsPoll: false, pollinator: false, regen: true, isStructure: true, desc: 'Converts organic matter into rich humus. Boosts nitrogen and soil health in adjacent cells. The ultimate closed-loop nutrient cycle.' },
-            rain_barrel: { emoji: '🛢️', label: 'Rain Barrel', days: 5, water: 0, sun: 0, nEffect: 0, family: 'structure', harvest: 0, cost: 3, needsPoll: false, pollinator: false, regen: true, isStructure: true, desc: 'Captures rainwater for irrigation. Reduces moisture decay rate for the whole garden by 20%. Free water from the sky!' },
+            tomato:    { emoji: '🍅', label: __alloT('stem.companionplanting.tomato_2', 'Tomato'),    days: 80, water: 3, sun: 3, nEffect: -1, family: 'nightshade', harvest: 15, cost: 8, needsPoll: false, pollinator: false, desc: __alloT('stem.companionplanting.heavy_feeder_needs_support_mild_drough', 'Heavy feeder, needs support. Mild drought stress improves flavor.') },
+            corn:      { emoji: '🌽', label: __alloT('stem.companionplanting.corn_2', 'Corn'),      days: 90, water: 2, sun: 3, nEffect: -1, family: 'grass', harvest: 12, cost: 5, needsPoll: false, pollinator: false, desc: __alloT('stem.companionplanting.wind_pollinated_plant_in_blocks_provid', 'Wind-pollinated. Plant in blocks. Provides trellis for beans.') },
+            beans:     { emoji: '🫘', label: __alloT('stem.companionplanting.beans_2', 'Beans'),     days: 60, water: 2, sun: 2, nEffect: 2,  family: 'legume', harvest: 10, cost: 4, needsPoll: false, pollinator: false, desc: __alloT('stem.companionplanting.nitrogen_fixer_via_rhizobium_bacteria_', 'Nitrogen fixer via rhizobium bacteria in root nodules.') },
+            squash:    { emoji: '🎃', label: __alloT('stem.companionplanting.squash_2', 'Squash'),    days: 95, water: 3, sun: 3, nEffect: -1, family: 'cucurbit', harvest: 14, cost: 7, needsPoll: true,  pollinator: false, desc: __alloT('stem.companionplanting.needs_pollinators_living_mulch_suppres', 'Needs pollinators. Living mulch suppresses weeds.') },
+            lettuce:   { emoji: '🥬', label: __alloT('stem.companionplanting.lettuce_2', 'Lettuce'),   days: 30, water: 3, sun: 1, nEffect: 0,  family: 'daisy', harvest: 5, cost: 3, needsPoll: false, pollinator: false, desc: __alloT('stem.companionplanting.fast_cool_crop_bolts_in_heat_75_f_perf', 'Fast cool crop. Bolts in heat >75°F. Perfect for shade.') },
+            carrot:    { emoji: '🥕', label: __alloT('stem.companionplanting.carrot', 'Carrot'),    days: 70, water: 2, sun: 2, nEffect: 0,  family: 'umbel', harvest: 8, cost: 3, needsPoll: false, pollinator: false, desc: __alloT('stem.companionplanting.deep_roots_break_compaction_high_n_cau', 'Deep roots break compaction. High N causes forking.') },
+            pepper:    { emoji: '🌶️', label: __alloT('stem.companionplanting.pepper', 'Pepper'),    days: 75, water: 2, sun: 3, nEffect: -1, family: 'nightshade', harvest: 12, cost: 7, needsPoll: false, pollinator: false, desc: __alloT('stem.companionplanting.water_stress_increases_capsaicin_heat_', 'Water stress increases capsaicin (heat). Needs warm soil.') },
+            onion:     { emoji: '🧅', label: __alloT('stem.companionplanting.onion', 'Onion'),     days: 65, water: 2, sun: 2, nEffect: 0,  family: 'allium', harvest: 7, cost: 3, needsPoll: false, pollinator: false, desc: __alloT('stem.companionplanting.sulfur_compounds_repel_carrot_fly_aphi', 'Sulfur compounds repel carrot fly, aphids, beetles.') },
+            potato:    { emoji: '🥔', label: __alloT('stem.companionplanting.potato_2', 'Potato'),    days: 85, water: 3, sun: 2, nEffect: -1, family: 'nightshade', harvest: 13, cost: 5, needsPoll: false, pollinator: false, desc: __alloT('stem.companionplanting.heavy_feeder_blight_risk_if_near_tomat', 'Heavy feeder. Blight risk if near tomatoes. Prefers acidic soil.') },
+            cucumber:  { emoji: '🥒', label: __alloT('stem.companionplanting.cucumber', 'Cucumber'),  days: 55, water: 3, sun: 2, nEffect: 0,  family: 'cucurbit', harvest: 9, cost: 5, needsPoll: true,  pollinator: false, desc: __alloT('stem.companionplanting.needs_pollinators_for_fruit_water_stre', 'Needs pollinators for fruit. Water stress causes bitterness.') },
+            peas:      { emoji: '🟢', label: __alloT('stem.companionplanting.peas', 'Peas'),      days: 55, water: 2, sun: 2, nEffect: 2,  family: 'legume', harvest: 8, cost: 4, needsPoll: false, pollinator: false, desc: __alloT('stem.companionplanting.cool_season_nitrogen_fixer_dies_in_sum', 'Cool season nitrogen fixer. Dies in summer heat.') },
+            broccoli:  { emoji: '🥦', label: __alloT('stem.companionplanting.broccoli', 'Broccoli'),  days: 65, water: 3, sun: 2, nEffect: -1, family: 'brassica', harvest: 11, cost: 5, needsPoll: false, pollinator: false, desc: __alloT('stem.companionplanting.cool_crop_bolts_in_heat_80_f_cabbage_m', 'Cool crop. Bolts in heat >80°F. Cabbage moth target.') },
+            basil:     { emoji: '🌿', label: __alloT('stem.companionplanting.basil', 'Basil'),     days: 40, water: 2, sun: 3, nEffect: 0,  family: 'mint', harvest: 6, cost: 3, needsPoll: false, pollinator: false, desc: __alloT('stem.companionplanting.repels_thrips_whiteflies_classic_tomat', 'Repels thrips, whiteflies. Classic tomato companion.') },
+            marigold:  { emoji: '🌼', label: __alloT('stem.companionplanting.marigold', 'Marigold'),  days: 45, water: 1, sun: 3, nEffect: 0,  family: 'daisy', harvest: 3, cost: 2, needsPoll: false, pollinator: true,  desc: __alloT('stem.companionplanting.root_exudates_kill_nematodes_best_util', 'Root exudates kill nematodes. Best utility flower.') },
+            sunflower: { emoji: '🌻', label: __alloT('stem.companionplanting.sunflower', 'Sunflower'), days: 70, water: 2, sun: 3, nEffect: 0,  family: 'daisy', harvest: 7, cost: 3, needsPoll: false, pollinator: true,  desc: __alloT('stem.companionplanting.top_pollinator_attractor_allelopathic_', 'Top pollinator attractor. Allelopathic to some plants.') },
+            mint:      { emoji: '🍃', label: __alloT('stem.companionplanting.mint', 'Mint'),      days: 35, water: 3, sun: 1, nEffect: 0,  family: 'mint', harvest: 4, cost: 2, needsPoll: false, pollinator: false, desc: __alloT('stem.companionplanting.repels_aphids_warning_spreads_via_unde', 'Repels aphids — WARNING: spreads via underground runners!') },
+            dill:      { emoji: '🌾', label: __alloT('stem.companionplanting.dill', 'Dill'),      days: 40, water: 1, sun: 2, nEffect: 0,  family: 'umbel', harvest: 5, cost: 2, needsPoll: false, pollinator: true,  desc: __alloT('stem.companionplanting.attracts_ladybugs_lacewings_parasitic_', 'Attracts ladybugs, lacewings, parasitic wasps.') },
+            rosemary:  { emoji: '🫒', label: __alloT('stem.companionplanting.rosemary', 'Rosemary'),  days: 90, water: 1, sun: 3, nEffect: 0,  family: 'mint', harvest: 6, cost: 4, needsPoll: false, pollinator: false, desc: __alloT('stem.companionplanting.perennial_deters_cabbage_moth_bean_bee', 'Perennial. Deters cabbage moth, bean beetles.') },
+            lavender:  { emoji: '💜', label: __alloT('stem.companionplanting.lavender_2', 'Lavender'),  days: 80, water: 1, sun: 3, nEffect: 0,  family: 'mint', harvest: 5, cost: 4, needsPoll: false, pollinator: true,  desc: __alloT('stem.companionplanting.exceptional_bee_attractor_deters_moths', 'Exceptional bee attractor. Deters moths, fleas.') },
+            nasturtium:{ emoji: '🧡', label: __alloT('stem.companionplanting.nasturtium', 'Nasturtium'),days: 35, water: 2, sun: 2, nEffect: 0,  family: 'nasturtium', harvest: 3, cost: 2, needsPoll: false, pollinator: true,  desc: __alloT('stem.companionplanting.trap_crop_aphids_colonize_it_instead_o', 'Trap crop — aphids colonize it instead of veggies. Edible!') },
+            clover:    { emoji: '☘️', label: __alloT('stem.companionplanting.clover', 'Clover'),    days: 25, water: 1, sun: 1, nEffect: 3,  family: 'legume', harvest: 1, cost: 1, needsPoll: false, pollinator: true,  regen: true, desc: __alloT('stem.companionplanting.cover_crop_fixes_nitrogen_living_mulch', 'Cover crop: fixes nitrogen + living mulch + attracts bees.') },
+            radish:    { emoji: '🔴', label: __alloT('stem.companionplanting.radish', 'Radish'),    days: 25, water: 2, sun: 2, nEffect: 0,  family: 'brassica', harvest: 3, cost: 1, needsPoll: false, pollinator: false, desc: __alloT('stem.companionplanting.fastest_crop_trap_crop_for_flea_beetle', 'Fastest crop. Trap crop for flea beetles. Loosens soil.') },
+            borage:    { emoji: '💙', label: __alloT('stem.companionplanting.borage', 'Borage'),    days: 60, water: 1, sun: 3, nEffect: 0,  family: 'borage', harvest: 4, cost: 2, needsPoll: false, pollinator: true,  regen: true, native: true, desc: __alloT('stem.companionplanting.top_bee_attractor_deep_taproots_mine_m', 'Top bee attractor. Deep taproots mine minerals from subsoil. Edible flowers. Self-seeds.') },
+            comfrey:   { emoji: '🌿', label: __alloT('stem.companionplanting.comfrey', 'Comfrey'),   days: 50, water: 2, sun: 2, nEffect: 1,  family: 'borage', harvest: 2, cost: 2, needsPoll: false, pollinator: true,  regen: true, desc: __alloT('stem.companionplanting.dynamic_accumulator_deep_roots_pull_nu', 'Dynamic accumulator — deep roots pull nutrients up. Cut-and-drop mulch. Permaculture staple.') },
+            buckwheat: { emoji: '🌾', label: __alloT('stem.companionplanting.buckwheat', 'Buckwheat'), days: 30, water: 1, sun: 3, nEffect: 0,  family: 'buckwheat', harvest: 2, cost: 1, needsPoll: false, pollinator: true,  regen: true, desc: __alloT('stem.companionplanting.fast_cover_crop_suppresses_weeds_attra', 'Fast cover crop. Suppresses weeds, attracts hoverflies, phosphorus accumulator. Till in as green manure.') },
+            yarrow:    { emoji: '🤍', label: __alloT('stem.companionplanting.yarrow', 'Yarrow'),    days: 70, water: 1, sun: 3, nEffect: 0,  family: 'daisy', harvest: 3, cost: 2, needsPoll: false, pollinator: true,  regen: true, native: true, desc: __alloT('stem.companionplanting.native_perennial_attracts_ladybugs_lac', 'Native perennial. Attracts ladybugs, lacewings, parasitic wasps. Medicinal. Drought-proof.') },
+            bee_hotel: { emoji: '🏨', label: __alloT('stem.companionplanting.bee_hotel', 'Bee Hotel'),  days: 10, water: 0, sun: 2, nEffect: 0,  family: 'structure', harvest: 0, cost: 5, needsPoll: false, pollinator: true, regen: true, isStructure: true, desc: __alloT('stem.companionplanting.nesting_habitat_for_solitary_bees_maso', 'Nesting habitat for solitary bees (mason bees, leafcutter bees). Boosts pollination in a 3-cell radius. Solitary bees pollinate 95% of wild plants!') },
+            compost_bin: { emoji: '♻️', label: __alloT('stem.companionplanting.compost_bin', 'Compost Bin'), days: 15, water: 0, sun: 0, nEffect: 2, family: 'structure', harvest: 0, cost: 4, needsPoll: false, pollinator: false, regen: true, isStructure: true, desc: __alloT('stem.companionplanting.converts_organic_matter_into_rich_humu', 'Converts organic matter into rich humus. Boosts nitrogen and soil health in adjacent cells. The ultimate closed-loop nutrient cycle.') },
+            rain_barrel: { emoji: '🛢️', label: __alloT('stem.companionplanting.rain_barrel', 'Rain Barrel'), days: 5, water: 0, sun: 0, nEffect: 0, family: 'structure', harvest: 0, cost: 3, needsPoll: false, pollinator: false, regen: true, isStructure: true, desc: __alloT('stem.companionplanting.captures_rainwater_for_irrigation_redu', 'Captures rainwater for irrigation. Reduces moisture decay rate for the whole garden by 20%. Free water from the sky!') },
             // ── Perennial Plants (persist across years, increasing yields) ──
-            strawberry: { emoji: '🍓', label: 'Strawberry', days: 60, water: 3, sun: 3, nEffect: -1, family: 'rose', harvest: 12, cost: 6, needsPoll: true, pollinator: false, perennial: true, yearsToMature: 1, desc: 'Perennial. First-year yield is low; doubles in year 2. Runners spread to fill gaps. Great ground cover.' },
-            asparagus:  { emoji: '🌱', label: 'Asparagus',  days: 120, water: 2, sun: 3, nEffect: 0, family: 'asparagus', harvest: 18, cost: 8, needsPoll: false, pollinator: false, perennial: true, yearsToMature: 3, desc: 'Perennial. Don\'t harvest for 3 years! Then produces for 20+ years. Deep roots improve soil structure.' },
-            blueberry:  { emoji: '🫐', label: 'Blueberry',  days: 100, water: 3, sun: 3, nEffect: 0, family: 'heath', harvest: 20, cost: 10, needsPoll: true, pollinator: false, perennial: true, yearsToMature: 3, desc: 'Perennial. Needs ACIDIC soil (pH 4.5-5.5). Takes 3 years to mature. Partner with azaleas.' },
-            garlic:     { emoji: '🧄', label: 'Garlic',     days: 90, water: 1, sun: 2, nEffect: 0, family: 'allium', harvest: 8, cost: 3, needsPoll: false, pollinator: false, desc: 'Plant in fall, harvest in spring. Strong pest repellent. Deters aphids, spider mites, Japanese beetles.' },
-            rhubarb:    { emoji: '🟥', label: 'Rhubarb',    days: 90, water: 2, sun: 2, nEffect: 0, family: 'buckwheat', harvest: 10, cost: 5, needsPoll: false, pollinator: false, perennial: true, yearsToMature: 2, desc: 'Perennial. Don\'t harvest year 1. Leaves are toxic (oxalic acid) — only eat the stalks! Produces for 10+ years.' }
+            strawberry: { emoji: '🍓', label: __alloT('stem.companionplanting.strawberry_2', 'Strawberry'), days: 60, water: 3, sun: 3, nEffect: -1, family: 'rose', harvest: 12, cost: 6, needsPoll: true, pollinator: false, perennial: true, yearsToMature: 1, desc: __alloT('stem.companionplanting.perennial_first_year_yield_is_low_doub', 'Perennial. First-year yield is low; doubles in year 2. Runners spread to fill gaps. Great ground cover.') },
+            asparagus:  { emoji: '🌱', label: __alloT('stem.companionplanting.asparagus_2', 'Asparagus'),  days: 120, water: 2, sun: 3, nEffect: 0, family: 'asparagus', harvest: 18, cost: 8, needsPoll: false, pollinator: false, perennial: true, yearsToMature: 3, desc: __alloT('stem.companionplanting.perennial_don_t_harvest_for_3_years_th', 'Perennial. Don\'t harvest for 3 years! Then produces for 20+ years. Deep roots improve soil structure.') },
+            blueberry:  { emoji: '🫐', label: __alloT('stem.companionplanting.blueberry_2', 'Blueberry'),  days: 100, water: 3, sun: 3, nEffect: 0, family: 'heath', harvest: 20, cost: 10, needsPoll: true, pollinator: false, perennial: true, yearsToMature: 3, desc: __alloT('stem.companionplanting.perennial_needs_acidic_soil_ph_4_5_5_5', 'Perennial. Needs ACIDIC soil (pH 4.5-5.5). Takes 3 years to mature. Partner with azaleas.') },
+            garlic:     { emoji: '🧄', label: __alloT('stem.companionplanting.garlic_2', 'Garlic'),     days: 90, water: 1, sun: 2, nEffect: 0, family: 'allium', harvest: 8, cost: 3, needsPoll: false, pollinator: false, desc: __alloT('stem.companionplanting.plant_in_fall_harvest_in_spring_strong', 'Plant in fall, harvest in spring. Strong pest repellent. Deters aphids, spider mites, Japanese beetles.') },
+            rhubarb:    { emoji: '🟥', label: __alloT('stem.companionplanting.rhubarb', 'Rhubarb'),    days: 90, water: 2, sun: 2, nEffect: 0, family: 'buckwheat', harvest: 10, cost: 5, needsPoll: false, pollinator: false, perennial: true, yearsToMature: 2, desc: __alloT('stem.companionplanting.perennial_don_t_harvest_year_1_leaves_', 'Perennial. Don\'t harvest year 1. Leaves are toxic (oxalic acid) — only eat the stalks! Produces for 10+ years.') }
           };
 
           // ── Companion Interactions (bidirectional) ──
           // Positive = growth bonus + pest reduction. Negative = growth penalty + disease risk.
           var CG_COMPANIONS = [
-            { a: 'tomato', b: 'basil', bonus: 15, desc: 'Basil repels tomato hornworm and whiteflies' },
-            { a: 'tomato', b: 'marigold', bonus: 10, desc: 'Marigold roots kill soil nematodes' },
-            { a: 'tomato', b: 'carrot', bonus: 8, desc: 'Tomato shade protects carrots in summer' },
-            { a: 'tomato', b: 'nasturtium', bonus: 12, desc: 'Nasturtium lures aphids away from tomatoes' },
-            { a: 'tomato', b: 'potato', bonus: -20, desc: 'Same family — share blight and beetle pests!' },
-            { a: 'tomato', b: 'dill', bonus: -10, desc: 'Mature dill stunts tomato growth' },
-            { a: 'corn', b: 'beans', bonus: 18, desc: 'Beans fix nitrogen; corn provides a trellis' },
-            { a: 'corn', b: 'squash', bonus: 15, desc: 'Squash shades soil; corn blocks wind' },
-            { a: 'beans', b: 'squash', bonus: 12, desc: 'Living mulch + nitrogen = thriving squash' },
-            { a: 'beans', b: 'onion', bonus: -15, desc: 'Onion sulfur compounds inhibit bean rhizobium' },
-            { a: 'carrot', b: 'onion', bonus: 15, desc: 'Onion repels carrot fly; carrots repel onion fly' },
-            { a: 'carrot', b: 'dill', bonus: -12, desc: 'Dill cross-pollinates and stunts carrot roots' },
-            { a: 'lettuce', b: 'radish', bonus: 10, desc: 'Radish loosens soil for shallow lettuce roots' },
-            { a: 'lettuce', b: 'sunflower', bonus: 8, desc: 'Sunflower provides afternoon shade for lettuce' },
-            { a: 'cucumber', b: 'dill', bonus: 12, desc: 'Dill attracts predatory wasps that eat cucumber beetles' },
-            { a: 'cucumber', b: 'sunflower', bonus: 10, desc: 'Sunflower attracts pollinators for cucumber flowers' },
-            { a: 'pepper', b: 'basil', bonus: 10, desc: 'Basil deters aphids and improves pepper flavor' },
-            { a: 'broccoli', b: 'rosemary', bonus: 12, desc: 'Rosemary repels cabbage moth larvae' },
-            { a: 'broccoli', b: 'nasturtium', bonus: 10, desc: 'Nasturtium traps cabbage aphids' },
-            { a: 'peas', b: 'carrot', bonus: 10, desc: 'Peas fix nitrogen that carrots need' },
-            { a: 'peas', b: 'onion', bonus: -12, desc: 'Allium family inhibits legume nitrogen fixation' },
-            { a: 'potato', b: 'beans', bonus: 10, desc: 'Beans fix nitrogen; potatoes provide ground cover' },
-            { a: 'potato', b: 'sunflower', bonus: -8, desc: 'Allelopathic sunflower chemicals stunt potatoes' },
-            { a: 'marigold', b: 'beans', bonus: 8, desc: 'Marigold attracts beneficial insects to bean flowers' },
-            { a: 'lavender', b: 'rosemary', bonus: 8, desc: 'Mediterranean herbs thrive together; attract pollinators' },
-            { a: 'mint', b: 'broccoli', bonus: 10, desc: 'Mint deters flea beetles on brassicas' },
-            { a: 'clover', b: 'corn', bonus: 12, desc: 'Clover fixes nitrogen and prevents erosion' },
-            { a: 'clover', b: 'tomato', bonus: 10, desc: 'Living mulch retains moisture around tomatoes' },
-            { a: 'borage', b: 'tomato', bonus: 15, desc: 'Borage attracts pollinators and repels tomato hornworm' },
-            { a: 'borage', b: 'squash', bonus: 12, desc: 'Borage is the #1 bee attractor — essential for squash pollination' },
-            { a: 'comfrey', b: 'tomato', bonus: 10, desc: 'Comfrey deep roots mine potassium — cut leaves make perfect tomato mulch' },
-            { a: 'comfrey', b: 'potato', bonus: 12, desc: 'Comfrey leaves as mulch provide potassium that potatoes crave' },
-            { a: 'buckwheat', b: 'cucumber', bonus: 10, desc: 'Buckwheat attracts hoverflies whose larvae eat cucumber aphids' },
-            { a: 'buckwheat', b: 'lettuce', bonus: 8, desc: 'Fast buckwheat cover suppresses weeds around slow lettuce' },
-            { a: 'yarrow', b: 'beans', bonus: 10, desc: 'Yarrow attracts parasitic wasps that control bean beetles' },
-            { a: 'yarrow', b: 'broccoli', bonus: 12, desc: 'Yarrow attracts lacewings that devour cabbage aphids' }
+            { a: 'tomato', b: 'basil', bonus: 15, desc: __alloT('stem.companionplanting.basil_repels_tomato_hornworm_and_white', 'Basil repels tomato hornworm and whiteflies') },
+            { a: 'tomato', b: 'marigold', bonus: 10, desc: __alloT('stem.companionplanting.marigold_roots_kill_soil_nematodes', 'Marigold roots kill soil nematodes') },
+            { a: 'tomato', b: 'carrot', bonus: 8, desc: __alloT('stem.companionplanting.tomato_shade_protects_carrots_in_summe', 'Tomato shade protects carrots in summer') },
+            { a: 'tomato', b: 'nasturtium', bonus: 12, desc: __alloT('stem.companionplanting.nasturtium_lures_aphids_away_from_toma', 'Nasturtium lures aphids away from tomatoes') },
+            { a: 'tomato', b: 'potato', bonus: -20, desc: __alloT('stem.companionplanting.same_family_share_blight_and_beetle_pe', 'Same family — share blight and beetle pests!') },
+            { a: 'tomato', b: 'dill', bonus: -10, desc: __alloT('stem.companionplanting.mature_dill_stunts_tomato_growth', 'Mature dill stunts tomato growth') },
+            { a: 'corn', b: 'beans', bonus: 18, desc: __alloT('stem.companionplanting.beans_fix_nitrogen_corn_provides_a_tre', 'Beans fix nitrogen; corn provides a trellis') },
+            { a: 'corn', b: 'squash', bonus: 15, desc: __alloT('stem.companionplanting.squash_shades_soil_corn_blocks_wind', 'Squash shades soil; corn blocks wind') },
+            { a: 'beans', b: 'squash', bonus: 12, desc: __alloT('stem.companionplanting.living_mulch_nitrogen_thriving_squash', 'Living mulch + nitrogen = thriving squash') },
+            { a: 'beans', b: 'onion', bonus: -15, desc: __alloT('stem.companionplanting.onion_sulfur_compounds_inhibit_bean_rh', 'Onion sulfur compounds inhibit bean rhizobium') },
+            { a: 'carrot', b: 'onion', bonus: 15, desc: __alloT('stem.companionplanting.onion_repels_carrot_fly_carrots_repel_', 'Onion repels carrot fly; carrots repel onion fly') },
+            { a: 'carrot', b: 'dill', bonus: -12, desc: __alloT('stem.companionplanting.dill_cross_pollinates_and_stunts_carro', 'Dill cross-pollinates and stunts carrot roots') },
+            { a: 'lettuce', b: 'radish', bonus: 10, desc: __alloT('stem.companionplanting.radish_loosens_soil_for_shallow_lettuc', 'Radish loosens soil for shallow lettuce roots') },
+            { a: 'lettuce', b: 'sunflower', bonus: 8, desc: __alloT('stem.companionplanting.sunflower_provides_afternoon_shade_for', 'Sunflower provides afternoon shade for lettuce') },
+            { a: 'cucumber', b: 'dill', bonus: 12, desc: __alloT('stem.companionplanting.dill_attracts_predatory_wasps_that_eat', 'Dill attracts predatory wasps that eat cucumber beetles') },
+            { a: 'cucumber', b: 'sunflower', bonus: 10, desc: __alloT('stem.companionplanting.sunflower_attracts_pollinators_for_cuc', 'Sunflower attracts pollinators for cucumber flowers') },
+            { a: 'pepper', b: 'basil', bonus: 10, desc: __alloT('stem.companionplanting.basil_deters_aphids_and_improves_peppe', 'Basil deters aphids and improves pepper flavor') },
+            { a: 'broccoli', b: 'rosemary', bonus: 12, desc: __alloT('stem.companionplanting.rosemary_repels_cabbage_moth_larvae', 'Rosemary repels cabbage moth larvae') },
+            { a: 'broccoli', b: 'nasturtium', bonus: 10, desc: __alloT('stem.companionplanting.nasturtium_traps_cabbage_aphids', 'Nasturtium traps cabbage aphids') },
+            { a: 'peas', b: 'carrot', bonus: 10, desc: __alloT('stem.companionplanting.peas_fix_nitrogen_that_carrots_need', 'Peas fix nitrogen that carrots need') },
+            { a: 'peas', b: 'onion', bonus: -12, desc: __alloT('stem.companionplanting.allium_family_inhibits_legume_nitrogen', 'Allium family inhibits legume nitrogen fixation') },
+            { a: 'potato', b: 'beans', bonus: 10, desc: __alloT('stem.companionplanting.beans_fix_nitrogen_potatoes_provide_gr', 'Beans fix nitrogen; potatoes provide ground cover') },
+            { a: 'potato', b: 'sunflower', bonus: -8, desc: __alloT('stem.companionplanting.allelopathic_sunflower_chemicals_stunt', 'Allelopathic sunflower chemicals stunt potatoes') },
+            { a: 'marigold', b: 'beans', bonus: 8, desc: __alloT('stem.companionplanting.marigold_attracts_beneficial_insects_t', 'Marigold attracts beneficial insects to bean flowers') },
+            { a: 'lavender', b: 'rosemary', bonus: 8, desc: __alloT('stem.companionplanting.mediterranean_herbs_thrive_together_at', 'Mediterranean herbs thrive together; attract pollinators') },
+            { a: 'mint', b: 'broccoli', bonus: 10, desc: __alloT('stem.companionplanting.mint_deters_flea_beetles_on_brassicas', 'Mint deters flea beetles on brassicas') },
+            { a: 'clover', b: 'corn', bonus: 12, desc: __alloT('stem.companionplanting.clover_fixes_nitrogen_and_prevents_ero', 'Clover fixes nitrogen and prevents erosion') },
+            { a: 'clover', b: 'tomato', bonus: 10, desc: __alloT('stem.companionplanting.living_mulch_retains_moisture_around_t', 'Living mulch retains moisture around tomatoes') },
+            { a: 'borage', b: 'tomato', bonus: 15, desc: __alloT('stem.companionplanting.borage_attracts_pollinators_and_repels', 'Borage attracts pollinators and repels tomato hornworm') },
+            { a: 'borage', b: 'squash', bonus: 12, desc: __alloT('stem.companionplanting.borage_is_the_1_bee_attractor_essentia', 'Borage is the #1 bee attractor — essential for squash pollination') },
+            { a: 'comfrey', b: 'tomato', bonus: 10, desc: __alloT('stem.companionplanting.comfrey_deep_roots_mine_potassium_cut_', 'Comfrey deep roots mine potassium — cut leaves make perfect tomato mulch') },
+            { a: 'comfrey', b: 'potato', bonus: 12, desc: __alloT('stem.companionplanting.comfrey_leaves_as_mulch_provide_potass', 'Comfrey leaves as mulch provide potassium that potatoes crave') },
+            { a: 'buckwheat', b: 'cucumber', bonus: 10, desc: __alloT('stem.companionplanting.buckwheat_attracts_hoverflies_whose_la', 'Buckwheat attracts hoverflies whose larvae eat cucumber aphids') },
+            { a: 'buckwheat', b: 'lettuce', bonus: 8, desc: __alloT('stem.companionplanting.fast_buckwheat_cover_suppresses_weeds_', 'Fast buckwheat cover suppresses weeds around slow lettuce') },
+            { a: 'yarrow', b: 'beans', bonus: 10, desc: __alloT('stem.companionplanting.yarrow_attracts_parasitic_wasps_that_c', 'Yarrow attracts parasitic wasps that control bean beetles') },
+            { a: 'yarrow', b: 'broccoli', bonus: 12, desc: __alloT('stem.companionplanting.yarrow_attracts_lacewings_that_devour_', 'Yarrow attracts lacewings that devour cabbage aphids') }
           ];
 
           // ── Invasive Species Events ──
           var CG_INVASIVES = [
-            { id: 'mint_spread', emoji: '🍃⚠️', label: 'Mint Invasion!', desc: 'Your mint has spread to adjacent plots! Mint sends underground runners that colonize nearby soil.', trigger: 'mint', spreadTo: 1, lesson: 'Mint is one of the most aggressive garden spreaders. Always plant mint in containers or isolated beds. Its underground stolons can travel several feet per season.' },
-            { id: 'japanese_beetle', emoji: '🪲', label: 'Japanese Beetles!', desc: 'Metallic green beetles are devouring leaves! They skeletonize foliage and damage fruit.', damage: 15, targets: ['tomato', 'beans', 'basil'], lesson: 'Japanese beetles (Popillia japonica) were accidentally introduced to the US in 1916. Hand-picking, neem oil, and milky spore disease (which kills grubs) are organic controls.' },
-            { id: 'aphid_swarm', emoji: '🦠', label: 'Aphid Swarm!', desc: 'Tiny sap-sucking insects coat the stems. They multiply explosively — one aphid can produce 80 offspring per week!', damage: 12, targets: ['lettuce', 'pepper', 'broccoli', 'peas'], lesson: 'Aphids reproduce asexually when conditions are good, producing live young without mating. Ladybugs eat 50+ aphids per day. Dill and nasturtium attract natural predators.' },
-            { id: 'cabbage_moth', emoji: '🦋⚠️', label: 'Cabbage White Moths!', desc: 'White butterflies are laying eggs on your brassicas. The green caterpillars will devour leaves.', damage: 18, targets: ['broccoli'], lesson: 'Pieris rapae caterpillars eat 3x their body weight daily. Row covers prevent egg-laying. Rosemary and thyme planted nearby confuse moths with strong scent.' },
-            { id: 'bindweed', emoji: '🌀', label: 'Bindweed Invasion!', desc: 'Twisting vines are strangling your plants! Bindweed can grow 3-6 feet per season and regenerates from root fragments.', damage: 20, spreadTo: 2, lesson: 'Convolvulus arvensis roots can extend 20+ feet deep. A single root fragment of 2 inches can regenerate. Repeated cutting exhausts root reserves over 2-3 seasons. Mulching heavily suppresses emergence.' },
-            { id: 'tomato_blight', emoji: '🟤', label: 'Late Blight!', desc: 'Brown patches spread across leaves. This is the same disease that caused the Irish Potato Famine!', damage: 25, targets: ['tomato', 'potato'], lesson: 'Phytophthora infestans spreads via airborne spores in cool, wet conditions. Crop rotation and avoiding overhead watering are key defenses. Never plant tomatoes where potatoes grew last season.' },
-            { id: 'spotted_lanternfly', emoji: '🪰', label: 'Spotted Lanternfly!', desc: 'These invasive insects from Asia suck sap and excrete sticky honeydew that grows sooty mold.', damage: 14, targets: ['sunflower', 'cucumber', 'squash'], lesson: 'Lycorma delicatula arrived in Pennsylvania in 2014 on stone shipments. They lay egg masses on any flat surface. Reporting sightings to your state agriculture department helps track their spread.' }
+            { id: 'mint_spread', emoji: '🍃⚠️', label: __alloT('stem.companionplanting.mint_invasion', 'Mint Invasion!'), desc: __alloT('stem.companionplanting.your_mint_has_spread_to_adjacent_plots', 'Your mint has spread to adjacent plots! Mint sends underground runners that colonize nearby soil.'), trigger: 'mint', spreadTo: 1, lesson: 'Mint is one of the most aggressive garden spreaders. Always plant mint in containers or isolated beds. Its underground stolons can travel several feet per season.' },
+            { id: 'japanese_beetle', emoji: '🪲', label: __alloT('stem.companionplanting.japanese_beetles', 'Japanese Beetles!'), desc: __alloT('stem.companionplanting.metallic_green_beetles_are_devouring_l', 'Metallic green beetles are devouring leaves! They skeletonize foliage and damage fruit.'), damage: 15, targets: ['tomato', 'beans', 'basil'], lesson: 'Japanese beetles (Popillia japonica) were accidentally introduced to the US in 1916. Hand-picking, neem oil, and milky spore disease (which kills grubs) are organic controls.' },
+            { id: 'aphid_swarm', emoji: '🦠', label: __alloT('stem.companionplanting.aphid_swarm', 'Aphid Swarm!'), desc: __alloT('stem.companionplanting.tiny_sap_sucking_insects_coat_the_stem', 'Tiny sap-sucking insects coat the stems. They multiply explosively — one aphid can produce 80 offspring per week!'), damage: 12, targets: ['lettuce', 'pepper', 'broccoli', 'peas'], lesson: 'Aphids reproduce asexually when conditions are good, producing live young without mating. Ladybugs eat 50+ aphids per day. Dill and nasturtium attract natural predators.' },
+            { id: 'cabbage_moth', emoji: '🦋⚠️', label: __alloT('stem.companionplanting.cabbage_white_moths', 'Cabbage White Moths!'), desc: __alloT('stem.companionplanting.white_butterflies_are_laying_eggs_on_y', 'White butterflies are laying eggs on your brassicas. The green caterpillars will devour leaves.'), damage: 18, targets: ['broccoli'], lesson: 'Pieris rapae caterpillars eat 3x their body weight daily. Row covers prevent egg-laying. Rosemary and thyme planted nearby confuse moths with strong scent.' },
+            { id: 'bindweed', emoji: '🌀', label: __alloT('stem.companionplanting.bindweed_invasion', 'Bindweed Invasion!'), desc: __alloT('stem.companionplanting.twisting_vines_are_strangling_your_pla', 'Twisting vines are strangling your plants! Bindweed can grow 3-6 feet per season and regenerates from root fragments.'), damage: 20, spreadTo: 2, lesson: 'Convolvulus arvensis roots can extend 20+ feet deep. A single root fragment of 2 inches can regenerate. Repeated cutting exhausts root reserves over 2-3 seasons. Mulching heavily suppresses emergence.' },
+            { id: 'tomato_blight', emoji: '🟤', label: __alloT('stem.companionplanting.late_blight', 'Late Blight!'), desc: __alloT('stem.companionplanting.brown_patches_spread_across_leaves_thi', 'Brown patches spread across leaves. This is the same disease that caused the Irish Potato Famine!'), damage: 25, targets: ['tomato', 'potato'], lesson: 'Phytophthora infestans spreads via airborne spores in cool, wet conditions. Crop rotation and avoiding overhead watering are key defenses. Never plant tomatoes where potatoes grew last season.' },
+            { id: 'spotted_lanternfly', emoji: '🪰', label: __alloT('stem.companionplanting.spotted_lanternfly', 'Spotted Lanternfly!'), desc: __alloT('stem.companionplanting.these_invasive_insects_from_asia_suck_', 'These invasive insects from Asia suck sap and excrete sticky honeydew that grows sooty mold.'), damage: 14, targets: ['sunflower', 'cucumber', 'squash'], lesson: 'Lycorma delicatula arrived in Pennsylvania in 2014 on stone shipments. They lay egg masses on any flat surface. Reporting sightings to your state agriculture department helps track their spread.' }
           ];
 
           // ── Achievement definitions ──
           var CG_ACHIEVEMENTS = [
-            { id: 'first_harvest', emoji: '🌱', label: 'First Harvest', desc: 'Harvest your first crop', check: function(s) { return s.totalHarvested >= 1; } },
-            { id: 'companion5', emoji: '🤝', label: 'Companion Master', desc: '5+ positive companion pairs active', check: function(s) { return s.activeBonuses >= 5; } },
-            { id: 'pollinator', emoji: '🐝', label: 'Pollinator Paradise', desc: 'Plant 3+ pollinator-attracting species', check: function(s) { return s.pollinatorPlants >= 3; } },
-            { id: 'biodiversity', emoji: '🌍', label: 'Biodiversity Champion', desc: '10+ different species planted', check: function(s) { return s.uniqueSpecies >= 10; } },
-            { id: 'nitrogen', emoji: '⚗️', label: 'Nitrogen Master', desc: 'Keep soil nitrogen above 60 for 10+ days', check: function(s) { return s.nitrogenDays >= 10; } },
-            { id: 'defender', emoji: '⚔️', label: 'Invasive Defender', desc: 'Successfully manage an invasive event', check: function(s) { return s.invasivesManaged >= 1; } },
-            { id: 'rotation', emoji: '🔄', label: 'Rotation Expert', desc: 'Complete 3 seasons with crop rotation', check: function(s) { return s.seasonsRotated >= 3; } },
-            { id: 'organic', emoji: '🌿', label: 'Organic Grower', desc: 'Reach harvest without any plant dying', check: function(s) { return s.noDeaths && s.totalHarvested >= 3; } },
-            { id: 'market', emoji: '💰', label: 'Market Star', desc: 'Earn 100+ harvest points in one season', check: function(s) { return s.seasonPoints >= 100; } },
-            { id: 'three_sisters', emoji: '🌽', label: 'Three Sisters', desc: 'Plant corn + beans + squash as neighbors', check: function(s) { return s.hasSisters; } },
-            { id: 'regenerative', emoji: '♻️', label: 'Regenerative Gardener', desc: 'Plant 3+ regenerative species (comfrey, clover, buckwheat, yarrow, borage)', check: function(s) { return s.regenCount >= 3; } },
-            { id: 'soil_healer', emoji: '🌍', label: 'Soil Healer', desc: 'Maintain nitrogen above 50 with only legumes (no compost action)', check: function(s) { return s.nitrogenFromLegumes; } }
+            { id: 'first_harvest', emoji: '🌱', label: __alloT('stem.companionplanting.first_harvest', 'First Harvest'), desc: __alloT('stem.companionplanting.harvest_your_first_crop', 'Harvest your first crop'), check: function(s) { return s.totalHarvested >= 1; } },
+            { id: 'companion5', emoji: '🤝', label: __alloT('stem.companionplanting.companion_master', 'Companion Master'), desc: __alloT('stem.companionplanting.5_positive_companion_pairs_active', '5+ positive companion pairs active'), check: function(s) { return s.activeBonuses >= 5; } },
+            { id: 'pollinator', emoji: '🐝', label: __alloT('stem.companionplanting.pollinator_paradise', 'Pollinator Paradise'), desc: __alloT('stem.companionplanting.plant_3_pollinator_attracting_species', 'Plant 3+ pollinator-attracting species'), check: function(s) { return s.pollinatorPlants >= 3; } },
+            { id: 'biodiversity', emoji: '🌍', label: __alloT('stem.companionplanting.biodiversity_champion', 'Biodiversity Champion'), desc: __alloT('stem.companionplanting.10_different_species_planted', '10+ different species planted'), check: function(s) { return s.uniqueSpecies >= 10; } },
+            { id: 'nitrogen', emoji: '⚗️', label: __alloT('stem.companionplanting.nitrogen_master', 'Nitrogen Master'), desc: __alloT('stem.companionplanting.keep_soil_nitrogen_above_60_for_10_day', 'Keep soil nitrogen above 60 for 10+ days'), check: function(s) { return s.nitrogenDays >= 10; } },
+            { id: 'defender', emoji: '⚔️', label: __alloT('stem.companionplanting.invasive_defender', 'Invasive Defender'), desc: __alloT('stem.companionplanting.successfully_manage_an_invasive_event', 'Successfully manage an invasive event'), check: function(s) { return s.invasivesManaged >= 1; } },
+            { id: 'rotation', emoji: '🔄', label: __alloT('stem.companionplanting.rotation_expert', 'Rotation Expert'), desc: __alloT('stem.companionplanting.complete_3_seasons_with_crop_rotation', 'Complete 3 seasons with crop rotation'), check: function(s) { return s.seasonsRotated >= 3; } },
+            { id: 'organic', emoji: '🌿', label: __alloT('stem.companionplanting.organic_grower', 'Organic Grower'), desc: __alloT('stem.companionplanting.reach_harvest_without_any_plant_dying', 'Reach harvest without any plant dying'), check: function(s) { return s.noDeaths && s.totalHarvested >= 3; } },
+            { id: 'market', emoji: '💰', label: __alloT('stem.companionplanting.market_star', 'Market Star'), desc: __alloT('stem.companionplanting.earn_100_harvest_points_in_one_season', 'Earn 100+ harvest points in one season'), check: function(s) { return s.seasonPoints >= 100; } },
+            { id: 'three_sisters', emoji: '🌽', label: __alloT('stem.companionplanting.three_sisters', 'Three Sisters'), desc: __alloT('stem.companionplanting.plant_corn_beans_squash_as_neighbors', 'Plant corn + beans + squash as neighbors'), check: function(s) { return s.hasSisters; } },
+            { id: 'regenerative', emoji: '♻️', label: __alloT('stem.companionplanting.regenerative_gardener', 'Regenerative Gardener'), desc: __alloT('stem.companionplanting.plant_3_regenerative_species_comfrey_c', 'Plant 3+ regenerative species (comfrey, clover, buckwheat, yarrow, borage)'), check: function(s) { return s.regenCount >= 3; } },
+            { id: 'soil_healer', emoji: '🌍', label: __alloT('stem.companionplanting.soil_healer', 'Soil Healer'), desc: __alloT('stem.companionplanting.maintain_nitrogen_above_50_with_only_l', 'Maintain nitrogen above 50 with only legumes (no compost action)'), check: function(s) { return s.nitrogenFromLegumes; } }
           ];
 
           // ── Garden Challenges — guided scenarios ──
           var CG_CHALLENGES = [
-            { id: 'pollinator_rescue', emoji: '🐝', title: 'Pollinator Rescue',
+            { id: 'pollinator_rescue', emoji: '🐝', title: __alloT('stem.companionplanting.pollinator_rescue', 'Pollinator Rescue'),
               difficulty: 'Beginner', ngss: 'LS2.A: Interdependent Relationships',
-              desc: 'A local farm\'s cucumber and squash yields are crashing because pollinators have disappeared. Design a garden that attracts pollinators AND produces food.',
-              goal: 'Harvest 3+ pollinator-dependent crops (cucumber, squash) with at least 3 pollinator plants nearby.',
-              hint: 'Marigold, sunflower, lavender, borage, and nasturtium all attract bees and butterflies. Plant them NEAR your cucumbers and squash.',
+              desc: __alloT('stem.companionplanting.a_local_farm_s_cucumber_and_squash_yie', 'A local farm\'s cucumber and squash yields are crashing because pollinators have disappeared. Design a garden that attracts pollinators AND produces food.'),
+              goal: __alloT('stem.companionplanting.harvest_3_pollinator_dependent_crops_c', 'Harvest 3+ pollinator-dependent crops (cucumber, squash) with at least 3 pollinator plants nearby.'),
+              hint: __alloT('stem.companionplanting.marigold_sunflower_lavender_borage_and', 'Marigold, sunflower, lavender, borage, and nasturtium all attract bees and butterflies. Plant them NEAR your cucumbers and squash.'),
               check: function(grid) {
                 var pollCrops = 0; var pollPlants = 0;
                 grid.forEach(function(c) { if (!c.plantId) return; var p = CG_PLANTS[c.plantId]; if (!p) return; if (p.needsPoll && c.growthDay >= p.days) pollCrops++; if (p.pollinator) pollPlants++; });
                 return pollCrops >= 3 && pollPlants >= 3;
               }
             },
-            { id: 'nitrogen_crisis', emoji: '⚗️', title: 'The Nitrogen Crisis',
+            { id: 'nitrogen_crisis', emoji: '⚗️', title: __alloT('stem.companionplanting.the_nitrogen_crisis', 'The Nitrogen Crisis'),
               difficulty: 'Intermediate', ngss: 'LS2.B: Cycles of Matter',
-              desc: 'After years of corn monoculture, this soil is depleted (nitrogen starts at 10). Restore soil fertility using ONLY biological nitrogen fixation — no compost allowed!',
-              goal: 'Raise nitrogen above 60 using only legumes (beans, peas, clover).',
-              hint: 'Legumes have symbiotic bacteria (Rhizobium) in their root nodules that convert atmospheric N₂ into plant-available ammonium. This is how nature makes fertilizer.',
+              desc: __alloT('stem.companionplanting.after_years_of_corn_monoculture_this_s', 'After years of corn monoculture, this soil is depleted (nitrogen starts at 10). Restore soil fertility using ONLY biological nitrogen fixation — no compost allowed!'),
+              goal: __alloT('stem.companionplanting.raise_nitrogen_above_60_using_only_leg', 'Raise nitrogen above 60 using only legumes (beans, peas, clover).'),
+              hint: __alloT('stem.companionplanting.legumes_have_symbiotic_bacteria_rhizob', 'Legumes have symbiotic bacteria (Rhizobium) in their root nodules that convert atmospheric N₂ into plant-available ammonium. This is how nature makes fertilizer.'),
               setup: { nitrogen: 10, moisture: 40 },
               check: function(grid, state) { return state.nitrogen >= 60; }
             },
-            { id: 'pest_gauntlet', emoji: '🐛', title: 'Pest Gauntlet',
+            { id: 'pest_gauntlet', emoji: '🐛', title: __alloT('stem.companionplanting.pest_gauntlet', 'Pest Gauntlet'),
               difficulty: 'Intermediate', ngss: 'LS2.C: Ecosystem Dynamics',
-              desc: 'Design a garden that can survive a full summer of pest pressure WITHOUT any weeding actions. Use only companion planting and beneficial insect attraction for defense.',
-              goal: 'Keep average plant health above 60% through summer with 8+ plants and no weeding.',
-              hint: 'Dill attracts parasitic wasps. Nasturtium is a trap crop. Marigold kills nematodes. Yarrow attracts ladybugs. Build your defense through biodiversity!',
+              desc: __alloT('stem.companionplanting.design_a_garden_that_can_survive_a_ful', 'Design a garden that can survive a full summer of pest pressure WITHOUT any weeding actions. Use only companion planting and beneficial insect attraction for defense.'),
+              goal: __alloT('stem.companionplanting.keep_average_plant_health_above_60_thr', 'Keep average plant health above 60% through summer with 8+ plants and no weeding.'),
+              hint: __alloT('stem.companionplanting.dill_attracts_parasitic_wasps_nasturti', 'Dill attracts parasitic wasps. Nasturtium is a trap crop. Marigold kills nematodes. Yarrow attracts ladybugs. Build your defense through biodiversity!'),
               check: function(grid, state) {
                 var planted = 0; var totalHealth = 0;
                 grid.forEach(function(c) { if (c.plantId) { planted++; totalHealth += c.health; } });
                 return planted >= 8 && (totalHealth / Math.max(1, planted)) > 60 && state.season === 1;
               }
             },
-            { id: 'rotation_master', emoji: '🔄', title: 'Four-Season Rotation',
+            { id: 'rotation_master', emoji: '🔄', title: __alloT('stem.companionplanting.four_season_rotation', 'Four-Season Rotation'),
               difficulty: 'Advanced', ngss: 'LS2.D: Social Interactions',
-              desc: 'Practice the 4-year crop rotation system: Year 1 legumes → Year 2 brassicas → Year 3 nightshades → Year 4 root crops. No family should repeat in the same plot.',
-              goal: 'Complete 4 seasons with proper family rotation in every cell. Zero rotation warnings.',
-              hint: 'Season 1: beans, peas, clover. Season 2: broccoli, radish. Season 3: tomato, pepper, potato. Season 4: carrot, onion. Each season, move families to new plots.',
+              desc: __alloT('stem.companionplanting.practice_the_4_year_crop_rotation_syst', 'Practice the 4-year crop rotation system: Year 1 legumes → Year 2 brassicas → Year 3 nightshades → Year 4 root crops. No family should repeat in the same plot.'),
+              goal: __alloT('stem.companionplanting.complete_4_seasons_with_proper_family_', 'Complete 4 seasons with proper family rotation in every cell. Zero rotation warnings.'),
+              hint: __alloT('stem.companionplanting.season_1_beans_peas_clover_season_2_br', 'Season 1: beans, peas, clover. Season 2: broccoli, radish. Season 3: tomato, pepper, potato. Season 4: carrot, onion. Each season, move families to new plots.'),
               check: function(grid, state) { return (state.cellHistory && Object.keys(state.cellHistory).length >= 8 && state.seasonsRotated >= 4); }
             },
-            { id: 'regen_garden', emoji: '♻️', title: 'The Regenerative Garden',
+            { id: 'regen_garden', emoji: '♻️', title: __alloT('stem.companionplanting.the_regenerative_garden', 'The Regenerative Garden'),
               difficulty: 'Advanced', ngss: 'ESS3.C: Human Impacts',
-              desc: 'Build a garden that IMPROVES the ecosystem over time. Start with degraded soil and transform it into a thriving, self-sustaining food forest.',
-              goal: 'Achieve ecosystem score 80+ with 3+ regenerative plants, 5+ families, and nitrogen above 50.',
-              hint: 'Comfrey, buckwheat, and yarrow heal soil. Clover and beans fix nitrogen. Borage attracts pollinators. A regenerative garden feeds itself.',
+              desc: __alloT('stem.companionplanting.build_a_garden_that_improves_the_ecosy', 'Build a garden that IMPROVES the ecosystem over time. Start with degraded soil and transform it into a thriving, self-sustaining food forest.'),
+              goal: __alloT('stem.companionplanting.achieve_ecosystem_score_80_with_3_rege', 'Achieve ecosystem score 80+ with 3+ regenerative plants, 5+ families, and nitrogen above 50.'),
+              hint: __alloT('stem.companionplanting.comfrey_buckwheat_and_yarrow_heal_soil', 'Comfrey, buckwheat, and yarrow heal soil. Clover and beans fix nitrogen. Borage attracts pollinators. A regenerative garden feeds itself.'),
               setup: { nitrogen: 15, moisture: 30 },
               check: function(grid, state) {
                 var regen = 0; var fams = {};
@@ -2503,11 +2504,11 @@ var d = (labToolData.companionPlanting) || {};
                 return regen >= 3 && Object.keys(fams).length >= 5 && state.nitrogen >= 50;
               }
             },
-            { id: 'three_sisters_community', emoji: '🌽', title: 'Three Sisters in the Community',
+            { id: 'three_sisters_community', emoji: '🌽', title: __alloT('stem.companionplanting.three_sisters_in_the_community', 'Three Sisters in the Community'),
               difficulty: 'Beginner', ngss: 'LS2.A: Interdependent Relationships',
-              desc: 'The Three Sisters (corn, beans, squash) is a 7,000-year-old agricultural system from Indigenous Mesoamerican and Haudenosaunee traditions. Plant them as neighbors and watch the synergy.',
-              goal: 'Plant corn, beans, and squash adjacent to each other and harvest all three.',
-              hint: 'Corn provides a trellis for beans. Beans fix nitrogen for corn. Squash shades the soil and suppresses weeds. Together, they provide complete nutrition.',
+              desc: __alloT('stem.companionplanting.the_three_sisters_corn_beans_squash_is', 'The Three Sisters (corn, beans, squash) is a 7,000-year-old agricultural system from Indigenous Mesoamerican and Haudenosaunee traditions. Plant them as neighbors and watch the synergy.'),
+              goal: __alloT('stem.companionplanting.plant_corn_beans_and_squash_adjacent_t', 'Plant corn, beans, and squash adjacent to each other and harvest all three.'),
+              hint: __alloT('stem.companionplanting.corn_provides_a_trellis_for_beans_bean', 'Corn provides a trellis for beans. Beans fix nitrogen for corn. Squash shades the soil and suppresses weeds. Together, they provide complete nutrition.'),
               check: function(grid) { var has = {}; grid.forEach(function(c) { if (c.plantId) has[c.plantId] = true; }); return has.corn && has.beans && has.squash; }
             }
           ];
@@ -2641,11 +2642,11 @@ var d = (labToolData.companionPlanting) || {};
           // ── CG: advance one day ──
           // ── Beneficial Events (positive ecosystem feedback) ──
           var CG_GOOD_EVENTS = [
-            { id: 'ladybugs', emoji: '🐞', label: 'Ladybug Colony!', desc: 'Ladybugs have moved in! A single ladybug eats 50+ aphids per day.', effect: function(grid) { return grid.map(function(c) { return c.plantId ? Object.assign({}, c, { pests: Math.max(0, c.pests - 15) }) : c; }); }, lesson: 'Ladybugs (Coccinellidae) eat up to 5,000 aphids in their lifetime. Dill, yarrow, and marigolds attract them by providing nectar and habitat.' },
-            { id: 'rain', emoji: '🌧️', label: 'Spring Rain!', desc: 'A gentle soaking rain replenishes the soil.', moistureBoost: 30, lesson: 'Plants prefer slow, deep watering over frequent shallow sprinkles. Soil organic matter acts like a sponge, holding 20× its weight in water.' },
-            { id: 'mycorrhiza', emoji: '🍄', label: 'Mycorrhizal Bloom!', desc: 'Beneficial fungi have colonized the root zone, extending root reach by 100×.', nitrogenBoost: 10, healthBoost: 8, lesson: 'Mycorrhizal fungi form symbiotic networks with 90% of plant species. They trade soil minerals for plant sugars. This underground "wood wide web" connects plants and can even transfer warning chemicals.' },
-            { id: 'earthworms', emoji: '🪱', label: 'Earthworm Surge!', desc: 'Earthworm populations are thriving! They aerate soil and recycle nutrients.', nitrogenBoost: 8, lesson: 'Charles Darwin studied earthworms for 39 years. A healthy garden has 100-500 worms per square meter. Their castings contain 5× more nitrogen and 7× more phosphorus than surrounding soil.' },
-            { id: 'pollinators', emoji: '🦋', label: 'Pollinator Migration!', desc: 'Monarch butterflies are passing through! Pollinator-dependent crops get a boost.', effect: function(grid) { return grid.map(function(c) { if (c.plantId && CG_PLANTS[c.plantId] && CG_PLANTS[c.plantId].needsPoll) return Object.assign({}, c, { health: Math.min(100, c.health + 10) }); return c; }); }, lesson: 'Monarch butterflies migrate up to 3,000 miles. Pollinator gardens along their route provide critical refueling stops. One in three bites of food depends on pollinators.' }
+            { id: 'ladybugs', emoji: '🐞', label: __alloT('stem.companionplanting.ladybug_colony', 'Ladybug Colony!'), desc: __alloT('stem.companionplanting.ladybugs_have_moved_in_a_single_ladybu', 'Ladybugs have moved in! A single ladybug eats 50+ aphids per day.'), effect: function(grid) { return grid.map(function(c) { return c.plantId ? Object.assign({}, c, { pests: Math.max(0, c.pests - 15) }) : c; }); }, lesson: 'Ladybugs (Coccinellidae) eat up to 5,000 aphids in their lifetime. Dill, yarrow, and marigolds attract them by providing nectar and habitat.' },
+            { id: 'rain', emoji: '🌧️', label: __alloT('stem.companionplanting.spring_rain', 'Spring Rain!'), desc: __alloT('stem.companionplanting.a_gentle_soaking_rain_replenishes_the_', 'A gentle soaking rain replenishes the soil.'), moistureBoost: 30, lesson: 'Plants prefer slow, deep watering over frequent shallow sprinkles. Soil organic matter acts like a sponge, holding 20× its weight in water.' },
+            { id: 'mycorrhiza', emoji: '🍄', label: __alloT('stem.companionplanting.mycorrhizal_bloom_2', 'Mycorrhizal Bloom!'), desc: __alloT('stem.companionplanting.beneficial_fungi_have_colonized_the_ro', 'Beneficial fungi have colonized the root zone, extending root reach by 100×.'), nitrogenBoost: 10, healthBoost: 8, lesson: 'Mycorrhizal fungi form symbiotic networks with 90% of plant species. They trade soil minerals for plant sugars. This underground "wood wide web" connects plants and can even transfer warning chemicals.' },
+            { id: 'earthworms', emoji: '🪱', label: __alloT('stem.companionplanting.earthworm_surge', 'Earthworm Surge!'), desc: __alloT('stem.companionplanting.earthworm_populations_are_thriving_the', 'Earthworm populations are thriving! They aerate soil and recycle nutrients.'), nitrogenBoost: 8, lesson: 'Charles Darwin studied earthworms for 39 years. A healthy garden has 100-500 worms per square meter. Their castings contain 5× more nitrogen and 7× more phosphorus than surrounding soil.' },
+            { id: 'pollinators', emoji: '🦋', label: __alloT('stem.companionplanting.pollinator_migration', 'Pollinator Migration!'), desc: __alloT('stem.companionplanting.monarch_butterflies_are_passing_throug', 'Monarch butterflies are passing through! Pollinator-dependent crops get a boost.'), effect: function(grid) { return grid.map(function(c) { if (c.plantId && CG_PLANTS[c.plantId] && CG_PLANTS[c.plantId].needsPoll) return Object.assign({}, c, { health: Math.min(100, c.health + 10) }); return c; }); }, lesson: 'Monarch butterflies migrate up to 3,000 miles. Pollinator gardens along their route provide critical refueling stops. One in three bites of food depends on pollinators.' }
           ];
 
           // ── Crop rotation history per cell ──
@@ -3023,33 +3024,33 @@ var d = (labToolData.companionPlanting) || {};
           // Connect garden mechanics to social-emotional learning
           var CG_SEL_REFLECTIONS = {
             first_harvest: {
-              emoji: '🌾', title: 'Patience Pays Off',
-              prompt: 'Your first harvest took many days of care. Think about a goal in your life that takes patience. What helps you keep going when progress feels slow?',
+              emoji: '🌾', title: __alloT('stem.companionplanting.patience_pays_off', 'Patience Pays Off'),
+              prompt: __alloT('stem.companionplanting.your_first_harvest_took_many_days_of_c', 'Your first harvest took many days of care. Think about a goal in your life that takes patience. What helps you keep going when progress feels slow?'),
               competency: 'Self-Management', connection: 'Plants teach us that growth is invisible most of the time. The roots grow before the fruit.'
             },
             pest_event: {
-              emoji: '🐛', title: 'Dealing with Setbacks',
-              prompt: 'Pests damaged your garden. How did you respond? When something goes wrong in your life, do you react quickly or take time to think about the best response?',
+              emoji: '🐛', title: __alloT('stem.companionplanting.dealing_with_setbacks', 'Dealing with Setbacks'),
+              prompt: __alloT('stem.companionplanting.pests_damaged_your_garden_how_did_you_', 'Pests damaged your garden. How did you respond? When something goes wrong in your life, do you react quickly or take time to think about the best response?'),
               competency: 'Self-Awareness', connection: 'In gardens and in life, the first reaction isn\'t always the best one. Observation before action leads to better outcomes.'
             },
             companion_discovery: {
-              emoji: '🤝', title: 'Better Together',
-              prompt: 'You discovered that some plants help each other grow. Who in your life helps you grow? How do you help them?',
+              emoji: '🤝', title: __alloT('stem.companionplanting.better_together', 'Better Together'),
+              prompt: __alloT('stem.companionplanting.you_discovered_that_some_plants_help_e', 'You discovered that some plants help each other grow. Who in your life helps you grow? How do you help them?'),
               competency: 'Relationship Skills', connection: 'Companion planting works because different strengths complement each other. No plant — and no person — thrives alone.'
             },
             rotation_lesson: {
-              emoji: '🔄', title: 'Learning from the Past',
-              prompt: 'Planting the same thing in the same place causes problems. Can you think of a time when doing the same thing over and over stopped working? What did you change?',
+              emoji: '🔄', title: __alloT('stem.companionplanting.learning_from_the_past', 'Learning from the Past'),
+              prompt: __alloT('stem.companionplanting.planting_the_same_thing_in_the_same_pl', 'Planting the same thing in the same place causes problems. Can you think of a time when doing the same thing over and over stopped working? What did you change?'),
               competency: 'Responsible Decision-Making', connection: 'Crop rotation teaches us that what worked before might not work now. Adapting to change is a strength, not a failure.'
             },
             biodiversity_win: {
-              emoji: '🌍', title: 'Strength in Diversity',
-              prompt: 'Your diverse garden attracted more helpful insects and resisted pests better. How does diversity make communities stronger? What happens when everyone thinks and acts the same way?',
+              emoji: '🌍', title: __alloT('stem.companionplanting.strength_in_diversity', 'Strength in Diversity'),
+              prompt: __alloT('stem.companionplanting.your_diverse_garden_attracted_more_hel', 'Your diverse garden attracted more helpful insects and resisted pests better. How does diversity make communities stronger? What happens when everyone thinks and acts the same way?'),
               competency: 'Social Awareness', connection: 'Ecosystems and communities are both stronger when they include many different kinds. Monocultures — in gardens and in groups — are fragile.'
             },
             invasive_managed: {
-              emoji: '⚔️', title: 'Protecting What Matters',
-              prompt: 'You managed an invasive species that threatened your garden. Is there ever a time in your life when you had to stand up to protect something you cared about?',
+              emoji: '⚔️', title: __alloT('stem.companionplanting.protecting_what_matters', 'Protecting What Matters'),
+              prompt: __alloT('stem.companionplanting.you_managed_an_invasive_species_that_t', 'You managed an invasive species that threatened your garden. Is there ever a time in your life when you had to stand up to protect something you cared about?'),
               competency: 'Responsible Decision-Making', connection: 'Standing up for your garden — or your values — takes courage and persistence. Not every problem has a quick fix.'
             }
           };
@@ -3260,10 +3261,10 @@ var d = (labToolData.companionPlanting) || {};
             var hasNeighborPollinator = neighbors.some(function(n) { return n && n.pollinator; });
 
             var layers = [
-              { id: 'roots', emoji: '🌱', label: 'Root System' },
-              { id: 'chemistry', emoji: '⚗️', label: 'Soil Chemistry' },
-              { id: 'cells', emoji: '🔬', label: 'Cell Biology' },
-              { id: 'fungi', emoji: '🍄', label: 'Fungal Network' }
+              { id: 'roots', emoji: '🌱', label: __alloT('stem.companionplanting.root_system', 'Root System') },
+              { id: 'chemistry', emoji: '⚗️', label: __alloT('stem.companionplanting.soil_chemistry', 'Soil Chemistry') },
+              { id: 'cells', emoji: '🔬', label: __alloT('stem.companionplanting.cell_biology', 'Cell Biology') },
+              { id: 'fungi', emoji: '🍄', label: __alloT('stem.companionplanting.fungal_network', 'Fungal Network') }
             ];
 
             return h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl border-2 border-indigo-400 p-4 space-y-3 text-white' },
@@ -3273,11 +3274,11 @@ var d = (labToolData.companionPlanting) || {};
                   h('span', { className: 'text-2xl' }, '🔬'),
                   h('div', null,
                     h('div', { className: 'font-bold text-sm' }, 'Microscope: ' + plant.emoji + ' ' + plant.label),
-                    h('div', { className: 'text-[11px] text-indigo-300' }, 'Zoom into the invisible world beneath the garden'))),
-                h('button', { onClick: function() { cgUpd({ microscopeCell: null }); }, className: 'transition-colors px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-bold' }, '← Back to Garden')),
+                    h('div', { className: 'text-[11px] text-indigo-300' }, __alloT('stem.companionplanting.zoom_into_the_invisible_world_beneath_', 'Zoom into the invisible world beneath the garden')))),
+                h('button', { onClick: function() { cgUpd({ microscopeCell: null }); }, className: 'transition-colors px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-bold' }, __alloT('stem.companionplanting.back_to_garden', '← Back to Garden'))),
 
               // Layer tabs — ARIA tablist with keyboard navigation
-              h('div', { className: 'flex gap-1', role: 'tablist', 'aria-label': 'Microscope science layers' },
+              h('div', { className: 'flex gap-1', role: 'tablist', 'aria-label': __alloT('stem.companionplanting.microscope_science_layers', 'Microscope science layers') },
                 layers.map(function(layer, li) {
                   var active = cgMicroscopeLayer === layer.id;
                   return h('button', { key: layer.id, role: 'tab', 'aria-selected': active ? 'true' : 'false', tabIndex: active ? 0 : -1,
@@ -3552,15 +3553,15 @@ var d = (labToolData.companionPlanting) || {};
                     ? '🌾 Fibrous root system — a dense mat of thin roots that hold soil in place and absorb water efficiently from the top 6" of soil. Corn roots can extend 6 feet laterally.'
                     : '🔀 Branching root system — primary and secondary roots spread outward and downward, creating a zone of nutrient uptake called the rhizosphere.'),
                   isLegume && h('div', { className: 'bg-emerald-900/40 rounded-lg p-3 border border-emerald-500/30' },
-                    h('div', { className: 'font-bold text-emerald-300 text-xs mb-1' }, '🔴 Root Nodules (Nitrogen Fixation)'),
-                    h('p', null, 'Swollen pink/red nodules on the roots contain billions of Rhizobium bacteria. These bacteria have an enzyme called nitrogenase that breaks the triple bond of atmospheric N₂ — one of the strongest chemical bonds in nature.'),
-                    h('p', { className: 'mt-1 font-mono text-emerald-400 text-center text-sm' }, 'N₂ + 8H⁺ + 8e⁻ + 16ATP → 2NH₃ + H₂ + 16ADP'),
-                    h('p', { className: 'mt-1' }, 'This reaction converts inert nitrogen gas into ammonia (NH₃), which plant roots can absorb. It\'s the biological equivalent of the industrial Haber-Bosch process — but at room temperature, using only sunlight energy.')),
+                    h('div', { className: 'font-bold text-emerald-300 text-xs mb-1' }, __alloT('stem.companionplanting.root_nodules_nitrogen_fixation', '🔴 Root Nodules (Nitrogen Fixation)')),
+                    h('p', null, __alloT('stem.companionplanting.swollen_pink_red_nodules_on_the_roots_', 'Swollen pink/red nodules on the roots contain billions of Rhizobium bacteria. These bacteria have an enzyme called nitrogenase that breaks the triple bond of atmospheric N₂ — one of the strongest chemical bonds in nature.')),
+                    h('p', { className: 'mt-1 font-mono text-emerald-400 text-center text-sm' }, __alloT('stem.companionplanting.n_8h_8e_16atp_2nh_h_16adp', 'N₂ + 8H⁺ + 8e⁻ + 16ATP → 2NH₃ + H₂ + 16ADP')),
+                    h('p', { className: 'mt-1' }, __alloT('stem.companionplanting.this_reaction_converts_inert_nitrogen_', 'This reaction converts inert nitrogen gas into ammonia (NH₃), which plant roots can absorb. It\'s the biological equivalent of the industrial Haber-Bosch process — but at room temperature, using only sunlight energy.'))),
                   h('div', { className: 'bg-slate-800/50 rounded-lg p-3 border border-slate-600/30' },
-                    h('div', { className: 'font-bold text-slate-300 text-xs mb-1' }, '💧 Water Transport (Osmosis)'),
-                    h('p', null, 'Root hairs increase surface area by 100×. Water enters by osmosis — moving from low solute concentration (soil) to high (root cells). The path: soil → root hair → cortex → xylem → stem → leaves.'),
-                    h('p', { className: 'mt-1 font-mono text-blue-400 text-center text-sm' }, 'Ψ_soil > Ψ_root → H₂O flows into root'),
-                    h('p', { className: 'mt-1' }, 'Water potential (Ψ) drives the flow. Transpiration from leaves creates negative pressure that pulls water up — like a straw. A large tree can move 100+ gallons per day this way.')))),
+                    h('div', { className: 'font-bold text-slate-300 text-xs mb-1' }, __alloT('stem.companionplanting.water_transport_osmosis', '💧 Water Transport (Osmosis)')),
+                    h('p', null, __alloT('stem.companionplanting.root_hairs_increase_surface_area_by_10', 'Root hairs increase surface area by 100×. Water enters by osmosis — moving from low solute concentration (soil) to high (root cells). The path: soil → root hair → cortex → xylem → stem → leaves.')),
+                    h('p', { className: 'mt-1 font-mono text-blue-400 text-center text-sm' }, __alloT('stem.companionplanting.soil_root_h_o_flows_into_root', 'Ψ_soil > Ψ_root → H₂O flows into root')),
+                    h('p', { className: 'mt-1' }, __alloT('stem.companionplanting.water_potential_drives_the_flow_transp', 'Water potential (Ψ) drives the flow. Transpiration from leaves creates negative pressure that pulls water up — like a straw. A large tree can move 100+ gallons per day this way.'))))),
 
               // ── SOIL CHEMISTRY VIEW ──
               cgMicroscopeLayer === 'chemistry' && h('div', { className: 'bg-gradient-to-b from-slate-800/50 to-slate-900/50 rounded-xl p-4 space-y-3 border border-slate-600/30' },
@@ -3568,11 +3569,11 @@ var d = (labToolData.companionPlanting) || {};
                 h('div', { className: 'text-xs text-slate-200/80 leading-relaxed space-y-2' },
                   // NPK
                   h('div', { className: 'bg-indigo-900/40 rounded-lg p-3 border border-indigo-500/30' },
-                    h('div', { className: 'font-bold text-indigo-300 text-xs mb-1' }, '🧪 The NPK Cycle'),
+                    h('div', { className: 'font-bold text-indigo-300 text-xs mb-1' }, __alloT('stem.companionplanting.the_npk_cycle', '🧪 The NPK Cycle')),
                     h('div', { className: 'grid grid-cols-3 gap-2 mb-2' },
-                      h('div', { className: 'text-center bg-blue-900/40 rounded-lg p-2' }, h('div', { className: 'text-lg font-black text-blue-400' }, 'N'), h('div', { className: 'text-[11px] text-blue-300' }, 'Nitrogen'), h('div', { className: 'text-[11px] text-slate-600' }, 'Drives leaf growth')),
-                      h('div', { className: 'text-center bg-orange-900/40 rounded-lg p-2' }, h('div', { className: 'text-lg font-black text-orange-400' }, 'P'), h('div', { className: 'text-[11px] text-orange-300' }, 'Phosphorus'), h('div', { className: 'text-[11px] text-slate-600' }, 'Drives roots & fruit')),
-                      h('div', { className: 'text-center bg-purple-900/40 rounded-lg p-2' }, h('div', { className: 'text-lg font-black text-purple-400' }, 'K'), h('div', { className: 'text-[11px] text-purple-300' }, 'Potassium'), h('div', { className: 'text-[11px] text-slate-600' }, 'Drives health & water'))),
+                      h('div', { className: 'text-center bg-blue-900/40 rounded-lg p-2' }, h('div', { className: 'text-lg font-black text-blue-400' }, 'N'), h('div', { className: 'text-[11px] text-blue-300' }, __alloT('stem.companionplanting.nitrogen', 'Nitrogen')), h('div', { className: 'text-[11px] text-slate-600' }, __alloT('stem.companionplanting.drives_leaf_growth', 'Drives leaf growth'))),
+                      h('div', { className: 'text-center bg-orange-900/40 rounded-lg p-2' }, h('div', { className: 'text-lg font-black text-orange-400' }, 'P'), h('div', { className: 'text-[11px] text-orange-300' }, __alloT('stem.companionplanting.phosphorus', 'Phosphorus')), h('div', { className: 'text-[11px] text-slate-600' }, __alloT('stem.companionplanting.drives_roots_fruit', 'Drives roots & fruit'))),
+                      h('div', { className: 'text-center bg-purple-900/40 rounded-lg p-2' }, h('div', { className: 'text-lg font-black text-purple-400' }, 'K'), h('div', { className: 'text-[11px] text-purple-300' }, __alloT('stem.companionplanting.potassium', 'Potassium')), h('div', { className: 'text-[11px] text-slate-600' }, __alloT('stem.companionplanting.drives_health_water', 'Drives health & water')))),
                     h('p', null, plant.nEffect < 0
                       ? '⬇️ ' + plant.label + ' is a heavy feeder — it consumes nitrogen faster than the soil replaces it. Without legume neighbors or compost, nitrogen depletes over time.'
                       : plant.nEffect > 0
@@ -3580,7 +3581,7 @@ var d = (labToolData.companionPlanting) || {};
                       : '↔️ ' + plant.label + ' has moderate nutrient needs. It takes what it needs without depleting or enriching the soil significantly.')),
                   // Companion chemistry
                   bonus.pairs.length > 0 && h('div', { className: 'bg-emerald-900/40 rounded-lg p-3 border border-emerald-500/30' },
-                    h('div', { className: 'font-bold text-emerald-300 text-xs mb-1' }, '🧬 Companion Chemistry (Active)'),
+                    h('div', { className: 'font-bold text-emerald-300 text-xs mb-1' }, __alloT('stem.companionplanting.companion_chemistry_active', '🧬 Companion Chemistry (Active)')),
                     bonus.pairs.map(function(p, i) {
                       return h('div', { key: i, className: 'mb-1 text-xs' },
                         h('span', { className: p.bonus > 0 ? 'text-emerald-400' : 'text-red-400' }, (p.bonus > 0 ? '✅ +' : '⚠️ ') + p.bonus + '% '),
@@ -3588,9 +3589,9 @@ var d = (labToolData.companionPlanting) || {};
                     })),
                   // Allelopathy
                   h('div', { className: 'bg-amber-900/30 rounded-lg p-3 border border-amber-600/30' },
-                    h('div', { className: 'font-bold text-amber-300 text-xs mb-1' }, '☠️ Allelopathy (Chemical Warfare)'),
-                    h('p', null, 'Some plants release chemicals from their roots that inhibit competitors. Sunflowers release heliannuol. Black walnut releases juglone. Even decomposing brassica leaves release glucosinolates that can suppress the next crop.'),
-                    h('p', { className: 'mt-1 font-mono text-amber-400 text-center text-sm' }, 'Root exudates → soil → neighboring root uptake → growth inhibition')))),
+                    h('div', { className: 'font-bold text-amber-300 text-xs mb-1' }, __alloT('stem.companionplanting.allelopathy_chemical_warfare', '☠️ Allelopathy (Chemical Warfare)')),
+                    h('p', null, __alloT('stem.companionplanting.some_plants_release_chemicals_from_the', 'Some plants release chemicals from their roots that inhibit competitors. Sunflowers release heliannuol. Black walnut releases juglone. Even decomposing brassica leaves release glucosinolates that can suppress the next crop.')),
+                    h('p', { className: 'mt-1 font-mono text-amber-400 text-center text-sm' }, __alloT('stem.companionplanting.root_exudates_soil_neighboring_root_up', 'Root exudates → soil → neighboring root uptake → growth inhibition'))))),
 
               // ── CELL BIOLOGY VIEW ──
               cgMicroscopeLayer === 'cells' && h('div', { className: 'bg-gradient-to-b from-green-900/30 to-green-950/50 rounded-xl p-4 space-y-3 border border-green-600/30' },
@@ -3598,24 +3599,24 @@ var d = (labToolData.companionPlanting) || {};
                 h('div', { className: 'text-xs text-green-100/80 leading-relaxed space-y-2' },
                   // Photosynthesis
                   h('div', { className: 'bg-green-900/40 rounded-lg p-3 border border-green-500/30' },
-                    h('div', { className: 'font-bold text-green-300 text-xs mb-1' }, '☀️ Photosynthesis (Chloroplasts)'),
-                    h('p', null, 'Inside each leaf cell, hundreds of chloroplasts capture photons of sunlight. Chlorophyll molecules absorb red and blue light (reflecting green — that\'s why plants look green). The energy splits water molecules and drives carbon fixation:'),
-                    h('p', { className: 'mt-1 font-mono text-green-400 text-center text-sm' }, '6CO₂ + 6H₂O + light → C₆H₁₂O₆ + 6O₂'),
-                    h('p', { className: 'mt-1' }, 'This single equation sustains nearly all life on Earth. The glucose (C₆H₁₂O₆) becomes the plant\'s energy and building material. The oxygen (O₂) is released — every breath you take was made by a plant.')),
+                    h('div', { className: 'font-bold text-green-300 text-xs mb-1' }, __alloT('stem.companionplanting.photosynthesis_chloroplasts', '☀️ Photosynthesis (Chloroplasts)')),
+                    h('p', null, __alloT('stem.companionplanting.inside_each_leaf_cell_hundreds_of_chlo', 'Inside each leaf cell, hundreds of chloroplasts capture photons of sunlight. Chlorophyll molecules absorb red and blue light (reflecting green — that\'s why plants look green). The energy splits water molecules and drives carbon fixation:')),
+                    h('p', { className: 'mt-1 font-mono text-green-400 text-center text-sm' }, __alloT('stem.companionplanting.6co_6h_o_light_c_h_o_6o', '6CO₂ + 6H₂O + light → C₆H₁₂O₆ + 6O₂')),
+                    h('p', { className: 'mt-1' }, __alloT('stem.companionplanting.this_single_equation_sustains_nearly_a', 'This single equation sustains nearly all life on Earth. The glucose (C₆H₁₂O₆) becomes the plant\'s energy and building material. The oxygen (O₂) is released — every breath you take was made by a plant.'))),
                   // Cellular respiration
                   h('div', { className: 'bg-orange-900/30 rounded-lg p-3 border border-orange-500/30' },
-                    h('div', { className: 'font-bold text-orange-300 text-xs mb-1' }, '🔥 Cellular Respiration (Mitochondria)'),
-                    h('p', null, 'At night (and always, in roots), mitochondria reverse the process — burning glucose to release energy for growth:'),
-                    h('p', { className: 'mt-1 font-mono text-orange-400 text-center text-sm' }, 'C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O + 36 ATP'),
-                    h('p', { className: 'mt-1' }, 'ATP is the universal energy currency of life. Every cell process — growth, division, nutrient transport — spends ATP. A growing plant produces and consumes millions of ATP molecules per second.')),
+                    h('div', { className: 'font-bold text-orange-300 text-xs mb-1' }, __alloT('stem.companionplanting.cellular_respiration_mitochondria', '🔥 Cellular Respiration (Mitochondria)')),
+                    h('p', null, __alloT('stem.companionplanting.at_night_and_always_in_roots_mitochond', 'At night (and always, in roots), mitochondria reverse the process — burning glucose to release energy for growth:')),
+                    h('p', { className: 'mt-1 font-mono text-orange-400 text-center text-sm' }, __alloT('stem.companionplanting.c_h_o_6o_6co_6h_o_36_atp', 'C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O + 36 ATP')),
+                    h('p', { className: 'mt-1' }, __alloT('stem.companionplanting.atp_is_the_universal_energy_currency_o', 'ATP is the universal energy currency of life. Every cell process — growth, division, nutrient transport — spends ATP. A growing plant produces and consumes millions of ATP molecules per second.'))),
                   // Cell wall & turgor
                   h('div', { className: 'bg-blue-900/30 rounded-lg p-3 border border-blue-500/30' },
-                    h('div', { className: 'font-bold text-blue-300 text-xs mb-1' }, '🧱 Cell Wall & Turgor Pressure'),
-                    h('p', null, 'Plant cells have a rigid cellulose wall (animals don\'t). Water pressure inside the cell (turgor) pushes against the wall, keeping the plant upright. When a plant wilts, it\'s losing turgor pressure — the cells deflate like tiny balloons.'),
+                    h('div', { className: 'font-bold text-blue-300 text-xs mb-1' }, __alloT('stem.companionplanting.cell_wall_turgor_pressure', '🧱 Cell Wall & Turgor Pressure')),
+                    h('p', null, __alloT('stem.companionplanting.plant_cells_have_a_rigid_cellulose_wal', 'Plant cells have a rigid cellulose wall (animals don\'t). Water pressure inside the cell (turgor) pushes against the wall, keeping the plant upright. When a plant wilts, it\'s losing turgor pressure — the cells deflate like tiny balloons.')),
                     h('p', { className: 'mt-1' }, cgMoisture < 30 ? '⚠️ Your soil moisture is low — this plant\'s cells are losing turgor. Water soon!' : '✅ Good moisture levels — cells are fully turgid and the plant stands strong.')),
                   // Dynamic science meters
                   h('div', { className: 'bg-slate-800/50 rounded-lg p-3 border border-slate-600/30' },
-                    h('div', { className: 'font-bold text-yellow-300 text-xs mb-2' }, '📊 Live Plant Processes (right now)'),
+                    h('div', { className: 'font-bold text-yellow-300 text-xs mb-2' }, __alloT('stem.companionplanting.live_plant_processes_right_now', '📊 Live Plant Processes (right now)')),
                     (function() {
                       var sunlight = [0.7, 1.0, 0.5, 0.1][cgSeason]; // seasonal sunlight
                       var waterAvail = Math.min(1, cgMoisture / 60);
@@ -3627,14 +3628,14 @@ var d = (labToolData.companionPlanting) || {};
                         // Photosynthesis bar
                         h('div', null,
                           h('div', { className: 'flex justify-between text-[11px] mb-0.5' },
-                            h('span', { className: 'text-green-400' }, '☀️ Photosynthesis rate'),
+                            h('span', { className: 'text-green-400' }, __alloT('stem.companionplanting.photosynthesis_rate', '☀️ Photosynthesis rate')),
                             h('span', { className: 'text-green-300 font-mono' }, photoRate + '%')),
                           h('div', { className: 'h-2 bg-slate-700 rounded-full overflow-hidden' },
                             h('div', { style: { width: photoRate + '%' }, className: 'h-full bg-gradient-to-r from-green-500 to-emerald-400 rounded-full transition-all' }))),
                         // Respiration bar
                         h('div', null,
                           h('div', { className: 'flex justify-between text-[11px] mb-0.5' },
-                            h('span', { className: 'text-orange-400' }, '🔥 Respiration rate'),
+                            h('span', { className: 'text-orange-400' }, __alloT('stem.companionplanting.respiration_rate', '🔥 Respiration rate')),
                             h('span', { className: 'text-orange-300 font-mono' }, respRate + '%')),
                           h('div', { className: 'h-2 bg-slate-700 rounded-full overflow-hidden' },
                             h('div', { style: { width: respRate + '%' }, className: 'h-full bg-gradient-to-r from-orange-500 to-red-400 rounded-full transition-all' }))),
@@ -3649,7 +3650,7 @@ var d = (labToolData.companionPlanting) || {};
                         // Transpiration
                         h('div', null,
                           h('div', { className: 'flex justify-between text-[11px] mb-0.5' },
-                            h('span', { className: 'text-blue-400' }, '💨 Transpiration (water loss through leaves)'),
+                            h('span', { className: 'text-blue-400' }, __alloT('stem.companionplanting.transpiration_water_loss_through_leave', '💨 Transpiration (water loss through leaves)')),
                             h('span', { className: 'text-blue-300 font-mono' }, transpRate + '%')),
                           h('div', { className: 'h-2 bg-slate-700 rounded-full overflow-hidden' },
                             h('div', { style: { width: transpRate + '%' }, className: 'h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full transition-all' }))),
@@ -3658,36 +3659,36 @@ var d = (labToolData.companionPlanting) || {};
 
               // ── FUNGAL NETWORK VIEW ──
               cgMicroscopeLayer === 'fungi' && h('div', { className: 'bg-gradient-to-b from-purple-900/30 to-purple-950/50 rounded-xl p-4 space-y-3 border border-purple-600/30' },
-                h('div', { className: 'text-sm font-bold text-purple-200' }, '🍄 The Wood Wide Web'),
+                h('div', { className: 'text-sm font-bold text-purple-200' }, __alloT('stem.companionplanting.the_wood_wide_web', '🍄 The Wood Wide Web')),
                 h('div', { className: 'text-xs text-purple-100/80 leading-relaxed space-y-2' },
                   h('div', { className: 'bg-purple-900/40 rounded-lg p-3 border border-purple-500/30' },
-                    h('div', { className: 'font-bold text-purple-300 text-xs mb-1' }, '🕸️ Mycorrhizal Networks'),
-                    h('p', null, 'Beneath your garden, an invisible internet of fungal threads (hyphae) connects 90% of plant species. These mycorrhizal fungi form symbiotic partnerships with roots:'),
+                    h('div', { className: 'font-bold text-purple-300 text-xs mb-1' }, __alloT('stem.companionplanting.mycorrhizal_networks', '🕸️ Mycorrhizal Networks')),
+                    h('p', null, __alloT('stem.companionplanting.beneath_your_garden_an_invisible_inter', 'Beneath your garden, an invisible internet of fungal threads (hyphae) connects 90% of plant species. These mycorrhizal fungi form symbiotic partnerships with roots:')),
                     h('div', { className: 'my-2 bg-purple-800/30 rounded-lg p-2 text-center' },
                       h('div', { className: 'flex items-center justify-center gap-3' },
-                        h('div', { className: 'text-center' }, h('div', { className: 'text-xl' }, '🌱'), h('div', { className: 'text-[11px] text-purple-300' }, 'Plant')),
-                        h('div', { className: 'text-purple-400 text-sm' }, '← sugars (C₆H₁₂O₆)'),
-                        h('div', { className: 'text-center' }, h('div', { className: 'text-xl' }, '🍄'), h('div', { className: 'text-[11px] text-purple-300' }, 'Fungus')),
-                        h('div', { className: 'text-purple-400 text-sm' }, 'phosphorus (PO₄³⁻) →'),
-                        h('div', { className: 'text-center' }, h('div', { className: 'text-xl' }, '🌱'), h('div', { className: 'text-[11px] text-purple-300' }, 'Plant')))),
-                    h('p', null, 'The fungus extends the plant\'s root system by 100-1000×, accessing water and phosphorus the roots can\'t reach. In return, the plant shares 10-30% of its photosynthesized sugars. Both benefit — neither survives as well alone.')),
+                        h('div', { className: 'text-center' }, h('div', { className: 'text-xl' }, '🌱'), h('div', { className: 'text-[11px] text-purple-300' }, __alloT('stem.companionplanting.plant', 'Plant'))),
+                        h('div', { className: 'text-purple-400 text-sm' }, __alloT('stem.companionplanting.sugars_c_h_o', '← sugars (C₆H₁₂O₆)')),
+                        h('div', { className: 'text-center' }, h('div', { className: 'text-xl' }, '🍄'), h('div', { className: 'text-[11px] text-purple-300' }, __alloT('stem.companionplanting.fungus', 'Fungus'))),
+                        h('div', { className: 'text-purple-400 text-sm' }, __alloT('stem.companionplanting.phosphorus_po', 'phosphorus (PO₄³⁻) →')),
+                        h('div', { className: 'text-center' }, h('div', { className: 'text-xl' }, '🌱'), h('div', { className: 'text-[11px] text-purple-300' }, __alloT('stem.companionplanting.plant_2', 'Plant'))))),
+                    h('p', null, __alloT('stem.companionplanting.the_fungus_extends_the_plant_s_root_sy', 'The fungus extends the plant\'s root system by 100-1000×, accessing water and phosphorus the roots can\'t reach. In return, the plant shares 10-30% of its photosynthesized sugars. Both benefit — neither survives as well alone.'))),
                   h('div', { className: 'bg-indigo-900/40 rounded-lg p-3 border border-indigo-500/30' },
-                    h('div', { className: 'font-bold text-indigo-300 text-xs mb-1' }, '📡 Chemical Signaling'),
-                    h('p', null, 'When one plant is attacked by pests, it sends chemical alarm signals through the fungal network. Connected plants receive the warning and preemptively produce defensive compounds — before the pest even reaches them.'),
-                    h('p', { className: 'mt-1' }, '"Mother trees" (the largest, oldest plants) share nutrients with seedlings through the network, especially shaded seedlings that can\'t photosynthesize enough on their own. The forest — and the garden — is a community, not a competition.')),
+                    h('div', { className: 'font-bold text-indigo-300 text-xs mb-1' }, __alloT('stem.companionplanting.chemical_signaling', '📡 Chemical Signaling')),
+                    h('p', null, __alloT('stem.companionplanting.when_one_plant_is_attacked_by_pests_it', 'When one plant is attacked by pests, it sends chemical alarm signals through the fungal network. Connected plants receive the warning and preemptively produce defensive compounds — before the pest even reaches them.')),
+                    h('p', { className: 'mt-1' }, __alloT('stem.companionplanting.mother_trees_the_largest_oldest_plants', '"Mother trees" (the largest, oldest plants) share nutrients with seedlings through the network, especially shaded seedlings that can\'t photosynthesize enough on their own. The forest — and the garden — is a community, not a competition.'))),
                   h('div', { className: 'bg-red-900/30 rounded-lg p-3 border border-red-500/30' },
-                    h('div', { className: 'font-bold text-red-300 text-xs mb-1' }, '⚠️ Threats to the Network'),
-                    h('p', null, 'Tilling destroys mycorrhizal networks (this is why no-till farming is gaining traction). Chemical fertilizers can suppress fungal growth — the plant gets "lazy" and stops feeding its fungal partner. Garlic mustard (an invasive) releases chemicals that specifically destroy mycorrhizal fungi, devastating the entire underground ecosystem.'),
+                    h('div', { className: 'font-bold text-red-300 text-xs mb-1' }, __alloT('stem.companionplanting.threats_to_the_network', '⚠️ Threats to the Network')),
+                    h('p', null, __alloT('stem.companionplanting.tilling_destroys_mycorrhizal_networks_', 'Tilling destroys mycorrhizal networks (this is why no-till farming is gaining traction). Chemical fertilizers can suppress fungal growth — the plant gets "lazy" and stops feeding its fungal partner. Garlic mustard (an invasive) releases chemicals that specifically destroy mycorrhizal fungi, devastating the entire underground ecosystem.')),
                     h('p', { className: 'mt-1' }, neighbors.length > 0
                       ? '🌐 This plant has ' + neighbors.length + ' neighbors. The mycorrhizal network likely connects them all, sharing nutrients and warning signals underground.'
                       : '🏝️ This plant is isolated — fewer network connections mean less nutrient sharing and no warning signals from neighbors.')))),
 
               // Current cell stats
               h('div', { className: 'bg-slate-700/50 rounded-lg p-3 grid grid-cols-4 gap-2 text-center text-[11px]' },
-                h('div', null, h('div', { className: 'text-lg font-black text-emerald-400' }, growthPct + '%'), h('div', { className: 'text-slate-200' }, 'Growth')),
-                h('div', null, h('div', { className: 'text-lg font-black ' + (cell.health > 70 ? 'text-green-400' : cell.health > 40 ? 'text-yellow-400' : 'text-red-400') }, Math.round(cell.health)), h('div', { className: 'text-slate-200' }, 'Health')),
-                h('div', null, h('div', { className: 'text-lg font-black ' + (bonus.total > 0 ? 'text-emerald-400' : bonus.total < 0 ? 'text-red-400' : 'text-slate-200') }, (bonus.total > 0 ? '+' : '') + bonus.total + '%'), h('div', { className: 'text-slate-200' }, 'Companion')),
-                h('div', null, h('div', { className: 'text-lg font-black text-orange-400' }, Math.round(cell.pests)), h('div', { className: 'text-slate-200' }, 'Pests'))));
+                h('div', null, h('div', { className: 'text-lg font-black text-emerald-400' }, growthPct + '%'), h('div', { className: 'text-slate-200' }, __alloT('stem.companionplanting.growth', 'Growth'))),
+                h('div', null, h('div', { className: 'text-lg font-black ' + (cell.health > 70 ? 'text-green-400' : cell.health > 40 ? 'text-yellow-400' : 'text-red-400') }, Math.round(cell.health)), h('div', { className: 'text-slate-200' }, __alloT('stem.companionplanting.health', 'Health'))),
+                h('div', null, h('div', { className: 'text-lg font-black ' + (bonus.total > 0 ? 'text-emerald-400' : bonus.total < 0 ? 'text-red-400' : 'text-slate-200') }, (bonus.total > 0 ? '+' : '') + bonus.total + '%'), h('div', { className: 'text-slate-200' }, __alloT('stem.companionplanting.companion', 'Companion'))),
+                h('div', null, h('div', { className: 'text-lg font-black text-orange-400' }, Math.round(cell.pests)), h('div', { className: 'text-slate-200' }, __alloT('stem.companionplanting.pests', 'Pests')))));
           }
 
           function renderCommunityGarden() {
@@ -3721,14 +3722,14 @@ var d = (labToolData.companionPlanting) || {};
                     h('textarea', {
                       value: cgReflectionResponse,
                       onChange: function(ev) { cgUpd({ reflectionResponse: ev.target.value }); },
-                      placeholder: 'Write your reflection here...',
+                      placeholder: __alloT('stem.companionplanting.write_your_reflection_here', 'Write your reflection here...'),
                       rows: 3,
-                      'aria-label': 'Your reflection',
+                      'aria-label': __alloT('stem.companionplanting.your_reflection', 'Your reflection'),
                       className: 'w-full text-sm border border-slate-400 rounded-lg p-2 outline-none focus:ring-2 focus:ring-violet-300 resize-none'
                     })),
                   h('div', { className: 'flex gap-2' },
-                    h('button', { onClick: cgSubmitReflection, disabled: !cgReflectionResponse.trim(), className: 'transition-colors px-4 py-2 bg-violet-600 text-white rounded-lg text-sm font-bold hover:bg-violet-700 disabled:opacity-40' }, '📝 Save to Journal'),
-                    h('button', { onClick: function() { cgUpd({ activeReflection: null }); }, className: 'transition-colors px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-200' }, 'Skip')));
+                    h('button', { onClick: cgSubmitReflection, disabled: !cgReflectionResponse.trim(), className: 'transition-colors px-4 py-2 bg-violet-600 text-white rounded-lg text-sm font-bold hover:bg-violet-700 disabled:opacity-40' }, __alloT('stem.companionplanting.save_to_journal', '📝 Save to Journal')),
+                    h('button', { onClick: function() { cgUpd({ activeReflection: null }); }, className: 'transition-colors px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-200' }, __alloT('stem.companionplanting.skip', 'Skip'))));
               })(),
               // ── Event popup ──
               cgActiveEvent && (function() {
@@ -3746,7 +3747,7 @@ var d = (labToolData.companionPlanting) || {};
                       h('div', { className: titleClass }, cgActiveEvent.label),
                       h('div', { className: descClass }, cgActiveEvent.desc))),
                   h('div', { className: 'bg-white rounded-lg p-3 text-xs text-slate-700 border ' + borderClass },
-                    h('strong', null, '🔬 Science: '), cgActiveEvent.lesson),
+                    h('strong', null, __alloT('stem.companionplanting.science', '🔬 Science: ')), cgActiveEvent.lesson),
                   h('button', { onClick: cgDismissEvent, className: btnClass }, btnText));
               })(),
 
@@ -3761,10 +3762,10 @@ var d = (labToolData.companionPlanting) || {};
               // ── Seasonal Tip ──
               cgPhase === 'grow' && (cgDay % 30) < 2 && (function() {
                 var tips = [
-                  { emoji: '🌱', tip: 'Spring: Perfect for cool-season crops (lettuce, peas, radish, broccoli). Plant nitrogen-fixers now to enrich soil for summer heavy feeders.' },
-                  { emoji: '☀️', tip: 'Summer: Peak growth for warm-season crops (tomatoes, peppers, squash). Watch moisture closely — evaporation is 2.5× higher. Pollinators are most active now!' },
-                  { emoji: '🍂', tip: 'Autumn: Harvest mature crops before frost. Plant cover crops (clover) in empty plots to protect soil over winter. Cool-season crops can go in for a fall harvest.' },
-                  { emoji: '❄️', tip: 'Winter: Growth stops. This is planning season! Review what worked, note crop rotation for spring, and let the soil rest. Compost decomposes slowly in cold.' }
+                  { emoji: '🌱', tip: __alloT('stem.companionplanting.spring_perfect_for_cool_season_crops_l', 'Spring: Perfect for cool-season crops (lettuce, peas, radish, broccoli). Plant nitrogen-fixers now to enrich soil for summer heavy feeders.') },
+                  { emoji: '☀️', tip: __alloT('stem.companionplanting.summer_peak_growth_for_warm_season_cro', 'Summer: Peak growth for warm-season crops (tomatoes, peppers, squash). Watch moisture closely — evaporation is 2.5× higher. Pollinators are most active now!') },
+                  { emoji: '🍂', tip: __alloT('stem.companionplanting.autumn_harvest_mature_crops_before_fro', 'Autumn: Harvest mature crops before frost. Plant cover crops (clover) in empty plots to protect soil over winter. Cool-season crops can go in for a fall harvest.') },
+                  { emoji: '❄️', tip: __alloT('stem.companionplanting.winter_growth_stops_this_is_planning_s', 'Winter: Growth stops. This is planning season! Review what worked, note crop rotation for spring, and let the soil rest. Compost decomposes slowly in cold.') }
                 ];
                 var st = tips[cgSeason];
                 return h('div', { className: 'flex items-start gap-2 bg-sky-50 rounded-lg border border-sky-200 p-2 text-xs text-sky-800' },
@@ -3790,8 +3791,8 @@ var d = (labToolData.companionPlanting) || {};
                 else if (cgNitrogen >= 20) grades.push({ mark: 'B', area: 'Soil Fertility', note: 'Nitrogen at ' + Math.round(cgNitrogen) + '% — could use legumes' });
                 else grades.push({ mark: 'C', area: 'Soil Fertility', note: 'Nitrogen depleted at ' + Math.round(cgNitrogen) + '%' });
                 if (stats2.pollinatorPlants >= 2) grades.push({ mark: 'A', area: 'Pollinators', note: stats2.pollinatorPlants + ' pollinator plants active' });
-                else if (stats2.pollinatorPlants >= 1) grades.push({ mark: 'B', area: 'Pollinators', note: 'Some pollinator coverage' });
-                else grades.push({ mark: 'C', area: 'Pollinators', note: 'No pollinator plants — yields suffering' });
+                else if (stats2.pollinatorPlants >= 1) grades.push({ mark: 'B', area: 'Pollinators', note: __alloT('stem.companionplanting.some_pollinator_coverage', 'Some pollinator coverage') });
+                else grades.push({ mark: 'C', area: 'Pollinators', note: __alloT('stem.companionplanting.no_pollinator_plants_yields_suffering', 'No pollinator plants — yields suffering') });
                 var overallGPA = grades.reduce(function(s, g) { return s + (g.mark === 'A' ? 4 : g.mark === 'B' ? 3 : 2); }, 0) / grades.length;
                 var overallGrade = overallGPA >= 3.5 ? 'A' : overallGPA >= 2.5 ? 'B' : 'C';
                 var gradeColors = { A: 'text-emerald-400', B: 'text-yellow-400', C: 'text-red-400' };
@@ -3810,7 +3811,7 @@ var d = (labToolData.companionPlanting) || {};
                     })),
                   h('div', { className: 'text-center' },
                     h('div', { className: 'text-3xl font-black ' + (gradeColors[overallGrade] || '') }, overallGrade),
-                    h('div', { className: 'text-[11px] text-slate-600' }, 'Overall Season Grade')),
+                    h('div', { className: 'text-[11px] text-slate-600' }, __alloT('stem.companionplanting.overall_season_grade', 'Overall Season Grade'))),
                   h('div', { className: 'text-[11px] text-amber-200/70 text-center italic' },
                     overallGrade === 'A' ? '🌟 Outstanding garden stewardship! Your ecosystem is thriving.' :
                     overallGrade === 'B' ? '🌿 Good progress! Focus on diversity and soil health to reach the next level.' :
@@ -3819,7 +3820,7 @@ var d = (labToolData.companionPlanting) || {};
 
               // ── Plant picker (plan phase) ──
               cgPhase === 'plan' && h('div', { className: 'bg-emerald-50 rounded-xl border border-emerald-200 p-3' },
-                h('div', { className: 'text-xs font-bold text-emerald-800 mb-2' }, '🌱 Select a plant, then click a cell to place it:'),
+                h('div', { className: 'text-xs font-bold text-emerald-800 mb-2' }, __alloT('stem.companionplanting.select_a_plant_then_click_a_cell_to_pl', '🌱 Select a plant, then click a cell to place it:')),
                 h('div', { className: 'flex flex-wrap gap-1.5' },
                   plantKeys.map(function(key) {
                     var p = CG_PLANTS[key];
@@ -3849,19 +3850,19 @@ var d = (labToolData.companionPlanting) || {};
                     h('div', { className: 'flex flex-wrap gap-2 text-[11px]' },
                       h('span', { className: 'bg-blue-50 text-blue-700 px-2 py-0.5 rounded' }, '💧'.repeat(sp.water) + ' Water'),
                       h('span', { className: 'bg-yellow-50 text-yellow-700 px-2 py-0.5 rounded' }, '☀️'.repeat(sp.sun) + ' Sun'),
-                      sp.nEffect > 0 && h('span', { className: 'bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded' }, '⚗️ Fixes nitrogen'),
-                      sp.nEffect < 0 && h('span', { className: 'bg-red-50 text-red-700 px-2 py-0.5 rounded' }, '⚗️ Heavy feeder'),
-                      sp.needsPoll && h('span', { className: 'bg-amber-50 text-amber-700 px-2 py-0.5 rounded' }, '🐝 Needs pollinators'),
-                      sp.pollinator && h('span', { className: 'bg-purple-50 text-purple-700 px-2 py-0.5 rounded' }, '🐝 Attracts pollinators'),
-                      sp.regen && h('span', { className: 'bg-teal-50 text-teal-700 px-2 py-0.5 rounded' }, '♻️ Regenerative'),
-                      sp.native && h('span', { className: 'bg-green-50 text-green-700 px-2 py-0.5 rounded' }, '🏔️ Native species')),
+                      sp.nEffect > 0 && h('span', { className: 'bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded' }, __alloT('stem.companionplanting.fixes_nitrogen', '⚗️ Fixes nitrogen')),
+                      sp.nEffect < 0 && h('span', { className: 'bg-red-50 text-red-700 px-2 py-0.5 rounded' }, __alloT('stem.companionplanting.heavy_feeder', '⚗️ Heavy feeder')),
+                      sp.needsPoll && h('span', { className: 'bg-amber-50 text-amber-700 px-2 py-0.5 rounded' }, __alloT('stem.companionplanting.needs_pollinators', '🐝 Needs pollinators')),
+                      sp.pollinator && h('span', { className: 'bg-purple-50 text-purple-700 px-2 py-0.5 rounded' }, __alloT('stem.companionplanting.attracts_pollinators', '🐝 Attracts pollinators')),
+                      sp.regen && h('span', { className: 'bg-teal-50 text-teal-700 px-2 py-0.5 rounded' }, __alloT('stem.companionplanting.regenerative', '♻️ Regenerative')),
+                      sp.native && h('span', { className: 'bg-green-50 text-green-700 px-2 py-0.5 rounded' }, __alloT('stem.companionplanting.native_species', '🏔️ Native species'))),
                     companions.length > 0 && (function() {
                       var sorted = companions.slice().sort(function(a, b) { return b.bonus - a.bonus; });
                       var maxMag = Math.max.apply(null, sorted.map(function(c) { return Math.abs(c.bonus); }).concat([10]));
                       var W = 240, rowH = 18, cx = 116, half = 94, padT = 16, Hh = padT + sorted.length * rowH + 4;
                       return h('svg', { viewBox: '0 0 ' + W + ' ' + Hh, width: '100%', style: { maxWidth: 300 }, role: 'img', 'aria-label': 'Companion strength for ' + sp.label + '. Green bars to the right are helpful neighbors, red bars to the left are plants to keep apart; longer bars mean a stronger effect.' },
-                        h('text', { x: cx - 4, y: 10, textAnchor: 'end', fontSize: 8, fill: '#dc2626', fontWeight: 700 }, '← keep apart'),
-                        h('text', { x: cx + 4, y: 10, textAnchor: 'start', fontSize: 8, fill: '#059669', fontWeight: 700 }, 'good neighbor →'),
+                        h('text', { x: cx - 4, y: 10, textAnchor: 'end', fontSize: 8, fill: '#dc2626', fontWeight: 700 }, __alloT('stem.companionplanting.keep_apart', '← keep apart')),
+                        h('text', { x: cx + 4, y: 10, textAnchor: 'start', fontSize: 8, fill: '#059669', fontWeight: 700 }, __alloT('stem.companionplanting.good_neighbor', 'good neighbor →')),
                         h('line', { x1: cx, y1: padT - 2, x2: cx, y2: Hh - 2, stroke: '#cbd5e1', strokeWidth: 1 }),
                         sorted.map(function(c, i) {
                           var other = c.a === cgSelectedPlant ? c.b : c.a;
@@ -3876,10 +3877,10 @@ var d = (labToolData.companionPlanting) || {};
                       );
                     })(),
                     friends.length > 0 && h('div', { className: 'text-[11px]' },
-                      h('span', { className: 'font-bold text-emerald-700' }, '✅ Good neighbors: '),
+                      h('span', { className: 'font-bold text-emerald-700' }, __alloT('stem.companionplanting.good_neighbors', '✅ Good neighbors: ')),
                       friends.map(function(f) { var other = f.a === cgSelectedPlant ? f.b : f.a; return CG_PLANTS[other] ? CG_PLANTS[other].emoji + ' ' + CG_PLANTS[other].label : other; }).join(', ')),
                     enemies.length > 0 && h('div', { className: 'text-[11px]' },
-                      h('span', { className: 'font-bold text-red-600' }, '⚠️ Keep apart: '),
+                      h('span', { className: 'font-bold text-red-600' }, __alloT('stem.companionplanting.keep_apart_2', '⚠️ Keep apart: ')),
                       enemies.map(function(f) { var other = f.a === cgSelectedPlant ? f.b : f.a; return CG_PLANTS[other] ? CG_PLANTS[other].emoji + ' ' + CG_PLANTS[other].label : other; }).join(', ')));
                 })()),
 
@@ -3902,29 +3903,29 @@ var d = (labToolData.companionPlanting) || {};
                 var ecoColor = ecoScore >= 80 ? 'text-emerald-700' : ecoScore >= 55 ? 'text-green-600' : ecoScore >= 35 ? 'text-yellow-600' : 'text-red-600';
                 return h('div', { className: 'bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 p-3' },
                   h('div', { className: 'flex items-center justify-between mb-2' },
-                    h('div', { className: 'text-xs font-bold text-emerald-800' }, '🌍 Ecosystem Health'),
+                    h('div', { className: 'text-xs font-bold text-emerald-800' }, __alloT('stem.companionplanting.ecosystem_health', '🌍 Ecosystem Health')),
                     h('div', { className: 'text-sm font-black ' + ecoColor }, ecoLabel + ' (' + ecoScore + ')')),
                   h('div', { className: 'grid grid-cols-3 gap-2 text-center' },
                     h('div', { className: 'bg-white rounded-lg p-2' },
                       h('div', { className: 'text-lg font-black text-emerald-600' }, diversity),
-                      h('div', { className: 'text-[11px] text-slate-600' }, 'Plant Families')),
+                      h('div', { className: 'text-[11px] text-slate-600' }, __alloT('stem.companionplanting.plant_families', 'Plant Families'))),
                     h('div', { className: 'bg-white rounded-lg p-2' },
                       h('div', { className: 'text-lg font-black text-purple-600' }, pollinatorCount),
-                      h('div', { className: 'text-[11px] text-slate-600' }, '🐝 Pollinators')),
+                      h('div', { className: 'text-[11px] text-slate-600' }, __alloT('stem.companionplanting.pollinators', '🐝 Pollinators'))),
                     h('div', { className: 'bg-white rounded-lg p-2' },
                       h('div', { className: 'text-lg font-black ' + (avgHealth > 70 ? 'text-emerald-600' : avgHealth > 40 ? 'text-yellow-600' : 'text-red-600') }, avgHealth + '%'),
-                      h('div', { className: 'text-[11px] text-slate-600' }, 'Avg Health'))),
+                      h('div', { className: 'text-[11px] text-slate-600' }, __alloT('stem.companionplanting.avg_health', 'Avg Health')))),
                   // Ecosystem feedback
                   h('div', { className: 'mt-2 text-[11px] text-emerald-700 space-y-0.5' },
-                    diversity < 3 && h('div', null, '⚠️ Low diversity — try planting more plant families for ecosystem resilience'),
-                    pollinatorCount === 0 && h('div', null, '⚠️ No pollinator plants — squash and cucumber yields will suffer'),
-                    avgPests > 40 && h('div', null, '🐛 High pest pressure — companion plants and weeding can help'),
-                    cgNitrogen < 20 && h('div', null, '⚗️ Nitrogen depleted — plant legumes (beans, peas, clover) to fix nitrogen'),
-                    cgMoisture < 25 && h('div', null, '💧 Soil is dry — water soon to prevent wilting'),
-                    cgMoisture > 85 && h('div', null, '💧 Overwatered — roots may rot. Let soil drain.'),
-                    ecoScore >= 80 && h('div', null, '🌳 Your garden ecosystem is thriving! Diversity and companion planting are working.'),
-                    regenCount >= 2 && h('div', null, '♻️ Regenerative plants are healing your soil — comfrey, clover, and buckwheat build long-term fertility without synthetic inputs.'),
-                    regenCount === 0 && plantCount > 4 && h('div', null, '♻️ No regenerative plants yet. Try comfrey, buckwheat, yarrow, or clover — they build soil health for future seasons.')));
+                    diversity < 3 && h('div', null, __alloT('stem.companionplanting.low_diversity_try_planting_more_plant_', '⚠️ Low diversity — try planting more plant families for ecosystem resilience')),
+                    pollinatorCount === 0 && h('div', null, __alloT('stem.companionplanting.no_pollinator_plants_squash_and_cucumb', '⚠️ No pollinator plants — squash and cucumber yields will suffer')),
+                    avgPests > 40 && h('div', null, __alloT('stem.companionplanting.high_pest_pressure_companion_plants_an', '🐛 High pest pressure — companion plants and weeding can help')),
+                    cgNitrogen < 20 && h('div', null, __alloT('stem.companionplanting.nitrogen_depleted_plant_legumes_beans_', '⚗️ Nitrogen depleted — plant legumes (beans, peas, clover) to fix nitrogen')),
+                    cgMoisture < 25 && h('div', null, __alloT('stem.companionplanting.soil_is_dry_water_soon_to_prevent_wilt', '💧 Soil is dry — water soon to prevent wilting')),
+                    cgMoisture > 85 && h('div', null, __alloT('stem.companionplanting.overwatered_roots_may_rot_let_soil_dra', '💧 Overwatered — roots may rot. Let soil drain.')),
+                    ecoScore >= 80 && h('div', null, __alloT('stem.companionplanting.your_garden_ecosystem_is_thriving_dive', '🌳 Your garden ecosystem is thriving! Diversity and companion planting are working.')),
+                    regenCount >= 2 && h('div', null, __alloT('stem.companionplanting.regenerative_plants_are_healing_your_s', '♻️ Regenerative plants are healing your soil — comfrey, clover, and buckwheat build long-term fertility without synthetic inputs.')),
+                    regenCount === 0 && plantCount > 4 && h('div', null, __alloT('stem.companionplanting.no_regenerative_plants_yet_try_comfrey', '♻️ No regenerative plants yet. Try comfrey, buckwheat, yarrow, or clover — they build soil health for future seasons.'))));
               })(),
 
               // ── Sustainable Gardening Tips (contextual, based on garden state) ──
@@ -3934,14 +3935,14 @@ var d = (labToolData.companionPlanting) || {};
                 var emptyPlots = cgGrid.filter(function(c) { return !c.plantId; }).length;
                 var hasMint = cgGrid.some(function(c) { return c.plantId === 'mint'; });
                 var tips = [];
-                if (regenPlants === 0) tips.push({ emoji: '♻️', text: 'Try regenerative plants (comfrey, buckwheat, clover, yarrow) — they heal soil, attract beneficials, and build long-term garden health.' });
-                if (pollinators < 2 && cgGrid.some(function(c) { return c.plantId && CG_PLANTS[c.plantId] && CG_PLANTS[c.plantId].needsPoll; })) tips.push({ emoji: '🐝', text: 'Your pollinator-dependent crops need nearby flowers. Plant marigold, borage, lavender, or sunflower within 2 cells for full yield.' });
-                if (emptyPlots > 6) tips.push({ emoji: '🌿', text: 'Empty soil erodes and loses nutrients. Cover crops (clover, buckwheat) protect soil even when you\'re not growing food — like nature\'s blanket.' });
-                if (hasMint) tips.push({ emoji: '⚠️', text: 'Mint is an aggressive spreader! In real gardens, always plant mint in containers. Here it may invade adjacent cells — monitor carefully.' });
-                if (cgNitrogen < 25) tips.push({ emoji: '⚗️', text: 'Regenerative tip: Instead of adding fertilizer, plant legumes (beans, peas, clover). They partner with soil bacteria to pull nitrogen from the air — free and sustainable!' });
+                if (regenPlants === 0) tips.push({ emoji: '♻️', text: __alloT('stem.companionplanting.try_regenerative_plants_comfrey_buckwh', 'Try regenerative plants (comfrey, buckwheat, clover, yarrow) — they heal soil, attract beneficials, and build long-term garden health.') });
+                if (pollinators < 2 && cgGrid.some(function(c) { return c.plantId && CG_PLANTS[c.plantId] && CG_PLANTS[c.plantId].needsPoll; })) tips.push({ emoji: '🐝', text: __alloT('stem.companionplanting.your_pollinator_dependent_crops_need_n', 'Your pollinator-dependent crops need nearby flowers. Plant marigold, borage, lavender, or sunflower within 2 cells for full yield.') });
+                if (emptyPlots > 6) tips.push({ emoji: '🌿', text: __alloT('stem.companionplanting.empty_soil_erodes_and_loses_nutrients_', 'Empty soil erodes and loses nutrients. Cover crops (clover, buckwheat) protect soil even when you\'re not growing food — like nature\'s blanket.') });
+                if (hasMint) tips.push({ emoji: '⚠️', text: __alloT('stem.companionplanting.mint_is_an_aggressive_spreader_in_real', 'Mint is an aggressive spreader! In real gardens, always plant mint in containers. Here it may invade adjacent cells — monitor carefully.') });
+                if (cgNitrogen < 25) tips.push({ emoji: '⚗️', text: __alloT('stem.companionplanting.regenerative_tip_instead_of_adding_fer', 'Regenerative tip: Instead of adding fertilizer, plant legumes (beans, peas, clover). They partner with soil bacteria to pull nitrogen from the air — free and sustainable!') });
                 if (tips.length === 0) return null;
                 return h('div', { className: 'bg-gradient-to-r from-teal-50 to-emerald-50 rounded-xl border border-teal-200 p-3' },
-                  h('div', { className: 'text-xs font-bold text-teal-800 mb-2' }, '♻️ Sustainable Gardening Tips'),
+                  h('div', { className: 'text-xs font-bold text-teal-800 mb-2' }, __alloT('stem.companionplanting.sustainable_gardening_tips', '♻️ Sustainable Gardening Tips')),
                   h('div', { className: 'space-y-1.5' },
                     tips.map(function(t, i) {
                       return h('div', { key: i, className: 'flex items-start gap-2 text-[11px] text-teal-700' },
@@ -3965,7 +3966,7 @@ var d = (labToolData.companionPlanting) || {};
                 h('canvas', {
                 key: 'cg-canvas-' + (cgMaximized ? 'max' : 'norm'),
                 role: 'application',
-                'aria-label': 'Isometric community garden view. Click plots to plant or inspect.',
+                'aria-label': __alloT('stem.companionplanting.isometric_community_garden_view_click_', 'Isometric community garden view. Click plots to plant or inspect.'),
                 tabIndex: 0,
                 style: { width: '100%', height: cgMaximized ? '100%' : '540px', borderRadius: cgMaximized ? '8px' : '12px', display: 'block', cursor: cgPhase === 'plan' && cgSelectedPlant ? 'crosshair' : 'pointer', background: '#1a2810', flex: cgMaximized ? '1' : 'unset' },
                 onMouseMove: function(e) {
@@ -5663,9 +5664,9 @@ var d = (labToolData.companionPlanting) || {};
                         var abCenter = isoToScreen(1.5, 1.5);
                         // Palette per action
                         var abPalette = {
-                          water:   { ring1: 'rgba(56,189,248,', ring2: 'rgba(186,230,253,', dot1: 'rgba(14,165,233,', dot2: 'rgba(125,211,252,', labelBg: 'rgba(7,89,133,0.85)', labelFg: '#e0f2fe', text: '💧 Watered!' },
-                          weed:    { ring1: 'rgba(74,222,128,', ring2: 'rgba(254,202,202,', dot1: 'rgba(34,197,94,',  dot2: 'rgba(248,113,113,', labelBg: 'rgba(20,83,45,0.85)',  labelFg: '#dcfce7', text: '🌿 Weeded!' },
-                          compost: { ring1: 'rgba(180,140,90,', ring2: 'rgba(202,138,4,',  dot1: 'rgba(120,80,40,',   dot2: 'rgba(252,211,77,',  labelBg: 'rgba(69,26,3,0.85)',  labelFg: '#fef3c7', text: '♻️ Composted!' }
+                          water:   { ring1: 'rgba(56,189,248,', ring2: 'rgba(186,230,253,', dot1: 'rgba(14,165,233,', dot2: 'rgba(125,211,252,', labelBg: 'rgba(7,89,133,0.85)', labelFg: '#e0f2fe', text: __alloT('stem.companionplanting.watered', '💧 Watered!') },
+                          weed:    { ring1: 'rgba(74,222,128,', ring2: 'rgba(254,202,202,', dot1: 'rgba(34,197,94,',  dot2: 'rgba(248,113,113,', labelBg: 'rgba(20,83,45,0.85)',  labelFg: '#dcfce7', text: __alloT('stem.companionplanting.weeded', '🌿 Weeded!') },
+                          compost: { ring1: 'rgba(180,140,90,', ring2: 'rgba(202,138,4,',  dot1: 'rgba(120,80,40,',   dot2: 'rgba(252,211,77,',  labelBg: 'rgba(69,26,3,0.85)',  labelFg: '#fef3c7', text: __alloT('stem.companionplanting.composted', '♻️ Composted!') }
                         }[abKind] || { ring1: 'rgba(255,255,255,', ring2: 'rgba(255,255,255,', dot1: 'rgba(255,255,255,', dot2: 'rgba(255,255,255,', labelBg: 'rgba(0,0,0,0.7)', labelFg: '#fff', text: 'Action!' };
                         // 2 expanding rings (large, scaled across whole garden footprint)
                         for (var abr = 0; abr < 2; abr++) {
@@ -5844,7 +5845,7 @@ var d = (labToolData.companionPlanting) || {};
                 var friends = guide.filter(function(g) { return g.comp.bonus > 0; });
                 var enemies = guide.filter(function(g) { return g.comp.bonus < 0; });
                 return h('div', { className: 'bg-white rounded-xl border border-slate-400 p-3' },
-                  h('div', { className: 'text-xs font-bold text-slate-700 mb-2' }, '📖 Companion Planting Guide'),
+                  h('div', { className: 'text-xs font-bold text-slate-700 mb-2' }, __alloT('stem.companionplanting.companion_planting_guide', '📖 Companion Planting Guide')),
                   friends.length > 0 && h('div', { className: 'mb-2' },
                     h('div', { className: 'text-[11px] font-bold text-emerald-700 mb-1' }, '✅ Good Companions (' + friends.length + ')'),
                     h('div', { className: 'space-y-0.5' },
@@ -5854,7 +5855,7 @@ var d = (labToolData.companionPlanting) || {};
                           h('span', null, (aP ? aP.emoji : '') + ' + ' + (bP ? bP.emoji : '')),
                           h('span', { className: 'font-bold text-emerald-600' }, '+' + g.comp.bonus + '%'),
                           h('span', { className: 'text-slate-600 truncate' }, g.comp.desc),
-                          g.active && h('span', { className: 'text-emerald-500 ml-auto flex-shrink-0' }, '✓ Active'));
+                          g.active && h('span', { className: 'text-emerald-500 ml-auto flex-shrink-0' }, __alloT('stem.companionplanting.active', '✓ Active')));
                       }))),
                   enemies.length > 0 && h('div', null,
                     h('div', { className: 'text-[11px] font-bold text-red-600 mb-1' }, '⚠️ Keep Apart (' + enemies.length + ')'),
@@ -5865,13 +5866,13 @@ var d = (labToolData.companionPlanting) || {};
                           h('span', null, (aP ? aP.emoji : '') + ' ✕ ' + (bP ? bP.emoji : '')),
                           h('span', { className: 'font-bold text-red-500' }, g.comp.bonus + '%'),
                           h('span', { className: 'text-slate-600 truncate' }, g.comp.desc),
-                          g.active && h('span', { className: 'text-red-500 ml-auto flex-shrink-0' }, '⚠️ Active!'));
+                          g.active && h('span', { className: 'text-red-500 ml-auto flex-shrink-0' }, __alloT('stem.companionplanting.active_2', '⚠️ Active!')));
                       }))));
               })(),
 
               // ── Challenge Picker / Progress ──
               cgPhase === 'plan' && !cgActiveChallenge && h('div', { className: 'bg-gradient-to-r from-indigo-50 to-violet-50 rounded-xl border border-indigo-200 p-3' },
-                h('div', { className: 'text-xs font-bold text-indigo-800 mb-2' }, '🎯 Garden Challenges (optional)'),
+                h('div', { className: 'text-xs font-bold text-indigo-800 mb-2' }, __alloT('stem.companionplanting.garden_challenges_optional', '🎯 Garden Challenges (optional)')),
                 h('div', { className: 'grid grid-cols-2 gap-2' },
                   CG_CHALLENGES.map(function(ch) {
                     var completed = cgCompletedChallenges.indexOf(ch.id) !== -1;
@@ -5911,34 +5912,34 @@ var d = (labToolData.companionPlanting) || {};
                     h('div', { className: 'flex-1' },
                       h('div', { className: 'text-xs font-bold text-indigo-800' }, '🎯 ' + ch.title + (isComplete ? ' — ✅ COMPLETE!' : '')),
                       h('div', { className: 'text-[11px] text-indigo-600' }, ch.goal)),
-                    h('button', { onClick: function() { cgUpd({ activeChallenge: null }); }, className: 'transition-colors text-xs text-slate-200 hover:text-slate-600', 'aria-label': 'Close challenge' }, '✕')),
+                    h('button', { onClick: function() { cgUpd({ activeChallenge: null }); }, className: 'transition-colors text-xs text-slate-200 hover:text-slate-600', 'aria-label': __alloT('stem.companionplanting.close_challenge', 'Close challenge') }, '✕')),
                   !isComplete && h('div', { className: 'text-[11px] text-amber-700 bg-amber-50 rounded-lg p-2 mt-1' }, '💡 Hint: ' + ch.hint));
               })(),
 
               // ── Action buttons ──
               cgPhase === 'plan' && h('div', { className: 'flex gap-2 flex-wrap' },
-                h('button', { onClick: cgStartGrowing, 'aria-label': 'Start growing season', className: 'transition-colors px-4 py-2 bg-emerald-700 text-white rounded-lg font-bold text-sm hover:bg-emerald-700' }, '▶️ Start Growing'),
-                h('button', { onClick: function() { cgUpd({ grid: cgGrid.map(function() { return { plantId: null, growthDay: 0, health: 100, watered: false, pests: 0 }; }), day: 0, score: 0, totalHarvested: 0, phase: 'plan', activeChallenge: null }); }, className: 'transition-colors px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-200' }, '🗑️ Clear All')),
+                h('button', { onClick: cgStartGrowing, 'aria-label': __alloT('stem.companionplanting.start_growing_season', 'Start growing season'), className: 'transition-colors px-4 py-2 bg-emerald-700 text-white rounded-lg font-bold text-sm hover:bg-emerald-700' }, __alloT('stem.companionplanting.start_growing', '▶️ Start Growing')),
+                h('button', { onClick: function() { cgUpd({ grid: cgGrid.map(function() { return { plantId: null, growthDay: 0, health: 100, watered: false, pests: 0 }; }), day: 0, score: 0, totalHarvested: 0, phase: 'plan', activeChallenge: null }); }, className: 'transition-colors px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-200' }, __alloT('stem.companionplanting.clear_all', '🗑️ Clear All'))),
 
               cgPhase === 'grow' && h('div', { className: 'flex gap-2 flex-wrap items-center' },
-                h('button', { onClick: cgAdvanceDay, className: 'transition-colors px-4 py-2 bg-sky-600 text-white rounded-lg font-bold text-sm hover:bg-sky-700' }, '⏩ Next Day'),
-                h('button', { onClick: function() { for(var i=0;i<5;i++) cgAdvanceDay(); }, className: 'transition-colors px-3 py-2 bg-sky-100 text-sky-700 rounded-lg text-sm font-bold hover:bg-sky-200' }, '⏭️ +5 Days'),
-                h('button', { onClick: cgWater, className: 'transition-colors px-3 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-bold hover:bg-blue-200' }, '💧 Water'),
-                h('button', { onClick: cgWeed, className: 'transition-colors px-3 py-2 bg-green-100 text-green-700 rounded-lg text-sm font-bold hover:bg-green-200' }, '🧹 Weed'),
-                h('button', { onClick: cgCompost, className: 'transition-colors px-3 py-2 bg-amber-100 text-amber-700 rounded-lg text-sm font-bold hover:bg-amber-200' }, '🧱 Compost'),
-                h('button', { onClick: cgHarvest, 'aria-label': 'Harvest ready crops', className: 'transition-colors px-3 py-2 bg-yellow-100 text-yellow-700 rounded-lg text-sm font-bold hover:bg-yellow-200' }, '🌾 Harvest Ready'),
-                h('button', { onClick: function() { cgUpd({ phase: 'plan' }); }, className: 'transition-colors px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-200' }, '\u270F\uFE0F Edit Garden')),
+                h('button', { onClick: cgAdvanceDay, className: 'transition-colors px-4 py-2 bg-sky-600 text-white rounded-lg font-bold text-sm hover:bg-sky-700' }, __alloT('stem.companionplanting.next_day', '⏩ Next Day')),
+                h('button', { onClick: function() { for(var i=0;i<5;i++) cgAdvanceDay(); }, className: 'transition-colors px-3 py-2 bg-sky-100 text-sky-700 rounded-lg text-sm font-bold hover:bg-sky-200' }, __alloT('stem.companionplanting.5_days', '⏭️ +5 Days')),
+                h('button', { onClick: cgWater, className: 'transition-colors px-3 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-bold hover:bg-blue-200' }, __alloT('stem.companionplanting.water_2', '💧 Water')),
+                h('button', { onClick: cgWeed, className: 'transition-colors px-3 py-2 bg-green-100 text-green-700 rounded-lg text-sm font-bold hover:bg-green-200' }, __alloT('stem.companionplanting.weed_2', '🧹 Weed')),
+                h('button', { onClick: cgCompost, className: 'transition-colors px-3 py-2 bg-amber-100 text-amber-700 rounded-lg text-sm font-bold hover:bg-amber-200' }, __alloT('stem.companionplanting.compost_2', '🧱 Compost')),
+                h('button', { onClick: cgHarvest, 'aria-label': __alloT('stem.companionplanting.harvest_ready_crops', 'Harvest ready crops'), className: 'transition-colors px-3 py-2 bg-yellow-100 text-yellow-700 rounded-lg text-sm font-bold hover:bg-yellow-200' }, __alloT('stem.companionplanting.harvest_ready', '🌾 Harvest Ready')),
+                h('button', { onClick: function() { cgUpd({ phase: 'plan' }); }, className: 'transition-colors px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-200' }, __alloT('stem.companionplanting.edit_garden', '\u270F\uFE0F Edit Garden'))),
 
               // ── Soil Chemistry + Economics + Pest HUD ──
               h('div', { className: 'grid grid-cols-2 gap-2' },
                 // Soil Chemistry Panel
                 h('div', { className: 'bg-gradient-to-b from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-2.5' },
-                  h('div', { className: 'text-[11px] font-bold text-amber-800 mb-1.5' }, '\uD83E\uDDEA Soil Chemistry'),
+                  h('div', { className: 'text-[11px] font-bold text-amber-800 mb-1.5' }, __alloT('stem.companionplanting.soil_chemistry_2', '\uD83E\uDDEA Soil Chemistry')),
                   h('div', { className: 'space-y-1' },
                     [
-                      { label: 'N', val: cgNitrogen, color: '#22c55e', tip: 'Nitrogen' },
-                      { label: 'P', val: cgPhosphorus, color: '#3b82f6', tip: 'Phosphorus' },
-                      { label: 'K', val: cgPotassium, color: '#8b5cf6', tip: 'Potassium' }
+                      { label: 'N', val: cgNitrogen, color: '#22c55e', tip: __alloT('stem.companionplanting.nitrogen_2', 'Nitrogen') },
+                      { label: 'P', val: cgPhosphorus, color: '#3b82f6', tip: __alloT('stem.companionplanting.phosphorus_2', 'Phosphorus') },
+                      { label: 'K', val: cgPotassium, color: '#8b5cf6', tip: __alloT('stem.companionplanting.potassium_2', 'Potassium') }
                     ].map(function(r) {
                       return h('div', { key: r.label, className: 'flex items-center gap-1.5', title: r.tip + ': ' + Math.round(r.val) + '/100' },
                         h('span', { className: 'text-[11px] font-bold w-3', style: { color: r.color } }, r.label),
@@ -5950,20 +5951,20 @@ var d = (labToolData.companionPlanting) || {};
                     })
                   ),
                   h('div', { className: 'flex justify-between mt-1.5 text-[11px]' },
-                    h('span', { className: 'text-amber-600', title: 'Soil pH (ideal 6.0-7.0 for most crops)' }, 'pH: ' + cgPH),
-                    h('span', { className: 'text-amber-600', title: 'Organic matter % (higher = better water retention)' }, 'OM: ' + cgOrganicMatter.toFixed(1) + '%')
+                    h('span', { className: 'text-amber-600', title: __alloT('stem.companionplanting.soil_ph_ideal_6_0_7_0_for_most_crops', 'Soil pH (ideal 6.0-7.0 for most crops)') }, 'pH: ' + cgPH),
+                    h('span', { className: 'text-amber-600', title: __alloT('stem.companionplanting.organic_matter_higher_better_water_ret', 'Organic matter % (higher = better water retention)') }, 'OM: ' + cgOrganicMatter.toFixed(1) + '%')
                   ),
                   // Soil actions
                   h('div', { className: 'flex gap-1 mt-1.5' },
-                    h('button', { onClick: cgAddLime, title: 'Add lime to raise pH (+$0.50)', className: 'transition-colors flex-1 px-1 py-1 text-[11px] font-bold rounded bg-amber-100 text-amber-700 hover:bg-amber-200' }, '\u2B06 Lime'),
-                    h('button', { onClick: cgAddSulfur, title: 'Add sulfur to lower pH (+$0.50)', className: 'transition-colors flex-1 px-1 py-1 text-[11px] font-bold rounded bg-yellow-100 text-yellow-700 hover:bg-yellow-200' }, '\u2B07 Sulfur')
+                    h('button', { onClick: cgAddLime, title: __alloT('stem.companionplanting.add_lime_to_raise_ph_0_50', 'Add lime to raise pH (+$0.50)'), className: 'transition-colors flex-1 px-1 py-1 text-[11px] font-bold rounded bg-amber-100 text-amber-700 hover:bg-amber-200' }, __alloT('stem.companionplanting.lime', '\u2B06 Lime')),
+                    h('button', { onClick: cgAddSulfur, title: __alloT('stem.companionplanting.add_sulfur_to_lower_ph_0_50', 'Add sulfur to lower pH (+$0.50)'), className: 'transition-colors flex-1 px-1 py-1 text-[11px] font-bold rounded bg-yellow-100 text-yellow-700 hover:bg-yellow-200' }, __alloT('stem.companionplanting.sulfur', '\u2B07 Sulfur'))
                   )
                 ),
                 // Economics + Pest Panel
                 h('div', { className: 'space-y-2' },
                   // Budget
                   h('div', { className: 'bg-gradient-to-b from-green-50 to-emerald-50 rounded-xl border border-green-200 p-2.5' },
-                    h('div', { className: 'text-[11px] font-bold text-green-800 mb-1' }, '\uD83D\uDCB0 Farm Budget'),
+                    h('div', { className: 'text-[11px] font-bold text-green-800 mb-1' }, __alloT('stem.companionplanting.farm_budget', '\uD83D\uDCB0 Farm Budget')),
                     h('div', { className: 'text-lg font-black ' + (cgBudget > 20 ? 'text-green-600' : cgBudget > 5 ? 'text-amber-600' : 'text-red-600') }, '$' + cgBudget.toFixed(2)),
                     h('div', { className: 'flex justify-between text-[11px] text-slate-600 mt-0.5' },
                       h('span', null, 'Spent: $' + cgExpenses.toFixed(2)),
@@ -5974,17 +5975,17 @@ var d = (labToolData.companionPlanting) || {};
                   ),
                   // Pest ecosystem
                   h('div', { className: 'bg-gradient-to-b from-red-50 to-orange-50 rounded-xl border border-red-200 p-2.5' },
-                    h('div', { className: 'text-[11px] font-bold text-red-800 mb-1' }, '\uD83D\uDC1B Pest Ecosystem'),
+                    h('div', { className: 'text-[11px] font-bold text-red-800 mb-1' }, __alloT('stem.companionplanting.pest_ecosystem', '\uD83D\uDC1B Pest Ecosystem')),
                     h('div', { className: 'flex justify-between text-[11px]' },
                       h('span', { className: 'text-red-600' }, '\uD83D\uDC1B Pests: ' + Math.round(cgPestPop)),
                       h('span', { className: 'text-green-600' }, '\uD83D\uDC1E Beneficials: ' + Math.round(cgBeneficialPop))
                     ),
                     // IPM action buttons
                     h('div', { className: 'grid grid-cols-2 gap-1 mt-1.5' },
-                      h('button', { onClick: function() { cgIPMAction('ladybugs'); }, title: 'Release ladybugs ($1.50)', className: 'transition-colors px-1 py-1 text-[11px] font-bold rounded bg-red-100 text-red-700 hover:bg-red-200' }, '\uD83D\uDC1E Ladybugs'),
-                      h('button', { onClick: function() { cgIPMAction('neem'); }, title: 'Neem spray ($1.00)', className: 'transition-colors px-1 py-1 text-[11px] font-bold rounded bg-orange-100 text-orange-700 hover:bg-orange-200' }, '\uD83C\uDF3F Neem'),
-                      h('button', { onClick: function() { cgIPMAction('handpick'); }, title: 'Hand-pick pests (free)', className: 'transition-colors px-1 py-1 text-[11px] font-bold rounded bg-yellow-100 text-yellow-700 hover:bg-yellow-200' }, '\u270B Pick'),
-                      h('button', { onClick: function() { cgIPMAction('rowcovers'); }, title: 'Row covers ($2.00)', className: 'transition-colors px-1 py-1 text-[11px] font-bold rounded bg-blue-100 text-blue-700 hover:bg-blue-200' }, '\uD83E\uDDF5 Covers')
+                      h('button', { onClick: function() { cgIPMAction('ladybugs'); }, title: __alloT('stem.companionplanting.release_ladybugs_1_50', 'Release ladybugs ($1.50)'), className: 'transition-colors px-1 py-1 text-[11px] font-bold rounded bg-red-100 text-red-700 hover:bg-red-200' }, __alloT('stem.companionplanting.ladybugs', '\uD83D\uDC1E Ladybugs')),
+                      h('button', { onClick: function() { cgIPMAction('neem'); }, title: __alloT('stem.companionplanting.neem_spray_1_00', 'Neem spray ($1.00)'), className: 'transition-colors px-1 py-1 text-[11px] font-bold rounded bg-orange-100 text-orange-700 hover:bg-orange-200' }, __alloT('stem.companionplanting.neem', '\uD83C\uDF3F Neem')),
+                      h('button', { onClick: function() { cgIPMAction('handpick'); }, title: __alloT('stem.companionplanting.hand_pick_pests_free', 'Hand-pick pests (free)'), className: 'transition-colors px-1 py-1 text-[11px] font-bold rounded bg-yellow-100 text-yellow-700 hover:bg-yellow-200' }, __alloT('stem.companionplanting.pick', '\u270B Pick')),
+                      h('button', { onClick: function() { cgIPMAction('rowcovers'); }, title: __alloT('stem.companionplanting.row_covers_2_00', 'Row covers ($2.00)'), className: 'transition-colors px-1 py-1 text-[11px] font-bold rounded bg-blue-100 text-blue-700 hover:bg-blue-200' }, __alloT('stem.companionplanting.covers', '\uD83E\uDDF5 Covers'))
                     )
                   )
                 )
@@ -6004,7 +6005,7 @@ var d = (labToolData.companionPlanting) || {};
               // ── Advisor Response ──
               cgAdvisorResponse && h('div', { className: 'bg-emerald-50 rounded-xl border border-emerald-200 p-3' },
                 h('div', { className: 'flex items-center gap-2 mb-1' },
-                  h('span', { className: 'text-[11px] font-bold text-emerald-700' }, '\uD83E\uDDD1\u200D\uD83C\uDF3E Garden Advisor'),
+                  h('span', { className: 'text-[11px] font-bold text-emerald-700' }, __alloT('stem.companionplanting.garden_advisor', '\uD83E\uDDD1\u200D\uD83C\uDF3E Garden Advisor')),
                   h('button', { onClick: function() { cgUpd({ advisorResponse: null }); }, className: 'transition-colors ml-auto text-[11px] text-slate-200 hover:text-slate-600' }, '\u2715')
                 ),
                 h('p', { className: 'text-[11px] text-slate-600 leading-relaxed whitespace-pre-line' }, cgAdvisorResponse)
@@ -6012,7 +6013,7 @@ var d = (labToolData.companionPlanting) || {};
 
               // ── Achievements ──
               h('div', { className: 'bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-3' },
-                h('div', { className: 'text-xs font-bold text-amber-800 mb-2' }, '🏆 Achievements'),
+                h('div', { className: 'text-xs font-bold text-amber-800 mb-2' }, __alloT('stem.companionplanting.achievements', '🏆 Achievements')),
                 h('div', { className: 'flex flex-wrap gap-1.5' },
                   CG_ACHIEVEMENTS.map(function(ach) {
                     var earned = ach.check(stats);
@@ -6046,13 +6047,13 @@ var d = (labToolData.companionPlanting) || {};
               renderTutorial('companionPlanting', _tutCompanionPlanting),
               React.createElement('div', { className: 'flex items-center justify-between' },
                 React.createElement('div', { className: 'flex items-center gap-3' },
-                  React.createElement('button', { onClick: function () { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg transition-colors', 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: 'text-slate-600' })),
+                  React.createElement('button', { onClick: function () { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg transition-colors', 'aria-label': __alloT('stem.companionplanting.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: 'text-slate-600' })),
                   React.createElement('div', null,
-                    React.createElement('h3', { className: 'text-lg font-bold text-slate-800' }, '🏡 Community Garden Simulator'),
-                    React.createElement('p', { className: 'text-xs text-slate-600' }, 'Plan, plant, and manage a diverse garden ecosystem'))),
+                    React.createElement('h3', { className: 'text-lg font-bold text-slate-800' }, __alloT('stem.companionplanting.community_garden_simulator', '🏡 Community Garden Simulator')),
+                    React.createElement('p', { className: 'text-xs text-slate-600' }, __alloT('stem.companionplanting.plan_plant_and_manage_a_diverse_garden', 'Plan, plant, and manage a diverse garden ecosystem')))),
                 React.createElement('div', { className: 'flex gap-2' },
-                  React.createElement('button', { onClick: function() { upd('gardenMode', 'sisters'); }, className: 'transition-colors px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-emerald-50' }, '🌽 Three Sisters'),
-                  React.createElement('button', { className: 'px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-700 text-white' }, '🏡 Community Garden'))),
+                  React.createElement('button', { onClick: function() { upd('gardenMode', 'sisters'); }, className: 'transition-colors px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-emerald-50' }, __alloT('stem.companionplanting.three_sisters_2', '🌽 Three Sisters')),
+                  React.createElement('button', { className: 'px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-700 text-white' }, __alloT('stem.companionplanting.community_garden', '🏡 Community Garden')))),
               renderCommunityGarden());
           }
 
@@ -6074,15 +6075,15 @@ var d = (labToolData.companionPlanting) || {};
 
                   onClick: function () { setStemLabTool(null); },
 
-                  className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors", "aria-label": "Back to tools"
+                  className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors", "aria-label": __alloT('stem.companionplanting.back_to_tools_2', "Back to tools")
 
                 }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
                 React.createElement("div", null,
 
-                  React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "🌱 Companion Planting Lab"),
+                  React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, __alloT('stem.companionplanting.companion_planting_lab', "🌱 Companion Planting Lab")),
 
-                  React.createElement("p", { className: "text-xs text-slate-600" }, "The milpa / Three Sisters — 7,000+ years of agricultural science")
+                  React.createElement("p", { className: "text-xs text-slate-600" }, __alloT('stem.companionplanting.the_milpa_three_sisters_7_000_years_of', "The milpa / Three Sisters — 7,000+ years of agricultural science"))
 
                 )
 
@@ -6093,7 +6094,7 @@ var d = (labToolData.companionPlanting) || {};
                 React.createElement("button", {
                   onClick: function () { upd('gardenMode', 'community'); },
                   className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border border-emerald-600"
-                }, "🏡 Community Garden"),
+                }, __alloT('stem.companionplanting.community_garden_2', "🏡 Community Garden")),
 
                 React.createElement("button", {
 
@@ -6101,25 +6102,25 @@ var d = (labToolData.companionPlanting) || {};
 
                   className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (showCulture ? 'bg-amber-100 text-amber-800 border border-amber-600' : 'bg-slate-100 text-slate-600 hover:bg-amber-50'),
 
-                  "aria-label": "Cultural context"
+                  "aria-label": __alloT('stem.companionplanting.cultural_context', "Cultural context")
 
-                }, "📜 Origins"),
+                }, __alloT('stem.companionplanting.origins', "📜 Origins")),
 
-                React.createElement("button", { "aria-label": "Compare",
+                React.createElement("button", { "aria-label": __alloT('stem.companionplanting.compare', "Compare"),
 
                   onClick: function () { upd('compareMode', !compareMode); },
 
                   className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (compareMode ? 'bg-blue-100 text-blue-800 border border-blue-600' : 'bg-slate-100 text-slate-600 hover:bg-blue-50')
 
-                }, "🔬 Compare"),
+                }, __alloT('stem.companionplanting.compare_2', "🔬 Compare")),
 
-                React.createElement("button", { "aria-label": "Soil Science",
+                React.createElement("button", { "aria-label": __alloT('stem.companionplanting.soil_science', "Soil Science"),
 
                   onClick: function () { upd('showSoilDetail', !showSoilDetail); },
 
                   className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (showSoilDetail ? 'bg-emerald-100 text-emerald-800 border border-emerald-600' : 'bg-slate-100 text-slate-600 hover:bg-emerald-50')
 
-                }, "🧪 Soil Science")
+                }, __alloT('stem.companionplanting.soil_science_2', "🧪 Soil Science"))
 
               )
 
@@ -6131,27 +6132,27 @@ var d = (labToolData.companionPlanting) || {};
 
             showCulture && React.createElement("div", { className: "bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 rounded-xl border border-amber-200 p-4 space-y-3" },
 
-              React.createElement("h4", { className: "text-sm font-bold text-amber-900 flex items-center gap-2" }, "📜 Cultural Origins & Living Knowledge"),
+              React.createElement("h4", { className: "text-sm font-bold text-amber-900 flex items-center gap-2" }, __alloT('stem.companionplanting.cultural_origins_living_knowledge', "📜 Cultural Origins & Living Knowledge")),
 
               React.createElement("div", { className: "grid md:grid-cols-2 gap-3 text-xs text-amber-800 leading-relaxed" },
 
                 React.createElement("div", { className: "space-y-2" },
 
-                  React.createElement("p", { className: "font-bold text-amber-900" }, "Mesoamerican Origins: The Milpa"),
+                  React.createElement("p", { className: "font-bold text-amber-900" }, __alloT('stem.companionplanting.mesoamerican_origins_the_milpa', "Mesoamerican Origins: The Milpa")),
 
-                  React.createElement("p", null, "The companion planting of corn, beans, and squash — known as milpa in Mesoamerica — is one of humanity's oldest agricultural innovations. Archaeological evidence traces this system to over 7,000 years ago in present-day Mexico. Squash was domesticated ~10,000 years ago, maize ~9,000 years ago from the wild grass teosinte, and common beans ~7,000 years ago."),
+                  React.createElement("p", null, __alloT('stem.companionplanting.the_companion_planting_of_corn_beans_a', "The companion planting of corn, beans, and squash — known as milpa in Mesoamerica — is one of humanity's oldest agricultural innovations. Archaeological evidence traces this system to over 7,000 years ago in present-day Mexico. Squash was domesticated ~10,000 years ago, maize ~9,000 years ago from the wild grass teosinte, and common beans ~7,000 years ago.")),
 
-                  React.createElement("p", null, "The milpa system diffused northward over millennia, appearing in North America around 1070 CE. By the time European colonizers arrived around 1500, it was a foundational food system across Central and North America.")
+                  React.createElement("p", null, __alloT('stem.companionplanting.the_milpa_system_diffused_northward_ov', "The milpa system diffused northward over millennia, appearing in North America around 1070 CE. By the time European colonizers arrived around 1500, it was a foundational food system across Central and North America."))
 
                 ),
 
                 React.createElement("div", { className: "space-y-2" },
 
-                  React.createElement("p", { className: "font-bold text-amber-900" }, "Haudenosaunee Tradition: De-oh-há-ko"),
+                  React.createElement("p", { className: "font-bold text-amber-900" }, __alloT('stem.companionplanting.haudenosaunee_tradition_de_oh_h_ko', "Haudenosaunee Tradition: De-oh-há-ko")),
 
-                  React.createElement("p", null, "The Haudenosaunee (Iroquois Confederacy) call these plants De-oh-há-ko — \"they sustain us.\" The Three Sisters are spiritual beings and precious gifts, central to Haudenosaunee language, ceremony, songs, and cosmology. This is not merely a farming technique — it is a living relationship between people and plants."),
+                  React.createElement("p", null, __alloT('stem.companionplanting.the_haudenosaunee_iroquois_confederacy', "The Haudenosaunee (Iroquois Confederacy) call these plants De-oh-há-ko — \"they sustain us.\" The Three Sisters are spiritual beings and precious gifts, central to Haudenosaunee language, ceremony, songs, and cosmology. This is not merely a farming technique — it is a living relationship between people and plants.")),
 
-                  React.createElement("p", null, "This knowledge is not historical artifact. Milpa and Three Sisters gardens are actively cultivated today across the Americas, representing a continuous tradition of ecological wisdom.")
+                  React.createElement("p", null, __alloT('stem.companionplanting.this_knowledge_is_not_historical_artif', "This knowledge is not historical artifact. Milpa and Three Sisters gardens are actively cultivated today across the Americas, representing a continuous tradition of ecological wisdom."))
 
                 )
 
@@ -6159,17 +6160,17 @@ var d = (labToolData.companionPlanting) || {};
 
               React.createElement("div", { className: "flex items-center gap-2 pt-1 flex-wrap" },
 
-                React.createElement("span", { className: "text-[11px] font-bold text-amber-600" }, "Learn more:"),
+                React.createElement("span", { className: "text-[11px] font-bold text-amber-600" }, __alloT('stem.companionplanting.learn_more', "Learn more:")),
 
-                React.createElement("a", { href: "https://www.haudenosauneeconfederacy.com/", target: "_blank", rel: "noopener noreferrer", className: "transition-colors text-[11px] text-amber-700 underline hover:text-amber-900" }, "Haudenosaunee Confederacy"),
-
-                React.createElement("span", { className: "text-[11px] text-amber-400" }, "•"),
-
-                React.createElement("a", { href: "https://americanindian.si.edu/", target: "_blank", rel: "noopener noreferrer", className: "transition-colors text-[11px] text-amber-700 underline hover:text-amber-900" }, "Smithsonian NMAI"),
+                React.createElement("a", { href: "https://www.haudenosauneeconfederacy.com/", target: "_blank", rel: "noopener noreferrer", className: "transition-colors text-[11px] text-amber-700 underline hover:text-amber-900" }, __alloT('stem.companionplanting.haudenosaunee_confederacy', "Haudenosaunee Confederacy")),
 
                 React.createElement("span", { className: "text-[11px] text-amber-400" }, "•"),
 
-                React.createElement("a", { href: "https://www.usda.gov/media/blog/2021/11/02/three-sisters-and-more-indigenous-food-systems", target: "_blank", rel: "noopener noreferrer", className: "transition-colors text-[11px] text-amber-700 underline hover:text-amber-900" }, "USDA: Three Sisters")
+                React.createElement("a", { href: "https://americanindian.si.edu/", target: "_blank", rel: "noopener noreferrer", className: "transition-colors text-[11px] text-amber-700 underline hover:text-amber-900" }, __alloT('stem.companionplanting.smithsonian_nmai', "Smithsonian NMAI")),
+
+                React.createElement("span", { className: "text-[11px] text-amber-400" }, "•"),
+
+                React.createElement("a", { href: "https://www.usda.gov/media/blog/2021/11/02/three-sisters-and-more-indigenous-food-systems", target: "_blank", rel: "noopener noreferrer", className: "transition-colors text-[11px] text-amber-700 underline hover:text-amber-900" }, __alloT('stem.companionplanting.usda_three_sisters', "USDA: Three Sisters"))
 
               )
 
@@ -6197,7 +6198,7 @@ var d = (labToolData.companionPlanting) || {};
 
                   style: { height: 320, cursor: phase === 'plant' ? 'pointer' : 'default', background: 'linear-gradient(180deg, #87CEEB 0%, #E8F5E9 45%, #558B2F 45%, #33691E 100%)' },
 
-                  role: "img", "aria-label": "Companion planting garden visualization showing corn, beans, and squash growing together"
+                  role: "img", "aria-label": __alloT('stem.companionplanting.companion_planting_garden_visualizatio', "Companion planting garden visualization showing corn, beans, and squash growing together")
 
                 })
 
@@ -6213,7 +6214,7 @@ var d = (labToolData.companionPlanting) || {};
 
                   React.createElement("div", { className: "flex items-center justify-between mb-1" },
 
-                    React.createElement("h4", { className: "text-xs font-bold text-emerald-800 flex items-center gap-1.5" }, "🧪 Needs & Meters"),
+                    React.createElement("h4", { className: "text-xs font-bold text-emerald-800 flex items-center gap-1.5" }, __alloT('stem.companionplanting.needs_meters', "🧪 Needs & Meters")),
 
                     phase === 'grow' && React.createElement("span", { className: "text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full" },
 
@@ -6239,7 +6240,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     React.createElement("div", { className: "flex justify-between items-center" },
 
-                      React.createElement("span", { className: "text-[11px] font-bold text-emerald-700" }, "Overall Soil Health"),
+                      React.createElement("span", { className: "text-[11px] font-bold text-emerald-700" }, __alloT('stem.companionplanting.overall_soil_health', "Overall Soil Health")),
 
                       React.createElement("span", { className: "text-sm font-bold " + (soilHealth > 70 ? 'text-emerald-700' : soilHealth > 40 ? 'text-amber-600' : 'text-red-600') }, soilHealth + '%')
 
@@ -6255,7 +6256,7 @@ var d = (labToolData.companionPlanting) || {};
 
                 compareMode && React.createElement("div", { className: "bg-gradient-to-br from-red-50 to-orange-50 rounded-xl border border-red-200 p-3 space-y-2" },
 
-                  React.createElement("h4", { className: "text-xs font-bold text-red-800" }, "🌽 Monoculture Comparison"),
+                  React.createElement("h4", { className: "text-xs font-bold text-red-800" }, __alloT('stem.companionplanting.monoculture_comparison', "🌽 Monoculture Comparison")),
 
                   gauge('Nitrogen', monoN, 'red', '📉', '%'),
 
@@ -6271,7 +6272,7 @@ var d = (labToolData.companionPlanting) || {};
 
                   growthTime > 30 && React.createElement("div", { className: "text-[11px] text-red-800 bg-red-100 rounded-lg p-2 mt-1" },
 
-                    "⚠️ Without beans, nitrogen depletes. Without squash leaves, moisture drops and weeds take over."
+                    __alloT('stem.companionplanting.without_beans_nitrogen_depletes_withou', "⚠️ Without beans, nitrogen depletes. Without squash leaves, moisture drops and weeds take over.")
 
                   )
 
@@ -6283,15 +6284,15 @@ var d = (labToolData.companionPlanting) || {};
 
                 showSoilDetail && React.createElement("div", { className: "bg-gradient-to-br from-stone-50 to-amber-50 rounded-xl border border-stone-200 p-3 text-[11px] text-stone-700 space-y-2 leading-relaxed" },
 
-                  React.createElement("h4", { className: "font-bold text-stone-800 text-xs" }, "🔬 The Science"),
+                  React.createElement("h4", { className: "font-bold text-stone-800 text-xs" }, __alloT('stem.companionplanting.the_science', "🔬 The Science")),
 
-                  React.createElement("p", null, React.createElement("b", null, "Nitrogen Fixation:"), " Rhizobium bacteria in bean root nodules convert atmospheric N₂ → NH₃ (ammonia) via nitrogenase enzyme. This biological process enriches soil without synthetic fertilizers."),
+                  React.createElement("p", null, React.createElement("b", null, __alloT('stem.companionplanting.nitrogen_fixation_2', "Nitrogen Fixation:")), __alloT('stem.companionplanting.rhizobium_bacteria_in_bean_root_nodule_2', " Rhizobium bacteria in bean root nodules convert atmospheric N₂ → NH₃ (ammonia) via nitrogenase enzyme. This biological process enriches soil without synthetic fertilizers.")),
 
-                  React.createElement("p", null, React.createElement("b", null, "Living Mulch:"), " Squash's broad leaves create ground cover that shades soil, reducing evapotranspiration by up to 50% and suppressing weed germination by blocking sunlight."),
+                  React.createElement("p", null, React.createElement("b", null, __alloT('stem.companionplanting.living_mulch', "Living Mulch:")), __alloT('stem.companionplanting.squash_s_broad_leaves_create_ground_co', " Squash's broad leaves create ground cover that shades soil, reducing evapotranspiration by up to 50% and suppressing weed germination by blocking sunlight.")),
 
-                  React.createElement("p", null, React.createElement("b", null, "Structural Symbiosis:"), " Corn stalks serve as natural trellises for bean vines. Bean vines, in turn, stabilize corn against wind shear."),
+                  React.createElement("p", null, React.createElement("b", null, __alloT('stem.companionplanting.structural_symbiosis', "Structural Symbiosis:")), __alloT('stem.companionplanting.corn_stalks_serve_as_natural_trellises', " Corn stalks serve as natural trellises for bean vines. Bean vines, in turn, stabilize corn against wind shear.")),
 
-                  React.createElement("p", null, React.createElement("b", null, "Nutritional Complementarity:"), " Corn provides methionine-rich carbohydrates; beans provide lysine-rich protein. Together they form a complete amino acid profile — a balanced diet from one garden.")
+                  React.createElement("p", null, React.createElement("b", null, __alloT('stem.companionplanting.nutritional_complementarity', "Nutritional Complementarity:")), __alloT('stem.companionplanting.corn_provides_methionine_rich_carbohyd', " Corn provides methionine-rich carbohydrates; beans provide lysine-rich protein. Together they form a complete amino acid profile — a balanced diet from one garden."))
 
                 )
 
@@ -6341,7 +6342,7 @@ var d = (labToolData.companionPlanting) || {};
 
                   React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase px-1" }, "Plant:"),
 
-                  React.createElement("button", { "aria-label": "Corn",
+                  React.createElement("button", { "aria-label": __alloT('stem.companionplanting.corn_3', "Corn"),
 
                     onClick: function () {
 
@@ -6361,7 +6362,7 @@ var d = (labToolData.companionPlanting) || {};
 
                   }, "🌽 Corn" + (cornPlanted ? ' ✓' : '')),
 
-                  React.createElement("button", { "aria-label": "Beans",
+                  React.createElement("button", { "aria-label": __alloT('stem.companionplanting.beans_3', "Beans"),
 
                     onClick: function () {
 
@@ -6381,7 +6382,7 @@ var d = (labToolData.companionPlanting) || {};
 
                   }, "🫘 Beans" + (beansPlanted ? ' ✓' : '')),
 
-                  React.createElement("button", { "aria-label": "Squash",
+                  React.createElement("button", { "aria-label": __alloT('stem.companionplanting.squash_3', "Squash"),
 
                     onClick: function () {
 
@@ -6409,9 +6410,9 @@ var d = (labToolData.companionPlanting) || {};
 
                   className: "px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg shadow-emerald-200 hover:from-emerald-600 hover:to-green-700 transition-all flex items-center gap-1.5"
 
-                }, "▶ Grow!"),
+                }, __alloT('stem.companionplanting.grow', "▶ Grow!")),
 
-                !allPlanted && React.createElement("span", { className: "text-[11px] text-slate-600 italic" }, "Plant all three seeds to begin")
+                !allPlanted && React.createElement("span", { className: "text-[11px] text-slate-600 italic" }, __alloT('stem.companionplanting.plant_all_three_seeds_to_begin', "Plant all three seeds to begin"))
 
               ),
 
@@ -6423,7 +6424,7 @@ var d = (labToolData.companionPlanting) || {};
 
                 React.createElement("div", { className: "flex items-center gap-2 mb-2" },
 
-                  React.createElement("span", { className: "text-xs font-bold text-emerald-800" }, "🎮 Actions"),
+                  React.createElement("span", { className: "text-xs font-bold text-emerald-800" }, __alloT('stem.companionplanting.actions', "🎮 Actions")),
 
                   React.createElement("div", { className: "flex-1" }),
 
@@ -6457,15 +6458,15 @@ var d = (labToolData.companionPlanting) || {};
 
                   [
 
-                    { id: 'water', emoji: '💧', label: 'Water', tip: 'Irrigation replenishes soil moisture. Over-watering leaches nutrients.' },
+                    { id: 'water', emoji: '💧', label: __alloT('stem.companionplanting.water_3', 'Water'), tip: __alloT('stem.companionplanting.irrigation_replenishes_soil_moisture_o', 'Irrigation replenishes soil moisture. Over-watering leaches nutrients.') },
 
-                    { id: 'compost', emoji: '🧪', label: 'Compost', tip: 'Composting adds organic nitrogen and beneficial microbes.' },
+                    { id: 'compost', emoji: '🧪', label: __alloT('stem.companionplanting.compost_3', 'Compost'), tip: __alloT('stem.companionplanting.composting_adds_organic_nitrogen_and_b', 'Composting adds organic nitrogen and beneficial microbes.') },
 
-                    { id: 'weed', emoji: '🌿', label: 'Weed', tip: 'Weeding removes competition for light, water, and nutrients.' },
+                    { id: 'weed', emoji: '🌿', label: __alloT('stem.companionplanting.weed_3', 'Weed'), tip: __alloT('stem.companionplanting.weeding_removes_competition_for_light_', 'Weeding removes competition for light, water, and nutrients.') },
 
-                    { id: 'inspect', emoji: '🔍', label: 'Inspect', tip: 'Inspecting reveals plant condition and early pest signs.' },
+                    { id: 'inspect', emoji: '🔍', label: __alloT('stem.companionplanting.inspect_2', 'Inspect'), tip: __alloT('stem.companionplanting.inspecting_reveals_plant_condition_and', 'Inspecting reveals plant condition and early pest signs.') },
 
-                    { id: 'mulch', emoji: '🍂', label: 'Mulch', tip: 'Mulching regulates soil temperature and retains moisture.' }
+                    { id: 'mulch', emoji: '🍂', label: __alloT('stem.companionplanting.mulch_2', 'Mulch'), tip: __alloT('stem.companionplanting.mulching_regulates_soil_temperature_an', 'Mulching regulates soil temperature and retains moisture.') }
 
                   ].map(function (action) {
 
@@ -6553,17 +6554,17 @@ var d = (labToolData.companionPlanting) || {};
 
               phase === 'grow' && React.createElement("div", { className: "bg-gradient-to-r from-purple-50 to-fuchsia-50 rounded-xl border border-purple-200 p-3 space-y-2" },
 
-                React.createElement("h4", { className: "text-xs font-bold text-purple-800 flex items-center gap-1.5" }, "🤝 Companion Synergies"),
+                React.createElement("h4", { className: "text-xs font-bold text-purple-800 flex items-center gap-1.5" }, __alloT('stem.companionplanting.companion_synergies', "🤝 Companion Synergies")),
 
                 React.createElement("div", { className: "grid grid-cols-3 gap-3" },
 
                   [
 
-                    { label: 'Corn ↔ Beans', val: synCornBeans, desc: 'Structural support & N-fixation', color: 'emerald' },
+                    { label: __alloT('stem.companionplanting.corn_beans', 'Corn ↔ Beans'), val: synCornBeans, desc: __alloT('stem.companionplanting.structural_support_n_fixation', 'Structural support & N-fixation'), color: 'emerald' },
 
-                    { label: 'Beans → Soil', val: synBeansSoil, desc: 'Rhizobium nitrogen enrichment', color: 'blue' },
+                    { label: __alloT('stem.companionplanting.beans_soil', 'Beans → Soil'), val: synBeansSoil, desc: __alloT('stem.companionplanting.rhizobium_nitrogen_enrichment', 'Rhizobium nitrogen enrichment'), color: 'blue' },
 
-                    { label: 'Squash → All', val: synSquashAll, desc: 'Living mulch & pest deterrent', color: 'orange' }
+                    { label: __alloT('stem.companionplanting.squash_all', 'Squash → All'), val: synSquashAll, desc: __alloT('stem.companionplanting.living_mulch_pest_deterrent', 'Living mulch & pest deterrent'), color: 'orange' }
 
                   ].map(function (syn) {
 
@@ -6621,15 +6622,15 @@ var d = (labToolData.companionPlanting) || {};
 
                 React.createElement("div", { className: "bg-white rounded-xl p-3 space-y-2 border border-amber-200" },
 
-                  React.createElement("div", { className: "text-[11px] font-bold text-amber-700 uppercase tracking-wider mb-1" }, "🌾 Crop Yields"),
+                  React.createElement("div", { className: "text-[11px] font-bold text-amber-700 uppercase tracking-wider mb-1" }, __alloT('stem.companionplanting.crop_yields', "🌾 Crop Yields")),
 
                   [
 
-                    { emoji: '🌽', name: 'Corn', value: _cornYield, planted: cornPlanted, color: '#ca8a04', bgColor: '#fef9c3', unit: 'ears' },
+                    { emoji: '🌽', name: __alloT('stem.companionplanting.corn_4', 'Corn'), value: _cornYield, planted: cornPlanted, color: '#ca8a04', bgColor: '#fef9c3', unit: 'ears' },
 
-                    { emoji: '🫘', name: 'Beans', value: _beanYield, planted: beansPlanted, color: '#16a34a', bgColor: '#dcfce7', unit: 'lbs' },
+                    { emoji: '🫘', name: __alloT('stem.companionplanting.beans_4', 'Beans'), value: _beanYield, planted: beansPlanted, color: '#16a34a', bgColor: '#dcfce7', unit: 'lbs' },
 
-                    { emoji: '🎃', name: 'Squash', value: _squashYield, planted: squashPlanted, color: '#ea580c', bgColor: '#fff7ed', unit: 'lbs' }
+                    { emoji: '🎃', name: __alloT('stem.companionplanting.squash_4', 'Squash'), value: _squashYield, planted: squashPlanted, color: '#ea580c', bgColor: '#fff7ed', unit: 'lbs' }
 
                   ].map(function (crop) {
 
@@ -6663,7 +6664,7 @@ var d = (labToolData.companionPlanting) || {};
 
                   React.createElement("div", { className: "flex items-center justify-between pt-1.5 border-t border-amber-100 mt-1" },
 
-                    React.createElement("span", { className: "text-[11px] font-bold text-amber-800" }, "Total Harvest"),
+                    React.createElement("span", { className: "text-[11px] font-bold text-amber-800" }, __alloT('stem.companionplanting.total_harvest', "Total Harvest")),
 
                     React.createElement("span", { className: "text-sm font-bold text-amber-700" }, _totalYield + ' units'),
 
@@ -6679,7 +6680,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     React.createElement("div", { className: "text-lg font-bold text-emerald-700" }, Math.round(plantHealth)),
 
-                    React.createElement("div", { className: "text-[11px] text-slate-600" }, "Health Score")
+                    React.createElement("div", { className: "text-[11px] text-slate-600" }, __alloT('stem.companionplanting.health_score', "Health Score"))
 
                   ),
 
@@ -6687,7 +6688,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     React.createElement("div", { className: "text-lg font-bold text-blue-700" }, Math.round((synCornBeans + synBeansSoil + synSquashAll) / 3)),
 
-                    React.createElement("div", { className: "text-[11px] text-slate-600" }, "Avg Synergy")
+                    React.createElement("div", { className: "text-[11px] text-slate-600" }, __alloT('stem.companionplanting.avg_synergy', "Avg Synergy"))
 
                   ),
 
@@ -6695,7 +6696,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     React.createElement("div", { className: "text-lg font-bold text-amber-700" }, seasonScore),
 
-                    React.createElement("div", { className: "text-[11px] text-slate-600" }, "Season Score")
+                    React.createElement("div", { className: "text-[11px] text-slate-600" }, __alloT('stem.companionplanting.season_score', "Season Score"))
 
                   )
 
@@ -6709,7 +6710,7 @@ var d = (labToolData.companionPlanting) || {};
 
                 ),
 
-                React.createElement("button", { "aria-label": "Harvest and start next season",
+                React.createElement("button", { "aria-label": __alloT('stem.companionplanting.harvest_and_start_next_season', "Harvest and start next season"),
 
                   onClick: function () {
 
@@ -6755,7 +6756,7 @@ var d = (labToolData.companionPlanting) || {};
 
                   className: "w-full px-4 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-amber-500 to-yellow-600 text-white shadow-lg shadow-amber-200 hover:from-amber-600 hover:to-yellow-700 transition-all"
 
-                }, "🌾 Harvest & Start Next Season →")
+                }, __alloT('stem.companionplanting.harvest_start_next_season', "🌾 Harvest & Start Next Season →"))
 
               ); })()
 
@@ -6769,21 +6770,21 @@ var d = (labToolData.companionPlanting) || {};
 
               React.createElement("div", { className: "flex-1" }),
 
-              React.createElement("button", { "aria-label": "Quiz",
+              React.createElement("button", { "aria-label": __alloT('stem.companionplanting.quiz', "Quiz"),
 
                 onClick: function () { upd('quizActive', !quizActive); upd('quizAnswer', ''); upd('quizFeedback', ''); },
 
                 className: "px-4 py-2 rounded-xl text-xs font-bold transition-all " + (quizActive ? 'bg-indigo-600 text-white shadow-lg' : 'bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100')
 
-              }, "🧠 Quiz"),
+              }, __alloT('stem.companionplanting.quiz_2', "🧠 Quiz")),
 
-              React.createElement("button", { "aria-label": "Science",
+              React.createElement("button", { "aria-label": __alloT('stem.companionplanting.science_2', "Science"),
 
                 onClick: function () { upd('showSciencePanel', !showSciencePanel); },
 
                 className: "px-4 py-2 rounded-xl text-xs font-bold transition-all " + (showSciencePanel ? 'bg-emerald-700 text-white shadow-lg' : 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100')
 
-              }, "\uD83D\uDCDA Science")
+              }, __alloT('stem.companionplanting.science_3', "\uD83D\uDCDA Science"))
 
             ),
 
@@ -6793,7 +6794,7 @@ var d = (labToolData.companionPlanting) || {};
 
             showSciencePanel && React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl border border-emerald-200 p-4 space-y-4", style: { maxHeight: '60vh', overflowY: 'auto' } },
 
-              React.createElement("h3", { className: "text-lg font-bold text-emerald-900 flex items-center gap-2" }, "\uD83C\uDF3E The Three Sisters: Science of Companion Planting"),
+              React.createElement("h3", { className: "text-lg font-bold text-emerald-900 flex items-center gap-2" }, __alloT('stem.companionplanting.the_three_sisters_science_of_companion', "\uD83C\uDF3E The Three Sisters: Science of Companion Planting")),
 
               React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-3" },
 
@@ -6801,9 +6802,9 @@ var d = (labToolData.companionPlanting) || {};
 
                   React.createElement("div", { className: "text-2xl mb-1" }, "\uD83C\uDF3D"),
 
-                  React.createElement("h4", { className: "font-bold text-yellow-800" }, "Corn (Structural Support)"),
+                  React.createElement("h4", { className: "font-bold text-yellow-800" }, __alloT('stem.companionplanting.corn_structural_support', "Corn (Structural Support)")),
 
-                  React.createElement("p", { className: "text-xs text-yellow-700 mt-1" }, "Grows tall stalks (6\u201310 ft) that serve as natural trellises for bean vines, providing vertical structure and replacing the need for artificial poles.")
+                  React.createElement("p", { className: "text-xs text-yellow-700 mt-1" }, __alloT('stem.companionplanting.grows_tall_stalks_6_10_ft_that_serve_a', "Grows tall stalks (6\u201310 ft) that serve as natural trellises for bean vines, providing vertical structure and replacing the need for artificial poles."))
 
                 ),
 
@@ -6811,9 +6812,9 @@ var d = (labToolData.companionPlanting) || {};
 
                   React.createElement("div", { className: "text-2xl mb-1" }, "\uD83C\uDF3E"),
 
-                  React.createElement("h4", { className: "font-bold text-green-800" }, "Beans (Nitrogen Fixation)"),
+                  React.createElement("h4", { className: "font-bold text-green-800" }, __alloT('stem.companionplanting.beans_nitrogen_fixation', "Beans (Nitrogen Fixation)")),
 
-                  React.createElement("p", { className: "text-xs text-green-700 mt-1" }, "Rhizobium bacteria in root nodules convert atmospheric N\u2082 into plant-usable ammonia. This biological nitrogen fixation enriches the soil without synthetic fertilizer.")
+                  React.createElement("p", { className: "text-xs text-green-700 mt-1" }, __alloT('stem.companionplanting.rhizobium_bacteria_in_root_nodules_con', "Rhizobium bacteria in root nodules convert atmospheric N\u2082 into plant-usable ammonia. This biological nitrogen fixation enriches the soil without synthetic fertilizer."))
 
                 ),
 
@@ -6821,9 +6822,9 @@ var d = (labToolData.companionPlanting) || {};
 
                   React.createElement("div", { className: "text-2xl mb-1" }, "\uD83C\uDF83"),
 
-                  React.createElement("h4", { className: "font-bold text-orange-800" }, "Squash (Living Mulch)"),
+                  React.createElement("h4", { className: "font-bold text-orange-800" }, __alloT('stem.companionplanting.squash_living_mulch', "Squash (Living Mulch)")),
 
-                  React.createElement("p", { className: "text-xs text-orange-700 mt-1" }, "Broad leaves shade the soil, reducing water evaporation by up to 50%. Prickly stems deter animal pests. Acts as natural weed suppression through ground cover.")
+                  React.createElement("p", { className: "text-xs text-orange-700 mt-1" }, __alloT('stem.companionplanting.broad_leaves_shade_the_soil_reducing_w', "Broad leaves shade the soil, reducing water evaporation by up to 50%. Prickly stems deter animal pests. Acts as natural weed suppression through ground cover."))
 
                 )
 
@@ -6831,7 +6832,7 @@ var d = (labToolData.companionPlanting) || {};
 
               React.createElement("div", { className: "bg-amber-50 rounded-lg p-4 border border-amber-200" },
 
-                React.createElement("h4", { className: "font-bold text-amber-900 mb-2" }, "\uD83E\uDDEA Underground Chemistry"),
+                React.createElement("h4", { className: "font-bold text-amber-900 mb-2" }, __alloT('stem.companionplanting.underground_chemistry', "\uD83E\uDDEA Underground Chemistry")),
 
                 React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-3" },
 
@@ -6843,9 +6844,9 @@ var d = (labToolData.companionPlanting) || {};
 
                       React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-xs font-bold text-amber-800" }, "Mycorrhizal Network"),
+                        React.createElement("p", { className: "text-xs font-bold text-amber-800" }, __alloT('stem.companionplanting.mycorrhizal_network', "Mycorrhizal Network")),
 
-                        React.createElement("p", { className: "text-xs text-amber-700" }, "Fungal threads extend root systems 100\u20131000x, creating an underground wood wide web that trades soil minerals for plant sugars.")
+                        React.createElement("p", { className: "text-xs text-amber-700" }, __alloT('stem.companionplanting.fungal_threads_extend_root_systems_100', "Fungal threads extend root systems 100\u20131000x, creating an underground wood wide web that trades soil minerals for plant sugars."))
 
                       )
 
@@ -6857,9 +6858,9 @@ var d = (labToolData.companionPlanting) || {};
 
                       React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-xs font-bold text-amber-800" }, "Rhizobium Nodules"),
+                        React.createElement("p", { className: "text-xs font-bold text-amber-800" }, __alloT('stem.companionplanting.rhizobium_nodules', "Rhizobium Nodules")),
 
-                        React.createElement("p", { className: "text-xs text-amber-700" }, "Specialized bacteria colonize bean roots, forming visible pink nodules. Nitrogenase enzyme breaks the triple bond in N\u2082 gas, producing ammonia for all plants.")
+                        React.createElement("p", { className: "text-xs text-amber-700" }, __alloT('stem.companionplanting.specialized_bacteria_colonize_bean_roo', "Specialized bacteria colonize bean roots, forming visible pink nodules. Nitrogenase enzyme breaks the triple bond in N\u2082 gas, producing ammonia for all plants."))
 
                       )
 
@@ -6875,9 +6876,9 @@ var d = (labToolData.companionPlanting) || {};
 
                       React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-xs font-bold text-amber-800" }, "Water Cycling"),
+                        React.createElement("p", { className: "text-xs font-bold text-amber-800" }, __alloT('stem.companionplanting.water_cycling', "Water Cycling")),
 
-                        React.createElement("p", { className: "text-xs text-amber-700" }, "Squash leaf shade reduces soil temperature by up to 10\u00B0F, cutting evaporation in half. Fallen leaves build organic matter, improving water retention.")
+                        React.createElement("p", { className: "text-xs text-amber-700" }, __alloT('stem.companionplanting.squash_leaf_shade_reduces_soil_tempera', "Squash leaf shade reduces soil temperature by up to 10\u00B0F, cutting evaporation in half. Fallen leaves build organic matter, improving water retention."))
 
                       )
 
@@ -6889,9 +6890,9 @@ var d = (labToolData.companionPlanting) || {};
 
                       React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-xs font-bold text-amber-800" }, "Nutrient Cycling"),
+                        React.createElement("p", { className: "text-xs font-bold text-amber-800" }, __alloT('stem.companionplanting.nutrient_cycling', "Nutrient Cycling")),
 
-                        React.createElement("p", { className: "text-xs text-amber-700" }, "Corn is a heavy nitrogen feeder. Beans replace what corn takes. Squash returns organic matter. Together they maintain soil fertility without synthetic inputs.")
+                        React.createElement("p", { className: "text-xs text-amber-700" }, __alloT('stem.companionplanting.corn_is_a_heavy_nitrogen_feeder_beans_', "Corn is a heavy nitrogen feeder. Beans replace what corn takes. Squash returns organic matter. Together they maintain soil fertility without synthetic inputs."))
 
                       )
 
@@ -6905,11 +6906,11 @@ var d = (labToolData.companionPlanting) || {};
 
               React.createElement("div", { className: "bg-violet-50 rounded-lg p-4 border border-violet-200" },
 
-                React.createElement("h4", { className: "font-bold text-violet-900 mb-2" }, "\uD83C\uDFDB\uFE0F Cultural Heritage"),
+                React.createElement("h4", { className: "font-bold text-violet-900 mb-2" }, __alloT('stem.companionplanting.cultural_heritage', "\uD83C\uDFDB\uFE0F Cultural Heritage")),
 
-                React.createElement("p", { className: "text-xs text-violet-800" }, "The Three Sisters (De-oh-h\u00E1-ko, meaning \u201Cthey sustain us\u201D in Haudenosaunee) is a 7,000-year-old agricultural system originating in Mesoamerica. Indigenous agricultural science developed sophisticated polyculture techniques millennia before modern ecology."),
+                React.createElement("p", { className: "text-xs text-violet-800" }, __alloT('stem.companionplanting.the_three_sisters_de_oh_h_ko_meaning_t', "The Three Sisters (De-oh-h\u00E1-ko, meaning \u201Cthey sustain us\u201D in Haudenosaunee) is a 7,000-year-old agricultural system originating in Mesoamerica. Indigenous agricultural science developed sophisticated polyculture techniques millennia before modern ecology.")),
 
-                React.createElement("p", { className: "text-xs text-violet-700 mt-2 italic" }, "Together, corn and beans provide a complete protein \u2014 corn supplies methionine while beans supply lysine \u2014 forming the nutritional foundation of many Indigenous diets.")
+                React.createElement("p", { className: "text-xs text-violet-700 mt-2 italic" }, __alloT('stem.companionplanting.together_corn_and_beans_provide_a_comp', "Together, corn and beans provide a complete protein \u2014 corn supplies methionine while beans supply lysine \u2014 forming the nutritional foundation of many Indigenous diets."))
 
               )
 
@@ -6998,13 +6999,13 @@ var d = (labToolData.companionPlanting) || {};
               className: "bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-4 border-2 border-green-300 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-sm font-bold text-green-800" }, "\u2696\uFE0F Sustainable Farming: Industrial vs Regenerative"),
+                React.createElement("h4", { className: "text-sm font-bold text-green-800" }, __alloT('stem.companionplanting.sustainable_farming_industrial_vs_rege', "\u2696\uFE0F Sustainable Farming: Industrial vs Regenerative")),
                 React.createElement("button", { onClick: function() { upd('showFarmCompare', !d.showFarmCompare); },
                   className: "transition-colors text-[11px] text-green-600 hover:text-green-800 font-bold"
                 }, d.showFarmCompare ? 'Hide' : 'Compare \u2192')
               ),
               d.showFarmCompare && React.createElement("div", null,
-                React.createElement("div", { className: "text-[11px] text-slate-600 italic mb-3" }, "How does companion planting compare to industrial farming? The energy, water, and carbon differences are staggering."),
+                React.createElement("div", { className: "text-[11px] text-slate-600 italic mb-3" }, __alloT('stem.companionplanting.how_does_companion_planting_compare_to', "How does companion planting compare to industrial farming? The energy, water, and carbon differences are staggering.")),
                 // System selector
                 React.createElement("div", { className: "flex gap-1 mb-3" },
                   FARMING_SYSTEMS.map(function(sys) {
@@ -7022,8 +7023,8 @@ var d = (labToolData.companionPlanting) || {};
                 // Comparison bars
                 (function() {
                   var metrics = [
-                    { label: 'Energy Efficiency (EROI)', key: 'eroi', max: 5, unit: 'x return', getVal: function(s) { return s.energy.eroi; } },
-                    { label: 'Biodiversity Score', key: 'bio', max: 100, unit: '/100', getVal: function(s) { return s.biodiversity.score; } }
+                    { label: __alloT('stem.companionplanting.energy_efficiency_eroi', 'Energy Efficiency (EROI)'), key: 'eroi', max: 5, unit: 'x return', getVal: function(s) { return s.energy.eroi; } },
+                    { label: __alloT('stem.companionplanting.biodiversity_score', 'Biodiversity Score'), key: 'bio', max: 100, unit: '/100', getVal: function(s) { return s.biodiversity.score; } }
                   ];
                   return React.createElement("div", { className: "space-y-2 mb-3" },
                     metrics.map(function(metric) {
@@ -7055,33 +7056,33 @@ var d = (labToolData.companionPlanting) || {};
                   },
                     React.createElement("div", { className: "grid grid-cols-2 gap-2 text-[11px]" },
                       React.createElement("div", { className: "rounded-lg p-2 bg-red-50 border border-red-100" },
-                        React.createElement("div", { className: "font-bold text-red-700 mb-0.5" }, "\u26A1 Energy"),
+                        React.createElement("div", { className: "font-bold text-red-700 mb-0.5" }, __alloT('stem.companionplanting.energy', "\u26A1 Energy")),
                         React.createElement("div", { className: "text-slate-600" }, sys.energy.input + ' cal input \u2192 ' + sys.energy.output + ' cal food'),
                         React.createElement("div", { className: "font-bold", style: { color: sys.color } }, 'EROI: ' + sys.energy.eroi + 'x')
                       ),
                       React.createElement("div", { className: "rounded-lg p-2 bg-blue-50 border border-blue-100" },
-                        React.createElement("div", { className: "font-bold text-blue-700 mb-0.5" }, "\uD83D\uDCA7 Water"),
+                        React.createElement("div", { className: "font-bold text-blue-700 mb-0.5" }, __alloT('stem.companionplanting.water_4', "\uD83D\uDCA7 Water")),
                         React.createElement("div", { className: "text-slate-600" }, sys.water.usage),
                         React.createElement("div", { className: "text-blue-600" }, 'Efficiency: ' + sys.water.efficiency)
                       ),
                       React.createElement("div", { className: "rounded-lg p-2 bg-amber-50 border border-amber-100" },
-                        React.createElement("div", { className: "font-bold text-amber-700 mb-0.5" }, "\uD83E\uDDEA Chemicals"),
+                        React.createElement("div", { className: "font-bold text-amber-700 mb-0.5" }, __alloT('stem.companionplanting.chemicals', "\uD83E\uDDEA Chemicals")),
                         React.createElement("div", { className: "text-slate-600" }, 'Fertilizer: ' + sys.chemicals.fertilizer),
                         React.createElement("div", { className: "text-slate-600" }, 'Pesticides: ' + sys.chemicals.pesticides)
                       ),
                       React.createElement("div", { className: "rounded-lg p-2 border " + (sys.carbon.net.indexOf('sink') >= 0 ? 'bg-green-50 border-green-100' : 'bg-red-50 border-red-100') },
-                        React.createElement("div", { className: "font-bold " + (sys.carbon.net.indexOf('sink') >= 0 ? 'text-green-700' : 'text-red-700') + " mb-0.5" }, "\uD83C\uDF0D Carbon"),
+                        React.createElement("div", { className: "font-bold " + (sys.carbon.net.indexOf('sink') >= 0 ? 'text-green-700' : 'text-red-700') + " mb-0.5" }, __alloT('stem.companionplanting.carbon', "\uD83C\uDF0D Carbon")),
                         React.createElement("div", { className: "text-slate-600" }, sys.carbon.emission),
                         React.createElement("div", { className: "font-bold " + (sys.carbon.net.indexOf('sink') >= 0 ? 'text-green-600' : 'text-red-600') }, sys.carbon.net)
                       )
                     ),
                     React.createElement("div", { className: "grid grid-cols-2 gap-2 mt-2" },
                       React.createElement("div", null,
-                        React.createElement("div", { className: "text-[11px] font-bold text-green-600 mb-0.5" }, '\u2705 Pros'),
+                        React.createElement("div", { className: "text-[11px] font-bold text-green-600 mb-0.5" }, __alloT('stem.companionplanting.pros', '\u2705 Pros')),
                         sys.pros.map(function(p, pi) { return React.createElement("div", { key: pi, className: "text-[11px] text-slate-600" }, '\u2022 ' + p); })
                       ),
                       React.createElement("div", null,
-                        React.createElement("div", { className: "text-[11px] font-bold text-red-500 mb-0.5" }, '\u26A0 Cons'),
+                        React.createElement("div", { className: "text-[11px] font-bold text-red-500 mb-0.5" }, __alloT('stem.companionplanting.cons', '\u26A0 Cons')),
                         sys.cons.map(function(c, ci) { return React.createElement("div", { key: ci, className: "text-[11px] text-slate-600" }, '\u2022 ' + c); })
                       )
                     )
@@ -7095,13 +7096,13 @@ var d = (labToolData.companionPlanting) || {};
               className: "bg-gradient-to-r from-blue-50 to-sky-50 rounded-2xl p-4 border border-blue-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-sm font-bold text-blue-800" }, "\uD83D\uDE9A Food Miles & Carbon Calculator"),
+                React.createElement("h4", { className: "text-sm font-bold text-blue-800" }, __alloT('stem.companionplanting.food_miles_carbon_calculator', "\uD83D\uDE9A Food Miles & Carbon Calculator")),
                 React.createElement("button", { onClick: function() { upd('showFoodMiles', !d.showFoodMiles); },
                   className: "transition-colors text-[11px] text-blue-600 hover:text-blue-800 font-bold"
                 }, d.showFoodMiles ? 'Hide' : 'Calculate \u2192')
               ),
               d.showFoodMiles && React.createElement("div", null,
-                React.createElement("div", { className: "text-[11px] text-slate-600 italic mb-2" }, "How much energy does your food travel? Homegrown food = zero food miles, zero transport emissions."),
+                React.createElement("div", { className: "text-[11px] text-slate-600 italic mb-2" }, __alloT('stem.companionplanting.how_much_energy_does_your_food_travel_', "How much energy does your food travel? Homegrown food = zero food miles, zero transport emissions.")),
                 React.createElement("div", { className: "space-y-1" },
                   FOOD_MILES.map(function(food, fi) {
                     var maxEnergy = 20;
@@ -7138,12 +7139,12 @@ var d = (labToolData.companionPlanting) || {};
                   })
                 ),
                 React.createElement("div", { className: "flex gap-3 justify-center mt-2 text-[11px]" },
-                  React.createElement("span", { className: "flex items-center gap-1" }, React.createElement("span", { className: "w-2 h-2 rounded-full bg-green-500" }), ' Homegrown'),
-                  React.createElement("span", { className: "flex items-center gap-1" }, React.createElement("span", { className: "w-2 h-2 rounded-full bg-amber-500" }), ' Grocery Store'),
-                  React.createElement("span", { className: "flex items-center gap-1" }, React.createElement("span", { className: "w-2 h-2 rounded-full bg-red-500" }), ' Imported')
+                  React.createElement("span", { className: "flex items-center gap-1" }, React.createElement("span", { className: "w-2 h-2 rounded-full bg-green-500" }), __alloT('stem.companionplanting.homegrown', ' Homegrown')),
+                  React.createElement("span", { className: "flex items-center gap-1" }, React.createElement("span", { className: "w-2 h-2 rounded-full bg-amber-500" }), __alloT('stem.companionplanting.grocery_store', ' Grocery Store')),
+                  React.createElement("span", { className: "flex items-center gap-1" }, React.createElement("span", { className: "w-2 h-2 rounded-full bg-red-500" }), __alloT('stem.companionplanting.imported', ' Imported'))
                 ),
                 React.createElement("div", { className: "mt-2 text-center rounded-lg p-2 bg-green-50 border border-green-200 text-[11px] text-green-700 font-bold" },
-                  '\uD83C\uDF0D A 4\u00D78 garden bed can save ~500 lbs CO\u2082/year compared to buying the same food imported!')
+                  __alloT('stem.companionplanting.a_4_8_garden_bed_can_save_500_lbs_co_y', '\uD83C\uDF0D A 4\u00D78 garden bed can save ~500 lbs CO\u2082/year compared to buying the same food imported!'))
               )
             ),
 
@@ -7152,13 +7153,13 @@ var d = (labToolData.companionPlanting) || {};
               className: "bg-gradient-to-r from-cyan-50 to-teal-50 rounded-2xl p-4 border border-cyan-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-sm font-bold text-cyan-800" }, "\uD83D\uDCA7 Water Footprint of Food"),
+                React.createElement("h4", { className: "text-sm font-bold text-cyan-800" }, __alloT('stem.companionplanting.water_footprint_of_food', "\uD83D\uDCA7 Water Footprint of Food")),
                 React.createElement("button", { onClick: function() { upd('showWaterFoot', !d.showWaterFoot); },
                   className: "transition-colors text-[11px] text-cyan-600 hover:text-cyan-800 font-bold"
                 }, d.showWaterFoot ? 'Hide' : 'View \u2192')
               ),
               d.showWaterFoot && React.createElement("div", null,
-                React.createElement("div", { className: "text-[11px] text-slate-600 italic mb-2" }, "Virtual water: the total water needed to produce food, from field to fork. Companion planting\'s living mulch cuts water use 40-60%!"),
+                React.createElement("div", { className: "text-[11px] text-slate-600 italic mb-2" }, __alloT('stem.companionplanting.virtual_water_the_total_water_needed_t', "Virtual water: the total water needed to produce food, from field to fork. Companion planting\'s living mulch cuts water use 40-60%!")),
                 React.createElement("div", { className: "space-y-0.5" },
                   WATER_FOOTPRINT.sort(function(a, b) { return a.gallons - b.gallons; }).map(function(crop, ci) {
                     var maxGal = 1900;
@@ -7174,7 +7175,7 @@ var d = (labToolData.companionPlanting) || {};
                   })
                 ),
                 React.createElement("div", { className: "mt-2 text-[11px] text-cyan-700 bg-cyan-50 rounded-lg p-2 border border-cyan-100" },
-                  '\uD83D\uDCA1 Notice: plant-based proteins (beans: 43 gal/lb) use 43x LESS water than beef (1,847 gal/lb). The Three Sisters provide complete protein at a fraction of the water cost!')
+                  __alloT('stem.companionplanting.notice_plant_based_proteins_beans_43_g', '\uD83D\uDCA1 Notice: plant-based proteins (beans: 43 gal/lb) use 43x LESS water than beef (1,847 gal/lb). The Three Sisters provide complete protein at a fraction of the water cost!'))
               )
             ),
 
@@ -7183,7 +7184,7 @@ var d = (labToolData.companionPlanting) || {};
               className: "bg-gradient-to-r from-violet-50 to-purple-50 rounded-2xl p-4 border border-violet-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-sm font-bold text-violet-800" }, "\uD83C\uDF00 12 Permaculture Principles"),
+                React.createElement("h4", { className: "text-sm font-bold text-violet-800" }, __alloT('stem.companionplanting.12_permaculture_principles', "\uD83C\uDF00 12 Permaculture Principles")),
                 React.createElement("button", { onClick: function() { upd('showPermaculture', !d.showPermaculture); },
                   className: "transition-colors text-[11px] text-violet-600 hover:text-violet-800 font-bold"
                 }, d.showPermaculture ? 'Hide' : 'Explore \u2192')
@@ -7211,7 +7212,7 @@ var d = (labToolData.companionPlanting) || {};
               className: "bg-gradient-to-r from-emerald-50 to-green-50 rounded-2xl p-4 border border-emerald-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-sm font-bold text-emerald-800" }, "\uD83C\uDF31 Regenerative Practices"),
+                React.createElement("h4", { className: "text-sm font-bold text-emerald-800" }, __alloT('stem.companionplanting.regenerative_practices', "\uD83C\uDF31 Regenerative Practices")),
                 React.createElement("button", { onClick: function() { upd('showRegen', !d.showRegen); },
                   className: "transition-colors text-[11px] text-emerald-600 hover:text-emerald-800 font-bold"
                 }, d.showRegen ? 'Hide' : 'Learn \u2192')
@@ -7297,13 +7298,13 @@ var d = (labToolData.companionPlanting) || {};
                     React.createElement("div", { className: "rounded-xl p-2 text-[11px] bg-indigo-50 border border-indigo-200 text-indigo-700" },
                       '\uD83D\uDCDA Concept: ' + sc.concept
                     ),
-                    React.createElement("button", { "aria-label": "Next Scenario",
+                    React.createElement("button", { "aria-label": __alloT('stem.companionplanting.next_scenario', "Next Scenario"),
                       onClick: function() {
                         upd('gardenScenarioIdx', (gardenScenarioIdx + 1) % GARDEN_SCENARIOS.length);
                         upd('gardenScenarioAnswer', -1);
                       },
                       className: "w-full py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-rose-500 to-pink-500 text-white"
-                    }, 'Next Scenario \u2192')
+                    }, __alloT('stem.companionplanting.next_scenario_2', 'Next Scenario \u2192'))
                   )
                 );
               })()
@@ -7316,13 +7317,13 @@ var d = (labToolData.companionPlanting) || {};
               React.createElement("div", { className: "flex items-center gap-2" },
                 React.createElement("span", { className: "text-xl" }, '\uD83E\uDD14'),
                 React.createElement("div", { className: "flex-1" },
-                  React.createElement("div", { className: "text-[11px] font-bold text-indigo-500 uppercase tracking-wider" }, 'Did You Know?'),
+                  React.createElement("div", { className: "text-[11px] font-bold text-indigo-500 uppercase tracking-wider" }, __alloT('stem.companionplanting.did_you_know', 'Did You Know?')),
                   React.createElement("div", { className: "text-[11px] text-indigo-800 leading-relaxed" }, GARDEN_FACTS[factIdx % GARDEN_FACTS.length])
                 ),
-                React.createElement("button", { "aria-label": "Next",
+                React.createElement("button", { "aria-label": __alloT('stem.companionplanting.next', "Next"),
                   onClick: function() { upd('factIdx', (factIdx + 1) % GARDEN_FACTS.length); },
                   className: "transition-colors text-[11px] text-indigo-500 hover:text-indigo-700 font-bold"
-                }, 'Next \u2192')
+                }, __alloT('stem.companionplanting.next_2', 'Next \u2192'))
               )
             ),
 
@@ -7331,7 +7332,7 @@ var d = (labToolData.companionPlanting) || {};
               className: "bg-gradient-to-r from-teal-50 to-cyan-50 rounded-2xl p-4 border border-teal-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-sm font-bold text-teal-800" }, "\uD83D\uDCCB Quick Reference Cards"),
+                React.createElement("h4", { className: "text-sm font-bold text-teal-800" }, __alloT('stem.companionplanting.quick_reference_cards', "\uD83D\uDCCB Quick Reference Cards")),
                 React.createElement("button", { onClick: function() { upd('showGardenRef', !d.showGardenRef); },
                   className: "transition-colors text-[11px] text-teal-600 hover:text-teal-800 font-bold"
                 }, d.showGardenRef ? 'Hide' : 'View \u2192')
@@ -7358,13 +7359,13 @@ var d = (labToolData.companionPlanting) || {};
               className: "bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl p-4 border border-blue-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-sm font-bold text-blue-800" }, "\u267B\uFE0F The Nitrogen Cycle"),
+                React.createElement("h4", { className: "text-sm font-bold text-blue-800" }, __alloT('stem.companionplanting.the_nitrogen_cycle', "\u267B\uFE0F The Nitrogen Cycle")),
                 React.createElement("button", { onClick: function() { upd('showNitrogen', !d.showNitrogen); },
                   className: "transition-colors text-[11px] text-blue-600 hover:text-blue-800 font-bold"
                 }, d.showNitrogen ? 'Hide' : 'Explore \u2192')
               ),
               d.showNitrogen && React.createElement("div", null,
-                React.createElement("div", { className: "text-[11px] text-slate-600 italic mb-2" }, "This is why beans are so important! They hack the nitrogen cycle through bacterial symbiosis."),
+                React.createElement("div", { className: "text-[11px] text-slate-600 italic mb-2" }, __alloT('stem.companionplanting.this_is_why_beans_are_so_important_the', "This is why beans are so important! They hack the nitrogen cycle through bacterial symbiosis.")),
                 React.createElement("div", { className: "flex flex-wrap gap-1 justify-center mb-2" },
                   NITROGEN_CYCLE.map(function(step, si) {
                     var isActive = (d.nitroCycleIdx || 0) === si;
@@ -7385,7 +7386,7 @@ var d = (labToolData.companionPlanting) || {};
                   return React.createElement("div", { className: "rounded-xl p-2.5 border bg-white text-center", style: { borderColor: step.color + '40' } },
                     React.createElement("div", { className: "text-[11px] font-bold", style: { color: step.color } }, 'Step ' + step.step + ': ' + step.name),
                     React.createElement("div", { className: "text-[11px] text-slate-600 mt-0.5" }, step.desc),
-                    step.step === 2 && React.createElement("div", { className: "text-[11px] text-emerald-800 bg-emerald-50 rounded p-1 mt-1 border border-emerald-100 font-bold" }, '\uD83C\uDF31 THIS is what bean roots do! Free fertilizer from thin air!')
+                    step.step === 2 && React.createElement("div", { className: "text-[11px] text-emerald-800 bg-emerald-50 rounded p-1 mt-1 border border-emerald-100 font-bold" }, __alloT('stem.companionplanting.this_is_what_bean_roots_do_free_fertil', '\uD83C\uDF31 THIS is what bean roots do! Free fertilizer from thin air!'))
                   );
                 })()
               )
@@ -7396,17 +7397,17 @@ var d = (labToolData.companionPlanting) || {};
               className: "bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl p-4 border border-amber-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-sm font-bold text-amber-800" }, "\u267B\uFE0F Composting Guide"),
-                React.createElement("button", { "aria-label": "GREENS (Nitrogen)",
+                React.createElement("h4", { className: "text-sm font-bold text-amber-800" }, __alloT('stem.companionplanting.composting_guide', "\u267B\uFE0F Composting Guide")),
+                React.createElement("button", { "aria-label": __alloT('stem.companionplanting.greens_nitrogen', "GREENS (Nitrogen)"),
                   onClick: function() { upd('showCompost', !d.showCompost); },
                   className: "transition-colors text-[11px] text-amber-600 hover:text-amber-800 font-bold"
                 }, d.showCompost ? 'Hide' : 'Learn \u2192')
               ),
               d.showCompost && React.createElement("div", null,
-                React.createElement("div", { className: "text-[11px] text-slate-600 italic mb-2" }, "The golden ratio: 3 parts Brown (carbon) to 1 part Green (nitrogen). Keep moist like a wrung-out sponge!"),
+                React.createElement("div", { className: "text-[11px] text-slate-600 italic mb-2" }, __alloT('stem.companionplanting.the_golden_ratio_3_parts_brown_carbon_', "The golden ratio: 3 parts Brown (carbon) to 1 part Green (nitrogen). Keep moist like a wrung-out sponge!")),
                 React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
                   React.createElement("div", { className: "rounded-xl p-2 border border-green-300 bg-green-50" },
-                    React.createElement("div", { className: "text-[11px] font-bold text-green-700 mb-1" }, "\uD83C\uDF3F GREENS (Nitrogen)"),
+                    React.createElement("div", { className: "text-[11px] font-bold text-green-700 mb-1" }, __alloT('stem.companionplanting.greens_nitrogen_2', "\uD83C\uDF3F GREENS (Nitrogen)")),
                     COMPOST_GREENS.map(function(g, gi) {
                       return React.createElement("div", { key: gi, className: "flex items-center gap-1 text-[11px] text-green-800" },
                         React.createElement("span", null, g.icon), React.createElement("span", null, g.name)
@@ -7414,7 +7415,7 @@ var d = (labToolData.companionPlanting) || {};
                     })
                   ),
                   React.createElement("div", { className: "rounded-xl p-2 border border-amber-300 bg-amber-50" },
-                    React.createElement("div", { className: "text-[11px] font-bold text-amber-700 mb-1" }, "\uD83C\uDF42 BROWNS (Carbon)"),
+                    React.createElement("div", { className: "text-[11px] font-bold text-amber-700 mb-1" }, __alloT('stem.companionplanting.browns_carbon', "\uD83C\uDF42 BROWNS (Carbon)")),
                     COMPOST_BROWNS.map(function(b, bi) {
                       return React.createElement("div", { key: bi, className: "flex items-center gap-1 text-[11px] text-amber-800" },
                         React.createElement("span", null, b.icon), React.createElement("span", null, b.name)
@@ -7433,7 +7434,7 @@ var d = (labToolData.companionPlanting) || {};
               className: "bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-4 border border-emerald-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-sm font-bold text-emerald-800" }, "\uD83D\uDCC5 Seasonal Planting Calendar"),
+                React.createElement("h4", { className: "text-sm font-bold text-emerald-800" }, __alloT('stem.companionplanting.seasonal_planting_calendar', "\uD83D\uDCC5 Seasonal Planting Calendar")),
                 React.createElement("button", { onClick: function() { upd('showCalendar', !d.showCalendar); },
                   className: "transition-colors text-[11px] text-emerald-600 hover:text-emerald-800 font-bold"
                 }, d.showCalendar ? 'Hide' : 'Plan \u2192')
@@ -7469,13 +7470,13 @@ var d = (labToolData.companionPlanting) || {};
               className: "bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-4 border border-purple-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-sm font-bold text-purple-800" }, "\u2696\uFE0F Soil pH & Plant Preferences"),
+                React.createElement("h4", { className: "text-sm font-bold text-purple-800" }, __alloT('stem.companionplanting.soil_ph_plant_preferences', "\u2696\uFE0F Soil pH & Plant Preferences")),
                 React.createElement("button", { onClick: function() { upd('showPH', !d.showPH); },
                   className: "transition-colors text-[11px] text-purple-600 hover:text-purple-800 font-bold"
                 }, d.showPH ? 'Hide' : 'View \u2192')
               ),
               d.showPH && React.createElement("div", null,
-                React.createElement("div", { className: "text-[11px] text-slate-600 italic mb-2" }, "pH measures soil acidity (1-14). Most veggies prefer 6.0-7.0. Test your soil!"),
+                React.createElement("div", { className: "text-[11px] text-slate-600 italic mb-2" }, __alloT('stem.companionplanting.ph_measures_soil_acidity_1_14_most_veg', "pH measures soil acidity (1-14). Most veggies prefer 6.0-7.0. Test your soil!")),
                 // pH scale bar
                 React.createElement("div", { className: "relative h-6 rounded-full overflow-hidden mb-1", style: { background: 'linear-gradient(to right, #ef4444, #f59e0b, #22c55e, #3b82f6, #8b5cf6)' } },
                   React.createElement("div", { className: "absolute inset-0 flex items-center justify-between px-2" },
@@ -7485,9 +7486,9 @@ var d = (labToolData.companionPlanting) || {};
                   )
                 ),
                 React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600 mb-2 px-1" },
-                  React.createElement("span", null, "\u2190 Acidic"),
-                  React.createElement("span", null, "Neutral"),
-                  React.createElement("span", null, "Alkaline \u2192")
+                  React.createElement("span", null, __alloT('stem.companionplanting.acidic', "\u2190 Acidic")),
+                  React.createElement("span", null, __alloT('stem.companionplanting.neutral', "Neutral")),
+                  React.createElement("span", null, __alloT('stem.companionplanting.alkaline', "Alkaline \u2192"))
                 ),
                 // Plant pH ranges
                 React.createElement("div", { className: "space-y-0.5" },
@@ -7560,13 +7561,13 @@ var d = (labToolData.companionPlanting) || {};
               className: "bg-gradient-to-r from-violet-50 to-purple-50 rounded-2xl p-4 border border-violet-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-sm font-bold text-violet-800" }, "\uD83C\uDF3E Plant Families & Crop Rotation"),
+                React.createElement("h4", { className: "text-sm font-bold text-violet-800" }, __alloT('stem.companionplanting.plant_families_crop_rotation', "\uD83C\uDF3E Plant Families & Crop Rotation")),
                 React.createElement("button", { onClick: function() { upd('showFamilies', !d.showFamilies); },
                   className: "transition-colors text-[11px] text-violet-600 hover:text-violet-800 font-bold"
                 }, d.showFamilies ? 'Hide' : 'Learn \u2192')
               ),
               d.showFamilies && React.createElement("div", { className: "space-y-1.5 max-h-56 overflow-y-auto" },
-                React.createElement("div", { className: "text-[11px] text-slate-600 italic mb-1" }, "Never plant the same family in the same spot two years in a row! Rotate to prevent disease buildup and nutrient depletion."),
+                React.createElement("div", { className: "text-[11px] text-slate-600 italic mb-1" }, __alloT('stem.companionplanting.never_plant_the_same_family_in_the_sam', "Never plant the same family in the same spot two years in a row! Rotate to prevent disease buildup and nutrient depletion.")),
                 PLANT_FAMILIES.map(function(fam, fi) {
                   var isActive = d.familyIdx === fi;
                   return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: fi,
@@ -7593,7 +7594,7 @@ var d = (labToolData.companionPlanting) || {};
               className: "bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl p-4 border border-amber-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-sm font-bold text-amber-800" }, "\uD83E\uDEA8 Soil Types Guide"),
+                React.createElement("h4", { className: "text-sm font-bold text-amber-800" }, __alloT('stem.companionplanting.soil_types_guide', "\uD83E\uDEA8 Soil Types Guide")),
                 React.createElement("button", { onClick: function() { upd('showSoilTypes', !d.showSoilTypes); },
                   className: "transition-colors text-[11px] text-amber-600 hover:text-amber-800 font-bold"
                 }, d.showSoilTypes ? 'Hide' : 'Explore \u2192')
@@ -7625,18 +7626,18 @@ var d = (labToolData.companionPlanting) || {};
               className: "bg-gradient-to-r from-red-50 to-orange-50 rounded-2xl p-4 border border-red-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-sm font-bold text-red-800" }, "\uD83D\uDC1E Garden Pests & Allies"),
+                React.createElement("h4", { className: "text-sm font-bold text-red-800" }, __alloT('stem.companionplanting.garden_pests_allies', "\uD83D\uDC1E Garden Pests & Allies")),
                 React.createElement("button", { onClick: function() { upd('showPests', !d.showPests); },
                   className: "transition-colors text-[11px] text-red-600 hover:text-red-800 font-bold"
                 }, d.showPests ? 'Hide' : 'Identify \u2192')
               ),
               d.showPests && React.createElement("div", null,
                 React.createElement("div", { className: "flex gap-1 mb-2" },
-                  React.createElement("button", { "aria-label": "Pests (",
+                  React.createElement("button", { "aria-label": __alloT('stem.companionplanting.pests_2', "Pests ("),
                     onClick: function() { upd('pestTab', 'pests'); },
                     className: "px-2 py-0.5 rounded-full text-[11px] font-bold " + ((d.pestTab || 'pests') === 'pests' ? 'bg-red-700 text-white' : 'bg-white text-red-600 border border-red-200')
                   }, "\uD83D\uDC1B Pests (" + GARDEN_PESTS.length + ")"),
-                  React.createElement("button", { "aria-label": "Allies (",
+                  React.createElement("button", { "aria-label": __alloT('stem.companionplanting.allies', "Allies ("),
                     onClick: function() { upd('pestTab', 'beneficial'); },
                     className: "px-2 py-0.5 rounded-full text-[11px] font-bold " + ((d.pestTab || 'pests') === 'beneficial' ? 'bg-green-700 text-white' : 'bg-white text-green-600 border border-green-200')
                   }, "\uD83D\uDC1E Allies (" + BENEFICIAL_INSECTS.length + ")")
@@ -7683,11 +7684,11 @@ var d = (labToolData.companionPlanting) || {};
 
             // ── Snapshot button ──
 
-            React.createElement("button", { "aria-label": "Snapshot",
+            React.createElement("button", { "aria-label": __alloT('stem.companionplanting.snapshot', "Snapshot"),
 
               onClick: function () {
 
-                setToolSnapshots(function (prev) { return prev.concat([{ id: 'garden-' + Date.now(), tool: 'companionPlanting', label: 'Companion Planting Lab', data: Object.assign({}, d), timestamp: Date.now() }]); });
+                setToolSnapshots(function (prev) { return prev.concat([{ id: 'garden-' + Date.now(), tool: 'companionPlanting', label: __alloT('stem.companionplanting.companion_planting_lab_2', 'Companion Planting Lab'), data: Object.assign({}, d), timestamp: Date.now() }]); });
 
                 if (addToast) addToast('📸 Garden snapshot saved!', 'success');
 
@@ -7695,7 +7696,7 @@ var d = (labToolData.companionPlanting) || {};
 
               className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-green-600 rounded-full hover:from-emerald-600 hover:to-green-700 shadow-md hover:shadow-lg transition-all"
 
-            }, "📸 Snapshot"),
+            }, __alloT('stem.companionplanting.snapshot_2', "📸 Snapshot")),
 
             // === H7b'' inquiry widget: Three Sisters synergy ===
             (function() {
@@ -7711,14 +7712,14 @@ var d = (labToolData.companionPlanting) || {};
               else if (iq.beanDensity < 10) state = 'noFixation';
               else state = 'unbalanced';
               var sm = {
-                sisters:     { label: '🌽🫘🎃 Three Sisters thrive', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Balanced trio. Beans fix nitrogen, corn provides poles, squash shades soil.' },
-                overcrowded: { label: '⚠️ Overcrowded', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Competition for light, water, nutrients.' },
-                noFixation:  { label: '🟠 No nitrogen fixation', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Too few beans — soil nitrogen depletes.' },
-                unbalanced:  { label: '🟡 Unbalanced — monoculture risk', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'One species dominates. Synergy reduced.' }
+                sisters:     { label: __alloT('stem.companionplanting.three_sisters_thrive', '🌽🫘🎃 Three Sisters thrive'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.companionplanting.balanced_trio_beans_fix_nitrogen_corn_', 'Balanced trio. Beans fix nitrogen, corn provides poles, squash shades soil.') },
+                overcrowded: { label: __alloT('stem.companionplanting.overcrowded', '⚠️ Overcrowded'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.companionplanting.competition_for_light_water_nutrients', 'Competition for light, water, nutrients.') },
+                noFixation:  { label: __alloT('stem.companionplanting.no_nitrogen_fixation', '🟠 No nitrogen fixation'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.companionplanting.too_few_beans_soil_nitrogen_depletes', 'Too few beans — soil nitrogen depletes.') },
+                unbalanced:  { label: __alloT('stem.companionplanting.unbalanced_monoculture_risk', '🟡 Unbalanced — monoculture risk'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: __alloT('stem.companionplanting.one_species_dominates_synergy_reduced', 'One species dominates. Synergy reduced.') }
               }[state];
               return h('div', { className: 'mt-3 p-4 rounded-xl bg-white border border-emerald-300 shadow-sm space-y-3' },
-                h('h3', { className: 'text-sm font-black text-emerald-700' }, '🌽 Three-sisters synergy discovery'),
-                h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, 'Sliders for corn, bean, squash density. Discrete 4-state synergy. No score, no reveal.'),
+                h('h3', { className: 'text-sm font-black text-emerald-700' }, __alloT('stem.companionplanting.three_sisters_synergy_discovery', '🌽 Three-sisters synergy discovery')),
+                h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, __alloT('stem.companionplanting.sliders_for_corn_bean_squash_density_d', 'Sliders for corn, bean, squash density. Discrete 4-state synergy. No score, no reveal.')),
                 h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
                   h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
                   h('div', { className: 'text-[11px] text-slate-700 mt-1' }, sm.desc)
@@ -7735,22 +7736,22 @@ var d = (labToolData.companionPlanting) || {};
                   })
                 ),
                 h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ c: iq.cornDensity, b: iq.beanDensity, sq: iq.squashDensity, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
-                  h('button', { onClick: function() { setIQ({ cornDensity: 50, beanDensity: 30, squashDensity: 20, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ c: iq.cornDensity, b: iq.beanDensity, sq: iq.squashDensity, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.companionplanting.log', '📋 Log')),
+                  h('button', { onClick: function() { setIQ({ cornDensity: 50, beanDensity: 30, squashDensity: 20, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.companionplanting.reset', '↺ Reset'))
                 ),
-                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: What ratio makes the Three Sisters mutually beneficial?',
+                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.companionplanting.hypothesis_what_ratio_makes_the_three_', 'Hypothesis: What ratio makes the Three Sisters mutually beneficial?'),
                   className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
-                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.companionplanting.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
                   h('ul', { className: 'list-disc pl-5 space-y-1' },
-                    h('li', null, 'Haudenosaunee traditional ratios: roughly equal. Investigate why.'),
-                    h('li', null, 'Beans fix nitrogen via Rhizobium. What happens at near-zero beans?'))),
+                    h('li', null, __alloT('stem.companionplanting.haudenosaunee_traditional_ratios_rough', 'Haudenosaunee traditional ratios: roughly equal. Investigate why.')),
+                    h('li', null, __alloT('stem.companionplanting.beans_fix_nitrogen_via_rhizobium_what_', 'Beans fix nitrogen via Rhizobium. What happens at near-zero beans?')))),
                 h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
                   h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
-                  'I understand — explain in own words'),
-                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how each species supports the others.',
+                  __alloT('stem.companionplanting.i_understand_explain_in_own_words', 'I understand — explain in own words')),
+                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.companionplanting.explain_how_each_species_supports_the_', 'Explain how each species supports the others.'),
                   className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
-                h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 4-state synergy marker; no yield score; no reveal — by design.')
+                h('div', { className: 'text-[10px] italic text-slate-500' }, __alloT('stem.companionplanting.design_note_discrete_4_state_synergy_m', 'Design note: discrete 4-state synergy marker; no yield score; no reveal — by design.'))
               );
             })()
 

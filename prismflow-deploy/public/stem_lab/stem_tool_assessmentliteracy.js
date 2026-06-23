@@ -8542,6 +8542,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
     color: 'indigo',
     category: 'Literacy',
     render: function(ctx) {
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = window.React;
       var h = React.createElement;
       var data = ctx.toolData || {};
@@ -8621,25 +8622,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       // ─────────────────────────────────────────
       function renderMenu() {
         var modules = [
-          { id: 'cognitive', icon: '\uD83E\uDDE0', label: 'Cognitive Assessment Literacy', desc: 'CHC, PASS, Gardner, Sternberg. Build a mock battery from subtest blocks. Browse real batteries (WISC-V, WJ-IV, KABC-II). Disability justice lens.', color: 'from-blue-600 to-cyan-600' },
-          { id: 'personality', icon: '\uD83C\uDFAD', label: 'Personality Inventory Literacy', desc: 'Big 5 vs MBTI head-to-head. Take an IPIP mini-inventory, see your continuous profile, watch it convert to MBTI, simulate retest flips.', color: 'from-purple-600 to-pink-600' },
-          { id: 'career', icon: '\uD83C\uDFAF', label: 'Career Interest Literacy', desc: 'Holland RIASEC short form from O*NET. Get your 3-letter code, explore real occupation matches, compare with clickbait quizzes.', color: 'from-emerald-600 to-teal-600' },
-          { id: 'employer', icon: '\uD83D\uDCBC', label: 'Employer Assessment Coaching', desc: 'Ethics, legal rights, test-specific primers (DISC, Hogan, PI, Caliper, Wonderlic, CCAT). Practice mode with AI-generated mock items.', color: 'from-amber-600 to-orange-600' },
-          { id: 'schoolpsych', icon: '\uD83C\uDFEB', label: 'School Psych & IEP Workflow', desc: 'RTI tiers, SLD identification methods, 504 vs IEP, the 13 IDEA categories, how to read a psych report, parent rights, and an interactive SEM / confidence interval simulator.', color: 'from-sky-600 to-blue-700' },
-          { id: 'junk', icon: '\uD83D\uDD0D', label: 'Spot the Junk Science — Capstone', desc: 'Read real-world test claims. Rate each: Legit / Suspect / Pseudoscience. Learn the tells that expose Barnum effects, popularity appeals, proprietary black boxes, and commercial inflation. Capstone challenge.', color: 'from-fuchsia-600 to-rose-600' },
-          { id: 'sources', icon: '\uD83D\uDCDA', label: 'Sources & Further Reading', desc: 'Primary-source citations organized by module — textbooks, peer-reviewed articles, legal rulings, and online resources. For students heading to grad school or anyone who wants to go deeper.', color: 'from-slate-600 to-slate-800' },
-          { id: 'teacher', icon: '\uD83C\uDF93', label: 'Teacher / Instructor Mode', desc: 'Course alignment, module-by-module learning objectives, 10 discussion prompts, 8 in-class activities, 5-dimension assessment rubric. For adopting this tool in a Psych, Ed Psych, or I/O course.', color: 'from-indigo-600 to-violet-700' },
-          { id: 'glossary', icon: '\uD83D\uDCD6', label: 'Glossary', desc: '60+ term glossary covering terms across all modules. Filter by keyword. For navigating a tool with lots of jargon.', color: 'from-stone-600 to-zinc-700' },
-          { id: 'inquiry', icon: '\uD83D\uDD2C', label: 'Reliability Inquiry \u2014 Capstone Sandbox', desc: 'Move four sliders (instrument reliability, SEM, observed score, decision stakes). Predict the confidence interval width and the action-readiness of the score. No score, no reveal \u2014 you mark your own understanding.', color: 'from-teal-600 to-emerald-700' }
+          { id: 'cognitive', icon: '\uD83E\uDDE0', label: __alloT('stem.assessmentliteracy.cognitive_assessment_literacy', 'Cognitive Assessment Literacy'), desc: __alloT('stem.assessmentliteracy.chc_pass_gardner_sternberg_build_a_moc', 'CHC, PASS, Gardner, Sternberg. Build a mock battery from subtest blocks. Browse real batteries (WISC-V, WJ-IV, KABC-II). Disability justice lens.'), color: 'from-blue-600 to-cyan-600' },
+          { id: 'personality', icon: '\uD83C\uDFAD', label: __alloT('stem.assessmentliteracy.personality_inventory_literacy', 'Personality Inventory Literacy'), desc: __alloT('stem.assessmentliteracy.big_5_vs_mbti_head_to_head_take_an_ipi', 'Big 5 vs MBTI head-to-head. Take an IPIP mini-inventory, see your continuous profile, watch it convert to MBTI, simulate retest flips.'), color: 'from-purple-600 to-pink-600' },
+          { id: 'career', icon: '\uD83C\uDFAF', label: __alloT('stem.assessmentliteracy.career_interest_literacy', 'Career Interest Literacy'), desc: __alloT('stem.assessmentliteracy.holland_riasec_short_form_from_o_net_g', 'Holland RIASEC short form from O*NET. Get your 3-letter code, explore real occupation matches, compare with clickbait quizzes.'), color: 'from-emerald-600 to-teal-600' },
+          { id: 'employer', icon: '\uD83D\uDCBC', label: __alloT('stem.assessmentliteracy.employer_assessment_coaching', 'Employer Assessment Coaching'), desc: __alloT('stem.assessmentliteracy.ethics_legal_rights_test_specific_prim', 'Ethics, legal rights, test-specific primers (DISC, Hogan, PI, Caliper, Wonderlic, CCAT). Practice mode with AI-generated mock items.'), color: 'from-amber-600 to-orange-600' },
+          { id: 'schoolpsych', icon: '\uD83C\uDFEB', label: __alloT('stem.assessmentliteracy.school_psych_iep_workflow', 'School Psych & IEP Workflow'), desc: __alloT('stem.assessmentliteracy.rti_tiers_sld_identification_methods_5', 'RTI tiers, SLD identification methods, 504 vs IEP, the 13 IDEA categories, how to read a psych report, parent rights, and an interactive SEM / confidence interval simulator.'), color: 'from-sky-600 to-blue-700' },
+          { id: 'junk', icon: '\uD83D\uDD0D', label: __alloT('stem.assessmentliteracy.spot_the_junk_science_capstone', 'Spot the Junk Science — Capstone'), desc: __alloT('stem.assessmentliteracy.read_real_world_test_claims_rate_each_', 'Read real-world test claims. Rate each: Legit / Suspect / Pseudoscience. Learn the tells that expose Barnum effects, popularity appeals, proprietary black boxes, and commercial inflation. Capstone challenge.'), color: 'from-fuchsia-600 to-rose-600' },
+          { id: 'sources', icon: '\uD83D\uDCDA', label: __alloT('stem.assessmentliteracy.sources_further_reading', 'Sources & Further Reading'), desc: __alloT('stem.assessmentliteracy.primary_source_citations_organized_by_', 'Primary-source citations organized by module — textbooks, peer-reviewed articles, legal rulings, and online resources. For students heading to grad school or anyone who wants to go deeper.'), color: 'from-slate-600 to-slate-800' },
+          { id: 'teacher', icon: '\uD83C\uDF93', label: __alloT('stem.assessmentliteracy.teacher_instructor_mode', 'Teacher / Instructor Mode'), desc: __alloT('stem.assessmentliteracy.course_alignment_module_by_module_lear', 'Course alignment, module-by-module learning objectives, 10 discussion prompts, 8 in-class activities, 5-dimension assessment rubric. For adopting this tool in a Psych, Ed Psych, or I/O course.'), color: 'from-indigo-600 to-violet-700' },
+          { id: 'glossary', icon: '\uD83D\uDCD6', label: __alloT('stem.assessmentliteracy.glossary', 'Glossary'), desc: __alloT('stem.assessmentliteracy.60_term_glossary_covering_terms_across', '60+ term glossary covering terms across all modules. Filter by keyword. For navigating a tool with lots of jargon.'), color: 'from-stone-600 to-zinc-700' },
+          { id: 'inquiry', icon: '\uD83D\uDD2C', label: __alloT('stem.assessmentliteracy.reliability_inquiry_capstone_sandbox', 'Reliability Inquiry \u2014 Capstone Sandbox'), desc: __alloT('stem.assessmentliteracy.move_four_sliders_instrument_reliabili', 'Move four sliders (instrument reliability, SEM, observed score, decision stakes). Predict the confidence interval width and the action-readiness of the score. No score, no reveal \u2014 you mark your own understanding.'), color: 'from-teal-600 to-emerald-700' }
         ];
         return h('div', { className: 'max-w-4xl mx-auto p-4 md:p-6' },
           h('header', { className: 'mb-6' },
-            h('h1', { className: 'text-2xl md:text-3xl font-black text-indigo-200 mb-2' }, '\uD83D\uDCCA Assessment Literacy Lab'),
+            h('h1', { className: 'text-2xl md:text-3xl font-black text-indigo-200 mb-2' }, __alloT('stem.assessmentliteracy.assessment_literacy_lab', '\uD83D\uDCCA Assessment Literacy Lab')),
             h('p', { className: 'text-sm text-slate-300 leading-relaxed' },
-              'This tool doesn\'t measure you. It teaches you how measurement claims are made — and how to tell a validated instrument from a persuasive-sounding one. Build mock batteries. Critique your own results. Learn to navigate employer tests ethically and strategically.'
+              __alloT('stem.assessmentliteracy.this_tool_doesn_t_measure_you_it_teach', 'This tool doesn\'t measure you. It teaches you how measurement claims are made — and how to tell a validated instrument from a persuasive-sounding one. Build mock batteries. Critique your own results. Learn to navigate employer tests ethically and strategically.')
             ),
             h('div', { className: 'mt-3 p-3 rounded-lg bg-indigo-900/30 border border-indigo-500/30 text-xs text-indigo-200' },
-              h('strong', null, 'Design principle: '), 'Every inventory here is for education and self-reflection, not diagnosis. Real clinical/educational decisions require a qualified professional administering a full validated battery.'
+              h('strong', null, __alloT('stem.assessmentliteracy.design_principle', 'Design principle: ')), __alloT('stem.assessmentliteracy.every_inventory_here_is_for_education_', 'Every inventory here is for education and self-reflection, not diagnosis. Real clinical/educational decisions require a qualified professional administering a full validated battery.')
             )
           ),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
@@ -8675,19 +8676,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
 
         // Cognitive submenu
         var subs = [
-          { id: 'theories', icon: '\uD83D\uDCDA', label: 'Theories of Intelligence', desc: 'CHC, PASS, Gardner, Sternberg, Luria, Spearman\'s g. What each theory actually claims, and how they compete or nest.' },
-          { id: 'builder', icon: '\uD83D\uDD27', label: 'Battery Builder', desc: 'Select CHC broad abilities → AI critiques what your mock battery would and would not capture.' },
-          { id: 'batteries', icon: '\uD83D\uDCD6', label: 'Real Cognitive Batteries', desc: 'WISC-V, WJ-IV, KABC-II, DAS-II, RIAS-2, SB-5, UNIT-2 — what each measures, strengths and weaknesses.' },
-          { id: 'justice', icon: '\u2696\uFE0F', label: 'Disability Justice & History', desc: 'Eugenics origins, Larry P., Atkins, processing-speed penalties, ADA accommodations.' },
-          { id: 'flynn', icon: '\uD83D\uDCC8', label: 'The Flynn Effect', desc: 'Why average IQ rose ~3 points per decade, why renorming matters, why "my IQ is stable" is only half-true, and the recent evidence for attenuation.' },
-          { id: 'neuropsych', icon: '\uD83E\uDDE0', label: 'Neuropsychology Basics', desc: '6 batteries (NEPSY-II, D-KEFS, WRAML-2, CVLT-C, Luria-Nebraska, NIH Toolbox), 7 neuropsych domains with targeted assessments, neuropsych vs school-psych scope comparison, when to refer out.' },
-          { id: 'biasSpotter', icon: '\uD83D\uDD75\uFE0F', label: 'Spot the Bias — interactive', desc: '12 short vignettes. Identify which of 6 validity issues applies to each (linguistic / cultural / outdated norms / construct under-rep / examiner / ceiling-floor). Builds the "what could go wrong with this assessment" reflex.' },
-          { id: 'narrow', icon: '🔬', label: 'CHC Narrow Abilities (Stratum I)', desc: 'The full Schneider & McGrew CHC taxonomy expanded — 40+ narrow abilities under 9 broad strata. For each: definition, sample task (what does the person actually do?), which commercial subtests measure it, and why it matters clinically. The level where psychoeducational evaluators actually think.' },
-          { id: 'sampleitems', icon: '🧪', label: 'Sample Items Demonstrator', desc: '20+ representative sample items across the 8 CHC broad ability areas. For each item: the actual stimulus, instruction, which commercial subtests use this format, and what the item reveals clinically. The fastest way to actually understand what cognitive tests measure.' }
+          { id: 'theories', icon: '\uD83D\uDCDA', label: __alloT('stem.assessmentliteracy.theories_of_intelligence', 'Theories of Intelligence'), desc: __alloT('stem.assessmentliteracy.chc_pass_gardner_sternberg_luria_spear', 'CHC, PASS, Gardner, Sternberg, Luria, Spearman\'s g. What each theory actually claims, and how they compete or nest.') },
+          { id: 'builder', icon: '\uD83D\uDD27', label: __alloT('stem.assessmentliteracy.battery_builder', 'Battery Builder'), desc: __alloT('stem.assessmentliteracy.select_chc_broad_abilities_ai_critique', 'Select CHC broad abilities → AI critiques what your mock battery would and would not capture.') },
+          { id: 'batteries', icon: '\uD83D\uDCD6', label: __alloT('stem.assessmentliteracy.real_cognitive_batteries', 'Real Cognitive Batteries'), desc: __alloT('stem.assessmentliteracy.wisc_v_wj_iv_kabc_ii_das_ii_rias_2_sb_', 'WISC-V, WJ-IV, KABC-II, DAS-II, RIAS-2, SB-5, UNIT-2 — what each measures, strengths and weaknesses.') },
+          { id: 'justice', icon: '\u2696\uFE0F', label: __alloT('stem.assessmentliteracy.disability_justice_history', 'Disability Justice & History'), desc: __alloT('stem.assessmentliteracy.eugenics_origins_larry_p_atkins_proces', 'Eugenics origins, Larry P., Atkins, processing-speed penalties, ADA accommodations.') },
+          { id: 'flynn', icon: '\uD83D\uDCC8', label: __alloT('stem.assessmentliteracy.the_flynn_effect', 'The Flynn Effect'), desc: __alloT('stem.assessmentliteracy.why_average_iq_rose_3_points_per_decad', 'Why average IQ rose ~3 points per decade, why renorming matters, why "my IQ is stable" is only half-true, and the recent evidence for attenuation.') },
+          { id: 'neuropsych', icon: '\uD83E\uDDE0', label: __alloT('stem.assessmentliteracy.neuropsychology_basics', 'Neuropsychology Basics'), desc: __alloT('stem.assessmentliteracy.6_batteries_nepsy_ii_d_kefs_wraml_2_cv', '6 batteries (NEPSY-II, D-KEFS, WRAML-2, CVLT-C, Luria-Nebraska, NIH Toolbox), 7 neuropsych domains with targeted assessments, neuropsych vs school-psych scope comparison, when to refer out.') },
+          { id: 'biasSpotter', icon: '\uD83D\uDD75\uFE0F', label: __alloT('stem.assessmentliteracy.spot_the_bias_interactive', 'Spot the Bias — interactive'), desc: __alloT('stem.assessmentliteracy.12_short_vignettes_identify_which_of_6', '12 short vignettes. Identify which of 6 validity issues applies to each (linguistic / cultural / outdated norms / construct under-rep / examiner / ceiling-floor). Builds the "what could go wrong with this assessment" reflex.') },
+          { id: 'narrow', icon: '🔬', label: __alloT('stem.assessmentliteracy.chc_narrow_abilities_stratum_i', 'CHC Narrow Abilities (Stratum I)'), desc: __alloT('stem.assessmentliteracy.the_full_schneider_mcgrew_chc_taxonomy', 'The full Schneider & McGrew CHC taxonomy expanded — 40+ narrow abilities under 9 broad strata. For each: definition, sample task (what does the person actually do?), which commercial subtests measure it, and why it matters clinically. The level where psychoeducational evaluators actually think.') },
+          { id: 'sampleitems', icon: '🧪', label: __alloT('stem.assessmentliteracy.sample_items_demonstrator', 'Sample Items Demonstrator'), desc: __alloT('stem.assessmentliteracy.20_representative_sample_items_across_', '20+ representative sample items across the 8 CHC broad ability areas. For each item: the actual stimulus, instruction, which commercial subtests use this format, and what the item reveals clinically. The fastest way to actually understand what cognitive tests measure.') }
         ];
         return h('div', { className: 'max-w-4xl mx-auto p-4 md:p-6' },
           backBtn('menu', null, 'Main menu'),
-          h('h2', { className: 'text-2xl font-black text-cyan-200 mb-4' }, '\uD83E\uDDE0 Cognitive Assessment Literacy'),
+          h('h2', { className: 'text-2xl font-black text-cyan-200 mb-4' }, __alloT('stem.assessmentliteracy.cognitive_assessment_literacy_2', '\uD83E\uDDE0 Cognitive Assessment Literacy')),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
             subs.map(function(x) {
               return h('button', {
@@ -8697,7 +8698,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               },
                 h('div', { className: 'text-2xl mb-1' }, x.icon),
                 h('div', { className: 'text-sm font-bold text-cyan-200 mb-1' }, x.label),
-                h('div', { className: 'text-xs text-slate-300 leading-snug' }, x.desc)
+                h('div', { className: 'text-xs text-slate-300 leading-snug' }, __alloT('stem.assessmentliteracy.' + (x.id) + '_desc', x.desc))
               );
             })
           )
@@ -8707,11 +8708,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       function renderCognitiveTheories() {
         return h('div', { className: 'max-w-4xl mx-auto p-4 md:p-6 space-y-5' },
           backBtn('cognitive', null, 'Cognitive menu'),
-          h('h2', { className: 'text-2xl font-black text-cyan-200' }, '\uD83D\uDCDA Theories of Intelligence'),
+          h('h2', { className: 'text-2xl font-black text-cyan-200' }, __alloT('stem.assessmentliteracy.theories_of_intelligence_2', '\uD83D\uDCDA Theories of Intelligence')),
 
           h('section', { className: 'p-4 rounded-xl bg-slate-800/60 border border-cyan-500/30' },
-            h('h3', { className: 'text-lg font-black text-cyan-300 mb-2' }, 'CHC (Cattell-Horn-Carroll)'),
-            h('p', { className: 'text-xs text-slate-300 mb-3' }, 'The dominant contemporary theoretical framework in psychoeducational assessment. Hierarchical — general ability (g) at top, 9+ broad abilities below, 70+ narrow abilities nested further. Most modern batteries are CHC-aligned (WJ-IV is the most explicit operationalization). Schneider & McGrew (2018) is the current model.'),
+            h('h3', { className: 'text-lg font-black text-cyan-300 mb-2' }, __alloT('stem.assessmentliteracy.chc_cattell_horn_carroll', 'CHC (Cattell-Horn-Carroll)')),
+            h('p', { className: 'text-xs text-slate-300 mb-3' }, __alloT('stem.assessmentliteracy.the_dominant_contemporary_theoretical_', 'The dominant contemporary theoretical framework in psychoeducational assessment. Hierarchical — general ability (g) at top, 9+ broad abilities below, 70+ narrow abilities nested further. Most modern batteries are CHC-aligned (WJ-IV is the most explicit operationalization). Schneider & McGrew (2018) is the current model.')),
             h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
               CHC_BROAD.map(function(b) {
                 return h('div', { key: b.code, className: 'p-3 rounded-lg bg-slate-900/60 border border-cyan-500/20' },
@@ -8724,8 +8725,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           ),
 
           h('section', { className: 'p-4 rounded-xl bg-slate-800/60 border border-purple-500/30' },
-            h('h3', { className: 'text-lg font-black text-purple-300 mb-2' }, 'PASS (Das & Naglieri, Luria-based)'),
-            h('p', { className: 'text-xs text-slate-300 mb-3' }, 'Neuropsychologically grounded — derives from Luria\'s work on brain function. Four components. Operationalized in the Cognitive Assessment System (CAS2). Strong for identifying specific cognitive deficits tied to neurological function.'),
+            h('h3', { className: 'text-lg font-black text-purple-300 mb-2' }, __alloT('stem.assessmentliteracy.pass_das_naglieri_luria_based', 'PASS (Das & Naglieri, Luria-based)')),
+            h('p', { className: 'text-xs text-slate-300 mb-3' }, __alloT('stem.assessmentliteracy.neuropsychologically_grounded_derives_', 'Neuropsychologically grounded — derives from Luria\'s work on brain function. Four components. Operationalized in the Cognitive Assessment System (CAS2). Strong for identifying specific cognitive deficits tied to neurological function.')),
             h('div', { className: 'grid grid-cols-2 gap-2' },
               PASS_COMPONENTS.map(function(p) {
                 return h('div', { key: p.code, className: 'p-3 rounded-lg bg-slate-900/60 border border-purple-500/20' },
@@ -8738,8 +8739,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           ),
 
           h('section', { className: 'p-4 rounded-xl bg-slate-800/60 border border-amber-500/30' },
-            h('h3', { className: 'text-lg font-black text-amber-300 mb-2' }, 'Gardner\'s Multiple Intelligences'),
-            h('p', { className: 'text-xs text-slate-300 mb-3' }, 'Popular in education; empirically contested. Claims 8 separate "intelligences" (plus some candidate additions).'),
+            h('h3', { className: 'text-lg font-black text-amber-300 mb-2' }, __alloT('stem.assessmentliteracy.gardner_s_multiple_intelligences', 'Gardner\'s Multiple Intelligences')),
+            h('p', { className: 'text-xs text-slate-300 mb-3' }, __alloT('stem.assessmentliteracy.popular_in_education_empirically_conte', 'Popular in education; empirically contested. Claims 8 separate "intelligences" (plus some candidate additions).')),
             h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2 mb-3' },
               GARDNER_MI.map(function(g, i) {
                 return h('div', { key: i, className: 'p-2 rounded-lg bg-slate-900/60 border border-amber-500/20' },
@@ -8749,14 +8750,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               })
             ),
             h('div', { className: 'p-3 rounded-lg bg-red-900/30 border border-red-500/40' },
-              h('div', { className: 'text-xs font-black text-red-300 mb-1' }, '\u26A0 Empirical critique'),
+              h('div', { className: 'text-xs font-black text-red-300 mb-1' }, __alloT('stem.assessmentliteracy.empirical_critique', '\u26A0 Empirical critique')),
               h('div', { className: 'text-xs text-slate-200' }, GARDNER_CRITIQUE)
             )
           ),
 
           h('section', { className: 'p-4 rounded-xl bg-slate-800/60 border border-emerald-500/30' },
-            h('h3', { className: 'text-lg font-black text-emerald-300 mb-2' }, 'Sternberg\'s Triarchic Theory'),
-            h('p', { className: 'text-xs text-slate-300 mb-3' }, 'Three complementary aspects of intelligence. Sternberg\'s Triarchic Abilities Test (STAT) operationalized this but has not replaced mainstream batteries. The "practical intelligence" construct resonates but is hard to measure reliably.'),
+            h('h3', { className: 'text-lg font-black text-emerald-300 mb-2' }, __alloT('stem.assessmentliteracy.sternberg_s_triarchic_theory', 'Sternberg\'s Triarchic Theory')),
+            h('p', { className: 'text-xs text-slate-300 mb-3' }, __alloT('stem.assessmentliteracy.three_complementary_aspects_of_intelli', 'Three complementary aspects of intelligence. Sternberg\'s Triarchic Abilities Test (STAT) operationalized this but has not replaced mainstream batteries. The "practical intelligence" construct resonates but is hard to measure reliably.')),
             h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2' },
               STERNBERG_TRIARCHIC.map(function(s, i) {
                 return h('div', { key: i, className: 'p-3 rounded-lg bg-slate-900/60 border border-emerald-500/20' },
@@ -8768,8 +8769,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           ),
 
           h('section', { className: 'p-4 rounded-xl bg-slate-800/60 border border-rose-500/30' },
-            h('h3', { className: 'text-lg font-black text-rose-300 mb-2' }, 'Luria\'s Functional Units'),
-            h('p', { className: 'text-xs text-slate-300 mb-3' }, 'Alexander Luria\'s neuropsychological model — foundation for PASS and KABC-II. Three functional brain systems that must work together for purposeful behavior.'),
+            h('h3', { className: 'text-lg font-black text-rose-300 mb-2' }, __alloT('stem.assessmentliteracy.luria_s_functional_units', 'Luria\'s Functional Units')),
+            h('p', { className: 'text-xs text-slate-300 mb-3' }, __alloT('stem.assessmentliteracy.alexander_luria_s_neuropsychological_m', 'Alexander Luria\'s neuropsychological model — foundation for PASS and KABC-II. Three functional brain systems that must work together for purposeful behavior.')),
             h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2' },
               LURIA_UNITS.map(function(u, i) {
                 return h('div', { key: i, className: 'p-3 rounded-lg bg-slate-900/60 border border-rose-500/20' },
@@ -8781,8 +8782,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           ),
 
           h('section', { className: 'p-4 rounded-xl bg-slate-800/60 border border-slate-500/30' },
-            h('h3', { className: 'text-lg font-black text-slate-200 mb-2' }, 'Spearman\'s g (1904)'),
-            h('p', { className: 'text-xs text-slate-300' }, 'The original finding that sparked the field: scores on any cognitive task correlate positively with scores on any other cognitive task (the "positive manifold"). Spearman called the common factor g — general cognitive ability. Every contemporary theory (CHC, PASS) accepts some version of g at the top of the hierarchy, even if they emphasize specific abilities below it. Arguments are about "how much g vs. how much specific" — not about whether g exists.')
+            h('h3', { className: 'text-lg font-black text-slate-200 mb-2' }, __alloT('stem.assessmentliteracy.spearman_s_g_1904', 'Spearman\'s g (1904)')),
+            h('p', { className: 'text-xs text-slate-300' }, __alloT('stem.assessmentliteracy.the_original_finding_that_sparked_the_', 'The original finding that sparked the field: scores on any cognitive task correlate positively with scores on any other cognitive task (the "positive manifold"). Spearman called the common factor g — general cognitive ability. Every contemporary theory (CHC, PASS) accepts some version of g at the top of the hierarchy, even if they emphasize specific abilities below it. Arguments are about "how much g vs. how much specific" — not about whether g exists.'))
           )
         );
       }
@@ -8798,8 +8799,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           upd({ battery: next, batteryCritique: '' });
         };
         var runCritique = function() {
-          if (!callGemini) { addToast({ message: 'AI unavailable', type: 'error' }); return; }
-          if (battery.length < 2) { addToast({ message: 'Select at least 2 broad abilities first', type: 'warning' }); return; }
+          if (!callGemini) { addToast({ message: __alloT('stem.assessmentliteracy.ai_unavailable', 'AI unavailable'), type: 'error' }); return; }
+          if (battery.length < 2) { addToast({ message: __alloT('stem.assessmentliteracy.select_at_least_2_broad_abilities_firs', 'Select at least 2 broad abilities first'), type: 'warning' }); return; }
           upd({ batteryLoading: true, batteryCritique: '' });
           Promise.resolve(callGemini(buildBatteryCritiquePrompt(battery), false, false, 0.5, null))
             .then(function(resp) {
@@ -8814,8 +8815,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
 
         return h('div', { className: 'max-w-4xl mx-auto p-4 md:p-6 space-y-4' },
           backBtn('cognitive', null, 'Cognitive menu'),
-          h('h2', { className: 'text-2xl font-black text-cyan-200' }, '\uD83D\uDD27 Battery Builder'),
-          h('p', { className: 'text-xs text-slate-300' }, 'Select the CHC broad abilities you\'d include in a mock cognitive battery. Then ask the AI to critique what your battery would and wouldn\'t capture. This simulates the design decisions a psychoed evaluator makes.'),
+          h('h2', { className: 'text-2xl font-black text-cyan-200' }, __alloT('stem.assessmentliteracy.battery_builder_2', '\uD83D\uDD27 Battery Builder')),
+          h('p', { className: 'text-xs text-slate-300' }, __alloT('stem.assessmentliteracy.select_the_chc_broad_abilities_you_d_i', 'Select the CHC broad abilities you\'d include in a mock cognitive battery. Then ask the AI to critique what your battery would and wouldn\'t capture. This simulates the design decisions a psychoed evaluator makes.')),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2' },
             CHC_BROAD.map(function(b) {
               var sel = battery.indexOf(b.code) >= 0;
@@ -8838,11 +8839,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             }, loading ? 'Thinking…' : '\u2728 Critique my battery'),
             h('span', { className: 'text-xs text-slate-300' }, battery.length + ' / ' + CHC_BROAD.length + ' broad abilities selected')
           ),
-          critique && h('section', { className: 'p-4 rounded-xl bg-slate-900/60 border border-cyan-500/30', 'aria-live': 'polite', role: 'region', 'aria-label': 'AI critique of selected battery' },
-            h('h3', { className: 'text-sm font-black text-cyan-300 mb-2' }, 'Critique'),
+          critique && h('section', { className: 'p-4 rounded-xl bg-slate-900/60 border border-cyan-500/30', 'aria-live': 'polite', role: 'region', 'aria-label': __alloT('stem.assessmentliteracy.ai_critique_of_selected_battery', 'AI critique of selected battery') },
+            h('h3', { className: 'text-sm font-black text-cyan-300 mb-2' }, __alloT('stem.assessmentliteracy.critique', 'Critique')),
             h('pre', { className: 'text-xs text-slate-200 whitespace-pre-wrap font-sans leading-relaxed' }, critique),
             h('div', { className: 'mt-3 no-print' },
-              h('button', { onClick: function() { window.print && window.print(); }, className: 'transition-colors w-full py-2 rounded-lg bg-slate-800 border border-cyan-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print battery + critique / Save as PDF')
+              h('button', { onClick: function() { window.print && window.print(); }, className: 'transition-colors w-full py-2 rounded-lg bg-slate-800 border border-cyan-500/40 text-white text-xs font-bold hover:bg-slate-700' }, __alloT('stem.assessmentliteracy.print_battery_critique_save_as_pdf', '\uD83D\uDDA8 Print battery + critique / Save as PDF'))
             )
           )
         );
@@ -8851,8 +8852,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       function renderRealBatteries() {
         return h('div', { className: 'max-w-4xl mx-auto p-4 md:p-6 space-y-3' },
           backBtn('cognitive', null, 'Cognitive menu'),
-          h('h2', { className: 'text-2xl font-black text-cyan-200 mb-2' }, '\uD83D\uDCD6 Real Cognitive Batteries'),
-          h('p', { className: 'text-xs text-slate-300 mb-4' }, 'The batteries clinicians actually use. Each makes different theoretical choices — what g to privilege, how to cover CHC, how to accommodate low-verbal or deaf populations. No single "best" — the right battery depends on the referral question.'),
+          h('h2', { className: 'text-2xl font-black text-cyan-200 mb-2' }, __alloT('stem.assessmentliteracy.real_cognitive_batteries_2', '\uD83D\uDCD6 Real Cognitive Batteries')),
+          h('p', { className: 'text-xs text-slate-300 mb-4' }, __alloT('stem.assessmentliteracy.the_batteries_clinicians_actually_use_', 'The batteries clinicians actually use. Each makes different theoretical choices — what g to privilege, how to cover CHC, how to accommodate low-verbal or deaf populations. No single "best" — the right battery depends on the referral question.')),
           REAL_BATTERIES.map(function(b) {
             return h('section', { key: b.abbr, className: 'p-4 rounded-xl bg-slate-800/60 border border-cyan-500/30' },
               h('div', { className: 'flex items-baseline gap-3 mb-2' },
@@ -8864,11 +8865,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               h('div', { className: 'text-xs text-slate-300 mb-2' }, h('strong', null, 'Measures: '), b.measures.join(' · ')),
               h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2 mt-2' },
                 h('div', { className: 'p-2 rounded-lg bg-emerald-900/30 border border-emerald-500/30' },
-                  h('div', { className: 'text-xs font-black text-emerald-300 mb-1' }, '\u2713 Strengths'),
+                  h('div', { className: 'text-xs font-black text-emerald-300 mb-1' }, __alloT('stem.assessmentliteracy.strengths', '\u2713 Strengths')),
                   h('div', { className: 'text-xs text-slate-200' }, b.strengths)
                 ),
                 h('div', { className: 'p-2 rounded-lg bg-amber-900/30 border border-amber-500/30' },
-                  h('div', { className: 'text-xs font-black text-amber-300 mb-1' }, '\u26A0 Weaknesses'),
+                  h('div', { className: 'text-xs font-black text-amber-300 mb-1' }, __alloT('stem.assessmentliteracy.weaknesses', '\u26A0 Weaknesses')),
                   h('div', { className: 'text-xs text-slate-200' }, b.weaknesses)
                 )
               )
@@ -8880,11 +8881,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       function renderNeuropsych() {
         return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-3' },
           backBtn('cognitive', null, 'Cognitive menu'),
-          h('h2', { className: 'text-2xl font-black text-cyan-200' }, '\uD83E\uDDE0 Neuropsychology Basics'),
-          h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, 'Neuropsychological assessment extends beyond cognitive ability (g, CHC) into the specific brain-behavior relationships that matter after brain injury, in neurological conditions, or for atypical cognitive profiles standard batteries miss. Most school psychologists aren\'t neuropsychologists, but should recognize when to refer and what a neuropsych eval adds.'),
+          h('h2', { className: 'text-2xl font-black text-cyan-200' }, __alloT('stem.assessmentliteracy.neuropsychology_basics_2', '\uD83E\uDDE0 Neuropsychology Basics')),
+          h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, __alloT('stem.assessmentliteracy.neuropsychological_assessment_extends_', 'Neuropsychological assessment extends beyond cognitive ability (g, CHC) into the specific brain-behavior relationships that matter after brain injury, in neurological conditions, or for atypical cognitive profiles standard batteries miss. Most school psychologists aren\'t neuropsychologists, but should recognize when to refer and what a neuropsych eval adds.')),
 
           h('section', { className: 'p-4 rounded-xl bg-slate-800/60 border border-cyan-500/30' },
-            h('h3', { className: 'text-sm font-black text-cyan-300 mb-3' }, '6 core neuropsych batteries'),
+            h('h3', { className: 'text-sm font-black text-cyan-300 mb-3' }, __alloT('stem.assessmentliteracy.6_core_neuropsych_batteries', '6 core neuropsych batteries')),
             h('div', { className: 'space-y-2' },
               NEUROPSYCH_BATTERIES.map(function(b, i) {
                 return h('div', { key: i, className: 'p-3 rounded bg-slate-900/60' },
@@ -8896,11 +8897,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                   h('div', { className: 'text-xs text-slate-200 mb-2' }, h('strong', { className: 'text-cyan-300' }, 'What: '), b.what),
                   h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2 mt-2' },
                     h('div', { className: 'p-2 rounded bg-emerald-900/20 border border-emerald-500/30' },
-                      h('div', { className: 'text-xs font-black text-emerald-300 mb-1' }, '\u2713 Strengths'),
+                      h('div', { className: 'text-xs font-black text-emerald-300 mb-1' }, __alloT('stem.assessmentliteracy.strengths_2', '\u2713 Strengths')),
                       h('div', { className: 'text-xs text-slate-200' }, b.strengths)
                     ),
                     h('div', { className: 'p-2 rounded bg-amber-900/20 border border-amber-500/30' },
-                      h('div', { className: 'text-xs font-black text-amber-300 mb-1' }, '\u26A0 Limits'),
+                      h('div', { className: 'text-xs font-black text-amber-300 mb-1' }, __alloT('stem.assessmentliteracy.limits', '\u26A0 Limits')),
                       h('div', { className: 'text-xs text-slate-200' }, b.weaknesses)
                     )
                   )
@@ -8910,31 +8911,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           ),
 
           h('section', { className: 'p-4 rounded-xl bg-slate-800/60 border border-purple-500/30' },
-            h('h3', { className: 'text-sm font-black text-purple-300 mb-3' }, '7 neuropsych domains and assessment'),
+            h('h3', { className: 'text-sm font-black text-purple-300 mb-3' }, __alloT('stem.assessmentliteracy.7_neuropsych_domains_and_assessment', '7 neuropsych domains and assessment')),
             h('div', { className: 'space-y-2' },
               NEUROPSYCH_DOMAIN_ASSESSMENT.map(function(d, i) {
                 return h('div', { key: i, className: 'p-3 rounded bg-slate-900/60' },
                   h('div', { className: 'text-xs font-black text-purple-200 mb-1' }, d.domain),
                   h('div', { className: 'text-xs text-slate-300 mb-1' }, h('strong', { className: 'text-purple-300' }, 'Subdomains: '), d.subdomains),
-                  h('div', { className: 'text-xs text-slate-200' }, h('strong', { className: 'text-purple-300' }, 'Common tools: '), d.tools)
+                  h('div', { className: 'text-xs text-slate-200' }, h('strong', { className: 'text-purple-300' }, __alloT('stem.assessmentliteracy.common_tools', 'Common tools: ')), d.tools)
                 );
               })
             )
           ),
 
           h('section', { className: 'p-4 rounded-xl bg-gradient-to-br from-cyan-900/40 to-sky-900/40 border border-cyan-500/30' },
-            h('h3', { className: 'text-sm font-black text-cyan-200 mb-3' }, 'Neuropsychology vs. School Psychology'),
+            h('h3', { className: 'text-sm font-black text-cyan-200 mb-3' }, __alloT('stem.assessmentliteracy.neuropsychology_vs_school_psychology', 'Neuropsychology vs. School Psychology')),
             h('div', { className: 'space-y-2' },
               NEUROPSYCH_VS_SCHOOLPSY.map(function(item, i) {
                 return h('div', { key: i, className: 'p-3 rounded bg-slate-900/60' },
                   h('div', { className: 'text-xs font-black text-cyan-200 mb-2' }, item.question),
                   h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
                     h('div', { className: 'p-2 rounded bg-cyan-900/20 border border-cyan-500/20' },
-                      h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, 'Neuropsychology'),
+                      h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, __alloT('stem.assessmentliteracy.neuropsychology', 'Neuropsychology')),
                       h('div', { className: 'text-xs text-slate-200' }, item.neuropsy)
                     ),
                     h('div', { className: 'p-2 rounded bg-sky-900/20 border border-sky-500/20' },
-                      h('div', { className: 'text-xs font-bold text-sky-300 mb-1' }, 'School Psychology'),
+                      h('div', { className: 'text-xs font-bold text-sky-300 mb-1' }, __alloT('stem.assessmentliteracy.school_psychology', 'School Psychology')),
                       h('div', { className: 'text-xs text-slate-200' }, item.schoolpsy)
                     )
                   )
@@ -8944,8 +8945,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           ),
 
           h('section', { className: 'p-4 rounded-xl bg-amber-900/30 border border-amber-500/40' },
-            h('h3', { className: 'text-sm font-black text-amber-300 mb-2' }, 'Practical note for school psychs'),
-            h('p', { className: 'text-xs text-slate-200 leading-relaxed' }, 'Most K-12 cases do NOT require neuropsych referral. Standard psychoed eval handles SLD, OHI (including ADHD), ID, SLI, and typical ASD presentations well. Reserve neuropsych referrals for: acquired brain injury (TBI with cognitive consequences), neurological conditions with cognitive implications (epilepsy, brain tumor, MS, cerebral palsy), complex atypical profiles that don\'t fit standard categories, cases where medical or legal decisions depend on comprehensive cognitive documentation. When referring, provide the neuropsychologist your comprehensive eval so they can build on it rather than duplicate.')
+            h('h3', { className: 'text-sm font-black text-amber-300 mb-2' }, __alloT('stem.assessmentliteracy.practical_note_for_school_psychs', 'Practical note for school psychs')),
+            h('p', { className: 'text-xs text-slate-200 leading-relaxed' }, __alloT('stem.assessmentliteracy.most_k_12_cases_do_not_require_neurops', 'Most K-12 cases do NOT require neuropsych referral. Standard psychoed eval handles SLD, OHI (including ADHD), ID, SLI, and typical ASD presentations well. Reserve neuropsych referrals for: acquired brain injury (TBI with cognitive consequences), neurological conditions with cognitive implications (epilepsy, brain tumor, MS, cerebral palsy), complex atypical profiles that don\'t fit standard categories, cases where medical or legal decisions depend on comprehensive cognitive documentation. When referring, provide the neuropsychologist your comprehensive eval so they can build on it rather than duplicate.'))
           )
         );
       }
@@ -8966,19 +8967,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         }
         return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-4' },
           backBtn('cognitive', null, 'Cognitive menu'),
-          h('h2', { className: 'text-2xl font-black text-cyan-200' }, '\uD83D\uDCC8 The Flynn Effect'),
-          h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, 'Across the 20th century, mean IQ scores rose about 3 points per decade when norms stayed fixed. James Flynn documented this in 14+ industrialized nations starting in the 1980s. The finding has major implications for how we interpret IQ scores across time — and for eligibility decisions made on old versus new norms.'),
+          h('h2', { className: 'text-2xl font-black text-cyan-200' }, __alloT('stem.assessmentliteracy.the_flynn_effect_2', '\uD83D\uDCC8 The Flynn Effect')),
+          h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, __alloT('stem.assessmentliteracy.across_the_20th_century_mean_iq_scores', 'Across the 20th century, mean IQ scores rose about 3 points per decade when norms stayed fixed. James Flynn documented this in 14+ industrialized nations starting in the 1980s. The finding has major implications for how we interpret IQ scores across time — and for eligibility decisions made on old versus new norms.')),
 
           h('section', { className: 'p-4 rounded-xl bg-gradient-to-br from-cyan-900/40 to-sky-900/40 border border-cyan-500/30' },
-            h('h3', { className: 'text-sm font-black text-cyan-200 mb-3' }, 'Interactive demonstration'),
+            h('h3', { className: 'text-sm font-black text-cyan-200 mb-3' }, __alloT('stem.assessmentliteracy.interactive_demonstration', 'Interactive demonstration')),
             h('p', { className: 'text-xs text-slate-300 mb-3' }, 'A person who scored 100 (mean) on a fresh test given in their birth year would score approximately what on a ' + baseYear + '-normed test today?'),
             h('div', { className: 'mb-3' },
-              h('label', { className: 'text-xs font-bold text-cyan-300 mb-1 block' }, 'Norm year of original test: ', h('span', { className: 'text-cyan-100' }, yr)),
+              h('label', { className: 'text-xs font-bold text-cyan-300 mb-1 block' }, __alloT('stem.assessmentliteracy.norm_year_of_original_test', 'Norm year of original test: '), h('span', { className: 'text-cyan-100' }, yr)),
               h('input', {
                 type: 'range', min: 1950, max: 2020, step: 1, value: yr,
                 onChange: function(e) { upd({ flynnYear: parseInt(e.target.value, 10) }); },
                 className: 'w-full',
-                'aria-label': 'Norm year',
+                'aria-label': __alloT('stem.assessmentliteracy.norm_year', 'Norm year'),
                 'aria-valuetext': 'norm year ' + yr
               }),
               h('div', { className: 'flex justify-between text-xs text-slate-300 mt-1' },
@@ -8987,21 +8988,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             ),
             h('div', { className: 'grid grid-cols-2 gap-3' },
               h('div', { className: 'p-3 rounded bg-slate-900/60' },
-                h('div', { className: 'text-xs text-slate-300' }, 'Classic Flynn (3 pts/decade)'),
+                h('div', { className: 'text-xs text-slate-300' }, __alloT('stem.assessmentliteracy.classic_flynn_3_pts_decade', 'Classic Flynn (3 pts/decade)')),
                 h('div', { className: 'text-2xl font-black text-cyan-200' }, (100 - shift).toFixed(1)),
                 h('div', { className: 'text-xs text-slate-300' }, 'Expected score today (' + shiftLabel + ' shift)')
               ),
               h('div', { className: 'p-3 rounded bg-slate-900/60' },
-                h('div', { className: 'text-xs text-slate-300' }, 'Attenuated model (post-2000)'),
+                h('div', { className: 'text-xs text-slate-300' }, __alloT('stem.assessmentliteracy.attenuated_model_post_2000', 'Attenuated model (post-2000)')),
                 h('div', { className: 'text-2xl font-black text-cyan-200' }, (100 - shiftAttenuated).toFixed(1)),
-                h('div', { className: 'text-xs text-slate-300' }, 'Accounts for recent slowdown in gains')
+                h('div', { className: 'text-xs text-slate-300' }, __alloT('stem.assessmentliteracy.accounts_for_recent_slowdown_in_gains', 'Accounts for recent slowdown in gains'))
               )
             ),
-            h('p', { className: 'text-xs text-slate-300 mt-3 italic' }, 'Translation: a person who performed "average" on a 1960 test would score below average on today\'s norms. Not because they\'re less able — but because the population shifted upward around them, and norms were reset.')
+            h('p', { className: 'text-xs text-slate-300 mt-3 italic' }, __alloT('stem.assessmentliteracy.translation_a_person_who_performed_ave', 'Translation: a person who performed "average" on a 1960 test would score below average on today\'s norms. Not because they\'re less able — but because the population shifted upward around them, and norms were reset.'))
           ),
 
           h('section', { className: 'p-4 rounded-xl bg-slate-800/60 border border-cyan-500/30' },
-            h('h3', { className: 'text-sm font-black text-cyan-300 mb-3' }, 'Key findings and implications'),
+            h('h3', { className: 'text-sm font-black text-cyan-300 mb-3' }, __alloT('stem.assessmentliteracy.key_findings_and_implications', 'Key findings and implications')),
             h('div', { className: 'space-y-2' },
               FLYNN_NOTES.map(function(n, i) {
                 return h('div', { key: i, className: 'p-3 rounded bg-slate-900/60' },
@@ -9013,12 +9014,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           ),
 
           h('section', { className: 'p-4 rounded-xl bg-amber-900/30 border border-amber-500/40' },
-            h('h3', { className: 'text-sm font-black text-amber-300 mb-2' }, 'Practical consequences'),
+            h('h3', { className: 'text-sm font-black text-amber-300 mb-2' }, __alloT('stem.assessmentliteracy.practical_consequences', 'Practical consequences')),
             h('ul', { className: 'text-xs text-slate-200 space-y-1 list-disc list-inside' },
-              h('li', null, h('strong', null, 'Don\'t compare scores across test editions without correction. '), 'A WISC-III score from 1992 and a WISC-V score from 2024 are not directly comparable.'),
-              h('li', null, h('strong', null, 'Use current-edition norms when eligibility depends on cutoffs. '), 'Flynn gains mean old norms over-qualify students for giftedness and under-qualify for ID.'),
-              h('li', null, h('strong', null, 'In death-penalty mitigation, Flynn correction is routinely litigated. '), 'Courts are inconsistent — know your jurisdiction\'s rules.'),
-              h('li', null, h('strong', null, '"My kid\'s IQ went up" may be test artifact. '), 'If different editions were used, a "gain" may just be switching from outdated norms to current ones.')
+              h('li', null, h('strong', null, __alloT('stem.assessmentliteracy.don_t_compare_scores_across_test_editi', 'Don\'t compare scores across test editions without correction. ')), __alloT('stem.assessmentliteracy.a_wisc_iii_score_from_1992_and_a_wisc_', 'A WISC-III score from 1992 and a WISC-V score from 2024 are not directly comparable.')),
+              h('li', null, h('strong', null, __alloT('stem.assessmentliteracy.use_current_edition_norms_when_eligibi', 'Use current-edition norms when eligibility depends on cutoffs. ')), __alloT('stem.assessmentliteracy.flynn_gains_mean_old_norms_over_qualif', 'Flynn gains mean old norms over-qualify students for giftedness and under-qualify for ID.')),
+              h('li', null, h('strong', null, __alloT('stem.assessmentliteracy.in_death_penalty_mitigation_flynn_corr', 'In death-penalty mitigation, Flynn correction is routinely litigated. ')), __alloT('stem.assessmentliteracy.courts_are_inconsistent_know_your_juri', 'Courts are inconsistent — know your jurisdiction\'s rules.')),
+              h('li', null, h('strong', null, __alloT('stem.assessmentliteracy.my_kid_s_iq_went_up_may_be_test_artifa', '"My kid\'s IQ went up" may be test artifact. ')), __alloT('stem.assessmentliteracy.if_different_editions_were_used_a_gain', 'If different editions were used, a "gain" may just be switching from outdated norms to current ones.'))
             )
           )
         );
@@ -9027,8 +9028,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       function renderCogJustice() {
         return h('div', { className: 'max-w-4xl mx-auto p-4 md:p-6 space-y-3' },
           backBtn('cognitive', null, 'Cognitive menu'),
-          h('h2', { className: 'text-2xl font-black text-cyan-200 mb-2' }, '\u2696\uFE0F Disability Justice & History'),
-          h('p', { className: 'text-xs text-slate-300 mb-4' }, 'Cognitive testing has been used both to support and to harm disabled, minoritized, and immigrant populations. A literate consumer of assessment — clinical or lay — knows this history and its ongoing implications.'),
+          h('h2', { className: 'text-2xl font-black text-cyan-200 mb-2' }, __alloT('stem.assessmentliteracy.disability_justice_history_2', '\u2696\uFE0F Disability Justice & History')),
+          h('p', { className: 'text-xs text-slate-300 mb-4' }, __alloT('stem.assessmentliteracy.cognitive_testing_has_been_used_both_t', 'Cognitive testing has been used both to support and to harm disabled, minoritized, and immigrant populations. A literate consumer of assessment — clinical or lay — knows this history and its ongoing implications.')),
           // ── The historical shadow as a TIMELINE (the prose cards below don't
           // make the arc legible at a glance). Color codes harm vs protection;
           // the stacked left-borders form a spine from the eugenics era to the
@@ -9043,8 +9044,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               { y: 2002, t: 'Atkins v. Virginia: bars executing the intellectually disabled', tone: 'protect', icon: '⚖️' }
             ];
             var toneCol = { harm: '#fb7185', origin: '#fcd34d', protect: '#6ee7b7' };
-            return h('div', { className: 'mb-4 rounded-xl bg-slate-900/50 border border-slate-700 p-3', role: 'img', 'aria-label': 'Timeline: 1908 Ellis Island Binet translations, 1916 Stanford-Binet, 1927 Buck v. Bell, 1979 Larry P. v. Riles, 1990 ADA, 2002 Atkins v. Virginia.' },
-              h('div', { className: 'text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2' }, '🕰️ The historical shadow'),
+            return h('div', { className: 'mb-4 rounded-xl bg-slate-900/50 border border-slate-700 p-3', role: 'img', 'aria-label': __alloT('stem.assessmentliteracy.timeline_1908_ellis_island_binet_trans', 'Timeline: 1908 Ellis Island Binet translations, 1916 Stanford-Binet, 1927 Buck v. Bell, 1979 Larry P. v. Riles, 1990 ADA, 2002 Atkins v. Virginia.') },
+              h('div', { className: 'text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2' }, __alloT('stem.assessmentliteracy.the_historical_shadow', '🕰️ The historical shadow')),
               EV.map(function(e, i) {
                 var col = toneCol[e.tone];
                 return h('div', { key: i, className: 'flex items-baseline gap-2 py-1', style: { borderLeft: '2px solid ' + col, paddingLeft: 10, marginLeft: 4 } },
@@ -9053,9 +9054,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                 );
               }),
               h('div', { className: 'flex flex-wrap gap-3 mt-2 pl-3 text-[9px]' },
-                h('span', { style: { color: '#fb7185', fontWeight: 700 } }, '● harm'),
-                h('span', { style: { color: '#fcd34d', fontWeight: 700 } }, '● origin'),
-                h('span', { style: { color: '#6ee7b7', fontWeight: 700 } }, '● protection'))
+                h('span', { style: { color: '#fb7185', fontWeight: 700 } }, __alloT('stem.assessmentliteracy.harm', '● harm')),
+                h('span', { style: { color: '#fcd34d', fontWeight: 700 } }, __alloT('stem.assessmentliteracy.origin', '● origin')),
+                h('span', { style: { color: '#6ee7b7', fontWeight: 700 } }, __alloT('stem.assessmentliteracy.protection', '● protection')))
             );
           })(),
           COG_JUSTICE.map(function(j, i) {
@@ -9073,12 +9074,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         // `textColor` = 300-tier used for the LABEL TEXT, since saturated 500s
         // fail WCAG AA when used as small bold text on dark slate.
         var ISSUES = [
-          { id: 'linguistic',   label: 'Linguistic bias',           color: '#0ea5e9', textColor: '#7dd3fc', icon: '\uD83D\uDDE3\uFE0F', def: 'Test was administered in a language the examinee is not fully fluent in, or item language is too complex for the examinee\'s reading/comprehension level.' },
-          { id: 'cultural',     label: 'Cultural bias',             color: '#a855f7', textColor: '#d8b4fe', icon: '\uD83C\uDF0E', def: 'Item content assumes familiarity with cultural references, customs, or environments not shared by the examinee.' },
-          { id: 'outdatedNorms', label: 'Outdated norms',           color: '#f59e0b', textColor: '#fcd34d', icon: '\uD83D\uDCC5', def: 'Test norms are too old to validly compare current performance (Flynn effect, demographic shifts).' },
-          { id: 'underRep',     label: 'Construct under-representation', color: '#22c55e', textColor: '#86efac', icon: '\uD83D\uDCD0', def: 'Test samples too narrow a slice of the construct it claims to measure (e.g., "reading" via decoding only).' },
-          { id: 'examiner',     label: 'Examiner / administration effect', color: '#ef4444', textColor: '#fca5a5', icon: '\uD83D\uDC65', def: 'Examiner behavior, rapport, race-of-examiner effects, distractions, or protocol deviations affect the score.' },
-          { id: 'ceilingFloor', label: 'Ceiling / floor effect',    color: '#6366f1', textColor: '#a5b4fc', icon: '\uD83D\uDCCF', def: 'Test items don\'t span the examinee\'s true ability range \u2014 score is artificially capped at top or bottom.' }
+          { id: 'linguistic',   label: __alloT('stem.assessmentliteracy.linguistic_bias', 'Linguistic bias'),           color: '#0ea5e9', textColor: '#7dd3fc', icon: '\uD83D\uDDE3\uFE0F', def: 'Test was administered in a language the examinee is not fully fluent in, or item language is too complex for the examinee\'s reading/comprehension level.' },
+          { id: 'cultural',     label: __alloT('stem.assessmentliteracy.cultural_bias', 'Cultural bias'),             color: '#a855f7', textColor: '#d8b4fe', icon: '\uD83C\uDF0E', def: 'Item content assumes familiarity with cultural references, customs, or environments not shared by the examinee.' },
+          { id: 'outdatedNorms', label: __alloT('stem.assessmentliteracy.outdated_norms', 'Outdated norms'),           color: '#f59e0b', textColor: '#fcd34d', icon: '\uD83D\uDCC5', def: 'Test norms are too old to validly compare current performance (Flynn effect, demographic shifts).' },
+          { id: 'underRep',     label: __alloT('stem.assessmentliteracy.construct_under_representation', 'Construct under-representation'), color: '#22c55e', textColor: '#86efac', icon: '\uD83D\uDCD0', def: 'Test samples too narrow a slice of the construct it claims to measure (e.g., "reading" via decoding only).' },
+          { id: 'examiner',     label: __alloT('stem.assessmentliteracy.examiner_administration_effect', 'Examiner / administration effect'), color: '#ef4444', textColor: '#fca5a5', icon: '\uD83D\uDC65', def: 'Examiner behavior, rapport, race-of-examiner effects, distractions, or protocol deviations affect the score.' },
+          { id: 'ceilingFloor', label: __alloT('stem.assessmentliteracy.ceiling_floor_effect', 'Ceiling / floor effect'),    color: '#6366f1', textColor: '#a5b4fc', icon: '\uD83D\uDCCF', def: 'Test items don\'t span the examinee\'s true ability range \u2014 score is artificially capped at top or bottom.' }
         ];
         // 12 vignettes. `correct` indexes into ISSUES.
         var VIGNETTES = [
@@ -9145,10 +9146,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         if (biasIdx < 0) {
           return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-4' },
             backBtn('cognitive', null, 'Cognitive menu'),
-            h('h2', { className: 'text-2xl font-black text-cyan-200' }, '\uD83D\uDD75\uFE0F Spot the Bias'),
-            h('p', { className: 'text-sm text-slate-200 leading-relaxed' }, 'You will see 12 brief assessment vignettes. For each, identify which of six common validity issues is the *primary* concern. After you pick, you will see a coaching block explaining what is happening and what a school psychologist would do about it.'),
+            h('h2', { className: 'text-2xl font-black text-cyan-200' }, __alloT('stem.assessmentliteracy.spot_the_bias', '\uD83D\uDD75\uFE0F Spot the Bias')),
+            h('p', { className: 'text-sm text-slate-200 leading-relaxed' }, __alloT('stem.assessmentliteracy.you_will_see_12_brief_assessment_vigne', 'You will see 12 brief assessment vignettes. For each, identify which of six common validity issues is the *primary* concern. After you pick, you will see a coaching block explaining what is happening and what a school psychologist would do about it.')),
             h('div', { className: 'p-4 rounded-xl bg-slate-800/60 border border-cyan-500/30' },
-              h('div', { className: 'text-sm font-bold text-cyan-200 mb-3' }, 'The six validity issues'),
+              h('div', { className: 'text-sm font-bold text-cyan-200 mb-3' }, __alloT('stem.assessmentliteracy.the_six_validity_issues', 'The six validity issues')),
               h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
                 ISSUES.map(function(iss, ii) {
                   return h('div', { key: ii,
@@ -9166,7 +9167,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             h('button', {
               onClick: nextRound,
               className: 'transition-colors w-full py-3 rounded-xl bg-cyan-600 text-white font-bold text-sm hover:bg-cyan-500 focus:outline-none focus:ring-2 ring-cyan-300'
-            }, '\uD83D\uDD75\uFE0F Start \u2014 vignette 1 of 12')
+            }, __alloT('stem.assessmentliteracy.start_vignette_1_of_12', '\uD83D\uDD75\uFE0F Start \u2014 vignette 1 of 12'))
           );
         }
 
@@ -9176,14 +9177,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         var allDone = biasShown.length >= VIGNETTES.length && biasAnswered;
         return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-4' },
           backBtn('cognitive', null, 'Cognitive menu'),
-          h('h2', { className: 'text-2xl font-black text-cyan-200' }, '\uD83D\uDD75\uFE0F Spot the Bias'),
+          h('h2', { className: 'text-2xl font-black text-cyan-200' }, __alloT('stem.assessmentliteracy.spot_the_bias_2', '\uD83D\uDD75\uFE0F Spot the Bias')),
           // Score header
           h('div', { className: 'flex flex-wrap gap-3 items-center text-xs' },
-            h('span', { className: 'text-slate-300' }, 'Vignette ', h('strong', { className: 'text-white' }, biasShown.length + (biasAnswered ? '' : ''))),
-            h('span', { className: 'text-slate-300' }, 'Score ', h('strong', { className: 'text-emerald-300' }, biasScore + ' / ' + biasRounds)),
-            biasRounds > 0 && h('span', { className: 'text-slate-300' }, 'Accuracy ', h('strong', { className: 'text-cyan-300' }, pct + '%')),
-            h('span', { className: 'text-slate-300' }, 'Streak ', h('strong', { className: 'text-amber-300' }, biasStreak)),
-            h('span', { className: 'text-slate-300' }, 'Best ', h('strong', { className: 'text-yellow-300' }, biasBest))
+            h('span', { className: 'text-slate-300' }, __alloT('stem.assessmentliteracy.vignette', 'Vignette '), h('strong', { className: 'text-white' }, biasShown.length + (biasAnswered ? '' : ''))),
+            h('span', { className: 'text-slate-300' }, __alloT('stem.assessmentliteracy.score', 'Score '), h('strong', { className: 'text-emerald-300' }, biasScore + ' / ' + biasRounds)),
+            biasRounds > 0 && h('span', { className: 'text-slate-300' }, __alloT('stem.assessmentliteracy.accuracy', 'Accuracy '), h('strong', { className: 'text-cyan-300' }, pct + '%')),
+            h('span', { className: 'text-slate-300' }, __alloT('stem.assessmentliteracy.streak', 'Streak '), h('strong', { className: 'text-amber-300' }, biasStreak)),
+            h('span', { className: 'text-slate-300' }, __alloT('stem.assessmentliteracy.best', 'Best '), h('strong', { className: 'text-yellow-300' }, biasBest))
           ),
           // The vignette
           h('section', { className: 'p-5 rounded-xl bg-slate-800/60 border-2 border-cyan-500/40' },
@@ -9191,7 +9192,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             h('p', { className: 'text-sm text-slate-100 leading-relaxed' }, v.scenario)
           ),
           // 6 issue picker buttons
-          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2', role: 'radiogroup', 'aria-label': 'Pick the primary validity issue' },
+          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2', role: 'radiogroup', 'aria-label': __alloT('stem.assessmentliteracy.pick_the_primary_validity_issue', 'Pick the primary validity issue') },
             ISSUES.map(function(iss, ii) {
               var picked = biasAnswered && biasPick === ii;
               var isRight = biasAnswered && ii === v.correct;
@@ -9229,13 +9230,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             ),
             h('p', { className: 'text-xs text-slate-100 leading-relaxed mb-2' }, v.why),
             v.secondary && h('div', { className: 'text-xs text-slate-300 italic mb-2' },
-              'Secondary issue also at play: ', h('strong', { style: { color: ISSUES.filter(function(x) { return x.id === v.secondary; })[0].color } }, ISSUES.filter(function(x) { return x.id === v.secondary; })[0].label)
+              __alloT('stem.assessmentliteracy.secondary_issue_also_at_play', 'Secondary issue also at play: '), h('strong', { style: { color: ISSUES.filter(function(x) { return x.id === v.secondary; })[0].color } }, ISSUES.filter(function(x) { return x.id === v.secondary; })[0].label)
             ),
             allDone
               ? h('div', { className: 'p-3 rounded-lg bg-cyan-900/30 border border-cyan-500/40 mt-2' },
-                  h('div', { className: 'text-sm font-black text-cyan-200 mb-1' }, '\uD83C\uDFC6 All 12 vignettes complete!'),
+                  h('div', { className: 'text-sm font-black text-cyan-200 mb-1' }, __alloT('stem.assessmentliteracy.all_12_vignettes_complete', '\uD83C\uDFC6 All 12 vignettes complete!')),
                   h('div', { className: 'text-xs text-slate-100 leading-relaxed' },
-                    'Final score: ', h('strong', { className: 'text-white' }, biasScore + ' / ' + VIGNETTES.length + ' (' + Math.round((biasScore / VIGNETTES.length) * 100) + '%)'),
+                    __alloT('stem.assessmentliteracy.final_score', 'Final score: '), h('strong', { className: 'text-white' }, biasScore + ' / ' + VIGNETTES.length + ' (' + Math.round((biasScore / VIGNETTES.length) * 100) + '%)'),
                     biasScore === VIGNETTES.length ? ' \u2014 every primary issue spotted. Ready for case-conference work.' :
                     biasScore >= 10 ? ' \u2014 strong validity reasoning. The misses are usually examiner vs. construct under-rep, the two most-overlapping categories.' :
                     biasScore >= 7 ? ' \u2014 solid baseline. Re-read the vignettes you missed; bias categories overlap, so naming the *primary* one takes practice.' :
@@ -9244,12 +9245,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                   h('button', {
                     onClick: function() { upd({ alBiasIdx: -1, alBiasShown: [], alBiasScore: 0, alBiasRounds: 0, alBiasStreak: 0 }); },
                     className: 'transition-colors mt-2 px-4 py-1.5 rounded-lg bg-cyan-600 text-white font-bold text-xs hover:bg-cyan-500'
-                  }, '\uD83D\uDD04 Restart')
+                  }, __alloT('stem.assessmentliteracy.restart', '\uD83D\uDD04 Restart'))
                 )
               : h('button', {
                   onClick: nextRound,
                   className: 'transition-colors mt-1 px-4 py-2 rounded-lg bg-cyan-600 text-white font-bold text-sm hover:bg-cyan-500 focus:outline-none focus:ring-2 ring-cyan-300'
-                }, '\u27A1\uFE0F Next vignette')
+                }, __alloT('stem.assessmentliteracy.next_vignette', '\u27A1\uFE0F Next vignette'))
           )
         );
       }
@@ -9259,43 +9260,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       function renderSampleItems() {
         var SAMPLE_ITEMS = {
           Gf: [
-            { type: 'Matrix Reasoning', stim: '[A 3x3 grid where the pattern is shapes rotating 90° clockwise across rows, with one cell missing in the bottom-right]', instruction: 'Which of the 5 answer choices completes the pattern?', tests_assessed: ['WISC-V Matrix Reasoning', 'WAIS-IV Matrix Reasoning', 'WJ-IV Concept Formation', 'Raven\'s Progressive Matrices'], why_revealing: 'Tests inductive reasoning + pattern detection + Gf without verbal load. Strong predictor of academic readiness across grades. Culturally + linguistically less loaded than verbal subtests — often used in EL + multilingual eval batteries.' },
-            { type: 'Number Series', stim: '2, 4, 8, 16, ___, ___', instruction: 'What are the next two numbers in the sequence? Explain the pattern.', tests_assessed: ['WJ-IV Number Series', 'Stanford-Binet 5 Quantitative Reasoning', 'WAIS-IV Arithmetic (partial)'], why_revealing: 'Quantitative reasoning (RQ). Distinguishes "can compute" from "can reason mathematically." A student strong on math facts but weak here = different intervention needs than math facts gap.' },
-            { type: 'Verbal Analogies', stim: 'Doctor is to hospital as teacher is to ____.', instruction: 'Pick the best completing word: (a) student, (b) classroom, (c) chalk, (d) book.', tests_assessed: ['WJ-IV Analysis-Synthesis', 'KABC-II Verbal Knowledge', 'Stanford-Binet 5 Verbal Analogies'], why_revealing: 'Tests deductive verbal reasoning + crystallized knowledge integration. Confounded with Gc — students with strong Gf but weak vocabulary will fail not from reasoning weakness.' }
+            { type: 'Matrix Reasoning', stim: '[A 3x3 grid where the pattern is shapes rotating 90° clockwise across rows, with one cell missing in the bottom-right]', instruction: __alloT('stem.assessmentliteracy.which_of_the_5_answer_choices_complete', 'Which of the 5 answer choices completes the pattern?'), tests_assessed: ['WISC-V Matrix Reasoning', 'WAIS-IV Matrix Reasoning', 'WJ-IV Concept Formation', 'Raven\'s Progressive Matrices'], why_revealing: 'Tests inductive reasoning + pattern detection + Gf without verbal load. Strong predictor of academic readiness across grades. Culturally + linguistically less loaded than verbal subtests — often used in EL + multilingual eval batteries.' },
+            { type: 'Number Series', stim: '2, 4, 8, 16, ___, ___', instruction: __alloT('stem.assessmentliteracy.what_are_the_next_two_numbers_in_the_s', 'What are the next two numbers in the sequence? Explain the pattern.'), tests_assessed: ['WJ-IV Number Series', 'Stanford-Binet 5 Quantitative Reasoning', 'WAIS-IV Arithmetic (partial)'], why_revealing: 'Quantitative reasoning (RQ). Distinguishes "can compute" from "can reason mathematically." A student strong on math facts but weak here = different intervention needs than math facts gap.' },
+            { type: 'Verbal Analogies', stim: 'Doctor is to hospital as teacher is to ____.', instruction: __alloT('stem.assessmentliteracy.pick_the_best_completing_word_a_studen', 'Pick the best completing word: (a) student, (b) classroom, (c) chalk, (d) book.'), tests_assessed: ['WJ-IV Analysis-Synthesis', 'KABC-II Verbal Knowledge', 'Stanford-Binet 5 Verbal Analogies'], why_revealing: 'Tests deductive verbal reasoning + crystallized knowledge integration. Confounded with Gc — students with strong Gf but weak vocabulary will fail not from reasoning weakness.' }
           ],
           Gc: [
-            { type: 'Vocabulary (Definition)', stim: 'What does the word "diminish" mean?', instruction: 'Provide definition. Score: 2 = "make smaller," 1 = "reduce," 0 = "hide" or unrelated.', tests_assessed: ['WISC-V Vocabulary', 'WAIS-IV Vocabulary', 'WJ-IV Picture Vocabulary'], why_revealing: 'Lexical knowledge (VL). Most stable cognitive score across lifespan. BUT heavily culturally + linguistically loaded — low scores in EL students often reflect English-academic-vocabulary exposure, not Gc.' },
-            { type: 'Information (General Knowledge)', stim: 'Who was the first president of the United States?', instruction: 'Answer factual question. No partial credit for "the founders" or other non-specific answers.', tests_assessed: ['WISC-V Information', 'WAIS-IV Information'], why_revealing: 'General Information (K0). Reflects accumulated schooling + cultural exposure. Heavily biased against students with interrupted education, recent immigrants, low SES. Should be discounted in low-SES + EL evaluations.' },
-            { type: 'Similarities (Categorical Reasoning)', stim: 'How are an apple and a banana alike?', instruction: 'Score: 2 = "they are both fruit" (categorical), 1 = "they grow on trees" (functional), 0 = "they are both yellow" (perceptual).', tests_assessed: ['WISC-V Similarities', 'WAIS-IV Similarities'], why_revealing: 'Verbal abstract reasoning. Reveals developmental + cognitive level. Students with autism may show concrete (functional) responses despite high overall IQ.' }
+            { type: 'Vocabulary (Definition)', stim: 'What does the word "diminish" mean?', instruction: __alloT('stem.assessmentliteracy.provide_definition_score_2_make_smalle', 'Provide definition. Score: 2 = "make smaller," 1 = "reduce," 0 = "hide" or unrelated.'), tests_assessed: ['WISC-V Vocabulary', 'WAIS-IV Vocabulary', 'WJ-IV Picture Vocabulary'], why_revealing: 'Lexical knowledge (VL). Most stable cognitive score across lifespan. BUT heavily culturally + linguistically loaded — low scores in EL students often reflect English-academic-vocabulary exposure, not Gc.' },
+            { type: 'Information (General Knowledge)', stim: 'Who was the first president of the United States?', instruction: __alloT('stem.assessmentliteracy.answer_factual_question_no_partial_cre', 'Answer factual question. No partial credit for "the founders" or other non-specific answers.'), tests_assessed: ['WISC-V Information', 'WAIS-IV Information'], why_revealing: 'General Information (K0). Reflects accumulated schooling + cultural exposure. Heavily biased against students with interrupted education, recent immigrants, low SES. Should be discounted in low-SES + EL evaluations.' },
+            { type: 'Similarities (Categorical Reasoning)', stim: 'How are an apple and a banana alike?', instruction: __alloT('stem.assessmentliteracy.score_2_they_are_both_fruit_categorica', 'Score: 2 = "they are both fruit" (categorical), 1 = "they grow on trees" (functional), 0 = "they are both yellow" (perceptual).'), tests_assessed: ['WISC-V Similarities', 'WAIS-IV Similarities'], why_revealing: 'Verbal abstract reasoning. Reveals developmental + cognitive level. Students with autism may show concrete (functional) responses despite high overall IQ.' }
           ],
           Gs: [
-            { type: 'Symbol Search', stim: '[Two rows of geometric symbols. A target row + a search group. Student marks "yes" or "no" if target appears in search group.]', instruction: 'Mark "yes" or "no" for each row as fast as possible. 2 minutes.', tests_assessed: ['WISC-V Symbol Search', 'WAIS-IV Symbol Search', 'WJ-IV Letter-Pattern Matching'], why_revealing: 'Perceptual speed (P). Pure Gs measure. Highly impacted by ADHD, autism (slow + deliberate processing), motor disability, anxiety. Often the LOWEST score in students with disabilities — major source of inflated achievement-IQ discrepancies. ADA-relevant for extended-time accommodations.' },
-            { type: 'Coding (Symbol-Number Pairing)', stim: '[Key shows numbers 1-9 paired with simple symbols. Student fills in the symbol below each number in a long sequence.]', instruction: 'Copy the symbols paired with each number as fast as possible. 2 minutes.', tests_assessed: ['WISC-V Coding', 'WAIS-IV Coding', 'WJ-IV Pair Cancellation'], why_revealing: 'Rate of test-taking (R9). Heavily motor + attention loaded. Penalized in students with motor disability, dysgraphia, low motivation, anxiety. Should NOT be used in mean-of-FSIQ calculation when scatter is large.' }
+            { type: 'Symbol Search', stim: '[Two rows of geometric symbols. A target row + a search group. Student marks "yes" or "no" if target appears in search group.]', instruction: __alloT('stem.assessmentliteracy.mark_yes_or_no_for_each_row_as_fast_as', 'Mark "yes" or "no" for each row as fast as possible. 2 minutes.'), tests_assessed: ['WISC-V Symbol Search', 'WAIS-IV Symbol Search', 'WJ-IV Letter-Pattern Matching'], why_revealing: 'Perceptual speed (P). Pure Gs measure. Highly impacted by ADHD, autism (slow + deliberate processing), motor disability, anxiety. Often the LOWEST score in students with disabilities — major source of inflated achievement-IQ discrepancies. ADA-relevant for extended-time accommodations.' },
+            { type: 'Coding (Symbol-Number Pairing)', stim: '[Key shows numbers 1-9 paired with simple symbols. Student fills in the symbol below each number in a long sequence.]', instruction: __alloT('stem.assessmentliteracy.copy_the_symbols_paired_with_each_numb', 'Copy the symbols paired with each number as fast as possible. 2 minutes.'), tests_assessed: ['WISC-V Coding', 'WAIS-IV Coding', 'WJ-IV Pair Cancellation'], why_revealing: 'Rate of test-taking (R9). Heavily motor + attention loaded. Penalized in students with motor disability, dysgraphia, low motivation, anxiety. Should NOT be used in mean-of-FSIQ calculation when scatter is large.' }
           ],
           Glr: [
-            { type: 'Word Pair Memory (Associative Learning)', stim: 'Examiner reads pairs: "rose-school," "dog-happy," "table-quiet." After 3 reading trials, examiner says first word; student recalls second.', instruction: 'Listen to word pairs. After all pairs are read, you\'ll be asked to recall.', tests_assessed: ['WJ-IV Visual-Auditory Learning', 'CVLT-C List A', 'WRAML-2 Verbal Learning'], why_revealing: 'Associative memory (MA). Foundation for vocabulary + foreign language + math facts. Often the most affected by hippocampal pathology + early dementia. Should be among first subtests if neurodegenerative concern.' },
-            { type: 'Rapid Naming', stim: '[Page of 50 colored circles in 5 colors, randomly arranged.]', instruction: 'Name all colors in order as fast as possible. Time + errors recorded.', tests_assessed: ['CTOPP-2 Rapid Color Naming', 'NEPSY-II Speeded Naming', 'WJ-IV Rapid Picture Naming'], why_revealing: 'Naming facility (NA). Strongest single predictor of reading fluency. Weak RAN + weak phonological awareness = double-deficit dyslexia marker.' }
+            { type: 'Word Pair Memory (Associative Learning)', stim: 'Examiner reads pairs: "rose-school," "dog-happy," "table-quiet." After 3 reading trials, examiner says first word; student recalls second.', instruction: __alloT('stem.assessmentliteracy.listen_to_word_pairs_after_all_pairs_a', 'Listen to word pairs. After all pairs are read, you\'ll be asked to recall.'), tests_assessed: ['WJ-IV Visual-Auditory Learning', 'CVLT-C List A', 'WRAML-2 Verbal Learning'], why_revealing: 'Associative memory (MA). Foundation for vocabulary + foreign language + math facts. Often the most affected by hippocampal pathology + early dementia. Should be among first subtests if neurodegenerative concern.' },
+            { type: 'Rapid Naming', stim: '[Page of 50 colored circles in 5 colors, randomly arranged.]', instruction: __alloT('stem.assessmentliteracy.name_all_colors_in_order_as_fast_as_po', 'Name all colors in order as fast as possible. Time + errors recorded.'), tests_assessed: ['CTOPP-2 Rapid Color Naming', 'NEPSY-II Speeded Naming', 'WJ-IV Rapid Picture Naming'], why_revealing: 'Naming facility (NA). Strongest single predictor of reading fluency. Weak RAN + weak phonological awareness = double-deficit dyslexia marker.' }
           ],
           Gsm: [
-            { type: 'Digit Span Forward', stim: 'Examiner says: "4 - 7 - 2 - 9 - 5"', instruction: 'Listen, then repeat the digits in the same order.', tests_assessed: ['WISC-V Digit Span Forward', 'WAIS-IV Digit Span Forward', 'WJ-IV Memory for Words'], why_revealing: 'Memory span (MS). Pure short-term auditory storage. Average adult span = 7±2. Spared in ADHD (which more affects manipulation than span).' },
-            { type: 'Digit Span Backward', stim: 'Examiner says: "6 - 3 - 9 - 1 - 4"', instruction: 'Listen, then repeat the digits in REVERSE order.', tests_assessed: ['WISC-V Digit Span Backward', 'WAIS-IV Digit Span Backward', 'WJ-IV Numbers Reversed'], why_revealing: 'Working memory capacity (MW). Probably the strongest cognitive predictor of academic achievement after Gf. ADHD: WM consistently the lowest score. Distinguishes "can hold" (MS) from "can manipulate" (MW).' },
-            { type: 'Letter-Number Sequencing', stim: '"K - 4 - B - 2 - 7 - A"', instruction: 'Listen, then say all the numbers in order first, then all the letters in order.', tests_assessed: ['WISC-V Letter-Number Sequencing', 'WAIS-IV Letter-Number Sequencing'], why_revealing: 'Working memory with dual-task switching. More cognitively demanding than digit span backward. Strong differentiator of executive function weakness vs simple memory weakness.' }
+            { type: 'Digit Span Forward', stim: 'Examiner says: "4 - 7 - 2 - 9 - 5"', instruction: __alloT('stem.assessmentliteracy.listen_then_repeat_the_digits_in_the_s', 'Listen, then repeat the digits in the same order.'), tests_assessed: ['WISC-V Digit Span Forward', 'WAIS-IV Digit Span Forward', 'WJ-IV Memory for Words'], why_revealing: 'Memory span (MS). Pure short-term auditory storage. Average adult span = 7±2. Spared in ADHD (which more affects manipulation than span).' },
+            { type: 'Digit Span Backward', stim: 'Examiner says: "6 - 3 - 9 - 1 - 4"', instruction: __alloT('stem.assessmentliteracy.listen_then_repeat_the_digits_in_rever', 'Listen, then repeat the digits in REVERSE order.'), tests_assessed: ['WISC-V Digit Span Backward', 'WAIS-IV Digit Span Backward', 'WJ-IV Numbers Reversed'], why_revealing: 'Working memory capacity (MW). Probably the strongest cognitive predictor of academic achievement after Gf. ADHD: WM consistently the lowest score. Distinguishes "can hold" (MS) from "can manipulate" (MW).' },
+            { type: 'Letter-Number Sequencing', stim: '"K - 4 - B - 2 - 7 - A"', instruction: __alloT('stem.assessmentliteracy.listen_then_say_all_the_numbers_in_ord', 'Listen, then say all the numbers in order first, then all the letters in order.'), tests_assessed: ['WISC-V Letter-Number Sequencing', 'WAIS-IV Letter-Number Sequencing'], why_revealing: 'Working memory with dual-task switching. More cognitively demanding than digit span backward. Strong differentiator of executive function weakness vs simple memory weakness.' }
           ],
           Gv: [
-            { type: 'Block Design', stim: '[A 2D pattern card showing a red + white design that must be replicated with 3D cubes that are red, white, or half each.]', instruction: 'Use these blocks to make this design as fast as possible. Time bonus for speed.', tests_assessed: ['WISC-V Block Design', 'WAIS-IV Block Design', 'KABC-II Triangles'], why_revealing: 'Visualization (VZ) + spatial reasoning. Best subtest for identifying visual-spatial strengths. Often very strong in autism + dyslexia. Speed bonus penalizes deliberate cognitive style.' },
-            { type: 'Visual Puzzles', stim: '[Image of a complete shape; student picks the 3 puzzle pieces that would combine to make it.]', instruction: 'Pick the 3 pieces that would combine to make the design.', tests_assessed: ['WISC-V Visual Puzzles', 'WAIS-IV Visual Puzzles'], why_revealing: 'Visualization without motor demands (unlike Block Design). Useful when motor disability is a concern. Less time pressure than Block Design.' },
-            { type: 'Picture Concepts (Categorical Visual Reasoning)', stim: '[Two or three rows of pictures; student picks one from each row that go together.]', instruction: 'Pick one picture from each row that go together in some way.', tests_assessed: ['WISC-V Picture Concepts'], why_revealing: 'Visual categorical reasoning. Tests Gf via visual stimuli. Less verbally loaded than Similarities — useful for EL students.' }
+            { type: 'Block Design', stim: '[A 2D pattern card showing a red + white design that must be replicated with 3D cubes that are red, white, or half each.]', instruction: __alloT('stem.assessmentliteracy.use_these_blocks_to_make_this_design_a', 'Use these blocks to make this design as fast as possible. Time bonus for speed.'), tests_assessed: ['WISC-V Block Design', 'WAIS-IV Block Design', 'KABC-II Triangles'], why_revealing: 'Visualization (VZ) + spatial reasoning. Best subtest for identifying visual-spatial strengths. Often very strong in autism + dyslexia. Speed bonus penalizes deliberate cognitive style.' },
+            { type: 'Visual Puzzles', stim: '[Image of a complete shape; student picks the 3 puzzle pieces that would combine to make it.]', instruction: __alloT('stem.assessmentliteracy.pick_the_3_pieces_that_would_combine_t', 'Pick the 3 pieces that would combine to make the design.'), tests_assessed: ['WISC-V Visual Puzzles', 'WAIS-IV Visual Puzzles'], why_revealing: 'Visualization without motor demands (unlike Block Design). Useful when motor disability is a concern. Less time pressure than Block Design.' },
+            { type: 'Picture Concepts (Categorical Visual Reasoning)', stim: '[Two or three rows of pictures; student picks one from each row that go together.]', instruction: __alloT('stem.assessmentliteracy.pick_one_picture_from_each_row_that_go', 'Pick one picture from each row that go together in some way.'), tests_assessed: ['WISC-V Picture Concepts'], why_revealing: 'Visual categorical reasoning. Tests Gf via visual stimuli. Less verbally loaded than Similarities — useful for EL students.' }
           ],
           Ga: [
-            { type: 'Elision (Phoneme Deletion)', stim: 'Examiner: "Say snake. Now say snake without the /k/ sound."', instruction: 'Repeat the word, then say it again with one sound removed.', tests_assessed: ['CTOPP-2 Elision', 'NEPSY-II Phonological Processing'], why_revealing: 'Phonemic awareness (PC) — foundation for reading decoding. Weakness = dyslexia marker. Highly responsive to intervention if caught early.' },
-            { type: 'Sound Blending', stim: 'Examiner: "/m/ - /a/ - /p/. What word is that?"', instruction: 'Listen to sounds; blend them into a word.', tests_assessed: ['CTOPP-2 Blending Words', 'WJ-IV Sound Blending', 'NEPSY-II Phonological Processing'], why_revealing: 'Phoneme blending (PC). Another foundation skill for reading. K-2 students struggling here = strong indicator of dyslexia risk.' },
-            { type: 'Auditory Working Memory in Noise', stim: 'Examiner plays sentence with background noise; student repeats verbatim.', instruction: 'Listen carefully + repeat the sentence exactly.', tests_assessed: ['SCAN-3 Auditory Figure-Ground', 'NU-CHIPS', 'Filtered Words'], why_revealing: 'Resistance to auditory distortion (UR). Affected by Central Auditory Processing Disorder. Students struggle in noisy classrooms but pass quiet hearing tests.' }
+            { type: 'Elision (Phoneme Deletion)', stim: 'Examiner: "Say snake. Now say snake without the /k/ sound."', instruction: __alloT('stem.assessmentliteracy.repeat_the_word_then_say_it_again_with', 'Repeat the word, then say it again with one sound removed.'), tests_assessed: ['CTOPP-2 Elision', 'NEPSY-II Phonological Processing'], why_revealing: 'Phonemic awareness (PC) — foundation for reading decoding. Weakness = dyslexia marker. Highly responsive to intervention if caught early.' },
+            { type: 'Sound Blending', stim: 'Examiner: "/m/ - /a/ - /p/. What word is that?"', instruction: __alloT('stem.assessmentliteracy.listen_to_sounds_blend_them_into_a_wor', 'Listen to sounds; blend them into a word.'), tests_assessed: ['CTOPP-2 Blending Words', 'WJ-IV Sound Blending', 'NEPSY-II Phonological Processing'], why_revealing: 'Phoneme blending (PC). Another foundation skill for reading. K-2 students struggling here = strong indicator of dyslexia risk.' },
+            { type: 'Auditory Working Memory in Noise', stim: 'Examiner plays sentence with background noise; student repeats verbatim.', instruction: __alloT('stem.assessmentliteracy.listen_carefully_repeat_the_sentence_e', 'Listen carefully + repeat the sentence exactly.'), tests_assessed: ['SCAN-3 Auditory Figure-Ground', 'NU-CHIPS', 'Filtered Words'], why_revealing: 'Resistance to auditory distortion (UR). Affected by Central Auditory Processing Disorder. Students struggle in noisy classrooms but pass quiet hearing tests.' }
           ],
           Grw: [
-            { type: 'Word Reading (Decoding)', stim: 'Examiner shows: "cat, sing, jumped, magnificent, hyperbole"', instruction: 'Read each word aloud. Don\'t guess if you don\'t know.', tests_assessed: ['WIAT-4 Word Reading', 'WJ-IV Letter-Word Identification', 'KTEA-3 Letter & Word Recognition'], why_revealing: 'Reading decoding (RD). Tests sight-word recognition + decoding combined. Distinguishes dyslexia (poor decoding) from comprehension-only disorders.' },
-            { type: 'Pseudoword (Nonword) Decoding', stim: 'Examiner shows: "vop, plimp, frindle, splatch"', instruction: 'Read these made-up words aloud. They follow English rules.', tests_assessed: ['WIAT-4 Pseudoword Decoding', 'CTOPP-2 Phonemic Decoding', 'WJ-IV Word Attack'], why_revealing: 'Pure decoding skill — cannot rely on sight-word memory. Strongest single subtest for diagnosing dyslexia. Weak pseudoword + strong word reading = sight-word strength compensating for weak decoding.' },
-            { type: 'Reading Comprehension', stim: '[200-word passage about an unfamiliar topic]', instruction: 'Read the passage. Answer 4 multiple-choice questions about main idea, inference, vocab in context, detail.', tests_assessed: ['WIAT-4 Reading Comprehension', 'KTEA-3 Reading Comprehension', 'WJ-IV Passage Comprehension'], why_revealing: 'Reading comprehension (RC). Distinguishes comprehension weakness from decoding weakness. A student strong on decoding but weak on comprehension needs different intervention than dyslexia.' },
-            { type: 'Writing Sample', stim: 'Prompt: "Write a paragraph about what you did last summer. You have 10 minutes."', instruction: 'Write a paragraph. Graded for ideas, organization, grammar, mechanics, voice.', tests_assessed: ['WIAT-4 Essay Composition', 'WJ-IV Writing Samples', 'KTEA-3 Written Expression'], why_revealing: 'Writing ability (WA). Most complex literacy demand. Often weakest area in students with disabilities (combines multiple substrate skills).' }
+            { type: 'Word Reading (Decoding)', stim: 'Examiner shows: "cat, sing, jumped, magnificent, hyperbole"', instruction: __alloT('stem.assessmentliteracy.read_each_word_aloud_don_t_guess_if_yo', 'Read each word aloud. Don\'t guess if you don\'t know.'), tests_assessed: ['WIAT-4 Word Reading', 'WJ-IV Letter-Word Identification', 'KTEA-3 Letter & Word Recognition'], why_revealing: 'Reading decoding (RD). Tests sight-word recognition + decoding combined. Distinguishes dyslexia (poor decoding) from comprehension-only disorders.' },
+            { type: 'Pseudoword (Nonword) Decoding', stim: 'Examiner shows: "vop, plimp, frindle, splatch"', instruction: __alloT('stem.assessmentliteracy.read_these_made_up_words_aloud_they_fo', 'Read these made-up words aloud. They follow English rules.'), tests_assessed: ['WIAT-4 Pseudoword Decoding', 'CTOPP-2 Phonemic Decoding', 'WJ-IV Word Attack'], why_revealing: 'Pure decoding skill — cannot rely on sight-word memory. Strongest single subtest for diagnosing dyslexia. Weak pseudoword + strong word reading = sight-word strength compensating for weak decoding.' },
+            { type: 'Reading Comprehension', stim: '[200-word passage about an unfamiliar topic]', instruction: __alloT('stem.assessmentliteracy.read_the_passage_answer_4_multiple_cho', 'Read the passage. Answer 4 multiple-choice questions about main idea, inference, vocab in context, detail.'), tests_assessed: ['WIAT-4 Reading Comprehension', 'KTEA-3 Reading Comprehension', 'WJ-IV Passage Comprehension'], why_revealing: 'Reading comprehension (RC). Distinguishes comprehension weakness from decoding weakness. A student strong on decoding but weak on comprehension needs different intervention than dyslexia.' },
+            { type: 'Writing Sample', stim: 'Prompt: "Write a paragraph about what you did last summer. You have 10 minutes."', instruction: __alloT('stem.assessmentliteracy.write_a_paragraph_graded_for_ideas_org', 'Write a paragraph. Graded for ideas, organization, grammar, mechanics, voice.'), tests_assessed: ['WIAT-4 Essay Composition', 'WJ-IV Writing Samples', 'KTEA-3 Written Expression'], why_revealing: 'Writing ability (WA). Most complex literacy demand. Often weakest area in students with disabilities (combines multiple substrate skills).' }
           ]
         };
 
@@ -9305,10 +9306,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           var totalItems = Object.keys(SAMPLE_ITEMS).reduce(function(sum, k) { return sum + SAMPLE_ITEMS[k].length; }, 0);
           return h('div', { className: 'max-w-4xl mx-auto p-4 md:p-6 space-y-3' },
             backBtn('cognitive', null, 'Cognitive menu'),
-            h('h2', { className: 'text-2xl font-black text-cyan-200' }, '🧪 Sample Items Demonstrator'),
+            h('h2', { className: 'text-2xl font-black text-cyan-200' }, __alloT('stem.assessmentliteracy.sample_items_demonstrator_2', '🧪 Sample Items Demonstrator')),
             h('p', { className: 'text-xs text-slate-300 leading-relaxed' },
               h('strong', { className: 'text-cyan-300' }, totalItems + ' sample items'),
-              ' across the 8 CHC broad ability areas. For each: the actual stimulus (representative — not real proprietary items), instruction, which commercial subtests use this format, and what the item reveals clinically. Powerful pedagogical tool for understanding what tests actually measure.'
+              __alloT('stem.assessmentliteracy.across_the_8_chc_broad_ability_areas_f', ' across the 8 CHC broad ability areas. For each: the actual stimulus (representative — not real proprietary items), instruction, which commercial subtests use this format, and what the item reveals clinically. Powerful pedagogical tool for understanding what tests actually measure.')
             ),
             h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
               CHC_BROAD.filter(function(b) { return SAMPLE_ITEMS[b.code]; }).map(function(b) {
@@ -9334,25 +9335,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
 
         return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-3' },
           h('div', { className: 'flex flex-wrap gap-2 no-print' },
-            h('button', { onClick: function() { upd({ sampleArea: null }); }, className: 'transition-colors px-3 py-1.5 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, '← All areas'),
+            h('button', { onClick: function() { upd({ sampleArea: null }); }, className: 'transition-colors px-3 py-1.5 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, __alloT('stem.assessmentliteracy.all_areas', '← All areas')),
             backBtn('cognitive', null, 'Cognitive menu')
           ),
           h('h2', { className: 'text-2xl font-black text-cyan-200' }, '🧪 ' + focusedBroad.code + ' — ' + focusedBroad.name + ' Sample Items'),
           h('p', { className: 'text-xs text-slate-300 italic' }, focusedBroad.desc),
-          h('p', { className: 'text-xs text-amber-300 italic' }, '⚠ Sample items are educational representations. NOT actual proprietary items. Real test items are protected by test publisher copyright + professional ethics.'),
+          h('p', { className: 'text-xs text-amber-300 italic' }, __alloT('stem.assessmentliteracy.sample_items_are_educational_represent', '⚠ Sample items are educational representations. NOT actual proprietary items. Real test items are protected by test publisher copyright + professional ethics.')),
 
           h('div', { className: 'space-y-3' },
             items.map(function(item, i) {
               return h('section', { key: i, className: 'p-4 rounded-xl bg-slate-800/60 border border-cyan-500/30' },
                 h('h3', { className: 'text-sm font-black text-cyan-200 mb-2' }, (i + 1) + '. ' + item.type),
                 h('div', { className: 'p-3 rounded bg-slate-900/80 border border-cyan-500/40 mb-2' },
-                  h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, '📝 Stimulus / Item'),
+                  h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, __alloT('stem.assessmentliteracy.stimulus_item', '📝 Stimulus / Item')),
                   h('p', { className: 'text-xs text-slate-100 font-mono leading-relaxed' }, item.stim),
-                  h('div', { className: 'text-xs font-bold text-emerald-300 mt-2 mb-1' }, '🎯 Instruction'),
+                  h('div', { className: 'text-xs font-bold text-emerald-300 mt-2 mb-1' }, __alloT('stem.assessmentliteracy.instruction', '🎯 Instruction')),
                   h('p', { className: 'text-xs text-slate-100 italic leading-relaxed' }, item.instruction)
                 ),
                 h('div', { className: 'mb-2' },
-                  h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, '📋 Commercial subtests using this format'),
+                  h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, __alloT('stem.assessmentliteracy.commercial_subtests_using_this_format', '📋 Commercial subtests using this format')),
                   h('div', { className: 'flex flex-wrap gap-1' },
                     item.tests_assessed.map(function(t, j) {
                       return h('span', { key: j, className: 'px-2 py-0.5 rounded-full text-xs bg-amber-900/30 border border-amber-500/30 text-amber-100' }, t);
@@ -9360,7 +9361,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                   )
                 ),
                 h('div', { className: 'p-2 rounded bg-cyan-900/20 border border-cyan-500/20' },
-                  h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, '💡 Why this item reveals what it does'),
+                  h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, __alloT('stem.assessmentliteracy.why_this_item_reveals_what_it_does', '💡 Why this item reveals what it does')),
                   h('p', { className: 'text-xs text-slate-200 leading-relaxed' }, item.why_revealing)
                 )
               );
@@ -9381,13 +9382,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           var totalNarrow = broadList.reduce(function(sum, b) { return sum + (CHC_NARROW[b.code] || []).length; }, 0);
           return h('div', { className: 'max-w-4xl mx-auto p-4 md:p-6 space-y-3' },
             backBtn('cognitive', null, 'Cognitive menu'),
-            h('h2', { className: 'text-2xl font-black text-cyan-200' }, '🔬 CHC Narrow Abilities — Stratum I'),
+            h('h2', { className: 'text-2xl font-black text-cyan-200' }, __alloT('stem.assessmentliteracy.chc_narrow_abilities_stratum_i_2', '🔬 CHC Narrow Abilities — Stratum I')),
             h('p', { className: 'text-xs text-slate-300 leading-relaxed' },
-              'CHC organizes cognitive ability into a 3-stratum hierarchy: ',
-              h('strong', null, 'Stratum III'), ' (general intelligence, g), ',
-              h('strong', null, 'Stratum II'), ' (9 broad abilities — what most score reports show), and ',
-              h('strong', null, 'Stratum I'), ' (~70 narrow abilities — the level individual subtests actually measure). Working at the narrow level is what distinguishes a clinician from a person reading test manuals. Below: ',
-              h('strong', { className: 'text-cyan-300' }, totalNarrow + ' narrow abilities'), ' organized under their 9 broad strata. Click a broad ability to expand.'
+              __alloT('stem.assessmentliteracy.chc_organizes_cognitive_ability_into_a', 'CHC organizes cognitive ability into a 3-stratum hierarchy: '),
+              h('strong', null, __alloT('stem.assessmentliteracy.stratum_iii', 'Stratum III')), __alloT('stem.assessmentliteracy.general_intelligence_g', ' (general intelligence, g), '),
+              h('strong', null, __alloT('stem.assessmentliteracy.stratum_ii', 'Stratum II')), __alloT('stem.assessmentliteracy.9_broad_abilities_what_most_score_repo', ' (9 broad abilities — what most score reports show), and '),
+              h('strong', null, __alloT('stem.assessmentliteracy.stratum_i', 'Stratum I')), __alloT('stem.assessmentliteracy.70_narrow_abilities_the_level_individu', ' (~70 narrow abilities — the level individual subtests actually measure). Working at the narrow level is what distinguishes a clinician from a person reading test manuals. Below: '),
+              h('strong', { className: 'text-cyan-300' }, totalNarrow + ' narrow abilities'), __alloT('stem.assessmentliteracy.organized_under_their_9_broad_strata_c', ' organized under their 9 broad strata. Click a broad ability to expand.')
             ),
             h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
               broadList.map(function(b) {
@@ -9402,17 +9403,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                     h('span', { className: 'text-xs font-bold text-cyan-300 px-2 py-0.5 rounded-full bg-cyan-900/40' }, narrows.length + ' narrow')
                   ),
                   h('p', { className: 'text-xs text-slate-300 leading-relaxed mb-1' }, b.desc),
-                  h('div', { className: 'text-xs text-slate-400 italic' }, '🧠 Sample broad-level task: ', b.example)
+                  h('div', { className: 'text-xs text-slate-400 italic' }, __alloT('stem.assessmentliteracy.sample_broad_level_task', '🧠 Sample broad-level task: '), b.example)
                 );
               })
             ),
             h('section', { className: 'p-4 rounded-xl bg-cyan-900/20 border border-cyan-500/30 mt-3' },
-              h('h3', { className: 'text-sm font-black text-cyan-200 mb-2' }, '🎯 How to actually use this'),
+              h('h3', { className: 'text-sm font-black text-cyan-200 mb-2' }, __alloT('stem.assessmentliteracy.how_to_actually_use_this', '🎯 How to actually use this')),
               h('ul', { className: 'text-xs text-slate-100 space-y-2 leading-relaxed' },
-                h('li', null, h('strong', { className: 'text-cyan-300' }, 'When reading a psych report: '), 'a "Working Memory Index of 85" is more meaningful when you know that score reflects ', h('em', null, 'Mw'), ' (working memory capacity) — and that ', h('em', null, 'Mw'), ' is the strongest single predictor of academic achievement after Gf.'),
-                h('li', null, h('strong', { className: 'text-cyan-300' }, 'When designing assessment: '), 'a "comprehensive cognitive battery" must sample multiple narrow abilities per broad area. A single subtest score = unreliable estimate of the broad construct.'),
-                h('li', null, h('strong', { className: 'text-cyan-300' }, 'When planning intervention: '), 'narrow-level diagnosis tells you which sub-skill to target. "Reading weakness" is vague; "phonological awareness deficit" (Ga: PC) or "rapid naming deficit" (Glr: NA) tell you what to do.'),
-                h('li', null, h('strong', { className: 'text-cyan-300' }, 'When questioning a score: '), 'low scores can come from many sources — knowing the narrow construct + sample task helps identify whether weakness is genuine, instructional gap, attention, anxiety, or accommodation issue.')
+                h('li', null, h('strong', { className: 'text-cyan-300' }, __alloT('stem.assessmentliteracy.when_reading_a_psych_report', 'When reading a psych report: ')), __alloT('stem.assessmentliteracy.a_working_memory_index_of_85_is_more_m', 'a "Working Memory Index of 85" is more meaningful when you know that score reflects '), h('em', null, 'Mw'), __alloT('stem.assessmentliteracy.working_memory_capacity_and_that', ' (working memory capacity) — and that '), h('em', null, 'Mw'), __alloT('stem.assessmentliteracy.is_the_strongest_single_predictor_of_a', ' is the strongest single predictor of academic achievement after Gf.')),
+                h('li', null, h('strong', { className: 'text-cyan-300' }, __alloT('stem.assessmentliteracy.when_designing_assessment', 'When designing assessment: ')), __alloT('stem.assessmentliteracy.a_comprehensive_cognitive_battery_must', 'a "comprehensive cognitive battery" must sample multiple narrow abilities per broad area. A single subtest score = unreliable estimate of the broad construct.')),
+                h('li', null, h('strong', { className: 'text-cyan-300' }, __alloT('stem.assessmentliteracy.when_planning_intervention', 'When planning intervention: ')), __alloT('stem.assessmentliteracy.narrow_level_diagnosis_tells_you_which', 'narrow-level diagnosis tells you which sub-skill to target. "Reading weakness" is vague; "phonological awareness deficit" (Ga: PC) or "rapid naming deficit" (Glr: NA) tell you what to do.')),
+                h('li', null, h('strong', { className: 'text-cyan-300' }, __alloT('stem.assessmentliteracy.when_questioning_a_score', 'When questioning a score: ')), __alloT('stem.assessmentliteracy.low_scores_can_come_from_many_sources_', 'low scores can come from many sources — knowing the narrow construct + sample task helps identify whether weakness is genuine, instructional gap, attention, anxiety, or accommodation issue.'))
               )
             )
           );
@@ -9425,28 +9426,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
 
         return h('div', { className: 'max-w-4xl mx-auto p-4 md:p-6 space-y-3' },
           h('div', { className: 'flex flex-wrap gap-2 no-print' },
-            h('button', { onClick: function() { upd({ narrowBroad: null }); }, className: 'transition-colors px-3 py-1.5 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, '← All broad abilities'),
+            h('button', { onClick: function() { upd({ narrowBroad: null }); }, className: 'transition-colors px-3 py-1.5 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, __alloT('stem.assessmentliteracy.all_broad_abilities', '← All broad abilities')),
             backBtn('cognitive', null, 'Cognitive menu')
           ),
           h('section', { className: 'p-4 rounded-xl bg-gradient-to-br from-cyan-900/40 to-blue-900/40 border-2 border-cyan-500/40' },
             h('h2', { className: 'text-2xl font-black text-white mb-1' }, focusedBroad.code + ' — ' + focusedBroad.name),
             h('p', { className: 'text-sm text-slate-100 leading-relaxed mb-2' }, focusedBroad.desc),
-            h('div', { className: 'text-xs text-cyan-200 italic' }, '🧠 Stratum-II level sample task: ', focusedBroad.example)
+            h('div', { className: 'text-xs text-cyan-200 italic' }, __alloT('stem.assessmentliteracy.stratum_ii_level_sample_task', '🧠 Stratum-II level sample task: '), focusedBroad.example)
           ),
           h('div', { className: 'space-y-2' },
             narrows.map(function(n) {
               return h('section', { key: n.code, className: 'p-4 rounded-xl bg-slate-800/60 border border-cyan-500/30' },
                 h('div', { className: 'flex justify-between items-baseline mb-2 flex-wrap gap-1' },
                   h('h3', { className: 'text-base font-black text-cyan-200' }, n.code + ' — ' + n.name),
-                  h('span', { className: 'text-xs text-cyan-400 font-mono px-2 py-0.5 rounded-full bg-slate-900/60 border border-cyan-700/40' }, 'Stratum I')
+                  h('span', { className: 'text-xs text-cyan-400 font-mono px-2 py-0.5 rounded-full bg-slate-900/60 border border-cyan-700/40' }, __alloT('stem.assessmentliteracy.stratum_i_2', 'Stratum I'))
                 ),
                 h('p', { className: 'text-xs text-slate-100 leading-relaxed mb-2' }, h('strong', { className: 'text-cyan-300' }, 'Definition: '), n.def),
                 h('div', { className: 'p-3 rounded bg-slate-900/60 mb-2' },
-                  h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '🧪 Sample task'),
+                  h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, __alloT('stem.assessmentliteracy.sample_task', '🧪 Sample task')),
                   h('p', { className: 'text-xs text-slate-200 leading-relaxed italic' }, n.sample_task)
                 ),
                 n.tests && n.tests.length > 0 && h('div', { className: 'mb-2' },
-                  h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, '📋 Commercial subtests that measure this'),
+                  h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, __alloT('stem.assessmentliteracy.commercial_subtests_that_measure_this', '📋 Commercial subtests that measure this')),
                   h('div', { className: 'flex flex-wrap gap-1' },
                     n.tests.map(function(t, i) {
                       return h('span', { key: i, className: 'px-2 py-0.5 rounded-full text-xs bg-amber-900/30 border border-amber-500/30 text-amber-100' }, t);
@@ -9454,7 +9455,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                   )
                 ),
                 n.why_matters && h('div', { className: 'p-2 rounded bg-cyan-900/20 border border-cyan-500/20' },
-                  h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, '💡 Why it matters clinically'),
+                  h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, __alloT('stem.assessmentliteracy.why_it_matters_clinically', '💡 Why it matters clinically')),
                   h('p', { className: 'text-xs text-slate-200 leading-relaxed' }, n.why_matters)
                 )
               );
@@ -9503,17 +9504,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       // ─────────────────────────────────────────
       function renderSources() {
         var sections = [
-          { key: 'cognitive', label: 'Cognitive Assessment', color: 'cyan' },
-          { key: 'personality', label: 'Personality', color: 'purple' },
-          { key: 'career', label: 'Career & Values', color: 'emerald' },
-          { key: 'employer', label: 'Employer Assessment & Law', color: 'amber' },
-          { key: 'schoolpsych', label: 'School Psychology & IEP', color: 'sky' },
-          { key: 'resources', label: 'Online Resources & Organizations', color: 'rose' }
+          { key: 'cognitive', label: __alloT('stem.assessmentliteracy.cognitive_assessment', 'Cognitive Assessment'), color: 'cyan' },
+          { key: 'personality', label: __alloT('stem.assessmentliteracy.personality', 'Personality'), color: 'purple' },
+          { key: 'career', label: __alloT('stem.assessmentliteracy.career_values', 'Career & Values'), color: 'emerald' },
+          { key: 'employer', label: __alloT('stem.assessmentliteracy.employer_assessment_law', 'Employer Assessment & Law'), color: 'amber' },
+          { key: 'schoolpsych', label: __alloT('stem.assessmentliteracy.school_psychology_iep', 'School Psychology & IEP'), color: 'sky' },
+          { key: 'resources', label: __alloT('stem.assessmentliteracy.online_resources_organizations', 'Online Resources & Organizations'), color: 'rose' }
         ];
         return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-4' },
           backBtn('menu', null, 'Main menu'),
-          h('h2', { className: 'text-2xl font-black text-slate-100' }, '\uD83D\uDCDA Sources & Further Reading'),
-          h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, 'Primary sources for the claims, frameworks, and numerical estimates used throughout this tool. Organized by module. For claims not cited here, the basis is standard material found in any graduate-level intellectual/psychoeducational assessment text (e.g., Sattler; Flanagan & Harrison; Reynolds et al.).'),
+          h('h2', { className: 'text-2xl font-black text-slate-100' }, __alloT('stem.assessmentliteracy.sources_further_reading_2', '\uD83D\uDCDA Sources & Further Reading')),
+          h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, __alloT('stem.assessmentliteracy.primary_sources_for_the_claims_framewo', 'Primary sources for the claims, frameworks, and numerical estimates used throughout this tool. Organized by module. For claims not cited here, the basis is standard material found in any graduate-level intellectual/psychoeducational assessment text (e.g., Sattler; Flanagan & Harrison; Reynolds et al.).')),
           sections.map(function(sec) {
             var items = SOURCES[sec.key] || [];
             return h('section', { key: sec.key, className: 'p-4 rounded-xl bg-slate-800/60 border border-' + sec.color + '-500/30' },
@@ -9529,8 +9530,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             );
           }),
           h('section', { className: 'p-4 rounded-xl bg-slate-800/60 border border-slate-500/30' },
-            h('h3', { className: 'text-sm font-black text-slate-200 mb-2' }, 'Citation style note'),
-            h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, 'Citations are in APA 7th edition format where practical. Legal citations follow Bluebook. Some online resources don\'t have traditional citations; URLs are provided in-text. If you\'re using this tool for a course assignment, consult your instructor\'s preferred style guide.')
+            h('h3', { className: 'text-sm font-black text-slate-200 mb-2' }, __alloT('stem.assessmentliteracy.citation_style_note', 'Citation style note')),
+            h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, __alloT('stem.assessmentliteracy.citations_are_in_apa_7th_edition_forma', 'Citations are in APA 7th edition format where practical. Legal citations follow Bluebook. Some online resources don\'t have traditional citations; URLs are provided in-text. If you\'re using this tool for a course assignment, consult your instructor\'s preferred style guide.'))
           )
         );
       }
@@ -9544,16 +9545,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         if (sub === 'courses') {
           return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-3' },
             backBtn('teacher', null, 'Teacher menu'),
-            h('h2', { className: 'text-2xl font-black text-violet-200' }, '\uD83D\uDCCB Course Alignment'),
-            h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, 'Which modules fit which courses. Use this to plan adoptions — for a 2-week unit in Tests & Measurements you need different modules than for a single lecture in Intro Psych.'),
+            h('h2', { className: 'text-2xl font-black text-violet-200' }, __alloT('stem.assessmentliteracy.course_alignment', '\uD83D\uDCCB Course Alignment')),
+            h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, __alloT('stem.assessmentliteracy.which_modules_fit_which_courses_use_th', 'Which modules fit which courses. Use this to plan adoptions — for a 2-week unit in Tests & Measurements you need different modules than for a single lecture in Intro Psych.')),
             COURSE_ALIGNMENT.map(function(c, i) {
               return h('section', { key: i, className: 'p-4 rounded-xl bg-slate-800/60 border border-violet-500/30' },
                 h('div', { className: 'flex items-baseline justify-between mb-1' },
                   h('h3', { className: 'text-base font-black text-violet-200' }, c.course),
                   h('span', { className: 'text-xs text-violet-400 italic ml-2' }, c.level)
                 ),
-                h('div', { className: 'text-xs text-slate-200 mb-2' }, h('strong', { className: 'text-violet-300' }, 'Recommended modules: '), c.modules.join(', ')),
-                h('div', { className: 'text-xs text-slate-200' }, h('strong', { className: 'text-violet-300' }, 'Pedagogical goal: '), c.objectives)
+                h('div', { className: 'text-xs text-slate-200 mb-2' }, h('strong', { className: 'text-violet-300' }, __alloT('stem.assessmentliteracy.recommended_modules', 'Recommended modules: ')), c.modules.join(', ')),
+                h('div', { className: 'text-xs text-slate-200' }, h('strong', { className: 'text-violet-300' }, __alloT('stem.assessmentliteracy.pedagogical_goal', 'Pedagogical goal: ')), c.objectives)
               );
             })
           );
@@ -9561,16 +9562,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
 
         if (sub === 'objectives') {
           var modSections = [
-            { key: 'cognitive', label: 'Cognitive Assessment', color: 'cyan' },
-            { key: 'personality', label: 'Personality', color: 'purple' },
-            { key: 'career', label: 'Career & Values', color: 'emerald' },
-            { key: 'employer', label: 'Employer Assessment', color: 'amber' },
-            { key: 'schoolpsych', label: 'School Psychology', color: 'sky' }
+            { key: 'cognitive', label: __alloT('stem.assessmentliteracy.cognitive_assessment_2', 'Cognitive Assessment'), color: 'cyan' },
+            { key: 'personality', label: __alloT('stem.assessmentliteracy.personality_2', 'Personality'), color: 'purple' },
+            { key: 'career', label: __alloT('stem.assessmentliteracy.career_values_2', 'Career & Values'), color: 'emerald' },
+            { key: 'employer', label: __alloT('stem.assessmentliteracy.employer_assessment', 'Employer Assessment'), color: 'amber' },
+            { key: 'schoolpsych', label: __alloT('stem.assessmentliteracy.school_psychology_2', 'School Psychology'), color: 'sky' }
           ];
           return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-3' },
             backBtn('teacher', null, 'Teacher menu'),
-            h('h2', { className: 'text-2xl font-black text-violet-200' }, '\uD83C\uDFAF Module-by-Module Learning Objectives'),
-            h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, 'Bloom-leveled outcomes suitable for a syllabus. Written to align with APA Undergraduate Learning Outcomes (goals 1, 2, 3) and NASP Professional Standards where relevant.'),
+            h('h2', { className: 'text-2xl font-black text-violet-200' }, __alloT('stem.assessmentliteracy.module_by_module_learning_objectives', '\uD83C\uDFAF Module-by-Module Learning Objectives')),
+            h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, __alloT('stem.assessmentliteracy.bloom_leveled_outcomes_suitable_for_a_', 'Bloom-leveled outcomes suitable for a syllabus. Written to align with APA Undergraduate Learning Outcomes (goals 1, 2, 3) and NASP Professional Standards where relevant.')),
             modSections.map(function(sec) {
               var items = LEARNING_OBJECTIVES[sec.key] || [];
               return h('section', { key: sec.key, className: 'p-4 rounded-xl bg-slate-800/60 border border-' + sec.color + '-500/30' },
@@ -9581,7 +9582,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               );
             }),
             h('div', { className: 'no-print' },
-              h('button', { onClick: function() { window.print && window.print(); }, className: 'transition-colors w-full py-2 rounded-lg bg-slate-800 border border-violet-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print objectives for syllabus')
+              h('button', { onClick: function() { window.print && window.print(); }, className: 'transition-colors w-full py-2 rounded-lg bg-slate-800 border border-violet-500/40 text-white text-xs font-bold hover:bg-slate-700' }, __alloT('stem.assessmentliteracy.print_objectives_for_syllabus', '\uD83D\uDDA8 Print objectives for syllabus'))
             )
           );
         }
@@ -9589,8 +9590,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         if (sub === 'prompts') {
           return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-3' },
             backBtn('teacher', null, 'Teacher menu'),
-            h('h2', { className: 'text-2xl font-black text-violet-200' }, '\uD83D\uDCAC Discussion Prompts'),
-            h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, 'Seminar-style questions that surface the tool\'s key tensions. Mix of technical, applied, ethical, and meta-level prompts. Good for weekly discussion sections, essay assignments, or in-class debate.'),
+            h('h2', { className: 'text-2xl font-black text-violet-200' }, __alloT('stem.assessmentliteracy.discussion_prompts', '\uD83D\uDCAC Discussion Prompts')),
+            h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, __alloT('stem.assessmentliteracy.seminar_style_questions_that_surface_t', 'Seminar-style questions that surface the tool\'s key tensions. Mix of technical, applied, ethical, and meta-level prompts. Good for weekly discussion sections, essay assignments, or in-class debate.')),
             DISCUSSION_PROMPTS.map(function(p, i) {
               return h('section', { key: i, className: 'p-4 rounded-xl bg-slate-800/60 border border-violet-500/30' },
                 h('div', { className: 'text-xs font-black text-violet-300 mb-1' }, (i + 1) + '. ' + p.topic),
@@ -9603,8 +9604,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         if (sub === 'activities') {
           return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-3' },
             backBtn('teacher', null, 'Teacher menu'),
-            h('h2', { className: 'text-2xl font-black text-violet-200' }, '\uD83D\uDEE0 In-Class Activities'),
-            h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, 'Eight classroom activities using the tool interactively. Each includes setup, runtime estimate, task, and debrief prompts. Mix of individual reflection, pair work, small groups, and whole-class.'),
+            h('h2', { className: 'text-2xl font-black text-violet-200' }, __alloT('stem.assessmentliteracy.in_class_activities', '\uD83D\uDEE0 In-Class Activities')),
+            h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, __alloT('stem.assessmentliteracy.eight_classroom_activities_using_the_t', 'Eight classroom activities using the tool interactively. Each includes setup, runtime estimate, task, and debrief prompts. Mix of individual reflection, pair work, small groups, and whole-class.')),
             ACTIVITIES.map(function(a, i) {
               return h('section', { key: i, className: 'p-4 rounded-xl bg-slate-800/60 border border-violet-500/30' },
                 h('h3', { className: 'text-base font-black text-violet-200 mb-1' }, (i + 1) + '. ' + a.name),
@@ -9620,8 +9621,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         if (sub === 'rubric') {
           return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-3' },
             backBtn('teacher', null, 'Teacher menu'),
-            h('h2', { className: 'text-2xl font-black text-violet-200' }, '\uD83D\uDCCF Assessment Rubric'),
-            h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, 'Five-dimension rubric for grading student work on assignments using this tool. Each dimension scored 1-4 (Beginning, Developing, Proficient, Excellent). Customize by weighting dimensions for your course emphasis.'),
+            h('h2', { className: 'text-2xl font-black text-violet-200' }, __alloT('stem.assessmentliteracy.assessment_rubric', '\uD83D\uDCCF Assessment Rubric')),
+            h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, __alloT('stem.assessmentliteracy.five_dimension_rubric_for_grading_stud', 'Five-dimension rubric for grading student work on assignments using this tool. Each dimension scored 1-4 (Beginning, Developing, Proficient, Excellent). Customize by weighting dimensions for your course emphasis.')),
             RUBRIC_ITEMS.map(function(r, i) {
               return h('section', { key: i, className: 'p-4 rounded-xl bg-slate-800/60 border border-violet-500/30' },
                 h('h3', { className: 'text-sm font-black text-violet-200 mb-2' }, r.area),
@@ -9641,23 +9642,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               );
             }),
             h('div', { className: 'no-print' },
-              h('button', { onClick: function() { window.print && window.print(); }, className: 'transition-colors w-full py-2 rounded-lg bg-slate-800 border border-violet-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print rubric')
+              h('button', { onClick: function() { window.print && window.print(); }, className: 'transition-colors w-full py-2 rounded-lg bg-slate-800 border border-violet-500/40 text-white text-xs font-bold hover:bg-slate-700' }, __alloT('stem.assessmentliteracy.print_rubric', '\uD83D\uDDA8 Print rubric'))
             )
           );
         }
 
         // Teacher submenu
         var tsubs = [
-          { id: 'courses', icon: '\uD83D\uDCCB', label: 'Course Alignment', desc: '10 course types mapped to recommended modules and pedagogical goals. From Intro Psych to graduate School Psych.' },
-          { id: 'objectives', icon: '\uD83C\uDFAF', label: 'Learning Objectives', desc: 'Bloom-leveled learning outcomes per module, syllabus-ready. Aligned with APA Undergrad Learning Outcomes.' },
-          { id: 'prompts', icon: '\uD83D\uDCAC', label: 'Discussion Prompts', desc: '10 seminar-style questions spanning technical, applied, ethical, and meta-level territory.' },
-          { id: 'activities', icon: '\uD83D\uDEE0', label: 'In-Class Activities', desc: '8 hands-on classroom activities with setup, runtime, task, and debrief. Mix of individual, pair, group, and whole-class.' },
-          { id: 'rubric', icon: '\uD83D\uDCCF', label: 'Assessment Rubric', desc: '5-dimension rubric for grading student work. Ready to customize for your course emphasis.' }
+          { id: 'courses', icon: '\uD83D\uDCCB', label: __alloT('stem.assessmentliteracy.course_alignment_2', 'Course Alignment'), desc: __alloT('stem.assessmentliteracy.10_course_types_mapped_to_recommended_', '10 course types mapped to recommended modules and pedagogical goals. From Intro Psych to graduate School Psych.') },
+          { id: 'objectives', icon: '\uD83C\uDFAF', label: __alloT('stem.assessmentliteracy.learning_objectives', 'Learning Objectives'), desc: __alloT('stem.assessmentliteracy.bloom_leveled_learning_outcomes_per_mo', 'Bloom-leveled learning outcomes per module, syllabus-ready. Aligned with APA Undergrad Learning Outcomes.') },
+          { id: 'prompts', icon: '\uD83D\uDCAC', label: __alloT('stem.assessmentliteracy.discussion_prompts_2', 'Discussion Prompts'), desc: __alloT('stem.assessmentliteracy.10_seminar_style_questions_spanning_te', '10 seminar-style questions spanning technical, applied, ethical, and meta-level territory.') },
+          { id: 'activities', icon: '\uD83D\uDEE0', label: __alloT('stem.assessmentliteracy.in_class_activities_2', 'In-Class Activities'), desc: __alloT('stem.assessmentliteracy.8_hands_on_classroom_activities_with_s', '8 hands-on classroom activities with setup, runtime, task, and debrief. Mix of individual, pair, group, and whole-class.') },
+          { id: 'rubric', icon: '\uD83D\uDCCF', label: __alloT('stem.assessmentliteracy.assessment_rubric_2', 'Assessment Rubric'), desc: __alloT('stem.assessmentliteracy.5_dimension_rubric_for_grading_student', '5-dimension rubric for grading student work. Ready to customize for your course emphasis.') }
         ];
         return h('div', { className: 'max-w-4xl mx-auto p-4 md:p-6' },
           backBtn('menu', null, 'Main menu'),
-          h('h2', { className: 'text-2xl font-black text-violet-200 mb-2' }, '\uD83C\uDF93 Teacher / Instructor Mode'),
-          h('p', { className: 'text-xs text-slate-300 mb-4 leading-relaxed' }, 'Everything you need to adopt this tool in a Psychology, Education, School Psychology, or Industrial/Organizational Psych course. The content is built for undergraduate and graduate teaching; pick what fits your level.'),
+          h('h2', { className: 'text-2xl font-black text-violet-200 mb-2' }, __alloT('stem.assessmentliteracy.teacher_instructor_mode_2', '\uD83C\uDF93 Teacher / Instructor Mode')),
+          h('p', { className: 'text-xs text-slate-300 mb-4 leading-relaxed' }, __alloT('stem.assessmentliteracy.everything_you_need_to_adopt_this_tool', 'Everything you need to adopt this tool in a Psychology, Education, School Psychology, or Industrial/Organizational Psych course. The content is built for undergraduate and graduate teaching; pick what fits your level.')),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
             tsubs.map(function(x) {
               return h('button', {
@@ -9697,19 +9698,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
 
         return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-3' },
           backBtn('menu', null, 'Main menu'),
-          h('h2', { className: 'text-2xl font-black text-stone-100' }, '\uD83D\uDCD6 Glossary'),
-          h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, 'Key terms used throughout the Assessment Literacy Lab. Type in the box to filter by term, definition, or module. Terms link conceptually to the module where they\'re developed most fully.'),
+          h('h2', { className: 'text-2xl font-black text-stone-100' }, __alloT('stem.assessmentliteracy.glossary_2', '\uD83D\uDCD6 Glossary')),
+          h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, __alloT('stem.assessmentliteracy.key_terms_used_throughout_the_assessme', 'Key terms used throughout the Assessment Literacy Lab. Type in the box to filter by term, definition, or module. Terms link conceptually to the module where they\'re developed most fully.')),
           h('div', { className: 'sticky top-0 z-10 bg-slate-900/90 backdrop-blur py-2 no-print' },
             h('input', {
               type: 'text',
               value: s.glossaryFilter || '',
               onChange: function(e) { upd({ glossaryFilter: e.target.value }); },
-              placeholder: 'Filter by term, definition, or module',
+              placeholder: __alloT('stem.assessmentliteracy.filter_by_term_definition_or_module', 'Filter by term, definition, or module'),
               className: 'w-full p-2 rounded bg-slate-800/80 border border-stone-500 text-xs text-slate-100'
             }),
             filter && h('div', { className: 'text-xs text-slate-300 mt-1' }, filtered.length + ' of ' + GLOSSARY_TERMS.length + ' terms matching "' + filter + '"')
           ),
-          filtered.length === 0 ? h('div', { className: 'p-6 rounded bg-slate-800/40 text-center text-sm text-slate-100', role: 'status' }, 'No terms match your filter.') :
+          filtered.length === 0 ? h('div', { className: 'p-6 rounded bg-slate-800/40 text-center text-sm text-slate-100', role: 'status' }, __alloT('stem.assessmentliteracy.no_terms_match_your_filter', 'No terms match your filter.')) :
           letters.map(function(letter) {
             return h('section', { key: letter, className: 'space-y-2' },
               h('h3', { className: 'text-lg font-black text-stone-300 border-b border-stone-500/30 pb-1' }, letter),
@@ -9725,7 +9726,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             );
           }),
           h('div', { className: 'pt-4 no-print' },
-            h('button', { onClick: function() { window.print && window.print(); }, className: 'transition-colors w-full py-2 rounded-lg bg-slate-800 border border-stone-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print glossary')
+            h('button', { onClick: function() { window.print && window.print(); }, className: 'transition-colors w-full py-2 rounded-lg bg-slate-800 border border-stone-500/40 text-white text-xs font-bold hover:bg-slate-700' }, __alloT('stem.assessmentliteracy.print_glossary', '\uD83D\uDDA8 Print glossary'))
           )
         );
       }
@@ -9755,20 +9756,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         var actionReady = iq.reliability > 0.90 && ciHalf < (iq.stakes < 5 ? 15 : 8);
         var state = actionReady ? 'actready' : iq.reliability < 0.70 ? 'unreliable' : iq.reliability < 0.85 ? 'screeningonly' : iq.stakes > 7 ? 'needmore' : 'usewithci';
         var sm = ({
-          actready: { label: 'Action-ready', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'High reliability + narrow CI relative to stakes. Suitable as one input to a decision (still triangulate).' },
-          usewithci: { label: 'Use with CI', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Reasonable reliability but report the confidence interval — never the point estimate alone.' },
-          screeningonly: { label: 'Screening only', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Reliability 0.70-0.85 — fine for routine screening, NOT for placement or eligibility decisions.' },
-          needmore: { label: 'Insufficient for high stakes', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'CI is wide relative to the consequences of a wrong decision. Gather more data before acting.' },
-          unreliable: { label: 'Unreliable for high-stakes individual decisions', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Reliability < 0.70 — error variance ≥ 30% of total variance. Acceptable for some group-level research questions, but the confidence interval around any individual score is too wide for high-stakes individual decisions (placement, eligibility, diagnosis).' }
+          actready: { label: 'Action-ready', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: __alloT('stem.assessmentliteracy.high_reliability_narrow_ci_relative_to', 'High reliability + narrow CI relative to stakes. Suitable as one input to a decision (still triangulate).') },
+          usewithci: { label: __alloT('stem.assessmentliteracy.use_with_ci', 'Use with CI'), color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: __alloT('stem.assessmentliteracy.reasonable_reliability_but_report_the_', 'Reasonable reliability but report the confidence interval — never the point estimate alone.') },
+          screeningonly: { label: __alloT('stem.assessmentliteracy.screening_only', 'Screening only'), color: '#facc15', bg: '#2a2410', border: '#eab308', desc: __alloT('stem.assessmentliteracy.reliability_0_70_0_85_fine_for_routine', 'Reliability 0.70-0.85 — fine for routine screening, NOT for placement or eligibility decisions.') },
+          needmore: { label: __alloT('stem.assessmentliteracy.insufficient_for_high_stakes', 'Insufficient for high stakes'), color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: __alloT('stem.assessmentliteracy.ci_is_wide_relative_to_the_consequence', 'CI is wide relative to the consequences of a wrong decision. Gather more data before acting.') },
+          unreliable: { label: __alloT('stem.assessmentliteracy.unreliable_for_high_stakes_individual_', 'Unreliable for high-stakes individual decisions'), color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: __alloT('stem.assessmentliteracy.reliability_0_70_error_variance_30_of_', 'Reliability < 0.70 — error variance ≥ 30% of total variance. Acceptable for some group-level research questions, but the confidence interval around any individual score is too wide for high-stakes individual decisions (placement, eligibility, diagnosis).') }
         })[state];
         return h('div', { className: 'max-w-4xl mx-auto p-4 md:p-6' },
           h('header', { className: 'mb-4 flex items-center gap-3' },
             ArrowLeft && h('button', { onClick: function() { upd({ view: null, sub: null }); }, className: 'transition-colors p-2 hover:bg-slate-100 rounded-lg' }, h(ArrowLeft, { size: 18 })),
-            h('h1', { className: 'text-xl font-black text-teal-200' }, '🔬 Reliability Inquiry — Sandbox Capstone')
+            h('h1', { className: 'text-xl font-black text-teal-200' }, __alloT('stem.assessmentliteracy.reliability_inquiry_sandbox_capstone', '🔬 Reliability Inquiry — Sandbox Capstone'))
           ),
           h('div', { style: { padding: 16, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
-            h('p', { className: 'text-sm opacity-85 mb-3 leading-snug' }, 'Adjust the four sliders. Predict whether this score is action-ready. No score, no reveal — you mark your own understanding.'),
-            h('p', { className: 'text-xs opacity-70 mb-3 leading-snug italic' }, 'Note: in classical test theory, SEM and reliability are NOT independent — SEM = SD × √(1−r). They are separated here so you can see each lever in isolation, but a real instrument constrains both together. A claim like "r=.99 with SEM=15" is mathematically impossible at any plausible SD.'),
+            h('p', { className: 'text-sm opacity-85 mb-3 leading-snug' }, __alloT('stem.assessmentliteracy.adjust_the_four_sliders_predict_whethe', 'Adjust the four sliders. Predict whether this score is action-ready. No score, no reveal — you mark your own understanding.')),
+            h('p', { className: 'text-xs opacity-70 mb-3 leading-snug italic' }, __alloT('stem.assessmentliteracy.note_in_classical_test_theory_sem_and_', 'Note: in classical test theory, SEM and reliability are NOT independent — SEM = SD × √(1−r). They are separated here so you can see each lever in isolation, but a real instrument constrains both together. A claim like "r=.99 with SEM=15" is mathematically impossible at any plausible SD.')),
             h('div', { className: 'inline-block px-3 py-1 rounded-full text-xs font-bold mb-2', style: { background: sm.color, color: '#000' } }, sm.label + ' · CI ' + ciLow.toFixed(1) + '-' + ciHigh.toFixed(1)),
             h('p', { className: 'text-xs opacity-80 mb-3' }, sm.desc),
             h('svg', { width: '100%', height: 120, viewBox: '0 0 320 120', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 12 } },
@@ -9781,19 +9782,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             ),
             h('div', { className: 'grid grid-cols-2 gap-3 mb-3' },
               h('label', { className: 'text-xs' },
-                h('div', { className: 'flex justify-between mb-1' }, h('span', null, 'Reliability (r)'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.reliability.toFixed(2))),
+                h('div', { className: 'flex justify-between mb-1' }, h('span', null, __alloT('stem.assessmentliteracy.reliability_r', 'Reliability (r)')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.reliability.toFixed(2))),
                 h('input', { type: 'range', min: 0.5, max: 0.99, step: 0.01, value: iq.reliability, onChange: function(e) { setKey('reliability', parseFloat(e.target.value)); }, className: 'w-full' })
               ),
               h('label', { className: 'text-xs' },
-                h('div', { className: 'flex justify-between mb-1' }, h('span', null, 'SEM (standard error)'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.sem.toFixed(1))),
+                h('div', { className: 'flex justify-between mb-1' }, h('span', null, __alloT('stem.assessmentliteracy.sem_standard_error', 'SEM (standard error)')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.sem.toFixed(1))),
                 h('input', { type: 'range', min: 1, max: 15, step: 0.5, value: iq.sem, onChange: function(e) { setKey('sem', parseFloat(e.target.value)); }, className: 'w-full' })
               ),
               h('label', { className: 'text-xs' },
-                h('div', { className: 'flex justify-between mb-1' }, h('span', null, 'Observed score'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.observed)),
+                h('div', { className: 'flex justify-between mb-1' }, h('span', null, __alloT('stem.assessmentliteracy.observed_score', 'Observed score')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.observed)),
                 h('input', { type: 'range', min: 60, max: 140, step: 1, value: iq.observed, onChange: function(e) { setKey('observed', parseInt(e.target.value, 10)); }, className: 'w-full' })
               ),
               h('label', { className: 'text-xs' },
-                h('div', { className: 'flex justify-between mb-1' }, h('span', null, 'Decision stakes (1-10)'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.stakes)),
+                h('div', { className: 'flex justify-between mb-1' }, h('span', null, __alloT('stem.assessmentliteracy.decision_stakes_1_10', 'Decision stakes (1-10)')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.stakes)),
                 h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.stakes, onChange: function(e) { setKey('stakes', parseInt(e.target.value, 10)); }, className: 'w-full' })
               )
             ),
@@ -9801,31 +9802,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               h('button', { onClick: function() {
                 var t = new Date().toISOString().slice(11, 19);
                 setIQ({ log: iq.log.concat([{ t: t, r: iq.reliability.toFixed(2), sem: iq.sem, obs: iq.observed, stk: iq.stakes, ci: ciLow.toFixed(0) + '-' + ciHigh.toFixed(0), state: sm.label }]) });
-              }, className: 'flex-1 px-3 py-2 rounded text-xs font-bold', style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, '📋 Log this configuration'),
-              h('button', { onClick: function() { setIQ({ reliability: 0.85, sem: 5, observed: 100, stakes: 5 }); }, className: 'px-3 py-2 rounded text-xs', style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, 'Reset')
+              }, className: 'flex-1 px-3 py-2 rounded text-xs font-bold', style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, __alloT('stem.assessmentliteracy.log_this_configuration', '📋 Log this configuration')),
+              h('button', { onClick: function() { setIQ({ reliability: 0.85, sem: 5, observed: 100, stakes: 5 }); }, className: 'px-3 py-2 rounded text-xs', style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, __alloT('stem.assessmentliteracy.reset', 'Reset'))
             ),
             iq.log.length > 0 && h('div', { className: 'p-2 rounded text-xs font-mono mb-3', style: { background: '#0a0a1a', maxHeight: 100, overflow: 'auto', border: '1px solid #1e293b' } },
               iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · r=' + e.r + ' SEM=' + e.sem + ' obs=' + e.obs + ' stk=' + e.stk + ' → CI ' + e.ci); })
             ),
-            h('label', { className: 'block text-xs font-bold opacity-85 mb-1' }, 'Your hypothesis (which slider should weigh most when stakes are high?)'),
-            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 3, placeholder: 'e.g., for special education eligibility we should never act on r<.90 even if the point estimate looks clear...', className: 'w-full p-2 rounded text-xs mb-3', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-3 py-2 rounded text-xs font-bold mb-3', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, "🤔 I'm stuck — show open questions"),
+            h('label', { className: 'block text-xs font-bold opacity-85 mb-1' }, __alloT('stem.assessmentliteracy.your_hypothesis_which_slider_should_we', 'Your hypothesis (which slider should weigh most when stakes are high?)')),
+            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 3, placeholder: __alloT('stem.assessmentliteracy.e_g_for_special_education_eligibility_', 'e.g., for special education eligibility we should never act on r<.90 even if the point estimate looks clear...'), className: 'w-full p-2 rounded text-xs mb-3', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-3 py-2 rounded text-xs font-bold mb-3', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, __alloT('stem.assessmentliteracy.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
             iq.stuckRevealed && h('div', { className: 'p-3 rounded text-xs mb-3', style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.6 } },
-              h('div', { className: 'font-bold mb-2', style: { color: sm.color } }, 'Open questions (no answer key)'),
+              h('div', { className: 'font-bold mb-2', style: { color: sm.color } }, __alloT('stem.assessmentliteracy.open_questions_no_answer_key', 'Open questions (no answer key)')),
               h('ul', { className: 'pl-5 m-0 space-y-1' },
-                h('li', null, 'Why is the 95% CI ±1.96 × SEM, not ±1 × SEM or ±2 × SEM?'),
-                h('li', null, 'A standard score of 100 with r=.95, SEM=3 vs r=.75, SEM=10 — which is action-ready and why?'),
-                h('li', null, 'AAIDD requires r > .90 for ID determination. Why do high-stakes decisions need higher reliability?'),
-                h('li', null, 'When does a SCREENING-grade tool become inappropriate (and what is the harm)?'),
-                h('li', null, 'SEM = SD × √(1−r). At what SD does r=.95 force SEM ≤ 3? At what SD does r=.70 force SEM ≥ 8? Why are the sliders here NOT independent in real instruments?')
+                h('li', null, __alloT('stem.assessmentliteracy.why_is_the_95_ci_1_96_sem_not_1_sem_or', 'Why is the 95% CI ±1.96 × SEM, not ±1 × SEM or ±2 × SEM?')),
+                h('li', null, __alloT('stem.assessmentliteracy.a_standard_score_of_100_with_r_95_sem_', 'A standard score of 100 with r=.95, SEM=3 vs r=.75, SEM=10 — which is action-ready and why?')),
+                h('li', null, __alloT('stem.assessmentliteracy.aaidd_requires_r_90_for_id_determinati', 'AAIDD requires r > .90 for ID determination. Why do high-stakes decisions need higher reliability?')),
+                h('li', null, __alloT('stem.assessmentliteracy.when_does_a_screening_grade_tool_becom', 'When does a SCREENING-grade tool become inappropriate (and what is the harm)?')),
+                h('li', null, __alloT('stem.assessmentliteracy.sem_sd_1_r_at_what_sd_does_r_95_force_', 'SEM = SD × √(1−r). At what SD does r=.95 force SEM ≤ 3? At what SD does r=.70 force SEM ≥ 8? Why are the sliders here NOT independent in real instruments?'))
               )
             ),
             h('label', { className: 'flex items-center gap-2 text-xs font-bold cursor-pointer mb-2' },
               h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
-              h('span', null, 'I can explain why this reliability/SEM/score/stakes combination yields this action-readiness state.')
+              h('span', null, __alloT('stem.assessmentliteracy.i_can_explain_why_this_reliability_sem', 'I can explain why this reliability/SEM/score/stakes combination yields this action-readiness state.'))
             ),
-            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 3, placeholder: 'Explain in your own words...', className: 'w-full p-2 rounded text-xs mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-            h('p', { className: 'm-0 text-xs italic opacity-60' }, 'Inquiry widget — no score, no reveal, no answer dump. CIs assume normal sampling distribution; for very small samples use the appropriate t-distribution. Reliability is necessary but not sufficient — validity matters too. Always consult test manuals and standards (AAIDD-12, AERA/APA/NCME Standards).')
+            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 3, placeholder: __alloT('stem.assessmentliteracy.explain_in_your_own_words', 'Explain in your own words...'), className: 'w-full p-2 rounded text-xs mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+            h('p', { className: 'm-0 text-xs italic opacity-60' }, __alloT('stem.assessmentliteracy.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. CIs assume normal sampling distribution; for very small samples use the appropriate t-distribution. Reliability is necessary but not sufficient — validity matters too. Always consult test manuals and standards (AAIDD-12, AERA/APA/NCME Standards).'))
           )
         );
       }

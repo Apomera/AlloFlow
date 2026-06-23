@@ -38,6 +38,7 @@
       { id: 'try_2_specimens', label: 'Explore 2 different specimens', icon: '\uD83D\uDC38', check: function(d) { return Object.keys(d.specimensViewed || {}).length >= 2; }, progress: function(d) { return Object.keys(d.specimensViewed || {}).length + '/2'; } }
     ],
     render: function(ctx) {
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       console.log('[Dissection Plugin] render() called, has React:', !!ctx.React, 'has toolData:', !!ctx.toolData);
       // Aliases â€” maps ctx properties to original variable names
       var React = ctx.React;
@@ -6748,7 +6749,7 @@ var d = labToolData.dissection || {};
 
                   React.createElement("div", { className: "mt-2 pt-2 border-t border-slate-200" },
 
-                    React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed mb-1" }, spec.desc),
+                    React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed mb-1" }, __alloT('stem.dissection.' + (specimen) + '_desc', spec.desc)),
 
                     React.createElement("div", { className: "grid grid-cols-2 gap-1 mt-1" },
 

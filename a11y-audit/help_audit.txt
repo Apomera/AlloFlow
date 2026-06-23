@@ -4,9 +4,9 @@
 
 Files scanned: 368
 Defined help keys (help_strings.js): 878
-Referenced help keys (data-help-key attrs): 861
+Referenced help keys (data-help-key attrs): 862
   - With definition: 856
-  - MISSING definition: 5
+  - MISSING definition: 6
 Dead entries (defined but never referenced): 22
 
 --- MISSING help strings (referenced, no definition) ---
@@ -19,6 +19,9 @@ Dead entries (defined but never referenced): 22
   educator_hub_professional_dev_card  [2x in 2 file(s)]
      - view_educator_hub_modal_module.js
      - view_educator_hub_modal_source.jsx
+  pdf_audit_view_ocr_language  [2x in 2 file(s)]
+     - view_pdf_audit_module.js
+     - view_pdf_audit_source.jsx
   pdf_audit_writing_check_btn  [2x in 2 file(s)]
      - view_pdf_audit_module.js
      - view_pdf_audit_source.jsx
@@ -52,5 +55,5 @@ Dead entries (defined but never referenced): 22
 
 --- Top sections of MISSING keys (by snake_case prefix) ---
      3  educator
-     1  pdf
+     2  pdf
      1  ws

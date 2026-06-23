@@ -8153,7 +8153,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
       });
       // Add CSS to make skip link visible on focus with WCAG AA contrast
       if (accessibleHtml.includes('</head>')) {
-        accessibleHtml = accessibleHtml.replace('</head>', '<style>.skip-link:focus{position:fixed!important;left:0!important;top:0!important;width:auto!important;height:auto!important;overflow:visible!important;clip:auto!important;z-index:10000!important;background:#1e293b!important;color:#ffffff!important;padding:12px 20px!important;font-size:16px!important;font-weight:bold!important;outline:3px solid #fbbf24!important;outline-offset:2px!important;text-decoration:underline!important}</style>\n</head>');
+        accessibleHtml = accessibleHtml.replace('</head>', '<style>.skip-link:focus{position:fixed!important;left:0!important;top:0!important;width:auto!important;height:auto!important;overflow:visible!important;clip:auto!important;z-index:10000!important;background:#1e293b!important;color:#ffffff!important;padding:12px 20px!important;font-size:16px!important;font-weight:bold!important;outline:3px solid #1e3a8a!important;outline-offset:2px!important;box-shadow:0 0 0 2px #ffffff!important;text-decoration:underline!important}</style>\n</head>');
         aiFixCount++;
       }
     }
@@ -15471,7 +15471,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           });
           // Inject focus-visible CSS for skip link
           if (accessibleHtml.includes('</head>')) {
-            accessibleHtml = accessibleHtml.replace('</head>', '<style>.skip-link:focus{position:fixed!important;left:0!important;top:0!important;width:auto!important;height:auto!important;overflow:visible!important;clip:auto!important;z-index:10000!important;background:#1e293b!important;color:#ffffff!important;padding:12px 20px!important;font-size:16px!important;font-weight:bold!important;outline:3px solid #fbbf24!important;outline-offset:2px!important;text-decoration:underline!important}</style>\n</head>');
+            accessibleHtml = accessibleHtml.replace('</head>', '<style>.skip-link:focus{position:fixed!important;left:0!important;top:0!important;width:auto!important;height:auto!important;overflow:visible!important;clip:auto!important;z-index:10000!important;background:#1e293b!important;color:#ffffff!important;padding:12px 20px!important;font-size:16px!important;font-weight:bold!important;outline:3px solid #1e3a8a!important;outline-offset:2px!important;box-shadow:0 0 0 2px #ffffff!important;text-decoration:underline!important}</style>\n</head>');
             aiFixCount++;
           }
         }

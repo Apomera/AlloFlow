@@ -141,15 +141,15 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
           var dataRows = d.dataRows || [
 
-            { label: 'Apples', value: 45 },
+            { label: t('stem.datastudio.apples', 'Apples'), value: 45 },
 
-            { label: 'Bananas', value: 30 },
+            { label: t('stem.datastudio.bananas', 'Bananas'), value: 30 },
 
-            { label: 'Oranges', value: 55 },
+            { label: t('stem.datastudio.oranges', 'Oranges'), value: 55 },
 
-            { label: 'Grapes', value: 25 },
+            { label: t('stem.datastudio.grapes', 'Grapes'), value: 25 },
 
-            { label: 'Cherries', value: 40 }
+            { label: t('stem.datastudio.cherries', 'Cherries'), value: 40 }
 
           ];
 
@@ -171,15 +171,15 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
           var CHART_TYPES = [
 
-            { id: 'bar', icon: '📊', label: 'Bar Chart' },
+            { id: 'bar', icon: '📊', label: t('stem.datastudio.bar_chart', 'Bar Chart') },
 
-            { id: 'pie', icon: '🥧', label: 'Pie Chart' },
+            { id: 'pie', icon: '🥧', label: t('stem.datastudio.pie_chart', 'Pie Chart') },
 
-            { id: 'line', icon: '📈', label: 'Line Graph' },
+            { id: 'line', icon: '📈', label: t('stem.datastudio.line_graph', 'Line Graph') },
 
-            { id: 'scatter', icon: '⚬', label: 'Scatter Plot' },
+            { id: 'scatter', icon: '⚬', label: t('stem.datastudio.scatter_plot', 'Scatter Plot') },
 
-            { id: 'histogram', icon: '📉', label: 'Histogram' }
+            { id: 'histogram', icon: '📉', label: t('stem.datastudio.histogram', 'Histogram') }
 
           ];
 
@@ -187,15 +187,15 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
           var PRESETS = [
 
-            { label: '🍎 Fruit Sales', data: [{ label: 'Apples', value: 45 }, { label: 'Bananas', value: 30 }, { label: 'Oranges', value: 55 }, { label: 'Grapes', value: 25 }, { label: 'Cherries', value: 40 }], title: 'Fruit Sales' },
+            { label: t('stem.datastudio.fruit_sales', '🍎 Fruit Sales'), data: [{ label: t('stem.datastudio.apples_2', 'Apples'), value: 45 }, { label: t('stem.datastudio.bananas_2', 'Bananas'), value: 30 }, { label: t('stem.datastudio.oranges_2', 'Oranges'), value: 55 }, { label: t('stem.datastudio.grapes_2', 'Grapes'), value: 25 }, { label: t('stem.datastudio.cherries_2', 'Cherries'), value: 40 }], title: t('stem.datastudio.fruit_sales_2', 'Fruit Sales') },
 
-            { label: '🌡️ Monthly Temps (°F)', data: [{ label: 'Jan', value: 32 }, { label: 'Feb', value: 35 }, { label: 'Mar', value: 45 }, { label: 'Apr', value: 55 }, { label: 'May', value: 65 }, { label: 'Jun', value: 75 }, { label: 'Jul', value: 82 }, { label: 'Aug', value: 80 }, { label: 'Sep', value: 70 }, { label: 'Oct', value: 58 }, { label: 'Nov', value: 45 }, { label: 'Dec', value: 35 }], title: 'Monthly Temperature' },
+            { label: t('stem.datastudio.monthly_temps_f', '🌡️ Monthly Temps (°F)'), data: [{ label: 'Jan', value: 32 }, { label: 'Feb', value: 35 }, { label: 'Mar', value: 45 }, { label: 'Apr', value: 55 }, { label: 'May', value: 65 }, { label: 'Jun', value: 75 }, { label: 'Jul', value: 82 }, { label: 'Aug', value: 80 }, { label: 'Sep', value: 70 }, { label: 'Oct', value: 58 }, { label: 'Nov', value: 45 }, { label: 'Dec', value: 35 }], title: t('stem.datastudio.monthly_temperature', 'Monthly Temperature') },
 
-            { label: '📚 Class Grades', data: [{ label: 'A', value: 8 }, { label: 'B', value: 15 }, { label: 'C', value: 12 }, { label: 'D', value: 5 }, { label: 'F', value: 2 }], title: 'Grade Distribution' },
+            { label: t('stem.datastudio.class_grades', '📚 Class Grades'), data: [{ label: 'A', value: 8 }, { label: 'B', value: 15 }, { label: 'C', value: 12 }, { label: 'D', value: 5 }, { label: 'F', value: 2 }], title: t('stem.datastudio.grade_distribution', 'Grade Distribution') },
 
-            { label: '🏀 Sports Points', data: [{ label: 'Game 1', value: 22 }, { label: 'Game 2', value: 18 }, { label: 'Game 3', value: 31 }, { label: 'Game 4', value: 27 }, { label: 'Game 5', value: 35 }, { label: 'Game 6', value: 29 }], title: 'Points Per Game' },
+            { label: t('stem.datastudio.sports_points', '🏀 Sports Points'), data: [{ label: t('stem.datastudio.game_1', 'Game 1'), value: 22 }, { label: t('stem.datastudio.game_2', 'Game 2'), value: 18 }, { label: t('stem.datastudio.game_3', 'Game 3'), value: 31 }, { label: t('stem.datastudio.game_4', 'Game 4'), value: 27 }, { label: t('stem.datastudio.game_5', 'Game 5'), value: 35 }, { label: t('stem.datastudio.game_6', 'Game 6'), value: 29 }], title: t('stem.datastudio.points_per_game', 'Points Per Game') },
 
-            { label: '🎲 Dice Rolls (50)', data: (function () { var c = [0, 0, 0, 0, 0, 0]; for (var i = 0; i < 50; i++) c[Math.floor(Math.random() * 6)]++; return c.map(function (v, j) { return { label: '' + (j + 1), value: v }; }); })(), title: 'Dice Roll Distribution' }
+            { label: t('stem.datastudio.dice_rolls_50', '🎲 Dice Rolls (50)'), data: (function () { var c = [0, 0, 0, 0, 0, 0]; for (var i = 0; i < 50; i++) c[Math.floor(Math.random() * 6)]++; return c.map(function (v, j) { return { label: '' + (j + 1), value: v }; }); })(), title: t('stem.datastudio.dice_roll_distribution', 'Dice Roll Distribution') }
 
           ];
 
@@ -388,9 +388,9 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               React.createElement("div", null,
 
-                React.createElement("h3", { className: "text-lg font-bold flex items-center gap-2" }, "📈 Data Studio"),
+                React.createElement("h3", { className: "text-lg font-bold flex items-center gap-2" }, t('stem.datastudio.data_studio', "📈 Data Studio")),
 
-                React.createElement("p", { className: "text-xs", style: { color: _muted } }, "Create charts, import data & explore statistics")
+                React.createElement("p", { className: "text-xs", style: { color: _muted } }, t('stem.datastudio.create_charts_import_data_explore_stat', "Create charts, import data & explore statistics"))
 
               ),
 
@@ -404,7 +404,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 }, showStats ? '📊 Stats On' : '📊 Stats'),
 
-                React.createElement("button", { "aria-label": "Back",
+                React.createElement("button", { "aria-label": t('stem.datastudio.back', "Back"),
 
                   onClick: function () { setStemLabTool(null); },
 
@@ -412,7 +412,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   style: { background: _card, border: '1px solid ' + _border, color: _text }
 
-                }, "← Back")
+                }, t('stem.datastudio.back_2', "← Back"))
 
               )
 
@@ -456,7 +456,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               onChange: function (e) { updDS('chartTitle', e.target.value); },
 
-              placeholder: "Chart title...",
+              placeholder: t('stem.datastudio.chart_title', "Chart title..."),
 
               className: "w-full px-3 py-2 rounded-xl text-sm font-bold text-center",
 
@@ -871,7 +871,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               ['none', 'asc', 'desc'].map(function (s) {
 
-                var labels = { none: '— None', asc: '↑ Asc', desc: '↓ Desc' };
+                var labels = { none: '— None', asc: '↑ Asc', desc: t('stem.datastudio.desc', '↓ Desc') };
 
                 return React.createElement("button", { key: s,
 
@@ -917,7 +917,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               }),
 
-              (filterMin !== '' || filterMax !== '') && React.createElement("button", { "aria-label": "Clear",
+              (filterMin !== '' || filterMax !== '') && React.createElement("button", { "aria-label": t('stem.datastudio.clear', "Clear"),
 
                 onClick: function () { updDS('filterMin', ''); updDS('filterMax', ''); },
 
@@ -925,7 +925,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 style: { background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }
 
-              }, "✕ Clear"),
+              }, t('stem.datastudio.clear_2', "✕ Clear")),
 
               displayRows.length !== dataRows.length && React.createElement("span", { className: "text-[11px] font-bold", style: { color: _accent } }, '(' + displayRows.length + '/' + dataRows.length + ' shown)'),
 
@@ -971,7 +971,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
             React.createElement("div", { className: "flex gap-2" },
 
-              React.createElement("button", { "aria-label": "Import CSV data file",
+              React.createElement("button", { "aria-label": t('stem.datastudio.import_csv_data_file', "Import CSV data file"),
 
                 onClick: function () {
 
@@ -1005,9 +1005,9 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 style: { background: _card, border: '1px solid ' + _border, color: _accent }
 
-              }, "📂 Import CSV"),
+              }, t('stem.datastudio.import_csv', "📂 Import CSV")),
 
-              React.createElement("button", { "aria-label": "Export CSV",
+              React.createElement("button", { "aria-label": t('stem.datastudio.export_csv', "Export CSV"),
 
                 onClick: function () {
 
@@ -1029,7 +1029,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 style: { background: _card, border: '1px solid ' + _border, color: _accent }
 
-              }, "💾 Export CSV")
+              }, t('stem.datastudio.export_csv_2', "💾 Export CSV"))
 
             ),
 
@@ -1047,7 +1047,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 React.createElement("input", {
 
-                  type: "text", placeholder: "Label",
+                  type: "text", placeholder: t('stem.datastudio.label', "Label"),
 
                   value: editRow.label,
 
@@ -1062,7 +1062,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 React.createElement("input", {
 
-                  type: "number", placeholder: "Value",
+                  type: "number", placeholder: t('stem.datastudio.value', "Value"),
 
                   value: editRow.value,
 
@@ -1087,7 +1087,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 }),
 
-                React.createElement("button", { "aria-label": "+ Add",
+                React.createElement("button", { "aria-label": t('stem.datastudio.add', "+ Add"),
 
                   onClick: function () {
 
@@ -1105,7 +1105,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   style: { background: _btnBg, color: '#fff' }
 
-                }, "+ Add")
+                }, t('stem.datastudio.add_2', "+ Add"))
 
               ),
 
@@ -1137,7 +1137,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               // Clear
 
-              dataRows.length > 0 && React.createElement("button", { "aria-label": "Clear All",
+              dataRows.length > 0 && React.createElement("button", { "aria-label": t('stem.datastudio.clear_all', "Clear All"),
 
                 onClick: function () { updDS('dataRows', []); },
 
@@ -1145,7 +1145,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 style: { background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }
 
-              }, "🗑 Clear All")
+              }, t('stem.datastudio.clear_all_2', "🗑 Clear All"))
 
             ),
 
@@ -1159,11 +1159,11 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 { label: 'Sum', val: total.toFixed(1) },
 
-                { label: 'Mean', val: mean.toFixed(1) },
+                { label: t('stem.datastudio.mean', 'Mean'), val: mean.toFixed(1) },
 
-                { label: 'Median', val: median.toFixed(1) },
+                { label: t('stem.datastudio.median', 'Median'), val: median.toFixed(1) },
 
-                { label: 'Std Dev', val: stdDev.toFixed(1) }
+                { label: t('stem.datastudio.std_dev', 'Std Dev'), val: stdDev.toFixed(1) }
 
               ].map(function (stat, i) {
 
@@ -1195,11 +1195,11 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               var LEVELS = [
 
-                { id: 'plain', label: 'Plain Language', promptHint: 'simple everyday words, short sentences' },
+                { id: 'plain', label: t('stem.datastudio.plain_language', 'Plain Language'), promptHint: 'simple everyday words, short sentences' },
 
-                { id: 'grade5', label: 'Grade 5', promptHint: 'a 5th grade student' },
+                { id: 'grade5', label: t('stem.datastudio.grade_5', 'Grade 5'), promptHint: 'a 5th grade student' },
 
-                { id: 'grade8', label: 'Grade 8', promptHint: 'an 8th grade student' }
+                { id: 'grade8', label: t('stem.datastudio.grade_8', 'Grade 8'), promptHint: 'an 8th grade student' }
 
               ];
 
@@ -1253,13 +1253,13 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               }
 
-              return React.createElement("div", { className: "mt-2 rounded-xl p-3", role: "region", "aria-label": "AI data story", style: { background: _card, border: '1px solid ' + _border } },
+              return React.createElement("div", { className: "mt-2 rounded-xl p-3", role: "region", "aria-label": t('stem.datastudio.ai_data_story', "AI data story"), style: { background: _card, border: '1px solid ' + _border } },
 
                 React.createElement("div", { className: "flex items-center flex-wrap gap-2 mb-2" },
 
-                  React.createElement("span", { className: "text-sm font-bold", style: { color: _accent } }, "\u2728 What story does this data tell?"),
+                  React.createElement("span", { className: "text-sm font-bold", style: { color: _accent } }, t('stem.datastudio.what_story_does_this_data_tell', "\u2728 What story does this data tell?")),
 
-                  React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": "Reading level" },
+                  React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": t('stem.datastudio.reading_level', "Reading level") },
 
                     LEVELS.map(function (L) {
 
@@ -1291,7 +1291,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                     disabled: aiLoading,
 
-                    "aria-label": "Generate data story at " + (LEVELS.find(function (L) { return L.id === aiLevel; }) || { label: 'Grade 5' }).label + " level",
+                    "aria-label": "Generate data story at " + (LEVELS.find(function (L) { return L.id === aiLevel; }) || { label: t('stem.datastudio.grade_5_2', 'Grade 5') }).label + " level",
 
                     className: "px-3 py-1 rounded-lg text-[11px] font-bold transition-all disabled:opacity-50",
 
@@ -1305,7 +1305,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 aiStory && React.createElement("p", { className: "text-xs leading-relaxed mt-1", style: { color: _text } }, aiStory),
 
-                !aiStory && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic", style: { color: _muted } }, "Click \u201CTell the story\u201D to have the AI tutor explain what your chart shows at your chosen reading level.")
+                !aiStory && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic", style: { color: _muted } }, t('stem.datastudio.click_tell_the_story_to_have_the_ai_tu', "Click \u201CTell the story\u201D to have the AI tutor explain what your chart shows at your chosen reading level."))
 
               );
 
@@ -1321,14 +1321,14 @@ var d = (labToolData && labToolData._dataStudio) || {};
               else if (iq.zoomX < 60 && iq.zoomY < 60) state = 'tooBroad';
               else state = 'legible';
               var sm = {
-                invisible:  { label: '\uD83D\uDC7B Nearly invisible (low opacity)', color: '#94a3b8', bg: '#f1f5f9', border: '#cbd5e1' },
-                overzoomed: { label: '\uD83D\uDD0D Over-zoomed (lose context)', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
-                tooBroad:   { label: '\uD83D\uDD2D Too broad (lose detail)', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9' },
-                legible:    { label: '\uD83D\uDFE2 Legible visualization', color: '#059669', bg: '#ecfdf5', border: '#86efac' }
+                invisible:  { label: t('stem.datastudio.nearly_invisible_low_opacity', '\uD83D\uDC7B Nearly invisible (low opacity)'), color: '#94a3b8', bg: '#f1f5f9', border: '#cbd5e1' },
+                overzoomed: { label: t('stem.datastudio.over_zoomed_lose_context', '\uD83D\uDD0D Over-zoomed (lose context)'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
+                tooBroad:   { label: t('stem.datastudio.too_broad_lose_detail', '\uD83D\uDD2D Too broad (lose detail)'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9' },
+                legible:    { label: t('stem.datastudio.legible_visualization', '\uD83D\uDFE2 Legible visualization'), color: '#059669', bg: '#ecfdf5', border: '#86efac' }
               }[state];
               return React.createElement('div', { className: 'mt-3 p-3 rounded-xl bg-white border border-cyan-300 space-y-2' },
-                React.createElement('h3', { className: 'text-sm font-black text-cyan-700' }, '\uD83D\uDCCA Chart visuals discovery'),
-                React.createElement('p', { className: 'text-[11px] text-slate-700' }, 'Sliders for opacity, zoom X, zoom Y. Discrete 4-state visual legibility. No score, no reveal.'),
+                React.createElement('h3', { className: 'text-sm font-black text-cyan-700' }, t('stem.datastudio.chart_visuals_discovery', '\uD83D\uDCCA Chart visuals discovery')),
+                React.createElement('p', { className: 'text-[11px] text-slate-700' }, t('stem.datastudio.sliders_for_opacity_zoom_x_zoom_y_disc', 'Sliders for opacity, zoom X, zoom Y. Discrete 4-state visual legibility. No score, no reveal.')),
                 React.createElement('div', { className: 'p-2 rounded text-center', style: { background: sm.bg, border: '1px solid ' + sm.border } },
                   React.createElement('div', { className: 'text-sm font-black', style: { color: sm.color } }, sm.label)
                 ),
@@ -1342,22 +1342,22 @@ var d = (labToolData && labToolData._dataStudio) || {};
                   })
                 ),
                 React.createElement('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  React.createElement('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ o: iq.opacity, x: iq.zoomX, y: iq.zoomY, st: state }]).slice(-8) }); }, className: 'px-2 py-0.5 rounded bg-slate-100 text-[10px] font-bold text-slate-700 border border-slate-300' }, '\uD83D\uDCCB Log'),
-                  React.createElement('button', { onClick: function() { setIQ({ opacity: 80, zoomX: 100, zoomY: 100, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[10px] font-semibold text-slate-600 border border-slate-300' }, '\u21BA Reset')
+                  React.createElement('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ o: iq.opacity, x: iq.zoomX, y: iq.zoomY, st: state }]).slice(-8) }); }, className: 'px-2 py-0.5 rounded bg-slate-100 text-[10px] font-bold text-slate-700 border border-slate-300' }, t('stem.datastudio.log', '\uD83D\uDCCB Log')),
+                  React.createElement('button', { onClick: function() { setIQ({ opacity: 80, zoomX: 100, zoomY: 100, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[10px] font-semibold text-slate-600 border border-slate-300' }, t('stem.datastudio.reset', '\u21BA Reset'))
                 ),
-                React.createElement('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: When is a chart most legible?',
+                React.createElement('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.datastudio.hypothesis_when_is_a_chart_most_legibl', 'Hypothesis: When is a chart most legible?'),
                   className: 'w-full text-[11px] border border-slate-300 rounded p-1 font-mono leading-snug', rows: 2 }),
-                !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[10px] font-bold text-amber-800 border border-amber-300' }, '\uD83E\uDD14 Stuck \u2014 show open prompts'),
+                !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[10px] font-bold text-amber-800 border border-amber-300' }, t('stem.datastudio.stuck_show_open_prompts', '\uD83E\uDD14 Stuck \u2014 show open prompts')),
                 iq.stuckRevealed && React.createElement('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[10px] text-slate-700' },
                   React.createElement('ul', { className: 'list-disc pl-4 space-y-0.5' },
-                    React.createElement('li', null, 'Tufte rules: maximize data-ink ratio. What does that mean?'),
-                    React.createElement('li', null, 'When does zoom obscure context?'))),
+                    React.createElement('li', null, t('stem.datastudio.tufte_rules_maximize_data_ink_ratio_wh', 'Tufte rules: maximize data-ink ratio. What does that mean?')),
+                    React.createElement('li', null, t('stem.datastudio.when_does_zoom_obscure_context', 'When does zoom obscure context?')))),
                 React.createElement('label', { className: 'flex items-center gap-1 text-[10px] font-bold text-emerald-800 cursor-pointer' },
                   React.createElement('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
-                  'I understand \u2014 explain in own words'),
-                iq.understood && React.createElement('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain chart visualization principles.',
+                  t('stem.datastudio.i_understand_explain_in_own_words', 'I understand \u2014 explain in own words')),
+                iq.understood && React.createElement('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.datastudio.explain_chart_visualization_principles', 'Explain chart visualization principles.'),
                   className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
-                React.createElement('div', { className: 'text-[9px] italic text-slate-500' }, 'Design note: discrete 4-state visual marker; no aesthetic score; no reveal \u2014 by design.')
+                React.createElement('div', { className: 'text-[9px] italic text-slate-500' }, t('stem.datastudio.design_note_discrete_4_state_visual_ma', 'Design note: discrete 4-state visual marker; no aesthetic score; no reveal \u2014 by design.'))
               );
             })()
 

@@ -475,22 +475,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
       // ── Mission Data ──
       var PHASES = [
-        { name: 'Mission Briefing', icon: '\uD83D\uDCCB', desc: 'Review your mission objectives and crew assignment' },
-        { name: 'Launch', icon: '\uD83D\uDE80', desc: 'Countdown and liftoff from Kennedy Space Center' },
-        { name: 'Earth Orbit', icon: '\uD83C\uDF0D', desc: 'Reach low Earth orbit and prepare for trans-lunar injection' },
-        { name: 'Trans-Lunar Coast', icon: '\uD83C\uDF11', desc: '3-day journey to the Moon \u2014 384,400 km' },
-        { name: 'Lunar Orbit', icon: '\uD83C\uDF15', desc: 'Enter orbit around the Moon' },
-        { name: 'Powered Descent', icon: '\u2B07\uFE0F', desc: 'Pilot the Lunar Module to the surface' },
-        { name: 'Moonwalk EVA', icon: '\uD83D\uDC68\u200D\uD83D\uDE80', desc: 'Explore the lunar surface and collect samples' },
-        { name: 'Lunar Ascent', icon: '\u2B06\uFE0F', desc: 'Launch from the Moon and rendezvous with Command Module' },
-        { name: 'Trans-Earth Coast', icon: '\uD83C\uDF0D', desc: 'Return journey to Earth' },
-        { name: 'Re-entry & Splashdown', icon: '\uD83C\uDF0A', desc: 'Survive re-entry and splash down in the Pacific' }
+        { name: t('stem.moonmission.mission_briefing', 'Mission Briefing'), icon: '\uD83D\uDCCB', desc: t('stem.moonmission.review_your_mission_objectives_and_cre', 'Review your mission objectives and crew assignment') },
+        { name: t('stem.moonmission.launch', 'Launch'), icon: '\uD83D\uDE80', desc: t('stem.moonmission.countdown_and_liftoff_from_kennedy_spa', 'Countdown and liftoff from Kennedy Space Center') },
+        { name: t('stem.moonmission.earth_orbit', 'Earth Orbit'), icon: '\uD83C\uDF0D', desc: t('stem.moonmission.reach_low_earth_orbit_and_prepare_for_', 'Reach low Earth orbit and prepare for trans-lunar injection') },
+        { name: t('stem.moonmission.trans_lunar_coast', 'Trans-Lunar Coast'), icon: '\uD83C\uDF11', desc: t('stem.moonmission.3_day_journey_to_the_moon_384_400_km', '3-day journey to the Moon \u2014 384,400 km') },
+        { name: t('stem.moonmission.lunar_orbit', 'Lunar Orbit'), icon: '\uD83C\uDF15', desc: t('stem.moonmission.enter_orbit_around_the_moon', 'Enter orbit around the Moon') },
+        { name: t('stem.moonmission.powered_descent', 'Powered Descent'), icon: '\u2B07\uFE0F', desc: t('stem.moonmission.pilot_the_lunar_module_to_the_surface', 'Pilot the Lunar Module to the surface') },
+        { name: t('stem.moonmission.moonwalk_eva', 'Moonwalk EVA'), icon: '\uD83D\uDC68\u200D\uD83D\uDE80', desc: t('stem.moonmission.explore_the_lunar_surface_and_collect_', 'Explore the lunar surface and collect samples') },
+        { name: t('stem.moonmission.lunar_ascent', 'Lunar Ascent'), icon: '\u2B06\uFE0F', desc: t('stem.moonmission.launch_from_the_moon_and_rendezvous_wi', 'Launch from the Moon and rendezvous with Command Module') },
+        { name: t('stem.moonmission.trans_earth_coast', 'Trans-Earth Coast'), icon: '\uD83C\uDF0D', desc: t('stem.moonmission.return_journey_to_earth', 'Return journey to Earth') },
+        { name: t('stem.moonmission.re_entry_splashdown', 'Re-entry & Splashdown'), icon: '\uD83C\uDF0A', desc: t('stem.moonmission.survive_re_entry_and_splash_down_in_th', 'Survive re-entry and splash down in the Pacific') }
       ];
 
       var CREW_ROLES = [
-        { role: 'Commander (CDR)', name: 'You', desc: 'Pilots the Lunar Module to the surface and leads the EVA', tasks: 'Landing decisions, EVA leadership, sample selection' },
-        { role: 'Command Module Pilot (CMP)', name: 'Alex', desc: 'Orbits the Moon alone in the Command Module while CDR and LMP explore', tasks: 'Orbital science, photography, rendezvous navigation' },
-        { role: 'Lunar Module Pilot (LMP)', name: 'Jordan', desc: 'Assists with descent and EVA, operates scientific instruments', tasks: 'Systems monitoring, instrument deployment, sample documentation' }
+        { role: 'Commander (CDR)', name: 'You', desc: t('stem.moonmission.pilots_the_lunar_module_to_the_surface', 'Pilots the Lunar Module to the surface and leads the EVA'), tasks: 'Landing decisions, EVA leadership, sample selection' },
+        { role: 'Command Module Pilot (CMP)', name: t('stem.moonmission.alex', 'Alex'), desc: t('stem.moonmission.orbits_the_moon_alone_in_the_command_m', 'Orbits the Moon alone in the Command Module while CDR and LMP explore'), tasks: 'Orbital science, photography, rendezvous navigation' },
+        { role: 'Lunar Module Pilot (LMP)', name: t('stem.moonmission.jordan', 'Jordan'), desc: t('stem.moonmission.assists_with_descent_and_eva_operates_', 'Assists with descent and EVA, operates scientific instruments'), tasks: 'Systems monitoring, instrument deployment, sample documentation' }
       ];
 
       var APOLLO_FACTS = [
@@ -509,28 +509,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       ];
 
       var LUNAR_SAMPLES_DATA = [
-        { name: 'Anorthosite', icon: '\u26AA', type: 'Highland Rock', xp: 15, fact: 'This ancient rock from the lunar highlands is 4.4 billion years old \u2014 nearly as old as the Moon itself. It tells us the Moon once had a global magma ocean.' },
-        { name: 'Basalt', icon: '\u26AB', type: 'Mare Rock', xp: 10, fact: 'Dark volcanic basalt filled the Moon\'s giant impact basins to create the dark "seas" (maria) visible from Earth. These lavas erupted 3-3.5 billion years ago.' },
-        { name: 'Breccia', icon: '\uD83D\uDFE4', type: 'Impact Rock', xp: 12, fact: 'A jumbled mix of rock fragments welded together by meteorite impacts. The Moon\'s surface has been pounded for 4+ billion years.' },
-        { name: 'Regolith Core', icon: '\uD83E\uDEA8', type: 'Soil Sample', xp: 8, fact: 'Lunar soil is ground-up rock from billions of years of micrometeorite bombardment. It contains tiny glass beads and even traces of solar wind particles.' },
-        { name: 'Orange Soil', icon: '\uD83D\uDFE0', type: 'Volcanic Glass', xp: 20, fact: 'Apollo 17 found orange soil \u2014 tiny glass beads from an ancient volcanic eruption 3.7 billion years ago. This was one of Apollo\'s most exciting discoveries!' },
-        { name: 'KREEP Basalt', icon: '\uD83D\uDC8E', type: 'Rare Mineral', xp: 25, fact: 'KREEP stands for Potassium (K), Rare Earth Elements, and Phosphorus. These minerals concentrated in the last dregs of the lunar magma ocean.' },
-        { name: 'Impact Glass', icon: '\u2728', type: 'Glass Bead', xp: 10, fact: 'Meteorite impacts melt rock into glass that flies through space and lands as tiny spheres. Some contain trapped gases from the ancient lunar atmosphere.' },
-        { name: 'Genesis Rock', icon: '\uD83D\uDCA0', type: 'Primordial', xp: 30, fact: 'Apollo 15 found this 4.1 billion year old anorthosite, one of the oldest rocks ever collected. It helped prove the magma ocean theory of the Moon\'s formation.' }
+        { name: t('stem.moonmission.anorthosite', 'Anorthosite'), icon: '\u26AA', type: 'Highland Rock', xp: 15, fact: t('stem.moonmission.this_ancient_rock_from_the_lunar_highl', 'This ancient rock from the lunar highlands is 4.4 billion years old \u2014 nearly as old as the Moon itself. It tells us the Moon once had a global magma ocean.') },
+        { name: t('stem.moonmission.basalt', 'Basalt'), icon: '\u26AB', type: 'Mare Rock', xp: 10, fact: t('stem.moonmission.dark_volcanic_basalt_filled_the_moon_s', 'Dark volcanic basalt filled the Moon\'s giant impact basins to create the dark "seas" (maria) visible from Earth. These lavas erupted 3-3.5 billion years ago.') },
+        { name: t('stem.moonmission.breccia', 'Breccia'), icon: '\uD83D\uDFE4', type: 'Impact Rock', xp: 12, fact: t('stem.moonmission.a_jumbled_mix_of_rock_fragments_welded', 'A jumbled mix of rock fragments welded together by meteorite impacts. The Moon\'s surface has been pounded for 4+ billion years.') },
+        { name: t('stem.moonmission.regolith_core', 'Regolith Core'), icon: '\uD83E\uDEA8', type: 'Soil Sample', xp: 8, fact: t('stem.moonmission.lunar_soil_is_ground_up_rock_from_bill', 'Lunar soil is ground-up rock from billions of years of micrometeorite bombardment. It contains tiny glass beads and even traces of solar wind particles.') },
+        { name: t('stem.moonmission.orange_soil', 'Orange Soil'), icon: '\uD83D\uDFE0', type: 'Volcanic Glass', xp: 20, fact: t('stem.moonmission.apollo_17_found_orange_soil_tiny_glass', 'Apollo 17 found orange soil \u2014 tiny glass beads from an ancient volcanic eruption 3.7 billion years ago. This was one of Apollo\'s most exciting discoveries!') },
+        { name: t('stem.moonmission.kreep_basalt', 'KREEP Basalt'), icon: '\uD83D\uDC8E', type: 'Rare Mineral', xp: 25, fact: t('stem.moonmission.kreep_stands_for_potassium_k_rare_eart', 'KREEP stands for Potassium (K), Rare Earth Elements, and Phosphorus. These minerals concentrated in the last dregs of the lunar magma ocean.') },
+        { name: t('stem.moonmission.impact_glass', 'Impact Glass'), icon: '\u2728', type: 'Glass Bead', xp: 10, fact: t('stem.moonmission.meteorite_impacts_melt_rock_into_glass', 'Meteorite impacts melt rock into glass that flies through space and lands as tiny spheres. Some contain trapped gases from the ancient lunar atmosphere.') },
+        { name: t('stem.moonmission.genesis_rock', 'Genesis Rock'), icon: '\uD83D\uDCA0', type: 'Primordial', xp: 30, fact: t('stem.moonmission.apollo_15_found_this_4_1_billion_year_', 'Apollo 15 found this 4.1 billion year old anorthosite, one of the oldest rocks ever collected. It helped prove the magma ocean theory of the Moon\'s formation.') }
       ];
 
       // ── Quiz Questions (shown between key phases) ──
       var QUIZ_BANK = [
-        { q: 'How far is the Moon from Earth?', opts: ['38,440 km', '384,400 km', '3,844,000 km', '38,440,000 km'], a: 1, fact: 'The Moon is about 384,400 km away \u2014 light takes 1.3 seconds to travel there!' },
-        { q: 'How long does it take to reach the Moon?', opts: ['3 hours', '3 days', '3 weeks', '3 months'], a: 1, fact: 'Apollo missions took about 3 days each way, traveling at ~3,900 km/h.' },
-        { q: 'What is the Moon\'s gravity compared to Earth?', opts: ['1/2', '1/4', '1/6', '1/10'], a: 2, fact: 'The Moon\'s gravity is 1/6 of Earth\'s. A 70 kg person weighs only ~12 kg there!' },
-        { q: 'What is the temperature on the Moon\'s sunlit side?', opts: ['50\u00B0C', '127\u00B0C', '200\u00B0C', '327\u00B0C'], a: 1, fact: 'The sunlit side reaches 127\u00B0C, while the dark side drops to -173\u00B0C!' },
-        { q: 'How many people have walked on the Moon?', opts: ['2', '6', '12', '24'], a: 2, fact: '12 astronauts walked on the Moon across Apollo 11, 12, 14, 15, 16, and 17.' },
-        { q: 'What was the first word spoken on the Moon?', opts: ['"Houston"', '"Tranquility"', '"Eagle"', '"That\'s"'], a: 0, fact: 'Buzz Aldrin said "Contact light" first, but Armstrong\'s famous line started with "That\'s."' },
-        { q: 'What fuel did the Saturn V first stage use?', opts: ['Hydrogen', 'Kerosene (RP-1)', 'Methane', 'Solid fuel'], a: 1, fact: 'The first stage burned RP-1 kerosene with liquid oxygen \u2014 2,000+ tons of fuel in 2.5 minutes!' },
-        { q: 'Why is there no sound on the Moon?', opts: ['Too cold', 'No atmosphere', 'Too much gravity', 'Solar radiation'], a: 1, fact: 'Sound needs a medium (air/water) to travel. The Moon has no atmosphere, so it\'s perfectly silent.' },
-        { q: 'What does the Moon smell like?', opts: ['Nothing', 'Spent gunpowder', 'Sulfur', 'Roses'], a: 1, fact: 'Every Apollo astronaut reported that Moon dust smells like spent gunpowder when brought inside the LM!' },
-        { q: 'How old are the oldest Moon rocks collected?', opts: ['1 billion years', '2.5 billion years', '4.4 billion years', '6 billion years'], a: 2, fact: 'The oldest Moon rocks are 4.4 billion years old \u2014 nearly as old as the solar system itself!' }
+        { q: 'How far is the Moon from Earth?', opts: ['38,440 km', '384,400 km', '3,844,000 km', '38,440,000 km'], a: 1, fact: t('stem.moonmission.the_moon_is_about_384_400_km_away_ligh', 'The Moon is about 384,400 km away \u2014 light takes 1.3 seconds to travel there!') },
+        { q: 'How long does it take to reach the Moon?', opts: ['3 hours', '3 days', '3 weeks', '3 months'], a: 1, fact: t('stem.moonmission.apollo_missions_took_about_3_days_each', 'Apollo missions took about 3 days each way, traveling at ~3,900 km/h.') },
+        { q: 'What is the Moon\'s gravity compared to Earth?', opts: ['1/2', '1/4', '1/6', '1/10'], a: 2, fact: t('stem.moonmission.the_moon_s_gravity_is_1_6_of_earth_s_a', 'The Moon\'s gravity is 1/6 of Earth\'s. A 70 kg person weighs only ~12 kg there!') },
+        { q: 'What is the temperature on the Moon\'s sunlit side?', opts: ['50\u00B0C', '127\u00B0C', '200\u00B0C', '327\u00B0C'], a: 1, fact: t('stem.moonmission.the_sunlit_side_reaches_127_c_while_th', 'The sunlit side reaches 127\u00B0C, while the dark side drops to -173\u00B0C!') },
+        { q: 'How many people have walked on the Moon?', opts: ['2', '6', '12', '24'], a: 2, fact: t('stem.moonmission.12_astronauts_walked_on_the_moon_acros', '12 astronauts walked on the Moon across Apollo 11, 12, 14, 15, 16, and 17.') },
+        { q: 'What was the first word spoken on the Moon?', opts: ['"Houston"', '"Tranquility"', '"Eagle"', '"That\'s"'], a: 0, fact: t('stem.moonmission.buzz_aldrin_said_contact_light_first_b', 'Buzz Aldrin said "Contact light" first, but Armstrong\'s famous line started with "That\'s."') },
+        { q: 'What fuel did the Saturn V first stage use?', opts: ['Hydrogen', 'Kerosene (RP-1)', 'Methane', 'Solid fuel'], a: 1, fact: t('stem.moonmission.the_first_stage_burned_rp_1_kerosene_w', 'The first stage burned RP-1 kerosene with liquid oxygen \u2014 2,000+ tons of fuel in 2.5 minutes!') },
+        { q: 'Why is there no sound on the Moon?', opts: ['Too cold', 'No atmosphere', 'Too much gravity', 'Solar radiation'], a: 1, fact: t('stem.moonmission.sound_needs_a_medium_air_water_to_trav', 'Sound needs a medium (air/water) to travel. The Moon has no atmosphere, so it\'s perfectly silent.') },
+        { q: 'What does the Moon smell like?', opts: ['Nothing', 'Spent gunpowder', 'Sulfur', 'Roses'], a: 1, fact: t('stem.moonmission.every_apollo_astronaut_reported_that_m', 'Every Apollo astronaut reported that Moon dust smells like spent gunpowder when brought inside the LM!') },
+        { q: 'How old are the oldest Moon rocks collected?', opts: ['1 billion years', '2.5 billion years', '4.4 billion years', '6 billion years'], a: 2, fact: t('stem.moonmission.the_oldest_moon_rocks_are_4_4_billion_', 'The oldest Moon rocks are 4.4 billion years old \u2014 nearly as old as the solar system itself!') }
       ];
 
       // ── AI-customized content override ──
@@ -566,7 +566,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             if (QUIZ_BANK.length < 3) {
               // Fallback: if validation dropped too many, restore defaults.
               QUIZ_BANK = [
-                { q: 'How far is the Moon from Earth?', opts: ['38,440 km', '384,400 km', '3,844,000 km', '38,440,000 km'], a: 1, fact: 'The Moon is about 384,400 km away \u2014 light takes 1.3 seconds to travel there!' }
+                { q: 'How far is the Moon from Earth?', opts: ['38,440 km', '384,400 km', '3,844,000 km', '38,440,000 km'], a: 1, fact: t('stem.moonmission.the_moon_is_about_384_400_km_away_ligh_2', 'The Moon is about 384,400 km away \u2014 light takes 1.3 seconds to travel there!') }
               ];
             }
           }
@@ -581,91 +581,91 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       // ═══════════════════════════════════════════════════════════════
       var MISSION_EVENTS = [
         {
-          id: 'toilet_clog', title: 'Waste Management Malfunction', emoji: '\uD83D\uDEBD',
+          id: 'toilet_clog', title: t('stem.moonmission.waste_management_malfunction', 'Waste Management Malfunction'), emoji: '\uD83D\uDEBD',
           phases: [3, 8], difficulty: ['pilot', 'commander'], probability: 0.7,
           historical: 'Artemis II (April 2026): Frozen urine in the vent line blocked the toilet just hours into the mission. NASA rotated the Orion capsule to expose the frozen blockage to sunlight, thawing it via thermal radiation through the vacuum of space.',
           scenario: 'Houston reports a blockage in the waste management vent line. Frozen waste is preventing the toilet from functioning. With days of coast ahead, this needs solving \u2014 crew comfort and hygiene are critical for mission success.',
           stemConcepts: ['thermal radiation', 'phase changes of matter', 'heat transfer in vacuum'],
           options: [
-            { label: 'Rotate spacecraft to expose vent to sunlight', icon: '\u2600\uFE0F',
+            { label: t('stem.moonmission.rotate_spacecraft_to_expose_vent_to_su', 'Rotate spacecraft to expose vent to sunlight'), icon: '\u2600\uFE0F',
               effects: { morale: 10 }, quality: 'optimal', xp: 20,
               scienceReward: 'Thermal radiation travels through the vacuum of space \u2014 no air needed! The Sun delivers 1,361 watts per square meter. By rotating Orion, the crew used the Sun as a giant space heater. This is the same principle that makes the sunlit side of the Moon reach 127\u00B0C while the dark side drops to -173\u00B0C.' },
-            { label: 'Reroute cabin heater duct to warm the pipe', icon: '\uD83D\uDD25',
+            { label: t('stem.moonmission.reroute_cabin_heater_duct_to_warm_the_', 'Reroute cabin heater duct to warm the pipe'), icon: '\uD83D\uDD25',
               effects: { morale: 5 }, quality: 'adequate', xp: 10,
               scienceReward: 'Conduction transfers heat through direct contact between molecules. It works, but uses electrical power from your limited fuel cell supply \u2014 and fuel cells also generate your oxygen and drinking water!' },
-            { label: 'Seal the vent and use backup waste bags', icon: '\uD83D\uDDC4\uFE0F',
+            { label: t('stem.moonmission.seal_the_vent_and_use_backup_waste_bag', 'Seal the vent and use backup waste bags'), icon: '\uD83D\uDDC4\uFE0F',
               effects: { morale: -10 }, quality: 'poor', xp: 5,
               scienceReward: 'Apollo astronauts (1969-1972) had NO toilet at all \u2014 they used adhesive collection bags for every bathroom visit. In microgravity, this was extremely difficult and unpleasant. The modern $23 million Universal Waste Management System was designed to fix this, but as Artemis II proved, space plumbing is hard!' }
           ]
         },
         {
-          id: 'program_alarm', title: 'Program Alarm 1202!', emoji: '\u26A0\uFE0F',
+          id: 'program_alarm', title: t('stem.moonmission.program_alarm_1202', 'Program Alarm 1202!'), emoji: '\u26A0\uFE0F',
           phases: [5], difficulty: ['pilot', 'commander'], probability: 0.8,
           historical: 'Apollo 11 (July 1969): During powered descent, the guidance computer triggered a 1202 "executive overflow" alarm \u2014 it was overloaded with data from the rendezvous radar left on by mistake. 26-year-old engineer Steve Bales in Mission Control made the call: "GO!" Armstrong continued the landing.',
           scenario: 'WARNING: The guidance computer is flashing a 1202 alarm \u2014 executive overflow! The computer is being asked to do more calculations than it can handle. The landing radar and rendezvous radar are both demanding processing time. You have seconds to decide.',
           stemConcepts: ['computer architecture', 'priority scheduling', 'real-time systems'],
           options: [
-            { label: 'Trust the computer and continue \u2014 "GO!"', icon: '\u2705',
+            { label: t('stem.moonmission.trust_the_computer_and_continue_go', 'Trust the computer and continue \u2014 "GO!"'), icon: '\u2705',
               effects: { morale: 15 }, quality: 'optimal', xp: 25,
               scienceReward: 'The Apollo Guidance Computer had just 74 KB of memory and ran at 0.043 MHz \u2014 thousands of times slower than your phone. But its software used a brilliant priority-based scheduling system designed by MIT\'s Margaret Hamilton. Low-priority tasks were shed automatically so critical navigation could continue. This is the same "priority scheduling" concept used in every modern operating system!' },
-            { label: 'Abort the descent \u2014 fire ascent engine', icon: '\uD83D\uDD3A',
+            { label: t('stem.moonmission.abort_the_descent_fire_ascent_engine', 'Abort the descent \u2014 fire ascent engine'), icon: '\uD83D\uDD3A',
               effects: { morale: -5 }, quality: 'adequate', xp: 10,
               scienceReward: 'An abort during powered descent was always an option. The abort guidance system (AGS) was a completely separate computer that could return the LM to orbit independently. Redundancy \u2014 having backup systems \u2014 is a core principle of engineering safety.' },
-            { label: 'Switch to full manual control', icon: '\uD83D\uDD79\uFE0F',
+            { label: t('stem.moonmission.switch_to_full_manual_control', 'Switch to full manual control'), icon: '\uD83D\uDD79\uFE0F',
               effects: { morale: 5 }, quality: 'risky', xp: 15,
               scienceReward: 'Armstrong actually DID take semi-manual control during the final approach, using the hand controller to fly past a boulder field. But full manual control without ANY computer assistance would require superhuman precision \u2014 the computer was still calculating altitude and velocity even when Armstrong steered.' }
           ]
         },
         {
-          id: 'boulder_field', title: 'Boulder Field at Landing Site!', emoji: '\uD83E\uDEA8',
+          id: 'boulder_field', title: t('stem.moonmission.boulder_field_at_landing_site', 'Boulder Field at Landing Site!'), emoji: '\uD83E\uDEA8',
           phases: [5], difficulty: ['tourist', 'pilot', 'commander'], probability: 0.65,
           historical: 'Apollo 11 (1969): Armstrong saw the computer was guiding Eagle toward a crater filled with boulders "the size of automobiles." He took manual control and flew 500 meters past the danger zone, landing with just 25 seconds of fuel remaining. Mission Control called: "60 seconds!" then "30 seconds!"',
           scenario: 'Looking out the window, you see the automated guidance is targeting a field of boulders! Large rocks surround the planned landing zone. You need to decide: trust the computer, take manual control, or abort.',
           stemConcepts: ['terrain analysis', 'fuel management', 'risk assessment'],
           options: [
-            { label: 'Take manual control and fly past the boulders', icon: '\uD83D\uDD79\uFE0F',
+            { label: t('stem.moonmission.take_manual_control_and_fly_past_the_b', 'Take manual control and fly past the boulders'), icon: '\uD83D\uDD79\uFE0F',
               effects: { morale: 15 }, quality: 'optimal', xp: 25,
               scienceReward: 'Armstrong flew the LM like a helicopter, translating horizontally while descending. This cost precious fuel but saved the mission. When he landed, only 25 seconds of hover fuel remained \u2014 about 200 kg of Aerozine-50 and nitrogen tetroxide. The fuel margin was so thin that a single additional hover would have triggered a mandatory abort.' },
-            { label: 'Land where the computer says', icon: '\uD83E\uDD16',
+            { label: t('stem.moonmission.land_where_the_computer_says', 'Land where the computer says'), icon: '\uD83E\uDD16',
               effects: { morale: -15 }, quality: 'poor', xp: 5,
               scienceReward: 'The guidance computer\'s landing target was calculated from orbital photographs, but those photos couldn\'t show every boulder. The lesson: automation is powerful but humans must monitor and override when reality differs from the plan. This is called "human-in-the-loop" design.' },
-            { label: 'Abort and try again next orbit', icon: '\uD83D\uDD04',
+            { label: t('stem.moonmission.abort_and_try_again_next_orbit', 'Abort and try again next orbit'), icon: '\uD83D\uDD04',
               effects: { morale: -5 }, quality: 'adequate', xp: 10,
               scienceReward: 'Aborting and re-orbiting was always an option, but it would cost fuel and delay the landing by 2 hours. In some scenarios, discretion IS the better part of valor \u2014 but Armstrong\'s instinct told him he could make it, and he was right.' }
           ]
         },
         {
-          id: 'fuel_cell_stir', title: 'Oxygen Tank Pressure Spike', emoji: '\u26A1',
+          id: 'fuel_cell_stir', title: t('stem.moonmission.oxygen_tank_pressure_spike', 'Oxygen Tank Pressure Spike'), emoji: '\u26A1',
           phases: [3, 8], difficulty: ['commander'], probability: 0.6,
           historical: 'Apollo 13 (April 1970): A routine "cryo stir" of the oxygen tanks caused an explosion that crippled the Service Module. The crew survived by using the Lunar Module as a lifeboat \u2014 one of the greatest rescues in history. Commander Lovell, Pilot Haise, and Pilot Swigert improvised solutions for 4 days.',
           scenario: 'During a routine cryogenic tank stir, you hear a loud bang and see the pressure gauge in O\u2082 Tank 2 spiking wildly. Cabin pressure is fluctuating. Houston is analyzing telemetry urgently.',
           stemConcepts: ['cryogenics', 'gas laws (Boyle\'s Law)', 'electrical systems', 'emergency procedures'],
           options: [
-            { label: 'Immediately isolate Tank 2 and switch to Tank 1', icon: '\uD83D\uDEE1\uFE0F',
+            { label: t('stem.moonmission.immediately_isolate_tank_2_and_switch_', 'Immediately isolate Tank 2 and switch to Tank 1'), icon: '\uD83D\uDEE1\uFE0F',
               effects: { morale: 5 }, quality: 'optimal', xp: 20,
               scienceReward: 'Cryogenic oxygen is stored at -183\u00B0C under extreme pressure. When pressure rises uncontrollably, the risk is rupture. Isolating the faulty tank preserves your remaining oxygen supply. Boyle\'s Law (P\u00D7V = constant at fixed temperature) tells us that as the tank heats up, pressure increases proportionally \u2014 that\'s what the gauges showed.' },
-            { label: 'Vent Tank 2 to relieve pressure', icon: '\uD83D\uDCA8',
+            { label: t('stem.moonmission.vent_tank_2_to_relieve_pressure', 'Vent Tank 2 to relieve pressure'), icon: '\uD83D\uDCA8',
               effects: { morale: -5 }, quality: 'adequate', xp: 10,
               scienceReward: 'Venting releases the pressure but wastes oxygen into space. On Apollo 13, the crew eventually lost ALL oxygen from the Service Module. They survived because the Lunar Module had its own independent life support \u2014 a lesson in the importance of redundant systems.' },
-            { label: 'Try to reset the tank heater circuit', icon: '\uD83D\uDD27',
+            { label: t('stem.moonmission.try_to_reset_the_tank_heater_circuit', 'Try to reset the tank heater circuit'), icon: '\uD83D\uDD27',
               effects: { morale: -10 }, quality: 'poor', xp: 5,
               scienceReward: 'On Apollo 13, the explosion was caused by damaged wiring inside the tank \u2014 a manufacturing defect from years earlier. Attempting to reset would have made it worse. This teaches a critical engineering principle: when you don\'t understand the root cause, don\'t poke at it \u2014 stabilize first, diagnose second.' }
           ]
         },
         {
-          id: 'space_sickness', title: 'Space Adaptation Syndrome', emoji: '\uD83E\uDD22',
+          id: 'space_sickness', title: t('stem.moonmission.space_adaptation_syndrome', 'Space Adaptation Syndrome'), emoji: '\uD83E\uDD22',
           phases: [2, 3], difficulty: ['tourist', 'pilot', 'commander'], probability: 0.5,
           historical: 'About 60-80% of astronauts experience Space Adaptation Syndrome (SAS) in the first 1-3 days. Senator Jake Garn\'s 1985 Shuttle flight was so severe that NASA informally named the unit of space sickness the "Garn" \u2014 1 Garn being the maximum possible nausea.',
           scenario: 'A crew member is experiencing severe nausea and disorientation. In microgravity, the inner ear sends confusing signals to the brain because "up" and "down" no longer exist. This affects their ability to work and could impact mission tasks.',
           stemConcepts: ['vestibular system', 'inner ear physiology', 'microgravity adaptation'],
           options: [
-            { label: 'Administer anti-nausea medication and rest period', icon: '\uD83D\uDC8A',
+            { label: t('stem.moonmission.administer_anti_nausea_medication_and_', 'Administer anti-nausea medication and rest period'), icon: '\uD83D\uDC8A',
               effects: { morale: 5 }, quality: 'optimal', xp: 15,
               scienceReward: 'The vestibular system in your inner ear uses fluid-filled semicircular canals to detect rotation and tiny calcium carbonate crystals (otoliths) to detect gravity. In microgravity, the otoliths float freely, sending signals that conflict with what your eyes see. Anti-nausea medication (like promethazine) blocks the brain\'s emetic center while the vestibular system adapts over 2-3 days.' },
-            { label: 'Tough it out \u2014 keep working through the nausea', icon: '\uD83D\uDCAA',
+            { label: t('stem.moonmission.tough_it_out_keep_working_through_the_', 'Tough it out \u2014 keep working through the nausea'), icon: '\uD83D\uDCAA',
               effects: { morale: -10 }, quality: 'poor', xp: 5,
               scienceReward: 'Working through severe SAS is counterproductive and dangerous. In microgravity, vomiting is a serious safety hazard \u2014 without gravity to direct it, vomit can be inhaled into the lungs (aspiration). Modern space medicine prioritizes crew health because a sick astronaut is an ineffective astronaut.' },
-            { label: 'Reduce visual stimulation and close window shades', icon: '\uD83D\uDE36\u200D\uD83C\uDF2B\uFE0F',
+            { label: t('stem.moonmission.reduce_visual_stimulation_and_close_wi', 'Reduce visual stimulation and close window shades'), icon: '\uD83D\uDE36\u200D\uD83C\uDF2B\uFE0F',
               effects: { morale: 0 }, quality: 'adequate', xp: 10,
               scienceReward: 'Closing eyes or fixing gaze on a stable reference point reduces "sensory conflict" \u2014 the mismatch between what eyes see (floating objects) and what the inner ear feels (no gravity). This is similar to why reading in a car causes motion sickness: eyes say "still" but inner ear says "moving."' }
           ]
@@ -674,21 +674,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
       // ── Difficulty Settings (expanded with event parameters) ──
       var DIFFICULTIES = {
-        tourist:    { label: 'Tourist',    icon: '\uD83C\uDF1F', desc: 'Guided experience \u2014 auto-landing, extended O\u2082', gravity: 0.5, fuel: 150, o2Rate: 0.1, eventFreq: 0.3, showEffects: true, showOptimalHint: true },
-        pilot:     { label: 'Pilot',      icon: '\u2B50', desc: 'Standard Apollo parameters', gravity: 1.62, fuel: 100, o2Rate: 0.3, eventFreq: 0.6, showEffects: true, showOptimalHint: false },
-        commander: { label: 'Commander',  icon: '\uD83C\uDFC5', desc: 'Realistic \u2014 tight fuel budget, faster O\u2082 drain', gravity: 1.62, fuel: 70, o2Rate: 0.6, eventFreq: 0.9, showEffects: false, showOptimalHint: false }
+        tourist:    { label: t('stem.moonmission.tourist', 'Tourist'),    icon: '\uD83C\uDF1F', desc: t('stem.moonmission.guided_experience_auto_landing_extende', 'Guided experience \u2014 auto-landing, extended O\u2082'), gravity: 0.5, fuel: 150, o2Rate: 0.1, eventFreq: 0.3, showEffects: true, showOptimalHint: true },
+        pilot:     { label: t('stem.moonmission.pilot', 'Pilot'),      icon: '\u2B50', desc: t('stem.moonmission.standard_apollo_parameters', 'Standard Apollo parameters'), gravity: 1.62, fuel: 100, o2Rate: 0.3, eventFreq: 0.6, showEffects: true, showOptimalHint: false },
+        commander: { label: t('stem.moonmission.commander', 'Commander'),  icon: '\uD83C\uDFC5', desc: t('stem.moonmission.realistic_tight_fuel_budget_faster_o_d', 'Realistic \u2014 tight fuel budget, faster O\u2082 drain'), gravity: 1.62, fuel: 70, o2Rate: 0.6, eventFreq: 0.9, showEffects: false, showOptimalHint: false }
       };
       var difficulty = d.difficulty || 'pilot';
       var diffSettings = DIFFICULTIES[difficulty];
 
       // ── Achievement Badges ──
       var BADGES = [
-        { id: 'first_step', name: 'One Small Step', icon: '\uD83D\uDC63', desc: 'Complete your first EVA moonwalk', check: function() { return phase >= 7; } },
-        { id: 'geologist', name: 'Lunar Geologist', icon: '\uD83E\uDEA8', desc: 'Collect 4+ rock samples', check: function() { return (d.lunarSamples || []).length >= 4; } },
-        { id: 'collector', name: 'Sample Return', icon: '\uD83D\uDCE6', desc: 'Collect all 8 sample types', check: function() { return (d.lunarSamples || []).length >= 8; } },
-        { id: 'mission_complete', name: 'Splashdown!', icon: '\uD83C\uDF0A', desc: 'Complete the full mission', check: function() { return phase >= 10; } },
-        { id: 'quiz_master', name: 'Space Scholar', icon: '\uD83C\uDF93', desc: 'Answer 5+ quiz questions correctly', check: function() { return (d.quizCorrect || 0) >= 5; } },
-        { id: 'commander_diff', name: 'Right Stuff', icon: '\uD83D\uDE80', desc: 'Complete mission on Commander difficulty', check: function() { return phase >= 10 && difficulty === 'commander'; } }
+        { id: 'first_step', name: t('stem.moonmission.one_small_step', 'One Small Step'), icon: '\uD83D\uDC63', desc: t('stem.moonmission.complete_your_first_eva_moonwalk', 'Complete your first EVA moonwalk'), check: function() { return phase >= 7; } },
+        { id: 'geologist', name: t('stem.moonmission.lunar_geologist', 'Lunar Geologist'), icon: '\uD83E\uDEA8', desc: t('stem.moonmission.collect_4_rock_samples', 'Collect 4+ rock samples'), check: function() { return (d.lunarSamples || []).length >= 4; } },
+        { id: 'collector', name: t('stem.moonmission.sample_return', 'Sample Return'), icon: '\uD83D\uDCE6', desc: t('stem.moonmission.collect_all_8_sample_types', 'Collect all 8 sample types'), check: function() { return (d.lunarSamples || []).length >= 8; } },
+        { id: 'mission_complete', name: 'Splashdown!', icon: '\uD83C\uDF0A', desc: t('stem.moonmission.complete_the_full_mission', 'Complete the full mission'), check: function() { return phase >= 10; } },
+        { id: 'quiz_master', name: t('stem.moonmission.space_scholar', 'Space Scholar'), icon: '\uD83C\uDF93', desc: t('stem.moonmission.answer_5_quiz_questions_correctly', 'Answer 5+ quiz questions correctly'), check: function() { return (d.quizCorrect || 0) >= 5; } },
+        { id: 'commander_diff', name: t('stem.moonmission.right_stuff', 'Right Stuff'), icon: '\uD83D\uDE80', desc: t('stem.moonmission.complete_mission_on_commander_difficul', 'Complete mission on Commander difficulty'), check: function() { return phase >= 10 && difficulty === 'commander'; } }
       ];
       var earnedBadges = d.earnedBadges || {};
       function checkBadges() {
@@ -739,12 +739,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 if (evaCanvas && evaCanvas._evaCleanup) evaCanvas._evaCleanup();
                 if (typeof stopMissionAmbient === 'function') stopMissionAmbient();
                 setStemLabTool(null);
-              }, className: 'p-1 rounded-lg hover:bg-slate-100 transition-colors', 'aria-label': 'Back to STEM Lab' },
+              }, className: 'p-1 rounded-lg hover:bg-slate-100 transition-colors', 'aria-label': t('stem.moonmission.back_to_stem_lab', 'Back to STEM Lab') },
               h(ArrowLeft, { size: 18 })
             ),
             h('div', null,
-              h('h3', { className: 'text-lg font-black text-slate-800 flex items-center gap-2' }, '\uD83D\uDE80 Apollo Moon Mission'),
-              h('p', { className: 'text-[11px] text-slate-600 -mt-0.5' }, 'Full mission simulation \u2022 Launch to splashdown')
+              h('h3', { className: 'text-lg font-black text-slate-800 flex items-center gap-2' }, t('stem.moonmission.apollo_moon_mission', '\uD83D\uDE80 Apollo Moon Mission')),
+              h('p', { className: 'text-[11px] text-slate-600 -mt-0.5' }, t('stem.moonmission.full_mission_simulation_launch_to_spla', 'Full mission simulation \u2022 Launch to splashdown'))
             )
           ),
           h('div', { className: 'text-right' },
@@ -795,7 +795,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             })
           ),
           h('details', { className: 'mt-3' },
-            h('summary', { className: 'text-[11px] text-slate-600 cursor-pointer hover:text-slate-200 transition-colors' }, '\uD83D\uDCDA What really happened?'),
+            h('summary', { className: 'text-[11px] text-slate-600 cursor-pointer hover:text-slate-200 transition-colors' }, t('stem.moonmission.what_really_happened', '\uD83D\uDCDA What really happened?')),
             h('p', { className: 'text-[11px] text-indigo-300 mt-1 pl-3 leading-relaxed' }, d.activeEvent.historical)
           )
         ),
@@ -820,7 +820,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               setPhase(d.eventPhaseTarget);
             },
             className: 'w-full mt-3 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-md transition-all'
-          }, '\uD83D\uDE80 Continue Mission')
+          }, t('stem.moonmission.continue_mission', '\uD83D\uDE80 Continue Mission'))
         ),
 
         // ── Quiz overlay (shown between key phases) ──
@@ -828,7 +828,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           h('div', { className: 'flex items-center gap-2 mb-3' },
             h('span', { className: 'text-xl' }, '\uD83E\uDDE0'),
             h('div', null,
-              h('h5', { className: 'text-sm font-bold text-indigo-300' }, 'Space Knowledge Check'),
+              h('h5', { className: 'text-sm font-bold text-indigo-300' }, t('stem.moonmission.space_knowledge_check', 'Space Knowledge Check')),
               h('p', { className: 'text-[11px] text-slate-600' }, 'Question ' + (quizIdx + 1) + '/' + QUIZ_BANK.length + ' \u2022 ' + quizCorrect + ' correct so far')
             )
           ),
@@ -897,9 +897,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             })
           ),
           h('div', { className: 'flex justify-between text-[11px] text-slate-600' },
-            h('span', null, 'Launch'),
+            h('span', null, t('stem.moonmission.launch_2', 'Launch')),
             h('span', null, 'Phase ' + (phase + 1) + '/10'),
-            h('span', null, 'Splashdown')
+            h('span', null, t('stem.moonmission.splashdown', 'Splashdown'))
           )
         ),
 
@@ -908,13 +908,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           h('div', { className: 'bg-gradient-to-br from-slate-900 to-indigo-950 rounded-xl p-4 text-white' },
             h('div', { className: 'text-center mb-3' },
               h('div', { className: 'text-3xl mb-1' }, '\uD83C\uDF15'),
-              h('h4', { className: 'text-lg font-black tracking-wide' }, 'MISSION BRIEFING'),
-              h('p', { className: 'text-xs text-slate-600' }, 'Apollo-style lunar landing mission')
+              h('h4', { className: 'text-lg font-black tracking-wide' }, t('stem.moonmission.mission_briefing_2', 'MISSION BRIEFING')),
+              h('p', { className: 'text-xs text-slate-600' }, t('stem.moonmission.apollo_style_lunar_landing_mission', 'Apollo-style lunar landing mission'))
             ),
             h('div', { className: 'bg-white/5 rounded-lg p-3 mb-3 border border-white/10' },
               h('p', { className: 'text-[11px] text-slate-200 font-bold mb-1' },
-                '\uD83C\uDFAF MISSION OBJECTIVES',
-                d.aiBriefing && Array.isArray(d.aiBriefing.objectives) && h('span', { className: 'ml-2 text-[10px] text-emerald-300 font-normal' }, '\u2728 AI-customized')
+                t('stem.moonmission.mission_objectives', '\uD83C\uDFAF MISSION OBJECTIVES'),
+                d.aiBriefing && Array.isArray(d.aiBriefing.objectives) && h('span', { className: 'ml-2 text-[10px] text-emerald-300 font-normal' }, t('stem.moonmission.ai_customized', '\u2728 AI-customized'))
               ),
               h('div', { className: 'space-y-1' },
                 ((d.aiBriefing && Array.isArray(d.aiBriefing.objectives) && d.aiBriefing.objectives.length >= 3)
@@ -934,7 +934,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               )
             ),
             h('div', { className: 'mb-3' },
-              h('p', { className: 'text-[11px] text-slate-200 font-bold mb-2' }, '\uD83D\uDC68\u200D\uD83D\uDE80 YOUR CREW'),
+              h('p', { className: 'text-[11px] text-slate-200 font-bold mb-2' }, t('stem.moonmission.your_crew', '\uD83D\uDC68\u200D\uD83D\uDE80 YOUR CREW')),
               h('div', { className: 'grid grid-cols-3 gap-2' },
                 CREW_ROLES.map(function(crew, i) {
                   return h('div', { key: i, className: 'bg-white/5 rounded-lg p-2 border border-white/10 text-center' },
@@ -947,8 +947,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               )
             ),
             // Difficulty selector
-            h('div', { className: 'mb-3', role: 'radiogroup', 'aria-label': 'Mission difficulty selection' },
-              h('p', { className: 'text-[11px] text-slate-200 font-bold mb-2', id: 'difficulty-label' }, '\uD83C\uDFAE MISSION DIFFICULTY'),
+            h('div', { className: 'mb-3', role: 'radiogroup', 'aria-label': t('stem.moonmission.mission_difficulty_selection', 'Mission difficulty selection') },
+              h('p', { className: 'text-[11px] text-slate-200 font-bold mb-2', id: 'difficulty-label' }, t('stem.moonmission.mission_difficulty', '\uD83C\uDFAE MISSION DIFFICULTY')),
               h('div', { className: 'grid grid-cols-3 gap-2' },
                 Object.keys(DIFFICULTIES).map(function(key) {
                   var diff = DIFFICULTIES[key];
@@ -1038,7 +1038,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               if (addToast) addToast('\uD83D\uDE80 Mission authorized! Difficulty: ' + DIFFICULTIES[difficulty].label, 'success');
             },
             className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg transition-all hover:scale-[1.01]'
-          }, '\uD83D\uDE80 Begin Mission \u2014 Proceed to Launch')
+          }, t('stem.moonmission.begin_mission_proceed_to_launch', '\uD83D\uDE80 Begin Mission \u2014 Proceed to Launch'))
         ),
 
         // ═══ PHASE 1: LAUNCH ═══
@@ -1049,7 +1049,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               h('canvas', { 
                 'data-launch-canvas': 'true',
                 role: 'img',
-                'aria-label': 'Animated Saturn V rocket launch sequence. 5-second countdown followed by ascent through atmosphere to orbit. Shows altitude, velocity, G-force, and stage separations.',
+                'aria-label': t('stem.moonmission.animated_saturn_v_rocket_launch_sequen', 'Animated Saturn V rocket launch sequence. 5-second countdown followed by ascent through atmosphere to orbit. Shows altitude, velocity, G-force, and stage separations.'),
                 style: { width: '100%', height: '100%', display: 'block' },
                 ref: function(cvEl) {
                   if (!cvEl || cvEl._launchInit) return;
@@ -1333,11 +1333,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('div', { className: 'p-3 border-t border-slate-700' },
               h('div', { className: 'flex items-center justify-between' },
                 h('div', null,
-                  h('p', { className: 'text-xs text-slate-600' }, '\uD83D\uDE80 Saturn V \u2022 3 stages \u2022 7.5 million lbs thrust'),
-                  h('p', { className: 'text-[11px] text-slate-600' }, 'Watch the countdown and ascent through Earth\'s atmosphere')
+                  h('p', { className: 'text-xs text-slate-600' }, t('stem.moonmission.saturn_v_3_stages_7_5_million_lbs_thru', '\uD83D\uDE80 Saturn V \u2022 3 stages \u2022 7.5 million lbs thrust')),
+                  h('p', { className: 'text-[11px] text-slate-600' }, t('stem.moonmission.watch_the_countdown_and_ascent_through', 'Watch the countdown and ascent through Earth\'s atmosphere'))
                 ),
                 h('button', {
-                  'aria-label': 'Proceed to Earth orbit phase after successful launch',
+                  'aria-label': t('stem.moonmission.proceed_to_earth_orbit_phase_after_suc', 'Proceed to Earth orbit phase after successful launch'),
                   onClick: function() {
                     advancePhase(2);
                     log('\uD83D\uDE80 Launch successful! Reached Earth orbit.');
@@ -1345,7 +1345,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     if (addToast) addToast('\uD83C\uDF0D Orbit achieved! Preparing trans-lunar injection.', 'success');
                   },
                   className: 'px-4 py-2 rounded-lg text-xs font-bold text-white bg-green-600 hover:bg-green-700 transition-colors'
-                }, '\u2705 Proceed to Orbit')
+                }, t('stem.moonmission.proceed_to_orbit', '\u2705 Proceed to Orbit'))
               )
             )
           )
@@ -1358,7 +1358,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('div', { className: 'relative', style: { height: '260px' } },
               h('canvas', {
                 role: 'img',
-                'aria-label': 'Animated view of spacecraft in low Earth orbit at 185 kilometers. CSM completes 1.5 orbits while a trans-lunar injection burn window aligns with the Moon\'s future position. Orbit counter, altitude, velocity, and TLI readiness displayed.',
+                'aria-label': t('stem.moonmission.animated_view_of_spacecraft_in_low_ear', 'Animated view of spacecraft in low Earth orbit at 185 kilometers. CSM completes 1.5 orbits while a trans-lunar injection burn window aligns with the Moon\'s future position. Orbit counter, altitude, velocity, and TLI readiness displayed.'),
                 style: { width: '100%', height: '100%', display: 'block' },
                 ref: function(cvEl) {
                   if (!cvEl || cvEl._orbitLeoInit) return;
@@ -1506,13 +1506,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('div', { className: 'p-4 text-white' },
             h('div', { className: 'text-center mb-3' },
               h('div', { className: 'text-3xl' }, '\uD83C\uDF0D'),
-              h('h4', { className: 'text-base font-bold' }, 'Low Earth Orbit'),
-              h('p', { className: 'text-[11px] text-slate-600' }, 'Altitude: 185 km \u2022 Speed: 28,000 km/h \u2022 1.5 orbits before TLI burn')
+              h('h4', { className: 'text-base font-bold' }, t('stem.moonmission.low_earth_orbit', 'Low Earth Orbit')),
+              h('p', { className: 'text-[11px] text-slate-600' }, t('stem.moonmission.altitude_185_km_speed_28_000_km_h_1_5_', 'Altitude: 185 km \u2022 Speed: 28,000 km/h \u2022 1.5 orbits before TLI burn'))
             ),
             h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10 mb-3' },
-              h('p', { className: 'text-[11px] text-sky-300 font-bold mb-1' }, '\uD83D\uDE80 TRANS-LUNAR INJECTION (TLI)'),
+              h('p', { className: 'text-[11px] text-sky-300 font-bold mb-1' }, t('stem.moonmission.trans_lunar_injection_tli', '\uD83D\uDE80 TRANS-LUNAR INJECTION (TLI)')),
               h('p', { className: 'text-[11px] text-slate-300 leading-relaxed' },
-                'The S-IVB third stage will fire for 5 minutes 47 seconds to accelerate from 28,000 km/h to 38,900 km/h \u2014 escape velocity. This single burn sends you on a trajectory to the Moon, 384,400 km away.'),
+                t('stem.moonmission.the_s_ivb_third_stage_will_fire_for_5_', 'The S-IVB third stage will fire for 5 minutes 47 seconds to accelerate from 28,000 km/h to 38,900 km/h \u2014 escape velocity. This single burn sends you on a trajectory to the Moon, 384,400 km away.')),
               h('div', { className: 'grid grid-cols-3 gap-2 mt-2' },
                 [
                   ['\u0394v Required', '3.13 km/s'],
@@ -1532,7 +1532,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             )
           ),
           h('button', {
-            'aria-label': 'Execute trans-lunar injection burn to begin 3-day journey to the Moon',
+            'aria-label': t('stem.moonmission.execute_trans_lunar_injection_burn_to_', 'Execute trans-lunar injection burn to begin 3-day journey to the Moon'),
             onClick: function() {
               advancePhase(3);
               upd('showQuiz', true); // Trigger quiz during coast
@@ -1541,7 +1541,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               if (addToast) addToast('\uD83C\uDF11 Trans-lunar injection successful! Time for a space knowledge check.', 'success');
             },
             className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg'
-          }, '\uD83D\uDE80 Execute TLI Burn \u2014 Head to the Moon')
+          }, t('stem.moonmission.execute_tli_burn_head_to_the_moon', '\uD83D\uDE80 Execute TLI Burn \u2014 Head to the Moon'))
         ),
 
         // ═══ PHASE 3: TRANS-LUNAR COAST (Animated Canvas) ═══
@@ -1550,7 +1550,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('div', { className: 'relative', style: { height: '280px' } },
               h('canvas', { 
                 role: 'img',
-                'aria-label': 'Animated trans-lunar coast. Earth shrinks on the left, Moon grows on the right as the spacecraft travels 384,400 kilometers over 3 days. Shows distance counter and mission communications.',
+                'aria-label': t('stem.moonmission.animated_trans_lunar_coast_earth_shrin', 'Animated trans-lunar coast. Earth shrinks on the left, Moon grows on the right as the spacecraft travels 384,400 kilometers over 3 days. Shows distance counter and mission communications.'),
                 style: { width: '100%', height: '100%', display: 'block' },
                 ref: function(cvEl) {
                   if (!cvEl || cvEl._transitInit) return;
@@ -1656,7 +1656,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             )
           ),
           h('button', {
-            'aria-label': 'Arrive at the Moon and enter lunar orbit at 110 kilometer altitude',
+            'aria-label': t('stem.moonmission.arrive_at_the_moon_and_enter_lunar_orb', 'Arrive at the Moon and enter lunar orbit at 110 kilometer altitude'),
             onClick: function() {
               advancePhase(4);
               log('\uD83C\uDF15 Approaching the Moon. Preparing for lunar orbit insertion.');
@@ -1664,7 +1664,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               if (addToast) addToast('\uD83C\uDF15 The Moon fills the window! Preparing LOI burn.', 'success');
             },
             className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-lg'
-          }, '\uD83C\uDF15 Arrive at the Moon \u2014 Enter Lunar Orbit')
+          }, t('stem.moonmission.arrive_at_the_moon_enter_lunar_orbit', '\uD83C\uDF15 Arrive at the Moon \u2014 Enter Lunar Orbit'))
         ),
 
         // ═══ PHASE 4: LUNAR ORBIT (Animated Canvas) ═══
@@ -1673,7 +1673,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('div', { className: 'relative', style: { height: '240px' } },
               h('canvas', { 
                 role: 'img',
-                'aria-label': 'Animated view of spacecraft orbiting the Moon at 110 kilometer altitude. Shows the Moon surface with craters, Sea of Tranquility landing site marked in green, and the spacecraft dot orbiting.',
+                'aria-label': t('stem.moonmission.animated_view_of_spacecraft_orbiting_t', 'Animated view of spacecraft orbiting the Moon at 110 kilometer altitude. Shows the Moon surface with craters, Sea of Tranquility landing site marked in green, and the spacecraft dot orbiting.'),
                 style: { width: '100%', height: '100%', display: 'block' },
                 ref: function(cvEl) {
                   if (!cvEl || cvEl._orbitInit) return;
@@ -1757,7 +1757,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             )
           ),
           h('button', {
-            'aria-label': 'Undock Lunar Module Eagle from Command Module Columbia and begin powered descent to the Moon surface',
+            'aria-label': t('stem.moonmission.undock_lunar_module_eagle_from_command', 'Undock Lunar Module Eagle from Command Module Columbia and begin powered descent to the Moon surface'),
             onClick: function() {
               advancePhase(5);
               log('\u2B07\uFE0F Undocked from Columbia. Beginning powered descent.');
@@ -1765,7 +1765,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               if (addToast) addToast('\u2B07\uFE0F "The Eagle has undocked!" Beginning powered descent.', 'success');
             },
             className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 shadow-lg'
-          }, '\u2B07\uFE0F Undock & Begin Powered Descent')
+          }, t('stem.moonmission.undock_begin_powered_descent', '\u2B07\uFE0F Undock & Begin Powered Descent'))
         ),
 
         // ═══ PHASE 5: POWERED DESCENT ═══
@@ -1773,39 +1773,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           // Onboarding overlay (before game starts)
           !d.descentStarted && h('div', { className: 'bg-gradient-to-b from-slate-900 to-indigo-950 rounded-xl p-5 border border-slate-700 text-white text-center' },
             h('div', { className: 'text-4xl mb-3' }, '\u2B07\uFE0F'),
-            h('h4', { className: 'text-lg font-black mb-2' }, 'Powered Descent'),
+            h('h4', { className: 'text-lg font-black mb-2' }, t('stem.moonmission.powered_descent_2', 'Powered Descent')),
             h('p', { className: 'text-xs text-slate-200 mb-4' }, 'You are piloting the Lunar Module to the Moon\'s surface. Control your thrust to land softly!'),
             h('div', { className: 'grid grid-cols-3 gap-3 mb-4 max-w-sm mx-auto' },
               h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
                 h('div', { className: 'text-2xl mb-1' }, '\u2B06\uFE0F'),
-                h('p', { className: 'text-[11px] font-bold text-sky-300' }, 'W / \u2191'),
-                h('p', { className: 'text-[11px] text-slate-600' }, 'Fire engines (thrust UP)')
+                h('p', { className: 'text-[11px] font-bold text-sky-300' }, t('stem.moonmission.w', 'W / \u2191')),
+                h('p', { className: 'text-[11px] text-slate-600' }, t('stem.moonmission.fire_engines_thrust_up', 'Fire engines (thrust UP)'))
               ),
               h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
                 h('div', { className: 'text-2xl mb-1' }, '\u2194\uFE0F'),
-                h('p', { className: 'text-[11px] font-bold text-sky-300' }, 'A/D or \u2190/\u2192'),
-                h('p', { className: 'text-[11px] text-slate-600' }, 'Lateral movement')
+                h('p', { className: 'text-[11px] font-bold text-sky-300' }, t('stem.moonmission.a_d_or', 'A/D or \u2190/\u2192')),
+                h('p', { className: 'text-[11px] text-slate-600' }, t('stem.moonmission.lateral_movement', 'Lateral movement'))
               ),
               h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
                 h('div', { className: 'text-2xl mb-1' }, '\uD83C\uDFAF'),
-                h('p', { className: 'text-[11px] font-bold text-amber-300' }, 'Goal'),
-                h('p', { className: 'text-[11px] text-slate-600' }, 'V < 3 m/s, H < 5 m/s')
+                h('p', { className: 'text-[11px] font-bold text-amber-300' }, t('stem.moonmission.goal', 'Goal')),
+                h('p', { className: 'text-[11px] text-slate-600' }, t('stem.moonmission.v_3_m_s_h_5_m_s', 'V < 3 m/s, H < 5 m/s'))
               )
             ),
             h('div', { className: 'bg-amber-500/10 rounded-lg p-3 border border-amber-500/20 mb-4 max-w-sm mx-auto' },
-              h('p', { className: 'text-[11px] text-amber-300 font-bold mb-1' }, '\u26A0\uFE0F Tips from Mission Control:'),
+              h('p', { className: 'text-[11px] text-amber-300 font-bold mb-1' }, t('stem.moonmission.tips_from_mission_control', '\u26A0\uFE0F Tips from Mission Control:')),
               h('ul', { className: 'text-[11px] text-amber-200 space-y-1 text-left pl-4' },
-                h('li', null, 'Start slowing down early \u2014 Moon gravity is gentle but relentless'),
-                h('li', null, 'Watch your fuel gauge \u2014 you can\'t thrust without fuel!'),
-                h('li', null, 'Reduce horizontal speed before focusing on vertical'),
-                h('li', null, 'The real Apollo 11 landed with only 25 seconds of fuel left!')
+                h('li', null, t('stem.moonmission.start_slowing_down_early_moon_gravity_', 'Start slowing down early \u2014 Moon gravity is gentle but relentless')),
+                h('li', null, t('stem.moonmission.watch_your_fuel_gauge_you_can_t_thrust', 'Watch your fuel gauge \u2014 you can\'t thrust without fuel!')),
+                h('li', null, t('stem.moonmission.reduce_horizontal_speed_before_focusin', 'Reduce horizontal speed before focusing on vertical')),
+                h('li', null, t('stem.moonmission.the_real_apollo_11_landed_with_only_25', 'The real Apollo 11 landed with only 25 seconds of fuel left!'))
               )
             ),
             h('button', {
-              'aria-label': 'Begin powered descent piloting',
+              'aria-label': t('stem.moonmission.begin_powered_descent_piloting', 'Begin powered descent piloting'),
               onClick: function() { upd('descentStarted', true); },
               className: 'px-8 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 shadow-lg transition-all hover:scale-[1.02] animate-pulse'
-            }, '\uD83D\uDE80 Begin Descent \u2014 Take the Controls!')
+            }, t('stem.moonmission.begin_descent_take_the_controls', '\uD83D\uDE80 Begin Descent \u2014 Take the Controls!'))
           ),
           // Game canvas (after onboarding)
           d.descentStarted && h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
@@ -1813,7 +1813,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               h('canvas', { 
                 'data-descent-canvas': 'true',
                 role: 'application',
-                'aria-label': 'Interactive lunar descent piloting game. Use W or Up Arrow for thrust, A and D or Left and Right arrows for lateral movement. Land with vertical speed under 3 meters per second and horizontal speed under 5 meters per second.',
+                'aria-label': t('stem.moonmission.interactive_lunar_descent_piloting_gam', 'Interactive lunar descent piloting game. Use W or Up Arrow for thrust, A and D or Left and Right arrows for lateral movement. Land with vertical speed under 3 meters per second and horizontal speed under 5 meters per second.'),
                 style: { width: '100%', height: '100%', display: 'block' },
                 ref: function(cvEl) {
                   if (!cvEl || cvEl._descentInit) return;
@@ -2092,9 +2092,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               })
             ),
             h('div', { className: 'p-3 border-t border-slate-700 flex justify-between items-center' },
-              h('p', { className: 'text-[11px] text-slate-600' }, '\u2191/W = thrust \u2022 \u2190\u2192/AD = lateral \u2022 Land gently!'),
+              h('p', { className: 'text-[11px] text-slate-600' }, t('stem.moonmission.w_thrust_ad_lateral_land_gently', '\u2191/W = thrust \u2022 \u2190\u2192/AD = lateral \u2022 Land gently!')),
               h('button', {
-                'aria-label': 'Begin extravehicular activity moonwalk to explore the lunar surface and collect geological samples',
+                'aria-label': t('stem.moonmission.begin_extravehicular_activity_moonwalk', 'Begin extravehicular activity moonwalk to explore the lunar surface and collect geological samples'),
                 onClick: function() {
                   advancePhase(6);
                   log('\uD83C\uDF15 "The Eagle has landed!" Preparing for EVA.');
@@ -2102,7 +2102,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   if (addToast) addToast('\uD83D\uDC68\u200D\uD83D\uDE80 "That\'s one small step..." Preparing for moonwalk!', 'success');
                 },
                 className: 'px-4 py-2 rounded-lg text-xs font-bold text-white bg-green-600 hover:bg-green-700'
-              }, '\uD83D\uDC68\u200D\uD83D\uDE80 Begin EVA')
+              }, t('stem.moonmission.begin_eva', '\uD83D\uDC68\u200D\uD83D\uDE80 Begin EVA'))
             )
           )
         ),
@@ -2115,44 +2115,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           // samples), and seeds two Apollo-era surface-ops facts.
           !d.evaStarted && h('div', { className: 'bg-gradient-to-b from-slate-900 to-indigo-950 rounded-xl p-5 border border-slate-700 text-white text-center' },
             h('div', { className: 'text-4xl mb-3' }, '👨‍🚀'),
-            h('h4', { className: 'text-lg font-black mb-2' }, 'Moonwalk EVA'),
+            h('h4', { className: 'text-lg font-black mb-2' }, t('stem.moonmission.moonwalk_eva_2', 'Moonwalk EVA')),
             h('p', { className: 'text-xs text-slate-200 mb-4' }, 'You are standing on the lunar surface in a pressurized suit at one-sixth Earth gravity. Walk the regolith, collect rock samples, and earn science points for each unique geological find.'),
             h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 max-w-2xl mx-auto' },
               h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
                 h('div', { className: 'text-2xl mb-1' }, '🚶'),
                 h('p', { className: 'text-[11px] font-bold text-sky-300' }, 'WASD'),
-                h('p', { className: 'text-[11px] text-slate-300' }, 'Walk forward/back, strafe')
+                h('p', { className: 'text-[11px] text-slate-300' }, t('stem.moonmission.walk_forward_back_strafe', 'Walk forward/back, strafe'))
               ),
               h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
                 h('div', { className: 'text-2xl mb-1' }, '🦘'),
-                h('p', { className: 'text-[11px] font-bold text-sky-300' }, 'Space'),
-                h('p', { className: 'text-[11px] text-slate-300' }, 'Jump (low-gravity hop)')
+                h('p', { className: 'text-[11px] font-bold text-sky-300' }, t('stem.moonmission.space', 'Space')),
+                h('p', { className: 'text-[11px] text-slate-300' }, t('stem.moonmission.jump_low_gravity_hop', 'Jump (low-gravity hop)'))
               ),
               h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
                 h('div', { className: 'text-2xl mb-1' }, '🪨'),
                 h('p', { className: 'text-[11px] font-bold text-amber-300' }, 'F'),
-                h('p', { className: 'text-[11px] text-slate-300' }, 'Collect rock at your feet')
+                h('p', { className: 'text-[11px] text-slate-300' }, t('stem.moonmission.collect_rock_at_your_feet', 'Collect rock at your feet'))
               ),
               h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
                 h('div', { className: 'text-2xl mb-1' }, '🔭'),
-                h('p', { className: 'text-[11px] font-bold text-sky-300' }, 'Mouse'),
-                h('p', { className: 'text-[11px] text-slate-300' }, 'Look around (click canvas first)')
+                h('p', { className: 'text-[11px] font-bold text-sky-300' }, t('stem.moonmission.mouse', 'Mouse')),
+                h('p', { className: 'text-[11px] text-slate-300' }, t('stem.moonmission.look_around_click_canvas_first', 'Look around (click canvas first)'))
               )
             ),
             h('div', { className: 'bg-amber-500/10 rounded-lg p-3 border border-amber-500/20 mb-4 max-w-xl mx-auto' },
-              h('p', { className: 'text-[11px] text-amber-300 font-bold mb-1' }, '🎯 Mission objective + Apollo facts:'),
+              h('p', { className: 'text-[11px] text-amber-300 font-bold mb-1' }, t('stem.moonmission.mission_objective_apollo_facts', '🎯 Mission objective + Apollo facts:')),
               h('ul', { className: 'text-[11px] text-amber-200 space-y-1 text-left pl-4' },
-                h('li', null, 'Collect at least 4 unique rock samples to satisfy the geology quest hook.'),
-                h('li', null, 'Apollo 11 brought back 47.5 lb of lunar samples; Apollo 17 brought 243 lb.'),
-                h('li', null, 'In one-sixth gravity, a hop covers about six times the horizontal distance for the same effort.'),
-                h('li', null, 'Earth hangs in a fixed spot in the lunar sky because the Moon is tidally locked.')
+                h('li', null, t('stem.moonmission.collect_at_least_4_unique_rock_samples', 'Collect at least 4 unique rock samples to satisfy the geology quest hook.')),
+                h('li', null, t('stem.moonmission.apollo_11_brought_back_47_5_lb_of_luna', 'Apollo 11 brought back 47.5 lb of lunar samples; Apollo 17 brought 243 lb.')),
+                h('li', null, t('stem.moonmission.in_one_sixth_gravity_a_hop_covers_abou', 'In one-sixth gravity, a hop covers about six times the horizontal distance for the same effort.')),
+                h('li', null, t('stem.moonmission.earth_hangs_in_a_fixed_spot_in_the_lun', 'Earth hangs in a fixed spot in the lunar sky because the Moon is tidally locked.'))
               )
             ),
             h('button', {
-              'aria-label': 'Begin EVA on the lunar surface',
+              'aria-label': t('stem.moonmission.begin_eva_on_the_lunar_surface', 'Begin EVA on the lunar surface'),
               onClick: function() { upd('evaStarted', true); },
               className: 'px-8 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 shadow-lg transition-all hover:scale-[1.02] animate-pulse'
-            }, '👨‍🚀 Step Onto the Moon · Begin EVA')
+            }, t('stem.moonmission.step_onto_the_moon_begin_eva', '👨‍🚀 Step Onto the Moon · Begin EVA'))
           ),
           d.evaStarted && h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
             h('div', { className: 'relative', style: { height: '70vh', minHeight: '400px', maxHeight: '700px' } },
@@ -2161,18 +2161,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 style: { height: '100%', background: 'rgba(15, 23, 42, 0.8)' }
               },
                 h('span', { style: { fontSize: '48px', marginBottom: '16px' } }, '⚠'),
-                h('h4', { className: 'text-lg font-bold text-red-400 mb-2' }, 'Moonwalk 3D Mode Unresolved'),
-                h('p', { className: 'text-xs text-slate-300 max-w-sm mb-6' }, 'WebGL failed to initialize. Your browser or device might not support 3D hardware acceleration.'),
+                h('h4', { className: 'text-lg font-bold text-red-400 mb-2' }, t('stem.moonmission.moonwalk_3d_mode_unresolved', 'Moonwalk 3D Mode Unresolved')),
+                h('p', { className: 'text-xs text-slate-300 max-w-sm mb-6' }, t('stem.moonmission.webgl_failed_to_initialize_your_browse', 'WebGL failed to initialize. Your browser or device might not support 3D hardware acceleration.')),
                 h('button', {
                   onClick: function() {
                     upd('webglError', false);
                   },
                   className: 'px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg shadow-md transition-colors'
-                }, 'Retry 3D Mode')
+                }, t('stem.moonmission.retry_3d_mode', 'Retry 3D Mode'))
               ) : h('canvas', {
                 'data-eva-canvas': 'true',
                 role: 'application',
-                'aria-label': 'Interactive 3D lunar surface EVA. Use WASD to walk, Space to jump in one-sixth gravity, F to collect rock samples, mouse to look around. Collect geological samples and explore the Moon surface near the Lunar Module.',
+                'aria-label': t('stem.moonmission.interactive_3d_lunar_surface_eva_use_w', 'Interactive 3D lunar surface EVA. Use WASD to walk, Space to jump in one-sixth gravity, F to collect rock samples, mouse to look around. Collect geological samples and explore the Moon surface near the Lunar Module.'),
                 style: { width: '100%', height: '100%', display: 'block', cursor: 'crosshair' },
                 ref: function(canvasEl) {
                   if (!canvasEl || canvasEl._evaInit) return;
@@ -2768,11 +2768,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       // ── Proximity-based discovery cards ──
                       if (evaTick % 30 === 0) {
                         var landmarks = [
-                          { x: alsepX, z: alsepZ, name: 'ALSEP Science Station', fact: 'The Apollo Lunar Surface Experiments Package ran for years after the astronauts left. The seismometer detected moonquakes and meteorite impacts until 1977.', icon: '\uD83D\uDEF0' },
-                          { x: 8, z: -4, name: 'Lunar Rover (LRV)', fact: 'The Lunar Roving Vehicle cost $38 million. Apollo 17\'s rover traveled 35.7 km \u2014 still parked on the Moon with the keys in it!', icon: '\uD83D\uDE97' },
-                          { x: 4, z: 2, name: 'American Flag', fact: 'The flags on the Moon have been bleached pure white by decades of unfiltered UV radiation. Only the Apollo 12 flag was knocked over by engine exhaust.', icon: '\uD83C\uDDFA\uD83C\uDDF8' },
-                          { x: alsepX + 2, z: alsepZ + 1, name: 'Seismometer', fact: 'Lunar seismometers detected deep moonquakes at 700-1100 km depth, caused by tidal forces from Earth. The Moon still has a partially molten core!', icon: '\uD83D\uDCCA' },
-                          { x: alsepX - 2, z: alsepZ - 1, name: 'Laser Retroreflector', fact: 'Scientists bounce lasers off this mirror to measure the Earth-Moon distance to within 1 cm accuracy. The Moon moves 3.8 cm farther from Earth each year.', icon: '\uD83D\uDD2C' }
+                          { x: alsepX, z: alsepZ, name: t('stem.moonmission.alsep_science_station', 'ALSEP Science Station'), fact: t('stem.moonmission.the_apollo_lunar_surface_experiments_p', 'The Apollo Lunar Surface Experiments Package ran for years after the astronauts left. The seismometer detected moonquakes and meteorite impacts until 1977.'), icon: '\uD83D\uDEF0' },
+                          { x: 8, z: -4, name: t('stem.moonmission.lunar_rover_lrv', 'Lunar Rover (LRV)'), fact: t('stem.moonmission.the_lunar_roving_vehicle_cost_38_milli', 'The Lunar Roving Vehicle cost $38 million. Apollo 17\'s rover traveled 35.7 km \u2014 still parked on the Moon with the keys in it!'), icon: '\uD83D\uDE97' },
+                          { x: 4, z: 2, name: t('stem.moonmission.american_flag', 'American Flag'), fact: t('stem.moonmission.the_flags_on_the_moon_have_been_bleach', 'The flags on the Moon have been bleached pure white by decades of unfiltered UV radiation. Only the Apollo 12 flag was knocked over by engine exhaust.'), icon: '\uD83C\uDDFA\uD83C\uDDF8' },
+                          { x: alsepX + 2, z: alsepZ + 1, name: t('stem.moonmission.seismometer', 'Seismometer'), fact: t('stem.moonmission.lunar_seismometers_detected_deep_moonq', 'Lunar seismometers detected deep moonquakes at 700-1100 km depth, caused by tidal forces from Earth. The Moon still has a partially molten core!'), icon: '\uD83D\uDCCA' },
+                          { x: alsepX - 2, z: alsepZ - 1, name: t('stem.moonmission.laser_retroreflector', 'Laser Retroreflector'), fact: t('stem.moonmission.scientists_bounce_lasers_off_this_mirr', 'Scientists bounce lasers off this mirror to measure the Earth-Moon distance to within 1 cm accuracy. The Moon moves 3.8 cm farther from Earth each year.'), icon: '\uD83D\uDD2C' }
                         ];
                         var nearestLM = null;
                         var nearestLMDist = 999;
@@ -2866,8 +2866,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             ),
             h('div', { className: 'p-3 border-t border-slate-700 flex justify-between items-center' },
               h('div', null,
-                h('p', { className: 'text-xs text-white font-bold' }, '\uD83D\uDC68\u200D\uD83D\uDE80 Moonwalk EVA'),
-                h('p', { className: 'text-[11px] text-slate-600' }, 'Explore \u2022 Collect samples \u2022 Jump in 1/6 gravity!')
+                h('p', { className: 'text-xs text-white font-bold' }, t('stem.moonmission.moonwalk_eva_3', '\uD83D\uDC68\u200D\uD83D\uDE80 Moonwalk EVA')),
+                h('p', { className: 'text-[11px] text-slate-600' }, t('stem.moonmission.explore_collect_samples_jump_in_1_6_gr', 'Explore \u2022 Collect samples \u2022 Jump in 1/6 gravity!'))
               ),
               h('button', {
                 'aria-label': 'End moonwalk EVA and return to Lunar Module. ' + (d.lunarSamples || []).length + ' samples collected.',
@@ -2881,7 +2881,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   if (addToast) addToast('\u2B06\uFE0F EVA complete! Time to go home. Preparing lunar ascent.', 'success');
                 },
                 className: 'px-4 py-2 rounded-lg text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700'
-              }, '\u2B06\uFE0F End EVA \u2014 Return to LM')
+              }, t('stem.moonmission.end_eva_return_to_lm', '\u2B06\uFE0F End EVA \u2014 Return to LM'))
             )
           )
         ),
@@ -2892,7 +2892,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('div', { className: 'relative', style: { height: '300px' } },
               h('canvas', {
                 role: 'img',
-                'aria-label': 'Animated lunar ascent sequence. Ascent stage lifts off the Moon leaving the descent stage behind, climbs to lunar orbit over 60 kilometers, then rendezvous-docks with the orbiting Command Module Columbia. HUD shows altitude, phase, distance to CSM.',
+                'aria-label': t('stem.moonmission.animated_lunar_ascent_sequence_ascent_', 'Animated lunar ascent sequence. Ascent stage lifts off the Moon leaving the descent stage behind, climbs to lunar orbit over 60 kilometers, then rendezvous-docks with the orbiting Command Module Columbia. HUD shows altitude, phase, distance to CSM.'),
                 style: { width: '100%', height: '100%', display: 'block' },
                 ref: function(cvEl) {
                   if (!cvEl || cvEl._ascentInit) return;
@@ -3164,12 +3164,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('div', { className: 'p-4 text-white border-t border-slate-700' },
               h('div', { className: 'text-center mb-3' },
                 h('div', { className: 'text-3xl' }, '\u2B06\uFE0F'),
-                h('h4', { className: 'text-base font-bold' }, 'Lunar Ascent & Rendezvous'),
-                h('p', { className: 'text-[11px] text-slate-600' }, 'Ascent stage launches from Moon, docks with Columbia')
+                h('h4', { className: 'text-base font-bold' }, t('stem.moonmission.lunar_ascent_rendezvous', 'Lunar Ascent & Rendezvous')),
+                h('p', { className: 'text-[11px] text-slate-600' }, t('stem.moonmission.ascent_stage_launches_from_moon_docks_', 'Ascent stage launches from Moon, docks with Columbia'))
               ),
               h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10 mb-3' },
                 h('p', { className: 'text-[11px] text-slate-300 leading-relaxed' },
-                  'The LM\'s ascent engine — a single-start hypergolic motor with no abort option — fires to launch you off the lunar surface. The descent stage serves as the launch pad and stays behind. You rendezvous and dock with Columbia, then jettison "Eagle" (it eventually crashes into the Moon).'),
+                  t('stem.moonmission.the_lm_s_ascent_engine_a_single_start_', 'The LM\'s ascent engine — a single-start hypergolic motor with no abort option — fires to launch you off the lunar surface. The descent stage serves as the launch pad and stays behind. You rendezvous and dock with Columbia, then jettison "Eagle" (it eventually crashes into the Moon).')),
                 h('div', { className: 'mt-2 bg-amber-500/10 rounded p-2 border border-amber-500/20' },
                   h('p', { className: 'text-[11px] text-amber-300' }, '\uD83E\uDEA8 Samples collected: ' + (d.lunarSamples || []).length + ' / ' + LUNAR_SAMPLES_DATA.length),
                   (d.lunarSamples || []).map(function(s, i) {
@@ -3183,7 +3183,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             )
           ),
           h('button', {
-            'aria-label': 'Fire trans-Earth injection burn to begin 3-day return journey home',
+            'aria-label': t('stem.moonmission.fire_trans_earth_injection_burn_to_beg', 'Fire trans-Earth injection burn to begin 3-day return journey home'),
             onClick: function() {
               advancePhase(8);
               log('\u2B06\uFE0F Docked with Columbia. LM jettisoned.');
@@ -3191,7 +3191,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               if (addToast) addToast('\uD83C\uDF0D TEI burn complete. Heading home.', 'success');
             },
             className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg'
-          }, '\uD83D\uDE80 TEI Burn \u2014 Head Home')
+          }, t('stem.moonmission.tei_burn_head_home', '\uD83D\uDE80 TEI Burn \u2014 Head Home'))
         ),
 
         // ═══ PHASE 8: TRANS-EARTH COAST ═══
@@ -3199,26 +3199,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl p-4 text-white' },
             h('div', { className: 'text-center mb-3' },
               h('div', { className: 'text-3xl' }, '\uD83C\uDF0D'),
-              h('h4', { className: 'text-base font-bold' }, 'Trans-Earth Coast'),
-              h('p', { className: 'text-[11px] text-slate-600' }, 'Returning home \u2022 384,400 km \u2022 ~3 days')
+              h('h4', { className: 'text-base font-bold' }, t('stem.moonmission.trans_earth_coast_2', 'Trans-Earth Coast')),
+              h('p', { className: 'text-[11px] text-slate-600' }, t('stem.moonmission.returning_home_384_400_km_3_days', 'Returning home \u2022 384,400 km \u2022 ~3 days'))
             ),
             h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10 mb-3' },
               h('p', { className: 'text-[11px] text-slate-300 leading-relaxed' },
-                'The Service Module engine fires for the Trans-Earth Injection burn. You coast for 3 days back to Earth, jettison the Service Module, and prepare the Command Module for re-entry \u2014 the most dangerous phase of the mission.')
+                t('stem.moonmission.the_service_module_engine_fires_for_th', 'The Service Module engine fires for the Trans-Earth Injection burn. You coast for 3 days back to Earth, jettison the Service Module, and prepare the Command Module for re-entry \u2014 the most dangerous phase of the mission.'))
             ),
             h('div', { className: 'bg-indigo-500/10 rounded-lg p-2 border border-indigo-500/20' },
               h('p', { className: 'text-[11px] text-indigo-300' }, '\uD83D\uDCA1 ' + APOLLO_FACTS[Math.floor(Math.random() * APOLLO_FACTS.length)])
             )
           ),
           h('button', {
-            'aria-label': 'Begin atmospheric re-entry sequence at 39,900 kilometers per hour',
+            'aria-label': t('stem.moonmission.begin_atmospheric_re_entry_sequence_at', 'Begin atmospheric re-entry sequence at 39,900 kilometers per hour'),
             onClick: function() {
               advancePhase(9);
               log('\uD83C\uDF0D Approaching Earth. Preparing for re-entry.');
               addXP(15);
             },
             className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg'
-          }, '\uD83C\uDF0A Begin Re-entry Sequence')
+          }, t('stem.moonmission.begin_re_entry_sequence', '\uD83C\uDF0A Begin Re-entry Sequence'))
         ),
 
         // ═══ PHASE 9: RE-ENTRY & SPLASHDOWN (Animated Canvas) ═══
@@ -3227,7 +3227,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('div', { className: 'relative', style: { height: '320px' } },
               h('canvas', { 
                 role: 'img',
-                'aria-label': 'Animated re-entry sequence. Command Module enters atmosphere at 39,900 km/h with plasma heating to 2,760 degrees. Shows radio blackout, drogue chutes, main parachutes, and ocean splashdown.',
+                'aria-label': t('stem.moonmission.animated_re_entry_sequence_command_mod', 'Animated re-entry sequence. Command Module enters atmosphere at 39,900 km/h with plasma heating to 2,760 degrees. Shows radio blackout, drogue chutes, main parachutes, and ocean splashdown.'),
                 style: { width: '100%', height: '100%', display: 'block' },
                 ref: function(cvEl) {
                   if (!cvEl || cvEl._reentryInit) return;
@@ -3435,14 +3435,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               })
             ),
             h('div', { className: 'p-3 border-t border-orange-900/30' },
-              h('p', { className: 'text-[11px] text-slate-200 mb-2' }, 'Watch the Command Module survive re-entry at 39,900 km/h through 2,760\u00B0C plasma, deploy parachutes, and splash down in the Pacific Ocean.'),
+              h('p', { className: 'text-[11px] text-slate-200 mb-2' }, t('stem.moonmission.watch_the_command_module_survive_re_en', 'Watch the Command Module survive re-entry at 39,900 km/h through 2,760\u00B0C plasma, deploy parachutes, and splash down in the Pacific Ocean.')),
               h('div', { className: 'bg-indigo-500/10 rounded p-1.5 border border-indigo-500/20' },
                 h('p', { className: 'text-[11px] text-indigo-300' }, '\uD83D\uDCA1 ' + APOLLO_FACTS[Math.floor(Math.random() * APOLLO_FACTS.length)])
               )
             )
           ),
           h('button', {
-            'aria-label': 'Complete the mission with Pacific Ocean splashdown. Welcome home Commander!',
+            'aria-label': t('stem.moonmission.complete_the_mission_with_pacific_ocea', 'Complete the mission with Pacific Ocean splashdown. Welcome home Commander!'),
             onClick: function() {
               setPhase(10);
               log('\uD83C\uDF0A SPLASHDOWN! Mission complete.');
@@ -3451,15 +3451,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               if (typeof announceToSR === 'function') announceToSR('Mission complete! Splashdown in the Pacific Ocean. Welcome home, Commander.');
             },
             className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 shadow-lg animate-pulse'
-          }, '\uD83C\uDF0A Mission Complete \u2014 SPLASHDOWN!')
+          }, t('stem.moonmission.mission_complete_splashdown', '\uD83C\uDF0A Mission Complete \u2014 SPLASHDOWN!'))
         ),
 
         // ═══ PHASE 10: MISSION COMPLETE ═══
         phase >= 10 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
           h('div', { className: 'bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900 rounded-xl p-5 text-white text-center' },
             h('div', { className: 'text-5xl mb-2' }, '\uD83C\uDF1F'),
-            h('h4', { className: 'text-xl font-black tracking-wide mb-1' }, 'MISSION COMPLETE'),
-            h('p', { className: 'text-sm text-indigo-300 mb-3' }, 'Welcome home, Commander. The world celebrates.'),
+            h('h4', { className: 'text-xl font-black tracking-wide mb-1' }, t('stem.moonmission.mission_complete', 'MISSION COMPLETE')),
+            h('p', { className: 'text-sm text-indigo-300 mb-3' }, t('stem.moonmission.welcome_home_commander_the_world_celeb', 'Welcome home, Commander. The world celebrates.')),
             h('div', { className: 'grid grid-cols-3 gap-3 mb-4' },
               [
                 ['\uD83D\uDE80', 'Launched', 'Saturn V'],
@@ -3474,7 +3474,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               })
             ),
             h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10 text-left mb-3' },
-              h('p', { className: 'text-[11px] text-fuchsia-300 font-bold mb-1' }, '\uD83C\uDFC5 MISSION DEBRIEF'),
+              h('p', { className: 'text-[11px] text-fuchsia-300 font-bold mb-1' }, t('stem.moonmission.mission_debrief', '\uD83C\uDFC5 MISSION DEBRIEF')),
               h('div', { className: 'grid grid-cols-4 gap-2 mb-2' },
                 [
                   ['\u2B50', (d.missionXP || 0) + ' XP', 'Total'],
@@ -3490,7 +3490,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 })
               ),
               // Badges earned
-              h('p', { className: 'text-[11px] text-slate-600 font-bold mb-1' }, '\uD83C\uDFC5 BADGES EARNED:'),
+              h('p', { className: 'text-[11px] text-slate-600 font-bold mb-1' }, t('stem.moonmission.badges_earned', '\uD83C\uDFC5 BADGES EARNED:')),
               h('div', { className: 'flex flex-wrap gap-1.5 mb-2' },
                 BADGES.map(function(b) {
                   var earned = !!(d.earnedBadges || {})[b.id];
@@ -3520,13 +3520,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 // Collection completeness
                 (d.lunarSamples || []).length >= LUNAR_SAMPLES_DATA.length && h('div', { className: 'mt-2 bg-amber-500/10 rounded-lg p-2 border border-amber-500/20 text-center' },
                   h('p', { className: 'text-[11px] font-bold text-amber-300' }, '\uD83C\uDFC6 COMPLETE COLLECTION! All ' + LUNAR_SAMPLES_DATA.length + ' samples recovered.'),
-                  h('p', { className: 'text-[11px] text-amber-400' }, 'These samples will be studied by scientists for decades to come.')
+                  h('p', { className: 'text-[11px] text-amber-400' }, t('stem.moonmission.these_samples_will_be_studied_by_scien', 'These samples will be studied by scientists for decades to come.'))
                 )
               )
             ),
             // ── Decision Analysis (from Mission Events) ──
             (d.decisionLog || []).length > 0 && h('div', { className: 'mt-3 bg-white/5 rounded-xl p-3 border border-white/10' },
-              h('p', { className: 'text-[11px] text-slate-600 font-bold mb-2' }, '\uD83D\uDCCA DECISION ANALYSIS'),
+              h('p', { className: 'text-[11px] text-slate-600 font-bold mb-2' }, t('stem.moonmission.decision_analysis', '\uD83D\uDCCA DECISION ANALYSIS')),
               (d.decisionLog || []).map(function(dec, i) {
                 return h('div', { key: i, className: 'bg-white/5 rounded-lg p-2.5 border border-white/10 mb-1.5' },
                   h('div', { className: 'flex justify-between items-center mb-1' },
@@ -3542,7 +3542,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     '\uD83D\uDCA1 Better option: "' + dec.optimal + '"'
                   ),
                   h('details', { className: 'mt-1' },
-                    h('summary', { className: 'text-[11px] text-slate-600 cursor-pointer' }, 'Historical context'),
+                    h('summary', { className: 'text-[11px] text-slate-600 cursor-pointer' }, t('stem.moonmission.historical_context', 'Historical context')),
                     h('p', { className: 'text-[11px] text-slate-200 mt-1 pl-2' }, dec.historical)
                   )
                 );
@@ -3565,7 +3565,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             ),
 
             h('button', {
-              'aria-label': 'Reset and start a new Moon mission from the beginning',
+              'aria-label': t('stem.moonmission.reset_and_start_a_new_moon_mission_fro', 'Reset and start a new Moon mission from the beginning'),
               onClick: function() {
                 upd('missionPhase', 0);
                 upd('missionLog', []);
@@ -3579,7 +3579,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 upd('quizAnswered', false);
               },
               className: 'px-6 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700'
-            }, '\uD83D\uDD04 Fly Another Mission')
+            }, t('stem.moonmission.fly_another_mission', '\uD83D\uDD04 Fly Another Mission'))
           )
         ),
 
@@ -3593,26 +3593,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           var deltaV = iq.isp * g * Math.log(iq.massRatio);
           var orbit = deltaV < 7800 ? 'insufficient' : (deltaV < 11200 ? 'leo' : 'escape');
           var orbitMeta = {
-            insufficient: { label: '🔴 Insufficient — suborbital', color: '#dc2626', bg: 'rgba(220,38,38,0.10)', border: '#ef4444' },
-            leo:          { label: '🟢 LEO / Earth orbit',          color: '#059669', bg: 'rgba(16,185,129,0.10)', border: '#10b981' },
-            escape:       { label: '🚀 Escape velocity (lunar/beyond)', color: '#0ea5e9', bg: 'rgba(14,165,233,0.10)', border: '#0ea5e9' }
+            insufficient: { label: t('stem.moonmission.insufficient_suborbital', '🔴 Insufficient — suborbital'), color: '#dc2626', bg: 'rgba(220,38,38,0.10)', border: '#ef4444' },
+            leo:          { label: t('stem.moonmission.leo_earth_orbit', '🟢 LEO / Earth orbit'),          color: '#059669', bg: 'rgba(16,185,129,0.10)', border: '#10b981' },
+            escape:       { label: t('stem.moonmission.escape_velocity_lunar_beyond', '🚀 Escape velocity (lunar/beyond)'), color: '#0ea5e9', bg: 'rgba(14,165,233,0.10)', border: '#0ea5e9' }
           }[orbit];
           function logObs() {
             setIQ({ log: (iq.log || []).concat([{ mr: iq.massRatio, bd: iq.burnDur, isp: iq.isp, dv: Math.round(deltaV), o: orbit }]).slice(-8) });
           }
           return h('div', { className: 'mt-3 p-3 rounded-lg bg-slate-50 border border-indigo-300' },
-            h('div', { className: 'text-sm font-black text-indigo-700 mb-1' }, '🛰️ Orbital delta-V discovery'),
+            h('div', { className: 'text-sm font-black text-indigo-700 mb-1' }, t('stem.moonmission.orbital_delta_v_discovery', '🛰️ Orbital delta-V discovery')),
             h('p', { className: 'text-[11px] text-slate-700 mb-2 leading-relaxed' },
-              'Tsiolkovsky rocket equation. Adjust mass ratio, burn duration, and specific impulse (Isp). Discrete 3-state outcome shows whether your delta-V is insufficient, achieves LEO, or escapes Earth. No score, no reveal.'),
+              t('stem.moonmission.tsiolkovsky_rocket_equation_adjust_mas', 'Tsiolkovsky rocket equation. Adjust mass ratio, burn duration, and specific impulse (Isp). Discrete 3-state outcome shows whether your delta-V is insufficient, achieves LEO, or escapes Earth. No score, no reveal.')),
             h('div', { className: 'mb-2 p-2 rounded text-center', style: { background: orbitMeta.bg, border: '1px solid ' + orbitMeta.border } },
               h('div', { className: 'text-sm font-black', style: { color: orbitMeta.color } }, orbitMeta.label),
               h('div', { className: 'text-[10px] text-slate-700 mt-1' }, 'Δv = ' + Math.round(deltaV) + ' m/s')
             ),
             h('div', { className: 'grid grid-cols-3 gap-2 mb-2' },
               [
-                { key: 'massRatio', label: 'Mass ratio', val: iq.massRatio, min: 1.2, max: 12, step: 0.1 },
-                { key: 'burnDur',   label: 'Burn dur (s)', val: iq.burnDur,   min: 30, max: 600, step: 10 },
-                { key: 'isp',       label: 'Isp (s)',     val: iq.isp,       min: 100, max: 450, step: 5 }
+                { key: 'massRatio', label: t('stem.moonmission.mass_ratio', 'Mass ratio'), val: iq.massRatio, min: 1.2, max: 12, step: 0.1 },
+                { key: 'burnDur',   label: t('stem.moonmission.burn_dur_s', 'Burn dur (s)'), val: iq.burnDur,   min: 30, max: 600, step: 10 },
+                { key: 'isp',       label: t('stem.moonmission.isp_s', 'Isp (s)'),     val: iq.isp,       min: 100, max: 450, step: 5 }
               ].map(function(s) {
                 return h('div', { key: s.key },
                   h('label', { htmlFor: 'dv-' + s.key, className: 'block text-[10px] font-bold text-slate-700 mb-0.5' },
@@ -3623,9 +3623,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               })
             ),
             h('div', { className: 'flex gap-1 items-center mb-2 flex-wrap' },
-              h('button', { onClick: logObs, className: 'px-2 py-0.5 rounded bg-slate-200 hover:bg-slate-300 text-[10px] font-bold text-slate-700' }, '📋 Log'),
+              h('button', { onClick: logObs, className: 'px-2 py-0.5 rounded bg-slate-200 hover:bg-slate-300 text-[10px] font-bold text-slate-700' }, t('stem.moonmission.log', '📋 Log')),
               h('button', { onClick: function() { setIQ({ massRatio: 3, burnDur: 180, isp: 311, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
-                className: 'px-2 py-0.5 rounded bg-white hover:bg-slate-100 text-[10px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset'),
+                className: 'px-2 py-0.5 rounded bg-white hover:bg-slate-100 text-[10px] font-semibold text-slate-600 border border-slate-300' }, t('stem.moonmission.reset', '↺ Reset')),
               (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
             ),
             (iq.log || []).length > 0 && h('table', { className: 'text-[10px] w-full border-collapse text-slate-700 mb-2' },
@@ -3641,26 +3641,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               }))
             ),
             h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
-              placeholder: 'Hypothesis (free text — no right answer): Which lever matters most?',
+              placeholder: t('stem.moonmission.hypothesis_free_text_no_right_answer_w', 'Hypothesis (free text — no right answer): Which lever matters most?'),
               className: 'w-full text-[11px] border border-slate-300 rounded p-1 font-mono leading-snug mb-2', rows: 2 }),
             !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
               className: 'px-2 py-0.5 rounded bg-amber-50 hover:bg-amber-100 text-[10px] font-bold text-amber-800 border border-amber-300 mb-2' },
-              '🤔 Stuck — show open prompts'),
+              t('stem.moonmission.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
             iq.stuckRevealed && h('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[10px] text-slate-700 leading-relaxed mb-2' },
               h('ul', { className: 'list-disc pl-4 space-y-0.5' },
-                h('li', null, 'Hold two sliders steady. Move one. Watch.'),
-                h('li', null, 'Find two settings producing the same outcome.'),
-                h('li', null, 'Which slider affects Δv the most? Use the log.'),
-                h('li', null, 'Real spacecraft trade fuel mass against Isp. Investigate why.'))),
+                h('li', null, t('stem.moonmission.hold_two_sliders_steady_move_one_watch', 'Hold two sliders steady. Move one. Watch.')),
+                h('li', null, t('stem.moonmission.find_two_settings_producing_the_same_o', 'Find two settings producing the same outcome.')),
+                h('li', null, t('stem.moonmission.which_slider_affects_v_the_most_use_th', 'Which slider affects Δv the most? Use the log.')),
+                h('li', null, t('stem.moonmission.real_spacecraft_trade_fuel_mass_agains', 'Real spacecraft trade fuel mass against Isp. Investigate why.')))),
             h('div', { className: 'p-2 rounded bg-emerald-50 border border-emerald-200' },
               h('label', { className: 'flex items-center gap-1 text-[10px] font-bold text-emerald-800 cursor-pointer' },
                 h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
-                'I think I understand the trade-offs'),
+                t('stem.moonmission.i_think_i_understand_the_trade_offs', 'I think I understand the trade-offs')),
               iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); },
-                placeholder: 'Explain in your own words: how do mass ratio, burn duration, and Isp interact?',
+                placeholder: t('stem.moonmission.explain_in_your_own_words_how_do_mass_', 'Explain in your own words: how do mass ratio, burn duration, and Isp interact?'),
                 className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 })),
             h('div', { className: 'mt-2 text-[9px] italic text-slate-500' },
-              'Design note: discrete 3-state outcome; no score; no reveal — by design.')
+              t('stem.moonmission.design_note_discrete_3_state_outcome_n', 'Design note: discrete 3-state outcome; no score; no reveal — by design.'))
           );
         })(),
 

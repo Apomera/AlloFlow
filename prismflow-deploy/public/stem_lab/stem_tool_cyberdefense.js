@@ -110,6 +110,7 @@
       { id: 'warroom_perfect_defense', label: 'Zero assets lost on Threat Hunter difficulty', icon: '\uD83D\uDEE1\uFE0F', check: function(d) { return !!d.warRoomPerfectDefense; }, progress: function(d) { return d.warRoomPerfectDefense ? 'Achieved!' : 'In progress'; } }
     ],
     render: function (ctx) {
+      var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
     var React = ctx.React;
     var el = React.createElement;
     var announceToSR = ctx.announceToSR;
@@ -280,102 +281,102 @@
           // â”€â”€ Phishing Email Data (with investigation clues) â”€â”€
           var phishEmails = [
             // Easy
-            { from: 'security@g00gle-support.com', fromDisplay: 'Google Security Team', subject: '\u26A0\uFE0F URGENT: Your account will be suspended!', body: 'Dear user, we detected unusual activity on your account. Click below IMMEDIATELY or your account will be permanently deleted within 24 hours.', link: 'http://g00gle-support.com/verify-now', isPhish: true, difficulty: 'easy',
+            { from: 'security@g00gle-support.com', fromDisplay: 'Google Security Team', subject: '\u26A0\uFE0F URGENT: Your account will be suspended!', body: t('stem.cyberdefense.dear_user_we_detected_unusual_activity', 'Dear user, we detected unusual activity on your account. Click below IMMEDIATELY or your account will be permanently deleted within 24 hours.'), link: 'http://g00gle-support.com/verify-now', isPhish: true, difficulty: 'easy',
               headers: { returnPath: 'delivery@mail-delivery-relay-09.ru', spf: 'softfail', dkim: 'fail', dmarc: 'fail' },
               flags: ['Misspelled domain (g00gle with zeros)', 'Urgency/fear tactics ("IMMEDIATELY", "permanently deleted")', 'Generic greeting ("Dear user")', 'Suspicious link domain', 'Header Validation: SPF softfail, DKIM fail, DMARC fail. Return-Path domain does not match sender domain.'],
               clues: [
-                { zone: 'sender', icon: '\uD83D\uDCE7', label: 'Sender Domain', desc: 'g00gle-support.com uses zeros instead of o\'s \u2014 a classic spoofing trick', suspicious: true },
-                { zone: 'subject', icon: '\u26A1', label: 'Urgency Tactic', desc: '"URGENT" and threats of suspension create panic to bypass your judgment', suspicious: true },
-                { zone: 'body', icon: '\uD83D\uDCDD', label: 'Generic Greeting', desc: '"Dear user" \u2014 real companies use your actual name', suspicious: true },
-                { zone: 'link', icon: '\uD83D\uDD17', label: 'Link Analysis', desc: 'HTTP (not HTTPS) link to a fake domain \u2014 never click these!', suspicious: true },
-                { zone: 'headers', icon: '\uD83D\uDD0D', label: 'Header Alignment', desc: 'Return-Path (mail-delivery-relay-09.ru) does not match the sender domain, and DMARC checks failed.', suspicious: true }
+                { zone: 'sender', icon: '\uD83D\uDCE7', label: t('stem.cyberdefense.sender_domain', 'Sender Domain'), desc: t('stem.cyberdefense.g00gle_support_com_uses_zeros_instead_', 'g00gle-support.com uses zeros instead of o\'s \u2014 a classic spoofing trick'), suspicious: true },
+                { zone: 'subject', icon: '\u26A1', label: t('stem.cyberdefense.urgency_tactic', 'Urgency Tactic'), desc: t('stem.cyberdefense.urgent_and_threats_of_suspension_creat', '"URGENT" and threats of suspension create panic to bypass your judgment'), suspicious: true },
+                { zone: 'body', icon: '\uD83D\uDCDD', label: t('stem.cyberdefense.generic_greeting', 'Generic Greeting'), desc: t('stem.cyberdefense.dear_user_real_companies_use_your_actu', '"Dear user" \u2014 real companies use your actual name'), suspicious: true },
+                { zone: 'link', icon: '\uD83D\uDD17', label: t('stem.cyberdefense.link_analysis', 'Link Analysis'), desc: t('stem.cyberdefense.http_not_https_link_to_a_fake_domain_n', 'HTTP (not HTTPS) link to a fake domain \u2014 never click these!'), suspicious: true },
+                { zone: 'headers', icon: '\uD83D\uDD0D', label: t('stem.cyberdefense.header_alignment', 'Header Alignment'), desc: t('stem.cyberdefense.return_path_mail_delivery_relay_09_ru_', 'Return-Path (mail-delivery-relay-09.ru) does not match the sender domain, and DMARC checks failed.'), suspicious: true }
               ] },
-            { from: 'noreply@school.edu', fromDisplay: 'School Library', subject: 'Library Book Due Reminder', body: 'Hi! This is a reminder that "Charlotte\'s Web" is due back to the library by Friday. Please return it to the front desk. Thanks!', link: null, isPhish: false, difficulty: 'easy',
+            { from: 'noreply@school.edu', fromDisplay: 'School Library', subject: 'Library Book Due Reminder', body: t('stem.cyberdefense.hi_this_is_a_reminder_that_charlotte_s', 'Hi! This is a reminder that "Charlotte\'s Web" is due back to the library by Friday. Please return it to the front desk. Thanks!'), link: null, isPhish: false, difficulty: 'easy',
               headers: { returnPath: 'noreply@school.edu', spf: 'pass', dkim: 'pass', dmarc: 'pass' },
               flags: ['Legitimate school domain', 'Specific book title', 'No urgent threats', 'No suspicious links', 'Header Validation: SPF, DKIM, and DMARC are fully aligned and valid.'],
               clues: [
-                { zone: 'sender', icon: '\uD83D\uDCE7', label: 'Sender Domain', desc: 'school.edu is a legitimate educational domain', suspicious: false },
-                { zone: 'body', icon: '\uD83D\uDCDD', label: 'Specific Details', desc: 'Mentions a specific book title \u2014 real messages have real details', suspicious: false },
-                { zone: 'subject', icon: '\u26A1', label: 'Tone Check', desc: 'Friendly reminder with no threats or urgency', suspicious: false },
-                { zone: 'headers', icon: '\uD83D\uDD0D', label: 'Header Alignment', desc: 'All cryptographic checks (SPF, DKIM, DMARC) pass and are aligned with school.edu.', suspicious: false }
+                { zone: 'sender', icon: '\uD83D\uDCE7', label: t('stem.cyberdefense.sender_domain_2', 'Sender Domain'), desc: t('stem.cyberdefense.school_edu_is_a_legitimate_educational', 'school.edu is a legitimate educational domain'), suspicious: false },
+                { zone: 'body', icon: '\uD83D\uDCDD', label: t('stem.cyberdefense.specific_details', 'Specific Details'), desc: t('stem.cyberdefense.mentions_a_specific_book_title_real_me', 'Mentions a specific book title \u2014 real messages have real details'), suspicious: false },
+                { zone: 'subject', icon: '\u26A1', label: t('stem.cyberdefense.tone_check', 'Tone Check'), desc: t('stem.cyberdefense.friendly_reminder_with_no_threats_or_u', 'Friendly reminder with no threats or urgency'), suspicious: false },
+                { zone: 'headers', icon: '\uD83D\uDD0D', label: t('stem.cyberdefense.header_alignment_2', 'Header Alignment'), desc: t('stem.cyberdefense.all_cryptographic_checks_spf_dkim_dmar', 'All cryptographic checks (SPF, DKIM, DMARC) pass and are aligned with school.edu.'), suspicious: false }
               ] },
-            { from: 'prizes@win-big-now.net', fromDisplay: 'Prize Award Center', subject: '\uD83C\uDF89 YOU WON $1,000,000!!!', body: 'Congratulations! You have been randomly selected to receive ONE MILLION DOLLARS! Send us your full name, address, and parent\'s credit card number to claim your prize NOW!', link: 'http://win-big-now.net/claim', isPhish: true, difficulty: 'easy',
+            { from: 'prizes@win-big-now.net', fromDisplay: 'Prize Award Center', subject: '\uD83C\uDF89 YOU WON $1,000,000!!!', body: t('stem.cyberdefense.congratulations_you_have_been_randomly', 'Congratulations! You have been randomly selected to receive ONE MILLION DOLLARS! Send us your full name, address, and parent\'s credit card number to claim your prize NOW!'), link: 'http://win-big-now.net/claim', isPhish: true, difficulty: 'easy',
               headers: { returnPath: 'admin@spambox-server-east.cn', spf: 'fail', dkim: 'fail', dmarc: 'fail' },
               flags: ['Too good to be true', 'Asks for personal/financial info', 'Random prize from unknown sender', 'Suspicious domain', 'Header Validation: SPF/DKIM checks failed completely, Return-Path domain is unrelated.'],
               clues: [
-                { zone: 'subject', icon: '\u26A1', label: 'Too Good To Be True', desc: 'Winning $1M from a random email? That\'s never real', suspicious: true },
-                { zone: 'body', icon: '\uD83D\uDCDD', label: 'Asks for Personal Info', desc: 'Requests credit card number \u2014 legitimate prizes NEVER ask for payment info', suspicious: true },
-                { zone: 'sender', icon: '\uD83D\uDCE7', label: 'Sender Domain', desc: 'win-big-now.net is a sketchy, unfamiliar domain', suspicious: true },
-                { zone: 'link', icon: '\uD83D\uDD17', label: 'Link Analysis', desc: 'Links to the same suspicious domain \u2014 designed to steal your info', suspicious: true },
-                { zone: 'headers', icon: '\uD83D\uDD0D', label: 'Header Alignment', desc: 'Return-Path (spambox-server-east.cn) is totally different and lacks SPF/DKIM verification.', suspicious: true }
+                { zone: 'subject', icon: '\u26A1', label: t('stem.cyberdefense.too_good_to_be_true', 'Too Good To Be True'), desc: t('stem.cyberdefense.winning_1m_from_a_random_email_that_s_', 'Winning $1M from a random email? That\'s never real'), suspicious: true },
+                { zone: 'body', icon: '\uD83D\uDCDD', label: t('stem.cyberdefense.asks_for_personal_info', 'Asks for Personal Info'), desc: t('stem.cyberdefense.requests_credit_card_number_legitimate', 'Requests credit card number \u2014 legitimate prizes NEVER ask for payment info'), suspicious: true },
+                { zone: 'sender', icon: '\uD83D\uDCE7', label: t('stem.cyberdefense.sender_domain_3', 'Sender Domain'), desc: t('stem.cyberdefense.win_big_now_net_is_a_sketchy_unfamilia', 'win-big-now.net is a sketchy, unfamiliar domain'), suspicious: true },
+                { zone: 'link', icon: '\uD83D\uDD17', label: t('stem.cyberdefense.link_analysis_2', 'Link Analysis'), desc: t('stem.cyberdefense.links_to_the_same_suspicious_domain_de', 'Links to the same suspicious domain \u2014 designed to steal your info'), suspicious: true },
+                { zone: 'headers', icon: '\uD83D\uDD0D', label: t('stem.cyberdefense.header_alignment_3', 'Header Alignment'), desc: t('stem.cyberdefense.return_path_spambox_server_east_cn_is_', 'Return-Path (spambox-server-east.cn) is totally different and lacks SPF/DKIM verification.'), suspicious: true }
               ] },
             // Medium
-            { from: 'support@amaz0n-orders.com', fromDisplay: 'Amazon Order Support', subject: 'Problem with your recent order #38291', body: 'We were unable to process payment for your recent order. Please update your payment information within 48 hours to avoid cancellation. Click here to update.', link: 'http://amaz0n-orders.com/update-payment', isPhish: true, difficulty: 'medium',
+            { from: 'support@amaz0n-orders.com', fromDisplay: 'Amazon Order Support', subject: 'Problem with your recent order #38291', body: t('stem.cyberdefense.we_were_unable_to_process_payment_for_', 'We were unable to process payment for your recent order. Please update your payment information within 48 hours to avoid cancellation. Click here to update.'), link: 'http://amaz0n-orders.com/update-payment', isPhish: true, difficulty: 'medium',
               headers: { returnPath: 'orders-update@amaz0n-orders.com', spf: 'softfail', dkim: 'fail', dmarc: 'fail' },
               flags: ['Misspelled domain (amaz0n with zero)', 'Creates urgency (48 hours)', 'Vague order reference', 'Link to suspicious domain', 'Header Validation: SPF softfail and DKIM failure indicate unauthorized origin.'],
               clues: [
-                { zone: 'sender', icon: '\uD83D\uDCE7', label: 'Sender Domain', desc: 'amaz0n-orders.com \u2014 note the zero! Real Amazon uses amazon.com', suspicious: true },
-                { zone: 'subject', icon: '\u26A1', label: 'Vague Reference', desc: 'Generic order number \u2014 phishers use random numbers hoping you recently ordered something', suspicious: true },
-                { zone: 'body', icon: '\uD83D\uDCDD', label: 'Urgency Pressure', desc: '"48 hours" deadline creates pressure to act without thinking', suspicious: true },
-                { zone: 'link', icon: '\uD83D\uDD17', label: 'Link Analysis', desc: 'Links to amaz0n-orders.com, not amazon.com', suspicious: true },
-                { zone: 'headers', icon: '\uD83D\uDD0D', label: 'Header Alignment', desc: 'DKIM signature failed, and SPF softfailed, indicating a domain spoofing attempt.', suspicious: true }
+                { zone: 'sender', icon: '\uD83D\uDCE7', label: t('stem.cyberdefense.sender_domain_4', 'Sender Domain'), desc: t('stem.cyberdefense.amaz0n_orders_com_note_the_zero_real_a', 'amaz0n-orders.com \u2014 note the zero! Real Amazon uses amazon.com'), suspicious: true },
+                { zone: 'subject', icon: '\u26A1', label: t('stem.cyberdefense.vague_reference', 'Vague Reference'), desc: t('stem.cyberdefense.generic_order_number_phishers_use_rand', 'Generic order number \u2014 phishers use random numbers hoping you recently ordered something'), suspicious: true },
+                { zone: 'body', icon: '\uD83D\uDCDD', label: t('stem.cyberdefense.urgency_pressure', 'Urgency Pressure'), desc: t('stem.cyberdefense.48_hours_deadline_creates_pressure_to_', '"48 hours" deadline creates pressure to act without thinking'), suspicious: true },
+                { zone: 'link', icon: '\uD83D\uDD17', label: t('stem.cyberdefense.link_analysis_3', 'Link Analysis'), desc: t('stem.cyberdefense.links_to_amaz0n_orders_com_not_amazon_', 'Links to amaz0n-orders.com, not amazon.com'), suspicious: true },
+                { zone: 'headers', icon: '\uD83D\uDD0D', label: t('stem.cyberdefense.header_alignment_4', 'Header Alignment'), desc: t('stem.cyberdefense.dkim_signature_failed_and_spf_softfail', 'DKIM signature failed, and SPF softfailed, indicating a domain spoofing attempt.'), suspicious: true }
               ] },
-            { from: 'teacher@myschool.edu', fromDisplay: 'Mrs. Johnson', subject: 'Science Fair Project Update', body: 'Hi! Just a reminder that science fair projects are due next Tuesday. Please bring your display board and any materials. Let me know if you need extra time. - Mrs. Johnson', link: null, isPhish: false, difficulty: 'medium',
+            { from: 'teacher@myschool.edu', fromDisplay: 'Mrs. Johnson', subject: 'Science Fair Project Update', body: t('stem.cyberdefense.hi_just_a_reminder_that_science_fair_p', 'Hi! Just a reminder that science fair projects are due next Tuesday. Please bring your display board and any materials. Let me know if you need extra time. - Mrs. Johnson'), link: null, isPhish: false, difficulty: 'medium',
               headers: { returnPath: 'teacher@myschool.edu', spf: 'pass', dkim: 'pass', dmarc: 'pass' },
               flags: ['Legitimate school domain', 'Specific teacher name', 'Normal classroom request', 'No links or downloads', 'Header Validation: Valid DKIM and SPF alignment.'],
               clues: [
-                { zone: 'sender', icon: '\uD83D\uDCE7', label: 'Sender Domain', desc: 'myschool.edu \u2014 legitimate school domain', suspicious: false },
-                { zone: 'body', icon: '\uD83D\uDCDD', label: 'Personal Tone', desc: 'Signed by a specific teacher, offers extra time \u2014 normal teacher behavior', suspicious: false },
-                { zone: 'subject', icon: '\u26A1', label: 'Normal Request', desc: 'A reminder about a real assignment with a reasonable deadline', suspicious: false },
-                { zone: 'headers', icon: '\uD83D\uDD0D', label: 'Header Alignment', desc: 'Valid SPF, DKIM, and DMARC alignments confirm identity of myschool.edu.', suspicious: false }
+                { zone: 'sender', icon: '\uD83D\uDCE7', label: t('stem.cyberdefense.sender_domain_5', 'Sender Domain'), desc: t('stem.cyberdefense.myschool_edu_legitimate_school_domain', 'myschool.edu \u2014 legitimate school domain'), suspicious: false },
+                { zone: 'body', icon: '\uD83D\uDCDD', label: t('stem.cyberdefense.personal_tone', 'Personal Tone'), desc: t('stem.cyberdefense.signed_by_a_specific_teacher_offers_ex', 'Signed by a specific teacher, offers extra time \u2014 normal teacher behavior'), suspicious: false },
+                { zone: 'subject', icon: '\u26A1', label: t('stem.cyberdefense.normal_request', 'Normal Request'), desc: t('stem.cyberdefense.a_reminder_about_a_real_assignment_wit', 'A reminder about a real assignment with a reasonable deadline'), suspicious: false },
+                { zone: 'headers', icon: '\uD83D\uDD0D', label: t('stem.cyberdefense.header_alignment_5', 'Header Alignment'), desc: t('stem.cyberdefense.valid_spf_dkim_and_dmarc_alignments_co', 'Valid SPF, DKIM, and DMARC alignments confirm identity of myschool.edu.'), suspicious: false }
               ] },
-            { from: 'help@paypa1-secure.com', fromDisplay: 'PayPal Security', subject: 'Unusual login from new device', body: 'We noticed a login to your account from a new device in Russia. If this wasn\'t you, secure your account immediately by verifying your identity below.', link: 'http://paypa1-secure.com/verify', isPhish: true, difficulty: 'medium',
+            { from: 'help@paypa1-secure.com', fromDisplay: 'PayPal Security', subject: 'Unusual login from new device', body: t('stem.cyberdefense.we_noticed_a_login_to_your_account_fro', 'We noticed a login to your account from a new device in Russia. If this wasn\'t you, secure your account immediately by verifying your identity below.'), link: 'http://paypa1-secure.com/verify', isPhish: true, difficulty: 'medium',
               headers: { returnPath: 'verification@paypa1-secure.com', spf: 'softfail', dkim: 'fail', dmarc: 'fail' },
               flags: ['Misspelled domain (paypa1 with number 1)', 'Fear of unauthorized access', 'Link to fake domain', 'Real PayPal would say paypal.com', 'Header Validation: SPF softfail and corrupt DKIM signature trigger DMARC reject.'],
               clues: [
-                { zone: 'sender', icon: '\uD83D\uDCE7', label: 'Sender Domain', desc: 'paypa1-secure.com uses the number 1 instead of lowercase L \u2014 very sneaky!', suspicious: true },
-                { zone: 'body', icon: '\uD83D\uDCDD', label: 'Fear Tactic', desc: '"login from Russia" creates fear of being hacked', suspicious: true },
-                { zone: 'link', icon: '\uD83D\uDD17', label: 'Link Analysis', desc: 'Real PayPal links go to paypal.com, not paypa1-secure.com', suspicious: true },
-                { zone: 'headers', icon: '\uD83D\uDD0D', label: 'Header Alignment', desc: 'DKIM signature verification failed, and DMARC check failed, rejecting authentication.', suspicious: true }
+                { zone: 'sender', icon: '\uD83D\uDCE7', label: t('stem.cyberdefense.sender_domain_6', 'Sender Domain'), desc: t('stem.cyberdefense.paypa1_secure_com_uses_the_number_1_in', 'paypa1-secure.com uses the number 1 instead of lowercase L \u2014 very sneaky!'), suspicious: true },
+                { zone: 'body', icon: '\uD83D\uDCDD', label: t('stem.cyberdefense.fear_tactic', 'Fear Tactic'), desc: t('stem.cyberdefense.login_from_russia_creates_fear_of_bein', '"login from Russia" creates fear of being hacked'), suspicious: true },
+                { zone: 'link', icon: '\uD83D\uDD17', label: t('stem.cyberdefense.link_analysis_4', 'Link Analysis'), desc: t('stem.cyberdefense.real_paypal_links_go_to_paypal_com_not', 'Real PayPal links go to paypal.com, not paypa1-secure.com'), suspicious: true },
+                { zone: 'headers', icon: '\uD83D\uDD0D', label: t('stem.cyberdefense.header_alignment_6', 'Header Alignment'), desc: t('stem.cyberdefense.dkim_signature_verification_failed_and', 'DKIM signature verification failed, and DMARC check failed, rejecting authentication.'), suspicious: true }
               ] },
-            { from: 'newsletter@nationalgeographic.com', fromDisplay: 'National Geographic Kids', subject: 'This Week: Amazing Ocean Creatures!', body: 'Dive into this week\'s feature about bioluminescent sea creatures! Watch videos, play games, and learn about the deep ocean. New content every Wednesday.', link: 'https://kids.nationalgeographic.com/ocean', isPhish: false, difficulty: 'medium',
+            { from: 'newsletter@nationalgeographic.com', fromDisplay: 'National Geographic Kids', subject: 'This Week: Amazing Ocean Creatures!', body: t('stem.cyberdefense.dive_into_this_week_s_feature_about_bi', 'Dive into this week\'s feature about bioluminescent sea creatures! Watch videos, play games, and learn about the deep ocean. New content every Wednesday.'), link: 'https://kids.nationalgeographic.com/ocean', isPhish: false, difficulty: 'medium',
               headers: { returnPath: 'bounce-natgeo@nationalgeographic.com', spf: 'pass', dkim: 'pass', dmarc: 'pass' },
               flags: ['Legitimate domain', 'Educational content', 'No personal info requested', 'HTTPS link to real site', 'Header Validation: All validation checks (SPF, DKIM, DMARC) passed.'],
               clues: [
-                { zone: 'sender', icon: '\uD83D\uDCE7', label: 'Sender Domain', desc: 'nationalgeographic.com \u2014 a well-known, legitimate organization', suspicious: false },
-                { zone: 'link', icon: '\uD83D\uDD17', label: 'Link Analysis', desc: 'HTTPS link to kids.nationalgeographic.com \u2014 real subdomain of real site', suspicious: false },
-                { zone: 'body', icon: '\uD83D\uDCDD', label: 'Content Check', desc: 'Educational content, no personal info requested, no urgency', suspicious: false },
-                { zone: 'headers', icon: '\uD83D\uDD0D', label: 'Header Alignment', desc: 'All cryptographic validations align perfectly with nationalgeographic.com.', suspicious: false }
+                { zone: 'sender', icon: '\uD83D\uDCE7', label: t('stem.cyberdefense.sender_domain_7', 'Sender Domain'), desc: t('stem.cyberdefense.nationalgeographic_com_a_well_known_le', 'nationalgeographic.com \u2014 a well-known, legitimate organization'), suspicious: false },
+                { zone: 'link', icon: '\uD83D\uDD17', label: t('stem.cyberdefense.link_analysis_5', 'Link Analysis'), desc: t('stem.cyberdefense.https_link_to_kids_nationalgeographic_', 'HTTPS link to kids.nationalgeographic.com \u2014 real subdomain of real site'), suspicious: false },
+                { zone: 'body', icon: '\uD83D\uDCDD', label: t('stem.cyberdefense.content_check', 'Content Check'), desc: t('stem.cyberdefense.educational_content_no_personal_info_r', 'Educational content, no personal info requested, no urgency'), suspicious: false },
+                { zone: 'headers', icon: '\uD83D\uDD0D', label: t('stem.cyberdefense.header_alignment_7', 'Header Alignment'), desc: t('stem.cyberdefense.all_cryptographic_validations_align_pe', 'All cryptographic validations align perfectly with nationalgeographic.com.'), suspicious: false }
               ] },
             // Hard
-            { from: 'it-dept@yourschool.edu.support-portal.com', fromDisplay: 'School IT Department', subject: 'Password Reset Required - Network Maintenance', body: 'Due to scheduled network maintenance this weekend, all students must reset their passwords. Please use the secure portal below to create a new password. This must be completed before Friday.', link: 'https://yourschool.edu.support-portal.com/reset', isPhish: true, difficulty: 'hard',
+            { from: 'it-dept@yourschool.edu.support-portal.com', fromDisplay: 'School IT Department', subject: 'Password Reset Required - Network Maintenance', body: t('stem.cyberdefense.due_to_scheduled_network_maintenance_t', 'Due to scheduled network maintenance this weekend, all students must reset their passwords. Please use the secure portal below to create a new password. This must be completed before Friday.'), link: 'https://yourschool.edu.support-portal.com/reset', isPhish: true, difficulty: 'hard',
               headers: { returnPath: 'system-maintenance@support-portal.com', spf: 'softfail', dkim: 'fail', dmarc: 'fail' },
               flags: ['Subdomain trick (school name in a different domain)', 'Actual domain is support-portal.com, not yourschool.edu', 'Mass password reset is unusual', 'Real IT would use the actual school domain', 'Header Validation: Domain spoofing detected as yourschool.edu does not match support-portal.com.'],
               clues: [
-                { zone: 'sender', icon: '\uD83D\uDCE7', label: 'Sender Domain', desc: 'yourschool.edu.support-portal.com \u2014 the REAL domain is support-portal.com! The school name is just a subdomain trick', suspicious: true },
-                { zone: 'body', icon: '\uD83D\uDCDD', label: 'Mass Action Request', desc: '"All students must reset" \u2014 real IT departments don\'t require mass password resets via email', suspicious: true },
-                { zone: 'link', icon: '\uD83D\uDD17', label: 'Link Analysis', desc: 'Link domain also uses the subdomain trick \u2014 it\'s NOT a school website', suspicious: true },
-                { zone: 'subject', icon: '\u26A1', label: 'Urgency Tactic', desc: '"Must be completed before Friday" \u2014 creates a false deadline', suspicious: true },
-                { zone: 'headers', icon: '\uD83D\uDD0D', label: 'Header Alignment', desc: 'Return-Path (support-portal.com) SPF/DKIM verification failed due to misalignment.', suspicious: true }
+                { zone: 'sender', icon: '\uD83D\uDCE7', label: t('stem.cyberdefense.sender_domain_8', 'Sender Domain'), desc: t('stem.cyberdefense.yourschool_edu_support_portal_com_the_', 'yourschool.edu.support-portal.com \u2014 the REAL domain is support-portal.com! The school name is just a subdomain trick'), suspicious: true },
+                { zone: 'body', icon: '\uD83D\uDCDD', label: t('stem.cyberdefense.mass_action_request', 'Mass Action Request'), desc: t('stem.cyberdefense.all_students_must_reset_real_it_depart', '"All students must reset" \u2014 real IT departments don\'t require mass password resets via email'), suspicious: true },
+                { zone: 'link', icon: '\uD83D\uDD17', label: t('stem.cyberdefense.link_analysis_6', 'Link Analysis'), desc: t('stem.cyberdefense.link_domain_also_uses_the_subdomain_tr', 'Link domain also uses the subdomain trick \u2014 it\'s NOT a school website'), suspicious: true },
+                { zone: 'subject', icon: '\u26A1', label: t('stem.cyberdefense.urgency_tactic_2', 'Urgency Tactic'), desc: t('stem.cyberdefense.must_be_completed_before_friday_create', '"Must be completed before Friday" \u2014 creates a false deadline'), suspicious: true },
+                { zone: 'headers', icon: '\uD83D\uDD0D', label: t('stem.cyberdefense.header_alignment_8', 'Header Alignment'), desc: t('stem.cyberdefense.return_path_support_portal_com_spf_dki', 'Return-Path (support-portal.com) SPF/DKIM verification failed due to misalignment.'), suspicious: true }
               ] },
-            { from: 'admin@clever.com', fromDisplay: 'Clever Portal', subject: 'New app added to your Clever dashboard', body: 'Your teacher has added "Khan Academy" to your Clever dashboard. Log in to Clever to access it. If you have questions, ask your teacher.', link: 'https://clever.com/login', isPhish: false, difficulty: 'hard',
+            { from: 'admin@clever.com', fromDisplay: 'Clever Portal', subject: 'New app added to your Clever dashboard', body: t('stem.cyberdefense.your_teacher_has_added_khan_academy_to', 'Your teacher has added "Khan Academy" to your Clever dashboard. Log in to Clever to access it. If you have questions, ask your teacher.'), link: 'https://clever.com/login', isPhish: false, difficulty: 'hard',
               headers: { returnPath: 'notifications@clever.com', spf: 'pass', dkim: 'pass', dmarc: 'pass' },
               flags: ['Legitimate Clever domain', 'Specific app mentioned', 'Directs to official login', 'References teacher', 'Header Validation: Verified SPF and DKIM pass and align with clever.com.'],
               clues: [
-                { zone: 'sender', icon: '\uD83D\uDCE7', label: 'Sender Domain', desc: 'clever.com \u2014 the real Clever platform used by many schools', suspicious: false },
-                { zone: 'link', icon: '\uD83D\uDD17', label: 'Link Analysis', desc: 'HTTPS link to clever.com/login \u2014 the official Clever login page', suspicious: false },
-                { zone: 'body', icon: '\uD83D\uDCDD', label: 'Specific Details', desc: 'Names a specific app (Khan Academy) and references your teacher', suspicious: false },
-                { zone: 'headers', icon: '\uD83D\uDD0D', label: 'Header Alignment', desc: 'DKIM and SPF signatures are fully authenticated and verified.', suspicious: false }
+                { zone: 'sender', icon: '\uD83D\uDCE7', label: t('stem.cyberdefense.sender_domain_9', 'Sender Domain'), desc: t('stem.cyberdefense.clever_com_the_real_clever_platform_us', 'clever.com \u2014 the real Clever platform used by many schools'), suspicious: false },
+                { zone: 'link', icon: '\uD83D\uDD17', label: t('stem.cyberdefense.link_analysis_7', 'Link Analysis'), desc: t('stem.cyberdefense.https_link_to_clever_com_login_the_off', 'HTTPS link to clever.com/login \u2014 the official Clever login page'), suspicious: false },
+                { zone: 'body', icon: '\uD83D\uDCDD', label: t('stem.cyberdefense.specific_details_2', 'Specific Details'), desc: t('stem.cyberdefense.names_a_specific_app_khan_academy_and_', 'Names a specific app (Khan Academy) and references your teacher'), suspicious: false },
+                { zone: 'headers', icon: '\uD83D\uDD0D', label: t('stem.cyberdefense.header_alignment_9', 'Header Alignment'), desc: t('stem.cyberdefense.dkim_and_spf_signatures_are_fully_auth', 'DKIM and SPF signatures are fully authenticated and verified.'), suspicious: false }
               ] },
-            { from: 'friend.sarah@gmail.com', fromDisplay: 'Sarah M.', subject: 'Check out this funny video of you!!', body: 'OMG I found this hilarious video of you from the school assembly!! You HAVE to see it lol. Click here before they take it down!', link: 'http://bit.ly/3xFk2z9', isPhish: true, difficulty: 'hard',
+            { from: 'friend.sarah@gmail.com', fromDisplay: 'Sarah M.', subject: 'Check out this funny video of you!!', body: t('stem.cyberdefense.omg_i_found_this_hilarious_video_of_yo', 'OMG I found this hilarious video of you from the school assembly!! You HAVE to see it lol. Click here before they take it down!'), link: 'http://bit.ly/3xFk2z9', isPhish: true, difficulty: 'hard',
               headers: { returnPath: 'sarah-spam-relay@freehoster-xyz.xyz', spf: 'softfail', dkim: 'fail', dmarc: 'fail' },
               flags: ['Shortened/obscured URL (bit.ly)', 'Emotional manipulation ("funny video of you")', 'Urgency ("before they take it down")', 'Even real friends\' accounts can be hacked', 'Header Validation: Return-Path domain mismatch (freehoster-xyz.xyz) and SPF/DKIM verification failure.'],
               clues: [
-                { zone: 'sender', icon: '\uD83D\uDCE7', label: 'Sender Identity', desc: 'Even gmail.com accounts can be hacked \u2014 the sender could be compromised', suspicious: true },
-                { zone: 'body', icon: '\uD83D\uDCDD', label: 'Emotional Bait', desc: '"Funny video of you" targets curiosity and social anxiety', suspicious: true },
-                { zone: 'link', icon: '\uD83D\uDD17', label: 'Shortened URL', desc: 'bit.ly hides the real destination \u2014 never click shortened links from unexpected messages', suspicious: true },
-                { zone: 'subject', icon: '\u26A1', label: 'Urgency Tactic', desc: '"Before they take it down" creates FOMO to make you click without thinking', suspicious: true },
-                { zone: 'headers', icon: '\uD83D\uDD0D', label: 'Header Alignment', desc: 'Sender domain is gmail.com, but Return-Path points to freehoster-xyz.xyz (mismatch).', suspicious: true }
+                { zone: 'sender', icon: '\uD83D\uDCE7', label: t('stem.cyberdefense.sender_identity', 'Sender Identity'), desc: t('stem.cyberdefense.even_gmail_com_accounts_can_be_hacked_', 'Even gmail.com accounts can be hacked \u2014 the sender could be compromised'), suspicious: true },
+                { zone: 'body', icon: '\uD83D\uDCDD', label: t('stem.cyberdefense.emotional_bait', 'Emotional Bait'), desc: t('stem.cyberdefense.funny_video_of_you_targets_curiosity_a', '"Funny video of you" targets curiosity and social anxiety'), suspicious: true },
+                { zone: 'link', icon: '\uD83D\uDD17', label: t('stem.cyberdefense.shortened_url', 'Shortened URL'), desc: t('stem.cyberdefense.bit_ly_hides_the_real_destination_neve', 'bit.ly hides the real destination \u2014 never click shortened links from unexpected messages'), suspicious: true },
+                { zone: 'subject', icon: '\u26A1', label: t('stem.cyberdefense.urgency_tactic_3', 'Urgency Tactic'), desc: t('stem.cyberdefense.before_they_take_it_down_creates_fomo_', '"Before they take it down" creates FOMO to make you click without thinking'), suspicious: true },
+                { zone: 'headers', icon: '\uD83D\uDD0D', label: t('stem.cyberdefense.header_alignment_10', 'Header Alignment'), desc: t('stem.cyberdefense.sender_domain_is_gmail_com_but_return_', 'Sender domain is gmail.com, but Return-Path points to freehoster-xyz.xyz (mismatch).'), suspicious: true }
               ] }
           ];
 
@@ -698,16 +699,16 @@
                 activeEmail.clues.push({
                   zone: 'headers',
                   icon: '\uD83D\uDD0D',
-                  label: 'Header Alignment',
-                  desc: 'SPF and DKIM signature check failed, resulting in a DMARC validation rejection.',
+                  label: t('stem.cyberdefense.header_alignment_11', 'Header Alignment'),
+                  desc: t('stem.cyberdefense.spf_and_dkim_signature_check_failed_re', 'SPF and DKIM signature check failed, resulting in a DMARC validation rejection.'),
                   suspicious: true
                 });
               } else {
                 activeEmail.clues.push({
                   zone: 'headers',
                   icon: '\uD83D\uDD0D',
-                  label: 'Header Alignment',
-                  desc: 'SPF, DKIM, and DMARC are fully aligned and valid, indicating verified authenticity.',
+                  label: t('stem.cyberdefense.header_alignment_12', 'Header Alignment'),
+                  desc: t('stem.cyberdefense.spf_dkim_and_dmarc_are_fully_aligned_a', 'SPF, DKIM, and DMARC are fully aligned and valid, indicating verified authenticity.'),
                   suspicious: false
                 });
               }
@@ -724,7 +725,7 @@
 
           // â”€â”€ Password Strength Calculator â”€â”€
           function calcPasswordStrength(pw) {
-            if (!pw) return { score: 0, label: 'Empty', color: 'var(--allo-stem-text-soft, #475569)', entropy: 0, crackTime: 'N/A', checks: {} };
+            if (!pw) return { score: 0, label: t('stem.cyberdefense.empty', 'Empty'), color: 'var(--allo-stem-text-soft, #475569)', entropy: 0, crackTime: 'N/A', checks: {} };
             var len = pw.length;
             var hasLower = /[a-z]/.test(pw);
             var hasUpper = /[A-Z]/.test(pw);
@@ -793,11 +794,11 @@
 
           // Cipher challenges
           var cipherChallenges = [
-            { type: 'caesar', shift: 3, encoded: 'FRPSXWHU VFLHQFH LV IXQ', answer: 'COMPUTER SCIENCE IS FUN', hint: 'Shift of 3 (classic Caesar)' },
-            { type: 'caesar', shift: 7, encoded: 'JVILY KLMLUZL', answer: 'CYBER DEFENSE', hint: 'Shift of 7' },
-            { type: 'atbash', shift: 0, encoded: 'KZHHDLIW HZUVGB', answer: 'PASSWORD SAFETY', hint: 'A=Z, B=Y, C=X...' },
-            { type: 'caesar', shift: 13, encoded: 'QRIRE FGNGR LBHE CNFFJBEQ', answer: 'NEVER STATE YOUR PASSWORD', hint: 'ROT13 - shift of 13' },
-            { type: 'atbash', shift: 0, encoded: 'GSRMP YVULIV BLF XORXP', answer: 'THINK BEFORE YOU CLICK', hint: 'Reverse the alphabet' }
+            { type: 'caesar', shift: 3, encoded: 'FRPSXWHU VFLHQFH LV IXQ', answer: t('stem.cyberdefense.computer_science_is_fun', 'COMPUTER SCIENCE IS FUN'), hint: t('stem.cyberdefense.shift_of_3_classic_caesar', 'Shift of 3 (classic Caesar)') },
+            { type: 'caesar', shift: 7, encoded: 'JVILY KLMLUZL', answer: t('stem.cyberdefense.cyber_defense', 'CYBER DEFENSE'), hint: t('stem.cyberdefense.shift_of_7', 'Shift of 7') },
+            { type: 'atbash', shift: 0, encoded: 'KZHHDLIW HZUVGB', answer: t('stem.cyberdefense.password_safety', 'PASSWORD SAFETY'), hint: t('stem.cyberdefense.a_z_b_y_c_x', 'A=Z, B=Y, C=X...') },
+            { type: 'caesar', shift: 13, encoded: 'QRIRE FGNGR LBHE CNFFJBEQ', answer: t('stem.cyberdefense.never_state_your_password', 'NEVER STATE YOUR PASSWORD'), hint: t('stem.cyberdefense.rot13_shift_of_13', 'ROT13 - shift of 13') },
+            { type: 'atbash', shift: 0, encoded: 'GSRMP YVULIV BLF XORXP', answer: t('stem.cyberdefense.think_before_you_click', 'THINK BEFORE YOU CLICK'), hint: t('stem.cyberdefense.reverse_the_alphabet', 'Reverse the alphabet') }
           ];
 
           var activeChallengeData = cipherChallenges[Math.abs(phishScore + caesarShift) % cipherChallenges.length];
@@ -824,9 +825,9 @@
             var strength = calcPasswordStrength(target);
             var totalGuesses = Math.pow(2, strength.entropy);
             var speeds = [
-              { label: 'Old laptop', rate: 1e4, icon: '\uD83D\uDCBB' },
-              { label: 'Gaming PC', rate: 1e8, icon: '\uD83D\uDDA5\uFE0F' },
-              { label: 'Cloud cluster', rate: 1e10, icon: '\u2601\uFE0F' },
+              { label: t('stem.cyberdefense.old_laptop', 'Old laptop'), rate: 1e4, icon: '\uD83D\uDCBB' },
+              { label: t('stem.cyberdefense.gaming_pc', 'Gaming PC'), rate: 1e8, icon: '\uD83D\uDDA5\uFE0F' },
+              { label: t('stem.cyberdefense.cloud_cluster', 'Cloud cluster'), rate: 1e10, icon: '\u2601\uFE0F' },
               { label: 'Nation-state', rate: 1e14, icon: '\uD83C\uDFDB\uFE0F' }
             ];
             var charSets = [];
@@ -895,44 +896,44 @@
           // ── Social Engineering Scenarios ──
           var seScenarios = [
             { scenario: 'You get a phone call from someone claiming to be IT support. They say your computer has a virus and need your password to fix it.', correct: 'refuse', options: [
-              { id: 'comply', label: 'Give them your password so they can help', feedback: 'Never share passwords over the phone! Real IT can reset your password without knowing it.' },
-              { id: 'refuse', label: 'Hang up and call IT directly using the official number', feedback: 'Correct! Always verify by calling the official number. This is a classic vishing (voice phishing) attack.' },
-              { id: 'partial', label: 'Give them your old password instead', feedback: 'Sharing any password is risky. Old passwords reveal your pattern to attackers.' }
+              { id: 'comply', label: t('stem.cyberdefense.give_them_your_password_so_they_can_he', 'Give them your password so they can help'), feedback: t('stem.cyberdefense.never_share_passwords_over_the_phone_r', 'Never share passwords over the phone! Real IT can reset your password without knowing it.') },
+              { id: 'refuse', label: t('stem.cyberdefense.hang_up_and_call_it_directly_using_the', 'Hang up and call IT directly using the official number'), feedback: t('stem.cyberdefense.correct_always_verify_by_calling_the_o', 'Correct! Always verify by calling the official number. This is a classic vishing (voice phishing) attack.') },
+              { id: 'partial', label: t('stem.cyberdefense.give_them_your_old_password_instead', 'Give them your old password instead'), feedback: t('stem.cyberdefense.sharing_any_password_is_risky_old_pass', 'Sharing any password is risky. Old passwords reveal your pattern to attackers.') }
             ], type: 'Vishing', lesson: 'Legitimate IT departments never ask for your password. They can reset it from their admin console.' },
             { scenario: 'You find a USB drive in the parking lot labeled “Final Exam Answers 2026”.', correct: 'report', options: [
-              { id: 'plug', label: 'Plug it into your computer to check', feedback: 'USB baiting attack! Malicious USB drives can auto-run malware the moment they\'re plugged in.' },
-              { id: 'report', label: 'Turn it in to security without plugging it in', feedback: 'Correct! The Stuxnet worm that damaged Iran\'s nuclear program spread via USB drives.' },
-              { id: 'friend', label: 'Give it to a friend to try', feedback: 'This just puts your friend at risk. Never plug in unknown USB devices.' }
+              { id: 'plug', label: t('stem.cyberdefense.plug_it_into_your_computer_to_check', 'Plug it into your computer to check'), feedback: t('stem.cyberdefense.usb_baiting_attack_malicious_usb_drive', 'USB baiting attack! Malicious USB drives can auto-run malware the moment they\'re plugged in.') },
+              { id: 'report', label: t('stem.cyberdefense.turn_it_in_to_security_without_pluggin', 'Turn it in to security without plugging it in'), feedback: t('stem.cyberdefense.correct_the_stuxnet_worm_that_damaged_', 'Correct! The Stuxnet worm that damaged Iran\'s nuclear program spread via USB drives.') },
+              { id: 'friend', label: t('stem.cyberdefense.give_it_to_a_friend_to_try', 'Give it to a friend to try'), feedback: t('stem.cyberdefense.this_just_puts_your_friend_at_risk_nev', 'This just puts your friend at risk. Never plug in unknown USB devices.') }
             ], type: 'USB Baiting', lesson: 'In a study, 48% of USB drives dropped on a university campus were plugged in by finders.' },
             { scenario: 'Someone in a delivery uniform asks you to hold the secure office door open because their hands are full.', correct: 'verify', options: [
-              { id: 'hold', label: 'Hold the door \u2014 they look legitimate', feedback: 'Tailgating! Attackers dress as delivery workers or employees to gain physical access.' },
-              { id: 'verify', label: 'Ask them to badge in or contact reception', feedback: 'Correct! Everyone must authenticate individually. Physical security matters!' },
-              { id: 'ignore', label: 'Walk away without saying anything', feedback: 'Better than letting them in, but alerting security is the best practice.' }
+              { id: 'hold', label: t('stem.cyberdefense.hold_the_door_they_look_legitimate', 'Hold the door \u2014 they look legitimate'), feedback: t('stem.cyberdefense.tailgating_attackers_dress_as_delivery', 'Tailgating! Attackers dress as delivery workers or employees to gain physical access.') },
+              { id: 'verify', label: t('stem.cyberdefense.ask_them_to_badge_in_or_contact_recept', 'Ask them to badge in or contact reception'), feedback: t('stem.cyberdefense.correct_everyone_must_authenticate_ind', 'Correct! Everyone must authenticate individually. Physical security matters!') },
+              { id: 'ignore', label: t('stem.cyberdefense.walk_away_without_saying_anything', 'Walk away without saying anything'), feedback: t('stem.cyberdefense.better_than_letting_them_in_but_alerti', 'Better than letting them in, but alerting security is the best practice.') }
             ], type: 'Tailgating', lesson: 'Physical access is game over. Once inside, an attacker can install keyloggers or access unlocked computers.' },
             { scenario: 'Your “boss” texts from an unknown number, urgently asking you to buy gift cards and send the codes.', correct: 'verify', options: [
-              { id: 'buy', label: 'Rush to buy the gift cards', feedback: 'Gift card scam! No legitimate boss asks for gift card codes via text.' },
-              { id: 'verify', label: 'Contact your boss through usual channels to verify', feedback: 'Correct! Always verify unusual requests through established channels.' },
-              { id: 'reply', label: 'Ask the texter for proof they are your boss', feedback: 'Attackers can fake proof. Only trust communication through verified channels.' }
+              { id: 'buy', label: t('stem.cyberdefense.rush_to_buy_the_gift_cards', 'Rush to buy the gift cards'), feedback: t('stem.cyberdefense.gift_card_scam_no_legitimate_boss_asks', 'Gift card scam! No legitimate boss asks for gift card codes via text.') },
+              { id: 'verify', label: t('stem.cyberdefense.contact_your_boss_through_usual_channe', 'Contact your boss through usual channels to verify'), feedback: t('stem.cyberdefense.correct_always_verify_unusual_requests', 'Correct! Always verify unusual requests through established channels.') },
+              { id: 'reply', label: t('stem.cyberdefense.ask_the_texter_for_proof_they_are_your', 'Ask the texter for proof they are your boss'), feedback: t('stem.cyberdefense.attackers_can_fake_proof_only_trust_co', 'Attackers can fake proof. Only trust communication through verified channels.') }
             ], type: 'Pretexting', lesson: 'The FBI reported $241 million lost to gift card scams in 2023. Urgency + authority = red flags.' },
             { scenario: 'You get an email saying you won a $500 Amazon gift card. Just fill out a survey with your credit card for “shipping.”', correct: 'delete', options: [
-              { id: 'fill', label: 'Fill out the survey to claim your prize', feedback: 'Phishing scam. Legitimate prizes never require credit card info for shipping.' },
-              { id: 'delete', label: 'Delete it \u2014 you never entered a contest', feedback: 'Correct! If you didn\'t enter, you can\'t win. This harvests personal and financial data.' },
-              { id: 'forward', label: 'Forward it to friends', feedback: 'Forwarding phishing spreads the attack. You\'d help the scammer reach more victims.' }
+              { id: 'fill', label: t('stem.cyberdefense.fill_out_the_survey_to_claim_your_priz', 'Fill out the survey to claim your prize'), feedback: t('stem.cyberdefense.phishing_scam_legitimate_prizes_never_', 'Phishing scam. Legitimate prizes never require credit card info for shipping.') },
+              { id: 'delete', label: t('stem.cyberdefense.delete_it_you_never_entered_a_contest', 'Delete it \u2014 you never entered a contest'), feedback: t('stem.cyberdefense.correct_if_you_didn_t_enter_you_can_t_', 'Correct! If you didn\'t enter, you can\'t win. This harvests personal and financial data.') },
+              { id: 'forward', label: t('stem.cyberdefense.forward_it_to_friends', 'Forward it to friends'), feedback: t('stem.cyberdefense.forwarding_phishing_spreads_the_attack', 'Forwarding phishing spreads the attack. You\'d help the scammer reach more victims.') }
             ], type: 'Phishing/Baiting', lesson: '”You\'ve won!” emails are almost always scams. Real companies don\'t require credit cards for prizes.' },
             { scenario: 'A friendly “journalist” at a coffee shop asks detailed questions about your school\'s network, software, and server room.', correct: 'decline', options: [
-              { id: 'help', label: 'Answer their questions \u2014 they seem nice', feedback: 'Reconnaissance! Attackers gather info through casual conversation before launching attacks.' },
-              { id: 'decline', label: 'Suggest they contact the school\'s press office', feedback: 'Correct! Redirect info requests to official channels that can verify the person.' },
-              { id: 'some', label: 'Answer some but not technical questions', feedback: 'Even non-technical details help build spear-phishing profiles. Names, schedules, software \u2014 all valuable.' }
+              { id: 'help', label: t('stem.cyberdefense.answer_their_questions_they_seem_nice', 'Answer their questions \u2014 they seem nice'), feedback: t('stem.cyberdefense.reconnaissance_attackers_gather_info_t', 'Reconnaissance! Attackers gather info through casual conversation before launching attacks.') },
+              { id: 'decline', label: t('stem.cyberdefense.suggest_they_contact_the_school_s_pres', 'Suggest they contact the school\'s press office'), feedback: t('stem.cyberdefense.correct_redirect_info_requests_to_offi', 'Correct! Redirect info requests to official channels that can verify the person.') },
+              { id: 'some', label: t('stem.cyberdefense.answer_some_but_not_technical_question', 'Answer some but not technical questions'), feedback: t('stem.cyberdefense.even_non_technical_details_help_build_', 'Even non-technical details help build spear-phishing profiles. Names, schedules, software \u2014 all valuable.') }
             ], type: 'Reconnaissance', lesson: 'Information is the currency of social engineering. Every detail shared helps craft a more convincing attack.' },
             { scenario: 'A pop-up screams “YOUR COMPUTER IS INFECTED! Call Microsoft Support at 1-800-555-0199 immediately!”', correct: 'close', options: [
-              { id: 'call', label: 'Call the number for help', feedback: 'Tech support scam! Microsoft never shows phone numbers in pop-ups. The “technicians” install remote access malware.' },
-              { id: 'close', label: 'Close the tab and run your actual antivirus', feedback: 'Correct! These are fake warnings. Real security alerts come from your installed antivirus, not browser pop-ups.' },
-              { id: 'pay', label: 'Pay for their removal service', feedback: 'You\'d be paying scammers who may install more malware.' }
+              { id: 'call', label: t('stem.cyberdefense.call_the_number_for_help', 'Call the number for help'), feedback: t('stem.cyberdefense.tech_support_scam_microsoft_never_show', 'Tech support scam! Microsoft never shows phone numbers in pop-ups. The “technicians” install remote access malware.') },
+              { id: 'close', label: t('stem.cyberdefense.close_the_tab_and_run_your_actual_anti', 'Close the tab and run your actual antivirus'), feedback: t('stem.cyberdefense.correct_these_are_fake_warnings_real_s', 'Correct! These are fake warnings. Real security alerts come from your installed antivirus, not browser pop-ups.') },
+              { id: 'pay', label: t('stem.cyberdefense.pay_for_their_removal_service', 'Pay for their removal service'), feedback: t('stem.cyberdefense.you_d_be_paying_scammers_who_may_insta', 'You\'d be paying scammers who may install more malware.') }
             ], type: 'Tech Support Scam', lesson: 'Over 100,000 tech support scam reports in 2023. Real warnings come from YOUR installed software.' },
             { scenario: 'A classmate borrows your phone “for a second” and walks around a corner with it.', correct: 'watch', options: [
-              { id: 'let', label: 'Let them go \u2014 they\'ll be right back', feedback: 'A few seconds with your unlocked phone = access to all accounts, messages, and payment apps.' },
-              { id: 'watch', label: 'Stay with them and watch', feedback: 'Correct! Never let unlocked devices out of sight. Seconds of access can install spyware.' },
-              { id: 'lock', label: 'Lock it first then hand over', feedback: 'Better, but they could shoulder-surf your PIN next time. Look things up for them yourself.' }
+              { id: 'let', label: t('stem.cyberdefense.let_them_go_they_ll_be_right_back', 'Let them go \u2014 they\'ll be right back'), feedback: t('stem.cyberdefense.a_few_seconds_with_your_unlocked_phone', 'A few seconds with your unlocked phone = access to all accounts, messages, and payment apps.') },
+              { id: 'watch', label: t('stem.cyberdefense.stay_with_them_and_watch', 'Stay with them and watch'), feedback: t('stem.cyberdefense.correct_never_let_unlocked_devices_out', 'Correct! Never let unlocked devices out of sight. Seconds of access can install spyware.') },
+              { id: 'lock', label: t('stem.cyberdefense.lock_it_first_then_hand_over', 'Lock it first then hand over'), feedback: t('stem.cyberdefense.better_but_they_could_shoulder_surf_yo', 'Better, but they could shoulder-surf your PIN next time. Look things up for them yourself.') }
             ], type: 'Physical Access', lesson: 'The “evil maid” attack: brief physical access to a device can compromise all data on it.' }
           ];
           var activeSeScenario = seScenarios[seQuizIdx % seScenarios.length];
@@ -980,22 +981,22 @@
 
           // ── Achievement badges catalog ──
           var warAchievements = [
-            { id: 'first_blood', icon: '\uD83C\uDFAF', label: 'First Blood', desc: 'Mitigate the Reconnaissance attack.' },
-            { id: 'no_phish', icon: '\uD83D\uDEE1\uFE0F', label: 'No Phish Shall Pass', desc: 'Stop the Delivery stage (mitigate or detect).' },
-            { id: 'patchwork', icon: '\uD83E\uDDF0', label: 'Patchwork', desc: 'Play Emergency Patch in 3+ rounds of one campaign.' },
-            { id: 'zero_tolerance', icon: '\uD83C\uDF96\uFE0F', label: 'Zero Tolerance', desc: 'Win without using Escalate to CISO.' },
-            { id: 'combo_artist', icon: '\u2728', label: 'Combo Artist', desc: 'Trigger 3+ combos in one campaign.' },
-            { id: 'budget_master', icon: '\uD83D\uDCB5', label: 'Budget Master', desc: 'Win with 3+ budget remaining.' },
-            { id: 'hunter', icon: '\uD83E\uDDEC', label: 'Apex Hunter', desc: 'Play Hunt for IOCs in 4+ rounds of one campaign.' },
-            { id: 'perfect_run', icon: '\uD83C\uDFC6', label: 'Flawless Defense', desc: 'Achieve 6/6 full mitigations in one campaign.' },
-            { id: 'data_guardian', icon: '\uD83D\uDDC4\uFE0F', label: 'Data Guardian', desc: 'Finish a campaign with 100/100 data intact.' },
-            { id: 'speedrun', icon: '\u26A1', label: 'Lightning Reflexes', desc: 'Win a Threat Hunter campaign without the clock running out on any round.' },
-            { id: 'boss_slayer', icon: '\uD83D\uDC79', label: 'Boss Slayer', desc: 'Win a Boss Mode campaign.' },
-            { id: 'weekly_champion', icon: '\uD83D\uDDD3\uFE0F', label: 'Weekly Champion', desc: 'Win a Challenge of the Week campaign.' },
-            { id: 'diverse_strategy', icon: '\uD83C\uDF08', label: 'Diverse Strategy', desc: 'Use at least 6 different blue cards in one campaign.' },
-            { id: 'rookie_perfect', icon: '\uD83C\uDF31', label: 'First Steps', desc: 'Mitigate every round of a Rookie campaign.' },
-            { id: 'quiz_novice', icon: '\uD83D\uDD25', label: 'Quiz Apprentice', desc: 'Get a Quick Quiz streak of 5 correct in a row.' },
-            { id: 'quiz_master', icon: '\uD83C\uDF93', label: 'Quiz Master', desc: 'Answer 25 Quick Quiz questions correctly.' }
+            { id: 'first_blood', icon: '\uD83C\uDFAF', label: t('stem.cyberdefense.first_blood', 'First Blood'), desc: t('stem.cyberdefense.mitigate_the_reconnaissance_attack', 'Mitigate the Reconnaissance attack.') },
+            { id: 'no_phish', icon: '\uD83D\uDEE1\uFE0F', label: t('stem.cyberdefense.no_phish_shall_pass', 'No Phish Shall Pass'), desc: t('stem.cyberdefense.stop_the_delivery_stage_mitigate_or_de', 'Stop the Delivery stage (mitigate or detect).') },
+            { id: 'patchwork', icon: '\uD83E\uDDF0', label: t('stem.cyberdefense.patchwork', 'Patchwork'), desc: t('stem.cyberdefense.play_emergency_patch_in_3_rounds_of_on', 'Play Emergency Patch in 3+ rounds of one campaign.') },
+            { id: 'zero_tolerance', icon: '\uD83C\uDF96\uFE0F', label: t('stem.cyberdefense.zero_tolerance', 'Zero Tolerance'), desc: t('stem.cyberdefense.win_without_using_escalate_to_ciso', 'Win without using Escalate to CISO.') },
+            { id: 'combo_artist', icon: '\u2728', label: t('stem.cyberdefense.combo_artist', 'Combo Artist'), desc: t('stem.cyberdefense.trigger_3_combos_in_one_campaign', 'Trigger 3+ combos in one campaign.') },
+            { id: 'budget_master', icon: '\uD83D\uDCB5', label: t('stem.cyberdefense.budget_master', 'Budget Master'), desc: t('stem.cyberdefense.win_with_3_budget_remaining', 'Win with 3+ budget remaining.') },
+            { id: 'hunter', icon: '\uD83E\uDDEC', label: t('stem.cyberdefense.apex_hunter', 'Apex Hunter'), desc: t('stem.cyberdefense.play_hunt_for_iocs_in_4_rounds_of_one_', 'Play Hunt for IOCs in 4+ rounds of one campaign.') },
+            { id: 'perfect_run', icon: '\uD83C\uDFC6', label: t('stem.cyberdefense.flawless_defense', 'Flawless Defense'), desc: t('stem.cyberdefense.achieve_6_6_full_mitigations_in_one_ca', 'Achieve 6/6 full mitigations in one campaign.') },
+            { id: 'data_guardian', icon: '\uD83D\uDDC4\uFE0F', label: t('stem.cyberdefense.data_guardian', 'Data Guardian'), desc: t('stem.cyberdefense.finish_a_campaign_with_100_100_data_in', 'Finish a campaign with 100/100 data intact.') },
+            { id: 'speedrun', icon: '\u26A1', label: t('stem.cyberdefense.lightning_reflexes', 'Lightning Reflexes'), desc: t('stem.cyberdefense.win_a_threat_hunter_campaign_without_t', 'Win a Threat Hunter campaign without the clock running out on any round.') },
+            { id: 'boss_slayer', icon: '\uD83D\uDC79', label: t('stem.cyberdefense.boss_slayer', 'Boss Slayer'), desc: t('stem.cyberdefense.win_a_boss_mode_campaign', 'Win a Boss Mode campaign.') },
+            { id: 'weekly_champion', icon: '\uD83D\uDDD3\uFE0F', label: t('stem.cyberdefense.weekly_champion', 'Weekly Champion'), desc: t('stem.cyberdefense.win_a_challenge_of_the_week_campaign', 'Win a Challenge of the Week campaign.') },
+            { id: 'diverse_strategy', icon: '\uD83C\uDF08', label: t('stem.cyberdefense.diverse_strategy', 'Diverse Strategy'), desc: t('stem.cyberdefense.use_at_least_6_different_blue_cards_in', 'Use at least 6 different blue cards in one campaign.') },
+            { id: 'rookie_perfect', icon: '\uD83C\uDF31', label: t('stem.cyberdefense.first_steps', 'First Steps'), desc: t('stem.cyberdefense.mitigate_every_round_of_a_rookie_campa', 'Mitigate every round of a Rookie campaign.') },
+            { id: 'quiz_novice', icon: '\uD83D\uDD25', label: t('stem.cyberdefense.quiz_apprentice', 'Quiz Apprentice'), desc: t('stem.cyberdefense.get_a_quick_quiz_streak_of_5_correct_i', 'Get a Quick Quiz streak of 5 correct in a row.') },
+            { id: 'quiz_master', icon: '\uD83C\uDF93', label: t('stem.cyberdefense.quiz_master', 'Quiz Master'), desc: t('stem.cyberdefense.answer_25_quick_quiz_questions_correct', 'Answer 25 Quick Quiz questions correctly.') }
           ];
 
           // ── Best-progress helpers for unearned achievements (read from history) ──
@@ -1007,14 +1008,14 @@
               }, 0);
             };
             switch (achId) {
-              case 'patchwork':     return { cur: maxOf('patchesPlayed'), goal: 3, label: 'Best patch count' };
-              case 'combo_artist':  return { cur: maxOf('combos'), goal: 3, label: 'Best combo count' };
-              case 'hunter':        return { cur: maxOf('huntsPlayed'), goal: 4, label: 'Best hunt count' };
-              case 'perfect_run':   return { cur: maxOf('mitigations'), goal: 6, label: 'Best mitigations' };
-              case 'data_guardian': return { cur: maxOf('dataRemaining'), goal: 100, label: 'Best data remaining' };
+              case 'patchwork':     return { cur: maxOf('patchesPlayed'), goal: 3, label: t('stem.cyberdefense.best_patch_count', 'Best patch count') };
+              case 'combo_artist':  return { cur: maxOf('combos'), goal: 3, label: t('stem.cyberdefense.best_combo_count', 'Best combo count') };
+              case 'hunter':        return { cur: maxOf('huntsPlayed'), goal: 4, label: t('stem.cyberdefense.best_hunt_count', 'Best hunt count') };
+              case 'perfect_run':   return { cur: maxOf('mitigations'), goal: 6, label: t('stem.cyberdefense.best_mitigations', 'Best mitigations') };
+              case 'data_guardian': return { cur: maxOf('dataRemaining'), goal: 100, label: t('stem.cyberdefense.best_data_remaining', 'Best data remaining') };
               case 'budget_master': {
                 var best = h.reduce(function(b, row) { return (row.verdict === 'won' && row.budgetRemaining != null && row.budgetRemaining > b) ? row.budgetRemaining : b; }, 0);
-                return { cur: best, goal: 3, label: 'Best leftover budget on a win' };
+                return { cur: best, goal: 3, label: t('stem.cyberdefense.best_leftover_budget_on_a_win', 'Best leftover budget on a win') };
               }
               case 'diverse_strategy': {
                 var bestUnique = h.reduce(function(b, row) {
@@ -1023,10 +1024,10 @@
                   var cnt = Object.keys(set).length;
                   return cnt > b ? cnt : b;
                 }, 0);
-                return { cur: bestUnique, goal: 6, label: 'Best unique-card count' };
+                return { cur: bestUnique, goal: 6, label: t('stem.cyberdefense.best_unique_card_count', 'Best unique-card count') };
               }
-              case 'quiz_novice':   return { cur: warRoomQuizStreak || 0, goal: 5, label: 'Current quiz streak' };
-              case 'quiz_master':   return { cur: warRoomQuizCorrect || 0, goal: 25, label: 'Lifetime quiz correct' };
+              case 'quiz_novice':   return { cur: warRoomQuizStreak || 0, goal: 5, label: t('stem.cyberdefense.current_quiz_streak', 'Current quiz streak') };
+              case 'quiz_master':   return { cur: warRoomQuizCorrect || 0, goal: 25, label: t('stem.cyberdefense.lifetime_quiz_correct', 'Lifetime quiz correct') };
               default: return null;
             }
           }
@@ -1078,72 +1079,72 @@
           }
 
           var warStages = [
-            { num: 1, id: 'recon',       name: 'Reconnaissance',         icon: '\uD83D\uDD0D', color: 'var(--allo-stem-text-soft, #94a3b8)' },
+            { num: 1, id: 'recon',       name: t('stem.cyberdefense.reconnaissance', 'Reconnaissance'),         icon: '\uD83D\uDD0D', color: 'var(--allo-stem-text-soft, #94a3b8)' },
             { num: 2, id: 'delivery',    name: 'Weaponization/Delivery', icon: '\uD83D\uDCE8', color: '#f59e0b' },
-            { num: 3, id: 'exploit',     name: 'Exploitation',            icon: '\uD83D\uDCA5', color: '#ef4444' },
+            { num: 3, id: 'exploit',     name: t('stem.cyberdefense.exploitation', 'Exploitation'),            icon: '\uD83D\uDCA5', color: '#ef4444' },
             { num: 4, id: 'persist',     name: 'Installation/Persistence', icon: '\uD83D\uDD27', color: '#a855f7' },
-            { num: 5, id: 'c2',          name: 'Command & Control',       icon: '\uD83D\uDCE1', color: '#ec4899' },
-            { num: 6, id: 'actions',     name: 'Actions on Objectives',   icon: '\uD83C\uDFAF', color: '#dc2626' }
+            { num: 5, id: 'c2',          name: t('stem.cyberdefense.command_control', 'Command & Control'),       icon: '\uD83D\uDCE1', color: '#ec4899' },
+            { num: 6, id: 'actions',     name: t('stem.cyberdefense.actions_on_objectives', 'Actions on Objectives'),   icon: '\uD83C\uDFAF', color: '#dc2626' }
           ];
 
           // ── Red Team card library (abstracted — no payload details) ──
           var redTeamCards = [
             // Stage 1: Reconnaissance
-            { id: 'r_linkedin', stage: 'recon', title: 'LinkedIn scrape of Finance dept', description: 'Adversary harvests names, roles, and reporting structure of Finance staff from public profiles.', indicators: ['Unusual LinkedIn profile views from a single IP', 'Pattern of views clustered around Finance team'], noiseIndicators: ['Routine recruiter activity'], mitigations: { hunt_iocs: 1.0, awareness_blast: 0.6, investigate: 0.3 }, impact: { users: 1 } },
-            { id: 'r_dnsenum', stage: 'recon', title: 'DNS enumeration of public assets', description: 'Attacker fingerprints subdomains and exposed services.', indicators: ['Burst of DNS TXT/AXFR queries from one ASN', 'Scans of staging.* subdomains'], noiseIndicators: ['Search engine crawler traffic'], mitigations: { hunt_iocs: 1.0, block_ip: 0.8, investigate: 0.4 }, impact: { servers: 1 } },
-            { id: 'r_s3scan', stage: 'recon', title: 'Public S3 bucket scan', description: 'Automated scanner searches for misconfigured cloud storage.', indicators: ['S3 list-bucket attempts on unfamiliar names', '403 spike on staging buckets'], noiseIndicators: ['Legitimate vendor health check'], mitigations: { patch: 1.0, hunt_iocs: 0.7, block_ip: 0.5 }, impact: { data: 5 } },
-            { id: 'r_osint', stage: 'recon', title: 'OSINT on IT admins', description: 'Attacker maps IT staff schedules and toolchain via social media.', indicators: ['Screenshots of helpdesk tickets appearing on paste sites'], noiseIndicators: ['Conference talk references'], mitigations: { awareness_blast: 1.0, hunt_iocs: 0.6 }, impact: { users: 1 } },
-            { id: 'r_darkweb', stage: 'recon', title: 'Dark web credential marketplace purchase', description: 'Attacker buys a bundle of leaked credentials matching your domain on a dark-web marketplace.', indicators: ['Password-dump mention on a tracked forum', 'Unusual MFA prompts for old or dormant accounts'], noiseIndicators: ['Routine security vendor notice'], mitigations: { reset_credential: 1.0, hunt_iocs: 0.8, awareness_blast: 0.5 }, impact: { users: 2 } },
+            { id: 'r_linkedin', stage: 'recon', title: t('stem.cyberdefense.linkedin_scrape_of_finance_dept', 'LinkedIn scrape of Finance dept'), description: t('stem.cyberdefense.adversary_harvests_names_roles_and_rep', 'Adversary harvests names, roles, and reporting structure of Finance staff from public profiles.'), indicators: ['Unusual LinkedIn profile views from a single IP', 'Pattern of views clustered around Finance team'], noiseIndicators: ['Routine recruiter activity'], mitigations: { hunt_iocs: 1.0, awareness_blast: 0.6, investigate: 0.3 }, impact: { users: 1 } },
+            { id: 'r_dnsenum', stage: 'recon', title: t('stem.cyberdefense.dns_enumeration_of_public_assets', 'DNS enumeration of public assets'), description: t('stem.cyberdefense.attacker_fingerprints_subdomains_and_e', 'Attacker fingerprints subdomains and exposed services.'), indicators: ['Burst of DNS TXT/AXFR queries from one ASN', 'Scans of staging.* subdomains'], noiseIndicators: ['Search engine crawler traffic'], mitigations: { hunt_iocs: 1.0, block_ip: 0.8, investigate: 0.4 }, impact: { servers: 1 } },
+            { id: 'r_s3scan', stage: 'recon', title: t('stem.cyberdefense.public_s3_bucket_scan', 'Public S3 bucket scan'), description: t('stem.cyberdefense.automated_scanner_searches_for_misconf', 'Automated scanner searches for misconfigured cloud storage.'), indicators: ['S3 list-bucket attempts on unfamiliar names', '403 spike on staging buckets'], noiseIndicators: ['Legitimate vendor health check'], mitigations: { patch: 1.0, hunt_iocs: 0.7, block_ip: 0.5 }, impact: { data: 5 } },
+            { id: 'r_osint', stage: 'recon', title: t('stem.cyberdefense.osint_on_it_admins', 'OSINT on IT admins'), description: t('stem.cyberdefense.attacker_maps_it_staff_schedules_and_t', 'Attacker maps IT staff schedules and toolchain via social media.'), indicators: ['Screenshots of helpdesk tickets appearing on paste sites'], noiseIndicators: ['Conference talk references'], mitigations: { awareness_blast: 1.0, hunt_iocs: 0.6 }, impact: { users: 1 } },
+            { id: 'r_darkweb', stage: 'recon', title: t('stem.cyberdefense.dark_web_credential_marketplace_purcha', 'Dark web credential marketplace purchase'), description: t('stem.cyberdefense.attacker_buys_a_bundle_of_leaked_crede', 'Attacker buys a bundle of leaked credentials matching your domain on a dark-web marketplace.'), indicators: ['Password-dump mention on a tracked forum', 'Unusual MFA prompts for old or dormant accounts'], noiseIndicators: ['Routine security vendor notice'], mitigations: { reset_credential: 1.0, hunt_iocs: 0.8, awareness_blast: 0.5 }, impact: { users: 2 } },
 
             // Stage 2: Delivery
-            { id: 'd_spearcfo', stage: 'delivery', title: 'Spear phish CFO with invoice.docx', description: 'Targeted email with a look-alike domain and a macro-laden attachment arrives in the CFO\'s inbox.', indicators: ['Look-alike sender domain (single-char swap)', 'Attachment with embedded macros', 'Urgent wire-transfer language'], noiseIndicators: ['Legitimate AP invoice from a known vendor'], mitigations: { block_ip: 0.9, awareness_blast: 1.0, reset_credential: 0.4, investigate: 0.5 }, impact: { users: 2 } },
-            { id: 'd_usb', stage: 'delivery', title: 'USB drops in parking lot', description: 'Adversary scatters branded USB drives near employee entrance.', indicators: ['Unknown USB device inserts reported by EDR', 'Auto-run attempts on Finance workstations'], noiseIndicators: ['Vendor-provided conference USBs'], mitigations: { deploy_edr: 1.0, awareness_blast: 0.8, isolate_host: 0.6 }, impact: { users: 1, servers: 1 } },
-            { id: 'd_typosquat', stage: 'delivery', title: 'Typo-squatted vendor domain', description: 'Fake vendor portal collects employee credentials.', indicators: ['Outbound DNS to newly-registered look-alike domain', 'Credential-form POST to unusual host'], noiseIndicators: ['New SaaS pilot the team just approved'], mitigations: { block_ip: 1.0, awareness_blast: 0.7, hunt_iocs: 0.5 }, impact: { users: 2 } },
-            { id: 'd_sms', stage: 'delivery', title: 'Smishing wave to staff', description: 'Bulk SMS claiming to be IT asks users to re-verify SSO from a personal device.', indicators: ['Cluster of help-desk calls about an "IT text"'], noiseIndicators: ['Legitimate SMS MFA prompts'], mitigations: { awareness_blast: 1.0, reset_credential: 0.5 }, impact: { users: 2 } },
+            { id: 'd_spearcfo', stage: 'delivery', title: t('stem.cyberdefense.spear_phish_cfo_with_invoice_docx', 'Spear phish CFO with invoice.docx'), description: t('stem.cyberdefense.targeted_email_with_a_look_alike_domai', 'Targeted email with a look-alike domain and a macro-laden attachment arrives in the CFO\'s inbox.'), indicators: ['Look-alike sender domain (single-char swap)', 'Attachment with embedded macros', 'Urgent wire-transfer language'], noiseIndicators: ['Legitimate AP invoice from a known vendor'], mitigations: { block_ip: 0.9, awareness_blast: 1.0, reset_credential: 0.4, investigate: 0.5 }, impact: { users: 2 } },
+            { id: 'd_usb', stage: 'delivery', title: t('stem.cyberdefense.usb_drops_in_parking_lot', 'USB drops in parking lot'), description: t('stem.cyberdefense.adversary_scatters_branded_usb_drives_', 'Adversary scatters branded USB drives near employee entrance.'), indicators: ['Unknown USB device inserts reported by EDR', 'Auto-run attempts on Finance workstations'], noiseIndicators: ['Vendor-provided conference USBs'], mitigations: { deploy_edr: 1.0, awareness_blast: 0.8, isolate_host: 0.6 }, impact: { users: 1, servers: 1 } },
+            { id: 'd_typosquat', stage: 'delivery', title: t('stem.cyberdefense.typo_squatted_vendor_domain', 'Typo-squatted vendor domain'), description: t('stem.cyberdefense.fake_vendor_portal_collects_employee_c', 'Fake vendor portal collects employee credentials.'), indicators: ['Outbound DNS to newly-registered look-alike domain', 'Credential-form POST to unusual host'], noiseIndicators: ['New SaaS pilot the team just approved'], mitigations: { block_ip: 1.0, awareness_blast: 0.7, hunt_iocs: 0.5 }, impact: { users: 2 } },
+            { id: 'd_sms', stage: 'delivery', title: t('stem.cyberdefense.smishing_wave_to_staff', 'Smishing wave to staff'), description: t('stem.cyberdefense.bulk_sms_claiming_to_be_it_asks_users_', 'Bulk SMS claiming to be IT asks users to re-verify SSO from a personal device.'), indicators: ['Cluster of help-desk calls about an "IT text"'], noiseIndicators: ['Legitimate SMS MFA prompts'], mitigations: { awareness_blast: 1.0, reset_credential: 0.5 }, impact: { users: 2 } },
 
             // Stage 3: Exploitation
-            { id: 'e_macro', stage: 'exploit', title: 'Macro executes loader in-memory', description: 'User enabled macros; a living-off-the-land loader runs.', indicators: ['powershell.exe spawned by WINWORD.EXE', 'Encoded command-line parameters'], noiseIndicators: ['IT automation script'], mitigations: { deploy_edr: 1.0, isolate_host: 0.9, investigate: 0.6 }, impact: { servers: 1, users: 1 } },
-            { id: 'e_cve', stage: 'exploit', title: 'Unpatched VPN CVE exploited', description: 'A known, patched-since-January CVE is still open on the edge device.', indicators: ['Exploit signatures on perimeter IDS', 'Anomalous VPN auth success from new geography'], noiseIndicators: ['Scheduled vulnerability scan'], mitigations: { patch: 1.0, isolate_host: 0.7, block_ip: 0.6 }, impact: { servers: 2, data: 10 } },
-            { id: 'e_credstuff', stage: 'exploit', title: 'Credential stuffing vs SSO', description: 'Breached-password list replayed against the login portal.', indicators: ['High-volume login failures from rotating IPs', 'MFA fatigue pushes to same user'], noiseIndicators: ['QA automation account'], mitigations: { reset_credential: 1.0, block_ip: 0.7, awareness_blast: 0.4 }, impact: { users: 3 } },
-            { id: 'e_watering', stage: 'exploit', title: 'Watering-hole on industry forum', description: 'Trusted industry site compromised to deliver a drive-by to visitors.', indicators: ['JS redirects to an uncategorized CDN', 'Browser exploit signatures'], noiseIndicators: ['Standard ad-network noise'], mitigations: { patch: 1.0, block_ip: 0.6, deploy_edr: 0.7 }, impact: { users: 1, servers: 1 } },
+            { id: 'e_macro', stage: 'exploit', title: t('stem.cyberdefense.macro_executes_loader_in_memory', 'Macro executes loader in-memory'), description: t('stem.cyberdefense.user_enabled_macros_a_living_off_the_l', 'User enabled macros; a living-off-the-land loader runs.'), indicators: ['powershell.exe spawned by WINWORD.EXE', 'Encoded command-line parameters'], noiseIndicators: ['IT automation script'], mitigations: { deploy_edr: 1.0, isolate_host: 0.9, investigate: 0.6 }, impact: { servers: 1, users: 1 } },
+            { id: 'e_cve', stage: 'exploit', title: t('stem.cyberdefense.unpatched_vpn_cve_exploited', 'Unpatched VPN CVE exploited'), description: t('stem.cyberdefense.a_known_patched_since_january_cve_is_s', 'A known, patched-since-January CVE is still open on the edge device.'), indicators: ['Exploit signatures on perimeter IDS', 'Anomalous VPN auth success from new geography'], noiseIndicators: ['Scheduled vulnerability scan'], mitigations: { patch: 1.0, isolate_host: 0.7, block_ip: 0.6 }, impact: { servers: 2, data: 10 } },
+            { id: 'e_credstuff', stage: 'exploit', title: t('stem.cyberdefense.credential_stuffing_vs_sso', 'Credential stuffing vs SSO'), description: t('stem.cyberdefense.breached_password_list_replayed_agains', 'Breached-password list replayed against the login portal.'), indicators: ['High-volume login failures from rotating IPs', 'MFA fatigue pushes to same user'], noiseIndicators: ['QA automation account'], mitigations: { reset_credential: 1.0, block_ip: 0.7, awareness_blast: 0.4 }, impact: { users: 3 } },
+            { id: 'e_watering', stage: 'exploit', title: t('stem.cyberdefense.watering_hole_on_industry_forum', 'Watering-hole on industry forum'), description: t('stem.cyberdefense.trusted_industry_site_compromised_to_d', 'Trusted industry site compromised to deliver a drive-by to visitors.'), indicators: ['JS redirects to an uncategorized CDN', 'Browser exploit signatures'], noiseIndicators: ['Standard ad-network noise'], mitigations: { patch: 1.0, block_ip: 0.6, deploy_edr: 0.7 }, impact: { users: 1, servers: 1 } },
 
             // Stage 4: Persistence
-            { id: 'p_schedtask', stage: 'persist', title: 'Scheduled task persistence', description: 'Adversary creates a hidden scheduled task that re-launches the implant nightly.', indicators: ['schtasks.exe with /create from a user context', 'Unsigned binary path in task action'], noiseIndicators: ['New backup job scheduled'], mitigations: { deploy_edr: 1.0, hunt_iocs: 0.8, isolate_host: 0.7 }, impact: { servers: 1 } },
-            { id: 'p_runkey', stage: 'persist', title: 'Registry Run key implant', description: 'HKCU Run key added to relaunch on login.', indicators: ['New HKCU\\Run value pointing to user temp dir'], noiseIndicators: ['Legitimate app auto-update registered'], mitigations: { deploy_edr: 1.0, hunt_iocs: 0.9, reset_credential: 0.4 }, impact: { users: 1, servers: 1 } },
-            { id: 'p_service', stage: 'persist', title: 'Malicious Windows service installed', description: 'Attacker installs a service that survives reboots.', indicators: ['New auto-start service with random display name', 'Service runs as SYSTEM from %ProgramData%'], noiseIndicators: ['Vendor management agent install'], mitigations: { isolate_host: 1.0, deploy_edr: 0.9, patch: 0.5 }, impact: { servers: 2 } },
-            { id: 'p_oauthapp', stage: 'persist', title: 'Rogue OAuth app granted consent', description: 'User consented to a third-party OAuth app requesting mailbox access.', indicators: ['New enterprise app with mail.read and offline_access scopes'], noiseIndicators: ['Legitimate productivity integration'], mitigations: { reset_credential: 1.0, awareness_blast: 0.7, investigate: 0.6 }, impact: { users: 2, data: 10 } },
+            { id: 'p_schedtask', stage: 'persist', title: t('stem.cyberdefense.scheduled_task_persistence', 'Scheduled task persistence'), description: t('stem.cyberdefense.adversary_creates_a_hidden_scheduled_t', 'Adversary creates a hidden scheduled task that re-launches the implant nightly.'), indicators: ['schtasks.exe with /create from a user context', 'Unsigned binary path in task action'], noiseIndicators: ['New backup job scheduled'], mitigations: { deploy_edr: 1.0, hunt_iocs: 0.8, isolate_host: 0.7 }, impact: { servers: 1 } },
+            { id: 'p_runkey', stage: 'persist', title: t('stem.cyberdefense.registry_run_key_implant', 'Registry Run key implant'), description: t('stem.cyberdefense.hkcu_run_key_added_to_relaunch_on_logi', 'HKCU Run key added to relaunch on login.'), indicators: ['New HKCU\\Run value pointing to user temp dir'], noiseIndicators: ['Legitimate app auto-update registered'], mitigations: { deploy_edr: 1.0, hunt_iocs: 0.9, reset_credential: 0.4 }, impact: { users: 1, servers: 1 } },
+            { id: 'p_service', stage: 'persist', title: t('stem.cyberdefense.malicious_windows_service_installed', 'Malicious Windows service installed'), description: t('stem.cyberdefense.attacker_installs_a_service_that_survi', 'Attacker installs a service that survives reboots.'), indicators: ['New auto-start service with random display name', 'Service runs as SYSTEM from %ProgramData%'], noiseIndicators: ['Vendor management agent install'], mitigations: { isolate_host: 1.0, deploy_edr: 0.9, patch: 0.5 }, impact: { servers: 2 } },
+            { id: 'p_oauthapp', stage: 'persist', title: t('stem.cyberdefense.rogue_oauth_app_granted_consent', 'Rogue OAuth app granted consent'), description: t('stem.cyberdefense.user_consented_to_a_third_party_oauth_', 'User consented to a third-party OAuth app requesting mailbox access.'), indicators: ['New enterprise app with mail.read and offline_access scopes'], noiseIndicators: ['Legitimate productivity integration'], mitigations: { reset_credential: 1.0, awareness_blast: 0.7, investigate: 0.6 }, impact: { users: 2, data: 10 } },
 
             // Stage 5: Command & Control
-            { id: 'c_dnstun', stage: 'c2', title: 'DNS tunneling beacon', description: 'Implant beacons via encoded DNS TXT queries.', indicators: ['Long-subdomain DNS queries to a single parent domain', 'Periodic timing pattern (60s jitter)'], noiseIndicators: ['Cloud-based email security scan'], mitigations: { block_ip: 1.0, hunt_iocs: 0.9, isolate_host: 0.7 }, impact: { data: 15 } },
-            { id: 'c_httpscdn', stage: 'c2', title: 'HTTPS C2 hidden behind CDN', description: 'Beacon blends into legitimate CDN traffic.', indicators: ['JA3 fingerprint mismatch for a known CDN tenant', 'User-agent inconsistent with browser'], noiseIndicators: ['Normal video-streaming traffic'], mitigations: { deploy_edr: 1.0, hunt_iocs: 0.8, isolate_host: 0.7, block_ip: 0.5 }, impact: { data: 10, servers: 1 } },
-            { id: 'c_slackhook', stage: 'c2', title: 'Slack webhook exfil channel', description: 'Adversary abuses an incoming webhook as a low-noise C2.', indicators: ['Outbound POSTs to hooks.slack.com from a server that never used Slack'], noiseIndicators: ['Monitoring integration alerts'], mitigations: { block_ip: 1.0, hunt_iocs: 0.8, investigate: 0.5 }, impact: { data: 10 } },
-            { id: 'c_icmp', stage: 'c2', title: 'ICMP covert channel', description: 'Implant tunnels commands inside ICMP echo payloads.', indicators: ['Unusually large ICMP packets', 'Sustained ICMP to a single external host'], noiseIndicators: ['Network monitoring pings'], mitigations: { block_ip: 1.0, isolate_host: 0.8, deploy_edr: 0.6 }, impact: { servers: 1, data: 5 } },
-            { id: 'c_websocket', stage: 'c2', title: 'WebSocket tunnel to a SaaS allow-listed domain', description: 'Malware hides C2 traffic inside WebSocket connections to a legitimate-looking SaaS provider that\'s on the corporate allow-list.', indicators: ['WebSocket connections from a server process to an uncommon SaaS subdomain', 'Off-hours keep-alive frames to a single endpoint'], noiseIndicators: ['Active chat or collaboration session'], mitigations: { hunt_iocs: 1.0, isolate_host: 0.8, block_ip: 0.6, deploy_edr: 0.5 }, impact: { data: 12 } },
+            { id: 'c_dnstun', stage: 'c2', title: t('stem.cyberdefense.dns_tunneling_beacon', 'DNS tunneling beacon'), description: t('stem.cyberdefense.implant_beacons_via_encoded_dns_txt_qu', 'Implant beacons via encoded DNS TXT queries.'), indicators: ['Long-subdomain DNS queries to a single parent domain', 'Periodic timing pattern (60s jitter)'], noiseIndicators: ['Cloud-based email security scan'], mitigations: { block_ip: 1.0, hunt_iocs: 0.9, isolate_host: 0.7 }, impact: { data: 15 } },
+            { id: 'c_httpscdn', stage: 'c2', title: t('stem.cyberdefense.https_c2_hidden_behind_cdn', 'HTTPS C2 hidden behind CDN'), description: t('stem.cyberdefense.beacon_blends_into_legitimate_cdn_traf', 'Beacon blends into legitimate CDN traffic.'), indicators: ['JA3 fingerprint mismatch for a known CDN tenant', 'User-agent inconsistent with browser'], noiseIndicators: ['Normal video-streaming traffic'], mitigations: { deploy_edr: 1.0, hunt_iocs: 0.8, isolate_host: 0.7, block_ip: 0.5 }, impact: { data: 10, servers: 1 } },
+            { id: 'c_slackhook', stage: 'c2', title: t('stem.cyberdefense.slack_webhook_exfil_channel', 'Slack webhook exfil channel'), description: t('stem.cyberdefense.adversary_abuses_an_incoming_webhook_a', 'Adversary abuses an incoming webhook as a low-noise C2.'), indicators: ['Outbound POSTs to hooks.slack.com from a server that never used Slack'], noiseIndicators: ['Monitoring integration alerts'], mitigations: { block_ip: 1.0, hunt_iocs: 0.8, investigate: 0.5 }, impact: { data: 10 } },
+            { id: 'c_icmp', stage: 'c2', title: t('stem.cyberdefense.icmp_covert_channel', 'ICMP covert channel'), description: t('stem.cyberdefense.implant_tunnels_commands_inside_icmp_e', 'Implant tunnels commands inside ICMP echo payloads.'), indicators: ['Unusually large ICMP packets', 'Sustained ICMP to a single external host'], noiseIndicators: ['Network monitoring pings'], mitigations: { block_ip: 1.0, isolate_host: 0.8, deploy_edr: 0.6 }, impact: { servers: 1, data: 5 } },
+            { id: 'c_websocket', stage: 'c2', title: t('stem.cyberdefense.websocket_tunnel_to_a_saas_allow_liste', 'WebSocket tunnel to a SaaS allow-listed domain'), description: t('stem.cyberdefense.malware_hides_c2_traffic_inside_websoc', 'Malware hides C2 traffic inside WebSocket connections to a legitimate-looking SaaS provider that\'s on the corporate allow-list.'), indicators: ['WebSocket connections from a server process to an uncommon SaaS subdomain', 'Off-hours keep-alive frames to a single endpoint'], noiseIndicators: ['Active chat or collaboration session'], mitigations: { hunt_iocs: 1.0, isolate_host: 0.8, block_ip: 0.6, deploy_edr: 0.5 }, impact: { data: 12 } },
 
             // Stage 6: Actions on Objectives
-            { id: 'a_piiexfil', stage: 'actions', title: 'Customer PII exfiltration', description: 'Adversary packages a customer database for exfiltration.', indicators: ['Large archive creation on DB server', 'Sudden egress spike at 3am'], noiseIndicators: ['Scheduled nightly backup job'], mitigations: { isolate_host: 1.0, block_ip: 0.8, escalate: 1.0, hunt_iocs: 0.5 }, impact: { data: 60 } },
-            { id: 'a_ransom', stage: 'actions', title: 'Ransomware detonation', description: 'Attacker pushes a ransomware payload across domain-joined hosts.', indicators: ['Mass file renames with unusual extension', 'Shadow-copy deletion commands'], noiseIndicators: ['Large file-migration project'], mitigations: { isolate_host: 1.0, escalate: 1.0, deploy_edr: 0.8, patch: 0.3 }, impact: { servers: 5, data: 40 } },
-            { id: 'a_wirefraud', stage: 'actions', title: 'Wire-transfer fraud (BEC)', description: 'Finance receives a forwarded email chain authorizing a $380k wire.', indicators: ['Mailbox forwarding rule created in last 48h', 'Reply-to domain differs from display'], noiseIndicators: ['Routine vendor onboarding'], mitigations: { escalate: 1.0, reset_credential: 0.9, awareness_blast: 0.8, investigate: 0.7 }, impact: { data: 50 } },
-            { id: 'a_sabotage', stage: 'actions', title: 'Destructive wiper on build server', description: 'Attacker wipes CI/CD infrastructure to disrupt operations.', indicators: ['Disk write patterns consistent with wiping', 'Admin tool invoked outside change window'], noiseIndicators: ['Planned infrastructure decommission'], mitigations: { isolate_host: 1.0, escalate: 1.0, deploy_edr: 0.7 }, impact: { servers: 4, data: 20 } },
+            { id: 'a_piiexfil', stage: 'actions', title: t('stem.cyberdefense.customer_pii_exfiltration', 'Customer PII exfiltration'), description: t('stem.cyberdefense.adversary_packages_a_customer_database', 'Adversary packages a customer database for exfiltration.'), indicators: ['Large archive creation on DB server', 'Sudden egress spike at 3am'], noiseIndicators: ['Scheduled nightly backup job'], mitigations: { isolate_host: 1.0, block_ip: 0.8, escalate: 1.0, hunt_iocs: 0.5 }, impact: { data: 60 } },
+            { id: 'a_ransom', stage: 'actions', title: t('stem.cyberdefense.ransomware_detonation', 'Ransomware detonation'), description: t('stem.cyberdefense.attacker_pushes_a_ransomware_payload_a', 'Attacker pushes a ransomware payload across domain-joined hosts.'), indicators: ['Mass file renames with unusual extension', 'Shadow-copy deletion commands'], noiseIndicators: ['Large file-migration project'], mitigations: { isolate_host: 1.0, escalate: 1.0, deploy_edr: 0.8, patch: 0.3 }, impact: { servers: 5, data: 40 } },
+            { id: 'a_wirefraud', stage: 'actions', title: t('stem.cyberdefense.wire_transfer_fraud_bec', 'Wire-transfer fraud (BEC)'), description: t('stem.cyberdefense.finance_receives_a_forwarded_email_cha', 'Finance receives a forwarded email chain authorizing a $380k wire.'), indicators: ['Mailbox forwarding rule created in last 48h', 'Reply-to domain differs from display'], noiseIndicators: ['Routine vendor onboarding'], mitigations: { escalate: 1.0, reset_credential: 0.9, awareness_blast: 0.8, investigate: 0.7 }, impact: { data: 50 } },
+            { id: 'a_sabotage', stage: 'actions', title: t('stem.cyberdefense.destructive_wiper_on_build_server', 'Destructive wiper on build server'), description: t('stem.cyberdefense.attacker_wipes_ci_cd_infrastructure_to', 'Attacker wipes CI/CD infrastructure to disrupt operations.'), indicators: ['Disk write patterns consistent with wiping', 'Admin tool invoked outside change window'], noiseIndicators: ['Planned infrastructure decommission'], mitigations: { isolate_host: 1.0, escalate: 1.0, deploy_edr: 0.7 }, impact: { servers: 4, data: 20 } },
 
             // ── Nation-State APT cards (unlocked via Trophy Room) ──
-            { id: 'r_supplychain', stage: 'recon', title: 'Supply-chain vendor mapping', description: 'State-sponsored actor profiles your software vendors to find a soft entry point upstream.', indicators: ['Your IT partner appears in breach-forum chatter', 'WHOIS lookups of your vendors from uncategorized ASNs'], noiseIndicators: ['Journalist researching industry'], mitigations: { hunt_iocs: 1.0, escalate: 0.5 }, impact: { data: 5 }, apt: true },
-            { id: 'd_signed_driver', stage: 'delivery', title: 'Malicious update via signed driver', description: 'Compromised code-signing certificate lets the adversary push a "trusted" update.', indicators: ['Legitimate vendor certificate used on unfamiliar binary', 'Update server redirected through unknown CDN'], noiseIndicators: ['Scheduled maintenance window'], mitigations: { hunt_iocs: 1.0, deploy_edr: 0.7, block_ip: 0.4 }, impact: { servers: 2, users: 2 }, apt: true },
-            { id: 'e_zeroday', stage: 'exploit', title: 'Zero-day kernel exploit', description: 'No patch exists \u2014 the vendor doesn\'t know about this bug yet.', indicators: ['Kernel crash dumps with unusual call stacks', 'BSoD events clustered by time'], noiseIndicators: ['Aging hardware'], mitigations: { isolate_host: 1.0, deploy_edr: 0.7, hunt_iocs: 0.5 }, impact: { servers: 3, data: 15 }, apt: true },
-            { id: 'p_firmware', stage: 'persist', title: 'Firmware-level implant', description: 'Adversary embeds persistence below the OS \u2014 survives re-imaging.', indicators: ['BIOS/UEFI integrity checks fail', 'Implant resurrects after full disk wipe'], noiseIndicators: ['Legitimate firmware update'], mitigations: { isolate_host: 1.0, escalate: 0.8, deploy_edr: 0.4 }, impact: { servers: 3 }, apt: true },
-            { id: 'c_slow_dns', stage: 'c2', title: 'Low-and-slow DNS C2 (1 query/hr)', description: 'Extremely low-volume beaconing designed to evade threshold-based detection.', indicators: ['Single anomalous DNS query per hour to same parent domain', 'Timing variance < 2%'], noiseIndicators: ['Cloud service keepalive'], mitigations: { hunt_iocs: 1.0, block_ip: 0.6, isolate_host: 0.7 }, impact: { data: 20 }, apt: true },
-            { id: 'a_longexfil', stage: 'actions', title: 'Multi-week intellectual property exfiltration', description: 'Classified designs siphoned in small chunks over 6 weeks to avoid egress alarms.', indicators: ['Cumulative egress to research domain exceeds baseline', 'Encrypted archives created on file server'], noiseIndicators: ['Legitimate research collaboration'], mitigations: { escalate: 1.0, isolate_host: 0.9, hunt_iocs: 0.7 }, impact: { data: 80 }, apt: true }
+            { id: 'r_supplychain', stage: 'recon', title: t('stem.cyberdefense.supply_chain_vendor_mapping', 'Supply-chain vendor mapping'), description: t('stem.cyberdefense.state_sponsored_actor_profiles_your_so', 'State-sponsored actor profiles your software vendors to find a soft entry point upstream.'), indicators: ['Your IT partner appears in breach-forum chatter', 'WHOIS lookups of your vendors from uncategorized ASNs'], noiseIndicators: ['Journalist researching industry'], mitigations: { hunt_iocs: 1.0, escalate: 0.5 }, impact: { data: 5 }, apt: true },
+            { id: 'd_signed_driver', stage: 'delivery', title: t('stem.cyberdefense.malicious_update_via_signed_driver', 'Malicious update via signed driver'), description: t('stem.cyberdefense.compromised_code_signing_certificate_l', 'Compromised code-signing certificate lets the adversary push a "trusted" update.'), indicators: ['Legitimate vendor certificate used on unfamiliar binary', 'Update server redirected through unknown CDN'], noiseIndicators: ['Scheduled maintenance window'], mitigations: { hunt_iocs: 1.0, deploy_edr: 0.7, block_ip: 0.4 }, impact: { servers: 2, users: 2 }, apt: true },
+            { id: 'e_zeroday', stage: 'exploit', title: t('stem.cyberdefense.zero_day_kernel_exploit', 'Zero-day kernel exploit'), description: t('stem.cyberdefense.no_patch_exists_the_vendor_doesn_t_kno', 'No patch exists \u2014 the vendor doesn\'t know about this bug yet.'), indicators: ['Kernel crash dumps with unusual call stacks', 'BSoD events clustered by time'], noiseIndicators: ['Aging hardware'], mitigations: { isolate_host: 1.0, deploy_edr: 0.7, hunt_iocs: 0.5 }, impact: { servers: 3, data: 15 }, apt: true },
+            { id: 'p_firmware', stage: 'persist', title: t('stem.cyberdefense.firmware_level_implant', 'Firmware-level implant'), description: t('stem.cyberdefense.adversary_embeds_persistence_below_the', 'Adversary embeds persistence below the OS \u2014 survives re-imaging.'), indicators: ['BIOS/UEFI integrity checks fail', 'Implant resurrects after full disk wipe'], noiseIndicators: ['Legitimate firmware update'], mitigations: { isolate_host: 1.0, escalate: 0.8, deploy_edr: 0.4 }, impact: { servers: 3 }, apt: true },
+            { id: 'c_slow_dns', stage: 'c2', title: t('stem.cyberdefense.low_and_slow_dns_c2_1_query_hr', 'Low-and-slow DNS C2 (1 query/hr)'), description: t('stem.cyberdefense.extremely_low_volume_beaconing_designe', 'Extremely low-volume beaconing designed to evade threshold-based detection.'), indicators: ['Single anomalous DNS query per hour to same parent domain', 'Timing variance < 2%'], noiseIndicators: ['Cloud service keepalive'], mitigations: { hunt_iocs: 1.0, block_ip: 0.6, isolate_host: 0.7 }, impact: { data: 20 }, apt: true },
+            { id: 'a_longexfil', stage: 'actions', title: t('stem.cyberdefense.multi_week_intellectual_property_exfil', 'Multi-week intellectual property exfiltration'), description: t('stem.cyberdefense.classified_designs_siphoned_in_small_c', 'Classified designs siphoned in small chunks over 6 weeks to avoid egress alarms.'), indicators: ['Cumulative egress to research domain exceeds baseline', 'Encrypted archives created on file server'], noiseIndicators: ['Legitimate research collaboration'], mitigations: { escalate: 1.0, isolate_host: 0.9, hunt_iocs: 0.7 }, impact: { data: 80 }, apt: true }
           ];
 
           // ── Combo bonuses: playing these pairs/triples together unlocks bonus effects ──
           var blueCombos = [
-            { id: 'full_containment', ids: ['isolate_host', 'deploy_edr'], label: 'Full Containment', effect: 'effectBoost', value: 0.3, description: 'Isolate + EDR together prevent lateral spread and catch payloads mid-flight.' },
-            { id: 'identity_hardening', ids: ['reset_credential', 'awareness_blast'], label: 'Identity Hardening', effect: 'effectBoost', value: 0.25, description: 'Reset creds AND warn users before they reuse old ones elsewhere.' },
-            { id: 'perimeter_hunt', ids: ['block_ip', 'hunt_iocs'], label: 'Perimeter + Hunt', effect: 'bonusXP', value: 2, description: 'Block known-bad AND hunt for unknown-bad. Full surface coverage.' },
-            { id: 'deep_analysis', ids: ['investigate', 'hunt_iocs'], label: 'Deep Analysis', effect: 'bonusXP', value: 2, description: 'Surface-level and deep-level investigation \u2014 nothing slips through.' },
-            { id: 'defense_in_depth', ids: ['patch', 'deploy_edr'], label: 'Defense in Depth', effect: 'minEffect', value: 0.6, description: 'Patch the known hole AND watch for zero-days \u2014 layered defense.' },
-            { id: 'crisis_response', ids: ['escalate', 'isolate_host'], label: 'Crisis Response', effect: 'effectBoost', value: 0.4, description: 'Emergency containment + executive authorization. Overwhelming late-stage response.' },
-            { id: 'rapid_response', ids: ['investigate', 'isolate_host'], label: 'Rapid Response', effect: 'effectBoost', value: 0.2, description: 'See it, stop it. Investigation confirms the threat; isolation cuts it off before damage spreads.' }
+            { id: 'full_containment', ids: ['isolate_host', 'deploy_edr'], label: t('stem.cyberdefense.full_containment', 'Full Containment'), effect: 'effectBoost', value: 0.3, description: t('stem.cyberdefense.isolate_edr_together_prevent_lateral_s', 'Isolate + EDR together prevent lateral spread and catch payloads mid-flight.') },
+            { id: 'identity_hardening', ids: ['reset_credential', 'awareness_blast'], label: t('stem.cyberdefense.identity_hardening', 'Identity Hardening'), effect: 'effectBoost', value: 0.25, description: t('stem.cyberdefense.reset_creds_and_warn_users_before_they', 'Reset creds AND warn users before they reuse old ones elsewhere.') },
+            { id: 'perimeter_hunt', ids: ['block_ip', 'hunt_iocs'], label: t('stem.cyberdefense.perimeter_hunt', 'Perimeter + Hunt'), effect: 'bonusXP', value: 2, description: t('stem.cyberdefense.block_known_bad_and_hunt_for_unknown_b', 'Block known-bad AND hunt for unknown-bad. Full surface coverage.') },
+            { id: 'deep_analysis', ids: ['investigate', 'hunt_iocs'], label: t('stem.cyberdefense.deep_analysis', 'Deep Analysis'), effect: 'bonusXP', value: 2, description: t('stem.cyberdefense.surface_level_and_deep_level_investiga', 'Surface-level and deep-level investigation \u2014 nothing slips through.') },
+            { id: 'defense_in_depth', ids: ['patch', 'deploy_edr'], label: t('stem.cyberdefense.defense_in_depth', 'Defense in Depth'), effect: 'minEffect', value: 0.6, description: t('stem.cyberdefense.patch_the_known_hole_and_watch_for_zer', 'Patch the known hole AND watch for zero-days \u2014 layered defense.') },
+            { id: 'crisis_response', ids: ['escalate', 'isolate_host'], label: t('stem.cyberdefense.crisis_response', 'Crisis Response'), effect: 'effectBoost', value: 0.4, description: t('stem.cyberdefense.emergency_containment_executive_author', 'Emergency containment + executive authorization. Overwhelming late-stage response.') },
+            { id: 'rapid_response', ids: ['investigate', 'isolate_host'], label: t('stem.cyberdefense.rapid_response', 'Rapid Response'), effect: 'effectBoost', value: 0.2, description: t('stem.cyberdefense.see_it_stop_it_investigation_confirms_', 'See it, stop it. Investigation confirms the threat; isolation cuts it off before damage spreads.') }
           ];
 
           // ── Detect which combos are active in the current blue plays ──
@@ -1155,27 +1156,27 @@
 
           // ── Blue Team card library ──
           var blueTeamCards = [
-            { id: 'investigate',      label: 'Investigate Alert',   icon: '\uD83D\uDD0E', cost: 1, category: 'Analysis',              description: 'Read deeper into an alert. Reveals whether a signal is real or noise, and highlights the active attack step.' },
-            { id: 'block_ip',         label: 'Block Sender/IP',     icon: '\uD83D\uDEAB', cost: 1, category: 'Perimeter',             description: 'Block a sender domain or IP at the perimeter. Strong vs delivery and C2 traffic.' },
-            { id: 'reset_credential', label: 'Reset Credential',    icon: '\uD83D\uDD10', cost: 1, category: 'Identity',              description: 'Force password reset and kill active sessions. Neutralizes credential theft and rogue app tokens.' },
-            { id: 'patch',            label: 'Emergency Patch',     icon: '\uD83E\uDDF0', cost: 2, category: 'Vulnerability mgmt',    description: 'Apply a known security update. Prevents exploitation of unpatched systems.' },
-            { id: 'isolate_host',     label: 'Isolate Endpoint',    icon: '\uD83E\uDDF1', cost: 2, category: 'Containment',           description: 'Network-quarantine a suspicious host. Strong vs lateral movement, persistence, and C2.' },
-            { id: 'awareness_blast',  label: 'User Awareness Blast',icon: '\uD83D\uDCE3', cost: 1, category: 'Human layer',           description: 'Urgent notice to staff about an active campaign. Reduces human-factor attack success.' },
-            { id: 'deploy_edr',       label: 'Deploy EDR Rule',     icon: '\uD83D\uDEE1\uFE0F', cost: 2, category: 'Endpoint',         description: 'Push a detection rule to endpoints. Excellent against execution and persistence.' },
-            { id: 'hunt_iocs',        label: 'Hunt for IOCs',       icon: '\uD83E\uDDEC', cost: 2, category: 'Threat hunting',        description: 'Proactive threat hunt across logs. Surfaces indicators early — especially strong in recon and C2.' },
-            { id: 'escalate',         label: 'Escalate to CISO',    icon: '\uD83D\uDEA8', cost: 3, category: 'Crisis management',     description: 'Pull the emergency brake. Once per campaign. Major impact on late-stage attacks.' }
+            { id: 'investigate',      label: t('stem.cyberdefense.investigate_alert', 'Investigate Alert'),   icon: '\uD83D\uDD0E', cost: 1, category: 'Analysis',              description: t('stem.cyberdefense.read_deeper_into_an_alert_reveals_whet', 'Read deeper into an alert. Reveals whether a signal is real or noise, and highlights the active attack step.') },
+            { id: 'block_ip',         label: t('stem.cyberdefense.block_sender_ip', 'Block Sender/IP'),     icon: '\uD83D\uDEAB', cost: 1, category: 'Perimeter',             description: t('stem.cyberdefense.block_a_sender_domain_or_ip_at_the_per', 'Block a sender domain or IP at the perimeter. Strong vs delivery and C2 traffic.') },
+            { id: 'reset_credential', label: t('stem.cyberdefense.reset_credential', 'Reset Credential'),    icon: '\uD83D\uDD10', cost: 1, category: 'Identity',              description: t('stem.cyberdefense.force_password_reset_and_kill_active_s', 'Force password reset and kill active sessions. Neutralizes credential theft and rogue app tokens.') },
+            { id: 'patch',            label: t('stem.cyberdefense.emergency_patch', 'Emergency Patch'),     icon: '\uD83E\uDDF0', cost: 2, category: 'Vulnerability mgmt',    description: t('stem.cyberdefense.apply_a_known_security_update_prevents', 'Apply a known security update. Prevents exploitation of unpatched systems.') },
+            { id: 'isolate_host',     label: t('stem.cyberdefense.isolate_endpoint', 'Isolate Endpoint'),    icon: '\uD83E\uDDF1', cost: 2, category: 'Containment',           description: t('stem.cyberdefense.network_quarantine_a_suspicious_host_s', 'Network-quarantine a suspicious host. Strong vs lateral movement, persistence, and C2.') },
+            { id: 'awareness_blast',  label: t('stem.cyberdefense.user_awareness_blast', 'User Awareness Blast'),icon: '\uD83D\uDCE3', cost: 1, category: 'Human layer',           description: t('stem.cyberdefense.urgent_notice_to_staff_about_an_active', 'Urgent notice to staff about an active campaign. Reduces human-factor attack success.') },
+            { id: 'deploy_edr',       label: t('stem.cyberdefense.deploy_edr_rule', 'Deploy EDR Rule'),     icon: '\uD83D\uDEE1\uFE0F', cost: 2, category: 'Endpoint',         description: t('stem.cyberdefense.push_a_detection_rule_to_endpoints_exc', 'Push a detection rule to endpoints. Excellent against execution and persistence.') },
+            { id: 'hunt_iocs',        label: t('stem.cyberdefense.hunt_for_iocs', 'Hunt for IOCs'),       icon: '\uD83E\uDDEC', cost: 2, category: 'Threat hunting',        description: t('stem.cyberdefense.proactive_threat_hunt_across_logs_surf', 'Proactive threat hunt across logs. Surfaces indicators early — especially strong in recon and C2.') },
+            { id: 'escalate',         label: t('stem.cyberdefense.escalate_to_ciso', 'Escalate to CISO'),    icon: '\uD83D\uDEA8', cost: 3, category: 'Crisis management',     description: t('stem.cyberdefense.pull_the_emergency_brake_once_per_camp', 'Pull the emergency brake. Once per campaign. Major impact on late-stage attacks.') }
           ];
 
           // ── Campaign themes — bias the red team's card pool ──
           var campaignThemes = {
             mixed: {
-              id: 'mixed', label: 'Mixed Threat Landscape', icon: '\uD83C\uDFAF',
-              desc: 'A random adversary drawing from the full playbook. Best for your first run.',
+              id: 'mixed', label: t('stem.cyberdefense.mixed_threat_landscape', 'Mixed Threat Landscape'), icon: '\uD83C\uDFAF',
+              desc: t('stem.cyberdefense.a_random_adversary_drawing_from_the_fu', 'A random adversary drawing from the full playbook. Best for your first run.'),
               preferred: null
             },
             ransomware: {
-              id: 'ransomware', label: 'Ransomware Crew', icon: '\uD83D\uDD12',
-              desc: 'A financially-motivated crew aiming to encrypt your environment for ransom. Expect loud, destructive finales.',
+              id: 'ransomware', label: t('stem.cyberdefense.ransomware_crew', 'Ransomware Crew'), icon: '\uD83D\uDD12',
+              desc: t('stem.cyberdefense.a_financially_motivated_crew_aiming_to', 'A financially-motivated crew aiming to encrypt your environment for ransom. Expect loud, destructive finales.'),
               preferred: {
                 recon: ['r_dnsenum', 'r_s3scan'],
                 delivery: ['d_spearcfo', 'd_typosquat'],
@@ -1186,8 +1187,8 @@
               }
             },
             bec: {
-              id: 'bec', label: 'BEC Fraud Ring', icon: '\uD83D\uDCB0',
-              desc: 'Business Email Compromise specialists after wire-transfer fraud. Patient, social-engineering-heavy, low-noise.',
+              id: 'bec', label: t('stem.cyberdefense.bec_fraud_ring', 'BEC Fraud Ring'), icon: '\uD83D\uDCB0',
+              desc: t('stem.cyberdefense.business_email_compromise_specialists_', 'Business Email Compromise specialists after wire-transfer fraud. Patient, social-engineering-heavy, low-noise.'),
               preferred: {
                 recon: ['r_linkedin', 'r_osint'],
                 delivery: ['d_spearcfo', 'd_sms'],
@@ -1198,8 +1199,8 @@
               }
             },
             insider: {
-              id: 'insider', label: 'Insider Threat', icon: '\uD83C\uDFAD',
-              desc: 'A trusted employee abusing legitimate access. Few external IOCs \u2014 hunt behaviorally, not by signature.',
+              id: 'insider', label: t('stem.cyberdefense.insider_threat', 'Insider Threat'), icon: '\uD83C\uDFAD',
+              desc: t('stem.cyberdefense.a_trusted_employee_abusing_legitimate_', 'A trusted employee abusing legitimate access. Few external IOCs \u2014 hunt behaviorally, not by signature.'),
               preferred: {
                 recon: ['r_osint'],
                 delivery: ['d_usb'],
@@ -1210,8 +1211,8 @@
               }
             },
             apt: {
-              id: 'apt', label: 'Nation-State APT', icon: '\uD83C\uDF10',
-              desc: 'A patient, well-funded adversary using zero-days, signed binaries, and firmware persistence. Only patching and scanning won\'t save you.',
+              id: 'apt', label: t('stem.cyberdefense.nation_state_apt', 'Nation-State APT'), icon: '\uD83C\uDF10',
+              desc: t('stem.cyberdefense.a_patient_well_funded_adversary_using_', 'A patient, well-funded adversary using zero-days, signed binaries, and firmware persistence. Only patching and scanning won\'t save you.'),
               preferred: {
                 recon: ['r_supplychain', 'r_dnsenum'],
                 delivery: ['d_signed_driver', 'd_spearcfo'],
@@ -1227,8 +1228,8 @@
               unlockHint: 'Earn 6 Trophy Room achievements to unlock.'
             },
             custom: {
-              id: 'custom', label: 'Custom Scenario', icon: '\uD83E\uDDEA',
-              desc: 'Scenarios authored by your teacher. Falls back to default red cards for any stage the teacher didn\'t cover.',
+              id: 'custom', label: t('stem.cyberdefense.custom_scenario', 'Custom Scenario'), icon: '\uD83E\uDDEA',
+              desc: t('stem.cyberdefense.scenarios_authored_by_your_teacher_fal', 'Scenarios authored by your teacher. Falls back to default red cards for any stage the teacher didn\'t cover.'),
               preferred: null,
               locked: true,
               unlockCondition: function(dd) { return Array.isArray(dd.warRoomCustomCards) && dd.warRoomCustomCards.length > 0; },
@@ -1241,23 +1242,23 @@
             var b = { budgetBonus: 0, freeFirstUse: [], earned: [] };
             if ((dd.phishScore || 0) >= 5) {
               b.budgetBonus += 3;
-              b.earned.push({ id: 'phishing_master', icon: '\uD83C\uDFA3', label: 'Phishing Master', perk: '+3 starting budget', source: 'Cyber Detective: 5+ correct IDs' });
+              b.earned.push({ id: 'phishing_master', icon: '\uD83C\uDFA3', label: t('stem.cyberdefense.phishing_master', 'Phishing Master'), perk: '+3 starting budget', source: 'Cyber Detective: 5+ correct IDs' });
             }
             if ((dd.casesClosed || 0) >= 10) {
               if (b.freeFirstUse.indexOf('awareness_blast') === -1) b.freeFirstUse.push('awareness_blast');
-              b.earned.push({ id: 'seasoned_detective', icon: '\uD83D\uDD75\uFE0F', label: 'Seasoned Detective', perk: 'First Awareness Blast is free', source: 'Cyber Detective: 10+ cases closed' });
+              b.earned.push({ id: 'seasoned_detective', icon: '\uD83D\uDD75\uFE0F', label: t('stem.cyberdefense.seasoned_detective', 'Seasoned Detective'), perk: 'First Awareness Blast is free', source: 'Cyber Detective: 10+ cases closed' });
             }
             if (dd.pwInput && dd.pwInput.length >= 12) {
               if (b.freeFirstUse.indexOf('reset_credential') === -1) b.freeFirstUse.push('reset_credential');
-              b.earned.push({ id: 'password_pro', icon: '\uD83D\uDD10', label: 'Password Pro', perk: 'First Reset Credential is free', source: 'Password Forge: tested a 12+ char password' });
+              b.earned.push({ id: 'password_pro', icon: '\uD83D\uDD10', label: t('stem.cyberdefense.password_pro', 'Password Pro'), perk: 'First Reset Credential is free', source: 'Password Forge: tested a 12+ char password' });
             }
             if ((dd.seQuizScore || 0) >= 5) {
               if (b.freeFirstUse.indexOf('investigate') === -1) b.freeFirstUse.push('investigate');
-              b.earned.push({ id: 'social_shield', icon: '\uD83C\uDFAD', label: 'Social Shield', perk: 'First Investigate is free', source: 'Social Engineering: 5+ correct' });
+              b.earned.push({ id: 'social_shield', icon: '\uD83C\uDFAD', label: t('stem.cyberdefense.social_shield', 'Social Shield'), perk: 'First Investigate is free', source: 'Social Engineering: 5+ correct' });
             }
             if ((dd.netScore || 0) >= 5) {
               if (b.freeFirstUse.indexOf('hunt_iocs') === -1) b.freeFirstUse.push('hunt_iocs');
-              b.earned.push({ id: 'traffic_analyst', icon: '\uD83D\uDCE1', label: 'Traffic Analyst', perk: 'First Hunt for IOCs is free', source: 'Traffic Analyzer: 5+ correct flags' });
+              b.earned.push({ id: 'traffic_analyst', icon: '\uD83D\uDCE1', label: t('stem.cyberdefense.traffic_analyst', 'Traffic Analyst'), perk: 'First Hunt for IOCs is free', source: 'Traffic Analyzer: 5+ correct flags' });
             }
             return b;
           }
@@ -1866,38 +1867,38 @@
 
           // ── MITRE ATT&CK technique tags per red card (for credibility + advanced learners) ──
           var mitreTechniques = {
-            r_linkedin:     { id: 'T1589.002', name: 'Gather Victim Identity: Email Addresses' },
-            r_dnsenum:      { id: 'T1590.002', name: 'Gather Victim Network: DNS' },
-            r_s3scan:       { id: 'T1595.002', name: 'Active Scanning: Vulnerability Scanning' },
-            r_osint:        { id: 'T1591',     name: 'Gather Victim Org Information' },
-            r_darkweb:      { id: 'T1589.001', name: 'Gather Victim Identity: Credentials' },
-            d_spearcfo:     { id: 'T1566.001', name: 'Phishing: Spearphishing Attachment' },
-            d_usb:          { id: 'T1091',     name: 'Replication Through Removable Media' },
-            d_typosquat:    { id: 'T1583.001', name: 'Acquire Infrastructure: Domains' },
-            d_sms:          { id: 'T1566.003', name: 'Phishing: Spearphishing via Service' },
-            e_macro:        { id: 'T1204.002', name: 'User Execution: Malicious File' },
-            e_cve:          { id: 'T1190',     name: 'Exploit Public-Facing Application' },
-            e_credstuff:    { id: 'T1110.004', name: 'Brute Force: Credential Stuffing' },
-            e_watering:     { id: 'T1189',     name: 'Drive-by Compromise' },
-            p_schedtask:    { id: 'T1053.005', name: 'Scheduled Task/Job: Scheduled Task' },
-            p_runkey:       { id: 'T1547.001', name: 'Registry Run Keys / Startup Folder' },
-            p_service:      { id: 'T1543.003', name: 'Create/Modify System Process: Service' },
-            p_oauthapp:     { id: 'T1550.001', name: 'Application Access Token' },
-            c_dnstun:       { id: 'T1071.004', name: 'Application Layer Protocol: DNS' },
-            c_httpscdn:     { id: 'T1071.001', name: 'Application Layer Protocol: Web' },
-            c_slackhook:    { id: 'T1567.002', name: 'Exfiltration to Cloud Storage' },
-            c_icmp:         { id: 'T1095',     name: 'Non-Application Layer Protocol' },
-            c_websocket:    { id: 'T1071.001', name: 'Application Layer Protocol: Web (WebSocket)' },
-            a_piiexfil:     { id: 'T1041',     name: 'Exfiltration Over C2 Channel' },
-            a_ransom:       { id: 'T1486',     name: 'Data Encrypted for Impact' },
-            a_wirefraud:    { id: 'T1534',     name: 'Internal Spearphishing (BEC)' },
-            a_sabotage:     { id: 'T1485',     name: 'Data Destruction' },
-            r_supplychain:  { id: 'T1195.002', name: 'Supply Chain Compromise: Software' },
-            d_signed_driver:{ id: 'T1553.002', name: 'Subvert Trust Controls: Code Signing' },
-            e_zeroday:      { id: 'T1068',     name: 'Exploitation for Privilege Escalation' },
-            p_firmware:     { id: 'T1542.001', name: 'Pre-OS Boot: System Firmware' },
-            c_slow_dns:     { id: 'T1071.004', name: 'Application Layer Protocol: DNS (low-and-slow)' },
-            a_longexfil:    { id: 'T1030',     name: 'Data Transfer Size Limits' }
+            r_linkedin:     { id: 'T1589.002', name: t('stem.cyberdefense.gather_victim_identity_email_addresses', 'Gather Victim Identity: Email Addresses') },
+            r_dnsenum:      { id: 'T1590.002', name: t('stem.cyberdefense.gather_victim_network_dns', 'Gather Victim Network: DNS') },
+            r_s3scan:       { id: 'T1595.002', name: t('stem.cyberdefense.active_scanning_vulnerability_scanning', 'Active Scanning: Vulnerability Scanning') },
+            r_osint:        { id: 'T1591',     name: t('stem.cyberdefense.gather_victim_org_information', 'Gather Victim Org Information') },
+            r_darkweb:      { id: 'T1589.001', name: t('stem.cyberdefense.gather_victim_identity_credentials', 'Gather Victim Identity: Credentials') },
+            d_spearcfo:     { id: 'T1566.001', name: t('stem.cyberdefense.phishing_spearphishing_attachment', 'Phishing: Spearphishing Attachment') },
+            d_usb:          { id: 'T1091',     name: t('stem.cyberdefense.replication_through_removable_media', 'Replication Through Removable Media') },
+            d_typosquat:    { id: 'T1583.001', name: t('stem.cyberdefense.acquire_infrastructure_domains', 'Acquire Infrastructure: Domains') },
+            d_sms:          { id: 'T1566.003', name: t('stem.cyberdefense.phishing_spearphishing_via_service', 'Phishing: Spearphishing via Service') },
+            e_macro:        { id: 'T1204.002', name: t('stem.cyberdefense.user_execution_malicious_file', 'User Execution: Malicious File') },
+            e_cve:          { id: 'T1190',     name: t('stem.cyberdefense.exploit_public_facing_application', 'Exploit Public-Facing Application') },
+            e_credstuff:    { id: 'T1110.004', name: t('stem.cyberdefense.brute_force_credential_stuffing', 'Brute Force: Credential Stuffing') },
+            e_watering:     { id: 'T1189',     name: t('stem.cyberdefense.drive_by_compromise', 'Drive-by Compromise') },
+            p_schedtask:    { id: 'T1053.005', name: t('stem.cyberdefense.scheduled_task_job_scheduled_task', 'Scheduled Task/Job: Scheduled Task') },
+            p_runkey:       { id: 'T1547.001', name: t('stem.cyberdefense.registry_run_keys_startup_folder', 'Registry Run Keys / Startup Folder') },
+            p_service:      { id: 'T1543.003', name: t('stem.cyberdefense.create_modify_system_process_service', 'Create/Modify System Process: Service') },
+            p_oauthapp:     { id: 'T1550.001', name: t('stem.cyberdefense.application_access_token', 'Application Access Token') },
+            c_dnstun:       { id: 'T1071.004', name: t('stem.cyberdefense.application_layer_protocol_dns', 'Application Layer Protocol: DNS') },
+            c_httpscdn:     { id: 'T1071.001', name: t('stem.cyberdefense.application_layer_protocol_web', 'Application Layer Protocol: Web') },
+            c_slackhook:    { id: 'T1567.002', name: t('stem.cyberdefense.exfiltration_to_cloud_storage', 'Exfiltration to Cloud Storage') },
+            c_icmp:         { id: 'T1095',     name: t('stem.cyberdefense.non_application_layer_protocol', 'Non-Application Layer Protocol') },
+            c_websocket:    { id: 'T1071.001', name: t('stem.cyberdefense.application_layer_protocol_web_websock', 'Application Layer Protocol: Web (WebSocket)') },
+            a_piiexfil:     { id: 'T1041',     name: t('stem.cyberdefense.exfiltration_over_c2_channel', 'Exfiltration Over C2 Channel') },
+            a_ransom:       { id: 'T1486',     name: t('stem.cyberdefense.data_encrypted_for_impact', 'Data Encrypted for Impact') },
+            a_wirefraud:    { id: 'T1534',     name: t('stem.cyberdefense.internal_spearphishing_bec', 'Internal Spearphishing (BEC)') },
+            a_sabotage:     { id: 'T1485',     name: t('stem.cyberdefense.data_destruction', 'Data Destruction') },
+            r_supplychain:  { id: 'T1195.002', name: t('stem.cyberdefense.supply_chain_compromise_software', 'Supply Chain Compromise: Software') },
+            d_signed_driver:{ id: 'T1553.002', name: t('stem.cyberdefense.subvert_trust_controls_code_signing', 'Subvert Trust Controls: Code Signing') },
+            e_zeroday:      { id: 'T1068',     name: t('stem.cyberdefense.exploitation_for_privilege_escalation', 'Exploitation for Privilege Escalation') },
+            p_firmware:     { id: 'T1542.001', name: t('stem.cyberdefense.pre_os_boot_system_firmware', 'Pre-OS Boot: System Firmware') },
+            c_slow_dns:     { id: 'T1071.004', name: t('stem.cyberdefense.application_layer_protocol_dns_low_and', 'Application Layer Protocol: DNS (low-and-slow)') },
+            a_longexfil:    { id: 'T1030',     name: t('stem.cyberdefense.data_transfer_size_limits', 'Data Transfer Size Limits') }
           };
 
           // ── Plain Language rewrites: simpler words for the same concepts (UDL toggle) ──
@@ -2549,11 +2550,11 @@
           }, 0);
           var warRoomRank = (function() {
             var det = warRoomDetections;
-            if (warRoomVerdict !== 'won') return { label: 'SOC Trainee', icon: '\uD83D\uDD30', color: 'var(--allo-stem-text-soft, #94a3b8)' };
+            if (warRoomVerdict !== 'won') return { label: t('stem.cyberdefense.soc_trainee', 'SOC Trainee'), icon: '\uD83D\uDD30', color: 'var(--allo-stem-text-soft, #94a3b8)' };
             if (det >= 6) return { label: 'CISO', icon: '\uD83C\uDFC6', color: '#f59e0b' };
-            if (det >= 5) return { label: 'Incident Commander', icon: '\u2B50', color: '#a855f7' };
-            if (det >= 4) return { label: 'Incident Responder', icon: '\uD83D\uDEE1\uFE0F', color: '#3b82f6' };
-            return { label: 'Junior Analyst', icon: '\uD83D\uDD0D', color: '#22c55e' };
+            if (det >= 5) return { label: t('stem.cyberdefense.incident_commander', 'Incident Commander'), icon: '\u2B50', color: '#a855f7' };
+            if (det >= 4) return { label: t('stem.cyberdefense.incident_responder', 'Incident Responder'), icon: '\uD83D\uDEE1\uFE0F', color: '#3b82f6' };
+            return { label: t('stem.cyberdefense.junior_analyst', 'Junior Analyst'), icon: '\uD83D\uDD0D', color: '#22c55e' };
           })();
 
           return el('div', { className: 'animate-in fade-in duration-300', style: { background: 'linear-gradient(135deg, #0f172a 0%, #16172e 50%, var(--allo-stem-canvas, #0f172a) 100%)', borderRadius: 16, minHeight: '70vh', padding: 0, boxShadow: '0 0 40px rgba(99,102,241,0.15)' } },
@@ -2577,7 +2578,7 @@
 
             // Tab Bar
             el('div', { style: { display: 'flex', borderBottom: '1px solid rgba(99,102,241,0.15)', padding: '0 24px' } },
-              [{ id: 'phish', icon: '\uD83D\uDD75\uFE0F', label: 'Cyber Detective' }, { id: 'password', icon: '\uD83D\uDD10', label: 'Password Forge' }, { id: 'cipher', icon: '\uD83D\uDD11', label: 'Cipher Lab' }, { id: 'network', icon: '\uD83D\uDCE1', label: 'Traffic Analyzer' }, { id: 'social', icon: '\uD83C\uDFAD', label: 'Social Engineering' }, { id: 'warroom', icon: '\u2694\uFE0F', label: 'SOC War Room' }, { id: 'defenseHunt', icon: '\uD83D\uDEE1\uFE0F', label: 'Defense Metrics' }].map(function(tab) {
+              [{ id: 'phish', icon: '\uD83D\uDD75\uFE0F', label: t('stem.cyberdefense.cyber_detective', 'Cyber Detective') }, { id: 'password', icon: '\uD83D\uDD10', label: t('stem.cyberdefense.password_forge', 'Password Forge') }, { id: 'cipher', icon: '\uD83D\uDD11', label: t('stem.cyberdefense.cipher_lab', 'Cipher Lab') }, { id: 'network', icon: '\uD83D\uDCE1', label: t('stem.cyberdefense.traffic_analyzer', 'Traffic Analyzer') }, { id: 'social', icon: '\uD83C\uDFAD', label: t('stem.cyberdefense.social_engineering', 'Social Engineering') }, { id: 'warroom', icon: '\u2694\uFE0F', label: t('stem.cyberdefense.soc_war_room', 'SOC War Room') }, { id: 'defenseHunt', icon: '\uD83D\uDEE1\uFE0F', label: t('stem.cyberdefense.defense_metrics', 'Defense Metrics') }].map(function(tab) {
                 var isActive = cyberTab === tab.id;
                 return el('button', { key: tab.id, onClick: function() { upd('cyberTab', tab.id); },
                   style: { padding: '12px 20px', borderTop: 'none', borderRight: 'none', borderLeft: 'none', borderBottom: isActive ? '2px solid #6366f1' : '2px solid transparent', background: 'none', color: isActive ? '#a5b4fc' : '#94a3b8', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s' } },
@@ -2654,7 +2655,7 @@
                             if (clue.zone !== 'sender') return null;
                             var found = cluesFound.indexOf(ci) !== -1;
                             return el('button', { key: 'clue-s-' + ci, onClick: function() { handleClueClick(ci); },
-                              title: 'Investigate sender',
+                              title: t('stem.cyberdefense.investigate_sender', 'Investigate sender'),
                               style: { background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '2px 5px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#94a3b8', transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite' } },
                               '\uD83D\uDD0D');
                           })
@@ -2683,7 +2684,7 @@
                             if (clue.zone !== 'headers') return null;
                             var found = cluesFound.indexOf(ci) !== -1;
                             return el('button', { key: 'clue-h-' + ci, onClick: function() { handleClueClick(ci); },
-                              title: 'Investigate email headers',
+                              title: t('stem.cyberdefense.investigate_email_headers', 'Investigate email headers'),
                               style: { background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '2px 5px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#94a3b8', transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite' } },
                               '\uD83D\uDD0D');
                           })
@@ -2697,7 +2698,7 @@
                         if (clue.zone !== 'subject') return null;
                         var found = cluesFound.indexOf(ci) !== -1;
                         return el('button', { key: 'clue-sub-' + ci, onClick: function() { handleClueClick(ci); },
-                          title: 'Investigate subject',
+                          title: t('stem.cyberdefense.investigate_subject', 'Investigate subject'),
                           style: { background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '2px 5px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#94a3b8', flexShrink: 0, transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite' } },
                           '\uD83D\uDD0D');
                       })
@@ -2769,7 +2770,7 @@
                       if (clue.zone !== 'body') return null;
                       var found = cluesFound.indexOf(ci) !== -1;
                       return el('button', { key: 'clue-b-' + ci, onClick: function() { handleClueClick(ci); },
-                        title: 'Investigate this',
+                        title: t('stem.cyberdefense.investigate_this', 'Investigate this'),
                         style: { marginLeft: 6, background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '2px 5px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#94a3b8', transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite', verticalAlign: 'middle' } },
                         '\uD83D\uDD0D');
                     }),
@@ -2780,7 +2781,7 @@
                         if (clue.zone !== 'link') return null;
                         var found = cluesFound.indexOf(ci) !== -1;
                         return el('button', { key: 'clue-l-' + ci, onClick: function() { handleClueClick(ci); },
-                          title: 'Investigate link',
+                          title: t('stem.cyberdefense.investigate_link', 'Investigate link'),
                           style: { marginLeft: 'auto', flexShrink: 0, background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '2px 5px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#94a3b8', transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite' } },
                           '\uD83D\uDD0D');
                       })
@@ -2877,8 +2878,8 @@
                       el('div', { style: { flex: 1, position: 'relative' } },
                         el('input', { value: pwInput, type: pwShowPassword ? 'text' : 'password',
                           onChange: function(e) { upd({ pwInput: e.target.value, pwBruteAnim: null, pwBreachResult: null }); },
-                          placeholder: 'Type a password to analyze...',
-                          'aria-label': 'Password to analyze',
+                          placeholder: t('stem.cyberdefense.type_a_password_to_analyze', 'Type a password to analyze...'),
+                          'aria-label': t('stem.cyberdefense.password_to_analyze', 'Password to analyze'),
                           style: { width: '100%', padding: '12px 40px 12px 14px', borderRadius: 10, border: '2px solid ' + (pwInput ? pwStrength.color : 'rgba(255,255,255,0.1)'), background: 'rgba(255,255,255,0.06)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, fontWeight: 600, boxSizing: 'border-box', fontFamily: pwShowPassword ? 'monospace' : 'inherit' }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
                         el('button', { onClick: function() { upd('pwShowPassword', !pwShowPassword); },
                           'aria-label': pwShowPassword ? 'Hide password' : 'Show password',
@@ -2923,13 +2924,13 @@
                   // Checklist
                   el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 14 } },
                     [
-                      { label: '8+ characters', ok: pwStrength.checks.length >= 8 },
-                      { label: '12+ characters', ok: pwStrength.checks.length >= 12 },
-                      { label: 'Uppercase letters', ok: pwStrength.checks.hasUpper },
-                      { label: 'Lowercase letters', ok: pwStrength.checks.hasLower },
-                      { label: 'Numbers', ok: pwStrength.checks.hasDigit },
-                      { label: 'Symbols (!@#$)', ok: pwStrength.checks.hasSymbol },
-                      { label: 'Not a common password', ok: !pwStrength.checks.isCommon && pwInput.length > 0 }
+                      { label: t('stem.cyberdefense.8_characters', '8+ characters'), ok: pwStrength.checks.length >= 8 },
+                      { label: t('stem.cyberdefense.12_characters', '12+ characters'), ok: pwStrength.checks.length >= 12 },
+                      { label: t('stem.cyberdefense.uppercase_letters', 'Uppercase letters'), ok: pwStrength.checks.hasUpper },
+                      { label: t('stem.cyberdefense.lowercase_letters', 'Lowercase letters'), ok: pwStrength.checks.hasLower },
+                      { label: t('stem.cyberdefense.numbers', 'Numbers'), ok: pwStrength.checks.hasDigit },
+                      { label: t('stem.cyberdefense.symbols', 'Symbols (!@#$)'), ok: pwStrength.checks.hasSymbol },
+                      { label: t('stem.cyberdefense.not_a_common_password', 'Not a common password'), ok: !pwStrength.checks.isCommon && pwInput.length > 0 }
                     ].map(function(check, ci) {
                       return el('div', { key: ci, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 6, background: check.ok ? 'rgba(34,197,94,0.08)' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (check.ok ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.06)') } },
                         el('span', { style: { fontSize: 12, color: check.ok ? '#4ade80' : '#64748b' } }, check.ok ? '\u2714' : '\u25CB'),
@@ -3007,7 +3008,7 @@
               cyberTab === 'cipher' && el('div', { style: { maxWidth: 640, margin: '0 auto' } },
                 // Cipher type selector
                 el('div', { style: { display: 'flex', gap: 8, marginBottom: 20 } },
-                  [{ id: 'caesar', label: 'Caesar Cipher', icon: '\uD83D\uDD04' }, { id: 'atbash', label: 'Atbash Cipher', icon: '\uD83D\uDD00' }, { id: 'xor', label: 'XOR Cipher', icon: '\u2295' }].map(function(c) {
+                  [{ id: 'caesar', label: t('stem.cyberdefense.caesar_cipher', 'Caesar Cipher'), icon: '\uD83D\uDD04' }, { id: 'atbash', label: t('stem.cyberdefense.atbash_cipher', 'Atbash Cipher'), icon: '\uD83D\uDD00' }, { id: 'xor', label: t('stem.cyberdefense.xor_cipher', 'XOR Cipher'), icon: '\u2295' }].map(function(c) {
                     return el('button', { key: c.id, onClick: function() { upd('cipherMode', c.id); },
                       style: { flex: 1, padding: '10px 14px', borderRadius: 10, border: cipherMode === c.id ? '2px solid #6366f1' : '1px solid rgba(255,255,255,0.1)', background: cipherMode === c.id ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.04)', color: cipherMode === c.id ? '#a5b4fc' : '#94a3b8', fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 } },
                       el('span', null, c.icon), c.label);
@@ -3023,7 +3024,7 @@
                 // Caesar shift control
                 cipherMode === 'caesar' && el('div', { style: { marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 } },
                   el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, fontWeight: 600 } }, 'Shift:'),
-                  el('input', { type: 'range', 'aria-label': 'caesar shift', min: 1, max: 25, value: caesarShift, onChange: function(e) { upd('caesarShift', parseInt(e.target.value)); },
+                  el('input', { type: 'range', 'aria-label': t('stem.cyberdefense.caesar_shift', 'caesar shift'), min: 1, max: 25, value: caesarShift, onChange: function(e) { upd('caesarShift', parseInt(e.target.value)); },
                     style: { width: 180, accentColor: '#6366f1' } }),
                   el('span', { style: { color: '#a5b4fc', fontSize: 16, fontWeight: 900, fontFamily: 'monospace', minWidth: 28, textAlign: 'center' } }, caesarShift)
                 ),
@@ -3075,7 +3076,7 @@
                     upd('cipherChallenge', val);
                     if (val.trim() === activeChallengeData.answer) { upd('challengeSolved', true); ctx.awardXP('cyberDefense', 5); if (ctx.addToast) ctx.addToast('\uD83D\uDD11 +5 XP! Cipher cracked!', 'success'); if (announceToSR) announceToSR('Cipher cracked! Plus 5 XP.'); }
                     else { upd('challengeSolved', false); }
-                  }, placeholder: 'Type the decoded message...', 'aria-label': 'Cipher challenge answer', disabled: challengeSolved,
+                  }, placeholder: t('stem.cyberdefense.type_the_decoded_message', 'Type the decoded message...'), 'aria-label': t('stem.cyberdefense.cipher_challenge_answer', 'Cipher challenge answer'), disabled: challengeSolved,
                     style: { width: '100%', padding: '10px 14px', borderRadius: 8, border: '2px solid ' + (challengeSolved ? '#22c55e' : 'rgba(255,255,255,0.1)'), background: challengeSolved ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.06)', color: challengeSolved ? '#4ade80' : '#e2e8f0', fontSize: 13, fontFamily: 'monospace', fontWeight: 600, boxSizing: 'border-box' }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
                   challengeSolved && el('div', { style: { marginTop: 8, color: '#4ade80', fontSize: 13, fontWeight: 800, textAlign: 'center' } }, '\u2705 Decoded! The message is: "' + activeChallengeData.answer + '"')
                 )
@@ -3248,7 +3249,7 @@
               ),
 
               // ======= SOC WAR ROOM (red team / blue team simulation) =======
-              cyberTab === 'warroom' && el('div', { className: 'allo-warroom-root', role: 'region', 'aria-label': 'SOC War Room', lang: 'en', style: Object.assign({
+              cyberTab === 'warroom' && el('div', { className: 'allo-warroom-root', role: 'region', 'aria-label': t('stem.cyberdefense.soc_war_room_2', 'SOC War Room'), lang: 'en', style: Object.assign({
                 maxWidth: 960, margin: '0 auto', position: 'relative',
                 fontFamily: warRoomA11y.dyslexiaFont ? '"OpenDyslexic","Comic Sans MS","Atkinson Hyperlegible",sans-serif' : undefined,
                 fontSize: warRoomA11y.largeText ? '1.18em' : undefined,
@@ -3277,7 +3278,7 @@
                   var answered = q.answered !== -1;
                   var gotIt = answered && q.answered === q.correctIdx;
                   var pct = warRoomQuizTotal > 0 ? Math.round(warRoomQuizCorrect / warRoomQuizTotal * 100) : 0;
-                  return el('div', { role: 'dialog', 'aria-label': 'Quick Quiz',
+                  return el('div', { role: 'dialog', 'aria-label': t('stem.cyberdefense.quick_quiz', 'Quick Quiz'),
                     style: { padding: 16, borderRadius: 12, background: 'linear-gradient(135deg, rgba(236,72,153,0.1), rgba(168,85,247,0.06))', border: '2px solid rgba(236,72,153,0.45)', marginBottom: 14 } },
                     // Header
                     el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' } },
@@ -3288,7 +3289,7 @@
                       ),
                       el('button', {
                         onClick: function() { warTtsStop(); upd({ warRoomQuizOpen: false, warRoomQuizCurrent: null }); sfxCyberdClick(); },
-                        'aria-label': 'Close quiz',
+                        'aria-label': t('stem.cyberdefense.close_quiz', 'Close quiz'),
                         style: { padding: '4px 10px', borderRadius: 5, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(30,41,59,0.6)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\u2715 Close')
                     ),
                     // Red card question
@@ -3302,8 +3303,8 @@
                             var desc = (warRoomPlainLanguage && plainRedDescriptions[redCard.id]) || redCard.description || '';
                             warTtsSpeak('Question: ' + title + '. ' + desc);
                           },
-                          'aria-label': 'Read this quiz question aloud',
-                          title: 'Read aloud',
+                          'aria-label': t('stem.cyberdefense.read_this_quiz_question_aloud', 'Read this quiz question aloud'),
+                          title: t('stem.cyberdefense.read_aloud', 'Read aloud'),
                           style: { marginLeft: 'auto', padding: '2px 8px', borderRadius: 4, border: '1px solid rgba(168,85,247,0.3)', background: 'rgba(168,85,247,0.12)', color: '#d8b4fe', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDD0A Read')
                       ),
                       el('div', { style: { fontSize: 14, fontWeight: 800, color: '#fecaca', marginBottom: 4 } }, redCard.title),
@@ -3364,7 +3365,7 @@
                       el('button', {
                         onClick: function() { upd({ warRoomQuizCurrent: generateQuizQuestion() }); sfxCyberdClick(); },
                         disabled: !answered,
-                        'aria-label': 'Next question',
+                        'aria-label': t('stem.cyberdefense.next_question', 'Next question'),
                         style: { flex: 1, padding: '10px 14px', borderRadius: 6, border: 'none', background: !answered ? 'rgba(100,116,139,0.3)' : 'linear-gradient(135deg, #ec4899, #a855f7)', color: 'white', fontSize: 13, fontWeight: 800, cursor: !answered ? 'not-allowed' : 'pointer' } },
                         answered ? 'Next Question \u2192' : 'Pick an answer above'),
                       el('button', {
@@ -3388,7 +3389,7 @@
                          : step.outcome === 'detected' ? { c: '#3b82f6', label: 'DETECTED' }
                          : { c: '#ef4444', label: 'SUCCEEDED' };
                   var goStep = function(n) { upd('warRoomReplay', Object.assign({}, warRoomReplay, { stepIdx: n, playing: false })); };
-                  return el('div', { role: 'dialog', 'aria-label': 'Campaign replay',
+                  return el('div', { role: 'dialog', 'aria-label': t('stem.cyberdefense.campaign_replay', 'Campaign replay'),
                     style: { padding: 16, borderRadius: 12, background: 'linear-gradient(135deg, rgba(236,72,153,0.1), rgba(168,85,247,0.06))', border: '2px solid rgba(236,72,153,0.4)', marginBottom: 14 } },
                     // Header row
                     el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' } },
@@ -3399,7 +3400,7 @@
                       ),
                       el('button', {
                         onClick: function() { warTtsStop(); upd('warRoomReplay', null); sfxCyberdClick(); },
-                        'aria-label': 'Close replay',
+                        'aria-label': t('stem.cyberdefense.close_replay', 'Close replay'),
                         style: { padding: '4px 10px', borderRadius: 5, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(30,41,59,0.6)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\u2715 Close')
                     ),
                     // Red card
@@ -3413,8 +3414,8 @@
                             var desc = (step.red && step.red.description) || '';
                             warTtsSpeak('Red team: ' + title + '. ' + desc);
                           },
-                          'aria-label': 'Read this round\'s attack aloud',
-                          title: 'Read aloud',
+                          'aria-label': t('stem.cyberdefense.read_this_round_s_attack_aloud', 'Read this round\'s attack aloud'),
+                          title: t('stem.cyberdefense.read_aloud_2', 'Read aloud'),
                           style: { marginLeft: 'auto', padding: '2px 8px', borderRadius: 4, border: '1px solid rgba(168,85,247,0.3)', background: 'rgba(168,85,247,0.12)', color: '#d8b4fe', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDD0A Read')
                       ),
                       el('div', { style: { fontSize: 13, fontWeight: 800, color: '#fecaca', marginBottom: 4 } }, (step.red && step.red.title) || ''),
@@ -3436,14 +3437,14 @@
                     ),
                     // Transport controls
                     el('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-                      el('button', { onClick: function() { if (idx > 0) goStep(idx - 1); }, disabled: idx === 0, 'aria-label': 'Previous round',
+                      el('button', { onClick: function() { if (idx > 0) goStep(idx - 1); }, disabled: idx === 0, 'aria-label': t('stem.cyberdefense.previous_round', 'Previous round'),
                         style: { padding: '6px 10px', borderRadius: 5, border: '1px solid rgba(148,163,184,0.3)', background: idx === 0 ? 'rgba(30,41,59,0.3)' : 'rgba(30,41,59,0.6)', color: idx === 0 ? '#475569' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: idx === 0 ? 'not-allowed' : 'pointer' } }, '\u23EE Prev'),
                       el('button', {
                         onClick: function() { upd('warRoomReplay', Object.assign({}, warRoomReplay, { playing: !warRoomReplay.playing })); sfxCyberdClick(); },
                         'aria-label': warRoomReplay.playing ? 'Pause auto-advance' : 'Play auto-advance',
                         style: { padding: '6px 14px', borderRadius: 5, border: '1px solid rgba(236,72,153,0.35)', background: 'rgba(236,72,153,0.15)', color: '#f9a8d4', fontSize: 12, fontWeight: 800, cursor: 'pointer', minWidth: 80 } },
                         warRoomReplay.playing ? '\u23F8 Pause' : '\u25B6 Play'),
-                      el('button', { onClick: function() { if (idx < chain.length - 1) goStep(idx + 1); }, disabled: idx >= chain.length - 1, 'aria-label': 'Next round',
+                      el('button', { onClick: function() { if (idx < chain.length - 1) goStep(idx + 1); }, disabled: idx >= chain.length - 1, 'aria-label': t('stem.cyberdefense.next_round', 'Next round'),
                         style: { padding: '6px 10px', borderRadius: 5, border: '1px solid rgba(148,163,184,0.3)', background: idx >= chain.length - 1 ? 'rgba(30,41,59,0.3)' : 'rgba(30,41,59,0.6)', color: idx >= chain.length - 1 ? '#475569' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: idx >= chain.length - 1 ? 'not-allowed' : 'pointer' } }, 'Next \u23ED'),
                       el('div', { style: { flex: 1, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, textTransform: 'uppercase', textAlign: 'right', letterSpacing: 0.5 } }, warRoomReplay.playing ? 'Auto-playing \u2014 2.6s per round' : 'Paused')
                     )
@@ -3461,7 +3462,7 @@
                   el('span', null, ' button above shows which defenses stop which attacks at each kill-chain stage.'),
                   el('button', {
                     onClick: function() { upd('warRoomPlaybookSeen', true); sfxCyberdClick(); },
-                    'aria-label': 'Dismiss Playbook tip',
+                    'aria-label': t('stem.cyberdefense.dismiss_playbook_tip', 'Dismiss Playbook tip'),
                     style: { marginLeft: 'auto', padding: '2px 6px', background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(148,163,184,0.2)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700, cursor: 'pointer', borderRadius: 3 } },
                     '\u2715')
                 ),
@@ -3478,10 +3479,10 @@
                   ),
                   el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 14, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } },
                     [
-                      { icon: '\uD83C\uDFAC', title: 'New here?', body: 'Turn on Story Mode below for per-round coaching tips.' },
-                      { icon: '\u267F', title: 'Need support?', body: 'Use the UDL options for plain language, larger text, or a dyslexia-friendly font.' },
-                      { icon: '\uD83E\uDD1D', title: 'With classmates?', body: 'Hot Seat rotates 2\u20136 players on one device each round.' },
-                      { icon: '\uD83C\uDFAF', title: 'Daily Challenge', body: 'Play the same scenario as every other student today and compare scores.' }
+                      { icon: '\uD83C\uDFAC', title: t('stem.cyberdefense.new_here', 'New here?'), body: t('stem.cyberdefense.turn_on_story_mode_below_for_per_round', 'Turn on Story Mode below for per-round coaching tips.') },
+                      { icon: '\u267F', title: t('stem.cyberdefense.need_support', 'Need support?'), body: t('stem.cyberdefense.use_the_udl_options_for_plain_language', 'Use the UDL options for plain language, larger text, or a dyslexia-friendly font.') },
+                      { icon: '\uD83E\uDD1D', title: t('stem.cyberdefense.with_classmates', 'With classmates?'), body: t('stem.cyberdefense.hot_seat_rotates_2_6_players_on_one_de', 'Hot Seat rotates 2\u20136 players on one device each round.') },
+                      { icon: '\uD83C\uDFAF', title: t('stem.cyberdefense.daily_challenge', 'Daily Challenge'), body: t('stem.cyberdefense.play_the_same_scenario_as_every_other_', 'Play the same scenario as every other student today and compare scores.') }
                     ].map(function(tip, i) {
                       return el('div', { key: i, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.45)', border: '1px solid rgba(148,163,184,0.2)' } },
                         el('div', { style: { fontSize: 18, marginBottom: 3 } }, tip.icon),
@@ -3492,7 +3493,7 @@
                   ),
                   el('div', { style: { textAlign: 'center' } },
                     el('button', { onClick: function() { upd('warRoomWelcomeSeen', true); sfxCyberdClick(); },
-                      'aria-label': 'Dismiss welcome and continue',
+                      'aria-label': t('stem.cyberdefense.dismiss_welcome_and_continue', 'Dismiss welcome and continue'),
                       style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #6366f1, #a855f7)', color: 'white', fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
                       'Let\'s Begin \u2192')
                   )
@@ -3505,7 +3506,7 @@
                     (warRoomTeacherDashOpen ? '\u2715 Close' : '\uD83D\uDCCA Open') + ' Teacher Dashboard'),
                   (warRoomCampaignHistory.length > 0 || warRoomQuizTotal > 0) && el('button', { onClick: function() { upd({ warRoomStatsOpen: !warRoomStatsOpen, warRoomGlossaryOpen: false, warRoomHelpOpen: false, warRoomPlaybookOpen: false, warRoomTeacherDashOpen: false }); sfxCyberdClick(); },
                     'aria-expanded': warRoomStatsOpen, 'aria-controls': 'warroom-stats-panel',
-                    title: 'Your personal performance stats',
+                    title: t('stem.cyberdefense.your_personal_performance_stats', 'Your personal performance stats'),
                     style: { padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(59,130,246,0.3)', background: warRoomStatsOpen ? 'rgba(59,130,246,0.25)' : 'rgba(59,130,246,0.12)', color: '#93c5fd', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
                     (warRoomStatsOpen ? '\u2715 Close' : '\uD83D\uDCC8 My') + ' Stats'),
                   el('button', { onClick: function() { upd({ warRoomGlossaryOpen: !warRoomGlossaryOpen, warRoomGlossaryFilter: warRoomGlossaryOpen ? '' : warRoomGlossaryFilter, warRoomTeacherDashOpen: false, warRoomHelpOpen: false, warRoomPlaybookOpen: false, warRoomStatsOpen: false }); sfxCyberdClick(); },
@@ -3514,17 +3515,17 @@
                     (warRoomGlossaryOpen ? '\u2715 Close' : '\uD83D\uDCD6 Open') + ' Glossary'),
                   el('button', { onClick: function() { upd({ warRoomPlaybookOpen: !warRoomPlaybookOpen, warRoomPlaybookSeen: true, warRoomGlossaryOpen: false, warRoomTeacherDashOpen: false, warRoomHelpOpen: false, warRoomStatsOpen: false }); sfxCyberdClick(); },
                     'aria-expanded': warRoomPlaybookOpen, 'aria-controls': 'warroom-playbook-panel',
-                    title: 'Strategy guide — which defenses work against which stages',
+                    title: t('stem.cyberdefense.strategy_guide_which_defenses_work_aga', 'Strategy guide — which defenses work against which stages'),
                     style: { padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(236,72,153,0.3)', background: warRoomPlaybookOpen ? 'rgba(236,72,153,0.25)' : 'rgba(236,72,153,0.12)', color: '#f9a8d4', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
                     (warRoomPlaybookOpen ? '\u2715 Close' : '\uD83D\uDCD2 Open') + ' Playbook'),
                   el('button', { onClick: function() { upd({ warRoomHelpOpen: !warRoomHelpOpen, warRoomGlossaryOpen: false, warRoomTeacherDashOpen: false, warRoomPlaybookOpen: false, warRoomStatsOpen: false }); sfxCyberdClick(); },
                     'aria-expanded': warRoomHelpOpen, 'aria-controls': 'warroom-help-panel',
-                    title: 'Keyboard shortcuts (shortcut: ?)',
+                    title: t('stem.cyberdefense.keyboard_shortcuts_shortcut', 'Keyboard shortcuts (shortcut: ?)'),
                     style: { padding: '6px 10px', borderRadius: 6, border: '1px solid rgba(245,158,11,0.3)', background: warRoomHelpOpen ? 'rgba(245,158,11,0.25)' : 'rgba(245,158,11,0.12)', color: '#fcd34d', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
                     warRoomHelpOpen ? '\u2715' : '? Help')
                 ),
                 // Playbook panel
-                warRoomPlaybookOpen && el('div', { id: 'warroom-playbook-panel', role: 'region', 'aria-label': 'Strategy playbook',
+                warRoomPlaybookOpen && el('div', { id: 'warroom-playbook-panel', role: 'region', 'aria-label': t('stem.cyberdefense.strategy_playbook', 'Strategy playbook'),
                   style: { padding: 14, borderRadius: 10, background: 'rgba(15,23,42,0.8)', border: '1px solid rgba(236,72,153,0.3)', marginBottom: 14, maxHeight: 520, overflowY: 'auto' } },
                   el('div', { style: { color: '#f9a8d4', fontSize: 12, fontWeight: 800, marginBottom: 6, letterSpacing: 0.5 } }, '\uD83D\uDCD2 STRATEGY PLAYBOOK'),
                   el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 12, lineHeight: 1.5 } }, 'Which defenses work best at each kill-chain stage. These rankings are computed from every red team card in the catalog \u2014 the more cards a defense fully mitigates, the higher it ranks.'),
@@ -3563,7 +3564,7 @@
                   })
                 ),
                 // Help / shortcuts overlay
-                warRoomHelpOpen && el('div', { id: 'warroom-help-panel', role: 'region', 'aria-label': 'Keyboard shortcuts and help',
+                warRoomHelpOpen && el('div', { id: 'warroom-help-panel', role: 'region', 'aria-label': t('stem.cyberdefense.keyboard_shortcuts_and_help', 'Keyboard shortcuts and help'),
                   style: { padding: 14, borderRadius: 10, background: 'rgba(15,23,42,0.8)', border: '1px solid rgba(245,158,11,0.3)', marginBottom: 14 } },
                   el('div', { style: { color: '#fcd34d', fontSize: 12, fontWeight: 800, marginBottom: 10, letterSpacing: 0.5 } }, '\u2328\uFE0F KEYBOARD SHORTCUTS'),
                   el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } },
@@ -3590,7 +3591,7 @@
                   el('div', { style: { marginTop: 10, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, 'Shortcuts are disabled while typing in text fields or in Observer mode.')
                 ),
                 // Personal Stats panel
-                warRoomStatsOpen && el('div', { id: 'warroom-stats-panel', role: 'region', 'aria-label': 'Your personal stats',
+                warRoomStatsOpen && el('div', { id: 'warroom-stats-panel', role: 'region', 'aria-label': t('stem.cyberdefense.your_personal_stats', 'Your personal stats'),
                   style: { padding: 14, borderRadius: 10, background: 'rgba(15,23,42,0.8)', border: '1px solid rgba(59,130,246,0.3)', marginBottom: 14 } },
                   el('div', { style: { color: '#93c5fd', fontSize: 12, fontWeight: 800, marginBottom: 10, letterSpacing: 0.5 } }, '\uD83D\uDCC8 YOUR STATS'),
                   (function() {
@@ -3604,9 +3605,9 @@
                             el('div', { style: { color: '#f9a8d4', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, '\u2753 Quick Quiz performance'),
                             el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 6 } },
                               [
-                                { label: 'Answered', val: String(warRoomQuizTotal), color: 'var(--allo-stem-text, #cbd5e1)' },
-                                { label: 'Correct', val: warRoomQuizCorrect + ' (' + Math.round(warRoomQuizCorrect / warRoomQuizTotal * 100) + '%)', color: '#86efac' },
-                                { label: 'Best Streak', val: String(Math.max(warRoomQuizStreak, d.warRoomQuizBestStreak || 0)), color: '#fcd34d' }
+                                { label: t('stem.cyberdefense.answered', 'Answered'), val: String(warRoomQuizTotal), color: 'var(--allo-stem-text, #cbd5e1)' },
+                                { label: t('stem.cyberdefense.correct', 'Correct'), val: warRoomQuizCorrect + ' (' + Math.round(warRoomQuizCorrect / warRoomQuizTotal * 100) + '%)', color: '#86efac' },
+                                { label: t('stem.cyberdefense.best_streak', 'Best Streak'), val: String(Math.max(warRoomQuizStreak, d.warRoomQuizBestStreak || 0)), color: '#fcd34d' }
                               ].map(function(s, i) {
                                 return el('div', { key: i, style: { padding: 6, borderRadius: 4, background: 'rgba(15,23,42,0.5)' } },
                                   el('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, textTransform: 'uppercase' } }, s.label),
@@ -3653,12 +3654,12 @@
                       // Top stats row
                       el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 8, marginBottom: 14 } },
                         [
-                          { label: 'Campaigns', val: String(h.length), color: 'var(--allo-stem-text, #cbd5e1)' },
-                          { label: 'Wins', val: wins + ' (' + winPct + '%)', color: '#86efac' },
-                          { label: 'Avg Detections', val: avgDet + '/6', color: '#93c5fd' },
-                          { label: 'Avg Data Saved', val: avgData + '/100', color: '#fcd34d' },
-                          { label: 'Longest Streak', val: longestStreak + ' win' + (longestStreak === 1 ? '' : 's'), color: '#a855f7' },
-                          { label: 'Current Streak', val: currentStreak + ' win' + (currentStreak === 1 ? '' : 's'), color: '#f472b6' }
+                          { label: t('stem.cyberdefense.campaigns', 'Campaigns'), val: String(h.length), color: 'var(--allo-stem-text, #cbd5e1)' },
+                          { label: t('stem.cyberdefense.wins', 'Wins'), val: wins + ' (' + winPct + '%)', color: '#86efac' },
+                          { label: t('stem.cyberdefense.avg_detections', 'Avg Detections'), val: avgDet + '/6', color: '#93c5fd' },
+                          { label: t('stem.cyberdefense.avg_data_saved', 'Avg Data Saved'), val: avgData + '/100', color: '#fcd34d' },
+                          { label: t('stem.cyberdefense.longest_streak', 'Longest Streak'), val: longestStreak + ' win' + (longestStreak === 1 ? '' : 's'), color: '#a855f7' },
+                          { label: t('stem.cyberdefense.current_streak', 'Current Streak'), val: currentStreak + ' win' + (currentStreak === 1 ? '' : 's'), color: '#f472b6' }
                         ].map(function(s, i) {
                           return el('div', { key: i, style: { padding: 8, borderRadius: 6, background: 'rgba(30,41,59,0.6)' } },
                             el('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, s.label),
@@ -3671,9 +3672,9 @@
                         el('div', { style: { color: '#f9a8d4', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, '\u2753 Quick Quiz performance'),
                         el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 6 } },
                           [
-                            { label: 'Answered', val: String(warRoomQuizTotal), color: 'var(--allo-stem-text, #cbd5e1)' },
-                            { label: 'Correct', val: warRoomQuizCorrect + ' (' + Math.round(warRoomQuizCorrect / warRoomQuizTotal * 100) + '%)', color: '#86efac' },
-                            { label: 'Best Streak', val: String(Math.max(warRoomQuizStreak, d.warRoomQuizBestStreak || 0)), color: '#fcd34d' }
+                            { label: t('stem.cyberdefense.answered_2', 'Answered'), val: String(warRoomQuizTotal), color: 'var(--allo-stem-text, #cbd5e1)' },
+                            { label: t('stem.cyberdefense.correct_2', 'Correct'), val: warRoomQuizCorrect + ' (' + Math.round(warRoomQuizCorrect / warRoomQuizTotal * 100) + '%)', color: '#86efac' },
+                            { label: t('stem.cyberdefense.best_streak_2', 'Best Streak'), val: String(Math.max(warRoomQuizStreak, d.warRoomQuizBestStreak || 0)), color: '#fcd34d' }
                           ].map(function(s, i) {
                             return el('div', { key: i, style: { padding: 6, borderRadius: 4, background: 'rgba(15,23,42,0.5)' } },
                               el('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, textTransform: 'uppercase' } }, s.label),
@@ -3685,7 +3686,7 @@
                       // Data-preserved bar chart (last 10 campaigns)
                       sparkData.length > 0 && el('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(148,163,184,0.15)', marginBottom: 12 } },
                         el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'Data Preserved \u2014 last ' + sparkData.length + ' campaign' + (sparkData.length === 1 ? '' : 's') + ' (newest \u2192)'),
-                        el('div', { role: 'img', 'aria-label': 'Bar chart showing data preserved across recent campaigns',
+                        el('div', { role: 'img', 'aria-label': t('stem.cyberdefense.bar_chart_showing_data_preserved_acros', 'Bar chart showing data preserved across recent campaigns'),
                           style: { display: 'flex', alignItems: 'flex-end', gap: 3, height: 70 } },
                           sparkData.map(function(v, i) {
                             var pct = Math.max(2, (v / maxBar) * 100);
@@ -3878,7 +3879,7 @@
                   })()
                 ),
                 // Teacher Dashboard panel
-                warRoomTeacherDashOpen && el('div', { id: 'warroom-teacher-dash', role: 'region', 'aria-label': 'Teacher dashboard',
+                warRoomTeacherDashOpen && el('div', { id: 'warroom-teacher-dash', role: 'region', 'aria-label': t('stem.cyberdefense.teacher_dashboard', 'Teacher dashboard'),
                   style: { padding: 14, borderRadius: 10, background: 'rgba(15,23,42,0.75)', border: '1px solid rgba(34,197,94,0.3)', marginBottom: 14 } },
                   el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 } },
                     el('div', { style: { color: '#86efac', fontSize: 12, fontWeight: 800, letterSpacing: 0.5 } }, '\uD83D\uDCCA TEACHER DASHBOARD \u2014 CAMPAIGN HISTORY (' + warRoomCampaignHistory.length + ' of last 20)'),
@@ -3943,13 +3944,13 @@
                             if (ctx.addToast) ctx.addToast('\uD83D\uDCBE Full backup downloaded', 'success');
                           } catch(e) { if (ctx.addToast) ctx.addToast('Backup failed', 'info'); }
                         },
-                        'aria-label': 'Export all War Room data as JSON',
-                        title: 'Full backup of history, achievements, daily/weekly challenges, and settings.',
+                        'aria-label': t('stem.cyberdefense.export_all_war_room_data_as_json', 'Export all War Room data as JSON'),
+                        title: t('stem.cyberdefense.full_backup_of_history_achievements_da', 'Full backup of history, achievements, daily/weekly challenges, and settings.'),
                         style: { padding: '4px 10px', borderRadius: 5, border: '1px solid rgba(99,102,241,0.35)', background: 'rgba(99,102,241,0.15)', color: '#a5b4fc', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDCBE Backup'),
                       // Import JSON backup — merges with current data
                       el('label', {
-                        'aria-label': 'Import JSON backup',
-                        title: 'Restore from a .json backup. Merges with existing data (duplicates kept by most-recent).',
+                        'aria-label': t('stem.cyberdefense.import_json_backup', 'Import JSON backup'),
+                        title: t('stem.cyberdefense.restore_from_a_json_backup_merges_with', 'Restore from a .json backup. Merges with existing data (duplicates kept by most-recent).'),
                         style: { padding: '4px 10px', borderRadius: 5, border: '1px solid rgba(168,85,247,0.35)', background: 'rgba(168,85,247,0.15)', color: '#d8b4fe', fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 } },
                         '\uD83D\uDCE5 Restore',
                         el('input', { type: 'file', accept: '.json,application/json',
@@ -4062,7 +4063,7 @@
                                     sfxCyberdClick();
                                   },
                                   'aria-label': 'Watch replay of campaign #' + h.id,
-                                  title: 'Watch a step-by-step playback of this campaign',
+                                  title: t('stem.cyberdefense.watch_a_step_by_step_playback_of_this_', 'Watch a step-by-step playback of this campaign'),
                                   style: { padding: '2px 8px', borderRadius: 4, border: '1px solid rgba(236,72,153,0.35)', background: 'rgba(236,72,153,0.15)', color: '#f9a8d4', fontSize: 10, fontWeight: 800, cursor: 'pointer' } }, '\uD83D\uDCFD\uFE0F'),
                                 canReplay && el('button', {
                                   onClick: function() {
@@ -4071,7 +4072,7 @@
                                     startCampaign(h.difficulty, h.theme, h.id);
                                   },
                                   'aria-label': 'Replay campaign #' + h.id,
-                                  title: 'Replay this exact campaign from scratch',
+                                  title: t('stem.cyberdefense.replay_this_exact_campaign_from_scratc', 'Replay this exact campaign from scratch'),
                                   style: { padding: '2px 8px', borderRadius: 4, border: '1px solid rgba(99,102,241,0.35)', background: 'rgba(99,102,241,0.15)', color: '#a5b4fc', fontSize: 10, fontWeight: 800, cursor: 'pointer' } }, '\u25B6')
                               )
                             )
@@ -4094,7 +4095,7 @@
                     el('textarea', {
                       id: 'warroom-custom-cards-input',
                       value: warRoomCustomCardsDraft,
-                      placeholder: '[{"id":"myphish","stage":"delivery","title":"Fake homework portal login","description":"An email links to a fake school portal page.","indicators":["Sender address uses \\"login-portal.net\\""],"mitigations":{"block_ip":1.0,"awareness_blast":0.8},"impact":{"users":2}}]',
+                      placeholder: t('stem.cyberdefense.id_myphish_stage_delivery_title_fake_h', '[{"id":"myphish","stage":"delivery","title":"Fake homework portal login","description":"An email links to a fake school portal page.","indicators":["Sender address uses \\"login-portal.net\\""],"mitigations":{"block_ip":1.0,"awareness_blast":0.8},"impact":{"users":2}}]'),
                       onChange: function(ev) { upd({ warRoomCustomCardsDraft: ev.target.value, warRoomCustomCardsError: null }); },
                       style: { width: '100%', minHeight: 140, padding: 8, borderRadius: 6, border: '1px solid rgba(168,85,247,0.3)', background: 'rgba(15,23,42,0.8)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 11, lineHeight: 1.5, fontFamily: 'monospace', resize: 'vertical', boxSizing: 'border-box' } }),
                     warRoomCustomCardsError && el('div', { role: 'alert',
@@ -4116,25 +4117,25 @@
                         onClick: function() {
                           upd({ warRoomCustomCardsDraft: JSON.stringify(warRoomCustomCards, null, 2), warRoomCustomCardsError: null });
                         },
-                        'aria-label': 'Load currently-saved cards into the editor',
+                        'aria-label': t('stem.cyberdefense.load_currently_saved_cards_into_the_ed', 'Load currently-saved cards into the editor'),
                         style: { padding: '6px 14px', borderRadius: 5, border: '1px solid rgba(99,102,241,0.35)', background: 'rgba(99,102,241,0.12)', color: '#a5b4fc', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\u21BB Load Saved'),
                       // Grade-level sample packs (pick one to load)
                       (function() {
                         var packs = {
                           elementary: [
-                            { id: 'elem_stranger_chat', stage: 'recon', title: 'Stranger in an online game asks personal questions', description: 'A new player keeps asking your student which school they go to and where they live.', indicators: ['Quick shift from game talk to personal questions', 'Asks for a photo'], noiseIndicators: ['A classmate friending them'], mitigations: { awareness_blast: 1.0, hunt_iocs: 0.5 }, impact: { users: 1 } },
-                            { id: 'elem_popup_tablet', stage: 'delivery', title: 'Pop-up: "You won a free tablet! Tap here!"', description: 'A pop-up on a classroom computer promises a free tablet for a survey.', indicators: ['"Too good to be true" prize', 'Asks for address and phone'], noiseIndicators: ['A real school raffle poster'], mitigations: { block_ip: 1.0, awareness_blast: 0.9 }, impact: { users: 2 } },
-                            { id: 'elem_shared_pw', stage: 'exploit', title: 'Shared classroom computer left logged in', description: 'A student walks away from a classroom computer still signed into their school account.', indicators: ['Session active longer than expected', 'Another user acts on the open session'], noiseIndicators: ['Teacher using the same terminal'], mitigations: { reset_credential: 1.0, awareness_blast: 0.7 }, impact: { users: 1 } }
+                            { id: 'elem_stranger_chat', stage: 'recon', title: t('stem.cyberdefense.stranger_in_an_online_game_asks_person', 'Stranger in an online game asks personal questions'), description: t('stem.cyberdefense.a_new_player_keeps_asking_your_student', 'A new player keeps asking your student which school they go to and where they live.'), indicators: ['Quick shift from game talk to personal questions', 'Asks for a photo'], noiseIndicators: ['A classmate friending them'], mitigations: { awareness_blast: 1.0, hunt_iocs: 0.5 }, impact: { users: 1 } },
+                            { id: 'elem_popup_tablet', stage: 'delivery', title: t('stem.cyberdefense.pop_up_you_won_a_free_tablet_tap_here', 'Pop-up: "You won a free tablet! Tap here!"'), description: t('stem.cyberdefense.a_pop_up_on_a_classroom_computer_promi', 'A pop-up on a classroom computer promises a free tablet for a survey.'), indicators: ['"Too good to be true" prize', 'Asks for address and phone'], noiseIndicators: ['A real school raffle poster'], mitigations: { block_ip: 1.0, awareness_blast: 0.9 }, impact: { users: 2 } },
+                            { id: 'elem_shared_pw', stage: 'exploit', title: t('stem.cyberdefense.shared_classroom_computer_left_logged_', 'Shared classroom computer left logged in'), description: t('stem.cyberdefense.a_student_walks_away_from_a_classroom_', 'A student walks away from a classroom computer still signed into their school account.'), indicators: ['Session active longer than expected', 'Another user acts on the open session'], noiseIndicators: ['Teacher using the same terminal'], mitigations: { reset_credential: 1.0, awareness_blast: 0.7 }, impact: { users: 1 } }
                           ],
                           middle: [
-                            { id: 'mid_insta_login', stage: 'delivery', title: 'Fake Instagram login page in a DM', description: 'A DM from a "friend" links to an Instagram login page that looks real but is on a weird domain.', indicators: ['URL is instagrarn-login.net not instagram.com', 'Login page asks to confirm email password too'], noiseIndicators: ['Real Instagram password reset'], mitigations: { block_ip: 1.0, awareness_blast: 0.8, reset_credential: 0.5 }, impact: { users: 3 } },
-                            { id: 'mid_quiz_app', stage: 'persist', title: 'Quiz app requests full contact and photo access', description: 'A viral "Which Marvel hero are you?" app wants permissions it does not need.', indicators: ['Over-broad permission scopes', 'Developer has only one product'], noiseIndicators: ['Legit educational app'], mitigations: { reset_credential: 1.0, awareness_blast: 0.8 }, impact: { users: 2, data: 10 } },
-                            { id: 'mid_friend_link', stage: 'delivery', title: 'Friend\'s account sends a suspicious link', description: 'Your friend\'s account DMs you "look at this funny video of you lol".', indicators: ['Message tone differs from friend\'s usual style', 'Shortened bit.ly link'], noiseIndicators: ['Actual meme your friend shares'], mitigations: { awareness_blast: 1.0, block_ip: 0.7 }, impact: { users: 2 } }
+                            { id: 'mid_insta_login', stage: 'delivery', title: t('stem.cyberdefense.fake_instagram_login_page_in_a_dm', 'Fake Instagram login page in a DM'), description: t('stem.cyberdefense.a_dm_from_a_friend_links_to_an_instagr', 'A DM from a "friend" links to an Instagram login page that looks real but is on a weird domain.'), indicators: ['URL is instagrarn-login.net not instagram.com', 'Login page asks to confirm email password too'], noiseIndicators: ['Real Instagram password reset'], mitigations: { block_ip: 1.0, awareness_blast: 0.8, reset_credential: 0.5 }, impact: { users: 3 } },
+                            { id: 'mid_quiz_app', stage: 'persist', title: t('stem.cyberdefense.quiz_app_requests_full_contact_and_pho', 'Quiz app requests full contact and photo access'), description: t('stem.cyberdefense.a_viral_which_marvel_hero_are_you_app_', 'A viral "Which Marvel hero are you?" app wants permissions it does not need.'), indicators: ['Over-broad permission scopes', 'Developer has only one product'], noiseIndicators: ['Legit educational app'], mitigations: { reset_credential: 1.0, awareness_blast: 0.8 }, impact: { users: 2, data: 10 } },
+                            { id: 'mid_friend_link', stage: 'delivery', title: t('stem.cyberdefense.friend_s_account_sends_a_suspicious_li', 'Friend\'s account sends a suspicious link'), description: t('stem.cyberdefense.your_friend_s_account_dms_you_look_at_', 'Your friend\'s account DMs you "look at this funny video of you lol".'), indicators: ['Message tone differs from friend\'s usual style', 'Shortened bit.ly link'], noiseIndicators: ['Actual meme your friend shares'], mitigations: { awareness_blast: 1.0, block_ip: 0.7 }, impact: { users: 2 } }
                           ],
                           high: [
-                            { id: 'hs_recruiter_zip', stage: 'delivery', title: 'LinkedIn recruiter with a "portfolio.zip" attachment', description: 'A recruiter messages on LinkedIn offering an internship and asks the student to download a portfolio template.', indicators: ['Zip attachment with macro-enabled doc inside', 'Recruiter profile created in the last week'], noiseIndicators: ['Actual recruiter outreach'], mitigations: { block_ip: 1.0, deploy_edr: 0.8, awareness_blast: 0.7 }, impact: { users: 2, servers: 1 } },
-                            { id: 'hs_mfa_fatigue', stage: 'exploit', title: 'MFA push notifications flooding during study hall', description: 'A student\'s phone gets dozens of MFA approve prompts. They tap Approve to make it stop.', indicators: ['Repeated push requests in short time', 'Logins from unusual geography'], noiseIndicators: ['Student forgot they\'re logging in on another device'], mitigations: { reset_credential: 1.0, awareness_blast: 0.9, block_ip: 0.6 }, impact: { users: 3 } },
-                            { id: 'hs_scholarship_scam', stage: 'actions', title: 'Scholarship email asks for SSN and bank info', description: 'An email claims a student won a $5,000 scholarship and asks for SSN and bank account to "deposit" it.', indicators: ['Asks for SSN before any legitimate verification', 'Reply-to on a free-email domain'], noiseIndicators: ['Real scholarship award notice'], mitigations: { escalate: 1.0, awareness_blast: 0.9, investigate: 0.7 }, impact: { data: 40, users: 1 } }
+                            { id: 'hs_recruiter_zip', stage: 'delivery', title: t('stem.cyberdefense.linkedin_recruiter_with_a_portfolio_zi', 'LinkedIn recruiter with a "portfolio.zip" attachment'), description: t('stem.cyberdefense.a_recruiter_messages_on_linkedin_offer', 'A recruiter messages on LinkedIn offering an internship and asks the student to download a portfolio template.'), indicators: ['Zip attachment with macro-enabled doc inside', 'Recruiter profile created in the last week'], noiseIndicators: ['Actual recruiter outreach'], mitigations: { block_ip: 1.0, deploy_edr: 0.8, awareness_blast: 0.7 }, impact: { users: 2, servers: 1 } },
+                            { id: 'hs_mfa_fatigue', stage: 'exploit', title: t('stem.cyberdefense.mfa_push_notifications_flooding_during', 'MFA push notifications flooding during study hall'), description: t('stem.cyberdefense.a_student_s_phone_gets_dozens_of_mfa_a', 'A student\'s phone gets dozens of MFA approve prompts. They tap Approve to make it stop.'), indicators: ['Repeated push requests in short time', 'Logins from unusual geography'], noiseIndicators: ['Student forgot they\'re logging in on another device'], mitigations: { reset_credential: 1.0, awareness_blast: 0.9, block_ip: 0.6 }, impact: { users: 3 } },
+                            { id: 'hs_scholarship_scam', stage: 'actions', title: t('stem.cyberdefense.scholarship_email_asks_for_ssn_and_ban', 'Scholarship email asks for SSN and bank info'), description: t('stem.cyberdefense.an_email_claims_a_student_won_a_5_000_', 'An email claims a student won a $5,000 scholarship and asks for SSN and bank account to "deposit" it.'), indicators: ['Asks for SSN before any legitimate verification', 'Reply-to on a free-email domain'], noiseIndicators: ['Real scholarship award notice'], mitigations: { escalate: 1.0, awareness_blast: 0.9, investigate: 0.7 }, impact: { data: 40, users: 1 } }
                           ]
                         };
                         var mkPackButton = function(key, label, color) {
@@ -4163,18 +4164,18 @@
                     )
                   )
                 ),
-                warRoomGlossaryOpen && el('div', { id: 'warroom-glossary-panel', role: 'region', 'aria-label': 'Cybersecurity glossary',
+                warRoomGlossaryOpen && el('div', { id: 'warroom-glossary-panel', role: 'region', 'aria-label': t('stem.cyberdefense.cybersecurity_glossary', 'Cybersecurity glossary'),
                   style: { padding: 14, borderRadius: 10, background: 'rgba(15,23,42,0.7)', border: '1px solid rgba(99,102,241,0.25)', marginBottom: 14, maxHeight: 340, overflowY: 'auto' } },
                   el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
                     el('div', { style: { color: '#a5b4fc', fontSize: 12, fontWeight: 800, letterSpacing: 0.5 } }, '\uD83D\uDCD6 GLOSSARY'),
                     el('label', { htmlFor: 'warroom-glossary-filter', className: 'allo-sr-only' }, 'Filter glossary terms'),
                     el('input', { id: 'warroom-glossary-filter', type: 'search', placeholder: 'Filter\u2026', value: warRoomGlossaryFilter,
                       onChange: function(ev) { upd('warRoomGlossaryFilter', (ev.target.value || '').slice(0, 40)); },
-                      'aria-label': 'Filter glossary terms',
+                      'aria-label': t('stem.cyberdefense.filter_glossary_terms', 'Filter glossary terms'),
                       style: { flex: 1, padding: '4px 8px', borderRadius: 4, border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(15,23,42,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 11, boxSizing: 'border-box' } }),
                     warRoomGlossaryFilter && el('button', {
                       onClick: function() { upd('warRoomGlossaryFilter', ''); },
-                      'aria-label': 'Clear glossary filter',
+                      'aria-label': t('stem.cyberdefense.clear_glossary_filter', 'Clear glossary filter'),
                       style: { padding: '2px 8px', borderRadius: 4, border: '1px solid rgba(148,163,184,0.25)', background: 'rgba(30,41,59,0.5)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, '\u2715')
                   ),
                   (function() {
@@ -4208,7 +4209,7 @@
                   // Story Mode toggle
                   el('div', { style: { padding: 10, borderRadius: 8, background: warRoomStoryMode ? 'rgba(34,197,94,0.08)' : 'rgba(15,23,42,0.4)', border: '1px solid ' + (warRoomStoryMode ? 'rgba(34,197,94,0.3)' : 'rgba(148,163,184,0.15)'), marginBottom: 10, display: 'flex', alignItems: 'center', gap: 10 } },
                     el('button', { onClick: function() { upd('warRoomStoryMode', !warRoomStoryMode); sfxCyberdClick(); },
-                      role: 'switch', 'aria-checked': warRoomStoryMode, 'aria-label': 'Toggle Story Mode',
+                      role: 'switch', 'aria-checked': warRoomStoryMode, 'aria-label': t('stem.cyberdefense.toggle_story_mode', 'Toggle Story Mode'),
                       style: { padding: '4px 10px', borderRadius: 20, border: 'none', background: warRoomStoryMode ? '#22c55e' : '#475569', color: 'white', fontSize: 11, fontWeight: 800, cursor: 'pointer', minWidth: 50 } },
                       warRoomStoryMode ? 'ON' : 'OFF'),
                     el('div', { style: { flex: 1 } },
@@ -4221,15 +4222,15 @@
                     el('div', { style: { color: '#a5b4fc', fontSize: 10, fontWeight: 800, marginBottom: 6, letterSpacing: 0.5 } }, '\u267F UDL \u2022 ACCESS OPTIONS'),
                     el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 6 } },
                       [
-                        { id: 'warRoomPlainLanguage', label: '\uD83D\uDCDD Plain Language', desc: 'Simpler words for attacks and defenses.', val: warRoomPlainLanguage },
-                        { id: 'a_dyslexiaFont',       label: '\uD83D\uDD24 Dyslexia-friendly Font', desc: 'Switch to an easier-to-read font.', val: warRoomA11y.dyslexiaFont },
-                        { id: 'a_largeText',          label: '\uD83D\uDD0D Larger Text', desc: 'Increase font size across the tool.', val: warRoomA11y.largeText },
-                        { id: 'a_highContrast',       label: '\u25D1 High Contrast', desc: 'Stronger color contrast for clarity.', val: warRoomA11y.highContrast },
-                        { id: 'a_colorBlind',         label: '\uD83C\uDFA8 Color-Blind Friendly', desc: 'Orange / yellow / blue outcomes (no red-green).', val: warRoomA11y.colorBlind },
-                        warRoomTtsAvailable ? { id: 'a_ttsAuto', label: '\uD83D\uDD0A Auto Read-Aloud', desc: 'Text-to-speech reads each new attack.', val: warRoomA11y.ttsAuto } : null,
-                        { id: 'a_noShortcuts',        label: '\u2328\uFE0F Disable Keyboard Shortcuts', desc: 'WCAG 2.1.4 \u2014 turn off single-key shortcuts if they trigger accidentally.', val: warRoomA11y.noShortcuts },
-                        { id: 'a_noTimerAutoResolve', label: '\u23F8 No Timer Auto-Resolve', desc: 'WCAG 2.2.1 \u2014 Threat Hunter timer shows but never force-ends a round.', val: warRoomA11y.noTimerAutoResolve },
-                        { id: 'warRoomSoundMuted',    label: '\uD83D\uDD07 Mute War Room Sounds', desc: 'Silence the click / outcome tones.', val: warRoomSoundMuted }
+                        { id: 'warRoomPlainLanguage', label: t('stem.cyberdefense.plain_language', '\uD83D\uDCDD Plain Language'), desc: t('stem.cyberdefense.simpler_words_for_attacks_and_defenses', 'Simpler words for attacks and defenses.'), val: warRoomPlainLanguage },
+                        { id: 'a_dyslexiaFont',       label: t('stem.cyberdefense.dyslexia_friendly_font', '\uD83D\uDD24 Dyslexia-friendly Font'), desc: t('stem.cyberdefense.switch_to_an_easier_to_read_font', 'Switch to an easier-to-read font.'), val: warRoomA11y.dyslexiaFont },
+                        { id: 'a_largeText',          label: t('stem.cyberdefense.larger_text', '\uD83D\uDD0D Larger Text'), desc: t('stem.cyberdefense.increase_font_size_across_the_tool', 'Increase font size across the tool.'), val: warRoomA11y.largeText },
+                        { id: 'a_highContrast',       label: t('stem.cyberdefense.high_contrast', '\u25D1 High Contrast'), desc: t('stem.cyberdefense.stronger_color_contrast_for_clarity', 'Stronger color contrast for clarity.'), val: warRoomA11y.highContrast },
+                        { id: 'a_colorBlind',         label: t('stem.cyberdefense.color_blind_friendly', '\uD83C\uDFA8 Color-Blind Friendly'), desc: t('stem.cyberdefense.orange_yellow_blue_outcomes_no_red_gre', 'Orange / yellow / blue outcomes (no red-green).'), val: warRoomA11y.colorBlind },
+                        warRoomTtsAvailable ? { id: 'a_ttsAuto', label: t('stem.cyberdefense.auto_read_aloud', '\uD83D\uDD0A Auto Read-Aloud'), desc: t('stem.cyberdefense.text_to_speech_reads_each_new_attack', 'Text-to-speech reads each new attack.'), val: warRoomA11y.ttsAuto } : null,
+                        { id: 'a_noShortcuts',        label: t('stem.cyberdefense.disable_keyboard_shortcuts', '\u2328\uFE0F Disable Keyboard Shortcuts'), desc: t('stem.cyberdefense.wcag_2_1_4_turn_off_single_key_shortcu', 'WCAG 2.1.4 \u2014 turn off single-key shortcuts if they trigger accidentally.'), val: warRoomA11y.noShortcuts },
+                        { id: 'a_noTimerAutoResolve', label: t('stem.cyberdefense.no_timer_auto_resolve', '\u23F8 No Timer Auto-Resolve'), desc: t('stem.cyberdefense.wcag_2_2_1_threat_hunter_timer_shows_b', 'WCAG 2.2.1 \u2014 Threat Hunter timer shows but never force-ends a round.'), val: warRoomA11y.noTimerAutoResolve },
+                        { id: 'warRoomSoundMuted',    label: t('stem.cyberdefense.mute_war_room_sounds', '\uD83D\uDD07 Mute War Room Sounds'), desc: t('stem.cyberdefense.silence_the_click_outcome_tones', 'Silence the click / outcome tones.'), val: warRoomSoundMuted }
                       ].filter(Boolean).map(function(opt) {
                         var isOn = !!opt.val;
                         return el('button', { key: opt.id, role: 'switch', 'aria-checked': isOn, 'aria-label': opt.label + (isOn ? ', on' : ', off'),
@@ -4264,7 +4265,7 @@
                         });
                         if (ctx.addToast) ctx.addToast('Access options reset to defaults', 'info');
                       },
-                      'aria-label': 'Reset UDL and accessibility options to their defaults',
+                      'aria-label': t('stem.cyberdefense.reset_udl_and_accessibility_options_to', 'Reset UDL and accessibility options to their defaults'),
                       style: { marginTop: 6, padding: '4px 10px', borderRadius: 5, border: '1px solid rgba(148,163,184,0.25)', background: 'transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700, cursor: 'pointer' } },
                       '\u21BB Reset to defaults') : null)
                   ),
@@ -4288,7 +4289,7 @@
                   el('div', { style: { padding: 10, borderRadius: 8, background: warRoomHotSeatEnabled ? 'rgba(168,85,247,0.08)' : 'rgba(15,23,42,0.4)', border: '1px solid ' + (warRoomHotSeatEnabled ? 'rgba(168,85,247,0.3)' : 'rgba(148,163,184,0.15)'), marginBottom: 16 } },
                     el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: warRoomHotSeatEnabled ? 10 : 0 } },
                       el('button', { onClick: function() { upd('warRoomHotSeatEnabled', !warRoomHotSeatEnabled); sfxCyberdClick(); },
-                        role: 'switch', 'aria-checked': warRoomHotSeatEnabled, 'aria-label': 'Toggle Hot Seat classroom mode',
+                        role: 'switch', 'aria-checked': warRoomHotSeatEnabled, 'aria-label': t('stem.cyberdefense.toggle_hot_seat_classroom_mode', 'Toggle Hot Seat classroom mode'),
                         style: { padding: '4px 10px', borderRadius: 20, border: 'none', background: warRoomHotSeatEnabled ? '#a855f7' : '#475569', color: 'white', fontSize: 11, fontWeight: 800, cursor: 'pointer', minWidth: 50 } },
                         warRoomHotSeatEnabled ? 'ON' : 'OFF'),
                       el('div', { style: { flex: 1 } },
@@ -4319,7 +4320,7 @@
                                 sfxCyberdClick();
                               },
                               'aria-label': 'Remove ' + name,
-                              title: 'Remove player (minimum 2 required)',
+                              title: t('stem.cyberdefense.remove_player_minimum_2_required', 'Remove player (minimum 2 required)'),
                               style: { padding: '2px 8px', borderRadius: 4, border: 'none', background: 'rgba(239,68,68,0.15)', color: '#fca5a5', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\u2715')
                           );
                         })
@@ -4361,7 +4362,7 @@
                         : el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 3 } }, 'A new challenge drops every day (UTC). Every student gets the exact same scenario \u2014 compare scores with classmates!')
                     ),
                     el('button', { onClick: function() { startCampaign(todaysChallenge.difficulty, todaysChallenge.theme, todaysChallenge.id); },
-                      'aria-label': 'Start today\'s challenge',
+                      'aria-label': t('stem.cyberdefense.start_today_s_challenge', 'Start today\'s challenge'),
                       style: { padding: '10px 18px', borderRadius: 8, border: 'none', background: todayCompletion ? 'linear-gradient(135deg, #3b82f6, #6366f1)' : 'linear-gradient(135deg, #f59e0b, #f43f5e)', color: 'white', fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
                       todayCompletion ? '\uD83D\uDD04 Replay' : '\u25B6 Play')
                   ),
@@ -4376,14 +4377,14 @@
                         : el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 3 } }, 'Toughest challenge of the week (Threat Hunter). Same seed every day until Sunday.')
                     ),
                     el('button', { onClick: function() { startCampaign(thisWeeksChallenge.difficulty, thisWeeksChallenge.theme, thisWeeksChallenge.id); },
-                      'aria-label': 'Start this week\'s challenge',
+                      'aria-label': t('stem.cyberdefense.start_this_week_s_challenge', 'Start this week\'s challenge'),
                       style: { padding: '10px 18px', borderRadius: 8, border: 'none', background: weekCompletion ? 'linear-gradient(135deg, #3b82f6, #6366f1)' : 'linear-gradient(135deg, #a855f7, #ec4899)', color: 'white', fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
                       weekCompletion ? '\uD83D\uDD04 Replay' : '\u25B6 Play')
                   ),
                   // Theme picker
                   el('div', { style: { marginBottom: 14 } },
                     el('div', { style: { color: '#a5b4fc', fontSize: 11, fontWeight: 800, marginBottom: 8, letterSpacing: 0.5 } }, '1. PICK YOUR ADVERSARY'),
-                    el('div', { role: 'radiogroup', 'aria-label': 'Adversary theme', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 8 } },
+                    el('div', { role: 'radiogroup', 'aria-label': t('stem.cyberdefense.adversary_theme', 'Adversary theme'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 8 } },
                       Object.keys(campaignThemes).map(function(tid) {
                         var t = campaignThemes[tid];
                         var isLocked = t.locked && !(t.unlockCondition && t.unlockCondition(d));
@@ -4432,9 +4433,9 @@
                     })(),
                     el('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
                       [
-                        { id: 'rookie',       label: 'Rookie',        sub: 'Clear IOCs \u2022 18 budget', color: '#22c55e', help: 'Best for first-timers. Every alert is real \u2014 no noise. Generous 18-budget lets you play 2 defenses per round comfortably.' },
-                        { id: 'analyst',      label: 'Analyst',       sub: 'Some noise \u2022 14 budget', color: '#3b82f6', help: 'Mid-tier challenge. Alerts include one noise signal per round. Tighter 14-budget forces you to prioritize.' },
-                        { id: 'threatHunter', label: 'Threat Hunter', sub: 'Adaptive red team \u2022 10 budget \u2022 90s/round', color: '#f43f5e', help: 'Expert mode. 90-second clock per round auto-resolves when time expires. Red team adapts to your successes. Only 10 starting budget.' }
+                        { id: 'rookie',       label: t('stem.cyberdefense.rookie', 'Rookie'),        sub: 'Clear IOCs \u2022 18 budget', color: '#22c55e', help: 'Best for first-timers. Every alert is real \u2014 no noise. Generous 18-budget lets you play 2 defenses per round comfortably.' },
+                        { id: 'analyst',      label: t('stem.cyberdefense.analyst', 'Analyst'),       sub: 'Some noise \u2022 14 budget', color: '#3b82f6', help: 'Mid-tier challenge. Alerts include one noise signal per round. Tighter 14-budget forces you to prioritize.' },
+                        { id: 'threatHunter', label: t('stem.cyberdefense.threat_hunter', 'Threat Hunter'), sub: 'Adaptive red team \u2022 10 budget \u2022 90s/round', color: '#f43f5e', help: 'Expert mode. 90-second clock per round auto-resolves when time expires. Red team adapts to your successes. Only 10 starting budget.' }
                       ].map(function(tier) {
                         return el('button', { key: tier.id, onClick: function() { startCampaign(tier.id, warRoomCampaignTheme); },
                           'aria-label': 'Start ' + tier.label + ' campaign against ' + campaignThemes[warRoomCampaignTheme].label + '. ' + tier.help,
@@ -4451,10 +4452,10 @@
                     el('div', { style: { color: '#fda4af', fontSize: 11, fontWeight: 800, marginBottom: 6, letterSpacing: 0.5 } }, '\u2696\uFE0F HOUSE RULES (OPTIONAL \u2014 MAKE IT HARDER)'),
                     el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 6 } },
                       [
-                        { id: 'noEscalate', label: 'No Escalate', desc: 'The Escalate to CISO card is disabled.' },
-                        { id: 'tightBudget', label: 'Tight Budget', desc: 'Start with 3 fewer budget points.' },
-                        { id: 'allStealth', label: 'All Stealth', desc: 'One fewer real IOC per alert panel.' },
-                        { id: 'noCombos', label: 'No Combos', desc: 'Combo bonuses are suppressed.' }
+                        { id: 'noEscalate', label: t('stem.cyberdefense.no_escalate', 'No Escalate'), desc: t('stem.cyberdefense.the_escalate_to_ciso_card_is_disabled', 'The Escalate to CISO card is disabled.') },
+                        { id: 'tightBudget', label: t('stem.cyberdefense.tight_budget', 'Tight Budget'), desc: t('stem.cyberdefense.start_with_3_fewer_budget_points', 'Start with 3 fewer budget points.') },
+                        { id: 'allStealth', label: t('stem.cyberdefense.all_stealth', 'All Stealth'), desc: t('stem.cyberdefense.one_fewer_real_ioc_per_alert_panel', 'One fewer real IOC per alert panel.') },
+                        { id: 'noCombos', label: t('stem.cyberdefense.no_combos', 'No Combos'), desc: t('stem.cyberdefense.combo_bonuses_are_suppressed', 'Combo bonuses are suppressed.') }
                       ].map(function(opt) {
                         var isOn = !!(warRoomHouseRulesDraft && warRoomHouseRulesDraft[opt.id]);
                         return el('button', { key: opt.id, role: 'switch', 'aria-checked': isOn, 'aria-label': opt.label + (isOn ? ', on' : ', off'),
@@ -4478,7 +4479,7 @@
                   el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 14 } },
                     el('button', {
                       onClick: openQuiz,
-                      'aria-label': 'Open quick-quiz flashcard drill',
+                      'aria-label': t('stem.cyberdefense.open_quick_quiz_flashcard_drill', 'Open quick-quiz flashcard drill'),
                       style: { padding: '12px 16px', borderRadius: 10, border: '1px solid rgba(236,72,153,0.4)', background: 'linear-gradient(135deg, rgba(236,72,153,0.12), rgba(168,85,247,0.06))', color: '#f9a8d4', fontSize: 12, fontWeight: 800, cursor: 'pointer', textAlign: 'left' } },
                       el('div', { style: { fontSize: 15, marginBottom: 3 } }, '\u2753 Quick Quiz'),
                       el('div', { style: { fontSize: 10.5, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600, lineHeight: 1.35 } }, 'Rapid-fire drill \u2014 pick the best defense for each attack. Earn +1 XP per correct answer.' + (warRoomQuizTotal > 0 ? ' (' + warRoomQuizCorrect + '/' + warRoomQuizTotal + ' lifetime)' : ''))
@@ -4494,7 +4495,7 @@
                         var randDiff = diffs[Math.floor(Math.random() * diffs.length)];
                         startCampaign(randDiff, randTheme);
                       },
-                      'aria-label': 'Start a random campaign',
+                      'aria-label': t('stem.cyberdefense.start_a_random_campaign', 'Start a random campaign'),
                       style: { padding: '12px 16px', borderRadius: 10, border: '1px solid rgba(59,130,246,0.35)', background: 'linear-gradient(135deg, rgba(59,130,246,0.12), rgba(99,102,241,0.06))', color: '#93c5fd', fontSize: 12, fontWeight: 800, cursor: 'pointer', textAlign: 'left' } },
                       el('div', { style: { fontSize: 15, marginBottom: 3 } }, '\uD83C\uDFB2 Quick Match'),
                       el('div', { style: { fontSize: 10.5, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600, lineHeight: 1.35 } }, 'One-click random theme + difficulty. Great for warmup.')
@@ -4505,7 +4506,7 @@
                           startCampaign('threatHunter', 'apt', null, { bossMode: true });
                         }
                       },
-                      'aria-label': 'Start Boss Mode campaign',
+                      'aria-label': t('stem.cyberdefense.start_boss_mode_campaign', 'Start Boss Mode campaign'),
                       style: { padding: '12px 16px', borderRadius: 10, border: '1px solid rgba(244,63,94,0.4)', background: 'linear-gradient(135deg, rgba(244,63,94,0.14), rgba(234,179,8,0.06))', color: '#fca5a5', fontSize: 12, fontWeight: 800, cursor: 'pointer', textAlign: 'left' } },
                       el('div', { style: { fontSize: 15, marginBottom: 3 } }, '\uD83D\uDC79 Boss Mode'),
                       el('div', { style: { fontSize: 10.5, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600, lineHeight: 1.35 } }, '3 rounds, toughest adversary, 10 budget. Win to unlock the Boss Slayer badge.')
@@ -4518,7 +4519,7 @@
                     el('div', { style: { display: 'flex', gap: 8 } },
                       el('input', { type: 'text', maxLength: 4, placeholder: 'ABCD',
                         value: d.warRoomSeedInput || '',
-                        'aria-label': 'Campaign ID to play',
+                        'aria-label': t('stem.cyberdefense.campaign_id_to_play', 'Campaign ID to play'),
                         onChange: function(ev) {
                           var v = (ev.target.value || '').toUpperCase().replace(/[^A-HJ-NP-Z2-9]/g, '').slice(0, 4);
                           upd('warRoomSeedInput', v);
@@ -4544,11 +4545,11 @@
                     var h = warRoomCampaignHistory || [];
                     var uniqueThemes = {}; h.forEach(function(r) { if (r.theme) uniqueThemes[r.theme] = true; });
                     var items = [
-                      { id: 'first_campaign', label: 'Play your first campaign',     icon: '\uD83D\uDD75\uFE0F', done: warRoomCampaignsCompleted >= 1 },
-                      { id: 'first_achievement', label: 'Earn your first achievement', icon: '\uD83C\uDFC5', done: Object.keys(warRoomAchievements).length >= 1 },
-                      { id: 'first_combo', label: 'Trigger a combo',                  icon: '\u2728', done: h.some(function(r) { return (r.combos || 0) > 0; }) },
-                      { id: 'two_themes', label: 'Try 2 different adversaries',       icon: '\uD83C\uDFAD', done: Object.keys(uniqueThemes).length >= 2 },
-                      { id: 'daily', label: 'Play the Daily Challenge',               icon: '\uD83C\uDFAF', done: Object.keys(d.warRoomDailyCompletions || {}).length >= 1 }
+                      { id: 'first_campaign', label: t('stem.cyberdefense.play_your_first_campaign', 'Play your first campaign'),     icon: '\uD83D\uDD75\uFE0F', done: warRoomCampaignsCompleted >= 1 },
+                      { id: 'first_achievement', label: t('stem.cyberdefense.earn_your_first_achievement', 'Earn your first achievement'), icon: '\uD83C\uDFC5', done: Object.keys(warRoomAchievements).length >= 1 },
+                      { id: 'first_combo', label: t('stem.cyberdefense.trigger_a_combo', 'Trigger a combo'),                  icon: '\u2728', done: h.some(function(r) { return (r.combos || 0) > 0; }) },
+                      { id: 'two_themes', label: t('stem.cyberdefense.try_2_different_adversaries', 'Try 2 different adversaries'),       icon: '\uD83C\uDFAD', done: Object.keys(uniqueThemes).length >= 2 },
+                      { id: 'daily', label: t('stem.cyberdefense.play_the_daily_challenge', 'Play the Daily Challenge'),               icon: '\uD83C\uDFAF', done: Object.keys(d.warRoomDailyCompletions || {}).length >= 1 }
                     ];
                     var doneCount = items.filter(function(i) { return i.done; }).length;
                     if (doneCount === items.length) return null; // hide when complete
@@ -4615,12 +4616,12 @@
                   raw -= (warRoomAssetsLost.users * 1 + warRoomAssetsLost.servers * 2);
                   var score = Math.max(0, Math.min(100, Math.round(raw)));
                   var grade;
-                  if (score >= 95)      grade = { letter: 'A+', color: '#22c55e', desc: 'Outstanding' };
-                  else if (score >= 88) grade = { letter: 'A',  color: '#22c55e', desc: 'Excellent' };
-                  else if (score >= 80) grade = { letter: 'B',  color: '#3b82f6', desc: 'Strong' };
-                  else if (score >= 70) grade = { letter: 'C',  color: '#f59e0b', desc: 'Fair' };
-                  else if (score >= 60) grade = { letter: 'D',  color: '#f97316', desc: 'Needs work' };
-                  else                  grade = { letter: 'F',  color: '#ef4444', desc: 'Try again' };
+                  if (score >= 95)      grade = { letter: 'A+', color: '#22c55e', desc: t('stem.cyberdefense.outstanding', 'Outstanding') };
+                  else if (score >= 88) grade = { letter: 'A',  color: '#22c55e', desc: t('stem.cyberdefense.excellent', 'Excellent') };
+                  else if (score >= 80) grade = { letter: 'B',  color: '#3b82f6', desc: t('stem.cyberdefense.strong', 'Strong') };
+                  else if (score >= 70) grade = { letter: 'C',  color: '#f59e0b', desc: t('stem.cyberdefense.fair', 'Fair') };
+                  else if (score >= 60) grade = { letter: 'D',  color: '#f97316', desc: t('stem.cyberdefense.needs_work', 'Needs work') };
+                  else                  grade = { letter: 'F',  color: '#ef4444', desc: t('stem.cyberdefense.try_again', 'Try again') };
                   return el('div', { style: { padding: '8px 8px' } },
                   el('div', { style: { textAlign: 'center', marginBottom: 16 } },
                     el('div', { 'aria-hidden': 'true', className: warRoomVerdict === 'won' ? 'war-victory' : 'war-shake',
@@ -4641,11 +4642,11 @@
                   ),
                   el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10, marginBottom: 16 } },
                     [
-                      { label: 'Attacks Detected', val: warRoomDetections + '/' + warRoomRoundsTotal, color: '#3b82f6' },
-                      { label: 'Fully Mitigated', val: warRoomMitigations + '/' + warRoomRoundsTotal, color: '#22c55e' },
-                      { label: 'Users Lost', val: warRoomAssetsLost.users, color: '#f59e0b' },
-                      { label: 'Servers Lost', val: warRoomAssetsLost.servers, color: '#ef4444' },
-                      { label: 'Data Lost', val: warRoomAssetsLost.data, color: '#a855f7' }
+                      { label: t('stem.cyberdefense.attacks_detected', 'Attacks Detected'), val: warRoomDetections + '/' + warRoomRoundsTotal, color: '#3b82f6' },
+                      { label: t('stem.cyberdefense.fully_mitigated', 'Fully Mitigated'), val: warRoomMitigations + '/' + warRoomRoundsTotal, color: '#22c55e' },
+                      { label: t('stem.cyberdefense.users_lost', 'Users Lost'), val: warRoomAssetsLost.users, color: '#f59e0b' },
+                      { label: t('stem.cyberdefense.servers_lost', 'Servers Lost'), val: warRoomAssetsLost.servers, color: '#ef4444' },
+                      { label: t('stem.cyberdefense.data_lost', 'Data Lost'), val: warRoomAssetsLost.data, color: '#a855f7' }
                     ].map(function(stat, i) {
                       return el('div', { key: i, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', border: '1px solid ' + stat.color + '44', textAlign: 'center' } },
                         el('div', { style: { fontSize: 18, fontWeight: 900, color: stat.color } }, stat.val),
@@ -4764,7 +4765,7 @@
                       '\uD83D\uDCDD REFLECTION \u2014 OPTIONAL (saved with this campaign)'),
                     el('textarea', {
                       id: 'warroom-reflection-input',
-                      placeholder: 'What did you learn? What would you play differently?',
+                      placeholder: t('stem.cyberdefense.what_did_you_learn_what_would_you_play', 'What did you learn? What would you play differently?'),
                       maxLength: 1000,
                       value: warRoomReflection,
                       onChange: function(ev) {
@@ -4824,12 +4825,12 @@
                           }
                         } catch(e) { if (ctx.addToast) ctx.addToast('Copy failed', 'info'); }
                       },
-                      'aria-label': 'Copy campaign summary to clipboard',
+                      'aria-label': t('stem.cyberdefense.copy_campaign_summary_to_clipboard', 'Copy campaign summary to clipboard'),
                       style: { flex: '0 0 auto', padding: '12px 16px', borderRadius: 10, border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.12)', color: '#a5b4fc', fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
                       '\uD83D\uDCCB Copy Summary'),
                     el('button', {
                       onClick: function() { startCampaign(warRoomDifficulty, warRoomCampaignTheme); },
-                      'aria-label': 'Replay the same setup with a fresh roll of cards',
+                      'aria-label': t('stem.cyberdefense.replay_the_same_setup_with_a_fresh_rol', 'Replay the same setup with a fresh roll of cards'),
                       style: { flex: '0 0 auto', padding: '12px 16px', borderRadius: 10, border: '1px solid rgba(234,179,8,0.35)', background: 'rgba(234,179,8,0.15)', color: 'var(--allo-stem-text, #fcd34d)', fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
                       '\uD83D\uDD04 Replay Same Setup'),
                     el('button', {
@@ -4908,7 +4909,7 @@
                           w.document.open(); w.document.write(html); w.document.close();
                         } catch(e) { if (ctx.addToast) ctx.addToast('Print failed \u2014 ' + (e.message || 'unknown error'), 'info'); }
                       },
-                      'aria-label': 'Print campaign report',
+                      'aria-label': t('stem.cyberdefense.print_campaign_report', 'Print campaign report'),
                       style: { flex: '0 0 auto', padding: '12px 16px', borderRadius: 10, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(148,163,184,0.1)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
                       '\uD83D\uDDA8\uFE0F Print Report'),
                     el('button', {
@@ -4991,8 +4992,8 @@
                           if (ctx.addToast) ctx.addToast('\uD83D\uDCDD Transcript downloaded', 'success');
                         } catch(e) { if (ctx.addToast) ctx.addToast('Transcript export failed', 'info'); }
                       },
-                      'aria-label': 'Download plain-text transcript of this campaign',
-                      title: 'Download .txt transcript \u2014 easy to share or paste into a gradebook',
+                      'aria-label': t('stem.cyberdefense.download_plain_text_transcript_of_this', 'Download plain-text transcript of this campaign'),
+                      title: t('stem.cyberdefense.download_txt_transcript_easy_to_share_', 'Download .txt transcript \u2014 easy to share or paste into a gradebook'),
                       style: { flex: '0 0 auto', padding: '12px 16px', borderRadius: 10, border: '1px solid rgba(168,85,247,0.3)', background: 'rgba(168,85,247,0.12)', color: '#d8b4fe', fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
                       '\uD83D\uDCDD Transcript'),
                     el('button', { onClick: function() { warTtsStop(); upd({ warRoomActive: false, warRoomVerdict: null, warRoomAAR: null, warRoomCampaignId: null }); sfxCyberdClick(); },
@@ -5031,19 +5032,19 @@
                   ),
 
                   // Observer suggestion compose (only when observing)
-                  warLiveIsObserving && el('div', { role: 'region', 'aria-label': 'Send a suggestion to the host',
+                  warLiveIsObserving && el('div', { role: 'region', 'aria-label': t('stem.cyberdefense.send_a_suggestion_to_the_host', 'Send a suggestion to the host'),
                     style: { padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.3)', marginBottom: 10 } },
                     el('div', { style: { color: '#a5b4fc', fontSize: 10, fontWeight: 800, letterSpacing: 0.5, marginBottom: 6 } }, '\uD83D\uDCAC SUGGEST A MOVE TO THE HOST'),
                     el('div', { style: { display: 'flex', gap: 6 } },
                       el('input', { type: 'text', maxLength: 140,
-                        value: warRoomChatDraft, placeholder: 'e.g., "Try Isolate + EDR this round"',
-                        'aria-label': 'Your suggestion (max 140 characters)',
+                        value: warRoomChatDraft, placeholder: t('stem.cyberdefense.e_g_try_isolate_edr_this_round', 'e.g., "Try Isolate + EDR this round"'),
+                        'aria-label': t('stem.cyberdefense.your_suggestion_max_140_characters', 'Your suggestion (max 140 characters)'),
                         onChange: function(ev) { upd('warRoomChatDraft', (ev.target.value || '').slice(0, 140)); },
                         onKeyDown: function(ev) { if (ev.key === 'Enter') { ev.preventDefault(); warLiveSendSuggestion(warRoomChatDraft); } },
                         style: { flex: 1, padding: '6px 10px', borderRadius: 5, border: '1px solid rgba(99,102,241,0.35)', background: 'rgba(15,23,42,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, fontFamily: 'inherit', boxSizing: 'border-box' } }),
                       el('button', { onClick: function() { warLiveSendSuggestion(warRoomChatDraft); },
                         disabled: !warRoomChatDraft.trim(),
-                        'aria-label': 'Send suggestion',
+                        'aria-label': t('stem.cyberdefense.send_suggestion', 'Send suggestion'),
                         style: { padding: '6px 14px', borderRadius: 5, border: 'none', background: warRoomChatDraft.trim() ? 'linear-gradient(135deg, #6366f1, #a855f7)' : 'rgba(100,116,139,0.3)', color: 'white', fontSize: 12, fontWeight: 800, cursor: warRoomChatDraft.trim() ? 'pointer' : 'not-allowed' } },
                         'Send')
                     ),
@@ -5051,7 +5052,7 @@
                   ),
 
                   // Host-side suggestions feed (visible when hosting and there are messages)
-                  warLiveIsHosting && warRoomChatMessages.length > 0 && el('div', { role: 'region', 'aria-label': 'Suggestions from observers',
+                  warLiveIsHosting && warRoomChatMessages.length > 0 && el('div', { role: 'region', 'aria-label': t('stem.cyberdefense.suggestions_from_observers', 'Suggestions from observers'),
                     style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', marginBottom: 10, maxHeight: 160, overflowY: 'auto' } },
                     el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#d8b4fe', fontSize: 10, fontWeight: 800, letterSpacing: 0.5, marginBottom: 6 } },
                       el('span', null, '\uD83D\uDCAC OBSERVER SUGGESTIONS (' + warRoomChatMessages.length + ')'),
@@ -5060,7 +5061,7 @@
                           if (!ref) return;
                           try { warLive.fb.setDoc(ref, { messages: [] }); upd('warRoomChatMessages', []); } catch(e) {}
                         },
-                        'aria-label': 'Clear observer suggestions',
+                        'aria-label': t('stem.cyberdefense.clear_observer_suggestions', 'Clear observer suggestions'),
                         style: { padding: '2px 8px', borderRadius: 3, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(30,41,59,0.6)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, 'Clear')
                     ),
                     warRoomChatMessages.slice().reverse().map(function(m, i) {
@@ -5092,7 +5093,7 @@
                               } catch(e) { /* silent */ }
                             },
                             'aria-label': 'Copy campaign ID ' + warRoomCampaignId + ' to clipboard',
-                            title: 'Copy this campaign ID so others can play the same seed',
+                            title: t('stem.cyberdefense.copy_this_campaign_id_so_others_can_pl', 'Copy this campaign ID so others can play the same seed'),
                             style: { padding: '1px 6px', borderRadius: 3, border: '1px solid rgba(148,163,184,0.25)', background: 'rgba(15,23,42,0.5)', color: '#fcd34d', fontSize: 10, fontWeight: 800, cursor: 'pointer', fontFamily: 'monospace' } },
                             '#' + warRoomCampaignId + ' \uD83D\uDCCB')
                         ),
@@ -5109,7 +5110,7 @@
                       )
                     ),
                     // Kill chain progress bar
-                    el('div', { role: 'progressbar', 'aria-valuenow': warRoomRound, 'aria-valuemin': 1, 'aria-valuemax': warRoomRoundsTotal, 'aria-label': 'Kill chain progress',
+                    el('div', { role: 'progressbar', 'aria-valuenow': warRoomRound, 'aria-valuemin': 1, 'aria-valuemax': warRoomRoundsTotal, 'aria-label': t('stem.cyberdefense.kill_chain_progress', 'Kill chain progress'),
                       style: { flex: 1, display: 'flex', gap: 4, minWidth: 240 } },
                       warRoomActiveStages.map(function(st, i) {
                         var done = warRoomKillChain[i];
@@ -5191,9 +5192,9 @@
                   // Round debrief (shown after Resolve, before advancing to next round)
                   warRoomRoundResolved && warRoomLastResolution && (function() {
                     var res = warRoomLastResolution;
-                    var oc = res.outcome === 'mitigated' ? { c: warOutcomeColors.mitigated, bg: warOutcomeColors.mitigated + '1a', bd: warOutcomeColors.mitigated + '59', title: 'Attack Mitigated', icon: '\u2705' }
-                           : res.outcome === 'detected' ? { c: warOutcomeColors.detected, bg: warOutcomeColors.detected + '1a', bd: warOutcomeColors.detected + '59', title: 'Attack Detected \u2014 Partial', icon: '\uD83D\uDD35' }
-                           : { c: warOutcomeColors.succeeded, bg: warOutcomeColors.succeeded + '1a', bd: warOutcomeColors.succeeded + '59', title: 'Attack Succeeded', icon: '\u26A0\uFE0F' };
+                    var oc = res.outcome === 'mitigated' ? { c: warOutcomeColors.mitigated, bg: warOutcomeColors.mitigated + '1a', bd: warOutcomeColors.mitigated + '59', title: t('stem.cyberdefense.attack_mitigated', 'Attack Mitigated'), icon: '\u2705' }
+                           : res.outcome === 'detected' ? { c: warOutcomeColors.detected, bg: warOutcomeColors.detected + '1a', bd: warOutcomeColors.detected + '59', title: t('stem.cyberdefense.attack_detected_partial', 'Attack Detected \u2014 Partial'), icon: '\uD83D\uDD35' }
+                           : { c: warOutcomeColors.succeeded, bg: warOutcomeColors.succeeded + '1a', bd: warOutcomeColors.succeeded + '59', title: t('stem.cyberdefense.attack_succeeded', 'Attack Succeeded'), icon: '\u26A0\uFE0F' };
                     var playedIds = warRoomBluePlays;
                     var idealIds = res.idealPlayIds || [];
                     var ideals = idealIds.map(function(id) { return blueTeamCards.filter(function(b) { return b.id === id; })[0]; }).filter(Boolean);
@@ -5265,8 +5266,8 @@
                       ),
                       // Try Again (only on lost rounds, once per round, unless observing or final campaign verdict)
                       res.outcome === 'succeeded' && !warRoomRetryUsedThisRound && !warLiveIsObserving && el('button', {
-                        onClick: tryAgainRound, 'aria-label': 'Try this round again with the same scenario',
-                        title: 'Revert this round and replay it from scratch (once per round).',
+                        onClick: tryAgainRound, 'aria-label': t('stem.cyberdefense.try_this_round_again_with_the_same_sce', 'Try this round again with the same scenario'),
+                        title: t('stem.cyberdefense.revert_this_round_and_replay_it_from_s', 'Revert this round and replay it from scratch (once per round).'),
                         style: { width: '100%', marginBottom: 8, padding: '10px 16px', borderRadius: 10, border: '1px solid rgba(234,179,8,0.4)', background: 'rgba(234,179,8,0.15)', color: 'var(--allo-stem-text, #fcd34d)', fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
                         '\uD83D\uDD04 Try This Round Again'),
                       res.outcome === 'succeeded' && warRoomRetryUsedThisRound && !warLiveIsObserving && el('div', {
@@ -5333,14 +5334,14 @@
                               var desc = (warRoomPlainLanguage && warRoomRedAction && plainRedDescriptions[warRoomRedAction.id]) || (warRoomRedAction && warRoomRedAction.description) || '';
                               warTtsSpeak('Red team: ' + title + '. ' + desc);
                             },
-                            'aria-label': 'Read this attack scenario aloud',
-                            title: 'Read aloud (text-to-speech)',
+                            'aria-label': t('stem.cyberdefense.read_this_attack_scenario_aloud', 'Read this attack scenario aloud'),
+                            title: t('stem.cyberdefense.read_aloud_text_to_speech', 'Read aloud (text-to-speech)'),
                             style: { padding: '3px 8px', borderRadius: 4, border: '1px solid rgba(168,85,247,0.3)', background: 'rgba(168,85,247,0.12)', color: '#d8b4fe', fontSize: 10, fontWeight: 700, cursor: 'pointer' } },
                             '\uD83D\uDD0A Read'),
                           ctx.callGemini && !warLiveIsObserving && !warRoomRoundResolved && warRoomBluePlays.length === 0 && el('button', {
                             onClick: generateAIRedCard, disabled: warRoomAICardLoading,
-                            'aria-label': 'Generate a new AI red team scenario',
-                            title: 'Ask the AI to generate a fresh scenario for this stage. Only available before playing any defenses.',
+                            'aria-label': t('stem.cyberdefense.generate_a_new_ai_red_team_scenario', 'Generate a new AI red team scenario'),
+                            title: t('stem.cyberdefense.ask_the_ai_to_generate_a_fresh_scenari', 'Ask the AI to generate a fresh scenario for this stage. Only available before playing any defenses.'),
                             style: { marginLeft: 'auto', padding: '3px 8px', borderRadius: 4, border: '1px solid rgba(99,102,241,0.3)', background: warRoomAICardLoading ? 'rgba(99,102,241,0.35)' : 'rgba(99,102,241,0.15)', color: '#a5b4fc', fontSize: 10, fontWeight: 700, cursor: warRoomAICardLoading ? 'wait' : 'pointer' } },
                             warRoomAICardLoading ? '\u23F3' : '\uD83E\uDD16 Replace')
                         ),
@@ -5393,8 +5394,8 @@
                         warRoomScratchOpen && el('div', null,
                           el('textarea', {
                             id: 'warroom-scratchpad-input',
-                            'aria-label': 'Scratchpad notes for this campaign',
-                            placeholder: 'Jot anything here \u2014 what you spotted, what to try next round. Saved for your reflection at campaign\'s end.',
+                            'aria-label': t('stem.cyberdefense.scratchpad_notes_for_this_campaign', 'Scratchpad notes for this campaign'),
+                            placeholder: t('stem.cyberdefense.jot_anything_here_what_you_spotted_wha', 'Jot anything here \u2014 what you spotted, what to try next round. Saved for your reflection at campaign\'s end.'),
                             maxLength: 2000,
                             value: warRoomScratchpad,
                             onChange: function(ev) {
@@ -5449,13 +5450,13 @@
                       })(),
                       // Undo Last Play (only when at least one play exists and round not resolved)
                       warRoomPlayLog.length > 0 && !warRoomRoundResolved && !warLiveIsObserving && el('button', {
-                        onClick: undoLastPlay, 'aria-label': 'Undo the last defense you played',
+                        onClick: undoLastPlay, 'aria-label': t('stem.cyberdefense.undo_the_last_defense_you_played', 'Undo the last defense you played'),
                         style: { width: '100%', marginTop: 6, padding: '7px 10px', borderRadius: 6, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(148,163,184,0.1)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
                         '\u21A9\uFE0F Undo Last Play (' + (function() { var last = warRoomPlayLog[warRoomPlayLog.length - 1]; var c = blueTeamCards.filter(function(b){return b.id===last.cardId;})[0]; return c ? c.label : last.cardId; })() + ')'),
                       // Hint button (costs 1 budget, once per round, reveals category of ideal play)
                       el('div', { style: { marginTop: 6, padding: 8, borderRadius: 8, background: 'rgba(234,179,8,0.06)', border: '1px dashed rgba(234,179,8,0.3)' } },
                         !warRoomHintRevealed && el('button', { onClick: requestHint, disabled: warLiveIsObserving || warRoomRoundResolved || warRoomBudget < 1,
-                          'aria-label': 'Request a hint for 1 budget',
+                          'aria-label': t('stem.cyberdefense.request_a_hint_for_1_budget', 'Request a hint for 1 budget'),
                           style: { width: '100%', padding: '8px 12px', borderRadius: 6, border: 'none', background: 'rgba(234,179,8,0.18)', color: '#fbbf24', fontSize: 11, fontWeight: 700, cursor: (warLiveIsObserving || warRoomBudget < 1) ? 'not-allowed' : 'pointer', opacity: (warLiveIsObserving || warRoomBudget < 1) ? 0.55 : 1 } },
                           '\uD83D\uDCA1 Request Hint (\u2212 1 budget)'),
                         warRoomHintRevealed && (function() {
@@ -5488,7 +5489,7 @@
                             if (ctx.announceToSR) ctx.announceToSR('Campaign abandoned.');
                           }
                         },
-                        'aria-label': 'Quit this campaign',
+                        'aria-label': t('stem.cyberdefense.quit_this_campaign', 'Quit this campaign'),
                         style: { width: '100%', marginTop: 6, padding: '6px 10px', borderRadius: 6, border: '1px solid rgba(148,163,184,0.2)', background: 'transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700, cursor: 'pointer' } },
                         'Quit Campaign')
                     )
@@ -5506,10 +5507,10 @@
                 else if (defense > 30) state = 'succeeded';
                 else state = 'lost';
                 var sm = {
-                  mitigated: { label: '🛡️ Mitigated', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Attack blocked before damage. Strong defense.' },
-                  detected:  { label: '🟡 Detected (alert raised)', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Attack visible. Containment depends on response speed.' },
-                  succeeded: { label: '🔴 Attack succeeded', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Initial breach. Containment slow.' },
-                  lost:      { label: '⚫ Compromise (data lost)', color: '#1e293b', bg: '#f1f5f9', border: '#475569', desc: 'Defenses insufficient. Major incident.' }
+                  mitigated: { label: t('stem.cyberdefense.mitigated', '🛡️ Mitigated'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: t('stem.cyberdefense.attack_blocked_before_damage_strong_de', 'Attack blocked before damage. Strong defense.') },
+                  detected:  { label: t('stem.cyberdefense.detected_alert_raised', '🟡 Detected (alert raised)'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.cyberdefense.attack_visible_containment_depends_on_', 'Attack visible. Containment depends on response speed.') },
+                  succeeded: { label: t('stem.cyberdefense.attack_succeeded_2', '🔴 Attack succeeded'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.cyberdefense.initial_breach_containment_slow', 'Initial breach. Containment slow.') },
+                  lost:      { label: t('stem.cyberdefense.compromise_data_lost', '⚫ Compromise (data lost)'), color: '#1e293b', bg: '#f1f5f9', border: '#475569', desc: t('stem.cyberdefense.defenses_insufficient_major_incident', 'Defenses insufficient. Major incident.') }
                 }[state];
                 return el('div', { style: { padding: 24 } },
                   el('div', { style: { padding: 16, background: 'rgba(15,23,42,0.6)', borderRadius: 10, border: '1px solid rgba(99,102,241,0.3)', color: '#e2e8f0' } },
@@ -5534,7 +5535,7 @@
                       el('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ d: iq.detection, r: iq.response, t: iq.training, st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
                       el('button', { onClick: function() { setIQ({ detection: 50, response: 50, training: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset')
                     ),
-                    el('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: Which is the strongest defense lever?',
+                    el('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.cyberdefense.hypothesis_which_is_the_strongest_defe', 'Hypothesis: Which is the strongest defense lever?'),
                       style: { width: '100%', minHeight: 50, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 8 }, rows: 2 }),
                     !iq.stuckRevealed && el('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, '🤔 Stuck — show open prompts'),
                     iq.stuckRevealed && el('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: '#cbd5e1', marginBottom: 8 } },
@@ -5543,7 +5544,7 @@
                         el('li', null, 'Real SOCs weight training high. Why?'))),
                     el('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
                       el('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand — explain in own words'),
-                    iq.understood && el('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how detection, response, and training compose security posture.',
+                    iq.understood && el('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.cyberdefense.explain_how_detection_response_and_tra', 'Explain how detection, response, and training compose security posture.'),
                       style: { width: '100%', minHeight: 60, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 3 }),
                     el('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: '#94a3b8' } }, 'Design note: discrete 4-state defense marker; no security score; no reveal — by design.')
                   )

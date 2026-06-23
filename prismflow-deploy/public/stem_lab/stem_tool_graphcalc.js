@@ -184,6 +184,7 @@
       { id: 'ask_ai_3', label: 'Ask the AI tutor 3 questions', icon: '\uD83E\uDD16', check: function(d) { return (d.aiQuestions || 0) >= 3; }, progress: function(d) { return (d.aiQuestions || 0) + '/3 questions'; } }
     ],
     render: function(ctx) {
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -266,7 +267,7 @@
         var MATH_SYMBOLS = [
           { label: 'x', insert: 'x', tier: 'explorer' },
           { label: '^', insert: '^', tier: 'explorer' },
-          { label: '( )', insert: '()', tier: 'explorer' },
+          { label: __alloT('stem.graphcalc.str', '( )'), insert: '()', tier: 'explorer' },
           { label: '\u03C0', insert: 'pi', tier: 'explorer' },
           { label: '\u221A', insert: 'sqrt(', tier: 'explorer' },
           { label: '|x|', insert: 'abs(', tier: 'explorer' },
@@ -299,20 +300,20 @@
         /* ── Coach tips ── */
         var COACH_TIPS = {
           explorer: [
-            { icon: '\uD83D\uDCA1', title: 'Entering Functions', text: 'Type y = mx + b where m is the slope and b is the y-intercept. Try: 2x + 3' },
-            { icon: '\uD83D\uDD0D', title: 'Zoom & Window', text: 'Use zoom presets to change how much of the graph you see.' },
-            { icon: '\uD83D\uDCCA', title: 'Reading the Table', text: 'The table shows exact y-values for each x.' },
-            { icon: '\uD83C\uDFAF', title: 'Multiple Functions', text: 'Enter different equations to compare them. Where lines cross is an intersection!' }
+            { icon: '\uD83D\uDCA1', title: __alloT('stem.graphcalc.entering_functions', 'Entering Functions'), text: __alloT('stem.graphcalc.type_y_mx_b_where_m_is_the_slope_and_b', 'Type y = mx + b where m is the slope and b is the y-intercept. Try: 2x + 3') },
+            { icon: '\uD83D\uDD0D', title: __alloT('stem.graphcalc.zoom_window', 'Zoom & Window'), text: __alloT('stem.graphcalc.use_zoom_presets_to_change_how_much_of', 'Use zoom presets to change how much of the graph you see.') },
+            { icon: '\uD83D\uDCCA', title: __alloT('stem.graphcalc.reading_the_table', 'Reading the Table'), text: __alloT('stem.graphcalc.the_table_shows_exact_y_values_for_eac', 'The table shows exact y-values for each x.') },
+            { icon: '\uD83C\uDFAF', title: __alloT('stem.graphcalc.multiple_functions', 'Multiple Functions'), text: __alloT('stem.graphcalc.enter_different_equations_to_compare_t', 'Enter different equations to compare them. Where lines cross is an intersection!') }
           ],
           analyst: [
-            { icon: '\uD83D\uDCC8', title: 'Linear vs Quadratic', text: 'y = 2x + 1 is a line. y = x^2 is a parabola. The exponent determines the shape!' },
-            { icon: '\uD83E\uDDEE', title: 'Finding Zeros', text: 'Where the graph crosses the x-axis, y = 0. These are zeros or x-intercepts.' },
-            { icon: '\u26A1', title: 'Transformations', text: 'y = (x-3)^2 shifts right by 3. y = x^2 + 5 shifts up by 5.' }
+            { icon: '\uD83D\uDCC8', title: __alloT('stem.graphcalc.linear_vs_quadratic', 'Linear vs Quadratic'), text: __alloT('stem.graphcalc.y_2x_1_is_a_line_y_x_2_is_a_parabola_t', 'y = 2x + 1 is a line. y = x^2 is a parabola. The exponent determines the shape!') },
+            { icon: '\uD83E\uDDEE', title: __alloT('stem.graphcalc.finding_zeros', 'Finding Zeros'), text: __alloT('stem.graphcalc.where_the_graph_crosses_the_x_axis_y_0', 'Where the graph crosses the x-axis, y = 0. These are zeros or x-intercepts.') },
+            { icon: '\u26A1', title: __alloT('stem.graphcalc.transformations', 'Transformations'), text: __alloT('stem.graphcalc.y_x_3_2_shifts_right_by_3_y_x_2_5_shif', 'y = (x-3)^2 shifts right by 3. y = x^2 + 5 shifts up by 5.') }
           ],
           engineer: [
-            { icon: '\uD83E\uDDE9', title: 'Trig Functions', text: 'sin(x), cos(x), tan(x) create waves. Period of sin(x) is 2\u03C0.' },
-            { icon: '\uD83D\uDD22', title: 'Logarithms', text: 'log(x) is the inverse of 10^x. ln(x) is the natural log.' },
-            { icon: '\u221E', title: 'Asymptotes', text: 'y = 1/x approaches x=0 and y=0 but never touches them.' }
+            { icon: '\uD83E\uDDE9', title: __alloT('stem.graphcalc.trig_functions', 'Trig Functions'), text: __alloT('stem.graphcalc.sin_x_cos_x_tan_x_create_waves_period_', 'sin(x), cos(x), tan(x) create waves. Period of sin(x) is 2\u03C0.') },
+            { icon: '\uD83D\uDD22', title: __alloT('stem.graphcalc.logarithms', 'Logarithms'), text: __alloT('stem.graphcalc.log_x_is_the_inverse_of_10_x_ln_x_is_t', 'log(x) is the inverse of 10^x. ln(x) is the natural log.') },
+            { icon: '\u221E', title: __alloT('stem.graphcalc.asymptotes', 'Asymptotes'), text: __alloT('stem.graphcalc.y_1_x_approaches_x_0_and_y_0_but_never', 'y = 1/x approaches x=0 and y=0 but never touches them.') }
           ]
         };
 
@@ -324,24 +325,24 @@
 
         /* ── Zoom presets ── */
         var ZOOM_PRESETS = [
-          { name: 'Standard', xmin: -10, xmax: 10, ymin: -10, ymax: 10 },
-          { name: 'Trig', xmin: -6.28, xmax: 6.28, ymin: -2, ymax: 2 },
-          { name: 'Quadratic', xmin: -5, xmax: 5, ymin: -5, ymax: 25 },
-          { name: 'Wide', xmin: -50, xmax: 50, ymin: -50, ymax: 50 },
-          { name: 'Positive', xmin: 0, xmax: 20, ymin: 0, ymax: 20 }
+          { name: __alloT('stem.graphcalc.standard', 'Standard'), xmin: -10, xmax: 10, ymin: -10, ymax: 10 },
+          { name: __alloT('stem.graphcalc.trig', 'Trig'), xmin: -6.28, xmax: 6.28, ymin: -2, ymax: 2 },
+          { name: __alloT('stem.graphcalc.quadratic', 'Quadratic'), xmin: -5, xmax: 5, ymin: -5, ymax: 25 },
+          { name: __alloT('stem.graphcalc.wide', 'Wide'), xmin: -50, xmax: 50, ymin: -50, ymax: 50 },
+          { name: __alloT('stem.graphcalc.positive', 'Positive'), xmin: 0, xmax: 20, ymin: 0, ymax: 20 }
         ];
 
         /* ── Challenges ── */
         var PREMADE_CHALLENGES = [
-          { tier: 'explorer', topic: 'Linear Functions', prompt: 'Graph y = 3x - 2. What is the y-intercept?', hint: 'The y-intercept is where the line crosses the y-axis (x=0).' },
-          { tier: 'explorer', topic: 'Linear Functions', prompt: 'Graph y = -x + 5 and y = x - 1. Where do they intersect?', hint: 'The intersection is where both equations give the same y for the same x.' },
-          { tier: 'explorer', topic: 'Tables', prompt: 'Enter y = x^2. Look at the table. What pattern do you see?', hint: 'The differences between consecutive y-values increase by 2 each time!' },
-          { tier: 'analyst', topic: 'Quadratics', prompt: 'Graph y = x^2 - 4. Where are the zeros?', hint: 'Set y = 0: x^2 = 4, so x = +/-2.' },
-          { tier: 'analyst', topic: 'Transformations', prompt: 'Graph y = x^2, y = (x-3)^2, y = (x+2)^2. What changes?', hint: '(x-h) shifts RIGHT by h. (x+h) shifts LEFT.' },
-          { tier: 'analyst', topic: 'Slope', prompt: 'Graph y = 0.5x, y = x, y = 2x, y = 5x. What happens?', hint: 'Bigger slope = steeper line.' },
-          { tier: 'engineer', topic: 'Trigonometry', prompt: 'Graph sin(x) and cos(x) with Trig preset. How are they related?', hint: 'cos(x) is sin(x) shifted left by pi/2.' },
-          { tier: 'engineer', topic: 'Exponential', prompt: 'Graph y = 2^x and y = log(x)/log(2). What do you notice?', hint: 'Inverse functions are mirrors across y = x.' },
-          { tier: 'engineer', topic: 'Asymptotes', prompt: 'Graph y = 1/x. What happens near x = 0?', hint: 'The graph approaches but never touches the axes.' }
+          { tier: 'explorer', topic: 'Linear Functions', prompt: __alloT('stem.graphcalc.graph_y_3x_2_what_is_the_y_intercept', 'Graph y = 3x - 2. What is the y-intercept?'), hint: __alloT('stem.graphcalc.the_y_intercept_is_where_the_line_cros', 'The y-intercept is where the line crosses the y-axis (x=0).') },
+          { tier: 'explorer', topic: 'Linear Functions', prompt: __alloT('stem.graphcalc.graph_y_x_5_and_y_x_1_where_do_they_in', 'Graph y = -x + 5 and y = x - 1. Where do they intersect?'), hint: __alloT('stem.graphcalc.the_intersection_is_where_both_equatio', 'The intersection is where both equations give the same y for the same x.') },
+          { tier: 'explorer', topic: 'Tables', prompt: __alloT('stem.graphcalc.enter_y_x_2_look_at_the_table_what_pat', 'Enter y = x^2. Look at the table. What pattern do you see?'), hint: __alloT('stem.graphcalc.the_differences_between_consecutive_y_', 'The differences between consecutive y-values increase by 2 each time!') },
+          { tier: 'analyst', topic: 'Quadratics', prompt: __alloT('stem.graphcalc.graph_y_x_2_4_where_are_the_zeros', 'Graph y = x^2 - 4. Where are the zeros?'), hint: __alloT('stem.graphcalc.set_y_0_x_2_4_so_x_2', 'Set y = 0: x^2 = 4, so x = +/-2.') },
+          { tier: 'analyst', topic: 'Transformations', prompt: __alloT('stem.graphcalc.graph_y_x_2_y_x_3_2_y_x_2_2_what_chang', 'Graph y = x^2, y = (x-3)^2, y = (x+2)^2. What changes?'), hint: __alloT('stem.graphcalc.x_h_shifts_right_by_h_x_h_shifts_left', '(x-h) shifts RIGHT by h. (x+h) shifts LEFT.') },
+          { tier: 'analyst', topic: 'Slope', prompt: __alloT('stem.graphcalc.graph_y_0_5x_y_x_y_2x_y_5x_what_happen', 'Graph y = 0.5x, y = x, y = 2x, y = 5x. What happens?'), hint: __alloT('stem.graphcalc.bigger_slope_steeper_line', 'Bigger slope = steeper line.') },
+          { tier: 'engineer', topic: 'Trigonometry', prompt: __alloT('stem.graphcalc.graph_sin_x_and_cos_x_with_trig_preset', 'Graph sin(x) and cos(x) with Trig preset. How are they related?'), hint: __alloT('stem.graphcalc.cos_x_is_sin_x_shifted_left_by_pi_2', 'cos(x) is sin(x) shifted left by pi/2.') },
+          { tier: 'engineer', topic: 'Exponential', prompt: __alloT('stem.graphcalc.graph_y_2_x_and_y_log_x_log_2_what_do_', 'Graph y = 2^x and y = log(x)/log(2). What do you notice?'), hint: __alloT('stem.graphcalc.inverse_functions_are_mirrors_across_y', 'Inverse functions are mirrors across y = x.') },
+          { tier: 'engineer', topic: 'Asymptotes', prompt: __alloT('stem.graphcalc.graph_y_1_x_what_happens_near_x_0', 'Graph y = 1/x. What happens near x = 0?'), hint: __alloT('stem.graphcalc.the_graph_approaches_but_never_touches', 'The graph approaches but never touches the axes.') }
         ];
 
         var availableChallenges = PREMADE_CHALLENGES.filter(function(c) {
@@ -352,10 +353,10 @@
         });
 
         var TIER_INFO = {
-          explorer: { icon: '\uD83D\uDFE2', name: 'Explorer', desc: 'Linear functions', color: '#34d399' },
-          analyst: { icon: '\uD83D\uDFE1', name: 'Analyst', desc: 'Quadratics, transforms', color: '#fbbf24' },
-          engineer: { icon: '\uD83D\uDD35', name: 'Engineer', desc: 'Trig, logs, exponentials', color: '#60a5fa' },
-          researcher: { icon: '\uD83D\uDFE3', name: 'Researcher', desc: 'Full access', color: '#a78bfa' }
+          explorer: { icon: '\uD83D\uDFE2', name: __alloT('stem.graphcalc.explorer', 'Explorer'), desc: __alloT('stem.graphcalc.linear_functions', 'Linear functions'), color: '#34d399' },
+          analyst: { icon: '\uD83D\uDFE1', name: __alloT('stem.graphcalc.analyst', 'Analyst'), desc: __alloT('stem.graphcalc.quadratics_transforms', 'Quadratics, transforms'), color: '#fbbf24' },
+          engineer: { icon: '\uD83D\uDD35', name: __alloT('stem.graphcalc.engineer', 'Engineer'), desc: __alloT('stem.graphcalc.trig_logs_exponentials', 'Trig, logs, exponentials'), color: '#60a5fa' },
+          researcher: { icon: '\uD83D\uDFE3', name: __alloT('stem.graphcalc.researcher', 'Researcher'), desc: __alloT('stem.graphcalc.full_access', 'Full access'), color: '#a78bfa' }
         };
         var tierInfo = TIER_INFO[tier] || TIER_INFO.explorer;
 
@@ -475,7 +476,7 @@
           callGemini(prompt, true, false, 0.8).then(function(reply) {
             updMulti({ aiMessages: msgs.concat([{ role: 'ai', text: reply }]), aiLoading: false, aiQuestions: (d.aiQuestions || 0) + 1 });
           }).catch(function() {
-            updMulti({ aiMessages: msgs.concat([{ role: 'ai', text: 'Sorry, I could not get an answer right now.' }]), aiLoading: false });
+            updMulti({ aiMessages: msgs.concat([{ role: 'ai', text: __alloT('stem.graphcalc.sorry_i_could_not_get_an_answer_right_', 'Sorry, I could not get an answer right now.') }]), aiLoading: false });
           });
         }
 
@@ -628,16 +629,16 @@
 
           // Header
           h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px', background: 'linear-gradient(135deg, #1e1b4b, #312e81)', borderBottom: '1px solid rgba(99,102,241,0.2)' } },
-            h('button', { 'aria-label': 'Back', onClick: function() { setStemLabTool(null); }, style: { background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', padding: '6px 12px', color: '#c7d2fe', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' } }, '\u2190 Back'),
-            h('div', { style: { fontWeight: 'bold', fontSize: '16px', color: '#c7d2fe' } }, '\uD83D\uDCC8 Graphing Calculator'),
+            h('button', { 'aria-label': __alloT('stem.graphcalc.back', 'Back'), onClick: function() { setStemLabTool(null); }, style: { background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', padding: '6px 12px', color: '#c7d2fe', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' } }, __alloT('stem.graphcalc.back_2', '\u2190 Back')),
+            h('div', { style: { fontWeight: 'bold', fontSize: '16px', color: '#c7d2fe' } }, __alloT('stem.graphcalc.graphing_calculator', '\uD83D\uDCC8 Graphing Calculator')),
             h('span', { style: { fontSize: '10px', color: '#818cf8', maxWidth: '300px', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' } }, gradeIntros[band] || ''),
             h('div', { style: { marginLeft: 'auto', display: 'flex', gap: '8px', alignItems: 'center' } },
               h('span', { style: { background: tierInfo.color + '22', color: tierInfo.color, padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 'bold', border: '1px solid ' + tierInfo.color + '44' } }, tierInfo.icon + ' ' + tierInfo.name),
-              h('select', { value: tier, onChange: function(e) { SOUNDS.tierChange(); upd('tier', e.target.value); }, 'aria-label': 'Difficulty tier', style: { background: 'rgba(255,255,255,0.1)', border: '1px solid #818cf8', borderRadius: '6px', padding: '3px 8px', color: '#c7d2fe', fontSize: '10px', cursor: 'pointer' } },
-                h('option', { value: 'explorer' }, '\uD83D\uDFE2 Explorer'), h('option', { value: 'analyst' }, '\uD83D\uDFE1 Analyst'),
-                h('option', { value: 'engineer' }, '\uD83D\uDD35 Engineer'), h('option', { value: 'researcher' }, '\uD83D\uDFE3 Researcher')
+              h('select', { value: tier, onChange: function(e) { SOUNDS.tierChange(); upd('tier', e.target.value); }, 'aria-label': __alloT('stem.graphcalc.difficulty_tier', 'Difficulty tier'), style: { background: 'rgba(255,255,255,0.1)', border: '1px solid #818cf8', borderRadius: '6px', padding: '3px 8px', color: '#c7d2fe', fontSize: '10px', cursor: 'pointer' } },
+                h('option', { value: 'explorer' }, __alloT('stem.graphcalc.explorer_2', '\uD83D\uDFE2 Explorer')), h('option', { value: 'analyst' }, __alloT('stem.graphcalc.analyst_2', '\uD83D\uDFE1 Analyst')),
+                h('option', { value: 'engineer' }, __alloT('stem.graphcalc.engineer_2', '\uD83D\uDD35 Engineer')), h('option', { value: 'researcher' }, __alloT('stem.graphcalc.researcher_2', '\uD83D\uDFE3 Researcher'))
               ),
-              h('button', { onClick: takeSnapshot, 'aria-label': 'Take snapshot', style: { background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: '6px', padding: '3px 8px', color: '#fbbf24', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCF8'),
+              h('button', { onClick: takeSnapshot, 'aria-label': __alloT('stem.graphcalc.take_snapshot', 'Take snapshot'), style: { background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: '6px', padding: '3px 8px', color: '#fbbf24', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCF8'),
               badges.length > 0 ? h('span', { style: { background: 'rgba(167,139,250,0.15)', color: '#a78bfa', padding: '3px 8px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' } }, '\uD83C\uDFC5 ' + badges.length) : null
             )
           ),
@@ -647,7 +648,7 @@
 
             // Left sidebar
             h('div', { style: { width: '220px', borderRight: '1px solid rgba(99,102,241,0.15)', display: 'flex', flexDirection: 'column', background: 'rgba(15,23,42,0.8)' } },
-              h('div', { style: { padding: '10px 12px', borderBottom: '1px solid rgba(99,102,241,0.1)', fontSize: '11px', fontWeight: 'bold', color: '#818cf8', letterSpacing: '1px' } }, '\uD83D\uDCDD FUNCTIONS'),
+              h('div', { style: { padding: '10px 12px', borderBottom: '1px solid rgba(99,102,241,0.1)', fontSize: '11px', fontWeight: 'bold', color: '#818cf8', letterSpacing: '1px' } }, __alloT('stem.graphcalc.functions', '\uD83D\uDCDD FUNCTIONS')),
               h('div', { style: { flex: 1, overflowY: 'auto', padding: '8px' } },
                 funcs.map(function(fn, i) {
                   return h('div', { key: 'f' + i, style: { marginBottom: '8px' } },
@@ -666,7 +667,7 @@
               ),
               // Math Pad toggle
               h('div', { style: { padding: '4px 12px', borderTop: '1px solid rgba(99,102,241,0.1)' } },
-                h('button', { onClick: function() { upd('showMathPad', !showMathPad); }, 'aria-pressed': !!showMathPad, style: { width: '100%', padding: '4px', borderRadius: '6px', background: showMathPad ? '#818cf833' : 'rgba(255,255,255,0.05)', color: showMathPad ? '#a5b4fc' : '#94a3b8', border: showMathPad ? '1px solid #818cf844' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\u2328 Math Pad'),
+                h('button', { onClick: function() { upd('showMathPad', !showMathPad); }, 'aria-pressed': !!showMathPad, style: { width: '100%', padding: '4px', borderRadius: '6px', background: showMathPad ? '#818cf833' : 'rgba(255,255,255,0.05)', color: showMathPad ? '#a5b4fc' : '#94a3b8', border: showMathPad ? '1px solid #818cf844' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, __alloT('stem.graphcalc.math_pad', '\u2328 Math Pad')),
                 showMathPad ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '3px', paddingBottom: '4px', paddingTop: '4px' } },
                   visibleSymbols.map(function(sym) {
                     return h('button', { 'aria-label': 'Insert ' + sym.label, key: sym.label, onClick: function() { insertSymbol(sym.insert); }, style: { padding: '3px 7px', borderRadius: '5px', background: 'rgba(99,102,241,0.12)', color: '#c7d2fe', border: '1px solid rgba(99,102,241,0.2)', fontSize: '11px', fontFamily: 'monospace', fontWeight: 'bold', cursor: 'pointer' } }, sym.label);
@@ -675,19 +676,19 @@
               ),
               // Tool buttons
               h('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', display: 'flex', flexWrap: 'wrap', gap: '4px' } },
-                h('button', { onClick: function() { upd('showTable', !showTable); if (!showTable) upd('_usedTable', true); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showTable ? '#818cf833' : 'rgba(255,255,255,0.05)', color: showTable ? '#a5b4fc' : '#94a3b8', border: showTable ? '1px solid #818cf844' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCCA Table'),
-                h('button', { onClick: function() { try { var _cs = [].slice.call(document.querySelectorAll('canvas')); if (!_cs.length) return; var _c = _cs.sort(function(a,b){ return (b.width*b.height)-(a.width*a.height); })[0]; var _a = document.createElement('a'); _a.href = _c.toDataURL('image/png'); _a.download = 'graphcalc_' + Date.now() + '.png'; _a.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCF8 PNG saved!', 'success'); } catch (e) {} }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: 'rgba(56,189,248,0.1)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.2)', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCF8 PNG'),
-                h('button', { onClick: function() { upd('showWindow', !showWindow); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showWindow ? '#818cf833' : 'rgba(255,255,255,0.05)', color: showWindow ? '#a5b4fc' : '#94a3b8', border: showWindow ? '1px solid #818cf844' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\u2699\uFE0F Window'),
-                h('button', { 'aria-label': 'Challenge', onClick: function() { SOUNDS.challengeOpen(); upd('showChallenge', !showChallenge); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showChallenge ? '#a78bfa33' : 'rgba(255,255,255,0.05)', color: showChallenge ? '#c4b5fd' : '#94a3b8', border: showChallenge ? '1px solid #a78bfa44' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83C\uDFAF Challenge'),
-                h('button', { 'aria-label': 'Clear', onClick: function() { SOUNDS.clearAll(); upd('funcs', funcs.map(function(f) { return Object.assign({}, f, { expr: '' }); })); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: 'rgba(239,68,68,0.1)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDDD1 Clear'),
-                h('button', { onClick: function() { SOUNDS.traceOn(); upd('traceMode', !d.traceMode); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: d.traceMode ? '#fbbf2433' : 'rgba(255,255,255,0.05)', color: d.traceMode ? '#fbbf24' : '#94a3b8', border: d.traceMode ? '1px solid #fbbf2444' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDD0D Trace'),
-                h('button', { onClick: runAnalysis, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: d.showAnalysis ? '#34d39933' : 'rgba(255,255,255,0.05)', color: d.showAnalysis ? '#34d399' : '#94a3b8', border: d.showAnalysis ? '1px solid #34d39944' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\u26A1 Analyze'),
-                h('button', { onClick: function() { upd('showDeriv', !d.showDeriv); if (!d.showDeriv) { upd('_usedDeriv', true); if (d.derivX == null) upd('derivX', 0); } }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: d.showDeriv ? '#fb923c33' : 'rgba(255,255,255,0.05)', color: d.showDeriv ? '#fb923c' : '#94a3b8', border: d.showDeriv ? '1px solid #fb923c44' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, "\u2202 f'(x)"),
-                h('button', { 'aria-label': 'Sliders', onClick: function() { upd('showSliders', !showSliders); if (!showSliders) { upd('_usedSliders', true); if (d.sliderA == null) upd('sliderA', 1); if (d.sliderB == null) upd('sliderB', 0); if (d.sliderC == null) upd('sliderC', 0); } }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showSliders ? '#a78bfa33' : 'rgba(255,255,255,0.05)', color: showSliders ? '#a78bfa' : '#94a3b8', border: showSliders ? '1px solid #a78bfa44' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83C\uDFA8 Sliders')
+                h('button', { onClick: function() { upd('showTable', !showTable); if (!showTable) upd('_usedTable', true); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showTable ? '#818cf833' : 'rgba(255,255,255,0.05)', color: showTable ? '#a5b4fc' : '#94a3b8', border: showTable ? '1px solid #818cf844' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, __alloT('stem.graphcalc.table', '\uD83D\uDCCA Table')),
+                h('button', { onClick: function() { try { var _cs = [].slice.call(document.querySelectorAll('canvas')); if (!_cs.length) return; var _c = _cs.sort(function(a,b){ return (b.width*b.height)-(a.width*a.height); })[0]; var _a = document.createElement('a'); _a.href = _c.toDataURL('image/png'); _a.download = 'graphcalc_' + Date.now() + '.png'; _a.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCF8 PNG saved!', 'success'); } catch (e) {} }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: 'rgba(56,189,248,0.1)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.2)', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, __alloT('stem.graphcalc.png', '\uD83D\uDCF8 PNG')),
+                h('button', { onClick: function() { upd('showWindow', !showWindow); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showWindow ? '#818cf833' : 'rgba(255,255,255,0.05)', color: showWindow ? '#a5b4fc' : '#94a3b8', border: showWindow ? '1px solid #818cf844' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, __alloT('stem.graphcalc.window', '\u2699\uFE0F Window')),
+                h('button', { 'aria-label': __alloT('stem.graphcalc.challenge', 'Challenge'), onClick: function() { SOUNDS.challengeOpen(); upd('showChallenge', !showChallenge); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showChallenge ? '#a78bfa33' : 'rgba(255,255,255,0.05)', color: showChallenge ? '#c4b5fd' : '#94a3b8', border: showChallenge ? '1px solid #a78bfa44' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, __alloT('stem.graphcalc.challenge_2', '\uD83C\uDFAF Challenge')),
+                h('button', { 'aria-label': __alloT('stem.graphcalc.clear', 'Clear'), onClick: function() { SOUNDS.clearAll(); upd('funcs', funcs.map(function(f) { return Object.assign({}, f, { expr: '' }); })); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: 'rgba(239,68,68,0.1)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, __alloT('stem.graphcalc.clear_2', '\uD83D\uDDD1 Clear')),
+                h('button', { onClick: function() { SOUNDS.traceOn(); upd('traceMode', !d.traceMode); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: d.traceMode ? '#fbbf2433' : 'rgba(255,255,255,0.05)', color: d.traceMode ? '#fbbf24' : '#94a3b8', border: d.traceMode ? '1px solid #fbbf2444' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, __alloT('stem.graphcalc.trace', '\uD83D\uDD0D Trace')),
+                h('button', { onClick: runAnalysis, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: d.showAnalysis ? '#34d39933' : 'rgba(255,255,255,0.05)', color: d.showAnalysis ? '#34d399' : '#94a3b8', border: d.showAnalysis ? '1px solid #34d39944' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, __alloT('stem.graphcalc.analyze', '\u26A1 Analyze')),
+                h('button', { onClick: function() { upd('showDeriv', !d.showDeriv); if (!d.showDeriv) { upd('_usedDeriv', true); if (d.derivX == null) upd('derivX', 0); } }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: d.showDeriv ? '#fb923c33' : 'rgba(255,255,255,0.05)', color: d.showDeriv ? '#fb923c' : '#94a3b8', border: d.showDeriv ? '1px solid #fb923c44' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, __alloT('stem.graphcalc.f_x', "\u2202 f'(x)")),
+                h('button', { 'aria-label': __alloT('stem.graphcalc.sliders', 'Sliders'), onClick: function() { upd('showSliders', !showSliders); if (!showSliders) { upd('_usedSliders', true); if (d.sliderA == null) upd('sliderA', 1); if (d.sliderB == null) upd('sliderB', 0); if (d.sliderC == null) upd('sliderC', 0); } }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showSliders ? '#a78bfa33' : 'rgba(255,255,255,0.05)', color: showSliders ? '#a78bfa' : '#94a3b8', border: showSliders ? '1px solid #a78bfa44' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, __alloT('stem.graphcalc.sliders_2', '\uD83C\uDFA8 Sliders'))
               ),
               // Zoom presets
               h('div', { style: { padding: '6px 12px 10px', borderTop: '1px solid rgba(99,102,241,0.1)' } },
-                h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '4px', fontWeight: 'bold' } }, 'ZOOM PRESETS'),
+                h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '4px', fontWeight: 'bold' } }, __alloT('stem.graphcalc.zoom_presets', 'ZOOM PRESETS')),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '3px' } },
                   ZOOM_PRESETS.map(function(z) {
                     return h('button', { 'aria-label': z.name + ' zoom preset', key: z.name, onClick: function() { SOUNDS.zoomPreset(); upd('window', { xmin: z.xmin, xmax: z.xmax, ymin: z.ymin, ymax: z.ymax }); }, style: { padding: '3px 7px', borderRadius: '4px', background: 'rgba(99,102,241,0.1)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.2)', fontSize: '11px', cursor: 'pointer' } }, z.name);
@@ -696,7 +697,7 @@
               ),
               // Sliders
               showSliders ? h('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', background: 'rgba(167,139,250,0.06)' } },
-                h('div', { style: { fontSize: '11px', color: '#a78bfa', fontWeight: 'bold', marginBottom: '6px' } }, '\uD83C\uDFA8 SLIDERS \u2014 Use a, b, c'),
+                h('div', { style: { fontSize: '11px', color: '#a78bfa', fontWeight: 'bold', marginBottom: '6px' } }, __alloT('stem.graphcalc.sliders_use_a_b_c', '\uD83C\uDFA8 SLIDERS \u2014 Use a, b, c')),
                 ['a', 'b', 'c'].map(function(p) {
                   var key = 'slider' + p.toUpperCase(); var val = d[key] != null ? d[key] : (p === 'a' ? 1 : 0);
                   return h('div', { key: p, style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' } },
@@ -708,7 +709,7 @@
               ) : null,
               // Derivative slider
               d.showDeriv ? h('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', background: 'rgba(251,146,60,0.06)' } },
-                h('div', { style: { fontSize: '11px', color: '#fb923c', fontWeight: 'bold', marginBottom: '4px' } }, '\u2202 TANGENT to y\u2081'),
+                h('div', { style: { fontSize: '11px', color: '#fb923c', fontWeight: 'bold', marginBottom: '4px' } }, __alloT('stem.graphcalc.tangent_to_y', '\u2202 TANGENT to y\u2081')),
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
                   h('span', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'x='),
                   h('input', { type: 'range', min: win.xmin, max: win.xmax, step: (win.xmax - win.xmin) / 200, value: d.derivX != null ? d.derivX : 0, 'aria-label': 'Tangent x position: ' + (d.derivX != null ? Number(d.derivX.toPrecision(4)) : '0'), onChange: function(e) { upd('derivX', parseFloat(e.target.value)); }, style: { flex: 1, accentColor: '#fb923c' } }),
@@ -717,15 +718,15 @@
               ) : null,
               // Analysis results
               d.showAnalysis ? h('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', background: 'rgba(52,211,153,0.06)' } },
-                h('div', { style: { fontSize: '11px', color: '#34d399', fontWeight: 'bold', marginBottom: '4px' } }, '\u26A1 ANALYSIS'),
+                h('div', { style: { fontSize: '11px', color: '#34d399', fontWeight: 'bold', marginBottom: '4px' } }, __alloT('stem.graphcalc.analysis', '\u26A1 ANALYSIS')),
                 h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
                   h('div', { style: { flex: 1 } },
-                    h('div', { style: { fontSize: '11px', color: '#34d399', fontWeight: 'bold' } }, 'Zeros'),
-                    (d._zeros && d._zeros.length > 0) ? d._zeros.map(function(z, zi) { return h('div', { key: zi, style: { fontSize: '10px', fontFamily: 'monospace', color: '#a7f3d0' } }, 'x=' + Number(z.x.toPrecision(5))); }) : h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'None')
+                    h('div', { style: { fontSize: '11px', color: '#34d399', fontWeight: 'bold' } }, __alloT('stem.graphcalc.zeros', 'Zeros')),
+                    (d._zeros && d._zeros.length > 0) ? d._zeros.map(function(z, zi) { return h('div', { key: zi, style: { fontSize: '10px', fontFamily: 'monospace', color: '#a7f3d0' } }, 'x=' + Number(z.x.toPrecision(5))); }) : h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.graphcalc.none', 'None'))
                   ),
                   h('div', { style: { flex: 1 } },
-                    h('div', { style: { fontSize: '11px', color: '#f472b6', fontWeight: 'bold' } }, 'Intersections'),
-                    (d._intersections && d._intersections.length > 0) ? d._intersections.map(function(pt, pi) { return h('div', { key: pi, style: { fontSize: '10px', fontFamily: 'monospace', color: '#f9a8d4' } }, '(' + Number(pt.x.toPrecision(4)) + ',' + Number(pt.y.toPrecision(4)) + ')'); }) : h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Need 2+ funcs')
+                    h('div', { style: { fontSize: '11px', color: '#f472b6', fontWeight: 'bold' } }, __alloT('stem.graphcalc.intersections', 'Intersections')),
+                    (d._intersections && d._intersections.length > 0) ? d._intersections.map(function(pt, pi) { return h('div', { key: pi, style: { fontSize: '10px', fontFamily: 'monospace', color: '#f9a8d4' } }, '(' + Number(pt.x.toPrecision(4)) + ',' + Number(pt.y.toPrecision(4)) + ')'); }) : h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.graphcalc.need_2_funcs', 'Need 2+ funcs'))
                   )
                 )
               ) : null
@@ -733,7 +734,7 @@
 
             // Center — Canvas
             h('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' } },
-              h('canvas', { ref: canvasRef, 'aria-label': 'Interactive graphing calculator visualization', tabIndex: 0, style: { width: '100%', flex: 1, background: 'var(--allo-stem-canvas, #0f172a)', cursor: d.traceMode ? 'crosshair' : 'default' },
+              h('canvas', { ref: canvasRef, 'aria-label': __alloT('stem.graphcalc.interactive_graphing_calculator_visual', 'Interactive graphing calculator visualization'), tabIndex: 0, style: { width: '100%', flex: 1, background: 'var(--allo-stem-canvas, #0f172a)', cursor: d.traceMode ? 'crosshair' : 'default' },
                 onMouseMove: function(e) { if (!d.traceMode) return; var rect = e.currentTarget.getBoundingClientRect(); var px = (e.clientX - rect.left) / rect.width * (e.currentTarget.width / (window.devicePixelRatio || 1)); if (e.currentTarget._toMathX) upd('traceX', e.currentTarget._toMathX(px)); },
                 onMouseLeave: function() { if (d.traceMode) upd('traceX', null); } }),
               showWindow ? h('div', { style: { padding: '8px 12px', background: 'rgba(30,27,75,0.9)', borderTop: '1px solid rgba(99,102,241,0.2)', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
@@ -744,12 +745,12 @@
               ) : null,
               showTable ? h('div', { style: { maxHeight: '150px', overflowY: 'auto', borderTop: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.95)' } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px', borderBottom: '1px solid rgba(99,102,241,0.1)' } },
-                  h('span', { style: { fontSize: '10px', fontWeight: 'bold', color: '#818cf8' } }, '\uD83D\uDCCA TABLE'),
+                  h('span', { style: { fontSize: '10px', fontWeight: 'bold', color: '#818cf8' } }, __alloT('stem.graphcalc.table_2', '\uD83D\uDCCA TABLE')),
                   h('label', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', display: 'flex', alignItems: 'center', gap: '3px' } }, 'Start:', h('input', { type: 'number', value: tableX, onChange: function(e) { upd('tableX', parseFloat(e.target.value) || 0); }, style: { width: '40px', padding: '1px 3px', borderRadius: '3px', border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(99,102,241,0.1)', color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'monospace', fontSize: '11px' } })),
                   h('label', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', display: 'flex', alignItems: 'center', gap: '3px' } }, 'Step:', h('input', { type: 'number', value: tableStep, onChange: function(e) { upd('tableStep', parseFloat(e.target.value) || 1); }, style: { width: '40px', padding: '1px 3px', borderRadius: '3px', border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(99,102,241,0.1)', color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'monospace', fontSize: '11px' } }))
                 ),
                 h('table', { style: { width: '100%', fontSize: '11px', fontFamily: 'monospace', borderCollapse: 'collapse' } },
-                  h('caption', { className: 'sr-only' }, 'graphcalc data table'), h('thead', null, h('tr', null, h('th', { scope: 'col', style: { padding: '3px 10px', textAlign: 'right', color: '#818cf8', fontWeight: 'bold', borderBottom: '1px solid rgba(99,102,241,0.15)' } }, 'x'), h('th', { style: { padding: '3px 10px', textAlign: 'right', color: funcs[0] ? funcs[0].color : '#38bdf8', fontWeight: 'bold', borderBottom: '1px solid rgba(99,102,241,0.15)' } }, 'y\u2081'))),
+                  h('caption', { className: 'sr-only' }, __alloT('stem.graphcalc.graphcalc_data_table', 'graphcalc data table')), h('thead', null, h('tr', null, h('th', { scope: 'col', style: { padding: '3px 10px', textAlign: 'right', color: '#818cf8', fontWeight: 'bold', borderBottom: '1px solid rgba(99,102,241,0.15)' } }, 'x'), h('th', { style: { padding: '3px 10px', textAlign: 'right', color: funcs[0] ? funcs[0].color : '#38bdf8', fontWeight: 'bold', borderBottom: '1px solid rgba(99,102,241,0.15)' } }, 'y\u2081'))),
                   h('tbody', null, tableRows.map(function(r, ri) { return h('tr', { key: ri, style: { background: ri % 2 === 0 ? 'transparent' : 'rgba(99,102,241,0.04)' } }, h('td', { style: { padding: '2px 10px', textAlign: 'right', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, r.x), h('td', { style: { padding: '2px 10px', textAlign: 'right', color: 'var(--allo-stem-text, #e2e8f0)' } }, r.y)); }))
                 )
               ) : null
@@ -758,7 +759,7 @@
             // Right sidebar
             h('div', { style: { width: '230px', borderLeft: '1px solid rgba(99,102,241,0.15)', display: 'flex', flexDirection: 'column', background: 'rgba(15,23,42,0.8)' } },
               h('div', { style: { display: 'flex', borderBottom: '1px solid rgba(99,102,241,0.1)' } },
-                [{ id: 'coach', label: '\uD83D\uDCA1 Coach' }, { id: 'challenge', label: '\uD83C\uDFAF Tasks' }, { id: 'ai', label: '\uD83E\uDD16 AI' }, { id: 'badges', label: '\uD83C\uDFC5' }, { id: 'inquiry', label: '\u2754 Inquiry' }].map(function(st) {
+                [{ id: 'coach', label: __alloT('stem.graphcalc.coach', '\uD83D\uDCA1 Coach') }, { id: 'challenge', label: __alloT('stem.graphcalc.tasks', '\uD83C\uDFAF Tasks') }, { id: 'ai', label: __alloT('stem.graphcalc.ai', '\uD83E\uDD16 AI') }, { id: 'badges', label: '\uD83C\uDFC5' }, { id: 'inquiry', label: __alloT('stem.graphcalc.inquiry', '\u2754 Inquiry') }].map(function(st) {
                   var active = (d._sideTab || 'coach') === st.id;
                   return h('button', { 'aria-label': st.label, key: st.id, onClick: function() { upd('_sideTab', st.id); }, style: { flex: 1, padding: '8px 4px', fontSize: '11px', fontWeight: 'bold', color: active ? '#a5b4fc' : '#94a3b8', background: active ? 'rgba(99,102,241,0.1)' : 'transparent', borderTop: 'none', borderRight: 'none', borderLeft: 'none', borderBottom: active ? '2px solid #818cf8' : '2px solid transparent', cursor: 'pointer' } }, st.label);
                 })
@@ -769,7 +770,7 @@
                   return h('div', { key: i, style: { padding: '10px', marginBottom: '6px', borderRadius: '10px', background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.12)' } },
                     h('div', { style: { fontWeight: 'bold', fontSize: '12px', marginBottom: '4px', color: '#a5b4fc' } }, tip.icon + ' ' + tip.title),
                     h('div', { style: { fontSize: '11px', lineHeight: '1.5', color: 'var(--allo-stem-text, #cbd5e1)' } }, tip.text),
-                    h('button', { 'aria-label': 'Read aloud', onClick: function() { speakText(tip.text, callTTS); }, style: { marginTop: '4px', background: 'none', border: 'none', color: '#818cf8', fontSize: '10px', cursor: 'pointer', fontWeight: 'bold' } }, '\uD83D\uDD0A Read aloud')
+                    h('button', { 'aria-label': __alloT('stem.graphcalc.read_aloud', 'Read aloud'), onClick: function() { speakText(tip.text, callTTS); }, style: { marginTop: '4px', background: 'none', border: 'none', color: '#818cf8', fontSize: '10px', cursor: 'pointer', fontWeight: 'bold' } }, __alloT('stem.graphcalc.read_aloud_2', '\uD83D\uDD0A Read aloud'))
                   );
                 })
               ) : null,
@@ -782,7 +783,7 @@
                     h('div', { style: { fontSize: '11px', lineHeight: '1.5', color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: '4px' } }, ch.prompt),
                     isActive ? h('div', null,
                       h('div', { style: { fontSize: '10px', color: '#fbbf24', background: 'rgba(251,191,36,0.1)', padding: '6px 8px', borderRadius: '6px', marginTop: '4px' } }, '\uD83D\uDCA1 ' + ch.hint),
-                      h('button', { 'aria-label': 'Complete', onClick: function(e) { e.stopPropagation(); SOUNDS.quizCorrect(); updMulti({ _challengesCompleted: (d._challengesCompleted || 0) + 1, activeChallenge: -1 }); if (addToast) addToast('\u2705 Challenge done! +5 XP'); if (awardStemXP) awardStemXP('graphCalc', 5, 'Graphing challenge'); }, style: { marginTop: '6px', padding: '4px 12px', borderRadius: '6px', background: '#22c55e', color: '#fff', border: 'none', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\u2705 Complete')
+                      h('button', { 'aria-label': __alloT('stem.graphcalc.complete', 'Complete'), onClick: function(e) { e.stopPropagation(); SOUNDS.quizCorrect(); updMulti({ _challengesCompleted: (d._challengesCompleted || 0) + 1, activeChallenge: -1 }); if (addToast) addToast('\u2705 Challenge done! +5 XP'); if (awardStemXP) awardStemXP('graphCalc', 5, 'Graphing challenge'); }, style: { marginTop: '6px', padding: '4px 12px', borderRadius: '6px', background: '#22c55e', color: '#fff', border: 'none', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, __alloT('stem.graphcalc.complete_2', '\u2705 Complete'))
                     ) : null
                   );
                 })
@@ -790,19 +791,19 @@
               // AI
               (d._sideTab || 'coach') === 'ai' ? h('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', padding: '8px' } },
                 h('div', { style: { flex: 1, overflowY: 'auto', marginBottom: '8px' } },
-                  aiMessages.length === 0 ? h('div', { style: { textAlign: 'center', padding: '20px 0' } }, h('div', { style: { fontSize: '24px', marginBottom: '8px' } }, '\uD83E\uDD16'), h('p', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Ask about graphing or math!')) : null,
+                  aiMessages.length === 0 ? h('div', { style: { textAlign: 'center', padding: '20px 0' } }, h('div', { style: { fontSize: '24px', marginBottom: '8px' } }, '\uD83E\uDD16'), h('p', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.graphcalc.ask_about_graphing_or_math', 'Ask about graphing or math!'))) : null,
                   aiMessages.map(function(msg, i) {
                     return h('div', { key: i, style: { display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start', marginBottom: '6px' } },
                       h('div', { style: { maxWidth: '85%', padding: '6px 10px', borderRadius: '10px', fontSize: '11px', lineHeight: '1.5', background: msg.role === 'user' ? '#6366f1' : 'rgba(99,102,241,0.1)', color: msg.role === 'user' ? '#fff' : '#cbd5e1' } },
                         msg.text,
-                        msg.role !== 'user' ? h('button', { 'aria-label': 'Speak Text', onClick: function() { speakText(msg.text, callTTS); }, style: { marginLeft: '6px', background: 'none', border: 'none', color: '#818cf8', fontSize: '10px', cursor: 'pointer' } }, '\uD83D\uDD0A') : null
+                        msg.role !== 'user' ? h('button', { 'aria-label': __alloT('stem.graphcalc.speak_text', 'Speak Text'), onClick: function() { speakText(msg.text, callTTS); }, style: { marginLeft: '6px', background: 'none', border: 'none', color: '#818cf8', fontSize: '10px', cursor: 'pointer' } }, '\uD83D\uDD0A') : null
                       ));
                   }),
                   aiLoading ? h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, 'Thinking...') : null
                 ),
                 h('div', { style: { display: 'flex', gap: '4px' } },
-                  h('input', { type: 'text', value: aiInput, onChange: function(e) { upd('aiInput', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter' && aiInput.trim()) handleAiQuestion(aiInput.trim()); }, placeholder: 'Ask about math...', 'aria-label': 'Ask the math tutor', className: 'focus:ring-2 focus:ring-indigo-500', style: { flex: 1, padding: '6px 8px', borderRadius: '6px', border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.08)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px' } }),
-                  h('button', { onClick: function() { if (aiInput.trim()) handleAiQuestion(aiInput.trim()); }, 'aria-label': 'Send question to AI math tutor', style: { padding: '6px 10px', borderRadius: '6px', background: '#6366f1', color: '#fff', border: 'none', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' } }, '\u2191')
+                  h('input', { type: 'text', value: aiInput, onChange: function(e) { upd('aiInput', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter' && aiInput.trim()) handleAiQuestion(aiInput.trim()); }, placeholder: __alloT('stem.graphcalc.ask_about_math', 'Ask about math...'), 'aria-label': __alloT('stem.graphcalc.ask_the_math_tutor', 'Ask the math tutor'), className: 'focus:ring-2 focus:ring-indigo-500', style: { flex: 1, padding: '6px 8px', borderRadius: '6px', border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.08)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px' } }),
+                  h('button', { onClick: function() { if (aiInput.trim()) handleAiQuestion(aiInput.trim()); }, 'aria-label': __alloT('stem.graphcalc.send_question_to_ai_math_tutor', 'Send question to AI math tutor'), style: { padding: '6px 10px', borderRadius: '6px', background: '#6366f1', color: '#fff', border: 'none', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' } }, '\u2191')
                 )
               ) : null,
               // Badges
@@ -813,7 +814,7 @@
                   return h('div', { key: b.id, style: { padding: '8px', marginBottom: '4px', borderRadius: '8px', background: earned ? 'rgba(167,139,250,0.12)' : 'rgba(255,255,255,0.03)', border: earned ? '1px solid rgba(167,139,250,0.3)' : '1px solid rgba(99,102,241,0.08)', opacity: earned ? 1 : 0.5 } },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
                       h('span', { style: { fontSize: '16px' } }, earned ? b.icon : '\uD83D\uDD12'),
-                      h('div', null, h('div', { style: { fontSize: '11px', fontWeight: 'bold', color: earned ? '#c4b5fd' : '#94a3b8' } }, b.label), h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, b.desc)),
+                      h('div', null, h('div', { style: { fontSize: '11px', fontWeight: 'bold', color: earned ? '#c4b5fd' : '#94a3b8' } }, b.label), h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.graphcalc.' + (b.id) + '_desc', b.desc))),
                       earned ? h('span', { style: { marginLeft: 'auto', fontSize: '11px', color: '#a78bfa', fontWeight: 'bold' } }, '+' + b.xp + ' XP') : null
                     ));
                 })
@@ -824,26 +825,26 @@
                 function setIQ(patch) { upd('quadHunt', Object.assign({}, iq, patch)); }
                 var state = Math.abs(iq.a) < 0.1 ? 'degenerate' : (iq.a > 0 ? 'up' : 'down');
                 var stateMeta = {
-                  up:         { label: '🙂 Opens UP (min at vertex)',   color: '#059669', bg: 'rgba(16,185,129,0.10)', border: '#10b981' },
-                  down:       { label: '🙁 Opens DOWN (max at vertex)', color: '#dc2626', bg: 'rgba(220,38,38,0.10)', border: '#ef4444' },
-                  degenerate: { label: '➖ Nearly a line',               color: '#64748b', bg: 'rgba(100,116,139,0.10)', border: '#94a3b8' }
+                  up:         { label: __alloT('stem.graphcalc.opens_up_min_at_vertex', '🙂 Opens UP (min at vertex)'),   color: '#059669', bg: 'rgba(16,185,129,0.10)', border: '#10b981' },
+                  down:       { label: __alloT('stem.graphcalc.opens_down_max_at_vertex', '🙁 Opens DOWN (max at vertex)'), color: '#dc2626', bg: 'rgba(220,38,38,0.10)', border: '#ef4444' },
+                  degenerate: { label: __alloT('stem.graphcalc.nearly_a_line', '➖ Nearly a line'),               color: '#64748b', bg: 'rgba(100,116,139,0.10)', border: '#94a3b8' }
                 }[state];
                 function logObs() {
                   setIQ({ log: (iq.log || []).concat([{ a: iq.a, h: iq.hVertex, k: iq.kVertex, st: state }]).slice(-8) });
                 }
                 return h('div', { style: { flex: 1, overflowY: 'auto', padding: '8px', color: 'var(--allo-stem-text, #e2e8f0)' } },
-                  h('div', { style: { fontSize: '12px', fontWeight: 'bold', color: '#a5b4fc', marginBottom: '6px' } }, '❔ Quadratic discovery'),
+                  h('div', { style: { fontSize: '12px', fontWeight: 'bold', color: '#a5b4fc', marginBottom: '6px' } }, __alloT('stem.graphcalc.quadratic_discovery', '❔ Quadratic discovery')),
                   h('p', { style: { fontSize: '10px', color: '#94a3b8', lineHeight: 1.4, marginBottom: '8px' } },
-                    'Sliders for vertex (h, k) and stretch a. Discrete 3-state outcome shows the parabola direction. No score, no reveal — sweep and notice.'),
+                    __alloT('stem.graphcalc.sliders_for_vertex_h_k_and_stretch_a_d', 'Sliders for vertex (h, k) and stretch a. Discrete 3-state outcome shows the parabola direction. No score, no reveal — sweep and notice.')),
                   h('div', { style: { marginBottom: '8px', padding: '8px', borderRadius: '6px', textAlign: 'center', background: stateMeta.bg, border: '1px solid ' + stateMeta.border } },
                     h('div', { style: { fontSize: '11px', fontWeight: 'bold', color: stateMeta.color } }, stateMeta.label),
                     h('div', { style: { fontSize: '10px', color: '#cbd5e1', marginTop: '3px', fontFamily: 'monospace' } },
                       'y = ' + iq.a.toFixed(2) + '(x − ' + iq.hVertex + ')² + ' + iq.kVertex)
                   ),
                   [
-                    { key: 'a',       label: 'stretch a',  val: iq.a,       min: -3,  max: 3,   step: 0.1 },
-                    { key: 'hVertex', label: 'vertex h',   val: iq.hVertex, min: -10, max: 10,  step: 1 },
-                    { key: 'kVertex', label: 'vertex k',   val: iq.kVertex, min: -10, max: 10,  step: 1 }
+                    { key: 'a',       label: __alloT('stem.graphcalc.stretch_a', 'stretch a'),  val: iq.a,       min: -3,  max: 3,   step: 0.1 },
+                    { key: 'hVertex', label: __alloT('stem.graphcalc.vertex_h', 'vertex h'),   val: iq.hVertex, min: -10, max: 10,  step: 1 },
+                    { key: 'kVertex', label: __alloT('stem.graphcalc.vertex_k', 'vertex k'),   val: iq.kVertex, min: -10, max: 10,  step: 1 }
                   ].map(function(s) {
                     return h('div', { key: s.key, style: { marginBottom: '6px' } },
                       h('label', { htmlFor: 'qh-' + s.key, style: { display: 'block', fontSize: '10px', fontWeight: 'bold', color: '#cbd5e1', marginBottom: '2px' } },
@@ -853,9 +854,9 @@
                         style: { width: '100%' }, 'aria-label': s.label }));
                   }),
                   h('div', { style: { display: 'flex', gap: '4px', marginBottom: '6px', flexWrap: 'wrap' } },
-                    h('button', { onClick: logObs, style: { padding: '3px 8px', fontSize: '10px', fontWeight: 'bold', background: 'rgba(99,102,241,0.2)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.4)', borderRadius: '4px', cursor: 'pointer' } }, '📋 Log'),
+                    h('button', { onClick: logObs, style: { padding: '3px 8px', fontSize: '10px', fontWeight: 'bold', background: 'rgba(99,102,241,0.2)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.4)', borderRadius: '4px', cursor: 'pointer' } }, __alloT('stem.graphcalc.log', '📋 Log')),
                     h('button', { onClick: function() { setIQ({ a: 1, hVertex: 0, kVertex: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
-                      style: { padding: '3px 8px', fontSize: '10px', fontWeight: 600, background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: '4px', cursor: 'pointer' } }, '↺ Reset')
+                      style: { padding: '3px 8px', fontSize: '10px', fontWeight: 600, background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: '4px', cursor: 'pointer' } }, __alloT('stem.graphcalc.reset', '↺ Reset'))
                   ),
                   (iq.log || []).length > 0 && h('table', { style: { fontSize: '9px', width: '100%', borderCollapse: 'collapse', color: '#cbd5e1', marginBottom: '8px' } },
                     h('thead', null, h('tr', { style: { background: 'rgba(99,102,241,0.1)' } },
@@ -869,33 +870,33 @@
                     }))
                   ),
                   h('div', { style: { marginBottom: '8px' } },
-                    h('label', { htmlFor: 'qh-hypo', style: { display: 'block', fontSize: '10px', fontWeight: 'bold', color: '#cbd5e1', marginBottom: '2px' } }, 'Hypothesis (free text):'),
+                    h('label', { htmlFor: 'qh-hypo', style: { display: 'block', fontSize: '10px', fontWeight: 'bold', color: '#cbd5e1', marginBottom: '2px' } }, __alloT('stem.graphcalc.hypothesis_free_text', 'Hypothesis (free text):')),
                     h('textarea', { id: 'qh-hypo', value: iq.hypothesis || '',
                       onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
-                      placeholder: 'What does a control? What about h and k?',
+                      placeholder: __alloT('stem.graphcalc.what_does_a_control_what_about_h_and_k', 'What does a control? What about h and k?'),
                       style: { width: '100%', minHeight: '40px', padding: '4px', background: 'rgba(99,102,241,0.08)', color: '#e2e8f0', border: '1px solid rgba(99,102,241,0.3)', borderRadius: '4px', fontSize: '10px', fontFamily: 'monospace' }, rows: 3 })
                   ),
                   h('div', { style: { marginBottom: '8px' } },
                     !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
                       style: { padding: '3px 8px', fontSize: '10px', fontWeight: 'bold', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.4)', borderRadius: '4px', cursor: 'pointer' } },
-                      '🤔 Stuck — show open prompts'),
+                      __alloT('stem.graphcalc.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
                     iq.stuckRevealed && h('div', { style: { padding: '6px', fontSize: '10px', color: '#cbd5e1', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: '4px' } },
                       h('ul', { style: { margin: 0, paddingLeft: '14px' } },
-                        h('li', null, 'Hold two sliders steady. Move one. Watch what happens.'),
-                        h('li', null, 'Log observations of each state. What patterns emerge?'),
-                        h('li', null, 'What slider value makes the parabola degenerate?'),
-                        h('li', null, 'Can you get the same shape with two different settings?')))
+                        h('li', null, __alloT('stem.graphcalc.hold_two_sliders_steady_move_one_watch', 'Hold two sliders steady. Move one. Watch what happens.')),
+                        h('li', null, __alloT('stem.graphcalc.log_observations_of_each_state_what_pa', 'Log observations of each state. What patterns emerge?')),
+                        h('li', null, __alloT('stem.graphcalc.what_slider_value_makes_the_parabola_d', 'What slider value makes the parabola degenerate?')),
+                        h('li', null, __alloT('stem.graphcalc.can_you_get_the_same_shape_with_two_di', 'Can you get the same shape with two different settings?'))))
                   ),
                   h('div', { style: { padding: '6px', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '4px' } },
                     h('label', { style: { display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
                       h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
-                      'I understand — explain in my own words'),
+                      __alloT('stem.graphcalc.i_understand_explain_in_my_own_words', 'I understand — explain in my own words')),
                     iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); },
-                      placeholder: 'Explain in your own words: what does each slider control?',
+                      placeholder: __alloT('stem.graphcalc.explain_in_your_own_words_what_does_ea', 'Explain in your own words: what does each slider control?'),
                       style: { width: '100%', marginTop: '4px', minHeight: '50px', padding: '4px', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '4px', fontSize: '10px', fontFamily: 'monospace' }, rows: 4 })
                   ),
                   h('div', { style: { marginTop: '6px', padding: '6px', fontSize: '9px', fontStyle: 'italic', color: '#64748b', background: 'rgba(15,23,42,0.5)', borderRadius: '4px' } },
-                    'Design note: discrete 3-state marker; no score, no reveal — by design.')
+                    __alloT('stem.graphcalc.design_note_discrete_3_state_marker_no', 'Design note: discrete 3-state marker; no score, no reveal — by design.'))
                 );
               })() : null
             )

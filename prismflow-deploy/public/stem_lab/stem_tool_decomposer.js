@@ -423,6 +423,7 @@
       { id: 'streak_3', label: 'Get a 3-answer correct streak', icon: '\uD83D\uDD25', check: function(d) { return (d.bestStreak || 0) >= 3; }, progress: function(d) { return (d.bestStreak || 0) + '/3'; } }
     ],
     render: function(ctx) {
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       /* ── Aliases ── */
       var React = ctx.React;
       var h = React.createElement;
@@ -1816,7 +1817,7 @@
                           scene.name,
                           complete ? h('span', { className: 'text-emerald-500 text-xs' }, '\u2705') : null
                         ),
-                        h('p', { className: 'text-[11px] text-slate-600 mt-0.5 line-clamp-1' }, scene.desc),
+                        h('p', { className: 'text-[11px] text-slate-600 mt-0.5 line-clamp-1' }, __alloT('stem.decomposer.' + (scene.id) + '_desc', scene.desc)),
                         h('div', { className: 'flex items-center gap-2 mt-2' },
                           h('div', { className: 'flex-1 h-2 rounded-full overflow-hidden', style: { background: complete ? '#d1fae5' : '#f1f5f9' } },
                             h('div', { className: 'h-full rounded-full transition-all duration-500', style: { width: pct + '%', background: complete ? '#10b981' : scene.accent } })

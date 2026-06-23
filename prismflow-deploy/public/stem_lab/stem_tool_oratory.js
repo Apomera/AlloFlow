@@ -1372,6 +1372,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     ],
 
     render: function(ctx) {
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -2801,11 +2802,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
         // TABS definition
         // ═══════════════════════════════════════
         var TABS = [
-          { id: 'visualizer', label: 'Visualizer', icon: '\uD83C\uDFA4' },
-          { id: 'practice', label: 'Practice', icon: '\uD83D\uDCDD' },
-          { id: 'multilingual', label: 'Multilingual', icon: '\uD83C\uDF10' },
-          { id: 'report', label: 'Report', icon: '\uD83D\uDCCB' },
-          { id: 'prosodyHunt', label: 'Prosody', icon: '\u2699\uFE0F' }
+          { id: 'visualizer', label: t('stem.oratory.visualizer', 'Visualizer'), icon: '\uD83C\uDFA4' },
+          { id: 'practice', label: t('stem.oratory.practice', 'Practice'), icon: '\uD83D\uDCDD' },
+          { id: 'multilingual', label: t('stem.oratory.multilingual', 'Multilingual'), icon: '\uD83C\uDF10' },
+          { id: 'report', label: t('stem.oratory.report', 'Report'), icon: '\uD83D\uDCCB' },
+          { id: 'prosodyHunt', label: t('stem.oratory.prosody', 'Prosody'), icon: '\u2699\uFE0F' }
         ];
 
         // ═══════════════════════════════════════
@@ -2833,7 +2834,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               h('div', { className: 'flex items-center justify-between mb-3' },
                 h('h3', { className: headingClass + ' text-sm flex items-center gap-2' },
                   h('span', null, '\uD83C\uDFB5'),
-                  'Vocal Warm-ups',
+                  t('stem.oratory.vocal_warm_ups', 'Vocal Warm-ups'),
                   warmUpsCompleted > 0 && h('span', { className: 'text-xs font-normal ' + subTextClass }, '(' + warmUpsCompleted + ' completed)')
                 )
               ),
@@ -2844,19 +2845,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                         h('span', { className: 'text-xl' }, warmupActive.icon),
                         h('span', { className: headingClass + ' text-sm' }, warmupActive.label)),
                       h('p', { className: (isDark ? 'text-slate-300' : 'text-slate-600') + ' text-sm leading-relaxed' }, warmupActive.desc),
-                      h('p', { className: subTextClass + ' mt-2 italic' }, 'Start your microphone and try it! When you\'re done, click "Complete."')),
+                      h('p', { className: subTextClass + ' mt-2 italic' }, t('stem.oratory.start_your_microphone_and_try_it_when_', 'Start your microphone and try it! When you\'re done, click "Complete."'))),
                     h('div', { className: 'flex gap-2' },
                       h('button', {
                         className: btnPrimary,
                         onClick: function() { completeWarmup(warmupActive.id); },
-                        'aria-label': 'Mark warm-up as complete'
-                      }, 'Complete'),
+                        'aria-label': t('stem.oratory.mark_warm_up_as_complete', 'Mark warm-up as complete')
+                      }, t('stem.oratory.complete', 'Complete')),
                       h('button', {
                         className: btnSecondary,
                         onClick: function() { setWarmupActive(null); },
                         
-                      }, 'Cancel')))
-                : h('div', { className: 'flex flex-wrap gap-2', role: 'list', 'aria-label': 'Available warm-up exercises' },
+                      }, t('stem.oratory.cancel', 'Cancel'))))
+                : h('div', { className: 'flex flex-wrap gap-2', role: 'list', 'aria-label': t('stem.oratory.available_warm_up_exercises', 'Available warm-up exercises') },
                     WARMUPS.map(function(wu) {
                       return h('button', {
                         key: wu.id,
@@ -2884,8 +2885,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   h('button', {
                     className: btnSecondary,
                     onClick: resetSession,
-                    'aria-label': 'Reset all session data'
-                  }, 'Reset')),
+                    'aria-label': t('stem.oratory.reset_all_session_data', 'Reset all session data')
+                  }, t('stem.oratory.reset', 'Reset'))),
                 h('div', { className: 'flex items-center gap-2' },
                   h('button', {
                     className: btnSecondary + (showModel ? ' ring-2 ring-violet-400' : ''),
@@ -2913,8 +2914,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             // Prosody Curve
             h('div', { className: cardClass },
               h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
-                h('span', null, '\uD83D\uDCC8'), 'Pitch Contour'),
-              h('p', { className: subTextClass + ' mb-2' }, 'The melody of your speech. Rising pitch = questions, falling = statements, variation = emphasis.'),
+                h('span', null, '\uD83D\uDCC8'), t('stem.oratory.pitch_contour', 'Pitch Contour')),
+              h('p', { className: subTextClass + ' mb-2' }, t('stem.oratory.the_melody_of_your_speech_rising_pitch', 'The melody of your speech. Rising pitch = questions, falling = statements, variation = emphasis.')),
               h('canvas', { ref: pitchCanvasRef,
                 width: 600,
                 height: 180,
@@ -2925,12 +2926,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   : 'Pitch contour graph. No pitch detected. Speak into the microphone to see your pitch.'
               }),
               // Pitch zone legend
-              h('div', { className: 'flex flex-wrap gap-3 mt-2 text-xs', role: 'list', 'aria-label': 'Pitch zone legend' },
+              h('div', { className: 'flex flex-wrap gap-3 mt-2 text-xs', role: 'list', 'aria-label': t('stem.oratory.pitch_zone_legend', 'Pitch zone legend') },
                 [
-                  { color: '#3b82f6', label: 'Low / Calm', pattern: '\u2588' },
-                  { color: '#22c55e', label: 'Conversational', pattern: '\u2588' },
-                  { color: '#f97316', label: 'Emphasis', pattern: '\u2588' },
-                  { color: '#ef4444', label: 'High / Strained', pattern: '\u2588' }
+                  { color: '#3b82f6', label: t('stem.oratory.low_calm', 'Low / Calm'), pattern: '\u2588' },
+                  { color: '#22c55e', label: t('stem.oratory.conversational', 'Conversational'), pattern: '\u2588' },
+                  { color: '#f97316', label: t('stem.oratory.emphasis', 'Emphasis'), pattern: '\u2588' },
+                  { color: '#ef4444', label: t('stem.oratory.high_strained', 'High / Strained'), pattern: '\u2588' }
                 ].map(function(zone) {
                   return h('span', { key: zone.label, className: 'flex items-center gap-1', role: 'listitem' },
                     h('span', { style: { color: zone.color } }, zone.pattern),
@@ -2943,8 +2944,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               // Pacing Speedometer
               h('div', { className: cardClass },
                 h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
-                  h('span', null, '\u23F1\uFE0F'), 'Pacing'),
-                h('p', { className: subTextClass + ' mb-2' }, 'How fast you are speaking in words per minute.'),
+                  h('span', null, '\u23F1\uFE0F'), t('stem.oratory.pacing', 'Pacing')),
+                h('p', { className: subTextClass + ' mb-2' }, t('stem.oratory.how_fast_you_are_speaking_in_words_per', 'How fast you are speaking in words per minute.')),
                 h('canvas', { ref: pacingCanvasRef,
                   width: 280,
                   height: 160,
@@ -2956,8 +2957,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               // Volume Meter
               h('div', { className: cardClass },
                 h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
-                  h('span', null, '\uD83D\uDD0A'), 'Volume'),
-                h('p', { className: subTextClass + ' mb-2' }, 'Your speaking volume and steadiness over time.'),
+                  h('span', null, '\uD83D\uDD0A'), t('stem.oratory.volume', 'Volume')),
+                h('p', { className: subTextClass + ' mb-2' }, t('stem.oratory.your_speaking_volume_and_steadiness_ov', 'Your speaking volume and steadiness over time.')),
                 h('canvas', { ref: volumeCanvasRef,
                   width: 280,
                   height: 70,
@@ -2970,8 +2971,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             // Pause Detection
             h('div', { className: cardClass },
               h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
-                h('span', null, '\u23F8\uFE0F'), 'Pause Detection'),
-              h('p', { className: subTextClass + ' mb-2' }, 'Good speakers use pauses! Aim for 20-30% pauses in your speech.'),
+                h('span', null, '\u23F8\uFE0F'), t('stem.oratory.pause_detection', 'Pause Detection')),
+              h('p', { className: subTextClass + ' mb-2' }, t('stem.oratory.good_speakers_use_pauses_aim_for_20_30', 'Good speakers use pauses! Aim for 20-30% pauses in your speech.')),
               h('canvas', { ref: pauseCanvasRef,
                 width: 600,
                 height: 55,
@@ -2993,12 +2994,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 'aria-controls': 'oratory-fluency-section'
               },
                 h('h3', { className: headingClass + ' text-sm flex items-center gap-2' },
-                  h('span', null, '\uD83D\uDCCA'), 'Fluency / Disfluency Tracker'),
+                  h('span', null, '\uD83D\uDCCA'), t('stem.oratory.fluency_disfluency_tracker', 'Fluency / Disfluency Tracker')),
                 h('span', { className: subTextClass + ' text-lg' }, fluencyOpen ? '\u25B2' : '\u25BC')),
 
               fluencyOpen && h('div', { id: 'oratory-fluency-section', className: 'mt-4 space-y-4' },
                 h('p', { className: subTextClass + ' mb-2' },
-                  'Analyzes pause patterns, syllable rate consistency, and volume steadiness to generate a fluency score. Record at least 10 seconds of speech, then click "Analyze Fluency."'),
+                  t('stem.oratory.analyzes_pause_patterns_syllable_rate_', 'Analyzes pause patterns, syllable rate consistency, and volume steadiness to generate a fluency score. Record at least 10 seconds of speech, then click "Analyze Fluency."')),
 
                 // Analyze button
                 h('div', { className: 'flex items-center gap-3 flex-wrap' },
@@ -3006,9 +3007,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                     className: btnPrimary,
                     onClick: computeFluencyScore,
                     disabled: pitchHistory.length < 30,
-                    'aria-label': 'Analyze fluency from current recording data'
-                  }, '\uD83D\uDCCA Analyze Fluency'),
-                  pitchHistory.length < 30 && h('span', { className: subTextClass + ' italic' }, 'Record more speech first...')),
+                    'aria-label': t('stem.oratory.analyze_fluency_from_current_recording', 'Analyze fluency from current recording data')
+                  }, t('stem.oratory.analyze_fluency', '\uD83D\uDCCA Analyze Fluency')),
+                  pitchHistory.length < 30 && h('span', { className: subTextClass + ' italic' }, t('stem.oratory.record_more_speech_first', 'Record more speech first...'))),
 
                 // Results
                 fluencyScore !== null && h('div', { className: 'space-y-3' },
@@ -3026,13 +3027,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   fluencyDetails && h('div', { className: 'grid grid-cols-3 gap-3 text-center text-xs' },
                     h('div', { className: 'p-2 rounded-lg ' + (isDark ? 'bg-slate-700' : 'bg-slate-50') },
                       h('div', { className: headingClass + ' text-sm' }, fluencyDetails.pauseScore + '%'),
-                      h('div', { className: subTextClass }, 'Pause Regularity')),
+                      h('div', { className: subTextClass }, t('stem.oratory.pause_regularity', 'Pause Regularity'))),
                     h('div', { className: 'p-2 rounded-lg ' + (isDark ? 'bg-slate-700' : 'bg-slate-50') },
                       h('div', { className: headingClass + ' text-sm' }, fluencyDetails.rhythmScore + '%'),
-                      h('div', { className: subTextClass }, 'Rhythm')),
+                      h('div', { className: subTextClass }, t('stem.oratory.rhythm', 'Rhythm'))),
                     h('div', { className: 'p-2 rounded-lg ' + (isDark ? 'bg-slate-700' : 'bg-slate-50') },
                       h('div', { className: headingClass + ' text-sm' }, fluencyDetails.volScore + '%'),
-                      h('div', { className: subTextClass }, 'Volume Steadiness'))),
+                      h('div', { className: subTextClass }, t('stem.oratory.volume_steadiness', 'Volume Steadiness')))),
 
                   // Pause details
                   fluencyDetails && h('div', { className: subTextClass },
@@ -3043,7 +3044,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
                 // Session comparison chart
                 fluencySessions.length > 0 && h('div', { className: 'mt-3' },
-                  h('h4', { className: headingClass + ' text-xs mb-2' }, 'Session History'),
+                  h('h4', { className: headingClass + ' text-xs mb-2' }, t('stem.oratory.session_history', 'Session History')),
                   h('canvas', { ref: fluencyChartCanvasRef,
                     width: 500,
                     height: 150,
@@ -3065,15 +3066,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 'aria-controls': 'oratory-vowel-lab'
               },
                 h('h3', { className: headingClass + ' text-sm flex items-center gap-2' },
-                  h('span', null, '\uD83D\uDDE3\uFE0F'), 'Formant Vowel Space Lab'),
+                  h('span', null, '\uD83D\uDDE3\uFE0F'), t('stem.oratory.formant_vowel_space_lab', 'Formant Vowel Space Lab')),
                 h('span', { className: subTextClass + ' text-lg' }, vowelLabOpen ? '\u25B2' : '\u25BC')),
 
               vowelLabOpen && h('div', { id: 'oratory-vowel-lab', className: 'mt-4 space-y-3' },
                 h('p', { className: subTextClass + ' mb-2' },
-                  'Visualizes your vowel sounds on an IPA vowel quadrilateral using formant analysis (F1/F2). Speak a vowel sound and watch the dot move to show where your vowel falls. Trail mode shows diphthong transitions!'),
+                  t('stem.oratory.visualizes_your_vowel_sounds_on_an_ipa', 'Visualizes your vowel sounds on an IPA vowel quadrilateral using formant analysis (F1/F2). Speak a vowel sound and watch the dot move to show where your vowel falls. Trail mode shows diphthong transitions!')),
 
                 // Language selector for vowel map
-                h('div', { className: 'flex flex-wrap gap-2 mb-3', role: 'radiogroup', 'aria-label': 'Vowel map language' },
+                h('div', { className: 'flex flex-wrap gap-2 mb-3', role: 'radiogroup', 'aria-label': t('stem.oratory.vowel_map_language', 'Vowel map language') },
                   Object.keys(VOWEL_MAPS).map(function(langKey) {
                     var isActive = vowelLang === langKey;
                     return h('button', {
@@ -3107,11 +3108,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   h('button', {
                     className: btnSecondary,
                     onClick: function() { setVowelTrail([]); },
-                    'aria-label': 'Clear vowel trail'
-                  }, 'Clear Trail')),
+                    'aria-label': t('stem.oratory.clear_vowel_trail', 'Clear vowel trail')
+                  }, t('stem.oratory.clear_trail', 'Clear Trail'))),
 
                 h('p', { className: subTextClass + ' italic mt-1' },
-                  'Green circles = target vowel positions. Orange dot = your current vowel. Purple trail = recent vowel transitions.')
+                  t('stem.oratory.green_circles_target_vowel_positions_o', 'Green circles = target vowel positions. Orange dot = your current vowel. Purple trail = recent vowel transitions.'))
               )
             ),
 
@@ -3120,12 +3121,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             // ═══════════════════════════════════════
             h('div', { className: cardClass },
               h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
-                h('span', null, '\uD83D\uDD01'), 'Recording Playback'),
+                h('span', null, '\uD83D\uDD01'), t('stem.oratory.recording_playback', 'Recording Playback')),
               h('p', { className: subTextClass + ' mb-3' },
-                'Recordings are automatically saved when you stop the microphone. Play back with synchronized prosody annotation. Last 3 recordings kept.'),
+                t('stem.oratory.recordings_are_automatically_saved_whe', 'Recordings are automatically saved when you stop the microphone. Play back with synchronized prosody annotation. Last 3 recordings kept.')),
 
               savedRecordings.length === 0
-                ? h('p', { className: subTextClass + ' italic text-center py-3' }, 'No recordings yet. Start and stop the microphone to save a recording.')
+                ? h('p', { className: subTextClass + ' italic text-center py-3' }, t('stem.oratory.no_recordings_yet_start_and_stop_the_m', 'No recordings yet. Start and stop the microphone to save a recording.'))
                 : h('div', { className: 'space-y-3' },
                     // Recording list
                     savedRecordings.map(function(rec, ri) {
@@ -3193,23 +3194,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                       // Comparison view
                       compareMode && h('div', { className: 'mt-3 space-y-2' },
                         h('div', { className: 'flex items-center gap-2 text-xs' },
-                          h('label', { className: isDark ? 'text-slate-300' : 'text-slate-600' }, 'Recording 1:'),
+                          h('label', { className: isDark ? 'text-slate-300' : 'text-slate-600' }, t('stem.oratory.recording_1', 'Recording 1:')),
                           h('select', {
                             value: compareIdx1,
                             onChange: function(e) { setCompareIdx1(parseInt(e.target.value, 10)); },
                             className: 'px-2 py-1 rounded text-xs ' + (isDark ? 'bg-slate-700 text-white border-slate-600' : 'bg-white text-slate-900 border-slate-300') + ' border',
-                            'aria-label': 'Select first recording to compare'
+                            'aria-label': t('stem.oratory.select_first_recording_to_compare', 'Select first recording to compare')
                           },
                             savedRecordings.map(function(r, ri) {
                               return h('option', { key: ri, value: ri }, '#' + (ri + 1) + ' (' + new Date(r.timestamp).toLocaleTimeString() + ')');
                             })
                           ),
-                          h('label', { className: isDark ? 'text-slate-300' : 'text-slate-600' }, 'vs Recording 2:'),
+                          h('label', { className: isDark ? 'text-slate-300' : 'text-slate-600' }, t('stem.oratory.vs_recording_2', 'vs Recording 2:')),
                           h('select', {
                             value: compareIdx2,
                             onChange: function(e) { setCompareIdx2(parseInt(e.target.value, 10)); },
                             className: 'px-2 py-1 rounded text-xs ' + (isDark ? 'bg-slate-700 text-white border-slate-600' : 'bg-white text-slate-900 border-slate-300') + ' border',
-                            'aria-label': 'Select second recording to compare'
+                            'aria-label': t('stem.oratory.select_second_recording_to_compare', 'Select second recording to compare')
                           },
                             savedRecordings.map(function(r, ri) {
                               return h('option', { key: ri, value: ri }, '#' + (ri + 1) + ' (' + new Date(r.timestamp).toLocaleTimeString() + ')');
@@ -3249,9 +3250,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
           if (!exerciseType) {
             return h('div', { className: 'space-y-4' },
               h('div', { className: cardClass },
-                h('h3', { className: headingClass + ' text-base mb-1' }, 'Practice Exercises'),
-                h('p', { className: subTextClass + ' mb-4' }, 'Choose an exercise type. The tool will give you phrases to practice with real-time prosody feedback.')),
-              h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3', role: 'list', 'aria-label': 'Exercise types' },
+                h('h3', { className: headingClass + ' text-base mb-1' }, t('stem.oratory.practice_exercises', 'Practice Exercises')),
+                h('p', { className: subTextClass + ' mb-4' }, t('stem.oratory.choose_an_exercise_type_the_tool_will_', 'Choose an exercise type. The tool will give you phrases to practice with real-time prosody feedback.'))),
+              h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3', role: 'list', 'aria-label': t('stem.oratory.exercise_types', 'Exercise types') },
                 EXERCISE_TYPES.map(function(et) {
                   return h('button', {
                     key: et.id,
@@ -3278,7 +3279,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                       h('span', { className: 'text-2xl' }, et.icon),
                       h('div', null,
                         h('div', { className: headingClass + ' text-sm' }, et.label),
-                        h('div', { className: subTextClass }, et.desc))));
+                        h('div', { className: subTextClass }, __alloT('stem.oratory.' + (et.id) + '_desc', et.desc)))));
                 })),
               // AI generation note
               h('div', { className: subTextClass + ' text-center mt-2 italic' },
@@ -3302,8 +3303,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             h('button', {
               className: btnSecondary + ' flex items-center gap-1',
               onClick: function() { setExerciseType(null); setAiExercises(null); },
-              'aria-label': 'Back to exercise type selection'
-            }, '\u2190 Back'),
+              'aria-label': t('stem.oratory.back_to_exercise_type_selection', 'Back to exercise type selection')
+            }, t('stem.oratory.back', '\u2190 Back')),
             h('div', { className: 'flex items-center gap-2' },
               h('span', { className: headingClass + ' text-sm' },
                 (EXERCISE_TYPES.find(function(et) { return et.id === exerciseType; }) || {}).icon + ' ' +
@@ -3313,19 +3314,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               exercises.length > 1 && h('button', {
                 className: btnSecondary,
                 onClick: function() { setExerciseIndex(exerciseIndex > 0 ? exerciseIndex - 1 : exercises.length - 1); setEmphasisWord(0); setEmotionIndex(0); },
-                'aria-label': 'Previous exercise',
+                'aria-label': t('stem.oratory.previous_exercise', 'Previous exercise'),
                 disabled: exercises.length <= 1
               }, '\u2190'),
               exercises.length > 1 && h('button', {
                 className: btnSecondary,
                 onClick: function() { setExerciseIndex((exerciseIndex + 1) % exercises.length); setEmphasisWord(0); setEmotionIndex(0); },
-                'aria-label': 'Next exercise'
+                'aria-label': t('stem.oratory.next_exercise', 'Next exercise')
               }, '\u2192'),
               h('button', {
                 className: btnSecondary,
                 onClick: function() { generateExercises(exerciseType); },
                 disabled: aiLoading,
-                'aria-label': 'Generate new AI exercises'
+                'aria-label': t('stem.oratory.generate_new_ai_exercises', 'Generate new AI exercises')
               }, aiLoading ? 'Generating...' : '\u2728 New'))
           );
 
@@ -3339,8 +3340,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               navBar,
               h('div', { className: cardClass },
                 h('div', { className: headingClass + ' text-lg text-center mb-3' }, '"' + phrase + '"'),
-                h('p', { className: subTextClass + ' text-center mb-3' }, 'Say this phrase with the emotion below. Watch how your pitch and volume change!'),
-                h('div', { className: 'flex flex-wrap gap-2 justify-center mb-4', role: 'radiogroup', 'aria-label': 'Select emotion' },
+                h('p', { className: subTextClass + ' text-center mb-3' }, t('stem.oratory.say_this_phrase_with_the_emotion_below', 'Say this phrase with the emotion below. Watch how your pitch and volume change!')),
+                h('div', { className: 'flex flex-wrap gap-2 justify-center mb-4', role: 'radiogroup', 'aria-label': t('stem.oratory.select_emotion', 'Select emotion') },
                   emotions.map(function(emo, ei) {
                     var isActive = ei === emotionIndex;
                     return h('button', {
@@ -3366,15 +3367,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                     currentEmotion === 'Disappointment' ? '\uD83D\uDE1E' :
                     '\uD83C\uDFAD'),
                   h('div', { className: headingClass + ' text-xl' }, currentEmotion),
-                  h('p', { className: subTextClass + ' mt-1' }, 'Say the phrase with THIS feeling. Notice what happens to your pitch!'))),
+                  h('p', { className: subTextClass + ' mt-1' }, t('stem.oratory.say_the_phrase_with_this_feeling_notic', 'Say the phrase with THIS feeling. Notice what happens to your pitch!')))),
               // Mic controls + mini visualizer
               renderMiniControls(),
               h('div', { className: 'text-center' },
                 h('button', {
                   className: btnPrimary,
                   onClick: recordPhraseCompletion,
-                  'aria-label': 'I practiced this phrase, record it'
-                }, '\u2713 I Practiced This'))
+                  'aria-label': t('stem.oratory.i_practiced_this_phrase_record_it', 'I practiced this phrase, record it')
+                }, t('stem.oratory.i_practiced_this', '\u2713 I Practiced This')))
             );
           }
 
@@ -3385,20 +3386,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             return h('div', { className: 'space-y-4' },
               navBar,
               h('div', { className: cardClass },
-                h('h3', { className: headingClass + ' text-sm mb-3' }, 'Question vs Statement'),
-                h('p', { className: subTextClass + ' mb-3' }, 'Say the same words as a statement (pitch falls at the end) and as a question (pitch rises). Watch the difference on the pitch graph!'),
+                h('h3', { className: headingClass + ' text-sm mb-3' }, t('stem.oratory.question_vs_statement', 'Question vs Statement')),
+                h('p', { className: subTextClass + ' mb-3' }, t('stem.oratory.say_the_same_words_as_a_statement_pitc', 'Say the same words as a statement (pitch falls at the end) and as a question (pitch rises). Watch the difference on the pitch graph!')),
                 h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
                   h('div', { className: 'p-4 rounded-lg text-center ' + (isDark ? 'bg-green-900/30 border border-green-700' : 'bg-green-50 border border-green-200') },
                     h('div', { className: 'text-2xl mb-1' }, '\u2198\uFE0F'),
-                    h('div', { className: subTextClass + ' mb-1' }, 'Statement (pitch falls)'),
+                    h('div', { className: subTextClass + ' mb-1' }, t('stem.oratory.statement_pitch_falls', 'Statement (pitch falls)')),
                     h('div', { className: headingClass + ' text-base' }, stmt)),
                   h('div', { className: 'p-4 rounded-lg text-center ' + (isDark ? 'bg-blue-900/30 border border-blue-700' : 'bg-blue-50 border border-blue-200') },
                     h('div', { className: 'text-2xl mb-1' }, '\u2197\uFE0F'),
-                    h('div', { className: subTextClass + ' mb-1' }, 'Question (pitch rises)'),
+                    h('div', { className: subTextClass + ' mb-1' }, t('stem.oratory.question_pitch_rises', 'Question (pitch rises)')),
                     h('div', { className: headingClass + ' text-base' }, qst)))),
               renderMiniControls(),
               h('div', { className: 'text-center' },
-                h('button', { className: btnPrimary, onClick: recordPhraseCompletion, 'aria-label': 'I practiced this phrase' }, '\u2713 I Practiced This'))
+                h('button', { className: btnPrimary, onClick: recordPhraseCompletion, 'aria-label': t('stem.oratory.i_practiced_this_phrase', 'I practiced this phrase') }, t('stem.oratory.i_practiced_this_2', '\u2713 I Practiced This')))
             );
           }
 
@@ -3423,12 +3424,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             return h('div', { className: 'space-y-4' },
               navBar,
               h('div', { className: cardClass },
-                h('h3', { className: headingClass + ' text-sm mb-3' }, 'Emphasis Drill'),
-                h('p', { className: subTextClass + ' mb-3' }, 'The same sentence means different things depending on which word you stress. Select a word below, then say the sentence emphasizing that word.'),
+                h('h3', { className: headingClass + ' text-sm mb-3' }, t('stem.oratory.emphasis_drill', 'Emphasis Drill')),
+                h('p', { className: subTextClass + ' mb-3' }, t('stem.oratory.the_same_sentence_means_different_thin', 'The same sentence means different things depending on which word you stress. Select a word below, then say the sentence emphasizing that word.')),
                 h('div', { className: 'text-center p-4 rounded-lg mb-3 ' + (isDark ? 'bg-violet-900/30 border border-violet-700' : 'bg-violet-50 border border-violet-200') },
                   h('div', { className: headingClass + ' text-lg' }, '"' + emphasizedPhrase + '"'),
                   selectedMeaning && h('div', { className: subTextClass + ' mt-2 italic' }, 'Meaning: ' + selectedMeaning)),
-                h('div', { className: 'flex flex-wrap gap-2 justify-center', role: 'radiogroup', 'aria-label': 'Select word to emphasize' },
+                h('div', { className: 'flex flex-wrap gap-2 justify-center', role: 'radiogroup', 'aria-label': t('stem.oratory.select_word_to_emphasize', 'Select word to emphasize') },
                   words.map(function(word, wi) {
                     var isActive = wi === emphasisWord;
                     return h('button', {
@@ -3443,7 +3444,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   }))),
               renderMiniControls(),
               h('div', { className: 'text-center' },
-                h('button', { className: btnPrimary, onClick: recordPhraseCompletion, 'aria-label': 'I practiced this phrase' }, '\u2713 I Practiced This'))
+                h('button', { className: btnPrimary, onClick: recordPhraseCompletion, 'aria-label': t('stem.oratory.i_practiced_this_phrase_2', 'I practiced this phrase') }, t('stem.oratory.i_practiced_this_3', '\u2713 I Practiced This')))
             );
           }
 
@@ -3454,8 +3455,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             return h('div', { className: 'space-y-4' },
               navBar,
               h('div', { className: cardClass },
-                h('h3', { className: headingClass + ' text-sm mb-3' }, 'Pacing Challenge'),
-                h('p', { className: subTextClass + ' mb-3' }, 'Read the passage below at the target speed. The speedometer will show you how fast you are going!'),
+                h('h3', { className: headingClass + ' text-sm mb-3' }, t('stem.oratory.pacing_challenge', 'Pacing Challenge')),
+                h('p', { className: subTextClass + ' mb-3' }, t('stem.oratory.read_the_passage_below_at_the_target_s', 'Read the passage below at the target speed. The speedometer will show you how fast you are going!')),
                 h('div', { className: 'text-center p-4 rounded-lg mb-3 ' + (isDark ? 'bg-yellow-900/30 border border-yellow-700' : 'bg-yellow-50 border border-yellow-200') },
                   h('div', { className: 'text-xs font-bold mb-2 ' + (isDark ? 'text-yellow-300' : 'text-yellow-700') }, 'Target: ' + targetWpm + ' WPM'),
                   h('div', { className: headingClass + ' text-base leading-relaxed' }, text)),
@@ -3469,7 +3470,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                     : 'Slow down a bit...'))),
               renderMiniControls(),
               h('div', { className: 'text-center' },
-                h('button', { className: btnPrimary, onClick: recordPhraseCompletion, 'aria-label': 'I practiced this passage' }, '\u2713 I Practiced This'))
+                h('button', { className: btnPrimary, onClick: recordPhraseCompletion, 'aria-label': t('stem.oratory.i_practiced_this_passage', 'I practiced this passage') }, t('stem.oratory.i_practiced_this_4', '\u2713 I Practiced This')))
             );
           }
 
@@ -3480,14 +3481,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             return h('div', { className: 'space-y-4' },
               navBar,
               h('div', { className: cardClass },
-                h('h3', { className: headingClass + ' text-sm mb-3' }, 'Volume Projection'),
+                h('h3', { className: headingClass + ' text-sm mb-3' }, t('stem.oratory.volume_projection', 'Volume Projection')),
                 h('p', { className: subTextClass + ' mb-3' }, 'Speak at a steady, consistent volume for ' + volDuration + ' seconds. Try to keep the volume meter in the green zone the whole time!'),
                 h('div', { className: 'text-center p-4 rounded-lg mb-3 ' + (isDark ? 'bg-green-900/30 border border-green-700' : 'bg-green-50 border border-green-200') },
                   h('div', { className: headingClass + ' text-base leading-relaxed mb-2' }, volText),
                   exerciseActive
                     ? h('div', null,
                         h('div', { className: 'text-4xl font-bold  tracking-tight' + (isDark ? 'text-green-400' : 'text-green-600'), 'aria-live': 'polite' }, volumeTimer + 's'),
-                        h('div', { className: subTextClass }, 'Keep going! Hold your volume steady.'))
+                        h('div', { className: subTextClass }, t('stem.oratory.keep_going_hold_your_volume_steady', 'Keep going! Hold your volume steady.')))
                     : h('button', {
                         className: btnPrimary,
                         onClick: function() {
@@ -3495,13 +3496,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                           startVolumeChallenge();
                         },
                         'aria-label': 'Start the ' + volDuration + ' second volume challenge'
-                      }, 'Start Challenge'))),
+                      }, t('stem.oratory.start_challenge', 'Start Challenge')))),
               renderMiniControls()
             );
           }
 
           // Fallback
-          return h('div', { className: cardClass }, 'Select an exercise type.');
+          return h('div', { className: cardClass }, t('stem.oratory.select_an_exercise_type', 'Select an exercise type.'));
         }
 
         // ═══════════════════════════════════════
@@ -3513,8 +3514,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             h('button', {
               className: btnSecondary + ' flex items-center gap-1',
               onClick: function() { setExerciseType(null); setSelectedPattern(null); setPatternPracticing(false); setPatternScore(null); setPatternStudentCurve(null); },
-              'aria-label': 'Back to exercise type selection'
-            }, '\u2190 Back'));
+              'aria-label': t('stem.oratory.back_to_exercise_type_selection_2', 'Back to exercise type selection')
+            }, t('stem.oratory.back_2', '\u2190 Back')));
 
           // If a pattern is selected for practice
           if (selectedPattern) {
@@ -3528,18 +3529,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   h('button', {
                     className: btnSecondary,
                     onClick: function() { setSelectedPattern(null); setPatternPracticing(false); setPatternScore(null); setPatternStudentCurve(null); },
-                    'aria-label': 'Choose a different pattern'
-                  }, 'Change Pattern')),
+                    'aria-label': t('stem.oratory.choose_a_different_pattern', 'Choose a different pattern')
+                  }, t('stem.oratory.change_pattern', 'Change Pattern'))),
                 h('p', { className: subTextClass + ' mb-2' }, selectedPattern.desc),
 
                 // Sample phrase
                 h('div', { className: 'text-center p-3 rounded-lg mb-3 ' + (isDark ? 'bg-violet-900/30 border border-violet-700' : 'bg-violet-50 border border-violet-200') },
-                  h('div', { className: subTextClass + ' text-xs mb-1' }, 'Sample Phrase:'),
+                  h('div', { className: subTextClass + ' text-xs mb-1' }, t('stem.oratory.sample_phrase', 'Sample Phrase:')),
                   h('div', { className: headingClass + ' text-lg' }, '"' + selectedPattern.phrase + '"')),
 
                 // Target pattern canvas
                 h('div', { className: 'mb-3' },
-                  h('div', { className: subTextClass + ' mb-1' }, 'Target pitch pattern (green zone = target, orange = your pitch):'),
+                  h('div', { className: subTextClass + ' mb-1' }, t('stem.oratory.target_pitch_pattern_green_zone_target', 'Target pitch pattern (green zone = target, orange = your pitch):')),
                   h('canvas', { ref: patternCanvasRef,
                     width: 500,
                     height: 120,
@@ -3560,12 +3561,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                           setPitchHistory([]);
                           if (!isRecording) startRecording();
                         },
-                        'aria-label': 'Start practicing this intonation pattern'
-                      }, '\uD83C\uDFA4 Practice This Pattern'))
+                        'aria-label': t('stem.oratory.start_practicing_this_intonation_patte', 'Start practicing this intonation pattern')
+                      }, t('stem.oratory.practice_this_pattern', '\uD83C\uDFA4 Practice This Pattern')))
                   : h('div', { className: 'space-y-3' },
                       h('div', { className: 'text-center p-2 rounded-lg ' + (isDark ? 'bg-green-900/30 border border-green-700' : 'bg-green-50 border border-green-200') },
                         h('p', { className: (isDark ? 'text-green-300' : 'text-green-700') + ' font-bold text-sm animate-pulse' },
-                          'Say the phrase now! Try to match the green target zone.')),
+                          t('stem.oratory.say_the_phrase_now_try_to_match_the_gr', 'Say the phrase now! Try to match the green target zone.'))),
                       h('div', { className: 'flex items-center gap-3 justify-center' },
                         h('button', {
                           className: btnPrimary,
@@ -3580,8 +3581,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                             if (score >= 70 && stemCelebrate) stemCelebrate();
                             if (announceToSR) announceToSR('Pattern match score: ' + score + ' percent.');
                           },
-                          'aria-label': 'Stop and score my attempt'
-                        }, '\u2713 Score My Attempt'),
+                          'aria-label': t('stem.oratory.stop_and_score_my_attempt', 'Stop and score my attempt')
+                        }, t('stem.oratory.score_my_attempt', '\u2713 Score My Attempt')),
                         h('button', {
                           className: btnSecondary,
                           onClick: function() {
@@ -3589,8 +3590,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                             setPatternScore(null);
                             setPatternStudentCurve(null);
                           },
-                          'aria-label': 'Cancel practice attempt'
-                        }, 'Cancel'))),
+                          'aria-label': t('stem.oratory.cancel_practice_attempt', 'Cancel practice attempt')
+                        }, t('stem.oratory.cancel_2', 'Cancel')))),
 
                 // Score display
                 patternScore !== null && h('div', { className: 'text-center p-4 mt-3 rounded-lg ' +
@@ -3614,8 +3615,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                       setPatternPracticing(true);
                       setPitchHistory([]);
                     },
-                    'aria-label': 'Try this pattern again'
-                  }, '\uD83D\uDD01 Try Again'))),
+                    'aria-label': t('stem.oratory.try_this_pattern_again', 'Try this pattern again')
+                  }, t('stem.oratory.try_again', '\uD83D\uDD01 Try Again')))),
 
               // Mini controls
               patternPracticing && renderMiniControls()
@@ -3627,9 +3628,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             backBtn,
             h('div', { className: cardClass },
               h('h3', { className: headingClass + ' text-base mb-1 flex items-center gap-2' },
-                h('span', null, '\uD83C\uDFB6'), 'Intonation Pattern Templates'),
+                h('span', null, '\uD83C\uDFB6'), t('stem.oratory.intonation_pattern_templates', 'Intonation Pattern Templates')),
               h('p', { className: subTextClass + ' mb-4' },
-                'SLPs use specific prosody patterns as clinical targets. Select a pattern to see the target pitch contour and practice matching it.')),
+                t('stem.oratory.slps_use_specific_prosody_patterns_as_', 'SLPs use specific prosody patterns as clinical targets. Select a pattern to see the target pitch contour and practice matching it.'))),
 
             h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
               INTONATION_PATTERNS.map(function(pat) {
@@ -3648,7 +3649,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                     h('div', { className: 'text-2xl font-mono w-8 text-center flex-shrink-0 ' + (isDark ? 'text-violet-400' : 'text-violet-600') }, pat.icon),
                     h('div', null,
                       h('div', { className: headingClass + ' text-sm' }, pat.label),
-                      h('div', { className: subTextClass + ' mb-1' }, pat.desc),
+                      h('div', { className: subTextClass + ' mb-1' }, __alloT('stem.oratory.' + (pat.id) + '_desc', pat.desc)),
                       h('div', { className: 'text-xs italic ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, '"' + pat.phrase + '"'))));
               }))
           );
@@ -3674,18 +3675,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               height: 120,
               className: 'w-full rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-200'),
               role: 'img',
-              'aria-label': 'Pitch contour graph'
+              'aria-label': t('stem.oratory.pitch_contour_graph', 'Pitch contour graph')
             }),
             h('div', { className: 'grid grid-cols-3 gap-3 text-center text-xs' },
               h('div', null,
                 h('div', { className: headingClass }, (currentPitch > 0 ? Math.round(currentPitch) + ' Hz' : '--')),
-                h('div', { className: subTextClass }, 'Pitch')),
+                h('div', { className: subTextClass }, t('stem.oratory.pitch', 'Pitch'))),
               h('div', null,
                 h('div', { className: headingClass }, currentWpm + ' WPM'),
-                h('div', { className: subTextClass }, 'Pace')),
+                h('div', { className: subTextClass }, t('stem.oratory.pace', 'Pace'))),
               h('div', null,
                 h('div', { className: headingClass }, Math.round(currentDb) + ' dB'),
-                h('div', { className: subTextClass }, 'Volume')))
+                h('div', { className: subTextClass }, t('stem.oratory.volume_2', 'Volume'))))
           );
         }
 
@@ -3699,13 +3700,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
           return h('div', { className: 'space-y-4' },
             h('div', { className: cardClass },
               h('h3', { className: headingClass + ' text-base mb-1 flex items-center gap-2' },
-                h('span', null, '\uD83C\uDF10'), 'Multilingual Pronunciation Lab'),
-              h('p', { className: subTextClass + ' mb-4' }, 'Practice pronunciation in any language! The AI will model the phrase, then you try to match its prosody.')),
+                h('span', null, '\uD83C\uDF10'), t('stem.oratory.multilingual_pronunciation_lab', 'Multilingual Pronunciation Lab')),
+              h('p', { className: subTextClass + ' mb-4' }, t('stem.oratory.practice_pronunciation_in_any_language', 'Practice pronunciation in any language! The AI will model the phrase, then you try to match its prosody.'))),
 
             // Language selector
             h('div', { className: cardClass },
-              h('h4', { className: headingClass + ' text-sm mb-3' }, 'Select Language'),
-              h('div', { className: 'flex flex-wrap gap-2 mb-3', role: 'radiogroup', 'aria-label': 'Language selection' },
+              h('h4', { className: headingClass + ' text-sm mb-3' }, t('stem.oratory.select_language', 'Select Language')),
+              h('div', { className: 'flex flex-wrap gap-2 mb-3', role: 'radiogroup', 'aria-label': t('stem.oratory.language_selection', 'Language selection') },
                 LANGUAGES.map(function(lang) {
                   var isActive = selectedLang === lang.code && !customLang;
                   return h('button', {
@@ -3719,21 +3720,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   }, lang.flag + ' ' + lang.name);
                 })),
               h('div', { className: 'flex items-center gap-2' },
-                h('label', { className: subTextClass, htmlFor: 'oratory-custom-lang' }, 'Or type any language:'),
+                h('label', { className: subTextClass, htmlFor: 'oratory-custom-lang' }, t('stem.oratory.or_type_any_language', 'Or type any language:')),
                 h('input', {
                   id: 'oratory-custom-lang',
                   type: 'text',
                   value: customLang,
                   onChange: function(e) { setCustomLang(e.target.value); },
-                  placeholder: 'e.g., Tagalog, Amharic...',
+                  placeholder: t('stem.oratory.e_g_tagalog_amharic', 'e.g., Tagalog, Amharic...'),
                   className: 'flex-1 px-3 py-1.5 rounded-lg text-sm border focus:outline-none focus:ring-2 focus:ring-violet-400 ' +
                     (isDark ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'),
-                  'aria-label': 'Type a language name'
+                  'aria-label': t('stem.oratory.type_a_language_name', 'Type a language name')
                 }))),
 
             // Phrase input
             h('div', { className: cardClass },
-              h('h4', { className: headingClass + ' text-sm mb-3' }, 'Phrase to Practice'),
+              h('h4', { className: headingClass + ' text-sm mb-3' }, t('stem.oratory.phrase_to_practice', 'Phrase to Practice')),
               h('div', { className: 'flex items-center gap-2 mb-3' },
                 h('input', {
                   type: 'text',
@@ -3760,7 +3761,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                     className: btnPrimary + ' flex items-center gap-2',
                     onClick: modelMultiPhrase,
                     disabled: ttsLoading || multiMode === 'modeling',
-                    'aria-label': 'Hear the AI model speak this phrase'
+                    'aria-label': t('stem.oratory.hear_the_ai_model_speak_this_phrase', 'Hear the AI model speak this phrase')
                   }, ttsLoading ? 'Loading...' : '\uD83D\uDD0A Model'),
                   h('button', {
                     className: btnPrimary + ' flex items-center gap-2',
@@ -3769,28 +3770,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                       if (!isRecording) startRecording();
                     },
                     disabled: multiMode === 'modeling',
-                    'aria-label': 'Your turn to speak the phrase'
-                  }, '\uD83C\uDFA4 Your Turn')),
+                    'aria-label': t('stem.oratory.your_turn_to_speak_the_phrase', 'Your turn to speak the phrase')
+                  }, t('stem.oratory.your_turn', '\uD83C\uDFA4 Your Turn'))),
 
                 // Mode status
-                multiMode === 'modeling' && h('div', { className: subTextClass + ' mt-3 animate-pulse' }, 'Listen carefully to the model...'),
-                multiMode === 'yourTurn' && h('div', { className: (isDark ? 'text-green-400' : 'text-green-600') + ' mt-3 font-bold text-sm' }, 'Your turn! Speak the phrase and try to match the pitch pattern.'))
+                multiMode === 'modeling' && h('div', { className: subTextClass + ' mt-3 animate-pulse' }, t('stem.oratory.listen_carefully_to_the_model', 'Listen carefully to the model...')),
+                multiMode === 'yourTurn' && h('div', { className: (isDark ? 'text-green-400' : 'text-green-600') + ' mt-3 font-bold text-sm' }, t('stem.oratory.your_turn_speak_the_phrase_and_try_to_', 'Your turn! Speak the phrase and try to match the pitch pattern.')))
             ),
 
             // Prosody comparison visualization
             (multiMode === 'yourTurn' || multiMode === 'comparing') && h('div', { className: cardClass },
-              h('h4', { className: headingClass + ' text-sm mb-2' }, 'Prosody Comparison'),
-              h('p', { className: subTextClass + ' mb-2' }, 'Dashed line = model, solid line = your speech. Try to make them match!'),
+              h('h4', { className: headingClass + ' text-sm mb-2' }, t('stem.oratory.prosody_comparison', 'Prosody Comparison')),
+              h('p', { className: subTextClass + ' mb-2' }, t('stem.oratory.dashed_line_model_solid_line_your_spee', 'Dashed line = model, solid line = your speech. Try to make them match!')),
               h('canvas', { ref: pitchCanvasRef,
                 width: 600,
                 height: 180,
                 className: 'w-full rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-200'),
                 role: 'img',
-                'aria-label': 'Prosody comparison graph showing model curve and your speech curve overlaid'
+                'aria-label': t('stem.oratory.prosody_comparison_graph_showing_model', 'Prosody comparison graph showing model curve and your speech curve overlaid')
               }),
               renderMiniControls(),
               h('div', { className: 'text-center mt-2' },
-                h('button', { className: btnPrimary, onClick: recordPhraseCompletion, 'aria-label': 'I practiced this phrase' }, '\u2713 I Practiced This')))
+                h('button', { className: btnPrimary, onClick: recordPhraseCompletion, 'aria-label': t('stem.oratory.i_practiced_this_phrase_3', 'I practiced this phrase') }, t('stem.oratory.i_practiced_this_5', '\u2713 I Practiced This'))))
           );
         }
 
@@ -3813,8 +3814,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
           return h('div', { className: 'space-y-4' },
             h('div', { className: cardClass },
               h('h3', { className: headingClass + ' text-base mb-1 flex items-center gap-2' },
-                h('span', null, '\uD83D\uDCCB'), 'Session Report'),
-              h('p', { className: subTextClass + ' mb-4' }, 'Summary of your practice session. Share this with your speech-language pathologist!')),
+                h('span', null, '\uD83D\uDCCB'), t('stem.oratory.session_report', 'Session Report')),
+              h('p', { className: subTextClass + ' mb-4' }, t('stem.oratory.summary_of_your_practice_session_share', 'Summary of your practice session. Share this with your speech-language pathologist!'))),
 
             // Stats grid
             h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 gap-3' },
@@ -3828,7 +3829,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             // Fluency summary in report
             fluencySessions.length > 0 && h('div', { className: cardClass },
               h('h4', { className: headingClass + ' text-sm mb-3 flex items-center gap-2' },
-                h('span', null, '\uD83D\uDCCA'), 'Fluency Scores'),
+                h('span', null, '\uD83D\uDCCA'), t('stem.oratory.fluency_scores', 'Fluency Scores')),
               h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 gap-3' },
                 renderStatCard('\u2B50', 'Latest Score',
                   fluencySessions[fluencySessions.length - 1].fluencyStars + ' stars'),
@@ -3841,7 +3842,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
             // Achievements
             h('div', { className: cardClass },
-              h('h4', { className: headingClass + ' text-sm mb-3' }, 'Achievements'),
+              h('h4', { className: headingClass + ' text-sm mb-3' }, t('stem.oratory.achievements', 'Achievements')),
               h('div', { className: 'space-y-2' },
                 renderAchievement('\uD83C\uDFA4', 'Vocal Warm-up', warmUpsCompleted >= 1, warmUpsCompleted + '/1 completed'),
                 renderAchievement('\uD83D\uDCCA', '5 Phrases Analyzed', phrasesAnalyzed >= 5, phrasesAnalyzed + '/5 phrases'),
@@ -3849,14 +3850,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
             // Share button
             h('div', { className: cardClass },
-              h('h4', { className: headingClass + ' text-sm mb-3' }, 'Share with SLP'),
-              h('p', { className: subTextClass + ' mb-3' }, 'Generate a text summary of this session that you can share with your speech-language pathologist.'),
+              h('h4', { className: headingClass + ' text-sm mb-3' }, t('stem.oratory.share_with_slp', 'Share with SLP')),
+              h('p', { className: subTextClass + ' mb-3' }, t('stem.oratory.generate_a_text_summary_of_this_sessio', 'Generate a text summary of this session that you can share with your speech-language pathologist.')),
               h('div', { className: 'flex gap-2' },
                 h('button', {
                   className: btnPrimary,
                   onClick: generateReport,
-                  'aria-label': 'Generate session report for sharing'
-                }, '\uD83D\uDCCB Generate Report'),
+                  'aria-label': t('stem.oratory.generate_session_report_for_sharing', 'Generate session report for sharing')
+                }, t('stem.oratory.generate_report', '\uD83D\uDCCB Generate Report')),
                 reportText && h('button', {
                   className: btnSecondary,
                   onClick: copyReport,
@@ -3867,7 +3868,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 className: 'mt-3 p-3 rounded-lg text-xs leading-relaxed overflow-auto max-h-60 ' +
                   (isDark ? 'bg-slate-900 text-slate-300 border border-slate-700' : 'bg-slate-50 text-slate-700 border border-slate-400'),
                 role: 'textbox',
-                'aria-label': 'Session report text',
+                'aria-label': t('stem.oratory.session_report_text', 'Session report text'),
                 'aria-readonly': 'true',
                 tabIndex: 0
               }, reportText)),
@@ -3895,8 +3896,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   if (addToast) addToast('Session data cleared.', 'info');
                   if (announceToSR) announceToSR('All session data has been reset.');
                 },
-                'aria-label': 'Clear all session data and start fresh'
-              }, 'Clear All Session Data'))
+                'aria-label': t('stem.oratory.clear_all_session_data_and_start_fresh', 'Clear all session data and start fresh')
+              }, t('stem.oratory.clear_all_session_data', 'Clear All Session Data')))
           );
         }
 
@@ -3930,7 +3931,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
         return h('div', {
           className: 'space-y-4 max-w-4xl mx-auto pb-8',
           role: 'main',
-          'aria-label': 'Oratory and Prosody Communication Lab'
+          'aria-label': t('stem.oratory.oratory_and_prosody_communication_lab', 'Oratory and Prosody Communication Lab')
         },
           // Header
           h('div', { className: 'flex items-center justify-between' },
@@ -3941,27 +3942,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   if (isRecording) stopRecording();
                   setStemLabTool(null);
                 },
-                'aria-label': 'Go back to STEM Lab tool list'
+                'aria-label': t('stem.oratory.go_back_to_stem_lab_tool_list', 'Go back to STEM Lab tool list')
               },
                 ArrowLeft && h(ArrowLeft, { size: 14 }),
-                'Back'),
+                t('stem.oratory.back_3', 'Back')),
               h('div', null,
                 h('h2', { className: headingClass + ' text-lg flex items-center gap-2' },
-                  h('span', null, '\uD83D\uDDE3\uFE0F'), 'Oratory Lab'),
-                h('p', { className: subTextClass }, 'Speech prosody visualization for SLP-recommended practice'))),
+                  h('span', null, '\uD83D\uDDE3\uFE0F'), t('stem.oratory.oratory_lab', 'Oratory Lab')),
+                h('p', { className: subTextClass }, t('stem.oratory.speech_prosody_visualization_for_slp_r', 'Speech prosody visualization for SLP-recommended practice')))),
             // Recording indicator
             isRecording && h('div', {
               className: 'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold ' +
                 (isDark ? 'bg-red-900/50 text-red-300' : 'bg-red-50 text-red-600'),
               role: 'status',
               'aria-live': 'polite'
-            }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse' }), 'Recording')),
+            }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse' }), t('stem.oratory.recording', 'Recording'))),
 
           // Tab navigation
           h('div', {
             className: 'flex gap-1 p-1 rounded-xl ' + (isDark ? 'bg-slate-800' : 'bg-slate-100'),
             role: 'tablist',
-            'aria-label': 'Oratory Lab sections'
+            'aria-label': t('stem.oratory.oratory_lab_sections', 'Oratory Lab sections')
           },
             TABS.map(function(tab) {
               var isActive = activeTab === tab.id;
@@ -3995,11 +3996,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
           // ── Topic-accent hero band (per tab) ──
           (function() {
             var TAB_META = {
-              visualizer:   { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '🎤', title: 'Live visualizer — record + read your delivery', hint: 'Real-time pitch trace + volume meter + filler-word counter. Trained speakers vary pitch ~30% across a sentence; flat delivery loses listener attention within ~20 seconds.' },
-              practice:     { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '📝', title: 'Practice — work through a delivery',          hint: 'Pacing target ~150 wpm. Pauses between ideas (1–2 seconds) carry as much weight as the words. Read your own writing aloud first; awkward sentences reveal themselves immediately.' },
-              multilingual: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '🌐', title: 'Multilingual — same speech, multiple languages', hint: 'Speech rate varies dramatically by language: Spanish + Japanese ~7 syllables/sec; English ~6; Mandarin ~5. Information rate is roughly constant — denser languages talk slower.' },
-              report:       { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '📋', title: 'Report — your delivery analytics',           hint: 'Pace, pitch range, filler-word density, pause timing — each scored against research-backed targets. Click any dimension for a citation + a coaching tip.' },
-              prosodyHunt:  { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '⚙️', title: 'Prosody — discover how delivery shapes meaning', hint: 'Adjust pitch offset, pace, and volume gain, then log what you notice. No score, no reveal — form your own hypothesis about why most TED talks sit near 150 wpm.' }
+              visualizer:   { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '🎤', title: t('stem.oratory.live_visualizer_record_read_your_deliv', 'Live visualizer — record + read your delivery'), hint: t('stem.oratory.real_time_pitch_trace_volume_meter_fil', 'Real-time pitch trace + volume meter + filler-word counter. Trained speakers vary pitch ~30% across a sentence; flat delivery loses listener attention within ~20 seconds.') },
+              practice:     { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '📝', title: t('stem.oratory.practice_work_through_a_delivery', 'Practice — work through a delivery'),          hint: t('stem.oratory.pacing_target_150_wpm_pauses_between_i', 'Pacing target ~150 wpm. Pauses between ideas (1–2 seconds) carry as much weight as the words. Read your own writing aloud first; awkward sentences reveal themselves immediately.') },
+              multilingual: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '🌐', title: t('stem.oratory.multilingual_same_speech_multiple_lang', 'Multilingual — same speech, multiple languages'), hint: t('stem.oratory.speech_rate_varies_dramatically_by_lan', 'Speech rate varies dramatically by language: Spanish + Japanese ~7 syllables/sec; English ~6; Mandarin ~5. Information rate is roughly constant — denser languages talk slower.') },
+              report:       { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '📋', title: t('stem.oratory.report_your_delivery_analytics', 'Report — your delivery analytics'),           hint: t('stem.oratory.pace_pitch_range_filler_word_density_p', 'Pace, pitch range, filler-word density, pause timing — each scored against research-backed targets. Click any dimension for a citation + a coaching tip.') },
+              prosodyHunt:  { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '⚙️', title: t('stem.oratory.prosody_discover_how_delivery_shapes_m', 'Prosody — discover how delivery shapes meaning'), hint: t('stem.oratory.adjust_pitch_offset_pace_and_volume_ga', 'Adjust pitch offset, pace, and volume gain, then log what you notice. No score, no reveal — form your own hypothesis about why most TED talks sit near 150 wpm.') }
             };
             var meta = TAB_META[activeTab] || TAB_META.visualizer;
             return h('div', {
@@ -4040,14 +4041,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               else if (iq.pace < 1.6) tempo = 'fast';
               else tempo = 'sprint';
               var tm = {
-                slow: { label: '🐢 Slow / deliberate', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Suited to emphasis, reflection, gravitas.' },
-                conversational: { label: '🗣 Conversational', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Default for most speaking. Natural rhythm.' },
-                fast: { label: '⚡ Fast / urgent', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Conveys excitement, urgency, energy.' },
-                sprint: { label: '🚀 Sprint', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Too fast — comprehension drops.' }
+                slow: { label: t('stem.oratory.slow_deliberate', '🐢 Slow / deliberate'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: t('stem.oratory.suited_to_emphasis_reflection_gravitas', 'Suited to emphasis, reflection, gravitas.') },
+                conversational: { label: t('stem.oratory.conversational_2', '🗣 Conversational'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: t('stem.oratory.default_for_most_speaking_natural_rhyt', 'Default for most speaking. Natural rhythm.') },
+                fast: { label: t('stem.oratory.fast_urgent', '⚡ Fast / urgent'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.oratory.conveys_excitement_urgency_energy', 'Conveys excitement, urgency, energy.') },
+                sprint: { label: t('stem.oratory.sprint', '🚀 Sprint'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.oratory.too_fast_comprehension_drops', 'Too fast — comprehension drops.') }
               }[tempo];
               return h('div', { className: 'p-4 rounded-xl border ' + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-300') + ' space-y-3' },
-                h('h3', { className: 'text-sm font-black' }, '⚙️ Prosody discovery'),
-                h('p', { className: 'text-[12px] leading-relaxed' }, 'Adjust pitch offset, pacing, volume. Discrete 4-tempo classification. No score, no reveal.'),
+                h('h3', { className: 'text-sm font-black' }, t('stem.oratory.prosody_discovery', '⚙️ Prosody discovery')),
+                h('p', { className: 'text-[12px] leading-relaxed' }, t('stem.oratory.adjust_pitch_offset_pacing_volume_disc', 'Adjust pitch offset, pacing, volume. Discrete 4-tempo classification. No score, no reveal.')),
                 h('div', { className: 'p-3 rounded-lg text-center', style: { background: tm.bg, border: '2px solid ' + tm.border } },
                   h('div', { className: 'text-base font-black', style: { color: tm.color } }, tm.label),
                   h('div', { className: 'text-[11px] text-slate-700 mt-1' }, tm.desc)
@@ -4064,22 +4065,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   })
                 ),
                 h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ p: iq.pitch, c: iq.pace, v: iq.volume, t: tempo }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-200 text-[11px] font-bold text-slate-700' }, '📋 Log'),
-                  h('button', { onClick: function() { setIQ({ pitch: 100, pace: 1.0, volume: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded text-[11px] font-semibold border border-slate-300 ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, '↺ Reset')
+                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ p: iq.pitch, c: iq.pace, v: iq.volume, t: tempo }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-200 text-[11px] font-bold text-slate-700' }, t('stem.oratory.log', '📋 Log')),
+                  h('button', { onClick: function() { setIQ({ pitch: 100, pace: 1.0, volume: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded text-[11px] font-semibold border border-slate-300 ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, t('stem.oratory.reset_2', '↺ Reset'))
                 ),
-                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: How does pace affect audience comprehension?',
+                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.oratory.hypothesis_how_does_pace_affect_audien', 'Hypothesis: How does pace affect audience comprehension?'),
                   className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
-                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, t('stem.oratory.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] leading-relaxed' },
                   h('ul', { className: 'list-disc pl-5 space-y-1' },
-                    h('li', null, 'Most TED talks are ~150 wpm. Investigate why.'),
-                    h('li', null, 'When does pitch variation help vs distract?'))),
+                    h('li', null, t('stem.oratory.most_ted_talks_are_150_wpm_investigate', 'Most TED talks are ~150 wpm. Investigate why.')),
+                    h('li', null, t('stem.oratory.when_does_pitch_variation_help_vs_dist', 'When does pitch variation help vs distract?')))),
                 h('label', { className: 'flex items-center gap-2 text-[12px] font-bold cursor-pointer' },
                   h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
-                  'I understand — explain in own words'),
-                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how prosody shapes oratory impact.',
+                  t('stem.oratory.i_understand_explain_in_own_words', 'I understand — explain in own words')),
+                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.oratory.explain_how_prosody_shapes_oratory_imp', 'Explain how prosody shapes oratory impact.'),
                   className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 3 }),
-                h('div', { className: 'text-[10px] italic ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, 'Design note: discrete 4-tempo marker; no delivery score; no reveal — by design.')
+                h('div', { className: 'text-[10px] italic ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, t('stem.oratory.design_note_discrete_4_tempo_marker_no', 'Design note: discrete 4-tempo marker; no delivery score; no reveal — by design.'))
               );
             })()
           ),
@@ -4087,9 +4088,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
           // Bottom info for SLPs
           h('div', { className: cardClass + ' text-center' },
             h('p', { className: subTextClass + ' italic' },
-              'This tool is designed as a Tier 1 classroom intervention. For individualized speech therapy, please consult a certified Speech-Language Pathologist.'),
+              t('stem.oratory.this_tool_is_designed_as_a_tier_1_clas', 'This tool is designed as a Tier 1 classroom intervention. For individualized speech therapy, please consult a certified Speech-Language Pathologist.')),
             h('p', { className: subTextClass + ' mt-1' },
-              'Visualizations use Web Audio API pitch detection (autocorrelation) and amplitude analysis. All processing happens locally in the browser \u2014 no audio is recorded or transmitted.'))
+              t('stem.oratory.visualizations_use_web_audio_api_pitch', 'Visualizations use Web Audio API pitch detection (autocorrelation) and amplitude analysis. All processing happens locally in the browser \u2014 no audio is recorded or transmitted.')))
         );
       })();
     }

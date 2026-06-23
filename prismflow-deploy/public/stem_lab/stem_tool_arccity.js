@@ -1431,7 +1431,7 @@
               style: { cursor: 'grab' }, 'aria-hidden': 'true',
               onPointerDown: function (e) { startHandleDrag(e, function (wx, wy) { return parabolaVertexParams(wx, wy, level); }); }
             }));
-            handleEls.push(h('text', { key: 'vhl', x: sx(P.h) + 12, y: sy(P.k) - 8, fill: HANDLE, fontSize: 11, 'aria-hidden': 'true' }, 'vertex (h, k)'));
+            handleEls.push(h('text', { key: 'vhl', x: sx(P.h) + 12, y: sy(P.k) - 8, fill: HANDLE, fontSize: 11, 'aria-hidden': 'true' }, t('stem.arccity.vertex_h_k', 'vertex (h, k)')));
           } else if (level.family === 'line' && level.params.b && level.params.b.locked) {
             var xH = level.node.x, yH = fnY('line', P, xH);
             handleEls.push(h('circle', {
@@ -1464,7 +1464,7 @@
               style: { cursor: 'grab' }, 'aria-hidden': 'true',
               onPointerDown: function (e) { startHandleDrag(e, function (wx, wy) { return sineCrestParams(wx, wy, level, P.b, P.k); }); }
             }));
-            handleEls.push(h('text', { key: 'shl', x: sx(xc) + 12, y: sy(yc) - 8, fill: HANDLE, fontSize: 11, 'aria-hidden': 'true' }, 'crest — drag onto a window'));
+            handleEls.push(h('text', { key: 'shl', x: sx(xc) + 12, y: sy(yc) - 8, fill: HANDLE, fontSize: 11, 'aria-hidden': 'true' }, t('stem.arccity.crest_drag_onto_a_window', 'crest — drag onto a window')));
           }
         }
 

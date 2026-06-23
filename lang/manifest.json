@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-06-21T10:04:19.660Z",
-  "count": 60,
+  "generated": "2026-06-22T01:40:41.279Z",
+  "count": 63,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -75,6 +75,20 @@
       "updated": "2026-06-21"
     },
     {
+      "slug": "dutch",
+      "display": "Dutch",
+      "keys": 11286,
+      "bytes": 1221276,
+      "updated": "2026-06-21"
+    },
+    {
+      "slug": "esperanto",
+      "display": "Esperanto",
+      "keys": 11286,
+      "bytes": 1152484,
+      "updated": "2026-06-22"
+    },
+    {
       "slug": "farsi",
       "display": "Farsi",
       "keys": 11455,
@@ -84,15 +98,15 @@
     {
       "slug": "french",
       "display": "French",
-      "keys": 11225,
-      "bytes": 1284249,
+      "keys": 11264,
+      "bytes": 1300190,
       "updated": "2026-06-21"
     },
     {
       "slug": "french_canadian",
       "display": "French (Canadian)",
-      "keys": 11231,
-      "bytes": 1284046,
+      "keys": 11270,
+      "bytes": 1299987,
       "updated": "2026-06-21"
     },
     {
@@ -168,8 +182,8 @@
     {
       "slug": "italian",
       "display": "Italian",
-      "keys": 11225,
-      "bytes": 965798,
+      "keys": 11264,
+      "bytes": 980853,
       "updated": "2026-06-21"
     },
     {
@@ -177,6 +191,13 @@
       "display": "Japanese",
       "keys": 11298,
       "bytes": 865115,
+      "updated": "2026-06-21"
+    },
+    {
+      "slug": "kannada",
+      "display": "Kannada",
+      "keys": 11286,
+      "bytes": 2606278,
       "updated": "2026-06-21"
     },
     {
@@ -245,8 +266,8 @@
     {
       "slug": "malayalam",
       "display": "Malayalam",
-      "keys": 11198,
-      "bytes": 2817900,
+      "keys": 11286,
+      "bytes": 2834994,
       "updated": "2026-06-21"
     },
     {
@@ -287,22 +308,22 @@
     {
       "slug": "portuguese_angola",
       "display": "Portuguese (Angola)",
-      "keys": 11231,
-      "bytes": 1138581,
+      "keys": 11270,
+      "bytes": 1153439,
       "updated": "2026-06-21"
     },
     {
       "slug": "portuguese_brazil",
       "display": "Portuguese (Brazil)",
-      "keys": 11225,
-      "bytes": 1208688,
+      "keys": 11264,
+      "bytes": 1223534,
       "updated": "2026-06-21"
     },
     {
       "slug": "portuguese_portugal",
       "display": "Portuguese (Portugal)",
-      "keys": 11231,
-      "bytes": 1138429,
+      "keys": 11270,
+      "bytes": 1153287,
       "updated": "2026-06-21"
     },
     {
@@ -315,8 +336,8 @@
     {
       "slug": "romanian",
       "display": "Romanian",
-      "keys": 11434,
-      "bytes": 901912,
+      "keys": 11473,
+      "bytes": 917091,
       "updated": "2026-06-21"
     },
     {
@@ -336,15 +357,15 @@
     {
       "slug": "spanish_castilian",
       "display": "Spanish (Castilian)",
-      "keys": 11231,
-      "bytes": 1242346,
+      "keys": 11270,
+      "bytes": 1257671,
       "updated": "2026-06-21"
     },
     {
       "slug": "spanish_latin_america",
       "display": "Spanish (Latin America)",
-      "keys": 11225,
-      "bytes": 1255189,
+      "keys": 11264,
+      "bytes": 1270514,
       "updated": "2026-06-21"
     },
     {

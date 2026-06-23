@@ -1018,6 +1018,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
       { id: 'complete_all_fifteen', label: 'Complete all fifteen — grandmaster', icon: '🌟', check: function(d) { return countCompletedFromTopLevel(d) >= 15; }, progress: function(d) { return countCompletedFromTopLevel(d) + '/15 complete'; } }
     ],
     render: function(ctx) {
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -1039,44 +1040,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
       // to draw out the specific structural insight that pair surfaces.
       var PAIR_REFLECTIONS = {
         'mosaic+conserve': {
-          title: 'Stewardship as multi-generational practice',
-          text: 'Cultural Mosaic and Conservation Manager are both multi-year stewardship campaigns where the moves you make in year 2 only pay off in year 7. Mosaic\'s coppice plantings, Conservation Manager\'s wolf-support building. The discipline is the same: invest in slow infrastructure before you need it. What other domains in your life reward this kind of patience?'
+          title: __alloT('stem.stewardship.stewardship_as_multi_generational_prac', 'Stewardship as multi-generational practice'),
+          text: __alloT('stem.stewardship.cultural_mosaic_and_conservation_manag', 'Cultural Mosaic and Conservation Manager are both multi-year stewardship campaigns where the moves you make in year 2 only pay off in year 7. Mosaic\'s coppice plantings, Conservation Manager\'s wolf-support building. The discipline is the same: invest in slow infrastructure before you need it. What other domains in your life reward this kind of patience?')
         },
         'mosaic+outbreak': {
-          title: 'Time scales of stewardship',
-          text: 'Cultural Mosaic operates on 8 years; Outbreak Response on 26 weeks. The shorter time scale of pandemic response means your trust capital regenerates more slowly than your fire-return cycles do. Notice how the same kind of decision (a controversial intervention) carries different weight depending on how long the system has to recover. Real Maine planners juggle both time horizons in parallel.'
+          title: __alloT('stem.stewardship.time_scales_of_stewardship', 'Time scales of stewardship'),
+          text: __alloT('stem.stewardship.cultural_mosaic_operates_on_8_years_ou', 'Cultural Mosaic operates on 8 years; Outbreak Response on 26 weeks. The shorter time scale of pandemic response means your trust capital regenerates more slowly than your fire-return cycles do. Notice how the same kind of decision (a controversial intervention) carries different weight depending on how long the system has to recover. Real Maine planners juggle both time horizons in parallel.')
         },
         'mosaic+steward': {
-          title: 'Actively tending land and water',
-          text: 'Both campaigns are about active stewardship of physical Maine landscape: fire on the barrens, water in the streams. Both involve Wabanaki-led work as the historical and ongoing foundation. Both reward you for matching technique to season and to specific zones. Mosaic\'s riparian zone (sweetgrass, beaver) is literally the same physical place as Watershed Steward\'s floodplain wetlands.'
+          title: __alloT('stem.stewardship.actively_tending_land_and_water', 'Actively tending land and water'),
+          text: __alloT('stem.stewardship.both_campaigns_are_about_active_stewar', 'Both campaigns are about active stewardship of physical Maine landscape: fire on the barrens, water in the streams. Both involve Wabanaki-led work as the historical and ongoing foundation. Both reward you for matching technique to season and to specific zones. Mosaic\'s riparian zone (sweetgrass, beaver) is literally the same physical place as Watershed Steward\'s floodplain wetlands.')
         },
         'mosaic+pathway': {
-          title: 'Indigenous-led work as primary, not bolt-on',
-          text: 'Both Cultural Mosaic and Climate Pathways center Indigenous-led work as foundational. Mosaic IS Wabanaki practice; Pathway\'s Climate Justice sector has the largest feedback-rule reach (low support there drags every other sector down). What pattern do you notice about how systems perform when Indigenous leadership is centered versus appended?'
+          title: __alloT('stem.stewardship.indigenous_led_work_as_primary_not_bol', 'Indigenous-led work as primary, not bolt-on'),
+          text: __alloT('stem.stewardship.both_cultural_mosaic_and_climate_pathw', 'Both Cultural Mosaic and Climate Pathways center Indigenous-led work as foundational. Mosaic IS Wabanaki practice; Pathway\'s Climate Justice sector has the largest feedback-rule reach (low support there drags every other sector down). What pattern do you notice about how systems perform when Indigenous leadership is centered versus appended?')
         },
         'conserve+outbreak': {
-          title: 'Trust and support as gating mechanisms',
-          text: 'Conservation Manager\'s wolf reintroduction requires habitat 60+ AND public support 50+. Outbreak Response\'s vaccine uptake collapses when working-age trust drops below 40. In both cases, technical feasibility is downstream of social acceptance. The technical move you most want to make is often the one you most have to earn.'
+          title: __alloT('stem.stewardship.trust_and_support_as_gating_mechanisms', 'Trust and support as gating mechanisms'),
+          text: __alloT('stem.stewardship.conservation_manager_s_wolf_reintroduc', 'Conservation Manager\'s wolf reintroduction requires habitat 60+ AND public support 50+. Outbreak Response\'s vaccine uptake collapses when working-age trust drops below 40. In both cases, technical feasibility is downstream of social acceptance. The technical move you most want to make is often the one you most have to earn.')
         },
         'conserve+steward': {
-          title: 'Keystone entities reshape entire systems',
-          text: 'Wolves in Conservation Manager and beavers in Watershed Steward are both keystone species. A small change in their population produces large changes everywhere downstream. The lesson: in any complex system, identify your keystone first. Most of your effort should go into the entity whose effect ripples furthest.'
+          title: __alloT('stem.stewardship.keystone_entities_reshape_entire_syste', 'Keystone entities reshape entire systems'),
+          text: __alloT('stem.stewardship.wolves_in_conservation_manager_and_bea', 'Wolves in Conservation Manager and beavers in Watershed Steward are both keystone species. A small change in their population produces large changes everywhere downstream. The lesson: in any complex system, identify your keystone first. Most of your effort should go into the entity whose effect ripples furthest.')
         },
         'conserve+pathway': {
-          title: 'Cascades at the species and sector scale',
-          text: 'Conservation Manager\'s trophic cascades (wolf-deer-forest) and Climate Pathway\'s sector cascades (clean-grid-transport-buildings) are structurally identical: high state in one entity unlocks accelerated change in another. The math is the same; only the units differ. This is what makes systems thinking transferable across domains.'
+          title: __alloT('stem.stewardship.cascades_at_the_species_and_sector_sca', 'Cascades at the species and sector scale'),
+          text: __alloT('stem.stewardship.conservation_manager_s_trophic_cascade', 'Conservation Manager\'s trophic cascades (wolf-deer-forest) and Climate Pathway\'s sector cascades (clean-grid-transport-buildings) are structurally identical: high state in one entity unlocks accelerated change in another. The math is the same; only the units differ. This is what makes systems thinking transferable across domains.')
         },
         'outbreak+steward': {
-          title: 'Constrained-hours public-resource management',
-          text: 'Both Outbreak Response and Watershed Steward run a constrained hours budget per period. Both involve weighing politically expensive moves (mandates, dam removal) against trust-building moves (communication, citizen science). Both expose the same painful truth: the right intervention at the wrong time costs more than it gains.'
+          title: __alloT('stem.stewardship.constrained_hours_public_resource_mana', 'Constrained-hours public-resource management'),
+          text: __alloT('stem.stewardship.both_outbreak_response_and_watershed_s', 'Both Outbreak Response and Watershed Steward run a constrained hours budget per period. Both involve weighing politically expensive moves (mandates, dam removal) against trust-building moves (communication, citizen science). Both expose the same painful truth: the right intervention at the wrong time costs more than it gains.')
         },
         'outbreak+pathway': {
-          title: 'Equity as foundation, not topping',
-          text: 'Outbreak Response\'s equity-PHO badge requires elderly vaccination above 80 WITH maintained trust. Climate Pathway\'s Justice sector has the biggest feedback-rule reach across all five campaigns. In both, equity is a structural input to system performance, not a moral overlay. Watch what happens to ANY policy in either campaign when equity drops below 40.'
+          title: __alloT('stem.stewardship.equity_as_foundation_not_topping', 'Equity as foundation, not topping'),
+          text: __alloT('stem.stewardship.outbreak_response_s_equity_pho_badge_r', 'Outbreak Response\'s equity-PHO badge requires elderly vaccination above 80 WITH maintained trust. Climate Pathway\'s Justice sector has the biggest feedback-rule reach across all five campaigns. In both, equity is a structural input to system performance, not a moral overlay. Watch what happens to ANY policy in either campaign when equity drops below 40.')
         },
         'steward+pathway': {
-          title: 'Land-use decisions compound over decades',
-          text: 'Watershed restoration on a 10-year scale and climate policy on a 40-year scale share the same fundamental pattern: land-use decisions compound. Riparian buffer plantings show up as cold-water trout populations 8 years later. Forest carbon protection shows up as adaptation co-benefits two decades later. The decisions feel small at the moment of action and only become visible at scale years later.'
+          title: __alloT('stem.stewardship.land_use_decisions_compound_over_decad', 'Land-use decisions compound over decades'),
+          text: __alloT('stem.stewardship.watershed_restoration_on_a_10_year_sca', 'Watershed restoration on a 10-year scale and climate policy on a 40-year scale share the same fundamental pattern: land-use decisions compound. Riparian buffer plantings show up as cold-water trout populations 8 years later. Forest carbon protection shows up as adaptation co-benefits two decades later. The decisions feel small at the moment of action and only become visible at scale years later.')
         }
       };
 
@@ -1114,9 +1115,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 16, padding: '20px 16px', minHeight: 'calc(100vh - 32px)' }
           }, h('div', { style: { maxWidth: 800, margin: '0 auto' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 } },
-              h('button', { onClick: closeComparison, 'aria-label': 'Cancel comparison',
-                style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 } }, '← Back to hub'),
-              h('h2', { style: { margin: 0, color: '#a855f7', fontSize: 20 } }, '🔀 Compare two campaigns')
+              h('button', { onClick: closeComparison, 'aria-label': __alloT('stem.stewardship.cancel_comparison', 'Cancel comparison'),
+                style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 } }, __alloT('stem.stewardship.back_to_hub', '← Back to hub')),
+              h('h2', { style: { margin: 0, color: '#a855f7', fontSize: 20 } }, __alloT('stem.stewardship.compare_two_campaigns', '🔀 Compare two campaigns'))
             ),
             h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.4)', borderRight: '1px solid rgba(168,85,247,0.4)', borderBottom: '1px solid rgba(168,85,247,0.4)', borderLeft: '3px solid #a855f7', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.55 } },
               cmp.a
@@ -1180,7 +1181,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
 
           function ruleList(counts, color) {
             var keys = Object.keys(counts).sort(function(a, b) { return counts[b] - counts[a]; });
-            if (keys.length === 0) return h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic' } }, 'No feedback rules fired (or no log captured).');
+            if (keys.length === 0) return h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic' } }, __alloT('stem.stewardship.no_feedback_rules_fired_or_no_log_capt', 'No feedback rules fired (or no log captured).'));
             return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
               keys.map(function(k) {
                 return h('div', { key: k, style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } },
@@ -1192,7 +1193,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
           }
 
           function outcomeChip(c, outcome) {
-            if (!outcome) return h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'No outcome');
+            if (!outcome) return h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.stewardship.no_outcome', 'No outcome'));
             return h('div', { style: { padding: 10, borderRadius: 8, background: (outcome.color || '#86efac') + '15', borderLeft: '3px solid ' + (outcome.color || '#86efac') } },
               h('div', { style: { fontSize: 13, fontWeight: 700, color: outcome.color || '#86efac' } }, (outcome.icon || '🏆') + ' ' + (outcome.label || 'Complete')),
               h('p', { style: { margin: '4px 0 0', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.5 } }, outcome.desc || '')
@@ -1204,11 +1205,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 16, padding: '20px 16px', minHeight: 'calc(100vh - 32px)' }
           }, h('div', { style: { maxWidth: 900, margin: '0 auto' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' } },
-              h('button', { onClick: closeComparison, 'aria-label': 'Back to hub',
-                style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 } }, '← Back'),
-              h('h2', { style: { margin: 0, color: '#a855f7', fontSize: 20 } }, '🔀 Campaign Comparison'),
+              h('button', { onClick: closeComparison, 'aria-label': __alloT('stem.stewardship.back_to_hub_2', 'Back to hub'),
+                style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 } }, __alloT('stem.stewardship.back', '← Back')),
+              h('h2', { style: { margin: 0, color: '#a855f7', fontSize: 20 } }, __alloT('stem.stewardship.campaign_comparison', '🔀 Campaign Comparison')),
               h('button', { onClick: function() { setHub({ comparing: { mode: 'selecting', a: null, b: null } }); },
-                style: { marginLeft: 'auto', background: 'transparent', border: '1px solid var(--allo-stem-border, #475569)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 12 } }, 'Pick different pair')
+                style: { marginLeft: 'auto', background: 'transparent', border: '1px solid var(--allo-stem-border, #475569)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 12 } }, __alloT('stem.stewardship.pick_different_pair', 'Pick different pair'))
             ),
 
             // Pair-specific reflection
@@ -1219,7 +1220,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                 borderTop: '1px solid rgba(168,85,247,0.4)', borderRight: '1px solid rgba(168,85,247,0.4)', borderBottom: '1px solid rgba(168,85,247,0.4)', borderLeft: '4px solid #a855f7'
               }
             },
-              h('div', { style: { fontSize: 11, color: '#a855f7', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 4 } }, 'Pair reflection'),
+              h('div', { style: { fontSize: 11, color: '#a855f7', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 4 } }, __alloT('stem.stewardship.pair_reflection', 'Pair reflection')),
               h('h3', { style: { margin: '0 0 6px', color: '#e9d5ff', fontSize: 16, fontWeight: 800 } }, reflection.title),
               h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13.5, lineHeight: 1.65 } }, reflection.text)
             ) : null,
@@ -1244,7 +1245,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                     h('div', { style: { color: side.s.outcome && isTopTier(side.s.outcome) ? '#a855f7' : '#64748b', fontWeight: 700, marginTop: 4 } }, side.s.outcome && isTopTier(side.s.outcome) ? '🌟 Top-tier outcome' : '')
                   ),
                   h('div', { style: { marginTop: 10 } },
-                    h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 4 } }, 'Feedback rules fired'),
+                    h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 4 } }, __alloT('stem.stewardship.feedback_rules_fired', 'Feedback rules fired')),
                     ruleList(side.rules, side.c.color)
                   )
                 );
@@ -1265,28 +1266,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
       var TUTORIAL_STEPS = [
         {
           icon: '🌍',
-          title: 'Fifteen campaigns, two formats, five mechanic families',
-          body: 'You have fifteen campaigns to choose from. Five are deep Maine anchor campaigns (multi-period simulations grounded in documented Maine practice — Wabanaki fire stewardship, wildlife conservation, public health, watershed restoration, climate policy). Ten are self-contained cross-region scenarios (4-decision, 5–10 minute experiences from Yarralin Australia, Karuk Northern California, Yellowstone, Akagera Rwanda, Mumbai monsoon dengue, Liberia 2014 Ebola, Klamath River, Murray–Darling Basin, Marshall Islands, and Bangladesh delta) that teach the same universal mechanic on different country. Same five mechanic families, two case studies per family minimum. Family Pairing Insights unlock as you complete a Maine anchor + a cross-region scenario in the same family.'
+          title: __alloT('stem.stewardship.fifteen_campaigns_two_formats_five_mec', 'Fifteen campaigns, two formats, five mechanic families'),
+          body: __alloT('stem.stewardship.you_have_fifteen_campaigns_to_choose_f', 'You have fifteen campaigns to choose from. Five are deep Maine anchor campaigns (multi-period simulations grounded in documented Maine practice — Wabanaki fire stewardship, wildlife conservation, public health, watershed restoration, climate policy). Ten are self-contained cross-region scenarios (4-decision, 5–10 minute experiences from Yarralin Australia, Karuk Northern California, Yellowstone, Akagera Rwanda, Mumbai monsoon dengue, Liberia 2014 Ebola, Klamath River, Murray–Darling Basin, Marshall Islands, and Bangladesh delta) that teach the same universal mechanic on different country. Same five mechanic families, two case studies per family minimum. Family Pairing Insights unlock as you complete a Maine anchor + a cross-region scenario in the same family.')
         },
         {
           icon: '🔁',
-          title: 'The campaign loop',
-          body: 'Every campaign cycles through four phases. Setup: pick a difficulty and read about the entities. Period (year, week, or 5-year period depending on the campaign): allocate stewardship hours to interventions on specific entities. Review: see how the system drifted and which events fired. Debrief at the end: see your outcome tier, a do-nothing comparison, and a trend chart. The pattern is the same in every campaign; the moves differ.'
+          title: __alloT('stem.stewardship.the_campaign_loop', 'The campaign loop'),
+          body: __alloT('stem.stewardship.every_campaign_cycles_through_four_pha', 'Every campaign cycles through four phases. Setup: pick a difficulty and read about the entities. Period (year, week, or 5-year period depending on the campaign): allocate stewardship hours to interventions on specific entities. Review: see how the system drifted and which events fired. Debrief at the end: see your outcome tier, a do-nothing comparison, and a trend chart. The pattern is the same in every campaign; the moves differ.')
         },
         {
           icon: '🔄',
-          title: 'Feedback rules are the campaign\'s spine',
-          body: 'Each campaign has 3 to 4 feedback rules that fire AFTER your actions resolve. They tie entities together. Wolves suppress deer (Conservation Manager). Beavers help salmon and brook trout (Watershed Steward). Clean grid unlocks transport electrification (Climate Pathways). Low working-age trust triggers vaccine refusal (Outbreak Response). Read the year-end review for which feedback rules fired this period; that is where the real strategy lives.'
+          title: __alloT('stem.stewardship.feedback_rules_are_the_campaign_s_spin', 'Feedback rules are the campaign\'s spine'),
+          body: __alloT('stem.stewardship.each_campaign_has_3_to_4_feedback_rule', 'Each campaign has 3 to 4 feedback rules that fire AFTER your actions resolve. They tie entities together. Wolves suppress deer (Conservation Manager). Beavers help salmon and brook trout (Watershed Steward). Clean grid unlocks transport electrification (Climate Pathways). Low working-age trust triggers vaccine refusal (Outbreak Response). Read the year-end review for which feedback rules fired this period; that is where the real strategy lives.')
         },
         {
           icon: '🔍',
-          title: 'AI Reading: what it is and what it is NOT',
-          body: 'Every campaign has a "Read the [land/county/watershed/etc] (AI)" button. This is an AI educator that reads your current state and offers coaching grounded in research and Maine case studies. It is NOT a Wabanaki person, NOT a real Public Health Officer, NOT a wildlife biologist, NOT an agency staff member. Real voices belong to real organizations: Wabanaki Public Health and Wellness, Maine Indian Basketmakers Alliance, Penobscot Nation CHPD, Maine CDC, Atlantic Salmon Federation, and others, named in every AI response disclaimer. The AI is a teaching helper, not an authority.'
+          title: __alloT('stem.stewardship.ai_reading_what_it_is_and_what_it_is_n', 'AI Reading: what it is and what it is NOT'),
+          body: __alloT('stem.stewardship.every_campaign_has_a_read_the_land_cou', 'Every campaign has a "Read the [land/county/watershed/etc] (AI)" button. This is an AI educator that reads your current state and offers coaching grounded in research and Maine case studies. It is NOT a Wabanaki person, NOT a real Public Health Officer, NOT a wildlife biologist, NOT an agency staff member. Real voices belong to real organizations: Wabanaki Public Health and Wellness, Maine Indian Basketmakers Alliance, Penobscot Nation CHPD, Maine CDC, Atlantic Salmon Federation, and others, named in every AI response disclaimer. The AI is a teaching helper, not an authority.')
         },
         {
           icon: '🌱',
-          title: 'Choose your first campaign or scenario',
-          body: 'No required order. Conservation Manager (Maine anchor) has the cleanest feedback rules for first-timers. Yellowstone Wolf Restoration is the textbook trophic cascade case study — a great first cross-region scenario after the Maine one. For shorter sessions try a cross-region scenario (5–10 min) first; for longer sessions try a Maine anchor (multi-period campaign). The strongest learning move: pair a Maine anchor with a cross-region scenario in the same mechanic family, then compare. After two completions the hub surfaces cross-campaign patterns you would not see from any single run.'
+          title: __alloT('stem.stewardship.choose_your_first_campaign_or_scenario', 'Choose your first campaign or scenario'),
+          body: __alloT('stem.stewardship.no_required_order_conservation_manager', 'No required order. Conservation Manager (Maine anchor) has the cleanest feedback rules for first-timers. Yellowstone Wolf Restoration is the textbook trophic cascade case study — a great first cross-region scenario after the Maine one. For shorter sessions try a cross-region scenario (5–10 min) first; for longer sessions try a Maine anchor (multi-period campaign). The strongest learning move: pair a Maine anchor with a cross-region scenario in the same mechanic family, then compare. After two completions the hub surfaces cross-campaign patterns you would not see from any single run.')
         }
       ];
 
@@ -1312,16 +1313,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
         return h('div', {
           // Dark shell — see hub view for WCAG rationale
           style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 16, padding: '20px 16px', minHeight: 'calc(100vh - 32px)' },
-          role: 'region', 'aria-label': 'Stewardship Hub onboarding tutorial'
+          role: 'region', 'aria-label': __alloT('stem.stewardship.stewardship_hub_onboarding_tutorial', 'Stewardship Hub onboarding tutorial')
         }, h('div', { style: { maxWidth: 700, margin: '0 auto' } },
           // Header
           h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 } },
             h('div', null,
-              h('h2', { style: { margin: 0, color: '#86efac', fontSize: 22, fontWeight: 900 } }, '🌍 Welcome to Environmental Stewardship Campaigns'),
-              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, 'A 5-step tour before your first campaign or scenario.')
+              h('h2', { style: { margin: 0, color: '#86efac', fontSize: 22, fontWeight: 900 } }, __alloT('stem.stewardship.welcome_to_environmental_stewardship_c', '🌍 Welcome to Environmental Stewardship Campaigns')),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, __alloT('stem.stewardship.a_5_step_tour_before_your_first_campai', 'A 5-step tour before your first campaign or scenario.'))
             ),
-            h('button', { onClick: dismissTutorial, 'aria-label': 'Skip tutorial',
-              style: { marginLeft: 'auto', background: 'transparent', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text-soft, #94a3b8)', borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 12, cursor: 'pointer' } }, 'Skip tour')
+            h('button', { onClick: dismissTutorial, 'aria-label': __alloT('stem.stewardship.skip_tutorial', 'Skip tutorial'),
+              style: { marginLeft: 'auto', background: 'transparent', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text-soft, #94a3b8)', borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 12, cursor: 'pointer' } }, __alloT('stem.stewardship.skip_tour', 'Skip tour'))
           ),
 
           // Step counter
@@ -1354,8 +1355,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
 
           // Navigation
           h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
-            step > 0 ? h('button', { onClick: backTutorial, 'aria-label': 'Previous step',
-              style: { padding: '8px 16px', borderRadius: 10, border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #cbd5e1)', cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back') : null,
+            step > 0 ? h('button', { onClick: backTutorial, 'aria-label': __alloT('stem.stewardship.previous_step', 'Previous step'),
+              style: { padding: '8px 16px', borderRadius: 10, border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #cbd5e1)', cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, __alloT('stem.stewardship.back_2', '← Back')) : null,
             h('div', { style: { flex: 1 } }),
             h('button', { onClick: advanceTutorial, 'aria-label': step === TUTORIAL_STEPS.length - 1 ? 'Finish tutorial' : 'Next step',
               style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #15803d 0%, #166534 100%)', color: '#fff', fontWeight: 800, fontSize: 14 } },
@@ -1386,13 +1387,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
         // (these were duplicated in each tool file, so the hub does not
         // import them directly; we render with whatever the state holds).
         var entityFieldMap = {
-          mosaic: { name: 'Zone', metricLabel: 'Health' },
-          conserve: { name: 'Species', metricLabel: 'Population' },
-          outbreak: { name: 'Demographic', metricLabel: 'Vaccinated' },
-          steward: { name: 'Component', metricLabel: 'Quality' },
-          pathway: { name: 'Sector', metricLabel: 'Decarbonization' }
+          mosaic: { name: __alloT('stem.stewardship.zone', 'Zone'), metricLabel: 'Health' },
+          conserve: { name: __alloT('stem.stewardship.species', 'Species'), metricLabel: 'Population' },
+          outbreak: { name: __alloT('stem.stewardship.demographic', 'Demographic'), metricLabel: 'Vaccinated' },
+          steward: { name: __alloT('stem.stewardship.component', 'Component'), metricLabel: 'Quality' },
+          pathway: { name: __alloT('stem.stewardship.sector', 'Sector'), metricLabel: 'Decarbonization' }
         };
-        var fm = entityFieldMap[campaignId] || { name: 'Entity', metricLabel: 'Score' };
+        var fm = entityFieldMap[campaignId] || { name: __alloT('stem.stewardship.entity', 'Entity'), metricLabel: 'Score' };
 
         function primaryMetric(entity) {
           if (campaignId === 'mosaic') return entity.health;
@@ -1432,15 +1433,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
           h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, paddingBottom: 14, borderBottom: '2px solid ' + c.color } },
             h('span', { style: { fontSize: 40 } }, c.icon),
             h('div', { style: { flex: 1 } },
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 } }, 'Maine Stewardship Campaign Report'),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 } }, __alloT('stem.stewardship.maine_stewardship_campaign_report', 'Maine Stewardship Campaign Report')),
               h('h2', { style: { margin: '4px 0 0', color: c.color, fontSize: 24, fontWeight: 900 } }, c.label),
               h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 4 } }, c.scale + ' · ' + c.mechanic)
             ),
             h('div', { className: 'no-print', style: { display: 'flex', gap: 6 } },
-              h('button', { onClick: printReport, 'aria-label': 'Print this report',
-                style: { padding: '6px 14px', borderRadius: 8, border: '1px solid #15803d', background: '#15803d', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 12 } }, '🖨 Print'),
-              h('button', { onClick: closeReport, 'aria-label': 'Close report',
-                style: { padding: '6px 14px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', background: '#fff', color: 'var(--allo-stem-text-soft, #475569)', cursor: 'pointer', fontWeight: 700, fontSize: 12 } }, '← Back')
+              h('button', { onClick: printReport, 'aria-label': __alloT('stem.stewardship.print_this_report', 'Print this report'),
+                style: { padding: '6px 14px', borderRadius: 8, border: '1px solid #15803d', background: '#15803d', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 12 } }, __alloT('stem.stewardship.print', '🖨 Print')),
+              h('button', { onClick: closeReport, 'aria-label': __alloT('stem.stewardship.close_report', 'Close report'),
+                style: { padding: '6px 14px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', background: '#fff', color: 'var(--allo-stem-text-soft, #475569)', cursor: 'pointer', fontWeight: 700, fontSize: 12 } }, __alloT('stem.stewardship.back_3', '← Back'))
             )
           ),
 
@@ -1448,7 +1449,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
           outcome ? h('div', {
             style: { padding: 14, borderRadius: 10, marginBottom: 16, background: (outcome.color || '#86efac') + '18', border: '1px solid ' + (outcome.color || '#86efac') + '66' }
           },
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 4 } }, 'Final outcome'),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 4 } }, __alloT('stem.stewardship.final_outcome', 'Final outcome')),
             h('div', { style: { fontSize: 18, fontWeight: 800, color: outcome.color || '#0f172a' } }, (outcome.icon || '🏆') + ' ' + (outcome.label || 'Complete')),
             h('p', { style: { margin: '6px 0 0', color: '#475569', fontSize: 13, lineHeight: 1.55 } }, outcome.desc || '')
           ) : null,
@@ -1458,15 +1459,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, marginBottom: 16, padding: 12, background: '#f1f5f9', borderRadius: 8 }
           },
             h('div', null,
-              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Difficulty'),
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', textTransform: 'uppercase', letterSpacing: 0.5 } }, __alloT('stem.stewardship.difficulty', 'Difficulty')),
               h('div', { style: { fontSize: 14, fontWeight: 700, color: '#0f172a' } }, state.difficulty || 'Standard')
             ),
             h('div', null,
-              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Periods played'),
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', textTransform: 'uppercase', letterSpacing: 0.5 } }, __alloT('stem.stewardship.periods_played', 'Periods played')),
               h('div', { style: { fontSize: 14, fontWeight: 700, color: '#0f172a' } }, yearLog.length + ' of ' + (state.maxYears || state.maxWeeks || c.defaultMaxYears))
             ),
             h('div', null,
-              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Campaign seed'),
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', textTransform: 'uppercase', letterSpacing: 0.5 } }, __alloT('stem.stewardship.campaign_seed', 'Campaign seed')),
               h('div', { style: { fontSize: 11, fontWeight: 700, fontFamily: 'ui-monospace, monospace', color: '#0f172a' } }, state.seed || 'unsaved')
             )
           ),
@@ -1487,7 +1488,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
 
           // Event log highlights
           eventHighlights.length > 0 ? h('div', { style: { marginBottom: 16 } },
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, 'Campaign Log'),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, __alloT('stem.stewardship.campaign_log', 'Campaign Log')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
               eventHighlights.map(function(eh, i) {
                 return h('div', { key: i, style: { padding: '6px 10px', background: '#f8fafc', borderLeft: '3px solid ' + c.color, borderRadius: 4, fontSize: 12, color: '#334155' } },
@@ -1506,17 +1507,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             style: { marginTop: 24, paddingTop: 16, borderTop: '1px dashed var(--allo-stem-border, #cbd5e1)', display: 'flex', gap: 32, fontSize: 11, color: 'var(--allo-stem-text-soft, #475569)' }
           },
             h('div', { style: { flex: 1 } },
-              h('div', { style: { borderTop: '1px solid #0f172a', paddingTop: 4 } }, 'Student name'),
-              h('div', { style: { marginTop: 16, borderTop: '1px solid #0f172a', paddingTop: 4 } }, 'Date')
+              h('div', { style: { borderTop: '1px solid #0f172a', paddingTop: 4 } }, __alloT('stem.stewardship.student_name', 'Student name')),
+              h('div', { style: { marginTop: 16, borderTop: '1px solid #0f172a', paddingTop: 4 } }, __alloT('stem.stewardship.date', 'Date'))
             ),
             h('div', { style: { flex: 1 } },
-              h('div', { style: { borderTop: '1px solid #0f172a', paddingTop: 4 } }, 'Reflection (one thing you learned)'),
-              h('div', { style: { marginTop: 16, borderTop: '1px solid #0f172a', paddingTop: 4 } }, 'Teacher signature')
+              h('div', { style: { borderTop: '1px solid #0f172a', paddingTop: 4 } }, __alloT('stem.stewardship.reflection_one_thing_you_learned', 'Reflection (one thing you learned)')),
+              h('div', { style: { marginTop: 16, borderTop: '1px solid #0f172a', paddingTop: 4 } }, __alloT('stem.stewardship.teacher_signature', 'Teacher signature'))
             )
           ),
 
           h('div', { style: { marginTop: 18, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center', fontStyle: 'italic' } },
-            'Generated by Environmental Stewardship Campaigns · AlloFlow · Campaign data is a teaching simplification grounded in documented practice.'
+            __alloT('stem.stewardship.generated_by_environmental_stewardship', 'Generated by Environmental Stewardship Campaigns · AlloFlow · Campaign data is a teaching simplification grounded in documented practice.')
           )
         );
       }
@@ -1594,8 +1595,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             role: 'region', 'aria-label': scenario.label + ' briefing'
           }, h('div', { style: { maxWidth: 800, margin: '0 auto' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
-              h('button', { onClick: closeScenario, 'aria-label': 'Back to hub',
-                style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 } }, '← Back to hub'),
+              h('button', { onClick: closeScenario, 'aria-label': __alloT('stem.stewardship.back_to_hub_3', 'Back to hub'),
+                style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 } }, __alloT('stem.stewardship.back_to_hub_4', '← Back to hub')),
               h('span', { style: { fontSize: 36 } }, scenario.icon),
               h('div', { style: { flex: 1, minWidth: 220 } },
                 h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 } }, scenario.regionFlag + ' ' + scenario.region),
@@ -1606,11 +1607,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             h('div', {
               style: { padding: 16, borderRadius: 12, background: 'rgba(15,23,42,0.7)', border: '1px solid ' + scenario.color + '55', borderLeft: '4px solid ' + scenario.color, marginBottom: 14 }
             },
-              h('div', { style: { fontSize: 11, color: scenario.color, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, 'Briefing'),
+              h('div', { style: { fontSize: 11, color: scenario.color, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, __alloT('stem.stewardship.briefing', 'Briefing')),
               h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.7 } }, scenario.briefing)
             ),
             h('div', { style: { marginBottom: 14 } },
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, 'Entities you steward'),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, __alloT('stem.stewardship.entities_you_steward', 'Entities you steward')),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 8 } },
                 scenario.entities.map(function(ent) {
                   return h('div', { key: ent.id, style: { padding: 10, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)' } },
@@ -1628,14 +1629,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             h('div', {
               style: { padding: 12, borderRadius: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', marginBottom: 14, fontSize: 12.5, color: 'var(--allo-stem-text, #fef3c7)', lineHeight: 1.55 }
             },
-              h('strong', null, '⚠️ AI scenario notice: '),
+              h('strong', null, __alloT('stem.stewardship.ai_scenario_notice', '⚠️ AI scenario notice: ')),
               scenario.aiDisclaimer
             ),
             h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
-              h('button', { onClick: function() { beginScenarioPlay(scenario); }, 'aria-label': 'Begin scenario',
-                style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + scenario.color + ' 0%, ' + scenario.color + 'cc 100%)', color: '#fff', fontWeight: 800, fontSize: 14 } }, 'Begin scenario →'),
-              h('button', { onClick: closeScenario, 'aria-label': 'Cancel',
-                style: { padding: '10px 16px', borderRadius: 10, border: '1px solid var(--allo-stem-border, #334155)', cursor: 'pointer', background: 'transparent', color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700, fontSize: 13 } }, 'Cancel')
+              h('button', { onClick: function() { beginScenarioPlay(scenario); }, 'aria-label': __alloT('stem.stewardship.begin_scenario', 'Begin scenario'),
+                style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + scenario.color + ' 0%, ' + scenario.color + 'cc 100%)', color: '#fff', fontWeight: 800, fontSize: 14 } }, __alloT('stem.stewardship.begin_scenario_2', 'Begin scenario →')),
+              h('button', { onClick: closeScenario, 'aria-label': __alloT('stem.stewardship.cancel', 'Cancel'),
+                style: { padding: '10px 16px', borderRadius: 10, border: '1px solid var(--allo-stem-border, #334155)', cursor: 'pointer', background: 'transparent', color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700, fontSize: 13 } }, __alloT('stem.stewardship.cancel_2', 'Cancel'))
             )
           )); // close inner maxWidth + outer dark shell
         }
@@ -1652,8 +1653,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
           }, h('div', { style: { maxWidth: 820, margin: '0 auto' } },
             // Header bar
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
-              h('button', { onClick: closeScenario, 'aria-label': 'Pause and return to hub',
-                style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 } }, '← Pause'),
+              h('button', { onClick: closeScenario, 'aria-label': __alloT('stem.stewardship.pause_and_return_to_hub', 'Pause and return to hub'),
+                style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 } }, __alloT('stem.stewardship.pause', '← Pause')),
               h('span', { style: { fontSize: 28 } }, scenario.icon),
               h('div', { style: { flex: 1, minWidth: 220 } },
                 h('div', { style: { fontWeight: 800, color: scenario.color, fontSize: 16 } }, scenario.label),
@@ -1711,7 +1712,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                   })
                 );
               })(),
-              h('div', { style: { fontSize: 9.5, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center', marginTop: 4, lineHeight: 1.4 } }, 'each ring is one part of the system (🟢 healthy · 🟡 stressed · 🔴 critical). After a choice, lit spokes + ±deltas show how it rippled through.')
+              h('div', { style: { fontSize: 9.5, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center', marginTop: 4, lineHeight: 1.4 } }, __alloT('stem.stewardship.each_ring_is_one_part_of_the_system_he', 'each ring is one part of the system (🟢 healthy · 🟡 stressed · 🔴 critical). After a choice, lit spokes + ±deltas show how it rippled through.'))
             ),
             // Decision prompt
             h('div', {
@@ -1736,7 +1737,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             ),
             // Recent decision log
             (st.decisionLog && st.decisionLog.length > 0) ? h('details', { style: { marginTop: 16, padding: '10px 14px', borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)' } },
-              h('summary', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: 0.5 } }, '📓 Decisions so far'),
+              h('summary', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: 0.5 } }, __alloT('stem.stewardship.decisions_so_far', '📓 Decisions so far')),
               h('div', { style: { marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 } },
                 st.decisionLog.map(function(entry, i) {
                   return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-panel, #1e293b)', borderLeft: '3px solid ' + scenario.color } },
@@ -1759,8 +1760,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             role: 'region', 'aria-label': scenario.label + ' debrief'
           }, h('div', { style: { maxWidth: 820, margin: '0 auto' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
-              h('button', { onClick: closeScenario, 'aria-label': 'Back to hub',
-                style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 } }, '← Back to hub'),
+              h('button', { onClick: closeScenario, 'aria-label': __alloT('stem.stewardship.back_to_hub_5', 'Back to hub'),
+                style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 } }, __alloT('stem.stewardship.back_to_hub_6', '← Back to hub')),
               h('span', { style: { fontSize: 36 } }, scenario.icon),
               h('div', { style: { flex: 1, minWidth: 200 } },
                 h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, scenario.regionFlag + ' ' + scenario.region),
@@ -1774,7 +1775,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
                 h('span', { style: { fontSize: 36 } }, outcome.icon || '🏆'),
                 h('div', null,
-                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 } }, 'Final outcome'),
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 } }, __alloT('stem.stewardship.final_outcome_2', 'Final outcome')),
                   h('h3', { style: { margin: '2px 0 0', color: outcome.color || '#86efac', fontSize: 20, fontWeight: 900 } }, outcome.label)
                 )
               ),
@@ -1782,7 +1783,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             ),
             // Final entity state
             h('div', { style: { marginBottom: 16 } },
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, 'Final entity state'),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, __alloT('stem.stewardship.final_entity_state', 'Final entity state')),
               (function() {
                 // Reconstruct each entity's trajectory by replaying the decision
                 // log's effects from the initial values — so the debrief shows
@@ -1832,7 +1833,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             ),
             // Decision log
             (st.decisionLog && st.decisionLog.length > 0) ? h('div', { style: { marginBottom: 16 } },
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, 'Your decision path'),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, __alloT('stem.stewardship.your_decision_path', 'Your decision path')),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
                 st.decisionLog.map(function(entry, i) {
                   return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid ' + scenario.color, fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)' } },
@@ -1847,12 +1848,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             h('div', {
               style: { padding: 14, borderRadius: 12, marginBottom: 16, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.4)', borderRight: '1px solid rgba(168,85,247,0.4)', borderBottom: '1px solid rgba(168,85,247,0.4)', borderLeft: '3px solid #a855f7' }
             },
-              h('div', { style: { fontSize: 11, color: '#a855f7', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, '🧠 Cross-region synthesis'),
+              h('div', { style: { fontSize: 11, color: '#a855f7', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, __alloT('stem.stewardship.cross_region_synthesis', '🧠 Cross-region synthesis')),
               h('p', { style: { margin: 0, color: '#e9d5ff', fontSize: 13.5, lineHeight: 1.65 } }, scenario.synthesis)
             ),
             // Sources
             h('details', { open: false, style: { marginBottom: 16, padding: '10px 14px', borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)' } },
-              h('summary', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: 0.5 } }, '📚 Cited organizations and sources'),
+              h('summary', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: 0.5 } }, __alloT('stem.stewardship.cited_organizations_and_sources', '📚 Cited organizations and sources')),
               h('ul', { style: { margin: '10px 0 0 18px', padding: 0, fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65 } },
                 scenario.sources.map(function(src, i) { return h('li', { key: i }, src); })
               ),
@@ -1862,10 +1863,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             ),
             // Actions
             h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
-              h('button', { onClick: function() { resetScenario(scenario.id); beginScenarioPlay(scenario); }, 'aria-label': 'Replay scenario',
-                style: { padding: '10px 18px', borderRadius: 10, border: '1px solid ' + scenario.color, cursor: 'pointer', background: 'transparent', color: scenario.color, fontWeight: 700, fontSize: 13 } }, '↻ Replay'),
-              h('button', { onClick: closeScenario, 'aria-label': 'Back to hub',
-                style: { padding: '10px 18px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + scenario.color + ' 0%, ' + scenario.color + 'cc 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '← Back to hub')
+              h('button', { onClick: function() { resetScenario(scenario.id); beginScenarioPlay(scenario); }, 'aria-label': __alloT('stem.stewardship.replay_scenario', 'Replay scenario'),
+                style: { padding: '10px 18px', borderRadius: 10, border: '1px solid ' + scenario.color, cursor: 'pointer', background: 'transparent', color: scenario.color, fontWeight: 700, fontSize: 13 } }, __alloT('stem.stewardship.replay', '↻ Replay')),
+              h('button', { onClick: closeScenario, 'aria-label': __alloT('stem.stewardship.back_to_hub_7', 'Back to hub'),
+                style: { padding: '10px 18px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + scenario.color + ' 0%, ' + scenario.color + 'cc 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, __alloT('stem.stewardship.back_to_hub_8', '← Back to hub'))
             )
           )); // close inner maxWidth + outer dark shell
         }
@@ -1954,21 +1955,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
         // designed contrast regardless of the parent page's background.
         style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 16, padding: '20px 16px', minHeight: 'calc(100vh - 32px)' },
         role: 'region',
-        'aria-label': 'Environmental Stewardship Campaigns hub'
+        'aria-label': __alloT('stem.stewardship.environmental_stewardship_campaigns_hu', 'Environmental Stewardship Campaigns hub')
       }, h('div', {
         style: { maxWidth: 900, margin: '0 auto' }
       },
         // Header
         h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' } },
-          ArrowLeft ? h('button', { onClick: function() { setStemLabTool(null); }, 'aria-label': 'Back to STEM Lab',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 14 } }, '← Back') : null,
+          ArrowLeft ? h('button', { onClick: function() { setStemLabTool(null); }, 'aria-label': __alloT('stem.stewardship.back_to_stem_lab', 'Back to STEM Lab'),
+            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 14 } }, __alloT('stem.stewardship.back_4', '← Back')) : null,
           h('div', { style: { flex: 1, minWidth: 280 } },
-            h('h2', { style: { margin: 0, color: '#86efac', fontSize: 22, fontWeight: 900 } }, '🌍 Environmental Stewardship Campaigns'),
-            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, maxWidth: 720, lineHeight: 1.55 } }, 'Fifteen environmental stewardship campaigns across eleven regions. Five deep multi-period Maine anchor campaigns (your case studies for fire-return intervals, trophic cascades, public-health trust, hydrological cascades, climate-policy interdependence) plus ten self-contained cross-region scenarios (Yarralin Australia, Karuk Northern California, Yellowstone wolves, Akagera Rwanda lions, Mumbai monsoon dengue, Liberia 2014 Ebola, Klamath River, Murray–Darling Basin, Marshall Islands atolls, Bangladesh delta) that teach the same universal mechanics on different country. Every mechanic family now has at least two cross-region case studies for direct comparison.')
+            h('h2', { style: { margin: 0, color: '#86efac', fontSize: 22, fontWeight: 900 } }, __alloT('stem.stewardship.environmental_stewardship_campaigns', '🌍 Environmental Stewardship Campaigns')),
+            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, maxWidth: 720, lineHeight: 1.55 } }, __alloT('stem.stewardship.fifteen_environmental_stewardship_camp', 'Fifteen environmental stewardship campaigns across eleven regions. Five deep multi-period Maine anchor campaigns (your case studies for fire-return intervals, trophic cascades, public-health trust, hydrological cascades, climate-policy interdependence) plus ten self-contained cross-region scenarios (Yarralin Australia, Karuk Northern California, Yellowstone wolves, Akagera Rwanda lions, Mumbai monsoon dengue, Liberia 2014 Ebola, Klamath River, Murray–Darling Basin, Marshall Islands atolls, Bangladesh delta) that teach the same universal mechanics on different country. Every mechanic family now has at least two cross-region case studies for direct comparison.'))
           ),
-          h('button', { onClick: startTutorial, 'aria-label': 'Take the 5-step tour',
-            title: 'Re-launch the onboarding tutorial',
-            style: { background: 'rgba(134,239,172,0.10)', border: '1px solid #86efac', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', color: '#86efac', fontSize: 12, fontWeight: 700 } }, '🧭 Take the tour')
+          h('button', { onClick: startTutorial, 'aria-label': __alloT('stem.stewardship.take_the_5_step_tour', 'Take the 5-step tour'),
+            title: __alloT('stem.stewardship.re_launch_the_onboarding_tutorial', 'Re-launch the onboarding tutorial'),
+            style: { background: 'rgba(134,239,172,0.10)', border: '1px solid #86efac', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', color: '#86efac', fontSize: 12, fontWeight: 700 } }, __alloT('stem.stewardship.take_the_tour', '🧭 Take the tour'))
         ),
 
         // ══ STEWARDSHIP INQUIRY widget (H7b'') ══
@@ -1989,15 +1990,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
           var roi = (iq.timeHorizon * iq.communityBuyin * 0.05) - (iq.investment / 1000);
           var state = successOdds > 0.75 ? 'flourishing' : successOdds > 0.55 ? 'positive' : successOdds > 0.35 ? 'tenuous' : successOdds > 0.15 ? 'struggling' : 'failing';
           var sm = ({
-            flourishing: { label: 'Flourishing', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'High investment, long horizon, strong community — landscape recovers and self-sustains.' },
-            positive: { label: 'Positive trajectory', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Real progress visible. Continued effort builds on early wins.' },
-            tenuous: { label: 'Tenuous', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Mixed results. One bad season or funding cut could reverse gains.' },
-            struggling: { label: 'Struggling', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'Low investment or weak community engagement. Effort visible but ecosystem still declining.' },
-            failing: { label: 'Failing', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Too little, too late, or wrong approach. Tipping point passed or imminent.' }
+            flourishing: { label: __alloT('stem.stewardship.flourishing', 'Flourishing'), color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: __alloT('stem.stewardship.high_investment_long_horizon_strong_co', 'High investment, long horizon, strong community — landscape recovers and self-sustains.') },
+            positive: { label: __alloT('stem.stewardship.positive_trajectory', 'Positive trajectory'), color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: __alloT('stem.stewardship.real_progress_visible_continued_effort', 'Real progress visible. Continued effort builds on early wins.') },
+            tenuous: { label: __alloT('stem.stewardship.tenuous', 'Tenuous'), color: '#facc15', bg: '#2a2410', border: '#eab308', desc: __alloT('stem.stewardship.mixed_results_one_bad_season_or_fundin', 'Mixed results. One bad season or funding cut could reverse gains.') },
+            struggling: { label: __alloT('stem.stewardship.struggling', 'Struggling'), color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: __alloT('stem.stewardship.low_investment_or_weak_community_engag', 'Low investment or weak community engagement. Effort visible but ecosystem still declining.') },
+            failing: { label: __alloT('stem.stewardship.failing', 'Failing'), color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: __alloT('stem.stewardship.too_little_too_late_or_wrong_approach_', 'Too little, too late, or wrong approach. Tipping point passed or imminent.') }
           })[state];
           return h('div', { style: { padding: 14, marginBottom: 16, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
-            h('h4', { style: { margin: '0 0 4px', fontSize: 13, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, '🔬 Stewardship Inquiry — Predict the Trajectory'),
-            h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, 'Pick a hypothetical project setting. Predict how investment, time, community, and intervention complexity combine. No score, no reveal. (Note: this slider is intervention complexity, NOT biodiversity — higher biodiversity generally INCREASES resilience.)'),
+            h('h4', { style: { margin: '0 0 4px', fontSize: 13, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, __alloT('stem.stewardship.stewardship_inquiry_predict_the_trajec', '🔬 Stewardship Inquiry — Predict the Trajectory')),
+            h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, __alloT('stem.stewardship.pick_a_hypothetical_project_setting_pr', 'Pick a hypothetical project setting. Predict how investment, time, community, and intervention complexity combine. No score, no reveal. (Note: this slider is intervention complexity, NOT biodiversity — higher biodiversity generally INCREASES resilience.)')),
             h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · success odds ' + (successOdds * 100).toFixed(0) + '% · ROI proxy ' + roi.toFixed(2)),
             h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
             h('svg', { width: '100%', height: 120, viewBox: '0 0 320 120', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
@@ -2010,19 +2011,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
               h('label', { style: { fontSize: 11 } },
-                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Investment ($K)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.investment)),
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.stewardship.investment_k', 'Investment ($K)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.investment)),
                 h('input', { type: 'range', min: 1, max: 500, step: 5, value: iq.investment, onChange: function(e) { setKey('investment', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
               ),
               h('label', { style: { fontSize: 11 } },
-                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Time horizon (yr)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.timeHorizon)),
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.stewardship.time_horizon_yr', 'Time horizon (yr)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.timeHorizon)),
                 h('input', { type: 'range', min: 1, max: 50, step: 1, value: iq.timeHorizon, onChange: function(e) { setKey('timeHorizon', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
               ),
               h('label', { style: { fontSize: 11 } },
-                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Community buy-in'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.communityBuyin)),
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.stewardship.community_buy_in', 'Community buy-in')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.communityBuyin)),
                 h('input', { type: 'range', min: 0, max: 10, step: 1, value: iq.communityBuyin, onChange: function(e) { setKey('communityBuyin', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
               ),
               h('label', { style: { fontSize: 11 } },
-                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Intervention complexity / uncertainty'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.interventionComplexity)),
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.stewardship.intervention_complexity_uncertainty', 'Intervention complexity / uncertainty')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.interventionComplexity)),
                 h('input', { type: 'range', min: 0, max: 10, step: 1, value: iq.interventionComplexity, onChange: function(e) { setKey('interventionComplexity', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
               )
             ),
@@ -2030,30 +2031,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
               h('button', { onClick: function() {
                 var t = new Date().toISOString().slice(11, 19);
                 setIQ({ log: iq.log.concat([{ t: t, inv: iq.investment, hor: iq.timeHorizon, comm: iq.communityBuyin, ic: iq.interventionComplexity, odds: (successOdds * 100).toFixed(0), state: sm.label }]) });
-              }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '📋 Log this project'),
-              h('button', { onClick: function() { setIQ({ investment: 50, timeHorizon: 10, communityBuyin: 5, interventionComplexity: 5 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
+              }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, __alloT('stem.stewardship.log_this_project', '📋 Log this project')),
+              h('button', { onClick: function() { setIQ({ investment: 50, timeHorizon: 10, communityBuyin: 5, interventionComplexity: 5 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, __alloT('stem.stewardship.reset', 'Reset'))
             ),
             iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
               iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · $' + e.inv + 'K · ' + e.hor + 'yr · comm ' + e.comm + ' · ic ' + (e.ic != null ? e.ic : e.ec) + ' → ' + e.odds + '%'); })
             ),
-            h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (which campaign would benefit most from MORE community buy-in vs MORE investment?)'),
-            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., Yellowstone wolves needed 50 years of community shift before reintroduction was politically possible — money alone wouldn\'t have worked...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
+            h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, __alloT('stem.stewardship.your_hypothesis_which_campaign_would_b', 'Your hypothesis (which campaign would benefit most from MORE community buy-in vs MORE investment?)')),
+            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.stewardship.e_g_yellowstone_wolves_needed_50_years', 'e.g., Yellowstone wolves needed 50 years of community shift before reintroduction was politically possible — money alone wouldn\'t have worked...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, __alloT('stem.stewardship.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
             iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
-              h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
+              h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, __alloT('stem.stewardship.open_questions_no_answer_key', 'Open questions (no answer key)')),
               h('ul', { style: { margin: 0, paddingLeft: 16 } },
-                h('li', null, 'Watch the vocabulary: the "intervention complexity" slider tracks how many uncertain, intervention-dependent variables you must manage — NOT biodiversity. Biodiversity-ecosystem-function research (Tilman, Cardinale, Loreau, IPBES) consistently links higher diversity to higher resilience. What real-world projects have high intervention complexity but ALSO high biodiversity outcomes?'),
-                h('li', null, 'Time horizon × community buy-in dominates the ROI proxy. Is that realistic? When is it wrong?'),
-                h('li', null, 'A $500K, 1-year intervention with zero community buy-in — what trajectory? Why?'),
-                h('li', null, 'When does this model fail badly? (Hint: discrete tipping points, irreversibility.)')
+                h('li', null, __alloT('stem.stewardship.watch_the_vocabulary_the_intervention_', 'Watch the vocabulary: the "intervention complexity" slider tracks how many uncertain, intervention-dependent variables you must manage — NOT biodiversity. Biodiversity-ecosystem-function research (Tilman, Cardinale, Loreau, IPBES) consistently links higher diversity to higher resilience. What real-world projects have high intervention complexity but ALSO high biodiversity outcomes?')),
+                h('li', null, __alloT('stem.stewardship.time_horizon_community_buy_in_dominate', 'Time horizon × community buy-in dominates the ROI proxy. Is that realistic? When is it wrong?')),
+                h('li', null, __alloT('stem.stewardship.a_500k_1_year_intervention_with_zero_c', 'A $500K, 1-year intervention with zero community buy-in — what trajectory? Why?')),
+                h('li', null, __alloT('stem.stewardship.when_does_this_model_fail_badly_hint_d', 'When does this model fail badly? (Hint: discrete tipping points, irreversibility.)'))
               )
             ),
             h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
               h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
-              h('span', null, 'I can explain why this project profile yields this stewardship trajectory.')
+              h('span', null, __alloT('stem.stewardship.i_can_explain_why_this_project_profile', 'I can explain why this project profile yields this stewardship trajectory.'))
             ),
-            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
-            h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal, no answer dump. Linear scoring is pedagogical only; real stewardship has tipping points, lag effects, and qualitative shifts that don\'t fit a single index.')
+            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.stewardship.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+            h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, __alloT('stem.stewardship.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Linear scoring is pedagogical only; real stewardship has tipping points, lag effects, and qualitative shifts that don\'t fit a single index.'))
           );
         })(),
 
@@ -2067,26 +2068,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
           }
         },
           h('div', null,
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Campaigns + scenarios complete'),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.stewardship.campaigns_scenarios_complete', 'Campaigns + scenarios complete')),
             h('div', { style: { fontSize: 26, fontWeight: 900, color: '#86efac' } }, totalComplete + ' / ' + totalAvailable)
           ),
           h('div', null,
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'In progress'),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.stewardship.in_progress', 'In progress')),
             h('div', { style: { fontSize: 26, fontWeight: 900, color: '#fbbf24' } }, inProgressCount)
           ),
           h('div', null,
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Top-tier outcomes'),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.stewardship.top_tier_outcomes', 'Top-tier outcomes')),
             h('div', { style: { fontSize: 26, fontWeight: 900, color: '#a855f7' } }, totalTopTier + ' / ' + totalAvailable)
           ),
           h('div', null,
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Stewardship tier'),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.stewardship.stewardship_tier', 'Stewardship tier')),
             h('div', { style: { fontSize: 16, fontWeight: 900, color: '#86efac' } }, earnedTiers.length > 0 ? earnedTiers[earnedTiers.length - 1].icon + ' ' + earnedTiers[earnedTiers.length - 1].label : '🌑 Not yet earned')
           )
         ),
 
         // Mastery tier track
         h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 14, marginBottom: 16, border: '1px solid var(--allo-stem-border, #1e293b)' } },
-          h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 10 } }, 'Cross-campaign mastery'),
+          h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 10 } }, __alloT('stem.stewardship.cross_campaign_mastery', 'Cross-campaign mastery')),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
             STEWARDSHIP_TIERS.map(function(t) {
               var earned = t.requireTopTier ? totalTopTierForTier >= t.minComplete : totalCompleteForTier >= t.minComplete;
@@ -2102,8 +2103,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                   h('span', { style: { fontSize: 20 } }, t.icon),
                   h('strong', { style: { color: earned ? '#86efac' : '#cbd5e1', fontSize: 13 } }, t.label)
                 ),
-                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.4 } }, t.desc),
-                earned ? h('div', { style: { fontSize: 11, color: '#86efac', marginTop: 4, fontWeight: 700 } }, '✓ Earned') : null
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.4 } }, __alloT('stem.stewardship.' + (t.id) + '_desc', t.desc)),
+                earned ? h('div', { style: { fontSize: 11, color: '#86efac', marginTop: 4, fontWeight: 700 } }, __alloT('stem.stewardship.earned', '✓ Earned')) : null
               );
             })
           )
@@ -2129,11 +2130,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap' } },
               h('span', { style: { fontSize: 24 } }, '🧠'),
               h('div', { style: { flex: 1, minWidth: 240 } },
-                h('h3', { style: { margin: 0, color: '#c4b5fd', fontSize: 16, fontWeight: 800 } }, 'Cross-Campaign Synthesis'),
+                h('h3', { style: { margin: 0, color: '#c4b5fd', fontSize: 16, fontWeight: 800 } }, __alloT('stem.stewardship.cross_campaign_synthesis', 'Cross-Campaign Synthesis')),
                 h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, 'Patterns that show up across the campaigns you have completed (' + completedCount + ' / 5). These are the structural insights the five campaigns are designed to teach together.')
               ),
-              h('button', { onClick: startComparison, 'aria-label': 'Compare two of your completed campaigns side by side',
-                style: { background: 'rgba(168,85,247,0.18)', border: '1px solid #a855f7', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', color: '#e9d5ff', fontSize: 12, fontWeight: 700 } }, '🔀 Compare two campaigns')
+              h('button', { onClick: startComparison, 'aria-label': __alloT('stem.stewardship.compare_two_of_your_completed_campaign', 'Compare two of your completed campaigns side by side'),
+                style: { background: 'rgba(168,85,247,0.18)', border: '1px solid #a855f7', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', color: '#e9d5ff', fontSize: 12, fontWeight: 700 } }, __alloT('stem.stewardship.compare_two_campaigns_2', '🔀 Compare two campaigns'))
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr', gap: 10 } },
               applicable.map(function(p) {
@@ -2171,7 +2172,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
               h('span', { style: { fontSize: 28 } }, '🪶'),
               h('div', { style: { flex: 1, minWidth: 240 } },
-                h('h3', { style: { margin: 0, color: '#c4b5fd', fontSize: 17, fontWeight: 900 } }, 'Cross-Region Pairing Insights'),
+                h('h3', { style: { margin: 0, color: '#c4b5fd', fontSize: 17, fontWeight: 900 } }, __alloT('stem.stewardship.cross_region_pairing_insights', 'Cross-Region Pairing Insights')),
                 h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, 'Unlocked when you complete a Maine anchor AND a cross-region scenario in the same mechanic family. ' + paired.length + ' of 5 families unlocked.')
               )
             ),
@@ -2193,8 +2194,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
 
         // ─────────── Maine anchor campaigns ───────────
         h('div', { style: { marginBottom: 8, padding: '8px 12px', borderRadius: 8, background: 'rgba(134,239,172,0.06)', borderLeft: '3px solid #86efac' } },
-          h('div', { style: { fontSize: 12, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5 } }, '🇺🇸 Maine anchor campaigns'),
-          h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2, lineHeight: 1.5 } }, 'Five deep multi-period simulations grounded in documented Maine practice. Each is a 10–40 period campaign with periodic decisions, random events, and feedback rules. Use these as your deep case study for each mechanic, then try the same mechanic in another region below.')
+          h('div', { style: { fontSize: 12, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5 } }, __alloT('stem.stewardship.maine_anchor_campaigns', '🇺🇸 Maine anchor campaigns')),
+          h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2, lineHeight: 1.5 } }, __alloT('stem.stewardship.five_deep_multi_period_simulations_gro', 'Five deep multi-period simulations grounded in documented Maine practice. Each is a 10–40 period campaign with periodic decisions, random events, and feedback rules. Use these as your deep case study for each mechanic, then try the same mechanic in another region below.'))
         ),
 
         // Campaign tiles
@@ -2219,7 +2220,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
               // Recommended starter badge for first-timers
               (completedCount === 0 && inProgressCount === 0 && c.id === 'conserve') ? h('div', {
                 style: { background: 'rgba(134,239,172,0.15)', border: '1px solid #86efac', borderRadius: 6, padding: '4px 8px', fontSize: 11, color: '#86efac', fontWeight: 700, display: 'inline-block' }
-              }, '🌱 Recommended starter') : null,
+              }, __alloT('stem.stewardship.recommended_starter', '🌱 Recommended starter')) : null,
               h('div', { style: { fontSize: 11, color: '#fbbf24', fontStyle: 'italic' } }, 'Mechanic: ' + c.mechanic),
               h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, c.desc),
 
@@ -2232,7 +2233,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
               ) : null,
               s.status === 'complete' && outcome ? h('div', { style: { background: (outcome.color || '#86efac') + '15', borderRadius: 8, padding: 8, borderLeft: '3px solid ' + (outcome.color || '#86efac') } },
                 h('div', { style: { fontSize: 12, fontWeight: 700, color: outcome.color || '#86efac' } }, (outcome.icon || '🏆') + ' ' + (outcome.label || 'Complete')),
-                isTopTier(outcome) ? h('div', { style: { fontSize: 10, color: '#a855f7', marginTop: 2, fontWeight: 700 } }, '🌟 Top-tier outcome') : null
+                isTopTier(outcome) ? h('div', { style: { fontSize: 10, color: '#a855f7', marginTop: 2, fontWeight: 700 } }, __alloT('stem.stewardship.top_tier_outcome', '🌟 Top-tier outcome')) : null
               ) : null,
 
               h('div', { style: { marginTop: 'auto', display: 'flex', gap: 6, flexWrap: 'wrap' } },
@@ -2249,12 +2250,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                 s.status === 'complete' ? h('button', {
                   onClick: function() { viewReport(c.id); },
                   'aria-label': 'View printable report for ' + c.label,
-                  title: 'View printable campaign report',
+                  title: __alloT('stem.stewardship.view_printable_campaign_report', 'View printable campaign report'),
                   style: {
                     padding: '10px 12px', borderRadius: 10, border: '1px solid ' + c.color + '88', cursor: 'pointer',
                     background: 'rgba(15,23,42,0.5)', color: c.color, fontWeight: 700, fontSize: 12
                   }
-                }, '🖨 Report') : null
+                }, __alloT('stem.stewardship.report', '🖨 Report')) : null
               )
             );
           })
@@ -2262,8 +2263,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
 
         // ─────────── Cross-region scenarios catalog ───────────
         h('div', { style: { marginBottom: 8, padding: '8px 12px', borderRadius: 8, background: 'rgba(168,85,247,0.06)', borderLeft: '3px solid #a855f7' } },
-          h('div', { style: { fontSize: 12, fontWeight: 800, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 0.5 } }, '🌐 Cross-region scenarios'),
-          h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2, lineHeight: 1.5 } }, 'Ten self-contained 4-decision scenarios from other parts of the world. Each takes 5–10 minutes and uses the same universal mechanic as the Maine anchor — different country, different cultures, different stakes. Every mechanic family has at least two cross-region scenarios so you can compare within the same mechanic across two regions, and compare those against the Maine anchor in a three-way analysis.')
+          h('div', { style: { fontSize: 12, fontWeight: 800, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 0.5 } }, __alloT('stem.stewardship.cross_region_scenarios', '🌐 Cross-region scenarios')),
+          h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2, lineHeight: 1.5 } }, __alloT('stem.stewardship.ten_self_contained_4_decision_scenario', 'Ten self-contained 4-decision scenarios from other parts of the world. Each takes 5–10 minutes and uses the same universal mechanic as the Maine anchor — different country, different cultures, different stakes. Every mechanic family has at least two cross-region scenarios so you can compare within the same mechanic across two regions, and compare those against the Maine anchor in a three-way analysis.'))
         ),
 
         // Scenarios catalog grid
@@ -2298,7 +2299,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
               ) : null,
               state.status === 'complete' && state.outcome ? h('div', { style: { background: (state.outcome.color || '#86efac') + '15', borderRadius: 8, padding: 8, borderLeft: '3px solid ' + (state.outcome.color || '#86efac') } },
                 h('div', { style: { fontSize: 12, fontWeight: 700, color: state.outcome.color || '#86efac' } }, (state.outcome.icon || '🏆') + ' ' + state.outcome.label),
-                isScenarioTopTier(state.outcome) ? h('div', { style: { fontSize: 10, color: '#a855f7', marginTop: 2, fontWeight: 700 } }, '🌟 Top-tier outcome') : null
+                isScenarioTopTier(state.outcome) ? h('div', { style: { fontSize: 10, color: '#a855f7', marginTop: 2, fontWeight: 700 } }, __alloT('stem.stewardship.top_tier_outcome_2', '🌟 Top-tier outcome')) : null
               ) : null,
 
               h('div', { style: { marginTop: 'auto', display: 'flex', gap: 6, flexWrap: 'wrap' } },
@@ -2315,7 +2316,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                 state.status === 'complete' ? h('button', {
                   onClick: function() { resetScenario(sc.id); openScenario(sc.id); },
                   'aria-label': 'Replay ' + sc.label,
-                  title: 'Reset and replay this scenario',
+                  title: __alloT('stem.stewardship.reset_and_replay_this_scenario', 'Reset and replay this scenario'),
                   style: {
                     padding: '10px 12px', borderRadius: 10, border: '1px solid ' + sc.color + '88', cursor: 'pointer',
                     background: 'rgba(15,23,42,0.5)', color: sc.color, fontWeight: 700, fontSize: 12
@@ -2330,30 +2331,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
         h('details', {
           style: { marginTop: 16, padding: '10px 14px', borderRadius: 12, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)' }
         },
-          h('summary', { style: { fontSize: 12, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: 0.5 } }, '📝 Notes for educators'),
+          h('summary', { style: { fontSize: 12, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: 0.5 } }, __alloT('stem.stewardship.notes_for_educators', '📝 Notes for educators')),
           h('div', { style: { marginTop: 10, fontSize: 13, lineHeight: 1.6, color: 'var(--allo-stem-text, #cbd5e1)' } },
             h('p', { style: { margin: '0 0 8px' } },
-              'All fifteen campaigns and scenarios share the same structural pattern: setup or briefing, periodic decisions, feedback rules / consequences that tie entities together, debrief. A student who learns one knows how to play all fifteen.'
+              __alloT('stem.stewardship.all_fifteen_campaigns_and_scenarios_sh', 'All fifteen campaigns and scenarios share the same structural pattern: setup or briefing, periodic decisions, feedback rules / consequences that tie entities together, debrief. A student who learns one knows how to play all fifteen.')
             ),
             h('p', { style: { margin: '0 0 8px' } },
-              h('strong', { style: { color: '#fbbf24' } }, 'What differs across mechanic families:'),
-              ' fire-return intervals across habitats (Mosaic + Yarralin + Karuk); trophic cascades between species (Conservation Manager + Yellowstone + Akagera); trust feedback in public health (Outbreak + Mumbai + Liberia); hydrological cascades through a watershed (Watershed Steward + Klamath + Murray–Darling); inter-sector policy dependence in climate planning (Pathways + Marshall Islands + Bangladesh).'
+              h('strong', { style: { color: '#fbbf24' } }, __alloT('stem.stewardship.what_differs_across_mechanic_families', 'What differs across mechanic families:')),
+              __alloT('stem.stewardship.fire_return_intervals_across_habitats_', ' fire-return intervals across habitats (Mosaic + Yarralin + Karuk); trophic cascades between species (Conservation Manager + Yellowstone + Akagera); trust feedback in public health (Outbreak + Mumbai + Liberia); hydrological cascades through a watershed (Watershed Steward + Klamath + Murray–Darling); inter-sector policy dependence in climate planning (Pathways + Marshall Islands + Bangladesh).')
             ),
             h('p', { style: { margin: '0 0 8px' } },
-              h('strong', { style: { color: '#fbbf24' } }, 'Why pair regions:'),
-              ' the Maine anchor campaign in each family is the deep multi-period simulation grounded in documented Maine practice (Wabanaki seasonal cycles, Edwards/Veazie dam removals, central Maine watersheds, NECEC + heat-pump policy fights). The cross-region scenario in the same family teaches the SAME universal mechanic on radically different country, with cited Indigenous-led organisations and regionally-appropriate AI disclaimers. The pairing surfaces both what is universal and what is local.'
+              h('strong', { style: { color: '#fbbf24' } }, __alloT('stem.stewardship.why_pair_regions', 'Why pair regions:')),
+              __alloT('stem.stewardship.the_maine_anchor_campaign_in_each_fami', ' the Maine anchor campaign in each family is the deep multi-period simulation grounded in documented Maine practice (Wabanaki seasonal cycles, Edwards/Veazie dam removals, central Maine watersheds, NECEC + heat-pump policy fights). The cross-region scenario in the same family teaches the SAME universal mechanic on radically different country, with cited Indigenous-led organisations and regionally-appropriate AI disclaimers. The pairing surfaces both what is universal and what is local.')
             ),
             h('p', { style: { margin: '0 0 8px' } },
-              h('strong', { style: { color: '#fbbf24' } }, 'Discussion prompts after a Maine+region pairing in the same family:'),
+              h('strong', { style: { color: '#fbbf24' } }, __alloT('stem.stewardship.discussion_prompts_after_a_maine_regio', 'Discussion prompts after a Maine+region pairing in the same family:')),
             ),
             h('ul', { style: { margin: '0 0 0 18px', padding: 0 } },
-              h('li', null, 'What stewardship principle showed up in both regions? What was specific to local culture, climate, or history?'),
-              h('li', null, 'Whose voice was load-bearing in each? (Wabanaki / Karangpurru / Yurok / Marshallese / etc.) How does the AI disclaimer reflect that?'),
-              h('li', null, 'In which mechanic family is the underlying physics most identical across regions? Most different?'),
-              h('li', null, 'What would you build to take what you learned in one region and apply it to the other?')
+              h('li', null, __alloT('stem.stewardship.what_stewardship_principle_showed_up_i', 'What stewardship principle showed up in both regions? What was specific to local culture, climate, or history?')),
+              h('li', null, __alloT('stem.stewardship.whose_voice_was_load_bearing_in_each_w', 'Whose voice was load-bearing in each? (Wabanaki / Karangpurru / Yurok / Marshallese / etc.) How does the AI disclaimer reflect that?')),
+              h('li', null, __alloT('stem.stewardship.in_which_mechanic_family_is_the_underl', 'In which mechanic family is the underlying physics most identical across regions? Most different?')),
+              h('li', null, __alloT('stem.stewardship.what_would_you_build_to_take_what_you_', 'What would you build to take what you learned in one region and apply it to the other?'))
             ),
             h('p', { style: { margin: '8px 0 0', color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } },
-              'Maine campaigns are 10–40 period simulations with do-nothing baselines, trend charts, and AI Reading. Cross-region scenarios are 4-decision self-contained learning experiences (5–10 min each) with cited regional organisations and region-specific AI disclaimers. Both count toward the mastery tiers.'
+              __alloT('stem.stewardship.maine_campaigns_are_10_40_period_simul', 'Maine campaigns are 10–40 period simulations with do-nothing baselines, trend charts, and AI Reading. Cross-region scenarios are 4-decision self-contained learning experiences (5–10 min each) with cited regional organisations and region-specific AI disclaimers. Both count toward the mastery tiers.')
             )
           )
         )

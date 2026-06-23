@@ -81,6 +81,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
       var setToolSnapshots = ctx.setToolSnapshots;
       var addToast = ctx.addToast;
       var t = ctx.t;
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var ArrowLeft = ctx.icons.ArrowLeft;
       var Calculator = ctx.icons.Calculator;
       var Sparkles = ctx.icons.Sparkles;
@@ -135,9 +136,9 @@ dataRef.current = d;
 
             {
 
-              id: 1, title: 'First Food', concept: 'Positive Reinforcement', target: 'pressLever', goal: 10,
+              id: 1, title: __alloT('stem.behaviorlab.first_food', 'First Food'), concept: 'Positive Reinforcement', target: 'pressLever', goal: 10,
 
-              intro: 'In positive reinforcement, a consequence is ADDED after a behavior to INCREASE the likelihood of that behavior occurring again. Your job: click "Deliver Food" immediately after the mouse presses the lever. Reinforce 10 lever presses!',
+              intro: __alloT('stem.behaviorlab.in_positive_reinforcement_a_consequenc', 'In positive reinforcement, a consequence is ADDED after a behavior to INCREASE the likelihood of that behavior occurring again. Your job: click "Deliver Food" immediately after the mouse presses the lever. Reinforce 10 lever presses!'),
 
               termDef: 'Positive Reinforcement (SR+): Adding a stimulus after a behavior that increases the future probability of that behavior.',
 
@@ -151,9 +152,9 @@ dataRef.current = d;
 
             {
 
-              id: 2, title: 'Shape Up!', concept: 'Shaping', target: 'spin', goal: 5,
+              id: 2, title: __alloT('stem.behaviorlab.shape_up', 'Shape Up!'), concept: 'Shaping', target: 'spin', goal: 5,
 
-              intro: 'Shaping uses successive approximations. The mouse won\'t spin on its own! Follow this 3-step sequence: (1) Reinforce "Turning Right" (↪️) to increase turning. (2) Once turns are frequent, wait for "Half-Turn" (↩️↪️) and reinforce those. (3) Finally, wait for full "Spinning" (🌀) and reinforce! Shape 5 complete spins through 3 stages of approximation!',
+              intro: __alloT('stem.behaviorlab.shaping_uses_successive_approximations', 'Shaping uses successive approximations. The mouse won\'t spin on its own! Follow this 3-step sequence: (1) Reinforce "Turning Right" (↪️) to increase turning. (2) Once turns are frequent, wait for "Half-Turn" (↩️↪️) and reinforce those. (3) Finally, wait for full "Spinning" (🌀) and reinforce! Shape 5 complete spins through 3 stages of approximation!'),
 
               termDef: 'Shaping: Differentially reinforcing successive approximations toward a terminal (target) behavior.',
 
@@ -167,9 +168,9 @@ dataRef.current = d;
 
             {
 
-              id: 3, title: 'The Burst', concept: 'Extinction', target: 'pressLever', goal: 0,
+              id: 3, title: __alloT('stem.behaviorlab.the_burst', 'The Burst'), concept: 'Extinction', target: 'pressLever', goal: 0,
 
-              intro: 'When reinforcement is suddenly withheld, the organism often shows an extinction burst — a temporary INCREASE in the behavior before it decreases. First, reinforce 5 lever presses, then STOP reinforcing and watch what happens!',
+              intro: __alloT('stem.behaviorlab.when_reinforcement_is_suddenly_withhel', 'When reinforcement is suddenly withheld, the organism often shows an extinction burst — a temporary INCREASE in the behavior before it decreases. First, reinforce 5 lever presses, then STOP reinforcing and watch what happens!'),
 
               termDef: 'Extinction Burst: A temporary increase in frequency/intensity of a previously reinforced behavior when reinforcement is discontinued.',
 
@@ -183,9 +184,9 @@ dataRef.current = d;
 
             {
 
-              id: 4, title: 'On Schedule', concept: 'Schedules of Reinforcement', target: 'pressLever', goal: 20,
+              id: 4, title: __alloT('stem.behaviorlab.on_schedule', 'On Schedule'), concept: 'Schedules of Reinforcement', target: 'pressLever', goal: 20,
 
-              intro: 'Not every response needs reinforcement! A Fixed Ratio (FR) schedule reinforces after a set number of responses. Try FR-3: reinforce every 3rd lever press. Watch how the mouse responds differently than continuous reinforcement!',
+              intro: __alloT('stem.behaviorlab.not_every_response_needs_reinforcement', 'Not every response needs reinforcement! A Fixed Ratio (FR) schedule reinforces after a set number of responses. Try FR-3: reinforce every 3rd lever press. Watch how the mouse responds differently than continuous reinforcement!'),
 
               termDef: 'Fixed Ratio (FR): A schedule where reinforcement is delivered after a fixed number of responses.',
 
@@ -199,9 +200,9 @@ dataRef.current = d;
 
             {
 
-              id: 5, title: 'Green Means Go', concept: 'Stimulus Discrimination', target: 'pressLever', goal: 10,
+              id: 5, title: __alloT('stem.behaviorlab.green_means_go', 'Green Means Go'), concept: 'Stimulus Discrimination', target: 'pressLever', goal: 10,
 
-              intro: 'A discriminative stimulus (SD) signals that reinforcement is available. The green light = SD (reinforce lever presses). Red light = S-delta (do NOT reinforce). Teach the mouse to press only when the green light is on!',
+              intro: __alloT('stem.behaviorlab.a_discriminative_stimulus_sd_signals_t', 'A discriminative stimulus (SD) signals that reinforcement is available. The green light = SD (reinforce lever presses). Red light = S-delta (do NOT reinforce). Teach the mouse to press only when the green light is on!'),
 
               termDef: 'SD (Discriminative Stimulus): A stimulus that signals reinforcement is available for a specific behavior.',
 
@@ -215,9 +216,9 @@ dataRef.current = d;
 
             {
 
-              id: 6, title: 'Free Lab', concept: 'Sandbox Mode', target: null, goal: 0,
+              id: 6, title: __alloT('stem.behaviorlab.free_lab', 'Free Lab'), concept: 'Sandbox Mode', target: null, goal: 0,
 
-              intro: 'Welcome to the Free Lab! All tools are unlocked. Design your own experiment. Try shaping a new behavior, testing different schedules, or building a behavior chain. Happy experimenting!',
+              intro: __alloT('stem.behaviorlab.welcome_to_the_free_lab_all_tools_are_', 'Welcome to the Free Lab! All tools are unlocked. Design your own experiment. Try shaping a new behavior, testing different schedules, or building a behavior chain. Happy experimenting!'),
 
               termDef: 'Applied Behavior Analysis (ABA): The science of applying behavioral principles to improve socially significant behavior.',
 
@@ -231,9 +232,9 @@ dataRef.current = d;
 
             {
 
-              id: 7, title: 'Chain Reaction', concept: 'Behavior Chaining', target: 'pressLever', goal: 3,
+              id: 7, title: __alloT('stem.behaviorlab.chain_reaction', 'Chain Reaction'), concept: 'Behavior Chaining', target: 'pressLever', goal: 3,
 
-              intro: 'A behavior chain links multiple behaviors in a specific sequence. The completion of one step becomes the signal (SD) for the next. Teach the mouse this chain: Sniff ➜ Rear Up ➜ Press Lever. Reinforce ONLY when the full 3-step chain is completed!',
+              intro: __alloT('stem.behaviorlab.a_behavior_chain_links_multiple_behavi', 'A behavior chain links multiple behaviors in a specific sequence. The completion of one step becomes the signal (SD) for the next. Teach the mouse this chain: Sniff ➜ Rear Up ➜ Press Lever. Reinforce ONLY when the full 3-step chain is completed!'),
 
               termDef: 'Behavior Chain: A sequence of responses where each response produces the discriminative stimulus (SD) for the next response, and the last response is followed by a reinforcer.',
 
@@ -247,9 +248,9 @@ dataRef.current = d;
 
             {
 
-              id: 8, title: 'Not That!', concept: 'DRO — Differential Reinforcement', target: null, goal: 5,
+              id: 8, title: __alloT('stem.behaviorlab.not_that', 'Not That!'), concept: 'DRO — Differential Reinforcement', target: null, goal: 5,
 
-              intro: 'DRO (Differential Reinforcement of Other behavior) means reinforcing the ABSENCE of a specific behavior for a set time interval. A countdown timer runs — if the mouse does NOT press the lever before the timer finishes, deliver food! If the mouse presses the lever, the timer resets. Deliver 5 successful DRO intervals!',
+              intro: __alloT('stem.behaviorlab.dro_differential_reinforcement_of_othe', 'DRO (Differential Reinforcement of Other behavior) means reinforcing the ABSENCE of a specific behavior for a set time interval. A countdown timer runs — if the mouse does NOT press the lever before the timer finishes, deliver food! If the mouse presses the lever, the timer resets. Deliver 5 successful DRO intervals!'),
 
               termDef: 'DRO (Differential Reinforcement of Other Behavior): Reinforcement is delivered when a specified behavior does NOT occur for a predetermined interval of time.',
 
@@ -263,9 +264,9 @@ dataRef.current = d;
 
             {
 
-              id: 9, title: 'Pavlov\'s Bell', concept: 'Classical Conditioning', target: null, goal: 0,
+              id: 9, title: __alloT('stem.behaviorlab.pavlov_s_bell', 'Pavlov\'s Bell'), concept: 'Classical Conditioning', target: null, goal: 0,
 
-              intro: 'Classical conditioning pairs a neutral stimulus (bell) with an unconditioned stimulus (food) that naturally causes a response (salivation). After repeated pairings the bell ALONE triggers salivation! Phase 1: Ring the bell — nothing happens. Phase 2: Pair bell + food 5 times. Phase 3: Ring bell alone and watch for the conditioned response!',
+              intro: __alloT('stem.behaviorlab.classical_conditioning_pairs_a_neutral', 'Classical conditioning pairs a neutral stimulus (bell) with an unconditioned stimulus (food) that naturally causes a response (salivation). After repeated pairings the bell ALONE triggers salivation! Phase 1: Ring the bell — nothing happens. Phase 2: Pair bell + food 5 times. Phase 3: Ring bell alone and watch for the conditioned response!'),
 
               termDef: 'Classical Conditioning: A learning process where a neutral stimulus (CS) is repeatedly paired with an unconditioned stimulus (US) until the CS alone elicits a conditioned response (CR).',
 
@@ -311,59 +312,59 @@ dataRef.current = d;
 
           // === ENGAGEMENT: Level Badges ===
           var LEVEL_BADGES = {
-            1: { icon: '\uD83C\uDF55', name: 'First Feeder', desc: 'Mastered positive reinforcement' },
-            2: { icon: '\uD83C\uDFAF', name: 'Shape Shifter', desc: 'Shaped behavior through approximations' },
-            3: { icon: '\uD83D\uDCA5', name: 'Burst Observer', desc: 'Witnessed the extinction burst' },
-            4: { icon: '\uD83D\uDCC5', name: 'Scheduler', desc: 'Implemented FR-3 schedule' },
-            5: { icon: '\uD83D\uDEA6', name: 'Signal Master', desc: 'Taught stimulus discrimination' },
-            6: { icon: '\uD83E\uDDEA', name: 'Free Thinker', desc: 'Explored the sandbox lab' },
-            7: { icon: '\u26D3', name: 'Chain Builder', desc: 'Completed a behavior chain' },
-            8: { icon: '\u23F1', name: 'DRO Pro', desc: 'Mastered differential reinforcement' },
-            9: { icon: '\uD83D\uDD14', name: 'Pavlovian', desc: 'Demonstrated classical conditioning' }
+            1: { icon: '\uD83C\uDF55', name: __alloT('stem.behaviorlab.first_feeder', 'First Feeder'), desc: __alloT('stem.behaviorlab.mastered_positive_reinforcement', 'Mastered positive reinforcement') },
+            2: { icon: '\uD83C\uDFAF', name: __alloT('stem.behaviorlab.shape_shifter', 'Shape Shifter'), desc: __alloT('stem.behaviorlab.shaped_behavior_through_approximations', 'Shaped behavior through approximations') },
+            3: { icon: '\uD83D\uDCA5', name: __alloT('stem.behaviorlab.burst_observer', 'Burst Observer'), desc: __alloT('stem.behaviorlab.witnessed_the_extinction_burst', 'Witnessed the extinction burst') },
+            4: { icon: '\uD83D\uDCC5', name: __alloT('stem.behaviorlab.scheduler', 'Scheduler'), desc: __alloT('stem.behaviorlab.implemented_fr_3_schedule', 'Implemented FR-3 schedule') },
+            5: { icon: '\uD83D\uDEA6', name: __alloT('stem.behaviorlab.signal_master', 'Signal Master'), desc: __alloT('stem.behaviorlab.taught_stimulus_discrimination', 'Taught stimulus discrimination') },
+            6: { icon: '\uD83E\uDDEA', name: __alloT('stem.behaviorlab.free_thinker', 'Free Thinker'), desc: __alloT('stem.behaviorlab.explored_the_sandbox_lab', 'Explored the sandbox lab') },
+            7: { icon: '\u26D3', name: __alloT('stem.behaviorlab.chain_builder', 'Chain Builder'), desc: __alloT('stem.behaviorlab.completed_a_behavior_chain', 'Completed a behavior chain') },
+            8: { icon: '\u23F1', name: __alloT('stem.behaviorlab.dro_pro', 'DRO Pro'), desc: __alloT('stem.behaviorlab.mastered_differential_reinforcement', 'Mastered differential reinforcement') },
+            9: { icon: '\uD83D\uDD14', name: __alloT('stem.behaviorlab.pavlovian', 'Pavlovian'), desc: __alloT('stem.behaviorlab.demonstrated_classical_conditioning', 'Demonstrated classical conditioning') }
           };
 
           // === Famous Behaviorists ===
           var FAMOUS_BEHAVIORISTS = [
-            { name: 'Ivan Pavlov', year: '1849-1936', contribution: 'Discovered classical conditioning through salivation experiments with dogs. Won the Nobel Prize in Physiology (1904).', icon: '\uD83D\uDC36', field: 'Classical Conditioning' },
-            { name: 'John B. Watson', year: '1878-1958', contribution: 'Founded behaviorism as a school of psychology. Argued psychology should study only observable behavior, not mental states. Controversial "Little Albert" experiment.', icon: '\uD83E\uDDEC', field: 'Behaviorism' },
-            { name: 'Edward Thorndike', year: '1874-1949', contribution: 'Formulated the Law of Effect: behaviors followed by satisfying consequences are strengthened. Puzzle box experiments with cats.', icon: '\uD83D\uDC31', field: 'Law of Effect' },
-            { name: 'B.F. Skinner', year: '1904-1990', contribution: 'Developed operant conditioning and the Skinner box. Identified reinforcement schedules (FR, VR, FI, VI). Most influential behavioral psychologist ever.', icon: '\uD83D\uDC2D', field: 'Operant Conditioning' },
-            { name: 'Albert Bandura', year: '1925-2021', contribution: 'Social learning theory and the Bobo doll experiment. Showed learning occurs through observation (modeling), not just direct reinforcement. Self-efficacy theory.', icon: '\uD83E\uDDD1', field: 'Social Learning' },
-            { name: 'Baer, Wolf & Risley', year: '1968', contribution: 'Published the founding article of Applied Behavior Analysis (ABA). Defined ABA as applied, behavioral, analytic, technological, conceptually systematic, effective, and generalizable.', icon: '\uD83D\uDCDA', field: 'Applied Behavior Analysis' },
-            { name: 'O. Ivar Lovaas', year: '1927-2010', contribution: 'Pioneered the use of ABA for autism intervention. His 1987 study showed 47% of children receiving intensive ABA achieved normal functioning.', icon: '\u2764', field: 'Autism Intervention' },
-            { name: 'Murray Sidman', year: '1923-2019', contribution: 'Developed stimulus equivalence theory and the coercion framework. Advocated for reinforcement over punishment in all applications.', icon: '\u2696', field: 'Stimulus Equivalence' }
+            { name: __alloT('stem.behaviorlab.ivan_pavlov', 'Ivan Pavlov'), year: '1849-1936', contribution: 'Discovered classical conditioning through salivation experiments with dogs. Won the Nobel Prize in Physiology (1904).', icon: '\uD83D\uDC36', field: 'Classical Conditioning' },
+            { name: __alloT('stem.behaviorlab.john_b_watson', 'John B. Watson'), year: '1878-1958', contribution: 'Founded behaviorism as a school of psychology. Argued psychology should study only observable behavior, not mental states. Controversial "Little Albert" experiment.', icon: '\uD83E\uDDEC', field: 'Behaviorism' },
+            { name: __alloT('stem.behaviorlab.edward_thorndike', 'Edward Thorndike'), year: '1874-1949', contribution: 'Formulated the Law of Effect: behaviors followed by satisfying consequences are strengthened. Puzzle box experiments with cats.', icon: '\uD83D\uDC31', field: 'Law of Effect' },
+            { name: __alloT('stem.behaviorlab.b_f_skinner', 'B.F. Skinner'), year: '1904-1990', contribution: 'Developed operant conditioning and the Skinner box. Identified reinforcement schedules (FR, VR, FI, VI). Most influential behavioral psychologist ever.', icon: '\uD83D\uDC2D', field: 'Operant Conditioning' },
+            { name: __alloT('stem.behaviorlab.albert_bandura', 'Albert Bandura'), year: '1925-2021', contribution: 'Social learning theory and the Bobo doll experiment. Showed learning occurs through observation (modeling), not just direct reinforcement. Self-efficacy theory.', icon: '\uD83E\uDDD1', field: 'Social Learning' },
+            { name: __alloT('stem.behaviorlab.baer_wolf_risley', 'Baer, Wolf & Risley'), year: '1968', contribution: 'Published the founding article of Applied Behavior Analysis (ABA). Defined ABA as applied, behavioral, analytic, technological, conceptually systematic, effective, and generalizable.', icon: '\uD83D\uDCDA', field: 'Applied Behavior Analysis' },
+            { name: __alloT('stem.behaviorlab.o_ivar_lovaas', 'O. Ivar Lovaas'), year: '1927-2010', contribution: 'Pioneered the use of ABA for autism intervention. His 1987 study showed 47% of children receiving intensive ABA achieved normal functioning.', icon: '\u2764', field: 'Autism Intervention' },
+            { name: __alloT('stem.behaviorlab.murray_sidman', 'Murray Sidman'), year: '1923-2019', contribution: 'Developed stimulus equivalence theory and the coercion framework. Advocated for reinforcement over punishment in all applications.', icon: '\u2696', field: 'Stimulus Equivalence' }
           ];
 
           // === Four Functions of Behavior (FBA) ===
           var FOUR_FUNCTIONS = [
-            { name: 'Attention', abbrev: 'ATT', icon: '\uD83D\uDC40', color: '#3b82f6', desc: 'Behavior maintained by social attention from others. Example: A student calls out in class to get the teacher to look at them. The attention (even if negative) reinforces the calling out.', example: 'Calling out, clowning around, tantrums when ignored', intervention: 'Planned ignoring of problem behavior + attention for appropriate behavior (DRA). Teach appropriate ways to get attention.' },
-            { name: 'Escape/Avoidance', abbrev: 'ESC', icon: '\uD83C\uDFC3', color: '#ef4444', desc: 'Behavior maintained by removal of an aversive stimulus. Example: A student has a meltdown when given math work, and the teacher removes the assignment. The meltdown is negatively reinforced.', example: 'Work refusal, aggression to end demands, elopement', intervention: 'Escape extinction (don\'t remove demand). Break tasks into smaller steps. Provide breaks contingent on compliance (DRO/DRA).' },
-            { name: 'Tangible', abbrev: 'TAN', icon: '\uD83C\uDFAE', color: '#f59e0b', desc: 'Behavior maintained by access to a preferred item or activity. Example: A child screams in the store until the parent buys them candy. The screaming is reinforced by getting the candy.', example: 'Grabbing items, screaming for toys, negotiating for screen time', intervention: 'Don\'t provide the item contingent on problem behavior. Teach requesting (FCT). Provide access to preferred items for appropriate behavior.' },
-            { name: 'Sensory/Automatic', abbrev: 'AUT', icon: '\u2728', color: '#8b5cf6', desc: 'Behavior maintained by the sensory stimulation it produces, independent of social consequences. The behavior itself feels good. Example: Hand-flapping may produce proprioceptive input that is reinforcing.', example: 'Hand flapping, rocking, humming, nail biting', intervention: 'Provide alternative sensory input (sensory diet). Modify the environment. Consider whether the behavior actually needs intervention (it may serve a regulatory function).' }
+            { name: __alloT('stem.behaviorlab.attention', 'Attention'), abbrev: 'ATT', icon: '\uD83D\uDC40', color: '#3b82f6', desc: __alloT('stem.behaviorlab.behavior_maintained_by_social_attentio', 'Behavior maintained by social attention from others. Example: A student calls out in class to get the teacher to look at them. The attention (even if negative) reinforces the calling out.'), example: 'Calling out, clowning around, tantrums when ignored', intervention: 'Planned ignoring of problem behavior + attention for appropriate behavior (DRA). Teach appropriate ways to get attention.' },
+            { name: 'Escape/Avoidance', abbrev: 'ESC', icon: '\uD83C\uDFC3', color: '#ef4444', desc: __alloT('stem.behaviorlab.behavior_maintained_by_removal_of_an_a', 'Behavior maintained by removal of an aversive stimulus. Example: A student has a meltdown when given math work, and the teacher removes the assignment. The meltdown is negatively reinforced.'), example: 'Work refusal, aggression to end demands, elopement', intervention: 'Escape extinction (don\'t remove demand). Break tasks into smaller steps. Provide breaks contingent on compliance (DRO/DRA).' },
+            { name: __alloT('stem.behaviorlab.tangible', 'Tangible'), abbrev: 'TAN', icon: '\uD83C\uDFAE', color: '#f59e0b', desc: __alloT('stem.behaviorlab.behavior_maintained_by_access_to_a_pre', 'Behavior maintained by access to a preferred item or activity. Example: A child screams in the store until the parent buys them candy. The screaming is reinforced by getting the candy.'), example: 'Grabbing items, screaming for toys, negotiating for screen time', intervention: 'Don\'t provide the item contingent on problem behavior. Teach requesting (FCT). Provide access to preferred items for appropriate behavior.' },
+            { name: 'Sensory/Automatic', abbrev: 'AUT', icon: '\u2728', color: '#8b5cf6', desc: __alloT('stem.behaviorlab.behavior_maintained_by_the_sensory_sti', 'Behavior maintained by the sensory stimulation it produces, independent of social consequences. The behavior itself feels good. Example: Hand-flapping may produce proprioceptive input that is reinforcing.'), example: 'Hand flapping, rocking, humming, nail biting', intervention: 'Provide alternative sensory input (sensory diet). Modify the environment. Consider whether the behavior actually needs intervention (it may serve a regulatory function).' }
           ];
 
           // === Real-World ABA Applications ===
           var ABA_APPLICATIONS = [
-            { name: 'Autism Services', icon: '\u2764', desc: 'Evidence-based intervention for individuals with autism. Teaches communication, social, self-care, and academic skills through systematic reinforcement and prompting strategies.', setting: 'Clinics, homes, schools' },
-            { name: 'Education & Classroom Management', icon: '\uD83C\uDFEB', desc: 'Token economies, positive behavior support (PBS), response to intervention (RTI), and group contingencies. Making learning reinforcing and reducing challenging behavior.', setting: 'Schools (Pre-K through college)' },
-            { name: 'Animal Training', icon: '\uD83D\uDC3E', desc: 'Clicker training, shaping, and chaining are all ABA principles. Service dogs, marine mammals, and zoo animals are all trained using operant conditioning.', setting: 'Zoos, aquariums, service dog organizations' },
-            { name: 'Organizational Behavior Management (OBM)', icon: '\uD83C\uDFE2', desc: 'Applying ABA principles to improve employee performance, safety, and satisfaction. Feedback systems, incentive programs, and performance management.', setting: 'Businesses, hospitals, factories' },
-            { name: 'Sports Performance', icon: '\u26BD', desc: 'Coaches use shaping, reinforcement, and behavioral rehearsal to improve athletic performance. Video feedback and goal-setting based on behavioral principles.', setting: 'Professional & amateur sports' },
-            { name: 'Health & Fitness', icon: '\uD83D\uDCAA', desc: 'Habit formation, self-monitoring, contingency contracts for exercise. Behavioral approaches to weight management, medication adherence, and addiction treatment.', setting: 'Hospitals, gyms, home programs' },
-            { name: 'App & Game Design', icon: '\uD83D\uDCF1', desc: 'Variable ratio reinforcement in social media (likes, notifications). Shaping in game tutorials. Streaks and badges as conditioned reinforcers. Gamification IS applied behavior analysis.', setting: 'Tech companies, UX design' },
-            { name: 'Environmental Sustainability', icon: '\uD83C\uDF0D', desc: 'Behavioral interventions for recycling, energy conservation, and sustainable transportation. Feedback and reinforcement can change environmental behaviors at scale.', setting: 'Communities, policy' }
+            { name: __alloT('stem.behaviorlab.autism_services', 'Autism Services'), icon: '\u2764', desc: __alloT('stem.behaviorlab.evidence_based_intervention_for_indivi', 'Evidence-based intervention for individuals with autism. Teaches communication, social, self-care, and academic skills through systematic reinforcement and prompting strategies.'), setting: 'Clinics, homes, schools' },
+            { name: __alloT('stem.behaviorlab.education_classroom_management', 'Education & Classroom Management'), icon: '\uD83C\uDFEB', desc: __alloT('stem.behaviorlab.token_economies_positive_behavior_supp', 'Token economies, positive behavior support (PBS), response to intervention (RTI), and group contingencies. Making learning reinforcing and reducing challenging behavior.'), setting: 'Schools (Pre-K through college)' },
+            { name: __alloT('stem.behaviorlab.animal_training', 'Animal Training'), icon: '\uD83D\uDC3E', desc: __alloT('stem.behaviorlab.clicker_training_shaping_and_chaining_', 'Clicker training, shaping, and chaining are all ABA principles. Service dogs, marine mammals, and zoo animals are all trained using operant conditioning.'), setting: 'Zoos, aquariums, service dog organizations' },
+            { name: __alloT('stem.behaviorlab.organizational_behavior_management_obm', 'Organizational Behavior Management (OBM)'), icon: '\uD83C\uDFE2', desc: __alloT('stem.behaviorlab.applying_aba_principles_to_improve_emp', 'Applying ABA principles to improve employee performance, safety, and satisfaction. Feedback systems, incentive programs, and performance management.'), setting: 'Businesses, hospitals, factories' },
+            { name: __alloT('stem.behaviorlab.sports_performance', 'Sports Performance'), icon: '\u26BD', desc: __alloT('stem.behaviorlab.coaches_use_shaping_reinforcement_and_', 'Coaches use shaping, reinforcement, and behavioral rehearsal to improve athletic performance. Video feedback and goal-setting based on behavioral principles.'), setting: 'Professional & amateur sports' },
+            { name: __alloT('stem.behaviorlab.health_fitness', 'Health & Fitness'), icon: '\uD83D\uDCAA', desc: __alloT('stem.behaviorlab.habit_formation_self_monitoring_contin', 'Habit formation, self-monitoring, contingency contracts for exercise. Behavioral approaches to weight management, medication adherence, and addiction treatment.'), setting: 'Hospitals, gyms, home programs' },
+            { name: __alloT('stem.behaviorlab.app_game_design', 'App & Game Design'), icon: '\uD83D\uDCF1', desc: __alloT('stem.behaviorlab.variable_ratio_reinforcement_in_social', 'Variable ratio reinforcement in social media (likes, notifications). Shaping in game tutorials. Streaks and badges as conditioned reinforcers. Gamification IS applied behavior analysis.'), setting: 'Tech companies, UX design' },
+            { name: __alloT('stem.behaviorlab.environmental_sustainability', 'Environmental Sustainability'), icon: '\uD83C\uDF0D', desc: __alloT('stem.behaviorlab.behavioral_interventions_for_recycling', 'Behavioral interventions for recycling, energy conservation, and sustainable transportation. Feedback and reinforcement can change environmental behaviors at scale.'), setting: 'Communities, policy' }
           ];
 
           // === Behavior Measurement Methods ===
           var MEASUREMENT_METHODS = [
             { name: 'Frequency/Rate', def: 'Count of behaviors per time period. Rate = count / time.', example: 'Student raised hand 12 times in a 30-minute class = 0.4 per minute', when: 'Behavior has a clear start and end. Each instance is roughly equal in duration.', icon: '\uD83D\uDD22' },
-            { name: 'Duration', def: 'Total time a behavior occurs. Can be total or per-occurrence.', example: 'Student was off-task for 14 of 30 minutes (47%)', when: 'The concern is HOW LONG the behavior lasts (tantrums, on-task behavior, engagement).', icon: '\u23F1' },
-            { name: 'Latency', def: 'Time between a stimulus (instruction) and behavior onset.', example: 'Teacher said "sit down" and student sat 45 seconds later', when: 'The concern is HOW LONG it takes to start responding after an instruction.', icon: '\u23F3' },
-            { name: 'Inter-Response Time (IRT)', def: 'Time between two consecutive instances of the same behavior.', example: 'Time between each hand-raise: 2 min, 5 min, 1 min, 8 min', when: 'Evaluating whether behavior is clustering or spreading out over time.', icon: '\u2194' },
+            { name: __alloT('stem.behaviorlab.duration', 'Duration'), def: 'Total time a behavior occurs. Can be total or per-occurrence.', example: 'Student was off-task for 14 of 30 minutes (47%)', when: 'The concern is HOW LONG the behavior lasts (tantrums, on-task behavior, engagement).', icon: '\u23F1' },
+            { name: __alloT('stem.behaviorlab.latency', 'Latency'), def: 'Time between a stimulus (instruction) and behavior onset.', example: 'Teacher said "sit down" and student sat 45 seconds later', when: 'The concern is HOW LONG it takes to start responding after an instruction.', icon: '\u23F3' },
+            { name: __alloT('stem.behaviorlab.inter_response_time_irt', 'Inter-Response Time (IRT)'), def: 'Time between two consecutive instances of the same behavior.', example: 'Time between each hand-raise: 2 min, 5 min, 1 min, 8 min', when: 'Evaluating whether behavior is clustering or spreading out over time.', icon: '\u2194' },
             { name: 'Magnitude/Intensity', def: 'The force or strength of a behavior.', example: 'Volume of voice (measured in decibels) during instruction', when: 'Two instances of the same behavior differ in intensity (soft vs. loud voice, gentle vs. forceful hitting).', icon: '\uD83D\uDCCA' },
-            { name: 'Partial Interval Recording', def: 'Mark interval as "occurred" if behavior happened at ANY point during the interval.', example: 'Divide 30 min into 1-min intervals. Mark if student talked out at any point in each interval.', when: 'Overestimates behavior. Good for behaviors you want to decrease.', icon: '\uD83D\uDFE5' },
-            { name: 'Whole Interval Recording', def: 'Mark as "occurred" only if behavior lasted the ENTIRE interval.', example: 'Mark 1-min interval only if student was on-task for all 60 seconds.', when: 'Underestimates behavior. Good for behaviors you want to increase.', icon: '\uD83D\uDFE9' },
-            { name: 'Momentary Time Sampling', def: 'At the end of each interval, check if behavior is occurring at that exact moment.', example: 'Every 5 minutes, look at student. On-task? Check. Off-task? Check.', when: 'Easiest method for teachers. Good for estimating proportion of time.', icon: '\uD83D\uDFE6' }
+            { name: __alloT('stem.behaviorlab.partial_interval_recording', 'Partial Interval Recording'), def: 'Mark interval as "occurred" if behavior happened at ANY point during the interval.', example: 'Divide 30 min into 1-min intervals. Mark if student talked out at any point in each interval.', when: 'Overestimates behavior. Good for behaviors you want to decrease.', icon: '\uD83D\uDFE5' },
+            { name: __alloT('stem.behaviorlab.whole_interval_recording', 'Whole Interval Recording'), def: 'Mark as "occurred" only if behavior lasted the ENTIRE interval.', example: 'Mark 1-min interval only if student was on-task for all 60 seconds.', when: 'Underestimates behavior. Good for behaviors you want to increase.', icon: '\uD83D\uDFE9' },
+            { name: __alloT('stem.behaviorlab.momentary_time_sampling', 'Momentary Time Sampling'), def: 'At the end of each interval, check if behavior is occurring at that exact moment.', example: 'Every 5 minutes, look at student. On-task? Check. Off-task? Check.', when: 'Easiest method for teachers. Good for estimating proportion of time.', icon: '\uD83D\uDFE6' }
           ];
 
           // === ABA Glossary ===
@@ -440,7 +441,7 @@ dataRef.current = d;
           var PBIS_TIERS_MOVED_TO_TOOLKIT = [
             {
               tier: 1,
-              name: 'Tier 1 — Universal',
+              name: __alloT('stem.behaviorlab.tier_1_universal', 'Tier 1 — Universal'),
               icon: '🟢', color: '#22c55e',
               who: 'All students. Every classroom, every period, every staff member.',
               percent: '~80% of students need only Tier 1 to be successful.',
@@ -450,7 +451,7 @@ dataRef.current = d;
             },
             {
               tier: 2,
-              name: 'Tier 2 — Targeted',
+              name: __alloT('stem.behaviorlab.tier_2_targeted', 'Tier 2 — Targeted'),
               icon: '🟡', color: '#fbbf24',
               who: 'Students who don\'t respond fully to Tier 1 alone — usually due to consistent attention-seeking, low-grade work avoidance, social skills gaps, or emerging mental health needs.',
               percent: '~15% of students benefit from Tier 2 added supports.',
@@ -460,7 +461,7 @@ dataRef.current = d;
             },
             {
               tier: 3,
-              name: 'Tier 3 — Intensive',
+              name: __alloT('stem.behaviorlab.tier_3_intensive', 'Tier 3 — Intensive'),
               icon: '🔴', color: '#ef4444',
               who: 'Students whose behavior poses safety concerns, or who have not responded to Tier 1 + Tier 2, or who have specific intensive needs (autism, severe trauma, complex disability).',
               percent: '~5% of students need Tier 3 individualized supports.',
@@ -474,39 +475,39 @@ dataRef.current = d;
           /* eslint-disable no-unused-vars */
           var RESTRAINT_PRINCIPLES_MOVED_TO_TOOLKIT = [
             {
-              name: 'What restraint IS (and is NOT)',
+              name: __alloT('stem.behaviorlab.what_restraint_is_and_is_not', 'What restraint IS (and is NOT)'),
               icon: '⚖️', color: '#fbbf24',
-              content: 'Restraint = physical holding that restricts a student\'s freedom of movement. Three types: physical (staff hands on student), mechanical (devices that restrict — almost never appropriate in schools), chemical (medication used for behavioral control rather than treatment — never appropriate without prescription).',
+              content: __alloT('stem.behaviorlab.restraint_physical_holding_that_restri', 'Restraint = physical holding that restricts a student\'s freedom of movement. Three types: physical (staff hands on student), mechanical (devices that restrict — almost never appropriate in schools), chemical (medication used for behavioral control rather than treatment — never appropriate without prescription).'),
               counter: 'NOT restraint: brief holding to prevent immediate injury (e.g., catching a falling kid); routine guidance (gentle hand on shoulder to redirect); typical physical contact in adapted PE or therapy. The line is restriction of freedom of movement.'
             },
             {
-              name: 'What seclusion IS (and is NOT)',
+              name: __alloT('stem.behaviorlab.what_seclusion_is_and_is_not', 'What seclusion IS (and is NOT)'),
               icon: '🚪', color: '#ef4444',
-              content: 'Seclusion = involuntary confinement of a student alone in a room or area from which the student is physically prevented from leaving. The "physically prevented from leaving" part is what makes it seclusion legally.',
+              content: __alloT('stem.behaviorlab.seclusion_involuntary_confinement_of_a', 'Seclusion = involuntary confinement of a student alone in a room or area from which the student is physically prevented from leaving. The "physically prevented from leaving" part is what makes it seclusion legally.'),
               counter: 'NOT seclusion: time-out where the student can leave (a "calm corner" with the door open); a quiet space chosen by the student; a sensory room used for regulation. Voluntary use of a separate space is not seclusion.'
             },
             {
-              name: 'Maine Chapter 33 — the rule',
+              name: __alloT('stem.behaviorlab.maine_chapter_33_the_rule', 'Maine Chapter 33 — the rule'),
               icon: '🏛️', color: '#a78bfa',
-              content: 'Maine permits emergency physical restraint and seclusion ONLY when there is "imminent danger of serious physical injury" to the student or others. Property destruction alone is not sufficient justification. Documentation, debrief, and parent notification are mandatory within specific time windows. Specific staff training (currently CPI / NCI / Mandt or equivalent) is required for anyone authorized to perform restraint.',
+              content: __alloT('stem.behaviorlab.maine_permits_emergency_physical_restr', 'Maine permits emergency physical restraint and seclusion ONLY when there is "imminent danger of serious physical injury" to the student or others. Property destruction alone is not sufficient justification. Documentation, debrief, and parent notification are mandatory within specific time windows. Specific staff training (currently CPI / NCI / Mandt or equivalent) is required for anyone authorized to perform restraint.'),
               counter: 'Other states vary: some prohibit prone restraint outright; some require court-ordered behavior plans for any restraint use; some are far more permissive. Always check current state regulation. Federal guidance (2022) recommends restricting school-based restraint/seclusion to genuine emergencies; some federal legislation has been proposed but not enacted.'
             },
             {
-              name: 'Less-restrictive-alternative principle',
+              name: __alloT('stem.behaviorlab.less_restrictive_alternative_principle', 'Less-restrictive-alternative principle'),
               icon: '🔓', color: '#22c55e',
-              content: 'Every restraint or seclusion use must be the least restrictive option available to manage the immediate safety concern. If a student can be safely de-escalated by clearing the room of others, that comes before restraint. If a student can be safely supported with verbal de-escalation, that comes before clearing the room. The hierarchy is built into law and ethics — not optional.',
+              content: __alloT('stem.behaviorlab.every_restraint_or_seclusion_use_must_', 'Every restraint or seclusion use must be the least restrictive option available to manage the immediate safety concern. If a student can be safely de-escalated by clearing the room of others, that comes before restraint. If a student can be safely supported with verbal de-escalation, that comes before clearing the room. The hierarchy is built into law and ethics — not optional.'),
               counter: 'Common misuse: restraint or seclusion used as a consequence ("if you do that again, you will go to the calm room"). That converts an emergency tool into a punishment, which is both unethical and frequently illegal under disability law.'
             },
             {
-              name: 'After every incident — the debrief',
+              name: __alloT('stem.behaviorlab.after_every_incident_the_debrief', 'After every incident — the debrief'),
               icon: '📝', color: '#3b82f6',
-              content: 'Within ~24-48 hours: an incident report (what happened, who, when, duration, less-restrictive alternatives tried first). A staff debrief about what could be done differently next time. Parent notification (Maine requires same-day or next-business-day). A team meeting to revise the BIP if the incident reveals a pattern. The student debrief — when the student is fully recovered — to hear their perspective.',
+              content: __alloT('stem.behaviorlab.within_24_48_hours_an_incident_report_', 'Within ~24-48 hours: an incident report (what happened, who, when, duration, less-restrictive alternatives tried first). A staff debrief about what could be done differently next time. Parent notification (Maine requires same-day or next-business-day). A team meeting to revise the BIP if the incident reveals a pattern. The student debrief — when the student is fully recovered — to hear their perspective.'),
               counter: 'Common gap: incidents get documented but the BIP never gets revised. Three or more incidents of the same antecedent in a quarter is a system signal that the BIP itself is failing — not a kid signal. Pattern-blindness is the most common documentation problem.'
             },
             {
-              name: 'The disability-community position',
+              name: __alloT('stem.behaviorlab.the_disability_community_position', 'The disability-community position'),
               icon: '✋', color: '#f472b6',
-              content: 'Major disability-rights organizations (ASAN, AAPD, COPAA, Disability Rights Network) have called for substantial federal restriction of school restraint and seclusion. Documented harms include physical injury, psychological trauma (PTSD outcomes are well-documented), and disproportionate use against students of color and students with disabilities. Federal data show students with disabilities account for ~12% of enrollment but ~75% of restraint cases.',
+              content: __alloT('stem.behaviorlab.major_disability_rights_organizations_', 'Major disability-rights organizations (ASAN, AAPD, COPAA, Disability Rights Network) have called for substantial federal restriction of school restraint and seclusion. Documented harms include physical injury, psychological trauma (PTSD outcomes are well-documented), and disproportionate use against students of color and students with disabilities. Federal data show students with disabilities account for ~12% of enrollment but ~75% of restraint cases.'),
               counter: 'Some BCBAs and behavior specialists argue restraint is occasionally necessary in genuine safety emergencies. Both positions can be true: emergencies happen AND the system overuses restraint by orders of magnitude. The ethical floor is "every restraint is one too many that should have been prevented earlier in the cycle."'
             }
           ];
@@ -515,31 +516,31 @@ dataRef.current = d;
           /* eslint-disable no-unused-vars */
           var ACTING_OUT_CYCLE_MOVED_TO_TOOLKIT = [
             {
-              phase: 1, name: 'Calm', icon: '🌊', color: '#22c55e',
+              phase: 1, name: __alloT('stem.behaviorlab.calm', 'Calm'), icon: '🌊', color: '#22c55e',
               signs: 'Baseline functioning. Engaged, cooperative, on-task. Predictable, regulated.',
               doThis: 'Build rapport, teach skills, pre-teach upcoming demands, set up environmental supports. This is the phase where preventive work actually happens — every other phase is too late for prevention.',
               dontDo: 'Don\'t treat calm as nothing-to-do. The work you do at Phase 1 is what determines how short Phase 5 is.'
             },
             {
-              phase: 2, name: 'Triggers', icon: '⚡', color: '#fbbf24',
+              phase: 2, name: __alloT('stem.behaviorlab.triggers', 'Triggers'), icon: '⚡', color: '#fbbf24',
               signs: 'Setting events stack with an immediate antecedent. Often invisible from the outside — the student notices before staff do.',
               doThis: 'Reduce demands, offer a choice, allow a regulation break, switch to a known-easy task. Catching it here is the highest-leverage moment in the cycle.',
               dontDo: 'Don\'t add demands. Don\'t escalate consequences. Don\'t insist on the original task. The trigger is information about threshold, not defiance.'
             },
             {
-              phase: 3, name: 'Agitation', icon: '😟', color: '#f97316',
+              phase: 3, name: __alloT('stem.behaviorlab.agitation', 'Agitation'), icon: '😟', color: '#f97316',
               signs: 'Early warning signs: off-task, verbal complaints, withdrawal, increased motor activity, darting eye contact, head down. Some students go quiet; some get loud. Both are agitation.',
               doThis: 'Reduce sensory load, offer the regulation break with no strings attached, validate the feeling without arguing the cause ("This is hard right now"), modify the demand.',
               dontDo: 'Don\'t lecture. Don\'t reason with logic. Don\'t insist on eye contact. Don\'t escalate your own voice. The thinking brain is already losing access.'
             },
             {
-              phase: 4, name: 'Acceleration', icon: '🌪️', color: '#ef4444',
+              phase: 4, name: __alloT('stem.behaviorlab.acceleration', 'Acceleration'), icon: '🌪️', color: '#ef4444',
               signs: 'Provocative behavior aimed at getting a reaction: blame, intimidation, escalating language, threats, refusal to engage with anyone, scripted "I don\'t care" responses.',
               doThis: 'Stay quiet. Stay close enough to be safe, far enough to give space. Clear the audience if possible — peers in the room raise the stakes. State only what is absolutely necessary, in short sentences.',
               dontDo: 'Don\'t take the bait. Don\'t match the volume. Don\'t threaten consequences mid-cycle. Don\'t deliver speeches. Most adult mistakes happen here — Phase 4 is the moment teachers get pulled into being part of the escalation.'
             },
             {
-              phase: 5, name: 'Peak', icon: '🔥', color: '#dc2626',
+              phase: 5, name: __alloT('stem.behaviorlab.peak', 'Peak'), icon: '🔥', color: '#dc2626',
               signs: 'Physical aggression, property destruction, elopement, full meltdown. The student is no longer in cognitive control. The thinking brain has gone offline.',
               doThis: 'Safety first. Move other students if needed. Use minimal language. Restraint only as a last resort with proper training and policy backing. Most of the work at Peak is just keeping the room safe and waiting.',
               dontDo: 'Don\'t teach. Don\'t reason. Don\'t process. Don\'t threaten. Don\'t give consequences mid-Peak. Recording the incident for documentation is appropriate; processing is not — yet.'
@@ -551,7 +552,7 @@ dataRef.current = d;
               dontDo: 'Don\'t debrief yet. Don\'t lecture about what happened. Don\'t require apology in this phase — it produces hollow performance, not actual repair.'
             },
             {
-              phase: 7, name: 'Recovery', icon: '🌅', color: '#a78bfa',
+              phase: 7, name: __alloT('stem.behaviorlab.recovery', 'Recovery'), icon: '🌅', color: '#a78bfa',
               signs: 'Back near baseline. Cognitive functioning returns. Student may have limited memory of the peak.',
               doThis: 'Now you debrief. Together, with empathy: "What happened? What were the signs you noticed? What would help next time?" Rebuild the relationship explicitly. Repair any damage with the student\'s input. Update the BIP based on what the cycle revealed.',
               dontDo: 'Don\'t treat recovery as the end of the cycle — it\'s the start of the next Phase 1. The relationship work you do here determines whether the next cycle will be shorter or longer.'
@@ -573,37 +574,37 @@ dataRef.current = d;
               category: 'Biological',
               icon: '😴', color: '#a78bfa',
               examples: 'Poor sleep last night · skipped breakfast · medication change · constipation · onset of illness · seasonal allergies flaring · pain (ear infection, headache, dental) · menstrual cycle for adolescents',
-              note: 'A kid who is in pain cannot perform the same way a kid who is not in pain can. Period.'
+              note: __alloT('stem.behaviorlab.a_kid_who_is_in_pain_cannot_perform_th', 'A kid who is in pain cannot perform the same way a kid who is not in pain can. Period.')
             },
             {
               category: 'Home / family',
               icon: '🏠', color: '#22d3ee',
               examples: 'Witnessed a fight before school · parent left for a deployment or trip · sibling sick · housing change · weekend with the other parent · CPS involvement · loss of pet · move-out of an older sibling',
-              note: 'Schools often see the AFTERMATH of a home event hours later — student is more dysregulated than usual but cannot or will not say why.'
+              note: __alloT('stem.behaviorlab.schools_often_see_the_aftermath_of_a_h', 'Schools often see the AFTERMATH of a home event hours later — student is more dysregulated than usual but cannot or will not say why.')
             },
             {
               category: 'Schedule / setting',
               icon: '🕒', color: '#fbbf24',
               examples: 'Substitute teacher · changed lunch period · fire drill earlier · pep rally · early-release day · field trip the day before · holiday break ending · daylight-saving-time week',
-              note: 'Predictability is a reinforcer for many learners. Removing it changes thresholds across the whole day, not just the moment.'
+              note: __alloT('stem.behaviorlab.predictability_is_a_reinforcer_for_man', 'Predictability is a reinforcer for many learners. Removing it changes thresholds across the whole day, not just the moment.')
             },
             {
               category: 'Peer / social',
               icon: '🧑‍🤝‍🧑', color: '#f472b6',
               examples: 'Friendship conflict at recess · being excluded from a group chat · breakup · social media incident · ongoing bullying · best-friend absent · seating change',
-              note: 'Adolescent social events have a half-life of days, not minutes. Behavior on Wednesday may trace to Friday.'
+              note: __alloT('stem.behaviorlab.adolescent_social_events_have_a_half_l', 'Adolescent social events have a half-life of days, not minutes. Behavior on Wednesday may trace to Friday.')
             },
             {
               category: 'Sensory / environmental',
               icon: '🔊', color: '#4ade80',
               examples: 'Loud fluorescent buzz · gym next door · cafeteria smell · new perfume on an adult · uniform/clothing change · temperature extreme · construction noise',
-              note: 'For sensory-sensitive learners, the environment itself is a continuous setting event. Reduce input and threshold rises.'
+              note: __alloT('stem.behaviorlab.for_sensory_sensitive_learners_the_env', 'For sensory-sensitive learners, the environment itself is a continuous setting event. Reduce input and threshold rises.')
             },
             {
               category: 'Mental health',
               icon: '💭', color: 'var(--allo-stem-text-soft, #94a3b8)',
               examples: 'Anxiety flare · low mood episode · recent therapy session that opened something · trauma anniversary · sensory overload accumulating across days · burnout from masking',
-              note: 'Trauma anniversaries and seasonal mental-health patterns are real and predictable. Calendar awareness is a clinical tool.'
+              note: __alloT('stem.behaviorlab.trauma_anniversaries_and_seasonal_ment', 'Trauma anniversaries and seasonal mental-health patterns are real and predictable. Calendar awareness is a clinical tool.')
             }
           ];
 
@@ -618,42 +619,42 @@ dataRef.current = d;
           /* eslint-disable no-unused-vars */
           var DISABILITY_VOICES_MOVED_TO_SEL_HUB = [
             {
-              name: 'Ari Ne\'eman',
+              name: __alloT('stem.behaviorlab.ari_ne_eman', 'Ari Ne\'eman'),
               role: 'Co-founder, Autism Self Advocacy Network (ASAN); first openly autistic appointee to the National Council on Disability (Obama, 2010); now at Harvard School of Public Health.',
               icon: '🎙️', color: '#3b82f6',
               quote: 'Nothing about us without us.',
               source: 'ASAN founding principle, 2006-present; widely echoed across disability-rights work'
             },
             {
-              name: 'Temple Grandin',
+              name: __alloT('stem.behaviorlab.temple_grandin', 'Temple Grandin'),
               role: 'Professor of animal science, Colorado State; designed humane livestock handling systems used across North American agriculture; among the most-known autistic adults in the world.',
               icon: '🐄', color: '#fbbf24',
               quote: 'Different, not less.',
               source: 'Thinking in Pictures (1995); HBO biopic (2010); decades of public lectures'
             },
             {
-              name: 'Damian Milton',
+              name: __alloT('stem.behaviorlab.damian_milton', 'Damian Milton'),
               role: 'Autistic sociologist, University of Kent; developed the Double Empathy Problem framework that reframes autism social-skill "deficits" as two-way mismatches in mutual understanding.',
               icon: '⇄', color: '#22d3ee',
               quote: 'The autistic person and the non-autistic person are equally responsible for the breakdown in mutual understanding. The disability research field has historically located the problem in only one of them.',
               source: 'Milton 2012, Disability & Society; expanded across his subsequent papers'
             },
             {
-              name: 'Henny Kupferstein',
+              name: __alloT('stem.behaviorlab.henny_kupferstein', 'Henny Kupferstein'),
               role: 'Researcher; published the 2018 survey on PTSD outcomes following ABA exposure that became a major reference point for the autism community critique.',
               icon: '📊', color: '#a78bfa',
               quote: 'Adults and children exposed to ABA were significantly more likely to meet PTSD diagnostic criteria than those who were not exposed. This is data, not opinion.',
               source: 'Kupferstein 2018, Advances in Autism (peer-reviewed). The methodology has been debated; the finding catalyzed industry-wide reckoning regardless.'
             },
             {
-              name: 'Kassiane Asasumasu',
+              name: __alloT('stem.behaviorlab.kassiane_asasumasu', 'Kassiane Asasumasu'),
               role: 'Autistic and multiply disabled activist; coined the term "neurodivergent" in the early 2000s as an identity-claim alternative to deficit framings.',
               icon: '🌈', color: '#f472b6',
               quote: 'Neurodivergent is not a euphemism. It does not mean "we are all the same." It means our brains diverge from a constructed norm — and divergence is information, not pathology.',
               source: 'Personal blog and community writing, mid-2000s; widely adopted across disability-justice movements'
             },
             {
-              name: 'Mel Baggs (1980–2020)',
+              name: __alloT('stem.behaviorlab.mel_baggs_1980_2020', 'Mel Baggs (1980–2020)'),
               role: 'Nonspeaking autistic activist, writer, and YouTuber. The 2007 video "In My Language" was the first widely-shared first-person account of nonspeaking autistic experience — viewed millions of times, taught in disability-studies courses since.',
               icon: '✊', color: 'var(--allo-stem-text-soft, #94a3b8)',
               quote: 'My language is not about designing words or even visual symbols for people to interpret. It is about being in a constant conversation with every aspect of my environment.',
@@ -671,98 +672,98 @@ dataRef.current = d;
           // updated BACB ethical guidance; NDBI research literature.
           var BEYOND_ABA = [
             {
-              name: 'The autism community critique',
+              name: __alloT('stem.behaviorlab.the_autism_community_critique', 'The autism community critique'),
               icon: '🌟', color: '#a78bfa',
-              desc: 'Adult autistic advocates — including many who experienced early ABA — have documented serious concerns about historical practice: 40-hour-week intensity, "indistinguishable from peers" as a goal (which trains masking), targeting stimming and eye-contact "deficits" without considering their function, and the use of contingencies that look like coercion when the client cannot meaningfully consent or refuse.',
+              desc: __alloT('stem.behaviorlab.adult_autistic_advocates_including_man', 'Adult autistic advocates — including many who experienced early ABA — have documented serious concerns about historical practice: 40-hour-week intensity, "indistinguishable from peers" as a goal (which trains masking), targeting stimming and eye-contact "deficits" without considering their function, and the use of contingencies that look like coercion when the client cannot meaningfully consent or refuse.'),
               source: 'Autism Self Advocacy Network position statements; Kupferstein 2018 ABA-PTSD survey'
             },
             {
-              name: 'Neurodiversity-affirming ABA',
+              name: __alloT('stem.behaviorlab.neurodiversity_affirming_aba', 'Neurodiversity-affirming ABA'),
               icon: '🌱', color: '#22c55e',
-              desc: 'Modern ethical practice has shifted: client assent (not just guardian consent) is required throughout sessions, "normalization" goals are increasingly declined, stimming is recognized as self-regulation rather than a target for reduction, and client-chosen goals replace clinician-imposed ones. The acronym stays; the values inside it have moved.',
+              desc: __alloT('stem.behaviorlab.modern_ethical_practice_has_shifted_cl', 'Modern ethical practice has shifted: client assent (not just guardian consent) is required throughout sessions, "normalization" goals are increasingly declined, stimming is recognized as self-regulation rather than a target for reduction, and client-chosen goals replace clinician-imposed ones. The acronym stays; the values inside it have moved.'),
               source: 'Updated BACB ethical guidance (2022+); Schreibman et al. on naturalistic developmental behavioral interventions (NDBI)'
             },
             {
-              name: 'Trauma-informed behavior practice',
+              name: __alloT('stem.behaviorlab.trauma_informed_behavior_practice', 'Trauma-informed behavior practice'),
               icon: '🤗', color: '#f472b6',
-              desc: 'Some "non-compliance" is a trauma response, not a learning deficit. A child who freezes, flees, or fights at a familiar demand may be telling you the demand has become a threat cue. Regulation comes before reasoning; co-regulation comes before self-regulation. Contingency analysis still matters — it just is not the whole picture.',
+              desc: __alloT('stem.behaviorlab.some_non_compliance_is_a_trauma_respon', 'Some "non-compliance" is a trauma response, not a learning deficit. A child who freezes, flees, or fights at a familiar demand may be telling you the demand has become a threat cue. Regulation comes before reasoning; co-regulation comes before self-regulation. Contingency analysis still matters — it just is not the whole picture.'),
               source: 'Bruce Perry Neurosequential Model; Stuart Shanker self-regulation framework'
             },
             {
-              name: 'The Double Empathy Problem',
+              name: __alloT('stem.behaviorlab.the_double_empathy_problem', 'The Double Empathy Problem'),
               icon: '⇄', color: '#22d3ee',
-              desc: 'Research by autistic scholar Damian Milton reframes "social skill deficits" as a two-way mismatch in mutual understanding between autistic and non-autistic people, not a one-sided deficit located in the autistic person. This changes what we measure as a "behavior problem" — and who needs to do the changing.',
+              desc: __alloT('stem.behaviorlab.research_by_autistic_scholar_damian_mi', 'Research by autistic scholar Damian Milton reframes "social skill deficits" as a two-way mismatch in mutual understanding between autistic and non-autistic people, not a one-sided deficit located in the autistic person. This changes what we measure as a "behavior problem" — and who needs to do the changing.'),
               source: 'Milton 2012; Crompton et al. 2020 (autistic-to-autistic communication research)'
             },
             {
-              name: 'What ABA does well',
+              name: __alloT('stem.behaviorlab.what_aba_does_well', 'What ABA does well'),
               icon: '✅', color: '#fbbf24',
-              desc: 'Honest accounting matters. Functional communication training for non-speaking learners has changed lives. Reduction of self-injurious or dangerous behavior is sometimes the difference between a kid going to school and a kid getting hospitalized. Self-help skills the client actively wants. Schedules of reinforcement explain real classroom outcomes. The science is real; the application has to be ethical.',
+              desc: __alloT('stem.behaviorlab.honest_accounting_matters_functional_c', 'Honest accounting matters. Functional communication training for non-speaking learners has changed lives. Reduction of self-injurious or dangerous behavior is sometimes the difference between a kid going to school and a kid getting hospitalized. Self-help skills the client actively wants. Schedules of reinforcement explain real classroom outcomes. The science is real; the application has to be ethical.'),
               source: 'Carr et al. on FCT; CER literature on dangerous-behavior reduction'
             },
             {
-              name: 'What ABA cannot do alone',
+              name: __alloT('stem.behaviorlab.what_aba_cannot_do_alone', 'What ABA cannot do alone'),
               icon: '🧩', color: 'var(--allo-stem-text-soft, #94a3b8)',
-              desc: 'Operant conditioning is one tool. It does not replace mental-health treatment for trauma or anxiety. It does not address the sensory environment a building creates. It does not substitute for autistic community and identity. Good practice integrates ABA with OT (sensory), SLP (communication), mental health (regulation), and — crucially — autistic adult mentorship that the child can grow into.',
+              desc: __alloT('stem.behaviorlab.operant_conditioning_is_one_tool_it_do', 'Operant conditioning is one tool. It does not replace mental-health treatment for trauma or anxiety. It does not address the sensory environment a building creates. It does not substitute for autistic community and identity. Good practice integrates ABA with OT (sensory), SLP (communication), mental health (regulation), and — crucially — autistic adult mentorship that the child can grow into.'),
               source: 'Autism Self Advocacy Network "Real Communities" framework; OT/SLP integrative-care literature'
             }
           ];
 
           // === ABA Ethics Principles ===
           var ABA_ETHICS = [
-            { name: 'Benefit Others', icon: '\u2764', desc: 'ABA practitioners have a responsibility to promote the well-being of their clients above all other considerations.' },
-            { name: 'Least Restrictive', icon: '\uD83D\uDD13', desc: 'Always use the least restrictive effective treatment. Try reinforcement-based procedures before considering punishment-based ones.' },
-            { name: 'Informed Consent', icon: '\uD83D\uDCDD', desc: 'Clients (or their guardians) must understand and agree to all intervention procedures before they are implemented.' },
-            { name: 'Data-Driven Decisions', icon: '\uD83D\uDCCA', desc: 'All treatment decisions must be based on objective data, not opinions or assumptions. If data shows the intervention isn\'t working, change it.' },
-            { name: 'Social Validity', icon: '\uD83E\uDDD1\u200D\uD83E\uDD1D\u200D\uD83E\uDDD1', desc: 'Goals, procedures, and outcomes should be acceptable and meaningful to the client and their community.' },
-            { name: 'Competence', icon: '\uD83C\uDF93', desc: 'Only practice within your area of training and competence. Seek supervision and continuing education.' }
+            { name: __alloT('stem.behaviorlab.benefit_others', 'Benefit Others'), icon: '\u2764', desc: __alloT('stem.behaviorlab.aba_practitioners_have_a_responsibilit', 'ABA practitioners have a responsibility to promote the well-being of their clients above all other considerations.') },
+            { name: __alloT('stem.behaviorlab.least_restrictive', 'Least Restrictive'), icon: '\uD83D\uDD13', desc: __alloT('stem.behaviorlab.always_use_the_least_restrictive_effec', 'Always use the least restrictive effective treatment. Try reinforcement-based procedures before considering punishment-based ones.') },
+            { name: __alloT('stem.behaviorlab.informed_consent', 'Informed Consent'), icon: '\uD83D\uDCDD', desc: __alloT('stem.behaviorlab.clients_or_their_guardians_must_unders', 'Clients (or their guardians) must understand and agree to all intervention procedures before they are implemented.') },
+            { name: __alloT('stem.behaviorlab.data_driven_decisions', 'Data-Driven Decisions'), icon: '\uD83D\uDCCA', desc: __alloT('stem.behaviorlab.all_treatment_decisions_must_be_based_', 'All treatment decisions must be based on objective data, not opinions or assumptions. If data shows the intervention isn\'t working, change it.') },
+            { name: __alloT('stem.behaviorlab.social_validity', 'Social Validity'), icon: '\uD83E\uDDD1\u200D\uD83E\uDD1D\u200D\uD83E\uDDD1', desc: __alloT('stem.behaviorlab.goals_procedures_and_outcomes_should_b', 'Goals, procedures, and outcomes should be acceptable and meaningful to the client and their community.') },
+            { name: __alloT('stem.behaviorlab.competence', 'Competence'), icon: '\uD83C\uDF93', desc: __alloT('stem.behaviorlab.only_practice_within_your_area_of_trai', 'Only practice within your area of training and competence. Seek supervision and continuing education.') }
           ];
 
           // === Wave 2: SCHEDULE_TYPES for comparison canvas ===
           var SCHEDULE_TYPES = [
-            { id: 'FR', name: 'Fixed Ratio', abbrev: 'FR-5', color: '#f59e0b', desc: 'Reinforce every Nth response. Creates post-reinforcement pause then rapid responding.', example: 'Piecework pay: get paid per 5 items assembled', pattern: 'high-pause', ratio: 5 },
-            { id: 'VR', name: 'Variable Ratio', abbrev: 'VR-5', color: '#ef4444', desc: 'Reinforce after variable number of responses (avg N). Produces high, steady rate. Most resistant to extinction.', example: 'Slot machines: win after random number of pulls', pattern: 'high-steady', ratio: 5 },
-            { id: 'FI', name: 'Fixed Interval', abbrev: 'FI-10', color: '#3b82f6', desc: 'Reinforce first response after fixed time interval. Creates scallop pattern — slow after reinforcement, fast near end.', example: 'Checking mail: arrives at same time daily', pattern: 'scallop', interval: 10 },
-            { id: 'VI', name: 'Variable Interval', abbrev: 'VI-10', color: '#10b981', desc: 'Reinforce first response after variable time interval (avg N). Produces slow, steady rate.', example: 'Fishing: fish bite at unpredictable times', pattern: 'low-steady', interval: 10 }
+            { id: 'FR', name: __alloT('stem.behaviorlab.fixed_ratio', 'Fixed Ratio'), abbrev: 'FR-5', color: '#f59e0b', desc: __alloT('stem.behaviorlab.reinforce_every_nth_response_creates_p', 'Reinforce every Nth response. Creates post-reinforcement pause then rapid responding.'), example: 'Piecework pay: get paid per 5 items assembled', pattern: 'high-pause', ratio: 5 },
+            { id: 'VR', name: __alloT('stem.behaviorlab.variable_ratio', 'Variable Ratio'), abbrev: 'VR-5', color: '#ef4444', desc: __alloT('stem.behaviorlab.reinforce_after_variable_number_of_res', 'Reinforce after variable number of responses (avg N). Produces high, steady rate. Most resistant to extinction.'), example: 'Slot machines: win after random number of pulls', pattern: 'high-steady', ratio: 5 },
+            { id: 'FI', name: __alloT('stem.behaviorlab.fixed_interval', 'Fixed Interval'), abbrev: 'FI-10', color: '#3b82f6', desc: __alloT('stem.behaviorlab.reinforce_first_response_after_fixed_t', 'Reinforce first response after fixed time interval. Creates scallop pattern — slow after reinforcement, fast near end.'), example: 'Checking mail: arrives at same time daily', pattern: 'scallop', interval: 10 },
+            { id: 'VI', name: __alloT('stem.behaviorlab.variable_interval', 'Variable Interval'), abbrev: 'VI-10', color: '#10b981', desc: __alloT('stem.behaviorlab.reinforce_first_response_after_variabl', 'Reinforce first response after variable time interval (avg N). Produces slow, steady rate.'), example: 'Fishing: fish bite at unpredictable times', pattern: 'low-steady', interval: 10 }
           ];
 
           // === Wave 2: REINFORCEMENT_MATRIX (2x2 operant conditioning) ===
           var REINFORCE_MATRIX = [
-            { id: 'srPlus', row: 0, col: 0, name: 'Positive Reinforcement', abbrev: 'SR+', action: 'ADD', effect: 'INCREASE', color: '#22c55e', icon: '\u2795\u2B06',
-              desc: 'Adding a stimulus to increase behavior', formal: 'The contingent presentation of a stimulus that increases the future probability of a behavior.',
+            { id: 'srPlus', row: 0, col: 0, name: __alloT('stem.behaviorlab.positive_reinforcement', 'Positive Reinforcement'), abbrev: 'SR+', action: 'ADD', effect: 'INCREASE', color: '#22c55e', icon: '\u2795\u2B06',
+              desc: __alloT('stem.behaviorlab.adding_a_stimulus_to_increase_behavior', 'Adding a stimulus to increase behavior'), formal: 'The contingent presentation of a stimulus that increases the future probability of a behavior.',
               examples: ['Teacher gives sticker after completed work', 'Dog gets treat for sitting', 'Employee receives bonus for sales target', 'Child gets praise for sharing'] },
-            { id: 'srMinus', row: 0, col: 1, name: 'Negative Reinforcement', abbrev: 'SR-', action: 'REMOVE', effect: 'INCREASE', color: '#3b82f6', icon: '\u2796\u2B06',
-              desc: 'Removing an aversive stimulus to increase behavior', formal: 'The contingent removal of an aversive stimulus that increases the future probability of a behavior.',
+            { id: 'srMinus', row: 0, col: 1, name: __alloT('stem.behaviorlab.negative_reinforcement', 'Negative Reinforcement'), abbrev: 'SR-', action: 'REMOVE', effect: 'INCREASE', color: '#3b82f6', icon: '\u2796\u2B06',
+              desc: __alloT('stem.behaviorlab.removing_an_aversive_stimulus_to_incre', 'Removing an aversive stimulus to increase behavior'), formal: 'The contingent removal of an aversive stimulus that increases the future probability of a behavior.',
               examples: ['Seatbelt beeping stops when buckled', 'Headache goes away after taking medicine', 'Nagging stops when chores are done', 'Sunglasses remove glare'] },
-            { id: 'spPlus', row: 1, col: 0, name: 'Positive Punishment', abbrev: 'SP+', action: 'ADD', effect: 'DECREASE', color: '#ef4444', icon: '\u2795\u2B07',
-              desc: 'Adding an aversive stimulus to decrease behavior', formal: 'The contingent presentation of an aversive stimulus that decreases the future probability of a behavior.',
+            { id: 'spPlus', row: 1, col: 0, name: __alloT('stem.behaviorlab.positive_punishment', 'Positive Punishment'), abbrev: 'SP+', action: 'ADD', effect: 'DECREASE', color: '#ef4444', icon: '\u2795\u2B07',
+              desc: __alloT('stem.behaviorlab.adding_an_aversive_stimulus_to_decreas', 'Adding an aversive stimulus to decrease behavior'), formal: 'The contingent presentation of an aversive stimulus that decreases the future probability of a behavior.',
               examples: ['Touching hot stove causes burn', 'Speeding ticket after driving too fast', 'Extra push-ups for being late', 'Verbal reprimand for misbehavior'] },
-            { id: 'spMinus', row: 1, col: 1, name: 'Negative Punishment', abbrev: 'SP-', action: 'REMOVE', effect: 'DECREASE', color: '#f59e0b', icon: '\u2796\u2B07',
-              desc: 'Removing a desired stimulus to decrease behavior', formal: 'The contingent removal of a reinforcing stimulus that decreases the future probability of a behavior.',
+            { id: 'spMinus', row: 1, col: 1, name: __alloT('stem.behaviorlab.negative_punishment', 'Negative Punishment'), abbrev: 'SP-', action: 'REMOVE', effect: 'DECREASE', color: '#f59e0b', icon: '\u2796\u2B07',
+              desc: __alloT('stem.behaviorlab.removing_a_desired_stimulus_to_decreas', 'Removing a desired stimulus to decrease behavior'), formal: 'The contingent removal of a reinforcing stimulus that decreases the future probability of a behavior.',
               examples: ['Phone taken away for breaking rules', 'Loss of recess for fighting', 'Fine for parking violation', 'Time-out from preferred activity'] }
           ];
 
           // === Wave 2: TOKEN_ITEMS for token economy builder ===
           var TOKEN_ITEMS = [
-            { id: 'hw', name: 'Homework Complete', tokens: 3, icon: '\uD83D\uDCD3', category: 'academic' },
-            { id: 'onTask', name: 'On-task 15 min', tokens: 2, icon: '\uD83C\uDFAF', category: 'behavior' },
-            { id: 'kind', name: 'Act of Kindness', tokens: 4, icon: '\u2764\uFE0F', category: 'social' },
-            { id: 'clean', name: 'Clean Up Area', tokens: 2, icon: '\uD83E\uDDF9', category: 'behavior' },
-            { id: 'help', name: 'Help a Peer', tokens: 3, icon: '\uD83E\uDD1D', category: 'social' },
-            { id: 'quiet', name: 'Quiet Transition', tokens: 1, icon: '\uD83E\uDD2B', category: 'behavior' },
-            { id: 'read', name: 'Read 20 Pages', tokens: 3, icon: '\uD83D\uDCDA', category: 'academic' },
-            { id: 'test', name: 'Score 80%+', tokens: 5, icon: '\uD83C\uDF1F', category: 'academic' }
+            { id: 'hw', name: __alloT('stem.behaviorlab.homework_complete', 'Homework Complete'), tokens: 3, icon: '\uD83D\uDCD3', category: 'academic' },
+            { id: 'onTask', name: __alloT('stem.behaviorlab.on_task_15_min', 'On-task 15 min'), tokens: 2, icon: '\uD83C\uDFAF', category: 'behavior' },
+            { id: 'kind', name: __alloT('stem.behaviorlab.act_of_kindness', 'Act of Kindness'), tokens: 4, icon: '\u2764\uFE0F', category: 'social' },
+            { id: 'clean', name: __alloT('stem.behaviorlab.clean_up_area', 'Clean Up Area'), tokens: 2, icon: '\uD83E\uDDF9', category: 'behavior' },
+            { id: 'help', name: __alloT('stem.behaviorlab.help_a_peer', 'Help a Peer'), tokens: 3, icon: '\uD83E\uDD1D', category: 'social' },
+            { id: 'quiet', name: __alloT('stem.behaviorlab.quiet_transition', 'Quiet Transition'), tokens: 1, icon: '\uD83E\uDD2B', category: 'behavior' },
+            { id: 'read', name: __alloT('stem.behaviorlab.read_20_pages', 'Read 20 Pages'), tokens: 3, icon: '\uD83D\uDCDA', category: 'academic' },
+            { id: 'test', name: __alloT('stem.behaviorlab.score_80', 'Score 80%+'), tokens: 5, icon: '\uD83C\uDF1F', category: 'academic' }
           ];
 
           var TOKEN_REWARDS = [
-            { id: 'sticker', name: 'Sticker', cost: 5, icon: '\u2B50' },
-            { id: 'freetime', name: '5 min Free Time', cost: 10, icon: '\uD83C\uDFAE' },
-            { id: 'snack', name: 'Snack Choice', cost: 15, icon: '\uD83C\uDF6A' },
-            { id: 'leader', name: 'Line Leader', cost: 8, icon: '\uD83D\uDC51' },
-            { id: 'computer', name: 'Computer Time', cost: 12, icon: '\uD83D\uDCBB' },
-            { id: 'homework', name: 'Homework Pass', cost: 20, icon: '\uD83C\uDF89' },
-            { id: 'teacher', name: 'Lunch with Teacher', cost: 25, icon: '\uD83C\uDF55' },
-            { id: 'mystery', name: 'Mystery Prize', cost: 30, icon: '\uD83C\uDF81' }
+            { id: 'sticker', name: __alloT('stem.behaviorlab.sticker', 'Sticker'), cost: 5, icon: '\u2B50' },
+            { id: 'freetime', name: __alloT('stem.behaviorlab.5_min_free_time', '5 min Free Time'), cost: 10, icon: '\uD83C\uDFAE' },
+            { id: 'snack', name: __alloT('stem.behaviorlab.snack_choice', 'Snack Choice'), cost: 15, icon: '\uD83C\uDF6A' },
+            { id: 'leader', name: __alloT('stem.behaviorlab.line_leader', 'Line Leader'), cost: 8, icon: '\uD83D\uDC51' },
+            { id: 'computer', name: __alloT('stem.behaviorlab.computer_time', 'Computer Time'), cost: 12, icon: '\uD83D\uDCBB' },
+            { id: 'homework', name: __alloT('stem.behaviorlab.homework_pass', 'Homework Pass'), cost: 20, icon: '\uD83C\uDF89' },
+            { id: 'teacher', name: __alloT('stem.behaviorlab.lunch_with_teacher', 'Lunch with Teacher'), cost: 25, icon: '\uD83C\uDF55' },
+            { id: 'mystery', name: __alloT('stem.behaviorlab.mystery_prize', 'Mystery Prize'), cost: 30, icon: '\uD83C\uDF81' }
           ];
 
           // === Wave 2: CONDITIONING_COMPARE ===
@@ -779,51 +780,51 @@ dataRef.current = d;
 
           // === Wave 3: SCENARIO_CHALLENGES ===
           var SCENARIO_CHALLENGES = [
-            { id: 1, scenario: 'A student screams every time they are asked to complete a math worksheet. When they scream, the teacher sends them to the hallway.', question: 'What function does the screaming likely serve?',
+            { id: 1, scenario: 'A student screams every time they are asked to complete a math worksheet. When they scream, the teacher sends them to the hallway.', question: __alloT('stem.behaviorlab.what_function_does_the_screaming_likel', 'What function does the screaming likely serve?'),
               options: ['Attention', 'Escape', 'Tangible', 'Sensory'], correct: 1,
               explain: 'The student screams and is removed from the math task. The screaming is negatively reinforced by escape from the aversive task (math worksheet). The teacher is accidentally reinforcing the screaming!',
               better: 'Break the worksheet into smaller chunks, teach the student to request a break appropriately, and reinforce task completion.' },
-            { id: 2, scenario: 'A child throws toys whenever their parent is on the phone. The parent stops the call to attend to the child.', question: 'What function does throwing toys likely serve?',
+            { id: 2, scenario: 'A child throws toys whenever their parent is on the phone. The parent stops the call to attend to the child.', question: __alloT('stem.behaviorlab.what_function_does_throwing_toys_likel', 'What function does throwing toys likely serve?'),
               options: ['Escape', 'Tangible', 'Attention', 'Sensory'], correct: 2,
               explain: 'The child throws toys and gets parent attention. The behavior is positively reinforced by the attention that follows. Phone calls = SD for throwing toys.',
               better: 'Give the child attention before the call, provide a preferred activity during calls, and reinforce appropriate play with praise.' },
-            { id: 3, scenario: 'A student with autism rocks back and forth during independent work time. The rocking does not seem connected to getting or avoiding anything.', question: 'What function does the rocking likely serve?',
+            { id: 3, scenario: 'A student with autism rocks back and forth during independent work time. The rocking does not seem connected to getting or avoiding anything.', question: __alloT('stem.behaviorlab.what_function_does_the_rocking_likely_', 'What function does the rocking likely serve?'),
               options: ['Attention', 'Escape', 'Tangible', 'Automatic/Sensory'], correct: 3,
               explain: 'Automatic (sensory) reinforcement! The behavior produces its own reinforcement through proprioceptive/vestibular stimulation. It is not maintained by social consequences.',
               better: 'If the rocking is not disruptive, it may not need intervention. If needed, provide alternative sensory input (fidget tools, movement breaks).' },
-            { id: 4, scenario: 'Every time a specific toy is visible, a child cries until they get it. The crying stops immediately once they have the toy.', question: 'What function does the crying likely serve?',
+            { id: 4, scenario: 'Every time a specific toy is visible, a child cries until they get it. The crying stops immediately once they have the toy.', question: __alloT('stem.behaviorlab.what_function_does_the_crying_likely_s', 'What function does the crying likely serve?'),
               options: ['Escape', 'Attention', 'Tangible', 'Sensory'], correct: 2,
               explain: 'Tangible reinforcement! The crying is maintained by access to a preferred item (the toy). The visibility of the toy acts as an MO (motivating operation).',
               better: 'Teach "I want" requesting (FCT), reinforce appropriate asking, put toys on a schedule of access, and do not provide toys contingent on crying.' },
-            { id: 5, scenario: 'You are using FR-5 to reinforce a new behavior. The learner shows a post-reinforcement pause after each delivery.', question: 'What should you do?',
+            { id: 5, scenario: 'You are using FR-5 to reinforce a new behavior. The learner shows a post-reinforcement pause after each delivery.', question: __alloT('stem.behaviorlab.what_should_you_do', 'What should you do?'),
               options: ['Switch to VR-5', 'Increase to FR-10', 'Add punishment', 'Give up'], correct: 0,
               explain: 'Correct! Post-reinforcement pauses are characteristic of FR schedules. Switching to a VR schedule maintains the same average ratio but eliminates the predictable pause pattern.',
               better: 'VR schedules produce steady, high rates of responding because the learner cannot predict exactly when reinforcement will occur.' },
-            { id: 6, scenario: 'A student has learned to raise their hand in the classroom but does not do it at home or in other settings.', question: 'What ABA concept does this illustrate?',
+            { id: 6, scenario: 'A student has learned to raise their hand in the classroom but does not do it at home or in other settings.', question: __alloT('stem.behaviorlab.what_aba_concept_does_this_illustrate', 'What ABA concept does this illustrate?'),
               options: ['Extinction', 'Stimulus generalization failure', 'Shaping', 'Chaining'], correct: 1,
               explain: 'The behavior has not generalized across settings. The hand-raising is under tight stimulus control of the classroom environment only.',
               better: 'Program for generalization from the start: train in multiple settings, with multiple people, and reinforce the behavior in all environments.' },
-            { id: 7, scenario: 'A therapist is teaching a child to brush their teeth using forward chaining. The child can do steps 1-3 independently.', question: 'What should the therapist do next?',
+            { id: 7, scenario: 'A therapist is teaching a child to brush their teeth using forward chaining. The child can do steps 1-3 independently.', question: __alloT('stem.behaviorlab.what_should_the_therapist_do_next', 'What should the therapist do next?'),
               options: ['Start over', 'Teach step 4 and prompt remaining steps', 'Skip to the last step', 'Remove all prompts'], correct: 1,
               explain: 'In forward chaining, you teach the chain from the beginning. Steps 1-3 are independent, so now teach step 4 while prompting/assisting remaining steps.',
               better: 'Forward chaining builds momentum because the learner always starts with mastered steps. Each new step is the SD for the next prompted step.' },
-            { id: 8, scenario: 'A teacher wants to reduce a student calling out in class but does not want to use punishment.', question: 'Which procedure would be MOST appropriate?',
+            { id: 8, scenario: 'A teacher wants to reduce a student calling out in class but does not want to use punishment.', question: __alloT('stem.behaviorlab.which_procedure_would_be_most_appropri', 'Which procedure would be MOST appropriate?'),
               options: ['Extinction only', 'DRA (reinforce hand-raising)', 'Time-out', 'Response cost'], correct: 1,
               explain: 'DRA (Differential Reinforcement of Alternative behavior) reinforces an appropriate alternative (hand-raising) that serves the same function. It reduces calling out without punishment.',
               better: 'DRA is preferred because it teaches what TO do (not just what NOT to do), aligns with the least restrictive principle, and builds new skills.' },
-            { id: 9, scenario: 'During a Pavlovian conditioning experiment, you pair a tone (NS) with food (US) 10 times. On trial 11, you present the tone alone.', question: 'What do you expect?',
+            { id: 9, scenario: 'During a Pavlovian conditioning experiment, you pair a tone (NS) with food (US) 10 times. On trial 11, you present the tone alone.', question: __alloT('stem.behaviorlab.what_do_you_expect', 'What do you expect?'),
               options: ['No response', 'Conditioned response (salivation)', 'Extinction', 'Spontaneous recovery'], correct: 1,
               explain: 'After repeated CS-US pairings, the tone (now a CS) should elicit a conditioned response (CR = salivation) even without the food (US). This is acquisition!',
               better: 'The strength of the CR depends on the number of pairings, the timing (best with forward delay), and the salience of the CS and US.' },
-            { id: 10, scenario: 'A BCBAs client has been making great progress on a program. The insurance company is reviewing whether to continue funding.', question: 'What should the BCBA present?',
+            { id: 10, scenario: 'A BCBAs client has been making great progress on a program. The insurance company is reviewing whether to continue funding.', question: __alloT('stem.behaviorlab.what_should_the_bcba_present', 'What should the BCBA present?'),
               options: ['Anecdotes from parents', 'Objective data and graphs', 'Other client success stories', 'Their credentials'], correct: 1,
               explain: 'Data-driven decision making is a core ethical principle of ABA. Objective data (graphs, trend lines, effect sizes) is the gold standard for justifying continued treatment.',
               better: 'Always let the data speak. Visual analysis of graphed data shows trends, level changes, and variability that support clinical decisions.' },
-            { id: 11, scenario: 'You are implementing DRO with a 30-second interval. The target behavior occurs at the 28-second mark.', question: 'What happens?',
+            { id: 11, scenario: 'You are implementing DRO with a 30-second interval. The target behavior occurs at the 28-second mark.', question: __alloT('stem.behaviorlab.what_happens', 'What happens?'),
               options: ['Deliver reinforcement anyway', 'Reset the timer', 'Extend the interval', 'End the session'], correct: 1,
               explain: 'In DRO, if the target behavior occurs at ANY point during the interval, the timer resets. No reinforcement is delivered. The learner must go the full interval without the behavior.',
               better: 'This is exactly what Level 8 in the simulator teaches! The mouse must refrain from pressing the lever for the full DRO interval.' },
-            { id: 12, scenario: 'A parent reports that their child "had an extinction burst" when they stopped giving candy for tantrums. They want to give in.', question: 'What is the best advice?',
+            { id: 12, scenario: 'A parent reports that their child "had an extinction burst" when they stopped giving candy for tantrums. They want to give in.', question: __alloT('stem.behaviorlab.what_is_the_best_advice', 'What is the best advice?'),
               options: ['Give the candy to stop the tantrum', 'Stay the course \u2014 extinction burst is expected', 'Try punishment instead', 'Increase the candy amount'], correct: 1,
               explain: 'Extinction bursts are temporary increases BEFORE the behavior decreases. Giving in during a burst teaches the child that MORE INTENSE tantrums work! This is the worst time to reinforce.',
               better: 'Warn parents about extinction bursts BEFORE starting extinction. Staying consistent through the burst is critical for success.' }
@@ -850,14 +851,14 @@ dataRef.current = d;
 
           // === Wave 3: QUICK_REFERENCE ===
           var QUICK_REF_CARDS = [
-            { title: 'The 7 Dimensions of ABA', content: 'Applied \u2022 Behavioral \u2022 Analytic \u2022 Technological \u2022 Conceptually Systematic \u2022 Effective \u2022 Generality', icon: '7\uFE0F\u20E3', color: '#f59e0b' },
-            { title: 'Reinforcement Rule', content: 'If a consequence INCREASES behavior = Reinforcement. + means ADD stimulus. - means REMOVE stimulus.', icon: '\u2B06\uFE0F', color: '#22c55e' },
-            { title: 'Punishment Rule', content: 'If a consequence DECREASES behavior = Punishment. + means ADD stimulus. - means REMOVE stimulus.', icon: '\u2B07\uFE0F', color: '#ef4444' },
-            { title: 'Three-Term Contingency', content: 'A (Antecedent) \u2192 B (Behavior) \u2192 C (Consequence). Also called the "ABC" of behavior analysis.', icon: '\uD83D\uDD17', color: '#8b5cf6' },
-            { title: 'Extinction', content: 'Withholding reinforcement for a previously reinforced behavior. Expect an initial extinction BURST (temporary increase) before decrease.', icon: '\uD83D\uDCC9', color: '#6366f1' },
-            { title: 'Schedules of Reinforcement', content: 'FR (Fixed Ratio) \u2022 VR (Variable Ratio) \u2022 FI (Fixed Interval) \u2022 VI (Variable Interval). Ratio = responses. Interval = time.', icon: '\uD83D\uDCC5', color: '#3b82f6' },
-            { title: 'Motivating Operations', content: 'EO (Establishing Operation) = increases value of reinforcer. AO (Abolishing Operation) = decreases value of reinforcer.', icon: '\uD83D\uDCA1', color: '#10b981' },
-            { title: 'Ethics First', content: 'Least restrictive \u2022 Data-driven \u2022 Informed consent \u2022 Social validity \u2022 Competence \u2022 Client benefit above all.', icon: '\u2764\uFE0F', color: '#ec4899' }
+            { title: __alloT('stem.behaviorlab.the_7_dimensions_of_aba', 'The 7 Dimensions of ABA'), content: __alloT('stem.behaviorlab.applied_behavioral_analytic_technologi', 'Applied \u2022 Behavioral \u2022 Analytic \u2022 Technological \u2022 Conceptually Systematic \u2022 Effective \u2022 Generality'), icon: '7\uFE0F\u20E3', color: '#f59e0b' },
+            { title: __alloT('stem.behaviorlab.reinforcement_rule', 'Reinforcement Rule'), content: __alloT('stem.behaviorlab.if_a_consequence_increases_behavior_re', 'If a consequence INCREASES behavior = Reinforcement. + means ADD stimulus. - means REMOVE stimulus.'), icon: '\u2B06\uFE0F', color: '#22c55e' },
+            { title: __alloT('stem.behaviorlab.punishment_rule', 'Punishment Rule'), content: __alloT('stem.behaviorlab.if_a_consequence_decreases_behavior_pu', 'If a consequence DECREASES behavior = Punishment. + means ADD stimulus. - means REMOVE stimulus.'), icon: '\u2B07\uFE0F', color: '#ef4444' },
+            { title: __alloT('stem.behaviorlab.three_term_contingency', 'Three-Term Contingency'), content: __alloT('stem.behaviorlab.a_antecedent_b_behavior_c_consequence_', 'A (Antecedent) \u2192 B (Behavior) \u2192 C (Consequence). Also called the "ABC" of behavior analysis.'), icon: '\uD83D\uDD17', color: '#8b5cf6' },
+            { title: __alloT('stem.behaviorlab.extinction', 'Extinction'), content: __alloT('stem.behaviorlab.withholding_reinforcement_for_a_previo', 'Withholding reinforcement for a previously reinforced behavior. Expect an initial extinction BURST (temporary increase) before decrease.'), icon: '\uD83D\uDCC9', color: '#6366f1' },
+            { title: __alloT('stem.behaviorlab.schedules_of_reinforcement', 'Schedules of Reinforcement'), content: __alloT('stem.behaviorlab.fr_fixed_ratio_vr_variable_ratio_fi_fi', 'FR (Fixed Ratio) \u2022 VR (Variable Ratio) \u2022 FI (Fixed Interval) \u2022 VI (Variable Interval). Ratio = responses. Interval = time.'), icon: '\uD83D\uDCC5', color: '#3b82f6' },
+            { title: __alloT('stem.behaviorlab.motivating_operations', 'Motivating Operations'), content: __alloT('stem.behaviorlab.eo_establishing_operation_increases_va', 'EO (Establishing Operation) = increases value of reinforcer. AO (Abolishing Operation) = decreases value of reinforcer.'), icon: '\uD83D\uDCA1', color: '#10b981' },
+            { title: __alloT('stem.behaviorlab.ethics_first', 'Ethics First'), content: __alloT('stem.behaviorlab.least_restrictive_data_driven_informed', 'Least restrictive \u2022 Data-driven \u2022 Informed consent \u2022 Social validity \u2022 Competence \u2022 Client benefit above all.'), icon: '\u2764\uFE0F', color: '#ec4899' }
           ];
 
 
@@ -3153,10 +3154,10 @@ dataRef.current = d;
 
           if (blPhase === 'intro') {
 
-            return React.createElement("div", { className: "p-6 space-y-4", role: "main", "aria-label": "Behavior Lab", style: { maxWidth: 700, margin: '0 auto' } },
+            return React.createElement("div", { className: "p-6 space-y-4", role: "main", "aria-label": __alloT('stem.behaviorlab.behavior_lab', "Behavior Lab"), style: { maxWidth: 700, margin: '0 auto' } },
 
               // Skip navigation
-              React.createElement("a", { href: "#behaviorlab-main", className: "sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-2 focus:bg-indigo-600 focus:text-white focus:rounded-lg" }, "Skip to main content"),
+              React.createElement("a", { href: "#behaviorlab-main", className: "sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-2 focus:bg-indigo-600 focus:text-white focus:rounded-lg" }, __alloT('stem.behaviorlab.skip_to_main_content', "Skip to main content")),
 
               // Header
               React.createElement("h2", { id: "behaviorlab-main", className: "sr-only" }, "Behavior Lab — Level " + blLevel),
@@ -3179,7 +3180,7 @@ dataRef.current = d;
               },
                 React.createElement("button", {
                   onClick: function () { setStemLabTool(null); },
-                  'aria-label': 'Back to STEM Lab',
+                  'aria-label': __alloT('stem.behaviorlab.back_to_stem_lab', 'Back to STEM Lab'),
                   style: {
                     background: 'rgba(255,255,255,0.06)',
                     border: '1px solid var(--allo-stem-border, #334155)',
@@ -3289,7 +3290,7 @@ dataRef.current = d;
 
                 React.createElement("div", { className: "bg-slate-800/60 rounded-xl p-3 border border-slate-600/40" },
 
-                  React.createElement("p", { className: "text-xs text-amber-200 font-bold mb-1" }, "\uD83D\uDCD6 Key Term:"),
+                  React.createElement("p", { className: "text-xs text-amber-200 font-bold mb-1" }, __alloT('stem.behaviorlab.key_term', "\uD83D\uDCD6 Key Term:")),
 
                   React.createElement("p", { className: "text-xs text-slate-100 italic" }, currentLevel.termDef)
 
@@ -3315,13 +3316,13 @@ dataRef.current = d;
 
                   var LEVELS = [
 
-                    { id: 'plain', label: 'Plain', hint: 'using simple everyday words and short sentences, no jargon' },
+                    { id: 'plain', label: __alloT('stem.behaviorlab.plain', 'Plain'), hint: __alloT('stem.behaviorlab.using_simple_everyday_words_and_short_', 'using simple everyday words and short sentences, no jargon') },
 
-                    { id: 'grade5', label: 'Grade 5', hint: 'for a 5th grade student, with a concrete classroom or family example' },
+                    { id: 'grade5', label: __alloT('stem.behaviorlab.grade_5', 'Grade 5'), hint: __alloT('stem.behaviorlab.for_a_5th_grade_student_with_a_concret', 'for a 5th grade student, with a concrete classroom or family example') },
 
-                    { id: 'hs', label: 'High School', hint: 'for a high school psychology student' },
+                    { id: 'hs', label: __alloT('stem.behaviorlab.high_school', 'High School'), hint: __alloT('stem.behaviorlab.for_a_high_school_psychology_student', 'for a high school psychology student') },
 
-                    { id: 'prof', label: 'Pro', hint: 'for a new school psychologist or BCBA trainee, using accurate technical language' }
+                    { id: 'prof', label: 'Pro', hint: __alloT('stem.behaviorlab.for_a_new_school_psychologist_or_bcba_', 'for a new school psychologist or BCBA trainee, using accurate technical language') }
 
                   ];
 
@@ -3359,13 +3360,13 @@ dataRef.current = d;
 
                   }
 
-                  return React.createElement("div", { className: "bg-slate-800/60 rounded-xl p-3 border border-purple-500/40 mt-2", role: "region", "aria-label": "AI behavior-analysis tutor" },
+                  return React.createElement("div", { className: "bg-slate-800/60 rounded-xl p-3 border border-purple-500/40 mt-2", role: "region", "aria-label": __alloT('stem.behaviorlab.ai_behavior_analysis_tutor', "AI behavior-analysis tutor") },
 
                     React.createElement("div", { className: "flex items-center flex-wrap gap-2 mb-1.5" },
 
-                      React.createElement("span", { className: "text-xs font-bold text-purple-300" }, "\u2728 Explain at my level"),
+                      React.createElement("span", { className: "text-xs font-bold text-purple-300" }, __alloT('stem.behaviorlab.explain_at_my_level', "\u2728 Explain at my level")),
 
-                      React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": "Reading level" },
+                      React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": __alloT('stem.behaviorlab.reading_level', "Reading level") },
 
                         LEVELS.map(function (L) {
 
@@ -3407,7 +3408,7 @@ dataRef.current = d;
 
                     aiText && React.createElement("p", { className: "text-xs text-slate-100 leading-relaxed bg-slate-900/50 rounded-lg p-2 border border-purple-500/20" }, aiText),
 
-                    !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-400" }, "Click \u201CExplain\u201D for a classroom example of this concept at your chosen reading level.")
+                    !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-400" }, __alloT('stem.behaviorlab.click_explain_for_a_classroom_example_', "Click \u201CExplain\u201D for a classroom example of this concept at your chosen reading level."))
 
                   );
 
@@ -3417,7 +3418,7 @@ dataRef.current = d;
 
               // Start button
 
-              React.createElement("button", { "aria-label": "Start Experiment",
+              React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.start_experiment', "Start Experiment"),
 
                 onClick: function () {
 
@@ -3467,7 +3468,7 @@ dataRef.current = d;
 
                 className: "w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-extrabold text-base shadow-lg shadow-amber-500/30 hover:from-amber-600 hover:to-orange-600 transition-all hover:scale-[1.02]"
 
-              }, "\uD83D\uDE80 Start Experiment"),
+              }, __alloT('stem.behaviorlab.start_experiment_2', "\uD83D\uDE80 Start Experiment")),
 
               // \u2550\u2550 REINFORCEMENT INQUIRY widget (H7b'') \u2550\u2550
               (function() {
@@ -3478,15 +3479,15 @@ dataRef.current = d;
                 var extinctionResistance = (iq.schedule === 'CRF' ? 1 : iq.schedule === 'FR3' ? 3 : iq.schedule === 'VR5' ? 9 : iq.schedule === 'FI30' ? 4 : 8);
                 var state = persistence > 9 ? 'addictive' : persistence > 6 ? 'durable' : persistence > 4 ? 'moderate' : persistence > 2 ? 'fragile' : 'extinguishing';
                 var sm = ({
-                  addictive: { label: 'Addictive pattern', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'VR schedule + strong reinforcer + no alternative = gambling/scrolling pattern. Hardest to extinguish.' },
-                  durable: { label: 'Durable habit', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Behavior persists through occasional non-reinforcement. Typical of well-trained skills.' },
-                  moderate: { label: 'Moderate persistence', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Standard reinforcement; behavior maintained while contingency holds.' },
-                  fragile: { label: 'Fragile', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'CRF or low strength + alternatives available. Extinction begins quickly when reinforcement stops.' },
-                  extinguishing: { label: 'Already extinguishing', color: '#94a3b8', bg: '#1e293b', border: '#475569', desc: 'Reinforcer too weak vs alternative \u2014 behavior dropping in frequency right now.' }
+                  addictive: { label: __alloT('stem.behaviorlab.addictive_pattern', 'Addictive pattern'), color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: __alloT('stem.behaviorlab.vr_schedule_strong_reinforcer_no_alter', 'VR schedule + strong reinforcer + no alternative = gambling/scrolling pattern. Hardest to extinguish.') },
+                  durable: { label: __alloT('stem.behaviorlab.durable_habit', 'Durable habit'), color: '#facc15', bg: '#2a2410', border: '#eab308', desc: __alloT('stem.behaviorlab.behavior_persists_through_occasional_n', 'Behavior persists through occasional non-reinforcement. Typical of well-trained skills.') },
+                  moderate: { label: __alloT('stem.behaviorlab.moderate_persistence', 'Moderate persistence'), color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: __alloT('stem.behaviorlab.standard_reinforcement_behavior_mainta', 'Standard reinforcement; behavior maintained while contingency holds.') },
+                  fragile: { label: __alloT('stem.behaviorlab.fragile', 'Fragile'), color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: __alloT('stem.behaviorlab.crf_or_low_strength_alternatives_avail', 'CRF or low strength + alternatives available. Extinction begins quickly when reinforcement stops.') },
+                  extinguishing: { label: __alloT('stem.behaviorlab.already_extinguishing', 'Already extinguishing'), color: '#94a3b8', bg: '#1e293b', border: '#475569', desc: __alloT('stem.behaviorlab.reinforcer_too_weak_vs_alternative_beh', 'Reinforcer too weak vs alternative \u2014 behavior dropping in frequency right now.') }
                 })[state];
                 return React.createElement("div", { style: { marginTop: 14, padding: 12, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
-                  React.createElement("h4", { style: { margin: '0 0 4px', fontSize: 12, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, '\uD83D\uDD2C Reinforcement Inquiry \u2014 Predict Persistence'),
-                  React.createElement("p", { style: { margin: '0 0 6px', fontSize: 10, opacity: 0.85, lineHeight: 1.4 } }, 'Set schedule, reinforcer strength, alternatives, extinction time. Predict the persistence band. No score, no reveal.'),
+                  React.createElement("h4", { style: { margin: '0 0 4px', fontSize: 12, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, __alloT('stem.behaviorlab.reinforcement_inquiry_predict_persiste', '\uD83D\uDD2C Reinforcement Inquiry \u2014 Predict Persistence')),
+                  React.createElement("p", { style: { margin: '0 0 6px', fontSize: 10, opacity: 0.85, lineHeight: 1.4 } }, __alloT('stem.behaviorlab.set_schedule_reinforcer_strength_alter', 'Set schedule, reinforcer strength, alternatives, extinction time. Predict the persistence band. No score, no reveal.')),
                   React.createElement("div", { style: { display: 'inline-block', padding: '3px 8px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 10, fontWeight: 800, marginBottom: 6 } }, sm.label + ' \u00B7 persist ' + persistence.toFixed(1) + ' \u00B7 ext-resist ' + extinctionResistance),
                   React.createElement("p", { style: { margin: '0 0 6px', fontSize: 10, opacity: 0.8 } }, sm.desc),
                   React.createElement("div", { style: { display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 6 } },
@@ -3497,15 +3498,15 @@ dataRef.current = d;
                   ),
                   React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 8 } },
                     React.createElement("label", { style: { fontSize: 10 } },
-                      React.createElement("div", { style: { marginBottom: 2 } }, 'Strength ', React.createElement("span", { style: { color: sm.color, fontFamily: 'monospace' } }, iq.reinforcerStrength)),
+                      React.createElement("div", { style: { marginBottom: 2 } }, __alloT('stem.behaviorlab.strength', 'Strength '), React.createElement("span", { style: { color: sm.color, fontFamily: 'monospace' } }, iq.reinforcerStrength)),
                       React.createElement("input", { type: 'range', min: 1, max: 10, step: 1, value: iq.reinforcerStrength, onChange: function(e) { setKey('reinforcerStrength', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
                     ),
                     React.createElement("label", { style: { fontSize: 10 } },
-                      React.createElement("div", { style: { marginBottom: 2 } }, 'Alternative ', React.createElement("span", { style: { color: sm.color, fontFamily: 'monospace' } }, iq.alternativeReward)),
+                      React.createElement("div", { style: { marginBottom: 2 } }, __alloT('stem.behaviorlab.alternative', 'Alternative '), React.createElement("span", { style: { color: sm.color, fontFamily: 'monospace' } }, iq.alternativeReward)),
                       React.createElement("input", { type: 'range', min: 0, max: 10, step: 1, value: iq.alternativeReward, onChange: function(e) { setKey('alternativeReward', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
                     ),
                     React.createElement("label", { style: { fontSize: 10 } },
-                      React.createElement("div", { style: { marginBottom: 2 } }, 'Ext time ', React.createElement("span", { style: { color: sm.color, fontFamily: 'monospace' } }, iq.extinctionTime)),
+                      React.createElement("div", { style: { marginBottom: 2 } }, __alloT('stem.behaviorlab.ext_time', 'Ext time '), React.createElement("span", { style: { color: sm.color, fontFamily: 'monospace' } }, iq.extinctionTime)),
                       React.createElement("input", { type: 'range', min: 0, max: 30, step: 1, value: iq.extinctionTime, onChange: function(e) { setKey('extinctionTime', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
                     )
                   ),
@@ -3513,30 +3514,30 @@ dataRef.current = d;
                     React.createElement("button", { onClick: function() {
                       var t = new Date().toISOString().slice(11, 19);
                       setIQ({ log: iq.log.concat([{ t: t, s: iq.schedule, str: iq.reinforcerStrength, alt: iq.alternativeReward, ext: iq.extinctionTime, p: persistence.toFixed(1), state: sm.label }]) });
-                    }, style: { flex: 1, padding: 4, fontSize: 10, fontWeight: 700, borderRadius: 4, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '\uD83D\uDCCB Log'),
-                    React.createElement("button", { onClick: function() { setIQ({ schedule: 'FR3', reinforcerStrength: 5, alternativeReward: 3, extinctionTime: 5 }); }, style: { padding: '4px 8px', fontSize: 10, borderRadius: 4, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
+                    }, style: { flex: 1, padding: 4, fontSize: 10, fontWeight: 700, borderRadius: 4, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, __alloT('stem.behaviorlab.log', '\uD83D\uDCCB Log')),
+                    React.createElement("button", { onClick: function() { setIQ({ schedule: 'FR3', reinforcerStrength: 5, alternativeReward: 3, extinctionTime: 5 }); }, style: { padding: '4px 8px', fontSize: 10, borderRadius: 4, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, __alloT('stem.behaviorlab.reset', 'Reset'))
                   ),
                   iq.log.length > 0 && React.createElement("div", { style: { maxHeight: 60, overflow: 'auto', padding: 4, borderRadius: 4, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 6, fontSize: 9, fontFamily: 'monospace', lineHeight: 1.4 } },
                     iq.log.slice(-5).map(function(e, i) { return React.createElement("div", { key: i }, e.t + '  ' + e.state + ' \u00B7 ' + e.s + ' str' + e.str + ' alt' + e.alt + ' \u2192 ' + e.p); })
                   ),
-                  React.createElement("label", { style: { display: 'block', fontSize: 10, fontWeight: 700, opacity: 0.85, marginBottom: 3 } }, 'Your hypothesis (why does VR resist extinction so much?)'),
-                  React.createElement("textarea", { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., VR makes every action potentially the rewarded one \u2014 extinction never feels conclusive...', style: { width: '100%', padding: 4, borderRadius: 4, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 10, marginBottom: 6, resize: 'vertical' } }),
-                  !iq.stuckRevealed && React.createElement("button", { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 8px', fontSize: 10, fontWeight: 700, borderRadius: 4, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 6 } }, "\uD83E\uDD14 I'm stuck \u2014 show open questions"),
+                  React.createElement("label", { style: { display: 'block', fontSize: 10, fontWeight: 700, opacity: 0.85, marginBottom: 3 } }, __alloT('stem.behaviorlab.your_hypothesis_why_does_vr_resist_ext', 'Your hypothesis (why does VR resist extinction so much?)')),
+                  React.createElement("textarea", { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.behaviorlab.e_g_vr_makes_every_action_potentially_', 'e.g., VR makes every action potentially the rewarded one \u2014 extinction never feels conclusive...'), style: { width: '100%', padding: 4, borderRadius: 4, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 10, marginBottom: 6, resize: 'vertical' } }),
+                  !iq.stuckRevealed && React.createElement("button", { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 8px', fontSize: 10, fontWeight: 700, borderRadius: 4, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 6 } }, __alloT('stem.behaviorlab.i_m_stuck_show_open_questions', "\uD83E\uDD14 I'm stuck \u2014 show open questions")),
                   iq.stuckRevealed && React.createElement("div", { style: { padding: 6, borderRadius: 4, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 10, marginBottom: 6, lineHeight: 1.5 } },
-                    React.createElement("div", { style: { fontWeight: 700, color: sm.color, marginBottom: 3 } }, 'Open questions (no answer key)'),
+                    React.createElement("div", { style: { fontWeight: 700, color: sm.color, marginBottom: 3 } }, __alloT('stem.behaviorlab.open_questions_no_answer_key', 'Open questions (no answer key)')),
                     React.createElement("ul", { style: { margin: 0, paddingLeft: 14 } },
-                      React.createElement("li", null, 'Why is VR (variable ratio) the schedule behind slot machines + scrolling apps?'),
-                      React.createElement("li", null, 'When does adding an alternative reinforcer FASTER extinguish a behavior than just removing the original?'),
-                      React.createElement("li", null, 'What pattern of responding shows during an FI (fixed interval) schedule? Why "scalloping"?'),
-                      React.createElement("li", null, 'How does extinction TIME interact with schedule type? (Hint: partial reinforcement extinction effect.)')
+                      React.createElement("li", null, __alloT('stem.behaviorlab.why_is_vr_variable_ratio_the_schedule_', 'Why is VR (variable ratio) the schedule behind slot machines + scrolling apps?')),
+                      React.createElement("li", null, __alloT('stem.behaviorlab.when_does_adding_an_alternative_reinfo', 'When does adding an alternative reinforcer FASTER extinguish a behavior than just removing the original?')),
+                      React.createElement("li", null, __alloT('stem.behaviorlab.what_pattern_of_responding_shows_durin', 'What pattern of responding shows during an FI (fixed interval) schedule? Why "scalloping"?')),
+                      React.createElement("li", null, __alloT('stem.behaviorlab.how_does_extinction_time_interact_with', 'How does extinction TIME interact with schedule type? (Hint: partial reinforcement extinction effect.)'))
                     )
                   ),
                   React.createElement("label", { style: { display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, cursor: 'pointer', marginBottom: 4 } },
                     React.createElement("input", { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
-                    React.createElement("span", null, 'I can explain why this schedule + strength + alternative yields this persistence band.')
+                    React.createElement("span", null, __alloT('stem.behaviorlab.i_can_explain_why_this_schedule_streng', 'I can explain why this schedule + strength + alternative yields this persistence band.'))
                   ),
-                  iq.understood && React.createElement("textarea", { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 4, borderRadius: 4, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 10, marginBottom: 4, resize: 'vertical' } }),
-                  React.createElement("p", { style: { margin: 0, fontSize: 9, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget \u2014 no score, no reveal, no answer dump. Skinner box terminology + matching-law extension. Persistence is multi-dimensional in real life; this is a teaching heuristic.')
+                  iq.understood && React.createElement("textarea", { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.behaviorlab.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 4, borderRadius: 4, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 10, marginBottom: 4, resize: 'vertical' } }),
+                  React.createElement("p", { style: { margin: 0, fontSize: 9, fontStyle: 'italic', opacity: 0.6 } }, __alloT('stem.behaviorlab.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget \u2014 no score, no reveal, no answer dump. Skinner box terminology + matching-law extension. Persistence is multi-dimensional in real life; this is a teaching heuristic.'))
                 );
               })()
 
@@ -3570,10 +3571,10 @@ dataRef.current = d;
 
           // Running Phase & Complete Phase
 
-          return React.createElement("div", { className: "p-4 space-y-3", role: "main", "aria-label": "Behavior Lab Simulation", style: { maxWidth: 720, margin: '0 auto' } },
+          return React.createElement("div", { className: "p-4 space-y-3", role: "main", "aria-label": __alloT('stem.behaviorlab.behavior_lab_simulation', "Behavior Lab Simulation"), style: { maxWidth: 720, margin: '0 auto' } },
 
             // Skip navigation
-            React.createElement("a", { href: "#behaviorlab-sim", className: "sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-2 focus:bg-indigo-600 focus:text-white focus:rounded-lg" }, "Skip to simulation"),
+            React.createElement("a", { href: "#behaviorlab-sim", className: "sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-2 focus:bg-indigo-600 focus:text-white focus:rounded-lg" }, __alloT('stem.behaviorlab.skip_to_simulation', "Skip to simulation")),
             React.createElement("h2", { id: "behaviorlab-sim", className: "sr-only" }, "Behavior Lab — Level " + blLevel + " Simulation"),
 
             // ── Inject keyframe animation for pulse ──
@@ -3602,7 +3603,7 @@ dataRef.current = d;
 
                 onClick: function () { upd('blPhase', 'intro'); },
 
-                className: "text-xl hover:scale-110 transition-transform", 'aria-label': 'Back to level select'
+                className: "text-xl hover:scale-110 transition-transform", 'aria-label': __alloT('stem.behaviorlab.back_to_level_select', 'Back to level select')
 
               }, "\u2B05"),
 
@@ -3746,7 +3747,7 @@ dataRef.current = d;
 
                   React.createElement("p", { className: "text-lg font-extrabold text-amber-400 tracking-tight" }, '' + blReinforcements),
 
-                  React.createElement("p", { className: "text-[11px] text-slate-200" }, "Reinforcements")
+                  React.createElement("p", { className: "text-[11px] text-slate-200" }, __alloT('stem.behaviorlab.reinforcements', "Reinforcements"))
 
                 ),
 
@@ -3754,7 +3755,7 @@ dataRef.current = d;
 
                   React.createElement("p", { className: "text-lg font-extrabold text-indigo-400 tracking-tight" }, '' + blTick),
 
-                  React.createElement("p", { className: "text-[11px] text-slate-200" }, "Ticks to Complete")
+                  React.createElement("p", { className: "text-[11px] text-slate-200" }, __alloT('stem.behaviorlab.ticks_to_complete', "Ticks to Complete"))
 
                 ),
 
@@ -3764,7 +3765,7 @@ dataRef.current = d;
 
                     blTick > 0 ? (blLevelScore / blTick * 60).toFixed(1) : '0.0'),
 
-                  React.createElement("p", { className: "text-[11px] text-slate-200" }, "Resp Rate / min")
+                  React.createElement("p", { className: "text-[11px] text-slate-200" }, __alloT('stem.behaviorlab.resp_rate_min', "Resp Rate / min"))
 
                 ),
 
@@ -3774,7 +3775,7 @@ dataRef.current = d;
 
                     (blLatencies.reduce(function (a, b) { return a + b; }, 0) / blLatencies.length).toFixed(1)),
 
-                  React.createElement("p", { className: "text-[11px] text-slate-200" }, "Avg Latency (ticks)")
+                  React.createElement("p", { className: "text-[11px] text-slate-200" }, __alloT('stem.behaviorlab.avg_latency_ticks', "Avg Latency (ticks)"))
 
                 )
 
@@ -3784,7 +3785,7 @@ dataRef.current = d;
 
               React.createElement("div", { className: "bg-slate-900/40 rounded-xl p-3 border border-slate-700/30 mb-3" },
 
-                React.createElement("p", { className: "text-xs font-bold text-amber-300 mb-1" }, "\uD83D\uDCD6 Key Vocabulary:"),
+                React.createElement("p", { className: "text-xs font-bold text-amber-300 mb-1" }, __alloT('stem.behaviorlab.key_vocabulary', "\uD83D\uDCD6 Key Vocabulary:")),
 
                 React.createElement("ul", { className: "space-y-0.5" },
 
@@ -3802,7 +3803,7 @@ dataRef.current = d;
 
               QUIZ_BANK[blLevel] && React.createElement("div", { className: "bg-gradient-to-br from-indigo-900/40 to-purple-900/30 rounded-xl p-4 border border-indigo-500/30" },
 
-                React.createElement("p", { className: "text-xs font-bold text-indigo-300 mb-2" }, "🧠 Knowledge Check"),
+                React.createElement("p", { className: "text-xs font-bold text-indigo-300 mb-2" }, __alloT('stem.behaviorlab.knowledge_check', "🧠 Knowledge Check")),
 
                 React.createElement("p", { className: "text-sm text-slate-200 font-semibold mb-3" }, QUIZ_BANK[blLevel].q),
 
@@ -3888,7 +3889,7 @@ dataRef.current = d;
 
               // Next level button
 
-              React.createElement("button", { "aria-label": "Next Level",
+              React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.next_level', "Next Level"),
 
                 onClick: function () {
 
@@ -3936,7 +3937,7 @@ dataRef.current = d;
 
                 className: "w-full mt-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-extrabold text-sm shadow-lg shadow-emerald-500/25 hover:from-emerald-600 hover:to-teal-600 transition-all hover:scale-[1.02]"
 
-              }, "\u27A1\uFE0F Next Level")
+              }, __alloT('stem.behaviorlab.next_level_2', "\u27A1\uFE0F Next Level"))
 
             ),
 
@@ -3977,7 +3978,7 @@ dataRef.current = d;
               }),
               React.createElement("span", {
                 style: { position: 'absolute', right: 8, top: -1, fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: '12px' }
-              }, '\uD83D\uDC2D \u2192 Lever proximity')
+              }, __alloT('stem.behaviorlab.lever_proximity', '\uD83D\uDC2D \u2192 Lever proximity'))
             ),
 
             // ── Behavior frequency heatmap strip ──
@@ -3988,7 +3989,7 @@ dataRef.current = d;
 
             },
 
-              React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold mb-1.5 uppercase tracking-wider" }, "\uD83D\uDD25 Recent Behaviors"),
+              React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold mb-1.5 uppercase tracking-wider" }, __alloT('stem.behaviorlab.recent_behaviors', "\uD83D\uDD25 Recent Behaviors")),
 
               React.createElement("div", { className: "flex gap-1 items-center flex-wrap" },
 
@@ -4046,7 +4047,7 @@ dataRef.current = d;
 
                 style: { background: 'rgba(8,145,178,0.2)', border: '1px solid rgba(6,182,212,0.3)', borderRadius: 12 }
 
-              }, "\u23F1 Automatic (DRO) \u2014 food delivered when timer completes") :
+              }, __alloT('stem.behaviorlab.automatic_dro_food_delivered_when_time', "\u23F1 Automatic (DRO) \u2014 food delivered when timer completes")) :
 
               blLevel === 9 ? React.createElement("div", {
 
@@ -4054,7 +4055,7 @@ dataRef.current = d;
 
                 style: { background: 'rgba(225,29,72,0.15)', border: '1px solid rgba(225,29,72,0.3)', borderRadius: 12 }
 
-              }, "\uD83D\uDD14 Use the Classical Conditioning panel below") :
+              }, __alloT('stem.behaviorlab.use_the_classical_conditioning_panel_b', "\uD83D\uDD14 Use the Classical Conditioning panel below")) :
 
                 React.createElement("button", { onClick: function () {
 
@@ -4086,7 +4087,7 @@ dataRef.current = d;
 
               // Level 3: extinction trigger
 
-              blLevel === 3 && !blExtinctionPhase && blLevelScore >= 5 && React.createElement("button", { "aria-label": "Start Extinction",
+              blLevel === 3 && !blExtinctionPhase && blLevelScore >= 5 && React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.start_extinction', "Start Extinction"),
 
                 onClick: function () {
 
@@ -4100,7 +4101,7 @@ dataRef.current = d;
 
                 className: "flex-1 py-2.5 rounded-xl bg-red-600 text-white font-bold text-sm hover:bg-red-700 transition-colors shadow-md active:scale-[0.97]"
 
-              }, "\uD83D\uDEAB Start Extinction"),
+              }, __alloT('stem.behaviorlab.start_extinction_2', "\uD83D\uDEAB Start Extinction")),
 
               blLevel === 3 && blExtinctionPhase && React.createElement("div", {
 
@@ -4108,7 +4109,7 @@ dataRef.current = d;
 
                 style: { background: 'rgba(127,29,29,0.35)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 12 }
 
-              }, "\u23F3 Extinction in progress... watch the burst!"),
+              }, __alloT('stem.behaviorlab.extinction_in_progress_watch_the_burst', "\u23F3 Extinction in progress... watch the burst!")),
 
               // Level 6: sandbox target selector
 
@@ -4118,7 +4119,7 @@ dataRef.current = d;
 
                 onChange: function (e) { upd('blSandboxTarget', e.target.value); },
 
-                'aria-label': 'Target behavior selector',
+                'aria-label': __alloT('stem.behaviorlab.target_behavior_selector', 'Target behavior selector'),
 
                 className: "transition-all px-3 py-2 rounded-xl text-xs font-bold bg-slate-800 text-indigo-300 border border-indigo-500/30 cursor-pointer hover:shadow-md hover:-translate-y-0.5",
 
@@ -4146,7 +4147,7 @@ dataRef.current = d;
 
             },
 
-              React.createElement("h4", { className: "text-[11px] text-purple-300 font-bold mb-2 uppercase tracking-wider" }, "\uD83D\uDD17 Chain Progress"),
+              React.createElement("h4", { className: "text-[11px] text-purple-300 font-bold mb-2 uppercase tracking-wider" }, __alloT('stem.behaviorlab.chain_progress', "\uD83D\uDD17 Chain Progress")),
 
               React.createElement("div", { className: "flex items-center justify-center gap-2" },
 
@@ -4186,7 +4187,7 @@ dataRef.current = d;
 
                   className: "ml-2 px-3 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-500 to-yellow-500 text-white animate-pulse shadow-lg shadow-amber-500/30"
 
-                }, "🍕 REINFORCE NOW!")
+                }, __alloT('stem.behaviorlab.reinforce_now', "🍕 REINFORCE NOW!"))
 
               ),
 
@@ -4206,7 +4207,7 @@ dataRef.current = d;
 
             },
 
-              React.createElement("h4", { className: "text-[11px] text-cyan-300 font-bold mb-2 uppercase tracking-wider" }, "\u23F1 DRO Timer"),
+              React.createElement("h4", { className: "text-[11px] text-cyan-300 font-bold mb-2 uppercase tracking-wider" }, __alloT('stem.behaviorlab.dro_timer', "\u23F1 DRO Timer")),
 
               // Timer bar
 
@@ -4266,7 +4267,7 @@ dataRef.current = d;
 
             },
 
-              React.createElement("h4", { className: "text-[11px] text-rose-300 font-bold mb-2 uppercase tracking-wider" }, "\uD83D\uDD14 Classical Conditioning"),
+              React.createElement("h4", { className: "text-[11px] text-rose-300 font-bold mb-2 uppercase tracking-wider" }, __alloT('stem.behaviorlab.classical_conditioning', "\uD83D\uDD14 Classical Conditioning")),
 
               // Phase indicator
 
@@ -4306,7 +4307,7 @@ dataRef.current = d;
 
                 React.createElement("div", { className: "flex justify-between mb-1" },
 
-                  React.createElement("span", { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, 'Association Strength'),
+                  React.createElement("span", { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, __alloT('stem.behaviorlab.association_strength', 'Association Strength')),
 
                   React.createElement("span", { style: { fontSize: 11, color: blAssocStrength > 60 ? '#fda4af' : '#94a3b8', fontWeight: 700 } }, blAssocStrength + '%')
 
@@ -4388,7 +4389,7 @@ dataRef.current = d;
 
                 // Ring Bell button
 
-                React.createElement("button", { "aria-label": "Ring Bell",
+                React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.ring_bell', "Ring Bell"),
 
                   onClick: function () {
 
@@ -4528,7 +4529,7 @@ dataRef.current = d;
 
                 // Pair Bell + Food button (only in pairing phase)
 
-                React.createElement("button", { "aria-label": "Pair Bell with Food",
+                React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.pair_bell_with_food', "Pair Bell with Food"),
 
                   onClick: function () {
 
@@ -4628,7 +4629,7 @@ dataRef.current = d;
 
               },
 
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold mb-0.5 uppercase tracking-wider" }, "Last Behavior"),
+                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold mb-0.5 uppercase tracking-wider" }, __alloT('stem.behaviorlab.last_behavior', "Last Behavior")),
 
                 React.createElement("p", { className: "text-sm font-extrabold", style: { color: ACTION_COLORS[blMouseAction] || '#94a3b8' } },
 
@@ -4644,7 +4645,7 @@ dataRef.current = d;
 
               },
 
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold mb-0.5 uppercase tracking-wider" }, "Session Stats"),
+                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold mb-0.5 uppercase tracking-wider" }, __alloT('stem.behaviorlab.session_stats', "Session Stats")),
 
                 React.createElement("p", { className: "text-xs text-amber-300" }, "\uD83C\uDF55 Reinforcements: " + blReinforcements),
 
@@ -4668,7 +4669,7 @@ dataRef.current = d;
 
             },
 
-              React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold mb-2 uppercase tracking-wider" }, "\uD83D\uDCCA Behavior Probability Weights"),
+              React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold mb-2 uppercase tracking-wider" }, __alloT('stem.behaviorlab.behavior_probability_weights', "\uD83D\uDCCA Behavior Probability Weights")),
 
               React.createElement("div", { className: "space-y-1" },
 
@@ -4748,11 +4749,11 @@ dataRef.current = d;
 
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
 
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\uD83D\uDCCB ABC Data Log"),
+                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, __alloT('stem.behaviorlab.abc_data_log', "\uD83D\uDCCB ABC Data Log")),
 
                 // CSV Export button
 
-                React.createElement("button", { "aria-label": "Export ABC Data as CSV",
+                React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.export_abc_data_as_csv', "Export ABC Data as CSV"),
 
                   onClick: function () {
 
@@ -4782,7 +4783,7 @@ dataRef.current = d;
 
                   className: "px-3 py-1 rounded-lg text-[11px] font-bold bg-slate-700 text-slate-100 hover:bg-slate-600 transition-all border border-slate-600/40 active:scale-[0.97]"
 
-                }, "\uD83D\uDCE5 Export CSV")
+                }, __alloT('stem.behaviorlab.export_csv', "\uD83D\uDCE5 Export CSV"))
 
               ),
 
@@ -4814,7 +4815,7 @@ dataRef.current = d;
             React.createElement("div", {
               style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(139,92,246,0.2)' }, glass)
             },
-              React.createElement("h3", { className: "text-[11px] text-slate-200 font-bold mb-2 uppercase tracking-wider" }, "\uD83C\uDFC6 Progress Badges"),
+              React.createElement("h3", { className: "text-[11px] text-slate-200 font-bold mb-2 uppercase tracking-wider" }, __alloT('stem.behaviorlab.progress_badges', "\uD83C\uDFC6 Progress Badges")),
               React.createElement("div", { className: "flex flex-wrap gap-2 justify-center" },
                 LEVELS.filter(function(l) { return l.id <= 9; }).map(function(l) {
                   var badge = LEVEL_BADGES[l.id];
@@ -4828,7 +4829,7 @@ dataRef.current = d;
                   },
                     React.createElement("div", { className: "text-2xl " + (isCurrent ? 'animate-bounce' : '') }, badge.icon),
                     React.createElement("div", { className: "text-[11px] font-bold " + (earned ? 'text-amber-400' : 'text-slate-200') }, 'L' + l.id),
-                    earned ? React.createElement("div", { className: "text-[11px] text-green-400" }, '\u2713 Earned') : React.createElement("div", { className: "text-[11px] text-slate-200" }, '\uD83D\uDD12')
+                    earned ? React.createElement("div", { className: "text-[11px] text-green-400" }, __alloT('stem.behaviorlab.earned', '\u2713 Earned')) : React.createElement("div", { className: "text-[11px] text-slate-200" }, '\uD83D\uDD12')
                   );
                 })
               ),
@@ -4842,13 +4843,13 @@ dataRef.current = d;
               style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(59,130,246,0.2)' }, glass)
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h3", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\uD83D\uDCA1 Four Functions of Behavior (FBA)"),
+                React.createElement("h3", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, __alloT('stem.behaviorlab.four_functions_of_behavior_fba', "\uD83D\uDCA1 Four Functions of Behavior (FBA)")),
                 React.createElement("button", { onClick: function() { upd('blShowFunctions', !d.blShowFunctions); },
                   className: "transition-colors text-[11px] text-blue-400 hover:text-blue-300"
                 }, d.blShowFunctions ? 'Hide' : 'Learn \u2192')
               ),
               d.blShowFunctions && React.createElement("div", null,
-                React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-2" }, "Every behavior serves a function. Understanding WHY a behavior occurs is the key to changing it. These are the 4 functions identified by functional behavior assessment (FBA):"),
+                React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-2" }, __alloT('stem.behaviorlab.every_behavior_serves_a_function_under', "Every behavior serves a function. Understanding WHY a behavior occurs is the key to changing it. These are the 4 functions identified by functional behavior assessment (FBA):")),
                 React.createElement("div", { className: "grid grid-cols-2 gap-2" },
                   FOUR_FUNCTIONS.map(function(ff, ffi) {
                     var isActive = d.blFuncIdx === ffi;
@@ -4902,17 +4903,17 @@ dataRef.current = d;
                   }
                 }, '🏫'),
                 React.createElement("div", null,
-                  React.createElement("div", { style: { fontSize: 13, fontWeight: 800, color: '#5eead4', lineHeight: 1.2 } }, "Continue in: School Behavior Toolkit"),
-                  React.createElement("div", { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 3, fontStyle: 'italic' } }, "Applied K-12 practice — what school psychs and educators DO with the science")
+                  React.createElement("div", { style: { fontSize: 13, fontWeight: 800, color: '#5eead4', lineHeight: 1.2 } }, __alloT('stem.behaviorlab.continue_in_school_behavior_toolkit', "Continue in: School Behavior Toolkit")),
+                  React.createElement("div", { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 3, fontStyle: 'italic' } }, __alloT('stem.behaviorlab.applied_k_12_practice_what_school_psyc', "Applied K-12 practice — what school psychs and educators DO with the science"))
                 )
               ),
               React.createElement("div", { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 10 } },
-                "If you have just learned operant conditioning here in BehaviorLab, the next step is the K-12 practice that uses it. ",
-                React.createElement("b", null, "We deliberately built that content as a separate tool, not here."),
-                " The Skinner-box visual frame should not be adjacent to \"how to handle a kid in crisis\" content — different tonal space, different ethical weight. The Toolkit covers PBIS three-tier framework, replacement behaviors mapped to FBA functions, setting events (slow triggers most BIPs miss), Geoff Colvin's seven-phase Acting-Out Cycle for crisis de-escalation, and Restraint & Seclusion ethics anchored in Maine Chapter 33."),
+                __alloT('stem.behaviorlab.if_you_have_just_learned_operant_condi', "If you have just learned operant conditioning here in BehaviorLab, the next step is the K-12 practice that uses it. "),
+                React.createElement("b", null, __alloT('stem.behaviorlab.we_deliberately_built_that_content_as_', "We deliberately built that content as a separate tool, not here.")),
+                __alloT('stem.behaviorlab.the_skinner_box_visual_frame_should_no', " The Skinner-box visual frame should not be adjacent to \"how to handle a kid in crisis\" content — different tonal space, different ethical weight. The Toolkit covers PBIS three-tier framework, replacement behaviors mapped to FBA functions, setting events (slow triggers most BIPs miss), Geoff Colvin's seven-phase Acting-Out Cycle for crisis de-escalation, and Restraint & Seclusion ethics anchored in Maine Chapter 33.")),
               React.createElement("div", { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.55, fontStyle: 'italic' } },
-                "Open STEM Lab → Behavioral Science → ",
-                React.createElement("b", { style: { color: '#5eead4' } }, '"🏫 School Behavior Toolkit."'))
+                __alloT('stem.behaviorlab.open_stem_lab_behavioral_science', "Open STEM Lab → Behavioral Science → "),
+                React.createElement("b", { style: { color: '#5eead4' } }, __alloT('stem.behaviorlab.school_behavior_toolkit', '"🏫 School Behavior Toolkit."')))
             ),
 
                         // === BEYOND PURE ABA — neurodiversity-affirming + trauma-informed ===
@@ -4924,14 +4925,14 @@ dataRef.current = d;
               style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(167,139,250,0.25)' }, glass)
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "🧭 Beyond Pure ABA — neurodiversity-affirming + trauma-informed"),
+                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, __alloT('stem.behaviorlab.beyond_pure_aba_neurodiversity_affirmi', "🧭 Beyond Pure ABA — neurodiversity-affirming + trauma-informed")),
                 React.createElement("button", { onClick: function() { upd('blShowBeyond', !d.blShowBeyond); },
                   className: "transition-colors text-[11px] text-purple-400 hover:text-purple-300"
                 }, d.blShowBeyond ? 'Hide' : 'View →')
               ),
               d.blShowBeyond && React.createElement("div", null,
                 React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-3", style: { lineHeight: 1.55 } },
-                  "Operant conditioning is a powerful set of tools AND has been used in ways the autistic community has documented as harmful. Good modern practice holds both truths at once. School psychs and BCBAs working in K-12 settings need the critical lens to apply ABA ethically — not just the technical mechanics."),
+                  __alloT('stem.behaviorlab.operant_conditioning_is_a_powerful_set', "Operant conditioning is a powerful set of tools AND has been used in ways the autistic community has documented as harmful. Good modern practice holds both truths at once. School psychs and BCBAs working in K-12 settings need the critical lens to apply ABA ethically — not just the technical mechanics.")),
                 React.createElement("div", { className: "space-y-2" },
                   BEYOND_ABA.map(function(b, bi) {
                     return React.createElement("div", {
@@ -4971,7 +4972,7 @@ dataRef.current = d;
                     color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, lineHeight: 1.6, fontStyle: 'italic'
                   }
                 },
-                  "💡 Identity-first language follows community-consensus norms (Kenny et al. 2016; Bury et al. 2020; Taboas et al. 2023). The Behavior Lab teaches the science of behavior; this panel teaches the ethics of applying it to humans who can tell us what they want.")
+                  __alloT('stem.behaviorlab.identity_first_language_follows_commun', "💡 Identity-first language follows community-consensus norms (Kenny et al. 2016; Bury et al. 2020; Taboas et al. 2023). The Behavior Lab teaches the science of behavior; this panel teaches the ethics of applying it to humans who can tell us what they want."))
               )
             ),
 
@@ -5004,17 +5005,17 @@ dataRef.current = d;
                   }
                 }, '🎙️'),
                 React.createElement("div", null,
-                  React.createElement("div", { style: { fontSize: 13, fontWeight: 800, color: '#f9a8d4', lineHeight: 1.2 } }, "Continue in: Disability Voices (SEL Hub)"),
-                  React.createElement("div", { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 3, fontStyle: 'italic' } }, "Named autistic and disabled advocates, not behavioral subjects")
+                  React.createElement("div", { style: { fontSize: 13, fontWeight: 800, color: '#f9a8d4', lineHeight: 1.2 } }, __alloT('stem.behaviorlab.continue_in_disability_voices_sel_hub', "Continue in: Disability Voices (SEL Hub)")),
+                  React.createElement("div", { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 3, fontStyle: 'italic' } }, __alloT('stem.behaviorlab.named_autistic_and_disabled_advocates_', "Named autistic and disabled advocates, not behavioral subjects"))
                 )
               ),
               React.createElement("div", { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 10 } },
-                "If you have just read the critical-frame panels above, the next step is to hear from the people whose work shaped — and critiqued — applied behavior analysis. ",
-                React.createElement("b", null, "We deliberately built that content in the SEL Hub, not here."),
-                " Putting named real autistic adults inside a tool whose central image is a Skinner box would be exactly what the disability community has documented as harmful. The tool you want includes Ari Ne'eman, Temple Grandin, Damian Milton, Henny Kupferstein, Kassiane Asasumasu, Mel Baggs, Lydia X. Z. Brown, and Patty Berne — with documented quotes, context, and a curated reading list."),
+                __alloT('stem.behaviorlab.if_you_have_just_read_the_critical_fra', "If you have just read the critical-frame panels above, the next step is to hear from the people whose work shaped — and critiqued — applied behavior analysis. "),
+                React.createElement("b", null, __alloT('stem.behaviorlab.we_deliberately_built_that_content_in_', "We deliberately built that content in the SEL Hub, not here.")),
+                __alloT('stem.behaviorlab.putting_named_real_autistic_adults_ins', " Putting named real autistic adults inside a tool whose central image is a Skinner box would be exactly what the disability community has documented as harmful. The tool you want includes Ari Ne'eman, Temple Grandin, Damian Milton, Henny Kupferstein, Kassiane Asasumasu, Mel Baggs, Lydia X. Z. Brown, and Patty Berne — with documented quotes, context, and a curated reading list.")),
               React.createElement("div", { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.55, fontStyle: 'italic' } },
-                "Open SEL Hub → Identity & Care → ",
-                React.createElement("b", { style: { color: '#f9a8d4' } }, '"🎤 Disability Voices."'))
+                __alloT('stem.behaviorlab.open_sel_hub_identity_care', "Open SEL Hub → Identity & Care → "),
+                React.createElement("b", { style: { color: '#f9a8d4' } }, __alloT('stem.behaviorlab.disability_voices', '"🎤 Disability Voices."')))
             ),
 
             // === SCHEDULE COMPARISON CANVAS ===
@@ -5022,13 +5023,13 @@ dataRef.current = d;
               style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(245,158,11,0.2)' }, glass)
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\uD83D\uDCC8 Schedule Comparison"),
+                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, __alloT('stem.behaviorlab.schedule_comparison', "\uD83D\uDCC8 Schedule Comparison")),
                 React.createElement("button", { onClick: function() { upd('blSchedCanvas', !blSchedCanvas); },
                   className: "transition-colors text-[11px] text-amber-400 hover:text-amber-300"
                 }, blSchedCanvas ? 'Hide' : 'Compare Schedules \u2192')
               ),
               blSchedCanvas && React.createElement("div", null,
-                React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-2" }, "Watch how different reinforcement schedules produce distinct response patterns. FR creates post-reinforcement pauses, VR produces high steady rates, FI shows scalloping, VI shows low steady rates."),
+                React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-2" }, __alloT('stem.behaviorlab.watch_how_different_reinforcement_sche', "Watch how different reinforcement schedules produce distinct response patterns. FR creates post-reinforcement pauses, VR produces high steady rates, FI shows scalloping, VI shows low steady rates.")),
                 // Canvas for animated cumulative records
                 React.createElement("canvas", {
                   id: "bl-sched-compare-canvas",
@@ -5124,14 +5125,14 @@ dataRef.current = d;
                 }),
                 // Controls
                 React.createElement("div", { className: "flex gap-2 mt-2 justify-center" },
-                  React.createElement("button", { "aria-label": "Toggle schedule animation",
+                  React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.toggle_schedule_animation', "Toggle schedule animation"),
                     onClick: function() { upd('blSchedPaused', !blSchedPaused); },
                     className: "px-3 py-1 rounded-lg text-[11px] font-bold transition-all " + (blSchedPaused ? 'bg-amber-700 text-white' : 'bg-slate-700 text-slate-100')
                   }, blSchedPaused ? '\u25B6 Play' : '\u23F8 Pause'),
-                  React.createElement("button", { "aria-label": "Reset schedule animation",
+                  React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.reset_schedule_animation', "Reset schedule animation"),
                     onClick: function() { upd('blSchedTick', 0); upd('blSchedPaused', false); },
                     className: "transition-colors px-3 py-1 rounded-lg text-[11px] font-bold bg-slate-700 text-slate-100 hover:bg-slate-600 focus:ring-2 focus:ring-cyan-400 focus:outline-none active:scale-[0.97]"
-                  }, '\u21BB Reset')
+                  }, __alloT('stem.behaviorlab.reset_2', '\u21BB Reset'))
                 ),
                 // Schedule details
                 React.createElement("div", { className: "grid grid-cols-2 gap-2 mt-3" },
@@ -5161,7 +5162,7 @@ dataRef.current = d;
               style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(245,158,11,0.25)' }, glass)
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\uD83D\uDD75\uFE0F Schedule Sleuth \u2014 identify the schedule from its curve"),
+                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, __alloT('stem.behaviorlab.schedule_sleuth_identify_the_schedule_', "\uD83D\uDD75\uFE0F Schedule Sleuth \u2014 identify the schedule from its curve")),
                 React.createElement("button", {
                   onClick: function() { upd('blShowSleuth', !d.blShowSleuth); },
                   className: "transition-colors text-[11px] text-amber-400 hover:text-amber-300"
@@ -5187,12 +5188,12 @@ dataRef.current = d;
                 }
                 if (sleuthIdx < 0) {
                   return React.createElement("div", { className: "text-center py-4" },
-                    React.createElement("p", { className: "text-[11px] text-slate-300 mb-3 italic" }, "You will see one unlabeled cumulative-response curve. Pick which schedule produced it. The curve shape is the only clue."),
+                    React.createElement("p", { className: "text-[11px] text-slate-300 mb-3 italic" }, __alloT('stem.behaviorlab.you_will_see_one_unlabeled_cumulative_', "You will see one unlabeled cumulative-response curve. Pick which schedule produced it. The curve shape is the only clue.")),
                     React.createElement("button", {
                       onClick: startRound,
-                      "aria-label": "Start Schedule Sleuth",
+                      "aria-label": __alloT('stem.behaviorlab.start_schedule_sleuth', "Start Schedule Sleuth"),
                       className: "transition-colors px-4 py-2 rounded-lg bg-amber-600 text-white font-bold text-[11px] hover:bg-amber-500 focus:outline-none focus:ring-2 ring-amber-300 active:scale-[0.97]"
-                    }, "\uD83D\uDD75\uFE0F Start the game")
+                    }, __alloT('stem.behaviorlab.start_the_game', "\uD83D\uDD75\uFE0F Start the game"))
                   );
                 }
                 var sch = SCHEDULE_TYPES[sleuthIdx];
@@ -5258,10 +5259,10 @@ dataRef.current = d;
                   // Score header
                   React.createElement("div", { className: "flex items-center justify-between mb-2 text-[11px] flex-wrap gap-2" },
                     React.createElement("div", { className: "flex gap-3 items-center" },
-                      React.createElement("span", { className: "text-slate-300" }, "Round ", React.createElement("strong", { className: "text-white" }, sleuthRounds + (sleuthAnswered ? '' : '+1'))),
-                      React.createElement("span", { className: "text-slate-300" }, "Streak ", React.createElement("strong", { className: "text-amber-400" }, sleuthStreak)),
-                      React.createElement("span", { className: "text-slate-300" }, "Best ", React.createElement("strong", { className: "text-emerald-400" }, sleuthBestStreak)),
-                      sleuthRounds > 0 && React.createElement("span", { className: "text-slate-300" }, "Accuracy ", React.createElement("strong", { className: "text-cyan-400" }, pct + '%'))
+                      React.createElement("span", { className: "text-slate-300" }, __alloT('stem.behaviorlab.round', "Round "), React.createElement("strong", { className: "text-white" }, sleuthRounds + (sleuthAnswered ? '' : '+1'))),
+                      React.createElement("span", { className: "text-slate-300" }, __alloT('stem.behaviorlab.streak', "Streak "), React.createElement("strong", { className: "text-amber-400" }, sleuthStreak)),
+                      React.createElement("span", { className: "text-slate-300" }, __alloT('stem.behaviorlab.best', "Best "), React.createElement("strong", { className: "text-emerald-400" }, sleuthBestStreak)),
+                      sleuthRounds > 0 && React.createElement("span", { className: "text-slate-300" }, __alloT('stem.behaviorlab.accuracy', "Accuracy "), React.createElement("strong", { className: "text-cyan-400" }, pct + '%'))
                     )
                   ),
                   // ── Primer: how to read a cumulative-response curve ──
@@ -5271,17 +5272,17 @@ dataRef.current = d;
                     open: sleuthRounds === 0,
                     style: { background: 'rgba(15,23,42,0.5)', borderRadius: 10, border: '1px solid rgba(100,116,139,0.3)', marginBottom: 10 }
                   },
-                    React.createElement("summary", { className: "cursor-pointer text-[11px] font-bold px-3 py-2 select-none text-cyan-300 select-none" }, '📜 How to read this curve (click to toggle)'),
+                    React.createElement("summary", { className: "cursor-pointer text-[11px] font-bold px-3 py-2 select-none text-cyan-300 select-none" }, __alloT('stem.behaviorlab.how_to_read_this_curve_click_to_toggle', '📜 How to read this curve (click to toggle)')),
                     React.createElement("div", { className: "px-3 pb-3 space-y-2 text-[11px] text-slate-300" },
                       React.createElement("p", { className: "leading-relaxed" },
-                        React.createElement("strong", null, "Cumulative-response curve"), ': each reinforced response adds one to the y-axis. Flat segments = no responding. Steep segments = rapid responding. Bumps where the curve briefly flattens = post-reinforcement pauses.'
+                        React.createElement("strong", null, __alloT('stem.behaviorlab.cumulative_response_curve', "Cumulative-response curve")), __alloT('stem.behaviorlab.each_reinforced_response_adds_one_to_t', ': each reinforced response adds one to the y-axis. Flat segments = no responding. Steep segments = rapid responding. Bumps where the curve briefly flattens = post-reinforcement pauses.')
                       ),
                       React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-1.5" },
                         [
-                          { abbrev: 'FR', name: 'Fixed Ratio',     pattern: 'High rate with predictable pause after each reinforcer.', color: '#f59e0b' },
-                          { abbrev: 'VR', name: 'Variable Ratio',  pattern: 'High and steady. No pauses. Resistant to extinction.',    color: '#ef4444' },
-                          { abbrev: 'FI', name: 'Fixed Interval',  pattern: 'Scallop shape: slow after reinforcer, fast near the end.', color: '#3b82f6' },
-                          { abbrev: 'VI', name: 'Variable Interval', pattern: 'Low and steady. Predictable but slow.',                color: '#10b981' }
+                          { abbrev: 'FR', name: __alloT('stem.behaviorlab.fixed_ratio_2', 'Fixed Ratio'),     pattern: 'High rate with predictable pause after each reinforcer.', color: '#f59e0b' },
+                          { abbrev: 'VR', name: __alloT('stem.behaviorlab.variable_ratio_2', 'Variable Ratio'),  pattern: 'High and steady. No pauses. Resistant to extinction.',    color: '#ef4444' },
+                          { abbrev: 'FI', name: __alloT('stem.behaviorlab.fixed_interval_2', 'Fixed Interval'),  pattern: 'Scallop shape: slow after reinforcer, fast near the end.', color: '#3b82f6' },
+                          { abbrev: 'VI', name: __alloT('stem.behaviorlab.variable_interval_2', 'Variable Interval'), pattern: 'Low and steady. Predictable but slow.',                color: '#10b981' }
                         ].map(function(s, i) {
                           return React.createElement('div', { key: i, style: { background: 'rgba(30,41,59,0.6)', border: '1px solid ' + s.color + '55', borderRadius: 6, padding: '6px 8px' } },
                             React.createElement('div', { style: { color: s.color, fontWeight: 800, fontSize: 10 } }, s.abbrev + ' · ' + s.name),
@@ -5290,7 +5291,7 @@ dataRef.current = d;
                         })
                       ),
                       React.createElement('p', { className: 'text-[10px] italic text-slate-400 pt-1 border-t border-slate-700' },
-                        'Tip: focus on shape, not absolute height. The curve below is unlabeled until you guess.'
+                        __alloT('stem.behaviorlab.tip_focus_on_shape_not_absolute_height', 'Tip: focus on shape, not absolute height. The curve below is unlabeled until you guess.')
                       )
                     )
                   ),
@@ -5307,8 +5308,8 @@ dataRef.current = d;
                       [25, 50, 75].map(function(g) { return React.createElement('line', { key: 'gy' + g, x1: MARGIN_X, x2: WIDTH - MARGIN_X, y1: g, y2: g, stroke: 'rgba(100,116,139,0.18)', strokeWidth: 0.5 }); }),
                       [80, 160, 240].map(function(g) { return React.createElement('line', { key: 'gx' + g, x1: g, x2: g, y1: MARGIN_Y, y2: HEIGHT - MARGIN_Y, stroke: 'rgba(100,116,139,0.18)', strokeWidth: 0.5 }); }),
                       // Axes labels
-                      React.createElement('text', { x: MARGIN_X, y: 12, fontSize: 8, fill: '#94a3b8', fontFamily: 'monospace' }, 'Cumulative responses'),
-                      React.createElement('text', { x: WIDTH - 36, y: HEIGHT - 1, fontSize: 8, fill: '#94a3b8', fontFamily: 'monospace' }, 'Time \u2192'),
+                      React.createElement('text', { x: MARGIN_X, y: 12, fontSize: 8, fill: '#94a3b8', fontFamily: 'monospace' }, __alloT('stem.behaviorlab.cumulative_responses', 'Cumulative responses')),
+                      React.createElement('text', { x: WIDTH - 36, y: HEIGHT - 1, fontSize: 8, fill: '#94a3b8', fontFamily: 'monospace' }, __alloT('stem.behaviorlab.time', 'Time \u2192')),
                       // The curve \u2014 color reveals only after answered
                       React.createElement('polyline', {
                         points: pointsScaled, fill: 'none',
@@ -5318,7 +5319,7 @@ dataRef.current = d;
                     )
                   ),
                   // Picker buttons
-                  React.createElement("div", { className: "grid grid-cols-2 gap-2 mt-3", role: 'radiogroup', 'aria-label': 'Pick the schedule' },
+                  React.createElement("div", { className: "grid grid-cols-2 gap-2 mt-3", role: 'radiogroup', 'aria-label': __alloT('stem.behaviorlab.pick_the_schedule', 'Pick the schedule') },
                     SCHEDULE_TYPES.map(function(opt, oi) {
                       var isPicked = sleuthAnswered && sleuthPick === oi;
                       var isCorrect = sleuthAnswered && oi === sleuthIdx;
@@ -5362,9 +5363,9 @@ dataRef.current = d;
                     ),
                     React.createElement("button", {
                       onClick: startRound,
-                      "aria-label": "Next round",
+                      "aria-label": __alloT('stem.behaviorlab.next_round', "Next round"),
                       className: "transition-colors px-4 py-1.5 rounded-lg bg-amber-600 text-white font-bold text-[11px] hover:bg-amber-500 focus:outline-none focus:ring-2 ring-amber-300 active:scale-[0.97]"
-                    }, "\u27A1\uFE0F Next round")
+                    }, __alloT('stem.behaviorlab.next_round_2', "\u27A1\uFE0F Next round"))
                   )
                 );
               })()
@@ -5380,7 +5381,7 @@ dataRef.current = d;
               style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(59,130,246,0.25)' }, glass)
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "🔍 Function Sleuth — what is the behavior getting?"),
+                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, __alloT('stem.behaviorlab.function_sleuth_what_is_the_behavior_g', "🔍 Function Sleuth — what is the behavior getting?")),
                 React.createElement("button", {
                   onClick: function() { upd('blShowFnSleuth', !d.blShowFnSleuth); },
                   className: "transition-colors text-[11px] text-blue-400 hover:text-blue-300"
@@ -5414,10 +5415,10 @@ dataRef.current = d;
                     why: 'Behavior precedes the aversive demand and is specific to it. She is not avoiding gym in general — just the run. The selective onset + selective relief is the giveaway. Reinforcer = removal of the running demand.' }
                 ];
                 var FN_OPTIONS = [
-                  { id: 'Attention', label: 'Attention',         color: '#3b82f6', icon: '👀' },
-                  { id: 'Escape',    label: 'Escape / Avoidance', color: '#ef4444', icon: '🏃' },
-                  { id: 'Tangible',  label: 'Tangible',          color: '#f59e0b', icon: '🎮' },
-                  { id: 'Sensory',   label: 'Sensory / Automatic', color: '#8b5cf6', icon: '✨' }
+                  { id: 'Attention', label: __alloT('stem.behaviorlab.attention_2', 'Attention'),         color: '#3b82f6', icon: '👀' },
+                  { id: 'Escape',    label: __alloT('stem.behaviorlab.escape_avoidance', 'Escape / Avoidance'), color: '#ef4444', icon: '🏃' },
+                  { id: 'Tangible',  label: __alloT('stem.behaviorlab.tangible_2', 'Tangible'),          color: '#f59e0b', icon: '🎮' },
+                  { id: 'Sensory',   label: __alloT('stem.behaviorlab.sensory_automatic', 'Sensory / Automatic'), color: '#8b5cf6', icon: '✨' }
                 ];
                 var fnIdx = d.blFnIdx == null ? -1 : d.blFnIdx;
                 var fnSeed = d.blFnSeed || 1;
@@ -5457,7 +5458,7 @@ dataRef.current = d;
                 }
                 if (fnIdx < 0) {
                   return React.createElement("div", { className: "py-3" },
-                    React.createElement("p", { className: "text-[11px] text-slate-300 italic mb-3 leading-relaxed text-center" }, "12 vignettes. For each, pick the function the behavior is most likely serving. Coaching after each pick names what makes this function more likely than the other three."),
+                    React.createElement("p", { className: "text-[11px] text-slate-300 italic mb-3 leading-relaxed text-center" }, __alloT('stem.behaviorlab.12_vignettes_for_each_pick_the_functio', "12 vignettes. For each, pick the function the behavior is most likely serving. Coaching after each pick names what makes this function more likely than the other three.")),
                     // ── Four-functions primer ──
                     // FBA categorizes behavior reinforcement into 4
                     // canonical functions. Students new to ABA / behavior
@@ -5466,10 +5467,10 @@ dataRef.current = d;
                     // without this scaffolding.
                     React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-1.5 mb-3" },
                       [
-                        { id: 'Attention', icon: '👀', color: '#3b82f6', name: 'Attention', def: 'Behavior produces interaction (positive OR corrective) from someone.' },
-                        { id: 'Escape',    icon: '🏃', color: '#ef4444', name: 'Escape',    def: 'Behavior postpones, reduces, or removes a demand the kid wants to avoid.' },
-                        { id: 'Tangible',  icon: '🎮', color: '#f59e0b', name: 'Tangible',  def: 'Behavior produces access to a specific item or activity.' },
-                        { id: 'Sensory',   icon: '✨', color: '#8b5cf6', name: 'Sensory',   def: 'Behavior produces stimulation that is itself the reinforcer. No social or material payoff needed.' }
+                        { id: 'Attention', icon: '👀', color: '#3b82f6', name: __alloT('stem.behaviorlab.attention_3', 'Attention'), def: 'Behavior produces interaction (positive OR corrective) from someone.' },
+                        { id: 'Escape',    icon: '🏃', color: '#ef4444', name: __alloT('stem.behaviorlab.escape', 'Escape'),    def: 'Behavior postpones, reduces, or removes a demand the kid wants to avoid.' },
+                        { id: 'Tangible',  icon: '🎮', color: '#f59e0b', name: __alloT('stem.behaviorlab.tangible_3', 'Tangible'),  def: 'Behavior produces access to a specific item or activity.' },
+                        { id: 'Sensory',   icon: '✨', color: '#8b5cf6', name: __alloT('stem.behaviorlab.sensory', 'Sensory'),   def: 'Behavior produces stimulation that is itself the reinforcer. No social or material payoff needed.' }
                       ].map(function(f, i) {
                         return React.createElement('div', { key: i, style: { background: 'rgba(30,41,59,0.6)', border: '1px solid ' + f.color + '55', borderRadius: 6, padding: '6px 8px' } },
                           React.createElement('div', { style: { color: f.color, fontWeight: 800, fontSize: 11 } }, f.icon + ' ' + f.name),
@@ -5478,14 +5479,14 @@ dataRef.current = d;
                       })
                     ),
                     React.createElement('p', { className: 'text-[10px] italic text-slate-400 mb-3 text-center' },
-                      'A behavior can have more than one function in reality. For these vignettes, pick the most-likely primary function based on the contingency described.'
+                      __alloT('stem.behaviorlab.a_behavior_can_have_more_than_one_func', 'A behavior can have more than one function in reality. For these vignettes, pick the most-likely primary function based on the contingency described.')
                     ),
                     React.createElement("div", { className: "text-center" },
                       React.createElement("button", {
                         onClick: startFn,
-                        "aria-label": "Start Function Sleuth",
+                        "aria-label": __alloT('stem.behaviorlab.start_function_sleuth', "Start Function Sleuth"),
                         className: "transition-colors px-4 py-2 rounded-lg bg-blue-600 text-white font-bold text-[11px] hover:bg-blue-500 focus:outline-none focus:ring-2 ring-blue-300 active:scale-[0.97]"
-                      }, "🔍 Start the game")
+                      }, __alloT('stem.behaviorlab.start_the_game_2', "🔍 Start the game"))
                     )
                   );
                 }
@@ -5495,16 +5496,16 @@ dataRef.current = d;
                 var allDone = fnShown.length >= FN_VIGNETTES.length && fnAnswered;
                 return React.createElement("div", null,
                   React.createElement("div", { className: "flex items-center flex-wrap gap-3 mb-2 text-[11px]" },
-                    React.createElement("span", { className: "text-slate-300" }, "Round ", React.createElement("strong", { className: "text-white" }, fnShown.length)),
-                    React.createElement("span", { className: "text-slate-300" }, "Streak ", React.createElement("strong", { className: "text-amber-400" }, fnStreak)),
-                    React.createElement("span", { className: "text-slate-300" }, "Best ", React.createElement("strong", { className: "text-emerald-400" }, fnBest)),
-                    fnRounds > 0 && React.createElement("span", { className: "text-slate-300" }, "Accuracy ", React.createElement("strong", { className: "text-cyan-400" }, pct + '%'))
+                    React.createElement("span", { className: "text-slate-300" }, __alloT('stem.behaviorlab.round_2', "Round "), React.createElement("strong", { className: "text-white" }, fnShown.length)),
+                    React.createElement("span", { className: "text-slate-300" }, __alloT('stem.behaviorlab.streak_2', "Streak "), React.createElement("strong", { className: "text-amber-400" }, fnStreak)),
+                    React.createElement("span", { className: "text-slate-300" }, __alloT('stem.behaviorlab.best_2', "Best "), React.createElement("strong", { className: "text-emerald-400" }, fnBest)),
+                    fnRounds > 0 && React.createElement("span", { className: "text-slate-300" }, __alloT('stem.behaviorlab.accuracy_2', "Accuracy "), React.createElement("strong", { className: "text-cyan-400" }, pct + '%'))
                   ),
                   React.createElement("div", { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: '12px 14px', border: '1px solid rgba(100,116,139,0.3)', marginBottom: 10 } },
                     React.createElement("div", { className: "text-[10px] font-bold text-blue-300 uppercase tracking-widest mb-1" }, 'Vignette ' + fnShown.length + ' of ' + FN_VIGNETTES.length),
                     React.createElement("p", { className: "text-[12px] text-slate-100 leading-relaxed", style: { margin: 0 } }, v.scenario)
                   ),
-                  React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2", role: 'radiogroup', 'aria-label': 'Pick the function' },
+                  React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2", role: 'radiogroup', 'aria-label': __alloT('stem.behaviorlab.pick_the_function', 'Pick the function') },
                     FN_OPTIONS.map(function(opt) {
                       var picked = fnAnswered && fnPick === opt.id;
                       var isRight = fnAnswered && opt.id === v.correct;
@@ -5544,7 +5545,7 @@ dataRef.current = d;
                     React.createElement("p", { className: "text-[11px] text-slate-200 leading-relaxed", style: { margin: '0 0 8px' } }, v.why),
                     allDone
                       ? React.createElement("div", { style: { padding: '8px 10px', borderRadius: 8, background: 'rgba(59,130,246,0.10)', border: '1px solid rgba(59,130,246,0.45)' } },
-                          React.createElement("div", { className: "text-[12px] font-bold text-blue-300 mb-1" }, '🏆 All 12 vignettes complete'),
+                          React.createElement("div", { className: "text-[12px] font-bold text-blue-300 mb-1" }, __alloT('stem.behaviorlab.all_12_vignettes_complete', '🏆 All 12 vignettes complete')),
                           React.createElement("div", { className: "text-[11px] text-slate-100 leading-relaxed" },
                             'Final: ', React.createElement('strong', null, fnScore + ' / ' + FN_VIGNETTES.length + ' (' + Math.round((fnScore / FN_VIGNETTES.length) * 100) + '%)'),
                             fnScore === FN_VIGNETTES.length ? ' — every function correctly identified. Ready for real FBA case work.' :
@@ -5555,12 +5556,12 @@ dataRef.current = d;
                           React.createElement("button", {
                             onClick: function() { upd('blFnIdx', -1); upd('blFnShown', []); upd('blFnScore', 0); upd('blFnRounds', 0); upd('blFnStreak', 0); },
                             className: "transition-colors mt-2 px-3 py-1.5 rounded-lg bg-blue-600 text-white font-bold text-[11px] hover:bg-blue-500 active:scale-[0.97]"
-                          }, '🔄 Restart')
+                          }, __alloT('stem.behaviorlab.restart', '🔄 Restart'))
                         )
                       : React.createElement("button", {
                           onClick: startFn,
                           className: "transition-colors px-4 py-1.5 rounded-lg bg-blue-600 text-white font-bold text-[11px] hover:bg-blue-500 focus:outline-none focus:ring-2 ring-blue-300 active:scale-[0.97]"
-                        }, '➡️ Next vignette')
+                        }, __alloT('stem.behaviorlab.next_vignette', '➡️ Next vignette'))
                   )
                 );
               })()
@@ -5570,17 +5571,17 @@ dataRef.current = d;
             React.createElement("div", {
               style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(139,92,246,0.2)' }, glass)
             },
-              React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold mb-2 uppercase tracking-wider" }, "\u2696\uFE0F Reinforcement \u0026 Punishment Matrix"),
-              React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-2" }, "The 4 quadrants of operant conditioning. Click each cell to learn more:"),
+              React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold mb-2 uppercase tracking-wider" }, __alloT('stem.behaviorlab.reinforcement_punishment_matrix', "\u2696\uFE0F Reinforcement \u0026 Punishment Matrix")),
+              React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-2" }, __alloT('stem.behaviorlab.the_4_quadrants_of_operant_conditionin', "The 4 quadrants of operant conditioning. Click each cell to learn more:")),
               // Column headers
               React.createElement("div", { className: "grid grid-cols-3 gap-1 mb-1" },
                 React.createElement("div", null),
-                React.createElement("div", { className: "text-center text-[11px] font-bold text-emerald-400 uppercase" }, "\u2795 Add Stimulus"),
-                React.createElement("div", { className: "text-center text-[11px] font-bold text-blue-400 uppercase" }, "\u2796 Remove Stimulus")
+                React.createElement("div", { className: "text-center text-[11px] font-bold text-emerald-400 uppercase" }, __alloT('stem.behaviorlab.add_stimulus', "\u2795 Add Stimulus")),
+                React.createElement("div", { className: "text-center text-[11px] font-bold text-blue-400 uppercase" }, __alloT('stem.behaviorlab.remove_stimulus', "\u2796 Remove Stimulus"))
               ),
               // Row 1: Reinforcement
               React.createElement("div", { className: "grid grid-cols-3 gap-1 mb-1" },
-                React.createElement("div", { className: "flex items-center text-[11px] font-bold text-green-400 uppercase pr-1" }, "\u2B06 Increase Behavior"),
+                React.createElement("div", { className: "flex items-center text-[11px] font-bold text-green-400 uppercase pr-1" }, __alloT('stem.behaviorlab.increase_behavior', "\u2B06 Increase Behavior")),
                 REINFORCE_MATRIX.filter(function(m) { return m.row === 0; }).map(function(m, mi) {
                   var isActive = blMatrixIdx === m.id;
                   return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: m.id,
@@ -5596,7 +5597,7 @@ dataRef.current = d;
               ),
               // Row 2: Punishment
               React.createElement("div", { className: "grid grid-cols-3 gap-1" },
-                React.createElement("div", { className: "flex items-center text-[11px] font-bold text-red-400 uppercase pr-1" }, "\u2B07 Decrease Behavior"),
+                React.createElement("div", { className: "flex items-center text-[11px] font-bold text-red-400 uppercase pr-1" }, __alloT('stem.behaviorlab.decrease_behavior', "\u2B07 Decrease Behavior")),
                 REINFORCE_MATRIX.filter(function(m) { return m.row === 1; }).map(function(m, mi) {
                   var isActive = blMatrixIdx === m.id;
                   return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: m.id,
@@ -5622,11 +5623,11 @@ dataRef.current = d;
                   React.createElement("div", { className: "text-[11px] text-slate-100 mb-1" }, sel.formal),
                   React.createElement("div", { className: "text-[11px] text-slate-200 mb-2" },
                     React.createElement("span", { className: "font-bold text-emerald-400" }, sel.action),
-                    ' a stimulus to ',
+                    __alloT('stem.behaviorlab.a_stimulus_to', ' a stimulus to '),
                     React.createElement("span", { className: "font-bold text-blue-400" }, sel.effect),
                     ' behavior'
                   ),
-                  React.createElement("div", { className: "text-[11px] text-amber-400 font-medium mb-1" }, '\uD83D\uDCA1 Real-world examples:'),
+                  React.createElement("div", { className: "text-[11px] text-amber-400 font-medium mb-1" }, __alloT('stem.behaviorlab.real_world_examples', '\uD83D\uDCA1 Real-world examples:')),
                   React.createElement("ul", { className: "space-y-0.5 ml-2" },
                     sel.examples.map(function(ex, exi) {
                       return React.createElement("li", { key: exi, className: "text-[11px] text-slate-200 list-disc" }, ex);
@@ -5640,20 +5641,20 @@ dataRef.current = d;
             React.createElement("div", {
               style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(16,185,129,0.2)' }, glass)
             },
-              React.createElement("p", { className: "text-[11px] text-slate-200 font-bold mb-1 uppercase tracking-wider" }, "\uD83C\uDFAE Token Economy Builder"),
-              React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-2" }, "Design a classroom token economy! Award tokens for positive behaviors, then let students exchange them for rewards. This is a real ABA strategy used in schools worldwide."),
+              React.createElement("p", { className: "text-[11px] text-slate-200 font-bold mb-1 uppercase tracking-wider" }, __alloT('stem.behaviorlab.token_economy_builder', "\uD83C\uDFAE Token Economy Builder")),
+              React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-2" }, __alloT('stem.behaviorlab.design_a_classroom_token_economy_award', "Design a classroom token economy! Award tokens for positive behaviors, then let students exchange them for rewards. This is a real ABA strategy used in schools worldwide.")),
               // Token balance
               React.createElement("div", { className: "flex items-center justify-center gap-3 mb-3 py-2 bg-gradient-to-r from-amber-900/30 to-emerald-900/30 rounded-xl border border-amber-700/30" },
                 React.createElement("div", { className: "text-2xl" }, '\uD83E\uDE99'),
                 React.createElement("div", { className: "text-center" },
-                  React.createElement("div", { className: "text-[11px] text-slate-200 uppercase tracking-wider" }, 'Token Balance'),
+                  React.createElement("div", { className: "text-[11px] text-slate-200 uppercase tracking-wider" }, __alloT('stem.behaviorlab.token_balance', 'Token Balance')),
                   React.createElement("div", { className: "text-2xl font-black text-amber-400 tracking-tight" }, blTokenBalance)
                 ),
                 React.createElement("div", { className: "text-2xl" }, '\uD83E\uDE99')
               ),
               // Earn tokens
               React.createElement("div", { className: "mb-3" },
-                React.createElement("div", { className: "text-[11px] font-bold text-emerald-400 uppercase tracking-wider mb-1" }, '\u2B06 Earn Tokens'),
+                React.createElement("div", { className: "text-[11px] font-bold text-emerald-400 uppercase tracking-wider mb-1" }, __alloT('stem.behaviorlab.earn_tokens', '\u2B06 Earn Tokens')),
                 React.createElement("div", { className: "grid grid-cols-2 gap-1" },
                   TOKEN_ITEMS.map(function(item) {
                     return React.createElement("button", { key: item.id,
@@ -5678,7 +5679,7 @@ dataRef.current = d;
               ),
               // Spend tokens
               React.createElement("div", { className: "mb-2" },
-                React.createElement("div", { className: "text-[11px] font-bold text-amber-400 uppercase tracking-wider mb-1" }, '\uD83C\uDF81 Spend Tokens'),
+                React.createElement("div", { className: "text-[11px] font-bold text-amber-400 uppercase tracking-wider mb-1" }, __alloT('stem.behaviorlab.spend_tokens', '\uD83C\uDF81 Spend Tokens')),
                 React.createElement("div", { className: "grid grid-cols-2 gap-1" },
                   TOKEN_REWARDS.map(function(rew) {
                     var canAfford = blTokenBalance >= rew.cost;
@@ -5709,7 +5710,7 @@ dataRef.current = d;
               ),
               // Transaction log
               blTokenLog.length > 0 && React.createElement("div", { className: "mt-2" },
-                React.createElement("div", { className: "text-[11px] text-slate-200 uppercase tracking-wider mb-0.5" }, 'Recent Activity'),
+                React.createElement("div", { className: "text-[11px] text-slate-200 uppercase tracking-wider mb-0.5" }, __alloT('stem.behaviorlab.recent_activity', 'Recent Activity')),
                 React.createElement("div", { className: "max-h-24 overflow-y-auto space-y-0.5" },
                   blTokenLog.slice(0, 8).map(function(entry, ei) {
                     return React.createElement("div", { key: ei, className: "flex items-center justify-between text-[11px] px-1.5 py-0.5 rounded " + (entry.type === 'earn' ? 'bg-emerald-900/10' : 'bg-amber-900/10') },
@@ -5728,8 +5729,8 @@ dataRef.current = d;
               style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(139,92,246,0.2)' }, glass)
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\uD83D\uDD2C Operant vs Classical Conditioning"),
-                React.createElement("button", { "aria-label": "Aspect",
+                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, __alloT('stem.behaviorlab.operant_vs_classical_conditioning', "\uD83D\uDD2C Operant vs Classical Conditioning")),
+                React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.aspect', "Aspect"),
                   onClick: function() { upd('blShowCondCompare', !blShowCondCompare); },
                   className: "transition-colors text-[11px] text-violet-400 hover:text-violet-300"
                 }, blShowCondCompare ? 'Hide' : 'Compare \u2192')
@@ -5738,9 +5739,9 @@ dataRef.current = d;
                 React.createElement("div", { className: "rounded-xl overflow-hidden border border-slate-700/30" },
                   // Header row
                   React.createElement("div", { className: "grid grid-cols-3 bg-slate-800/60" },
-                    React.createElement("div", { className: "p-1.5 text-[11px] font-bold text-slate-200 uppercase" }, 'Aspect'),
-                    React.createElement("div", { className: "p-1.5 text-[11px] font-bold text-amber-400 uppercase text-center border-l border-slate-700/30" }, '\uD83D\uDC2D Operant'),
-                    React.createElement("div", { className: "p-1.5 text-[11px] font-bold text-violet-400 uppercase text-center border-l border-slate-700/30" }, '\uD83D\uDC36 Classical')
+                    React.createElement("div", { className: "p-1.5 text-[11px] font-bold text-slate-200 uppercase" }, __alloT('stem.behaviorlab.aspect_2', 'Aspect')),
+                    React.createElement("div", { className: "p-1.5 text-[11px] font-bold text-amber-400 uppercase text-center border-l border-slate-700/30" }, __alloT('stem.behaviorlab.operant', '\uD83D\uDC2D Operant')),
+                    React.createElement("div", { className: "p-1.5 text-[11px] font-bold text-violet-400 uppercase text-center border-l border-slate-700/30" }, __alloT('stem.behaviorlab.classical', '\uD83D\uDC36 Classical'))
                   ),
                   // Data rows
                   CONDITIONING_COMPARE.map(function(row, ri) {
@@ -5759,13 +5760,13 @@ dataRef.current = d;
               style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(239,68,68,0.2)' }, glass)
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\uD83D\uDCCB Behavior Intervention Plan (BIP) Builder"),
+                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, __alloT('stem.behaviorlab.behavior_intervention_plan_bip_builder', "\uD83D\uDCCB Behavior Intervention Plan (BIP) Builder")),
                 React.createElement("button", { onClick: function() { upd('blShowBipPlanner', !blShowBipPlanner); },
                   className: "transition-colors text-[11px] text-red-400 hover:text-red-300"
                 }, blShowBipPlanner ? 'Hide' : 'Build a BIP \u2192')
               ),
               blShowBipPlanner && React.createElement("div", null,
-                React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-3" }, "Walk through the steps of creating a real Behavior Intervention Plan \u2014 the document ABA professionals use to address challenging behavior."),
+                React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-3" }, __alloT('stem.behaviorlab.walk_through_the_steps_of_creating_a_r', "Walk through the steps of creating a real Behavior Intervention Plan \u2014 the document ABA professionals use to address challenging behavior.")),
                 // Step indicators
                 React.createElement("div", { className: "flex gap-1 justify-center mb-3" },
                   ['Target', 'Antecedent', 'Function', 'Replace', 'Strategy', 'Summary'].map(function(step, si) {
@@ -5786,11 +5787,11 @@ dataRef.current = d;
                 // Step content
                 (function() {
                   var steps = [
-                    { title: 'Step 1: Identify Target Behavior', prompt: 'Describe the behavior you want to change. Be specific and observable!', field: 'behavior', placeholder: 'e.g., Student calls out answers without raising hand (3-5 times per class)' },
-                    { title: 'Step 2: Identify Antecedents', prompt: 'What happens RIGHT BEFORE the behavior? What triggers it?', field: 'antecedent', placeholder: 'e.g., Teacher asks a question to the whole class' },
-                    { title: 'Step 3: Hypothesize Function', prompt: 'WHY does the student engage in this behavior? (Attention, Escape, Tangible, Sensory)', field: 'func', placeholder: 'e.g., Attention \u2014 student wants teacher and peer attention' },
-                    { title: 'Step 4: Replacement Behavior', prompt: 'What appropriate behavior should REPLACE the problem behavior? Must serve the SAME function!', field: 'replacement', placeholder: 'e.g., Raise hand and wait to be called on (still gets attention but appropriately)' },
-                    { title: 'Step 5: Intervention Strategy', prompt: 'How will you teach and reinforce the replacement behavior?', field: 'strategy', placeholder: 'e.g., Teach hand-raising, reinforce with praise + 2 tokens; ignore call-outs (extinction)' }
+                    { title: __alloT('stem.behaviorlab.step_1_identify_target_behavior', 'Step 1: Identify Target Behavior'), prompt: __alloT('stem.behaviorlab.describe_the_behavior_you_want_to_chan', 'Describe the behavior you want to change. Be specific and observable!'), field: 'behavior', placeholder: __alloT('stem.behaviorlab.e_g_student_calls_out_answers_without_', 'e.g., Student calls out answers without raising hand (3-5 times per class)') },
+                    { title: __alloT('stem.behaviorlab.step_2_identify_antecedents', 'Step 2: Identify Antecedents'), prompt: __alloT('stem.behaviorlab.what_happens_right_before_the_behavior', 'What happens RIGHT BEFORE the behavior? What triggers it?'), field: 'antecedent', placeholder: __alloT('stem.behaviorlab.e_g_teacher_asks_a_question_to_the_who', 'e.g., Teacher asks a question to the whole class') },
+                    { title: __alloT('stem.behaviorlab.step_3_hypothesize_function', 'Step 3: Hypothesize Function'), prompt: __alloT('stem.behaviorlab.why_does_the_student_engage_in_this_be', 'WHY does the student engage in this behavior? (Attention, Escape, Tangible, Sensory)'), field: 'func', placeholder: __alloT('stem.behaviorlab.e_g_attention_student_wants_teacher_an', 'e.g., Attention \u2014 student wants teacher and peer attention') },
+                    { title: __alloT('stem.behaviorlab.step_4_replacement_behavior', 'Step 4: Replacement Behavior'), prompt: __alloT('stem.behaviorlab.what_appropriate_behavior_should_repla', 'What appropriate behavior should REPLACE the problem behavior? Must serve the SAME function!'), field: 'replacement', placeholder: __alloT('stem.behaviorlab.e_g_raise_hand_and_wait_to_be_called_o', 'e.g., Raise hand and wait to be called on (still gets attention but appropriately)') },
+                    { title: __alloT('stem.behaviorlab.step_5_intervention_strategy', 'Step 5: Intervention Strategy'), prompt: __alloT('stem.behaviorlab.how_will_you_teach_and_reinforce_the_r', 'How will you teach and reinforce the replacement behavior?'), field: 'strategy', placeholder: __alloT('stem.behaviorlab.e_g_teach_hand_raising_reinforce_with_', 'e.g., Teach hand-raising, reinforce with praise + 2 tokens; ignore call-outs (extinction)') }
                   ];
                   if (blBipStep < 5) {
                     var s = steps[blBipStep];
@@ -5813,11 +5814,11 @@ dataRef.current = d;
                         className: "w-full bg-slate-800 border border-slate-600 rounded-lg p-2 text-[11px] text-slate-200 placeholder-slate-400 focus:border-red-500 focus:ring-2 focus:ring-red-500/50 focus:outline-none resize-none"
                       }),
                       React.createElement("div", { className: "flex gap-2 justify-end" },
-                        blBipStep > 0 && React.createElement("button", { "aria-label": "Back",
+                        blBipStep > 0 && React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.back', "Back"),
                           onClick: function() { upd('blBipStep', blBipStep - 1); },
                           className: "transition-colors px-3 py-1 rounded-lg text-[11px] font-bold bg-slate-700 text-slate-100 hover:bg-slate-600 focus:ring-2 focus:ring-cyan-400 focus:outline-none active:scale-[0.97]"
-                        }, '\u2190 Back'),
-                        React.createElement("button", { "aria-label": "Next",
+                        }, __alloT('stem.behaviorlab.back_2', '\u2190 Back')),
+                        React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.next', "Next"),
                           onClick: function() {
                             if (!blBipData[s.field]) {
                               if (addToast) addToast('\u270F\uFE0F Fill in this step first!', 'info');
@@ -5829,20 +5830,20 @@ dataRef.current = d;
                             if (addToast) addToast('\u2705 Step ' + (blBipStep + 1) + ' complete!', 'success');
                           },
                           className: "px-3 py-1 rounded-lg text-[11px] font-bold bg-red-600 text-white hover:bg-red-500 focus:ring-2 focus:ring-red-400 focus:outline-none transition-all active:scale-[0.97]"
-                        }, 'Next \u2192')
+                        }, __alloT('stem.behaviorlab.next_2', 'Next \u2192'))
                       )
                     );
                   } else {
                     // Summary view
                     return React.createElement("div", { className: "space-y-2" },
-                      React.createElement("div", { className: "text-[11px] font-bold text-emerald-300" }, '\u2705 Your Behavior Intervention Plan'),
+                      React.createElement("div", { className: "text-[11px] font-bold text-emerald-300" }, __alloT('stem.behaviorlab.your_behavior_intervention_plan', '\u2705 Your Behavior Intervention Plan')),
                       React.createElement("div", { className: "rounded-xl bg-slate-800/60 p-3 space-y-2 border border-emerald-700/30" },
                         [
-                          { label: 'Target Behavior', value: blBipData.behavior, color: 'text-red-300' },
-                          { label: 'Antecedent', value: blBipData.antecedent, color: 'text-blue-300' },
-                          { label: 'Hypothesized Function', value: blBipData.func, color: 'text-amber-300' },
-                          { label: 'Replacement Behavior', value: blBipData.replacement, color: 'text-emerald-300' },
-                          { label: 'Intervention Strategy', value: blBipData.strategy, color: 'text-violet-300' }
+                          { label: __alloT('stem.behaviorlab.target_behavior', 'Target Behavior'), value: blBipData.behavior, color: 'text-red-300' },
+                          { label: __alloT('stem.behaviorlab.antecedent', 'Antecedent'), value: blBipData.antecedent, color: 'text-blue-300' },
+                          { label: __alloT('stem.behaviorlab.hypothesized_function', 'Hypothesized Function'), value: blBipData.func, color: 'text-amber-300' },
+                          { label: __alloT('stem.behaviorlab.replacement_behavior', 'Replacement Behavior'), value: blBipData.replacement, color: 'text-emerald-300' },
+                          { label: __alloT('stem.behaviorlab.intervention_strategy', 'Intervention Strategy'), value: blBipData.strategy, color: 'text-violet-300' }
                         ].map(function(item, ii) {
                           return React.createElement("div", { key: ii },
                             React.createElement("div", { className: "text-[11px] font-bold uppercase tracking-wider " + item.color }, item.label),
@@ -5851,14 +5852,14 @@ dataRef.current = d;
                         })
                       ),
                       React.createElement("div", { className: "flex gap-2 justify-center" },
-                        React.createElement("button", { "aria-label": "Edit",
+                        React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.edit', "Edit"),
                           onClick: function() { upd('blBipStep', 0); },
                           className: "transition-colors px-3 py-1 rounded-lg text-[11px] font-bold bg-slate-700 text-slate-100 hover:bg-slate-600 focus:ring-2 focus:ring-cyan-400 focus:outline-none active:scale-[0.97]"
-                        }, '\u270F\uFE0F Edit'),
-                        React.createElement("button", { "aria-label": "New Plan",
+                        }, __alloT('stem.behaviorlab.edit_2', '\u270F\uFE0F Edit')),
+                        React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.new_plan', "New Plan"),
                           onClick: function() { upd('blBipStep', 0); upd('blBipData', { behavior: '', antecedent: '', consequence: '', func: '', replacement: '', strategy: '' }); },
                           className: "transition-colors px-3 py-1 rounded-lg text-[11px] font-bold bg-red-700 text-white hover:bg-red-600 active:scale-[0.97]"
-                        }, '\uD83D\uDD04 New Plan')
+                        }, __alloT('stem.behaviorlab.new_plan_2', '\uD83D\uDD04 New Plan'))
                       )
                     );
                   }
@@ -5936,10 +5937,10 @@ dataRef.current = d;
                       sc.explain
                     ),
                     React.createElement("div", { className: "rounded-xl p-2.5 text-[11px] bg-blue-900/20 border border-blue-700/30 text-blue-300" },
-                      React.createElement("span", { className: "font-bold" }, '\uD83D\uDCA1 Better approach: '),
+                      React.createElement("span", { className: "font-bold" }, __alloT('stem.behaviorlab.better_approach', '\uD83D\uDCA1 Better approach: ')),
                       sc.better
                     ),
-                    React.createElement("button", { "aria-label": "Next Scenario (",
+                    React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.next_scenario', "Next Scenario ("),
                       onClick: function() {
                         var nextIdx = (blScenarioIdx + 1) % SCENARIO_CHALLENGES.length;
                         upd('blScenarioIdx', nextIdx);
@@ -5957,7 +5958,7 @@ dataRef.current = d;
               style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(59,130,246,0.2)' }, glass)
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\uD83D\uDCC5 ABA History Timeline"),
+                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, __alloT('stem.behaviorlab.aba_history_timeline', "\uD83D\uDCC5 ABA History Timeline")),
                 React.createElement("button", { onClick: function() { upd('blShowTimeline', !blShowTimeline); },
                   className: "transition-colors text-[11px] text-blue-400 hover:text-blue-300"
                 }, blShowTimeline ? 'Hide' : 'Explore \u2192')
@@ -5989,7 +5990,7 @@ dataRef.current = d;
                 ),
                 // Era legend
                 React.createElement("div", { className: "flex gap-3 mt-2 justify-center" },
-                  [{ name: 'Foundations', color: 'bg-blue-500' }, { name: 'Growth', color: 'bg-amber-500' }, { name: 'Applied', color: 'bg-emerald-500' }, { name: 'Modern', color: 'bg-violet-500' }].map(function(era) {
+                  [{ name: __alloT('stem.behaviorlab.foundations', 'Foundations'), color: 'bg-blue-500' }, { name: __alloT('stem.behaviorlab.growth', 'Growth'), color: 'bg-amber-500' }, { name: __alloT('stem.behaviorlab.applied', 'Applied'), color: 'bg-emerald-500' }, { name: __alloT('stem.behaviorlab.modern', 'Modern'), color: 'bg-violet-500' }].map(function(era) {
                     return React.createElement("div", { key: era.name, className: "flex items-center gap-1" },
                       React.createElement("div", { className: "w-2 h-2 rounded-full " + era.color }),
                       React.createElement("span", { className: "text-[11px] text-slate-200" }, era.name)
@@ -6004,7 +6005,7 @@ dataRef.current = d;
               style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(16,185,129,0.2)' }, glass)
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\uD83D\uDCCB Quick Reference Cards"),
+                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, __alloT('stem.behaviorlab.quick_reference_cards', "\uD83D\uDCCB Quick Reference Cards")),
                 React.createElement("button", { onClick: function() { upd('blShowQuickRef', !blShowQuickRef); },
                   className: "transition-colors text-[11px] text-emerald-400 hover:text-emerald-300"
                 }, blShowQuickRef ? 'Hide' : 'View \u2192')
@@ -6061,7 +6062,7 @@ dataRef.current = d;
 
             },
 
-              React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold mb-2 uppercase tracking-wider" }, "\uD83D\uDD17 Three-Term Contingency"),
+              React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold mb-2 uppercase tracking-wider" }, __alloT('stem.behaviorlab.three_term_contingency_2', "\uD83D\uDD17 Three-Term Contingency")),
 
               React.createElement("div", { className: "flex items-center gap-2 justify-center flex-wrap" },
 

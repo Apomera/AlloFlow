@@ -1424,6 +1424,7 @@ window.StemLab = window.StemLab || {
         progress: function(d) { return (d.quizCompletedCount || 0) > 0 ? 'best: ' + (d.quizCorrect || 0) + '/5' : 'pending'; } }
     ],
     render: function(ctx) {
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -1448,7 +1449,7 @@ window.StemLab = window.StemLab || {
             // Data — flexible holder for current test's input
             sampleId: null,                // active sample dataset
             twoColData: { aLabel: 'Group A', bLabel: 'Group B', a: [], b: [] },
-            multiColData: { groups: [{ label: 'Group 1', values: [] }, { label: 'Group 2', values: [] }] },
+            multiColData: { groups: [{ label: __alloT('stem.statslab.group_1', 'Group 1'), values: [] }, { label: __alloT('stem.statslab.group_2', 'Group 2'), values: [] }] },
             oneColData: { values: [], mu0: 0 },
             chiGofData: { observed: [], expected: [], labels: [] },
             chiIndepData: { rows: ['Row 1', 'Row 2'], cols: ['Col 1', 'Col 2'], table: [[0, 0], [0, 0]] },
@@ -1762,26 +1763,26 @@ window.StemLab = window.StemLab || {
         h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' } },
           h('div', { style: { fontSize: 36 } }, '📊'),
           h('div', { style: { flex: 1 } },
-            h('h2', { style: { margin: 0, color: '#a5b4fc', fontSize: 24, fontWeight: 900 } }, 'Statistics Lab'),
-            h('p', { style: { margin: '4px 0 0', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, 'Inferential stats with AP Psych / AP Bio focus. Transparent. Scaffolded. Better than SPSS for learning.')
+            h('h2', { style: { margin: 0, color: '#a5b4fc', fontSize: 24, fontWeight: 900 } }, __alloT('stem.statslab.statistics_lab', 'Statistics Lab')),
+            h('p', { style: { margin: '4px 0 0', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, __alloT('stem.statslab.inferential_stats_with_ap_psych_ap_bio', 'Inferential stats with AP Psych / AP Bio focus. Transparent. Scaffolded. Better than SPSS for learning.'))
           )
         ),
 
         // Mode tabs
         h('div', {
           role: 'tablist',
-          'aria-label': 'Statistics Lab navigation',
+          'aria-label': __alloT('stem.statslab.statistics_lab_navigation', 'Statistics Lab navigation'),
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }
         },
           [
-            { id: 'home', label: '🏠 Home', desc: 'Sample datasets + about' },
-            { id: 'wizard', label: '🧙 Wizard', desc: 'Pick the right test' },
-            { id: 'data', label: '📋 Data', desc: 'Enter / paste data' },
-            { id: 'test', label: '⚖️ Test', desc: 'Choose + run a test' },
-            { id: 'results', label: '📈 Results', desc: 'View results + AI grade' },
-            { id: 'power', label: '🔋 Power', desc: 'Sample size calc' },
-            { id: 'mastery', label: '🏅 Mastery', desc: 'AP-quiz concept progress' },
-            { id: 'inquiry', label: '🔬 Inquiry', desc: 'Power × effect × alpha sandbox' }
+            { id: 'home', label: __alloT('stem.statslab.home', '🏠 Home'), desc: __alloT('stem.statslab.sample_datasets_about', 'Sample datasets + about') },
+            { id: 'wizard', label: __alloT('stem.statslab.wizard', '🧙 Wizard'), desc: __alloT('stem.statslab.pick_the_right_test', 'Pick the right test') },
+            { id: 'data', label: __alloT('stem.statslab.data', '📋 Data'), desc: __alloT('stem.statslab.enter_paste_data', 'Enter / paste data') },
+            { id: 'test', label: __alloT('stem.statslab.test', '⚖️ Test'), desc: __alloT('stem.statslab.choose_run_a_test', 'Choose + run a test') },
+            { id: 'results', label: __alloT('stem.statslab.results', '📈 Results'), desc: __alloT('stem.statslab.view_results_ai_grade', 'View results + AI grade') },
+            { id: 'power', label: __alloT('stem.statslab.power', '🔋 Power'), desc: __alloT('stem.statslab.sample_size_calc', 'Sample size calc') },
+            { id: 'mastery', label: __alloT('stem.statslab.mastery', '🏅 Mastery'), desc: __alloT('stem.statslab.ap_quiz_concept_progress', 'AP-quiz concept progress') },
+            { id: 'inquiry', label: __alloT('stem.statslab.inquiry', '🔬 Inquiry'), desc: __alloT('stem.statslab.power_effect_alpha_sandbox', 'Power × effect × alpha sandbox') }
           ].map(function(tab) {
             var sel = d.mode === tab.id;
             return h('button', {
@@ -1805,14 +1806,14 @@ window.StemLab = window.StemLab || {
         // Topic-accent hero band (swaps with the active mode)
         (function() {
           var TAB_META = {
-            home:    { accent: '#6366f1', soft: 'rgba(99,102,241,0.10)',  icon: '🏠', title: 'Sample datasets + tool overview',           hint: 'Eight pre-loaded datasets cover AP Psych and AP Bio canonical examples — load one to skip data entry.' },
-            wizard:  { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)',  icon: '🧙', title: 'Pick the right test for your data',          hint: 'Answer 4 questions about your variables. The wizard maps to t-test, ANOVA, chi-square, regression, or non-parametric.' },
-            data:    { accent: '#22c55e', soft: 'rgba(34,197,94,0.10)',   icon: '📋', title: 'Enter or paste your data',                    hint: 'Paste from Sheets/Excel, or type by hand. The lab auto-detects two-group vs. paired vs. categorical layouts.' },
-            test:    { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)',  icon: '⚖️', title: 'Run the test with full transparency',         hint: 'Every formula and intermediate step is shown — no SPSS black box. You see what the test actually computes.' },
-            results: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)',  icon: '📈', title: 'Interpret + AI-graded write-up',              hint: 'Effect-size context + Cohen-band labels. AI grades your interpretation against AP-rubric criteria.' },
-            power:   { accent: '#ef4444', soft: 'rgba(239,68,68,0.10)',   icon: '🔋', title: 'Sample-size + power calculator',              hint: 'How many subjects do you need to detect a real effect? Underpowered studies are why most psych findings fail to replicate.' },
-            mastery: { accent: '#eab308', soft: 'rgba(234,179,8,0.10)',   icon: '🏅', title: 'Concept mastery tracker',                    hint: 'Track your progress through AP-style quiz concepts.' },
-            inquiry: { accent: '#14b8a6', soft: 'rgba(20,184,166,0.10)',  icon: '🔬', title: 'Inquiry sandbox — power × effect × alpha',   hint: 'Move three sliders. Predict where a study moves from underpowered to well-powered to wasteful. No score, no reveal — you mark your own understanding.' }
+            home:    { accent: '#6366f1', soft: 'rgba(99,102,241,0.10)',  icon: '🏠', title: __alloT('stem.statslab.sample_datasets_tool_overview', 'Sample datasets + tool overview'),           hint: __alloT('stem.statslab.eight_pre_loaded_datasets_cover_ap_psy', 'Eight pre-loaded datasets cover AP Psych and AP Bio canonical examples — load one to skip data entry.') },
+            wizard:  { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)',  icon: '🧙', title: __alloT('stem.statslab.pick_the_right_test_for_your_data', 'Pick the right test for your data'),          hint: __alloT('stem.statslab.answer_4_questions_about_your_variable', 'Answer 4 questions about your variables. The wizard maps to t-test, ANOVA, chi-square, regression, or non-parametric.') },
+            data:    { accent: '#22c55e', soft: 'rgba(34,197,94,0.10)',   icon: '📋', title: __alloT('stem.statslab.enter_or_paste_your_data', 'Enter or paste your data'),                    hint: __alloT('stem.statslab.paste_from_sheets_excel_or_type_by_han', 'Paste from Sheets/Excel, or type by hand. The lab auto-detects two-group vs. paired vs. categorical layouts.') },
+            test:    { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)',  icon: '⚖️', title: __alloT('stem.statslab.run_the_test_with_full_transparency', 'Run the test with full transparency'),         hint: __alloT('stem.statslab.every_formula_and_intermediate_step_is', 'Every formula and intermediate step is shown — no SPSS black box. You see what the test actually computes.') },
+            results: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)',  icon: '📈', title: __alloT('stem.statslab.interpret_ai_graded_write_up', 'Interpret + AI-graded write-up'),              hint: __alloT('stem.statslab.effect_size_context_cohen_band_labels_', 'Effect-size context + Cohen-band labels. AI grades your interpretation against AP-rubric criteria.') },
+            power:   { accent: '#ef4444', soft: 'rgba(239,68,68,0.10)',   icon: '🔋', title: __alloT('stem.statslab.sample_size_power_calculator', 'Sample-size + power calculator'),              hint: __alloT('stem.statslab.how_many_subjects_do_you_need_to_detec', 'How many subjects do you need to detect a real effect? Underpowered studies are why most psych findings fail to replicate.') },
+            mastery: { accent: '#eab308', soft: 'rgba(234,179,8,0.10)',   icon: '🏅', title: __alloT('stem.statslab.concept_mastery_tracker', 'Concept mastery tracker'),                    hint: __alloT('stem.statslab.track_your_progress_through_ap_style_q', 'Track your progress through AP-style quiz concepts.') },
+            inquiry: { accent: '#14b8a6', soft: 'rgba(20,184,166,0.10)',  icon: '🔬', title: __alloT('stem.statslab.inquiry_sandbox_power_effect_alpha', 'Inquiry sandbox — power × effect × alpha'),   hint: __alloT('stem.statslab.move_three_sliders_predict_where_a_stu', 'Move three sliders. Predict where a study moves from underpowered to well-powered to wasteful. No score, no reveal — you mark your own understanding.') }
           };
           var meta = TAB_META[d.mode] || TAB_META.home;
           return h('div', {
@@ -1860,11 +1861,11 @@ window.StemLab = window.StemLab || {
           var power = Math.max(0, Math.min(1, normCdf(ncp - zalpha)));
           var state = power < 0.30 ? 'futile' : power < 0.60 ? 'underpowered' : power < 0.80 ? 'borderline' : power < 0.95 ? 'wellpowered' : 'overkill';
           var sm = ({
-            futile: { label: 'Futile', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Power < 30% — most replications will miss the effect even if it is real.' },
-            underpowered: { label: 'Underpowered', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'Power 30–60% — coin-flip-like ability to detect a true effect. Common in psych replications.' },
-            borderline: { label: 'Borderline', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Power 60–80% — typical funded study, but Cohen recommended ≥80%.' },
-            wellpowered: { label: 'Well-powered', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Power 80–95% — sound design. Effect, if real, will likely be detected.' },
-            overkill: { label: 'Overkill', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Power > 95% — diminishing returns; consider tightening alpha or splitting cohort.' }
+            futile: { label: __alloT('stem.statslab.futile', 'Futile'), color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: __alloT('stem.statslab.power_30_most_replications_will_miss_t', 'Power < 30% — most replications will miss the effect even if it is real.') },
+            underpowered: { label: __alloT('stem.statslab.underpowered', 'Underpowered'), color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: __alloT('stem.statslab.power_30_60_coin_flip_like_ability_to_', 'Power 30–60% — coin-flip-like ability to detect a true effect. Common in psych replications.') },
+            borderline: { label: __alloT('stem.statslab.borderline', 'Borderline'), color: '#facc15', bg: '#2a2410', border: '#eab308', desc: __alloT('stem.statslab.power_60_80_typical_funded_study_but_c', 'Power 60–80% — typical funded study, but Cohen recommended ≥80%.') },
+            wellpowered: { label: 'Well-powered', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: __alloT('stem.statslab.power_80_95_sound_design_effect_if_rea', 'Power 80–95% — sound design. Effect, if real, will likely be detected.') },
+            overkill: { label: __alloT('stem.statslab.overkill', 'Overkill'), color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: __alloT('stem.statslab.power_95_diminishing_returns_consider_', 'Power > 95% — diminishing returns; consider tightening alpha or splitting cohort.') }
           })[state];
           // SVG: power curve over n at fixed effect & alpha
           var ns = [];
@@ -1879,15 +1880,15 @@ window.StemLab = window.StemLab || {
           var hereX = ((Math.min(200, n) - 5) / 195) * 260 + 36;
           var hereY = 130 - power * 110;
           return h('div', { style: { padding: 16, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
-            h('h3', { style: { margin: '0 0 4px', fontSize: 16, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, '🔬 Inquiry Sandbox — Power, Effect, Alpha'),
-            h('p', { style: { margin: '0 0 10px', fontSize: 12, opacity: 0.85, lineHeight: 1.4 } }, 'Set true effect size, alpha, and per-group sample size. Predict where the design moves between futile, underpowered, well-powered, and overkill. No score, no reveal.'),
+            h('h3', { style: { margin: '0 0 4px', fontSize: 16, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, __alloT('stem.statslab.inquiry_sandbox_power_effect_alpha_2', '🔬 Inquiry Sandbox — Power, Effect, Alpha')),
+            h('p', { style: { margin: '0 0 10px', fontSize: 12, opacity: 0.85, lineHeight: 1.4 } }, __alloT('stem.statslab.set_true_effect_size_alpha_and_per_gro', 'Set true effect size, alpha, and per-group sample size. Predict where the design moves between futile, underpowered, well-powered, and overkill. No score, no reveal.')),
             h('div', { style: { display: 'inline-block', padding: '4px 12px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 12, fontWeight: 800, marginBottom: 6 } }, sm.label + ' (Power ≈ ' + (power * 100).toFixed(0) + '%)'),
             h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
             h('svg', { width: '100%', height: 160, viewBox: '0 0 320 160', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 } },
               h('line', { x1: 36, y1: 130, x2: 296, y2: 130, stroke: '#1e293b' }),
               h('line', { x1: 36, y1: 18, x2: 36, y2: 130, stroke: '#1e293b' }),
               h('line', { x1: 36, y1: 130 - 0.8 * 110, x2: 296, y2: 130 - 0.8 * 110, stroke: '#16a34a', strokeDasharray: '3 3', opacity: 0.6 }),
-              h('text', { x: 296, y: 130 - 0.8 * 110 - 2, fill: '#16a34a', fontSize: 8, textAnchor: 'end' }, 'power = 80%'),
+              h('text', { x: 296, y: 130 - 0.8 * 110 - 2, fill: '#16a34a', fontSize: 8, textAnchor: 'end' }, __alloT('stem.statslab.power_80', 'power = 80%')),
               [0, 50, 100, 150, 200].map(function(nv, i) { return h('text', { key: 'nx' + i, x: 36 + ((nv - 5) / 195) * 260, y: 145, fill: '#94a3b8', fontSize: 8, textAnchor: 'middle' }, 'n=' + nv); }),
               [0, 0.25, 0.5, 0.75, 1.0].map(function(p, i) { return h('text', { key: 'py' + i, x: 30, y: 132 - p * 110, fill: '#94a3b8', fontSize: 8, textAnchor: 'end' }, (p * 100).toFixed(0) + '%'); }),
               h('polyline', { points: pts, fill: 'none', stroke: sm.color, strokeWidth: 2, style: { filter: 'drop-shadow(0 0 3px ' + sm.color + ')' } }),
@@ -1896,15 +1897,15 @@ window.StemLab = window.StemLab || {
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 10 } },
               h('label', null,
-                h('div', { style: { fontSize: 12, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'True effect (Cohen d)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.effect.toFixed(2))),
+                h('div', { style: { fontSize: 12, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, __alloT('stem.statslab.true_effect_cohen_d', 'True effect (Cohen d)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.effect.toFixed(2))),
                 h('input', { type: 'range', min: 0.05, max: 1.5, step: 0.05, value: iq.effect, onChange: function(e) { setKey('effect', parseFloat(e.target.value)); }, style: { width: '100%' } })
               ),
               h('label', null,
-                h('div', { style: { fontSize: 12, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Alpha'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.alpha)),
+                h('div', { style: { fontSize: 12, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, __alloT('stem.statslab.alpha', 'Alpha')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.alpha)),
                 h('input', { type: 'range', min: 0.001, max: 0.2, step: 0.001, value: iq.alpha, onChange: function(e) { setKey('alpha', parseFloat(e.target.value)); }, style: { width: '100%' } })
               ),
               h('label', null,
-                h('div', { style: { fontSize: 12, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'n per group'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.nGroup)),
+                h('div', { style: { fontSize: 12, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, __alloT('stem.statslab.n_per_group', 'n per group')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.nGroup)),
                 h('input', { type: 'range', min: 5, max: 200, step: 1, value: iq.nGroup, onChange: function(e) { setKey('nGroup', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
               )
             ),
@@ -1912,30 +1913,30 @@ window.StemLab = window.StemLab || {
               h('button', { onClick: function() {
                 var t = new Date().toISOString().slice(11, 19);
                 setIQ({ log: iq.log.concat([{ t: t, d: iq.effect.toFixed(2), a: iq.alpha, n: iq.nGroup, power: (power * 100).toFixed(0) + '%', state: sm.label }]) });
-              }, style: { flex: 1, padding: 8, fontSize: 12, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '📋 Log this design'),
-              h('button', { 'data-sl-focusable': 'true', onClick: function() { setIQ({ effect: 0.5, alpha: 0.05, nGroup: 30 }); }, style: { padding: '8px 12px', fontSize: 12, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
+              }, style: { flex: 1, padding: 8, fontSize: 12, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, __alloT('stem.statslab.log_this_design', '📋 Log this design')),
+              h('button', { 'data-sl-focusable': 'true', onClick: function() { setIQ({ effect: 0.5, alpha: 0.05, nGroup: 30 }); }, style: { padding: '8px 12px', fontSize: 12, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, __alloT('stem.statslab.reset', 'Reset'))
             ),
             iq.log.length > 0 && h('div', { style: { maxHeight: 100, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
               iq.log.slice(-6).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · d' + e.d + ' α' + e.a + ' n' + e.n + ' → ' + e.power); })
             ),
-            h('label', { style: { display: 'block', fontSize: 12, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (which slider has the biggest leverage in your range?)'),
-            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., halving alpha needs almost double n to recover the same power...', style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 12, marginBottom: 10, resize: 'vertical' } }),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 12px', fontSize: 12, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
+            h('label', { style: { display: 'block', fontSize: 12, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, __alloT('stem.statslab.your_hypothesis_which_slider_has_the_b', 'Your hypothesis (which slider has the biggest leverage in your range?)')),
+            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.statslab.e_g_halving_alpha_needs_almost_double_', 'e.g., halving alpha needs almost double n to recover the same power...'), style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 12, marginBottom: 10, resize: 'vertical' } }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 12px', fontSize: 12, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, __alloT('stem.statslab.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
             iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 12, marginBottom: 10, lineHeight: 1.5 } },
-              h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
+              h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, __alloT('stem.statslab.open_questions_no_answer_key', 'Open questions (no answer key)')),
               h('ul', { style: { margin: 0, paddingLeft: 16 } },
-                h('li', null, 'If your effect is d=0.2 (small), what n per group do you need for 80% power at α=.05?'),
-                h('li', null, 'A study with n=20 per group and d=0.5 — what is its replication probability?'),
-                h('li', null, 'When does it make sense to *lower* power on purpose (e.g., pilot, screening)?'),
-                h('li', null, 'How does tightening α (e.g., for multiple comparisons) trade off against n?')
+                h('li', null, __alloT('stem.statslab.if_your_effect_is_d_0_2_small_what_n_p', 'If your effect is d=0.2 (small), what n per group do you need for 80% power at α=.05?')),
+                h('li', null, __alloT('stem.statslab.a_study_with_n_20_per_group_and_d_0_5_', 'A study with n=20 per group and d=0.5 — what is its replication probability?')),
+                h('li', null, __alloT('stem.statslab.when_does_it_make_sense_to_lower_power', 'When does it make sense to *lower* power on purpose (e.g., pilot, screening)?')),
+                h('li', null, __alloT('stem.statslab.how_does_tightening_e_g_for_multiple_c', 'How does tightening α (e.g., for multiple comparisons) trade off against n?'))
               )
             ),
             h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
               h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
-              h('span', null, 'I can explain why this d × α × n combination yields this power state.')
+              h('span', null, __alloT('stem.statslab.i_can_explain_why_this_d_n_combination', 'I can explain why this d × α × n combination yields this power state.'))
             ),
-            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 12, marginBottom: 6, resize: 'vertical' } }),
-            h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal, no answer dump. Power approximated via normal-z; for small n, true power from non-central t will differ slightly (use the Power tab for the formal calc).')
+            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.statslab.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 12, marginBottom: 6, resize: 'vertical' } }),
+            h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, __alloT('stem.statslab.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Power approximated via normal-z; for small n, true power from non-central t will differ slightly (use the Power tab for the formal calc).'))
           );
         })(),
         // Concept-mastery celebration overlay — same shape as Optics/Pets/BirdLab.
@@ -1963,7 +1964,7 @@ window.StemLab = window.StemLab || {
           },
             h('span', { 'aria-hidden': 'true', style: { fontSize: 28 } }, '🏅'),
             h('div', null,
-              h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.95 } }, 'Concept locked in'),
+              h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.95 } }, __alloT('stem.statslab.concept_locked_in', 'Concept locked in')),
               h('div', { style: { fontSize: 13, fontWeight: 800, lineHeight: 1.3 } }, slCeleb.question.length > 90 ? (slCeleb.question.substring(0, 87) + '…') : slCeleb.question),
               h('div', { style: { fontSize: 11, fontStyle: 'italic', opacity: 0.95, marginTop: 2 } }, slCeleb.total + ' / ' + AP_QUIZ_BANK.length + ' AP questions mastered')
             )

@@ -30,6 +30,7 @@ window.StemLab.registerTool('titrationLab', {
       { id: 'try_2_setups', label: 'Try 2 titration setups', icon: '🔬', check: function(d) { return Object.keys(d.presetsUsed || {}).length >= 2; }, progress: function(d) { return Object.keys(d.presetsUsed || {}).length + '/2'; } }
     ],
   render: function(ctx) {
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
     var React = ctx.React;
     var labToolData = ctx.toolData;
     var setLabToolData = function(fn) {
@@ -86,29 +87,29 @@ var glass = { backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }
 
 var presets = [
 
-  { id: 'sa_sb', label: 'HCl + NaOH', icon: '\u2697\uFE0F', desc: 'Strong acid + Strong base', color: '#f87171',
+  { id: 'sa_sb', label: __alloT('stem.titration.hcl_naoh', 'HCl + NaOH'), icon: '\u2697\uFE0F', desc: __alloT('stem.titration.strong_acid_strong_base', 'Strong acid + Strong base'), color: '#f87171',
 
     concAcid: 0.1, volAcid: 25, concBase: 0.1, Ka: null, Kb: null, acidName: 'HCl (0.1 M)', baseName: 'NaOH (0.1 M)' },
 
-  { id: 'wa_sb', label: 'CH\u2083COOH + NaOH', icon: '\uD83E\uDDEA', desc: 'Weak acid + Strong base', color: '#60a5fa',
+  { id: 'wa_sb', label: __alloT('stem.titration.ch_cooh_naoh', 'CH\u2083COOH + NaOH'), icon: '\uD83E\uDDEA', desc: __alloT('stem.titration.weak_acid_strong_base', 'Weak acid + Strong base'), color: '#60a5fa',
 
     concAcid: 0.1, volAcid: 25, concBase: 0.1, Ka: 1.8e-5, Kb: null, acidName: 'Acetic Acid (0.1 M)', baseName: 'NaOH (0.1 M)' },
 
-  { id: 'sa_wb', label: 'HCl + NH\u2083', icon: '\uD83D\uDC9C', desc: 'Strong acid + Weak base', color: '#a855f7',
+  { id: 'sa_wb', label: __alloT('stem.titration.hcl_nh', 'HCl + NH\u2083'), icon: '\uD83D\uDC9C', desc: __alloT('stem.titration.strong_acid_weak_base', 'Strong acid + Weak base'), color: '#a855f7',
 
     concAcid: 0.1, volAcid: 25, concBase: 0.1, Ka: null, Kb: 1.8e-5, acidName: 'HCl (0.1 M)', baseName: 'NH\u2083 (0.1 M)' },
 
-  { id: 'wa_wb', label: 'CH\u2083COOH + NH\u2083', icon: '\uD83D\uDC9A', desc: 'Both weak', color: '#34d399',
+  { id: 'wa_wb', label: __alloT('stem.titration.ch_cooh_nh', 'CH\u2083COOH + NH\u2083'), icon: '\uD83D\uDC9A', desc: __alloT('stem.titration.both_weak', 'Both weak'), color: '#34d399',
 
     concAcid: 0.1, volAcid: 25, concBase: 0.1, Ka: 1.8e-5, Kb: 1.8e-5, acidName: 'Acetic Acid (0.1 M)', baseName: 'NH\u2083 (0.1 M)' },
 
-  { id: 'poly_h3po4', label: 'H\u2083PO\u2084 + NaOH', icon: '\uD83D\uDD2C', desc: 'Polyprotic acid (3 equiv pts)', color: '#06b6d4',
+  { id: 'poly_h3po4', label: __alloT('stem.titration.h_po_naoh', 'H\u2083PO\u2084 + NaOH'), icon: '\uD83D\uDD2C', desc: __alloT('stem.titration.polyprotic_acid_3_equiv_pts', 'Polyprotic acid (3 equiv pts)'), color: '#06b6d4',
     concAcid: 0.1, volAcid: 25, concBase: 0.1, Ka: 7.5e-3, Kb: null, polyprotic: [7.5e-3, 6.2e-8, 4.8e-13], acidName: 'Phosphoric Acid (0.1 M)', baseName: 'NaOH (0.1 M)' },
 
-  { id: 'redox_kmno4', label: 'Fe\u00B2\u207A + KMnO\u2084', icon: '\uD83D\uDCAB', desc: 'Redox titration', color: '#c026d3',
+  { id: 'redox_kmno4', label: __alloT('stem.titration.fe_kmno', 'Fe\u00B2\u207A + KMnO\u2084'), icon: '\uD83D\uDCAB', desc: __alloT('stem.titration.redox_titration', 'Redox titration'), color: '#c026d3',
     concAcid: 0.02, volAcid: 25, concBase: 0.02, Ka: null, Kb: null, redox: true, acidName: 'FeSO\u2084 (0.02 M)', baseName: 'KMnO\u2084 (0.02 M)' },
 
-  { id: 'back_antacid', label: 'Antacid (back)', icon: '\uD83D\uDC8A', desc: 'Back-titration of antacid', color: '#f472b6',
+  { id: 'back_antacid', label: __alloT('stem.titration.antacid_back', 'Antacid (back)'), icon: '\uD83D\uDC8A', desc: __alloT('stem.titration.back_titration_of_antacid', 'Back-titration of antacid'), color: '#f472b6',
     concAcid: 0.1, volAcid: 50, concBase: 0.1, Ka: null, Kb: null, backTitration: true, excessAcidMoles: 0.003, acidName: 'Excess HCl after antacid', baseName: 'NaOH (0.1 M)' }
 
 ];
@@ -119,19 +120,19 @@ var presets = [
 
 var indicators = [
 
-  { id: 'phenolphthalein', label: 'Phenolphthalein', low: 8.2, high: 10.0,
+  { id: 'phenolphthalein', label: __alloT('stem.titration.phenolphthalein', 'Phenolphthalein'), low: 8.2, high: 10.0,
 
     colorLow: 'rgba(255,255,255,0.15)', colorHigh: '#ec4899', colorMid: '#f9a8d4' },
 
-  { id: 'methylOrange', label: 'Methyl Orange', low: 3.1, high: 4.4,
+  { id: 'methylOrange', label: __alloT('stem.titration.methyl_orange', 'Methyl Orange'), low: 3.1, high: 4.4,
 
     colorLow: '#ef4444', colorHigh: '#eab308', colorMid: '#f97316' },
 
-  { id: 'bromothymolBlue', label: 'Bromothymol Blue', low: 6.0, high: 7.6,
+  { id: 'bromothymolBlue', label: __alloT('stem.titration.bromothymol_blue', 'Bromothymol Blue'), low: 6.0, high: 7.6,
 
     colorLow: '#eab308', colorHigh: '#3b82f6', colorMid: '#22c55e' },
 
-  { id: 'universal', label: 'Universal', low: 0, high: 14,
+  { id: 'universal', label: __alloT('stem.titration.universal', 'Universal'), low: 0, high: 14,
 
     colorLow: '#ef4444', colorHigh: '#7c3aed', colorMid: '#22c55e' }
 
@@ -140,35 +141,35 @@ var indicators = [
 
 // ── GHS Chemical Hazard Data ──
 var chemHazards = {
-  'HCl': { name: 'Hydrochloric Acid', ghs: ['\u2620\uFE0F GHS05 Corrosive', '\u26A0\uFE0F GHS07 Irritant'], signal: 'Danger', color: '#ef4444',
+  'HCl': { name: __alloT('stem.titration.hydrochloric_acid', 'Hydrochloric Acid'), ghs: ['\u2620\uFE0F GHS05 Corrosive', '\u26A0\uFE0F GHS07 Irritant'], signal: 'Danger', color: '#ef4444',
     hazards: ['H290: May be corrosive to metals', 'H314: Causes severe skin burns and eye damage', 'H335: May cause respiratory irritation'],
     firstAid: 'Skin: Remove clothing, wash 15+ min. Eyes: Rinse 15+ min, seek medical attention. Inhalation: Move to fresh air.',
     disposal: 'Neutralize with sodium bicarbonate, dilute, pour down drain with excess water.' },
-  'NaOH': { name: 'Sodium Hydroxide', ghs: ['\u2620\uFE0F GHS05 Corrosive'], signal: 'Danger', color: '#3b82f6',
+  'NaOH': { name: __alloT('stem.titration.sodium_hydroxide', 'Sodium Hydroxide'), ghs: ['\u2620\uFE0F GHS05 Corrosive'], signal: 'Danger', color: '#3b82f6',
     hazards: ['H290: May be corrosive to metals', 'H314: Causes severe skin burns and eye damage'],
     firstAid: 'Skin: Remove clothing, wash 15+ min. Eyes: Rinse 15+ min, remove contacts. Ingestion: Rinse mouth, do NOT induce vomiting.',
     disposal: 'Neutralize with dilute acid, dilute, pour down drain with excess water.' },
-  'CH\u2083COOH': { name: 'Acetic Acid', ghs: ['\uD83D\uDD25 GHS02 Flammable', '\u26A0\uFE0F GHS07 Irritant'], signal: 'Warning', color: '#f59e0b',
+  'CH\u2083COOH': { name: __alloT('stem.titration.acetic_acid', 'Acetic Acid'), ghs: ['\uD83D\uDD25 GHS02 Flammable', '\u26A0\uFE0F GHS07 Irritant'], signal: 'Warning', color: '#f59e0b',
     hazards: ['H226: Flammable liquid and vapor', 'H302: Harmful if swallowed', 'H312: Harmful in contact with skin', 'H332: Harmful if inhaled'],
     firstAid: 'Skin: Wash with soap and water. Eyes: Rinse 15+ min. Inhalation: Move to fresh air. Keep away from ignition sources.',
     disposal: 'Dilute with water, neutralize, pour down drain.' },
-  'NH\u2083': { name: 'Ammonia', ghs: ['\u2620\uFE0F GHS05 Corrosive', '\u2623\uFE0F GHS06 Toxic', '\uD83C\uDF0D GHS09 Environment'], signal: 'Danger', color: '#a855f7',
+  'NH\u2083': { name: __alloT('stem.titration.ammonia', 'Ammonia'), ghs: ['\u2620\uFE0F GHS05 Corrosive', '\u2623\uFE0F GHS06 Toxic', '\uD83C\uDF0D GHS09 Environment'], signal: 'Danger', color: '#a855f7',
     hazards: ['H221: Flammable gas', 'H314: Causes severe skin burns and eye damage', 'H331: Toxic if inhaled', 'H400: Very toxic to aquatic life'],
     firstAid: 'Inhalation: Move to fresh air IMMEDIATELY. Skin: Flush with water 15+ min. Eyes: Rinse 15+ min. Call Poison Control.',
     disposal: 'Neutralize with dilute acid in fume hood. Never mix with bleach!' },
-  'H\u2083PO\u2084': { name: 'Phosphoric Acid', ghs: ['\u2620\uFE0F GHS05 Corrosive'], signal: 'Danger', color: '#06b6d4',
+  'H\u2083PO\u2084': { name: __alloT('stem.titration.phosphoric_acid', 'Phosphoric Acid'), ghs: ['\u2620\uFE0F GHS05 Corrosive'], signal: 'Danger', color: '#06b6d4',
     hazards: ['H290: May be corrosive to metals', 'H314: Causes severe skin burns and eye damage'],
     firstAid: 'Skin: Flush with water 15+ min. Eyes: Rinse 15+ min, remove contacts. Ingestion: Rinse mouth, do NOT induce vomiting.',
     disposal: 'Neutralize with sodium bicarbonate, dilute, pour down drain with excess water.' },
-  'KMnO\u2084': { name: 'Potassium Permanganate', ghs: ['\uD83D\uDD25 GHS03 Oxidizer', '\u2620\uFE0F GHS05 Corrosive', '\u2623\uFE0F GHS06 Toxic', '\uD83C\uDF0D GHS09 Environment'], signal: 'Danger', color: '#c026d3',
+  'KMnO\u2084': { name: __alloT('stem.titration.potassium_permanganate', 'Potassium Permanganate'), ghs: ['\uD83D\uDD25 GHS03 Oxidizer', '\u2620\uFE0F GHS05 Corrosive', '\u2623\uFE0F GHS06 Toxic', '\uD83C\uDF0D GHS09 Environment'], signal: 'Danger', color: '#c026d3',
     hazards: ['H272: May intensify fire; oxidizer', 'H302: Harmful if swallowed', 'H314: Causes severe skin burns', 'H410: Very toxic to aquatic life'],
     firstAid: 'Skin: Stains brown \u2014 wash with dilute H\u2082SO\u2083 then water. Eyes: Rinse 15+ min. NEVER use with flammable organics!',
     disposal: 'Reduce with sodium bisulfite, then neutralize. Do NOT pour down drain \u2014 heavy metal waste.' },
-  'FeSO\u2084': { name: 'Ferrous Sulfate', ghs: ['\u26A0\uFE0F GHS07 Irritant'], signal: 'Warning', color: '#65a30d',
+  'FeSO\u2084': { name: __alloT('stem.titration.ferrous_sulfate', 'Ferrous Sulfate'), ghs: ['\u26A0\uFE0F GHS07 Irritant'], signal: 'Warning', color: '#65a30d',
     hazards: ['H302: Harmful if swallowed', 'H315: Causes skin irritation', 'H319: Causes serious eye irritation'],
     firstAid: 'Skin: Wash with soap and water. Eyes: Rinse 10+ min. Ingestion: Rinse mouth.',
     disposal: 'Dissolve in water, precipitate as Fe(OH)\u2083 with NaOH, filter, dispose of solid as chemical waste.' },
-  'Antacid': { name: 'Antacid Tablet (CaCO\u2083/Mg(OH)\u2082)', ghs: ['\u26A0\uFE0F GHS07 Irritant'], signal: 'Warning', color: '#f472b6',
+  'Antacid': { name: __alloT('stem.titration.antacid_tablet_caco_mg_oh', 'Antacid Tablet (CaCO\u2083/Mg(OH)\u2082)'), ghs: ['\u26A0\uFE0F GHS07 Irritant'], signal: 'Warning', color: '#f472b6',
     hazards: ['H319: Causes eye irritation in powder form', 'Generally safe but excess may cause alkalosis'],
     firstAid: 'Eyes: Rinse with water. Low toxicity but handle dissolved solution with normal lab precautions.',
     disposal: 'Neutralized solution is safe for drain disposal with excess water.' }
@@ -183,93 +184,93 @@ var presetHazardKeys = {
 
 // ── Safety Checklist Items ──
 var safetyItems = [
-  { id: 'goggles', icon: '\uD83E\uDD7D', label: 'Safety goggles on', desc: 'Splash-proof chemical safety goggles \u2014 not regular glasses' },
-  { id: 'gloves', icon: '\uD83E\uDDE4', label: 'Nitrile gloves worn', desc: 'Protects skin from corrosive acids and bases' },
-  { id: 'coat', icon: '\uD83E\uDD7C', label: 'Lab coat on', desc: 'Button it up \u2014 protects clothing and skin from splashes' },
-  { id: 'shoes', icon: '\uD83D\uDC5F', label: 'Closed-toe shoes', desc: 'No sandals or open-toed shoes in the chemistry lab' },
-  { id: 'eyewash', icon: '\uD83D\uDEBF', label: 'Eyewash station located', desc: 'Know where it is BEFORE you start \u2014 you have 10 seconds if splashed' },
-  { id: 'extinguisher', icon: '\uD83E\uDDEF', label: 'Fire extinguisher located', desc: 'Acetic acid is flammable \u2014 know your nearest extinguisher' },
-  { id: 'sds', icon: '\uD83D\uDCCB', label: 'SDS reviewed for chemicals', desc: 'Safety Data Sheets list all hazards, PPE, and emergency procedures' }
+  { id: 'goggles', icon: '\uD83E\uDD7D', label: __alloT('stem.titration.safety_goggles_on', 'Safety goggles on'), desc: __alloT('stem.titration.splash_proof_chemical_safety_goggles_n', 'Splash-proof chemical safety goggles \u2014 not regular glasses') },
+  { id: 'gloves', icon: '\uD83E\uDDE4', label: __alloT('stem.titration.nitrile_gloves_worn', 'Nitrile gloves worn'), desc: __alloT('stem.titration.protects_skin_from_corrosive_acids_and', 'Protects skin from corrosive acids and bases') },
+  { id: 'coat', icon: '\uD83E\uDD7C', label: __alloT('stem.titration.lab_coat_on', 'Lab coat on'), desc: __alloT('stem.titration.button_it_up_protects_clothing_and_ski', 'Button it up \u2014 protects clothing and skin from splashes') },
+  { id: 'shoes', icon: '\uD83D\uDC5F', label: __alloT('stem.titration.closed_toe_shoes', 'Closed-toe shoes'), desc: __alloT('stem.titration.no_sandals_or_open_toed_shoes_in_the_c', 'No sandals or open-toed shoes in the chemistry lab') },
+  { id: 'eyewash', icon: '\uD83D\uDEBF', label: __alloT('stem.titration.eyewash_station_located', 'Eyewash station located'), desc: __alloT('stem.titration.know_where_it_is_before_you_start_you_', 'Know where it is BEFORE you start \u2014 you have 10 seconds if splashed') },
+  { id: 'extinguisher', icon: '\uD83E\uDDEF', label: __alloT('stem.titration.fire_extinguisher_located', 'Fire extinguisher located'), desc: __alloT('stem.titration.acetic_acid_is_flammable_know_your_nea', 'Acetic acid is flammable \u2014 know your nearest extinguisher') },
+  { id: 'sds', icon: '\uD83D\uDCCB', label: __alloT('stem.titration.sds_reviewed_for_chemicals', 'SDS reviewed for chemicals'), desc: __alloT('stem.titration.safety_data_sheets_list_all_hazards_pp', 'Safety Data Sheets list all hazards, PPE, and emergency procedures') }
 ];
 
 // ── Contextual Safety Tips ──
 var safetyTips = {
-  firstDrip: { icon: '\uD83D\uDCA7', text: 'Always add titrant slowly near the expected endpoint. A single drop can change the pH dramatically!', color: '#38bdf8' },
-  nearEquiv: { icon: '\u26A0\uFE0F', text: 'The pH is changing rapidly! In a real lab, switch to drop-by-drop addition and swirl after each drop.', color: '#f59e0b' },
-  overshot: { icon: '\u274C', text: 'You overshot the equivalence point! In a real lab, you would need to restart with a fresh sample.', color: '#ef4444' },
-  reset: { icon: '\u267B\uFE0F', text: 'Good lab practice: always rinse the burette with distilled water, then with titrant solution before refilling.', color: '#22c55e' },
-  halfEquiv: { icon: '\uD83E\uDDEA', text: 'At the half-equivalence point, pH = pKa. This is the center of the buffer region!', color: '#a78bfa' },
-  redoxWarning: { icon: '\uD83D\uDCAB', text: 'KMnO\u2084 is a strong oxidizer! In a real lab, keep away from organic solvents and use a fume hood. Purple \u2192 colorless = endpoint.', color: '#c026d3' },
-  polyprotic: { icon: '\uD83D\uDD2C', text: 'Polyprotic acids have multiple equivalence points! Watch for the S-curve to flatten between each one (buffer regions).', color: '#06b6d4' },
-  backTitration: { icon: '\uD83D\uDC8A', text: 'In a back-titration, you add EXCESS acid first, then titrate the leftover acid. This works for insoluble analytes like CaCO\u2083.', color: '#f472b6' },
-  acidToWater: { icon: '\uD83D\uDCA5', text: 'NEVER add water to concentrated acid! Always add acid TO water. "Do as you oughta \u2014 add acid to water." The exothermic reaction can cause dangerous splashing.', color: '#ef4444' },
-  fumeHood: { icon: '\uD83C\uDF2C\uFE0F', text: 'When using volatile reagents like NH\u2083 or HCl (conc.), always work in a fume hood. Breathing acid/base fumes damages lung tissue.', color: '#a855f7' },
-  meniscus: { icon: '\uD83D\uDC41\uFE0F', text: 'Read the burette at the BOTTOM of the meniscus, with your eye level at the liquid surface. Parallax errors affect accuracy!', color: '#38bdf8' }
+  firstDrip: { icon: '\uD83D\uDCA7', text: __alloT('stem.titration.always_add_titrant_slowly_near_the_exp', 'Always add titrant slowly near the expected endpoint. A single drop can change the pH dramatically!'), color: '#38bdf8' },
+  nearEquiv: { icon: '\u26A0\uFE0F', text: __alloT('stem.titration.the_ph_is_changing_rapidly_in_a_real_l', 'The pH is changing rapidly! In a real lab, switch to drop-by-drop addition and swirl after each drop.'), color: '#f59e0b' },
+  overshot: { icon: '\u274C', text: __alloT('stem.titration.you_overshot_the_equivalence_point_in_', 'You overshot the equivalence point! In a real lab, you would need to restart with a fresh sample.'), color: '#ef4444' },
+  reset: { icon: '\u267B\uFE0F', text: __alloT('stem.titration.good_lab_practice_always_rinse_the_bur', 'Good lab practice: always rinse the burette with distilled water, then with titrant solution before refilling.'), color: '#22c55e' },
+  halfEquiv: { icon: '\uD83E\uDDEA', text: __alloT('stem.titration.at_the_half_equivalence_point_ph_pka_t', 'At the half-equivalence point, pH = pKa. This is the center of the buffer region!'), color: '#a78bfa' },
+  redoxWarning: { icon: '\uD83D\uDCAB', text: __alloT('stem.titration.kmno_is_a_strong_oxidizer_in_a_real_la', 'KMnO\u2084 is a strong oxidizer! In a real lab, keep away from organic solvents and use a fume hood. Purple \u2192 colorless = endpoint.'), color: '#c026d3' },
+  polyprotic: { icon: '\uD83D\uDD2C', text: __alloT('stem.titration.polyprotic_acids_have_multiple_equival', 'Polyprotic acids have multiple equivalence points! Watch for the S-curve to flatten between each one (buffer regions).'), color: '#06b6d4' },
+  backTitration: { icon: '\uD83D\uDC8A', text: __alloT('stem.titration.in_a_back_titration_you_add_excess_aci', 'In a back-titration, you add EXCESS acid first, then titrate the leftover acid. This works for insoluble analytes like CaCO\u2083.'), color: '#f472b6' },
+  acidToWater: { icon: '\uD83D\uDCA5', text: __alloT('stem.titration.never_add_water_to_concentrated_acid_a', 'NEVER add water to concentrated acid! Always add acid TO water. "Do as you oughta \u2014 add acid to water." The exothermic reaction can cause dangerous splashing.'), color: '#ef4444' },
+  fumeHood: { icon: '\uD83C\uDF2C\uFE0F', text: __alloT('stem.titration.when_using_volatile_reagents_like_nh_o', 'When using volatile reagents like NH\u2083 or HCl (conc.), always work in a fume hood. Breathing acid/base fumes damages lung tissue.'), color: '#a855f7' },
+  meniscus: { icon: '\uD83D\uDC41\uFE0F', text: __alloT('stem.titration.read_the_burette_at_the_bottom_of_the_', 'Read the burette at the BOTTOM of the meniscus, with your eye level at the liquid surface. Parallax errors affect accuracy!'), color: '#38bdf8' }
 };
 
 // ── Lab Incident Scenarios ──
 var incidentScenarios = [
-  { id: 'acid_splash', title: 'Acid Splash on Skin!', icon: '\uD83D\uDCA6', desc: 'While pouring HCl, some splashes on your forearm.', urgency: 'high',
+  { id: 'acid_splash', title: __alloT('stem.titration.acid_splash_on_skin', 'Acid Splash on Skin!'), icon: '\uD83D\uDCA6', desc: __alloT('stem.titration.while_pouring_hcl_some_splashes_on_you', 'While pouring HCl, some splashes on your forearm.'), urgency: 'high',
     correct: 'rinse', options: [
-      { id: 'rinse', label: 'Remove clothing, rinse under running water for 15+ minutes', icon: '\uD83D\uDEB0', correct: true, feedback: 'Correct! Immediate and prolonged rinsing is critical. The 15-minute rule saves tissue damage.' },
-      { id: 'wipe', label: 'Wipe it off with a paper towel', icon: '\uD83E\uDDF4', correct: false, feedback: 'WRONG! Wiping can spread the acid and push it into your skin. You need running water immediately.' },
-      { id: 'neutralize', label: 'Apply baking soda paste directly to skin', icon: '\uD83E\uDDEA', correct: false, feedback: 'Not recommended! The neutralization reaction generates heat (exothermic) which can cause additional burns. Water is always the first response.' },
-      { id: 'ignore', label: 'It\'s dilute, just keep working', icon: '\uD83E\uDD37', correct: false, feedback: 'DANGEROUS! Even dilute acids can cause burns over time. Always treat chemical contact immediately.' }
+      { id: 'rinse', label: __alloT('stem.titration.remove_clothing_rinse_under_running_wa', 'Remove clothing, rinse under running water for 15+ minutes'), icon: '\uD83D\uDEB0', correct: true, feedback: __alloT('stem.titration.correct_immediate_and_prolonged_rinsin', 'Correct! Immediate and prolonged rinsing is critical. The 15-minute rule saves tissue damage.') },
+      { id: 'wipe', label: __alloT('stem.titration.wipe_it_off_with_a_paper_towel', 'Wipe it off with a paper towel'), icon: '\uD83E\uDDF4', correct: false, feedback: __alloT('stem.titration.wrong_wiping_can_spread_the_acid_and_p', 'WRONG! Wiping can spread the acid and push it into your skin. You need running water immediately.') },
+      { id: 'neutralize', label: __alloT('stem.titration.apply_baking_soda_paste_directly_to_sk', 'Apply baking soda paste directly to skin'), icon: '\uD83E\uDDEA', correct: false, feedback: __alloT('stem.titration.not_recommended_the_neutralization_rea', 'Not recommended! The neutralization reaction generates heat (exothermic) which can cause additional burns. Water is always the first response.') },
+      { id: 'ignore', label: __alloT('stem.titration.it_s_dilute_just_keep_working', 'It\'s dilute, just keep working'), icon: '\uD83E\uDD37', correct: false, feedback: __alloT('stem.titration.dangerous_even_dilute_acids_can_cause_', 'DANGEROUS! Even dilute acids can cause burns over time. Always treat chemical contact immediately.') }
     ]
   },
-  { id: 'eye_contact', title: 'Chemical Splash in Eyes!', icon: '\uD83D\uDC41\uFE0F', desc: 'NaOH solution splashes into your eyes while swirling the flask.', urgency: 'critical',
+  { id: 'eye_contact', title: __alloT('stem.titration.chemical_splash_in_eyes', 'Chemical Splash in Eyes!'), icon: '\uD83D\uDC41\uFE0F', desc: __alloT('stem.titration.naoh_solution_splashes_into_your_eyes_', 'NaOH solution splashes into your eyes while swirling the flask.'), urgency: 'critical',
     correct: 'eyewash', options: [
-      { id: 'eyewash', label: 'Go to eyewash station immediately, rinse 15+ min, hold eyelids open', icon: '\uD83D\uDEBF', correct: true, feedback: 'Correct! Speed is everything \u2014 you have about 10 seconds before serious damage starts. Hold eyelids open and tilt head to prevent cross-contamination to the other eye.' },
-      { id: 'rub', label: 'Rub your eyes and blink rapidly', icon: '\uD83D\uDE23', correct: false, feedback: 'NEVER rub! This spreads the chemical across more of the eye surface and can scratch the cornea.' },
-      { id: 'drops', label: 'Use eye drops from the first aid kit', icon: '\uD83D\uDC8A', correct: false, feedback: 'Eye drops are insufficient! You need high-volume flushing for 15+ minutes. Eye drops cannot provide that.' },
-      { id: 'wait', label: 'Finish the experiment first, then wash', icon: '\u23F0', correct: false, feedback: 'EXTREMELY DANGEROUS! NaOH causes alkali burns that penetrate deeper over time. Every second counts. Chemical eye injuries are the #1 cause of lab blindness.' }
+      { id: 'eyewash', label: __alloT('stem.titration.go_to_eyewash_station_immediately_rins', 'Go to eyewash station immediately, rinse 15+ min, hold eyelids open'), icon: '\uD83D\uDEBF', correct: true, feedback: __alloT('stem.titration.correct_speed_is_everything_you_have_a', 'Correct! Speed is everything \u2014 you have about 10 seconds before serious damage starts. Hold eyelids open and tilt head to prevent cross-contamination to the other eye.') },
+      { id: 'rub', label: __alloT('stem.titration.rub_your_eyes_and_blink_rapidly', 'Rub your eyes and blink rapidly'), icon: '\uD83D\uDE23', correct: false, feedback: __alloT('stem.titration.never_rub_this_spreads_the_chemical_ac', 'NEVER rub! This spreads the chemical across more of the eye surface and can scratch the cornea.') },
+      { id: 'drops', label: __alloT('stem.titration.use_eye_drops_from_the_first_aid_kit', 'Use eye drops from the first aid kit'), icon: '\uD83D\uDC8A', correct: false, feedback: __alloT('stem.titration.eye_drops_are_insufficient_you_need_hi', 'Eye drops are insufficient! You need high-volume flushing for 15+ minutes. Eye drops cannot provide that.') },
+      { id: 'wait', label: __alloT('stem.titration.finish_the_experiment_first_then_wash', 'Finish the experiment first, then wash'), icon: '\u23F0', correct: false, feedback: __alloT('stem.titration.extremely_dangerous_naoh_causes_alkali', 'EXTREMELY DANGEROUS! NaOH causes alkali burns that penetrate deeper over time. Every second counts. Chemical eye injuries are the #1 cause of lab blindness.') }
     ]
   },
-  { id: 'spill_bench', title: 'Large Acid Spill on Bench!', icon: '\uD83E\uDDEA', desc: 'You knock over the beaker of 0.1M HCl, spilling ~200 mL across the bench.', urgency: 'medium',
+  { id: 'spill_bench', title: __alloT('stem.titration.large_acid_spill_on_bench', 'Large Acid Spill on Bench!'), icon: '\uD83E\uDDEA', desc: __alloT('stem.titration.you_knock_over_the_beaker_of_0_1m_hcl_', 'You knock over the beaker of 0.1M HCl, spilling ~200 mL across the bench.'), urgency: 'medium',
     correct: 'contain', options: [
-      { id: 'contain', label: 'Alert others, contain with absorbent, neutralize with NaHCO\u2083, clean with water', icon: '\u2705', correct: true, feedback: 'Perfect procedure! (1) Alert nearby students, (2) contain the spread with absorbent pads, (3) sprinkle sodium bicarbonate to neutralize, (4) clean with water, (5) dispose of waste properly.' },
-      { id: 'water', label: 'Just flood it with lots of water', icon: '\uD83D\uDCA7', correct: false, feedback: 'Partially right but incomplete. Flooding spreads the acid further and doesn\'t neutralize it. Always contain first, then neutralize, then rinse.' },
-      { id: 'leave', label: 'Tell the teacher and don\'t touch it', icon: '\uD83D\uDDE3\uFE0F', correct: false, feedback: 'Telling the teacher is good, but at 0.1M this is manageable. You should start containment immediately while someone alerts the instructor. Don\'t let it reach the edge of the bench.' },
-      { id: 'paper', label: 'Soak it up with paper towels', icon: '\uD83E\uDDF4', correct: false, feedback: 'Paper towels are not appropriate for acid spills! They don\'t neutralize the acid and you\'ll be handling acid-soaked material. Use proper spill kits.' }
+      { id: 'contain', label: __alloT('stem.titration.alert_others_contain_with_absorbent_ne', 'Alert others, contain with absorbent, neutralize with NaHCO\u2083, clean with water'), icon: '\u2705', correct: true, feedback: __alloT('stem.titration.perfect_procedure_1_alert_nearby_stude', 'Perfect procedure! (1) Alert nearby students, (2) contain the spread with absorbent pads, (3) sprinkle sodium bicarbonate to neutralize, (4) clean with water, (5) dispose of waste properly.') },
+      { id: 'water', label: __alloT('stem.titration.just_flood_it_with_lots_of_water', 'Just flood it with lots of water'), icon: '\uD83D\uDCA7', correct: false, feedback: __alloT('stem.titration.partially_right_but_incomplete_floodin', 'Partially right but incomplete. Flooding spreads the acid further and doesn\'t neutralize it. Always contain first, then neutralize, then rinse.') },
+      { id: 'leave', label: __alloT('stem.titration.tell_the_teacher_and_don_t_touch_it', 'Tell the teacher and don\'t touch it'), icon: '\uD83D\uDDE3\uFE0F', correct: false, feedback: __alloT('stem.titration.telling_the_teacher_is_good_but_at_0_1', 'Telling the teacher is good, but at 0.1M this is manageable. You should start containment immediately while someone alerts the instructor. Don\'t let it reach the edge of the bench.') },
+      { id: 'paper', label: __alloT('stem.titration.soak_it_up_with_paper_towels', 'Soak it up with paper towels'), icon: '\uD83E\uDDF4', correct: false, feedback: __alloT('stem.titration.paper_towels_are_not_appropriate_for_a', 'Paper towels are not appropriate for acid spills! They don\'t neutralize the acid and you\'ll be handling acid-soaked material. Use proper spill kits.') }
     ]
   },
-  { id: 'gas_release', title: 'Mysterious Fumes Rising!', icon: '\uD83C\uDF2B\uFE0F', desc: 'While working with ammonia (NH\u2083), you notice a strong smell and your eyes start watering.', urgency: 'high',
+  { id: 'gas_release', title: __alloT('stem.titration.mysterious_fumes_rising', 'Mysterious Fumes Rising!'), icon: '\uD83C\uDF2B\uFE0F', desc: __alloT('stem.titration.while_working_with_ammonia_nh_you_noti', 'While working with ammonia (NH\u2083), you notice a strong smell and your eyes start watering.'), urgency: 'high',
     correct: 'fume_hood', options: [
-      { id: 'fume_hood', label: 'Move the experiment to the fume hood immediately, ventilate the area', icon: '\uD83C\uDF2C\uFE0F', correct: true, feedback: 'Correct! Volatile chemicals like NH\u2083 must be handled in a fume hood. If you smell it, you\'re breathing it. Open windows and move to fresh air if the fume hood is far away.' },
-      { id: 'mask', label: 'Put on a face mask and continue', icon: '\uD83D\uDE37', correct: false, feedback: 'A regular face mask does NOT protect against chemical fumes! You need proper respiratory protection (not available in most teaching labs) or a fume hood.' },
-      { id: 'fan', label: 'Fan the fumes away with your hand', icon: '\uD83D\uDC4B', correct: false, feedback: 'Fanning is for WAFTING to detect odors (gently directing air toward your nose). It does NOT remove hazardous fumes from the area. You need ventilation!' },
-      { id: 'continue', label: 'It\'s just a little smell, keep going', icon: '\uD83E\uDD37', correct: false, feedback: 'DANGEROUS! If you can smell NH\u2083, the concentration may exceed safe limits (25 ppm). Prolonged exposure causes chemical burns to airways. NH\u2083 at >300 ppm can be fatal.' }
+      { id: 'fume_hood', label: __alloT('stem.titration.move_the_experiment_to_the_fume_hood_i', 'Move the experiment to the fume hood immediately, ventilate the area'), icon: '\uD83C\uDF2C\uFE0F', correct: true, feedback: __alloT('stem.titration.correct_volatile_chemicals_like_nh_mus', 'Correct! Volatile chemicals like NH\u2083 must be handled in a fume hood. If you smell it, you\'re breathing it. Open windows and move to fresh air if the fume hood is far away.') },
+      { id: 'mask', label: __alloT('stem.titration.put_on_a_face_mask_and_continue', 'Put on a face mask and continue'), icon: '\uD83D\uDE37', correct: false, feedback: __alloT('stem.titration.a_regular_face_mask_does_not_protect_a', 'A regular face mask does NOT protect against chemical fumes! You need proper respiratory protection (not available in most teaching labs) or a fume hood.') },
+      { id: 'fan', label: __alloT('stem.titration.fan_the_fumes_away_with_your_hand', 'Fan the fumes away with your hand'), icon: '\uD83D\uDC4B', correct: false, feedback: __alloT('stem.titration.fanning_is_for_wafting_to_detect_odors', 'Fanning is for WAFTING to detect odors (gently directing air toward your nose). It does NOT remove hazardous fumes from the area. You need ventilation!') },
+      { id: 'continue', label: __alloT('stem.titration.it_s_just_a_little_smell_keep_going', 'It\'s just a little smell, keep going'), icon: '\uD83E\uDD37', correct: false, feedback: __alloT('stem.titration.dangerous_if_you_can_smell_nh_the_conc', 'DANGEROUS! If you can smell NH\u2083, the concentration may exceed safe limits (25 ppm). Prolonged exposure causes chemical burns to airways. NH\u2083 at >300 ppm can be fatal.') }
     ]
   },
-  { id: 'mix_bleach', title: 'Someone Brought Bleach!', icon: '\u2623\uFE0F', desc: 'A classmate suggests cleaning the bench with bleach while you still have ammonia solution open.', urgency: 'critical',
+  { id: 'mix_bleach', title: __alloT('stem.titration.someone_brought_bleach', 'Someone Brought Bleach!'), icon: '\u2623\uFE0F', desc: __alloT('stem.titration.a_classmate_suggests_cleaning_the_benc', 'A classmate suggests cleaning the bench with bleach while you still have ammonia solution open.'), urgency: 'critical',
     correct: 'stop', options: [
-      { id: 'stop', label: 'STOP them immediately! Bleach + ammonia = toxic chloramine gas', icon: '\uD83D\uDED1', correct: true, feedback: 'LIFE-SAVING action! NaOCl + 2NH\u2083 \u2192 2NH\u2082Cl (chloramine) \u2014 a toxic gas that causes severe respiratory damage. This is one of the most dangerous accidental mixings in a lab. Always neutralize and remove all chemicals before using any cleaning agents.' },
-      { id: 'ok', label: 'Sure, bleach is a disinfectant, it should be fine', icon: '\uD83D\uDC4D', correct: false, feedback: 'EXTREMELY DANGEROUS! Mixing bleach (NaOCl) with ammonia produces toxic chloramine gas. This has caused deaths in laboratories and homes. NEVER mix bleach with any other chemical.' },
-      { id: 'dilute', label: 'It should be fine if the ammonia is diluted', icon: '\uD83E\uDDEA', correct: false, feedback: 'WRONG! Even dilute ammonia reacts with bleach to produce toxic chloramine gas. The reaction occurs at ANY concentration. There is no safe dilution for mixing these chemicals.' },
-      { id: 'outside', label: 'Just open a window and it will be fine', icon: '\uD83C\uDF2C\uFE0F', correct: false, feedback: 'Ventilation does NOT make it safe to generate toxic gas! Chloramine causes immediate respiratory distress. Prevention is the only acceptable approach.' }
+      { id: 'stop', label: __alloT('stem.titration.stop_them_immediately_bleach_ammonia_t', 'STOP them immediately! Bleach + ammonia = toxic chloramine gas'), icon: '\uD83D\uDED1', correct: true, feedback: __alloT('stem.titration.life_saving_action_naocl_2nh_2nh_cl_ch', 'LIFE-SAVING action! NaOCl + 2NH\u2083 \u2192 2NH\u2082Cl (chloramine) \u2014 a toxic gas that causes severe respiratory damage. This is one of the most dangerous accidental mixings in a lab. Always neutralize and remove all chemicals before using any cleaning agents.') },
+      { id: 'ok', label: __alloT('stem.titration.sure_bleach_is_a_disinfectant_it_shoul', 'Sure, bleach is a disinfectant, it should be fine'), icon: '\uD83D\uDC4D', correct: false, feedback: __alloT('stem.titration.extremely_dangerous_mixing_bleach_naoc', 'EXTREMELY DANGEROUS! Mixing bleach (NaOCl) with ammonia produces toxic chloramine gas. This has caused deaths in laboratories and homes. NEVER mix bleach with any other chemical.') },
+      { id: 'dilute', label: __alloT('stem.titration.it_should_be_fine_if_the_ammonia_is_di', 'It should be fine if the ammonia is diluted'), icon: '\uD83E\uDDEA', correct: false, feedback: __alloT('stem.titration.wrong_even_dilute_ammonia_reacts_with_', 'WRONG! Even dilute ammonia reacts with bleach to produce toxic chloramine gas. The reaction occurs at ANY concentration. There is no safe dilution for mixing these chemicals.') },
+      { id: 'outside', label: __alloT('stem.titration.just_open_a_window_and_it_will_be_fine', 'Just open a window and it will be fine'), icon: '\uD83C\uDF2C\uFE0F', correct: false, feedback: __alloT('stem.titration.ventilation_does_not_make_it_safe_to_g', 'Ventilation does NOT make it safe to generate toxic gas! Chloramine causes immediate respiratory distress. Prevention is the only acceptable approach.') }
     ]
   }
 ];
 
 // ── Lab Equipment Guide Data ──
 var labEquipment = [
-  { id: 'burette', name: 'Burette', icon: '\uD83E\uDDEA', desc: 'Delivers precise volumes of titrant.',
+  { id: 'burette', name: __alloT('stem.titration.burette', 'Burette'), icon: '\uD83E\uDDEA', desc: __alloT('stem.titration.delivers_precise_volumes_of_titrant', 'Delivers precise volumes of titrant.'),
     technique: 'Rinse with distilled water, then with titrant solution. Fill above 0 mL mark, drain to 0. Read at meniscus bottom. Control stopcock with left hand, swirl flask with right.',
     errors: ['Parallax error: eye not level with meniscus', 'Air bubbles in tip', 'Not pre-rinsing with titrant', 'Reading at top of meniscus instead of bottom'],
     safetyNote: 'Clamp securely! A falling burette with acid/base is a serious splash hazard.' },
-  { id: 'erlenmeyer', name: 'Erlenmeyer Flask', icon: '\u2697\uFE0F', desc: 'Holds the analyte solution being titrated.',
+  { id: 'erlenmeyer', name: __alloT('stem.titration.erlenmeyer_flask', 'Erlenmeyer Flask'), icon: '\u2697\uFE0F', desc: __alloT('stem.titration.holds_the_analyte_solution_being_titra', 'Holds the analyte solution being titrated.'),
     technique: 'Swirl gently (don\'t shake!) after each addition. A white tile underneath helps detect color changes. Rinse walls with distilled water from a wash bottle to ensure all analyte reacts.',
     errors: ['Violent shaking (splashes analyte out)', 'Not rinsing walls (loses analyte)', 'Using a beaker instead (harder to swirl, easier to spill)'],
     safetyNote: 'Hot glass looks the same as cold glass. Always use tongs for heated flasks.' },
-  { id: 'pipette', name: 'Volumetric Pipette', icon: '\uD83E\uDDEA', desc: 'Measures exact volumes of analyte.',
+  { id: 'pipette', name: __alloT('stem.titration.volumetric_pipette', 'Volumetric Pipette'), icon: '\uD83E\uDDEA', desc: __alloT('stem.titration.measures_exact_volumes_of_analyte', 'Measures exact volumes of analyte.'),
     technique: 'Use a pipette filler (NEVER mouth pipette!). Rinse with the solution to be measured. Drain to the line, touch tip to flask wall to remove the hanging drop. Do NOT blow out the last drop.',
     errors: ['Mouth pipetting (extremely dangerous!)', 'Not rinsing with solution first', 'Blowing out the last drop', 'Air bubbles in the pipette'],
     safetyNote: '\u26D4 NEVER mouth pipette. This is the #1 lab safety violation. Even "safe" solutions may be contaminated. Always use a pipette filler or bulb.' },
-  { id: 'indicator', name: 'pH Indicator', icon: '\uD83C\uDFA8', desc: 'Changes color to signal the endpoint.',
+  { id: 'indicator', name: __alloT('stem.titration.ph_indicator', 'pH Indicator'), icon: '\uD83C\uDFA8', desc: __alloT('stem.titration.changes_color_to_signal_the_endpoint', 'Changes color to signal the endpoint.'),
     technique: 'Add only 2-3 drops. Too much indicator acts as a weak acid/base itself and shifts the endpoint! Choose an indicator whose transition range includes the equivalence pH.',
     errors: ['Adding too much indicator', 'Choosing wrong indicator for the titration type', 'Confusing endpoint with equivalence point'],
     safetyNote: 'Some indicators stain skin and clothing permanently. Wear gloves and a lab coat.' },
-  { id: 'washbottle', name: 'Wash Bottle', icon: '\uD83D\uDCA7', desc: 'Contains distilled water for rinsing.',
+  { id: 'washbottle', name: __alloT('stem.titration.wash_bottle', 'Wash Bottle'), icon: '\uD83D\uDCA7', desc: __alloT('stem.titration.contains_distilled_water_for_rinsing', 'Contains distilled water for rinsing.'),
     technique: 'Use to rinse burette tip and flask walls during titration. This ensures all titrant enters the reaction and no analyte clings to the walls. Always label the bottle.',
     errors: ['Using tap water instead of distilled (introduces ions)', 'Adding too much rinse water (dilutes but doesn\'t affect moles)'],
     safetyNote: 'Never store anything other than distilled water in a wash bottle. Label everything!' }
@@ -277,26 +278,26 @@ var labEquipment = [
 
 // ── Titration Challenge Questions ──
 var challengeQuestions = [
-  { q: 'What PPE is ALWAYS required in a titration lab?', opts: ['Just goggles', 'Goggles, gloves, and lab coat', 'A face shield only', 'No PPE for dilute solutions'], answer: 'Goggles, gloves, and lab coat', xp: 10, category: 'safety',
-    feedback: 'All three are mandatory: goggles protect eyes from splashes, gloves protect hands from corrosives, and the lab coat protects clothing and skin.' },
-  { q: 'You spill acid on your skin. What is your FIRST action?', opts: ['Apply baking soda', 'Rinse with running water for 15+ min', 'Wipe with a dry cloth', 'Apply burn cream'], answer: 'Rinse with running water for 15+ min', xp: 15, category: 'safety',
-    feedback: 'Water first, always! The 15-minute rinse is critical. Neutralizers can cause exothermic reactions on skin.' },
-  { q: 'What is the equivalence point?', opts: ['Where the indicator changes color', 'Where moles of acid = moles of base', 'Where pH = 7', 'Where you stop adding titrant'], answer: 'Where moles of acid = moles of base', xp: 10, category: 'theory',
-    feedback: 'The equivalence point is the stoichiometric point. The pH at equivalence depends on acid/base strength \u2014 it\'s only pH 7 for strong acid + strong base.' },
-  { q: 'Why do we add acid TO water, never water to acid?', opts: ['It\'s just tradition', 'Water is denser than acid', 'The exothermic reaction can cause violent boiling and splashing', 'It doesn\'t matter with dilute solutions'], answer: 'The exothermic reaction can cause violent boiling and splashing', xp: 15, category: 'safety',
-    feedback: 'When water hits concentrated acid, the heat released can boil the water instantly, causing a violent splash of hot acid. Adding acid to water spreads the heat through a larger water volume.' },
-  { q: 'For a weak acid + strong base titration, the equivalence pH is:', opts: ['Exactly 7', 'Below 7', 'Above 7', 'Cannot be determined'], answer: 'Above 7', xp: 10, category: 'theory',
-    feedback: 'At equivalence, only the conjugate base (A\u207B) remains. Conjugate bases of weak acids are themselves weak bases, making the solution basic (pH > 7).' },
-  { q: 'Phenolphthalein is best for which titration type?', opts: ['Strong acid + Strong base or Weak acid + Strong base', 'Strong acid + Weak base', 'Both weak', 'Redox titrations'], answer: 'Strong acid + Strong base or Weak acid + Strong base', xp: 10, category: 'theory',
-    feedback: 'Phenolphthalein transitions at pH 8.2-10.0, which matches the basic equivalence pH of weak acid + strong base titrations. It also works for SA+SB since the sharp jump crosses its range.' },
-  { q: 'What should you NEVER mix with bleach?', opts: ['Water', 'Ammonia or acids', 'Sodium bicarbonate', 'Ethanol'], answer: 'Ammonia or acids', xp: 20, category: 'safety',
-    feedback: 'Bleach + ammonia = chloramine gas (toxic). Bleach + acid = chlorine gas (toxic). Both can cause severe respiratory injury or death. NEVER combine bleach with any chemical.' },
+  { q: 'What PPE is ALWAYS required in a titration lab?', opts: ['Just goggles', 'Goggles, gloves, and lab coat', 'A face shield only', 'No PPE for dilute solutions'], answer: __alloT('stem.titration.goggles_gloves_and_lab_coat', 'Goggles, gloves, and lab coat'), xp: 10, category: 'safety',
+    feedback: __alloT('stem.titration.all_three_are_mandatory_goggles_protec', 'All three are mandatory: goggles protect eyes from splashes, gloves protect hands from corrosives, and the lab coat protects clothing and skin.') },
+  { q: 'You spill acid on your skin. What is your FIRST action?', opts: ['Apply baking soda', 'Rinse with running water for 15+ min', 'Wipe with a dry cloth', 'Apply burn cream'], answer: __alloT('stem.titration.rinse_with_running_water_for_15_min', 'Rinse with running water for 15+ min'), xp: 15, category: 'safety',
+    feedback: __alloT('stem.titration.water_first_always_the_15_minute_rinse', 'Water first, always! The 15-minute rinse is critical. Neutralizers can cause exothermic reactions on skin.') },
+  { q: 'What is the equivalence point?', opts: ['Where the indicator changes color', 'Where moles of acid = moles of base', 'Where pH = 7', 'Where you stop adding titrant'], answer: __alloT('stem.titration.where_moles_of_acid_moles_of_base', 'Where moles of acid = moles of base'), xp: 10, category: 'theory',
+    feedback: __alloT('stem.titration.the_equivalence_point_is_the_stoichiom', 'The equivalence point is the stoichiometric point. The pH at equivalence depends on acid/base strength \u2014 it\'s only pH 7 for strong acid + strong base.') },
+  { q: 'Why do we add acid TO water, never water to acid?', opts: ['It\'s just tradition', 'Water is denser than acid', 'The exothermic reaction can cause violent boiling and splashing', 'It doesn\'t matter with dilute solutions'], answer: __alloT('stem.titration.the_exothermic_reaction_can_cause_viol', 'The exothermic reaction can cause violent boiling and splashing'), xp: 15, category: 'safety',
+    feedback: __alloT('stem.titration.when_water_hits_concentrated_acid_the_', 'When water hits concentrated acid, the heat released can boil the water instantly, causing a violent splash of hot acid. Adding acid to water spreads the heat through a larger water volume.') },
+  { q: 'For a weak acid + strong base titration, the equivalence pH is:', opts: ['Exactly 7', 'Below 7', 'Above 7', 'Cannot be determined'], answer: __alloT('stem.titration.above_7', 'Above 7'), xp: 10, category: 'theory',
+    feedback: __alloT('stem.titration.at_equivalence_only_the_conjugate_base', 'At equivalence, only the conjugate base (A\u207B) remains. Conjugate bases of weak acids are themselves weak bases, making the solution basic (pH > 7).') },
+  { q: 'Phenolphthalein is best for which titration type?', opts: ['Strong acid + Strong base or Weak acid + Strong base', 'Strong acid + Weak base', 'Both weak', 'Redox titrations'], answer: __alloT('stem.titration.strong_acid_strong_base_or_weak_acid_s', 'Strong acid + Strong base or Weak acid + Strong base'), xp: 10, category: 'theory',
+    feedback: __alloT('stem.titration.phenolphthalein_transitions_at_ph_8_2_', 'Phenolphthalein transitions at pH 8.2-10.0, which matches the basic equivalence pH of weak acid + strong base titrations. It also works for SA+SB since the sharp jump crosses its range.') },
+  { q: 'What should you NEVER mix with bleach?', opts: ['Water', 'Ammonia or acids', 'Sodium bicarbonate', 'Ethanol'], answer: __alloT('stem.titration.ammonia_or_acids', 'Ammonia or acids'), xp: 20, category: 'safety',
+    feedback: __alloT('stem.titration.bleach_ammonia_chloramine_gas_toxic_bl', 'Bleach + ammonia = chloramine gas (toxic). Bleach + acid = chlorine gas (toxic). Both can cause severe respiratory injury or death. NEVER combine bleach with any chemical.') },
   { q: 'A burette reading of 23.45 mL has how many significant figures?', opts: ['2', '3', '4', '5'], answer: '4', xp: 10, category: 'technique',
-    feedback: '23.45 has 4 significant figures. The last digit (5) is estimated between the graduations. Burettes are precise to \u00B10.05 mL.' },
-  { q: 'What happens at the half-equivalence point of a weak acid titration?', opts: ['pH = 7', 'pH = pKa', 'pH = pKb', 'The indicator changes'], answer: 'pH = pKa', xp: 15, category: 'theory',
-    feedback: 'At half-equivalence, [HA] = [A\u207B], so Henderson\u2013Hasselbalch gives pH = pKa + log(1) = pKa. This is the center of the buffer region.' },
-  { q: 'When should you wear a face shield instead of just goggles?', opts: ['Never, goggles are enough', 'When handling >1M concentrated acids or bases', 'Only for organic solvents', 'Only if you wear glasses'], answer: 'When handling >1M concentrated acids or bases', xp: 15, category: 'safety',
-    feedback: 'Face shields provide splash protection for the entire face. Required for concentrated (>1M) corrosives, heating operations, and any procedure with splash risk beyond the eye area.' }
+    feedback: __alloT('stem.titration.23_45_has_4_significant_figures_the_la', '23.45 has 4 significant figures. The last digit (5) is estimated between the graduations. Burettes are precise to \u00B10.05 mL.') },
+  { q: 'What happens at the half-equivalence point of a weak acid titration?', opts: ['pH = 7', 'pH = pKa', 'pH = pKb', 'The indicator changes'], answer: __alloT('stem.titration.ph_pka', 'pH = pKa'), xp: 15, category: 'theory',
+    feedback: __alloT('stem.titration.at_half_equivalence_ha_a_so_henderson_', 'At half-equivalence, [HA] = [A\u207B], so Henderson\u2013Hasselbalch gives pH = pKa + log(1) = pKa. This is the center of the buffer region.') },
+  { q: 'When should you wear a face shield instead of just goggles?', opts: ['Never, goggles are enough', 'When handling >1M concentrated acids or bases', 'Only for organic solvents', 'Only if you wear glasses'], answer: __alloT('stem.titration.when_handling_1m_concentrated_acids_or', 'When handling >1M concentrated acids or bases'), xp: 15, category: 'safety',
+    feedback: __alloT('stem.titration.face_shields_provide_splash_protection', 'Face shields provide splash protection for the entire face. Required for concentrated (>1M) corrosives, heating operations, and any procedure with splash risk beyond the eye area.') }
 ];
 
 // ── State with defaults ──
@@ -744,10 +745,10 @@ if (!safetyChecked) {
   var chemsCount = presChems.filter(function(c) { return chemsReviewed[c]; }).length;
 
   var stationDefs = [
-    { id: 1, label: 'Suit Up', icon: '\uD83E\uDDFA', color: '#f59e0b', complete: ppeComplete, progress: ppeCount + '/' + ppeItems.length },
-    { id: 2, label: 'Lab Scan', icon: '\uD83D\uDD2C', color: '#38bdf8', complete: mapComplete, progress: mapCount + '/' + mapEquip.length },
-    { id: 3, label: 'Chemicals', icon: '\u2623\uFE0F', color: '#ef4444', complete: chemsComplete, progress: chemsCount + '/' + presChems.length },
-    { id: 4, label: 'Safety Drill', icon: '\uD83D\uDEA8', color: '#f97316', complete: drillComplete, progress: drillComplete ? '1/1' : '0/1' }
+    { id: 1, label: __alloT('stem.titration.suit_up', 'Suit Up'), icon: '\uD83E\uDDFA', color: '#f59e0b', complete: ppeComplete, progress: ppeCount + '/' + ppeItems.length },
+    { id: 2, label: __alloT('stem.titration.lab_scan', 'Lab Scan'), icon: '\uD83D\uDD2C', color: '#38bdf8', complete: mapComplete, progress: mapCount + '/' + mapEquip.length },
+    { id: 3, label: __alloT('stem.titration.chemicals', 'Chemicals'), icon: '\u2623\uFE0F', color: '#ef4444', complete: chemsComplete, progress: chemsCount + '/' + presChems.length },
+    { id: 4, label: __alloT('stem.titration.safety_drill', 'Safety Drill'), icon: '\uD83D\uDEA8', color: '#f97316', complete: drillComplete, progress: drillComplete ? '1/1' : '0/1' }
   ];
 
   function canGoStation(n) {
@@ -757,10 +758,10 @@ if (!safetyChecked) {
 
   // ── PPE consequence data ──
   var ppeConsequences = {
-    goggles: { risk: 'Chemical splash blindness', detail: 'NaOH causes alkali burns that penetrate the eye within 10 seconds. Without goggles, a single splash can cause permanent vision loss.', severity: 'critical' },
-    gloves: { risk: 'Chemical burns on hands', detail: 'Concentrated HCl dissolves skin on contact. Even dilute acids cause irritation. Your hands are closest to the chemicals.', severity: 'high' },
-    coat: { risk: 'Skin burns and ruined clothing', detail: 'A splash of acid or base will burn through clothing and skin. Lab coats provide a removable barrier layer.', severity: 'high' },
-    shoes: { risk: 'Foot burns from spills', detail: 'A dropped beaker sends glass and chemicals across the floor. Open-toed shoes mean acid on bare feet.', severity: 'medium' }
+    goggles: { risk: 'Chemical splash blindness', detail: __alloT('stem.titration.naoh_causes_alkali_burns_that_penetrat', 'NaOH causes alkali burns that penetrate the eye within 10 seconds. Without goggles, a single splash can cause permanent vision loss.'), severity: 'critical' },
+    gloves: { risk: 'Chemical burns on hands', detail: __alloT('stem.titration.concentrated_hcl_dissolves_skin_on_con', 'Concentrated HCl dissolves skin on contact. Even dilute acids cause irritation. Your hands are closest to the chemicals.'), severity: 'high' },
+    coat: { risk: 'Skin burns and ruined clothing', detail: __alloT('stem.titration.a_splash_of_acid_or_base_will_burn_thr', 'A splash of acid or base will burn through clothing and skin. Lab coats provide a removable barrier layer.'), severity: 'high' },
+    shoes: { risk: 'Foot burns from spills', detail: __alloT('stem.titration.a_dropped_beaker_sends_glass_and_chemi', 'A dropped beaker sends glass and chemicals across the floor. Open-toed shoes mean acid on bare feet.'), severity: 'medium' }
   };
 
   // ── Immersive CSS ──
@@ -819,9 +820,9 @@ if (!safetyChecked) {
         React.createElement("div", { style: { fontSize:'80px', marginBottom:'16px', animation:'safetyHeartbeat 1s ease infinite',
           filter:'drop-shadow(0 0 20px rgba(52,211,153,0.4))' } }, "\uD83E\uDDEA"),
         React.createElement("div", { style: { fontSize:'28px', fontWeight:900, color:'#34d399', letterSpacing:'3px', textTransform:'uppercase',
-          textShadow:'0 0 30px rgba(52,211,153,0.3)' } }, "Lab Access Granted"),
+          textShadow:'0 0 30px rgba(52,211,153,0.3)' } }, __alloT('stem.titration.lab_access_granted', "Lab Access Granted")),
         React.createElement("div", { style: { fontSize:'12px', color:'#6ee7b7', marginTop:'12px', opacity:0.8, letterSpacing:'1px' } },
-          "All safety protocols confirmed"),
+          __alloT('stem.titration.all_safety_protocols_confirmed', "All safety protocols confirmed")),
         // PPE status badges
         React.createElement("div", { style: { display:'flex', gap:'8px', justifyContent:'center', marginTop:'16px', animation:'safetyFadeUp 0.5s ease 1s both' } },
           ['\uD83E\uDD7D Goggles', '\uD83E\uDDE4 Gloves', '\uD83E\uDD7C Coat', '\uD83D\uDC5F Shoes'].map(function(label, i) {
@@ -843,10 +844,10 @@ if (!safetyChecked) {
     React.createElement("style", null, safetyCSSText),
 
     // Back button
-    React.createElement("button", { "aria-label": "Back",
+    React.createElement("button", { "aria-label": __alloT('stem.titration.back', "Back"),
       onClick: function() { setStemLabTool(null); },
       className: "text-xs font-bold text-cyan-400 hover:text-white transition-colors"
-    }, "\u2190 Back"),
+    }, __alloT('stem.titration.back_2', "\u2190 Back")),
 
     // ── Header ──
     React.createElement("div", {
@@ -858,7 +859,7 @@ if (!safetyChecked) {
         style: { background:'rgba(0,0,0,0.4)', borderBottom:'1px solid ' + stationBorders[safetyStation] }
       },
         React.createElement("div", { style: { fontSize:'28px', marginBottom:'4px' } }, "\u26A0\uFE0F"),
-        React.createElement("h2", { className: "text-xl font-black tracking-tight", style: { color: stationDefs[safetyStation-1].color } }, "Lab Safety Briefing"),
+        React.createElement("h2", { className: "text-xl font-black tracking-tight", style: { color: stationDefs[safetyStation-1].color } }, __alloT('stem.titration.lab_safety_briefing', "Lab Safety Briefing")),
         React.createElement("p", { className: "text-[11px] mt-1", style: { color: 'rgba(255,255,255,0.5)' } },
           "Complete all 4 safety stations before entering the Virtual " + preset.acidName.split(' ')[0] + " Lab")
       ),
@@ -911,8 +912,8 @@ if (!safetyChecked) {
         style: { animation: 'safetyStationEnter 0.4s ease' }
       },
         React.createElement("div", { className: "text-center mb-2" },
-          React.createElement("div", { style: { fontSize:'14px', fontWeight:900, color:'#fbbf24', letterSpacing:'2px', textTransform:'uppercase' } }, "\uD83D\uDEE1\uFE0F Personal Protective Equipment"),
-          React.createElement("p", { style: { fontSize:'11px', color:'rgba(251,191,36,0.6)', marginTop:'4px' } }, "Equip each piece of PPE before proceeding. In a real lab, you cannot touch chemicals without full protection.")
+          React.createElement("div", { style: { fontSize:'14px', fontWeight:900, color:'#fbbf24', letterSpacing:'2px', textTransform:'uppercase' } }, __alloT('stem.titration.personal_protective_equipment', "\uD83D\uDEE1\uFE0F Personal Protective Equipment")),
+          React.createElement("p", { style: { fontSize:'11px', color:'rgba(251,191,36,0.6)', marginTop:'4px' } }, __alloT('stem.titration.equip_each_piece_of_ppe_before_proceed', "Equip each piece of PPE before proceeding. In a real lab, you cannot touch chemicals without full protection."))
         ),
 
         // PPE readiness gauge
@@ -982,7 +983,7 @@ if (!safetyChecked) {
                 style: { marginTop:'8px', padding:'4px', borderRadius:'6px', textAlign:'center',
                   background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.2)' }
               },
-                React.createElement("span", { style: { fontSize:'8px', fontWeight:700, color:'#34d399' } }, "\u2714 EQUIPPED \u2014 Protected")
+                React.createElement("span", { style: { fontSize:'8px', fontWeight:700, color:'#34d399' } }, __alloT('stem.titration.equipped_protected', "\u2714 EQUIPPED \u2014 Protected"))
               )
             );
           })
@@ -990,11 +991,11 @@ if (!safetyChecked) {
 
         // Next station button
         ppeComplete && React.createElement("button", {
-          "aria-label": "Continue to Lab Scan station",
+          "aria-label": __alloT('stem.titration.continue_to_lab_scan_station', "Continue to Lab Scan station"),
           onClick: function() { upd('safetyStation', 2); },
           className: "w-full py-3 rounded-xl text-sm font-black text-white transition-all hover:scale-[1.02]",
           style: { background:'linear-gradient(90deg, #f59e0b, #d97706)', boxShadow:'0 0 20px rgba(245,158,11,0.3)', animation:'safetyFadeUp 0.4s ease' }
-        }, "\uD83D\uDD2C Continue to Lab Scan \u2192")
+        }, __alloT('stem.titration.continue_to_lab_scan', "\uD83D\uDD2C Continue to Lab Scan \u2192"))
       ),
 
       // ══════════════════════════════════════
@@ -1005,8 +1006,8 @@ if (!safetyChecked) {
         style: { animation: 'safetyStationEnter 0.4s ease' }
       },
         React.createElement("div", { className: "text-center mb-2" },
-          React.createElement("div", { style: { fontSize:'14px', fontWeight:900, color:'#38bdf8', letterSpacing:'2px', textTransform:'uppercase' } }, "\uD83D\uDD0D Locate Emergency Equipment"),
-          React.createElement("p", { style: { fontSize:'11px', color:'rgba(56,189,248,0.6)', marginTop:'4px' } }, "Find each piece of safety equipment on the lab map. In a real emergency, seconds matter \u2014 you must know where everything is BEFORE you start.")
+          React.createElement("div", { style: { fontSize:'14px', fontWeight:900, color:'#38bdf8', letterSpacing:'2px', textTransform:'uppercase' } }, __alloT('stem.titration.locate_emergency_equipment', "\uD83D\uDD0D Locate Emergency Equipment")),
+          React.createElement("p", { style: { fontSize:'11px', color:'rgba(56,189,248,0.6)', marginTop:'4px' } }, __alloT('stem.titration.find_each_piece_of_safety_equipment_on', "Find each piece of safety equipment on the lab map. In a real emergency, seconds matter \u2014 you must know where everything is BEFORE you start."))
         ),
 
         // Lab Map SVG
@@ -1027,16 +1028,16 @@ if (!safetyChecked) {
 
             // Fume hood (top)
             React.createElement("rect", { x:20, y:10, width:120, height:35, fill:'rgba(56,189,248,0.08)', stroke:'rgba(56,189,248,0.2)', strokeWidth:1, rx:3 }),
-            React.createElement("text", { x:80, y:32, fill:'rgba(56,189,248,0.4)', fontSize:8, textAnchor:'middle', fontWeight:'bold' }, "FUME HOOD"),
+            React.createElement("text", { x:80, y:32, fill:'rgba(56,189,248,0.4)', fontSize:8, textAnchor:'middle', fontWeight:'bold' }, __alloT('stem.titration.fume_hood', "FUME HOOD")),
 
             // Lab benches with equipment
             React.createElement("rect", { x:40, y:80, width:140, height:30, fill:'rgba(148,163,184,0.1)', stroke:'rgba(148,163,184,0.2)', strokeWidth:1, rx:2 }),
             React.createElement("rect", { x:220, y:80, width:140, height:30, fill:'rgba(148,163,184,0.1)', stroke:'rgba(148,163,184,0.2)', strokeWidth:1, rx:2 }),
             React.createElement("rect", { x:40, y:150, width:140, height:30, fill:'rgba(148,163,184,0.1)', stroke:'rgba(148,163,184,0.2)', strokeWidth:1, rx:2 }),
             React.createElement("rect", { x:220, y:150, width:140, height:30, fill:'rgba(148,163,184,0.1)', stroke:'rgba(148,163,184,0.2)', strokeWidth:1, rx:2 }),
-            React.createElement("text", { x:110, y:98, fill:'rgba(148,163,184,0.3)', fontSize:7, textAnchor:'middle' }, "Bench 1"),
-            React.createElement("text", { x:290, y:98, fill:'rgba(148,163,184,0.3)', fontSize:7, textAnchor:'middle' }, "Bench 2"),
-            React.createElement("text", { x:110, y:168, fill:'rgba(148,163,184,0.3)', fontSize:7, textAnchor:'middle' }, "Bench 3"),
+            React.createElement("text", { x:110, y:98, fill:'rgba(148,163,184,0.3)', fontSize:7, textAnchor:'middle' }, __alloT('stem.titration.bench_1', "Bench 1")),
+            React.createElement("text", { x:290, y:98, fill:'rgba(148,163,184,0.3)', fontSize:7, textAnchor:'middle' }, __alloT('stem.titration.bench_2', "Bench 2")),
+            React.createElement("text", { x:110, y:168, fill:'rgba(148,163,184,0.3)', fontSize:7, textAnchor:'middle' }, __alloT('stem.titration.bench_3', "Bench 3")),
 
             // Tiny equipment on benches (beakers, flasks)
             React.createElement("text", { x:65, y:93, fill:'rgba(56,189,248,0.25)', fontSize:10 }, "\u2697\uFE0F"),
@@ -1052,7 +1053,7 @@ if (!safetyChecked) {
             React.createElement("circle", { cx:200, cy:210, r:5, fill:'#10b981' }),
             React.createElement("circle", { cx:200, cy:210, r:16, fill:'transparent', stroke:'rgba(16,185,129,0.3)', strokeWidth:1,
               style: { animation:'safetyRipple 2s ease infinite' } }),
-            React.createElement("text", { x:200, y:230, fill:'#10b981', fontSize:7, textAnchor:'middle', fontWeight:'bold' }, "YOU ARE HERE"),
+            React.createElement("text", { x:200, y:230, fill:'#10b981', fontSize:7, textAnchor:'middle', fontWeight:'bold' }, __alloT('stem.titration.you_are_here', "YOU ARE HERE")),
 
             // Safety path lines (connect found equipment to student)
             labMapFound['eyewash'] && React.createElement("line", { x1:200, y1:210, x2:60, y2:240, stroke:'#10b981', strokeWidth:1, strokeDasharray:'4,3', opacity:0.4 }),
@@ -1065,7 +1066,7 @@ if (!safetyChecked) {
 
             // Sink
             React.createElement("rect", { x:330, y:10, width:50, height:25, fill:'rgba(56,189,248,0.05)', stroke:'rgba(56,189,248,0.15)', strokeWidth:1, rx:2 }),
-            React.createElement("text", { x:355, y:26, fill:'rgba(56,189,248,0.3)', fontSize:7, textAnchor:'middle' }, "Sink"),
+            React.createElement("text", { x:355, y:26, fill:'rgba(56,189,248,0.3)', fontSize:7, textAnchor:'middle' }, __alloT('stem.titration.sink', "Sink")),
 
             // Scanline animation overlay
             !mapComplete && React.createElement("rect", {
@@ -1102,7 +1103,7 @@ if (!safetyChecked) {
             labMapFound['extinguisher'] && React.createElement("g", null,
               React.createElement("circle", { cx:370, cy:160, r:14, fill:'rgba(16,185,129,0.2)', stroke:'#10b981', strokeWidth:2 }),
               React.createElement("text", { x:370, y:157, fill:'white', fontSize:14, textAnchor:'middle' }, "\uD83E\uDDEF"),
-              React.createElement("text", { x:370, y:174, fill:'#10b981', fontSize:6, textAnchor:'middle', fontWeight:'bold' }, "FIRE EXT.")
+              React.createElement("text", { x:370, y:174, fill:'#10b981', fontSize:6, textAnchor:'middle', fontWeight:'bold' }, __alloT('stem.titration.fire_ext', "FIRE EXT."))
             ),
 
             // SDS binder (teacher's area, top-right)
@@ -1114,7 +1115,7 @@ if (!safetyChecked) {
             labMapFound['sds'] && React.createElement("g", null,
               React.createElement("circle", { cx:250, cy:30, r:14, fill:'rgba(16,185,129,0.2)', stroke:'#10b981', strokeWidth:2 }),
               React.createElement("text", { x:250, y:27, fill:'white', fontSize:14, textAnchor:'middle' }, "\uD83D\uDCCB"),
-              React.createElement("text", { x:250, y:44, fill:'#10b981', fontSize:6, textAnchor:'middle', fontWeight:'bold' }, "SDS BINDER")
+              React.createElement("text", { x:250, y:44, fill:'#10b981', fontSize:6, textAnchor:'middle', fontWeight:'bold' }, __alloT('stem.titration.sds_binder', "SDS BINDER"))
             )
           ),
 
@@ -1122,7 +1123,7 @@ if (!safetyChecked) {
           React.createElement("div", { style: { position:'absolute', inset:0 } },
             // Eyewash click zone
             React.createElement("button", {
-              "aria-label": "Locate eyewash station",
+              "aria-label": __alloT('stem.titration.locate_eyewash_station', "Locate eyewash station"),
               style: { position:'absolute', left:'10%', top:'80%', width:'12%', height:'14%', background:'transparent', border:'none', cursor:'pointer', borderRadius:'50%' },
               onClick: function() {
                 var next = Object.assign({}, labMapFound);
@@ -1134,7 +1135,7 @@ if (!safetyChecked) {
             }),
             // Fire ext click zone
             React.createElement("button", {
-              "aria-label": "Locate fire extinguisher",
+              "aria-label": __alloT('stem.titration.locate_fire_extinguisher', "Locate fire extinguisher"),
               style: { position:'absolute', left:'86%', top:'50%', width:'12%', height:'14%', background:'transparent', border:'none', cursor:'pointer', borderRadius:'50%' },
               onClick: function() {
                 var next = Object.assign({}, labMapFound);
@@ -1146,7 +1147,7 @@ if (!safetyChecked) {
             }),
             // SDS click zone
             React.createElement("button", {
-              "aria-label": "Locate SDS binder",
+              "aria-label": __alloT('stem.titration.locate_sds_binder', "Locate SDS binder"),
               style: { position:'absolute', left:'57%', top:'4%', width:'12%', height:'14%', background:'transparent', border:'none', cursor:'pointer', borderRadius:'50%' },
               onClick: function() {
                 var next = Object.assign({}, labMapFound);
@@ -1164,30 +1165,30 @@ if (!safetyChecked) {
           className: "rounded-xl p-3 border",
           style: { background:'rgba(56,189,248,0.1)', borderColor:'rgba(56,189,248,0.3)', animation:'safetyFadeUp 0.3s ease' }
         },
-          React.createElement("div", { style: { fontSize:'11px', fontWeight:800, color:'#38bdf8' } }, "\uD83D\uDEBF Eyewash Station Located!"),
-          React.createElement("div", { style: { fontSize:'10px', color:'rgba(255,255,255,0.6)', marginTop:'4px' } }, "THE 10-SECOND RULE: If chemicals splash in your eyes, you have approximately 10 seconds to reach the eyewash before permanent damage begins. Hold eyelids open and rinse for 15+ minutes.")
+          React.createElement("div", { style: { fontSize:'11px', fontWeight:800, color:'#38bdf8' } }, __alloT('stem.titration.eyewash_station_located_2', "\uD83D\uDEBF Eyewash Station Located!")),
+          React.createElement("div", { style: { fontSize:'10px', color:'rgba(255,255,255,0.6)', marginTop:'4px' } }, __alloT('stem.titration.the_10_second_rule_if_chemicals_splash', "THE 10-SECOND RULE: If chemicals splash in your eyes, you have approximately 10 seconds to reach the eyewash before permanent damage begins. Hold eyelids open and rinse for 15+ minutes."))
         ),
         mapTooltip === 'extinguisher' && React.createElement("div", {
           className: "rounded-xl p-3 border",
           style: { background:'rgba(249,115,22,0.1)', borderColor:'rgba(249,115,22,0.3)', animation:'safetyFadeUp 0.3s ease' }
         },
-          React.createElement("div", { style: { fontSize:'11px', fontWeight:800, color:'#f97316' } }, "\uD83E\uDDEF Fire Extinguisher Located!"),
-          React.createElement("div", { style: { fontSize:'10px', color:'rgba(255,255,255,0.6)', marginTop:'4px' } }, "Remember P.A.S.S.: Pull the pin, Aim at base of fire, Squeeze handle, Sweep side to side. Acetic acid and some solvents are flammable \u2014 know this location before you begin.")
+          React.createElement("div", { style: { fontSize:'11px', fontWeight:800, color:'#f97316' } }, __alloT('stem.titration.fire_extinguisher_located_2', "\uD83E\uDDEF Fire Extinguisher Located!")),
+          React.createElement("div", { style: { fontSize:'10px', color:'rgba(255,255,255,0.6)', marginTop:'4px' } }, __alloT('stem.titration.remember_p_a_s_s_pull_the_pin_aim_at_b', "Remember P.A.S.S.: Pull the pin, Aim at base of fire, Squeeze handle, Sweep side to side. Acetic acid and some solvents are flammable \u2014 know this location before you begin."))
         ),
         mapTooltip === 'sds' && React.createElement("div", {
           className: "rounded-xl p-3 border",
           style: { background:'rgba(167,139,250,0.1)', borderColor:'rgba(167,139,250,0.3)', animation:'safetyFadeUp 0.3s ease' }
         },
-          React.createElement("div", { style: { fontSize:'11px', fontWeight:800, color:'#a78bfa' } }, "\uD83D\uDCCB Safety Data Sheets Located!"),
-          React.createElement("div", { style: { fontSize:'10px', color:'rgba(255,255,255,0.6)', marginTop:'4px' } }, "SDS documents list ALL hazards, required PPE, first aid procedures, and emergency contacts for every chemical in the lab. Review them BEFORE handling any substance.")
+          React.createElement("div", { style: { fontSize:'11px', fontWeight:800, color:'#a78bfa' } }, __alloT('stem.titration.safety_data_sheets_located', "\uD83D\uDCCB Safety Data Sheets Located!")),
+          React.createElement("div", { style: { fontSize:'10px', color:'rgba(255,255,255,0.6)', marginTop:'4px' } }, __alloT('stem.titration.sds_documents_list_all_hazards_require', "SDS documents list ALL hazards, required PPE, first aid procedures, and emergency contacts for every chemical in the lab. Review them BEFORE handling any substance."))
         ),
 
         // Equipment status grid
         React.createElement("div", { className: "grid grid-cols-3 gap-2" },
           [
-            { id:'eyewash', icon:'\uD83D\uDEBF', label:'Eyewash', color:'#38bdf8', time:'~3 sec away' },
-            { id:'extinguisher', icon:'\uD83E\uDDEF', label:'Fire Ext.', color:'#f97316', time:'~5 sec away' },
-            { id:'sds', icon:'\uD83D\uDCCB', label:'SDS Binder', color:'#a78bfa', time:'~4 sec away' }
+            { id:'eyewash', icon:'\uD83D\uDEBF', label:__alloT('stem.titration.eyewash', 'Eyewash'), color:'#38bdf8', time:'~3 sec away' },
+            { id:'extinguisher', icon:'\uD83E\uDDEF', label:__alloT('stem.titration.fire_ext_2', 'Fire Ext.'), color:'#f97316', time:'~5 sec away' },
+            { id:'sds', icon:'\uD83D\uDCCB', label:__alloT('stem.titration.sds_binder_2', 'SDS Binder'), color:'#a78bfa', time:'~4 sec away' }
           ].map(function(eq) {
             var found = labMapFound[eq.id];
             return React.createElement("div", {
@@ -1211,24 +1212,24 @@ if (!safetyChecked) {
             background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.3)',
             animation:'safetyFadeUp 0.4s ease' }
         },
-          React.createElement("div", { style: { fontSize:'13px', fontWeight:900, color:'#34d399' } }, "\uD83D\uDDFA\uFE0F Lab Safety Map Complete!"),
+          React.createElement("div", { style: { fontSize:'13px', fontWeight:900, color:'#34d399' } }, __alloT('stem.titration.lab_safety_map_complete', "\uD83D\uDDFA\uFE0F Lab Safety Map Complete!")),
           React.createElement("div", { style: { fontSize:'10px', color:'rgba(16,185,129,0.6)', marginTop:'4px' } },
-            "You can now locate all emergency equipment from your bench. In an emergency, every second counts \u2014 this knowledge could save a life.")
+            __alloT('stem.titration.you_can_now_locate_all_emergency_equip', "You can now locate all emergency equipment from your bench. In an emergency, every second counts \u2014 this knowledge could save a life."))
         ),
 
         // Navigation
         React.createElement("div", { className: "flex gap-2" },
           React.createElement("button", {
-            "aria-label": "Back to PPE station",
+            "aria-label": __alloT('stem.titration.back_to_ppe_station', "Back to PPE station"),
             onClick: function() { upd('safetyStation', 1); },
             className: "px-4 py-2 rounded-xl text-[11px] font-bold text-slate-200 hover:text-white bg-black/30 border border-slate-700 hover:border-slate-500 transition-all"
-          }, "\u2190 PPE"),
+          }, __alloT('stem.titration.ppe', "\u2190 PPE")),
           mapComplete && React.createElement("button", {
-            "aria-label": "Continue to Chemical Briefing",
+            "aria-label": __alloT('stem.titration.continue_to_chemical_briefing', "Continue to Chemical Briefing"),
             onClick: function() { upd('safetyStation', 3); },
             className: "flex-1 py-3 rounded-xl text-sm font-black text-white transition-all hover:scale-[1.02]",
             style: { background:'linear-gradient(90deg, #38bdf8, #0ea5e9)', boxShadow:'0 0 20px rgba(56,189,248,0.3)', animation:'safetyFadeUp 0.4s ease' }
-          }, "\u2623\uFE0F Continue to Chemical Briefing \u2192")
+          }, __alloT('stem.titration.continue_to_chemical_briefing_2', "\u2623\uFE0F Continue to Chemical Briefing \u2192"))
         )
       ),
 
@@ -1240,8 +1241,8 @@ if (!safetyChecked) {
         style: { animation: 'safetyStationEnter 0.4s ease' }
       },
         React.createElement("div", { className: "text-center mb-2" },
-          React.createElement("div", { style: { fontSize:'14px', fontWeight:900, color:'#ef4444', letterSpacing:'2px', textTransform:'uppercase' } }, "\u2623\uFE0F Chemical Hazard Briefing"),
-          React.createElement("p", { style: { fontSize:'11px', color:'rgba(239,68,68,0.6)', marginTop:'4px' } }, "Review EVERY chemical you will handle today. Tap each card to acknowledge you understand the hazards.")
+          React.createElement("div", { style: { fontSize:'14px', fontWeight:900, color:'#ef4444', letterSpacing:'2px', textTransform:'uppercase' } }, __alloT('stem.titration.chemical_hazard_briefing', "\u2623\uFE0F Chemical Hazard Briefing")),
+          React.createElement("p", { style: { fontSize:'11px', color:'rgba(239,68,68,0.6)', marginTop:'4px' } }, __alloT('stem.titration.review_every_chemical_you_will_handle_', "Review EVERY chemical you will handle today. Tap each card to acknowledge you understand the hazards."))
         ),
 
         // Chemical cards
@@ -1303,13 +1304,13 @@ if (!safetyChecked) {
                     })
                   ),
                   React.createElement("div", { style: { fontSize:'10px' } },
-                    React.createElement("span", { style: { fontWeight:800, color:'#10b981' } }, "\uD83C\uDFE5 First Aid: "),
+                    React.createElement("span", { style: { fontWeight:800, color:'#10b981' } }, __alloT('stem.titration.first_aid', "\uD83C\uDFE5 First Aid: ")),
                     React.createElement("span", { style: { color:'rgba(255,255,255,0.5)' } }, h.firstAid)
                   ),
                   !reviewed && React.createElement("div", {
                     style: { textAlign:'center', padding:'6px', borderRadius:'8px', background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.2)',
                       fontSize:'10px', fontWeight:700, color:'#fca5a5', marginTop:'4px' }
-                  }, "\u261D Tap to acknowledge you\u2019ve reviewed this chemical")
+                  }, __alloT('stem.titration.tap_to_acknowledge_you_ve_reviewed_thi', "\u261D Tap to acknowledge you\u2019ve reviewed this chemical"))
                 )
               )
             );
@@ -1319,16 +1320,16 @@ if (!safetyChecked) {
         // Navigation
         React.createElement("div", { className: "flex gap-2" },
           React.createElement("button", {
-            "aria-label": "Back to Lab Scan",
+            "aria-label": __alloT('stem.titration.back_to_lab_scan', "Back to Lab Scan"),
             onClick: function() { upd('safetyStation', 2); },
             className: "px-4 py-2 rounded-xl text-[11px] font-bold text-slate-200 hover:text-white bg-black/30 border border-slate-700 hover:border-slate-500 transition-all"
-          }, "\u2190 Lab Scan"),
+          }, __alloT('stem.titration.lab_scan_2', "\u2190 Lab Scan")),
           chemsComplete && React.createElement("button", {
-            "aria-label": "Continue to Safety Drill",
+            "aria-label": __alloT('stem.titration.continue_to_safety_drill', "Continue to Safety Drill"),
             onClick: function() { upd('safetyStation', 4); },
             className: "flex-1 py-3 rounded-xl text-sm font-black text-white transition-all hover:scale-[1.02]",
             style: { background:'linear-gradient(90deg, #ef4444, #dc2626)', boxShadow:'0 0 20px rgba(239,68,68,0.3)', animation:'safetyFadeUp 0.4s ease' }
-          }, "\uD83D\uDEA8 Continue to Safety Drill \u2192")
+          }, __alloT('stem.titration.continue_to_safety_drill_2', "\uD83D\uDEA8 Continue to Safety Drill \u2192"))
         )
       ),
 
@@ -1341,7 +1342,7 @@ if (!safetyChecked) {
       },
         React.createElement("div", { className: "text-center mb-2" },
           React.createElement("div", { style: { fontSize:'14px', fontWeight:900, color:'#f97316', letterSpacing:'2px', textTransform:'uppercase',
-            animation: drillActive && drillTimeLeft <= 5 ? 'safetyTimerWarn 0.5s ease infinite' : 'none' } }, "\uD83D\uDEA8 Emergency Response Drill"),
+            animation: drillActive && drillTimeLeft <= 5 ? 'safetyTimerWarn 0.5s ease infinite' : 'none' } }, __alloT('stem.titration.emergency_response_drill', "\uD83D\uDEA8 Emergency Response Drill")),
           React.createElement("p", { style: { fontSize:'11px', color:'rgba(249,115,22,0.6)', marginTop:'4px' } },
             drillResult ? "Drill complete \u2014 review the outcome below." :
             drillActive ? "MAKE YOUR DECISION! Time is running out!" :
@@ -1372,11 +1373,11 @@ if (!safetyChecked) {
 
         // Scenario
         !drillActive && !drillResult && React.createElement("button", {
-          "aria-label": "Begin safety drill",
+          "aria-label": __alloT('stem.titration.begin_safety_drill', "Begin safety drill"),
           onClick: function() { updMulti({ drillActive: true, drillStartTime: Date.now(), drillAnswer: null, drillResult: null }); },
           className: "w-full py-4 rounded-xl text-sm font-black text-white transition-all hover:scale-[1.02]",
           style: { background:'linear-gradient(90deg, #f97316, #ea580c)', boxShadow:'0 0 25px rgba(249,115,22,0.4)', animation:'safetyUrgencyPulse 2s ease infinite' }
-        }, "\uD83D\uDEA8 Begin Emergency Drill"),
+        }, __alloT('stem.titration.begin_emergency_drill', "\uD83D\uDEA8 Begin Emergency Drill")),
 
         // Scenario content
         (drillActive || drillResult) && React.createElement("div", {
@@ -1456,7 +1457,7 @@ if (!safetyChecked) {
               !isCorrect && correctOpt && React.createElement("div", {
                 style: { marginTop:'8px', padding:'8px', borderRadius:'8px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.3)' }
               },
-                React.createElement("div", { style: { fontSize:'10px', fontWeight:800, color:'#34d399', marginBottom:'4px' } }, "\u2705 Correct response:"),
+                React.createElement("div", { style: { fontSize:'10px', fontWeight:800, color:'#34d399', marginBottom:'4px' } }, __alloT('stem.titration.correct_response', "\u2705 Correct response:")),
                 React.createElement("div", { style: { fontSize:'10px', color:'rgba(255,255,255,0.6)' } },
                   correctOpt.label),
                 React.createElement("div", { style: { fontSize:'10px', color:'rgba(255,255,255,0.5)', marginTop:'4px' } },
@@ -1469,20 +1470,20 @@ if (!safetyChecked) {
         // Navigation / Enter Lab
         React.createElement("div", { className: "flex gap-2" },
           React.createElement("button", {
-            "aria-label": "Back to Chemical Briefing",
+            "aria-label": __alloT('stem.titration.back_to_chemical_briefing', "Back to Chemical Briefing"),
             onClick: function() { upd('safetyStation', 3); },
             className: "px-4 py-2 rounded-xl text-[11px] font-bold text-slate-200 hover:text-white bg-black/30 border border-slate-700 hover:border-slate-500 transition-all"
-          }, "\u2190 Chemicals"),
+          }, __alloT('stem.titration.chemicals_2', "\u2190 Chemicals")),
           drillResult && !allStationsComplete && React.createElement("button", {
-            "aria-label": "Retry drill",
+            "aria-label": __alloT('stem.titration.retry_drill', "Retry drill"),
             onClick: function() { updMulti({ drillActive: false, drillStartTime: 0, drillAnswer: null, drillResult: null }); },
             className: "px-4 py-2 rounded-xl text-[11px] font-bold text-amber-400 bg-amber-900/30 border border-amber-700 hover:border-amber-500 transition-all"
-          }, "\u21BA Retry Drill")
+          }, __alloT('stem.titration.retry_drill_2', "\u21BA Retry Drill"))
         ),
 
         // ── ENTER THE LAB ──
         allStationsComplete && React.createElement("button", {
-          "aria-label": "Enter lab \u2014 safety confirmed",
+          "aria-label": __alloT('stem.titration.enter_lab_safety_confirmed', "Enter lab \u2014 safety confirmed"),
           onClick: function() {
             upd('enterAnim', true);
             var allChecks = {};
@@ -1499,7 +1500,7 @@ if (!safetyChecked) {
             color: '#10b981'
           }
         },
-          React.createElement("span", { style: { color:'white' } }, "\uD83E\uDDEA Lab Safety Confirmed \u2014 Enter Virtual Lab")
+          React.createElement("span", { style: { color:'white' } }, __alloT('stem.titration.lab_safety_confirmed_enter_virtual_lab', "\uD83E\uDDEA Lab Safety Confirmed \u2014 Enter Virtual Lab"))
         )
       )
     )
@@ -1529,7 +1530,7 @@ return React.createElement("div", {
   className: "space-y-4 max-w-4xl mx-auto",
   style: { animation:'safetyFadeUp 0.4s ease' },
   role: "region",
-  "aria-label": "Titration Lab. Keyboard shortcuts: 1 through 5 switch tabs.",
+  "aria-label": __alloT('stem.titration.titration_lab_keyboard_shortcuts_1_thr', "Titration Lab. Keyboard shortcuts: 1 through 5 switch tabs."),
   tabIndex: 0,
   onKeyDown: onTitrKey
 },
@@ -1548,17 +1549,17 @@ return React.createElement("div", {
     style: { background: 'linear-gradient(90deg, rgba(16,185,129,0.12) 0%, rgba(6,182,212,0.08) 100%)', borderColor: 'rgba(16,185,129,0.3)' }
   },
     React.createElement("div", { className: "flex items-center gap-1 text-base" }, "\uD83E\uDD7D\uD83E\uDDE4\uD83E\uDD7C"),
-    React.createElement("span", { className: "text-[11px] font-bold text-amber-400/80 flex-1" }, "PPE Active \u2022 Lab Safety Verified"),
-    React.createElement("button", { "aria-label": "Safety Info",
+    React.createElement("span", { className: "text-[11px] font-bold text-amber-400/80 flex-1" }, __alloT('stem.titration.ppe_active_lab_safety_verified', "PPE Active \u2022 Lab Safety Verified")),
+    React.createElement("button", { "aria-label": __alloT('stem.titration.safety_info', "Safety Info"),
       onClick: function () { upd('showSafetyRef', !showSafetyRef); },
       className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " +
         (showSafetyRef ? "bg-amber-500/20 text-amber-300 ring-1 ring-amber-500/40" : "transition-colors text-amber-500/60 hover:text-amber-400 hover:bg-amber-500/10 active:scale-[0.97]")
-    }, "\u26A0\uFE0F Safety Info"),
-    React.createElement("button", { "aria-label": "Hazards",
+    }, __alloT('stem.titration.safety_info_2', "\u26A0\uFE0F Safety Info")),
+    React.createElement("button", { "aria-label": __alloT('stem.titration.hazards', "Hazards"),
       onClick: function () { upd('showHazards', !showHazards); },
       className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " +
         (showHazards ? "bg-red-500/20 text-red-300 ring-1 ring-red-500/40" : "transition-colors text-red-500/60 hover:text-red-400 hover:bg-red-500/10 active:scale-[0.97]")
-    }, "\u2623\uFE0F Hazards")
+    }, __alloT('stem.titration.hazards_2', "\u2623\uFE0F Hazards"))
   ),
 
   // ── Safety Reference Panel (toggled) ──
@@ -1566,7 +1567,7 @@ return React.createElement("div", {
     className: "rounded-xl p-4 border space-y-2 animate-in slide-in-from-top duration-200",
     style: Object.assign({}, glass, { background: 'rgba(120,53,15,0.3)', borderColor: 'rgba(251,191,36,0.2)' })
   },
-    React.createElement("div", { className: "text-xs font-black text-amber-400 mb-2" }, "\u26A0\uFE0F Quick Safety Reference"),
+    React.createElement("div", { className: "text-xs font-black text-amber-400 mb-2" }, __alloT('stem.titration.quick_safety_reference', "\u26A0\uFE0F Quick Safety Reference")),
     React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2" },
       safetyItems.slice(0, 4).map(function (item) {
         return React.createElement("div", { key: item.id, className: "flex items-center gap-2 text-[11px] text-amber-200/70" },
@@ -1575,7 +1576,7 @@ return React.createElement("div", {
       })
     ),
     React.createElement("div", { className: "text-[11px] text-amber-300/50 mt-1" },
-      "\uD83D\uDEBF Eyewash: 10-second rule \u2022 \uD83E\uDDEF Fire extinguisher located \u2022 \uD83D\uDCCB SDS reviewed")
+      __alloT('stem.titration.eyewash_10_second_rule_fire_extinguish', "\uD83D\uDEBF Eyewash: 10-second rule \u2022 \uD83E\uDDEF Fire extinguisher located \u2022 \uD83D\uDCCB SDS reviewed"))
   ),
 
   // ── Chemical Hazards Panel (toggled) ──
@@ -1583,7 +1584,7 @@ return React.createElement("div", {
     className: "rounded-xl p-4 border space-y-3 animate-in slide-in-from-top duration-200",
     style: Object.assign({}, glass, { background: 'rgba(127,29,29,0.15)', borderColor: 'rgba(248,113,113,0.2)' })
   },
-    React.createElement("div", { className: "text-xs font-black text-red-400 mb-1" }, "\u2623\uFE0F Chemical Hazard Information"),
+    React.createElement("div", { className: "text-xs font-black text-red-400 mb-1" }, __alloT('stem.titration.chemical_hazard_information', "\u2623\uFE0F Chemical Hazard Information")),
     (presetHazardKeys[presetId] || []).map(function (chem) {
       var h = chemHazards[chem];
       if (!h) return null;
@@ -1600,7 +1601,7 @@ return React.createElement("div", {
           h.hazards.map(function (hz) { return React.createElement("div", { key: hz, className: "text-[11px] text-slate-200" }, hz); })
         ),
         React.createElement("div", { className: "mt-2 text-[11px]" },
-          React.createElement("span", { className: "font-bold text-emerald-400" }, "First Aid: "),
+          React.createElement("span", { className: "font-bold text-emerald-400" }, __alloT('stem.titration.first_aid_2', "First Aid: ")),
           React.createElement("span", { className: "text-slate-200" }, h.firstAid)
         ),
         React.createElement("div", { className: "mt-1 text-[11px]" },
@@ -1618,7 +1619,7 @@ return React.createElement("div", {
   },
     React.createElement("span", { className: "text-lg shrink-0" }, activeTip.icon),
     React.createElement("div", null,
-      React.createElement("div", { className: "text-[11px] font-black uppercase tracking-wider mb-0.5", style: { color: activeTip.color } }, "Safety Tip"),
+      React.createElement("div", { className: "text-[11px] font-black uppercase tracking-wider mb-0.5", style: { color: activeTip.color } }, __alloT('stem.titration.safety_tip', "Safety Tip")),
       React.createElement("div", { className: "text-[11px] text-slate-300 leading-relaxed" }, activeTip.text)
     )
   ),
@@ -1636,22 +1637,22 @@ return React.createElement("div", {
 
     React.createElement("div", { className: "flex items-center justify-between mb-2" },
 
-      React.createElement("button", { "aria-label": "Back",
+      React.createElement("button", { "aria-label": __alloT('stem.titration.back_3', "Back"),
 
         onClick: function () { setStemLabTool(null); },
 
         className: "text-xs font-bold text-cyan-400 hover:text-white transition-colors"
 
-      }, "\u2190 Back"),
+      }, __alloT('stem.titration.back_4', "\u2190 Back")),
 
-      React.createElement("h3", { className: "text-lg font-black text-white tracking-tight" }, "\uD83E\uDDEA Virtual Titration Lab"),
+      React.createElement("h3", { className: "text-lg font-black text-white tracking-tight" }, __alloT('stem.titration.virtual_titration_lab', "\uD83E\uDDEA Virtual Titration Lab")),
       React.createElement("span", { className: "text-[11px] text-slate-600 ml-1" }, "v2.0")
 
     ),
 
     React.createElement("p", { className: "text-xs text-slate-200 text-center" },
 
-      "Flask: ", preset.acidName, " (", preset.volAcid, " mL)  \u2022  Burette: ", preset.baseName
+      "Flask: ", preset.acidName, " (", preset.volAcid, __alloT('stem.titration.ml_burette', " mL)  \u2022  Burette: "), preset.baseName
 
     )
 
@@ -1660,12 +1661,12 @@ return React.createElement("div", {
   // ── Tab Navigation ──
   React.createElement("div", { className: "flex gap-1 justify-center border-b border-slate-700 pb-2", role: "tablist" },
     [
-      { id: 'titrate', label: '\uD83E\uDDEA Titrate', color: '#38bdf8' },
-      { id: 'challenge', label: '\uD83C\uDFC6 Challenge', color: '#f59e0b' },
-      { id: 'incidents', label: '\uD83D\uDEA8 Safety Drills', color: '#ef4444' },
-      { id: 'equipment', label: '\uD83D\uDD2C Equipment', color: '#22c55e' },
-      { id: 'molarity', label: '\uD83E\uDDEE Dilution Calc', color: '#a78bfa' },
-      { id: 'buffers', label: '\uD83D\uDEE1\uFE0F Buffers', color: '#0891b2' }
+      { id: 'titrate', label: __alloT('stem.titration.titrate', '\uD83E\uDDEA Titrate'), color: '#38bdf8' },
+      { id: 'challenge', label: __alloT('stem.titration.challenge', '\uD83C\uDFC6 Challenge'), color: '#f59e0b' },
+      { id: 'incidents', label: __alloT('stem.titration.safety_drills', '\uD83D\uDEA8 Safety Drills'), color: '#ef4444' },
+      { id: 'equipment', label: __alloT('stem.titration.equipment', '\uD83D\uDD2C Equipment'), color: '#22c55e' },
+      { id: 'molarity', label: __alloT('stem.titration.dilution_calc', '\uD83E\uDDEE Dilution Calc'), color: '#a78bfa' },
+      { id: 'buffers', label: __alloT('stem.titration.buffers', '\uD83D\uDEE1\uFE0F Buffers'), color: '#0891b2' }
     ].map(function(tab) {
       var active = labTab === tab.id;
       return React.createElement("button", { "aria-label": "Switch to " + tab.label + " tab",
@@ -1683,12 +1684,12 @@ return React.createElement("div", {
   // ── Topic-accent hero band (per tab) ──
   (function() {
     var TAB_META = {
-      titrate:    { accent: '#38bdf8', soft: 'rgba(56,189,248,0.10)', icon: '\uD83E\uDDEA', title: 'Titrate \u2014 find the equivalence point',  hint: 'Add titrant drop-by-drop until indicator changes color. Equivalence point = stoichiometric balance; endpoint = where indicator switches. They are not exactly the same.' },
-      challenge:  { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83C\uDFC6', title: 'Challenge \u2014 graded titrations',           hint: 'Match real-world unknowns by titrating to within \u00b10.05 mL of theoretical. Tracks accuracy + speed; AP Chem-aligned scoring.' },
-      incidents:  { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83D\uDEA8', title: 'Safety drills \u2014 what could go wrong',     hint: 'Burette explodes, acid-burns spill, indicator added too early. Practice the right response sequence before it matters in a real lab.' },
-      equipment:  { accent: '#22c55e', soft: 'rgba(34,197,94,0.10)',  icon: '\uD83D\uDD2C', title: 'Equipment \u2014 burette, flask, pipette',     hint: 'Burette tolerance 0.05 mL; volumetric flask 0.10 mL; pipette 0.02 mL. Precision class A vs B doubles tolerance. Calibration matters more than students realize.' },
-      molarity:   { accent: '#a78bfa', soft: 'rgba(167,139,250,0.10)', icon: '\uD83E\uDDEE', title: 'Dilution calculator \u2014 M\u2081V\u2081 = M\u2082V\u2082',     hint: 'Stock + diluent \u2192 desired concentration. The 4 most-tested AP Chem problems all reduce to this single equation. Track significant figures: weakest measurement sets the answer.' },
-      buffers:    { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83D\uDEE1\uFE0F', title: 'Buffer discovery \u2014 when does a buffer hold?', hint: 'Adjust acid strength, [A\u207B]/[HA] ratio, starting pH. Discrete outcome: good buffer or poor buffer (after 20% more acid added). No score, no reveal \u2014 just sweep and observe.' }
+      titrate:    { accent: '#38bdf8', soft: 'rgba(56,189,248,0.10)', icon: '\uD83E\uDDEA', title: __alloT('stem.titration.titrate_find_the_equivalence_point', 'Titrate \u2014 find the equivalence point'),  hint: __alloT('stem.titration.add_titrant_drop_by_drop_until_indicat', 'Add titrant drop-by-drop until indicator changes color. Equivalence point = stoichiometric balance; endpoint = where indicator switches. They are not exactly the same.') },
+      challenge:  { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83C\uDFC6', title: __alloT('stem.titration.challenge_graded_titrations', 'Challenge \u2014 graded titrations'),           hint: __alloT('stem.titration.match_real_world_unknowns_by_titrating', 'Match real-world unknowns by titrating to within \u00b10.05 mL of theoretical. Tracks accuracy + speed; AP Chem-aligned scoring.') },
+      incidents:  { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83D\uDEA8', title: __alloT('stem.titration.safety_drills_what_could_go_wrong', 'Safety drills \u2014 what could go wrong'),     hint: __alloT('stem.titration.burette_explodes_acid_burns_spill_indi', 'Burette explodes, acid-burns spill, indicator added too early. Practice the right response sequence before it matters in a real lab.') },
+      equipment:  { accent: '#22c55e', soft: 'rgba(34,197,94,0.10)',  icon: '\uD83D\uDD2C', title: __alloT('stem.titration.equipment_burette_flask_pipette', 'Equipment \u2014 burette, flask, pipette'),     hint: __alloT('stem.titration.burette_tolerance_0_05_ml_volumetric_f', 'Burette tolerance 0.05 mL; volumetric flask 0.10 mL; pipette 0.02 mL. Precision class A vs B doubles tolerance. Calibration matters more than students realize.') },
+      molarity:   { accent: '#a78bfa', soft: 'rgba(167,139,250,0.10)', icon: '\uD83E\uDDEE', title: __alloT('stem.titration.dilution_calculator_m_v_m_v', 'Dilution calculator \u2014 M\u2081V\u2081 = M\u2082V\u2082'),     hint: __alloT('stem.titration.stock_diluent_desired_concentration_th', 'Stock + diluent \u2192 desired concentration. The 4 most-tested AP Chem problems all reduce to this single equation. Track significant figures: weakest measurement sets the answer.') },
+      buffers:    { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83D\uDEE1\uFE0F', title: __alloT('stem.titration.buffer_discovery_when_does_a_buffer_ho', 'Buffer discovery \u2014 when does a buffer hold?'), hint: __alloT('stem.titration.adjust_acid_strength_a_ha_ratio_starti', 'Adjust acid strength, [A\u207B]/[HA] ratio, starting pH. Discrete outcome: good buffer or poor buffer (after 20% more acid added). No score, no reveal \u2014 just sweep and observe.') }
     };
     var meta = TAB_META[labTab] || TAB_META.titrate;
     return React.createElement('div', {
@@ -1784,7 +1785,7 @@ return React.createElement("div", {
   },
     indicatorMismatch
       ? [
-          React.createElement("span", { key: 'h', className: "font-black" }, '⚠ Endpoint ≠ equivalence. '),
+          React.createElement("span", { key: 'h', className: "font-black" }, __alloT('stem.titration.endpoint_equivalence', '⚠ Endpoint ≠ equivalence. ')),
           indicator.label + ' changes color at pH ' + indicator.low + '–' + indicator.high +
             ', but this titration reaches equivalence at pH ' + equivPH.toFixed(2) + '. ',
           (endpointVol != null
@@ -1794,7 +1795,7 @@ return React.createElement("div", {
           React.createElement("span", { key: 'f', className: "font-bold" }, 'Pick an indicator whose range includes pH ' + equivPH.toFixed(1) + '.')
         ]
       : [
-          React.createElement("span", { key: 'h', className: "font-black" }, '✔ Good indicator choice. '),
+          React.createElement("span", { key: 'h', className: "font-black" }, __alloT('stem.titration.good_indicator_choice', '✔ Good indicator choice. ')),
           indicator.label + '’s range (pH ' + indicator.low + '–' + indicator.high +
             ') includes the equivalence pH (' + equivPH.toFixed(2) + '), so the color change marks equivalence accurately.'
         ]
@@ -1806,8 +1807,8 @@ return React.createElement("div", {
     role: "status",
     style: { background: 'rgba(112,26,117,0.30)', borderColor: 'rgba(217,70,239,0.5)', color: '#f5d0fe' }
   },
-    React.createElement("span", { className: "font-black" }, '⚗ Redox titration — not a pH curve. '),
-    'The trace shows relative reaction progress, not pH — there is no pH meter here. The endpoint is the first faint, lasting pink from a tiny excess of MnO₄⁻ (it reacts purple → colorless until then). Read this endpoint by COLOR.'
+    React.createElement("span", { className: "font-black" }, __alloT('stem.titration.redox_titration_not_a_ph_curve', '⚗ Redox titration — not a pH curve. ')),
+    __alloT('stem.titration.the_trace_shows_relative_reaction_prog', 'The trace shows relative reaction progress, not pH — there is no pH meter here. The endpoint is the first faint, lasting pink from a tiny excess of MnO₄⁻ (it reacts purple → colorless until then). Read this endpoint by COLOR.')
   ),
 
 
@@ -1824,7 +1825,7 @@ return React.createElement("div", {
 
     React.createElement("div", { className: "flex items-center gap-3 flex-wrap" },
 
-      React.createElement("span", { className: "text-[11px] text-slate-200 font-bold" }, "TITRANT VOLUME:"),
+      React.createElement("span", { className: "text-[11px] text-slate-200 font-bold" }, __alloT('stem.titration.titrant_volume', "TITRANT VOLUME:")),
 
       React.createElement("input", {
 
@@ -1832,7 +1833,7 @@ return React.createElement("div", {
 
         onChange: function (e) { updMulti({ volumeAdded: parseFloat(e.target.value), _prevVolume: volumeAdded }); },
 
-        'aria-label': 'Titrant volume',
+        'aria-label': __alloT('stem.titration.titrant_volume_2', 'Titrant volume'),
 
         'aria-valuetext': volumeAdded.toFixed(1) + ' milliliters, pH ' + currentPH.toFixed(2) + ', ' + indicatorStatus,
 
@@ -1862,10 +1863,10 @@ return React.createElement("div", {
         }, dropIcon + " +" + amt);
       }),
 
-      React.createElement("button", { "aria-label": "Reset titration volume to zero",
+      React.createElement("button", { "aria-label": __alloT('stem.titration.reset_titration_volume_to_zero', "Reset titration volume to zero"),
         onClick: function () { updMulti({ volumeAdded: 0, _reachedEquiv: false, _prevVolume: 0 }); if (addToast) addToast('♻️ ' + safetyTips.reset.text, 'info'); },
         className: "px-2 py-1 rounded-lg text-[11px] font-bold text-amber-300 bg-amber-900/30 hover:bg-amber-800/50 border border-amber-800/40 transition-all hover:scale-105 active:scale-[0.97]"
-      }, "↺ Reset")
+      }, __alloT('stem.titration.reset', "↺ Reset"))
 
     )
 
@@ -1889,7 +1890,7 @@ return React.createElement("div", {
 
     },
 
-      React.createElement("div", { className: "text-[11px] font-bold text-slate-200 mb-2" }, "BURETTE & FLASK"),
+      React.createElement("div", { className: "text-[11px] font-bold text-slate-200 mb-2" }, __alloT('stem.titration.burette_flask', "BURETTE & FLASK")),
 
 
 
@@ -2041,7 +2042,7 @@ return React.createElement("div", {
 
       },
 
-        React.createElement("span", { className: "text-[11px] text-slate-200 font-bold block" }, "CURRENT pH"),
+        React.createElement("span", { className: "text-[11px] text-slate-200 font-bold block" }, __alloT('stem.titration.current_ph', "CURRENT pH")),
 
         React.createElement("span", {
 
@@ -2067,7 +2068,7 @@ return React.createElement("div", {
 
     },
 
-      React.createElement("div", { className: "text-[11px] font-bold text-slate-200 mb-2" }, "TITRATION CURVE"),
+      React.createElement("div", { className: "text-[11px] font-bold text-slate-200 mb-2" }, __alloT('stem.titration.titration_curve', "TITRATION CURVE")),
 
       React.createElement("svg", {
 
@@ -2116,7 +2117,7 @@ return React.createElement("div", {
         preset.Ka && React.createElement("text", {
           x: xScale(Veq * 0.5), y: pad.top + 14,
           fill: '#a78bfa', fontSize: '10', textAnchor: 'middle', fontWeight: 'bold', opacity: 0.85
-        }, 'Buffer Region'),
+        }, __alloT('stem.titration.buffer_region', 'Buffer Region')),
 
 
 
@@ -2138,7 +2139,7 @@ return React.createElement("div", {
 
         // pH 7 label
 
-        React.createElement("text", { x: pad.left + chartW + 4, y: yScale(7) + 3, fill: '#4ade80', fontSize: '9', fontWeight: 'bold' }, 'pH 7'),
+        React.createElement("text", { x: pad.left + chartW + 4, y: yScale(7) + 3, fill: '#4ade80', fontSize: '9', fontWeight: 'bold' }, __alloT('stem.titration.ph_7', 'pH 7')),
 
 
 
@@ -2178,7 +2179,7 @@ return React.createElement("div", {
 
         // Axis labels
 
-        React.createElement("text", { x: pad.left + chartW / 2, y: svgH - 4, fill: '#94a3b8', fontSize: '10', textAnchor: 'middle', fontWeight: 'bold' }, 'Volume of Titrant (mL)'),
+        React.createElement("text", { x: pad.left + chartW / 2, y: svgH - 4, fill: '#94a3b8', fontSize: '10', textAnchor: 'middle', fontWeight: 'bold' }, __alloT('stem.titration.volume_of_titrant_ml', 'Volume of Titrant (mL)')),
 
         React.createElement("text", {
 
@@ -2297,7 +2298,7 @@ return React.createElement("div", {
 
     },
 
-      React.createElement("div", { className: "text-[11px] font-bold text-slate-200 mb-1" }, "CURRENT pH"),
+      React.createElement("div", { className: "text-[11px] font-bold text-slate-200 mb-1" }, __alloT('stem.titration.current_ph_2', "CURRENT pH")),
 
       React.createElement("div", { className: "text-xl font-black tabular-nums tracking-tight", style: { color: currentColor } }, currentPH.toFixed(2)),
 
@@ -2333,7 +2334,7 @@ return React.createElement("div", {
 
     },
 
-      React.createElement("div", { className: "text-[11px] font-bold text-slate-200 mb-1" }, "VOLUME ADDED"),
+      React.createElement("div", { className: "text-[11px] font-bold text-slate-200 mb-1" }, __alloT('stem.titration.volume_added', "VOLUME ADDED")),
 
       React.createElement("div", { className: "text-xl font-black tabular-nums text-cyan-400 tracking-tight" }, volumeAdded.toFixed(1) + " mL"),
 
@@ -2351,7 +2352,7 @@ return React.createElement("div", {
 
     },
 
-      React.createElement("div", { className: "text-[11px] font-bold text-slate-200 mb-1" }, "EQUIVALENCE POINT"),
+      React.createElement("div", { className: "text-[11px] font-bold text-slate-200 mb-1" }, __alloT('stem.titration.equivalence_point', "EQUIVALENCE POINT")),
 
       React.createElement("div", { className: "text-lg font-black tabular-nums  tracking-tight" + (pastEquivalence ? 'text-red-400' : 'text-slate-300') },
 
@@ -2411,7 +2412,7 @@ return React.createElement("div", {
 
       className: "px-4 py-3 cursor-pointer text-sm font-bold text-slate-300 hover:text-white transition-colors"
 
-    }, "\uD83D\uDCD6 Titration Science"),
+    }, __alloT('stem.titration.titration_science', "\uD83D\uDCD6 Titration Science")),
 
     React.createElement("div", { className: "px-4 pb-4 space-y-3" },
 
@@ -2421,7 +2422,7 @@ return React.createElement("div", {
 
       },
 
-        React.createElement("h5", { className: "text-xs font-bold text-cyan-400 mb-1" }, "What is Titration?"),
+        React.createElement("h5", { className: "text-xs font-bold text-cyan-400 mb-1" }, __alloT('stem.titration.what_is_titration', "What is Titration?")),
 
         React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" },
 
@@ -2439,11 +2440,11 @@ return React.createElement("div", {
 
       },
 
-        React.createElement("h5", { className: "text-xs font-bold text-amber-400 mb-1" }, "Henderson\u2013Hasselbalch Equation"),
+        React.createElement("h5", { className: "text-xs font-bold text-amber-400 mb-1" }, __alloT('stem.titration.henderson_hasselbalch_equation', "Henderson\u2013Hasselbalch Equation")),
 
         React.createElement("p", { className: "text-sm font-mono text-amber-200 text-center my-2" },
 
-          "pH = pK\u2090 + log([A\u207B] / [HA])"
+          __alloT('stem.titration.ph_pk_log_a_ha', "pH = pK\u2090 + log([A\u207B] / [HA])")
 
         ),
 
@@ -2463,29 +2464,29 @@ return React.createElement("div", {
 
       },
 
-        React.createElement("h5", { className: "text-xs font-bold text-emerald-400 mb-2" }, "Key Concepts"),
+        React.createElement("h5", { className: "text-xs font-bold text-emerald-400 mb-2" }, __alloT('stem.titration.key_concepts', "Key Concepts")),
 
         React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed mb-1" },
 
-          React.createElement("span", { className: "font-bold text-cyan-400" }, "Equivalence Point"), " \u2014 Where moles of acid = moles of base. The pH at this point depends on the acid/base strength."
+          React.createElement("span", { className: "font-bold text-cyan-400" }, __alloT('stem.titration.equivalence_point_2', "Equivalence Point")), __alloT('stem.titration.where_moles_of_acid_moles_of_base_the_', " \u2014 Where moles of acid = moles of base. The pH at this point depends on the acid/base strength.")
 
         ),
 
         React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed mb-1" },
 
-          React.createElement("span", { className: "font-bold text-pink-400" }, "Endpoint"), " \u2014 Where the indicator changes color. Ideally chosen so the endpoint \u2248 equivalence point."
+          React.createElement("span", { className: "font-bold text-pink-400" }, __alloT('stem.titration.endpoint', "Endpoint")), __alloT('stem.titration.where_the_indicator_changes_color_idea', " \u2014 Where the indicator changes color. Ideally chosen so the endpoint \u2248 equivalence point.")
 
         ),
 
         React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed mb-1" },
 
-          React.createElement("span", { className: "font-bold text-amber-400" }, "Buffer Region"), " \u2014 The flat part of a weak acid/base curve where pH resists change (Henderson\u2013Hasselbalch applies)."
+          React.createElement("span", { className: "font-bold text-amber-400" }, __alloT('stem.titration.buffer_region_2', "Buffer Region")), __alloT('stem.titration.the_flat_part_of_a_weak_acid_base_curv', " \u2014 The flat part of a weak acid/base curve where pH resists change (Henderson\u2013Hasselbalch applies).")
 
         ),
 
         React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" },
 
-          React.createElement("span", { className: "font-bold text-emerald-400" }, "Indicators"), " \u2014 Weak acids/bases that change color at specific pH ranges. Choose one whose transition range includes the equivalence pH."
+          React.createElement("span", { className: "font-bold text-emerald-400" }, __alloT('stem.titration.indicators', "Indicators")), __alloT('stem.titration.weak_acids_bases_that_change_color_at_', " \u2014 Weak acids/bases that change color at specific pH ranges. Choose one whose transition range includes the equivalence pH.")
 
         )
 
@@ -2495,19 +2496,19 @@ return React.createElement("div", {
       React.createElement("div", {
         className: "rounded-lg p-3 border border-red-800/30 bg-red-950/20"
       },
-        React.createElement("h5", { className: "text-xs font-bold text-red-400 mb-2" }, "\u26A0\uFE0F Lab Safety Best Practices"),
+        React.createElement("h5", { className: "text-xs font-bold text-red-400 mb-2" }, __alloT('stem.titration.lab_safety_best_practices', "\u26A0\uFE0F Lab Safety Best Practices")),
 
         React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed mb-1" },
-          React.createElement("span", { className: "font-bold text-red-400" }, "\uD83E\uDDEA Spill Response"), " \u2014 Acid spill: neutralize with sodium bicarbonate, then rinse. Base spill: neutralize with dilute citric acid. Always alert others in the lab."
+          React.createElement("span", { className: "font-bold text-red-400" }, __alloT('stem.titration.spill_response', "\uD83E\uDDEA Spill Response")), __alloT('stem.titration.acid_spill_neutralize_with_sodium_bica', " \u2014 Acid spill: neutralize with sodium bicarbonate, then rinse. Base spill: neutralize with dilute citric acid. Always alert others in the lab.")
         ),
         React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed mb-1" },
-          React.createElement("span", { className: "font-bold text-amber-400" }, "\u274C Never Mix"), " \u2014 Never mix bleach with ammonia (toxic chloramine gas). Never add water to concentrated acid (exothermic splash risk \u2014 always add acid to water)."
+          React.createElement("span", { className: "font-bold text-amber-400" }, __alloT('stem.titration.never_mix', "\u274C Never Mix")), __alloT('stem.titration.never_mix_bleach_with_ammonia_toxic_ch', " \u2014 Never mix bleach with ammonia (toxic chloramine gas). Never add water to concentrated acid (exothermic splash risk \u2014 always add acid to water).")
         ),
         React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed mb-1" },
-          React.createElement("span", { className: "font-bold text-cyan-400" }, "\uD83E\uDDEA Equipment"), " \u2014 Rinse the burette with the titrant solution before filling. Swirl the flask gently after each addition. Read the burette at the meniscus bottom."
+          React.createElement("span", { className: "font-bold text-cyan-400" }, __alloT('stem.titration.equipment_2', "\uD83E\uDDEA Equipment")), __alloT('stem.titration.rinse_the_burette_with_the_titrant_sol', " \u2014 Rinse the burette with the titrant solution before filling. Swirl the flask gently after each addition. Read the burette at the meniscus bottom.")
         ),
         React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" },
-          React.createElement("span", { className: "font-bold text-emerald-400" }, "\u267B\uFE0F Waste Disposal"), " \u2014 Neutralized acid/base solutions (pH 6\u20138) can go down the drain with excess water. Check your institution's chemical waste policy for concentrated solutions."
+          React.createElement("span", { className: "font-bold text-emerald-400" }, __alloT('stem.titration.waste_disposal', "\u267B\uFE0F Waste Disposal")), __alloT('stem.titration.neutralized_acid_base_solutions_ph_6_8', " \u2014 Neutralized acid/base solutions (pH 6\u20138) can go down the drain with excess water. Check your institution's chemical waste policy for concentrated solutions.")
         )
       )
 
@@ -2524,9 +2525,9 @@ return React.createElement("div", {
     var aiLoading = !!d.aiLoading;
     var aiError = d.aiError || '';
     var LEVELS = [
-      { id: 'plain', label: 'Plain', hint: 'using simple everyday words and short sentences' },
-      { id: 'grade5', label: 'Grade 5', hint: 'for a 5th grade student, brief and friendly' },
-      { id: 'hs', label: 'High School', hint: 'for a high school chemistry student, accurate but accessible' }
+      { id: 'plain', label: __alloT('stem.titration.plain', 'Plain'), hint: __alloT('stem.titration.using_simple_everyday_words_and_short_', 'using simple everyday words and short sentences') },
+      { id: 'grade5', label: __alloT('stem.titration.grade_5', 'Grade 5'), hint: __alloT('stem.titration.for_a_5th_grade_student_brief_and_frie', 'for a 5th grade student, brief and friendly') },
+      { id: 'hs', label: __alloT('stem.titration.high_school', 'High School'), hint: __alloT('stem.titration.for_a_high_school_chemistry_student_ac', 'for a high school chemistry student, accurate but accessible') }
     ];
     function explain() {
       if (typeof callGemini !== 'function') { upd('aiError', 'AI tutor not available.'); return; }
@@ -2549,12 +2550,12 @@ return React.createElement("div", {
     return React.createElement("div", {
       className: "rounded-xl p-4 border",
       role: "region",
-      "aria-label": "AI titration tutor",
+      "aria-label": __alloT('stem.titration.ai_titration_tutor', "AI titration tutor"),
       style: Object.assign({}, glass, { background: 'rgba(10,40,60,0.75)', borderColor: 'rgba(168,85,247,0.4)' })
     },
       React.createElement("div", { className: "flex items-center flex-wrap gap-2 mb-2" },
-        React.createElement("span", { className: "text-sm font-bold text-purple-300" }, "\u2728 Explain at my level"),
-        React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": "Reading level" },
+        React.createElement("span", { className: "text-sm font-bold text-purple-300" }, __alloT('stem.titration.explain_at_my_level', "\u2728 Explain at my level")),
+        React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": __alloT('stem.titration.reading_level', "Reading level") },
           LEVELS.map(function (L) {
             var active = aiLevel === L.id;
             return React.createElement("button", {
@@ -2575,7 +2576,7 @@ return React.createElement("div", {
       ),
       aiError && React.createElement("p", { className: "text-[11px] text-rose-400", role: "alert" }, aiError),
       aiText && React.createElement("p", { className: "text-xs text-slate-200 leading-relaxed bg-slate-900/40 rounded-lg p-3" }, aiText),
-      !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-400" }, "Click \u201CExplain\u201D to have the AI tutor describe this titration at your chosen reading level.")
+      !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-400" }, __alloT('stem.titration.click_explain_to_have_the_ai_tutor_des', "Click \u201CExplain\u201D to have the AI tutor describe this titration at your chosen reading level."))
     );
   })(),
 
@@ -2589,7 +2590,7 @@ return React.createElement("div", {
     style: Object.assign({}, glass, { background: 'rgba(3,25,40,0.85)', borderColor: 'rgba(245,158,11,0.3)' })
   },
     React.createElement("div", { className: "flex items-center justify-between" },
-      React.createElement("h3", { className: "text-sm font-black text-amber-400" }, "\uD83C\uDFC6 Lab Safety & Chemistry Challenge"),
+      React.createElement("h3", { className: "text-sm font-black text-amber-400" }, __alloT('stem.titration.lab_safety_chemistry_challenge', "\uD83C\uDFC6 Lab Safety & Chemistry Challenge")),
       React.createElement("div", { className: "flex gap-2" },
         React.createElement("span", { className: "text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-900/30 text-amber-400" }, "Score: " + challengeScore),
         challengeStreak >= 3 && React.createElement("span", { className: "text-[11px] font-bold px-2 py-0.5 rounded-full bg-red-900/30 text-red-400" }, "\uD83D\uDD25 Streak: " + challengeStreak)
@@ -2639,12 +2640,12 @@ return React.createElement("div", {
           ),
           React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" }, cq.feedback),
           React.createElement("div", { className: "mt-2" },
-            React.createElement("button", { "aria-label": "Next Question",
+            React.createElement("button", { "aria-label": __alloT('stem.titration.next_question', "Next Question"),
               onClick: function() {
                 updMulti({ challengeIdx: (challengeIdx + 1) % challengeQuestions.length, challengeAnswer: null });
               },
               className: "px-4 py-2 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 transition-all"
-            }, "Next Question \u2192")
+            }, __alloT('stem.titration.next_question_2', "Next Question \u2192"))
           )
         )
       );
@@ -2659,7 +2660,7 @@ return React.createElement("div", {
     style: Object.assign({}, glass, { background: 'rgba(3,25,40,0.85)', borderColor: 'rgba(239,68,68,0.3)' })
   },
     React.createElement("div", { className: "flex items-center justify-between" },
-      React.createElement("h3", { className: "text-sm font-black text-red-400" }, "\uD83D\uDEA8 Lab Safety Incident Simulator"),
+      React.createElement("h3", { className: "text-sm font-black text-red-400" }, __alloT('stem.titration.lab_safety_incident_simulator', "\uD83D\uDEA8 Lab Safety Incident Simulator")),
       React.createElement("div", { className: "flex gap-2" },
         React.createElement("span", { className: "text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-900/30 text-emerald-400" },
           Object.keys(incidentCompleted).filter(function(k) { return incidentCompleted[k]; }).length + "/" + incidentScenarios.length + " completed"),
@@ -2667,7 +2668,7 @@ return React.createElement("div", {
       )
     ),
     React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" },
-      "Practice responding to real lab emergencies. Choose the correct response to each scenario. These drills could save your life in a real lab!"
+      __alloT('stem.titration.practice_responding_to_real_lab_emerge', "Practice responding to real lab emergencies. Choose the correct response to each scenario. These drills could save your life in a real lab!")
     ),
     // Scenario selector dots
     React.createElement("div", { className: "flex gap-2 justify-center" },
@@ -2701,7 +2702,7 @@ return React.createElement("div", {
           )
         ),
         React.createElement("p", { className: "text-xs text-slate-300 mb-3 leading-relaxed" }, scenario.desc),
-        React.createElement("div", { className: "text-[11px] font-bold text-red-400 mb-2" }, "What do you do?"),
+        React.createElement("div", { className: "text-[11px] font-bold text-red-400 mb-2" }, __alloT('stem.titration.what_do_you_do', "What do you do?")),
         React.createElement("div", { className: "flex flex-col gap-2" },
           scenario.options.map(function(opt) {
             var showResult = incidentAnswer !== null;
@@ -2740,10 +2741,10 @@ return React.createElement("div", {
               selected.correct ? "\u2705 Correct Response! +20 XP" : "\u274C Not the best response"
             ),
             React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" }, selected.feedback),
-            incidentIdx < incidentScenarios.length - 1 && React.createElement("button", { "aria-label": "Next Scenario",
+            incidentIdx < incidentScenarios.length - 1 && React.createElement("button", { "aria-label": __alloT('stem.titration.next_scenario', "Next Scenario"),
               onClick: function() { updMulti({ incidentIdx: incidentIdx + 1, incidentAnswer: null }); },
               className: "mt-2 px-4 py-2 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 transition-all"
-            }, "Next Scenario \u2192")
+            }, __alloT('stem.titration.next_scenario_2', "Next Scenario \u2192"))
           );
         })()
       );
@@ -2757,8 +2758,8 @@ return React.createElement("div", {
     className: "rounded-2xl p-5 border space-y-4",
     style: Object.assign({}, glass, { background: 'rgba(3,25,40,0.85)', borderColor: 'rgba(34,197,94,0.3)' })
   },
-    React.createElement("h3", { className: "text-sm font-black text-emerald-400 mb-2" }, "\uD83D\uDD2C Lab Equipment & Proper Technique"),
-    React.createElement("p", { className: "text-xs text-slate-200 mb-3" }, "Master the correct technique for each piece of equipment. Good technique = accurate results + safe lab work."),
+    React.createElement("h3", { className: "text-sm font-black text-emerald-400 mb-2" }, __alloT('stem.titration.lab_equipment_proper_technique', "\uD83D\uDD2C Lab Equipment & Proper Technique")),
+    React.createElement("p", { className: "text-xs text-slate-200 mb-3" }, __alloT('stem.titration.master_the_correct_technique_for_each_', "Master the correct technique for each piece of equipment. Good technique = accurate results + safe lab work.")),
     React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3" },
       labEquipment.map(function(eq) {
         var isSelected = selectedEquip === eq.id;
@@ -2783,12 +2784,12 @@ return React.createElement("div", {
       return React.createElement("div", { className: "space-y-3 animate-in fade-in duration-200" },
         // Technique
         React.createElement("div", { className: "rounded-xl p-4 border border-emerald-800/30 bg-emerald-950/20" },
-          React.createElement("h5", { className: "text-xs font-bold text-emerald-400 mb-2" }, "\u2705 Correct Technique"),
+          React.createElement("h5", { className: "text-xs font-bold text-emerald-400 mb-2" }, __alloT('stem.titration.correct_technique', "\u2705 Correct Technique")),
           React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" }, eq.technique)
         ),
         // Common errors
         React.createElement("div", { className: "rounded-xl p-4 border border-amber-800/30 bg-amber-950/20" },
-          React.createElement("h5", { className: "text-xs font-bold text-amber-400 mb-2" }, "\u26A0\uFE0F Common Errors"),
+          React.createElement("h5", { className: "text-xs font-bold text-amber-400 mb-2" }, __alloT('stem.titration.common_errors', "\u26A0\uFE0F Common Errors")),
           React.createElement("ul", { className: "space-y-1" },
             eq.errors.map(function(err, i) {
               return React.createElement("li", { key: i, className: "text-[11px] text-slate-300 flex items-start gap-1.5" },
@@ -2800,7 +2801,7 @@ return React.createElement("div", {
         ),
         // Safety note
         React.createElement("div", { className: "rounded-xl p-4 border border-red-800/30 bg-red-950/20" },
-          React.createElement("h5", { className: "text-xs font-bold text-red-400 mb-1" }, "\uD83D\uDEE1\uFE0F Safety Note"),
+          React.createElement("h5", { className: "text-xs font-bold text-red-400 mb-1" }, __alloT('stem.titration.safety_note', "\uD83D\uDEE1\uFE0F Safety Note")),
           React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" }, eq.safetyNote)
         )
       );
@@ -2814,8 +2815,8 @@ return React.createElement("div", {
     className: "rounded-2xl p-5 border space-y-4",
     style: Object.assign({}, glass, { background: 'rgba(3,25,40,0.85)', borderColor: 'rgba(167,139,250,0.3)' })
   },
-    React.createElement("h3", { className: "text-sm font-black text-violet-400 mb-1" }, "\uD83E\uDDEE Dilution & Molarity Calculator"),
-    React.createElement("p", { className: "text-xs text-slate-200 mb-3" }, "C\u2081V\u2081 = C\u2082V\u2082 \u2014 Calculate how to dilute a stock solution to a target concentration."),
+    React.createElement("h3", { className: "text-sm font-black text-violet-400 mb-1" }, __alloT('stem.titration.dilution_molarity_calculator', "\uD83E\uDDEE Dilution & Molarity Calculator")),
+    React.createElement("p", { className: "text-xs text-slate-200 mb-3" }, __alloT('stem.titration.c_v_c_v_calculate_how_to_dilute_a_stoc', "C\u2081V\u2081 = C\u2082V\u2082 \u2014 Calculate how to dilute a stock solution to a target concentration.")),
 
     // Safety warning
     React.createElement("div", {
@@ -2824,8 +2825,8 @@ return React.createElement("div", {
     },
       React.createElement("span", { className: "text-base shrink-0" }, "\u26A0\uFE0F"),
       React.createElement("div", null,
-        React.createElement("p", { className: "text-[11px] font-bold text-red-400" }, "CRITICAL SAFETY REMINDER"),
-        React.createElement("p", { className: "text-[11px] text-red-300/70" }, "Always add acid TO water, never water to acid. Exothermic mixing can cause violent boiling and splash concentrated acid.")
+        React.createElement("p", { className: "text-[11px] font-bold text-red-400" }, __alloT('stem.titration.critical_safety_reminder', "CRITICAL SAFETY REMINDER")),
+        React.createElement("p", { className: "text-[11px] text-red-300/70" }, __alloT('stem.titration.always_add_acid_to_water_never_water_t', "Always add acid TO water, never water to acid. Exothermic mixing can cause violent boiling and splash concentrated acid."))
       )
     ),
 
@@ -2833,49 +2834,49 @@ return React.createElement("div", {
     React.createElement("div", { className: "grid grid-cols-2 gap-4" },
       // Stock solution (C1)
       React.createElement("div", { className: "rounded-xl p-3 border border-violet-800/30 bg-violet-950/20" },
-        React.createElement("div", { className: "text-[11px] font-bold text-violet-400 mb-2 uppercase tracking-wider" }, "Stock Solution"),
+        React.createElement("div", { className: "text-[11px] font-bold text-violet-400 mb-2 uppercase tracking-wider" }, __alloT('stem.titration.stock_solution', "Stock Solution")),
         React.createElement("label", { className: "block mb-2" },
-          React.createElement("span", { className: "text-[11px] text-slate-200" }, "C\u2081 (Concentration)"),
+          React.createElement("span", { className: "text-[11px] text-slate-200" }, __alloT('stem.titration.c_concentration', "C\u2081 (Concentration)")),
           React.createElement("div", { className: "flex items-center gap-1 mt-1" },
             React.createElement("input", {
               type: "range", min: 0.01, max: 18, step: 0.01, value: molarityCalcC1,
               onChange: function(e) { upd('molarityC1', parseFloat(e.target.value)); },
-              'aria-label': 'Stock solution concentration',
+              'aria-label': __alloT('stem.titration.stock_solution_concentration', 'Stock solution concentration'),
               className: "flex-1 accent-violet-500", style: { height: '4px' }
             }),
             React.createElement("span", { className: "text-xs font-mono font-bold text-violet-300 w-16 text-right" }, molarityCalcC1.toFixed(2) + " M")
           )
         ),
         React.createElement("label", { className: "block" },
-          React.createElement("span", { className: "text-[11px] text-slate-200" }, "V\u2081 (Volume needed)"),
+          React.createElement("span", { className: "text-[11px] text-slate-200" }, __alloT('stem.titration.v_volume_needed', "V\u2081 (Volume needed)")),
           React.createElement("div", { className: "text-lg font-black text-violet-300 mt-1 tracking-tight" },
             (molarityCalcC2 * molarityCalcV1 / molarityCalcC1).toFixed(2) + " mL"
           ),
-          React.createElement("span", { className: "text-[11px] text-slate-200" }, "Calculated from C\u2082V\u2082/C\u2081")
+          React.createElement("span", { className: "text-[11px] text-slate-200" }, __alloT('stem.titration.calculated_from_c_v_c', "Calculated from C\u2082V\u2082/C\u2081"))
         )
       ),
       // Desired solution (C2, V2)
       React.createElement("div", { className: "rounded-xl p-3 border border-cyan-800/30 bg-cyan-950/20" },
-        React.createElement("div", { className: "text-[11px] font-bold text-cyan-400 mb-2 uppercase tracking-wider" }, "Desired Solution"),
+        React.createElement("div", { className: "text-[11px] font-bold text-cyan-400 mb-2 uppercase tracking-wider" }, __alloT('stem.titration.desired_solution', "Desired Solution")),
         React.createElement("label", { className: "block mb-2" },
-          React.createElement("span", { className: "text-[11px] text-slate-200" }, "C\u2082 (Target concentration)"),
+          React.createElement("span", { className: "text-[11px] text-slate-200" }, __alloT('stem.titration.c_target_concentration', "C\u2082 (Target concentration)")),
           React.createElement("div", { className: "flex items-center gap-1 mt-1" },
             React.createElement("input", {
               type: "range", min: 0.001, max: molarityCalcC1, step: 0.001, value: Math.min(molarityCalcC2, molarityCalcC1),
               onChange: function(e) { upd('molarityC2', parseFloat(e.target.value)); },
-              'aria-label': 'Target concentration',
+              'aria-label': __alloT('stem.titration.target_concentration', 'Target concentration'),
               className: "flex-1 accent-cyan-500", style: { height: '4px' }
             }),
             React.createElement("span", { className: "text-xs font-mono font-bold text-cyan-300 w-16 text-right" }, molarityCalcC2.toFixed(3) + " M")
           )
         ),
         React.createElement("label", { className: "block" },
-          React.createElement("span", { className: "text-[11px] text-slate-200" }, "V\u2082 (Final volume)"),
+          React.createElement("span", { className: "text-[11px] text-slate-200" }, __alloT('stem.titration.v_final_volume', "V\u2082 (Final volume)")),
           React.createElement("div", { className: "flex items-center gap-1 mt-1" },
             React.createElement("input", {
               type: "range", min: 1, max: 1000, step: 1, value: molarityCalcV1,
               onChange: function(e) { upd('molarityV1', parseFloat(e.target.value)); },
-              'aria-label': 'Final volume',
+              'aria-label': __alloT('stem.titration.final_volume', 'Final volume'),
               className: "flex-1 accent-cyan-500", style: { height: '4px' }
             }),
             React.createElement("span", { className: "text-xs font-mono font-bold text-cyan-300 w-16 text-right" }, molarityCalcV1.toFixed(0) + " mL")
@@ -2886,15 +2887,15 @@ return React.createElement("div", {
 
     // Dilution procedure
     React.createElement("div", { className: "rounded-xl p-4 border border-slate-700 bg-slate-800/40" },
-      React.createElement("div", { className: "text-[11px] font-bold text-white mb-2" }, "\uD83D\uDCD0 Dilution Procedure"),
+      React.createElement("div", { className: "text-[11px] font-bold text-white mb-2" }, __alloT('stem.titration.dilution_procedure', "\uD83D\uDCD0 Dilution Procedure")),
       React.createElement("div", { className: "space-y-2" },
         [
           { step: 1, text: "Calculate V\u2081 = C\u2082 \u00D7 V\u2082 / C\u2081 = " + molarityCalcC2.toFixed(3) + " \u00D7 " + molarityCalcV1.toFixed(0) + " / " + molarityCalcC1.toFixed(2) + " = " + (molarityCalcC2 * molarityCalcV1 / molarityCalcC1).toFixed(2) + " mL", icon: "\uD83E\uDDEE" },
           { step: 2, text: "Add ~" + Math.round(molarityCalcV1 * 0.6) + " mL of distilled water to your volumetric flask first", icon: "\uD83D\uDCA7" },
           { step: 3, text: "Carefully measure " + (molarityCalcC2 * molarityCalcV1 / molarityCalcC1).toFixed(2) + " mL of stock solution with a pipette", icon: "\uD83E\uDDEA" },
-          { step: 4, text: "Add the stock solution TO the water (never water to acid!)", icon: "\u26A0\uFE0F" },
+          { step: 4, text: __alloT('stem.titration.add_the_stock_solution_to_the_water_ne', "Add the stock solution TO the water (never water to acid!)"), icon: "\u26A0\uFE0F" },
           { step: 5, text: "Swirl gently, then fill to the " + molarityCalcV1.toFixed(0) + " mL mark with distilled water", icon: "\uD83C\uDFAF" },
-          { step: 6, text: "Stopper and invert 10 times to mix thoroughly", icon: "\uD83D\uDD04" }
+          { step: 6, text: __alloT('stem.titration.stopper_and_invert_10_times_to_mix_tho', "Stopper and invert 10 times to mix thoroughly"), icon: "\uD83D\uDD04" }
         ].map(function(s) {
           return React.createElement("div", { key: s.step, className: "flex items-start gap-2" },
             React.createElement("span", { className: "text-xs shrink-0" }, s.icon),
@@ -2909,15 +2910,15 @@ return React.createElement("div", {
     // Dilution factor
     React.createElement("div", { className: "flex gap-3 justify-center" },
       React.createElement("div", { className: "rounded-lg px-4 py-2 text-center border border-violet-800/30 bg-violet-950/20" },
-        React.createElement("div", { className: "text-[11px] text-slate-200 font-bold" }, "Dilution Factor"),
+        React.createElement("div", { className: "text-[11px] text-slate-200 font-bold" }, __alloT('stem.titration.dilution_factor', "Dilution Factor")),
         React.createElement("div", { className: "text-sm font-black text-violet-400" }, "1:" + (molarityCalcC1 / molarityCalcC2).toFixed(1))
       ),
       React.createElement("div", { className: "rounded-lg px-4 py-2 text-center border border-cyan-800/30 bg-cyan-950/20" },
-        React.createElement("div", { className: "text-[11px] text-slate-200 font-bold" }, "Water to Add"),
+        React.createElement("div", { className: "text-[11px] text-slate-200 font-bold" }, __alloT('stem.titration.water_to_add', "Water to Add")),
         React.createElement("div", { className: "text-sm font-black text-cyan-400" }, (molarityCalcV1 - molarityCalcC2 * molarityCalcV1 / molarityCalcC1).toFixed(1) + " mL")
       ),
       React.createElement("div", { className: "rounded-lg px-4 py-2 text-center border border-emerald-800/30 bg-emerald-950/20" },
-        React.createElement("div", { className: "text-[11px] text-slate-200 font-bold" }, "Moles Solute"),
+        React.createElement("div", { className: "text-[11px] text-slate-200 font-bold" }, __alloT('stem.titration.moles_solute', "Moles Solute")),
         React.createElement("div", { className: "text-sm font-black text-emerald-400" }, (molarityCalcC2 * molarityCalcV1 / 1000).toExponential(2) + " mol")
       )
     )
@@ -2927,7 +2928,7 @@ return React.createElement("div", {
 
   React.createElement("div", { className: "flex justify-end" },
 
-    React.createElement("button", { "aria-label": "Save titration snapshot",
+    React.createElement("button", { "aria-label": __alloT('stem.titration.save_titration_snapshot', "Save titration snapshot"),
 
       onClick: function () {
 
@@ -2937,7 +2938,7 @@ return React.createElement("div", {
 
             return prev.concat([{
 
-              id: 'titr-' + Date.now(), tool: 'titrationLab', label: 'Titration Lab',
+              id: 'titr-' + Date.now(), tool: 'titrationLab', label: __alloT('stem.titration.titration_lab', 'Titration Lab'),
 
               data: { presetId: presetId, indicator: indicatorId, volumeAdded: volumeAdded, pH: currentPH },
 
@@ -2955,7 +2956,7 @@ return React.createElement("div", {
 
       className: "px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full hover:from-cyan-600 hover:to-blue-700 shadow-md hover:shadow-lg transition-all"
 
-    }, "\uD83D\uDCF8 Snapshot"),
+    }, __alloT('stem.titration.snapshot', "\uD83D\uDCF8 Snapshot")),
 
     // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
     // TITRATION CURVE animation
@@ -2964,9 +2965,9 @@ return React.createElement("div", {
       React.createElement("div", { className: "flex items-center justify-between mb-2" },
         React.createElement("div", { className: "flex items-center gap-2" },
           React.createElement("span", { className: "text-lg" }, "\uD83E\uDDEB"),
-          React.createElement("h4", { className: "text-sm font-bold text-emerald-700" }, "Titration Curve \u2014 Finding the equivalence point")
+          React.createElement("h4", { className: "text-sm font-bold text-emerald-700" }, __alloT('stem.titration.titration_curve_finding_the_equivalenc', "Titration Curve \u2014 Finding the equivalence point"))
         ),
-        React.createElement("span", { className: "text-[10px] italic text-slate-600" }, "strong acid + strong base \u00B7 pH meter shows the jump")
+        React.createElement("span", { className: "text-[10px] italic text-slate-600" }, __alloT('stem.titration.strong_acid_strong_base_ph_meter_shows', "strong acid + strong base \u00B7 pH meter shows the jump"))
       ),
       React.createElement("div", { className: "rounded-xl overflow-hidden border border-emerald-200", style: { background: '#020210', aspectRatio: '16/6' } },
         React.createElement("canvas", {
@@ -3126,25 +3127,25 @@ return React.createElement("div", {
     // Discrete outcome: good buffer (<1.0 unit shift), poor buffer (>=1.0 unit shift)
     var isGood = pHshift < 1.0;
     var outcomeMeta = isGood
-      ? { label: '🛡️ GOOD BUFFER', desc: 'pH shifted only ' + pHshift.toFixed(2) + ' units after 20% more acid. Buffer is holding.', color: '#059669', bg: '#ecfdf5', border: '#86efac' }
-      : { label: '💥 POOR BUFFER', desc: 'pH shifted ' + pHshift.toFixed(2) + ' units — buffer overwhelmed. Use different conditions.', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' };
+      ? { label: __alloT('stem.titration.good_buffer', '🛡️ GOOD BUFFER'), desc: 'pH shifted only ' + pHshift.toFixed(2) + ' units after 20% more acid. Buffer is holding.', color: '#059669', bg: '#ecfdf5', border: '#86efac' }
+      : { label: __alloT('stem.titration.poor_buffer', '💥 POOR BUFFER'), desc: 'pH shifted ' + pHshift.toFixed(2) + ' units — buffer overwhelmed. Use different conditions.', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' };
     function logObs() {
       var obs = { pKa: parseFloat(pKa.toFixed(2)), ratio: parseFloat(bf.ratio.toFixed(2)), pH: parseFloat(pHcurrent.toFixed(2)), shift: parseFloat(pHshift.toFixed(2)), good: isGood };
       setBF({ log: (bf.log || []).concat([obs]).slice(-8) });
     }
     return React.createElement('div', { className: 'rounded-2xl p-5 border space-y-4', style: Object.assign({}, glass, { background: 'rgba(3,30,40,0.85)', borderColor: 'rgba(8,145,178,0.3)' }) },
-      React.createElement('h3', { className: 'text-sm font-black text-cyan-400 mb-1' }, '🛡️ Buffer strength discovery'),
+      React.createElement('h3', { className: 'text-sm font-black text-cyan-400 mb-1' }, __alloT('stem.titration.buffer_strength_discovery', '🛡️ Buffer strength discovery')),
       React.createElement('p', { className: 'text-[12px] text-slate-300 mb-3 leading-relaxed' },
-        'Three sliders: weak acid strength (Ka), buffer ratio [A⁻]/[HA], and starting pH. The simulation tells you whether the buffer HOLDS or FAILS after adding 20% more acid (discrete outcome — no numeric "buffer score"). Sweep the sliders. Log observations. Type what you discover about what makes a good buffer.'),
+        __alloT('stem.titration.three_sliders_weak_acid_strength_ka_bu', 'Three sliders: weak acid strength (Ka), buffer ratio [A⁻]/[HA], and starting pH. The simulation tells you whether the buffer HOLDS or FAILS after adding 20% more acid (discrete outcome — no numeric "buffer score"). Sweep the sliders. Log observations. Type what you discover about what makes a good buffer.')),
       React.createElement('div', { className: 'mb-3 p-3 rounded-lg text-center', style: { background: outcomeMeta.bg, border: '2px solid ' + outcomeMeta.border } },
         React.createElement('div', { className: 'text-base font-black mb-1', style: { color: outcomeMeta.color } }, outcomeMeta.label),
         React.createElement('div', { className: 'text-[11px] text-slate-700' }, outcomeMeta.desc)
       ),
       React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3 mb-3' },
         [
-          { key: 'ka', label: 'Acid strength (pKa)', val: pKa, displayVal: pKa.toFixed(2), min: 2, max: 12, step: 0.1, onChange: function(v) { setBF({ ka: Math.pow(10, -v) }); } },
-          { key: 'ratio', label: '[A⁻]/[HA] ratio', val: bf.ratio, displayVal: bf.ratio.toFixed(2), min: 0.05, max: 20, step: 0.05, onChange: function(v) { setBF({ ratio: v }); } },
-          { key: 'startPH', label: 'Starting pH (display only)', val: pHcurrent, displayVal: pHcurrent.toFixed(2), min: 0, max: 14, step: 0.1, onChange: function(v) {}, readOnly: true }
+          { key: 'ka', label: __alloT('stem.titration.acid_strength_pka', 'Acid strength (pKa)'), val: pKa, displayVal: pKa.toFixed(2), min: 2, max: 12, step: 0.1, onChange: function(v) { setBF({ ka: Math.pow(10, -v) }); } },
+          { key: 'ratio', label: __alloT('stem.titration.a_ha_ratio', '[A⁻]/[HA] ratio'), val: bf.ratio, displayVal: bf.ratio.toFixed(2), min: 0.05, max: 20, step: 0.05, onChange: function(v) { setBF({ ratio: v }); } },
+          { key: 'startPH', label: __alloT('stem.titration.starting_ph_display_only', 'Starting pH (display only)'), val: pHcurrent, displayVal: pHcurrent.toFixed(2), min: 0, max: 14, step: 0.1, onChange: function(v) {}, readOnly: true }
         ].map(function(s) {
           return React.createElement('div', { key: s.key },
             React.createElement('label', { htmlFor: 'bf-' + s.key, className: 'block text-[11px] font-bold text-slate-300 mb-1' },
@@ -3155,9 +3156,9 @@ return React.createElement("div", {
         })
       ),
       React.createElement('div', { className: 'flex gap-2 items-center mb-3 flex-wrap' },
-        React.createElement('button', { onClick: logObs, className: 'transition-colors px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-[11px] font-bold text-slate-200 border border-slate-600 active:scale-[0.97]' }, '📋 Log observation'),
+        React.createElement('button', { onClick: logObs, className: 'transition-colors px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-[11px] font-bold text-slate-200 border border-slate-600 active:scale-[0.97]' }, __alloT('stem.titration.log_observation', '📋 Log observation')),
         React.createElement('button', { onClick: function() { setBF({ ka: 1e-5, ratio: 1.0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
-          className: 'transition-colors px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[11px] font-semibold text-slate-300 border border-slate-600 active:scale-[0.97]' }, '↺ Reset'),
+          className: 'transition-colors px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[11px] font-semibold text-slate-300 border border-slate-600 active:scale-[0.97]' }, __alloT('stem.titration.reset_2', '↺ Reset')),
         (bf.log || []).length > 0 && React.createElement('span', { className: 'text-[10px] text-slate-400 italic' }, (bf.log || []).length + ' observations logged')
       ),
       (bf.log || []).length > 0 && React.createElement('div', { className: 'mb-3 overflow-x-auto' },
@@ -3178,40 +3179,40 @@ return React.createElement("div", {
       ),
       React.createElement('div', { className: 'mb-3' },
         React.createElement('label', { htmlFor: 'bf-hypo', className: 'block text-[11px] font-bold text-slate-300 mb-1' },
-          'Your hypothesis (free text — no right answer):'),
+          __alloT('stem.titration.your_hypothesis_free_text_no_right_ans', 'Your hypothesis (free text — no right answer):')),
         React.createElement('textarea', { id: 'bf-hypo', value: bf.hypothesis || '',
           onChange: function(e) { setBF({ hypothesis: e.target.value }); },
-          placeholder: 'What single condition makes the difference between GOOD and POOR? Does ratio matter more than pKa? Does the starting pH matter at all? Type your own theory.',
+          placeholder: __alloT('stem.titration.what_single_condition_makes_the_differ', 'What single condition makes the difference between GOOD and POOR? Does ratio matter more than pKa? Does the starting pH matter at all? Type your own theory.'),
           className: 'w-full text-[12px] border border-slate-600 rounded p-2 font-mono leading-snug bg-slate-900 text-slate-200', rows: 3 })
       ),
       React.createElement('div', { className: 'mb-3' },
         !bf.stuckRevealed && React.createElement('button', { onClick: function() { setBF({ stuckRevealed: true }); },
           className: 'transition-colors px-2 py-1 rounded bg-amber-900/30 hover:bg-amber-800/40 text-[11px] font-bold text-amber-300 border border-amber-700 active:scale-[0.97]' },
-          '🤔 I\'m stuck — show me questions to think about (no answers)'),
+          __alloT('stem.titration.i_m_stuck_show_me_questions_to_think_a', '🤔 I\'m stuck — show me questions to think about (no answers)')),
         bf.stuckRevealed && React.createElement('div', { className: 'p-3 rounded bg-amber-900/20 border border-amber-700 text-[11px] text-slate-300 leading-relaxed' },
-          React.createElement('div', { className: 'font-bold text-amber-300 mb-1' }, 'Open questions — investigate by manipulating:'),
+          React.createElement('div', { className: 'font-bold text-amber-300 mb-1' }, __alloT('stem.titration.open_questions_investigate_by_manipula', 'Open questions — investigate by manipulating:')),
           React.createElement('ul', { className: 'list-disc pl-5 space-y-1' },
-            React.createElement('li', null, 'Fix ratio at 1.0. Sweep pKa from 2 to 12. Are some pKa values just inherently better buffers? Why might that be?'),
-            React.createElement('li', null, 'Set pKa = 4.74 (acetic acid). Sweep ratio from 0.05 to 20. At which ratios does the buffer hold? Is there a symmetric "good band"?'),
-            React.createElement('li', null, 'Find one GOOD buffer. Then change ONE slider until it becomes POOR. Which single change was most efficient?'),
-            React.createElement('li', null, 'Log 4-5 GOOD buffers with different pKa values. What do their starting pH values have in common with their pKa?'),
-            React.createElement('li', null, 'In real biochemistry, blood is buffered at pH 7.4 — what pKa would be ideal for that buffer system? Investigate by looking up phosphate and bicarbonate buffers.')),
-          React.createElement('div', { className: 'text-[10px] italic text-amber-400 mt-2' }, 'No answers will be revealed. Investigate.'))
+            React.createElement('li', null, __alloT('stem.titration.fix_ratio_at_1_0_sweep_pka_from_2_to_1', 'Fix ratio at 1.0. Sweep pKa from 2 to 12. Are some pKa values just inherently better buffers? Why might that be?')),
+            React.createElement('li', null, __alloT('stem.titration.set_pka_4_74_acetic_acid_sweep_ratio_f', 'Set pKa = 4.74 (acetic acid). Sweep ratio from 0.05 to 20. At which ratios does the buffer hold? Is there a symmetric "good band"?')),
+            React.createElement('li', null, __alloT('stem.titration.find_one_good_buffer_then_change_one_s', 'Find one GOOD buffer. Then change ONE slider until it becomes POOR. Which single change was most efficient?')),
+            React.createElement('li', null, __alloT('stem.titration.log_4_5_good_buffers_with_different_pk', 'Log 4-5 GOOD buffers with different pKa values. What do their starting pH values have in common with their pKa?')),
+            React.createElement('li', null, __alloT('stem.titration.in_real_biochemistry_blood_is_buffered', 'In real biochemistry, blood is buffered at pH 7.4 — what pKa would be ideal for that buffer system? Investigate by looking up phosphate and bicarbonate buffers.'))),
+          React.createElement('div', { className: 'text-[10px] italic text-amber-400 mt-2' }, __alloT('stem.titration.no_answers_will_be_revealed_investigat', 'No answers will be revealed. Investigate.')))
       ),
       React.createElement('div', { className: 'p-3 rounded bg-emerald-900/20 border border-emerald-700' },
         React.createElement('div', { className: 'flex items-center gap-2 mb-2' },
           React.createElement('input', { type: 'checkbox', id: 'bf-und', checked: !!bf.understood, onChange: function(e) { setBF({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
           React.createElement('label', { htmlFor: 'bf-und', className: 'text-[12px] font-bold text-emerald-300 cursor-pointer' },
-            'I think I understand the trade-offs — let me explain them in my own words')),
+            __alloT('stem.titration.i_think_i_understand_the_trade_offs_le', 'I think I understand the trade-offs — let me explain them in my own words'))),
         bf.understood && React.createElement('textarea', { value: bf.explanation || '',
           onChange: function(e) { setBF({ explanation: e.target.value }); },
-          placeholder: 'Explain in your own words: what is the relationship between pKa, ratio, and starting pH? What single condition (or combination) makes a buffer hold against more acid? Why does ratio range matter?',
+          placeholder: __alloT('stem.titration.explain_in_your_own_words_what_is_the_', 'Explain in your own words: what is the relationship between pKa, ratio, and starting pH? What single condition (or combination) makes a buffer hold against more acid? Why does ratio range matter?'),
           className: 'w-full text-[12px] border border-emerald-700 rounded p-2 font-mono leading-snug bg-slate-900 text-slate-200', rows: 4 }),
         bf.understood && (bf.explanation || '').trim().length >= 40 && React.createElement('div', { className: 'mt-2 text-[10px] italic text-emerald-400' },
-          '✓ Saved. Notice — nobody checked your answer. That is what learner-driven inquiry looks like.')
+          __alloT('stem.titration.saved_notice_nobody_checked_your_answe', '✓ Saved. Notice — nobody checked your answer. That is what learner-driven inquiry looks like.'))
       ),
       React.createElement('div', { className: 'mt-3 p-2 rounded bg-slate-900 border border-slate-700 text-[10px] italic text-slate-400' },
-        'Design note: no buffer-capacity score, no reveal button, no quiz validation. Outcome is shown as a discrete 2-state marker (GOOD / POOR), not a continuous gradient — by design, to discourage optimization-gaming behavior. The point is the inquiry, not the number.')
+        __alloT('stem.titration.design_note_no_buffer_capacity_score_n', 'Design note: no buffer-capacity score, no reveal button, no quiz validation. Outcome is shown as a discrete 2-state marker (GOOD / POOR), not a continuous gradient — by design, to discourage optimization-gaming behavior. The point is the inquiry, not the number.'))
     );
   })()
 

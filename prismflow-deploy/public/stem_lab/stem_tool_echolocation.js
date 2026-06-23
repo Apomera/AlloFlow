@@ -654,6 +654,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       { id: 'doppler_master', label: 'Identify 5 Doppler shifts correctly', icon: '\uD83C\uDF0A', check: function(d) { return (d.dopplerCorrect || 0) >= 5; }, progress: function(d) { return (d.dopplerCorrect || 0) + '/5'; } }
     ],
     render: function(ctx) {
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = ctx.React;
       var h = React.createElement;
       var useState = React.useState;
@@ -694,13 +695,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       var setWebglError = webglErrState[1];
       var tab = d.tab || 'sonar';
       var TABS = [
-        { id: 'sonar', label: 'Sonar Vision', icon: '\uD83E\uDD87' },
-        { id: 'cave3d', label: '3D Cave', icon: '\uD83D\uDD26' },
-        { id: 'waves', label: 'Sound Waves', icon: '\uD83C\uDF0A' },
-        { id: 'doppler', label: 'Doppler Effect', icon: '\uD83D\uDEA8' },
-        { id: 'biology', label: 'Bat Biology', icon: '\uD83E\uDDA0' },
-        { id: 'ecology', label: 'Acoustic Ecology', icon: '\uD83C\uDF33' },
-        { id: 'sweepHunt', label: 'Sweep Discovery', icon: '\uD83C\uDFB5' }
+        { id: 'sonar', label: t('stem.echolocation.sonar_vision', 'Sonar Vision'), icon: '\uD83E\uDD87' },
+        { id: 'cave3d', label: t('stem.echolocation.3d_cave', '3D Cave'), icon: '\uD83D\uDD26' },
+        { id: 'waves', label: t('stem.echolocation.sound_waves', 'Sound Waves'), icon: '\uD83C\uDF0A' },
+        { id: 'doppler', label: t('stem.echolocation.doppler_effect', 'Doppler Effect'), icon: '\uD83D\uDEA8' },
+        { id: 'biology', label: t('stem.echolocation.bat_biology', 'Bat Biology'), icon: '\uD83E\uDDA0' },
+        { id: 'ecology', label: t('stem.echolocation.acoustic_ecology', 'Acoustic Ecology'), icon: '\uD83C\uDF33' },
+        { id: 'sweepHunt', label: t('stem.echolocation.sweep_discovery', 'Sweep Discovery'), icon: '\uD83C\uDFB5' }
       ];
 
       // ── WCAG: Live region for SR announcements ──
@@ -763,7 +764,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
 
       function getActiveScene() {
         if (sceneIdx === 4) {
-          return { name: 'Custom', desc: 'Place your own objects and explore.', bg: '#0a0a1a', objects: customObjects };
+          return { name: t('stem.echolocation.custom', 'Custom'), desc: t('stem.echolocation.place_your_own_objects_and_explore', 'Place your own objects and explore.'), bg: '#0a0a1a', objects: customObjects };
         }
         var base = SCENES[sceneIdx] || SCENES[0];
         // Enrich cave scene with extra objects
@@ -799,11 +800,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center' },
             h('div', { className: 'text-2xl mb-1' }, '\uD83E\uDD87'),
-            h('div', { className: 'text-lg font-black ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, 'Choose Your Bat Species'),
+            h('div', { className: 'text-lg font-black ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, t('stem.echolocation.choose_your_bat_species', 'Choose Your Bat Species')),
             h('p', { className: 'text-xs mt-1 ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
-              'Each species has unique echolocation abilities and hunting strategies. Your choice changes how the sonar simulator works.')
+              t('stem.echolocation.each_species_has_unique_echolocation_a', 'Each species has unique echolocation abilities and hunting strategies. Your choice changes how the sonar simulator works.'))
           ),
-          h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-4', role: 'radiogroup', 'aria-label': 'Select bat species' },
+          h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-4', role: 'radiogroup', 'aria-label': t('stem.echolocation.select_bat_species', 'Select bat species') },
             PLAYABLE_SPECIES.map(function(sp) {
               var isSelected = selectedPlayableSpecies === sp.id;
               // Stat bar helper
@@ -833,8 +834,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 h('div', { className: 'text-center mb-3' },
                   h('div', { className: 'text-3xl mb-1' }, sp.emoji),
                   h('div', { className: 'text-sm font-black ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, sp.name),
-                  h('div', { className: 'text-[11px] font-bold ' + (isDark ? 'text-indigo-400' : 'text-indigo-600') }, sp.subtitle)),
-                h('p', { className: 'text-[11px] mb-3 ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, sp.desc),
+                  h('div', { className: 'text-[11px] font-bold ' + (isDark ? 'text-indigo-400' : 'text-indigo-600') }, __alloT('stem.echolocation.' + (sp.id) + '_subtitle', sp.subtitle))),
+                h('p', { className: 'text-[11px] mb-3 ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.echolocation.' + (sp.id) + '_desc', sp.desc)),
                 // Stats visualization
                 h('div', { className: 'space-y-0.5 mb-3' },
                   statBar('Sonar Range', sp.sonarRange, 300, '#6366f1'),
@@ -858,7 +859,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           ),
           // Science comparison
           selectedPlayableSpecies ? h('div', { className: 'rounded-xl p-3 ' + (isDark ? 'bg-indigo-900/20 border border-indigo-800/30' : 'bg-indigo-50 border border-indigo-200') },
-            h('div', { className: 'text-xs font-bold mb-1 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83E\uDDEC Science Note'),
+            h('div', { className: 'text-xs font-bold mb-1 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.science_note', '\uD83E\uDDEC Science Note')),
             h('p', { className: 'text-[11px] ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') },
               currentSpeciesData ? currentSpeciesData.scienceFact : ''),
             h('div', { className: 'mt-2 text-[11px] italic ' + (isDark ? 'text-indigo-400' : 'text-indigo-600') },
@@ -867,9 +868,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           // Start playing button (visible once species selected)
           selectedPlayableSpecies ? h('div', { className: 'text-center' },
             h('div', { className: 'text-[11px] mb-2 ' + (isDark ? 'text-slate-200' : 'text-slate-200') },
-              'Species selected! The sonar simulator below is now configured for your bat.'),
+              t('stem.echolocation.species_selected_the_sonar_simulator_b', 'Species selected! The sonar simulator below is now configured for your bat.')),
             h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-200') },
-              'You can change species anytime using the toggle in the game HUD.')
+              t('stem.echolocation.you_can_change_species_anytime_using_t', 'You can change species anytime using the toggle in the game HUD.'))
           ) : null
         );
       }
@@ -1026,7 +1027,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           // missing.
           if (!eng.moths) eng.moths = [];
           for (var lmi = 0; lmi < 3; lmi++) {
-            spawnInsect({ name: 'Luna Moth', color: 0x88ffcc, energy: 25, size: 0.22, speed: 0.2 });
+            spawnInsect({ name: t('stem.echolocation.luna_moth', 'Luna Moth'), color: 0x88ffcc, energy: 25, size: 0.22, speed: 0.2 });
             eng.moths[eng.moths.length - 1].position.set(12 + Math.random() * 4, 2 + Math.random() * 2, -1 + Math.random() * 6);
             eng.moths[eng.moths.length - 1]._baseY = eng.moths[eng.moths.length - 1].position.y;
           }
@@ -1082,10 +1083,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
 
           // ── Insect types (different food values) ──
           var INSECT_TYPES = [
-            { name: 'Moth', color: 0x44ff88, energy: 15, size: 0.15, speed: 0.3 },
-            { name: 'Luna Moth', color: 0x88ffcc, energy: 25, size: 0.22, speed: 0.2 },
-            { name: 'Mosquito Swarm', color: 0xaaaacc, energy: 8, size: 0.1, speed: 0.5 },
-            { name: 'Beetle', color: 0xffaa44, energy: 20, size: 0.18, speed: 0.15 }
+            { name: t('stem.echolocation.moth', 'Moth'), color: 0x44ff88, energy: 15, size: 0.15, speed: 0.3 },
+            { name: t('stem.echolocation.luna_moth_2', 'Luna Moth'), color: 0x88ffcc, energy: 25, size: 0.22, speed: 0.2 },
+            { name: t('stem.echolocation.mosquito_swarm', 'Mosquito Swarm'), color: 0xaaaacc, energy: 8, size: 0.1, speed: 0.5 },
+            { name: t('stem.echolocation.beetle', 'Beetle'), color: 0xffaa44, energy: 20, size: 0.18, speed: 0.15 }
           ];
 
           // Spawn initial insects
@@ -1575,8 +1576,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           // Bug fix: light-mode subtitle was 'text-slate-200' on both
           // branches, effectively invisible on a light background.
           h('div', { className: 'text-center' },
-            h('h3', { className: 'text-lg font-bold ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, '\uD83D\uDD26 3D Cave Echolocation'),
-            h('p', { className: 'text-xs ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, 'Survive in the dark using sonar. Catch as many insects as you can before energy runs out. Press E to pulse. WASD to fly.')
+            h('h3', { className: 'text-lg font-bold ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, t('stem.echolocation.3d_cave_echolocation', '\uD83D\uDD26 3D Cave Echolocation')),
+            h('p', { className: 'text-xs ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, t('stem.echolocation.survive_in_the_dark_using_sonar_catch_', 'Survive in the dark using sonar. Catch as many insects as you can before energy runs out. Press E to pulse. WASD to fly.'))
           ),
           // \u2500\u2500 Pre-flight brief (collapsible) \u2500\u2500
           // Goal, controls, and the science it teaches in one place.
@@ -1586,15 +1587,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             open: !cave3dEngineRef.current || (cave3dEngineRef.current.survivalTime || 0) < 1,
             className: 'rounded-xl ' + (isDark ? 'bg-emerald-900/20 border border-emerald-700/40' : 'bg-emerald-50 border border-emerald-300')
           },
-            h('summary', { className: 'cursor-pointer text-xs font-bold px-3 py-2 select-none ' + (isDark ? 'text-emerald-300' : 'text-emerald-800') }, '\uD83D\uDCDC How this works (click to toggle)'),
+            h('summary', { className: 'cursor-pointer text-xs font-bold px-3 py-2 select-none ' + (isDark ? 'text-emerald-300' : 'text-emerald-800') }, t('stem.echolocation.how_this_works_click_to_toggle', '\uD83D\uDCDC How this works (click to toggle)')),
             h('div', { className: 'px-3 pb-3 space-y-3 text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-700') },
               h('div', null,
-                h('div', { className: 'font-black mb-1 ' + (isDark ? 'text-emerald-200' : 'text-emerald-800') }, '\uD83C\uDFAF Goal'),
+                h('div', { className: 'font-black mb-1 ' + (isDark ? 'text-emerald-200' : 'text-emerald-800') }, t('stem.echolocation.goal', '\uD83C\uDFAF Goal')),
                 h('p', { className: 'leading-relaxed' },
-                  'Catch glowing insects to refill energy. Stay airborne as long as you can. There is no "win" screen; the score is your survival time and the insects you caught. Try to beat your high score.')
+                  t('stem.echolocation.catch_glowing_insects_to_refill_energy', 'Catch glowing insects to refill energy. Stay airborne as long as you can. There is no "win" screen; the score is your survival time and the insects you caught. Try to beat your high score.'))
               ),
               h('div', null,
-                h('div', { className: 'font-black mb-1 ' + (isDark ? 'text-emerald-200' : 'text-emerald-800') }, '\uD83D\uDD79 Controls'),
+                h('div', { className: 'font-black mb-1 ' + (isDark ? 'text-emerald-200' : 'text-emerald-800') }, t('stem.echolocation.controls', '\uD83D\uDD79 Controls')),
                 h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2' },
                   [
                     { k: 'WASD', d: 'Fly + steer' },
@@ -1618,33 +1619,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 )
               ),
               h('div', null,
-                h('div', { className: 'font-black mb-1 ' + (isDark ? 'text-emerald-200' : 'text-emerald-800') }, '\uD83E\uDDE0 What you\'re learning'),
+                h('div', { className: 'font-black mb-1 ' + (isDark ? 'text-emerald-200' : 'text-emerald-800') }, t('stem.echolocation.what_you_re_learning', '\uD83E\uDDE0 What you\'re learning')),
                 h('ul', { className: 'list-disc list-inside leading-relaxed space-y-0.5' },
-                  h('li', null, 'Sonar reveals geometry that vision cannot. The cave only "exists" at the moments you pulse.'),
-                  h('li', null, 'Echo-return time tells distance: the HUD shows d = v\u00D7t / 2 each pulse.'),
-                  h('li', null, 'Pulsing costs energy. Real bats balance pulse rate against the prey density they\'re chasing.'),
-                  h('li', null, 'Difficulty scales with survival time. Insects appear less often the longer you live.')
+                  h('li', null, t('stem.echolocation.sonar_reveals_geometry_that_vision_can', 'Sonar reveals geometry that vision cannot. The cave only "exists" at the moments you pulse.')),
+                  h('li', null, t('stem.echolocation.echo_return_time_tells_distance_the_hu', 'Echo-return time tells distance: the HUD shows d = v\u00D7t / 2 each pulse.')),
+                  h('li', null, t('stem.echolocation.pulsing_costs_energy_real_bats_balance', 'Pulsing costs energy. Real bats balance pulse rate against the prey density they\'re chasing.')),
+                  h('li', null, t('stem.echolocation.difficulty_scales_with_survival_time_i', 'Difficulty scales with survival time. Insects appear less often the longer you live.'))
                 )
               )
             )
           ),
           // Three.js not loaded
           !threeReady && h('div', { className: 'text-center p-8 text-slate-600' },
-            h('p', null, 'Loading 3D engine... (Three.js required)'),
-            h('p', { className: 'text-xs mt-2' }, 'Three.js loads automatically when you open any 3D tool.')
+            h('p', null, t('stem.echolocation.loading_3d_engine_three_js_required', 'Loading 3D engine... (Three.js required)')),
+            h('p', { className: 'text-xs mt-2' }, t('stem.echolocation.three_js_loads_automatically_when_you_', 'Three.js loads automatically when you open any 3D tool.'))
           ),
           // 3D Canvas container
           threeReady && (webglError
             ? h('div', { style: { width: '100%', height: '400px', borderRadius: '12px', overflow: 'hidden', border: '2px solid ' + (isDark ? '#ef4444' : '#fca5a5'), display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px', background: '#020208', color: '#cbd5e1', padding: '20px', textAlign: 'center' } },
                 h('span', { style: { fontSize: '32px' } }, '⚠️'),
-                h('div', { style: { fontWeight: 'bold', color: '#fca5a5' } }, '3D Echolocation Cave failed to initialize'),
-                h('p', { style: { fontSize: '11px', color: '#94a3b8', maxWidth: '360px' } }, 'WebGL is required to render the 3D cave environment. Please check your browser settings or hardware acceleration and try again.'),
+                h('div', { style: { fontWeight: 'bold', color: '#fca5a5' } }, t('stem.echolocation.3d_echolocation_cave_failed_to_initial', '3D Echolocation Cave failed to initialize')),
+                h('p', { style: { fontSize: '11px', color: '#94a3b8', maxWidth: '360px' } }, t('stem.echolocation.webgl_is_required_to_render_the_3d_cav', 'WebGL is required to render the 3D cave environment. Please check your browser settings or hardware acceleration and try again.')),
                 h('button', {
                   onClick: function() {
                     setWebglError(false);
                   },
                   style: { padding: '6px 12px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' }
-                }, 'Retry')
+                }, t('stem.echolocation.retry', 'Retry'))
               )
             : h('div', {
                 ref: cave3dRef,
@@ -1653,8 +1654,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               },
             // Fullscreen toggle (top-right corner)
             h('button', {
-              'aria-label': 'Toggle fullscreen for the 3D cave',
-              title: 'Fullscreen',
+              'aria-label': t('stem.echolocation.toggle_fullscreen_for_the_3d_cave', 'Toggle fullscreen for the 3D cave'),
+              title: t('stem.echolocation.fullscreen', 'Fullscreen'),
               onClick: function() {
                 var el = document.getElementById('echo-cave3d-fs-wrap');
                 if (!el) return;
@@ -1683,12 +1684,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             }, '⛶'),
             // HUD overlay
             h('div', { style: { position: 'absolute', top: '8px', left: '8px', zIndex: 10, pointerEvents: 'none', fontSize: '11px', color: '#4ade80', maxWidth: '200px' } },
-              h('div', { style: { fontWeight: 700 } }, '\uD83E\uDD87 3D Echolocation Cave'),
-              h('div', { style: { fontSize: '9px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'WASD=fly \u2022 E=sonar \u2022 P=perch \u2022 R=restart'),
+              h('div', { style: { fontWeight: 700 } }, t('stem.echolocation.3d_echolocation_cave', '\uD83E\uDD87 3D Echolocation Cave')),
+              h('div', { style: { fontSize: '9px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.echolocation.wasd_fly_e_sonar_p_perch_r_restart', 'WASD=fly \u2022 E=sonar \u2022 P=perch \u2022 R=restart')),
               // Energy bar
               cave3dEngineRef.current && h('div', { style: { marginTop: '4px' } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' } },
-                  h('span', { style: { fontSize: '9px', color: '#f59e0b' } }, '\u26A1 Energy'),
+                  h('span', { style: { fontSize: '9px', color: '#f59e0b' } }, t('stem.echolocation.energy', '\u26A1 Energy')),
                   h('span', { style: { fontSize: '9px', color: cave3dEngineRef.current.energy > 30 ? '#f59e0b' : '#ef4444', fontWeight: 700 } }, Math.round(cave3dEngineRef.current.energy) + '%')
                 ),
                 h('div', { style: { width: '120px', height: '6px', borderRadius: '3px', background: 'rgba(100,116,139,0.3)', overflow: 'hidden' } },
@@ -1703,11 +1704,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 h('div', { style: { color: '#4ade80' } }, '\uD83C\uDFAF Score: ' + (cave3dEngineRef.current.score || 0)),
                 h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, '\u23F1 ' + Math.round(cave3dEngineRef.current.survivalTime || 0) + 's'),
                 cave3dEngineRef.current.highScore && cave3dEngineRef.current.highScore.score > 0 && h('div', { style: { color: '#7c3aed', fontSize: '9px' } }, '\uD83C\uDFC6 Best: ' + cave3dEngineRef.current.highScore.score + ' (' + (cave3dEngineRef.current.highScore.time || 0) + 's)'),
-                cave3dEngineRef.current.perching && h('div', { style: { color: '#60a5fa', fontWeight: 700, marginTop: '2px' } }, '\uD83E\uDD87 Perching (resting...)'),
+                cave3dEngineRef.current.perching && h('div', { style: { color: '#60a5fa', fontWeight: 700, marginTop: '2px' } }, t('stem.echolocation.perching_resting', '\uD83E\uDD87 Perching (resting...)')),
                 cave3dEngineRef.current.survivalTime > 5 && h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '8px', marginTop: '2px' } }, '\u26A0 Difficulty: x' + (1 + (cave3dEngineRef.current.survivalTime / 120) * 0.5).toFixed(1)),
                 // Echolocation distance calculation (educational)
                 cave3dEngineRef.current._lastEchoDistance && h('div', { style: { marginTop: '4px', background: 'rgba(0,40,30,0.8)', borderRadius: '6px', padding: '4px 6px', border: '1px solid rgba(0,255,170,0.2)' } },
-                  h('div', { style: { color: '#4ade80', fontSize: '9px', fontWeight: 700 } }, '\uD83D\uDCCF Echo Return:'),
+                  h('div', { style: { color: '#4ade80', fontSize: '9px', fontWeight: 700 } }, t('stem.echolocation.echo_return', '\uD83D\uDCCF Echo Return:')),
                   h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '8px', fontFamily: 'monospace' } },
                     'd = ' + cave3dEngineRef.current._lastEchoDistance.toFixed(1) + 'm'),
                   h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '7px', fontFamily: 'monospace' } },
@@ -1721,7 +1722,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 style: { position: 'absolute', bottom: '60px', left: '50%', transform: 'translateX(-50%)', textAlign: 'center', pointerEvents: 'none', zIndex: 15,
                   background: 'rgba(0,40,30,0.85)', borderRadius: '12px', padding: '10px 20px', border: '1px solid rgba(0,255,170,0.3)', maxWidth: '280px' }
               },
-                h('div', { style: { fontSize: '13px', fontWeight: 700, color: '#4ade80', marginBottom: '4px' } }, '\uD83E\uDD87 How to Echolocate:'),
+                h('div', { style: { fontSize: '13px', fontWeight: 700, color: '#4ade80', marginBottom: '4px' } }, t('stem.echolocation.how_to_echolocate', '\uD83E\uDD87 How to Echolocate:')),
                 h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } },
                   cave3dEngineRef.current.survivalTime < 3
                     ? 'Press E to send a sonar pulse. It reveals hidden cave walls and insects!'
@@ -1736,10 +1737,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                   background: 'rgba(15,23,42,0.9)', borderRadius: '12px', padding: '16px 24px', border: '2px solid #ef4444' }
               },
                 h('div', { style: { fontSize: '24px' } }, '\uD83E\uDD87\uD83D\uDCA4'),
-                h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#ef4444', marginBottom: '4px' } }, 'Out of Energy!'),
+                h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#ef4444', marginBottom: '4px' } }, t('stem.echolocation.out_of_energy', 'Out of Energy!')),
                 h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '8px' } },
                   'Caught ' + (cave3dEngineRef.current.mothsCaught || 0) + ' insects \u2022 Score: ' + (cave3dEngineRef.current.score || 0) + ' \u2022 Survived: ' + Math.round(cave3dEngineRef.current.survivalTime || 0) + 's'),
-                h('div', { style: { fontSize: '12px', color: '#fbbf24', fontWeight: 700 } }, 'Press R to restart')
+                h('div', { style: { fontSize: '12px', color: '#fbbf24', fontWeight: 700 } }, t('stem.echolocation.press_r_to_restart', 'Press R to restart'))
               )
             )
           )),
@@ -1748,52 +1749,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             h('button', {
               onTouchStart: function(ev) { ev.preventDefault(); var e = cave3dEngineRef.current; if (e) e.keys['KeyE'] = true; setTimeout(function() { if (e) e.keys['KeyE'] = false; }, 100); },
               className: 'px-4 py-2 rounded-xl font-bold text-sm', style: { background: 'rgba(0,255,170,0.2)', border: '2px solid rgba(0,255,170,0.5)', color: '#4ade80' }
-            }, '\uD83D\uDD26 Sonar'),
+            }, t('stem.echolocation.sonar', '\uD83D\uDD26 Sonar')),
             h('button', {
               onTouchStart: function(ev) { ev.preventDefault(); var e = cave3dEngineRef.current; if (e) e.keys['KeyP'] = true; },
               onTouchEnd: function() { var e = cave3dEngineRef.current; if (e) e.keys['KeyP'] = false; },
               className: 'px-4 py-2 rounded-xl font-bold text-sm', style: { background: 'rgba(96,165,250,0.2)', border: '2px solid rgba(96,165,250,0.5)', color: '#60a5fa' }
-            }, '\uD83E\uDD87 Perch'),
+            }, t('stem.echolocation.perch', '\uD83E\uDD87 Perch')),
             h('button', {
               onTouchStart: function(ev) { ev.preventDefault(); var e = cave3dEngineRef.current; if (e) e.keys['Space'] = true; },
               onTouchEnd: function() { var e = cave3dEngineRef.current; if (e) e.keys['Space'] = false; },
               className: 'px-4 py-2 rounded-xl font-bold text-sm', style: { background: 'rgba(167,139,250,0.2)', border: '2px solid rgba(167,139,250,0.5)', color: '#a78bfa' }
-            }, '\u2B06\uFE0F Up'),
+            }, t('stem.echolocation.up', '\u2B06\uFE0F Up')),
             cave3dEngineRef.current && cave3dEngineRef.current.gameOver && h('button', {
               onTouchStart: function(ev) { ev.preventDefault(); var e = cave3dEngineRef.current; if (e) e.keys['KeyR'] = true; setTimeout(function() { if (e) e.keys['KeyR'] = false; }, 100); },
               className: 'px-4 py-2 rounded-xl font-bold text-sm', style: { background: 'rgba(239,68,68,0.2)', border: '2px solid rgba(239,68,68,0.5)', color: '#ef4444' }
-            }, '\uD83D\uDD04 Restart')
+            }, t('stem.echolocation.restart', '\uD83D\uDD04 Restart'))
           ),
           // Controls help
           h('div', { className: 'grid grid-cols-3 gap-2 text-center text-xs ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
             h('div', { className: 'p-2 rounded-lg ' + (isDark ? 'bg-slate-800' : 'bg-emerald-50') },
               h('div', { className: 'text-lg' }, '\uD83D\uDD26'),
-              h('div', { className: 'font-bold' }, 'E = Sonar Pulse'),
-              h('div', null, 'Reveals cave walls & moths')),
+              h('div', { className: 'font-bold' }, t('stem.echolocation.e_sonar_pulse', 'E = Sonar Pulse')),
+              h('div', null, t('stem.echolocation.reveals_cave_walls_moths', 'Reveals cave walls & moths'))),
             h('div', { className: 'p-2 rounded-lg ' + (isDark ? 'bg-slate-800' : 'bg-emerald-50') },
               h('div', { className: 'text-lg' }, '\uD83E\uDD87'),
-              h('div', { className: 'font-bold' }, 'WASD = Fly'),
-              h('div', null, 'Navigate the dark cave')),
+              h('div', { className: 'font-bold' }, t('stem.echolocation.wasd_fly', 'WASD = Fly')),
+              h('div', null, t('stem.echolocation.navigate_the_dark_cave', 'Navigate the dark cave'))),
             h('div', { className: 'p-2 rounded-lg ' + (isDark ? 'bg-slate-800' : 'bg-emerald-50') },
               h('div', { className: 'text-lg' }, '\uD83E\uDD8B'),
-              h('div', { className: 'font-bold' }, 'Find 5 Moths'),
-              h('div', null, 'Hidden in the darkness'))
+              h('div', { className: 'font-bold' }, t('stem.echolocation.find_5_moths', 'Find 5 Moths')),
+              h('div', null, t('stem.echolocation.hidden_in_the_darkness', 'Hidden in the darkness')))
           ),
           // Science explanation
           h('div', { className: 'p-3 rounded-xl border text-xs ' + (isDark ? 'bg-slate-800/50 border-slate-700 text-slate-300' : 'bg-emerald-50 border-emerald-200 text-slate-700'), style: { lineHeight: 1.6 } },
-            h('strong', null, '\uD83E\uDDE0 How Real Echolocation Works: '),
-            'Bats emit ultrasonic pulses (20-200 kHz) from their mouths or noses. These sound waves bounce off objects and return to the bat\u2019s ears. The time delay tells the bat how far away objects are, and the frequency shift (Doppler effect) tells it whether objects are moving toward or away. In this 3D simulation, each sonar pulse you emit travels outward and illuminates cave walls and moths as it passes them \u2014 just like a real bat\u2019s sonar cone!'
+            h('strong', null, t('stem.echolocation.how_real_echolocation_works', '\uD83E\uDDE0 How Real Echolocation Works: ')),
+            t('stem.echolocation.bats_emit_ultrasonic_pulses_20_200_khz', 'Bats emit ultrasonic pulses (20-200 kHz) from their mouths or noses. These sound waves bounce off objects and return to the bat\u2019s ears. The time delay tells the bat how far away objects are, and the frequency shift (Doppler effect) tells it whether objects are moving toward or away. In this 3D simulation, each sonar pulse you emit travels outward and illuminates cave walls and moths as it passes them \u2014 just like a real bat\u2019s sonar cone!')
           )
         );
       }
 
       function renderSonarTab() {
-        var sonarCanvasEl = h('canvas', { 'aria-label': 'Echolocation visualization',
+        var sonarCanvasEl = h('canvas', { 'aria-label': t('stem.echolocation.echolocation_visualization', 'Echolocation visualization'),
           ref: sonarCanvasRef,
           width: 800,
           height: 500,
           role: 'img',
-          'aria-label': 'Sonar vision simulator. Use arrow keys or WASD to move the bat. Press Space to emit a sonar pulse. Objects illuminate briefly when hit by sound waves.',
+          'aria-label': t('stem.echolocation.sonar_vision_simulator_use_arrow_keys_', 'Sonar vision simulator. Use arrow keys or WASD to move the bat. Press Space to emit a sonar pulse. Objects illuminate briefly when hit by sound waves.'),
           tabIndex: 0,
           onKeyDown: function(e) {
             if (e.key === ' ' || e.key === 'Spacebar') {
@@ -1825,11 +1826,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               h('button', {
                 onClick: function() { upd('playableSpecies', null); },
                 className: 'px-2 py-0.5 rounded text-[11px] font-bold ' + (isDark ? 'transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600' : 'transition-colors bg-slate-200 text-slate-600 hover:bg-slate-300')
-              }, 'Change Species')
+              }, t('stem.echolocation.change_species', 'Change Species'))
             ),
             // Energy bar
             h('div', { className: 'flex items-center gap-2' },
-              h('span', { className: 'text-[11px] font-bold ' + (isDark ? 'text-amber-400' : 'text-amber-600') }, '\u26A1 Energy'),
+              h('span', { className: 'text-[11px] font-bold ' + (isDark ? 'text-amber-400' : 'text-amber-600') }, t('stem.echolocation.energy_2', '\u26A1 Energy')),
               h('div', { className: 'w-24 h-3 rounded-full overflow-hidden ' + (isDark ? 'bg-slate-700' : 'bg-slate-200'), 'aria-label': 'Energy: ' + Math.round(sonarStateRef.current.energy) + '%' },
                 h('div', {
                   style: { width: Math.round(sonarStateRef.current.energy) + '%', background: sonarStateRef.current.energy > 30 ? '#f59e0b' : '#ef4444', transition: 'width 0.2s' },
@@ -1859,23 +1860,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             }),
             // Custom scene: add object button
             sceneIdx === 4 ? h('button', {
-              'aria-label': 'Add object to custom scene',
+              'aria-label': t('stem.echolocation.add_object_to_custom_scene', 'Add object to custom scene'),
               onClick: function() { addCustomObject(); },
               className: 'transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-500'
-            }, '+ Add Object') : null
+            }, t('stem.echolocation.add_object', '+ Add Object')) : null
           ),
           // Controls hint
           h('div', { className: 'flex flex-wrap gap-4 text-[11px] ' + (isDark ? 'text-indigo-400' : 'text-indigo-600') },
-            h('span', null, '\u2B05\uFE0F\u27A1\uFE0F A/D: Steer'),
-            h('span', null, '\u2B06\uFE0F W: Flap wings (thrust up)'),
-            h('span', null, '\u2B07\uFE0F S: Dive'),
-            h('span', null, 'SPACE: Emit sonar pulse'),
-            h('span', null, 'Touch ceiling/wall: Perch & rest'),
+            h('span', null, t('stem.echolocation.a_d_steer', '\u2B05\uFE0F\u27A1\uFE0F A/D: Steer')),
+            h('span', null, t('stem.echolocation.w_flap_wings_thrust_up', '\u2B06\uFE0F W: Flap wings (thrust up)')),
+            h('span', null, t('stem.echolocation.s_dive', '\u2B07\uFE0F S: Dive')),
+            h('span', null, t('stem.echolocation.space_emit_sonar_pulse', 'SPACE: Emit sonar pulse')),
+            h('span', null, t('stem.echolocation.touch_ceiling_wall_perch_rest', 'Touch ceiling/wall: Perch & rest')),
             h('button', {
-              'aria-label': 'Emit sonar pulse',
+              'aria-label': t('stem.echolocation.emit_sonar_pulse', 'Emit sonar pulse'),
               onClick: function() { emitSonarPulse(); },
               className: 'transition-colors px-3 py-1 rounded-lg font-bold bg-indigo-600 text-white hover:bg-indigo-500'
-            }, '\uD83E\uDD87 Emit Pulse')
+            }, t('stem.echolocation.emit_pulse', '\uD83E\uDD87 Emit Pulse'))
           ),
           // Canvas (wrapped) + goal banner overlay + fullscreen button
           // The student looks at the canvas while playing, not at the
@@ -1897,8 +1898,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               // banner which is top-center). Uses the standard
               // requestFullscreen API with vendor-prefix fallbacks.
               h('button', {
-                'aria-label': 'Toggle fullscreen for the sonar canvas',
-                title: 'Fullscreen',
+                'aria-label': t('stem.echolocation.toggle_fullscreen_for_the_sonar_canvas', 'Toggle fullscreen for the sonar canvas'),
+                title: t('stem.echolocation.fullscreen_2', 'Fullscreen'),
                 onClick: function() {
                   var el = document.getElementById('echo-sonar-fs-wrap');
                   if (!el) return;
@@ -2024,35 +2025,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           sonarStateRef.current.sonarJamTimer > 0 ? h('div', {
             className: 'text-[11px] p-2 rounded-lg animate-pulse ' + (isDark ? 'bg-red-900/40 text-red-200 border border-red-700/40' : 'bg-red-50 text-red-800 border border-red-200'),
             role: 'alert'
-          }, '\uD83D\uDD07 Tiger moth jamming your sonar! These moths produce ultrasonic clicks that interfere with bat echolocation \u2014 a real anti-predator defense!') : null,
+          }, t('stem.echolocation.tiger_moth_jamming_your_sonar_these_mo', '\uD83D\uDD07 Tiger moth jamming your sonar! These moths produce ultrasonic clicks that interfere with bat echolocation \u2014 a real anti-predator defense!')) : null,
 
           // How to Play / Educational Info Panel
           h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-indigo-900/20 border border-indigo-800/30' : 'bg-indigo-50 border border-indigo-200') },
-            h('div', { className: 'text-xs font-bold mb-2 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83D\uDCA1 How Sonar Vision Works'),
+            h('div', { className: 'text-xs font-bold mb-2 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.how_sonar_vision_works', '\uD83D\uDCA1 How Sonar Vision Works')),
             h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
               h('div', null,
-                h('div', { className: 'font-bold mb-1 ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, 'What you\'re seeing:'),
-                h('p', null, 'This simulator shows what a bat "sees" through sound. The world is almost completely dark \u2014 objects only become visible for a brief moment when hit by a sonar pulse.'),
-                h('p', { className: 'mt-1' }, 'Brighter echoes = closer objects or harder materials. Faint flickering echoes = soft-bodied insects (moths). The glow fades over 1-2 seconds, simulating how the bat\'s "mental image" decays between pulses.')),
+                h('div', { className: 'font-bold mb-1 ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, t('stem.echolocation.what_you_re_seeing', 'What you\'re seeing:')),
+                h('p', null, t('stem.echolocation.this_simulator_shows_what_a_bat_sees_t', 'This simulator shows what a bat "sees" through sound. The world is almost completely dark \u2014 objects only become visible for a brief moment when hit by a sonar pulse.')),
+                h('p', { className: 'mt-1' }, t('stem.echolocation.brighter_echoes_closer_objects_or_hard', 'Brighter echoes = closer objects or harder materials. Faint flickering echoes = soft-bodied insects (moths). The glow fades over 1-2 seconds, simulating how the bat\'s "mental image" decays between pulses.'))),
               h('div', null,
-                h('div', { className: 'font-bold mb-1 ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, 'Tips for each scene:'),
+                h('div', { className: 'font-bold mb-1 ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, t('stem.echolocation.tips_for_each_scene', 'Tips for each scene:')),
                 h('ul', { className: 'list-disc pl-4 space-y-1' },
-                  h('li', null, h('strong', null, 'Cave: '), 'Use rapid pulses near walls to build up a detailed image. Find the exit (barely visible \u2014 it\'s open air with almost no echo). Watch for hidden passages!'),
-                  h('li', null, h('strong', null, 'Forest: '), 'Trees give strong woody echoes. Water pools reflect dimly. Moths flit erratically \u2014 they\'re hard to track!'),
-                  h('li', null, h('strong', null, 'Urban: '), 'Buildings give rock-hard echoes. Streetlights create confusing bright spots. Moths cluster around lights.'),
-                  h('li', null, h('strong', null, 'Tropical: '), 'Fruit glows faintly in night vision. Trees are large obstacles. Watch for vines!'),
-                  h('li', null, h('strong', null, 'Custom: '), 'Place your own objects and try to identify them by echo alone.'),
-                  h('li', null, h('strong', null, 'Flight tips: '), 'Press W to flap \u2014 gravity pulls you down! Perch on surfaces to rest and recharge energy. Catching prey restores +15 energy.')))
+                  h('li', null, h('strong', null, 'Cave: '), t('stem.echolocation.use_rapid_pulses_near_walls_to_build_u', 'Use rapid pulses near walls to build up a detailed image. Find the exit (barely visible \u2014 it\'s open air with almost no echo). Watch for hidden passages!')),
+                  h('li', null, h('strong', null, 'Forest: '), t('stem.echolocation.trees_give_strong_woody_echoes_water_p', 'Trees give strong woody echoes. Water pools reflect dimly. Moths flit erratically \u2014 they\'re hard to track!')),
+                  h('li', null, h('strong', null, 'Urban: '), t('stem.echolocation.buildings_give_rock_hard_echoes_street', 'Buildings give rock-hard echoes. Streetlights create confusing bright spots. Moths cluster around lights.')),
+                  h('li', null, h('strong', null, 'Tropical: '), t('stem.echolocation.fruit_glows_faintly_in_night_vision_tr', 'Fruit glows faintly in night vision. Trees are large obstacles. Watch for vines!')),
+                  h('li', null, h('strong', null, 'Custom: '), t('stem.echolocation.place_your_own_objects_and_try_to_iden', 'Place your own objects and try to identify them by echo alone.')),
+                  h('li', null, h('strong', null, t('stem.echolocation.flight_tips', 'Flight tips: ')), t('stem.echolocation.press_w_to_flap_gravity_pulls_you_down', 'Press W to flap \u2014 gravity pulls you down! Perch on surfaces to rest and recharge energy. Catching prey restores +15 energy.'))))
             ),
             h('div', { className: 'mt-2 text-[11px] italic ' + (isDark ? 'text-indigo-400' : 'text-indigo-600') },
-              'Fun fact: Real bats process all this information in milliseconds using a brain the size of a peanut. They can catch 10-14 insects per minute in total darkness!')
+              t('stem.echolocation.fun_fact_real_bats_process_all_this_in', 'Fun fact: Real bats process all this information in milliseconds using a brain the size of a peanut. They can catch 10-14 insects per minute in total darkness!'))
           ),
 
           // Species Comparison Table
           h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-indigo-900/20 border border-indigo-800/30' : 'bg-indigo-50 border border-indigo-200') },
-            h('div', { className: 'text-xs font-bold mb-2 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83E\uDD87 Species Comparison \u2014 Insectivore vs Frugivore'),
+            h('div', { className: 'text-xs font-bold mb-2 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.species_comparison_insectivore_vs_frug', '\uD83E\uDD87 Species Comparison \u2014 Insectivore vs Frugivore')),
             h('div', { className: 'overflow-x-auto' },
-              h('table', { className: 'w-full text-[11px] ' + (isDark ? 'text-slate-300' : 'text-slate-600'), role: 'table', 'aria-label': 'Species comparison table' },
+              h('table', { className: 'w-full text-[11px] ' + (isDark ? 'text-slate-300' : 'text-slate-600'), role: 'table', 'aria-label': t('stem.echolocation.species_comparison_table', 'Species comparison table') },
                 h('thead', null,
                   h('tr', { className: isDark ? 'bg-slate-700/50' : 'bg-slate-100' },
                     ['Feature', 'Little Brown Bat', 'Egyptian Fruit Bat'].map(function(hdr) {
@@ -2082,60 +2083,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               )
             ),
             h('div', { className: 'mt-2 text-[11px] italic ' + (isDark ? 'text-indigo-400' : 'text-indigo-600') },
-              'Both strategies are real! Insectivorous bats evolved high-powered laryngeal echolocation for active hunting. Most fruit bats rely on vision and smell, but Egyptian fruit bats are the exception \u2014 they developed tongue-click echolocation independently.')
+              t('stem.echolocation.both_strategies_are_real_insectivorous', 'Both strategies are real! Insectivorous bats evolved high-powered laryngeal echolocation for active hunting. Most fruit bats rely on vision and smell, but Egyptian fruit bats are the exception \u2014 they developed tongue-click echolocation independently.'))
           ),
 
           // Game Mechanics Panel
           h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/40 border border-slate-700/30' : 'bg-white border border-slate-400') },
-            h('div', { className: 'text-xs font-bold mb-2 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83C\uDFAE Flight & Energy Mechanics'),
+            h('div', { className: 'text-xs font-bold mb-2 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.flight_energy_mechanics', '\uD83C\uDFAE Flight & Energy Mechanics')),
             h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
               h('div', null,
-                h('div', { className: 'font-bold mb-1 ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, '\uD83E\uDD87 Flight Physics'),
+                h('div', { className: 'font-bold mb-1 ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, t('stem.echolocation.flight_physics', '\uD83E\uDD87 Flight Physics')),
                 h('ul', { className: 'list-disc pl-4 space-y-0.5' },
-                  h('li', null, 'Gravity pulls the bat downward constantly'),
-                  h('li', null, 'Press W/Up to flap wings (upward thrust impulse)'),
-                  h('li', null, 'Momentum builds gradually \u2014 no instant stops'),
-                  h('li', null, 'Air friction slows you down over time'),
-                  h('li', null, 'Terminal velocity limits fall speed'))),
+                  h('li', null, t('stem.echolocation.gravity_pulls_the_bat_downward_constan', 'Gravity pulls the bat downward constantly')),
+                  h('li', null, t('stem.echolocation.press_w_up_to_flap_wings_upward_thrust', 'Press W/Up to flap wings (upward thrust impulse)')),
+                  h('li', null, t('stem.echolocation.momentum_builds_gradually_no_instant_s', 'Momentum builds gradually \u2014 no instant stops')),
+                  h('li', null, t('stem.echolocation.air_friction_slows_you_down_over_time', 'Air friction slows you down over time')),
+                  h('li', null, t('stem.echolocation.terminal_velocity_limits_fall_speed', 'Terminal velocity limits fall speed')))),
               h('div', null,
-                h('div', { className: 'font-bold mb-1 ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, '\u26A1 Energy System'),
+                h('div', { className: 'font-bold mb-1 ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, t('stem.echolocation.energy_system', '\u26A1 Energy System')),
                 h('ul', { className: 'list-disc pl-4 space-y-0.5' },
-                  h('li', null, 'Energy starts at 100% and drains while flying'),
-                  h('li', null, 'Catching prey/fruit restores +15 energy'),
-                  h('li', null, 'Perching on surfaces regenerates energy slowly'),
-                  h('li', null, 'At 0% energy, you can only glide downward'),
-                  h('li', null, 'Frugivores drain energy slower (efficient gliders)'))),
+                  h('li', null, t('stem.echolocation.energy_starts_at_100_and_drains_while_', 'Energy starts at 100% and drains while flying')),
+                  h('li', null, t('stem.echolocation.catching_prey_fruit_restores_15_energy', 'Catching prey/fruit restores +15 energy')),
+                  h('li', null, t('stem.echolocation.perching_on_surfaces_regenerates_energ', 'Perching on surfaces regenerates energy slowly')),
+                  h('li', null, t('stem.echolocation.at_0_energy_you_can_only_glide_downwar', 'At 0% energy, you can only glide downward')),
+                  h('li', null, t('stem.echolocation.frugivores_drain_energy_slower_efficie', 'Frugivores drain energy slower (efficient gliders)')))),
               h('div', null,
-                h('div', { className: 'font-bold mb-1 ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, '\uD83E\uDD8B Moth Behavior'),
+                h('div', { className: 'font-bold mb-1 ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, t('stem.echolocation.moth_behavior', '\uD83E\uDD8B Moth Behavior')),
                 h('ul', { className: 'list-disc pl-4 space-y-0.5' },
-                  h('li', null, 'Moths move erratically (sinusoidal + random)'),
-                  h('li', null, '40% chance to evade when sonar hits them'),
-                  h('li', null, 'Tiger moths JAM your sonar with ultrasonic clicks!'),
-                  h('li', null, 'Luna moths are bigger, slower, worth more energy'),
-                  h('li', null, 'Mosquito swarms are tiny and fast'))),
+                  h('li', null, t('stem.echolocation.moths_move_erratically_sinusoidal_rand', 'Moths move erratically (sinusoidal + random)')),
+                  h('li', null, t('stem.echolocation.40_chance_to_evade_when_sonar_hits_the', '40% chance to evade when sonar hits them')),
+                  h('li', null, t('stem.echolocation.tiger_moths_jam_your_sonar_with_ultras', 'Tiger moths JAM your sonar with ultrasonic clicks!')),
+                  h('li', null, t('stem.echolocation.luna_moths_are_bigger_slower_worth_mor', 'Luna moths are bigger, slower, worth more energy')),
+                  h('li', null, t('stem.echolocation.mosquito_swarms_are_tiny_and_fast', 'Mosquito swarms are tiny and fast')))),
               h('div', null,
-                h('div', { className: 'font-bold mb-1 ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, '\uD83D\uDDFA\uFE0F Cave Secrets'),
+                h('div', { className: 'font-bold mb-1 ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, t('stem.echolocation.cave_secrets', '\uD83D\uDDFA\uFE0F Cave Secrets')),
                 h('ul', { className: 'list-disc pl-4 space-y-0.5' },
-                  h('li', null, 'Stalactites drip water \u2014 watch for ripples'),
-                  h('li', null, 'A bat colony hangs on the ceiling'),
-                  h('li', null, 'Find the hidden passage to a secret chamber'),
-                  h('li', null, 'Spider webs are nearly invisible to sonar'),
-                  h('li', null, 'A rare Luna Moth hides in the hidden chamber')))
+                  h('li', null, t('stem.echolocation.stalactites_drip_water_watch_for_rippl', 'Stalactites drip water \u2014 watch for ripples')),
+                  h('li', null, t('stem.echolocation.a_bat_colony_hangs_on_the_ceiling', 'A bat colony hangs on the ceiling')),
+                  h('li', null, t('stem.echolocation.find_the_hidden_passage_to_a_secret_ch', 'Find the hidden passage to a secret chamber')),
+                  h('li', null, t('stem.echolocation.spider_webs_are_nearly_invisible_to_so', 'Spider webs are nearly invisible to sonar')),
+                  h('li', null, t('stem.echolocation.a_rare_luna_moth_hides_in_the_hidden_c', 'A rare Luna Moth hides in the hidden chamber'))))
             )
           ),
 
           // Material echo guide
           h('div', { className: 'rounded-xl p-3 ' + (isDark ? 'bg-slate-800/40 border border-slate-700/30' : 'bg-white border border-slate-400') },
-            h('div', { className: 'text-xs font-bold mb-2 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83E\uDDF1 Echo Materials Guide'),
+            h('div', { className: 'text-xs font-bold mb-2 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.echo_materials_guide', '\uD83E\uDDF1 Echo Materials Guide')),
             h('div', { className: 'flex flex-wrap gap-3' },
               [
-                { material: 'Rock/Concrete', reflectivity: '85-95%', color: '#a5b4fc', desc: 'Bright, sharp echoes' },
-                { material: 'Wood/Tree', reflectivity: '50-70%', color: '#b48c64', desc: 'Moderate, diffuse echoes' },
-                { material: 'Water', reflectivity: '30-40%', color: '#60a5fa', desc: 'Dim, rippling echoes' },
-                { material: 'Moth/Insect', reflectivity: '20-30%', color: '#fbbf24', desc: 'Faint flickering echoes' },
-                { material: 'Fruit/Organic', reflectivity: '40-50%', color: '#fbbf24', desc: 'Moderate soft echoes, warm glow for fruit bats' },
-                { material: 'Spider Web', reflectivity: '5-10%', color: 'var(--allo-stem-text-soft, #94a3b8)', desc: 'Nearly invisible! Very faint thin lines' },
-                { material: 'Open Air', reflectivity: '1-5%', color: '#334155', desc: 'Almost invisible (no echo)' }
+                { material: 'Rock/Concrete', reflectivity: '85-95%', color: '#a5b4fc', desc: t('stem.echolocation.bright_sharp_echoes', 'Bright, sharp echoes') },
+                { material: 'Wood/Tree', reflectivity: '50-70%', color: '#b48c64', desc: t('stem.echolocation.moderate_diffuse_echoes', 'Moderate, diffuse echoes') },
+                { material: 'Water', reflectivity: '30-40%', color: '#60a5fa', desc: t('stem.echolocation.dim_rippling_echoes', 'Dim, rippling echoes') },
+                { material: 'Moth/Insect', reflectivity: '20-30%', color: '#fbbf24', desc: t('stem.echolocation.faint_flickering_echoes', 'Faint flickering echoes') },
+                { material: 'Fruit/Organic', reflectivity: '40-50%', color: '#fbbf24', desc: t('stem.echolocation.moderate_soft_echoes_warm_glow_for_fru', 'Moderate soft echoes, warm glow for fruit bats') },
+                { material: 'Spider Web', reflectivity: '5-10%', color: 'var(--allo-stem-text-soft, #94a3b8)', desc: t('stem.echolocation.nearly_invisible_very_faint_thin_lines', 'Nearly invisible! Very faint thin lines') },
+                { material: 'Open Air', reflectivity: '1-5%', color: '#334155', desc: t('stem.echolocation.almost_invisible_no_echo', 'Almost invisible (no echo)') }
               ].map(function(m, mi) {
                 return h('div', { key: mi, className: 'flex items-center gap-2' },
                   h('div', { style: { width: '12px', height: '12px', borderRadius: '50%', background: m.color }, 'aria-hidden': 'true' }),
@@ -2836,8 +2837,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
             h('div', { className: 'flex items-center gap-2 mb-3' },
               h('span', { className: 'text-xl' }, '\uD83C\uDF0A'),
-              h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, 'Wave Visualizer')),
-            h('canvas', { 'aria-label': 'Echolocation visualization',
+              h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.wave_visualizer', 'Wave Visualizer'))),
+            h('canvas', { 'aria-label': t('stem.echolocation.echolocation_visualization_2', 'Echolocation visualization'),
               ref: waveCanvasRef,
               width: 700,
               height: 180,
@@ -2863,10 +2864,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                   className: 'w-full accent-indigo-500'
                 }),
                 h('div', { className: 'flex justify-between text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-200') },
-                  h('span', null, '20 Hz'),
-                  h('span', { className: 'text-green-500' }, '\u2190 Audible \u2192'),
-                  h('span', { className: 'text-purple-500' }, '\u2190 Bat range \u2192'),
-                  h('span', null, '200 kHz'))
+                  h('span', null, t('stem.echolocation.20_hz', '20 Hz')),
+                  h('span', { className: 'text-green-500' }, t('stem.echolocation.audible', '\u2190 Audible \u2192')),
+                  h('span', { className: 'text-purple-500' }, t('stem.echolocation.bat_range', '\u2190 Bat range \u2192')),
+                  h('span', null, t('stem.echolocation.200_khz', '200 kHz')))
               ),
               // Amplitude slider
               h('div', null,
@@ -2895,10 +2896,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             h('div', { className: 'grid grid-cols-3 gap-2 mt-3' },
               h('div', { className: 'text-center p-2 rounded-lg ' + (isDark ? 'bg-slate-700/50' : 'bg-slate-100') },
                 h('div', { className: 'text-xs font-black ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, wavelength < 1 ? (wavelength * 100).toFixed(1) + ' cm' : wavelength.toFixed(2) + ' m'),
-                h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, 'Wavelength')),
+                h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, t('stem.echolocation.wavelength', 'Wavelength'))),
               h('div', { className: 'text-center p-2 rounded-lg ' + (isDark ? 'bg-slate-700/50' : 'bg-slate-100') },
                 h('div', { className: 'text-xs font-black ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, period < 0.001 ? (period * 1000000).toFixed(1) + ' \u00B5s' : (period * 1000).toFixed(2) + ' ms'),
-                h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, 'Period')),
+                h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, t('stem.echolocation.period', 'Period'))),
               h('div', { className: 'text-center p-2 rounded-lg ' + (isDark ? 'bg-slate-700/50' : 'bg-slate-100') },
                 h('div', { className: 'text-xs font-black ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, speedOfSound + ' m/s'),
                 h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, 'Speed (' + waveMedium + ')'))
@@ -2909,7 +2910,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
             h('div', { className: 'flex items-center gap-2 mb-3' },
               h('span', { className: 'text-xl' }, '\uD83D\uDCCF'),
-              h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, 'Speed of Sound Calculator')),
+              h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.speed_of_sound_calculator', 'Speed of Sound Calculator'))),
             h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3' },
               // Distance
               h('div', null,
@@ -2922,7 +2923,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 })),
               // Medium
               h('div', null,
-                h('label', { className: 'text-[11px] font-bold ' + (isDark ? 'text-indigo-300' : 'text-slate-600') }, 'Medium'),
+                h('label', { className: 'text-[11px] font-bold ' + (isDark ? 'text-indigo-300' : 'text-slate-600') }, t('stem.echolocation.medium', 'Medium')),
                 h('div', { className: 'flex gap-1 mt-1' },
                   ['air', 'water', 'steel'].map(function(m) {
                     return h('button', {
@@ -2938,10 +2939,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               // Emit button
               h('div', { className: 'flex items-end' },
                 h('button', {
-                  'aria-label': 'Emit pulse to calculate round trip time',
+                  'aria-label': t('stem.echolocation.emit_pulse_to_calculate_round_trip_tim', 'Emit pulse to calculate round trip time'),
                   onClick: function() { updMulti({ distPulseActive: true, distPulseProgress: 0 }); },
                   className: 'transition-colors px-4 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-500'
-                }, '\uD83D\uDD0A Emit Pulse'))
+                }, t('stem.echolocation.emit_pulse_2', '\uD83D\uDD0A Emit Pulse')))
             ),
             // Calculation display
             (function() {
@@ -2949,7 +2950,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               var roundTrip = (distCalcDist * 2) / spd;
               return h('div', { className: 'p-3 rounded-lg ' + (isDark ? 'bg-indigo-900/30 border border-indigo-800/40' : 'bg-indigo-50 border border-indigo-200') },
                 h('div', { className: 'text-xs font-mono text-center ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') },
-                  'distance = (speed \u00D7 time) / 2'),
+                  t('stem.echolocation.distance_speed_time_2', 'distance = (speed \u00D7 time) / 2')),
                 h('div', { className: 'text-xs font-mono text-center mt-1 ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') },
                   distCalcDist + ' m = (' + spd + ' m/s \u00D7 ' + (roundTrip * 1000).toFixed(2) + ' ms) / 2'),
                 h('div', { className: 'text-center mt-2 text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
@@ -2963,7 +2964,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
             h('div', { className: 'flex items-center gap-2 mb-3' },
               h('span', { className: 'text-xl' }, '\uD83E\uDDF1'),
-              h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, 'Reflection vs Absorption')),
+              h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.reflection_vs_absorption', 'Reflection vs Absorption'))),
             h('div', { className: 'flex gap-2 mb-3 flex-wrap' },
               WALL_MATERIALS.map(function(mat) {
                 var active = wallMaterial === mat.id;
@@ -2977,7 +2978,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 }, mat.label + ' (' + Math.round(mat.reflection * 100) + '%)');
               })
             ),
-            h('canvas', { 'aria-label': 'Echolocation visualization',
+            h('canvas', { 'aria-label': t('stem.echolocation.echolocation_visualization_3', 'Echolocation visualization'),
               ref: reflCanvasRef,
               width: 700,
               height: 150,
@@ -3010,21 +3011,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
             h('div', { className: 'flex items-center gap-2 mb-3' },
               h('span', { className: 'text-xl' }, '\uD83D\uDCC9'),
-              h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, 'Inverse Square Law')),
-            h('canvas', { 'aria-label': 'Echolocation visualization',
+              h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.inverse_square_law', 'Inverse Square Law'))),
+            h('canvas', { 'aria-label': t('stem.echolocation.echolocation_visualization_4', 'Echolocation visualization'),
               ref: invSqCanvasRef,
               width: 700,
               height: 160,
               role: 'img',
-              'aria-label': 'Inverse square law visualization showing sound intensity decreasing with distance. Intensity equals 1 over distance squared.',
+              'aria-label': t('stem.echolocation.inverse_square_law_visualization_showi', 'Inverse square law visualization showing sound intensity decreasing with distance. Intensity equals 1 over distance squared.'),
               tabIndex: 0,
               style: { width: '100%', height: 'auto', borderRadius: '8px', display: 'block', background: isDark ? '#0f172a' : '#f8fafc' }
             }),
             h('div', { className: 'mt-2 p-3 rounded-lg ' + (isDark ? 'bg-indigo-900/30 border border-indigo-800/40' : 'bg-indigo-50 border border-indigo-200') },
               h('div', { className: 'text-xs font-mono text-center ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') },
-                'Intensity \u221D 1 / r\u00B2'),
+                t('stem.echolocation.intensity_1_r', 'Intensity \u221D 1 / r\u00B2')),
               h('div', { className: 'text-[11px] text-center mt-1 ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
-                'This is why bats must fly close to objects \u2014 the echo gets 4x weaker when distance doubles!')
+                t('stem.echolocation.this_is_why_bats_must_fly_close_to_obj', 'This is why bats must fly close to objects \u2014 the echo gets 4x weaker when distance doubles!'))
             )
           ),
 
@@ -3032,15 +3033,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
             h('div', { className: 'flex items-center gap-2 mb-3' },
               h('span', { className: 'text-xl' }, '\uD83E\uDD87'),
-              h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, 'How Echolocation Works \u2014 Step by Step')),
+              h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.how_echolocation_works_step_by_step', 'How Echolocation Works \u2014 Step by Step'))),
             h('div', { className: 'space-y-2' },
               [
-                { step: 1, title: 'Emit', desc: 'The bat contracts its laryngeal muscles to produce an ultrasonic pulse (20-200 kHz). Some species call through their mouth; others through elaborate nose structures that focus the beam. Each pulse lasts only 1-5 milliseconds.', icon: '\uD83D\uDD0A' },
-                { step: 2, title: 'Propagate', desc: 'The sound wave travels outward at 343 m/s (in air). At 50 kHz, the wavelength is only 6.9 mm \u2014 small enough to reflect off tiny insects. Higher frequencies give better resolution but shorter range.', icon: '\u27A1\uFE0F' },
-                { step: 3, title: 'Reflect', desc: 'When the pulse hits an object, some energy bounces back as an echo. Hard surfaces (rock, chitin) reflect strongly. Soft surfaces (fur, carpet) absorb most energy. The object\'s shape affects the echo pattern.', icon: '\u21A9\uFE0F' },
-                { step: 4, title: 'Receive', desc: 'The bat\'s oversized ears collect the faint echo. The tragus (inner ear flap) helps determine vertical direction. The time delay between the two ears (interaural time difference) provides horizontal direction.', icon: '\uD83D\uDC42' },
-                { step: 5, title: 'Process', desc: 'The bat\'s auditory cortex extracts information from the echo in milliseconds: distance (from delay), size (from echo strength), shape (from echo pattern), texture (from frequency content), and speed (from Doppler shift).', icon: '\uD83E\uDDE0' },
-                { step: 6, title: 'Update', desc: 'The bat adjusts its next pulse based on what it learned. Approaching prey? Increase pulse rate (buzz phase: up to 200/sec). Open space? Lower rate to conserve energy. This adaptive behavior is called "acoustic gaze control."', icon: '\uD83D\uDD04' }
+                { step: 1, title: t('stem.echolocation.emit', 'Emit'), desc: t('stem.echolocation.the_bat_contracts_its_laryngeal_muscle', 'The bat contracts its laryngeal muscles to produce an ultrasonic pulse (20-200 kHz). Some species call through their mouth; others through elaborate nose structures that focus the beam. Each pulse lasts only 1-5 milliseconds.'), icon: '\uD83D\uDD0A' },
+                { step: 2, title: t('stem.echolocation.propagate', 'Propagate'), desc: t('stem.echolocation.the_sound_wave_travels_outward_at_343_', 'The sound wave travels outward at 343 m/s (in air). At 50 kHz, the wavelength is only 6.9 mm \u2014 small enough to reflect off tiny insects. Higher frequencies give better resolution but shorter range.'), icon: '\u27A1\uFE0F' },
+                { step: 3, title: t('stem.echolocation.reflect', 'Reflect'), desc: t('stem.echolocation.when_the_pulse_hits_an_object_some_ene', 'When the pulse hits an object, some energy bounces back as an echo. Hard surfaces (rock, chitin) reflect strongly. Soft surfaces (fur, carpet) absorb most energy. The object\'s shape affects the echo pattern.'), icon: '\u21A9\uFE0F' },
+                { step: 4, title: t('stem.echolocation.receive', 'Receive'), desc: t('stem.echolocation.the_bat_s_oversized_ears_collect_the_f', 'The bat\'s oversized ears collect the faint echo. The tragus (inner ear flap) helps determine vertical direction. The time delay between the two ears (interaural time difference) provides horizontal direction.'), icon: '\uD83D\uDC42' },
+                { step: 5, title: t('stem.echolocation.process', 'Process'), desc: t('stem.echolocation.the_bat_s_auditory_cortex_extracts_inf', 'The bat\'s auditory cortex extracts information from the echo in milliseconds: distance (from delay), size (from echo strength), shape (from echo pattern), texture (from frequency content), and speed (from Doppler shift).'), icon: '\uD83E\uDDE0' },
+                { step: 6, title: t('stem.echolocation.update', 'Update'), desc: t('stem.echolocation.the_bat_adjusts_its_next_pulse_based_o', 'The bat adjusts its next pulse based on what it learned. Approaching prey? Increase pulse rate (buzz phase: up to 200/sec). Open space? Lower rate to conserve energy. This adaptive behavior is called "acoustic gaze control."'), icon: '\uD83D\uDD04' }
               ].map(function(s) {
                 return h('div', { key: s.step, className: 'flex gap-3 p-2 rounded-lg ' + (isDark ? 'bg-slate-700/30' : 'bg-slate-50') },
                   h('div', { className: 'flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-black bg-indigo-600 text-white' }, s.step),
@@ -3056,15 +3057,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
             h('div', { className: 'flex items-center gap-2 mb-3' },
               h('span', { className: 'text-xl' }, '\uD83D\uDCD0'),
-              h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, 'Key Formulas \u2014 Sound Physics Reference')),
+              h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.key_formulas_sound_physics_reference', 'Key Formulas \u2014 Sound Physics Reference'))),
             h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
               [
-                { name: 'Wave Speed', formula: 'v = f \u00D7 \u03BB', desc: 'Speed = frequency times wavelength. In air at 20\u00B0C, v = 343 m/s.' },
-                { name: 'Echolocation Distance', formula: 'd = (v \u00D7 t) / 2', desc: 'Distance to object = speed of sound times round-trip time, divided by 2 (sound travels there AND back).' },
-                { name: 'Doppler Shift', formula: 'f\' = f(v \u00B1 v_r) / (v \u00B1 v_s)', desc: 'Observed frequency changes when source or receiver moves. Approaching = higher pitch, receding = lower pitch.' },
-                { name: 'Inverse Square Law', formula: 'I \u221D 1/r\u00B2', desc: 'Sound intensity decreases with the square of distance. Double the distance = quarter the intensity.' },
-                { name: 'Wavelength', formula: '\u03BB = v / f', desc: 'Wavelength determines resolution. A 50 kHz bat call in air has \u03BB = 6.9 mm \u2014 perfect for detecting insects.' },
-                { name: 'Interaural Time Diff', formula: '\u0394t = d \u00D7 sin\u03B8 / v', desc: 'Time difference between ears. For a bat with 2 cm ear spacing, max \u0394t \u2248 58 microseconds.' }
+                { name: t('stem.echolocation.wave_speed', 'Wave Speed'), formula: 'v = f \u00D7 \u03BB', desc: t('stem.echolocation.speed_frequency_times_wavelength_in_ai', 'Speed = frequency times wavelength. In air at 20\u00B0C, v = 343 m/s.') },
+                { name: t('stem.echolocation.echolocation_distance', 'Echolocation Distance'), formula: 'd = (v \u00D7 t) / 2', desc: t('stem.echolocation.distance_to_object_speed_of_sound_time', 'Distance to object = speed of sound times round-trip time, divided by 2 (sound travels there AND back).') },
+                { name: t('stem.echolocation.doppler_shift', 'Doppler Shift'), formula: 'f\' = f(v \u00B1 v_r) / (v \u00B1 v_s)', desc: t('stem.echolocation.observed_frequency_changes_when_source', 'Observed frequency changes when source or receiver moves. Approaching = higher pitch, receding = lower pitch.') },
+                { name: t('stem.echolocation.inverse_square_law_2', 'Inverse Square Law'), formula: 'I \u221D 1/r\u00B2', desc: t('stem.echolocation.sound_intensity_decreases_with_the_squ', 'Sound intensity decreases with the square of distance. Double the distance = quarter the intensity.') },
+                { name: t('stem.echolocation.wavelength_2', 'Wavelength'), formula: '\u03BB = v / f', desc: t('stem.echolocation.wavelength_determines_resolution_a_50_', 'Wavelength determines resolution. A 50 kHz bat call in air has \u03BB = 6.9 mm \u2014 perfect for detecting insects.') },
+                { name: t('stem.echolocation.interaural_time_diff', 'Interaural Time Diff'), formula: '\u0394t = d \u00D7 sin\u03B8 / v', desc: t('stem.echolocation.time_difference_between_ears_for_a_bat', 'Time difference between ears. For a bat with 2 cm ear spacing, max \u0394t \u2248 58 microseconds.') }
               ].map(function(f, fi) {
                 return h('div', { key: fi, className: 'p-3 rounded-lg ' + (isDark ? 'bg-indigo-900/20 border border-indigo-800/30' : 'bg-indigo-50 border border-indigo-200') },
                   h('div', { className: 'text-[11px] font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, f.name),
@@ -3078,15 +3079,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
             h('div', { className: 'flex items-center gap-2 mb-3' },
               h('span', { className: 'text-xl' }, '\uD83D\uDEE0\uFE0F'),
-              h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, 'Sound in the Real World \u2014 Technology Inspired by Nature')),
+              h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.sound_in_the_real_world_technology_ins', 'Sound in the Real World \u2014 Technology Inspired by Nature'))),
             h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
               [
-                { icon: '\uD83D\uDEA2', title: 'Naval SONAR', desc: 'Submarines use active sonar (emit a "ping" and listen for echoes) exactly like bats. Passive sonar just listens for engine noise. SONAR stands for Sound Navigation And Ranging.', year: '1910s' },
-                { icon: '\uD83C\uDFE5', title: 'Medical Ultrasound', desc: 'Ultrasound imaging sends 1-20 MHz pulses into the body and builds images from echoes. The same physics as echolocation, just at higher frequencies and through tissue instead of air.', year: '1950s' },
-                { icon: '\uD83D\uDE97', title: 'Parking Sensors', desc: 'Cars use ultrasonic sensors (40 kHz) to detect obstacles \u2014 a direct application of bat echolocation principles. The "beeping" speeds up as you get closer, mimicking a bat\'s buzz phase!', year: '1990s' },
-                { icon: '\uD83E\uDD16', title: 'Autonomous Robots', desc: 'Robot vacuum cleaners and drones use ultrasonic rangefinders to navigate. Engineers study bat flight algorithms to improve autonomous navigation in cluttered environments.', year: '2000s' },
-                { icon: '\uD83C\uDFD7\uFE0F', title: 'Non-Destructive Testing', desc: 'Engineers send ultrasonic pulses through metal bridges, airplane wings, and pipelines to detect internal cracks. The echo pattern reveals hidden flaws before catastrophic failure.', year: '1940s' },
-                { icon: '\uD83D\uDC69\u200D\uD83E\uDDAF', title: 'Assistive Technology', desc: 'Ultrasonic canes and wearable devices help blind individuals navigate by converting sonar echoes into vibrations or audio tones \u2014 giving humans a form of echolocation.', year: '2010s' }
+                { icon: '\uD83D\uDEA2', title: t('stem.echolocation.naval_sonar', 'Naval SONAR'), desc: t('stem.echolocation.submarines_use_active_sonar_emit_a_pin', 'Submarines use active sonar (emit a "ping" and listen for echoes) exactly like bats. Passive sonar just listens for engine noise. SONAR stands for Sound Navigation And Ranging.'), year: '1910s' },
+                { icon: '\uD83C\uDFE5', title: t('stem.echolocation.medical_ultrasound', 'Medical Ultrasound'), desc: t('stem.echolocation.ultrasound_imaging_sends_1_20_mhz_puls', 'Ultrasound imaging sends 1-20 MHz pulses into the body and builds images from echoes. The same physics as echolocation, just at higher frequencies and through tissue instead of air.'), year: '1950s' },
+                { icon: '\uD83D\uDE97', title: t('stem.echolocation.parking_sensors', 'Parking Sensors'), desc: t('stem.echolocation.cars_use_ultrasonic_sensors_40_khz_to_', 'Cars use ultrasonic sensors (40 kHz) to detect obstacles \u2014 a direct application of bat echolocation principles. The "beeping" speeds up as you get closer, mimicking a bat\'s buzz phase!'), year: '1990s' },
+                { icon: '\uD83E\uDD16', title: t('stem.echolocation.autonomous_robots', 'Autonomous Robots'), desc: t('stem.echolocation.robot_vacuum_cleaners_and_drones_use_u', 'Robot vacuum cleaners and drones use ultrasonic rangefinders to navigate. Engineers study bat flight algorithms to improve autonomous navigation in cluttered environments.'), year: '2000s' },
+                { icon: '\uD83C\uDFD7\uFE0F', title: t('stem.echolocation.non_destructive_testing', 'Non-Destructive Testing'), desc: t('stem.echolocation.engineers_send_ultrasonic_pulses_throu', 'Engineers send ultrasonic pulses through metal bridges, airplane wings, and pipelines to detect internal cracks. The echo pattern reveals hidden flaws before catastrophic failure.'), year: '1940s' },
+                { icon: '\uD83D\uDC69\u200D\uD83E\uDDAF', title: t('stem.echolocation.assistive_technology', 'Assistive Technology'), desc: t('stem.echolocation.ultrasonic_canes_and_wearable_devices_', 'Ultrasonic canes and wearable devices help blind individuals navigate by converting sonar echoes into vibrations or audio tones \u2014 giving humans a form of echolocation.'), year: '2010s' }
               ].map(function(app, ai) {
                 return h('div', { key: ai, className: 'p-3 rounded-lg ' + (isDark ? 'bg-slate-700/40 border border-slate-600/30' : 'bg-slate-50 border border-slate-400') },
                   h('div', { className: 'flex items-center justify-between mb-1' },
@@ -3098,18 +3099,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               })
             ),
             h('div', { className: 'mt-2 text-[11px] italic text-center ' + (isDark ? 'text-indigo-400' : 'text-indigo-600') },
-              'Nature invented sonar 52 million years before humans. Nearly every sonar technology we\'ve built was inspired by \u2014 or directly copied from \u2014 biological echolocation.')
+              t('stem.echolocation.nature_invented_sonar_52_million_years', 'Nature invented sonar 52 million years before humans. Nearly every sonar technology we\'ve built was inspired by \u2014 or directly copied from \u2014 biological echolocation.'))
           ),
 
           // Human Echolocation
           h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-purple-900/20 border border-purple-800/30' : 'bg-purple-50 border border-purple-200') },
             h('div', { className: 'flex items-center gap-2 mb-2' },
               h('span', { className: 'text-xl' }, '\uD83D\uDC64'),
-              h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-purple-300' : 'text-purple-800') }, 'Human Echolocation \u2014 Yes, People Can Do This!')),
+              h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-purple-300' : 'text-purple-800') }, t('stem.echolocation.human_echolocation_yes_people_can_do_t', 'Human Echolocation \u2014 Yes, People Can Do This!'))),
             h('p', { className: 'text-[11px] ' + (isDark ? 'text-purple-200' : 'text-purple-700') },
-              'Some blind individuals have learned to echolocate by making tongue clicks and listening to the echoes. Daniel Kish, known as "the real-life Batman," can ride a bicycle through traffic using only tongue-click echolocation. Brain scans show that human echolocators process echo information in the VISUAL cortex \u2014 their brains literally "see" with sound, repurposing the visual processing centers.'),
+              t('stem.echolocation.some_blind_individuals_have_learned_to', 'Some blind individuals have learned to echolocate by making tongue clicks and listening to the echoes. Daniel Kish, known as "the real-life Batman," can ride a bicycle through traffic using only tongue-click echolocation. Brain scans show that human echolocators process echo information in the VISUAL cortex \u2014 their brains literally "see" with sound, repurposing the visual processing centers.')),
             h('div', { className: 'mt-2 text-[11px] ' + (isDark ? 'text-purple-300' : 'text-purple-600') },
-              'Research shows that anyone can learn basic echolocation with practice. The key is producing consistent clicks and learning to interpret the subtle differences in echo timing, loudness, and frequency that indicate object size, distance, and material.')
+              t('stem.echolocation.research_shows_that_anyone_can_learn_b', 'Research shows that anyone can learn basic echolocation with practice. The key is producing consistent clicks and learning to interpret the subtle differences in echo timing, loudness, and frequency that indicate object size, distance, and material.'))
           )
         );
       }
@@ -3391,16 +3392,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-indigo-900/30 border border-indigo-700/40' : 'bg-indigo-50 border border-indigo-300') },
             h('div', { className: 'flex items-center gap-2 mb-2' },
               h('span', { 'aria-hidden': 'true', style: { fontSize: 20 } }, '\uD83D\uDCDC'),
-              h('span', { className: 'text-sm font-black ' + (isDark ? 'text-indigo-200' : 'text-indigo-900') }, 'How the Doppler effect works')
+              h('span', { className: 'text-sm font-black ' + (isDark ? 'text-indigo-200' : 'text-indigo-900') }, t('stem.echolocation.how_the_doppler_effect_works', 'How the Doppler effect works'))
             ),
             h('p', { className: 'text-[11px] leading-relaxed mb-3 ' + (isDark ? 'text-slate-200' : 'text-slate-700') },
-              'When a sound source and a listener move relative to each other, the listener hears a different frequency than what was emitted. Same physics that makes a passing ambulance siren drop in pitch as it goes by, and the same trick a bat uses to read whether prey is approaching or fleeing.'
+              t('stem.echolocation.when_a_sound_source_and_a_listener_mov', 'When a sound source and a listener move relative to each other, the listener hears a different frequency than what was emitted. Same physics that makes a passing ambulance siren drop in pitch as it goes by, and the same trick a bat uses to read whether prey is approaching or fleeing.')
             ),
             h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2' },
               [
-                { icon: '\u27A1\uFE0F\uD83E\uDD97', label: 'Approaching',  color: '#60a5fa', explain: 'Waves get COMPRESSED in front of the moth. Listener hears HIGHER frequency. Blue shift.' },
-                { icon: '\uD83E\uDD97\u27A1\uFE0F', label: 'Receding',     color: '#f87171', explain: 'Waves get STRETCHED behind the moth. Listener hears LOWER frequency. Red shift.' },
-                { icon: '\uD83E\uDD97\u23F8',  label: 'Stationary',   color: 'var(--allo-stem-text-soft, #94a3b8)', explain: 'No relative motion. Frequency unchanged. The reference case.' }
+                { icon: '\u27A1\uFE0F\uD83E\uDD97', label: t('stem.echolocation.approaching', 'Approaching'),  color: '#60a5fa', explain: 'Waves get COMPRESSED in front of the moth. Listener hears HIGHER frequency. Blue shift.' },
+                { icon: '\uD83E\uDD97\u27A1\uFE0F', label: t('stem.echolocation.receding', 'Receding'),     color: '#f87171', explain: 'Waves get STRETCHED behind the moth. Listener hears LOWER frequency. Red shift.' },
+                { icon: '\uD83E\uDD97\u23F8',  label: t('stem.echolocation.stationary', 'Stationary'),   color: 'var(--allo-stem-text-soft, #94a3b8)', explain: 'No relative motion. Frequency unchanged. The reference case.' }
               ].map(function(c, i) {
                 return h('div', { key: i,
                   className: 'rounded-lg p-2 border-2',
@@ -3420,15 +3421,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               })
             ),
             h('div', { className: 'mt-3 text-[11px] rounded p-2 italic ' + (isDark ? 'bg-slate-900/40 text-slate-300 border border-slate-700/40' : 'bg-white/70 text-slate-700 border border-indigo-200') },
-              h('strong', null, 'Try it: '), 'slide the moth speed below. Watch how the wave spacing on the canvas changes, and how the "Received" frequency readout moves up (toward) or down (away) from the "Emitted" frequency.'
+              h('strong', null, t('stem.echolocation.try_it', 'Try it: ')), t('stem.echolocation.slide_the_moth_speed_below_watch_how_t', 'slide the moth speed below. Watch how the wave spacing on the canvas changes, and how the "Received" frequency readout moves up (toward) or down (away) from the "Emitted" frequency.')
             )
           ),
           // Doppler Simulator
           h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
             h('div', { className: 'flex items-center gap-2 mb-3' },
               h('span', { className: 'text-xl' }, '\uD83D\uDEA8'),
-              h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, 'Doppler Effect Simulator')),
-            h('canvas', { 'aria-label': 'Echolocation visualization',
+              h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.doppler_effect_simulator', 'Doppler Effect Simulator'))),
+            h('canvas', { 'aria-label': t('stem.echolocation.echolocation_visualization_5', 'Echolocation visualization'),
               ref: dopplerCanvasRef,
               width: 700,
               height: 280,
@@ -3450,7 +3451,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                   'Moth speed: ' + mothSpeed + (mothSpeed < 0 ? ' (toward bat)' : mothSpeed > 0 ? ' (away from bat)' : ' (stationary)')),
                 h('input', {
                   type: 'range', min: -10, max: 10, value: mothSpeed, step: 1,
-                  'aria-label': 'Moth speed slider',
+                  'aria-label': t('stem.echolocation.moth_speed_slider', 'Moth speed slider'),
                   onChange: function(e) { upd('mothSpeed', parseInt(e.target.value)); },
                   className: 'w-full accent-indigo-500'
                 })),
@@ -3459,7 +3460,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                   'Emitted frequency: ' + (dopplerFreq / 1000).toFixed(0) + ' kHz'),
                 h('input', {
                   type: 'range', min: 20000, max: 100000, value: dopplerFreq, step: 1000,
-                  'aria-label': 'Emitted frequency slider',
+                  'aria-label': t('stem.echolocation.emitted_frequency_slider', 'Emitted frequency slider'),
                   onChange: function(e) { upd('dopplerFreq', parseInt(e.target.value)); },
                   className: 'w-full accent-indigo-500'
                 }))
@@ -3468,18 +3469,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             h('div', { className: 'grid grid-cols-3 gap-2 mt-3' },
               h('div', { className: 'text-center p-2 rounded-lg ' + (isDark ? 'bg-slate-700/50' : 'bg-slate-100') },
                 h('div', { className: 'text-xs font-black text-indigo-400' }, (dopplerFreq / 1000).toFixed(1) + ' kHz'),
-                h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, 'Emitted')),
+                h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, t('stem.echolocation.emitted', 'Emitted'))),
               h('div', { className: 'text-center p-2 rounded-lg ' + (isDark ? 'bg-slate-700/50' : 'bg-slate-100') },
                 h('div', { className: 'text-xs font-black ' + (freqDiff > 0 ? 'text-blue-400' : freqDiff < 0 ? 'text-red-400' : 'text-slate-200') }, (shiftedFreq / 1000).toFixed(1) + ' kHz'),
-                h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, 'Received')),
+                h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, t('stem.echolocation.received', 'Received'))),
               h('div', { className: 'text-center p-2 rounded-lg ' + (isDark ? 'bg-slate-700/50' : 'bg-slate-100') },
                 h('div', { className: 'text-xs font-black ' + (freqDiff > 0 ? 'text-blue-400' : freqDiff < 0 ? 'text-red-400' : 'text-slate-200') },
                   (freqDiff >= 0 ? '+' : '') + (freqDiff / 1000).toFixed(1) + ' kHz'),
-                h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, 'Shift'))
+                h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, t('stem.echolocation.shift', 'Shift')))
             ),
             // Hear It button (scaled to audible)
             h('button', {
-              'aria-label': 'Play Doppler shifted tone at audible frequency',
+              'aria-label': t('stem.echolocation.play_doppler_shifted_tone_at_audible_f', 'Play Doppler shifted tone at audible frequency'),
               onClick: function() {
                 if (typeof beep === 'function') {
                   var audible = Math.max(200, Math.min(4000, shiftedFreq / 10));
@@ -3487,7 +3488,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 }
               },
               className: 'transition-colors mt-2 px-4 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-500'
-            }, '\uD83D\uDD0A Hear It (scaled to audible)')
+            }, t('stem.echolocation.hear_it_scaled_to_audible', '\uD83D\uDD0A Hear It (scaled to audible)'))
           ),
 
           // Doppler Quiz Challenge
@@ -3495,21 +3496,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             h('div', { className: 'flex items-center justify-between mb-3' },
               h('div', { className: 'flex items-center gap-2' },
                 h('span', { className: 'text-xl' }, '\uD83C\uDFAF'),
-                h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, 'Doppler Challenge')),
+                h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.doppler_challenge', 'Doppler Challenge'))),
               h('span', { className: 'text-xs font-bold ' + (isDark ? 'text-indigo-400' : 'text-indigo-600') },
                 'Score: ' + dopplerCorrect + '/5 ' + (dopplerCorrect >= 5 ? '\u2713 Quest complete!' : ''))
             ),
             !dopplerQuizActive ? h('button', {
-              'aria-label': 'Start Doppler challenge quiz',
+              'aria-label': t('stem.echolocation.start_doppler_challenge_quiz', 'Start Doppler challenge quiz'),
               onClick: function() {
                 var dirs = ['toward', 'away', 'sideways'];
                 var dir = dirs[Math.floor(Math.random() * dirs.length)];
                 updMulti({ dopplerQuizActive: true, dopplerQuizDir: dir, dopplerQuizAnswer: null, dopplerQuizFeedback: '' });
               },
               className: 'transition-colors px-4 py-2 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-500'
-            }, '\uD83E\uDD87 New Challenge') : h('div', { className: 'space-y-3' },
+            }, t('stem.echolocation.new_challenge', '\uD83E\uDD87 New Challenge')) : h('div', { className: 'space-y-3' },
               h('p', { className: 'text-xs ' + (isDark ? 'text-slate-300' : 'text-slate-600') },
-                'A moth is moving. Based on the wave pattern, which direction is it going?'),
+                t('stem.echolocation.a_moth_is_moving_based_on_the_wave_pat', 'A moth is moving. Based on the wave pattern, which direction is it going?')),
               h('div', { className: 'text-center text-sm mb-2 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') },
                 dopplerQuizDir === 'toward' ? '\uD83C\uDF0A Waves are COMPRESSED (bunched together)' :
                 dopplerQuizDir === 'away' ? '\uD83C\uDF0A Waves are STRETCHED (spread apart)' :
@@ -3550,26 +3551,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               dopplerQuizFeedback ? h('div', { className: 'text-xs p-2 rounded-lg ' + (dopplerQuizAnswer === dopplerQuizDir ? (isDark ? 'bg-emerald-900/40 text-emerald-300' : 'bg-emerald-50 text-emerald-700') : (isDark ? 'bg-red-900/40 text-red-300' : 'bg-red-50 text-red-700')) },
                 dopplerQuizFeedback) : null,
               dopplerQuizAnswer ? h('button', {
-                'aria-label': 'Try another Doppler challenge',
+                'aria-label': t('stem.echolocation.try_another_doppler_challenge', 'Try another Doppler challenge'),
                 onClick: function() {
                   var dirs = ['toward', 'away', 'sideways'];
                   var dir = dirs[Math.floor(Math.random() * dirs.length)];
                   updMulti({ dopplerQuizDir: dir, dopplerQuizAnswer: null, dopplerQuizFeedback: '' });
                 },
                 className: 'transition-colors px-4 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-500'
-              }, 'Next Challenge \u2192') : null
+              }, t('stem.echolocation.next_challenge', 'Next Challenge \u2192')) : null
             )
           ),
 
           // Real-world examples
           h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
-            h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83C\uDF0D Real-World Doppler'),
+            h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.real_world_doppler', '\uD83C\uDF0D Real-World Doppler')),
             h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
               [
-                { icon: '\uD83D\uDE91', title: 'Ambulance Siren', desc: 'The classic example: the siren sounds higher-pitched as it approaches and lower as it moves away. The sound waves literally compress and stretch.' },
-                { icon: '\uD83C\uDF29\uFE0F', title: 'Doppler Weather Radar', desc: 'Radar stations send microwave pulses at clouds. The frequency shift of the reflected signal tells meteorologists the speed and direction of wind and precipitation.' },
-                { icon: '\uD83E\uDD87', title: 'Bat Hunting: Buzz Phase', desc: 'As a bat closes in on prey, it increases pulse rate from ~10/sec to 200/sec. The Doppler shift of each echo tells the bat exactly how fast the moth is moving.' },
-                { icon: '\uD83C\uDFE5', title: 'Medical Ultrasound', desc: 'Doctors use Doppler ultrasound to measure blood flow velocity. The frequency shift of echoes from moving blood cells reveals the speed and direction of blood flow.' }
+                { icon: '\uD83D\uDE91', title: t('stem.echolocation.ambulance_siren', 'Ambulance Siren'), desc: t('stem.echolocation.the_classic_example_the_siren_sounds_h', 'The classic example: the siren sounds higher-pitched as it approaches and lower as it moves away. The sound waves literally compress and stretch.') },
+                { icon: '\uD83C\uDF29\uFE0F', title: t('stem.echolocation.doppler_weather_radar', 'Doppler Weather Radar'), desc: t('stem.echolocation.radar_stations_send_microwave_pulses_a', 'Radar stations send microwave pulses at clouds. The frequency shift of the reflected signal tells meteorologists the speed and direction of wind and precipitation.') },
+                { icon: '\uD83E\uDD87', title: t('stem.echolocation.bat_hunting_buzz_phase', 'Bat Hunting: Buzz Phase'), desc: t('stem.echolocation.as_a_bat_closes_in_on_prey_it_increase', 'As a bat closes in on prey, it increases pulse rate from ~10/sec to 200/sec. The Doppler shift of each echo tells the bat exactly how fast the moth is moving.') },
+                { icon: '\uD83C\uDFE5', title: t('stem.echolocation.medical_ultrasound_2', 'Medical Ultrasound'), desc: t('stem.echolocation.doctors_use_doppler_ultrasound_to_meas', 'Doctors use Doppler ultrasound to measure blood flow velocity. The frequency shift of echoes from moving blood cells reveals the speed and direction of blood flow.') }
               ].map(function(ex, i) {
                 return h('div', { key: i, className: 'p-3 rounded-lg ' + (isDark ? 'bg-slate-700/40 border border-slate-600/30' : 'bg-slate-50 border border-slate-400') },
                   h('div', { className: 'flex items-center gap-2 mb-1' },
@@ -3584,14 +3585,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
             h('div', { className: 'flex items-center gap-2 mb-3' },
               h('span', { className: 'text-xl' }, '\uD83C\uDFAF'),
-              h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, 'Bat Hunting Strategy \u2014 The Three Phases')),
+              h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.bat_hunting_strategy_the_three_phases', 'Bat Hunting Strategy \u2014 The Three Phases'))),
             h('p', { className: 'text-[11px] mb-3 ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
-              'A bat\'s echolocation strategy changes dramatically during a hunt. Scientists divide the attack into three phases based on pulse rate:'),
+              t('stem.echolocation.a_bat_s_echolocation_strategy_changes_', 'A bat\'s echolocation strategy changes dramatically during a hunt. Scientists divide the attack into three phases based on pulse rate:')),
             h('div', { className: 'space-y-2' },
               [
-                { phase: 'Search Phase', rate: '5-10 pulses/sec', desc: 'The bat cruises through its territory, emitting slow, long-range pulses. Each call is wide-beam to scan a large area. Calls are long (10-20 ms) and spaced far apart to avoid overlap between outgoing pulse and returning echo. The bat is listening for any hint of prey.', color: isDark ? 'bg-sky-900/40 border-sky-700/40' : 'bg-sky-50 border-sky-200', textColor: isDark ? 'text-sky-300' : 'text-sky-700' },
-                { phase: 'Approach Phase', rate: '20-50 pulses/sec', desc: 'Prey detected! The bat narrows its sonar beam toward the target and increases pulse rate. Calls get shorter (5-10 ms) and higher frequency for better resolution. The bat is now tracking the moth\'s evasive maneuvers, adjusting its flight path with each echo.', color: isDark ? 'bg-amber-900/40 border-amber-700/40' : 'bg-amber-50 border-amber-200', textColor: isDark ? 'text-amber-300' : 'text-amber-700' },
-                { phase: 'Terminal Buzz', rate: '100-200 pulses/sec', desc: 'The final attack! Pulse rate skyrockets to 200/sec \u2014 the fastest muscle contractions in any mammal. Calls are now ultra-short (0.5-1 ms). The bat gets a near-continuous stream of position updates, like switching from photographs to live video. Catch rate: ~40-50% of attempts succeed.', color: isDark ? 'bg-red-900/40 border-red-700/40' : 'bg-red-50 border-red-200', textColor: isDark ? 'text-red-300' : 'text-red-700' }
+                { phase: 'Search Phase', rate: '5-10 pulses/sec', desc: t('stem.echolocation.the_bat_cruises_through_its_territory_', 'The bat cruises through its territory, emitting slow, long-range pulses. Each call is wide-beam to scan a large area. Calls are long (10-20 ms) and spaced far apart to avoid overlap between outgoing pulse and returning echo. The bat is listening for any hint of prey.'), color: isDark ? 'bg-sky-900/40 border-sky-700/40' : 'bg-sky-50 border-sky-200', textColor: isDark ? 'text-sky-300' : 'text-sky-700' },
+                { phase: 'Approach Phase', rate: '20-50 pulses/sec', desc: t('stem.echolocation.prey_detected_the_bat_narrows_its_sona', 'Prey detected! The bat narrows its sonar beam toward the target and increases pulse rate. Calls get shorter (5-10 ms) and higher frequency for better resolution. The bat is now tracking the moth\'s evasive maneuvers, adjusting its flight path with each echo.'), color: isDark ? 'bg-amber-900/40 border-amber-700/40' : 'bg-amber-50 border-amber-200', textColor: isDark ? 'text-amber-300' : 'text-amber-700' },
+                { phase: 'Terminal Buzz', rate: '100-200 pulses/sec', desc: t('stem.echolocation.the_final_attack_pulse_rate_skyrockets', 'The final attack! Pulse rate skyrockets to 200/sec \u2014 the fastest muscle contractions in any mammal. Calls are now ultra-short (0.5-1 ms). The bat gets a near-continuous stream of position updates, like switching from photographs to live video. Catch rate: ~40-50% of attempts succeed.'), color: isDark ? 'bg-red-900/40 border-red-700/40' : 'bg-red-50 border-red-200', textColor: isDark ? 'text-red-300' : 'text-red-700' }
               ].map(function(p, pi) {
                 return h('div', { key: pi, className: 'p-3 rounded-lg border ' + p.color },
                   h('div', { className: 'flex items-center justify-between mb-1' },
@@ -3602,29 +3603,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               })
             ),
             h('div', { className: 'mt-3 text-[11px] italic ' + (isDark ? 'text-indigo-400' : 'text-indigo-600') },
-              'Moth counter-strategies: Some moths have ears that detect bat sonar and trigger evasive dives. Others (tiger moths) emit their own ultrasonic clicks that "jam" bat sonar \u2014 acoustic warfare in the night sky!')
+              t('stem.echolocation.moth_counter_strategies_some_moths_hav', 'Moth counter-strategies: Some moths have ears that detect bat sonar and trigger evasive dives. Others (tiger moths) emit their own ultrasonic clicks that "jam" bat sonar \u2014 acoustic warfare in the night sky!'))
           ),
 
           // Moth Types & Anti-Predator Adaptations
           h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-amber-900/20 border border-amber-800/30' : 'bg-amber-50 border border-amber-200') },
             h('div', { className: 'flex items-center gap-2 mb-3' },
               h('span', { className: 'text-xl' }, '\uD83E\uDD8B'),
-              h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-amber-300' : 'text-amber-800') }, 'Moth Types & Anti-Predator Adaptations')),
+              h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-amber-300' : 'text-amber-800') }, t('stem.echolocation.moth_types_anti_predator_adaptations', 'Moth Types & Anti-Predator Adaptations'))),
             h('p', { className: 'text-[11px] mb-3 ' + (isDark ? 'text-amber-200' : 'text-amber-700') },
-              'The evolutionary arms race between bats and moths has produced remarkable adaptations on both sides. In the simulator, you encounter four moth types, each based on real species:'),
+              t('stem.echolocation.the_evolutionary_arms_race_between_bat', 'The evolutionary arms race between bats and moths has produced remarkable adaptations on both sides. In the simulator, you encounter four moth types, each based on real species:')),
             h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
               [
                 { type: 'Regular Moth', emoji: '\uD83E\uDD8B', color: isDark ? 'bg-slate-700/40' : 'bg-white',
-                  desc: 'Standard moths with basic flight patterns. Some have evolved tympanic organs (ears) on their thorax that detect bat ultrasound, triggering evasive dives and loops.',
+                  desc: t('stem.echolocation.standard_moths_with_basic_flight_patte', 'Standard moths with basic flight patterns. Some have evolved tympanic organs (ears) on their thorax that detect bat ultrasound, triggering evasive dives and loops.'),
                   stat: '40% evasion chance | Normal speed | +15 energy' },
                 { type: 'Tiger Moth', emoji: '\uD83E\uDD8B', color: isDark ? 'bg-orange-900/30' : 'bg-orange-50',
-                  desc: 'Tiger moths produce their own ultrasonic clicks that JAM bat sonar! They emit rapid trains of clicks that interfere with the bat\'s ability to process echoes \u2014 like a biological radar jammer. Some species also use these clicks to warn bats that they taste bad (aposematism).',
+                  desc: t('stem.echolocation.tiger_moths_produce_their_own_ultrason', 'Tiger moths produce their own ultrasonic clicks that JAM bat sonar! They emit rapid trains of clicks that interfere with the bat\'s ability to process echoes \u2014 like a biological radar jammer. Some species also use these clicks to warn bats that they taste bad (aposematism).'),
                   stat: '30% evasion + 50% sonar jamming | Slower | +15 energy' },
                 { type: 'Luna Moth', emoji: '\uD83E\uDD8B', color: isDark ? 'bg-emerald-900/30' : 'bg-emerald-50',
-                  desc: 'Luna moths are large, beautiful moths with long tail streamers. Research shows these tails confuse bat sonar by creating echo signatures that misdirect the bat\'s attack \u2014 the bat strikes the tail instead of the body. They are worth more energy when caught.',
+                  desc: t('stem.echolocation.luna_moths_are_large_beautiful_moths_w', 'Luna moths are large, beautiful moths with long tail streamers. Research shows these tails confuse bat sonar by creating echo signatures that misdirect the bat\'s attack \u2014 the bat strikes the tail instead of the body. They are worth more energy when caught.'),
                   stat: '20% evasion | Slow & large | +25 energy' },
                 { type: 'Mosquito Swarm', emoji: '\uD83E\uDD9F', color: isDark ? 'bg-slate-700/40' : 'bg-slate-100',
-                  desc: 'Tiny, fast-moving targets that cluster together. While individual mosquitoes are hard to echolocate due to their small size, bats use a rapid-fire "buzz phase" approach to track them. Little brown bats can catch 1,000 mosquitoes per hour!',
+                  desc: t('stem.echolocation.tiny_fast_moving_targets_that_cluster_', 'Tiny, fast-moving targets that cluster together. While individual mosquitoes are hard to echolocate due to their small size, bats use a rapid-fire "buzz phase" approach to track them. Little brown bats can catch 1,000 mosquitoes per hour!'),
                   stat: '15% evasion | Fast & tiny | +10 energy' }
               ].map(function(m, mi) {
                 return h('div', { key: mi, className: 'p-3 rounded-lg border ' + m.color + ' ' + (isDark ? 'border-slate-600/30' : 'border-slate-200') },
@@ -3637,9 +3638,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               })
             ),
             h('div', { className: 'mt-3 p-2 rounded-lg ' + (isDark ? 'bg-amber-900/30' : 'bg-amber-100') },
-              h('div', { className: 'text-[11px] font-bold ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, '\uD83E\uDDEC Evolutionary Arms Race'),
+              h('div', { className: 'text-[11px] font-bold ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, t('stem.echolocation.evolutionary_arms_race', '\uD83E\uDDEC Evolutionary Arms Race')),
               h('p', { className: 'text-[11px] ' + (isDark ? 'text-amber-200' : 'text-amber-800') },
-                'This bat-moth conflict has been raging for 65+ million years. As bats evolved better sonar, moths evolved ears. As moths evolved ears, some bats evolved "stealth" echolocation (quieter calls). As some bats went quiet, tiger moths evolved sonar jamming. The arms race continues! This is a textbook example of co-evolution driven by predator-prey dynamics.')
+                t('stem.echolocation.this_bat_moth_conflict_has_been_raging', 'This bat-moth conflict has been raging for 65+ million years. As bats evolved better sonar, moths evolved ears. As moths evolved ears, some bats evolved "stealth" echolocation (quieter calls). As some bats went quiet, tiger moths evolved sonar jamming. The arms race continues! This is a textbook example of co-evolution driven by predator-prey dynamics.'))
             )
           ),
 
@@ -3647,52 +3648,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-emerald-900/20 border border-emerald-800/30' : 'bg-emerald-50 border border-emerald-200') },
             h('div', { className: 'flex items-center gap-2 mb-3' },
               h('span', { className: 'text-xl' }, '\uD83C\uDF4C'),
-              h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-emerald-300' : 'text-emerald-800') }, 'Fruit Bat Foraging \u2014 A Different Strategy')),
+              h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-emerald-300' : 'text-emerald-800') }, t('stem.echolocation.fruit_bat_foraging_a_different_strateg', 'Fruit Bat Foraging \u2014 A Different Strategy'))),
             h('p', { className: 'text-[11px] mb-3 ' + (isDark ? 'text-emerald-200' : 'text-emerald-700') },
-              'While insectivorous bats are aerial hunters, fruit bats use a completely different foraging strategy. In the simulator\'s frugivore mode, you experience how Egyptian fruit bats navigate:'),
+              t('stem.echolocation.while_insectivorous_bats_are_aerial_hu', 'While insectivorous bats are aerial hunters, fruit bats use a completely different foraging strategy. In the simulator\'s frugivore mode, you experience how Egyptian fruit bats navigate:')),
             h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
               h('div', { className: 'p-3 rounded-lg ' + (isDark ? 'bg-emerald-900/30' : 'bg-emerald-100') },
-                h('div', { className: 'text-[11px] font-bold mb-1 ' + (isDark ? 'text-emerald-200' : 'text-emerald-800') }, '\uD83D\uDC41\uFE0F Night Vision'),
+                h('div', { className: 'text-[11px] font-bold mb-1 ' + (isDark ? 'text-emerald-200' : 'text-emerald-800') }, t('stem.echolocation.night_vision', '\uD83D\uDC41\uFE0F Night Vision')),
                 h('p', { className: 'text-[11px] ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') },
-                  'Fruit bats have large eyes with a high density of rod cells, giving them excellent low-light vision. In the simulator, ripe fruit glows faintly even without sonar pulses \u2014 simulating this visual advantage.')),
+                  t('stem.echolocation.fruit_bats_have_large_eyes_with_a_high', 'Fruit bats have large eyes with a high density of rod cells, giving them excellent low-light vision. In the simulator, ripe fruit glows faintly even without sonar pulses \u2014 simulating this visual advantage.'))),
               h('div', { className: 'p-3 rounded-lg ' + (isDark ? 'bg-emerald-900/30' : 'bg-emerald-100') },
-                h('div', { className: 'text-[11px] font-bold mb-1 ' + (isDark ? 'text-emerald-200' : 'text-emerald-800') }, '\uD83D\uDC43 Smell'),
+                h('div', { className: 'text-[11px] font-bold mb-1 ' + (isDark ? 'text-emerald-200' : 'text-emerald-800') }, t('stem.echolocation.smell', '\uD83D\uDC43 Smell')),
                 h('p', { className: 'text-[11px] ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') },
-                  'In reality, fruit bats locate ripe fruit primarily through smell. Ripe mangoes, figs, and guavas emit strong volatile compounds that bats can detect from hundreds of meters away.')),
+                  t('stem.echolocation.in_reality_fruit_bats_locate_ripe_frui', 'In reality, fruit bats locate ripe fruit primarily through smell. Ripe mangoes, figs, and guavas emit strong volatile compounds that bats can detect from hundreds of meters away.'))),
               h('div', { className: 'p-3 rounded-lg ' + (isDark ? 'bg-emerald-900/30' : 'bg-emerald-100') },
-                h('div', { className: 'text-[11px] font-bold mb-1 ' + (isDark ? 'text-emerald-200' : 'text-emerald-800') }, '\uD83D\uDD0A Tongue Clicks'),
+                h('div', { className: 'text-[11px] font-bold mb-1 ' + (isDark ? 'text-emerald-200' : 'text-emerald-800') }, t('stem.echolocation.tongue_clicks', '\uD83D\uDD0A Tongue Clicks')),
                 h('p', { className: 'text-[11px] ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') },
-                  'Egyptian fruit bats produce echolocation clicks with their tongue, not their larynx. These clicks are lower intensity and broader beam than insectivore sonar \u2014 good for obstacle avoidance but not precise enough for catching insects.')),
+                  t('stem.echolocation.egyptian_fruit_bats_produce_echolocati', 'Egyptian fruit bats produce echolocation clicks with their tongue, not their larynx. These clicks are lower intensity and broader beam than insectivore sonar \u2014 good for obstacle avoidance but not precise enough for catching insects.'))),
               h('div', { className: 'p-3 rounded-lg ' + (isDark ? 'bg-emerald-900/30' : 'bg-emerald-100') },
-                h('div', { className: 'text-[11px] font-bold mb-1 ' + (isDark ? 'text-emerald-200' : 'text-emerald-800') }, '\uD83C\uDF31 Seed Dispersal'),
+                h('div', { className: 'text-[11px] font-bold mb-1 ' + (isDark ? 'text-emerald-200' : 'text-emerald-800') }, t('stem.echolocation.seed_dispersal', '\uD83C\uDF31 Seed Dispersal')),
                 h('p', { className: 'text-[11px] ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') },
-                  'Fruit bats are critical for tropical ecosystems. They eat fruit and deposit seeds far from the parent tree. A single fruit bat can disperse thousands of seeds per night, making them essential for forest regeneration.'))
+                  t('stem.echolocation.fruit_bats_are_critical_for_tropical_e', 'Fruit bats are critical for tropical ecosystems. They eat fruit and deposit seeds far from the parent tree. A single fruit bat can disperse thousands of seeds per night, making them essential for forest regeneration.')))
             ),
             h('div', { className: 'mt-2 text-[11px] italic ' + (isDark ? 'text-emerald-400' : 'text-emerald-600') },
-              'Over 500 plant species depend on bat pollination or seed dispersal, including mangoes, bananas, agave (tequila!), and durian. Without fruit bats, many tropical foods would not exist.')
+              t('stem.echolocation.over_500_plant_species_depend_on_bat_p', 'Over 500 plant species depend on bat pollination or seed dispersal, including mangoes, bananas, agave (tequila!), and durian. Without fruit bats, many tropical foods would not exist.'))
           ),
 
           // Doppler Math Explainer
           h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
             h('div', { className: 'flex items-center gap-2 mb-3' },
               h('span', { className: 'text-xl' }, '\uD83D\uDCDD'),
-              h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, 'The Math Behind the Doppler Effect')),
+              h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.the_math_behind_the_doppler_effect', 'The Math Behind the Doppler Effect'))),
             h('div', { className: 'space-y-3' },
               h('div', { className: 'p-3 rounded-lg text-center ' + (isDark ? 'bg-indigo-900/30' : 'bg-indigo-50') },
                 h('div', { className: 'text-sm font-mono font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') },
-                  'f\' = f \u00D7 (v + v_receiver) / (v + v_source)'),
+                  t('stem.echolocation.f_f_v_v_receiver_v_v_source', 'f\' = f \u00D7 (v + v_receiver) / (v + v_source)')),
                 h('div', { className: 'text-[11px] mt-1 ' + (isDark ? 'text-indigo-400' : 'text-indigo-600') },
-                  'f = emitted frequency, v = speed of sound (343 m/s), v_r = receiver velocity, v_s = source velocity')),
+                  t('stem.echolocation.f_emitted_frequency_v_speed_of_sound_3', 'f = emitted frequency, v = speed of sound (343 m/s), v_r = receiver velocity, v_s = source velocity'))),
               h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
-                h('strong', null, 'For a bat hunting a moth: '), 'The bat is both the source (emitting) and receiver (listening to echoes). If the moth is flying toward the bat at 5 m/s:'),
+                h('strong', null, t('stem.echolocation.for_a_bat_hunting_a_moth', 'For a bat hunting a moth: ')), t('stem.echolocation.the_bat_is_both_the_source_emitting_an', 'The bat is both the source (emitting) and receiver (listening to echoes). If the moth is flying toward the bat at 5 m/s:')),
               h('div', { className: 'p-2 rounded font-mono text-[11px] ' + (isDark ? 'bg-slate-700/40 text-indigo-300' : 'bg-slate-100 text-indigo-700') },
-                'Outgoing: f\' = 50,000 \u00D7 (343 + 5) / 343 = 50,729 Hz',
+                t('stem.echolocation.outgoing_f_50_000_343_5_343_50_729_hz', 'Outgoing: f\' = 50,000 \u00D7 (343 + 5) / 343 = 50,729 Hz'),
                 h('br'),
-                'Reflected: f\'\' = 50,729 \u00D7 (343) / (343 - 5) = 51,479 Hz',
+                t('stem.echolocation.reflected_f_50_729_343_343_5_51_479_hz', 'Reflected: f\'\' = 50,729 \u00D7 (343) / (343 - 5) = 51,479 Hz'),
                 h('br'),
-                'Total Doppler shift: +1,479 Hz (+2.96%)'),
+                t('stem.echolocation.total_doppler_shift_1_479_hz_2_96', 'Total Doppler shift: +1,479 Hz (+2.96%)')),
               h('p', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
-                'The bat detects this +1,479 Hz shift and knows the moth is approaching. The larger the shift, the faster the moth is moving. Sideways motion produces no Doppler shift \u2014 only the radial component matters.')
+                t('stem.echolocation.the_bat_detects_this_1_479_hz_shift_an', 'The bat detects this +1,479 Hz shift and knows the moth is approaching. The larger the shift, the faster the moth is moving. Sideways motion produces no Doppler shift \u2014 only the radial component matters.'))
             )
           )
         );
@@ -3846,11 +3847,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       function renderBiologyTab() {
         return h('div', { className: 'space-y-4' },
           // Sub-tabs
-          h('div', { className: 'flex gap-2', role: 'tablist', 'aria-label': 'Biology sections' },
+          h('div', { className: 'flex gap-2', role: 'tablist', 'aria-label': t('stem.echolocation.biology_sections', 'Biology sections') },
             [
-              { id: 'anatomy', label: 'Anatomy', icon: '\uD83E\uDDA0' },
-              { id: 'species', label: 'Species Gallery', icon: '\uD83E\uDD87' },
-              { id: 'conservation', label: 'Conservation', icon: '\uD83C\uDF0D' }
+              { id: 'anatomy', label: t('stem.echolocation.anatomy', 'Anatomy'), icon: '\uD83E\uDDA0' },
+              { id: 'species', label: t('stem.echolocation.species_gallery', 'Species Gallery'), icon: '\uD83E\uDD87' },
+              { id: 'conservation', label: t('stem.echolocation.conservation', 'Conservation'), icon: '\uD83C\uDF0D' }
             ].map(function(s, si) {
               var active = bioSection === s.id;
               return h('button', {
@@ -3872,13 +3873,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           // ANATOMY SECTION
           bioSection === 'anatomy' && h('div', { className: 'space-y-3' },
             h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
-              h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83E\uDDA0 Bat Anatomy \u2014 Click a part to learn more'),
-              h('canvas', { 'aria-label': 'Echolocation visualization',
+              h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.bat_anatomy_click_a_part_to_learn_more', '\uD83E\uDDA0 Bat Anatomy \u2014 Click a part to learn more')),
+              h('canvas', { 'aria-label': t('stem.echolocation.echolocation_visualization_6', 'Echolocation visualization'),
                 ref: anatomyCanvasRef,
                 width: 500,
                 height: 300,
                 role: 'img',
-                'aria-label': 'Interactive bat anatomy diagram. Click or use keyboard to select wing, ear, nose, thumb claw, tail membrane, or larynx.',
+                'aria-label': t('stem.echolocation.interactive_bat_anatomy_diagram_click_', 'Interactive bat anatomy diagram. Click or use keyboard to select wing, ear, nose, thumb claw, tail membrane, or larynx.'),
                 tabIndex: 0,
                 onClick: function(e) {
                   var rect = e.target.getBoundingClientRect();
@@ -3921,61 +3922,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                   h('div', { className: 'text-xs font-bold mb-1', style: { color: part.color } }, part.label),
                   h('p', { className: 'text-[11px] mb-2 ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, part.what),
                   h('div', { className: 'p-2 rounded ' + (isDark ? 'bg-indigo-900/30' : 'bg-indigo-50') },
-                    h('div', { className: 'text-[11px] font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83E\uDD13 Fun Fact'),
+                    h('div', { className: 'text-[11px] font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.fun_fact', '\uD83E\uDD13 Fun Fact')),
                     h('p', { className: 'text-[11px] ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, part.funFact)),
                   h('div', { className: 'p-2 rounded mt-1 ' + (isDark ? 'bg-slate-700/40' : 'bg-slate-100') },
-                    h('div', { className: 'text-[11px] font-bold ' + (isDark ? 'text-cyan-300' : 'text-cyan-700') }, '\u2699\uFE0F Physics'),
+                    h('div', { className: 'text-[11px] font-bold ' + (isDark ? 'text-cyan-300' : 'text-cyan-700') }, t('stem.echolocation.physics', '\u2699\uFE0F Physics')),
                     h('p', { className: 'text-[11px] ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, part.physics))
                 );
               })(),
               !selectedAnatomyPart && h('div', { className: 'mt-2 text-[11px] italic text-center ' + (isDark ? 'text-slate-200' : 'text-slate-200') },
-                'Click or tap a part of the bat to explore it. Use arrow keys for keyboard navigation.')
+                t('stem.echolocation.click_or_tap_a_part_of_the_bat_to_expl', 'Click or tap a part of the bat to explore it. Use arrow keys for keyboard navigation.'))
             ),
 
             // Bat vs Bird Flight Comparison
             h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
-              h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83E\uDD87 vs \uD83D\uDC26 Bat Wings vs Bird Wings'),
+              h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.vs_bat_wings_vs_bird_wings', '\uD83E\uDD87 vs \uD83D\uDC26 Bat Wings vs Bird Wings')),
               h('p', { className: 'text-[11px] mb-3 ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
-                'Both bats and birds fly, but their wings evolved completely independently. The differences reveal how evolution solves the same problem in different ways:'),
+                t('stem.echolocation.both_bats_and_birds_fly_but_their_wing', 'Both bats and birds fly, but their wings evolved completely independently. The differences reveal how evolution solves the same problem in different ways:')),
               h('div', { className: 'grid grid-cols-2 gap-3' },
                 h('div', { className: 'p-3 rounded-lg ' + (isDark ? 'bg-indigo-900/30 border border-indigo-800/30' : 'bg-indigo-50 border border-indigo-200') },
                   h('div', { className: 'text-center mb-2' },
                     h('span', { className: 'text-2xl' }, '\uD83E\uDD87'),
-                    h('div', { className: 'text-xs font-bold ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, 'Bat Wing')),
+                    h('div', { className: 'text-xs font-bold ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, t('stem.echolocation.bat_wing', 'Bat Wing'))),
                   h('div', { className: 'space-y-1 text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
-                    h('p', null, '\u2022 Membrane stretched between elongated FINGER bones'),
-                    h('p', null, '\u2022 Can change wing shape dramatically (high maneuverability)'),
-                    h('p', null, '\u2022 Thinner, more flexible \u2014 generates less lift per area'),
-                    h('p', null, '\u2022 Cannot fold flat \u2014 bats must hang upside down to rest'),
-                    h('p', null, '\u2022 Excellent for slow, agile flight and hovering'),
-                    h('p', null, '\u2022 Wing loading: 5-15 N/m\u00B2 (very light)'),
-                    h('p', null, '\u2022 Can make tighter turns than any bird'))),
+                    h('p', null, t('stem.echolocation.membrane_stretched_between_elongated_f', '\u2022 Membrane stretched between elongated FINGER bones')),
+                    h('p', null, t('stem.echolocation.can_change_wing_shape_dramatically_hig', '\u2022 Can change wing shape dramatically (high maneuverability)')),
+                    h('p', null, t('stem.echolocation.thinner_more_flexible_generates_less_l', '\u2022 Thinner, more flexible \u2014 generates less lift per area')),
+                    h('p', null, t('stem.echolocation.cannot_fold_flat_bats_must_hang_upside', '\u2022 Cannot fold flat \u2014 bats must hang upside down to rest')),
+                    h('p', null, t('stem.echolocation.excellent_for_slow_agile_flight_and_ho', '\u2022 Excellent for slow, agile flight and hovering')),
+                    h('p', null, t('stem.echolocation.wing_loading_5_15_n_m_very_light', '\u2022 Wing loading: 5-15 N/m\u00B2 (very light)')),
+                    h('p', null, t('stem.echolocation.can_make_tighter_turns_than_any_bird', '\u2022 Can make tighter turns than any bird')))),
                 h('div', { className: 'p-3 rounded-lg ' + (isDark ? 'bg-amber-900/30 border border-amber-800/30' : 'bg-amber-50 border border-amber-200') },
                   h('div', { className: 'text-center mb-2' },
                     h('span', { className: 'text-2xl' }, '\uD83D\uDC26'),
-                    h('div', { className: 'text-xs font-bold ' + (isDark ? 'text-amber-200' : 'text-amber-800') }, 'Bird Wing')),
+                    h('div', { className: 'text-xs font-bold ' + (isDark ? 'text-amber-200' : 'text-amber-800') }, t('stem.echolocation.bird_wing', 'Bird Wing'))),
                   h('div', { className: 'space-y-1 text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
-                    h('p', null, '\u2022 Feathers attached to fused ARM bones'),
-                    h('p', null, '\u2022 More rigid shape \u2014 better for sustained flight'),
-                    h('p', null, '\u2022 Thicker airfoil \u2014 generates more lift per area'),
-                    h('p', null, '\u2022 Can fold flat against body \u2014 birds can perch and walk'),
-                    h('p', null, '\u2022 Excellent for fast, efficient long-distance flight'),
-                    h('p', null, '\u2022 Wing loading: 10-200 N/m\u00B2 (varies by species)'),
-                    h('p', null, '\u2022 Better at soaring and gliding')))
+                    h('p', null, t('stem.echolocation.feathers_attached_to_fused_arm_bones', '\u2022 Feathers attached to fused ARM bones')),
+                    h('p', null, t('stem.echolocation.more_rigid_shape_better_for_sustained_', '\u2022 More rigid shape \u2014 better for sustained flight')),
+                    h('p', null, t('stem.echolocation.thicker_airfoil_generates_more_lift_pe', '\u2022 Thicker airfoil \u2014 generates more lift per area')),
+                    h('p', null, t('stem.echolocation.can_fold_flat_against_body_birds_can_p', '\u2022 Can fold flat against body \u2014 birds can perch and walk')),
+                    h('p', null, t('stem.echolocation.excellent_for_fast_efficient_long_dist', '\u2022 Excellent for fast, efficient long-distance flight')),
+                    h('p', null, t('stem.echolocation.wing_loading_10_200_n_m_varies_by_spec', '\u2022 Wing loading: 10-200 N/m\u00B2 (varies by species)')),
+                    h('p', null, t('stem.echolocation.better_at_soaring_and_gliding', '\u2022 Better at soaring and gliding'))))
               ),
               h('div', { className: 'mt-2 text-[11px] text-center ' + (isDark ? 'text-indigo-400' : 'text-indigo-600') },
-                'Key insight: Bat wings are essentially hands with webbing. Each "finger" can be controlled independently, giving bats unparalleled maneuverability \u2014 essential for catching insects in mid-air using echolocation.')
+                t('stem.echolocation.key_insight_bat_wings_are_essentially_', 'Key insight: Bat wings are essentially hands with webbing. Each "finger" can be controlled independently, giving bats unparalleled maneuverability \u2014 essential for catching insects in mid-air using echolocation.'))
             ),
 
             // Bat Senses Beyond Sonar
             h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
-              h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83D\uDC40 Beyond Echolocation \u2014 Bat Superpowers'),
+              h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.beyond_echolocation_bat_superpowers', '\uD83D\uDC40 Beyond Echolocation \u2014 Bat Superpowers')),
               h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
                 [
-                  { icon: '\uD83D\uDC41\uFE0F', title: 'Vision', desc: 'Despite the myth, all bats can see. Fruit bats have large eyes with excellent night vision. Even echolocating bats use vision for long-range navigation \u2014 they use landmarks and the sunset glow to orient during migration.' },
-                  { icon: '\uD83E\uDDED', title: 'Magnetic Sense', desc: 'Some bat species can detect Earth\'s magnetic field and use it as an internal compass. Scientists discovered this by putting tiny magnets on bats\' heads \u2014 the bats became disoriented!' },
-                  { icon: '\uD83C\uDF21\uFE0F', title: 'Heat Detection', desc: 'Vampire bats have infrared-sensing pits on their nose that detect blood vessels under skin from inches away. This is convergent evolution with pit vipers!' },
-                  { icon: '\uD83D\uDC43', title: 'Smell', desc: 'Fruit bats locate ripe fruit using an acute sense of smell. Some flower-visiting bats can smell the difference between flowers that still have nectar and those already depleted by other bats.' }
+                  { icon: '\uD83D\uDC41\uFE0F', title: t('stem.echolocation.vision', 'Vision'), desc: t('stem.echolocation.despite_the_myth_all_bats_can_see_frui', 'Despite the myth, all bats can see. Fruit bats have large eyes with excellent night vision. Even echolocating bats use vision for long-range navigation \u2014 they use landmarks and the sunset glow to orient during migration.') },
+                  { icon: '\uD83E\uDDED', title: t('stem.echolocation.magnetic_sense', 'Magnetic Sense'), desc: t('stem.echolocation.some_bat_species_can_detect_earth_s_ma', 'Some bat species can detect Earth\'s magnetic field and use it as an internal compass. Scientists discovered this by putting tiny magnets on bats\' heads \u2014 the bats became disoriented!') },
+                  { icon: '\uD83C\uDF21\uFE0F', title: t('stem.echolocation.heat_detection', 'Heat Detection'), desc: t('stem.echolocation.vampire_bats_have_infrared_sensing_pit', 'Vampire bats have infrared-sensing pits on their nose that detect blood vessels under skin from inches away. This is convergent evolution with pit vipers!') },
+                  { icon: '\uD83D\uDC43', title: t('stem.echolocation.smell_2', 'Smell'), desc: t('stem.echolocation.fruit_bats_locate_ripe_fruit_using_an_', 'Fruit bats locate ripe fruit using an acute sense of smell. Some flower-visiting bats can smell the difference between flowers that still have nectar and those already depleted by other bats.') }
                 ].map(function(sense, si) {
                   return h('div', { key: si, className: 'p-3 rounded-lg ' + (isDark ? 'bg-slate-700/40 border border-slate-600/30' : 'bg-slate-50 border border-slate-400') },
                     h('div', { className: 'flex items-center gap-2 mb-1' },
@@ -3989,17 +3990,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
 
             // Bat Diet Diversity
             h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
-              h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83C\uDF7D\uFE0F Bat Diet Diversity \u2014 Not Just Bugs and Fruit!'),
+              h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.bat_diet_diversity_not_just_bugs_and_f', '\uD83C\uDF7D\uFE0F Bat Diet Diversity \u2014 Not Just Bugs and Fruit!')),
               h('p', { className: 'text-[11px] mb-3 ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
-                'With over 1,400 species, bats have evolved an incredible range of diets. The two playable species in the simulator represent the two largest dietary groups, but bats eat much more:'),
+                t('stem.echolocation.with_over_1_400_species_bats_have_evol', 'With over 1,400 species, bats have evolved an incredible range of diets. The two playable species in the simulator represent the two largest dietary groups, but bats eat much more:')),
               h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 gap-2' },
                 [
-                  { icon: '\uD83E\uDD9F', diet: 'Insectivore (70%)', desc: 'Most bat species eat insects. A single colony can consume tons of agricultural pests nightly.', color: isDark ? 'bg-amber-900/30' : 'bg-amber-50' },
-                  { icon: '\uD83C\uDF4C', diet: 'Frugivore (15%)', desc: 'Fruit bats disperse seeds and pollinate hundreds of plant species across tropical regions.', color: isDark ? 'bg-emerald-900/30' : 'bg-emerald-50' },
-                  { icon: '\uD83C\uDF3A', diet: 'Nectarivore (5%)', desc: 'Nectar-feeding bats have long tongues and pollinate night-blooming flowers including agave and cactus.', color: isDark ? 'bg-pink-900/30' : 'bg-pink-50' },
-                  { icon: '\uD83D\uDC1F', diet: 'Piscivore (rare)', desc: 'Fishing bats skim water surfaces using echolocation to detect fish fins breaking the surface.', color: isDark ? 'bg-blue-900/30' : 'bg-blue-50' },
-                  { icon: '\uD83E\uDD87', diet: 'Carnivore (rare)', desc: 'Some large bats prey on frogs, lizards, birds, and even other bats! The false vampire bat is an apex predator.', color: isDark ? 'bg-red-900/30' : 'bg-red-50' },
-                  { icon: '\uD83E\uDE78', diet: 'Sanguivore (3 spp)', desc: 'Only 3 species of vampire bats exist. They lap blood from cattle/birds using anticoagulant saliva.', color: isDark ? 'bg-purple-900/30' : 'bg-purple-50' }
+                  { icon: '\uD83E\uDD9F', diet: 'Insectivore (70%)', desc: t('stem.echolocation.most_bat_species_eat_insects_a_single_', 'Most bat species eat insects. A single colony can consume tons of agricultural pests nightly.'), color: isDark ? 'bg-amber-900/30' : 'bg-amber-50' },
+                  { icon: '\uD83C\uDF4C', diet: 'Frugivore (15%)', desc: t('stem.echolocation.fruit_bats_disperse_seeds_and_pollinat', 'Fruit bats disperse seeds and pollinate hundreds of plant species across tropical regions.'), color: isDark ? 'bg-emerald-900/30' : 'bg-emerald-50' },
+                  { icon: '\uD83C\uDF3A', diet: 'Nectarivore (5%)', desc: t('stem.echolocation.nectar_feeding_bats_have_long_tongues_', 'Nectar-feeding bats have long tongues and pollinate night-blooming flowers including agave and cactus.'), color: isDark ? 'bg-pink-900/30' : 'bg-pink-50' },
+                  { icon: '\uD83D\uDC1F', diet: 'Piscivore (rare)', desc: t('stem.echolocation.fishing_bats_skim_water_surfaces_using', 'Fishing bats skim water surfaces using echolocation to detect fish fins breaking the surface.'), color: isDark ? 'bg-blue-900/30' : 'bg-blue-50' },
+                  { icon: '\uD83E\uDD87', diet: 'Carnivore (rare)', desc: t('stem.echolocation.some_large_bats_prey_on_frogs_lizards_', 'Some large bats prey on frogs, lizards, birds, and even other bats! The false vampire bat is an apex predator.'), color: isDark ? 'bg-red-900/30' : 'bg-red-50' },
+                  { icon: '\uD83E\uDE78', diet: 'Sanguivore (3 spp)', desc: t('stem.echolocation.only_3_species_of_vampire_bats_exist_t', 'Only 3 species of vampire bats exist. They lap blood from cattle/birds using anticoagulant saliva.'), color: isDark ? 'bg-purple-900/30' : 'bg-purple-50' }
                 ].map(function(d2, di) {
                   return h('div', { key: di, className: 'p-2 rounded-lg ' + d2.color },
                     h('div', { className: 'flex items-center gap-1 mb-1' },
@@ -4009,12 +4010,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 })
               ),
               h('div', { className: 'mt-2 text-[11px] italic ' + (isDark ? 'text-indigo-400' : 'text-indigo-600') },
-                'The diversity of bat diets reflects their evolutionary success. Bats make up ~25% of all mammal species \u2014 second only to rodents. Every continent except Antarctica has bats.')
+                t('stem.echolocation.the_diversity_of_bat_diets_reflects_th', 'The diversity of bat diets reflects their evolutionary success. Bats make up ~25% of all mammal species \u2014 second only to rodents. Every continent except Antarctica has bats.'))
             ),
 
             // Echolocation Evolution Timeline
             h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
-              h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\u23F0 Evolution of Echolocation \u2014 Timeline'),
+              h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.evolution_of_echolocation_timeline', '\u23F0 Evolution of Echolocation \u2014 Timeline')),
               h('div', { className: 'space-y-2' },
                 [
                   { mya: '65 MYA', event: 'Earliest bat-like mammals appear after dinosaur extinction', color: '#6366f1' },
@@ -4036,13 +4037,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 })
               ),
               h('div', { className: 'mt-2 text-[11px] italic ' + (isDark ? 'text-indigo-400' : 'text-indigo-600') },
-                'Key debate: Did bats evolve flight first, then echolocation? Or echolocation first, then flight? The Onychonycteris fossil suggests flight came first \u2014 but the question remains open.')
+                t('stem.echolocation.key_debate_did_bats_evolve_flight_firs', 'Key debate: Did bats evolve flight first, then echolocation? Or echolocation first, then flight? The Onychonycteris fossil suggests flight came first \u2014 but the question remains open.'))
             )
           ,
 
           // SPECIES GALLERY
           bioSection === 'species' && h('div', { className: 'space-y-3' },
-            h('div', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83E\uDD87 Bat Species Gallery'),
+            h('div', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.bat_species_gallery', '\uD83E\uDD87 Bat Species Gallery')),
             h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
               BAT_SPECIES.map(function(sp, si) {
                 var expanded = selectedSpecies === si;
@@ -4073,10 +4074,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                     h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-300' : 'text-slate-600') },
                       h('strong', null, 'Habitat: '), sp.habitat),
                     h('div', { className: 'p-2 rounded mt-1 ' + (isDark ? 'bg-indigo-900/30' : 'bg-indigo-50') },
-                      h('div', { className: 'text-[11px] font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83E\uDD13 Fun Fact'),
+                      h('div', { className: 'text-[11px] font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.fun_fact_2', '\uD83E\uDD13 Fun Fact')),
                       h('p', { className: 'text-[11px] ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, sp.funFact)),
                     h('div', { className: 'p-2 rounded mt-1 ' + (isDark ? 'bg-amber-900/30' : 'bg-amber-50') },
-                      h('div', { className: 'text-[11px] font-bold ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, '\u26A0\uFE0F Conservation'),
+                      h('div', { className: 'text-[11px] font-bold ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, t('stem.echolocation.conservation_2', '\u26A0\uFE0F Conservation')),
                       h('p', { className: 'text-[11px] ' + (isDark ? 'text-amber-200' : 'text-amber-800') }, sp.conservation))
                   )
                 );
@@ -4090,40 +4091,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-red-900/30 border border-red-800/40' : 'bg-red-50 border border-red-200') },
               h('div', { className: 'flex items-center gap-2 mb-2' },
                 h('span', { className: 'text-xl' }, '\uD83E\uDDA0'),
-                h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-red-300' : 'text-red-800') }, 'White-Nose Syndrome')),
+                h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-red-300' : 'text-red-800') }, t('stem.echolocation.white_nose_syndrome', 'White-Nose Syndrome'))),
               h('p', { className: 'text-[11px] ' + (isDark ? 'text-red-200' : 'text-red-700') },
-                'White-nose syndrome (WNS) is caused by the fungus Pseudogymnoascus destructans. It grows on the skin of hibernating bats, irritating them and causing them to wake up repeatedly during winter. Each arousal burns precious fat reserves. By spring, infected bats have starved to death.'),
+                t('stem.echolocation.white_nose_syndrome_wns_is_caused_by_t', 'White-nose syndrome (WNS) is caused by the fungus Pseudogymnoascus destructans. It grows on the skin of hibernating bats, irritating them and causing them to wake up repeatedly during winter. Each arousal burns precious fat reserves. By spring, infected bats have starved to death.')),
               h('div', { className: 'mt-2 grid grid-cols-3 gap-2 text-center' },
                 h('div', { className: 'p-2 rounded ' + (isDark ? 'bg-red-900/40' : 'bg-red-100') },
                   h('div', { className: 'text-lg font-black ' + (isDark ? 'text-red-300' : 'text-red-700') }, '2006'),
-                  h('div', { className: 'text-[11px] ' + (isDark ? 'text-red-400' : 'text-red-600') }, 'First detected in NY')),
+                  h('div', { className: 'text-[11px] ' + (isDark ? 'text-red-400' : 'text-red-600') }, t('stem.echolocation.first_detected_in_ny', 'First detected in NY'))),
                 h('div', { className: 'p-2 rounded ' + (isDark ? 'bg-red-900/40' : 'bg-red-100') },
                   h('div', { className: 'text-lg font-black ' + (isDark ? 'text-red-300' : 'text-red-700') }, '90%'),
-                  h('div', { className: 'text-[11px] ' + (isDark ? 'text-red-400' : 'text-red-600') }, 'Population decline in some species')),
+                  h('div', { className: 'text-[11px] ' + (isDark ? 'text-red-400' : 'text-red-600') }, t('stem.echolocation.population_decline_in_some_species', 'Population decline in some species'))),
                 h('div', { className: 'p-2 rounded ' + (isDark ? 'bg-red-900/40' : 'bg-red-100') },
                   h('div', { className: 'text-lg font-black ' + (isDark ? 'text-red-300' : 'text-red-700') }, '37+'),
-                  h('div', { className: 'text-[11px] ' + (isDark ? 'text-red-400' : 'text-red-600') }, 'US states affected'))
+                  h('div', { className: 'text-[11px] ' + (isDark ? 'text-red-400' : 'text-red-600') }, t('stem.echolocation.us_states_affected', 'US states affected')))
               )
             ),
             // Wind turbines
             h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-amber-900/30 border border-amber-800/40' : 'bg-amber-50 border border-amber-200') },
               h('div', { className: 'flex items-center gap-2 mb-2' },
                 h('span', { className: 'text-xl' }, '\uD83C\uDF2C\uFE0F'),
-                h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-amber-300' : 'text-amber-800') }, 'Wind Turbine Barotrauma')),
+                h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-amber-300' : 'text-amber-800') }, t('stem.echolocation.wind_turbine_barotrauma', 'Wind Turbine Barotrauma'))),
               h('p', { className: 'text-[11px] ' + (isDark ? 'text-amber-200' : 'text-amber-700') },
-                'Bats are killed by wind turbines not just from blade strikes, but from barotrauma \u2014 the rapid pressure drop near spinning blades causes their lungs to expand and blood vessels to burst. Migratory species like the hoary bat are most at risk. Solutions include curtailing turbines during peak migration and low-wind nights when bats are most active.')
+                t('stem.echolocation.bats_are_killed_by_wind_turbines_not_j', 'Bats are killed by wind turbines not just from blade strikes, but from barotrauma \u2014 the rapid pressure drop near spinning blades causes their lungs to expand and blood vessels to burst. Migratory species like the hoary bat are most at risk. Solutions include curtailing turbines during peak migration and low-wind nights when bats are most active.'))
             ),
             // What you can do
             h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-emerald-900/30 border border-emerald-800/40' : 'bg-emerald-50 border border-emerald-200') },
               h('div', { className: 'flex items-center gap-2 mb-2' },
                 h('span', { className: 'text-xl' }, '\u2764\uFE0F'),
-                h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-emerald-300' : 'text-emerald-800') }, 'What YOU Can Do')),
+                h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-emerald-300' : 'text-emerald-800') }, t('stem.echolocation.what_you_can_do', 'What YOU Can Do'))),
               h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
                 [
-                  { icon: '\uD83C\uDFE0', title: 'Build a bat box', desc: 'Provide roosting habitat. Place bat houses 10-15 feet high on a south-facing wall.' },
-                  { icon: '\uD83C\uDF19', title: 'Reduce light pollution', desc: 'Turn off unnecessary outdoor lights. Light pollution disrupts bat foraging and insect availability.' },
-                  { icon: '\uD83D\uDEAB', title: 'Avoid disturbing caves', desc: 'Never enter caves where bats hibernate. Human visits during winter can be fatal to hibernating bats.' },
-                  { icon: '\uD83D\uDCB0', title: 'Support conservation', desc: 'Donate to Bat Conservation International (BCI) or your state wildlife agency\'s bat programs.' }
+                  { icon: '\uD83C\uDFE0', title: t('stem.echolocation.build_a_bat_box', 'Build a bat box'), desc: t('stem.echolocation.provide_roosting_habitat_place_bat_hou', 'Provide roosting habitat. Place bat houses 10-15 feet high on a south-facing wall.') },
+                  { icon: '\uD83C\uDF19', title: t('stem.echolocation.reduce_light_pollution', 'Reduce light pollution'), desc: t('stem.echolocation.turn_off_unnecessary_outdoor_lights_li', 'Turn off unnecessary outdoor lights. Light pollution disrupts bat foraging and insect availability.') },
+                  { icon: '\uD83D\uDEAB', title: t('stem.echolocation.avoid_disturbing_caves', 'Avoid disturbing caves'), desc: t('stem.echolocation.never_enter_caves_where_bats_hibernate', 'Never enter caves where bats hibernate. Human visits during winter can be fatal to hibernating bats.') },
+                  { icon: '\uD83D\uDCB0', title: t('stem.echolocation.support_conservation', 'Support conservation'), desc: t('stem.echolocation.donate_to_bat_conservation_internation', 'Donate to Bat Conservation International (BCI) or your state wildlife agency\'s bat programs.') }
                 ].map(function(item, i) {
                   return h('div', { key: i, className: 'p-2 rounded-lg ' + (isDark ? 'bg-emerald-900/30' : 'bg-emerald-100') },
                     h('div', { className: 'flex items-center gap-1 mb-1' },
@@ -4137,26 +4138,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
               h('div', { className: 'flex items-center gap-2 mb-2' },
                 h('span', { className: 'text-xl' }, '\uD83C\uDFD7\uFE0F'),
-                h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-slate-300' : 'text-slate-800') }, 'Habitat Loss')),
+                h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-slate-300' : 'text-slate-800') }, t('stem.echolocation.habitat_loss', 'Habitat Loss'))),
               h('p', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
-                'Deforestation, cave commercialization, building demolition, and land development destroy bat roosting sites. Many bat species need specific conditions: caves with stable temperatures for hibernation, dead trees with loose bark for summer roosting, and dark areas near water for foraging. When we remove these, bats have nowhere to go.'),
+                t('stem.echolocation.deforestation_cave_commercialization_b', 'Deforestation, cave commercialization, building demolition, and land development destroy bat roosting sites. Many bat species need specific conditions: caves with stable temperatures for hibernation, dead trees with loose bark for summer roosting, and dark areas near water for foraging. When we remove these, bats have nowhere to go.')),
               h('div', { className: 'grid grid-cols-3 gap-2 mt-2 text-center' },
                 h('div', { className: 'p-2 rounded ' + (isDark ? 'bg-slate-700/40' : 'bg-slate-100') },
                   h('div', { className: 'text-lg font-black ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, '1,400+'),
-                  h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-200') }, 'bat species worldwide')),
+                  h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-200') }, t('stem.echolocation.bat_species_worldwide', 'bat species worldwide'))),
                 h('div', { className: 'p-2 rounded ' + (isDark ? 'bg-slate-700/40' : 'bg-slate-100') },
                   h('div', { className: 'text-lg font-black ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, '~25%'),
-                  h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-200') }, 'threatened or endangered')),
+                  h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-200') }, t('stem.echolocation.threatened_or_endangered', 'threatened or endangered'))),
                 h('div', { className: 'p-2 rounded ' + (isDark ? 'bg-slate-700/40' : 'bg-slate-100') },
                   h('div', { className: 'text-lg font-black ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, '$23B'),
-                  h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-200') }, 'annual value of pest control'))
+                  h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-200') }, t('stem.echolocation.annual_value_of_pest_control', 'annual value of pest control')))
               )
             ),
             // Bat myths busted
             h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-purple-900/30 border border-purple-800/40' : 'bg-purple-50 border border-purple-200') },
               h('div', { className: 'flex items-center gap-2 mb-2' },
                 h('span', { className: 'text-xl' }, '\u274C'),
-                h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-purple-300' : 'text-purple-800') }, 'Bat Myths \u2014 Busted!')),
+                h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-purple-300' : 'text-purple-800') }, t('stem.echolocation.bat_myths_busted', 'Bat Myths \u2014 Busted!'))),
               h('div', { className: 'space-y-2' },
                 [
                   { myth: 'Bats are blind', truth: 'All bats can see! Many fruit bats have excellent vision. Echolocating bats use BOTH vision and sonar. The phrase "blind as a bat" is completely wrong.' },
@@ -4175,13 +4176,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-indigo-900/30 border border-indigo-800/40' : 'bg-indigo-50 border border-indigo-200') },
               h('div', { className: 'flex items-center gap-2 mb-2' },
                 h('span', { className: 'text-xl' }, '\uD83C\uDF0D'),
-                h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-800') }, 'Why Bats Matter \u2014 Ecosystem Services')),
+                h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-800') }, t('stem.echolocation.why_bats_matter_ecosystem_services', 'Why Bats Matter \u2014 Ecosystem Services'))),
               h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
                 [
-                  { icon: '\uD83E\uDD9F', title: 'Pest Control', desc: 'A single colony of 150 big brown bats eats enough cucumber beetles to prevent 33 million rootworm larvae per summer. US bats save farmers $23 billion annually in avoided pesticide costs.' },
-                  { icon: '\uD83C\uDF3A', title: 'Pollination', desc: 'Over 500 plant species depend on bat pollination, including agave (tequila!), bananas, mangoes, and durian. Without bats, many tropical ecosystems would collapse.' },
-                  { icon: '\uD83C\uDF31', title: 'Seed Dispersal', desc: 'Fruit bats spread seeds across tropical forests, regenerating cleared land. A single fruit bat can disperse thousands of seeds per night, making them critical for reforestation.' },
-                  { icon: '\uD83E\uDDEA', title: 'Medical Research', desc: 'Bat saliva anticoagulants inspired stroke medications. Bat immune systems fight viruses without getting sick, teaching us about disease resistance. Bat sonar inspires technology for blind navigation devices.' }
+                  { icon: '\uD83E\uDD9F', title: t('stem.echolocation.pest_control', 'Pest Control'), desc: t('stem.echolocation.a_single_colony_of_150_big_brown_bats_', 'A single colony of 150 big brown bats eats enough cucumber beetles to prevent 33 million rootworm larvae per summer. US bats save farmers $23 billion annually in avoided pesticide costs.') },
+                  { icon: '\uD83C\uDF3A', title: t('stem.echolocation.pollination', 'Pollination'), desc: t('stem.echolocation.over_500_plant_species_depend_on_bat_p_2', 'Over 500 plant species depend on bat pollination, including agave (tequila!), bananas, mangoes, and durian. Without bats, many tropical ecosystems would collapse.') },
+                  { icon: '\uD83C\uDF31', title: t('stem.echolocation.seed_dispersal_2', 'Seed Dispersal'), desc: t('stem.echolocation.fruit_bats_spread_seeds_across_tropica', 'Fruit bats spread seeds across tropical forests, regenerating cleared land. A single fruit bat can disperse thousands of seeds per night, making them critical for reforestation.') },
+                  { icon: '\uD83E\uDDEA', title: t('stem.echolocation.medical_research', 'Medical Research'), desc: t('stem.echolocation.bat_saliva_anticoagulants_inspired_str', 'Bat saliva anticoagulants inspired stroke medications. Bat immune systems fight viruses without getting sick, teaching us about disease resistance. Bat sonar inspires technology for blind navigation devices.') }
                 ].map(function(item, i) {
                   return h('div', { key: i, className: 'p-2 rounded-lg ' + (isDark ? 'bg-indigo-900/30' : 'bg-indigo-100') },
                     h('div', { className: 'flex items-center gap-1 mb-1' },
@@ -4193,27 +4194,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             ),
             // Maine specific
             h('div', { className: 'rounded-xl p-3 ' + (isDark ? 'bg-indigo-900/30 border border-indigo-800/40' : 'bg-indigo-50 border border-indigo-200') },
-              h('div', { className: 'text-xs font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83C\uDDFA\uD83C\uDDF8 Maine Bat Facts'),
+              h('div', { className: 'text-xs font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.maine_bat_facts', '\uD83C\uDDFA\uD83C\uDDF8 Maine Bat Facts')),
               h('p', { className: 'text-[11px] mt-1 ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') },
-                'Maine has 8 bat species. The little brown bat, once our most common species, has declined 90% due to white-nose syndrome. Big brown bats and hoary bats can still be spotted in Maine. If you see a bat flying at dusk, count yourself lucky \u2014 and know that single bat might eat 1,000 mosquitoes tonight!'),
+                t('stem.echolocation.maine_has_8_bat_species_the_little_bro', 'Maine has 8 bat species. The little brown bat, once our most common species, has declined 90% due to white-nose syndrome. Big brown bats and hoary bats can still be spotted in Maine. If you see a bat flying at dusk, count yourself lucky \u2014 and know that single bat might eat 1,000 mosquitoes tonight!')),
               h('div', { className: 'mt-2 text-[11px] ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') },
-                h('strong', null, 'Maine\'s 8 bat species: '),
-                'Little brown bat, Big brown bat, Northern long-eared bat (endangered), Eastern small-footed bat, Tri-colored bat, Silver-haired bat, Hoary bat, Red bat. The cave-hibernating species (first 4) are most affected by white-nose syndrome.')
+                h('strong', null, t('stem.echolocation.maine_s_8_bat_species', 'Maine\'s 8 bat species: ')),
+                t('stem.echolocation.little_brown_bat_big_brown_bat_norther', 'Little brown bat, Big brown bat, Northern long-eared bat (endangered), Eastern small-footed bat, Tri-colored bat, Silver-haired bat, Hoary bat, Red bat. The cave-hibernating species (first 4) are most affected by white-nose syndrome.'))
               ),
 
             // Bat Box Project
             h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-emerald-900/20 border border-emerald-800/30' : 'bg-emerald-50 border border-emerald-200') },
               h('div', { className: 'flex items-center gap-2 mb-2' },
                 h('span', { className: 'text-xl' }, '\uD83D\uDD28'),
-                h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-emerald-300' : 'text-emerald-800') }, 'STEM Project: Build a Bat Box!')),
+                h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-emerald-300' : 'text-emerald-800') }, t('stem.echolocation.stem_project_build_a_bat_box', 'STEM Project: Build a Bat Box!'))),
               h('p', { className: 'text-[11px] mb-2 ' + (isDark ? 'text-emerald-200' : 'text-emerald-700') },
-                'Help local bat populations by building a roosting box. This is a great hands-on project that combines woodworking, biology, and environmental science.'),
+                t('stem.echolocation.help_local_bat_populations_by_building', 'Help local bat populations by building a roosting box. This is a great hands-on project that combines woodworking, biology, and environmental science.')),
               h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
                 [
-                  { step: 'Materials', detail: 'Untreated plywood or cedar (never pressure-treated \u2014 toxic to bats), wood screws, exterior caulk, dark exterior paint or stain' },
-                  { step: 'Size', detail: 'At least 24" tall x 14" wide x 3.5" deep. Internal chambers with 3/4" spacing. Rough or grooved interior surfaces so bats can grip.' },
-                  { step: 'Placement', detail: 'Mount 10-15 feet high on a south-facing wall or pole. Full sun exposure is critical \u2014 bats need warmth. Near water is ideal.' },
-                  { step: 'Timeline', detail: 'Install by early spring (March-April in Maine). Bats may take 1-2 years to discover and colonize a new box. Be patient!' }
+                  { step: 'Materials', detail: t('stem.echolocation.untreated_plywood_or_cedar_never_press', 'Untreated plywood or cedar (never pressure-treated \u2014 toxic to bats), wood screws, exterior caulk, dark exterior paint or stain') },
+                  { step: 'Size', detail: t('stem.echolocation.at_least_24_tall_x_14_wide_x_3_5_deep_', 'At least 24" tall x 14" wide x 3.5" deep. Internal chambers with 3/4" spacing. Rough or grooved interior surfaces so bats can grip.') },
+                  { step: 'Placement', detail: t('stem.echolocation.mount_10_15_feet_high_on_a_south_facin', 'Mount 10-15 feet high on a south-facing wall or pole. Full sun exposure is critical \u2014 bats need warmth. Near water is ideal.') },
+                  { step: 'Timeline', detail: t('stem.echolocation.install_by_early_spring_march_april_in', 'Install by early spring (March-April in Maine). Bats may take 1-2 years to discover and colonize a new box. Be patient!') }
                 ].map(function(item, i) {
                   return h('div', { key: i, className: 'p-2 rounded-lg ' + (isDark ? 'bg-emerald-900/30' : 'bg-emerald-100') },
                     h('div', { className: 'text-[11px] font-bold ' + (isDark ? 'text-emerald-200' : 'text-emerald-800') }, item.step),
@@ -4221,7 +4222,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 })
               ),
               h('div', { className: 'mt-2 text-[11px] italic ' + (isDark ? 'text-emerald-400' : 'text-emerald-600') },
-                'A single bat box can house 50-200 bats. Those bats will eat millions of insects each summer, naturally reducing mosquitoes and crop pests in your area. Science + engineering + conservation = win!')
+                t('stem.echolocation.a_single_bat_box_can_house_50_200_bats', 'A single bat box can house 50-200 bats. Those bats will eat millions of insects each summer, naturally reducing mosquitoes and crop pests in your area. Science + engineering + conservation = win!'))
             )
           ));
       }
@@ -4313,11 +4314,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       function renderEcologyTab() {
         return h('div', { className: 'space-y-4' },
           // Sub-tabs
-          h('div', { className: 'flex gap-2', role: 'tablist', 'aria-label': 'Ecology sections' },
+          h('div', { className: 'flex gap-2', role: 'tablist', 'aria-label': t('stem.echolocation.ecology_sections', 'Ecology sections') },
             [
-              { id: 'soundscape', label: 'Soundscape', icon: '\uD83C\uDF33' },
-              { id: 'bioacoustics', label: 'Bioacoustics', icon: '\uD83D\uDD0A' },
-              { id: 'soundmap', label: 'Sound Map', icon: '\uD83D\uDDFA\uFE0F' }
+              { id: 'soundscape', label: t('stem.echolocation.soundscape', 'Soundscape'), icon: '\uD83C\uDF33' },
+              { id: 'bioacoustics', label: t('stem.echolocation.bioacoustics', 'Bioacoustics'), icon: '\uD83D\uDD0A' },
+              { id: 'soundmap', label: t('stem.echolocation.sound_map', 'Sound Map'), icon: '\uD83D\uDDFA\uFE0F' }
             ].map(function(s, si) {
               var active = ecoSection === s.id;
               return h('button', {
@@ -4341,8 +4342,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
               h('div', { className: 'flex items-center gap-2 mb-3' },
                 h('span', { className: 'text-xl' }, '\uD83C\uDF33'),
-                h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, 'Night Soundscape \u2014 Toggle animals to hear how they share the frequency space')),
-              h('canvas', { 'aria-label': 'Echolocation visualization',
+                h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.night_soundscape_toggle_animals_to_hea', 'Night Soundscape \u2014 Toggle animals to hear how they share the frequency space'))),
+              h('canvas', { 'aria-label': t('stem.echolocation.echolocation_visualization_7', 'Echolocation visualization'),
                 ref: soundscapeCanvasRef,
                 width: 700,
                 height: 250,
@@ -4394,14 +4395,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             ),
             // Acoustic niche explanation
             h('div', { className: 'p-3 rounded-lg ' + (isDark ? 'bg-indigo-900/30 border border-indigo-800/40' : 'bg-indigo-50 border border-indigo-200') },
-              h('div', { className: 'text-xs font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83C\uDFB5 Acoustic Niche Hypothesis'),
+              h('div', { className: 'text-xs font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.acoustic_niche_hypothesis', '\uD83C\uDFB5 Acoustic Niche Hypothesis')),
               h('p', { className: 'text-[11px] mt-1 ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') },
-                'Animals evolved to call at different frequencies so they don\'t interfere with each other \u2014 like radio stations on different channels. Insects use high frequencies, frogs use mid-range, owls use low frequencies, and bats use ultrasonic frequencies above human hearing. This frequency partitioning allows multiple species to communicate simultaneously without "jamming" each other\'s signals.')
+                t('stem.echolocation.animals_evolved_to_call_at_different_f', 'Animals evolved to call at different frequencies so they don\'t interfere with each other \u2014 like radio stations on different channels. Insects use high frequencies, frogs use mid-range, owls use low frequencies, and bats use ultrasonic frequencies above human hearing. This frequency partitioning allows multiple species to communicate simultaneously without "jamming" each other\'s signals.'))
             ),
 
             // Seasonal Soundscape Changes
             h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
-              h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83C\uDF43 How Soundscapes Change with Seasons'),
+              h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.how_soundscapes_change_with_seasons', '\uD83C\uDF43 How Soundscapes Change with Seasons')),
               h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
                 [
                   { season: 'Spring', emoji: '\uD83C\uDF31', sounds: 'Bird dawn chorus peaks, spring peepers (frogs) call at ponds, first bat activity resumes after hibernation, insects emerging', color: isDark ? 'bg-green-900/30' : 'bg-green-50' },
@@ -4417,23 +4418,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 })
               ),
               h('div', { className: 'mt-2 text-[11px] ' + (isDark ? 'text-indigo-400' : 'text-indigo-600') },
-                'Acoustic ecologists record soundscapes year-round at fixed locations. By comparing recordings over years, they can detect biodiversity changes \u2014 a "quieter" spring chorus may indicate declining bird populations.')
+                t('stem.echolocation.acoustic_ecologists_record_soundscapes', 'Acoustic ecologists record soundscapes year-round at fixed locations. By comparing recordings over years, they can detect biodiversity changes \u2014 a "quieter" spring chorus may indicate declining bird populations.'))
             ),
 
             // Decibel Scale Reference
             h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
-              h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83D\uDCCA The Decibel Scale \u2014 How Loud Is Loud?'),
+              h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.the_decibel_scale_how_loud_is_loud', '\uD83D\uDCCA The Decibel Scale \u2014 How Loud Is Loud?')),
               h('div', { className: 'space-y-1' },
                 [
-                  { dB: 0, label: 'Threshold of hearing', bar: 0, color: '#22c55e' },
-                  { dB: 20, label: 'Rustling leaves, whisper', bar: 10, color: '#22c55e' },
-                  { dB: 40, label: 'Quiet library', bar: 20, color: '#22c55e' },
-                  { dB: 60, label: 'Normal conversation', bar: 30, color: '#eab308' },
-                  { dB: 80, label: 'Vacuum cleaner, city traffic', bar: 40, color: '#f97316' },
-                  { dB: 100, label: 'Chainsaw, bat echolocation call!', bar: 55, color: '#ef4444' },
-                  { dB: 120, label: 'Jet engine at 100m, pain threshold', bar: 70, color: '#dc2626' },
-                  { dB: 140, label: 'Bat echolocation at source (up to 140 dB!)', bar: 85, color: '#7c2d12' },
-                  { dB: 188, label: 'Blue whale call (loudest animal)', bar: 100, color: '#581c87' }
+                  { dB: 0, label: t('stem.echolocation.threshold_of_hearing', 'Threshold of hearing'), bar: 0, color: '#22c55e' },
+                  { dB: 20, label: t('stem.echolocation.rustling_leaves_whisper', 'Rustling leaves, whisper'), bar: 10, color: '#22c55e' },
+                  { dB: 40, label: t('stem.echolocation.quiet_library', 'Quiet library'), bar: 20, color: '#22c55e' },
+                  { dB: 60, label: t('stem.echolocation.normal_conversation', 'Normal conversation'), bar: 30, color: '#eab308' },
+                  { dB: 80, label: t('stem.echolocation.vacuum_cleaner_city_traffic', 'Vacuum cleaner, city traffic'), bar: 40, color: '#f97316' },
+                  { dB: 100, label: t('stem.echolocation.chainsaw_bat_echolocation_call', 'Chainsaw, bat echolocation call!'), bar: 55, color: '#ef4444' },
+                  { dB: 120, label: t('stem.echolocation.jet_engine_at_100m_pain_threshold', 'Jet engine at 100m, pain threshold'), bar: 70, color: '#dc2626' },
+                  { dB: 140, label: t('stem.echolocation.bat_echolocation_at_source_up_to_140_d', 'Bat echolocation at source (up to 140 dB!)'), bar: 85, color: '#7c2d12' },
+                  { dB: 188, label: t('stem.echolocation.blue_whale_call_loudest_animal', 'Blue whale call (loudest animal)'), bar: 100, color: '#581c87' }
                 ].map(function(item, i) {
                   return h('div', { key: i, className: 'flex items-center gap-2' },
                     h('div', { className: 'w-10 text-right text-[11px] font-mono font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, item.dB + ' dB'),
@@ -4443,13 +4444,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 })
               ),
               h('div', { className: 'mt-2 text-[11px] italic ' + (isDark ? 'text-indigo-400' : 'text-indigo-600') },
-                'Decibels are logarithmic: every +10 dB is perceived as roughly twice as loud. A bat\'s echolocation call at the source (140 dB) would be painfully loud to humans \u2014 but we can\'t hear it because it\'s ultrasonic!')
+                t('stem.echolocation.decibels_are_logarithmic_every_10_db_i', 'Decibels are logarithmic: every +10 dB is perceived as roughly twice as loud. A bat\'s echolocation call at the source (140 dB) would be painfully loud to humans \u2014 but we can\'t hear it because it\'s ultrasonic!'))
             )
           ),
 
           // BIOACOUSTICS EXPLORER
           ecoSection === 'bioacoustics' && h('div', { className: 'space-y-3' },
-            h('div', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83D\uDD0A Bioacoustics Explorer'),
+            h('div', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.bioacoustics_explorer', '\uD83D\uDD0A Bioacoustics Explorer')),
             h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
               SOUNDSCAPE_ANIMALS.map(function(animal) {
                 return h('div', { key: animal.id, className: 'rounded-lg p-3 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
@@ -4467,9 +4468,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                         }
                       },
                       className: 'transition-colors px-3 py-1.5 rounded-lg text-[11px] font-bold bg-indigo-600 text-white hover:bg-indigo-500'
-                    }, '\uD83D\uDD0A Play')
+                    }, t('stem.echolocation.play', '\uD83D\uDD0A Play'))
                   ),
-                  h('p', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, animal.desc),
+                  h('p', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, __alloT('stem.echolocation.' + (animal.id) + '_desc', animal.desc)),
                   h('div', { className: 'flex gap-2 mt-2 text-[11px]' },
                     h('span', { className: 'px-2 py-0.5 rounded', style: { background: animal.color + '30', color: animal.color } },
                       animal.range),
@@ -4481,23 +4482,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             ),
             // Convergent evolution callout
             h('div', { className: 'p-3 rounded-lg ' + (isDark ? 'bg-cyan-900/30 border border-cyan-800/40' : 'bg-cyan-50 border border-cyan-200') },
-              h('div', { className: 'text-xs font-bold ' + (isDark ? 'text-cyan-300' : 'text-cyan-700') }, '\uD83E\uDDEC Convergent Evolution'),
+              h('div', { className: 'text-xs font-bold ' + (isDark ? 'text-cyan-300' : 'text-cyan-700') }, t('stem.echolocation.convergent_evolution', '\uD83E\uDDEC Convergent Evolution')),
               h('p', { className: 'text-[11px] mt-1 ' + (isDark ? 'text-cyan-200' : 'text-cyan-800') },
-                'Both bats and dolphins evolved echolocation independently \u2014 a textbook case of convergent evolution! Despite being separated by 80 million years of evolution, they use remarkably similar strategies: emit high-frequency pulses, listen for echoes, and build a "sound picture" of their environment. Even the neural circuits that process echoes are similar, suggesting evolution has found an optimal solution to the sonar problem.')
+                t('stem.echolocation.both_bats_and_dolphins_evolved_echoloc', 'Both bats and dolphins evolved echolocation independently \u2014 a textbook case of convergent evolution! Despite being separated by 80 million years of evolution, they use remarkably similar strategies: emit high-frequency pulses, listen for echoes, and build a "sound picture" of their environment. Even the neural circuits that process echoes are similar, suggesting evolution has found an optimal solution to the sonar problem.'))
             ),
 
             // Cricket Temperature Calculator
             h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-emerald-900/30 border border-emerald-800/40' : 'bg-emerald-50 border border-emerald-200') },
               h('div', { className: 'flex items-center gap-2 mb-3' },
                 h('span', { className: 'text-xl' }, '\uD83E\uDD97'),
-                h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, 'Cricket Thermometer \u2014 Dolbear\'s Law')),
+                h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, t('stem.echolocation.cricket_thermometer_dolbear_s_law', 'Cricket Thermometer \u2014 Dolbear\'s Law'))),
               h('p', { className: 'text-[11px] mb-3 ' + (isDark ? 'text-emerald-200' : 'text-emerald-700') },
-                'Crickets are cold-blooded, so their chirp rate changes with temperature. Amos Dolbear discovered this relationship in 1897. Count the number of chirps in 14 seconds and add 40 to get the approximate temperature in \u00B0F!'),
+                t('stem.echolocation.crickets_are_cold_blooded_so_their_chi', 'Crickets are cold-blooded, so their chirp rate changes with temperature. Amos Dolbear discovered this relationship in 1897. Count the number of chirps in 14 seconds and add 40 to get the approximate temperature in \u00B0F!')),
               h('div', { className: 'p-3 rounded-lg text-center ' + (isDark ? 'bg-emerald-900/40' : 'bg-emerald-100') },
                 h('div', { className: 'text-xs font-mono font-bold ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') },
-                  'T(\u00B0F) = N\u2081\u2084 + 40'),
+                  t('stem.echolocation.t_f_n_40', 'T(\u00B0F) = N\u2081\u2084 + 40')),
                 h('div', { className: 'text-[11px] mt-1 ' + (isDark ? 'text-emerald-400' : 'text-emerald-600') },
-                  'where N\u2081\u2084 = number of chirps in 14 seconds')),
+                  t('stem.echolocation.where_n_number_of_chirps_in_14_seconds', 'where N\u2081\u2084 = number of chirps in 14 seconds'))),
               h('div', { className: 'mt-3' },
                 h('label', { className: 'text-[11px] font-bold ' + (isDark ? 'text-emerald-300' : 'text-slate-600') },
                   'Chirps in 14 seconds: ' + (d.cricketChirps || 30)),
@@ -4511,24 +4512,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                   h('div', { className: 'text-center p-2 rounded ' + (isDark ? 'bg-emerald-900/40' : 'bg-emerald-100') },
                     h('div', { className: 'text-lg font-black ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') },
                       ((d.cricketChirps || 30) + 40) + '\u00B0F'),
-                    h('div', { className: 'text-[11px] ' + (isDark ? 'text-emerald-400' : 'text-emerald-600') }, 'Fahrenheit')),
+                    h('div', { className: 'text-[11px] ' + (isDark ? 'text-emerald-400' : 'text-emerald-600') }, t('stem.echolocation.fahrenheit', 'Fahrenheit'))),
                   h('div', { className: 'text-center p-2 rounded ' + (isDark ? 'bg-emerald-900/40' : 'bg-emerald-100') },
                     h('div', { className: 'text-lg font-black ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') },
                       (((d.cricketChirps || 30) + 40 - 32) * 5 / 9).toFixed(1) + '\u00B0C'),
-                    h('div', { className: 'text-[11px] ' + (isDark ? 'text-emerald-400' : 'text-emerald-600') }, 'Celsius'))
+                    h('div', { className: 'text-[11px] ' + (isDark ? 'text-emerald-400' : 'text-emerald-600') }, t('stem.echolocation.celsius', 'Celsius')))
                 ),
                 h('div', { className: 'text-[11px] mt-2 italic ' + (isDark ? 'text-emerald-400' : 'text-emerald-600') },
-                  'The physics: cricket muscles contract faster in warm temperatures because chemical reactions speed up. This is the same reason reptiles are sluggish in cold weather \u2014 enzymes work slower at lower temperatures (Arrhenius equation).')
+                  t('stem.echolocation.the_physics_cricket_muscles_contract_f', 'The physics: cricket muscles contract faster in warm temperatures because chemical reactions speed up. This is the same reason reptiles are sluggish in cold weather \u2014 enzymes work slower at lower temperatures (Arrhenius equation).'))
               )
             ),
 
             // Echolocation Comparison Table
             h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
-              h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83D\uDD0D Echolocation Across Species'),
+              h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.echolocation_across_species', '\uD83D\uDD0D Echolocation Across Species')),
               h('p', { className: 'text-[11px] mb-3 ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
-                'Multiple animals have evolved the ability to "see" with sound. Compare their sonar systems:'),
+                t('stem.echolocation.multiple_animals_have_evolved_the_abil', 'Multiple animals have evolved the ability to "see" with sound. Compare their sonar systems:')),
               h('div', { className: 'overflow-x-auto' },
-                h('table', { className: 'w-full text-[11px] ' + (isDark ? 'text-slate-300' : 'text-slate-600'), role: 'table', 'aria-label': 'Comparison of echolocation across species' },
+                h('table', { className: 'w-full text-[11px] ' + (isDark ? 'text-slate-300' : 'text-slate-600'), role: 'table', 'aria-label': t('stem.echolocation.comparison_of_echolocation_across_spec', 'Comparison of echolocation across species') },
                   h('thead', null,
                     h('tr', { className: isDark ? 'bg-slate-700/50' : 'bg-slate-100' },
                       ['Animal', 'Frequency', 'Range', 'Method', 'Medium', 'Precision'].map(function(hdr) {
@@ -4559,17 +4560,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 )
               ),
               h('div', { className: 'mt-2 text-[11px] italic ' + (isDark ? 'text-slate-200' : 'text-slate-200') },
-                'Note: Sound travels ~4.3x faster in water than air, so dolphin sonar has much greater range than bat sonar at similar frequencies.')
+                t('stem.echolocation.note_sound_travels_4_3x_faster_in_wate', 'Note: Sound travels ~4.3x faster in water than air, so dolphin sonar has much greater range than bat sonar at similar frequencies.'))
             ),
 
             // Speed of Sound comparison
             h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
-              h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\u26A1 Speed of Sound in Different Media'),
+              h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.speed_of_sound_in_different_media', '\u26A1 Speed of Sound in Different Media')),
               h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3' },
                 [
-                  { medium: 'Air (20\u00B0C)', speed: 343, emoji: '\uD83C\uDF2C\uFE0F', color: isDark ? 'bg-sky-900/40' : 'bg-sky-50', detail: 'Sound moves slowly through air because air molecules are far apart. Speed increases ~0.6 m/s per \u00B0C rise in temperature.' },
-                  { medium: 'Water (25\u00B0C)', speed: 1480, emoji: '\uD83C\uDF0A', color: isDark ? 'bg-blue-900/40' : 'bg-blue-50', detail: 'Water molecules are closer together, transmitting vibrations much faster. This is why dolphin sonar works at much greater distances than bat sonar.' },
-                  { medium: 'Steel', speed: 5960, emoji: '\u2699\uFE0F', color: isDark ? 'bg-slate-700/40' : 'bg-slate-100', detail: 'Rigid solids transmit sound fastest because atoms are tightly packed and bonded. You can hear a train coming by putting your ear to the rail long before you hear it through air!' }
+                  { medium: 'Air (20\u00B0C)', speed: 343, emoji: '\uD83C\uDF2C\uFE0F', color: isDark ? 'bg-sky-900/40' : 'bg-sky-50', detail: t('stem.echolocation.sound_moves_slowly_through_air_because', 'Sound moves slowly through air because air molecules are far apart. Speed increases ~0.6 m/s per \u00B0C rise in temperature.') },
+                  { medium: 'Water (25\u00B0C)', speed: 1480, emoji: '\uD83C\uDF0A', color: isDark ? 'bg-blue-900/40' : 'bg-blue-50', detail: t('stem.echolocation.water_molecules_are_closer_together_tr', 'Water molecules are closer together, transmitting vibrations much faster. This is why dolphin sonar works at much greater distances than bat sonar.') },
+                  { medium: 'Steel', speed: 5960, emoji: '\u2699\uFE0F', color: isDark ? 'bg-slate-700/40' : 'bg-slate-100', detail: t('stem.echolocation.rigid_solids_transmit_sound_fastest_be', 'Rigid solids transmit sound fastest because atoms are tightly packed and bonded. You can hear a train coming by putting your ear to the rail long before you hear it through air!') }
                 ].map(function(m, mi) {
                   return h('div', { key: mi, className: 'p-3 rounded-lg ' + m.color },
                     h('div', { className: 'flex items-center gap-2 mb-1' },
@@ -4584,10 +4585,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
 
             // Echolocation vs Human Technology
             h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
-              h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83E\uDD16 Nature vs Technology: Sonar Showdown'),
+              h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.nature_vs_technology_sonar_showdown', '\uD83E\uDD16 Nature vs Technology: Sonar Showdown')),
               h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
                 [
-                  { icon: '\uD83E\uDD87', title: 'Bat Echolocation', items: [
+                  { icon: '\uD83E\uDD87', title: t('stem.echolocation.bat_echolocation', 'Bat Echolocation'), items: [
                     'Weighs: 5-40 grams (entire animal!)',
                     'Power: microwatts (powered by insects)',
                     'Processing: 100 billion neurons',
@@ -4597,7 +4598,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                     'Self-repairing, self-reproducing',
                     'Evolved over 52 million years'
                   ]},
-                  { icon: '\uD83D\uDEA2', title: 'Naval SONAR', items: [
+                  { icon: '\uD83D\uDEA2', title: t('stem.echolocation.naval_sonar_2', 'Naval SONAR'), items: [
                     'Weighs: 500-2000+ kg (just the array)',
                     'Power: kilowatts (nuclear/diesel)',
                     'Processing: high-end computers',
@@ -4622,7 +4623,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 })
               ),
               h('div', { className: 'mt-2 text-[11px] italic text-center ' + (isDark ? 'text-indigo-400' : 'text-indigo-600') },
-                'Pound for pound, bat echolocation is the most sophisticated sonar system on Earth. Engineers study bats to improve robot navigation and autonomous vehicles.')
+                t('stem.echolocation.pound_for_pound_bat_echolocation_is_th', 'Pound for pound, bat echolocation is the most sophisticated sonar system on Earth. Engineers study bats to improve robot navigation and autonomous vehicles.'))
             )
           ),
 
@@ -4631,43 +4632,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
               h('div', { className: 'flex items-center gap-2 mb-3' },
                 h('span', { className: 'text-xl' }, '\uD83D\uDDFA\uFE0F'),
-                h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, 'AI Sound Map Generator')),
+                h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.ai_sound_map_generator', 'AI Sound Map Generator'))),
               h('p', { className: 'text-[11px] mb-3 ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
-                'Choose an environment and time of day. The AI will describe the soundscape \u2014 what animals you\'d hear, their frequencies, and how they share the acoustic space.'),
+                t('stem.echolocation.choose_an_environment_and_time_of_day_', 'Choose an environment and time of day. The AI will describe the soundscape \u2014 what animals you\'d hear, their frequencies, and how they share the acoustic space.')),
               h('div', { className: 'grid grid-cols-2 gap-3 mb-3' },
                 h('div', null,
-                  h('label', { className: 'text-[11px] font-bold ' + (isDark ? 'text-indigo-300' : 'text-slate-600') }, 'Environment'),
+                  h('label', { className: 'text-[11px] font-bold ' + (isDark ? 'text-indigo-300' : 'text-slate-600') }, t('stem.echolocation.environment', 'Environment')),
                   h('select', {
                     value: d.soundmapEnv || 'temperate_forest',
-                    'aria-label': 'Select environment',
+                    'aria-label': t('stem.echolocation.select_environment', 'Select environment'),
                     onChange: function(e) { upd('soundmapEnv', e.target.value); },
                     className: 'w-full mt-1 px-3 py-1.5 rounded-lg text-xs ' + (isDark ? 'bg-slate-700 text-slate-200 border-slate-600' : 'bg-white text-slate-800 border-slate-300') + ' border'
                   },
-                    h('option', { value: 'temperate_forest' }, 'Temperate Forest'),
-                    h('option', { value: 'tropical_rainforest' }, 'Tropical Rainforest'),
-                    h('option', { value: 'desert' }, 'Desert'),
-                    h('option', { value: 'ocean_coast' }, 'Ocean Coast'),
-                    h('option', { value: 'cave' }, 'Cave'),
-                    h('option', { value: 'freshwater_pond' }, 'Freshwater Pond'),
-                    h('option', { value: 'arctic_tundra' }, 'Arctic Tundra'),
-                    h('option', { value: 'coral_reef' }, 'Coral Reef (underwater)')
+                    h('option', { value: 'temperate_forest' }, t('stem.echolocation.temperate_forest', 'Temperate Forest')),
+                    h('option', { value: 'tropical_rainforest' }, t('stem.echolocation.tropical_rainforest', 'Tropical Rainforest')),
+                    h('option', { value: 'desert' }, t('stem.echolocation.desert', 'Desert')),
+                    h('option', { value: 'ocean_coast' }, t('stem.echolocation.ocean_coast', 'Ocean Coast')),
+                    h('option', { value: 'cave' }, t('stem.echolocation.cave', 'Cave')),
+                    h('option', { value: 'freshwater_pond' }, t('stem.echolocation.freshwater_pond', 'Freshwater Pond')),
+                    h('option', { value: 'arctic_tundra' }, t('stem.echolocation.arctic_tundra', 'Arctic Tundra')),
+                    h('option', { value: 'coral_reef' }, t('stem.echolocation.coral_reef_underwater', 'Coral Reef (underwater)'))
                   )),
                 h('div', null,
-                  h('label', { className: 'text-[11px] font-bold ' + (isDark ? 'text-indigo-300' : 'text-slate-600') }, 'Time of Day'),
+                  h('label', { className: 'text-[11px] font-bold ' + (isDark ? 'text-indigo-300' : 'text-slate-600') }, t('stem.echolocation.time_of_day', 'Time of Day')),
                   h('select', {
                     value: d.soundmapTime || 'dusk',
-                    'aria-label': 'Select time of day',
+                    'aria-label': t('stem.echolocation.select_time_of_day', 'Select time of day'),
                     onChange: function(e) { upd('soundmapTime', e.target.value); },
                     className: 'w-full mt-1 px-3 py-1.5 rounded-lg text-xs ' + (isDark ? 'bg-slate-700 text-slate-200 border-slate-600' : 'bg-white text-slate-800 border-slate-300') + ' border'
                   },
-                    h('option', { value: 'dawn' }, 'Dawn (5-7am)'),
-                    h('option', { value: 'midday' }, 'Midday (12-2pm)'),
-                    h('option', { value: 'dusk' }, 'Dusk (7-9pm)'),
-                    h('option', { value: 'midnight' }, 'Midnight (12-2am)')
+                    h('option', { value: 'dawn' }, t('stem.echolocation.dawn_5_7am', 'Dawn (5-7am)')),
+                    h('option', { value: 'midday' }, t('stem.echolocation.midday_12_2pm', 'Midday (12-2pm)')),
+                    h('option', { value: 'dusk' }, t('stem.echolocation.dusk_7_9pm', 'Dusk (7-9pm)')),
+                    h('option', { value: 'midnight' }, t('stem.echolocation.midnight_12_2am', 'Midnight (12-2am)'))
                   ))
               ),
               h('button', {
-                'aria-label': 'Generate soundscape description',
+                'aria-label': t('stem.echolocation.generate_soundscape_description', 'Generate soundscape description'),
                 disabled: soundmapLoading,
                 onClick: function() {
                   if (!callGemini) { if (addToast) addToast('AI not available', 'info'); return; }
@@ -4693,17 +4694,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
 
             // Did You Know? Sound facts
             h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
-              h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83D\uDCA1 Did You Know? \u2014 Amazing Sound Facts'),
+              h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.did_you_know_amazing_sound_facts', '\uD83D\uDCA1 Did You Know? \u2014 Amazing Sound Facts')),
               h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
                 [
-                  { fact: 'The pistol shrimp produces a sound of 218 decibels by snapping its claw \u2014 louder than a gunshot. The snap creates a cavitation bubble that reaches 4,700\u00B0C (as hot as the sun\'s surface) for a fraction of a second.', icon: '\uD83E\uDD90' },
-                  { fact: 'Elephants communicate using infrasonic rumbles as low as 14 Hz, below human hearing. These calls can travel 10+ km through the ground. Other elephants "hear" them through vibrations in their feet!', icon: '\uD83D\uDC18' },
-                  { fact: 'The Greater Wax Moth has the highest frequency hearing of any animal: up to 300 kHz (humans max out at ~20 kHz). Scientists think this evolved as a defense against bat echolocation.', icon: '\uD83E\uDD8B' },
-                  { fact: 'In space, no one can hear you scream \u2014 literally. Sound requires a medium (air, water, solid) to travel through. The vacuum of space is perfectly silent.', icon: '\uD83C\uDF0C' },
-                  { fact: 'The brown-headed cowbird learns its species-specific song even when raised by a different species. The password? A specific wingbeat pattern that unlocks the song-learning circuit in the brain.', icon: '\uD83D\uDC26' },
-                  { fact: 'Submarine crews can hear the "biological dawn chorus" \u2014 thousands of marine animals singing at sunrise, creating a wall of sound that can interfere with naval sonar. The ocean is incredibly noisy!', icon: '\uD83D\uDEA2' },
-                  { fact: 'Trees may communicate through sound: studies show plant roots produce clicking sounds at 220 Hz, and neighboring roots grow toward these sounds. "Talking trees" may be more than a metaphor.', icon: '\uD83C\uDF33' },
-                  { fact: 'The loudest animal relative to body size is the water boatman (Micronecta scholtzi), a tiny aquatic insect. It produces 99 dB by rubbing its body parts together \u2014 while being only 2mm long!', icon: '\uD83D\uDC1B' }
+                  { fact: t('stem.echolocation.the_pistol_shrimp_produces_a_sound_of_', 'The pistol shrimp produces a sound of 218 decibels by snapping its claw \u2014 louder than a gunshot. The snap creates a cavitation bubble that reaches 4,700\u00B0C (as hot as the sun\'s surface) for a fraction of a second.'), icon: '\uD83E\uDD90' },
+                  { fact: t('stem.echolocation.elephants_communicate_using_infrasonic', 'Elephants communicate using infrasonic rumbles as low as 14 Hz, below human hearing. These calls can travel 10+ km through the ground. Other elephants "hear" them through vibrations in their feet!'), icon: '\uD83D\uDC18' },
+                  { fact: t('stem.echolocation.the_greater_wax_moth_has_the_highest_f', 'The Greater Wax Moth has the highest frequency hearing of any animal: up to 300 kHz (humans max out at ~20 kHz). Scientists think this evolved as a defense against bat echolocation.'), icon: '\uD83E\uDD8B' },
+                  { fact: t('stem.echolocation.in_space_no_one_can_hear_you_scream_li', 'In space, no one can hear you scream \u2014 literally. Sound requires a medium (air, water, solid) to travel through. The vacuum of space is perfectly silent.'), icon: '\uD83C\uDF0C' },
+                  { fact: t('stem.echolocation.the_brown_headed_cowbird_learns_its_sp', 'The brown-headed cowbird learns its species-specific song even when raised by a different species. The password? A specific wingbeat pattern that unlocks the song-learning circuit in the brain.'), icon: '\uD83D\uDC26' },
+                  { fact: t('stem.echolocation.submarine_crews_can_hear_the_biologica', 'Submarine crews can hear the "biological dawn chorus" \u2014 thousands of marine animals singing at sunrise, creating a wall of sound that can interfere with naval sonar. The ocean is incredibly noisy!'), icon: '\uD83D\uDEA2' },
+                  { fact: t('stem.echolocation.trees_may_communicate_through_sound_st', 'Trees may communicate through sound: studies show plant roots produce clicking sounds at 220 Hz, and neighboring roots grow toward these sounds. "Talking trees" may be more than a metaphor.'), icon: '\uD83C\uDF33' },
+                  { fact: t('stem.echolocation.the_loudest_animal_relative_to_body_si', 'The loudest animal relative to body size is the water boatman (Micronecta scholtzi), a tiny aquatic insect. It produces 99 dB by rubbing its body parts together \u2014 while being only 2mm long!'), icon: '\uD83D\uDC1B' }
                 ].map(function(item, i) {
                   return h('div', { key: i, className: 'p-2 rounded-lg ' + (isDark ? 'bg-slate-700/40' : 'bg-slate-50') },
                     h('div', { className: 'flex items-start gap-2' },
@@ -4718,15 +4719,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-red-900/20 border border-red-800/30' : 'bg-red-50 border border-red-200') },
               h('div', { className: 'flex items-center gap-2 mb-3' },
                 h('span', { className: 'text-xl' }, '\uD83D\uDD07'),
-                h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-red-300' : 'text-red-800') }, 'The Growing Problem of Noise Pollution')),
+                h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-red-300' : 'text-red-800') }, t('stem.echolocation.the_growing_problem_of_noise_pollution', 'The Growing Problem of Noise Pollution'))),
               h('p', { className: 'text-[11px] mb-2 ' + (isDark ? 'text-red-200' : 'text-red-700') },
-                'Human-generated noise has doubled in many natural areas over the past 50 years. This acoustic pollution has measurable effects on wildlife:'),
+                t('stem.echolocation.human_generated_noise_has_doubled_in_m', 'Human-generated noise has doubled in many natural areas over the past 50 years. This acoustic pollution has measurable effects on wildlife:')),
               h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2 text-center' },
                 [
-                  { stat: '20-50%', label: 'Reduction in bird breeding success near roads', color: isDark ? 'text-red-300' : 'text-red-700' },
-                  { stat: '30%', label: 'Of US protected areas have noise doubling', color: isDark ? 'text-amber-300' : 'text-amber-700' },
-                  { stat: '63%', label: 'Of US parks exceed natural sound levels', color: isDark ? 'text-orange-300' : 'text-orange-700' },
-                  { stat: '2x', label: 'Stress hormones in birds near airports', color: isDark ? 'text-red-300' : 'text-red-700' }
+                  { stat: '20-50%', label: t('stem.echolocation.reduction_in_bird_breeding_success_nea', 'Reduction in bird breeding success near roads'), color: isDark ? 'text-red-300' : 'text-red-700' },
+                  { stat: '30%', label: t('stem.echolocation.of_us_protected_areas_have_noise_doubl', 'Of US protected areas have noise doubling'), color: isDark ? 'text-amber-300' : 'text-amber-700' },
+                  { stat: '63%', label: t('stem.echolocation.of_us_parks_exceed_natural_sound_level', 'Of US parks exceed natural sound levels'), color: isDark ? 'text-orange-300' : 'text-orange-700' },
+                  { stat: '2x', label: t('stem.echolocation.stress_hormones_in_birds_near_airports', 'Stress hormones in birds near airports'), color: isDark ? 'text-red-300' : 'text-red-700' }
                 ].map(function(s, si) {
                   return h('div', { key: si, className: 'p-2 rounded ' + (isDark ? 'bg-red-900/30' : 'bg-red-100') },
                     h('div', { className: 'text-lg font-black ' + s.color }, s.stat),
@@ -4734,7 +4735,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 })
               ),
               h('div', { className: 'mt-2 text-[11px] ' + (isDark ? 'text-red-200' : 'text-red-700') },
-                h('strong', null, 'How you can help: '), 'Support quiet zone designations in natural areas. Advocate for electric vehicles and quieter construction equipment. Even small actions like turning off leaf blowers and reducing nighttime lighting make a difference for nocturnal animals like bats.')
+                h('strong', null, t('stem.echolocation.how_you_can_help', 'How you can help: ')), t('stem.echolocation.support_quiet_zone_designations_in_nat', 'Support quiet zone designations in natural areas. Advocate for electric vehicles and quieter construction equipment. Even small actions like turning off leaf blowers and reducing nighttime lighting make a difference for nocturnal animals like bats.'))
             )
           )
         );
@@ -4870,11 +4871,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           gfx.font = '7px system-ui';
           gfx.textAlign = 'center';
           var freqLabels = [
-            { f: 20, label: '20 Hz' },
-            { f: 200, label: '200 Hz' },
-            { f: 2000, label: '2 kHz' },
-            { f: 20000, label: '20 kHz' },
-            { f: 200000, label: '200 kHz' }
+            { f: 20, label: t('stem.echolocation.20_hz_2', '20 Hz') },
+            { f: 200, label: t('stem.echolocation.200_hz', '200 Hz') },
+            { f: 2000, label: t('stem.echolocation.2_khz', '2 kHz') },
+            { f: 20000, label: t('stem.echolocation.20_khz', '20 kHz') },
+            { f: 200000, label: t('stem.echolocation.200_khz_2', '200 kHz') }
           ];
           freqLabels.forEach(function(fl) {
             var xPos = (Math.log10(fl.f) - Math.log10(20)) / (Math.log10(200000) - Math.log10(20)) * W;
@@ -4946,15 +4947,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         h('div', { className: 'flex items-center justify-between' },
           h('div', { className: 'flex items-center gap-3' },
             h('button', {
-              'aria-label': 'Back to STEM Lab menu',
+              'aria-label': t('stem.echolocation.back_to_stem_lab_menu', 'Back to STEM Lab menu'),
               onClick: function() { if (setStemLabTool) setStemLabTool(null); },
               className: 'p-2 rounded-lg transition-all ' + (isDark ? 'hover:bg-slate-700' : 'hover:bg-slate-200')
             }, h(ArrowLeft, { size: 18 })),
             h('div', null,
               h('div', { className: 'flex items-center gap-2' },
                 h('span', { className: 'text-2xl' }, '\uD83E\uDD87'),
-                h('span', { className: 'text-lg font-black ' + textColor }, 'Echolocation Lab')),
-              h('div', { className: 'text-[11px] ' + subtextColor }, 'See the world through sound \u2014 bat sonar vision, sound wave physics, Doppler effect & acoustic ecology'))),
+                h('span', { className: 'text-lg font-black ' + textColor }, t('stem.echolocation.echolocation_lab', 'Echolocation Lab'))),
+              h('div', { className: 'text-[11px] ' + subtextColor }, t('stem.echolocation.see_the_world_through_sound_bat_sonar_', 'See the world through sound \u2014 bat sonar vision, sound wave physics, Doppler effect & acoustic ecology')))),
           // Quest progress
           h('div', { className: 'text-right text-[11px] ' + subtextColor },
             h('div', null, '\uD83E\uDD87 Cave: ' + (d.caveMapped ? '\u2713' : '\u2014')),
@@ -4963,7 +4964,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         ),
 
         // Tab bar
-        h('div', { className: 'flex gap-1 flex-wrap', role: 'tablist', 'aria-label': 'Echolocation Lab sections' },
+        h('div', { className: 'flex gap-1 flex-wrap', role: 'tablist', 'aria-label': t('stem.echolocation.echolocation_lab_sections', 'Echolocation Lab sections') },
           TABS.map(function(tb, ti) {
             var active = tab === tb.id;
             return h('button', {
@@ -4990,13 +4991,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         // ── Topic-accent hero band per tab ──
         (function() {
           var TAB_META = {
-            sonar:    { accent: '#6366f1', soft: 'rgba(99,102,241,0.10)',  icon: '\uD83E\uDD87', title: 'Sonar Vision \u2014 hearing as imaging',                  hint: 'Bats emit ultrasonic clicks (20\u2013120 kHz, above human hearing) and read echo delay + frequency shift to build a 3D scene at 100+ targets per second. Donald Griffin coined \u201Cecholocation\u201D in 1944.' },
-            cave3d:   { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',   icon: '\uD83D\uDD26', title: '3D Cave \u2014 map by sound',                            hint: 'Each click bounces off cave walls; differential delay between ear canals plus interaural intensity differences locate a surface to ~1 cm. The bat\u2019s brain solves this geometry in real time on a peanut-sized chip.' },
-            waves:    { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)',  icon: '\uD83C\uDF0A', title: 'Sound Waves \u2014 wavelength meets target size',         hint: '\u03BB = c / f. At 60 kHz in air, \u03BB \u2248 5.7 mm \u2014 fine enough to resolve a moth\u2019s wing. Lower frequencies travel further but resolve coarser; higher = sharper but absorbed quickly. Trade-off baked in.' },
-            doppler:  { accent: '#ea580c', soft: 'rgba(234,88,12,0.10)',   icon: '\uD83D\uDEA8', title: 'Doppler Effect \u2014 the moving-prey signature',         hint: 'Moths fluttering toward the bat compress echo frequency; moving away stretches it. Horseshoe bats compensate by lowering their call to KEEP echoes in their auditory sweet spot \u2014 a biological phase-locked loop.' },
-            biology:  { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)',  icon: '\uD83E\uDDA0', title: 'Bat Biology \u2014 the auditory specialist',              hint: 'Larynx fires clicks; outer ear pinnae shape reception; massive auditory cortex parses returns. Bats hear over 8 octaves where humans manage ~10. Tongue-clicking humans (Daniel Kish) use the same trick crudely.' },
-            ecology:  { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',   icon: '\uD83C\uDF33', title: 'Acoustic Ecology \u2014 a soundscape we can\u2019t hear',  hint: 'Tropical rainforests are loud in the ultrasonic. White-nose syndrome has killed 6+ million North American bats since 2006; insect populations downstream are visibly affected. A frequency band we never knew about.' },
-            sweepHunt: { accent: '#22d3ee', soft: 'rgba(34,211,238,0.10)', icon: '🎯', title: 'Sweep Discovery — tune the chirp', hint: 'Adjust call frequency, duration, and bandwidth and watch how detection range trades off against resolution. An open exploration — no score, no single right answer.' }
+            sonar:    { accent: '#6366f1', soft: 'rgba(99,102,241,0.10)',  icon: '\uD83E\uDD87', title: t('stem.echolocation.sonar_vision_hearing_as_imaging', 'Sonar Vision \u2014 hearing as imaging'),                  hint: t('stem.echolocation.bats_emit_ultrasonic_clicks_20_120_khz', 'Bats emit ultrasonic clicks (20\u2013120 kHz, above human hearing) and read echo delay + frequency shift to build a 3D scene at 100+ targets per second. Donald Griffin coined \u201Cecholocation\u201D in 1944.') },
+            cave3d:   { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',   icon: '\uD83D\uDD26', title: t('stem.echolocation.3d_cave_map_by_sound', '3D Cave \u2014 map by sound'),                            hint: t('stem.echolocation.each_click_bounces_off_cave_walls_diff', 'Each click bounces off cave walls; differential delay between ear canals plus interaural intensity differences locate a surface to ~1 cm. The bat\u2019s brain solves this geometry in real time on a peanut-sized chip.') },
+            waves:    { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)',  icon: '\uD83C\uDF0A', title: t('stem.echolocation.sound_waves_wavelength_meets_target_si', 'Sound Waves \u2014 wavelength meets target size'),         hint: t('stem.echolocation.c_f_at_60_khz_in_air_5_7_mm_fine_enoug', '\u03BB = c / f. At 60 kHz in air, \u03BB \u2248 5.7 mm \u2014 fine enough to resolve a moth\u2019s wing. Lower frequencies travel further but resolve coarser; higher = sharper but absorbed quickly. Trade-off baked in.') },
+            doppler:  { accent: '#ea580c', soft: 'rgba(234,88,12,0.10)',   icon: '\uD83D\uDEA8', title: t('stem.echolocation.doppler_effect_the_moving_prey_signatu', 'Doppler Effect \u2014 the moving-prey signature'),         hint: t('stem.echolocation.moths_fluttering_toward_the_bat_compre', 'Moths fluttering toward the bat compress echo frequency; moving away stretches it. Horseshoe bats compensate by lowering their call to KEEP echoes in their auditory sweet spot \u2014 a biological phase-locked loop.') },
+            biology:  { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)',  icon: '\uD83E\uDDA0', title: t('stem.echolocation.bat_biology_the_auditory_specialist', 'Bat Biology \u2014 the auditory specialist'),              hint: t('stem.echolocation.larynx_fires_clicks_outer_ear_pinnae_s', 'Larynx fires clicks; outer ear pinnae shape reception; massive auditory cortex parses returns. Bats hear over 8 octaves where humans manage ~10. Tongue-clicking humans (Daniel Kish) use the same trick crudely.') },
+            ecology:  { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',   icon: '\uD83C\uDF33', title: t('stem.echolocation.acoustic_ecology_a_soundscape_we_can_t', 'Acoustic Ecology \u2014 a soundscape we can\u2019t hear'),  hint: t('stem.echolocation.tropical_rainforests_are_loud_in_the_u', 'Tropical rainforests are loud in the ultrasonic. White-nose syndrome has killed 6+ million North American bats since 2006; insect populations downstream are visibly affected. A frequency band we never knew about.') },
+            sweepHunt: { accent: '#22d3ee', soft: 'rgba(34,211,238,0.10)', icon: '🎯', title: t('stem.echolocation.sweep_discovery_tune_the_chirp', 'Sweep Discovery — tune the chirp'), hint: t('stem.echolocation.adjust_call_frequency_duration_and_ban', 'Adjust call frequency, duration, and bandwidth and watch how detection range trades off against resolution. An open exploration — no score, no single right answer.') }
           };
           var meta = TAB_META[tab] || TAB_META.sonar;
           return h('div', {
@@ -5035,14 +5036,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           else if (bandwidth >= 30) category = 'mixed';
           else category = 'narrow';
           var cMeta = {
-            cf:     { label: '🎵 CF (constant-frequency)',     color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: 'Long narrow-band call. Horseshoe-bat style. Detects fluttering prey.' },
-            fm:     { label: '〽️ FM (chirp/sweep)',            color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Short broadband sweep. Most microbats. Excellent range/distance.' },
-            mixed:  { label: '🎶 Mixed CF-FM',                 color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Long-tailed bat style. Long CF + terminal FM chirp.' },
-            narrow: { label: '🔉 Narrow short tone',           color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Limited band. Less useful for echolocation.' }
+            cf:     { label: t('stem.echolocation.cf_constant_frequency', '🎵 CF (constant-frequency)'),     color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: t('stem.echolocation.long_narrow_band_call_horseshoe_bat_st', 'Long narrow-band call. Horseshoe-bat style. Detects fluttering prey.') },
+            fm:     { label: t('stem.echolocation.fm_chirp_sweep', '〽️ FM (chirp/sweep)'),            color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.echolocation.short_broadband_sweep_most_microbats_e', 'Short broadband sweep. Most microbats. Excellent range/distance.') },
+            mixed:  { label: t('stem.echolocation.mixed_cf_fm', '🎶 Mixed CF-FM'),                 color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: t('stem.echolocation.long_tailed_bat_style_long_cf_terminal', 'Long-tailed bat style. Long CF + terminal FM chirp.') },
+            narrow: { label: t('stem.echolocation.narrow_short_tone', '🔉 Narrow short tone'),           color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.echolocation.limited_band_less_useful_for_echolocat', 'Limited band. Less useful for echolocation.') }
           }[category];
           return h('div', { className: 'p-4 rounded-xl bg-white border border-purple-300' },
-            h('h3', { className: 'text-sm font-black text-purple-700 mb-1' }, '🎵 Sonar sweep discovery'),
-            h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Adjust min/max frequency and sweep duration. Widget classifies call type into 4 discrete categories used by real bats. No score, no reveal.'),
+            h('h3', { className: 'text-sm font-black text-purple-700 mb-1' }, t('stem.echolocation.sonar_sweep_discovery', '🎵 Sonar sweep discovery')),
+            h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.echolocation.adjust_min_max_frequency_and_sweep_dur', 'Adjust min/max frequency and sweep duration. Widget classifies call type into 4 discrete categories used by real bats. No score, no reveal.')),
             h('div', { className: 'mb-3 p-3 rounded text-center', style: { background: cMeta.bg, border: '2px solid ' + cMeta.border } },
               h('div', { className: 'text-base font-black', style: { color: cMeta.color } }, cMeta.label),
               h('div', { className: 'text-[11px] text-slate-700 mt-1' }, cMeta.desc),
@@ -5060,23 +5061,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               })
             ),
             h('div', { className: 'flex gap-2 items-center flex-wrap mb-3' },
-              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ mn: iq.fmin, mx: iq.fmax, dur: iq.sweepMs, c: category }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
-              h('button', { onClick: function() { setIQ({ fmin: 40, fmax: 100, sweepMs: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ mn: iq.fmin, mx: iq.fmax, dur: iq.sweepMs, c: category }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, t('stem.echolocation.log', '📋 Log')),
+              h('button', { onClick: function() { setIQ({ fmin: 40, fmax: 100, sweepMs: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, t('stem.echolocation.reset', '↺ Reset'))
             ),
-            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: When does the call become FM vs CF?',
+            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.echolocation.hypothesis_when_does_the_call_become_f', 'Hypothesis: When does the call become FM vs CF?'),
               className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug mb-3', rows: 3 }),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300 mb-3' }, '🤔 Stuck — show open prompts'),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300 mb-3' }, t('stem.echolocation.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
             iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed mb-3' },
               h('ul', { className: 'list-disc pl-5 space-y-1' },
-                h('li', null, 'Bats use CF for cluttered environments, FM for open. Investigate why.'),
-                h('li', null, 'Find two settings producing the same category.'))),
+                h('li', null, t('stem.echolocation.bats_use_cf_for_cluttered_environments', 'Bats use CF for cluttered environments, FM for open. Investigate why.')),
+                h('li', null, t('stem.echolocation.find_two_settings_producing_the_same_c', 'Find two settings producing the same category.')))),
             h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
               h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
                 h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
-                'I understand — explain in own words'),
-              iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain why call shape (bandwidth + duration) determines suitability for different prey.',
+                t('stem.echolocation.i_understand_explain_in_own_words', 'I understand — explain in own words')),
+              iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.echolocation.explain_why_call_shape_bandwidth_durat', 'Explain why call shape (bandwidth + duration) determines suitability for different prey.'),
                 className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
-            h('div', { className: 'mt-2 text-[10px] italic text-slate-500' }, 'Design note: discrete 4-category sonar marker; no detection-rate score; no reveal — by design.')
+            h('div', { className: 'mt-2 text-[10px] italic text-slate-500' }, t('stem.echolocation.design_note_discrete_4_category_sonar_', 'Design note: discrete 4-category sonar marker; no detection-rate score; no reveal — by design.'))
           );
         })()
       );

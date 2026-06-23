@@ -87,6 +87,7 @@ window.StemLab = window.StemLab || {
       { id: 'earn_50_xp', label: 'Earn 50 Cell Explorer XP', icon: '\u2B50', check: function(d) { return (d.xpEarned || 0) >= 50; }, progress: function(d) { return (d.xpEarned || 0) + '/50 XP'; } }
     ],
     render: function(ctx) {
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       // Aliases - maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
@@ -19615,7 +19616,7 @@ var d = labToolData.cell || {};
                       },
                         React.createElement('div', { className: 'text-2xl mb-1' }, c.icon),
                         React.createElement('div', { className: 'text-sm font-bold text-' + c.color + '-700 mb-1' }, c.label),
-                        React.createElement('div', { className: 'text-[10px] text-slate-500 italic mb-1' }, c.desc),
+                        React.createElement('div', { className: 'text-[10px] text-slate-500 italic mb-1' }, __alloT('stem.cell.' + (c.id) + '_desc', c.desc)),
                         React.createElement('div', { className: 'text-[10px] text-' + c.color + '-600 font-mono' }, c.modes.length + ' modes')
                       );
                     })
@@ -20547,7 +20548,7 @@ var d = labToolData.cell || {};
                     React.createElement("span", { className: "text-lg" }, earned ? b.icon : "\uD83D\uDD12"),
                     React.createElement("div", null,
                       React.createElement("p", { className: "text-[11px] font-bold " + (earned ? "text-amber-800" : "text-slate-600") }, b.label),
-                      React.createElement("p", { className: "text-[11px] " + (earned ? "text-amber-600" : "text-slate-600") }, b.desc)
+                      React.createElement("p", { className: "text-[11px] " + (earned ? "text-amber-600" : "text-slate-600") }, __alloT('stem.cell.' + (key) + '_desc', b.desc))
                     )
                   );
                 })

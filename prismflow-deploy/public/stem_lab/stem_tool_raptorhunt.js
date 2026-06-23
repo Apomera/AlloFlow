@@ -6800,6 +6800,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     category: 'science',
     icon: '🦅',
     render: function(ctx) {
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = ctx.React, h = React.createElement;
       var useState = React.useState, useEffect = React.useEffect, useRef = React.useRef, useMemo = React.useMemo;
       var setToolData = ctx.setToolData, toolData = ctx.toolData;
@@ -6833,124 +6834,124 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // ── Section nav config ──
       var SECTIONS = [
         { id: 'hub', label: 'Hub', icon: '🦅' },
-        { id: 'roster', label: 'Species Roster', icon: '📋' },
-        { id: 'hunt', label: 'Hunt Sim (3D)', icon: '🎯' },
-        { id: 'talons', label: 'Talon Mechanics', icon: '🪝' },
-        { id: 'vision', label: 'Vision Lab', icon: '👁️' },
-        { id: 'flight', label: 'Flight Physics', icon: '🪶' },
-        { id: 'stoop', label: 'Stoop Calculator', icon: '📐' },
-        { id: 'silent', label: 'Silent Flight', icon: '🤫' },
-        { id: 'senses', label: 'Day Eye vs Night Eye', icon: '🌗' },
-        { id: 'conservation', label: 'Conservation', icon: '🌍' },
-        { id: 'fieldid', label: 'Field ID', icon: '🔍' },
-        { id: 'migration', label: 'Migration', icon: '🧭' },
-        { id: 'hearing', label: 'Owl Hearing Lab', icon: '🦻' },
-        { id: 'pellet', label: 'Pellet Lab', icon: '🥚' },
-        { id: 'falconry', label: 'Falconry & Humans', icon: '🤝' },
-        { id: 'anatomy', label: 'Anatomy', icon: '🦴' },
-        { id: 'lifecycle', label: 'Lifecycle', icon: '🐣' },
-        { id: 'spiral', label: 'Stoop Trajectory', icon: '🌀' },
-        { id: 'acuity', label: 'Vision Acuity Demo', icon: '👁️‍🗨️' },
-        { id: 'recoveries', label: 'Recovery Case Studies', icon: '🏆' },
-        { id: 'predictor', label: 'Wing-Loading Predictor', icon: '🪂' },
-        { id: 'famous', label: 'Famous Birds & Symbols', icon: '⭐' },
-        { id: 'rehab', label: 'Rehab & Vet Care', icon: '🏥' },
-        { id: 'history', label: 'History of Raptor Science', icon: '📜' },
-        { id: 'tracking', label: 'Tracking Technology', icon: '📡' },
-        { id: 'culture', label: 'Folklore by Culture', icon: '🌐' },
-        { id: 'photography', label: 'Photography Masterclass', icon: '📷' },
-        { id: 'nestcams', label: 'Nest Cam Directory', icon: '📹' },
-        { id: 'calls', label: 'Calls & Vocalizations', icon: '🔊' },
-        { id: 'hunting', label: 'Hunting Strategies', icon: '🎯' },
-        { id: 'behavior', label: 'Behavior Repertoire', icon: '🌗' },
-        { id: 'urban', label: 'Urban Raptors', icon: '🏙' },
-        { id: 'climate', label: 'Climate Change Impact', icon: '🌡' },
-        { id: 'physiology', label: 'Physiology Deep Dive', icon: '❤️' },
-        { id: 'ecology', label: 'Ecology & Food Webs', icon: '🕸' },
-        { id: 'evolution', label: 'Evolution & Taxonomy', icon: '🧬' },
-        { id: 'fieldnat', label: 'Field Naturalist', icon: '📓' },
-        { id: 'pelletkey', label: 'Pellet ID Key', icon: '🔬' },
-        { id: 'gear', label: 'Birding Gear Guide', icon: '🔭' },
-        { id: 'careers', label: 'Careers in Raptor Biology', icon: '💼' },
-        { id: 'falconrycurriculum', label: 'Falconry Curriculum', icon: '📚' },
-        { id: 'anatomyatlas', label: 'Anatomy Atlas (SVG)', icon: '🦴' },
-        { id: 'preyatlas', label: 'Prey Atlas', icon: '🐭' },
-        { id: 'fossils', label: 'Fossil Record', icon: '🦖' },
-        { id: 'demographics', label: 'Population & Demographics', icon: '📊' },
-        { id: 'habitats', label: 'Habitat Atlas', icon: '🏞' },
-        { id: 'lessons', label: 'Lesson Plan Library', icon: '🎒' },
-        { id: 'mystery', label: 'ID Mystery Cases', icon: '🕵' },
-        { id: 'regional', label: 'Regional Field Guides', icon: '🗺' },
-        { id: 'worldtour', label: 'World Tour', icon: '🌍' },
-        { id: 'records', label: 'Records & Superlatives', icon: '🏅' },
-        { id: 'threats', label: 'Threats Database', icon: '⚠️' },
-        { id: 'experts', label: 'Expert Spotlights', icon: '🧑‍🔬' },
-        { id: 'scenarios', label: 'Field Scenarios', icon: '🌲' },
-        { id: 'species20', label: 'Species 20-Deep Profiles', icon: '🐦' },
-        { id: 'comparative', label: 'Comparative Anatomy', icon: '⚖' },
-        { id: 'mythbusters', label: 'Raptor Mythbusters', icon: '💥' },
-        { id: 'pioneers', label: 'Research Stations', icon: '🔬' },
-        { id: 'organizations', label: 'Conservation Orgs', icon: '🏛' },
-        { id: 'museums', label: 'Raptor Museums', icon: '🏛' },
-        { id: 'books', label: 'Recommended Reading', icon: '📕' },
-        { id: 'films', label: 'Documentaries + Films', icon: '🎥' },
-        { id: 'cookbook', label: 'Nest-Build Cookbook', icon: '🪺' },
-        { id: 'mathlab', label: 'Raptor Math Lab', icon: '🧮' },
-        { id: 'engagement', label: 'Public Engagement', icon: '📢' },
-        { id: 'glossary2', label: 'Deep Glossary B', icon: '🅱' },
-        { id: 'finale', label: 'Closing Reflection', icon: '🌅' },
-        { id: 'rescue', label: 'Rescue Decision Tree', icon: '🚑' },
-        { id: 'agecoloration', label: 'Age & Plumage Guide', icon: '🎨' },
-        { id: 'molt', label: 'Molt Atlas', icon: '🪶' },
-        { id: 'wingformula', label: 'Wing Formula Calculator', icon: '📐' },
-        { id: 'datatables', label: 'Data Reference Tables', icon: '📋' },
-        { id: 'banding_codes', label: 'Banding Codes', icon: '🏷' },
-        { id: 'audioguide', label: 'Sonogram + Audio Guide', icon: '🎵' },
-        { id: 'localguide', label: 'Local Hot Spots Guide', icon: '📍' },
+        { id: 'roster', label: __alloT('stem.raptorhunt.species_roster', 'Species Roster'), icon: '📋' },
+        { id: 'hunt', label: __alloT('stem.raptorhunt.hunt_sim_3d', 'Hunt Sim (3D)'), icon: '🎯' },
+        { id: 'talons', label: __alloT('stem.raptorhunt.talon_mechanics', 'Talon Mechanics'), icon: '🪝' },
+        { id: 'vision', label: __alloT('stem.raptorhunt.vision_lab', 'Vision Lab'), icon: '👁️' },
+        { id: 'flight', label: __alloT('stem.raptorhunt.flight_physics', 'Flight Physics'), icon: '🪶' },
+        { id: 'stoop', label: __alloT('stem.raptorhunt.stoop_calculator', 'Stoop Calculator'), icon: '📐' },
+        { id: 'silent', label: __alloT('stem.raptorhunt.silent_flight', 'Silent Flight'), icon: '🤫' },
+        { id: 'senses', label: __alloT('stem.raptorhunt.day_eye_vs_night_eye', 'Day Eye vs Night Eye'), icon: '🌗' },
+        { id: 'conservation', label: __alloT('stem.raptorhunt.conservation', 'Conservation'), icon: '🌍' },
+        { id: 'fieldid', label: __alloT('stem.raptorhunt.field_id', 'Field ID'), icon: '🔍' },
+        { id: 'migration', label: __alloT('stem.raptorhunt.migration', 'Migration'), icon: '🧭' },
+        { id: 'hearing', label: __alloT('stem.raptorhunt.owl_hearing_lab', 'Owl Hearing Lab'), icon: '🦻' },
+        { id: 'pellet', label: __alloT('stem.raptorhunt.pellet_lab', 'Pellet Lab'), icon: '🥚' },
+        { id: 'falconry', label: __alloT('stem.raptorhunt.falconry_humans', 'Falconry & Humans'), icon: '🤝' },
+        { id: 'anatomy', label: __alloT('stem.raptorhunt.anatomy', 'Anatomy'), icon: '🦴' },
+        { id: 'lifecycle', label: __alloT('stem.raptorhunt.lifecycle', 'Lifecycle'), icon: '🐣' },
+        { id: 'spiral', label: __alloT('stem.raptorhunt.stoop_trajectory', 'Stoop Trajectory'), icon: '🌀' },
+        { id: 'acuity', label: __alloT('stem.raptorhunt.vision_acuity_demo', 'Vision Acuity Demo'), icon: '👁️‍🗨️' },
+        { id: 'recoveries', label: __alloT('stem.raptorhunt.recovery_case_studies', 'Recovery Case Studies'), icon: '🏆' },
+        { id: 'predictor', label: __alloT('stem.raptorhunt.wing_loading_predictor', 'Wing-Loading Predictor'), icon: '🪂' },
+        { id: 'famous', label: __alloT('stem.raptorhunt.famous_birds_symbols', 'Famous Birds & Symbols'), icon: '⭐' },
+        { id: 'rehab', label: __alloT('stem.raptorhunt.rehab_vet_care', 'Rehab & Vet Care'), icon: '🏥' },
+        { id: 'history', label: __alloT('stem.raptorhunt.history_of_raptor_science', 'History of Raptor Science'), icon: '📜' },
+        { id: 'tracking', label: __alloT('stem.raptorhunt.tracking_technology', 'Tracking Technology'), icon: '📡' },
+        { id: 'culture', label: __alloT('stem.raptorhunt.folklore_by_culture', 'Folklore by Culture'), icon: '🌐' },
+        { id: 'photography', label: __alloT('stem.raptorhunt.photography_masterclass', 'Photography Masterclass'), icon: '📷' },
+        { id: 'nestcams', label: __alloT('stem.raptorhunt.nest_cam_directory', 'Nest Cam Directory'), icon: '📹' },
+        { id: 'calls', label: __alloT('stem.raptorhunt.calls_vocalizations', 'Calls & Vocalizations'), icon: '🔊' },
+        { id: 'hunting', label: __alloT('stem.raptorhunt.hunting_strategies', 'Hunting Strategies'), icon: '🎯' },
+        { id: 'behavior', label: __alloT('stem.raptorhunt.behavior_repertoire', 'Behavior Repertoire'), icon: '🌗' },
+        { id: 'urban', label: __alloT('stem.raptorhunt.urban_raptors', 'Urban Raptors'), icon: '🏙' },
+        { id: 'climate', label: __alloT('stem.raptorhunt.climate_change_impact', 'Climate Change Impact'), icon: '🌡' },
+        { id: 'physiology', label: __alloT('stem.raptorhunt.physiology_deep_dive', 'Physiology Deep Dive'), icon: '❤️' },
+        { id: 'ecology', label: __alloT('stem.raptorhunt.ecology_food_webs', 'Ecology & Food Webs'), icon: '🕸' },
+        { id: 'evolution', label: __alloT('stem.raptorhunt.evolution_taxonomy', 'Evolution & Taxonomy'), icon: '🧬' },
+        { id: 'fieldnat', label: __alloT('stem.raptorhunt.field_naturalist', 'Field Naturalist'), icon: '📓' },
+        { id: 'pelletkey', label: __alloT('stem.raptorhunt.pellet_id_key', 'Pellet ID Key'), icon: '🔬' },
+        { id: 'gear', label: __alloT('stem.raptorhunt.birding_gear_guide', 'Birding Gear Guide'), icon: '🔭' },
+        { id: 'careers', label: __alloT('stem.raptorhunt.careers_in_raptor_biology', 'Careers in Raptor Biology'), icon: '💼' },
+        { id: 'falconrycurriculum', label: __alloT('stem.raptorhunt.falconry_curriculum', 'Falconry Curriculum'), icon: '📚' },
+        { id: 'anatomyatlas', label: __alloT('stem.raptorhunt.anatomy_atlas_svg', 'Anatomy Atlas (SVG)'), icon: '🦴' },
+        { id: 'preyatlas', label: __alloT('stem.raptorhunt.prey_atlas', 'Prey Atlas'), icon: '🐭' },
+        { id: 'fossils', label: __alloT('stem.raptorhunt.fossil_record', 'Fossil Record'), icon: '🦖' },
+        { id: 'demographics', label: __alloT('stem.raptorhunt.population_demographics', 'Population & Demographics'), icon: '📊' },
+        { id: 'habitats', label: __alloT('stem.raptorhunt.habitat_atlas', 'Habitat Atlas'), icon: '🏞' },
+        { id: 'lessons', label: __alloT('stem.raptorhunt.lesson_plan_library', 'Lesson Plan Library'), icon: '🎒' },
+        { id: 'mystery', label: __alloT('stem.raptorhunt.id_mystery_cases', 'ID Mystery Cases'), icon: '🕵' },
+        { id: 'regional', label: __alloT('stem.raptorhunt.regional_field_guides', 'Regional Field Guides'), icon: '🗺' },
+        { id: 'worldtour', label: __alloT('stem.raptorhunt.world_tour', 'World Tour'), icon: '🌍' },
+        { id: 'records', label: __alloT('stem.raptorhunt.records_superlatives', 'Records & Superlatives'), icon: '🏅' },
+        { id: 'threats', label: __alloT('stem.raptorhunt.threats_database', 'Threats Database'), icon: '⚠️' },
+        { id: 'experts', label: __alloT('stem.raptorhunt.expert_spotlights', 'Expert Spotlights'), icon: '🧑‍🔬' },
+        { id: 'scenarios', label: __alloT('stem.raptorhunt.field_scenarios', 'Field Scenarios'), icon: '🌲' },
+        { id: 'species20', label: __alloT('stem.raptorhunt.species_20_deep_profiles', 'Species 20-Deep Profiles'), icon: '🐦' },
+        { id: 'comparative', label: __alloT('stem.raptorhunt.comparative_anatomy', 'Comparative Anatomy'), icon: '⚖' },
+        { id: 'mythbusters', label: __alloT('stem.raptorhunt.raptor_mythbusters', 'Raptor Mythbusters'), icon: '💥' },
+        { id: 'pioneers', label: __alloT('stem.raptorhunt.research_stations', 'Research Stations'), icon: '🔬' },
+        { id: 'organizations', label: __alloT('stem.raptorhunt.conservation_orgs', 'Conservation Orgs'), icon: '🏛' },
+        { id: 'museums', label: __alloT('stem.raptorhunt.raptor_museums', 'Raptor Museums'), icon: '🏛' },
+        { id: 'books', label: __alloT('stem.raptorhunt.recommended_reading', 'Recommended Reading'), icon: '📕' },
+        { id: 'films', label: __alloT('stem.raptorhunt.documentaries_films', 'Documentaries + Films'), icon: '🎥' },
+        { id: 'cookbook', label: __alloT('stem.raptorhunt.nest_build_cookbook', 'Nest-Build Cookbook'), icon: '🪺' },
+        { id: 'mathlab', label: __alloT('stem.raptorhunt.raptor_math_lab', 'Raptor Math Lab'), icon: '🧮' },
+        { id: 'engagement', label: __alloT('stem.raptorhunt.public_engagement', 'Public Engagement'), icon: '📢' },
+        { id: 'glossary2', label: __alloT('stem.raptorhunt.deep_glossary_b', 'Deep Glossary B'), icon: '🅱' },
+        { id: 'finale', label: __alloT('stem.raptorhunt.closing_reflection', 'Closing Reflection'), icon: '🌅' },
+        { id: 'rescue', label: __alloT('stem.raptorhunt.rescue_decision_tree', 'Rescue Decision Tree'), icon: '🚑' },
+        { id: 'agecoloration', label: __alloT('stem.raptorhunt.age_plumage_guide', 'Age & Plumage Guide'), icon: '🎨' },
+        { id: 'molt', label: __alloT('stem.raptorhunt.molt_atlas', 'Molt Atlas'), icon: '🪶' },
+        { id: 'wingformula', label: __alloT('stem.raptorhunt.wing_formula_calculator', 'Wing Formula Calculator'), icon: '📐' },
+        { id: 'datatables', label: __alloT('stem.raptorhunt.data_reference_tables', 'Data Reference Tables'), icon: '📋' },
+        { id: 'banding_codes', label: __alloT('stem.raptorhunt.banding_codes', 'Banding Codes'), icon: '🏷' },
+        { id: 'audioguide', label: __alloT('stem.raptorhunt.sonogram_audio_guide', 'Sonogram + Audio Guide'), icon: '🎵' },
+        { id: 'localguide', label: __alloT('stem.raptorhunt.local_hot_spots_guide', 'Local Hot Spots Guide'), icon: '📍' },
         { id: 'qa', label: 'FAQs', icon: '❓' },
-        { id: 'feeder', label: 'Backyard Feeder Hawks', icon: '🌳' },
-        { id: 'illustrations', label: 'Illustration Gallery', icon: '🖼' },
-        { id: 'songscripts', label: 'Song Scripts', icon: '📜' },
-        { id: 'meditations', label: 'Field Meditations', icon: '🧘' },
-        { id: 'cookbook2', label: 'Habitat Restoration', icon: '🌾' },
-        { id: 'kidsactivities', label: 'Kids Activities', icon: '🎨' },
-        { id: 'reading_levels', label: 'Reading Levels', icon: '📚' },
-        { id: 'questionbank', label: 'Question Bank', icon: '❓' },
-        { id: 'iucn_status', label: 'IUCN Status Atlas', icon: '🛡' },
-        { id: 'flight_dynamics', label: 'Flight Dynamics', icon: '✈' },
-        { id: 'social_media', label: 'Social Media Guide', icon: '📱' },
-        { id: 'finale_master', label: 'Master Index', icon: '🏆' },
-        { id: 'datasets', label: 'Open Datasets', icon: '💾' },
-        { id: 'achievements', label: 'Achievements & Quests', icon: '🏅' },
-        { id: 'farewell', label: 'Farewell + Credits', icon: '🌟' },
-        { id: 'biographies', label: 'Hero Biographies', icon: '🧑' },
-        { id: 'curated_links', label: 'Curated Links', icon: '🔗' },
-        { id: 'big_quotes', label: 'Big Quotes', icon: '💬' },
-        { id: 'glossary3', label: 'Final Vocabulary', icon: '🔤' },
-        { id: 'twenty_k_finale', label: '20K Finale', icon: '🎆' },
-        { id: 'glossary', label: 'Glossary', icon: '📖' },
-        { id: 'quiz', label: 'Field ID Quiz', icon: '🎓' },
-        { id: 'resources', label: 'Resources', icon: '📚' }
+        { id: 'feeder', label: __alloT('stem.raptorhunt.backyard_feeder_hawks', 'Backyard Feeder Hawks'), icon: '🌳' },
+        { id: 'illustrations', label: __alloT('stem.raptorhunt.illustration_gallery', 'Illustration Gallery'), icon: '🖼' },
+        { id: 'songscripts', label: __alloT('stem.raptorhunt.song_scripts', 'Song Scripts'), icon: '📜' },
+        { id: 'meditations', label: __alloT('stem.raptorhunt.field_meditations', 'Field Meditations'), icon: '🧘' },
+        { id: 'cookbook2', label: __alloT('stem.raptorhunt.habitat_restoration', 'Habitat Restoration'), icon: '🌾' },
+        { id: 'kidsactivities', label: __alloT('stem.raptorhunt.kids_activities', 'Kids Activities'), icon: '🎨' },
+        { id: 'reading_levels', label: __alloT('stem.raptorhunt.reading_levels', 'Reading Levels'), icon: '📚' },
+        { id: 'questionbank', label: __alloT('stem.raptorhunt.question_bank', 'Question Bank'), icon: '❓' },
+        { id: 'iucn_status', label: __alloT('stem.raptorhunt.iucn_status_atlas', 'IUCN Status Atlas'), icon: '🛡' },
+        { id: 'flight_dynamics', label: __alloT('stem.raptorhunt.flight_dynamics', 'Flight Dynamics'), icon: '✈' },
+        { id: 'social_media', label: __alloT('stem.raptorhunt.social_media_guide', 'Social Media Guide'), icon: '📱' },
+        { id: 'finale_master', label: __alloT('stem.raptorhunt.master_index', 'Master Index'), icon: '🏆' },
+        { id: 'datasets', label: __alloT('stem.raptorhunt.open_datasets', 'Open Datasets'), icon: '💾' },
+        { id: 'achievements', label: __alloT('stem.raptorhunt.achievements_quests', 'Achievements & Quests'), icon: '🏅' },
+        { id: 'farewell', label: __alloT('stem.raptorhunt.farewell_credits', 'Farewell + Credits'), icon: '🌟' },
+        { id: 'biographies', label: __alloT('stem.raptorhunt.hero_biographies', 'Hero Biographies'), icon: '🧑' },
+        { id: 'curated_links', label: __alloT('stem.raptorhunt.curated_links', 'Curated Links'), icon: '🔗' },
+        { id: 'big_quotes', label: __alloT('stem.raptorhunt.big_quotes', 'Big Quotes'), icon: '💬' },
+        { id: 'glossary3', label: __alloT('stem.raptorhunt.final_vocabulary', 'Final Vocabulary'), icon: '🔤' },
+        { id: 'twenty_k_finale', label: __alloT('stem.raptorhunt.20k_finale', '20K Finale'), icon: '🎆' },
+        { id: 'glossary', label: __alloT('stem.raptorhunt.glossary', 'Glossary'), icon: '📖' },
+        { id: 'quiz', label: __alloT('stem.raptorhunt.field_id_quiz', 'Field ID Quiz'), icon: '🎓' },
+        { id: 'resources', label: __alloT('stem.raptorhunt.resources', 'Resources'), icon: '📚' }
       ];
 
       var CATEGORIES = [
-        { id: 'species', label: 'Species & ID', icon: '🦅', desc: 'Identify, compare, profile + quiz', color: 'amber',
+        { id: 'species', label: __alloT('stem.raptorhunt.species_id', 'Species & ID'), icon: '🦅', desc: __alloT('stem.raptorhunt.identify_compare_profile_quiz', 'Identify, compare, profile + quiz'), color: 'amber',
           sections: ['roster', 'species20', 'comparative', 'fieldid', 'mystery', 'quiz', 'agecoloration', 'molt', 'wingformula', 'banding_codes'] },
-        { id: 'labs', label: 'Labs & Physics', icon: '🔬', desc: 'Hands-on simulations + calculations', color: 'cyan',
+        { id: 'labs', label: __alloT('stem.raptorhunt.labs_physics', 'Labs & Physics'), icon: '🔬', desc: __alloT('stem.raptorhunt.hands_on_simulations_calculations', 'Hands-on simulations + calculations'), color: 'cyan',
           sections: ['hunt', 'talons', 'vision', 'flight', 'stoop', 'silent', 'hearing', 'spiral', 'acuity', 'predictor', 'mathlab', 'flight_dynamics', 'anatomy'] },
-        { id: 'biology', label: 'Behavior & Biology', icon: '🐭', desc: 'How raptors live, hunt, and grow', color: 'emerald',
+        { id: 'biology', label: __alloT('stem.raptorhunt.behavior_biology', 'Behavior & Biology'), icon: '🐭', desc: __alloT('stem.raptorhunt.how_raptors_live_hunt_and_grow', 'How raptors live, hunt, and grow'), color: 'emerald',
           sections: ['senses', 'lifecycle', 'behavior', 'hunting', 'anatomyatlas', 'physiology', 'preyatlas', 'calls', 'audioguide', 'ecology', 'evolution'] },
-        { id: 'conservation', label: 'Conservation', icon: '🌍', desc: 'Threats, recovery, and what to do', color: 'teal',
+        { id: 'conservation', label: __alloT('stem.raptorhunt.conservation_2', 'Conservation'), icon: '🌍', desc: __alloT('stem.raptorhunt.threats_recovery_and_what_to_do', 'Threats, recovery, and what to do'), color: 'teal',
           sections: ['conservation', 'threats', 'climate', 'recoveries', 'demographics', 'iucn_status', 'urban', 'fossils', 'rehab', 'organizations', 'engagement', 'achievements'] },
-        { id: 'habitats', label: 'Habitats & Travel', icon: '🏞', desc: 'Where to find them globally + locally', color: 'lime',
+        { id: 'habitats', label: __alloT('stem.raptorhunt.habitats_travel', 'Habitats & Travel'), icon: '🏞', desc: __alloT('stem.raptorhunt.where_to_find_them_globally_locally', 'Where to find them globally + locally'), color: 'lime',
           sections: ['habitats', 'regional', 'worldtour', 'localguide', 'migration', 'tracking', 'nestcams'] },
-        { id: 'history', label: 'History & Culture', icon: '🏛', desc: '5,000 years of human-raptor relationship', color: 'purple',
+        { id: 'history', label: __alloT('stem.raptorhunt.history_culture', 'History & Culture'), icon: '🏛', desc: __alloT('stem.raptorhunt.5_000_years_of_human_raptor_relationsh', '5,000 years of human-raptor relationship'), color: 'purple',
           sections: ['history', 'culture', 'falconry', 'falconrycurriculum', 'museums', 'biographies', 'experts', 'big_quotes', 'pioneers', 'famous'] },
-        { id: 'teaching', label: 'Teaching & Practice', icon: '🎒', desc: 'Lessons, activities, careers', color: 'indigo',
+        { id: 'teaching', label: __alloT('stem.raptorhunt.teaching_practice', 'Teaching & Practice'), icon: '🎒', desc: __alloT('stem.raptorhunt.lessons_activities_careers', 'Lessons, activities, careers'), color: 'indigo',
           sections: ['lessons', 'kidsactivities', 'reading_levels', 'questionbank', 'scenarios', 'rescue', 'cookbook', 'cookbook2', 'careers', 'photography', 'gear'] },
-        { id: 'reference', label: 'Reference & Resources', icon: '📚', desc: 'Glossaries, books, films, data', color: 'blue',
+        { id: 'reference', label: __alloT('stem.raptorhunt.reference_resources', 'Reference & Resources'), icon: '📚', desc: __alloT('stem.raptorhunt.glossaries_books_films_data', 'Glossaries, books, films, data'), color: 'blue',
           sections: ['glossary', 'glossary2', 'glossary3', 'books', 'films', 'datatables', 'datasets', 'curated_links', 'qa', 'resources', 'social_media', 'songscripts', 'illustrations', 'records', 'mythbusters'] },
-        { id: 'specialty', label: 'Specialty & Reflection', icon: '✨', desc: 'Pellets, feeders, meditations, finale', color: 'rose',
+        { id: 'specialty', label: __alloT('stem.raptorhunt.specialty_reflection', 'Specialty & Reflection'), icon: '✨', desc: __alloT('stem.raptorhunt.pellets_feeders_meditations_finale', 'Pellets, feeders, meditations, finale'), color: 'rose',
           sections: ['meditations', 'farewell', 'finale', 'finale_master', 'twenty_k_finale', 'pellet', 'pelletkey', 'feeder', 'fieldnat'] }
       ];
 
@@ -6978,14 +6979,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🦅'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, 'Raptor Hunt: Predator Physics + Biology'),
-                h('div', { className: 'text-sm text-amber-100/80 mt-1' }, 'Hunt as a peregrine at 240 mph. Crush bones at 530 psi as a harpy. See vole urine trails in UV like a kestrel. Glide silently on owl feathers. Then study the biology that makes it all possible.'),
-                h('div', { className: 'text-xs text-amber-300/70 mt-2 italic' }, '25 sections · 20 species · 6 interactive labs · anatomy + acuity demo · case studies · 42-term glossary · 70-question quiz')
+                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, __alloT('stem.raptorhunt.raptor_hunt_predator_physics_biology', 'Raptor Hunt: Predator Physics + Biology')),
+                h('div', { className: 'text-sm text-amber-100/80 mt-1' }, __alloT('stem.raptorhunt.hunt_as_a_peregrine_at_240_mph_crush_b', 'Hunt as a peregrine at 240 mph. Crush bones at 530 psi as a harpy. See vole urine trails in UV like a kestrel. Glide silently on owl feathers. Then study the biology that makes it all possible.')),
+                h('div', { className: 'text-xs text-amber-300/70 mt-2 italic' }, __alloT('stem.raptorhunt.25_sections_20_species_6_interactive_l', '25 sections · 20 species · 6 interactive labs · anatomy + acuity demo · case studies · 42-term glossary · 70-question quiz'))
               )
             ),
             // ── NEW v0.20: "Surprise me" random-section button ──
             h('div', { className: 'mt-3 pt-3 border-t border-amber-700/30 flex items-center justify-between gap-2 flex-wrap' },
-              h('div', { className: 'text-xs text-amber-200/70' }, '🎲 Not sure where to start?'),
+              h('div', { className: 'text-xs text-amber-200/70' }, __alloT('stem.raptorhunt.not_sure_where_to_start', '🎲 Not sure where to start?')),
               h('button', {
                 onClick: function() {
                   // Pick a random section that isn't 'hub' or 'resources' (the bookend sections)
@@ -6999,8 +7000,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   rhAnnounce('Surprise section: ' + pick.label);
                 },
                 className: 'px-4 py-2 rounded-lg text-sm font-bold bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 transition-all',
-                'aria-label': 'Jump to a random section'
-              }, '🎰 Surprise me — random section')
+                'aria-label': __alloT('stem.raptorhunt.jump_to_a_random_section', 'Jump to a random section')
+              }, __alloT('stem.raptorhunt.surprise_me_random_section', '🎰 Surprise me — random section'))
             )
           ),
           // Quick CTA cards
@@ -7008,44 +7009,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('button', {
               onClick: function() { setRH({ activeSection: 'hunt' }); },
               className: 'text-left p-4 rounded-xl bg-gradient-to-br from-red-900/40 to-orange-900/40 border border-red-700/40 hover:border-red-500/70 transition-all',
-              'aria-label': 'Launch 3D Hunt Simulator'
+              'aria-label': __alloT('stem.raptorhunt.launch_3d_hunt_simulator', 'Launch 3D Hunt Simulator')
             },
               h('div', { className: 'text-3xl mb-2' }, '🎯'),
-              h('div', { className: 'font-bold text-red-200' }, 'Launch Hunt Sim'),
-              h('div', { className: 'text-xs text-red-100/80 mt-1' }, 'Third-person 3D stoop sim. WASD to fly, Shift to dive, Space to pull up, F to strike. Species-specific physics.')
+              h('div', { className: 'font-bold text-red-200' }, __alloT('stem.raptorhunt.launch_hunt_sim', 'Launch Hunt Sim')),
+              h('div', { className: 'text-xs text-red-100/80 mt-1' }, __alloT('stem.raptorhunt.third_person_3d_stoop_sim_wasd_to_fly_', 'Third-person 3D stoop sim. WASD to fly, Shift to dive, Space to pull up, F to strike. Species-specific physics.'))
             ),
             h('button', {
               onClick: function() { setRH({ activeSection: 'roster' }); },
               className: 'text-left p-4 rounded-xl bg-gradient-to-br from-amber-900/40 to-yellow-900/40 border border-amber-700/40 hover:border-amber-500/70 transition-all',
-              'aria-label': 'Browse Species Roster'
+              'aria-label': __alloT('stem.raptorhunt.browse_species_roster', 'Browse Species Roster')
             },
               h('div', { className: 'text-3xl mb-2' }, '📋'),
-              h('div', { className: 'font-bold text-amber-200' }, 'Species Roster'),
-              h('div', { className: 'text-xs text-amber-100/80 mt-1' }, '20 species: peregrine, harpy, golden, bald, red-tail, goshawk, owl, osprey, kestrel, Cooper\'s, snowy, gyrfalcon, kite. Mass, talon force, vision, hunt style.')
+              h('div', { className: 'font-bold text-amber-200' }, __alloT('stem.raptorhunt.species_roster_2', 'Species Roster')),
+              h('div', { className: 'text-xs text-amber-100/80 mt-1' }, __alloT('stem.raptorhunt.20_species_peregrine_harpy_golden_bald', '20 species: peregrine, harpy, golden, bald, red-tail, goshawk, owl, osprey, kestrel, Cooper\'s, snowy, gyrfalcon, kite. Mass, talon force, vision, hunt style.'))
             ),
             h('button', {
               onClick: function() { setRH({ activeSection: 'talons' }); },
               className: 'text-left p-4 rounded-xl bg-gradient-to-br from-orange-900/40 to-red-900/40 border border-orange-700/40 hover:border-orange-500/70 transition-all',
-              'aria-label': 'Talon Mechanics'
+              'aria-label': __alloT('stem.raptorhunt.talon_mechanics_2', 'Talon Mechanics')
             },
               h('div', { className: 'text-3xl mb-2' }, '🪝'),
-              h('div', { className: 'font-bold text-orange-200' }, 'Talon Mechanics'),
-              h('div', { className: 'text-xs text-orange-100/80 mt-1' }, 'Grip force PSI compared across species. Why harpy eagles crush monkey skulls while peregrines punch with clenched feet at 200+ mph.')
+              h('div', { className: 'font-bold text-orange-200' }, __alloT('stem.raptorhunt.talon_mechanics_3', 'Talon Mechanics')),
+              h('div', { className: 'text-xs text-orange-100/80 mt-1' }, __alloT('stem.raptorhunt.grip_force_psi_compared_across_species', 'Grip force PSI compared across species. Why harpy eagles crush monkey skulls while peregrines punch with clenched feet at 200+ mph.'))
             )
           ),
           // Science topic tiles
           h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-amber-300 mb-3' }, '🧠 Deep-Science Modules'),
+            h('div', { className: 'text-sm font-bold text-amber-300 mb-3' }, __alloT('stem.raptorhunt.deep_science_modules', '🧠 Deep-Science Modules')),
             h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2' },
               [
-                { id: 'vision', icon: '👁️', label: 'Vision (4-8× human acuity)' },
-                { id: 'flight', icon: '🪶', label: 'Flight Physics' },
-                { id: 'stoop', icon: '📐', label: 'Stoop Calculator' },
-                { id: 'silent', icon: '🤫', label: 'Owl Silent Flight' },
-                { id: 'senses', icon: '🌗', label: 'Day vs Night Eyes' },
-                { id: 'conservation', icon: '🌍', label: 'DDT + Recovery' },
-                { id: 'fieldid', icon: '🔍', label: 'Field ID' },
-                { id: 'resources', icon: '📚', label: 'Resources' }
+                { id: 'vision', icon: '👁️', label: __alloT('stem.raptorhunt.vision_4_8_human_acuity', 'Vision (4-8× human acuity)') },
+                { id: 'flight', icon: '🪶', label: __alloT('stem.raptorhunt.flight_physics_2', 'Flight Physics') },
+                { id: 'stoop', icon: '📐', label: __alloT('stem.raptorhunt.stoop_calculator_2', 'Stoop Calculator') },
+                { id: 'silent', icon: '🤫', label: __alloT('stem.raptorhunt.owl_silent_flight', 'Owl Silent Flight') },
+                { id: 'senses', icon: '🌗', label: __alloT('stem.raptorhunt.day_vs_night_eyes', 'Day vs Night Eyes') },
+                { id: 'conservation', icon: '🌍', label: __alloT('stem.raptorhunt.ddt_recovery', 'DDT + Recovery') },
+                { id: 'fieldid', icon: '🔍', label: __alloT('stem.raptorhunt.field_id_2', 'Field ID') },
+                { id: 'resources', icon: '📚', label: __alloT('stem.raptorhunt.resources_2', 'Resources') }
               ].map(function(t) {
                 return h('button', {
                   key: t.id,
@@ -7065,26 +7066,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             var now = new Date();
             var daySeed = now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate();
             var challenges = [
-              { icon: '🪝', title: 'Rank by talon force', prompt: 'From memory: order these 5 species by grip force, weakest to strongest — bald eagle, harpy eagle, golden eagle, great horned owl, peregrine.', jumpTo: 'talons', answer: 'Peregrine (230 psi) → Bald eagle (400) → Great horned owl (500) → Harpy eagle (530) → Golden eagle (750)' },
-              { icon: '🎯', title: 'Match silhouette to family', prompt: 'Which family has POINTED swept-back wings + a medium tail with a tomial-tooth notch on the upper beak?', jumpTo: 'fieldid', answer: 'Falconidae — falcons. Pointed wings + the tomial tooth (used to sever the cervical vertebrae) are diagnostic.' },
-              { icon: '📐', title: 'Stoop physics', prompt: 'Estimate: a peregrine at 242 mph terminal velocity carries roughly how much kinetic energy at impact?', jumpTo: 'stoop', answer: '~5,000 J — pistol-bullet class. KE = ½ × 0.95 kg × (108 m/s)² ≈ 5,540 J.' },
-              { icon: '👁', title: 'UV vision', prompt: 'Which family of raptor can see ultraviolet light + uses it to track vole urine trails?', jumpTo: 'vision', answer: 'Falconidae (kestrels especially). Vole urine reflects UV strongly; the kestrel sees "glowing highways" of rodent travel routes. Viitala et al 1995 Nature.' },
-              { icon: '🤫', title: 'Silent flight mechanism', prompt: 'Name the 3 owl-feather features that produce silent flight.', jumpTo: 'silent', answer: 'Comb leading edge (serrated primaries) + fringed trailing edge + velvety dorsal surface. Shifts noise to ~16 kHz, above prey hearing range.' },
-              { icon: '🦉', title: 'Owl 3D hearing', prompt: 'How does an owl tell whether a sound came from ABOVE or BELOW its head?', jumpTo: 'senses', answer: 'Ear asymmetry: left ear opening sits higher on the skull than the right. Sound from above hits left ear first by ~30 microseconds; from below, right first. Payne 1962.' },
-              { icon: '🧭', title: 'Where the rivers meet', prompt: 'What is the world\'s largest single-site raptor migration count? About how many birds pass through each fall?', jumpTo: 'migration', answer: 'Veracruz River of Raptors (Mexico) — ~5 million birds per fall. Atlantic + Mississippi + Central flyways all converge before crossing into Central America.' },
-              { icon: '🐣', title: 'Why eagles are slow to recover', prompt: 'In K-selected raptor demographics, which is the highest-leverage parameter for population growth?', jumpTo: 'lifecycle', answer: 'Adult annual survival. Even small drops (e.g., from lead poisoning) flip λ from growing to declining. Adult breeders are worth 5-10× juveniles demographically.' },
-              { icon: '🏆', title: 'DDT recovery', prompt: 'Roughly how many peregrine pairs were left in the lower 48 US at the species\' nadir in 1972?', jumpTo: 'recoveries', answer: 'Fewer than 50. The species was functionally extinct east of the Rockies before the 1972 US DDT ban + The Peregrine Fund\'s captive-breeding program restored it to ~3,200 pairs by 2020.' },
-              { icon: '🦅', title: 'Tucker 1998', prompt: 'Why do peregrines fly a logarithmic spiral approach instead of a straight line?', jumpTo: 'spiral', answer: 'Constant retinal angle on the prey — no head turn needed at terminal velocity, no drag penalty. Identical algorithm to AIM-9 Sidewinder missiles.' },
-              { icon: '🥚', title: 'What\'s in a pellet?', prompt: 'A barn owl pellet is composed of roughly what proportions of fur vs. bone vs. teeth?', jumpTo: 'pellet', answer: 'About 40-60% fur (matrix), 20-30% bone fragments, ~5% cranium, ~5% loose teeth, 5-15% feathers + bird bones, 0-10% insect chitin.' },
-              { icon: '🤝', title: 'Berkutchi', prompt: 'Which species do Mongolian Berkutchi traditionally train, + what prey can it take?', jumpTo: 'falconry', answer: 'Golden eagle (Aquila chrysaetos). Trained to take wolves, foxes, hares from horseback. Tradition dating to ~2000 BCE.' },
-              { icon: '⭐', title: 'Pale Male', prompt: 'How long did Pale Male, Manhattan\'s most famous red-tailed hawk, nest at 927 Fifth Avenue?', jumpTo: 'famous', answer: '32 years (1991-2023). Raised 26+ offspring. The 2004 coop-board nest-removal sparked a 12-day public outcry covered by the NYT.' },
-              { icon: '🪂', title: 'Wing-loading prediction', prompt: 'A bird with HIGH wing loading + HIGH aspect ratio will hunt how?', jumpTo: 'predictor', answer: 'Falcon-style stoop specialist. Fast level + lethal dive, large turning radius, bad at slow flight. (Peregrine: 8.8 kg/m² / AR 10.2)' }
+              { icon: '🪝', title: __alloT('stem.raptorhunt.rank_by_talon_force', 'Rank by talon force'), prompt: __alloT('stem.raptorhunt.from_memory_order_these_5_species_by_g', 'From memory: order these 5 species by grip force, weakest to strongest — bald eagle, harpy eagle, golden eagle, great horned owl, peregrine.'), jumpTo: 'talons', answer: __alloT('stem.raptorhunt.peregrine_230_psi_bald_eagle_400_great', 'Peregrine (230 psi) → Bald eagle (400) → Great horned owl (500) → Harpy eagle (530) → Golden eagle (750)') },
+              { icon: '🎯', title: __alloT('stem.raptorhunt.match_silhouette_to_family', 'Match silhouette to family'), prompt: __alloT('stem.raptorhunt.which_family_has_pointed_swept_back_wi', 'Which family has POINTED swept-back wings + a medium tail with a tomial-tooth notch on the upper beak?'), jumpTo: 'fieldid', answer: __alloT('stem.raptorhunt.falconidae_falcons_pointed_wings_the_t', 'Falconidae — falcons. Pointed wings + the tomial tooth (used to sever the cervical vertebrae) are diagnostic.') },
+              { icon: '📐', title: __alloT('stem.raptorhunt.stoop_physics', 'Stoop physics'), prompt: __alloT('stem.raptorhunt.estimate_a_peregrine_at_242_mph_termin', 'Estimate: a peregrine at 242 mph terminal velocity carries roughly how much kinetic energy at impact?'), jumpTo: 'stoop', answer: __alloT('stem.raptorhunt.5_000_j_pistol_bullet_class_ke_0_95_kg', '~5,000 J — pistol-bullet class. KE = ½ × 0.95 kg × (108 m/s)² ≈ 5,540 J.') },
+              { icon: '👁', title: __alloT('stem.raptorhunt.uv_vision', 'UV vision'), prompt: __alloT('stem.raptorhunt.which_family_of_raptor_can_see_ultravi', 'Which family of raptor can see ultraviolet light + uses it to track vole urine trails?'), jumpTo: 'vision', answer: __alloT('stem.raptorhunt.falconidae_kestrels_especially_vole_ur', 'Falconidae (kestrels especially). Vole urine reflects UV strongly; the kestrel sees "glowing highways" of rodent travel routes. Viitala et al 1995 Nature.') },
+              { icon: '🤫', title: __alloT('stem.raptorhunt.silent_flight_mechanism', 'Silent flight mechanism'), prompt: __alloT('stem.raptorhunt.name_the_3_owl_feather_features_that_p', 'Name the 3 owl-feather features that produce silent flight.'), jumpTo: 'silent', answer: __alloT('stem.raptorhunt.comb_leading_edge_serrated_primaries_f', 'Comb leading edge (serrated primaries) + fringed trailing edge + velvety dorsal surface. Shifts noise to ~16 kHz, above prey hearing range.') },
+              { icon: '🦉', title: __alloT('stem.raptorhunt.owl_3d_hearing', 'Owl 3D hearing'), prompt: __alloT('stem.raptorhunt.how_does_an_owl_tell_whether_a_sound_c', 'How does an owl tell whether a sound came from ABOVE or BELOW its head?'), jumpTo: 'senses', answer: __alloT('stem.raptorhunt.ear_asymmetry_left_ear_opening_sits_hi', 'Ear asymmetry: left ear opening sits higher on the skull than the right. Sound from above hits left ear first by ~30 microseconds; from below, right first. Payne 1962.') },
+              { icon: '🧭', title: __alloT('stem.raptorhunt.where_the_rivers_meet', 'Where the rivers meet'), prompt: __alloT('stem.raptorhunt.what_is_the_world_s_largest_single_sit', 'What is the world\'s largest single-site raptor migration count? About how many birds pass through each fall?'), jumpTo: 'migration', answer: __alloT('stem.raptorhunt.veracruz_river_of_raptors_mexico_5_mil', 'Veracruz River of Raptors (Mexico) — ~5 million birds per fall. Atlantic + Mississippi + Central flyways all converge before crossing into Central America.') },
+              { icon: '🐣', title: __alloT('stem.raptorhunt.why_eagles_are_slow_to_recover', 'Why eagles are slow to recover'), prompt: __alloT('stem.raptorhunt.in_k_selected_raptor_demographics_whic', 'In K-selected raptor demographics, which is the highest-leverage parameter for population growth?'), jumpTo: 'lifecycle', answer: __alloT('stem.raptorhunt.adult_annual_survival_even_small_drops', 'Adult annual survival. Even small drops (e.g., from lead poisoning) flip λ from growing to declining. Adult breeders are worth 5-10× juveniles demographically.') },
+              { icon: '🏆', title: __alloT('stem.raptorhunt.ddt_recovery_2', 'DDT recovery'), prompt: __alloT('stem.raptorhunt.roughly_how_many_peregrine_pairs_were_', 'Roughly how many peregrine pairs were left in the lower 48 US at the species\' nadir in 1972?'), jumpTo: 'recoveries', answer: __alloT('stem.raptorhunt.fewer_than_50_the_species_was_function', 'Fewer than 50. The species was functionally extinct east of the Rockies before the 1972 US DDT ban + The Peregrine Fund\'s captive-breeding program restored it to ~3,200 pairs by 2020.') },
+              { icon: '🦅', title: __alloT('stem.raptorhunt.tucker_1998', 'Tucker 1998'), prompt: __alloT('stem.raptorhunt.why_do_peregrines_fly_a_logarithmic_sp', 'Why do peregrines fly a logarithmic spiral approach instead of a straight line?'), jumpTo: 'spiral', answer: __alloT('stem.raptorhunt.constant_retinal_angle_on_the_prey_no_', 'Constant retinal angle on the prey — no head turn needed at terminal velocity, no drag penalty. Identical algorithm to AIM-9 Sidewinder missiles.') },
+              { icon: '🥚', title: __alloT('stem.raptorhunt.what_s_in_a_pellet', 'What\'s in a pellet?'), prompt: __alloT('stem.raptorhunt.a_barn_owl_pellet_is_composed_of_rough', 'A barn owl pellet is composed of roughly what proportions of fur vs. bone vs. teeth?'), jumpTo: 'pellet', answer: __alloT('stem.raptorhunt.about_40_60_fur_matrix_20_30_bone_frag', 'About 40-60% fur (matrix), 20-30% bone fragments, ~5% cranium, ~5% loose teeth, 5-15% feathers + bird bones, 0-10% insect chitin.') },
+              { icon: '🤝', title: __alloT('stem.raptorhunt.berkutchi', 'Berkutchi'), prompt: __alloT('stem.raptorhunt.which_species_do_mongolian_berkutchi_t', 'Which species do Mongolian Berkutchi traditionally train, + what prey can it take?'), jumpTo: 'falconry', answer: __alloT('stem.raptorhunt.golden_eagle_aquila_chrysaetos_trained', 'Golden eagle (Aquila chrysaetos). Trained to take wolves, foxes, hares from horseback. Tradition dating to ~2000 BCE.') },
+              { icon: '⭐', title: __alloT('stem.raptorhunt.pale_male', 'Pale Male'), prompt: __alloT('stem.raptorhunt.how_long_did_pale_male_manhattan_s_mos', 'How long did Pale Male, Manhattan\'s most famous red-tailed hawk, nest at 927 Fifth Avenue?'), jumpTo: 'famous', answer: __alloT('stem.raptorhunt.32_years_1991_2023_raised_26_offspring', '32 years (1991-2023). Raised 26+ offspring. The 2004 coop-board nest-removal sparked a 12-day public outcry covered by the NYT.') },
+              { icon: '🪂', title: __alloT('stem.raptorhunt.wing_loading_prediction', 'Wing-loading prediction'), prompt: __alloT('stem.raptorhunt.a_bird_with_high_wing_loading_high_asp', 'A bird with HIGH wing loading + HIGH aspect ratio will hunt how?'), jumpTo: 'predictor', answer: __alloT('stem.raptorhunt.falcon_style_stoop_specialist_fast_lev', 'Falcon-style stoop specialist. Fast level + lethal dive, large turning radius, bad at slow flight. (Peregrine: 8.8 kg/m² / AR 10.2)') }
             ];
             var todayChallenge = challenges[daySeed % challenges.length];
             var revealed = (rh.challengeRevealed === daySeed);
             return h('div', { className: 'bg-gradient-to-br from-purple-900/40 to-fuchsia-900/40 border border-purple-700/40 rounded-xl p-4' },
               h('div', { className: 'flex items-baseline justify-between gap-2 mb-2' },
-                h('div', { className: 'text-sm font-bold text-purple-300' }, '🎲 Challenge of the Day'),
+                h('div', { className: 'text-sm font-bold text-purple-300' }, __alloT('stem.raptorhunt.challenge_of_the_day', '🎲 Challenge of the Day')),
                 h('div', { className: 'text-[10px] text-slate-400 font-mono' }, now.toLocaleDateString())
               ),
               h('div', { className: 'flex items-start gap-3' },
@@ -7097,8 +7098,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     h('button', {
                       onClick: function() { setRH({ challengeRevealed: daySeed }); rhAnnounce('Answer revealed'); },
                       className: 'transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-purple-700 text-amber-100 hover:bg-purple-600 active:scale-[0.97]',
-                      'aria-label': 'Show answer'
-                    }, '👁 Show Answer'),
+                      'aria-label': __alloT('stem.raptorhunt.show_answer', 'Show answer')
+                    }, __alloT('stem.raptorhunt.show_answer_2', '👁 Show Answer')),
                     h('button', {
                       onClick: function() {
                         setRH(function(cur) {
@@ -7108,12 +7109,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                         });
                       },
                       className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white hover:from-purple-700 hover:to-fuchsia-700',
-                      'aria-label': 'Jump to relevant section'
-                    }, '↗ Study the topic')
+                      'aria-label': __alloT('stem.raptorhunt.jump_to_relevant_section', 'Jump to relevant section')
+                    }, __alloT('stem.raptorhunt.study_the_topic', '↗ Study the topic'))
                   ),
                   // Revealed answer
                   revealed && h('div', { className: 'bg-emerald-900/30 border border-emerald-700/40 rounded-lg p-3' },
-                    h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '✓ Answer'),
+                    h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.answer', '✓ Answer')),
                     h('div', { className: 'text-xs text-emerald-100/90 leading-relaxed mb-2' }, todayChallenge.answer),
                     h('button', {
                       onClick: function() {
@@ -7124,12 +7125,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                         });
                       },
                       className: 'transition-colors text-[10px] text-cyan-300 hover:text-cyan-200 underline',
-                      'aria-label': 'Jump to relevant section'
-                    }, '↗ Read more in the relevant section')
+                      'aria-label': __alloT('stem.raptorhunt.jump_to_relevant_section_2', 'Jump to relevant section')
+                    }, __alloT('stem.raptorhunt.read_more_in_the_relevant_section', '↗ Read more in the relevant section'))
                   )
                 )
               ),
-              h('div', { className: 'text-[10px] text-slate-500 italic mt-2 text-right' }, 'New challenge tomorrow.')
+              h('div', { className: 'text-[10px] text-slate-500 italic mt-2 text-right' }, __alloT('stem.raptorhunt.new_challenge_tomorrow', 'New challenge tomorrow.'))
             );
           })(),
 
@@ -7149,7 +7150,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             unique = unique.slice(-5); // last 5 unique
             if (unique.length < 2) return null; // not interesting until 2+ unique
             return h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-3' },
-              h('div', { className: 'text-xs font-bold text-amber-300 mb-2' }, '🕒 Recently viewed (this session)'),
+              h('div', { className: 'text-xs font-bold text-amber-300 mb-2' }, __alloT('stem.raptorhunt.recently_viewed_this_session', '🕒 Recently viewed (this session)')),
               h('div', { className: 'flex gap-2 flex-wrap' },
                 unique.map(function(sid) {
                   var sec = SECTIONS.filter(function(x) { return x.id === sid; })[0];
@@ -7181,14 +7182,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             var pct = Math.round((visitedCount / totalSections) * 100);
             // Section state by category for compactness
             var groups = [
-              { label: '🎮 Interactive Labs', sectionIds: ['hunt', 'hearing', 'pellet', 'spiral', 'acuity', 'predictor'] },
-              { label: '🔬 Deep Science', sectionIds: ['talons', 'vision', 'flight', 'stoop', 'silent', 'senses', 'anatomy', 'lifecycle'] },
-              { label: '🌍 Ecology + Conservation', sectionIds: ['conservation', 'migration', 'recoveries', 'fieldid'] },
-              { label: '📚 Reference + History', sectionIds: ['roster', 'falconry', 'famous', 'glossary', 'quiz', 'resources'] }
+              { label: __alloT('stem.raptorhunt.interactive_labs', '🎮 Interactive Labs'), sectionIds: ['hunt', 'hearing', 'pellet', 'spiral', 'acuity', 'predictor'] },
+              { label: __alloT('stem.raptorhunt.deep_science', '🔬 Deep Science'), sectionIds: ['talons', 'vision', 'flight', 'stoop', 'silent', 'senses', 'anatomy', 'lifecycle'] },
+              { label: __alloT('stem.raptorhunt.ecology_conservation', '🌍 Ecology + Conservation'), sectionIds: ['conservation', 'migration', 'recoveries', 'fieldid'] },
+              { label: __alloT('stem.raptorhunt.reference_history', '📚 Reference + History'), sectionIds: ['roster', 'falconry', 'famous', 'glossary', 'quiz', 'resources'] }
             ];
             return h('div', { className: 'bg-gradient-to-br from-indigo-900/30 to-violet-900/30 border border-indigo-700/40 rounded-xl p-4' },
               h('div', { className: 'flex items-center justify-between mb-3' },
-                h('div', { className: 'text-sm font-bold text-indigo-300' }, '🗺 Your Tour Progress'),
+                h('div', { className: 'text-sm font-bold text-indigo-300' }, __alloT('stem.raptorhunt.your_tour_progress', '🗺 Your Tour Progress')),
                 h('div', { className: 'text-xs font-mono text-amber-300' }, visitedCount + ' / ' + totalSections + ' sections (' + pct + '%)')
               ),
               // Progress bar
@@ -7243,22 +7244,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('button', {
                   onClick: function() { if (typeof window !== 'undefined' && window.confirm && window.confirm('Reset visit history?')) setRH({ visited: {} }); },
                   className: 'transition-colors text-[10px] text-slate-500 hover:text-amber-300 italic underline',
-                  'aria-label': 'Reset visit history'
-                }, 'Reset progress')
+                  'aria-label': __alloT('stem.raptorhunt.reset_visit_history', 'Reset visit history')
+                }, __alloT('stem.raptorhunt.reset_progress', 'Reset progress'))
               )
             );
           })(),
 
           // Pedagogy framing
           h('div', { className: 'bg-emerald-900/20 border border-emerald-700/30 rounded-xl p-4' },
-            h('div', { className: 'text-xs font-bold text-emerald-300 mb-2' }, '📖 What students learn'),
+            h('div', { className: 'text-xs font-bold text-emerald-300 mb-2' }, __alloT('stem.raptorhunt.what_students_learn', '📖 What students learn')),
             h('ul', { className: 'text-xs text-emerald-100/90 space-y-1 list-disc list-inside' },
-              h('li', null, 'Force = mass × acceleration: kinetic energy of a 200 mph dive ≈ pistol bullet'),
-              h('li', null, 'Pressure = force / area: why talon length × grip muscle = lethal precision'),
-              h('li', null, 'Fluid dynamics: drag coefficient + wing loading + terminal velocity'),
-              h('li', null, 'Frequency-domain acoustics: how owl feathers shift noise above prey hearing'),
-              h('li', null, 'Predator ecology + the DDT story: how science + policy reversed a near-extinction'),
-              h('li', null, 'Field ID using gestalt — wing shape + flight pattern over species checklist')
+              h('li', null, __alloT('stem.raptorhunt.force_mass_acceleration_kinetic_energy', 'Force = mass × acceleration: kinetic energy of a 200 mph dive ≈ pistol bullet')),
+              h('li', null, __alloT('stem.raptorhunt.pressure_force_area_why_talon_length_g', 'Pressure = force / area: why talon length × grip muscle = lethal precision')),
+              h('li', null, __alloT('stem.raptorhunt.fluid_dynamics_drag_coefficient_wing_l', 'Fluid dynamics: drag coefficient + wing loading + terminal velocity')),
+              h('li', null, __alloT('stem.raptorhunt.frequency_domain_acoustics_how_owl_fea', 'Frequency-domain acoustics: how owl feathers shift noise above prey hearing')),
+              h('li', null, __alloT('stem.raptorhunt.predator_ecology_the_ddt_story_how_sci', 'Predator ecology + the DDT story: how science + policy reversed a near-extinction')),
+              h('li', null, __alloT('stem.raptorhunt.field_id_using_gestalt_wing_shape_flig', 'Field ID using gestalt — wing shape + flight pattern over species checklist'))
             )
           )
         );
@@ -7301,7 +7302,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
-            h('div', { className: 'text-sm text-amber-200/80' }, 'Tap a species card or row to make it the active raptor for the Hunt Sim + science modules.'),
+            h('div', { className: 'text-sm text-amber-200/80' }, __alloT('stem.raptorhunt.tap_a_species_card_or_row_to_make_it_t', 'Tap a species card or row to make it the active raptor for the Hunt Sim + science modules.')),
             // View toggle (3 modes now)
             h('div', { className: 'flex gap-1 bg-slate-800/60 rounded-lg p-1' },
               ['cards', 'table', 'duel'].map(function(v) {
@@ -7329,17 +7330,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             function setDuel(side, id) { setRH(side === 'A' ? { duelA: id } : { duelB: id }); }
             // Stats to compare (with directional meaning)
             var stats = [
-              { key: 'massKg', label: 'Mass (kg)', higher: 'heavier' },
-              { key: 'wingspanM', label: 'Wingspan (m)', higher: 'larger' },
-              { key: 'wingLoading', label: 'Wing loading (kg/m²)', higher: 'faster' },
-              { key: 'aspectRatio', label: 'Aspect ratio', higher: 'better soarer' },
-              { key: 'maxLevelMph', label: 'Max level speed (mph)', higher: 'faster' },
-              { key: 'stoopMph', label: 'Stoop speed (mph)', higher: 'faster dive' },
-              { key: 'talonForcePsi', label: 'Talon grip (psi)', higher: 'stronger' },
-              { key: 'talonLengthMm', label: 'Talon length (mm)', higher: 'longer reach' },
-              { key: 'visualAcuityX', label: 'Visual acuity (× human)', higher: 'sharper' },
-              { key: 'visualFieldDeg', label: 'Visual field (°)', higher: 'wider' },
-              { key: 'pullupG', label: 'Pull-up G tolerance', higher: 'tougher' }
+              { key: 'massKg', label: __alloT('stem.raptorhunt.mass_kg', 'Mass (kg)'), higher: 'heavier' },
+              { key: 'wingspanM', label: __alloT('stem.raptorhunt.wingspan_m', 'Wingspan (m)'), higher: 'larger' },
+              { key: 'wingLoading', label: __alloT('stem.raptorhunt.wing_loading_kg_m', 'Wing loading (kg/m²)'), higher: 'faster' },
+              { key: 'aspectRatio', label: __alloT('stem.raptorhunt.aspect_ratio', 'Aspect ratio'), higher: 'better soarer' },
+              { key: 'maxLevelMph', label: __alloT('stem.raptorhunt.max_level_speed_mph', 'Max level speed (mph)'), higher: 'faster' },
+              { key: 'stoopMph', label: __alloT('stem.raptorhunt.stoop_speed_mph', 'Stoop speed (mph)'), higher: 'faster dive' },
+              { key: 'talonForcePsi', label: __alloT('stem.raptorhunt.talon_grip_psi', 'Talon grip (psi)'), higher: 'stronger' },
+              { key: 'talonLengthMm', label: __alloT('stem.raptorhunt.talon_length_mm', 'Talon length (mm)'), higher: 'longer reach' },
+              { key: 'visualAcuityX', label: __alloT('stem.raptorhunt.visual_acuity_human', 'Visual acuity (× human)'), higher: 'sharper' },
+              { key: 'visualFieldDeg', label: __alloT('stem.raptorhunt.visual_field', 'Visual field (°)'), higher: 'wider' },
+              { key: 'pullupG', label: __alloT('stem.raptorhunt.pull_up_g_tolerance', 'Pull-up G tolerance'), higher: 'tougher' }
             ];
             function rowColor(a, b) {
               if (a > b) return 'aWins';
@@ -7348,7 +7349,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             }
             return h('div', { className: 'space-y-4' },
               h('div', { className: 'bg-gradient-to-br from-amber-900/30 to-orange-900/30 border border-amber-700/40 rounded-xl p-4' },
-                h('div', { className: 'text-sm font-bold text-amber-300 mb-2' }, '🆚 Pick Two Species'),
+                h('div', { className: 'text-sm font-bold text-amber-300 mb-2' }, __alloT('stem.raptorhunt.pick_two_species', '🆚 Pick Two Species')),
                 h('div', { className: 'grid grid-cols-2 gap-3' },
                   // Side A selector
                   h('div', { className: 'bg-slate-900/40 rounded-lg p-3 border border-amber-700/40' },
@@ -7356,7 +7357,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     h('select', {
                       value: duelA, onChange: function(e) { setDuel('A', e.target.value); },
                       className: 'w-full px-2 py-1.5 rounded bg-slate-800 text-amber-100 border border-slate-700 text-sm',
-                      'aria-label': 'Species A'
+                      'aria-label': __alloT('stem.raptorhunt.species_a', 'Species A')
                     },
                       SPECIES.map(function(s) { return h('option', { key: s.id, value: s.id }, s.emoji + ' ' + s.name); })
                     ),
@@ -7371,7 +7372,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     h('select', {
                       value: duelB, onChange: function(e) { setDuel('B', e.target.value); },
                       className: 'w-full px-2 py-1.5 rounded bg-slate-800 text-orange-100 border border-slate-700 text-sm',
-                      'aria-label': 'Species B'
+                      'aria-label': __alloT('stem.raptorhunt.species_b', 'Species B')
                     },
                       SPECIES.map(function(s) { return h('option', { key: s.id, value: s.id }, s.emoji + ' ' + s.name); })
                     ),
@@ -7384,7 +7385,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               ),
               // Stat-by-stat duel
               h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-3' },
-                h('div', { className: 'text-sm font-bold text-amber-300 mb-3' }, '📊 Head-to-head Stats'),
+                h('div', { className: 'text-sm font-bold text-amber-300 mb-3' }, __alloT('stem.raptorhunt.head_to_head_stats', '📊 Head-to-head Stats')),
                 h('div', { className: 'space-y-1' },
                   stats.map(function(stat, i) {
                     var a = spA[stat.key], b = spB[stat.key];
@@ -7412,10 +7413,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 });
                 var winner = aWins > bWins ? 'A' : (bWins > aWins ? 'B' : null);
                 return h('div', { className: 'bg-gradient-to-br from-' + (winner === 'A' ? 'emerald' : winner === 'B' ? 'amber' : 'slate') + '-900/30 to-slate-900/30 border border-amber-700/40 rounded-xl p-4 text-center' },
-                  h('div', { className: 'text-lg font-bold text-amber-300 mb-1 tracking-tight' }, '🏆 Stat-Sheet Winner'),
+                  h('div', { className: 'text-lg font-bold text-amber-300 mb-1 tracking-tight' }, __alloT('stem.raptorhunt.stat_sheet_winner', '🏆 Stat-Sheet Winner')),
                   h('div', { className: 'text-2xl my-1' }, winner === 'A' ? spA.emoji + ' ' + spA.name : winner === 'B' ? spB.emoji + ' ' + spB.name : '⚖ Tied'),
                   h('div', { className: 'text-xs text-slate-300' }, aWins + ' stats vs ' + bWins + ' stats out of ' + stats.length),
-                  h('div', { className: 'text-[10px] text-slate-500 italic mt-2' }, 'Note: "winning" on stats ≠ winning in nature. Each species evolved for its specific niche. A peregrine in a forest loses to a goshawk; a harpy in open desert loses to a golden eagle.')
+                  h('div', { className: 'text-[10px] text-slate-500 italic mt-2' }, __alloT('stem.raptorhunt.note_winning_on_stats_winning_in_natur', 'Note: "winning" on stats ≠ winning in nature. Each species evolved for its specific niche. A peregrine in a forest loses to a goshawk; a harpy in open desert loses to a golden eagle.'))
                 );
               })(),
               // Activate buttons
@@ -7423,12 +7424,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('button', {
                   onClick: function() { setRH({ selectedSpecies: duelA }); rhAnnounce(spA.name + ' selected for Hunt Sim'); },
                   className: 'transition-colors px-4 py-2 rounded-lg text-xs font-bold bg-slate-700 text-amber-300 hover:bg-slate-600 active:scale-[0.97]',
-                  'aria-label': 'Select A for Hunt Sim'
+                  'aria-label': __alloT('stem.raptorhunt.select_a_for_hunt_sim', 'Select A for Hunt Sim')
                 }, '→ Use ' + spA.name + ' in Hunt Sim'),
                 h('button', {
                   onClick: function() { setRH({ selectedSpecies: duelB }); rhAnnounce(spB.name + ' selected for Hunt Sim'); },
                   className: 'transition-colors px-4 py-2 rounded-lg text-xs font-bold bg-slate-700 text-orange-300 hover:bg-slate-600 active:scale-[0.97]',
-                  'aria-label': 'Select B for Hunt Sim'
+                  'aria-label': __alloT('stem.raptorhunt.select_b_for_hunt_sim', 'Select B for Hunt Sim')
                 }, '→ Use ' + spB.name + ' in Hunt Sim')
               )
             );
@@ -7436,9 +7437,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
           // ── NEW v0.10: Comparison Table View ──
           rosterView === 'table' && h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-xs text-slate-400 italic mb-2' }, 'Click any column header to sort by that field. Click any row to make that species active.'),
+            h('div', { className: 'text-xs text-slate-400 italic mb-2' }, __alloT('stem.raptorhunt.click_any_column_header_to_sort_by_tha', 'Click any column header to sort by that field. Click any row to make that species active.')),
             h('div', { className: 'overflow-x-auto' },
-              h('table', { className: 'w-full text-xs', 'aria-label': 'Raptor species comparison table' },
+              h('table', { className: 'w-full text-xs', 'aria-label': __alloT('stem.raptorhunt.raptor_species_comparison_table', 'Raptor species comparison table') },
                 h('thead', null,
                   h('tr', { className: 'border-b border-slate-700' },
                     sortHeader('name', 'Species'),
@@ -7482,7 +7483,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 )
               )
             ),
-            h('div', { className: 'text-[10px] text-slate-500 italic mt-2' }, 'Try sorting by Talon (psi) to see who has the strongest grip (golden eagle), or by Wing loading to see who\'s built for speed (peregrine vs harpy).')
+            h('div', { className: 'text-[10px] text-slate-500 italic mt-2' }, __alloT('stem.raptorhunt.try_sorting_by_talon_psi_to_see_who_ha', 'Try sorting by Talon (psi) to see who has the strongest grip (golden eagle), or by Wing loading to see who\'s built for speed (peregrine vs harpy).'))
           ),
 
           rosterView === 'cards' && h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
@@ -7504,15 +7505,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     h('div', { className: 'text-xs text-slate-300 mt-1' }, s.huntStyle),
                     h('div', { className: 'mt-2 grid grid-cols-3 gap-1 text-[10px]' },
                       h('div', { className: 'bg-slate-900/50 rounded p-1.5' },
-                        h('div', { className: 'text-slate-400' }, 'Mass'),
+                        h('div', { className: 'text-slate-400' }, __alloT('stem.raptorhunt.mass', 'Mass')),
                         h('div', { className: 'font-bold text-amber-300' }, s.massKg + ' kg')
                       ),
                       h('div', { className: 'bg-slate-900/50 rounded p-1.5' },
-                        h('div', { className: 'text-slate-400' }, 'Talon'),
+                        h('div', { className: 'text-slate-400' }, __alloT('stem.raptorhunt.talon', 'Talon')),
                         h('div', { className: 'font-bold text-amber-300' }, s.talonForcePsi + ' psi')
                       ),
                       h('div', { className: 'bg-slate-900/50 rounded p-1.5' },
-                        h('div', { className: 'text-slate-400' }, 'Stoop'),
+                        h('div', { className: 'text-slate-400' }, __alloT('stem.raptorhunt.stoop', 'Stoop')),
                         h('div', { className: 'font-bold text-amber-300' }, s.stoopMph + ' mph')
                       )
                     )
@@ -7555,51 +7556,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', null, h('span', { className: 'text-amber-300 font-bold' }, 'Range: '), h('span', { className: 'text-slate-300' }, sp.range)),
               h('div', null, h('span', { className: 'text-amber-300 font-bold' }, 'Conservation: '), h('span', { className: 'text-slate-300' }, sp.conservation)),
               h('div', { className: 'mt-2 p-3 bg-amber-900/30 rounded border border-amber-700/40' },
-                h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, '🦅 Hunt Style'),
+                h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.hunt_style', '🦅 Hunt Style')),
                 h('div', { className: 'text-sm text-amber-100/90' }, sp.huntStyle)
               ),
               h('div', { className: 'p-3 bg-slate-900/40 rounded border border-slate-700/40' },
-                h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '🌍 Ecology'),
+                h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.ecology', '🌍 Ecology')),
                 h('div', { className: 'text-sm text-slate-200' }, sp.ecology)
               ),
               h('div', { className: 'p-3 bg-orange-900/30 rounded border border-orange-700/40' },
-                h('div', { className: 'text-xs font-bold text-orange-300 mb-1' }, '⚡ Weird fact'),
+                h('div', { className: 'text-xs font-bold text-orange-300 mb-1' }, __alloT('stem.raptorhunt.weird_fact', '⚡ Weird fact')),
                 h('div', { className: 'text-sm text-orange-100/90' }, sp.weird)
               ),
               // ── NEW v0.33: Species Deep Dive expandable section ──
               SPECIES_DEEPDIVE[sp.id] && h('details', { className: 'mt-2 p-3 bg-slate-900/40 rounded border border-slate-700/40' },
-                h('summary', { className: 'text-xs font-bold text-amber-300 cursor-pointer' }, '📚 Deep dive: breeding · hunt strategy · history · ID · photography · taxonomy'),
+                h('summary', { className: 'text-xs font-bold text-amber-300 cursor-pointer' }, __alloT('stem.raptorhunt.deep_dive_breeding_hunt_strategy_histo', '📚 Deep dive: breeding · hunt strategy · history · ID · photography · taxonomy')),
                 h('div', { className: 'mt-3 space-y-3 text-xs' },
                   h('div', null,
-                    h('div', { className: 'text-amber-300 font-bold mb-1' }, '🐣 Breeding'),
+                    h('div', { className: 'text-amber-300 font-bold mb-1' }, __alloT('stem.raptorhunt.breeding', '🐣 Breeding')),
                     h('div', { className: 'text-slate-200 leading-relaxed' }, SPECIES_DEEPDIVE[sp.id].breeding)
                   ),
                   h('div', null,
-                    h('div', { className: 'text-red-300 font-bold mb-1' }, '🎯 Hunt strategy in depth'),
+                    h('div', { className: 'text-red-300 font-bold mb-1' }, __alloT('stem.raptorhunt.hunt_strategy_in_depth', '🎯 Hunt strategy in depth')),
                     h('div', { className: 'text-slate-200 leading-relaxed' }, SPECIES_DEEPDIVE[sp.id].huntStrategyDetail)
                   ),
                   h('div', null,
-                    h('div', { className: 'text-emerald-300 font-bold mb-1' }, '📊 Population history'),
+                    h('div', { className: 'text-emerald-300 font-bold mb-1' }, __alloT('stem.raptorhunt.population_history', '📊 Population history')),
                     h('div', { className: 'text-slate-200 leading-relaxed' }, SPECIES_DEEPDIVE[sp.id].populationHistory)
                   ),
                   h('div', null,
-                    h('div', { className: 'text-cyan-300 font-bold mb-1' }, '🔍 Field-ID tips'),
+                    h('div', { className: 'text-cyan-300 font-bold mb-1' }, __alloT('stem.raptorhunt.field_id_tips', '🔍 Field-ID tips')),
                     h('div', { className: 'text-slate-200 leading-relaxed' }, SPECIES_DEEPDIVE[sp.id].idTips)
                   ),
                   h('div', null,
-                    h('div', { className: 'text-yellow-300 font-bold mb-1' }, '🗓 When + where to see'),
+                    h('div', { className: 'text-yellow-300 font-bold mb-1' }, __alloT('stem.raptorhunt.when_where_to_see', '🗓 When + where to see')),
                     h('div', { className: 'text-slate-200 leading-relaxed' }, SPECIES_DEEPDIVE[sp.id].whenToSee)
                   ),
                   h('div', null,
-                    h('div', { className: 'text-pink-300 font-bold mb-1' }, '📷 Photography tips'),
+                    h('div', { className: 'text-pink-300 font-bold mb-1' }, __alloT('stem.raptorhunt.photography_tips', '📷 Photography tips')),
                     h('div', { className: 'text-slate-200 leading-relaxed' }, SPECIES_DEEPDIVE[sp.id].photoTips)
                   ),
                   h('div', null,
-                    h('div', { className: 'text-purple-300 font-bold mb-1' }, '🧬 Taxonomy notes'),
+                    h('div', { className: 'text-purple-300 font-bold mb-1' }, __alloT('stem.raptorhunt.taxonomy_notes', '🧬 Taxonomy notes')),
                     h('div', { className: 'text-slate-200 leading-relaxed' }, SPECIES_DEEPDIVE[sp.id].taxonomyNotes)
                   ),
                   h('div', null,
-                    h('div', { className: 'text-indigo-300 font-bold mb-1' }, '🌍 Cultural notes'),
+                    h('div', { className: 'text-indigo-300 font-bold mb-1' }, __alloT('stem.raptorhunt.cultural_notes', '🌍 Cultural notes')),
                     h('div', { className: 'text-slate-200 leading-relaxed' }, SPECIES_DEEPDIVE[sp.id].culturalNotes)
                   )
                 )
@@ -7618,19 +7619,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           (function() {
             var vultures = [
               {
-                emoji: '🦅', name: 'Turkey Vulture', sci: 'Cathartes aura',
+                emoji: '🦅', name: __alloT('stem.raptorhunt.turkey_vulture', 'Turkey Vulture'), sci: 'Cathartes aura',
                 trait: 'Olfactory hunter — finds carrion by SMELL (huge olfactory bulb, unique among "raptors")',
                 ecology: 'Most widespread vulture in the Americas. Range expanding NORTH ~10 km/decade with climate warming. Wintering in places it never did 30 years ago.',
                 weird: 'Discovered to use smell as primary sense by Kenneth Stager (1964) — natural gas pipelines now route through known vulture territories because vultures circle leaks (mercaptan in nat-gas smells like dead animals).'
               },
               {
-                emoji: '🦅', name: 'Black Vulture', sci: 'Coragyps atratus',
+                emoji: '🦅', name: __alloT('stem.raptorhunt.black_vulture', 'Black Vulture'), sci: 'Coragyps atratus',
                 trait: 'Visual hunter — finds carrion by sight; often follows turkey vultures to a carcass + then aggressively displaces them',
                 ecology: 'Range expanding NORTH at fastest rate of any North American bird. Reached New England by 2010. Highly social — nests + roosts in groups, hunts in packs.',
                 weird: 'Will kill + eat newborn livestock (calves, lambs, foals) — only "vulture" that hunts live prey. Causes legitimate agricultural-loss disputes in cattle country.'
               },
               {
-                emoji: '🦅', name: 'California Condor', sci: 'Gymnogyps californianus',
+                emoji: '🦅', name: __alloT('stem.raptorhunt.california_condor', 'California Condor'), sci: 'Gymnogyps californianus',
                 trait: 'Largest flying bird in North America (9.5 ft wingspan). Pure scavenger.',
                 ecology: 'See Recovery Case Studies — 22 birds 1987 → 530 today via 40-year captive-breeding program.',
                 weird: 'Lives 60+ years in captivity. Lays 1 egg every 2 years. Recovery cost ~$50M to date + ongoing.'
@@ -7638,17 +7639,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             ];
             return h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4 space-y-3' },
               h('div', { className: 'flex items-baseline justify-between gap-2' },
-                h('div', { className: 'text-sm font-bold text-slate-300' }, '🦅 New World Vultures — Honorary Raptors?'),
-                h('div', { className: 'text-[10px] text-amber-300 font-mono' }, 'Cathartiformes')
+                h('div', { className: 'text-sm font-bold text-slate-300' }, __alloT('stem.raptorhunt.new_world_vultures_honorary_raptors', '🦅 New World Vultures — Honorary Raptors?')),
+                h('div', { className: 'text-[10px] text-amber-300 font-mono' }, __alloT('stem.raptorhunt.cathartiformes', 'Cathartiformes'))
               ),
               h('div', { className: 'text-xs text-slate-300 leading-relaxed' },
-                'New World vultures (turkey, black, condor) hunt + soar like raptors but they\'re not in the raptor families Accipitriformes (hawks, eagles, kites) or Falconiformes (falcons). DNA evidence in the early 2000s placed them in their own order — ',
-                h('span', { className: 'font-bold text-amber-300' }, 'Cathartiformes'),
-                ' — closer to storks than to true raptors. The hooked beak + talons + soaring lifestyle are convergent evolution: they evolved the raptor body plan independently from carrion-eating ancestors.'
+                __alloT('stem.raptorhunt.new_world_vultures_turkey_black_condor', 'New World vultures (turkey, black, condor) hunt + soar like raptors but they\'re not in the raptor families Accipitriformes (hawks, eagles, kites) or Falconiformes (falcons). DNA evidence in the early 2000s placed them in their own order — '),
+                h('span', { className: 'font-bold text-amber-300' }, __alloT('stem.raptorhunt.cathartiformes_2', 'Cathartiformes')),
+                __alloT('stem.raptorhunt.closer_to_storks_than_to_true_raptors_', ' — closer to storks than to true raptors. The hooked beak + talons + soaring lifestyle are convergent evolution: they evolved the raptor body plan independently from carrion-eating ancestors.')
               ),
               h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-3 text-xs text-amber-100/90' },
-                h('span', { className: 'font-bold text-amber-300' }, '🔬 The "is it a raptor?" debate: '),
-                'Modern usage: most ornithologists + Hawk Mountain count vultures as "raptors" in counts because they fly the same migration corridors + face the same human threats (lead poisoning, wind farms). Strict taxonomy: they\'re NOT raptors. This kind of "lumper vs splitter" disagreement is common in biology + a great teaching moment about how scientific categories work.'
+                h('span', { className: 'font-bold text-amber-300' }, __alloT('stem.raptorhunt.the_is_it_a_raptor_debate', '🔬 The "is it a raptor?" debate: ')),
+                __alloT('stem.raptorhunt.modern_usage_most_ornithologists_hawk_', 'Modern usage: most ornithologists + Hawk Mountain count vultures as "raptors" in counts because they fly the same migration corridors + face the same human threats (lead poisoning, wind farms). Strict taxonomy: they\'re NOT raptors. This kind of "lumper vs splitter" disagreement is common in biology + a great teaching moment about how scientific categories work.')
               ),
               // 3-species mini-cards
               h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2' },
@@ -7661,7 +7662,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                         h('div', { className: 'text-[10px] italic text-slate-500' }, v.sci)
                       )
                     ),
-                    h('div', { className: 'text-[10px] text-cyan-300 font-bold mt-1' }, 'Key trait:'),
+                    h('div', { className: 'text-[10px] text-cyan-300 font-bold mt-1' }, __alloT('stem.raptorhunt.key_trait', 'Key trait:')),
                     h('div', { className: 'text-xs text-slate-200 leading-relaxed mb-2' }, v.trait),
                     h('div', { className: 'text-[10px] text-emerald-300 font-bold' }, 'Ecology:'),
                     h('div', { className: 'text-xs text-slate-300 leading-relaxed mb-2' }, v.ecology),
@@ -7670,7 +7671,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   );
                 })
               ),
-              h('div', { className: 'text-[10px] text-slate-500 italic' }, 'Old World vultures (Egypt, India, Africa) ARE in Accipitriformes — they evolved the carrion lifestyle from within the hawk/eagle family. New World vultures evolved it independently. Convergent evolution at the order level.')
+              h('div', { className: 'text-[10px] text-slate-500 italic' }, __alloT('stem.raptorhunt.old_world_vultures_egypt_india_africa_', 'Old World vultures (Egypt, India, Africa) ARE in Accipitriformes — they evolved the carrion lifestyle from within the hawk/eagle family. New World vultures evolved it independently. Convergent evolution at the order level.'))
             );
           })(),
 
@@ -7678,8 +7679,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           (function() {
             var VOCALS = [
               { id: 'peregrine', call: '"eechip-eechip-eechip" — sharp + repeated, often given at the nest or in defense of territory', mnemonic: 'rapid raspy bark', when: 'nest defense + intruder alert' },
-              { id: 'baldEagle', call: '"weak-eek-eek-eek" — surprisingly thin + high-pitched whistle for such a large bird', mnemonic: 'wimpy chitter (NOT the dramatic scream in movies)', when: 'territorial + courtship', note: 'The "eagle scream" you hear in movies is almost always a red-tail dubbed over a bald eagle clip — Hollywood corrects the bird\'s actual unimpressive voice.' },
-              { id: 'redTail', call: '"KEEEER-ee-er" — descending raspy scream, 2-3 seconds long', mnemonic: 'classic "movie hawk"', when: 'soaring + perched alert', note: 'THE iconic raptor call in American media. Dubbed in over bald eagles, golden eagles, ospreys — even owls in Hollywood films.' },
+              { id: 'baldEagle', call: '"weak-eek-eek-eek" — surprisingly thin + high-pitched whistle for such a large bird', mnemonic: 'wimpy chitter (NOT the dramatic scream in movies)', when: 'territorial + courtship', note: __alloT('stem.raptorhunt.the_eagle_scream_you_hear_in_movies_is', 'The "eagle scream" you hear in movies is almost always a red-tail dubbed over a bald eagle clip — Hollywood corrects the bird\'s actual unimpressive voice.') },
+              { id: 'redTail', call: '"KEEEER-ee-er" — descending raspy scream, 2-3 seconds long', mnemonic: 'classic "movie hawk"', when: 'soaring + perched alert', note: __alloT('stem.raptorhunt.the_iconic_raptor_call_in_american_med', 'THE iconic raptor call in American media. Dubbed in over bald eagles, golden eagles, ospreys — even owls in Hollywood films.') },
               { id: 'redShouldered', call: '"kee-yah, kee-yah, kee-yah" — clear repeated 2-syllable call', mnemonic: 'high clear yelp, repeated', when: 'territorial + during nesting' },
               { id: 'kestrel', call: '"klee-klee-klee-klee" — rapid high-pitched chitter', mnemonic: 'sewing-machine staccato', when: 'alarm + during territorial flights' },
               { id: 'coopersHawk', call: '"kek-kek-kek-kek" — sharp barking call, often near nest', mnemonic: 'angry corgi', when: 'at the nest defending territory' },
@@ -7694,8 +7695,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               { id: 'missKite', call: '"phee-phew" — descending 2-note whistle, repeated', mnemonic: 'two-tone whistle', when: 'often given in flight + at communal nest colonies' }
             ];
             return h('div', { className: 'bg-slate-900/40 border border-pink-700/40 rounded-xl p-4 space-y-2' },
-              h('div', { className: 'text-sm font-bold text-pink-300' }, '🎵 Vocalizations — Iconic Calls + Mnemonics'),
-              h('div', { className: 'text-xs text-slate-400 italic mb-2' }, 'Most raptor IDs in the field are by silhouette, but several species have iconic calls. The mnemonic phrases below are what serious birders memorize.'),
+              h('div', { className: 'text-sm font-bold text-pink-300' }, __alloT('stem.raptorhunt.vocalizations_iconic_calls_mnemonics', '🎵 Vocalizations — Iconic Calls + Mnemonics')),
+              h('div', { className: 'text-xs text-slate-400 italic mb-2' }, __alloT('stem.raptorhunt.most_raptor_ids_in_the_field_are_by_si', 'Most raptor IDs in the field are by silhouette, but several species have iconic calls. The mnemonic phrases below are what serious birders memorize.')),
               h('div', { className: 'space-y-2' },
                 VOCALS.map(function(v, i) {
                   // Try to find species (may not exist in SPECIES if it's a bonus entry like red-shouldered or barred owl)
@@ -7714,10 +7715,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 })
               ),
               h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded p-3 text-xs text-cyan-100/90' },
-                h('span', { className: 'font-bold text-cyan-300' }, '🦻 Hear them yourself: '),
-                'Cornell Lab\'s ',
-                h('a', { href: 'https://www.macaulaylibrary.org/', target: '_blank', rel: 'noopener noreferrer', className: 'transition-colors text-cyan-300 underline hover:text-cyan-200' }, 'Macaulay Library'),
-                ' has free audio for every species. Search by species name. Free to use for educational + non-commercial purposes.'
+                h('span', { className: 'font-bold text-cyan-300' }, __alloT('stem.raptorhunt.hear_them_yourself', '🦻 Hear them yourself: ')),
+                __alloT('stem.raptorhunt.cornell_lab_s', 'Cornell Lab\'s '),
+                h('a', { href: 'https://www.macaulaylibrary.org/', target: '_blank', rel: 'noopener noreferrer', className: 'transition-colors text-cyan-300 underline hover:text-cyan-200' }, __alloT('stem.raptorhunt.macaulay_library', 'Macaulay Library')),
+                __alloT('stem.raptorhunt.has_free_audio_for_every_species_searc', ' has free audio for every species. Search by species name. Free to use for educational + non-commercial purposes.')
               )
             );
           })()
@@ -7732,10 +7733,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       var MISSIONS = [
         {
           id: 'open',
-          name: 'Free Hunt (no mission)',
+          name: __alloT('stem.raptorhunt.free_hunt_no_mission', 'Free Hunt (no mission)'),
           icon: '🦅',
           difficulty: 'Open',
-          intro: 'No constraints. Hunt for the joy of flying.',
+          intro: __alloT('stem.raptorhunt.no_constraints_hunt_for_the_joy_of_fly', 'No constraints. Hunt for the joy of flying.'),
           objective: 'Hunt as long as you want. Practice flight + strike + species-specific physics.',
           timeLimit: 0,
           calorieGoal: 0,
@@ -7746,10 +7747,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         },
         {
           id: 'feedChicks',
-          name: 'Feed the Chicks',
+          name: __alloT('stem.raptorhunt.feed_the_chicks', 'Feed the Chicks'),
           icon: '🐣',
           difficulty: 'Easy',
-          intro: 'Your nest holds 2 hungry chicks. They need 200 kcal each by sunset.',
+          intro: __alloT('stem.raptorhunt.your_nest_holds_2_hungry_chicks_they_n', 'Your nest holds 2 hungry chicks. They need 200 kcal each by sunset.'),
           objective: 'Catch enough prey to deliver 400 kcal total in 4 minutes. Eating restores YOUR energy too.',
           timeLimit: 240,
           calorieGoal: 400,
@@ -7760,10 +7761,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         },
         {
           id: 'crossDesert',
-          name: 'Cross the Desert',
+          name: __alloT('stem.raptorhunt.cross_the_desert', 'Cross the Desert'),
           icon: '🏜',
           difficulty: 'Medium',
-          intro: 'A 6-minute migration crossing. Sparse prey, headwinds, no time to dawdle.',
+          intro: __alloT('stem.raptorhunt.a_6_minute_migration_crossing_sparse_p', 'A 6-minute migration crossing. Sparse prey, headwinds, no time to dawdle.'),
           objective: 'Stay airborne 6 minutes + catch at least 1 prey to refuel. Run out of calories = forced down = fail.',
           timeLimit: 360,
           calorieGoal: 0,
@@ -7774,10 +7775,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         },
         {
           id: 'silentStrike',
-          name: 'Silent Strike (owl mission)',
+          name: __alloT('stem.raptorhunt.silent_strike_owl_mission', 'Silent Strike (owl mission)'),
           icon: '🌙',
           difficulty: 'Medium',
-          intro: 'Night hunt. Prey can\'t see you — but if you flap too loudly within 30m, they flee.',
+          intro: __alloT('stem.raptorhunt.night_hunt_prey_can_t_see_you_but_if_y', 'Night hunt. Prey can\'t see you — but if you flap too loudly within 30m, they flee.'),
           objective: 'Catch 3 prey in 5 minutes without alerting the rest of the prey. Heavy flapping in detection range = miss.',
           timeLimit: 300,
           calorieGoal: 0,
@@ -7788,10 +7789,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         },
         {
           id: 'thermalKettle',
-          name: 'Ride the Thermal',
+          name: __alloT('stem.raptorhunt.ride_the_thermal', 'Ride the Thermal'),
           icon: '🌀',
           difficulty: 'Medium',
-          intro: 'A column of rising warm air sits under you. Use it to gain altitude without flapping.',
+          intro: __alloT('stem.raptorhunt.a_column_of_rising_warm_air_sits_under', 'A column of rising warm air sits under you. Use it to gain altitude without flapping.'),
           objective: 'Reach 500m altitude in 3 minutes using ONLY thermal lift + glide (no pull-up flapping allowed).',
           timeLimit: 180,
           calorieGoal: 0,
@@ -7803,10 +7804,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         },
         {
           id: 'avoidPredator',
-          name: 'Evade the Goshawk',
+          name: __alloT('stem.raptorhunt.evade_the_goshawk', 'Evade the Goshawk'),
           icon: '👁',
           difficulty: 'Hard',
-          intro: 'A larger raptor is hunting YOU. Survive 4 minutes + catch your own prey while keeping distance.',
+          intro: __alloT('stem.raptorhunt.a_larger_raptor_is_hunting_you_survive', 'A larger raptor is hunting YOU. Survive 4 minutes + catch your own prey while keeping distance.'),
           objective: 'Survive 4 minutes (don\'t let goshawk close to < 30m) + catch 2 prey. Goshawk closes when you\'re slow.',
           timeLimit: 240,
           calorieGoal: 0,
@@ -7817,10 +7818,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         },
         {
           id: 'highStoop',
-          name: 'High Stoop',
+          name: __alloT('stem.raptorhunt.high_stoop', 'High Stoop'),
           icon: '🚀',
           difficulty: 'Hard',
-          intro: 'Drop from 1000m altitude. Hit a moving pigeon at terminal velocity. One strike to win.',
+          intro: __alloT('stem.raptorhunt.drop_from_1000m_altitude_hit_a_moving_', 'Drop from 1000m altitude. Hit a moving pigeon at terminal velocity. One strike to win.'),
           objective: 'Climb to 1000m, then stoop. Strike must happen during dive at speed >180 mph. 3-minute time limit.',
           timeLimit: 180,
           calorieGoal: 0,
@@ -7842,8 +7843,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'bg-gradient-to-br from-amber-900/40 to-orange-900/40 border-2 border-amber-600 rounded-xl p-4' },
             h('div', { className: 'flex items-center justify-between gap-3 mb-3 flex-wrap' },
               h('div', null,
-                h('div', { className: 'text-sm font-bold text-amber-200' }, '🎯 Mission Select'),
-                h('div', { className: 'text-xs text-amber-100/80 mt-1' }, 'Choose a scenario. Open mode = no constraints. Missions teach specific concepts via gameplay.')
+                h('div', { className: 'text-sm font-bold text-amber-200' }, __alloT('stem.raptorhunt.mission_select', '🎯 Mission Select')),
+                h('div', { className: 'text-xs text-amber-100/80 mt-1' }, __alloT('stem.raptorhunt.choose_a_scenario_open_mode_no_constra', 'Choose a scenario. Open mode = no constraints. Missions teach specific concepts via gameplay.'))
               )
             ),
             h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2' },
@@ -7869,9 +7870,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             ),
             // Active mission detail
             h('div', { className: 'mt-3 bg-slate-900/50 border border-amber-700/30 rounded-lg p-3' },
-              h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, '📋 OBJECTIVE'),
+              h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.objective', '📋 OBJECTIVE')),
               h('div', { className: 'text-xs text-slate-200 leading-relaxed mb-2' }, mission.objective),
-              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '🧠 PEDAGOGY'),
+              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.pedagogy', '🧠 PEDAGOGY')),
               h('div', { className: 'text-xs text-slate-200 leading-relaxed italic' }, mission.pedagogy)
             )
           ),
@@ -7881,18 +7882,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'flex-1' },
                 h('div', { className: 'flex items-center gap-2 mb-2' },
                   h('div', { className: 'text-2xl' }, '🎓'),
-                  h('div', { className: 'text-base font-bold text-cyan-300' }, 'First time? Quick tutorial')
+                  h('div', { className: 'text-base font-bold text-cyan-300' }, __alloT('stem.raptorhunt.first_time_quick_tutorial', 'First time? Quick tutorial'))
                 ),
                 h('div', { className: 'text-xs text-cyan-100/90 leading-relaxed mb-3' },
-                  'You play a ', h('span', { className: 'font-bold text-amber-300' }, sp.emoji + ' ' + sp.name), ' in third-person view. Goal: dive on prey + strike. Each species has different physics — peregrines stoop at terminal velocity, owls glide silently with smaller detection radius.'
+                  __alloT('stem.raptorhunt.you_play_a', 'You play a '), h('span', { className: 'font-bold text-amber-300' }, sp.emoji + ' ' + sp.name), __alloT('stem.raptorhunt.in_third_person_view_goal_dive_on_prey', ' in third-person view. Goal: dive on prey + strike. Each species has different physics — peregrines stoop at terminal velocity, owls glide silently with smaller detection radius.')
                 ),
                 h('div', { className: 'grid grid-cols-1 md:grid-cols-5 gap-2' },
                   [
-                    { keys: 'W A S D', desc: 'Steer (yaw + pitch)' },
-                    { keys: 'Q / E', desc: 'Altitude down/up' },
-                    { keys: 'Shift', desc: 'DIVE (accelerate)' },
-                    { keys: 'Space', desc: 'PULL UP (climb)' },
-                    { keys: 'F', desc: 'STRIKE prey in front' }
+                    { keys: 'W A S D', desc: __alloT('stem.raptorhunt.steer_yaw_pitch', 'Steer (yaw + pitch)') },
+                    { keys: 'Q / E', desc: __alloT('stem.raptorhunt.altitude_down_up', 'Altitude down/up') },
+                    { keys: 'Shift', desc: __alloT('stem.raptorhunt.dive_accelerate', 'DIVE (accelerate)') },
+                    { keys: 'Space', desc: __alloT('stem.raptorhunt.pull_up_climb', 'PULL UP (climb)') },
+                    { keys: 'F', desc: __alloT('stem.raptorhunt.strike_prey_in_front', 'STRIKE prey in front') }
                   ].map(function(ctrl, i) {
                     return h('div', { key: i, className: 'bg-slate-900/60 rounded p-2 text-center' },
                       h('div', { className: 'font-mono text-amber-300 font-bold text-xs' }, ctrl.keys),
@@ -7901,21 +7902,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   })
                 ),
                 h('div', { className: 'text-[10px] text-cyan-200/70 italic mt-2' },
-                  '🦅 Tip: Click the canvas first to give it keyboard focus. Then start with a slow level glide before trying to dive. Prey flees on sight — sneak up from behind or above.'
+                  __alloT('stem.raptorhunt.tip_click_the_canvas_first_to_give_it_', '🦅 Tip: Click the canvas first to give it keyboard focus. Then start with a slow level glide before trying to dive. Prey flees on sight — sneak up from behind or above.')
                 )
               ),
               h('button', {
                 onClick: function() { setRH({ huntTutorialDismissed: true }); rhAnnounce('Tutorial dismissed'); },
                 className: 'transition-colors flex-shrink-0 text-cyan-300 hover:text-cyan-100 text-xs',
-                'aria-label': 'Dismiss tutorial'
-              }, '✕ Got it')
+                'aria-label': __alloT('stem.raptorhunt.dismiss_tutorial', 'Dismiss tutorial')
+              }, __alloT('stem.raptorhunt.got_it', '✕ Got it'))
             )
           ),
           h('div', { className: 'bg-slate-900/50 border border-slate-700/50 rounded-xl p-4' },
             h('div', { className: 'flex items-center justify-between gap-3 flex-wrap' },
               h('div', null,
                 h('div', { className: 'text-sm font-bold text-amber-200' }, 'Hunt Sim · ' + sp.emoji + ' ' + sp.name),
-                h('div', { className: 'text-xs text-slate-400' }, 'WASD to fly · Q/E for altitude · Shift to DIVE · Space to PULL UP · F to STRIKE')
+                h('div', { className: 'text-xs text-slate-400' }, __alloT('stem.raptorhunt.wasd_to_fly_q_e_for_altitude_shift_to_', 'WASD to fly · Q/E for altitude · Shift to DIVE · Space to PULL UP · F to STRIKE'))
               ),
               h('div', { className: 'flex items-center gap-2 text-xs' },
                 h('div', { className: 'px-2 py-1 rounded bg-emerald-900/30 border border-emerald-700/40' },
@@ -7925,14 +7926,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   h('span', { className: 'text-slate-400' }, 'Attempts: '), h('span', { className: 'font-bold text-blue-300' }, allStats.attempts)
                 ),
                 h('div', { className: 'px-2 py-1 rounded bg-amber-900/30 border border-amber-700/40' },
-                  h('span', { className: 'text-slate-400' }, 'Best run: '), h('span', { className: 'font-bold text-amber-300' }, allStats.bestRun + ' caught')
+                  h('span', { className: 'text-slate-400' }, __alloT('stem.raptorhunt.best_run', 'Best run: ')), h('span', { className: 'font-bold text-amber-300' }, allStats.bestRun + ' caught')
                 )
               )
             )
           ),
           !threeLoaded && h('div', { className: 'bg-blue-900/30 border border-blue-700/40 rounded-xl p-6 text-center' },
             h('div', { className: 'text-3xl mb-2' }, '⏳'),
-            h('div', { className: 'text-sm text-blue-200 mb-3' }, 'Loading 3D engine (Three.js r128)...'),
+            h('div', { className: 'text-sm text-blue-200 mb-3' }, __alloT('stem.raptorhunt.loading_3d_engine_three_js_r128', 'Loading 3D engine (Three.js r128)...')),
             h('button', {
               onClick: function() {
                 ensureThreeJS(
@@ -7941,18 +7942,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 );
               },
               className: 'px-4 py-2 rounded-lg text-sm font-bold bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700',
-              'aria-label': 'Load Three.js engine'
-            }, '🚀 Load 3D Engine'),
-            rh._threeLoadError && h('div', { className: 'text-xs text-red-300 mt-2' }, '⚠ Failed to load Three.js from CDN. Check your internet connection or try again.')
+              'aria-label': __alloT('stem.raptorhunt.load_three_js_engine', 'Load Three.js engine')
+            }, __alloT('stem.raptorhunt.load_3d_engine', '🚀 Load 3D Engine')),
+            rh._threeLoadError && h('div', { className: 'text-xs text-red-300 mt-2' }, __alloT('stem.raptorhunt.failed_to_load_three_js_from_cdn_check', '⚠ Failed to load Three.js from CDN. Check your internet connection or try again.'))
           ),
           threeLoaded && (
             webglError
               ? h('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, var(--allo-stem-panel, #1e293b), var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '32px', height: '60vh', minHeight: '420px' } },
                   h('div', { style: { textAlign: 'center', maxWidth: '400px' } },
                     h('div', { style: { fontSize: '48px', marginBottom: '12px' } }, '🦅'),
-                    h('div', { style: { color: 'var(--allo-stem-text, #f1f5f9)', fontSize: '16px', fontWeight: 700, marginBottom: '8px' } }, 'WebGL Not Available'),
+                    h('div', { style: { color: 'var(--allo-stem-text, #f1f5f9)', fontSize: '16px', fontWeight: 700, marginBottom: '8px' } }, __alloT('stem.raptorhunt.webgl_not_available', 'WebGL Not Available')),
                     h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '12px', lineHeight: '1.6', marginBottom: '16px' } },
-                      'Raptor Hunt requires WebGL for 3D rendering. This environment may not support it. Try opening AlloFlow directly in Chrome, Firefox, or Edge instead of within an embedded frame.'
+                      __alloT('stem.raptorhunt.raptor_hunt_requires_webgl_for_3d_rend', 'Raptor Hunt requires WebGL for 3D rendering. This environment may not support it. Try opening AlloFlow directly in Chrome, Firefox, or Edge instead of within an embedded frame.')
                     ),
                     h('button', {
                       onClick: function() {
@@ -7967,7 +7968,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                         cursor: 'pointer',
                         fontWeight: 600
                       }
-                    }, 'Retry 3D Mode')
+                    }, __alloT('stem.raptorhunt.retry_3d_mode', 'Retry 3D Mode'))
                   )
                 )
               : h('div', { className: 'bg-gradient-to-b from-sky-900/40 to-slate-900/40 border border-amber-700/40 rounded-xl overflow-hidden' },
@@ -7975,7 +7976,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     h('canvas', {
                       'data-raptor-canvas': 'true',
                       role: 'application',
-                      'aria-label': '3D raptor hunt simulator. Press WASD to steer, Q E to change altitude, Shift to dive, Space to pull up, F to strike.',
+                      'aria-label': __alloT('stem.raptorhunt.3d_raptor_hunt_simulator_press_wasd_to', '3D raptor hunt simulator. Press WASD to steer, Q E to change altitude, Shift to dive, Space to pull up, F to strike.'),
                       tabIndex: 0,
                       style: { width: '100%', height: '100%', display: 'block', cursor: 'crosshair', outline: 'none' },
                       ref: function(canvasEl) {
@@ -7993,9 +7994,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   h('div', { className: 'bg-slate-900/60 border-t border-slate-700/50 p-3 text-xs text-slate-300' },
                     h('div', { className: 'flex gap-4 flex-wrap' },
                       h('div', null, '⬆⬇⬅➡: ', h('span', { className: 'text-amber-300' }, 'WASD')),
-                      h('div', null, 'Altitude: ', h('span', { className: 'text-amber-300' }, 'Q (down) / E (up)')),
-                      h('div', null, 'Dive: ', h('span', { className: 'text-amber-300' }, 'Shift')),
-                      h('div', null, 'Pull up: ', h('span', { className: 'text-amber-300' }, 'Space')),
+                      h('div', null, 'Altitude: ', h('span', { className: 'text-amber-300' }, __alloT('stem.raptorhunt.q_down_e_up', 'Q (down) / E (up)'))),
+                      h('div', null, 'Dive: ', h('span', { className: 'text-amber-300' }, __alloT('stem.raptorhunt.shift', 'Shift'))),
+                      h('div', null, __alloT('stem.raptorhunt.pull_up', 'Pull up: '), h('span', { className: 'text-amber-300' }, __alloT('stem.raptorhunt.space', 'Space'))),
                       h('div', null, 'Strike: ', h('span', { className: 'text-amber-300' }, 'F'))
                     )
                   )
@@ -8019,22 +8020,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             var accuracy = allAttempts > 0 ? Math.round((allCatches / allAttempts) * 100) : 0;
             // Achievement definitions
             var achievements = [
-              { id: 'firstCatch', icon: '🎯', label: 'First Catch', desc: 'Catch your first prey', cond: allCatches >= 1 },
-              { id: 'tenCatches', icon: '🏹', label: 'Ten Catches', desc: 'Catch 10 prey total', cond: allCatches >= 10 },
-              { id: 'fiftyCatches', icon: '🦅', label: 'Apex Predator', desc: 'Catch 50 prey total', cond: allCatches >= 50 },
-              { id: 'hundredCatches', icon: '⭐', label: 'Hunter\'s Century', desc: 'Catch 100 prey total', cond: allCatches >= 100 },
-              { id: 'cleanRun5', icon: '🔥', label: 'Hot Streak', desc: 'Best run of 5+ catches', cond: bestRunAllSpecies >= 5 },
-              { id: 'cleanRun10', icon: '💎', label: 'Untouchable', desc: 'Best run of 10+ catches', cond: bestRunAllSpecies >= 10 },
-              { id: 'sharpEye', icon: '👁', label: 'Sharp Eye', desc: '50%+ hit rate (min 10 attempts)', cond: allAttempts >= 10 && accuracy >= 50 },
-              { id: 'masterEye', icon: '🪶', label: 'Master Hunter', desc: '70%+ hit rate (min 20 attempts)', cond: allAttempts >= 20 && accuracy >= 70 },
-              { id: 'threeSpecies', icon: '🦅', label: 'Generalist', desc: 'Catch with 3 different species', cond: speciesHunted >= 3 },
-              { id: 'fiveSpecies', icon: '👑', label: 'Versatile Falconer', desc: 'Catch with 5 different species', cond: speciesHunted >= 5 },
-              { id: 'allSpecies', icon: '🏆', label: 'Master of All', desc: 'Catch with all 8 species', cond: speciesHunted >= 8 }
+              { id: 'firstCatch', icon: '🎯', label: __alloT('stem.raptorhunt.first_catch', 'First Catch'), desc: __alloT('stem.raptorhunt.catch_your_first_prey', 'Catch your first prey'), cond: allCatches >= 1 },
+              { id: 'tenCatches', icon: '🏹', label: __alloT('stem.raptorhunt.ten_catches', 'Ten Catches'), desc: __alloT('stem.raptorhunt.catch_10_prey_total', 'Catch 10 prey total'), cond: allCatches >= 10 },
+              { id: 'fiftyCatches', icon: '🦅', label: __alloT('stem.raptorhunt.apex_predator', 'Apex Predator'), desc: __alloT('stem.raptorhunt.catch_50_prey_total', 'Catch 50 prey total'), cond: allCatches >= 50 },
+              { id: 'hundredCatches', icon: '⭐', label: __alloT('stem.raptorhunt.hunter_s_century', 'Hunter\'s Century'), desc: __alloT('stem.raptorhunt.catch_100_prey_total', 'Catch 100 prey total'), cond: allCatches >= 100 },
+              { id: 'cleanRun5', icon: '🔥', label: __alloT('stem.raptorhunt.hot_streak', 'Hot Streak'), desc: __alloT('stem.raptorhunt.best_run_of_5_catches', 'Best run of 5+ catches'), cond: bestRunAllSpecies >= 5 },
+              { id: 'cleanRun10', icon: '💎', label: __alloT('stem.raptorhunt.untouchable', 'Untouchable'), desc: __alloT('stem.raptorhunt.best_run_of_10_catches', 'Best run of 10+ catches'), cond: bestRunAllSpecies >= 10 },
+              { id: 'sharpEye', icon: '👁', label: __alloT('stem.raptorhunt.sharp_eye', 'Sharp Eye'), desc: __alloT('stem.raptorhunt.50_hit_rate_min_10_attempts', '50%+ hit rate (min 10 attempts)'), cond: allAttempts >= 10 && accuracy >= 50 },
+              { id: 'masterEye', icon: '🪶', label: __alloT('stem.raptorhunt.master_hunter', 'Master Hunter'), desc: __alloT('stem.raptorhunt.70_hit_rate_min_20_attempts', '70%+ hit rate (min 20 attempts)'), cond: allAttempts >= 20 && accuracy >= 70 },
+              { id: 'threeSpecies', icon: '🦅', label: __alloT('stem.raptorhunt.generalist', 'Generalist'), desc: __alloT('stem.raptorhunt.catch_with_3_different_species', 'Catch with 3 different species'), cond: speciesHunted >= 3 },
+              { id: 'fiveSpecies', icon: '👑', label: __alloT('stem.raptorhunt.versatile_falconer', 'Versatile Falconer'), desc: __alloT('stem.raptorhunt.catch_with_5_different_species', 'Catch with 5 different species'), cond: speciesHunted >= 5 },
+              { id: 'allSpecies', icon: '🏆', label: __alloT('stem.raptorhunt.master_of_all', 'Master of All'), desc: __alloT('stem.raptorhunt.catch_with_all_8_species', 'Catch with all 8 species'), cond: speciesHunted >= 8 }
             ];
             var earnedCount = achievements.filter(function(a) { return a.cond; }).length;
             return h('div', { className: 'bg-slate-900/40 border border-amber-700/40 rounded-xl p-4' },
               h('div', { className: 'flex items-center justify-between gap-2 mb-3' },
-                h('div', { className: 'text-sm font-bold text-amber-300' }, '🏅 Achievements'),
+                h('div', { className: 'text-sm font-bold text-amber-300' }, __alloT('stem.raptorhunt.achievements', '🏅 Achievements')),
                 h('div', { className: 'text-xs font-mono text-amber-300' }, earnedCount + ' / ' + achievements.length + ' earned')
               ),
               // Progress bar
@@ -8050,19 +8051,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2 mb-3 text-center text-xs' },
                 h('div', { className: 'bg-emerald-900/30 border border-emerald-700/40 rounded p-2' },
                   h('div', { className: 'text-xl font-bold text-emerald-300 tracking-tight' }, allCatches),
-                  h('div', { className: 'text-[10px] text-emerald-200 uppercase' }, 'Total catches')
+                  h('div', { className: 'text-[10px] text-emerald-200 uppercase' }, __alloT('stem.raptorhunt.total_catches', 'Total catches'))
                 ),
                 h('div', { className: 'bg-blue-900/30 border border-blue-700/40 rounded p-2' },
                   h('div', { className: 'text-xl font-bold text-blue-300 tracking-tight' }, accuracy + '%'),
-                  h('div', { className: 'text-[10px] text-blue-200 uppercase' }, 'Hit rate')
+                  h('div', { className: 'text-[10px] text-blue-200 uppercase' }, __alloT('stem.raptorhunt.hit_rate', 'Hit rate'))
                 ),
                 h('div', { className: 'bg-amber-900/30 border border-amber-700/40 rounded p-2' },
                   h('div', { className: 'text-xl font-bold text-amber-300 tracking-tight' }, bestRunAllSpecies),
-                  h('div', { className: 'text-[10px] text-amber-200 uppercase' }, 'Best run')
+                  h('div', { className: 'text-[10px] text-amber-200 uppercase' }, __alloT('stem.raptorhunt.best_run_2', 'Best run'))
                 ),
                 h('div', { className: 'bg-purple-900/30 border border-purple-700/40 rounded p-2' },
                   h('div', { className: 'text-xl font-bold text-purple-300 tracking-tight' }, speciesHunted + '/8'),
-                  h('div', { className: 'text-[10px] text-purple-200 uppercase' }, 'Species used')
+                  h('div', { className: 'text-[10px] text-purple-200 uppercase' }, __alloT('stem.raptorhunt.species_used', 'Species used'))
                 )
               ),
               // Badge grid
@@ -8085,7 +8086,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               ),
               // Per-species breakdown
               speciesHunted > 0 && h('details', { className: 'mt-3' },
-                h('summary', { className: 'text-xs font-bold text-amber-300 cursor-pointer' }, '📊 Per-species breakdown'),
+                h('summary', { className: 'text-xs font-bold text-amber-300 cursor-pointer' }, __alloT('stem.raptorhunt.per_species_breakdown', '📊 Per-species breakdown')),
                 h('div', { className: 'mt-2 grid grid-cols-1 md:grid-cols-2 gap-1' },
                   SPECIES.map(function(s) {
                     var st = huntStats[s.id] || { catches: 0, attempts: 0, bestRun: 0 };
@@ -10198,7 +10199,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           ),
           // PSI comparison chart
           h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4 space-y-2' },
-            h('div', { className: 'text-sm font-bold text-amber-300 mb-3' }, '🔬 Grip Force Comparison (PSI)'),
+            h('div', { className: 'text-sm font-bold text-amber-300 mb-3' }, __alloT('stem.raptorhunt.grip_force_comparison_psi', '🔬 Grip Force Comparison (PSI)')),
             TALON_FACTS.psiComparison.map(function(item, i) {
               var pct = (item.psi / maxPsi) * 100;
               var colorMap = { slate: 'bg-slate-500', amber: 'bg-amber-500', orange: 'bg-orange-500', red: 'bg-red-600' };
@@ -10233,19 +10234,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             function setTVP(patch) { setRH({ talonVsPrey: Object.assign({}, tvp, patch) }); }
             // Prey toughness data — approximate crush resistance + skull/spine breaking psi + size factor
             var PREY_TOUGHNESS = {
-              pigeon:       { name: 'Pigeon', massKg: 0.35, skullPsi: 50, vitalDepthMm: 8, type: 'bird' },
-              songbird:     { name: 'Songbird (sparrow)', massKg: 0.03, skullPsi: 35, vitalDepthMm: 5, type: 'bird' },
-              duck:         { name: 'Duck (mallard)', massKg: 1.1, skullPsi: 65, vitalDepthMm: 10, type: 'bird' },
-              fish:         { name: 'Fish (trout)', massKg: 0.8, skullPsi: 40, vitalDepthMm: 15, type: 'fish' },
-              rodent:       { name: 'Field Mouse / Rodent', massKg: 0.025, skullPsi: 25, vitalDepthMm: 4, type: 'mammal-small' },
-              rabbit:       { name: 'Cottontail Rabbit', massKg: 1.0, skullPsi: 80, vitalDepthMm: 12, type: 'mammal-med' },
-              snake:        { name: 'Snake', massKg: 0.3, skullPsi: 30, vitalDepthMm: 6, type: 'reptile' },
-              skunk:        { name: 'Skunk', massKg: 2.5, skullPsi: 120, vitalDepthMm: 18, type: 'mammal-med' },
-              sloth:        { name: 'Three-toed Sloth', massKg: 4.0, skullPsi: 200, vitalDepthMm: 22, type: 'mammal-med' },
-              monkey:       { name: 'Howler Monkey', massKg: 7.0, skullPsi: 280, vitalDepthMm: 28, type: 'mammal-large' },
-              fawn:         { name: 'White-tailed Fawn', massKg: 4.5, skullPsi: 250, vitalDepthMm: 25, type: 'mammal-med' },
-              fox:          { name: 'Red Fox', massKg: 5.0, skullPsi: 300, vitalDepthMm: 24, type: 'mammal-med' },
-              grouse:       { name: 'Ruffed Grouse', massKg: 0.6, skullPsi: 55, vitalDepthMm: 9, type: 'bird' }
+              pigeon:       { name: __alloT('stem.raptorhunt.pigeon', 'Pigeon'), massKg: 0.35, skullPsi: 50, vitalDepthMm: 8, type: 'bird' },
+              songbird:     { name: __alloT('stem.raptorhunt.songbird_sparrow', 'Songbird (sparrow)'), massKg: 0.03, skullPsi: 35, vitalDepthMm: 5, type: 'bird' },
+              duck:         { name: __alloT('stem.raptorhunt.duck_mallard', 'Duck (mallard)'), massKg: 1.1, skullPsi: 65, vitalDepthMm: 10, type: 'bird' },
+              fish:         { name: __alloT('stem.raptorhunt.fish_trout', 'Fish (trout)'), massKg: 0.8, skullPsi: 40, vitalDepthMm: 15, type: 'fish' },
+              rodent:       { name: __alloT('stem.raptorhunt.field_mouse_rodent', 'Field Mouse / Rodent'), massKg: 0.025, skullPsi: 25, vitalDepthMm: 4, type: 'mammal-small' },
+              rabbit:       { name: __alloT('stem.raptorhunt.cottontail_rabbit', 'Cottontail Rabbit'), massKg: 1.0, skullPsi: 80, vitalDepthMm: 12, type: 'mammal-med' },
+              snake:        { name: __alloT('stem.raptorhunt.snake', 'Snake'), massKg: 0.3, skullPsi: 30, vitalDepthMm: 6, type: 'reptile' },
+              skunk:        { name: __alloT('stem.raptorhunt.skunk', 'Skunk'), massKg: 2.5, skullPsi: 120, vitalDepthMm: 18, type: 'mammal-med' },
+              sloth:        { name: __alloT('stem.raptorhunt.three_toed_sloth', 'Three-toed Sloth'), massKg: 4.0, skullPsi: 200, vitalDepthMm: 22, type: 'mammal-med' },
+              monkey:       { name: __alloT('stem.raptorhunt.howler_monkey', 'Howler Monkey'), massKg: 7.0, skullPsi: 280, vitalDepthMm: 28, type: 'mammal-large' },
+              fawn:         { name: __alloT('stem.raptorhunt.white_tailed_fawn', 'White-tailed Fawn'), massKg: 4.5, skullPsi: 250, vitalDepthMm: 25, type: 'mammal-med' },
+              fox:          { name: __alloT('stem.raptorhunt.red_fox', 'Red Fox'), massKg: 5.0, skullPsi: 300, vitalDepthMm: 24, type: 'mammal-med' },
+              grouse:       { name: __alloT('stem.raptorhunt.ruffed_grouse', 'Ruffed Grouse'), massKg: 0.6, skullPsi: 55, vitalDepthMm: 9, type: 'bird' }
             };
             var prey = PREY_TOUGHNESS[tvp.preyId] || PREY_TOUGHNESS.pigeon;
             var predator = findSpecies(tvp.predatorId);
@@ -10268,19 +10269,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             }
 
             return h('div', { className: 'bg-gradient-to-br from-red-900/20 to-orange-900/20 border border-red-700/40 rounded-xl p-5 space-y-3 mt-3' },
-              h('div', { className: 'text-base font-bold text-red-300' }, '🎯 Talon vs Prey: Can the Grip Actually Kill?'),
+              h('div', { className: 'text-base font-bold text-red-300' }, __alloT('stem.raptorhunt.talon_vs_prey_can_the_grip_actually_ki', '🎯 Talon vs Prey: Can the Grip Actually Kill?')),
               h('div', { className: 'text-xs text-red-100/90 leading-relaxed' },
-                'Grip force PSI alone doesn\'t determine lethality — it has to be matched against the specific prey\'s skull/spine crush threshold AND the talon has to be long enough to reach vital organs. Try different predator-prey pairings to see which combinations actually work.'
+                __alloT('stem.raptorhunt.grip_force_psi_alone_doesn_t_determine', 'Grip force PSI alone doesn\'t determine lethality — it has to be matched against the specific prey\'s skull/spine crush threshold AND the talon has to be long enough to reach vital organs. Try different predator-prey pairings to see which combinations actually work.')
               ),
               // Selector row
               h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
                 h('div', null,
-                  h('label', { className: 'text-xs text-amber-300 font-bold block mb-1' }, '🦅 Predator'),
+                  h('label', { className: 'text-xs text-amber-300 font-bold block mb-1' }, __alloT('stem.raptorhunt.predator', '🦅 Predator')),
                   h('select', {
                     value: tvp.predatorId,
                     onChange: function(e) { setTVP({ predatorId: e.target.value }); },
                     className: 'w-full px-3 py-2 rounded-lg bg-slate-800 text-amber-100 border border-slate-700 text-sm',
-                    'aria-label': 'Choose predator'
+                    'aria-label': __alloT('stem.raptorhunt.choose_predator', 'Choose predator')
                   },
                     SPECIES.map(function(s) {
                       return h('option', { key: s.id, value: s.id }, s.emoji + ' ' + s.name + ' (' + s.talonForcePsi + ' psi, ' + s.talonLengthMm + ' mm talon)');
@@ -10288,12 +10289,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   )
                 ),
                 h('div', null,
-                  h('label', { className: 'text-xs text-amber-300 font-bold block mb-1' }, '🐭 Prey'),
+                  h('label', { className: 'text-xs text-amber-300 font-bold block mb-1' }, __alloT('stem.raptorhunt.prey', '🐭 Prey')),
                   h('select', {
                     value: tvp.preyId,
                     onChange: function(e) { setTVP({ preyId: e.target.value }); },
                     className: 'w-full px-3 py-2 rounded-lg bg-slate-800 text-amber-100 border border-slate-700 text-sm',
-                    'aria-label': 'Choose prey'
+                    'aria-label': __alloT('stem.raptorhunt.choose_prey', 'Choose prey')
                   },
                     Object.keys(PREY_TOUGHNESS).map(function(k) {
                       var p = PREY_TOUGHNESS[k];
@@ -10306,19 +10307,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'bg-slate-900/60 rounded-lg p-3' },
                 h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2 text-xs' },
                   h('div', { className: 'bg-slate-800/40 rounded p-2 text-center' },
-                    h('div', { className: 'text-[10px] text-slate-400 uppercase' }, 'Grip Force'),
+                    h('div', { className: 'text-[10px] text-slate-400 uppercase' }, __alloT('stem.raptorhunt.grip_force', 'Grip Force')),
                     h('div', { className: 'font-mono font-bold text-amber-300' }, predator.talonForcePsi + ' psi')
                   ),
                   h('div', { className: 'bg-slate-800/40 rounded p-2 text-center' },
-                    h('div', { className: 'text-[10px] text-slate-400 uppercase' }, 'Prey Crush Threshold'),
+                    h('div', { className: 'text-[10px] text-slate-400 uppercase' }, __alloT('stem.raptorhunt.prey_crush_threshold', 'Prey Crush Threshold')),
                     h('div', { className: 'font-mono font-bold text-amber-300' }, prey.skullPsi + ' psi')
                   ),
                   h('div', { className: 'bg-slate-800/40 rounded p-2 text-center' },
-                    h('div', { className: 'text-[10px] text-slate-400 uppercase' }, 'Talon Length'),
+                    h('div', { className: 'text-[10px] text-slate-400 uppercase' }, __alloT('stem.raptorhunt.talon_length', 'Talon Length')),
                     h('div', { className: 'font-mono font-bold text-amber-300' }, predator.talonLengthMm + ' mm')
                   ),
                   h('div', { className: 'bg-slate-800/40 rounded p-2 text-center' },
-                    h('div', { className: 'text-[10px] text-slate-400 uppercase' }, 'Prey Vital Depth'),
+                    h('div', { className: 'text-[10px] text-slate-400 uppercase' }, __alloT('stem.raptorhunt.prey_vital_depth', 'Prey Vital Depth')),
                     h('div', { className: 'font-mono font-bold text-amber-300' }, prey.vitalDepthMm + ' mm')
                   )
                 ),
@@ -10334,7 +10335,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               ),
               // Pedagogical note
               h('div', { className: 'text-[10px] text-slate-500 italic' },
-                'Note: real predator-prey relationships are also shaped by encounter rate, prey availability, learned hunting skill, energetic balance, + group dynamics. This calculator captures one factor (mechanical kill feasibility) — not the full ecology.'
+                __alloT('stem.raptorhunt.note_real_predator_prey_relationships_', 'Note: real predator-prey relationships are also shaped by encounter rate, prey availability, learned hunting skill, energetic balance, + group dynamics. This calculator captures one factor (mechanical kill feasibility) — not the full ecology.')
               )
             );
           })()
@@ -10352,7 +10353,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           ),
           // Acuity comparison
           h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-amber-300 mb-3' }, '👁️ Visual Acuity vs Human Baseline'),
+            h('div', { className: 'text-sm font-bold text-amber-300 mb-3' }, __alloT('stem.raptorhunt.visual_acuity_vs_human_baseline', '👁️ Visual Acuity vs Human Baseline')),
             VISION_FACTS.speciesComparison.map(function(item, i) {
               var pct = (item.acuity / 6.0) * 100;
               var colorMap = { slate: 'bg-slate-500', indigo: 'bg-indigo-500', amber: 'bg-amber-500', orange: 'bg-orange-500', red: 'bg-red-600' };
@@ -10380,9 +10381,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-3xl' }, '🦅'),
               h('div', null,
-                h('div', { className: 'text-sm font-bold text-violet-300 mb-1' }, 'Kestrels see vole urine trails — in UV light'),
+                h('div', { className: 'text-sm font-bold text-violet-300 mb-1' }, __alloT('stem.raptorhunt.kestrels_see_vole_urine_trails_in_uv_l', 'Kestrels see vole urine trails — in UV light')),
                 h('div', { className: 'text-xs text-violet-100/90 leading-relaxed' },
-                  'American kestrels (Falco sparverius) can see ultraviolet light. Vole urine + dung trails reflect UV strongly. To a kestrel scanning a meadow, the rodents\' travel routes look like glowing highways painted across the grass. The bird perches near the brightest "trail" and ambushes — no wonder kestrels hunt successfully from telephone wires year-round. Discovered by Viitala, Korpimäki, Palokangas, Koivula (1995) Nature 373:425-427.'
+                  __alloT('stem.raptorhunt.american_kestrels_falco_sparverius_can', 'American kestrels (Falco sparverius) can see ultraviolet light. Vole urine + dung trails reflect UV strongly. To a kestrel scanning a meadow, the rodents\' travel routes look like glowing highways painted across the grass. The bird perches near the brightest "trail" and ambushes — no wonder kestrels hunt successfully from telephone wires year-round. Discovered by Viitala, Korpimäki, Palokangas, Koivula (1995) Nature 373:425-427.')
                 )
               )
             )
@@ -10390,13 +10391,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
           // ── NEW v0.8: Visual-field SVG diagram ──
           h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-indigo-300 mb-2' }, '🎯 Visual Field — Top-Down View'),
-            h('div', { className: 'text-xs text-slate-400 mb-3 italic' }, 'Each diagram shows the bird/human looking up at the page (head viewed from above). Yellow = binocular zone (depth perception). Orange = monocular zones (peripheral, no depth). Gray = blind spot behind head.'),
+            h('div', { className: 'text-sm font-bold text-indigo-300 mb-2' }, __alloT('stem.raptorhunt.visual_field_top_down_view', '🎯 Visual Field — Top-Down View')),
+            h('div', { className: 'text-xs text-slate-400 mb-3 italic' }, __alloT('stem.raptorhunt.each_diagram_shows_the_bird_human_look', 'Each diagram shows the bird/human looking up at the page (head viewed from above). Yellow = binocular zone (depth perception). Orange = monocular zones (peripheral, no depth). Gray = blind spot behind head.')),
             h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
               // Helper to draw a head-from-above with field cones
               [
-                { label: 'Human', acuity: '1×', totalField: 180, binocular: 120, eyePosition: 'forward', color: 'slate' },
-                { label: 'Hawk / Eagle', acuity: '4-5×', totalField: 220, binocular: 35, eyePosition: 'lateral-forward', color: 'amber' },
+                { label: __alloT('stem.raptorhunt.human', 'Human'), acuity: '1×', totalField: 180, binocular: 120, eyePosition: 'forward', color: 'slate' },
+                { label: __alloT('stem.raptorhunt.hawk_eagle', 'Hawk / Eagle'), acuity: '4-5×', totalField: 220, binocular: 35, eyePosition: 'lateral-forward', color: 'amber' },
                 { label: 'Owl', acuity: '2×', totalField: 110, binocular: 70, eyePosition: 'forward-flat', color: 'indigo' }
               ].map(function(v, i) {
                 // Compute SVG: head at (100,100) viewBox 200x180; bird is "looking up the screen" (north)
@@ -10462,13 +10463,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     h('path', { d: 'M 100 70 L 95 60 L 105 60 Z', fill: '#fbbf24' }),
                     // Forward direction indicator
                     h('path', { d: 'M 100 30 L 96 40 L 104 40 Z', fill: '#fde047', opacity: 0.6 }),
-                    h('text', { x: 100, y: 22, fontSize: 8, fill: '#94a3b8', textAnchor: 'middle' }, '↑ forward')
+                    h('text', { x: 100, y: 22, fontSize: 8, fill: '#94a3b8', textAnchor: 'middle' }, __alloT('stem.raptorhunt.forward', '↑ forward'))
                   )
                 );
               })
             ),
             h('div', { className: 'text-[10px] text-slate-500 italic mt-2' },
-              'Hawk eyes are set on the sides — total field 220°, but binocular zone is just 35° (narrow forward overlap). Owls have eyes on the front of the face — total field only 110° but binocular zone 70° (twice that of hawks). Humans are intermediate. Tradeoff: wide field of view (hawk) vs deep binocular depth perception (owl).'
+              __alloT('stem.raptorhunt.hawk_eyes_are_set_on_the_sides_total_f', 'Hawk eyes are set on the sides — total field 220°, but binocular zone is just 35° (narrow forward overlap). Owls have eyes on the front of the face — total field only 110° but binocular zone 70° (twice that of hawks). Humans are intermediate. Tradeoff: wide field of view (hawk) vs deep binocular depth perception (owl).')
             )
           )
         );
@@ -10485,14 +10486,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           ),
           // Wing loading vs AR scatter
           h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-amber-300 mb-3' }, '✈ Wing Loading × Aspect Ratio (species map)'),
-            h('div', { className: 'text-xs text-slate-400 mb-3' }, 'X: wing loading (kg/m², high = fast/heavy). Y: aspect ratio (high = soaring efficient, low = forest agile).'),
+            h('div', { className: 'text-sm font-bold text-amber-300 mb-3' }, __alloT('stem.raptorhunt.wing_loading_aspect_ratio_species_map', '✈ Wing Loading × Aspect Ratio (species map)')),
+            h('div', { className: 'text-xs text-slate-400 mb-3' }, __alloT('stem.raptorhunt.x_wing_loading_kg_m_high_fast_heavy_y_', 'X: wing loading (kg/m², high = fast/heavy). Y: aspect ratio (high = soaring efficient, low = forest agile).')),
             h('div', { className: 'relative bg-slate-950/60 rounded-lg border border-slate-700/40', style: { height: '320px' } },
               // Axes
               h('div', { className: 'absolute bottom-0 left-0 right-0 border-t border-slate-700/40' }),
               h('div', { className: 'absolute top-0 bottom-0 left-0 border-r border-slate-700/40' }),
-              h('div', { className: 'absolute bottom-1 left-2 text-[10px] text-slate-500' }, 'wing loading (kg/m²) →'),
-              h('div', { className: 'absolute top-2 left-2 text-[10px] text-slate-500', style: { writingMode: 'vertical-rl', transform: 'rotate(180deg)' } }, 'aspect ratio →'),
+              h('div', { className: 'absolute bottom-1 left-2 text-[10px] text-slate-500' }, __alloT('stem.raptorhunt.wing_loading_kg_m_2', 'wing loading (kg/m²) →')),
+              h('div', { className: 'absolute top-2 left-2 text-[10px] text-slate-500', style: { writingMode: 'vertical-rl', transform: 'rotate(180deg)' } }, __alloT('stem.raptorhunt.aspect_ratio_2', 'aspect ratio →')),
               // Plot SPECIES
               SPECIES.map(function(sp2, i) {
                 var x = (sp2.wingLoading / 18) * 95 + 2;
@@ -10560,63 +10561,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               enhancedDistanceKm = (gr.startAltM * glideRatio * sinkRateMps / netSink) / 1000;
             }
             return h('div', { className: 'bg-slate-900/40 border border-cyan-700/40 rounded-xl p-4 space-y-3 mt-3' },
-              h('div', { className: 'text-sm font-bold text-cyan-300' }, '🪁 Glide Ratio Calculator'),
-              h('div', { className: 'text-xs text-slate-400 italic' }, 'Glide ratio (L/D) is the distance a bird can cover per unit altitude lost in still air. High aspect ratio = high L/D = efficient soaring. Thermal lift extends range further (or makes flight "free" if lift > sink rate).'),
+              h('div', { className: 'text-sm font-bold text-cyan-300' }, __alloT('stem.raptorhunt.glide_ratio_calculator', '🪁 Glide Ratio Calculator')),
+              h('div', { className: 'text-xs text-slate-400 italic' }, __alloT('stem.raptorhunt.glide_ratio_l_d_is_the_distance_a_bird', 'Glide ratio (L/D) is the distance a bird can cover per unit altitude lost in still air. High aspect ratio = high L/D = efficient soaring. Thermal lift extends range further (or makes flight "free" if lift > sink rate).')),
               // Species + sliders
               h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
                 h('div', null,
-                  h('label', { className: 'text-xs text-cyan-300 font-bold block mb-1' }, '🦅 Species'),
+                  h('label', { className: 'text-xs text-cyan-300 font-bold block mb-1' }, __alloT('stem.raptorhunt.species', '🦅 Species')),
                   h('select', {
                     value: gr.speciesId,
                     onChange: function(e) { setGR({ speciesId: e.target.value }); },
                     className: 'w-full px-3 py-2 rounded-lg bg-slate-800 text-amber-100 border border-slate-700 text-sm',
-                    'aria-label': 'Species'
+                    'aria-label': __alloT('stem.raptorhunt.species_2', 'Species')
                   },
                     SPECIES.map(function(s) { return h('option', { key: s.id, value: s.id }, s.emoji + ' ' + s.name + ' (AR ' + s.aspectRatio + ')'); })
                   )
                 ),
                 h('div', null,
                   h('label', { className: 'text-xs text-cyan-300 flex justify-between' },
-                    h('span', null, 'Start altitude'),
+                    h('span', null, __alloT('stem.raptorhunt.start_altitude', 'Start altitude')),
                     h('span', { className: 'font-mono text-amber-300' }, gr.startAltM + ' m')
                   ),
                   h('input', { type: 'range', min: 100, max: 3000, step: 100, value: gr.startAltM,
                     onInput: function(e) { setGR({ startAltM: parseInt(e.target.value) }); }, className: 'w-full',
-                    'aria-label': 'Start altitude' }),
-                  h('div', { className: 'text-[10px] text-slate-500' }, '500 m typical · 3000 m alpine soar')
+                    'aria-label': __alloT('stem.raptorhunt.start_altitude_2', 'Start altitude') }),
+                  h('div', { className: 'text-[10px] text-slate-500' }, __alloT('stem.raptorhunt.500_m_typical_3000_m_alpine_soar', '500 m typical · 3000 m alpine soar'))
                 ),
                 h('div', null,
                   h('label', { className: 'text-xs text-cyan-300 flex justify-between' },
-                    h('span', null, 'Thermal lift (m/s)'),
+                    h('span', null, __alloT('stem.raptorhunt.thermal_lift_m_s', 'Thermal lift (m/s)')),
                     h('span', { className: 'font-mono text-amber-300' }, gr.thermalLift.toFixed(1))
                   ),
                   h('input', { type: 'range', min: 0, max: 3.0, step: 0.1, value: gr.thermalLift,
                     onInput: function(e) { setGR({ thermalLift: parseFloat(e.target.value) }); }, className: 'w-full',
-                    'aria-label': 'Thermal lift' }),
-                  h('div', { className: 'text-[10px] text-slate-500' }, '0 = still air · 1.0 weak · 2.5 strong')
+                    'aria-label': __alloT('stem.raptorhunt.thermal_lift', 'Thermal lift') }),
+                  h('div', { className: 'text-[10px] text-slate-500' }, __alloT('stem.raptorhunt.0_still_air_1_0_weak_2_5_strong', '0 = still air · 1.0 weak · 2.5 strong'))
                 )
               ),
               // Results
               h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2' },
                 h('div', { className: 'bg-slate-800/40 rounded p-2 text-center' },
-                  h('div', { className: 'text-[10px] uppercase tracking-wider text-cyan-400' }, 'L/D Ratio'),
+                  h('div', { className: 'text-[10px] uppercase tracking-wider text-cyan-400' }, __alloT('stem.raptorhunt.l_d_ratio', 'L/D Ratio')),
                   h('div', { className: 'text-xl font-bold text-amber-300 tracking-tight' }, glideRatio.toFixed(1)),
                   h('div', { className: 'text-[10px] text-slate-500' }, 'from AR ' + sp2.aspectRatio)
                 ),
                 h('div', { className: 'bg-slate-800/40 rounded p-2 text-center' },
-                  h('div', { className: 'text-[10px] uppercase tracking-wider text-cyan-400' }, 'Still-air distance'),
+                  h('div', { className: 'text-[10px] uppercase tracking-wider text-cyan-400' }, __alloT('stem.raptorhunt.still_air_distance', 'Still-air distance')),
                   h('div', { className: 'text-xl font-bold text-amber-300 tracking-tight' }, distanceKm.toFixed(1) + ' km'),
                   h('div', { className: 'text-[10px] text-slate-500' }, '(' + distanceMi.toFixed(1) + ' miles)')
                 ),
                 h('div', { className: 'bg-slate-800/40 rounded p-2 text-center' },
-                  h('div', { className: 'text-[10px] uppercase tracking-wider text-cyan-400' }, 'With thermal'),
+                  h('div', { className: 'text-[10px] uppercase tracking-wider text-cyan-400' }, __alloT('stem.raptorhunt.with_thermal', 'With thermal')),
                   h('div', { className: 'text-xl font-bold text-amber-300 tracking-tight' }, infiniteGlide ? '∞' : enhancedDistanceKm.toFixed(1) + ' km'),
                   h('div', { className: 'text-[10px] text-slate-500' }, infiniteGlide ? 'lift exceeds sink' : 'extended')
                 ),
                 h('div', { className: 'bg-slate-800/40 rounded p-2 text-center' },
-                  h('div', { className: 'text-[10px] uppercase tracking-wider text-cyan-400' }, 'Net sink'),
+                  h('div', { className: 'text-[10px] uppercase tracking-wider text-cyan-400' }, __alloT('stem.raptorhunt.net_sink', 'Net sink')),
                   h('div', { className: 'text-xl font-bold text-amber-300 tracking-tight' }, infiniteGlide ? '↑ lift wins' : netSink.toFixed(1) + ' m/s'),
-                  h('div', { className: 'text-[10px] text-slate-500' }, 'after thermal')
+                  h('div', { className: 'text-[10px] text-slate-500' }, __alloT('stem.raptorhunt.after_thermal', 'after thermal'))
                 )
               ),
               // Visualization SVG
@@ -10625,7 +10626,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 var pixPerKm = (pw - 40) / Math.max(50, distanceKm * 1.3);
                 var birdX = 20;
                 var glideEndX = 20 + distanceKm * pixPerKm;
-                return h('svg', { viewBox: '0 0 ' + pw + ' ' + ph, style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': 'Glide ratio visualization' },
+                return h('svg', { viewBox: '0 0 ' + pw + ' ' + ph, style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': __alloT('stem.raptorhunt.glide_ratio_visualization', 'Glide ratio visualization') },
                   h('rect', { x: 0, y: 0, width: pw, height: ph, fill: '#0f172a' }),
                   // Ground line
                   h('line', { x1: 0, y1: ph - 15, x2: pw, y2: ph - 15, stroke: '#365314', strokeWidth: 3 }),
@@ -10640,11 +10641,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     h('text', { x: glideEndX, y: ph - 22, fontSize: 9, fill: '#fbbf24', textAnchor: 'middle' }, distanceKm.toFixed(1) + ' km')
                   ),
                   // Distance ruler
-                  h('text', { x: pw / 2, y: ph - 2, fontSize: 9, fill: '#94a3b8', textAnchor: 'middle' }, '→ horizontal distance →')
+                  h('text', { x: pw / 2, y: ph - 2, fontSize: 9, fill: '#94a3b8', textAnchor: 'middle' }, __alloT('stem.raptorhunt.horizontal_distance', '→ horizontal distance →'))
                 );
               })(),
               h('div', { className: 'text-[10px] text-slate-500 italic' },
-                'Bald eagles (AR 6.5) glide ~10:1 — 1 km horizontal per 100 m altitude lost. Albatross-class (AR 15) hit ~22:1. Falcons (lower AR ~10) sit around 16:1 but rarely use it — they\'re built for stoop, not soaring.'
+                __alloT('stem.raptorhunt.bald_eagles_ar_6_5_glide_10_1_1_km_hor', 'Bald eagles (AR 6.5) glide ~10:1 — 1 km horizontal per 100 m altitude lost. Albatross-class (AR 15) hit ~22:1. Falcons (lower AR ~10) sit around 16:1 but rarely use it — they\'re built for stoop, not soaring.')
               )
             );
           })()
@@ -10670,54 +10671,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           ),
           // Formula card
           h('div', { className: 'bg-slate-900/60 border border-slate-700/50 rounded-xl p-4' },
-            h('div', { className: 'text-xs text-slate-400 mb-1' }, 'Terminal velocity formula'),
+            h('div', { className: 'text-xs text-slate-400 mb-1' }, __alloT('stem.raptorhunt.terminal_velocity_formula', 'Terminal velocity formula')),
             h('div', { className: 'text-base font-mono text-amber-300 my-1' }, STOOP_FACTS.formula),
             h('div', { className: 'text-[10px] text-slate-400' }, STOOP_FACTS.formulaVars)
           ),
           // Interactive sliders
           h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4 space-y-3' },
-            h('div', { className: 'text-sm font-bold text-orange-300' }, '🧮 Interactive Stoop Calculator'),
+            h('div', { className: 'text-sm font-bold text-orange-300' }, __alloT('stem.raptorhunt.interactive_stoop_calculator', '🧮 Interactive Stoop Calculator')),
             // Mass slider
             h('div', null,
               h('label', { className: 'text-xs text-slate-300 flex items-center justify-between' },
-                h('span', null, 'Mass (kg)'),
+                h('span', null, __alloT('stem.raptorhunt.mass_kg_2', 'Mass (kg)')),
                 h('span', { className: 'font-mono text-amber-300' }, v.mass.toFixed(2))
               ),
               h('input', {
                 type: 'range', min: 0.1, max: 8, step: 0.05, value: v.mass,
                 onInput: function(e) { setRH({ stoopSimVars: Object.assign({}, v, { mass: parseFloat(e.target.value) }) }); },
                 className: 'w-full',
-                'aria-label': 'Mass in kilograms'
+                'aria-label': __alloT('stem.raptorhunt.mass_in_kilograms', 'Mass in kilograms')
               }),
-              h('div', { className: 'text-[10px] text-slate-500' }, 'Peregrine ≈ 0.95 kg · golden ≈ 4.2 kg · harpy ≈ 7.5 kg')
+              h('div', { className: 'text-[10px] text-slate-500' }, __alloT('stem.raptorhunt.peregrine_0_95_kg_golden_4_2_kg_harpy_', 'Peregrine ≈ 0.95 kg · golden ≈ 4.2 kg · harpy ≈ 7.5 kg'))
             ),
             // Cd slider
             h('div', null,
               h('label', { className: 'text-xs text-slate-300 flex items-center justify-between' },
-                h('span', null, 'Drag coefficient (Cd)'),
+                h('span', null, __alloT('stem.raptorhunt.drag_coefficient_cd', 'Drag coefficient (Cd)')),
                 h('span', { className: 'font-mono text-amber-300' }, v.cd.toFixed(2))
               ),
               h('input', {
                 type: 'range', min: 0.05, max: 0.8, step: 0.01, value: v.cd,
                 onInput: function(e) { setRH({ stoopSimVars: Object.assign({}, v, { cd: parseFloat(e.target.value) }) }); },
                 className: 'w-full',
-                'aria-label': 'Drag coefficient'
+                'aria-label': __alloT('stem.raptorhunt.drag_coefficient', 'Drag coefficient')
               }),
-              h('div', { className: 'text-[10px] text-slate-500' }, 'Teardrop ≈ 0.04 · sphere ≈ 0.47 · falcon stoop tuck ≈ 0.18 · human freefall ≈ 0.7')
+              h('div', { className: 'text-[10px] text-slate-500' }, __alloT('stem.raptorhunt.teardrop_0_04_sphere_0_47_falcon_stoop', 'Teardrop ≈ 0.04 · sphere ≈ 0.47 · falcon stoop tuck ≈ 0.18 · human freefall ≈ 0.7'))
             ),
             // Area slider
             h('div', null,
               h('label', { className: 'text-xs text-slate-300 flex items-center justify-between' },
-                h('span', null, 'Frontal area (m²)'),
+                h('span', null, __alloT('stem.raptorhunt.frontal_area_m', 'Frontal area (m²)')),
                 h('span', { className: 'font-mono text-amber-300' }, v.area.toFixed(3))
               ),
               h('input', {
                 type: 'range', min: 0.005, max: 0.15, step: 0.001, value: v.area,
                 onInput: function(e) { setRH({ stoopSimVars: Object.assign({}, v, { area: parseFloat(e.target.value) }) }); },
                 className: 'w-full',
-                'aria-label': 'Frontal cross-section area in square meters'
+                'aria-label': __alloT('stem.raptorhunt.frontal_cross_section_area_in_square_m', 'Frontal cross-section area in square meters')
               }),
-              h('div', { className: 'text-[10px] text-slate-500' }, 'Peregrine tucked ≈ 0.018 m² · golden eagle tucked ≈ 0.05 m²')
+              h('div', { className: 'text-[10px] text-slate-500' }, __alloT('stem.raptorhunt.peregrine_tucked_0_018_m_golden_eagle_', 'Peregrine tucked ≈ 0.018 m² · golden eagle tucked ≈ 0.05 m²'))
             ),
             h('button', {
               onClick: function() {
@@ -10725,34 +10726,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 setRH({ stoopSimVars: { mass: sp.massKg, cd: 0.18, area: sp.wingAreaSqM * 0.06, altitudeM: 600 } });
               },
               className: 'transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-700 text-amber-300 hover:bg-slate-600 active:scale-[0.97]',
-              'aria-label': 'Load active species presets'
+              'aria-label': __alloT('stem.raptorhunt.load_active_species_presets', 'Load active species presets')
             }, '↺ Load ' + sp.name + ' presets')
           ),
           // Results
           h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
             h('div', { className: 'bg-gradient-to-br from-red-900/40 to-orange-900/40 border border-red-700/40 rounded-xl p-4 text-center' },
-              h('div', { className: 'text-xs text-red-200' }, 'Terminal Velocity'),
+              h('div', { className: 'text-xs text-red-200' }, __alloT('stem.raptorhunt.terminal_velocity', 'Terminal Velocity')),
               h('div', { className: 'text-3xl font-bold text-amber-300 my-1 tracking-tight' }, vTerminalMph.toFixed(0)),
               h('div', { className: 'text-xs text-slate-400' }, 'mph (' + vTerminal.toFixed(0) + ' m/s)')
             ),
             h('div', { className: 'bg-gradient-to-br from-orange-900/40 to-yellow-900/40 border border-orange-700/40 rounded-xl p-4 text-center' },
-              h('div', { className: 'text-xs text-orange-200' }, 'Time to ~Terminal'),
+              h('div', { className: 'text-xs text-orange-200' }, __alloT('stem.raptorhunt.time_to_terminal', 'Time to ~Terminal')),
               h('div', { className: 'text-3xl font-bold text-amber-300 my-1 tracking-tight' }, tToTerminal.toFixed(1)),
-              h('div', { className: 'text-xs text-slate-400' }, 'seconds (v_t / g)')
+              h('div', { className: 'text-xs text-slate-400' }, __alloT('stem.raptorhunt.seconds_v_t_g', 'seconds (v_t / g)'))
             ),
             h('div', { className: 'bg-gradient-to-br from-yellow-900/40 to-amber-900/40 border border-amber-700/40 rounded-xl p-4 text-center' },
-              h('div', { className: 'text-xs text-yellow-200' }, 'Kinetic Energy'),
+              h('div', { className: 'text-xs text-yellow-200' }, __alloT('stem.raptorhunt.kinetic_energy', 'Kinetic Energy')),
               h('div', { className: 'text-3xl font-bold text-amber-300 my-1 tracking-tight' }, ke.toFixed(0)),
-              h('div', { className: 'text-xs text-slate-400' }, 'joules at impact')
+              h('div', { className: 'text-xs text-slate-400' }, __alloT('stem.raptorhunt.joules_at_impact', 'joules at impact'))
             )
           ),
           h('div', { className: 'bg-slate-900/60 border border-slate-700/50 rounded-xl p-4 text-xs text-slate-300' },
-            h('div', { className: 'font-bold text-amber-300 mb-2' }, '💡 For reference'),
+            h('div', { className: 'font-bold text-amber-300 mb-2' }, __alloT('stem.raptorhunt.for_reference', '💡 For reference')),
             h('ul', { className: 'space-y-1 list-disc list-inside' },
-              h('li', null, 'A .22 caliber bullet at the muzzle: ~150 J of KE'),
-              h('li', null, 'A baseball pitched at 95 mph: ~120 J'),
-              h('li', null, 'A peregrine at terminal velocity: ~5,000 J — ', h('span', { className: 'text-red-300' }, 'pistol-bullet class')),
-              h('li', null, 'A harpy eagle in dive: ~10,000+ J')
+              h('li', null, __alloT('stem.raptorhunt.a_22_caliber_bullet_at_the_muzzle_150_', 'A .22 caliber bullet at the muzzle: ~150 J of KE')),
+              h('li', null, __alloT('stem.raptorhunt.a_baseball_pitched_at_95_mph_120_j', 'A baseball pitched at 95 mph: ~120 J')),
+              h('li', null, __alloT('stem.raptorhunt.a_peregrine_at_terminal_velocity_5_000', 'A peregrine at terminal velocity: ~5,000 J — '), h('span', { className: 'text-red-300' }, __alloT('stem.raptorhunt.pistol_bullet_class', 'pistol-bullet class'))),
+              h('li', null, __alloT('stem.raptorhunt.a_harpy_eagle_in_dive_10_000_j', 'A harpy eagle in dive: ~10,000+ J'))
             )
           ),
           // Key points
@@ -10801,19 +10802,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             var v90 = 0.9 * velMax;
             var t90 = pts.find(function(p) { return p.velMph >= v90; });
             return h('div', { className: 'bg-slate-900/40 border border-amber-700/40 rounded-xl p-4 space-y-2' },
-              h('div', { className: 'text-sm font-bold text-amber-300' }, '📉 Fall Curve (time-domain physics)'),
-              h('div', { className: 'text-xs text-slate-400 italic' }, 'Numerical integration of the drag equation with your current slider values. Altitude (orange) plummets while velocity (red) builds toward terminal — and then plateaus when drag = weight.'),
+              h('div', { className: 'text-sm font-bold text-amber-300' }, __alloT('stem.raptorhunt.fall_curve_time_domain_physics', '📉 Fall Curve (time-domain physics)')),
+              h('div', { className: 'text-xs text-slate-400 italic' }, __alloT('stem.raptorhunt.numerical_integration_of_the_drag_equa', 'Numerical integration of the drag equation with your current slider values. Altitude (orange) plummets while velocity (red) builds toward terminal — and then plateaus when drag = weight.')),
               h('div', { className: 'bg-slate-950/60 rounded-lg p-2' },
                 h('div', { className: 'mb-2' },
                   h('label', { className: 'text-xs text-amber-300 flex items-center justify-between' },
-                    h('span', null, 'Stoop start altitude (m)'),
+                    h('span', null, __alloT('stem.raptorhunt.stoop_start_altitude_m', 'Stoop start altitude (m)')),
                     h('span', { className: 'font-mono text-amber-300' }, (v.altitudeM || 600).toFixed(0))
                   ),
                   h('input', { type: 'range', min: 100, max: 2000, step: 50, value: (v.altitudeM || 600),
                     onInput: function(e) { setRH({ stoopSimVars: Object.assign({}, v, { altitudeM: parseInt(e.target.value) }) }); },
-                    className: 'w-full', 'aria-label': 'Altitude m' })
+                    className: 'w-full', 'aria-label': __alloT('stem.raptorhunt.altitude_m', 'Altitude m') })
                 ),
-                h('svg', { viewBox: '0 0 ' + pw + ' ' + ph, style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': 'Fall curve plot' },
+                h('svg', { viewBox: '0 0 ' + pw + ' ' + ph, style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': __alloT('stem.raptorhunt.fall_curve_plot', 'Fall curve plot') },
                   h('rect', { x: 0, y: 0, width: pw, height: ph, fill: '#0f172a' }),
                   // Axes
                   h('line', { x1: pad, y1: ph - pad, x2: pw - pad, y2: ph - pad, stroke: '#475569', strokeWidth: 1 }),
@@ -10839,28 +10840,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   // Legend
                   h('rect', { x: pw - 165, y: 8, width: 155, height: 50, fill: 'rgba(15,23,42,0.85)', stroke: '#475569', strokeWidth: 1, rx: 4 }),
                   h('line', { x1: pw - 155, y1: 22, x2: pw - 140, y2: 22, stroke: '#f97316', strokeWidth: 3 }),
-                  h('text', { x: pw - 135, y: 25, fontSize: 10, fill: '#fdba74' }, 'Altitude (m)'),
+                  h('text', { x: pw - 135, y: 25, fontSize: 10, fill: '#fdba74' }, __alloT('stem.raptorhunt.altitude_m_2', 'Altitude (m)')),
                   h('line', { x1: pw - 155, y1: 40, x2: pw - 140, y2: 40, stroke: '#dc2626', strokeWidth: 3 }),
-                  h('text', { x: pw - 135, y: 43, fontSize: 10, fill: '#fca5a5' }, 'Velocity (mph)')
+                  h('text', { x: pw - 135, y: 43, fontSize: 10, fill: '#fca5a5' }, __alloT('stem.raptorhunt.velocity_mph', 'Velocity (mph)'))
                 ),
                 // Time/alt/vel summary
                 h('div', { className: 'grid grid-cols-3 gap-2 mt-2 text-center' },
                   h('div', { className: 'bg-slate-800/40 rounded p-2' },
-                    h('div', { className: 'text-xs text-slate-400' }, 'Time to 90% terminal'),
+                    h('div', { className: 'text-xs text-slate-400' }, __alloT('stem.raptorhunt.time_to_90_terminal', 'Time to 90% terminal')),
                     h('div', { className: 'text-lg font-bold text-amber-300 tracking-tight' }, t90 ? t90.t.toFixed(1) + 's' : '—')
                   ),
                   h('div', { className: 'bg-slate-800/40 rounded p-2' },
-                    h('div', { className: 'text-xs text-slate-400' }, 'Altitude lost @ 90%'),
+                    h('div', { className: 'text-xs text-slate-400' }, __alloT('stem.raptorhunt.altitude_lost_90', 'Altitude lost @ 90%')),
                     h('div', { className: 'text-lg font-bold text-amber-300 tracking-tight' }, t90 ? Math.round(altMax - t90.alt) + ' m' : '—')
                   ),
                   h('div', { className: 'bg-slate-800/40 rounded p-2' },
-                    h('div', { className: 'text-xs text-slate-400' }, 'Peak velocity'),
+                    h('div', { className: 'text-xs text-slate-400' }, __alloT('stem.raptorhunt.peak_velocity', 'Peak velocity')),
                     h('div', { className: 'text-lg font-bold text-amber-300 tracking-tight' }, velMax.toFixed(0) + ' mph')
                   )
                 )
               ),
               h('div', { className: 'text-[10px] text-slate-500 italic' },
-                'The exponential approach to terminal velocity is the signature of drag-limited fall. Without drag, the bird would just accelerate at g forever. With drag, terminal is reached + held.'
+                __alloT('stem.raptorhunt.the_exponential_approach_to_terminal_v', 'The exponential approach to terminal velocity is the signature of drag-limited fall. Without drag, the bird would just accelerate at g forever. With drag, terminal is reached + held.')
               )
             );
           })()
@@ -10878,43 +10879,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           ),
           // Diagram (text-based "anatomy of an owl feather")
           h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-5' },
-            h('div', { className: 'text-sm font-bold text-violet-300 mb-3' }, '🪶 Anatomy of an Owl Primary Feather (3-mechanism silencer)'),
+            h('div', { className: 'text-sm font-bold text-violet-300 mb-3' }, __alloT('stem.raptorhunt.anatomy_of_an_owl_primary_feather_3_me', '🪶 Anatomy of an Owl Primary Feather (3-mechanism silencer)')),
             h('div', { className: 'space-y-3 text-xs' },
               h('div', { className: 'flex items-start gap-3 p-3 bg-violet-900/20 rounded border border-violet-700/30' },
                 h('div', { className: 'text-2xl flex-shrink-0' }, '〰️'),
                 h('div', null,
-                  h('div', { className: 'font-bold text-violet-300' }, '1. Comb-edged leading primaries'),
-                  h('div', { className: 'text-slate-300 mt-0.5' }, 'Tiny serrated teeth (0.5-1 mm) on the front edge of each primary feather break the laminar-to-turbulent flow transition. Result: high-frequency noise scattering above prey hearing range.')
+                  h('div', { className: 'font-bold text-violet-300' }, __alloT('stem.raptorhunt.1_comb_edged_leading_primaries', '1. Comb-edged leading primaries')),
+                  h('div', { className: 'text-slate-300 mt-0.5' }, __alloT('stem.raptorhunt.tiny_serrated_teeth_0_5_1_mm_on_the_fr', 'Tiny serrated teeth (0.5-1 mm) on the front edge of each primary feather break the laminar-to-turbulent flow transition. Result: high-frequency noise scattering above prey hearing range.'))
                 )
               ),
               h('div', { className: 'flex items-start gap-3 p-3 bg-indigo-900/20 rounded border border-indigo-700/30' },
                 h('div', { className: 'text-2xl flex-shrink-0' }, '⌒'),
                 h('div', null,
-                  h('div', { className: 'font-bold text-indigo-300' }, '2. Fringed trailing edge'),
-                  h('div', { className: 'text-slate-300 mt-0.5' }, 'Soft 2-3 mm fringe on the back edge absorbs the trailing-edge turbulent vortex sound. This is the largest contributor — most aerodynamic noise comes from the trailing edge.')
+                  h('div', { className: 'font-bold text-indigo-300' }, __alloT('stem.raptorhunt.2_fringed_trailing_edge', '2. Fringed trailing edge')),
+                  h('div', { className: 'text-slate-300 mt-0.5' }, __alloT('stem.raptorhunt.soft_2_3_mm_fringe_on_the_back_edge_ab', 'Soft 2-3 mm fringe on the back edge absorbs the trailing-edge turbulent vortex sound. This is the largest contributor — most aerodynamic noise comes from the trailing edge.'))
                 )
               ),
               h('div', { className: 'flex items-start gap-3 p-3 bg-purple-900/20 rounded border border-purple-700/30' },
                 h('div', { className: 'text-2xl flex-shrink-0' }, '🧶'),
                 h('div', null,
-                  h('div', { className: 'font-bold text-purple-300' }, '3. Velvety dorsal surface'),
-                  h('div', { className: 'text-slate-300 mt-0.5' }, 'Tiny velvet-like pile (~0.5 mm) on the upper feather surface dampens feather-on-feather friction noise during wing folding/unfolding.')
+                  h('div', { className: 'font-bold text-purple-300' }, __alloT('stem.raptorhunt.3_velvety_dorsal_surface', '3. Velvety dorsal surface')),
+                  h('div', { className: 'text-slate-300 mt-0.5' }, __alloT('stem.raptorhunt.tiny_velvet_like_pile_0_5_mm_on_the_up', 'Tiny velvet-like pile (~0.5 mm) on the upper feather surface dampens feather-on-feather friction noise during wing folding/unfolding.'))
                 )
               )
             )
           ),
           // Frequency callout
           h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, '🔊 Frequency shift — the actual mechanism'),
+            h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, __alloT('stem.raptorhunt.frequency_shift_the_actual_mechanism', '🔊 Frequency shift — the actual mechanism')),
             h('div', { className: 'text-xs text-emerald-100/90 leading-relaxed' },
-              'Owl wing noise peaks at ~16 kHz. Hawk wing noise peaks at ~2-4 kHz. The owl achieves silence not by reducing total noise — that\'s a small effect — but by shifting the dominant frequency range out of where prey ears are most sensitive. A mouse hears 2-4 kHz acutely (rustling, footsteps) but is much less sensitive at 16 kHz.'
+              __alloT('stem.raptorhunt.owl_wing_noise_peaks_at_16_khz_hawk_wi', 'Owl wing noise peaks at ~16 kHz. Hawk wing noise peaks at ~2-4 kHz. The owl achieves silence not by reducing total noise — that\'s a small effect — but by shifting the dominant frequency range out of where prey ears are most sensitive. A mouse hears 2-4 kHz acutely (rustling, footsteps) but is much less sensitive at 16 kHz.')
             )
           ),
 
           // ── NEW v0.8: Frequency Spectrum Visualization ──
           h('div', { className: 'bg-slate-900/60 border border-violet-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-violet-300 mb-2' }, '📈 Wing Noise Spectrum — Hawk vs Owl vs Mouse Hearing'),
-            h('div', { className: 'text-xs text-slate-400 italic mb-3' }, 'X-axis: frequency (kHz). Y-axis: relative intensity / sensitivity. Hawk wing noise (red) peaks right in the mouse\'s most-sensitive range. Owl wing noise (violet) is shifted up out of that range. The frequency shift IS the silence mechanism.'),
+            h('div', { className: 'text-sm font-bold text-violet-300 mb-2' }, __alloT('stem.raptorhunt.wing_noise_spectrum_hawk_vs_owl_vs_mou', '📈 Wing Noise Spectrum — Hawk vs Owl vs Mouse Hearing')),
+            h('div', { className: 'text-xs text-slate-400 italic mb-3' }, __alloT('stem.raptorhunt.x_axis_frequency_khz_y_axis_relative_i', 'X-axis: frequency (kHz). Y-axis: relative intensity / sensitivity. Hawk wing noise (red) peaks right in the mouse\'s most-sensitive range. Owl wing noise (violet) is shifted up out of that range. The frequency shift IS the silence mechanism.')),
             (function() {
               // SVG plot of three curves
               var pw = 600, ph = 220, pad = 40;
@@ -10943,7 +10944,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               var hawkPath = curvePath(3, 0.6, 0.9, samples);   // peak 3 kHz
               var owlPath = curvePath(16, 0.5, 0.7, samples);   // peak 16 kHz
               var mousePath = curvePath(4, 0.7, 0.95, samples); // peak 4 kHz hearing
-              return h('svg', { viewBox: '0 0 ' + pw + ' ' + ph, style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': 'Frequency spectrum chart' },
+              return h('svg', { viewBox: '0 0 ' + pw + ' ' + ph, style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': __alloT('stem.raptorhunt.frequency_spectrum_chart', 'Frequency spectrum chart') },
                 // Background
                 h('rect', { x: 0, y: 0, width: pw, height: ph, fill: '#0f172a' }),
                 // Grid lines (log scale frequencies)
@@ -10964,21 +10965,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('line', { x1: fToX(3), y1: pad, x2: fToX(3), y2: ph - pad, stroke: '#dc2626', strokeWidth: 1, opacity: 0.6 }),
                 h('line', { x1: fToX(16), y1: pad, x2: fToX(16), y2: ph - pad, stroke: '#8b5cf6', strokeWidth: 1, opacity: 0.6 }),
                 // Labels
-                h('text', { x: fToX(3), y: pad - 5, fontSize: 11, fill: '#fca5a5', textAnchor: 'middle', fontWeight: 'bold' }, 'Hawk wing peak'),
-                h('text', { x: fToX(16), y: pad - 5, fontSize: 11, fill: '#c4b5fd', textAnchor: 'middle', fontWeight: 'bold' }, 'Owl wing peak'),
+                h('text', { x: fToX(3), y: pad - 5, fontSize: 11, fill: '#fca5a5', textAnchor: 'middle', fontWeight: 'bold' }, __alloT('stem.raptorhunt.hawk_wing_peak', 'Hawk wing peak')),
+                h('text', { x: fToX(16), y: pad - 5, fontSize: 11, fill: '#c4b5fd', textAnchor: 'middle', fontWeight: 'bold' }, __alloT('stem.raptorhunt.owl_wing_peak', 'Owl wing peak')),
                 // Axis labels
-                h('text', { x: pad - 25, y: ph / 2, fontSize: 10, fill: '#94a3b8', transform: 'rotate(-90 ' + (pad - 25) + ' ' + (ph / 2) + ')' }, 'Intensity / Sensitivity'),
+                h('text', { x: pad - 25, y: ph / 2, fontSize: 10, fill: '#94a3b8', transform: 'rotate(-90 ' + (pad - 25) + ' ' + (ph / 2) + ')' }, __alloT('stem.raptorhunt.intensity_sensitivity', 'Intensity / Sensitivity')),
                 // Legend
                 h('rect', { x: pw - 175, y: 10, width: 170, height: 55, fill: 'rgba(15,23,42,0.85)', stroke: '#475569', strokeWidth: 1, rx: 4 }),
                 h('line', { x1: pw - 165, y1: 22, x2: pw - 150, y2: 22, stroke: '#dc2626', strokeWidth: 3 }),
-                h('text', { x: pw - 145, y: 25, fontSize: 10, fill: '#fca5a5' }, 'Hawk wing noise'),
+                h('text', { x: pw - 145, y: 25, fontSize: 10, fill: '#fca5a5' }, __alloT('stem.raptorhunt.hawk_wing_noise', 'Hawk wing noise')),
                 h('line', { x1: pw - 165, y1: 38, x2: pw - 150, y2: 38, stroke: '#8b5cf6', strokeWidth: 3 }),
-                h('text', { x: pw - 145, y: 41, fontSize: 10, fill: '#c4b5fd' }, 'Owl wing noise'),
+                h('text', { x: pw - 145, y: 41, fontSize: 10, fill: '#c4b5fd' }, __alloT('stem.raptorhunt.owl_wing_noise', 'Owl wing noise')),
                 h('line', { x1: pw - 165, y1: 54, x2: pw - 150, y2: 54, stroke: '#94a3b8', strokeWidth: 2, strokeDasharray: '3,2' }),
-                h('text', { x: pw - 145, y: 57, fontSize: 10, fill: '#94a3b8' }, 'Mouse hearing')
+                h('text', { x: pw - 145, y: 57, fontSize: 10, fill: '#94a3b8' }, __alloT('stem.raptorhunt.mouse_hearing', 'Mouse hearing'))
               );
             })(),
-            h('div', { className: 'text-[10px] text-slate-400 italic mt-3' }, 'The owl\'s noise peak at 16 kHz sits past the mouse\'s sharp drop-off in hearing sensitivity. The hawk\'s noise peak at 3 kHz sits exactly where the mouse hears best. This is what "silent flight" really means in physics: not zero amplitude — frequency shifted out of the prey\'s perceptual band.')
+            h('div', { className: 'text-[10px] text-slate-400 italic mt-3' }, __alloT('stem.raptorhunt.the_owl_s_noise_peak_at_16_khz_sits_pa', 'The owl\'s noise peak at 16 kHz sits past the mouse\'s sharp drop-off in hearing sensitivity. The hawk\'s noise peak at 3 kHz sits exactly where the mouse hears best. This is what "silent flight" really means in physics: not zero amplitude — frequency shifted out of the prey\'s perceptual band.'))
           ),
 
           // Key points
@@ -11004,13 +11005,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           ),
           // ── NEW v0.9: Eye cross-section SVG comparison ──
           h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-amber-300 mb-2' }, '🔬 Eye Anatomy Cross-Section — Spherical vs Tubular'),
-            h('div', { className: 'text-xs text-slate-400 italic mb-3' }, 'Both eyes shown in horizontal cross-section, looking down through the top of the skull. Note the dramatic shape difference + the cone-vs-rod density distribution on the retina.'),
+            h('div', { className: 'text-sm font-bold text-amber-300 mb-2' }, __alloT('stem.raptorhunt.eye_anatomy_cross_section_spherical_vs', '🔬 Eye Anatomy Cross-Section — Spherical vs Tubular')),
+            h('div', { className: 'text-xs text-slate-400 italic mb-3' }, __alloT('stem.raptorhunt.both_eyes_shown_in_horizontal_cross_se', 'Both eyes shown in horizontal cross-section, looking down through the top of the skull. Note the dramatic shape difference + the cone-vs-rod density distribution on the retina.')),
             h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
               // Diurnal (spherical) eye
               h('div', { className: 'bg-amber-900/15 border border-amber-700/40 rounded-lg p-3' },
-                h('div', { className: 'text-xs font-bold text-amber-300 mb-1 text-center' }, '☀️ Diurnal — Spherical Eye'),
-                h('svg', { viewBox: '0 0 300 220', style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': 'Spherical raptor eye cross-section' },
+                h('div', { className: 'text-xs font-bold text-amber-300 mb-1 text-center' }, __alloT('stem.raptorhunt.diurnal_spherical_eye', '☀️ Diurnal — Spherical Eye')),
+                h('svg', { viewBox: '0 0 300 220', style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': __alloT('stem.raptorhunt.spherical_raptor_eye_cross_section', 'Spherical raptor eye cross-section') },
                   h('rect', { x: 0, y: 0, width: 300, height: 220, fill: '#1c1917' }),
                   // Eye sphere outline
                   h('circle', { cx: 150, cy: 110, r: 85, fill: 'none', stroke: '#fcd34d', strokeWidth: 2 }),
@@ -11027,28 +11028,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   h('path', { d: 'M 230 75 Q 250 110 230 145', fill: 'none', stroke: '#dc2626', strokeWidth: 4 }),
                   // Central fovea (deep pit)
                   h('circle', { cx: 235, cy: 110, r: 6, fill: '#dc2626' }),
-                  h('text', { x: 248, y: 113, fontSize: 9, fill: '#fca5a5', fontWeight: 'bold' }, 'Fovea 1'),
+                  h('text', { x: 248, y: 113, fontSize: 9, fill: '#fca5a5', fontWeight: 'bold' }, __alloT('stem.raptorhunt.fovea_1', 'Fovea 1')),
                   // Temporal fovea (shallower, lateral)
                   h('circle', { cx: 215, cy: 85, r: 4, fill: '#dc2626', opacity: 0.7 }),
-                  h('text', { x: 224, y: 78, fontSize: 9, fill: '#fca5a5', fontWeight: 'bold' }, 'Fovea 2'),
+                  h('text', { x: 224, y: 78, fontSize: 9, fill: '#fca5a5', fontWeight: 'bold' }, __alloT('stem.raptorhunt.fovea_2', 'Fovea 2')),
                   // Optic nerve
                   h('rect', { x: 235, y: 105, width: 30, height: 10, fill: '#a3a3a3' }),
-                  h('text', { x: 270, y: 113, fontSize: 9, fill: '#94a3b8' }, 'Optic n.'),
+                  h('text', { x: 270, y: 113, fontSize: 9, fill: '#94a3b8' }, __alloT('stem.raptorhunt.optic_n', 'Optic n.')),
                   // Pecten oculi (unique to birds)
                   h('path', { d: 'M 220 115 L 232 130 L 215 140 L 230 145', fill: 'none', stroke: '#16a34a', strokeWidth: 2 }),
-                  h('text', { x: 200, y: 165, fontSize: 9, fill: '#86efac' }, 'Pecten oculi'),
+                  h('text', { x: 200, y: 165, fontSize: 9, fill: '#86efac' }, __alloT('stem.raptorhunt.pecten_oculi', 'Pecten oculi')),
                   // Labels
-                  h('text', { x: 50, y: 110, fontSize: 9, fill: '#fbbf24', textAnchor: 'middle' }, 'Cornea'),
-                  h('text', { x: 92, y: 90, fontSize: 9, fill: '#fbbf24', textAnchor: 'middle' }, 'Pupil'),
-                  h('text', { x: 110, y: 145, fontSize: 9, fill: '#fbbf24', textAnchor: 'middle' }, 'Lens'),
-                  h('text', { x: 150, y: 30, fontSize: 11, fill: '#fde047', textAnchor: 'middle', fontWeight: 'bold' }, '~80% cones / 20% rods')
+                  h('text', { x: 50, y: 110, fontSize: 9, fill: '#fbbf24', textAnchor: 'middle' }, __alloT('stem.raptorhunt.cornea', 'Cornea')),
+                  h('text', { x: 92, y: 90, fontSize: 9, fill: '#fbbf24', textAnchor: 'middle' }, __alloT('stem.raptorhunt.pupil', 'Pupil')),
+                  h('text', { x: 110, y: 145, fontSize: 9, fill: '#fbbf24', textAnchor: 'middle' }, __alloT('stem.raptorhunt.lens', 'Lens')),
+                  h('text', { x: 150, y: 30, fontSize: 11, fill: '#fde047', textAnchor: 'middle', fontWeight: 'bold' }, __alloT('stem.raptorhunt.80_cones_20_rods', '~80% cones / 20% rods'))
                 ),
-                h('div', { className: 'text-[10px] text-amber-100/70 italic text-center mt-1' }, 'Spherical shape, 2 foveas, cone-dominated retina')
+                h('div', { className: 'text-[10px] text-amber-100/70 italic text-center mt-1' }, __alloT('stem.raptorhunt.spherical_shape_2_foveas_cone_dominate', 'Spherical shape, 2 foveas, cone-dominated retina'))
               ),
               // Nocturnal (tubular) eye
               h('div', { className: 'bg-indigo-900/20 border border-indigo-700/40 rounded-lg p-3' },
-                h('div', { className: 'text-xs font-bold text-indigo-300 mb-1 text-center' }, '🌙 Nocturnal — Tubular Eye (owl)'),
-                h('svg', { viewBox: '0 0 300 220', style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': 'Tubular owl eye cross-section' },
+                h('div', { className: 'text-xs font-bold text-indigo-300 mb-1 text-center' }, __alloT('stem.raptorhunt.nocturnal_tubular_eye_owl', '🌙 Nocturnal — Tubular Eye (owl)')),
+                h('svg', { viewBox: '0 0 300 220', style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': __alloT('stem.raptorhunt.tubular_owl_eye_cross_section', 'Tubular owl eye cross-section') },
                   h('rect', { x: 0, y: 0, width: 300, height: 220, fill: '#1c1917' }),
                   // Tubular eye — long + narrow, NOT spherical
                   h('path', { d: 'M 90 65 L 240 65 L 240 95 Q 250 110 240 125 L 240 155 L 90 155 Q 70 145 60 110 Q 70 75 90 65 Z',
@@ -11063,26 +11064,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   h('ellipse', { cx: 115, cy: 110, rx: 18, ry: 38, fill: '#ede9fe', opacity: 0.7, stroke: '#a78bfa', strokeWidth: 1 }),
                   // Single deep central fovea
                   h('circle', { cx: 235, cy: 110, r: 5, fill: '#dc2626' }),
-                  h('text', { x: 248, y: 113, fontSize: 9, fill: '#fca5a5', fontWeight: 'bold' }, 'Fovea'),
+                  h('text', { x: 248, y: 113, fontSize: 9, fill: '#fca5a5', fontWeight: 'bold' }, __alloT('stem.raptorhunt.fovea', 'Fovea')),
                   // Retina (rod-dominated, drawn as denser stippling on back wall)
                   h('path', { d: 'M 225 70 L 230 95 L 232 110 L 230 125 L 225 150', fill: 'none', stroke: '#a78bfa', strokeWidth: 5, opacity: 0.6 }),
                   // Optic nerve
                   h('rect', { x: 235, y: 105, width: 30, height: 10, fill: '#a3a3a3' }),
-                  h('text', { x: 270, y: 113, fontSize: 9, fill: '#94a3b8' }, 'Optic n.'),
+                  h('text', { x: 270, y: 113, fontSize: 9, fill: '#94a3b8' }, __alloT('stem.raptorhunt.optic_n_2', 'Optic n.')),
                   // Labels
-                  h('text', { x: 30, y: 110, fontSize: 9, fill: '#a78bfa', textAnchor: 'middle' }, 'Cornea'),
-                  h('text', { x: 85, y: 75, fontSize: 9, fill: '#a78bfa', textAnchor: 'middle' }, 'Pupil'),
-                  h('text', { x: 115, y: 165, fontSize: 9, fill: '#a78bfa', textAnchor: 'middle' }, 'Large lens'),
-                  h('text', { x: 150, y: 30, fontSize: 11, fill: '#c4b5fd', textAnchor: 'middle', fontWeight: 'bold' }, '~5% cones / 95% rods'),
+                  h('text', { x: 30, y: 110, fontSize: 9, fill: '#a78bfa', textAnchor: 'middle' }, __alloT('stem.raptorhunt.cornea_2', 'Cornea')),
+                  h('text', { x: 85, y: 75, fontSize: 9, fill: '#a78bfa', textAnchor: 'middle' }, __alloT('stem.raptorhunt.pupil_2', 'Pupil')),
+                  h('text', { x: 115, y: 165, fontSize: 9, fill: '#a78bfa', textAnchor: 'middle' }, __alloT('stem.raptorhunt.large_lens', 'Large lens')),
+                  h('text', { x: 150, y: 30, fontSize: 11, fill: '#c4b5fd', textAnchor: 'middle', fontWeight: 'bold' }, __alloT('stem.raptorhunt.5_cones_95_rods', '~5% cones / 95% rods')),
                   // Eye-fixed note
-                  h('text', { x: 150, y: 200, fontSize: 9, fill: '#c4b5fd', textAnchor: 'middle', fontStyle: 'italic' }, 'Cannot rotate — head turns instead')
+                  h('text', { x: 150, y: 200, fontSize: 9, fill: '#c4b5fd', textAnchor: 'middle', fontStyle: 'italic' }, __alloT('stem.raptorhunt.cannot_rotate_head_turns_instead', 'Cannot rotate — head turns instead'))
                 ),
-                h('div', { className: 'text-[10px] text-indigo-100/70 italic text-center mt-1' }, 'Tubular shape, 1 fovea, rod-dominated retina, larger cornea + lens')
+                h('div', { className: 'text-[10px] text-indigo-100/70 italic text-center mt-1' }, __alloT('stem.raptorhunt.tubular_shape_1_fovea_rod_dominated_re', 'Tubular shape, 1 fovea, rod-dominated retina, larger cornea + lens'))
               )
             ),
             h('div', { className: 'mt-3 p-3 bg-slate-800/40 rounded text-xs text-slate-300 leading-relaxed' },
-              h('span', { className: 'font-bold text-amber-300' }, 'Engineering implication: '),
-              'Diurnal raptors have spherical eyes that capture maximum cone density across the entire retina (= peripheral acuity + 2 foveas). Owls trade peripheral acuity for raw light-gathering — the tubular shape lets them pack a huge cornea + lens + rod-rich retina in a fixed skull volume. The cost: they can\'t rotate the eye (head must turn). The benefit: ~100× more sensitive at low light than humans.'
+              h('span', { className: 'font-bold text-amber-300' }, __alloT('stem.raptorhunt.engineering_implication', 'Engineering implication: ')),
+              __alloT('stem.raptorhunt.diurnal_raptors_have_spherical_eyes_th', 'Diurnal raptors have spherical eyes that capture maximum cone density across the entire retina (= peripheral acuity + 2 foveas). Owls trade peripheral acuity for raw light-gathering — the tubular shape lets them pack a huge cornea + lens + rod-rich retina in a fixed skull volume. The cost: they can\'t rotate the eye (head must turn). The benefit: ~100× more sensitive at low light than humans.')
             )
           ),
 
@@ -11091,33 +11092,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'bg-gradient-to-br from-amber-900/30 to-orange-900/30 border border-amber-700/40 rounded-xl p-4' },
               h('div', { className: 'flex items-center gap-2 mb-3' },
                 h('div', { className: 'text-3xl' }, '☀️'),
-                h('div', { className: 'text-base font-bold text-amber-200' }, 'Diurnal Eye (eagles, hawks, falcons)')
+                h('div', { className: 'text-base font-bold text-amber-200' }, __alloT('stem.raptorhunt.diurnal_eye_eagles_hawks_falcons', 'Diurnal Eye (eagles, hawks, falcons)'))
               ),
               h('ul', { className: 'space-y-2 text-xs text-amber-100/90' },
-                h('li', null, h('span', { className: 'font-bold' }, '~80% cones, 20% rods')),
-                h('li', null, h('span', { className: 'font-bold' }, 'Two foveas per eye '), '— central + temporal'),
-                h('li', null, h('span', { className: 'font-bold' }, 'Acuity:'), ' 4-8× human'),
-                h('li', null, h('span', { className: 'font-bold' }, 'Spherical eye shape')),
-                h('li', null, h('span', { className: 'font-bold' }, 'UV in falconids '), '— vole urine trails'),
-                h('li', null, h('span', { className: 'font-bold' }, 'Visual field:'), ' 180-220°'),
-                h('li', null, h('span', { className: 'font-bold' }, 'Color:'), ' full tetrachromatic'),
-                h('li', null, h('span', { className: 'font-bold' }, 'Low-light:'), ' poor (worse than humans at twilight)')
+                h('li', null, h('span', { className: 'font-bold' }, __alloT('stem.raptorhunt.80_cones_20_rods_2', '~80% cones, 20% rods'))),
+                h('li', null, h('span', { className: 'font-bold' }, __alloT('stem.raptorhunt.two_foveas_per_eye', 'Two foveas per eye ')), __alloT('stem.raptorhunt.central_temporal', '— central + temporal')),
+                h('li', null, h('span', { className: 'font-bold' }, 'Acuity:'), __alloT('stem.raptorhunt.4_8_human', ' 4-8× human')),
+                h('li', null, h('span', { className: 'font-bold' }, __alloT('stem.raptorhunt.spherical_eye_shape', 'Spherical eye shape'))),
+                h('li', null, h('span', { className: 'font-bold' }, __alloT('stem.raptorhunt.uv_in_falconids', 'UV in falconids ')), __alloT('stem.raptorhunt.vole_urine_trails', '— vole urine trails')),
+                h('li', null, h('span', { className: 'font-bold' }, __alloT('stem.raptorhunt.visual_field_2', 'Visual field:')), ' 180-220°'),
+                h('li', null, h('span', { className: 'font-bold' }, 'Color:'), __alloT('stem.raptorhunt.full_tetrachromatic', ' full tetrachromatic')),
+                h('li', null, h('span', { className: 'font-bold' }, 'Low-light:'), __alloT('stem.raptorhunt.poor_worse_than_humans_at_twilight', ' poor (worse than humans at twilight)'))
               )
             ),
             h('div', { className: 'bg-gradient-to-br from-indigo-900/40 to-slate-900/40 border border-indigo-700/40 rounded-xl p-4' },
               h('div', { className: 'flex items-center gap-2 mb-3' },
                 h('div', { className: 'text-3xl' }, '🌙'),
-                h('div', { className: 'text-base font-bold text-indigo-200' }, 'Nocturnal Eye (owls)')
+                h('div', { className: 'text-base font-bold text-indigo-200' }, __alloT('stem.raptorhunt.nocturnal_eye_owls', 'Nocturnal Eye (owls)'))
               ),
               h('ul', { className: 'space-y-2 text-xs text-indigo-100/90' },
-                h('li', null, h('span', { className: 'font-bold' }, '~5% cones, 95% rods')),
-                h('li', null, h('span', { className: 'font-bold' }, 'One fovea per eye '), '— central'),
-                h('li', null, h('span', { className: 'font-bold' }, 'Acuity:'), ' ~2× human (moderate)'),
-                h('li', null, h('span', { className: 'font-bold' }, 'Tubular eye shape '), '(cannot rotate)'),
-                h('li', null, h('span', { className: 'font-bold' }, 'No UV; '), 'near-monochromatic'),
-                h('li', null, h('span', { className: 'font-bold' }, 'Visual field:'), ' 110° (much narrower)'),
-                h('li', null, h('span', { className: 'font-bold' }, 'Low-light:'), ' ~100× more sensitive than humans'),
-                h('li', null, h('span', { className: 'font-bold' }, 'Eye = ~5% body mass'))
+                h('li', null, h('span', { className: 'font-bold' }, __alloT('stem.raptorhunt.5_cones_95_rods_2', '~5% cones, 95% rods'))),
+                h('li', null, h('span', { className: 'font-bold' }, __alloT('stem.raptorhunt.one_fovea_per_eye', 'One fovea per eye ')), __alloT('stem.raptorhunt.central', '— central')),
+                h('li', null, h('span', { className: 'font-bold' }, 'Acuity:'), __alloT('stem.raptorhunt.2_human_moderate', ' ~2× human (moderate)')),
+                h('li', null, h('span', { className: 'font-bold' }, __alloT('stem.raptorhunt.tubular_eye_shape', 'Tubular eye shape ')), __alloT('stem.raptorhunt.cannot_rotate', '(cannot rotate)')),
+                h('li', null, h('span', { className: 'font-bold' }, __alloT('stem.raptorhunt.no_uv', 'No UV; ')), 'near-monochromatic'),
+                h('li', null, h('span', { className: 'font-bold' }, __alloT('stem.raptorhunt.visual_field_3', 'Visual field:')), __alloT('stem.raptorhunt.110_much_narrower', ' 110° (much narrower)')),
+                h('li', null, h('span', { className: 'font-bold' }, 'Low-light:'), __alloT('stem.raptorhunt.100_more_sensitive_than_humans', ' ~100× more sensitive than humans')),
+                h('li', null, h('span', { className: 'font-bold' }, __alloT('stem.raptorhunt.eye_5_body_mass', 'Eye = ~5% body mass')))
               )
             )
           ),
@@ -11126,13 +11127,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-4xl' }, '👂'),
               h('div', null,
-                h('div', { className: 'text-base font-bold text-cyan-300 mb-2' }, 'Owl ear asymmetry: 3D sound localization'),
+                h('div', { className: 'text-base font-bold text-cyan-300 mb-2' }, __alloT('stem.raptorhunt.owl_ear_asymmetry_3d_sound_localizatio', 'Owl ear asymmetry: 3D sound localization')),
                 h('div', { className: 'text-sm text-slate-200 leading-relaxed' },
-                  'Owls have ',
-                  h('span', { className: 'font-bold text-cyan-300' }, 'asymmetrically placed ear openings'),
-                  ' — the left opening sits higher on the skull than the right by ~1 cm in barn owls. Sound arriving from above hits the left ear first by ~30 microseconds; sound from below hits the right ear first. The brain reads the time difference as ',
+                  __alloT('stem.raptorhunt.owls_have', 'Owls have '),
+                  h('span', { className: 'font-bold text-cyan-300' }, __alloT('stem.raptorhunt.asymmetrically_placed_ear_openings', 'asymmetrically placed ear openings')),
+                  __alloT('stem.raptorhunt.the_left_opening_sits_higher_on_the_sk', ' — the left opening sits higher on the skull than the right by ~1 cm in barn owls. Sound arriving from above hits the left ear first by ~30 microseconds; sound from below hits the right ear first. The brain reads the time difference as '),
                   h('span', { className: 'font-bold text-cyan-300' }, 'elevation'),
-                  '. Combined with the standard horizontal timing difference (which encodes azimuth), the owl gets full 3D acoustic localization. Roger Payne (1962) showed barn owls strike mice in total darkness using only sound, with median accuracy of ~1°.'
+                  __alloT('stem.raptorhunt.combined_with_the_standard_horizontal_', '. Combined with the standard horizontal timing difference (which encodes azimuth), the owl gets full 3D acoustic localization. Roger Payne (1962) showed barn owls strike mice in total darkness using only sound, with median accuracy of ~1°.')
                 )
               )
             )
@@ -11142,32 +11143,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           (function() {
             // Per-species female:male size ratio (rough averages)
             var ssdData = [
-              { id: 'kestrel', name: 'American Kestrel', ratio: 1.10, family: 'Falconidae' },
-              { id: 'peregrine', name: 'Peregrine Falcon', ratio: 1.27, family: 'Falconidae' },
-              { id: 'gyrfalcon', name: 'Gyrfalcon', ratio: 1.30, family: 'Falconidae' },
-              { id: 'coopersHawk', name: "Cooper's Hawk", ratio: 1.42, family: 'Accipitridae' },
-              { id: 'northernGoshawk', name: 'Northern Goshawk', ratio: 1.50, family: 'Accipitridae' },
-              { id: 'redTail', name: 'Red-tailed Hawk', ratio: 1.20, family: 'Accipitridae' },
-              { id: 'baldEagle', name: 'Bald Eagle', ratio: 1.20, family: 'Accipitridae' },
-              { id: 'goldenEagle', name: 'Golden Eagle', ratio: 1.25, family: 'Accipitridae' },
-              { id: 'harpyEagle', name: 'Harpy Eagle', ratio: 1.50, family: 'Accipitridae' },
-              { id: 'osprey', name: 'Osprey', ratio: 1.15, family: 'Pandionidae' },
-              { id: 'snowyOwl', name: 'Snowy Owl', ratio: 1.20, family: 'Strigidae' },
-              { id: 'greatHorned', name: 'Great Horned Owl', ratio: 1.15, family: 'Strigidae' },
-              { id: 'missKite', name: 'Mississippi Kite', ratio: 1.08, family: 'Accipitridae' }
+              { id: 'kestrel', name: __alloT('stem.raptorhunt.american_kestrel', 'American Kestrel'), ratio: 1.10, family: 'Falconidae' },
+              { id: 'peregrine', name: __alloT('stem.raptorhunt.peregrine_falcon', 'Peregrine Falcon'), ratio: 1.27, family: 'Falconidae' },
+              { id: 'gyrfalcon', name: __alloT('stem.raptorhunt.gyrfalcon', 'Gyrfalcon'), ratio: 1.30, family: 'Falconidae' },
+              { id: 'coopersHawk', name: __alloT('stem.raptorhunt.cooper_s_hawk', "Cooper's Hawk"), ratio: 1.42, family: 'Accipitridae' },
+              { id: 'northernGoshawk', name: __alloT('stem.raptorhunt.northern_goshawk', 'Northern Goshawk'), ratio: 1.50, family: 'Accipitridae' },
+              { id: 'redTail', name: __alloT('stem.raptorhunt.red_tailed_hawk', 'Red-tailed Hawk'), ratio: 1.20, family: 'Accipitridae' },
+              { id: 'baldEagle', name: __alloT('stem.raptorhunt.bald_eagle', 'Bald Eagle'), ratio: 1.20, family: 'Accipitridae' },
+              { id: 'goldenEagle', name: __alloT('stem.raptorhunt.golden_eagle', 'Golden Eagle'), ratio: 1.25, family: 'Accipitridae' },
+              { id: 'harpyEagle', name: __alloT('stem.raptorhunt.harpy_eagle', 'Harpy Eagle'), ratio: 1.50, family: 'Accipitridae' },
+              { id: 'osprey', name: __alloT('stem.raptorhunt.osprey', 'Osprey'), ratio: 1.15, family: 'Pandionidae' },
+              { id: 'snowyOwl', name: __alloT('stem.raptorhunt.snowy_owl', 'Snowy Owl'), ratio: 1.20, family: 'Strigidae' },
+              { id: 'greatHorned', name: __alloT('stem.raptorhunt.great_horned_owl', 'Great Horned Owl'), ratio: 1.15, family: 'Strigidae' },
+              { id: 'missKite', name: __alloT('stem.raptorhunt.mississippi_kite', 'Mississippi Kite'), ratio: 1.08, family: 'Accipitridae' }
             ].sort(function(a, b) { return b.ratio - a.ratio; });
             return h('div', { className: 'bg-slate-900/40 border border-pink-700/40 rounded-xl p-4' },
-              h('div', { className: 'text-base font-bold text-pink-300 mb-2' }, '⚥ Sexual Dimorphism: The Reverse SSD Mystery'),
+              h('div', { className: 'text-base font-bold text-pink-300 mb-2' }, __alloT('stem.raptorhunt.sexual_dimorphism_the_reverse_ssd_myst', '⚥ Sexual Dimorphism: The Reverse SSD Mystery')),
               h('div', { className: 'text-sm text-pink-100/90 leading-relaxed mb-3' },
-                'Raptors are the ',
-                h('span', { className: 'font-bold text-amber-300' }, 'only major bird group'),
-                ' in which females are consistently LARGER than males. In peacocks, deer, lions, gorillas — the male is the bigger sex. In raptors it\'s reversed. The phenomenon is called ',
-                h('span', { className: 'font-bold text-amber-300' }, 'reverse sexual size dimorphism (RSD)'),
-                ', and despite a century of study, biologists still don\'t fully agree why it exists.'
+                __alloT('stem.raptorhunt.raptors_are_the', 'Raptors are the '),
+                h('span', { className: 'font-bold text-amber-300' }, __alloT('stem.raptorhunt.only_major_bird_group', 'only major bird group')),
+                __alloT('stem.raptorhunt.in_which_females_are_consistently_larg', ' in which females are consistently LARGER than males. In peacocks, deer, lions, gorillas — the male is the bigger sex. In raptors it\'s reversed. The phenomenon is called '),
+                h('span', { className: 'font-bold text-amber-300' }, __alloT('stem.raptorhunt.reverse_sexual_size_dimorphism_rsd', 'reverse sexual size dimorphism (RSD)')),
+                __alloT('stem.raptorhunt.and_despite_a_century_of_study_biologi', ', and despite a century of study, biologists still don\'t fully agree why it exists.')
               ),
               // Size-ratio bar chart
               h('div', { className: 'bg-slate-950/60 rounded-lg p-3' },
-                h('div', { className: 'text-xs font-bold text-amber-300 mb-2' }, '📊 Female:Male body-mass ratio (sorted by magnitude)'),
+                h('div', { className: 'text-xs font-bold text-amber-300 mb-2' }, __alloT('stem.raptorhunt.female_male_body_mass_ratio_sorted_by_', '📊 Female:Male body-mass ratio (sorted by magnitude)')),
                 h('div', { className: 'space-y-1' },
                   ssdData.map(function(d, i) {
                     var pct = ((d.ratio - 1.0) / 0.6) * 100;
@@ -11181,25 +11182,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     );
                   })
                 ),
-                h('div', { className: 'text-[10px] text-slate-500 italic mt-2' }, 'Bar length = degree females exceed males in mass. Goshawks + harpies are the extremes (50% larger). Mississippi kites + falcons in general show less dimorphism.')
+                h('div', { className: 'text-[10px] text-slate-500 italic mt-2' }, __alloT('stem.raptorhunt.bar_length_degree_females_exceed_males', 'Bar length = degree females exceed males in mass. Goshawks + harpies are the extremes (50% larger). Mississippi kites + falcons in general show less dimorphism.'))
               ),
               // 3 hypotheses
               h('div', { className: 'mt-3 grid grid-cols-1 md:grid-cols-3 gap-2' },
                 [
                   {
-                    name: '1. Small-male hypothesis',
+                    name: __alloT('stem.raptorhunt.1_small_male_hypothesis', '1. Small-male hypothesis'),
                     short: 'Males got SMALLER',
-                    detail: 'Smaller males may be more agile + better at hunting fast-moving small prey to feed the nesting female. In accipiters + kestrels, males hunt smaller faster prey than females. Selected for male agility, not female size.'
+                    detail: __alloT('stem.raptorhunt.smaller_males_may_be_more_agile_better', 'Smaller males may be more agile + better at hunting fast-moving small prey to feed the nesting female. In accipiters + kestrels, males hunt smaller faster prey than females. Selected for male agility, not female size.')
                   },
                   {
-                    name: '2. Big-female hypothesis',
+                    name: __alloT('stem.raptorhunt.2_big_female_hypothesis', '2. Big-female hypothesis'),
                     short: 'Females got LARGER',
-                    detail: 'Larger females are more dominant over males in food disputes + better defenders of the nest against predators + intruders. Mother-defense + clutch protection drove female size up.'
+                    detail: __alloT('stem.raptorhunt.larger_females_are_more_dominant_over_', 'Larger females are more dominant over males in food disputes + better defenders of the nest against predators + intruders. Mother-defense + clutch protection drove female size up.')
                   },
                   {
-                    name: '3. Niche-divergence hypothesis',
+                    name: __alloT('stem.raptorhunt.3_niche_divergence_hypothesis', '3. Niche-divergence hypothesis'),
                     short: 'BOTH diverged into different niches',
-                    detail: 'Male + female evolve to hunt different prey size classes, reducing competition between mates. Each gender exploits a different ecological niche during breeding when both must hunt simultaneously. The synthesis of #1 + #2.'
+                    detail: __alloT('stem.raptorhunt.male_female_evolve_to_hunt_different_p', 'Male + female evolve to hunt different prey size classes, reducing competition between mates. Each gender exploits a different ecological niche during breeding when both must hunt simultaneously. The synthesis of #1 + #2.')
                   }
                 ].map(function(hyp, i) {
                   return h('div', { key: i, className: 'bg-slate-800/40 rounded-lg p-3 border border-pink-700/30' },
@@ -11210,10 +11211,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 })
               ),
               h('div', { className: 'mt-3 bg-amber-900/20 border border-amber-700/40 rounded p-3 text-xs text-amber-100/90' },
-                h('span', { className: 'font-bold text-amber-300' }, '🔬 Current scientific consensus: '),
-                'Most biologists now favor the ',
-                h('span', { className: 'font-bold' }, 'niche-divergence hypothesis (#3)'),
-                ' — observations confirm that mated pairs hunt different prey size classes, and this niche partitioning allows the pair to harvest more total biomass than either could alone. The dimorphism is most extreme in accipiters (forest specialists) + falcons that specialize in agile prey — exactly where prey-size divergence matters most.'
+                h('span', { className: 'font-bold text-amber-300' }, __alloT('stem.raptorhunt.current_scientific_consensus', '🔬 Current scientific consensus: ')),
+                __alloT('stem.raptorhunt.most_biologists_now_favor_the', 'Most biologists now favor the '),
+                h('span', { className: 'font-bold' }, __alloT('stem.raptorhunt.niche_divergence_hypothesis_3', 'niche-divergence hypothesis (#3)')),
+                __alloT('stem.raptorhunt.observations_confirm_that_mated_pairs_', ' — observations confirm that mated pairs hunt different prey size classes, and this niche partitioning allows the pair to harvest more total biomass than either could alone. The dimorphism is most extreme in accipiters (forest specialists) + falcons that specialize in agile prey — exactly where prey-size divergence matters most.')
               )
             );
           })(),
@@ -11297,16 +11298,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-emerald-900/40 to-teal-900/40 border border-emerald-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-emerald-200 mb-2 tracking-tight' }, '🌍 Conservation: From DDT to today'),
+            h('div', { className: 'text-lg font-bold text-emerald-200 mb-2 tracking-tight' }, __alloT('stem.raptorhunt.conservation_from_ddt_to_today', '🌍 Conservation: From DDT to today')),
             h('div', { className: 'text-sm text-emerald-100/90 leading-relaxed' }, CONSERVATION.overview)
           ),
 
           // ── NEW v0.20: Population Status Comparison Table ──
           h('div', { className: 'bg-slate-900/40 border border-emerald-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, '📊 Population Status — All 13 Species (sortable)'),
-            h('div', { className: 'text-xs text-slate-400 italic mb-3' }, 'IUCN codes: LC = Least Concern · NT = Near Threatened · VU = Vulnerable · EN = Endangered · CR = Critically Endangered. Click column headers to sort.'),
+            h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, __alloT('stem.raptorhunt.population_status_all_13_species_sorta', '📊 Population Status — All 13 Species (sortable)')),
+            h('div', { className: 'text-xs text-slate-400 italic mb-3' }, __alloT('stem.raptorhunt.iucn_codes_lc_least_concern_nt_near_th', 'IUCN codes: LC = Least Concern · NT = Near Threatened · VU = Vulnerable · EN = Endangered · CR = Critically Endangered. Click column headers to sort.')),
             h('div', { className: 'overflow-x-auto' },
-              h('table', { className: 'w-full text-xs', 'aria-label': 'Conservation status table' },
+              h('table', { className: 'w-full text-xs', 'aria-label': __alloT('stem.raptorhunt.conservation_status_table', 'Conservation status table') },
                 h('thead', null,
                   h('tr', { className: 'border-b border-slate-700' },
                     statusHeader('name', 'Species'),
@@ -11352,13 +11353,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               );
             })(),
             h('div', { className: 'text-[10px] text-slate-500 italic mt-2' },
-              'Trend insight: kestrels declining 50% since 1970 (cause unknown — pesticide-driven insect crash + mesopredator release suspected). Cooper\'s hawks + Mississippi kites are SUCCESS stories of urban adaptation. Snowy owls + harpy eagles are the conservation worries — climate change + habitat loss.'
+              __alloT('stem.raptorhunt.trend_insight_kestrels_declining_50_si', 'Trend insight: kestrels declining 50% since 1970 (cause unknown — pesticide-driven insect crash + mesopredator release suspected). Cooper\'s hawks + Mississippi kites are SUCCESS stories of urban adaptation. Snowy owls + harpy eagles are the conservation worries — climate change + habitat loss.')
             )
           ),
 
           // Success stories
           h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-emerald-300 mb-3' }, '✅ Recovery Success Stories'),
+            h('div', { className: 'text-sm font-bold text-emerald-300 mb-3' }, __alloT('stem.raptorhunt.recovery_success_stories', '✅ Recovery Success Stories')),
             h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
               CONSERVATION.successStories.map(function(s, i) {
                 return h('div', { key: i, className: 'bg-emerald-900/20 rounded-lg p-3 border border-emerald-700/30' },
@@ -11414,18 +11415,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return (i === 0 ? 'M ' : 'L ') + x.toFixed(1) + ' ' + ny.toFixed(1);
             }).join(' ');
             return h('div', { className: 'bg-slate-900/40 border border-emerald-700/40 rounded-xl p-5 space-y-3' },
-              h('div', { className: 'text-base font-bold text-emerald-300' }, '🎛 Threat Impact Calculator — Compound Population Effect'),
+              h('div', { className: 'text-base font-bold text-emerald-300' }, __alloT('stem.raptorhunt.threat_impact_calculator_compound_popu', '🎛 Threat Impact Calculator — Compound Population Effect')),
               h('div', { className: 'text-xs text-emerald-100/90 leading-relaxed' },
-                'Real raptor populations face multiple threats simultaneously. Each one is small but they compound. Try adjusting the threat sliders for a species — watch the 30-year population trajectory tip from growing to declining.'
+                __alloT('stem.raptorhunt.real_raptor_populations_face_multiple_', 'Real raptor populations face multiple threats simultaneously. Each one is small but they compound. Try adjusting the threat sliders for a species — watch the 30-year population trajectory tip from growing to declining.')
               ),
               // Species selector
               h('div', null,
-                h('label', { className: 'text-xs text-amber-300 font-bold block mb-1' }, '🦅 Species'),
+                h('label', { className: 'text-xs text-amber-300 font-bold block mb-1' }, __alloT('stem.raptorhunt.species_3', '🦅 Species')),
                 h('select', {
                   value: ti.species,
                   onChange: function(e) { setTI({ species: e.target.value }); },
                   className: 'w-full px-3 py-2 rounded-lg bg-slate-800 text-amber-100 border border-slate-700 text-sm',
-                  'aria-label': 'Species'
+                  'aria-label': __alloT('stem.raptorhunt.species_4', 'Species')
                 },
                   Object.keys(SPECIES_DEMO).map(function(k) {
                     var s = findSpecies(k);
@@ -11436,10 +11437,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               // Threat sliders
               h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
                 [
-                  { id: 'lead', label: '🎯 Lead-shot poisoning intensity', maxImpact: '-10% adult survival', color: 'red' },
-                  { id: 'wind', label: '💨 Wind turbine collision rate', maxImpact: '-5% adult survival', color: 'orange' },
-                  { id: 'rodenticide', label: '🐀 Rodenticide secondary poisoning', maxImpact: '-8% adult survival', color: 'yellow' },
-                  { id: 'habitat', label: '🌳 Habitat loss', maxImpact: '-8% survival + fecundity', color: 'amber' }
+                  { id: 'lead', label: __alloT('stem.raptorhunt.lead_shot_poisoning_intensity', '🎯 Lead-shot poisoning intensity'), maxImpact: '-10% adult survival', color: 'red' },
+                  { id: 'wind', label: __alloT('stem.raptorhunt.wind_turbine_collision_rate', '💨 Wind turbine collision rate'), maxImpact: '-5% adult survival', color: 'orange' },
+                  { id: 'rodenticide', label: __alloT('stem.raptorhunt.rodenticide_secondary_poisoning', '🐀 Rodenticide secondary poisoning'), maxImpact: '-8% adult survival', color: 'yellow' },
+                  { id: 'habitat', label: __alloT('stem.raptorhunt.habitat_loss', '🌳 Habitat loss'), maxImpact: '-8% survival + fecundity', color: 'amber' }
                 ].map(function(thr) {
                   return h('div', { key: thr.id },
                     h('label', { className: 'text-xs text-' + thr.color + '-300 flex justify-between items-center' },
@@ -11457,36 +11458,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2' },
                 h('div', { className: 'bg-' + vc + '-900/40 border border-' + vc + '-700/50 rounded p-3 text-center' },
                   h('div', { className: 'text-2xl font-bold text- tracking-tight' + vc + '-300' }, effLambda.toFixed(3)),
-                  h('div', { className: 'text-[10px] text-' + vc + '-200 uppercase tracking-wider' }, 'Effective λ')
+                  h('div', { className: 'text-[10px] text-' + vc + '-200 uppercase tracking-wider' }, __alloT('stem.raptorhunt.effective', 'Effective λ'))
                 ),
                 h('div', { className: 'bg-' + vc + '-900/40 border border-' + vc + '-700/50 rounded p-3 text-center' },
                   h('div', { className: 'text-base font-bold text-' + vc + '-300' }, verdict),
-                  h('div', { className: 'text-[10px] text-' + vc + '-200 uppercase tracking-wider' }, 'Trajectory')
+                  h('div', { className: 'text-[10px] text-' + vc + '-200 uppercase tracking-wider' }, __alloT('stem.raptorhunt.trajectory', 'Trajectory'))
                 ),
                 h('div', { className: 'bg-slate-800/60 border border-slate-700/50 rounded p-3 text-center' },
                   h('div', { className: 'text-base font-bold text-amber-300' }, Math.round(finalPop) + '% of base'),
-                  h('div', { className: 'text-[10px] text-slate-300 uppercase tracking-wider' }, 'Pop @ year 30')
+                  h('div', { className: 'text-[10px] text-slate-300 uppercase tracking-wider' }, __alloT('stem.raptorhunt.pop_year_30', 'Pop @ year 30'))
                 )
               ),
               // Sparkline
               h('div', { className: 'bg-slate-950/60 rounded-lg p-2' },
-                h('svg', { viewBox: '0 0 280 70', style: { width: '100%', height: '60px' }, role: 'img', 'aria-label': '30-year population sparkline' },
+                h('svg', { viewBox: '0 0 280 70', style: { width: '100%', height: '60px' }, role: 'img', 'aria-label': __alloT('stem.raptorhunt.30_year_population_sparkline', '30-year population sparkline') },
                   h('rect', { x: 0, y: 0, width: 280, height: 70, fill: '#0f172a' }),
                   h('line', { x1: 0, y1: 60 - ((100 - minP) / Math.max(1, maxP - minP)) * 50 - 5, x2: 280, y2: 60 - ((100 - minP) / Math.max(1, maxP - minP)) * 50 - 5, stroke: '#64748b', strokeWidth: 1, strokeDasharray: '3,3' }),
                   h('path', { d: spPath, fill: 'none', stroke: '#10b981', strokeWidth: 2 }),
-                  h('text', { x: 4, y: 12, fontSize: 9, fill: '#94a3b8' }, 'Year 0 → 30'),
+                  h('text', { x: 4, y: 12, fontSize: 9, fill: '#94a3b8' }, __alloT('stem.raptorhunt.year_0_30', 'Year 0 → 30')),
                   h('text', { x: 248, y: 65, fontSize: 9, fill: '#94a3b8' }, 'final')
                 )
               ),
               h('div', { className: 'text-[10px] text-slate-500 italic' },
-                'Pedagogy: even small per-threat effects compound multiplicatively across 30 years. A 5% adult-survival drop from lead PLUS 3% from wind PLUS 2% from rodenticide turns a +6%/year growth into a near-zero trajectory. This is the demographic reality of multi-stressor environments.'
+                __alloT('stem.raptorhunt.pedagogy_even_small_per_threat_effects', 'Pedagogy: even small per-threat effects compound multiplicatively across 30 years. A 5% adult-survival drop from lead PLUS 3% from wind PLUS 2% from rodenticide turns a +6%/year growth into a near-zero trajectory. This is the demographic reality of multi-stressor environments.')
               )
             );
           })(),
 
           // Crises
           h('div', { className: 'space-y-3' },
-            h('div', { className: 'text-sm font-bold text-amber-300' }, '⚠ Active Threats + Crises'),
+            h('div', { className: 'text-sm font-bold text-amber-300' }, __alloT('stem.raptorhunt.active_threats_crises', '⚠ Active Threats + Crises')),
             CONSERVATION.crises.map(function(c, i) {
               var resolved = c.status.indexOf('RESOLVED') === 0;
               var critical = c.status.indexOf('CRITICAL') === 0;
@@ -11506,9 +11507,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
           // ── NEW v0.23: Action Tier — "What can YOU do?" ──
           h('div', { className: 'bg-gradient-to-br from-emerald-900/40 to-cyan-900/40 border border-emerald-700/40 rounded-xl p-4 space-y-3' },
-            h('div', { className: 'text-base font-bold text-emerald-300' }, '🎯 What can YOU do? — Student Action Tier'),
+            h('div', { className: 'text-base font-bold text-emerald-300' }, __alloT('stem.raptorhunt.what_can_you_do_student_action_tier', '🎯 What can YOU do? — Student Action Tier')),
             h('div', { className: 'text-xs text-emerald-100/90 leading-relaxed' },
-              'Reading about conservation is half the work. Doing matters. Below are real actions organized by effort level — start with 5-minute commitments, work up to multi-day projects. Every line item is a thing students have actually done that meaningfully helps raptors.'
+              __alloT('stem.raptorhunt.reading_about_conservation_is_half_the', 'Reading about conservation is half the work. Doing matters. Below are real actions organized by effort level — start with 5-minute commitments, work up to multi-day projects. Every line item is a thing students have actually done that meaningfully helps raptors.')
             ),
             // 3 tiers
             [
@@ -11568,8 +11569,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               );
             }),
             h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-3 text-xs text-amber-100/90 italic text-center' },
-              h('span', { className: 'font-bold text-amber-300' }, '✦ Pick ONE this week. '),
-              'Conservation is built from millions of small actions. The 90-year Hawk Mountain dataset exists because someone showed up to count birds, every fall, for 90 years.'
+              h('span', { className: 'font-bold text-amber-300' }, __alloT('stem.raptorhunt.pick_one_this_week', '✦ Pick ONE this week. ')),
+              __alloT('stem.raptorhunt.conservation_is_built_from_millions_of', 'Conservation is built from millions of small actions. The 90-year Hawk Mountain dataset exists because someone showed up to count birds, every fall, for 90 years.')
             )
           )
         );
@@ -11694,8 +11695,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-yellow-900/40 to-amber-900/40 border border-yellow-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-yellow-200 mb-2 tracking-tight' }, '🔍 Field Identification: Wing Shape + Flight Pattern'),
-            h('div', { className: 'text-sm text-yellow-100/90 leading-relaxed' }, 'You almost never get a clear close-up of a raptor in the wild. Field ID works on ', h('span', { className: 'font-bold' }, 'gestalt — silhouette + flight pattern + behavior'), '. Color comes last. Learn the 8 silhouette groups below and you can ID 90% of North American raptors at a quarter mile.')
+            h('div', { className: 'text-lg font-bold text-yellow-200 mb-2 tracking-tight' }, __alloT('stem.raptorhunt.field_identification_wing_shape_flight', '🔍 Field Identification: Wing Shape + Flight Pattern')),
+            h('div', { className: 'text-sm text-yellow-100/90 leading-relaxed' }, __alloT('stem.raptorhunt.you_almost_never_get_a_clear_close_up_', 'You almost never get a clear close-up of a raptor in the wild. Field ID works on '), h('span', { className: 'font-bold' }, __alloT('stem.raptorhunt.gestalt_silhouette_flight_pattern_beha', 'gestalt — silhouette + flight pattern + behavior')), __alloT('stem.raptorhunt.color_comes_last_learn_the_8_silhouett', '. Color comes last. Learn the 8 silhouette groups below and you can ID 90% of North American raptors at a quarter mile.'))
           ),
           // Silhouette cards (now with inline SVGs!)
           h('div', { className: 'space-y-3' },
@@ -11712,13 +11713,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   // Title (right)
                   h('div', { className: 'flex-1' },
                     h('div', { className: 'text-sm font-bold text-yellow-300 mb-1' }, s.label),
-                    h('div', { className: 'text-[10px] text-slate-400 italic' }, '↑ silhouette as seen from below in flight')
+                    h('div', { className: 'text-[10px] text-slate-400 italic' }, __alloT('stem.raptorhunt.silhouette_as_seen_from_below_in_fligh', '↑ silhouette as seen from below in flight'))
                   )
                 ),
                 h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2 text-xs' },
-                  h('div', null, h('span', { className: 'text-slate-500' }, 'Wing shape: '), h('span', { className: 'text-slate-200' }, s.wingShape)),
+                  h('div', null, h('span', { className: 'text-slate-500' }, __alloT('stem.raptorhunt.wing_shape', 'Wing shape: ')), h('span', { className: 'text-slate-200' }, s.wingShape)),
                   h('div', null, h('span', { className: 'text-slate-500' }, 'Tail: '), h('span', { className: 'text-slate-200' }, s.tailShape)),
-                  h('div', { className: 'md:col-span-2' }, h('span', { className: 'text-slate-500' }, 'Flight pattern: '), h('span', { className: 'text-slate-200' }, s.flightPattern)),
+                  h('div', { className: 'md:col-span-2' }, h('span', { className: 'text-slate-500' }, __alloT('stem.raptorhunt.flight_pattern', 'Flight pattern: ')), h('span', { className: 'text-slate-200' }, s.flightPattern)),
                   h('div', { className: 'md:col-span-2' }, h('span', { className: 'text-slate-500' }, 'Species: '), h('span', { className: 'text-amber-300' }, s.species))
                 ),
                 h('div', { className: 'mt-2 p-2 bg-amber-900/20 rounded text-xs italic text-amber-200' }, '👁 Gestalt: ' + s.gestalt)
@@ -11727,7 +11728,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           ),
           // Behavior clues
           h('div', { className: 'bg-slate-900/50 border border-slate-700/50 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-yellow-300 mb-3' }, '🦅 Behavior Clues That Narrow ID Instantly'),
+            h('div', { className: 'text-sm font-bold text-yellow-300 mb-3' }, __alloT('stem.raptorhunt.behavior_clues_that_narrow_id_instantl', '🦅 Behavior Clues That Narrow ID Instantly')),
             h('div', { className: 'space-y-2' },
               FIELD_ID.behaviorClues.map(function(c, i) {
                 return h('div', { key: i, className: 'flex items-start gap-3 p-2 bg-slate-800/40 rounded' },
@@ -11746,15 +11747,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       function renderMigration() {
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-cyan-900/40 to-teal-900/40 border border-cyan-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-cyan-200 mb-2 tracking-tight' }, '🧭 Migration: 5 Million Birds, 5 Major Flyways'),
+            h('div', { className: 'text-lg font-bold text-cyan-200 mb-2 tracking-tight' }, __alloT('stem.raptorhunt.migration_5_million_birds_5_major_flyw', '🧭 Migration: 5 Million Birds, 5 Major Flyways')),
             h('div', { className: 'text-sm text-cyan-100/90 leading-relaxed' }, MIGRATION.overview)
           ),
 
           // Interactive World Map (NEW v0.7)
           h('div', { className: 'bg-slate-950/60 border border-cyan-700/40 rounded-xl p-3' },
-            h('div', { className: 'text-sm font-bold text-cyan-300 mb-2' }, '🗺 World Map — 5 Flyways + Famous Watch Sites'),
-            h('div', { className: 'text-[10px] text-slate-400 mb-2 italic' }, 'Hover a flyway color or a star to learn more. Arrows show fall migration direction (NE → SW for most North American species).'),
-            h('svg', { viewBox: '0 0 700 360', style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': 'World map showing the 5 major raptor migration flyways and famous hawk-watch site locations' },
+            h('div', { className: 'text-sm font-bold text-cyan-300 mb-2' }, __alloT('stem.raptorhunt.world_map_5_flyways_famous_watch_sites', '🗺 World Map — 5 Flyways + Famous Watch Sites')),
+            h('div', { className: 'text-[10px] text-slate-400 mb-2 italic' }, __alloT('stem.raptorhunt.hover_a_flyway_color_or_a_star_to_lear', 'Hover a flyway color or a star to learn more. Arrows show fall migration direction (NE → SW for most North American species).')),
+            h('svg', { viewBox: '0 0 700 360', style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': __alloT('stem.raptorhunt.world_map_showing_the_5_major_raptor_m', 'World map showing the 5 major raptor migration flyways and famous hawk-watch site locations') },
               // Ocean background
               h('rect', { x: 0, y: 0, width: 700, height: 360, fill: '#082f49' }),
               // ── Continental masses (simplified equirectangular) ──
@@ -11776,7 +11777,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('path', { d: 'M 590 270 L 660 270 L 655 320 L 610 330 L 590 305 Z', fill: '#1e3a2a', stroke: '#475569', strokeWidth: 1 }),
               // Equator + meridian guides
               h('line', { x1: 0, y1: 200, x2: 700, y2: 200, stroke: '#1e293b', strokeWidth: 1, strokeDasharray: '2,4' }),
-              h('text', { x: 5, y: 197, fontSize: 9, fill: '#475569' }, 'Equator'),
+              h('text', { x: 5, y: 197, fontSize: 9, fill: '#475569' }, __alloT('stem.raptorhunt.equator', 'Equator')),
 
               // ── Flyway paths + arrows (defs for marker arrowheads) ──
               h('defs', null,
@@ -11799,12 +11800,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
               // ── Famous watch sites (yellow stars) ──
               [
-                { name: 'Hawk Mtn', x: 195, y: 132 },
-                { name: 'Cape May', x: 200, y: 142 },
-                { name: 'Veracruz', x: 188, y: 195 },
+                { name: __alloT('stem.raptorhunt.hawk_mtn', 'Hawk Mtn'), x: 195, y: 132 },
+                { name: __alloT('stem.raptorhunt.cape_may', 'Cape May'), x: 200, y: 142 },
+                { name: __alloT('stem.raptorhunt.veracruz', 'Veracruz'), x: 188, y: 195 },
                 { name: 'GGRO', x: 105, y: 152 },
-                { name: 'Eilat', x: 415, y: 165 },
-                { name: 'Batumi', x: 425, y: 122 }
+                { name: __alloT('stem.raptorhunt.eilat', 'Eilat'), x: 415, y: 165 },
+                { name: __alloT('stem.raptorhunt.batumi', 'Batumi'), x: 425, y: 122 }
               ].map(function(site, i) {
                 return h('g', { key: i },
                   h('circle', { cx: site.x, cy: site.y, r: 6, fill: '#fde047', stroke: '#92400e', strokeWidth: 1.5 }),
@@ -11831,12 +11832,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               })
             ),
             // Map footer
-            h('div', { className: 'text-[10px] text-slate-500 mt-2 italic' }, 'Map: equirectangular projection, continents simplified for clarity. Flyway paths shown as fall-migration direction. Stars mark major hawk-watch sites with documented annual counts.')
+            h('div', { className: 'text-[10px] text-slate-500 mt-2 italic' }, __alloT('stem.raptorhunt.map_equirectangular_projection_contine', 'Map: equirectangular projection, continents simplified for clarity. Flyway paths shown as fall-migration direction. Stars mark major hawk-watch sites with documented annual counts.'))
           ),
 
           // Flyways
           h('div', { className: 'space-y-3' },
-            h('div', { className: 'text-sm font-bold text-amber-300' }, '🌎 The 5 Major Flyways'),
+            h('div', { className: 'text-sm font-bold text-amber-300' }, __alloT('stem.raptorhunt.the_5_major_flyways', '🌎 The 5 Major Flyways')),
             MIGRATION.flyways.map(function(f, i) {
               return h('div', { key: i, className: 'bg-slate-800/40 border border-slate-700/50 rounded-lg p-4' },
                 h('div', { className: 'flex items-center gap-2 mb-2' },
@@ -11856,7 +11857,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
           // Famous watch sites
           h('div', { className: 'space-y-3' },
-            h('div', { className: 'text-sm font-bold text-amber-300' }, '🗺 Famous Hawk-Watch Sites'),
+            h('div', { className: 'text-sm font-bold text-amber-300' }, __alloT('stem.raptorhunt.famous_hawk_watch_sites', '🗺 Famous Hawk-Watch Sites')),
             h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
               MIGRATION.watchSites.map(function(w, i) {
                 return h('div', { key: i, className: 'bg-slate-800/40 border border-slate-700/50 rounded-lg p-3' },
@@ -11873,35 +11874,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           (function() {
             var globalAtlas = [
               // North America
-              { region: 'Northeast US', name: 'Hawk Mountain Sanctuary', country: '🇺🇸 USA', state: 'PA', annual: '~17,000', founded: 1934, latLon: '40.6°N 75.9°W', species: '12 commonly counted; iconic for broadwings + golden eagles in Oct', tips: 'North Lookout open Sep-Nov daily. Free admission. NW wind days are best.' },
-              { region: 'Northeast US', name: 'Cape May Hawkwatch', country: '🇺🇸 USA', state: 'NJ', annual: '~40,000', founded: 1976, latLon: '38.9°N 74.9°W', species: 'Sharp-shins + American kestrels peak in October', tips: 'NW wind days produce massive concentrations. State Park lighthouse area is the count site.' },
-              { region: 'Northeast US', name: 'Quaker Ridge Hawkwatch', country: '🇺🇸 USA', state: 'CT', annual: '~15,000', founded: 1972, latLon: '41.0°N 73.6°W', species: 'Broadwings, sharps, kestrels', tips: 'Audubon-run; great accessible site near NYC. Sep-Nov.' },
-              { region: 'Northeast US', name: 'Lighthouse Point Park', country: '🇺🇸 USA', state: 'CT', annual: '~8,000', founded: 1970, latLon: '41.2°N 72.9°W', species: 'Sharp-shins, kestrels, merlins', tips: 'Free + accessible coastal site in New Haven.' },
-              { region: 'Mid-Atlantic US', name: 'Conowingo Dam', country: '🇺🇸 USA', state: 'MD', annual: '~5,000+ (eagles)', founded: 1990, latLon: '39.7°N 76.2°W', species: 'Bald eagles peak Nov-Dec at dam tailwater', tips: 'Photographers\' paradise. Eagles fish on stunned shad from the dam discharge.' },
-              { region: 'Southeast US', name: 'Curry Hammock State Park', country: '🇺🇸 USA', state: 'FL', annual: '~10,000', founded: 1999, latLon: '24.7°N 80.9°W', species: 'Peregrine + merlin peaks Oct; broadwings + sharpies', tips: 'FL Keys raptor count. Hot in summer but coastal breeze.' },
-              { region: 'Southeast US', name: 'Florida Keys Hawkwatch', country: '🇺🇸 USA', state: 'FL', annual: '~15,000+', founded: 1996, latLon: '24.6°N 81.4°W', species: 'Peregrine record days >500 birds in Oct', tips: 'October peregrine days are legendary among falcon enthusiasts.' },
-              { region: 'Midwest US', name: 'Hawk Ridge Bird Observatory', country: '🇺🇸 USA', state: 'MN', annual: '~60,000-90,000', founded: 1972, latLon: '46.8°N 92.0°W', species: 'Major site for sharps, broadwings, redtails', tips: 'Duluth area, Lake Superior shore concentrates birds. Aug-Nov peak season.' },
-              { region: 'Midwest US', name: 'Whitefish Point Bird Observatory', country: '🇺🇸 USA', state: 'MI', annual: '~14,000', founded: 1979, latLon: '46.8°N 84.9°W', species: 'Spring + fall counts. Lake Superior shore.', tips: 'Upper Peninsula migration corridor. Apr-May spring, Sep-Nov fall.' },
-              { region: 'Midwest US', name: 'Illinois Beach State Park', country: '🇺🇸 USA', state: 'IL', annual: '~5,000', founded: 1995, latLon: '42.5°N 87.8°W', species: 'Lake Michigan shore corridor', tips: 'Western shore concentrates birds.' },
-              { region: 'Southwest US', name: 'Smith Point Hawk Watch', country: '🇺🇸 USA', state: 'TX', annual: '~50,000', founded: 1996, latLon: '29.5°N 94.8°W', species: 'Gulf Coast funnel — Mississippi flyway + Veracruz-bound', tips: 'Major migration funnel. Mid-Sep + early Oct peak.' },
-              { region: 'Southwest US', name: 'Big Bend National Park', country: '🇺🇸 USA', state: 'TX', annual: '—', founded: 1944, latLon: '29.3°N 103.2°W', species: 'Year-round diversity — goldens, peregrines, harriers', tips: 'Not a count site but the most diverse raptor habitat in TX. Spring + fall best.' },
-              { region: 'Pacific NW', name: 'Bonney Butte Hawkwatch', country: '🇺🇸 USA', state: 'OR', annual: '~5,000', founded: 1994, latLon: '45.3°N 121.6°W', species: 'Pacific NW migration', tips: 'High elevation site. Cool weather + good views Sep-Oct.' },
-              { region: 'Pacific NW', name: 'Goshute Mountains Hawkwatch', country: '🇺🇸 USA', state: 'NV', annual: '~10,000', founded: 1980, latLon: '40.5°N 113.9°W', species: 'Major peregrine + goshawk count', tips: 'High-altitude desert site. Bring water + sunscreen.' },
-              { region: 'Pacific Coast', name: 'Golden Gate Raptor Observatory', country: '🇺🇸 USA', state: 'CA', annual: '~30,000', founded: 1985, latLon: '37.8°N 122.5°W', species: 'All Pacific flyway raptors', tips: 'Marin Headlands. Famous for accessibility + interpretive program. Aug-Dec.' },
-              { region: 'Pacific Coast', name: 'Cape Mendocino', country: '🇺🇸 USA', state: 'CA', annual: '—', founded: 1990, latLon: '40.4°N 124.4°W', species: 'Coastal migration concentration', tips: 'Coastal headland — Pacific flyway funnel.' },
-              { region: 'Pacific Coast', name: 'Big Sur Ornithology Lab', country: '🇺🇸 USA', state: 'CA', annual: 'Variable', founded: 1992, latLon: '36.2°N 121.7°W', species: 'California condor recovery site + raptor passage', tips: 'Hopper Mountain area. Active condor releases.' },
+              { region: 'Northeast US', name: __alloT('stem.raptorhunt.hawk_mountain_sanctuary', 'Hawk Mountain Sanctuary'), country: '🇺🇸 USA', state: 'PA', annual: '~17,000', founded: 1934, latLon: '40.6°N 75.9°W', species: '12 commonly counted; iconic for broadwings + golden eagles in Oct', tips: 'North Lookout open Sep-Nov daily. Free admission. NW wind days are best.' },
+              { region: 'Northeast US', name: __alloT('stem.raptorhunt.cape_may_hawkwatch', 'Cape May Hawkwatch'), country: '🇺🇸 USA', state: 'NJ', annual: '~40,000', founded: 1976, latLon: '38.9°N 74.9°W', species: 'Sharp-shins + American kestrels peak in October', tips: 'NW wind days produce massive concentrations. State Park lighthouse area is the count site.' },
+              { region: 'Northeast US', name: __alloT('stem.raptorhunt.quaker_ridge_hawkwatch', 'Quaker Ridge Hawkwatch'), country: '🇺🇸 USA', state: 'CT', annual: '~15,000', founded: 1972, latLon: '41.0°N 73.6°W', species: 'Broadwings, sharps, kestrels', tips: 'Audubon-run; great accessible site near NYC. Sep-Nov.' },
+              { region: 'Northeast US', name: __alloT('stem.raptorhunt.lighthouse_point_park', 'Lighthouse Point Park'), country: '🇺🇸 USA', state: 'CT', annual: '~8,000', founded: 1970, latLon: '41.2°N 72.9°W', species: 'Sharp-shins, kestrels, merlins', tips: 'Free + accessible coastal site in New Haven.' },
+              { region: 'Mid-Atlantic US', name: __alloT('stem.raptorhunt.conowingo_dam', 'Conowingo Dam'), country: '🇺🇸 USA', state: 'MD', annual: '~5,000+ (eagles)', founded: 1990, latLon: '39.7°N 76.2°W', species: 'Bald eagles peak Nov-Dec at dam tailwater', tips: 'Photographers\' paradise. Eagles fish on stunned shad from the dam discharge.' },
+              { region: 'Southeast US', name: __alloT('stem.raptorhunt.curry_hammock_state_park', 'Curry Hammock State Park'), country: '🇺🇸 USA', state: 'FL', annual: '~10,000', founded: 1999, latLon: '24.7°N 80.9°W', species: 'Peregrine + merlin peaks Oct; broadwings + sharpies', tips: 'FL Keys raptor count. Hot in summer but coastal breeze.' },
+              { region: 'Southeast US', name: __alloT('stem.raptorhunt.florida_keys_hawkwatch', 'Florida Keys Hawkwatch'), country: '🇺🇸 USA', state: 'FL', annual: '~15,000+', founded: 1996, latLon: '24.6°N 81.4°W', species: 'Peregrine record days >500 birds in Oct', tips: 'October peregrine days are legendary among falcon enthusiasts.' },
+              { region: 'Midwest US', name: __alloT('stem.raptorhunt.hawk_ridge_bird_observatory', 'Hawk Ridge Bird Observatory'), country: '🇺🇸 USA', state: 'MN', annual: '~60,000-90,000', founded: 1972, latLon: '46.8°N 92.0°W', species: 'Major site for sharps, broadwings, redtails', tips: 'Duluth area, Lake Superior shore concentrates birds. Aug-Nov peak season.' },
+              { region: 'Midwest US', name: __alloT('stem.raptorhunt.whitefish_point_bird_observatory', 'Whitefish Point Bird Observatory'), country: '🇺🇸 USA', state: 'MI', annual: '~14,000', founded: 1979, latLon: '46.8°N 84.9°W', species: 'Spring + fall counts. Lake Superior shore.', tips: 'Upper Peninsula migration corridor. Apr-May spring, Sep-Nov fall.' },
+              { region: 'Midwest US', name: __alloT('stem.raptorhunt.illinois_beach_state_park', 'Illinois Beach State Park'), country: '🇺🇸 USA', state: 'IL', annual: '~5,000', founded: 1995, latLon: '42.5°N 87.8°W', species: 'Lake Michigan shore corridor', tips: 'Western shore concentrates birds.' },
+              { region: 'Southwest US', name: __alloT('stem.raptorhunt.smith_point_hawk_watch', 'Smith Point Hawk Watch'), country: '🇺🇸 USA', state: 'TX', annual: '~50,000', founded: 1996, latLon: '29.5°N 94.8°W', species: 'Gulf Coast funnel — Mississippi flyway + Veracruz-bound', tips: 'Major migration funnel. Mid-Sep + early Oct peak.' },
+              { region: 'Southwest US', name: __alloT('stem.raptorhunt.big_bend_national_park', 'Big Bend National Park'), country: '🇺🇸 USA', state: 'TX', annual: '—', founded: 1944, latLon: '29.3°N 103.2°W', species: 'Year-round diversity — goldens, peregrines, harriers', tips: 'Not a count site but the most diverse raptor habitat in TX. Spring + fall best.' },
+              { region: 'Pacific NW', name: __alloT('stem.raptorhunt.bonney_butte_hawkwatch', 'Bonney Butte Hawkwatch'), country: '🇺🇸 USA', state: 'OR', annual: '~5,000', founded: 1994, latLon: '45.3°N 121.6°W', species: 'Pacific NW migration', tips: 'High elevation site. Cool weather + good views Sep-Oct.' },
+              { region: 'Pacific NW', name: __alloT('stem.raptorhunt.goshute_mountains_hawkwatch', 'Goshute Mountains Hawkwatch'), country: '🇺🇸 USA', state: 'NV', annual: '~10,000', founded: 1980, latLon: '40.5°N 113.9°W', species: 'Major peregrine + goshawk count', tips: 'High-altitude desert site. Bring water + sunscreen.' },
+              { region: 'Pacific Coast', name: __alloT('stem.raptorhunt.golden_gate_raptor_observatory', 'Golden Gate Raptor Observatory'), country: '🇺🇸 USA', state: 'CA', annual: '~30,000', founded: 1985, latLon: '37.8°N 122.5°W', species: 'All Pacific flyway raptors', tips: 'Marin Headlands. Famous for accessibility + interpretive program. Aug-Dec.' },
+              { region: 'Pacific Coast', name: __alloT('stem.raptorhunt.cape_mendocino', 'Cape Mendocino'), country: '🇺🇸 USA', state: 'CA', annual: '—', founded: 1990, latLon: '40.4°N 124.4°W', species: 'Coastal migration concentration', tips: 'Coastal headland — Pacific flyway funnel.' },
+              { region: 'Pacific Coast', name: __alloT('stem.raptorhunt.big_sur_ornithology_lab', 'Big Sur Ornithology Lab'), country: '🇺🇸 USA', state: 'CA', annual: 'Variable', founded: 1992, latLon: '36.2°N 121.7°W', species: 'California condor recovery site + raptor passage', tips: 'Hopper Mountain area. Active condor releases.' },
               // International
-              { region: 'Central America', name: 'Veracruz River of Raptors', country: '🇲🇽 Mexico', state: 'Veracruz', annual: '~5,000,000', founded: 1991, latLon: '19.2°N 96.1°W', species: 'Broadwings, Swainson\'s, Mississippi kites — world\'s largest count', tips: 'Pronatura Veracruz. Mid-Sept peak. Million-bird days possible.' },
-              { region: 'Central America', name: 'Talamanca Mountains', country: '🇨🇷 Costa Rica', state: 'Cartago', annual: '~3,000,000', founded: 2002, latLon: '9.6°N 83.8°W', species: 'Mass kettles of Swainson\'s + broadwings funnel through here', tips: 'Migration "river" through Central America funnel.' },
-              { region: 'Middle East', name: 'International Birding Centre Eilat', country: '🇮🇱 Israel', state: 'Negev', annual: '~1,000,000 (spring)', founded: 1980, latLon: '29.6°N 34.9°E', species: 'Honey buzzards, eagles, harriers — Africa-Eurasia bridge', tips: 'Best in spring (Mar-May). Sinai-Negev land bridge funnel.' },
-              { region: 'Eurasia', name: 'Batumi Raptor Count', country: '🇬🇪 Georgia', state: 'Adjara', annual: '~1,000,000', founded: 2008, latLon: '41.7°N 41.6°E', species: 'Honey buzzards + steppe buzzards primarily', tips: 'Caucasus funnel. Active anti-illegal-shooting conservation work.' },
-              { region: 'Mediterranean', name: 'Strait of Gibraltar', country: '🇪🇸 Spain', state: 'Cádiz', annual: '~250,000', founded: 1971, latLon: '36.0°N 5.6°W', species: 'Honey buzzards, booted eagles, black kites', tips: 'Cazalla observation point near Tarifa. Mar-May + Aug-Oct.' },
-              { region: 'Mediterranean', name: 'Bosphorus Strait', country: '🇹🇷 Turkey', state: 'Istanbul', annual: '~300,000', founded: 1972, latLon: '41.1°N 29.1°E', species: 'Major Europe-to-Africa crossing', tips: 'Black Sea-to-Aegean concentration zone.' },
-              { region: 'Africa', name: 'Bab-el-Mandeb Strait', country: '🇩🇯 Djibouti', state: '—', annual: '~500,000', founded: 1980, latLon: '12.6°N 43.3°E', species: 'African migration', tips: 'Africa-Arabia bridge. Sep-Nov + Mar-May.' },
+              { region: 'Central America', name: __alloT('stem.raptorhunt.veracruz_river_of_raptors', 'Veracruz River of Raptors'), country: '🇲🇽 Mexico', state: 'Veracruz', annual: '~5,000,000', founded: 1991, latLon: '19.2°N 96.1°W', species: 'Broadwings, Swainson\'s, Mississippi kites — world\'s largest count', tips: 'Pronatura Veracruz. Mid-Sept peak. Million-bird days possible.' },
+              { region: 'Central America', name: __alloT('stem.raptorhunt.talamanca_mountains', 'Talamanca Mountains'), country: '🇨🇷 Costa Rica', state: 'Cartago', annual: '~3,000,000', founded: 2002, latLon: '9.6°N 83.8°W', species: 'Mass kettles of Swainson\'s + broadwings funnel through here', tips: 'Migration "river" through Central America funnel.' },
+              { region: 'Middle East', name: __alloT('stem.raptorhunt.international_birding_centre_eilat', 'International Birding Centre Eilat'), country: '🇮🇱 Israel', state: 'Negev', annual: '~1,000,000 (spring)', founded: 1980, latLon: '29.6°N 34.9°E', species: 'Honey buzzards, eagles, harriers — Africa-Eurasia bridge', tips: 'Best in spring (Mar-May). Sinai-Negev land bridge funnel.' },
+              { region: 'Eurasia', name: __alloT('stem.raptorhunt.batumi_raptor_count', 'Batumi Raptor Count'), country: '🇬🇪 Georgia', state: 'Adjara', annual: '~1,000,000', founded: 2008, latLon: '41.7°N 41.6°E', species: 'Honey buzzards + steppe buzzards primarily', tips: 'Caucasus funnel. Active anti-illegal-shooting conservation work.' },
+              { region: 'Mediterranean', name: __alloT('stem.raptorhunt.strait_of_gibraltar', 'Strait of Gibraltar'), country: '🇪🇸 Spain', state: 'Cádiz', annual: '~250,000', founded: 1971, latLon: '36.0°N 5.6°W', species: 'Honey buzzards, booted eagles, black kites', tips: 'Cazalla observation point near Tarifa. Mar-May + Aug-Oct.' },
+              { region: 'Mediterranean', name: __alloT('stem.raptorhunt.bosphorus_strait', 'Bosphorus Strait'), country: '🇹🇷 Turkey', state: 'Istanbul', annual: '~300,000', founded: 1972, latLon: '41.1°N 29.1°E', species: 'Major Europe-to-Africa crossing', tips: 'Black Sea-to-Aegean concentration zone.' },
+              { region: 'Africa', name: __alloT('stem.raptorhunt.bab_el_mandeb_strait', 'Bab-el-Mandeb Strait'), country: '🇩🇯 Djibouti', state: '—', annual: '~500,000', founded: 1980, latLon: '12.6°N 43.3°E', species: 'African migration', tips: 'Africa-Arabia bridge. Sep-Nov + Mar-May.' },
               // Asia + Australasia
-              { region: 'South Asia', name: 'Khare Pass', country: '🇳🇵 Nepal', state: 'Himalaya', annual: '~120,000', founded: 1985, latLon: '27.6°N 84.7°E', species: 'Steppe eagles + buzzards over Himalayas', tips: 'Mid-altitude site. Oct-Nov peak.' },
-              { region: 'East Asia', name: 'Cape Sata', country: '🇯🇵 Japan', state: 'Kagoshima', annual: '~20,000', founded: 1995, latLon: '30.9°N 130.7°E', species: 'Eastern Asia migration', tips: 'Japan southernmost point. Spring + fall.' },
-              { region: 'Australasia', name: 'Hawk Mountain Australia', country: '🇦🇺 AU', state: 'NSW', annual: 'Variable', founded: 2010, latLon: '-31.6°S 152.9°E', species: 'Australian endemic raptors', tips: 'Few northern hemisphere counters here; bird community is dramatically different.' }
+              { region: 'South Asia', name: __alloT('stem.raptorhunt.khare_pass', 'Khare Pass'), country: '🇳🇵 Nepal', state: 'Himalaya', annual: '~120,000', founded: 1985, latLon: '27.6°N 84.7°E', species: 'Steppe eagles + buzzards over Himalayas', tips: 'Mid-altitude site. Oct-Nov peak.' },
+              { region: 'East Asia', name: __alloT('stem.raptorhunt.cape_sata', 'Cape Sata'), country: '🇯🇵 Japan', state: 'Kagoshima', annual: '~20,000', founded: 1995, latLon: '30.9°N 130.7°E', species: 'Eastern Asia migration', tips: 'Japan southernmost point. Spring + fall.' },
+              { region: 'Australasia', name: __alloT('stem.raptorhunt.hawk_mountain_australia', 'Hawk Mountain Australia'), country: '🇦🇺 AU', state: 'NSW', annual: 'Variable', founded: 2010, latLon: '-31.6°S 152.9°E', species: 'Australian endemic raptors', tips: 'Few northern hemisphere counters here; bird community is dramatically different.' }
             ];
             var atlasView = rh.atlasView || 'all';
             function setAtlasView(v) { setRH({ atlasView: v }); }
@@ -11909,7 +11910,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             var filteredAtlas = atlasView === 'all' ? globalAtlas : globalAtlas.filter(function(s) { return s.region === atlasView; });
             return h('div', { className: 'bg-slate-900/40 border border-cyan-700/40 rounded-xl p-4 space-y-3' },
               h('div', { className: 'flex items-baseline justify-between gap-2 mb-2' },
-                h('div', { className: 'text-sm font-bold text-cyan-300' }, '🗺 Global Hawkwatch Atlas — 28 sites worldwide'),
+                h('div', { className: 'text-sm font-bold text-cyan-300' }, __alloT('stem.raptorhunt.global_hawkwatch_atlas_28_sites_worldw', '🗺 Global Hawkwatch Atlas — 28 sites worldwide')),
                 h('div', { className: 'text-[10px] text-slate-400 italic' }, atlasView === 'all' ? 'all regions' : atlasView)
               ),
               // Region filter
@@ -11988,22 +11989,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'text-base font-bold text-emerald-300' }, '🌡 ' + MIGRATION.climateImpact.title),
             // Original bullets kept as quick-summary
             h('div', { className: 'bg-slate-900/40 rounded-lg p-3' },
-              h('div', { className: 'text-xs font-bold text-amber-300 mb-2' }, '📌 Five observed patterns'),
+              h('div', { className: 'text-xs font-bold text-amber-300 mb-2' }, __alloT('stem.raptorhunt.five_observed_patterns', '📌 Five observed patterns')),
               h('ul', { className: 'space-y-1 text-xs text-emerald-100/90 list-disc list-inside' },
                 MIGRATION.climateImpact.points.map(function(p, i) { return h('li', { key: i }, p); })
               )
             ),
             // Mechanisms grid
             h('div', null,
-              h('div', { className: 'text-xs font-bold text-amber-300 mb-2' }, '⚙ Mechanisms — why climate is reshaping raptor migration'),
+              h('div', { className: 'text-xs font-bold text-amber-300 mb-2' }, __alloT('stem.raptorhunt.mechanisms_why_climate_is_reshaping_ra', '⚙ Mechanisms — why climate is reshaping raptor migration')),
               h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
                 [
-                  { name: 'Phenological mismatch', detail: 'Songbirds + insects shift breeding earlier with warming. If raptors don\'t shift at the same rate, peak prey availability happens BEFORE chicks need food. Documented in European honey buzzards (Both et al. 2009) — chicks fledge after the wasp peak passes.' },
-                  { name: 'Stopover habitat loss', detail: 'Migrating raptors refuel at consistent stopover sites. Drought, fire, + agricultural intensification are degrading these. Veracruz wetlands face increasing water-stress; Eilat\'s desert oasis is shrinking.' },
-                  { name: 'Headwind frequency shifts', detail: 'Jet-stream changes from Arctic warming alter the wind patterns raptors depend on for soaring. Stronger headwinds = more flap-flight = higher energy cost = lower survival on migration.' },
-                  { name: 'Thermal availability', detail: 'Some regions get MORE thermals (good for raptors), others get fewer or weaker. Mediterranean raptors crossing Sahara face stronger but shorter-duration thermal columns.' },
-                  { name: 'Prey base disruption', detail: 'Snowy owls depend on lemming + vole cycles, which are flattening in some Arctic regions due to changing snowpack. Boom years become more variable + unpredictable.' },
-                  { name: 'Short-stoppers + non-migrants', detail: 'Several species (turkey vultures, red-tails, bald eagles) are wintering MUCH further north than 50 years ago — a permanent range shift, not irruption. Some are skipping migration entirely.' }
+                  { name: __alloT('stem.raptorhunt.phenological_mismatch', 'Phenological mismatch'), detail: __alloT('stem.raptorhunt.songbirds_insects_shift_breeding_earli', 'Songbirds + insects shift breeding earlier with warming. If raptors don\'t shift at the same rate, peak prey availability happens BEFORE chicks need food. Documented in European honey buzzards (Both et al. 2009) — chicks fledge after the wasp peak passes.') },
+                  { name: __alloT('stem.raptorhunt.stopover_habitat_loss', 'Stopover habitat loss'), detail: __alloT('stem.raptorhunt.migrating_raptors_refuel_at_consistent', 'Migrating raptors refuel at consistent stopover sites. Drought, fire, + agricultural intensification are degrading these. Veracruz wetlands face increasing water-stress; Eilat\'s desert oasis is shrinking.') },
+                  { name: __alloT('stem.raptorhunt.headwind_frequency_shifts', 'Headwind frequency shifts'), detail: __alloT('stem.raptorhunt.jet_stream_changes_from_arctic_warming', 'Jet-stream changes from Arctic warming alter the wind patterns raptors depend on for soaring. Stronger headwinds = more flap-flight = higher energy cost = lower survival on migration.') },
+                  { name: __alloT('stem.raptorhunt.thermal_availability', 'Thermal availability'), detail: __alloT('stem.raptorhunt.some_regions_get_more_thermals_good_fo', 'Some regions get MORE thermals (good for raptors), others get fewer or weaker. Mediterranean raptors crossing Sahara face stronger but shorter-duration thermal columns.') },
+                  { name: __alloT('stem.raptorhunt.prey_base_disruption', 'Prey base disruption'), detail: __alloT('stem.raptorhunt.snowy_owls_depend_on_lemming_vole_cycl', 'Snowy owls depend on lemming + vole cycles, which are flattening in some Arctic regions due to changing snowpack. Boom years become more variable + unpredictable.') },
+                  { name: __alloT('stem.raptorhunt.short_stoppers_non_migrants', 'Short-stoppers + non-migrants'), detail: __alloT('stem.raptorhunt.several_species_turkey_vultures_red_ta', 'Several species (turkey vultures, red-tails, bald eagles) are wintering MUCH further north than 50 years ago — a permanent range shift, not irruption. Some are skipping migration entirely.') }
                 ].map(function(mech, i) {
                   return h('div', { key: i, className: 'bg-slate-800/40 rounded p-3 border border-slate-700/40' },
                     h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, mech.name),
@@ -12014,7 +12015,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             ),
             // Regional impacts
             h('div', null,
-              h('div', { className: 'text-xs font-bold text-amber-300 mb-2' }, '🌍 Regional impacts'),
+              h('div', { className: 'text-xs font-bold text-amber-300 mb-2' }, __alloT('stem.raptorhunt.regional_impacts', '🌍 Regional impacts')),
               h('div', { className: 'space-y-1.5 text-xs' },
                 [
                   { region: 'Arctic (snowy owl, gyrfalcon)', impact: 'WORST hit — Arctic warming 4× global rate. Lemming cycles flattening. Range constricting northward. Both species IUCN-uplisted.' },
@@ -12032,16 +12033,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             ),
             // Projections panel
             h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded-lg p-3' },
-              h('div', { className: 'text-xs font-bold text-amber-300 mb-2' }, '🔮 Projections (2050 baseline)'),
+              h('div', { className: 'text-xs font-bold text-amber-300 mb-2' }, __alloT('stem.raptorhunt.projections_2050_baseline', '🔮 Projections (2050 baseline)')),
               h('ul', { className: 'space-y-1 text-xs text-amber-100/90 list-disc list-inside' },
-                h('li', null, 'BirdLife International projects ~15-30% of long-distance migrant raptors will face significant range shifts.'),
-                h('li', null, 'Snowy owl populations may decline 30-50% from current ~28,000 birds, primarily from Arctic prey-base disruption.'),
-                h('li', null, 'Turkey vulture + black vulture wintering ranges expected to extend ~500 km further north.'),
-                h('li', null, 'Mediterranean species (honey buzzard, lesser kestrel) may lose 20-40% of current European breeding range.'),
-                h('li', null, 'The long Hawk Mountain dataset (1934-now) will continue being the canonical evidence base for documenting these shifts.')
+                h('li', null, __alloT('stem.raptorhunt.birdlife_international_projects_15_30_', 'BirdLife International projects ~15-30% of long-distance migrant raptors will face significant range shifts.')),
+                h('li', null, __alloT('stem.raptorhunt.snowy_owl_populations_may_decline_30_5', 'Snowy owl populations may decline 30-50% from current ~28,000 birds, primarily from Arctic prey-base disruption.')),
+                h('li', null, __alloT('stem.raptorhunt.turkey_vulture_black_vulture_wintering', 'Turkey vulture + black vulture wintering ranges expected to extend ~500 km further north.')),
+                h('li', null, __alloT('stem.raptorhunt.mediterranean_species_honey_buzzard_le', 'Mediterranean species (honey buzzard, lesser kestrel) may lose 20-40% of current European breeding range.')),
+                h('li', null, __alloT('stem.raptorhunt.the_long_hawk_mountain_dataset_1934_no', 'The long Hawk Mountain dataset (1934-now) will continue being the canonical evidence base for documenting these shifts.'))
               )
             ),
-            h('div', { className: 'text-[10px] text-slate-500 italic' }, 'Sources: Both et al. 2009 J Anim Ecol; Bildstein 2017 Raptors; BirdLife International State of World\'s Birds 2022; Therrien et al. 2014 snowy owl winter ecology.')
+            h('div', { className: 'text-[10px] text-slate-500 italic' }, __alloT('stem.raptorhunt.sources_both_et_al_2009_j_anim_ecol_bi', 'Sources: Both et al. 2009 J Anim Ecol; Bildstein 2017 Raptors; BirdLife International State of World\'s Birds 2022; Therrien et al. 2014 snowy owl winter ecology.'))
           ),
 
           // ── NEW v0.17: Migration Calendar (Gantt-style) ──
@@ -12072,9 +12073,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             var cellW = (pw - nameW - 40) / 12;
             var currentMonth = new Date().getMonth();
             return h('div', { className: 'bg-slate-900/40 border border-cyan-700/40 rounded-xl p-4' },
-              h('div', { className: 'text-sm font-bold text-cyan-300 mb-2' }, '📅 Migration Calendar — When Each Species is Flying'),
-              h('div', { className: 'text-xs text-slate-400 italic mb-3' }, 'Bars show migration windows. Solid = peak passage. Light = shoulder weeks. Use this to plan a hawkwatch trip — broadwings = mid-Sept; peregrines = Oct; rough-legs = Nov. Green column = current month.'),
-              h('svg', { viewBox: '0 0 ' + pw + ' ' + ph, style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': 'Migration calendar' },
+              h('div', { className: 'text-sm font-bold text-cyan-300 mb-2' }, __alloT('stem.raptorhunt.migration_calendar_when_each_species_i', '📅 Migration Calendar — When Each Species is Flying')),
+              h('div', { className: 'text-xs text-slate-400 italic mb-3' }, __alloT('stem.raptorhunt.bars_show_migration_windows_solid_peak', 'Bars show migration windows. Solid = peak passage. Light = shoulder weeks. Use this to plan a hawkwatch trip — broadwings = mid-Sept; peregrines = Oct; rough-legs = Nov. Green column = current month.')),
+              h('svg', { viewBox: '0 0 ' + pw + ' ' + ph, style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': __alloT('stem.raptorhunt.migration_calendar', 'Migration calendar') },
                 h('rect', { x: 0, y: 0, width: pw, height: ph, fill: '#0f172a' }),
                 // Month headers
                 months.map(function(m, mi) {
@@ -12119,16 +12120,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 // Legend
                 h('rect', { x: 8, y: ph - 25, width: 280, height: 20, fill: 'rgba(15,23,42,0.8)', stroke: '#475569', strokeWidth: 1, rx: 3 }),
                 h('rect', { x: 14, y: ph - 21, width: 14, height: 12, fill: '#fbbf24', opacity: 0.95, rx: 1 }),
-                h('text', { x: 32, y: ph - 12, fontSize: 9, fill: '#cbd5e1' }, 'fall peak'),
+                h('text', { x: 32, y: ph - 12, fontSize: 9, fill: '#cbd5e1' }, __alloT('stem.raptorhunt.fall_peak', 'fall peak')),
                 h('rect', { x: 90, y: ph - 21, width: 14, height: 12, fill: '#fbbf24', opacity: 0.4, rx: 1 }),
-                h('text', { x: 108, y: ph - 12, fontSize: 9, fill: '#cbd5e1' }, 'fall shoulder'),
+                h('text', { x: 108, y: ph - 12, fontSize: 9, fill: '#cbd5e1' }, __alloT('stem.raptorhunt.fall_shoulder', 'fall shoulder')),
                 h('rect', { x: 180, y: ph - 21, width: 14, height: 12, fill: '#fbbf24', opacity: 0.25, stroke: '#fbbf24', strokeDasharray: '2,2', rx: 1 }),
                 h('text', { x: 198, y: ph - 12, fontSize: 9, fill: '#cbd5e1' }, 'spring')
               ),
               // What's flying this month
               (function() {
                 var flyingNow = calendar.filter(function(r) { return r.fall.indexOf(currentMonth) !== -1 || r.spring.indexOf(currentMonth) !== -1; });
-                if (flyingNow.length === 0) return h('div', { className: 'text-xs text-slate-400 mt-2 italic' }, '🟢 No major migrations this month — most species are on territory.');
+                if (flyingNow.length === 0) return h('div', { className: 'text-xs text-slate-400 mt-2 italic' }, __alloT('stem.raptorhunt.no_major_migrations_this_month_most_sp', '🟢 No major migrations this month — most species are on territory.'));
                 return h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-lg p-3 mt-2' },
                   h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '🟢 Flying RIGHT NOW (' + monthNames[currentMonth] + ')'),
                   h('div', { className: 'text-xs text-emerald-100/90' }, flyingNow.map(function(r) { return r.emoji + ' ' + r.sp; }).join(' · '))
@@ -12172,21 +12173,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'flex items-start gap-3' },
                 h('div', { className: 'text-5xl' }, '🎓'),
                 h('div', { className: 'flex-1' },
-                  h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, 'Field ID Quiz'),
-                  h('div', { className: 'text-sm text-amber-100/80 mt-1' }, 'Active retrieval practice across silhouettes, behavior, talon mechanics, vision, flight physics, and conservation. Each question has a detailed explanation — wrong answers are the best teachers.'),
-                  h('div', { className: 'text-xs text-amber-300/70 mt-2 italic' }, '18 questions · 3 difficulty bands · explanations included')
+                  h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, __alloT('stem.raptorhunt.field_id_quiz_2', 'Field ID Quiz')),
+                  h('div', { className: 'text-sm text-amber-100/80 mt-1' }, __alloT('stem.raptorhunt.active_retrieval_practice_across_silho', 'Active retrieval practice across silhouettes, behavior, talon mechanics, vision, flight physics, and conservation. Each question has a detailed explanation — wrong answers are the best teachers.')),
+                  h('div', { className: 'text-xs text-amber-300/70 mt-2 italic' }, __alloT('stem.raptorhunt.18_questions_3_difficulty_bands_explan', '18 questions · 3 difficulty bands · explanations included'))
                 )
               )
             ),
             // Difficulty selector
             h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
-              h('div', { className: 'text-sm font-bold text-amber-300 mb-3' }, 'Choose difficulty'),
+              h('div', { className: 'text-sm font-bold text-amber-300 mb-3' }, __alloT('stem.raptorhunt.choose_difficulty', 'Choose difficulty')),
               h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2' },
                 [
-                  { id: 'easy', label: 'Easy', desc: 'Silhouettes + obvious questions', count: QUIZ_QUESTIONS.filter(function(q) { return q.difficulty === 'easy'; }).length },
-                  { id: 'medium', label: 'Medium', desc: 'Deeper combos', count: QUIZ_QUESTIONS.filter(function(q) { return q.difficulty === 'medium'; }).length },
-                  { id: 'hard', label: 'Hard', desc: 'Deep science + nuance', count: QUIZ_QUESTIONS.filter(function(q) { return q.difficulty === 'hard'; }).length },
-                  { id: 'all', label: 'All 18', desc: 'Full quiz', count: QUIZ_QUESTIONS.length }
+                  { id: 'easy', label: __alloT('stem.raptorhunt.easy', 'Easy'), desc: __alloT('stem.raptorhunt.silhouettes_obvious_questions', 'Silhouettes + obvious questions'), count: QUIZ_QUESTIONS.filter(function(q) { return q.difficulty === 'easy'; }).length },
+                  { id: 'medium', label: __alloT('stem.raptorhunt.medium', 'Medium'), desc: __alloT('stem.raptorhunt.deeper_combos', 'Deeper combos'), count: QUIZ_QUESTIONS.filter(function(q) { return q.difficulty === 'medium'; }).length },
+                  { id: 'hard', label: __alloT('stem.raptorhunt.hard', 'Hard'), desc: __alloT('stem.raptorhunt.deep_science_nuance', 'Deep science + nuance'), count: QUIZ_QUESTIONS.filter(function(q) { return q.difficulty === 'hard'; }).length },
+                  { id: 'all', label: __alloT('stem.raptorhunt.all_18', 'All 18'), desc: __alloT('stem.raptorhunt.full_quiz', 'Full quiz'), count: QUIZ_QUESTIONS.length }
                 ].map(function(d) {
                   var active = quizState.difficulty === d.id;
                   return h('button', {
@@ -12205,7 +12206,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             ),
             // Best score
             (quizState.completedRuns > 0) && h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-3 text-sm text-emerald-200' },
-              '🏆 Best score: ', h('span', { className: 'font-bold text-emerald-300' }, quizState.bestScore + '/' + total),
+              __alloT('stem.raptorhunt.best_score', '🏆 Best score: '), h('span', { className: 'font-bold text-emerald-300' }, quizState.bestScore + '/' + total),
               ' · ', quizState.completedRuns + ' completed runs'
             ),
             // ── NEW v0.11: Per-difficulty stats panel ──
@@ -12214,7 +12215,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               var anyData = ['easy', 'medium', 'hard'].some(function(d) { return stats[d] && stats[d].total > 0; });
               if (!anyData) return null;
               return h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
-                h('div', { className: 'text-xs font-bold text-amber-300 mb-2' }, '📊 Your accuracy by difficulty (cumulative across all runs)'),
+                h('div', { className: 'text-xs font-bold text-amber-300 mb-2' }, __alloT('stem.raptorhunt.your_accuracy_by_difficulty_cumulative', '📊 Your accuracy by difficulty (cumulative across all runs)')),
                 h('div', { className: 'grid grid-cols-3 gap-2' },
                   ['easy', 'medium', 'hard'].map(function(d) {
                     var s = stats[d] || { correct: 0, total: 0 };
@@ -12233,7 +12234,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             (quizState.missedIds && quizState.missedIds.length > 0) && h('div', { className: 'bg-indigo-900/20 border border-indigo-700/40 rounded-xl p-3' },
               h('div', { className: 'flex items-center justify-between gap-2' },
                 h('div', { className: 'text-sm text-indigo-200' },
-                  '📌 ', h('span', { className: 'font-bold text-indigo-300' }, quizState.missedIds.length), ' question(s) flagged as missed from your last run.'
+                  '📌 ', h('span', { className: 'font-bold text-indigo-300' }, quizState.missedIds.length), __alloT('stem.raptorhunt.question_s_flagged_as_missed_from_your', ' question(s) flagged as missed from your last run.')
                 ),
                 h('button', {
                   onClick: function() {
@@ -12241,8 +12242,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     rhAnnounce('Reviewing ' + quizState.missedIds.length + ' missed questions');
                   },
                   className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-700 hover:to-violet-700',
-                  'aria-label': 'Review missed questions only'
-                }, '🔁 Review only missed')
+                  'aria-label': __alloT('stem.raptorhunt.review_missed_questions_only', 'Review missed questions only')
+                }, __alloT('stem.raptorhunt.review_only_missed', '🔁 Review only missed'))
               )
             ),
             // Start button
@@ -12276,8 +12277,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   setQuiz({ started: false, missedReviewMode: false, ix: 0, score: 0, selected: -1, answered: false, bestScore: newBest, completedRuns: newRuns });
                 },
                 className: 'px-4 py-3 rounded-lg text-sm font-bold bg-slate-700 text-amber-300 hover:bg-slate-600 transition-all active:scale-[0.97]',
-                'aria-label': 'Back to quiz menu'
-              }, '↶ Quiz Menu'),
+                'aria-label': __alloT('stem.raptorhunt.back_to_quiz_menu', 'Back to quiz menu')
+              }, __alloT('stem.raptorhunt.quiz_menu', '↶ Quiz Menu')),
               // ── NEW v0.11: Review missed questions button ──
               (quizState.missedIds && quizState.missedIds.length > 0) ? h('button', {
                 onClick: function() {
@@ -12295,8 +12296,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   setQuiz({ started: true, missedReviewMode: false, ix: 0, score: 0, selected: -1, answered: false, bestScore: newBest, completedRuns: newRuns });
                 },
                 className: 'px-4 py-3 rounded-lg text-sm font-bold bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:from-amber-700 hover:to-orange-700 transition-all',
-                'aria-label': 'Try again'
-              }, '🔁 Try Again')
+                'aria-label': __alloT('stem.raptorhunt.try_again', 'Try again')
+              }, __alloT('stem.raptorhunt.try_again_2', '🔁 Try Again'))
             )
           );
         }
@@ -12310,7 +12311,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'text-slate-300' }, 'Question ' + (quizState.ix + 1) + ' of ' + total),
             h('div', { className: 'flex gap-3' },
               h('div', { className: 'px-2 py-0.5 rounded font-mono text-[10px] bg-' + diffColor + '-900/40 text-' + diffColor + '-300 border border-' + diffColor + '-700/40' }, question.difficulty.toUpperCase()),
-              h('div', { className: 'text-amber-300' }, '🏆 Score: ', h('span', { className: 'font-bold' }, quizState.score))
+              h('div', { className: 'text-amber-300' }, __alloT('stem.raptorhunt.score', '🏆 Score: '), h('span', { className: 'font-bold' }, quizState.score))
             )
           ),
           // Progress bar
@@ -12384,8 +12385,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             className: 'w-full px-4 py-3 rounded-lg text-sm font-bold transition-all ' + (quizState.selected < 0
               ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
               : 'bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:from-amber-700 hover:to-orange-700'),
-            'aria-label': 'Submit answer'
-          }, '✔ Submit Answer'),
+            'aria-label': __alloT('stem.raptorhunt.submit_answer', 'Submit answer')
+          }, __alloT('stem.raptorhunt.submit_answer_2', '✔ Submit Answer')),
           quizState.answered && h('div', { className: 'space-y-3' },
             h('div', { className: 'p-4 rounded-lg ' + (isCorrect ? 'bg-emerald-900/30 border border-emerald-700/40' : 'bg-red-900/30 border border-red-700/40') },
               h('div', { className: 'flex items-start gap-2 mb-2' },
@@ -12433,11 +12434,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-indigo-900/40 to-violet-900/40 border border-indigo-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-indigo-200 mb-2 tracking-tight' }, '🦻 Owl Hearing Lab: Find the Mouse'),
+            h('div', { className: 'text-lg font-bold text-indigo-200 mb-2 tracking-tight' }, __alloT('stem.raptorhunt.owl_hearing_lab_find_the_mouse', '🦻 Owl Hearing Lab: Find the Mouse')),
             h('div', { className: 'text-sm text-indigo-100/90 leading-relaxed' },
-              'In 1962, Roger Payne placed a barn owl in a totally dark room with a mouse on a leaf-litter floor. The owl could hear the leaves rustle but see nothing. He recorded ~17 silent strikes — every one a kill, accurate to ~1° elevation + azimuth. This works because barn owls have ',
-              h('span', { className: 'font-bold text-violet-300' }, 'asymmetric ear openings'),
-              ' (left higher, right lower) plus a flat facial disc that acts like a parabolic dish. Below, you are the owl. The mouse is hidden — your ears can detect it within a noisy radius that scales with your ear-asymmetry magnitude.'
+              __alloT('stem.raptorhunt.in_1962_roger_payne_placed_a_barn_owl_', 'In 1962, Roger Payne placed a barn owl in a totally dark room with a mouse on a leaf-litter floor. The owl could hear the leaves rustle but see nothing. He recorded ~17 silent strikes — every one a kill, accurate to ~1° elevation + azimuth. This works because barn owls have '),
+              h('span', { className: 'font-bold text-violet-300' }, __alloT('stem.raptorhunt.asymmetric_ear_openings', 'asymmetric ear openings')),
+              __alloT('stem.raptorhunt.left_higher_right_lower_plus_a_flat_fa', ' (left higher, right lower) plus a flat facial disc that acts like a parabolic dish. Below, you are the owl. The mouse is hidden — your ears can detect it within a noisy radius that scales with your ear-asymmetry magnitude.')
             )
           ),
 
@@ -12445,46 +12446,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4 space-y-3' },
             h('div', null,
               h('label', { className: 'text-xs text-indigo-300 flex items-center justify-between mb-1' },
-                h('span', { className: 'font-bold' }, 'Ear asymmetry magnitude'),
+                h('span', { className: 'font-bold' }, __alloT('stem.raptorhunt.ear_asymmetry_magnitude', 'Ear asymmetry magnitude')),
                 h('span', { className: 'font-mono text-amber-300' }, (hl.asymmetry * 100).toFixed(0) + '%')
               ),
               h('input', {
                 type: 'range', min: 0, max: 1, step: 0.05, value: hl.asymmetry,
                 onInput: function(e) { setHL({ asymmetry: parseFloat(e.target.value) }); },
                 className: 'w-full',
-                'aria-label': 'Ear asymmetry magnitude'
+                'aria-label': __alloT('stem.raptorhunt.ear_asymmetry_magnitude_2', 'Ear asymmetry magnitude')
               }),
               h('div', { className: 'flex justify-between text-[10px] text-slate-500' },
-                h('span', null, '0% (symmetric — like a hawk)'),
-                h('span', null, '100% (barn-owl-grade)')
+                h('span', null, __alloT('stem.raptorhunt.0_symmetric_like_a_hawk', '0% (symmetric — like a hawk)')),
+                h('span', null, __alloT('stem.raptorhunt.100_barn_owl_grade', '100% (barn-owl-grade)'))
               )
             ),
             // ── NEW v0.9: Background noise slider ──
             h('div', null,
               h('label', { className: 'text-xs text-cyan-300 flex items-center justify-between mb-1' },
-                h('span', { className: 'font-bold' }, '🌬 Background noise (wind, traffic, rustling)'),
+                h('span', { className: 'font-bold' }, __alloT('stem.raptorhunt.background_noise_wind_traffic_rustling', '🌬 Background noise (wind, traffic, rustling)')),
                 h('span', { className: 'font-mono text-amber-300' }, (hl.noise || 0) + '%')
               ),
               h('input', {
                 type: 'range', min: 0, max: 100, step: 5, value: (hl.noise || 0),
                 onInput: function(e) { setHL({ noise: parseInt(e.target.value) }); },
                 className: 'w-full',
-                'aria-label': 'Background noise level'
+                'aria-label': __alloT('stem.raptorhunt.background_noise_level', 'Background noise level')
               }),
               h('div', { className: 'flex justify-between text-[10px] text-slate-500' },
-                h('span', null, '0% (silent forest)'),
-                h('span', null, '50% (windy night)'),
-                h('span', null, '100% (highway noise)')
+                h('span', null, __alloT('stem.raptorhunt.0_silent_forest', '0% (silent forest)')),
+                h('span', null, __alloT('stem.raptorhunt.50_windy_night', '50% (windy night)')),
+                h('span', null, __alloT('stem.raptorhunt.100_highway_noise', '100% (highway noise)'))
               )
             ),
             h('div', { className: 'text-[10px] text-indigo-200/70 italic' },
-              'Effective detection radius: ',
+              __alloT('stem.raptorhunt.effective_detection_radius', 'Effective detection radius: '),
               h('span', { className: 'font-mono text-amber-300' }, (errRadius * 100).toFixed(0) + '%'),
-              ' of canvas (base ',
+              __alloT('stem.raptorhunt.of_canvas_base', ' of canvas (base '),
               h('span', { className: 'font-mono text-slate-300' }, (baseRadius * 100).toFixed(0) + '%'),
-              ' from asymmetry + ',
+              __alloT('stem.raptorhunt.from_asymmetry', ' from asymmetry + '),
               h('span', { className: 'font-mono text-cyan-300' }, (noise * 25).toFixed(0) + '%'),
-              ' noise widening). Real barn owls operate at ~1° error in pitch black silence; even moderate wind degrades that. Hawkesford 2019 measured ~3× detection-radius widening at 60 dB ambient.'
+              __alloT('stem.raptorhunt.noise_widening_real_barn_owls_operate_', ' noise widening). Real barn owls operate at ~1° error in pitch black silence; even moderate wind degrades that. Hawkesford 2019 measured ~3× detection-radius widening at 60 dB ambient.')
             )
           ),
 
@@ -12493,7 +12494,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('canvas', {
               'data-hearing-canvas': 'true',
               role: 'application',
-              'aria-label': 'Owl hearing lab. Click anywhere on the dark canvas where you think the mouse is. Detection radius shows as a ring; click to strike.',
+              'aria-label': __alloT('stem.raptorhunt.owl_hearing_lab_click_anywhere_on_the_', 'Owl hearing lab. Click anywhere on the dark canvas where you think the mouse is. Detection radius shows as a ring; click to strike.'),
               tabIndex: 0,
               width: 600, height: 450,
               style: { width: '100%', height: '100%', cursor: 'crosshair', display: 'block' },
@@ -12619,43 +12620,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('button', {
               onClick: newMouse,
               className: 'px-4 py-2 rounded-lg text-sm font-bold bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-700 hover:to-violet-700 transition-all',
-              'aria-label': 'Release new mouse'
-            }, '🦉 Release Mouse'),
+              'aria-label': __alloT('stem.raptorhunt.release_new_mouse', 'Release new mouse')
+            }, __alloT('stem.raptorhunt.release_mouse', '🦉 Release Mouse')),
             h('button', {
               onClick: function() {
                 setHL({ attempts: 0, hits: 0, totalErr: 0, bestErr: null, lastErr: null, started: false });
                 rhAnnounce('Stats reset');
               },
               className: 'px-4 py-2 rounded-lg text-sm font-bold bg-slate-700 text-amber-300 hover:bg-slate-600 transition-all active:scale-[0.97]',
-              'aria-label': 'Reset stats'
-            }, '↺ Reset Stats')
+              'aria-label': __alloT('stem.raptorhunt.reset_stats', 'Reset stats')
+            }, __alloT('stem.raptorhunt.reset_stats_2', '↺ Reset Stats'))
           ),
 
           // Stats panel
           h('div', { className: 'grid grid-cols-3 gap-2 text-center' },
             h('div', { className: 'bg-emerald-900/30 border border-emerald-700/40 rounded p-3' },
               h('div', { className: 'text-2xl font-bold text-emerald-300 tracking-tight' }, hl.attempts > 0 ? Math.round(hl.hits / hl.attempts * 100) + '%' : '—'),
-              h('div', { className: 'text-[10px] text-emerald-200 uppercase tracking-wider' }, 'Strike Rate')
+              h('div', { className: 'text-[10px] text-emerald-200 uppercase tracking-wider' }, __alloT('stem.raptorhunt.strike_rate', 'Strike Rate'))
             ),
             h('div', { className: 'bg-indigo-900/30 border border-indigo-700/40 rounded p-3' },
               h('div', { className: 'text-2xl font-bold text-indigo-300 tracking-tight' }, hl.attempts),
-              h('div', { className: 'text-[10px] text-indigo-200 uppercase tracking-wider' }, 'Attempts')
+              h('div', { className: 'text-[10px] text-indigo-200 uppercase tracking-wider' }, __alloT('stem.raptorhunt.attempts', 'Attempts'))
             ),
             h('div', { className: 'bg-amber-900/30 border border-amber-700/40 rounded p-3' },
               h('div', { className: 'text-2xl font-bold text-amber-300 tracking-tight' }, hl.bestErr !== null ? (hl.bestErr * 100).toFixed(0) + '%' : '—'),
-              h('div', { className: 'text-[10px] text-amber-200 uppercase tracking-wider' }, 'Best Error')
+              h('div', { className: 'text-[10px] text-amber-200 uppercase tracking-wider' }, __alloT('stem.raptorhunt.best_error', 'Best Error'))
             )
           ),
 
           // Pedagogy
           h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4 text-sm space-y-3' },
-            h('div', { className: 'font-bold text-indigo-300' }, '💡 What you just modeled'),
-            h('div', { className: 'text-slate-300 leading-relaxed text-xs' }, 'Slide the asymmetry slider to 100% — your detection radius is tiny + barely larger than a single pixel. Real barn owls can localize sound to ~1° error in pitch dark. Slide to 0% (a hawk\'s ear placement) — the radius balloons to 40% of the canvas. This is why hawks hunt by sight + owls hunt by sound.'),
-            h('div', { className: 'text-slate-300 leading-relaxed text-xs' }, 'The mechanism is exactly the diagram in the Day Eye vs Night Eye section: ',
-              h('span', { className: 'text-indigo-300 font-bold' }, 'time-of-arrival difference'),
-              ' between the two ear openings encodes ',
-              h('span', { className: 'text-indigo-300 font-bold' }, 'azimuth + elevation in 3D'),
-              '. The asymmetric placement encodes elevation; without asymmetry, an owl could not tell if a sound came from above or below the head — only left or right.'
+            h('div', { className: 'font-bold text-indigo-300' }, __alloT('stem.raptorhunt.what_you_just_modeled', '💡 What you just modeled')),
+            h('div', { className: 'text-slate-300 leading-relaxed text-xs' }, __alloT('stem.raptorhunt.slide_the_asymmetry_slider_to_100_your', 'Slide the asymmetry slider to 100% — your detection radius is tiny + barely larger than a single pixel. Real barn owls can localize sound to ~1° error in pitch dark. Slide to 0% (a hawk\'s ear placement) — the radius balloons to 40% of the canvas. This is why hawks hunt by sight + owls hunt by sound.')),
+            h('div', { className: 'text-slate-300 leading-relaxed text-xs' }, __alloT('stem.raptorhunt.the_mechanism_is_exactly_the_diagram_i', 'The mechanism is exactly the diagram in the Day Eye vs Night Eye section: '),
+              h('span', { className: 'text-indigo-300 font-bold' }, __alloT('stem.raptorhunt.time_of_arrival_difference', 'time-of-arrival difference')),
+              __alloT('stem.raptorhunt.between_the_two_ear_openings_encodes', ' between the two ear openings encodes '),
+              h('span', { className: 'text-indigo-300 font-bold' }, __alloT('stem.raptorhunt.azimuth_elevation_in_3d', 'azimuth + elevation in 3D')),
+              __alloT('stem.raptorhunt.the_asymmetric_placement_encodes_eleva', '. The asymmetric placement encodes elevation; without asymmetry, an owl could not tell if a sound came from above or below the head — only left or right.')
             )
           )
         );
@@ -12667,13 +12668,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       function renderPellet() {
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-amber-900/40 to-yellow-900/40 border border-amber-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-amber-200 mb-2 tracking-tight' }, '🥚 Pellet Lab: The Owl\'s Trash, the Scientist\'s Treasure'),
+            h('div', { className: 'text-lg font-bold text-amber-200 mb-2 tracking-tight' }, __alloT('stem.raptorhunt.pellet_lab_the_owl_s_trash_the_scienti', '🥚 Pellet Lab: The Owl\'s Trash, the Scientist\'s Treasure')),
             h('div', { className: 'text-sm text-amber-100/90 leading-relaxed' }, PELLET_DATA.overview)
           ),
 
           // Anatomy of a pellet
           h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-amber-300 mb-3' }, '🔬 What\'s Inside a Typical Pellet'),
+            h('div', { className: 'text-sm font-bold text-amber-300 mb-3' }, __alloT('stem.raptorhunt.what_s_inside_a_typical_pellet', '🔬 What\'s Inside a Typical Pellet')),
             h('div', { className: 'space-y-2' },
               PELLET_DATA.composition.map(function(c, i) {
                 return h('div', { key: i, className: 'flex items-center gap-3 bg-slate-800/40 rounded p-2.5' },
@@ -12687,7 +12688,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
           // Common prey identification key
           h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-amber-300 mb-3' }, '🦷 Common Prey ID Key — From Skull + Teeth'),
+            h('div', { className: 'text-sm font-bold text-amber-300 mb-3' }, __alloT('stem.raptorhunt.common_prey_id_key_from_skull_teeth', '🦷 Common Prey ID Key — From Skull + Teeth')),
             h('div', { className: 'space-y-2' },
               PELLET_DATA.commonPrey.map(function(p, i) {
                 return h('div', { key: i, className: 'bg-slate-800/40 border border-slate-700/40 rounded-lg p-3' },
@@ -12713,13 +12714,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             }
             // 7 prey types, each with a "bone" the student identifies
             var preyTypes = [
-              { id: 'vole', name: 'Meadow Vole', biomass: 30, signature: 'M-shaped molar cusps; orange incisors; ~18 mm cranium', wrong: ['Deer Mouse', 'Shrew', 'Sparrow'] },
-              { id: 'mouse', name: 'Deer Mouse', biomass: 20, signature: 'Small ~15 mm cranium; long incisors; pointed snout shape', wrong: ['Meadow Vole', 'Shrew', 'Lemming'] },
-              { id: 'shrew', name: 'Short-tailed Shrew', biomass: 18, signature: 'RED-TIPPED teeth (iron-pigmented enamel); ~14 mm pointed snout cranium', wrong: ['Deer Mouse', 'Vole', 'Bat'] },
-              { id: 'sparrow', name: 'House Sparrow', biomass: 28, signature: 'Conical seed-eating beak; hollow bones; bird-skull shape', wrong: ['Starling', 'Songbird', 'Bat'] },
-              { id: 'starling', name: 'European Starling', biomass: 75, signature: 'Long pointed bird beak; black feather barbs in pellet; medium bird cranium', wrong: ['Sparrow', 'Robin', 'Pigeon'] },
-              { id: 'lemming', name: 'Bog Lemming', biomass: 35, signature: 'Vole-like but with FLAT-TOPPED grinding molars; chunky body', wrong: ['Meadow Vole', 'Deer Mouse', 'Shrew'] },
-              { id: 'bat', name: 'Little Brown Bat', biomass: 8, signature: 'Tiny wing-finger bones; large eye orbits; bird-like skull but with mammal teeth', wrong: ['Sparrow', 'Shrew', 'Songbird'] }
+              { id: 'vole', name: __alloT('stem.raptorhunt.meadow_vole', 'Meadow Vole'), biomass: 30, signature: 'M-shaped molar cusps; orange incisors; ~18 mm cranium', wrong: ['Deer Mouse', 'Shrew', 'Sparrow'] },
+              { id: 'mouse', name: __alloT('stem.raptorhunt.deer_mouse', 'Deer Mouse'), biomass: 20, signature: 'Small ~15 mm cranium; long incisors; pointed snout shape', wrong: ['Meadow Vole', 'Shrew', 'Lemming'] },
+              { id: 'shrew', name: __alloT('stem.raptorhunt.short_tailed_shrew', 'Short-tailed Shrew'), biomass: 18, signature: 'RED-TIPPED teeth (iron-pigmented enamel); ~14 mm pointed snout cranium', wrong: ['Deer Mouse', 'Vole', 'Bat'] },
+              { id: 'sparrow', name: __alloT('stem.raptorhunt.house_sparrow', 'House Sparrow'), biomass: 28, signature: 'Conical seed-eating beak; hollow bones; bird-skull shape', wrong: ['Starling', 'Songbird', 'Bat'] },
+              { id: 'starling', name: __alloT('stem.raptorhunt.european_starling', 'European Starling'), biomass: 75, signature: 'Long pointed bird beak; black feather barbs in pellet; medium bird cranium', wrong: ['Sparrow', 'Robin', 'Pigeon'] },
+              { id: 'lemming', name: __alloT('stem.raptorhunt.bog_lemming', 'Bog Lemming'), biomass: 35, signature: 'Vole-like but with FLAT-TOPPED grinding molars; chunky body', wrong: ['Meadow Vole', 'Deer Mouse', 'Shrew'] },
+              { id: 'bat', name: __alloT('stem.raptorhunt.little_brown_bat', 'Little Brown Bat'), biomass: 8, signature: 'Tiny wing-finger bones; large eye orbits; bird-like skull but with mammal teeth', wrong: ['Sparrow', 'Shrew', 'Songbird'] }
             ];
             function generatePellet() {
               // 1-4 prey per pellet, weighted toward smaller pellets being more common
@@ -12763,20 +12764,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             var biomass = pd.bones && pd.complete ? pd.bones.reduce(function(sum, b) { return sum + b.biomass; }, 0) : 0;
             var uniqueSpecies = pd.bones && pd.complete ? Array.from(new Set(pd.bones.map(function(b) { return b.preyId; }))).length : 0;
             return h('div', { className: 'bg-orange-900/20 border border-orange-700/40 rounded-xl p-5' },
-              h('div', { className: 'text-base font-bold text-orange-300 mb-2' }, '🔬 Virtual Dissection — Try It'),
-              h('div', { className: 'text-xs text-orange-100/90 mb-3 leading-relaxed' }, 'Generate a virtual pellet, then click each bone to identify the prey species. Each pellet contains 1-4 prey animals from your local rodent + bird population. Use the signature clues to pick the right species.'),
+              h('div', { className: 'text-base font-bold text-orange-300 mb-2' }, __alloT('stem.raptorhunt.virtual_dissection_try_it', '🔬 Virtual Dissection — Try It')),
+              h('div', { className: 'text-xs text-orange-100/90 mb-3 leading-relaxed' }, __alloT('stem.raptorhunt.generate_a_virtual_pellet_then_click_e', 'Generate a virtual pellet, then click each bone to identify the prey species. Each pellet contains 1-4 prey animals from your local rodent + bird population. Use the signature clues to pick the right species.')),
 
               !pd.started ? h('div', { className: 'text-center py-4' },
                 h('button', {
                   onClick: startDx,
                   className: 'px-5 py-3 rounded-xl text-sm font-bold bg-gradient-to-r from-orange-600 to-red-600 text-white hover:from-orange-700 hover:to-red-700 transition-all',
-                  'aria-label': 'Generate virtual pellet'
-                }, '🦉 Generate Virtual Pellet')
+                  'aria-label': __alloT('stem.raptorhunt.generate_virtual_pellet', 'Generate virtual pellet')
+                }, __alloT('stem.raptorhunt.generate_virtual_pellet_2', '🦉 Generate Virtual Pellet'))
               ) : h('div', { className: 'space-y-3' },
                 // Pellet visual (gradient blob with bones scattered)
                 h('div', { className: 'relative bg-gradient-to-br from-stone-700 to-stone-900 rounded-3xl mx-auto', style: { width: '100%', maxWidth: '400px', aspectRatio: '4/3', backgroundImage: 'radial-gradient(circle, rgba(120,53,15,0.3), transparent 70%)' } },
                   h('div', { className: 'absolute inset-0 flex items-center justify-center pointer-events-none' },
-                    h('div', { className: 'text-xs text-stone-400 italic' }, '— pellet — click bones below to identify —')
+                    h('div', { className: 'text-xs text-stone-400 italic' }, __alloT('stem.raptorhunt.pellet_click_bones_below_to_identify', '— pellet — click bones below to identify —'))
                   ),
                   (pd.bones || []).map(function(b, i) {
                     var idr = pd.identified[b.uid];
@@ -12808,7 +12809,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   // Deterministic shuffle by uid
                   opts = opts.sort(function(a, b) { return (a + activeBone.uid).localeCompare(b + activeBone.uid); });
                   return h('div', { className: 'bg-slate-900/60 border border-amber-700/40 rounded-lg p-3' },
-                    h('div', { className: 'text-xs font-bold text-amber-300 mb-2' }, '🦴 Identify this bone'),
+                    h('div', { className: 'text-xs font-bold text-amber-300 mb-2' }, __alloT('stem.raptorhunt.identify_this_bone', '🦴 Identify this bone')),
                     h('div', { className: 'text-xs text-slate-200 mb-3 italic' }, 'Signature: ' + activeBone.signature),
                     h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2' },
                       opts.map(function(opt, oi) {
@@ -12829,32 +12830,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 // Progress
                 h('div', { className: 'flex items-center justify-between text-xs' },
                   h('div', { className: 'text-slate-300' }, 'Bones identified: ' + idCount + ' / ' + totalBones + ' · Correct: ', h('span', { className: 'text-emerald-300 font-bold' }, correctCount)),
-                  pd.complete && h('div', { className: 'text-emerald-300 font-bold' }, '✓ Dissection complete')
+                  pd.complete && h('div', { className: 'text-emerald-300 font-bold' }, __alloT('stem.raptorhunt.dissection_complete', '✓ Dissection complete'))
                 ),
 
                 // Results panel
                 pd.complete && h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-lg p-3 space-y-2' },
-                  h('div', { className: 'text-sm font-bold text-emerald-300' }, '📊 Pellet Analysis Results'),
+                  h('div', { className: 'text-sm font-bold text-emerald-300' }, __alloT('stem.raptorhunt.pellet_analysis_results', '📊 Pellet Analysis Results')),
                   h('div', { className: 'grid grid-cols-3 gap-2 text-center' },
                     h('div', { className: 'bg-slate-800/40 rounded p-2' },
                       h('div', { className: 'text-xl font-bold text-amber-300 tracking-tight' }, totalBones),
-                      h('div', { className: 'text-[10px] text-slate-400 uppercase' }, 'Prey items')
+                      h('div', { className: 'text-[10px] text-slate-400 uppercase' }, __alloT('stem.raptorhunt.prey_items', 'Prey items'))
                     ),
                     h('div', { className: 'bg-slate-800/40 rounded p-2' },
                       h('div', { className: 'text-xl font-bold text-amber-300 tracking-tight' }, uniqueSpecies),
-                      h('div', { className: 'text-[10px] text-slate-400 uppercase' }, 'Species')
+                      h('div', { className: 'text-[10px] text-slate-400 uppercase' }, __alloT('stem.raptorhunt.species_5', 'Species'))
                     ),
                     h('div', { className: 'bg-slate-800/40 rounded p-2' },
                       h('div', { className: 'text-xl font-bold text-amber-300 tracking-tight' }, biomass + 'g'),
-                      h('div', { className: 'text-[10px] text-slate-400 uppercase' }, 'Biomass')
+                      h('div', { className: 'text-[10px] text-slate-400 uppercase' }, __alloT('stem.raptorhunt.biomass', 'Biomass'))
                     )
                   ),
                   h('div', { className: 'text-xs text-emerald-100/90 italic leading-relaxed' },
-                    'Real-world equivalent: a single owl roost with 50 pellets like this would document ',
+                    __alloT('stem.raptorhunt.real_world_equivalent_a_single_owl_roo', 'Real-world equivalent: a single owl roost with 50 pellets like this would document '),
                     h('span', { className: 'font-bold text-amber-300' }, totalBones * 50 + ' prey animals'),
-                    ' across the local landscape — ',
+                    __alloT('stem.raptorhunt.across_the_local_landscape', ' across the local landscape — '),
                     h('span', { className: 'font-bold text-amber-300' }, (biomass * 50 / 1000).toFixed(1) + ' kg of small-mammal biomass'),
-                    ' — without trapping a single mouse. This is why pellet science is a backbone of small-mammal ecology research.'
+                    __alloT('stem.raptorhunt.without_trapping_a_single_mouse_this_i', ' — without trapping a single mouse. This is why pellet science is a backbone of small-mammal ecology research.')
                   )
                 ),
 
@@ -12863,13 +12864,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   h('button', {
                     onClick: startDx,
                     className: 'transition-colors px-4 py-2 rounded-lg text-xs font-bold bg-slate-700 text-amber-300 hover:bg-slate-600 active:scale-[0.97]',
-                    'aria-label': 'Generate another pellet'
-                  }, '🔁 New Pellet'),
+                    'aria-label': __alloT('stem.raptorhunt.generate_another_pellet', 'Generate another pellet')
+                  }, __alloT('stem.raptorhunt.new_pellet', '🔁 New Pellet')),
                   h('button', {
                     onClick: function() { setPD({ started: false, bones: null, identified: {}, complete: false, activeBone: null }); },
                     className: 'transition-colors px-4 py-2 rounded-lg text-xs font-bold bg-slate-700 text-slate-300 hover:bg-slate-600 active:scale-[0.97]',
-                    'aria-label': 'Close dissection'
-                  }, '✕ Close')
+                    'aria-label': __alloT('stem.raptorhunt.close_dissection', 'Close dissection')
+                  }, __alloT('stem.raptorhunt.close', '✕ Close'))
                 )
               )
             );
@@ -12879,7 +12880,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded-xl p-5' },
             h('div', { className: 'text-base font-bold text-amber-300 mb-2' }, '🔧 ' + PELLET_DATA.method.title),
             h('div', { className: 'bg-red-900/30 border border-red-700/40 rounded p-2 mb-3 text-xs text-red-200' },
-              h('span', { className: 'font-bold' }, '⚠ Safety: '), PELLET_DATA.method.safetyNote
+              h('span', { className: 'font-bold' }, __alloT('stem.raptorhunt.safety', '⚠ Safety: ')), PELLET_DATA.method.safetyNote
             ),
             h('ol', { className: 'space-y-1 text-xs text-amber-100/90 list-decimal list-inside' },
               PELLET_DATA.method.steps.map(function(s, i) { return h('li', { key: i }, s.replace(/^\d+\.\s*/, '')); })
@@ -12888,18 +12889,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
           // Pedagogy note
           h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, '📚 Why pellet labs work in classrooms'),
+            h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, __alloT('stem.raptorhunt.why_pellet_labs_work_in_classrooms', '📚 Why pellet labs work in classrooms')),
             h('div', { className: 'text-xs text-emerald-100/90 leading-relaxed' }, PELLET_DATA.pedagogy)
           ),
 
           // External resource
           h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-3 text-xs' },
-            h('div', { className: 'font-bold text-amber-300 mb-1' }, '🔗 Free interactive dichotomous keys'),
-            h('a', { href: 'https://www.kidwings.com/owl-pellets/virtual-pellet/', target: '_blank', rel: 'noopener noreferrer', className: 'transition-colors text-cyan-300 hover:text-cyan-200 underline' }, 'KidWings Virtual Pellet (free online dissection)'),
+            h('div', { className: 'font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.free_interactive_dichotomous_keys', '🔗 Free interactive dichotomous keys')),
+            h('a', { href: 'https://www.kidwings.com/owl-pellets/virtual-pellet/', target: '_blank', rel: 'noopener noreferrer', className: 'transition-colors text-cyan-300 hover:text-cyan-200 underline' }, __alloT('stem.raptorhunt.kidwings_virtual_pellet_free_online_di', 'KidWings Virtual Pellet (free online dissection)')),
             ' · ',
-            h('a', { href: 'https://www.pellet.com/', target: '_blank', rel: 'noopener noreferrer', className: 'transition-colors text-cyan-300 hover:text-cyan-200 underline' }, 'Pellet.com (sterilized supplies)'),
+            h('a', { href: 'https://www.pellet.com/', target: '_blank', rel: 'noopener noreferrer', className: 'transition-colors text-cyan-300 hover:text-cyan-200 underline' }, __alloT('stem.raptorhunt.pellet_com_sterilized_supplies', 'Pellet.com (sterilized supplies)')),
             ' · ',
-            h('a', { href: 'https://www.carolina.com/owl-pellets/10288.pr', target: '_blank', rel: 'noopener noreferrer', className: 'transition-colors text-cyan-300 hover:text-cyan-200 underline' }, 'Carolina Biological')
+            h('a', { href: 'https://www.carolina.com/owl-pellets/10288.pr', target: '_blank', rel: 'noopener noreferrer', className: 'transition-colors text-cyan-300 hover:text-cyan-200 underline' }, __alloT('stem.raptorhunt.carolina_biological', 'Carolina Biological'))
           )
         );
       }
@@ -12910,7 +12911,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       function renderFalconry() {
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-orange-900/40 to-red-900/40 border border-orange-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-orange-200 mb-2 tracking-tight' }, '🤝 Falconry & Humans: 4,000 Years of Hunting Together'),
+            h('div', { className: 'text-lg font-bold text-orange-200 mb-2 tracking-tight' }, __alloT('stem.raptorhunt.falconry_humans_4_000_years_of_hunting', '🤝 Falconry & Humans: 4,000 Years of Hunting Together')),
             h('div', { className: 'text-sm text-orange-100/90 leading-relaxed' }, FALCONRY_DATA.overview)
           ),
 
@@ -12918,11 +12919,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           (function() {
             // Map each era to a date midpoint + color
             var eraDates = [
-              { y: -2000, label: 'Bronze Age', color: '#fbbf24', shortLabel: 'Mongolian Berkutchi' },
+              { y: -2000, label: __alloT('stem.raptorhunt.bronze_age', 'Bronze Age'), color: '#fbbf24', shortLabel: 'Mongolian Berkutchi' },
               { y: -300, label: 'Persian/Arabian', color: '#f59e0b', shortLabel: 'Royal sport' },
-              { y: 1350, label: 'Medieval Europe', color: '#dc2626', shortLabel: 'Frederick II 1240' },
-              { y: 1800, label: 'Decline / Persecution', color: '#737373', shortLabel: 'Industrial era' },
-              { y: 1995, label: 'Conservation', color: '#10b981', shortLabel: '1970-present' }
+              { y: 1350, label: __alloT('stem.raptorhunt.medieval_europe', 'Medieval Europe'), color: '#dc2626', shortLabel: 'Frederick II 1240' },
+              { y: 1800, label: __alloT('stem.raptorhunt.decline_persecution', 'Decline / Persecution'), color: '#737373', shortLabel: 'Industrial era' },
+              { y: 1995, label: __alloT('stem.raptorhunt.conservation_3', 'Conservation'), color: '#10b981', shortLabel: '1970-present' }
             ];
             // Timeline spans 2200 BCE to 2030 CE
             var yMin = -2200, yMax = 2030;
@@ -12943,9 +12944,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               { y: 2010, lbl: 'UNESCO falconry listing' }
             ];
             return h('div', { className: 'bg-slate-900/40 border border-orange-700/40 rounded-xl p-4' },
-              h('div', { className: 'text-sm font-bold text-orange-300 mb-1' }, '🕰 4,000-Year Timeline of Falconry'),
-              h('div', { className: 'text-xs text-slate-400 italic mb-3' }, 'Visual sweep from Bronze Age Mongolian steppe through medieval Europe to today\'s UNESCO-protected practice.'),
-              h('svg', { viewBox: '0 0 ' + pw + ' ' + ph, style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': '4,000-year falconry timeline' },
+              h('div', { className: 'text-sm font-bold text-orange-300 mb-1' }, __alloT('stem.raptorhunt.4_000_year_timeline_of_falconry', '🕰 4,000-Year Timeline of Falconry')),
+              h('div', { className: 'text-xs text-slate-400 italic mb-3' }, __alloT('stem.raptorhunt.visual_sweep_from_bronze_age_mongolian', 'Visual sweep from Bronze Age Mongolian steppe through medieval Europe to today\'s UNESCO-protected practice.')),
+              h('svg', { viewBox: '0 0 ' + pw + ' ' + ph, style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': __alloT('stem.raptorhunt.4_000_year_falconry_timeline', '4,000-year falconry timeline') },
                 h('rect', { x: 0, y: 0, width: pw, height: ph, fill: '#0f172a' }),
                 // Main timeline bar
                 h('line', { x1: pad, y1: 70, x2: pw - pad, y2: 70, stroke: '#475569', strokeWidth: 2 }),
@@ -12989,13 +12990,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   );
                 })
               ),
-              h('div', { className: 'text-[10px] text-slate-500 italic mt-1' }, 'Falconry is one of the oldest continuously-practiced human cultural traditions — UNESCO Intangible Cultural Heritage 2010 (now 24 nations).')
+              h('div', { className: 'text-[10px] text-slate-500 italic mt-1' }, __alloT('stem.raptorhunt.falconry_is_one_of_the_oldest_continuo', 'Falconry is one of the oldest continuously-practiced human cultural traditions — UNESCO Intangible Cultural Heritage 2010 (now 24 nations).'))
             );
           })(),
 
           // Timeline of eras (textual cards)
           h('div', { className: 'space-y-3' },
-            h('div', { className: 'text-sm font-bold text-amber-300' }, '📜 The 5 eras in detail'),
+            h('div', { className: 'text-sm font-bold text-amber-300' }, __alloT('stem.raptorhunt.the_5_eras_in_detail', '📜 The 5 eras in detail')),
             FALCONRY_DATA.eras.map(function(e, i) {
               return h('div', { key: i, className: 'bg-slate-800/40 border border-slate-700/50 rounded-lg p-4' },
                 h('div', { className: 'flex items-baseline justify-between gap-2 mb-2' },
@@ -13041,7 +13042,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
           // Equipment glossary
           h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-base font-bold text-amber-300 mb-2' }, '🛠 Equipment glossary'),
+            h('div', { className: 'text-base font-bold text-amber-300 mb-2' }, __alloT('stem.raptorhunt.equipment_glossary', '🛠 Equipment glossary')),
             h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
               FALCONRY_DATA.equipment.map(function(e, i) {
                 return h('div', { key: i, className: 'bg-slate-800/40 rounded p-2.5' },
@@ -13057,13 +13058,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'text-base font-bold text-cyan-300 mb-2' }, '🩺 ' + FALCONRY_DATA.rehab.title),
             h('div', { className: 'text-xs text-cyan-100/90 mb-3 leading-relaxed' }, FALCONRY_DATA.rehab.stats),
             h('div', { className: 'mb-3' },
-              h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, 'If you find an injured raptor:'),
+              h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.if_you_find_an_injured_raptor', 'If you find an injured raptor:')),
               h('ul', { className: 'space-y-1 text-xs text-slate-200 list-disc list-inside' },
                 FALCONRY_DATA.rehab.whatToDo.map(function(s, i) { return h('li', { key: i }, s); })
               )
             ),
             h('div', null,
-              h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, 'Notable US rehab facilities:'),
+              h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.notable_us_rehab_facilities', 'Notable US rehab facilities:')),
               h('div', { className: 'text-xs text-slate-300' }, FALCONRY_DATA.rehab.famousFacilities.join(' · '))
             )
           )
@@ -13123,7 +13124,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'bg-gradient-to-br from-amber-900/40 to-yellow-900/40 border border-amber-700/40 rounded-xl p-4' },
             h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-lg font-bold text-amber-200 mb-2 tracking-tight' }, '🦴 Raptor Anatomy'),
+                h('div', { className: 'text-lg font-bold text-amber-200 mb-2 tracking-tight' }, __alloT('stem.raptorhunt.raptor_anatomy', '🦴 Raptor Anatomy')),
                 h('div', { className: 'text-sm text-amber-100/90 leading-relaxed' }, ANATOMY.intro)
               ),
               // ── NEW v0.12: Mode toggle ──
@@ -13147,7 +13148,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // ── Quiz Mode Panel ──
           anatomyMode === 'quiz' && quizTargetPart && h('div', { className: 'bg-gradient-to-br from-orange-900/40 to-red-900/40 border border-orange-700/40 rounded-xl p-4' },
             h('div', { className: 'flex items-center justify-between gap-3 mb-2' },
-              h('div', { className: 'text-sm font-bold text-orange-300' }, '🎯 Identify the highlighted anchor →'),
+              h('div', { className: 'text-sm font-bold text-orange-300' }, __alloT('stem.raptorhunt.identify_the_highlighted_anchor', '🎯 Identify the highlighted anchor →')),
               h('div', { className: 'text-xs font-mono text-amber-300' }, 'Score: ' + quizStats.correct + '/' + quizStats.attempts)
             ),
             !quizResult ? h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2' },
@@ -13172,8 +13173,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('button', {
                 onClick: nextQuiz,
                 className: 'w-full px-4 py-2 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:from-amber-700 hover:to-orange-700',
-                'aria-label': 'Next anatomy question'
-              }, '➡ Next Anchor')
+                'aria-label': __alloT('stem.raptorhunt.next_anatomy_question', 'Next anatomy question')
+              }, __alloT('stem.raptorhunt.next_anchor', '➡ Next Anchor'))
             )
           ),
 
@@ -13185,7 +13186,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('svg', {
               viewBox: '0 0 800 500',
               role: 'img',
-              'aria-label': 'Labeled raptor anatomy diagram with interactive hover labels',
+              'aria-label': __alloT('stem.raptorhunt.labeled_raptor_anatomy_diagram_with_in', 'Labeled raptor anatomy diagram with interactive hover labels'),
               style: { width: '100%', height: 'auto', maxHeight: '500px', display: 'block' }
             },
               // Background sky
@@ -13287,7 +13288,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'text-sm font-bold text-amber-300 mb-1' }, '🔍 ' + hovered.label),
             h('div', { className: 'text-sm text-amber-100/90 leading-relaxed' }, hovered.desc)
           ) : h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4 text-center text-xs text-slate-400 italic' },
-            'Hover or tap any label above to see the description here.'
+            __alloT('stem.raptorhunt.hover_or_tap_any_label_above_to_see_th', 'Hover or tap any label above to see the description here.')
           ),
 
           // ── NEW v0.15: Cross-Species Comparison ──
@@ -13295,10 +13296,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             var compareKey = rh.anatomyCompare || 'talons';
             function setCompareKey(k) { setRH({ anatomyCompare: k }); }
             var compareTypes = [
-              { id: 'talons', label: '🪝 Talons', desc: 'Length + grip force across species' },
-              { id: 'wings', label: '🪶 Wings', desc: 'Wingspan + loading + aspect ratio' },
-              { id: 'eyes', label: '👁 Eyes', desc: 'Visual acuity + field of view' },
-              { id: 'mass', label: '⚖ Body Mass', desc: 'Body size + weight distribution' }
+              { id: 'talons', label: __alloT('stem.raptorhunt.talons', '🪝 Talons'), desc: __alloT('stem.raptorhunt.length_grip_force_across_species', 'Length + grip force across species') },
+              { id: 'wings', label: __alloT('stem.raptorhunt.wings', '🪶 Wings'), desc: __alloT('stem.raptorhunt.wingspan_loading_aspect_ratio', 'Wingspan + loading + aspect ratio') },
+              { id: 'eyes', label: __alloT('stem.raptorhunt.eyes', '👁 Eyes'), desc: __alloT('stem.raptorhunt.visual_acuity_field_of_view', 'Visual acuity + field of view') },
+              { id: 'mass', label: __alloT('stem.raptorhunt.body_mass', '⚖ Body Mass'), desc: __alloT('stem.raptorhunt.body_size_weight_distribution', 'Body size + weight distribution') }
             ];
             // Per-comparison: SVG visualization showing all 8 species' values
             function drawComparison(type) {
@@ -13308,7 +13309,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 var maxLen = Math.max.apply(null, sorted.map(function(s) { return s.talonLengthMm; }));
                 var maxForce = Math.max.apply(null, sorted.map(function(s) { return s.talonForcePsi; }));
                 return h('div', { className: 'space-y-2' },
-                  h('div', { className: 'text-xs text-slate-400 italic' }, 'Each row shows a species\' hallux (rear killing talon) drawn to scale. The amber bar is grip force (psi).'),
+                  h('div', { className: 'text-xs text-slate-400 italic' }, __alloT('stem.raptorhunt.each_row_shows_a_species_hallux_rear_k', 'Each row shows a species\' hallux (rear killing talon) drawn to scale. The amber bar is grip force (psi).')),
                   sorted.map(function(s, i) {
                     var lenPct = (s.talonLengthMm / maxLen) * 80;
                     var forcePct = (s.talonForcePsi / maxForce) * 100;
@@ -13342,7 +13343,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 var sorted = SPECIES.slice().sort(function(a, b) { return b.wingspanM - a.wingspanM; });
                 var maxSpan = Math.max.apply(null, sorted.map(function(s) { return s.wingspanM; }));
                 return h('div', { className: 'space-y-2' },
-                  h('div', { className: 'text-xs text-slate-400 italic' }, 'Each row shows wingspan to scale (gold bar) + wing loading (red dot — further right = faster) + aspect ratio (cyan dot — further right = more soaring-efficient).'),
+                  h('div', { className: 'text-xs text-slate-400 italic' }, __alloT('stem.raptorhunt.each_row_shows_wingspan_to_scale_gold_', 'Each row shows wingspan to scale (gold bar) + wing loading (red dot — further right = faster) + aspect ratio (cyan dot — further right = more soaring-efficient).')),
                   sorted.map(function(s, i) {
                     var spanPct = (s.wingspanM / maxSpan) * 70;
                     var loadingX = (s.wingLoading / 18) * 100;
@@ -13370,7 +13371,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               if (type === 'eyes') {
                 var sorted = SPECIES.slice().sort(function(a, b) { return b.visualAcuityX - a.visualAcuityX; });
                 return h('div', { className: 'space-y-2' },
-                  h('div', { className: 'text-xs text-slate-400 italic' }, 'Each row shows eye size proportional to acuity (gold circle) + visual field arc.'),
+                  h('div', { className: 'text-xs text-slate-400 italic' }, __alloT('stem.raptorhunt.each_row_shows_eye_size_proportional_t', 'Each row shows eye size proportional to acuity (gold circle) + visual field arc.')),
                   sorted.map(function(s, i) {
                     var eyeR = 4 + s.visualAcuityX * 3;
                     var fovDeg = s.visualFieldDeg;
@@ -13410,7 +13411,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 var sorted = SPECIES.slice().sort(function(a, b) { return b.massKg - a.massKg; });
                 var maxMass = Math.max.apply(null, sorted.map(function(s) { return s.massKg; }));
                 return h('div', { className: 'space-y-2' },
-                  h('div', { className: 'text-xs text-slate-400 italic' }, 'Each row shows body size to scale. The harpy eagle is 8× heavier than a peregrine.'),
+                  h('div', { className: 'text-xs text-slate-400 italic' }, __alloT('stem.raptorhunt.each_row_shows_body_size_to_scale_the_', 'Each row shows body size to scale. The harpy eagle is 8× heavier than a peregrine.')),
                   sorted.map(function(s, i) {
                     var sizePct = (s.massKg / maxMass) * 60;
                     return h('div', { key: s.id, className: 'bg-slate-800/40 rounded p-2 flex items-center gap-3' },
@@ -13436,8 +13437,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return null;
             }
             return h('div', { className: 'bg-slate-900/40 border border-amber-700/40 rounded-xl p-4 space-y-3' },
-              h('div', { className: 'text-sm font-bold text-amber-300' }, '🔬 Cross-Species Comparison'),
-              h('div', { className: 'text-xs text-slate-400 italic' }, 'Compare the same body part across all 8 species. Reveals the dramatic scale differences hidden in single-species views.'),
+              h('div', { className: 'text-sm font-bold text-amber-300' }, __alloT('stem.raptorhunt.cross_species_comparison', '🔬 Cross-Species Comparison')),
+              h('div', { className: 'text-xs text-slate-400 italic' }, __alloT('stem.raptorhunt.compare_the_same_body_part_across_all_', 'Compare the same body part across all 8 species. Reveals the dramatic scale differences hidden in single-species views.')),
               // Body part selector
               h('div', { className: 'flex flex-wrap gap-2' },
                 compareTypes.map(function(c) {
@@ -13460,7 +13461,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
           // Full list (for reading + accessibility)
           h('details', { className: 'bg-slate-900/30 border border-slate-700/40 rounded-xl p-3' },
-            h('summary', { className: 'text-sm font-bold text-amber-300 cursor-pointer' }, '📖 All anatomy entries (read-through view)'),
+            h('summary', { className: 'text-sm font-bold text-amber-300 cursor-pointer' }, __alloT('stem.raptorhunt.all_anatomy_entries_read_through_view', '📖 All anatomy entries (read-through view)')),
             h('div', { className: 'mt-3 space-y-2' },
               ANATOMY.parts.map(function(p, i) {
                 return h('div', { key: p.id, className: 'bg-slate-800/40 rounded p-2.5 text-xs' },
@@ -13506,13 +13507,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-emerald-900/40 to-teal-900/40 border border-emerald-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-emerald-200 mb-2 tracking-tight' }, '🐣 Lifecycle & Demographics'),
+            h('div', { className: 'text-lg font-bold text-emerald-200 mb-2 tracking-tight' }, __alloT('stem.raptorhunt.lifecycle_demographics', '🐣 Lifecycle & Demographics')),
             h('div', { className: 'text-sm text-emerald-100/90 leading-relaxed' }, LIFECYCLE.overview)
           ),
 
           // Stages
           h('div', { className: 'space-y-2' },
-            h('div', { className: 'text-sm font-bold text-amber-300' }, '🌱 The 7 lifecycle stages'),
+            h('div', { className: 'text-sm font-bold text-amber-300' }, __alloT('stem.raptorhunt.the_7_lifecycle_stages', '🌱 The 7 lifecycle stages')),
             LIFECYCLE.stages.map(function(s, i) {
               return h('div', { key: i, className: 'bg-slate-800/40 border border-slate-700/50 rounded-lg p-3' },
                 h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
@@ -13527,16 +13528,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
           // Longevity comparison
           h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-amber-300 mb-3' }, '📊 Lifespan + survival across species'),
+            h('div', { className: 'text-sm font-bold text-amber-300 mb-3' }, __alloT('stem.raptorhunt.lifespan_survival_across_species', '📊 Lifespan + survival across species')),
             h('div', { className: 'overflow-x-auto' },
               h('table', { className: 'w-full text-xs' },
                 h('thead', null,
                   h('tr', { className: 'text-left text-slate-400 border-b border-slate-700' },
-                    h('th', { className: 'pb-2 pr-2' }, 'Species'),
-                    h('th', { className: 'pb-2 px-2' }, '1st-yr mort'),
-                    h('th', { className: 'pb-2 px-2' }, 'Adult ann. surv'),
-                    h('th', { className: 'pb-2 px-2' }, 'Mean wild lifespan'),
-                    h('th', { className: 'pb-2 px-2' }, 'Record (wild)')
+                    h('th', { className: 'pb-2 pr-2' }, __alloT('stem.raptorhunt.species_6', 'Species')),
+                    h('th', { className: 'pb-2 px-2' }, __alloT('stem.raptorhunt.1st_yr_mort', '1st-yr mort')),
+                    h('th', { className: 'pb-2 px-2' }, __alloT('stem.raptorhunt.adult_ann_surv', 'Adult ann. surv')),
+                    h('th', { className: 'pb-2 px-2' }, __alloT('stem.raptorhunt.mean_wild_lifespan', 'Mean wild lifespan')),
+                    h('th', { className: 'pb-2 px-2' }, __alloT('stem.raptorhunt.record_wild', 'Record (wild)'))
                   )
                 ),
                 h('tbody', null,
@@ -13565,10 +13566,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             // Compute survivorship from juv mortality + annual adult survival
             // Plot for 4 reference species at log-Y scale
             var speciesPlot = [
-              { id: 'baldEagle', name: 'Bald Eagle', juvMort: 0.60, adultSurv: 0.90, color: '#fbbf24', maxAge: 35 },
-              { id: 'peregrine', name: 'Peregrine', juvMort: 0.70, adultSurv: 0.85, color: '#dc2626', maxAge: 25 },
-              { id: 'redTail', name: 'Red-tailed Hawk', juvMort: 0.70, adultSurv: 0.78, color: '#10b981', maxAge: 25 },
-              { id: 'kestrel', name: 'American Kestrel', juvMort: 0.65, adultSurv: 0.60, color: '#a78bfa', maxAge: 14 }
+              { id: 'baldEagle', name: __alloT('stem.raptorhunt.bald_eagle_2', 'Bald Eagle'), juvMort: 0.60, adultSurv: 0.90, color: '#fbbf24', maxAge: 35 },
+              { id: 'peregrine', name: __alloT('stem.raptorhunt.peregrine', 'Peregrine'), juvMort: 0.70, adultSurv: 0.85, color: '#dc2626', maxAge: 25 },
+              { id: 'redTail', name: __alloT('stem.raptorhunt.red_tailed_hawk_2', 'Red-tailed Hawk'), juvMort: 0.70, adultSurv: 0.78, color: '#10b981', maxAge: 25 },
+              { id: 'kestrel', name: __alloT('stem.raptorhunt.american_kestrel_2', 'American Kestrel'), juvMort: 0.65, adultSurv: 0.60, color: '#a78bfa', maxAge: 14 }
             ];
             function survivorshipPath(s, xFn, yFn, ages) {
               return ages.map(function(a, i) {
@@ -13610,9 +13611,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return (i === 0 ? 'M ' : 'L ') + xAt(a).toFixed(1) + ' ' + yAt(pct).toFixed(1);
             }).join(' ');
             return h('div', { className: 'bg-slate-900/40 border border-emerald-700/40 rounded-xl p-4' },
-              h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, '📉 Survivorship Curves — Raptors are Type I'),
-              h('div', { className: 'text-xs text-slate-400 italic mb-3' }, 'Standard ecology visualization: % of birth cohort still alive at each age (log Y-scale). Type I (mammals, raptors) = high survival until late life. Type II (many songbirds) = constant mortality. Type III (fish, insects, plants) = heavy juvenile loss, few survive to adulthood.'),
-              h('svg', { viewBox: '0 0 ' + pw + ' ' + ph, style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': 'Survivorship curves comparison' },
+              h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, __alloT('stem.raptorhunt.survivorship_curves_raptors_are_type_i', '📉 Survivorship Curves — Raptors are Type I')),
+              h('div', { className: 'text-xs text-slate-400 italic mb-3' }, __alloT('stem.raptorhunt.standard_ecology_visualization_of_birt', 'Standard ecology visualization: % of birth cohort still alive at each age (log Y-scale). Type I (mammals, raptors) = high survival until late life. Type II (many songbirds) = constant mortality. Type III (fish, insects, plants) = heavy juvenile loss, few survive to adulthood.')),
+              h('svg', { viewBox: '0 0 ' + pw + ' ' + ph, style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': __alloT('stem.raptorhunt.survivorship_curves_comparison', 'Survivorship curves comparison') },
                 h('rect', { x: 0, y: 0, width: pw, height: ph, fill: '#0f172a' }),
                 // Axes
                 h('line', { x1: pad, y1: ph - pad, x2: pw - pad, y2: ph - pad, stroke: '#475569', strokeWidth: 1 }),
@@ -13637,9 +13638,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('path', { d: typeIIPath, fill: 'none', stroke: '#64748b', strokeWidth: 1.5, strokeDasharray: '3,3' }),
                 h('path', { d: typeIIIPath, fill: 'none', stroke: '#64748b', strokeWidth: 1.5, strokeDasharray: '3,3' }),
                 // Type labels
-                h('text', { x: xAt(28), y: yAt(0.4), fontSize: 10, fill: '#94a3b8', textAnchor: 'end' }, 'Type I (mammals, eagles)'),
-                h('text', { x: xAt(28), y: yAt(0.04), fontSize: 10, fill: '#94a3b8', textAnchor: 'end' }, 'Type II (songbirds)'),
-                h('text', { x: xAt(20), y: yAt(0.005), fontSize: 10, fill: '#94a3b8' }, 'Type III (fish, insects)'),
+                h('text', { x: xAt(28), y: yAt(0.4), fontSize: 10, fill: '#94a3b8', textAnchor: 'end' }, __alloT('stem.raptorhunt.type_i_mammals_eagles', 'Type I (mammals, eagles)')),
+                h('text', { x: xAt(28), y: yAt(0.04), fontSize: 10, fill: '#94a3b8', textAnchor: 'end' }, __alloT('stem.raptorhunt.type_ii_songbirds', 'Type II (songbirds)')),
+                h('text', { x: xAt(20), y: yAt(0.005), fontSize: 10, fill: '#94a3b8' }, __alloT('stem.raptorhunt.type_iii_fish_insects', 'Type III (fish, insects)')),
                 // Species curves
                 speciesPlot.map(function(s, si) {
                   var ag = [];
@@ -13656,79 +13657,79 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   );
                 }),
                 // Title
-                h('text', { x: pw / 2, y: 20, fontSize: 11, fill: '#fde047', textAnchor: 'middle', fontWeight: 'bold' }, '% surviving vs age (log scale)')
+                h('text', { x: pw / 2, y: 20, fontSize: 11, fill: '#fde047', textAnchor: 'middle', fontWeight: 'bold' }, __alloT('stem.raptorhunt.surviving_vs_age_log_scale', '% surviving vs age (log scale)'))
               ),
               h('div', { className: 'text-xs text-emerald-100/90 leading-relaxed mt-2' },
-                h('span', { className: 'font-bold text-emerald-300' }, '💡 Pedagogy: '),
-                'Raptors fit the Type I pattern — a steep cliff in year 1 (70% of juveniles die during their first winter), then a long plateau where most adults survive 5-10+ years. This is why protecting adult breeders is the highest-leverage conservation action. A red-tailed hawk that survives year 1 typically lives to age 6-10; a kestrel that survives year 1 lives to age 5-7. Eagle adults can live 25+ years.'
+                h('span', { className: 'font-bold text-emerald-300' }, __alloT('stem.raptorhunt.pedagogy_2', '💡 Pedagogy: ')),
+                __alloT('stem.raptorhunt.raptors_fit_the_type_i_pattern_a_steep', 'Raptors fit the Type I pattern — a steep cliff in year 1 (70% of juveniles die during their first winter), then a long plateau where most adults survive 5-10+ years. This is why protecting adult breeders is the highest-leverage conservation action. A red-tailed hawk that survives year 1 typically lives to age 6-10; a kestrel that survives year 1 lives to age 5-7. Eagle adults can live 25+ years.')
               )
             );
           })(),
 
           // Interactive population simulator
           h('div', { className: 'bg-slate-900/40 border border-amber-700/40 rounded-xl p-4 space-y-3' },
-            h('div', { className: 'text-sm font-bold text-amber-300' }, '🧮 Interactive Population Simulator'),
-            h('div', { className: 'text-xs text-slate-400 italic' }, 'See why adult survival is the dominant lever in raptor population trajectories.'),
+            h('div', { className: 'text-sm font-bold text-amber-300' }, __alloT('stem.raptorhunt.interactive_population_simulator', '🧮 Interactive Population Simulator')),
+            h('div', { className: 'text-xs text-slate-400 italic' }, __alloT('stem.raptorhunt.see_why_adult_survival_is_the_dominant', 'See why adult survival is the dominant lever in raptor population trajectories.')),
 
             // Sliders
             h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
               h('div', null,
                 h('label', { className: 'text-xs text-emerald-300 flex justify-between items-center' },
-                  h('span', null, 'Adult annual survival'),
+                  h('span', null, __alloT('stem.raptorhunt.adult_annual_survival', 'Adult annual survival')),
                   h('span', { className: 'font-mono text-amber-300' }, (pop.adultSurv * 100).toFixed(0) + '%')
                 ),
                 h('input', {
                   type: 'range', min: 0.5, max: 0.99, step: 0.01, value: pop.adultSurv,
                   onInput: function(e) { setPop({ adultSurv: parseFloat(e.target.value) }); },
                   className: 'w-full',
-                  'aria-label': 'Adult annual survival rate'
+                  'aria-label': __alloT('stem.raptorhunt.adult_annual_survival_rate', 'Adult annual survival rate')
                 }),
-                h('div', { className: 'text-[10px] text-slate-500' }, 'Bald/golden eagle ≈ 90-94% · kestrel ≈ 60%')
+                h('div', { className: 'text-[10px] text-slate-500' }, __alloT('stem.raptorhunt.bald_golden_eagle_90_94_kestrel_60', 'Bald/golden eagle ≈ 90-94% · kestrel ≈ 60%'))
               ),
               h('div', null,
                 h('label', { className: 'text-xs text-emerald-300 flex justify-between items-center' },
-                  h('span', null, 'Juvenile 1st-yr survival'),
+                  h('span', null, __alloT('stem.raptorhunt.juvenile_1st_yr_survival', 'Juvenile 1st-yr survival')),
                   h('span', { className: 'font-mono text-amber-300' }, (pop.juvSurv * 100).toFixed(0) + '%')
                 ),
                 h('input', {
                   type: 'range', min: 0.1, max: 0.7, step: 0.01, value: pop.juvSurv,
                   onInput: function(e) { setPop({ juvSurv: parseFloat(e.target.value) }); },
                   className: 'w-full',
-                  'aria-label': 'Juvenile first-year survival'
+                  'aria-label': __alloT('stem.raptorhunt.juvenile_first_year_survival', 'Juvenile first-year survival')
                 }),
-                h('div', { className: 'text-[10px] text-slate-500' }, 'Typical raptor 1st-yr ≈ 30-40%')
+                h('div', { className: 'text-[10px] text-slate-500' }, __alloT('stem.raptorhunt.typical_raptor_1st_yr_30_40', 'Typical raptor 1st-yr ≈ 30-40%'))
               ),
               h('div', null,
                 h('label', { className: 'text-xs text-emerald-300 flex justify-between items-center' },
-                  h('span', null, 'Fecundity (fledged chicks per female per year)'),
+                  h('span', null, __alloT('stem.raptorhunt.fecundity_fledged_chicks_per_female_pe', 'Fecundity (fledged chicks per female per year)')),
                   h('span', { className: 'font-mono text-amber-300' }, pop.fecundity.toFixed(2))
                 ),
                 h('input', {
                   type: 'range', min: 0.1, max: 3.0, step: 0.05, value: pop.fecundity,
                   onInput: function(e) { setPop({ fecundity: parseFloat(e.target.value) }); },
                   className: 'w-full',
-                  'aria-label': 'Annual fecundity'
+                  'aria-label': __alloT('stem.raptorhunt.annual_fecundity', 'Annual fecundity')
                 }),
-                h('div', { className: 'text-[10px] text-slate-500' }, 'Eagle ≈ 0.8 · kestrel ≈ 2.5')
+                h('div', { className: 'text-[10px] text-slate-500' }, __alloT('stem.raptorhunt.eagle_0_8_kestrel_2_5', 'Eagle ≈ 0.8 · kestrel ≈ 2.5'))
               ),
               h('div', null,
                 h('label', { className: 'text-xs text-red-300 flex justify-between items-center' },
-                  h('span', null, 'Additional adult mortality bump (lead, turbines, etc)'),
+                  h('span', null, __alloT('stem.raptorhunt.additional_adult_mortality_bump_lead_t', 'Additional adult mortality bump (lead, turbines, etc)')),
                   h('span', { className: 'font-mono text-amber-300' }, '+' + (pop.adultMortBump * 100).toFixed(0) + '%')
                 ),
                 h('input', {
                   type: 'range', min: 0, max: 0.3, step: 0.01, value: pop.adultMortBump,
                   onInput: function(e) { setPop({ adultMortBump: parseFloat(e.target.value) }); },
                   className: 'w-full',
-                  'aria-label': 'Additional adult mortality'
+                  'aria-label': __alloT('stem.raptorhunt.additional_adult_mortality', 'Additional adult mortality')
                 }),
-                h('div', { className: 'text-[10px] text-slate-500' }, 'Add anthropogenic adult mortality (lead, turbines, etc)')
+                h('div', { className: 'text-[10px] text-slate-500' }, __alloT('stem.raptorhunt.add_anthropogenic_adult_mortality_lead', 'Add anthropogenic adult mortality (lead, turbines, etc)'))
               )
             ),
 
             // Plot SVG
             h('div', { className: 'bg-slate-950/60 rounded-lg p-3 mt-3' },
-              h('svg', { viewBox: '0 0 ' + pw + ' ' + (ph + 30), style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': 'Population trajectory plot' },
+              h('svg', { viewBox: '0 0 ' + pw + ' ' + (ph + 30), style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': __alloT('stem.raptorhunt.population_trajectory_plot', 'Population trajectory plot') },
                 // Grid
                 h('line', { x1: 0, y1: ph, x2: pw, y2: ph, stroke: '#475569', strokeWidth: 1 }),
                 h('line', { x1: 0, y1: 0, x2: 0, y2: ph, stroke: '#475569', strokeWidth: 1 }),
@@ -13739,7 +13740,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 // Axis labels
                 h('text', { x: 4, y: 14, fontSize: 11, fill: '#94a3b8' }, 'Pop'),
                 h('text', { x: pw - 40, y: ph + 18, fontSize: 11, fill: '#94a3b8' }, 'Year ' + pop.years),
-                h('text', { x: 4, y: ph + 18, fontSize: 11, fill: '#94a3b8' }, 'Year 0')
+                h('text', { x: 4, y: ph + 18, fontSize: 11, fill: '#94a3b8' }, __alloT('stem.raptorhunt.year_0', 'Year 0'))
               )
             ),
 
@@ -13747,11 +13748,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'grid grid-cols-3 gap-2 text-center' },
               h('div', { className: 'bg-' + trendColor + '-900/30 border border-' + trendColor + '-700/40 rounded p-3' },
                 h('div', { className: 'text-2xl font-bold text- tracking-tight' + trendColor + '-300' }, lambda.toFixed(3)),
-                h('div', { className: 'text-[10px] text-' + trendColor + '-200 uppercase tracking-wider' }, 'λ (lambda)')
+                h('div', { className: 'text-[10px] text-' + trendColor + '-200 uppercase tracking-wider' }, __alloT('stem.raptorhunt.lambda', 'λ (lambda)'))
               ),
               h('div', { className: 'bg-' + trendColor + '-900/30 border border-' + trendColor + '-700/40 rounded p-3' },
                 h('div', { className: 'text-2xl font-bold text- tracking-tight' + trendColor + '-300' }, trend),
-                h('div', { className: 'text-[10px] text-' + trendColor + '-200 uppercase tracking-wider' }, 'Trajectory')
+                h('div', { className: 'text-[10px] text-' + trendColor + '-200 uppercase tracking-wider' }, __alloT('stem.raptorhunt.trajectory_2', 'Trajectory'))
               ),
               h('div', { className: 'bg-slate-800/60 border border-slate-700/40 rounded p-3' },
                 h('div', { className: 'text-2xl font-bold text-amber-300 tracking-tight' }, Math.round(finalPop)),
@@ -13781,15 +13782,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-orange-900/40 to-red-900/40 border border-orange-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-orange-200 mb-2 tracking-tight' }, '🌀 Stoop Trajectory Visualizer'),
+            h('div', { className: 'text-lg font-bold text-orange-200 mb-2 tracking-tight' }, __alloT('stem.raptorhunt.stoop_trajectory_visualizer', '🌀 Stoop Trajectory Visualizer')),
             h('div', { className: 'text-sm text-orange-100/90 leading-relaxed' },
-              'Tucker (1998) modeled the falcon\'s stoop trajectory and showed that peregrines fly a ',
-              h('span', { className: 'font-bold text-amber-300' }, 'logarithmic spiral'),
-              ' — a curved approach that keeps the prey image at a ',
-              h('span', { className: 'font-bold text-amber-300' }, 'constant retinal angle'),
-              ' (the bird\'s head doesn\'t need to turn at terminal velocity, which would create drag). This is ',
+              __alloT('stem.raptorhunt.tucker_1998_modeled_the_falcon_s_stoop', 'Tucker (1998) modeled the falcon\'s stoop trajectory and showed that peregrines fly a '),
+              h('span', { className: 'font-bold text-amber-300' }, __alloT('stem.raptorhunt.logarithmic_spiral', 'logarithmic spiral')),
+              __alloT('stem.raptorhunt.a_curved_approach_that_keeps_the_prey_', ' — a curved approach that keeps the prey image at a '),
+              h('span', { className: 'font-bold text-amber-300' }, __alloT('stem.raptorhunt.constant_retinal_angle', 'constant retinal angle')),
+              __alloT('stem.raptorhunt.the_bird_s_head_doesn_t_need_to_turn_a', ' (the bird\'s head doesn\'t need to turn at terminal velocity, which would create drag). This is '),
               h('em', null, 'exactly'),
-              ' the proportional-navigation algorithm used by air-to-air missiles. Adjust the parameters below + watch the falcon close on its prey.'
+              __alloT('stem.raptorhunt.the_proportional_navigation_algorithm_', ' the proportional-navigation algorithm used by air-to-air missiles. Adjust the parameters below + watch the falcon close on its prey.')
             )
           ),
 
@@ -13798,41 +13799,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
               h('div', null,
                 h('label', { className: 'text-xs text-orange-300 flex justify-between' },
-                  h('span', null, 'Stoop start altitude'),
+                  h('span', null, __alloT('stem.raptorhunt.stoop_start_altitude', 'Stoop start altitude')),
                   h('span', { className: 'font-mono text-amber-300' }, sv.startAlt + ' m')
                 ),
                 h('input', { type: 'range', min: 200, max: 1500, step: 50, value: sv.startAlt,
                   onInput: function(e) { setSV({ startAlt: parseInt(e.target.value), playhead: 0 }); }, className: 'w-full',
-                  'aria-label': 'Stoop start altitude' }),
-                h('div', { className: 'text-[10px] text-slate-500' }, 'Real peregrine stoops: 200-3,000 m')
+                  'aria-label': __alloT('stem.raptorhunt.stoop_start_altitude_2', 'Stoop start altitude') }),
+                h('div', { className: 'text-[10px] text-slate-500' }, __alloT('stem.raptorhunt.real_peregrine_stoops_200_3_000_m', 'Real peregrine stoops: 200-3,000 m'))
               ),
               h('div', null,
                 h('label', { className: 'text-xs text-orange-300 flex justify-between' },
-                  h('span', null, 'Prey speed (m/s)'),
+                  h('span', null, __alloT('stem.raptorhunt.prey_speed_m_s', 'Prey speed (m/s)')),
                   h('span', { className: 'font-mono text-amber-300' }, sv.preySpeed.toFixed(1))
                 ),
                 h('input', { type: 'range', min: 1, max: 15, step: 0.5, value: sv.preySpeed,
                   onInput: function(e) { setSV({ preySpeed: parseFloat(e.target.value), playhead: 0 }); }, className: 'w-full',
-                  'aria-label': 'Prey forward speed' }),
-                h('div', { className: 'text-[10px] text-slate-500' }, 'Pigeon flapping ≈ 16 m/s · duck ≈ 22 m/s')
+                  'aria-label': __alloT('stem.raptorhunt.prey_forward_speed', 'Prey forward speed') }),
+                h('div', { className: 'text-[10px] text-slate-500' }, __alloT('stem.raptorhunt.pigeon_flapping_16_m_s_duck_22_m_s', 'Pigeon flapping ≈ 16 m/s · duck ≈ 22 m/s'))
               ),
               h('div', null,
                 h('label', { className: 'text-xs text-orange-300 flex justify-between' },
-                  h('span', null, 'Head tilt angle (°)'),
+                  h('span', null, __alloT('stem.raptorhunt.head_tilt_angle', 'Head tilt angle (°)')),
                   h('span', { className: 'font-mono text-amber-300' }, sv.headTilt + '°')
                 ),
                 h('input', { type: 'range', min: 20, max: 65, step: 1, value: sv.headTilt,
                   onInput: function(e) { setSV({ headTilt: parseInt(e.target.value), playhead: 0 }); }, className: 'w-full',
-                  'aria-label': 'Head tilt angle' }),
-                h('div', { className: 'text-[10px] text-slate-500' }, 'Tucker 1998 measured ~40°')
+                  'aria-label': __alloT('stem.raptorhunt.head_tilt_angle_2', 'Head tilt angle') }),
+                h('div', { className: 'text-[10px] text-slate-500' }, __alloT('stem.raptorhunt.tucker_1998_measured_40', 'Tucker 1998 measured ~40°'))
               )
             ),
             h('div', { className: 'flex gap-2 justify-center' },
               h('button', {
                 onClick: function() { setSV({ playhead: 0, paused: false }); },
                 className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:from-amber-700 hover:to-orange-700',
-                'aria-label': 'Replay stoop'
-              }, '▶ Replay'),
+                'aria-label': __alloT('stem.raptorhunt.replay_stoop', 'Replay stoop')
+              }, __alloT('stem.raptorhunt.replay', '▶ Replay')),
               h('button', {
                 onClick: function() { setSV({ paused: !sv.paused }); },
                 className: 'transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-700 text-amber-300 hover:bg-slate-600 active:scale-[0.97]',
@@ -13846,7 +13847,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('canvas', {
               'data-spiral-canvas': 'true',
               role: 'img',
-              'aria-label': 'Animated stoop trajectory showing a peregrine falcon descending in a logarithmic spiral to intercept moving prey',
+              'aria-label': __alloT('stem.raptorhunt.animated_stoop_trajectory_showing_a_pe', 'Animated stoop trajectory showing a peregrine falcon descending in a logarithmic spiral to intercept moving prey'),
               width: 720, height: 540,
               style: { width: '100%', height: '100%', display: 'block' },
               ref: function(canvasEl) {
@@ -14035,9 +14036,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             // to a fixed prey position. Stoop steepness + travel distance differ by species.
             var pw = 600, ph = 280, pad = 35;
             var specs = [
-              { id: 'peregrine', name: 'Peregrine Falcon', color: '#dc2626', stoopMph: 242, stoopBonus: 3.5, startAltScale: 1.0, cdCurve: 0.18 },
-              { id: 'goldenEagle', name: 'Golden Eagle', color: '#fbbf24', stoopMph: 200, stoopBonus: 3.0, startAltScale: 1.0, cdCurve: 0.22 },
-              { id: 'goshawk', name: 'Northern Goshawk', color: '#10b981', stoopMph: 95, stoopBonus: 1.8, startAltScale: 0.6, cdCurve: 0.35 }
+              { id: 'peregrine', name: __alloT('stem.raptorhunt.peregrine_falcon_2', 'Peregrine Falcon'), color: '#dc2626', stoopMph: 242, stoopBonus: 3.5, startAltScale: 1.0, cdCurve: 0.18 },
+              { id: 'goldenEagle', name: __alloT('stem.raptorhunt.golden_eagle_2', 'Golden Eagle'), color: '#fbbf24', stoopMph: 200, stoopBonus: 3.0, startAltScale: 1.0, cdCurve: 0.22 },
+              { id: 'goshawk', name: __alloT('stem.raptorhunt.northern_goshawk_2', 'Northern Goshawk'), color: '#10b981', stoopMph: 95, stoopBonus: 1.8, startAltScale: 0.6, cdCurve: 0.35 }
             ];
             // Plot grid: starting at (40, 20), ending at (560, 240) where prey is
             var startX = pad + 10;
@@ -14057,10 +14058,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               return 'M ' + s.x + ' ' + s.y + ' Q ' + cx + ' ' + cy + ' ' + e.x + ' ' + e.y;
             }
             return h('div', { className: 'bg-slate-900/40 border border-amber-700/40 rounded-xl p-4 mt-3' },
-              h('div', { className: 'text-sm font-bold text-amber-300 mb-2' }, '⚡ Multi-Species Trajectory Comparison'),
-              h('div', { className: 'text-xs text-slate-400 italic mb-3' }, 'Compare how 3 species approach the same prey target. Falcons + golden eagles use steep direct stoops; goshawks use a curved forest-chase trajectory.'),
+              h('div', { className: 'text-sm font-bold text-amber-300 mb-2' }, __alloT('stem.raptorhunt.multi_species_trajectory_comparison', '⚡ Multi-Species Trajectory Comparison')),
+              h('div', { className: 'text-xs text-slate-400 italic mb-3' }, __alloT('stem.raptorhunt.compare_how_3_species_approach_the_sam', 'Compare how 3 species approach the same prey target. Falcons + golden eagles use steep direct stoops; goshawks use a curved forest-chase trajectory.')),
               h('div', { className: 'bg-slate-950/60 rounded-lg p-2' },
-                h('svg', { viewBox: '0 0 ' + pw + ' ' + ph, style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': 'Multi-species stoop trajectory comparison' },
+                h('svg', { viewBox: '0 0 ' + pw + ' ' + ph, style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': __alloT('stem.raptorhunt.multi_species_stoop_trajectory_compari', 'Multi-species stoop trajectory comparison') },
                   // Sky gradient
                   (function() {
                     return [
@@ -14089,38 +14090,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   }),
                   // Prey (shared target)
                   h('circle', { cx: endX, cy: endY, r: 6, fill: '#9ca3af', stroke: '#1c1917', strokeWidth: 1 }),
-                  h('text', { x: endX, y: endY - 12, fontSize: 9, fill: '#1c1917', fontWeight: 'bold', textAnchor: 'middle' }, '🐦 prey'),
+                  h('text', { x: endX, y: endY - 12, fontSize: 9, fill: '#1c1917', fontWeight: 'bold', textAnchor: 'middle' }, __alloT('stem.raptorhunt.prey_2', '🐦 prey')),
                   // Legend
                   h('rect', { x: pad, y: ph - 18, width: pw - 2 * pad, height: 14, fill: 'none' }),
-                  h('text', { x: pad, y: ph - 7, fontSize: 9, fill: '#1c1917' }, '↑ altitude — →  horizontal distance — →  ground impact')
+                  h('text', { x: pad, y: ph - 7, fontSize: 9, fill: '#1c1917' }, __alloT('stem.raptorhunt.altitude_horizontal_distance_ground_im', '↑ altitude — →  horizontal distance — →  ground impact'))
                 )
               ),
               h('div', { className: 'grid grid-cols-3 gap-2 mt-2 text-xs' },
                 specs.map(function(spec, i) {
                   return h('div', { key: spec.id, className: 'bg-slate-800/40 rounded p-2', style: { borderLeftWidth: '4px', borderLeftStyle: 'solid', borderLeftColor: spec.color } },
                     h('div', { className: 'font-bold text-amber-200' }, spec.name),
-                    h('div', { className: 'text-[10px] text-slate-400 mt-1' }, 'Stoop speed: ', h('span', { className: 'font-mono text-amber-300' }, spec.stoopMph + ' mph')),
-                    h('div', { className: 'text-[10px] text-slate-400' }, 'Tuck Cd: ', h('span', { className: 'font-mono text-amber-300' }, spec.cdCurve))
+                    h('div', { className: 'text-[10px] text-slate-400 mt-1' }, __alloT('stem.raptorhunt.stoop_speed', 'Stoop speed: '), h('span', { className: 'font-mono text-amber-300' }, spec.stoopMph + ' mph')),
+                    h('div', { className: 'text-[10px] text-slate-400' }, __alloT('stem.raptorhunt.tuck_cd', 'Tuck Cd: '), h('span', { className: 'font-mono text-amber-300' }, spec.cdCurve))
                   );
                 })
               ),
               h('div', { className: 'text-[10px] text-slate-500 italic mt-2' },
-                'Trajectory steepness reflects how committed each species is to the vertical stoop. Peregrines + golden eagles dive nearly vertical from high altitude. Goshawks use a lower-altitude curve through forest canopy. The same logarithmic-spiral principle applies — each species adjusts the curve to keep the prey at a constant retinal angle.'
+                __alloT('stem.raptorhunt.trajectory_steepness_reflects_how_comm', 'Trajectory steepness reflects how committed each species is to the vertical stoop. Peregrines + golden eagles dive nearly vertical from high altitude. Goshawks use a lower-altitude curve through forest canopy. The same logarithmic-spiral principle applies — each species adjusts the curve to keep the prey at a constant retinal angle.')
               )
             );
           })(),
 
           // Insight panel
           h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded-xl p-4 text-sm space-y-2' },
-            h('div', { className: 'font-bold text-amber-300' }, '🎯 Why a spiral, not a straight line?'),
+            h('div', { className: 'font-bold text-amber-300' }, __alloT('stem.raptorhunt.why_a_spiral_not_a_straight_line', '🎯 Why a spiral, not a straight line?')),
             h('div', { className: 'text-amber-100/90 text-xs leading-relaxed' },
-              h('strong', null, 'Straight-line problem: '), 'If the falcon flies directly at the prey, the prey appears to move SIDEWAYS in its visual field as it travels — the bird would have to constantly rotate its head + body to track. At 200+ mph that head rotation creates drag, ruins the streamlining, AND requires the bird to angle its eye away from prey.'
+              h('strong', null, __alloT('stem.raptorhunt.straight_line_problem', 'Straight-line problem: ')), __alloT('stem.raptorhunt.if_the_falcon_flies_directly_at_the_pr', 'If the falcon flies directly at the prey, the prey appears to move SIDEWAYS in its visual field as it travels — the bird would have to constantly rotate its head + body to track. At 200+ mph that head rotation creates drag, ruins the streamlining, AND requires the bird to angle its eye away from prey.')
             ),
             h('div', { className: 'text-amber-100/90 text-xs leading-relaxed' },
-              h('strong', null, 'Spiral solution: '), 'The logarithmic spiral approach keeps the prey at a CONSTANT angle to the falcon\'s body axis. The bird never needs to turn its head — eyes stay fixed forward through deep fovea, body stays streamlined, the prey appears motionless relative to the falcon. This is exactly the proportional-navigation algorithm used by AIM-9 Sidewinder + similar guided missiles, derived for the same reason: ',
-              h('strong', null, 'guidance without instability.')
+              h('strong', null, __alloT('stem.raptorhunt.spiral_solution', 'Spiral solution: ')), __alloT('stem.raptorhunt.the_logarithmic_spiral_approach_keeps_', 'The logarithmic spiral approach keeps the prey at a CONSTANT angle to the falcon\'s body axis. The bird never needs to turn its head — eyes stay fixed forward through deep fovea, body stays streamlined, the prey appears motionless relative to the falcon. This is exactly the proportional-navigation algorithm used by AIM-9 Sidewinder + similar guided missiles, derived for the same reason: '),
+              h('strong', null, __alloT('stem.raptorhunt.guidance_without_instability', 'guidance without instability.'))
             ),
-            h('div', { className: 'text-xs text-slate-300 italic mt-2' }, 'Reference: Tucker, V.A. (1998) Curved flight paths and sideways vision in peregrine falcons. Journal of Experimental Biology 201(3):403-414.')
+            h('div', { className: 'text-xs text-slate-300 italic mt-2' }, __alloT('stem.raptorhunt.reference_tucker_v_a_1998_curved_fligh', 'Reference: Tucker, V.A. (1998) Curved flight paths and sideways vision in peregrine falcons. Journal of Experimental Biology 201(3):403-414.'))
           )
         );
       }
@@ -14135,34 +14136,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         function setAV(patch) { setRH({ acuity: Object.assign({}, av, patch) }); }
         // Lines of a Snellen chart, sized so 1× is normal reading
         var lines = [
-          { text: 'E F P', size: 90 },
-          { text: 'T O Z', size: 60 },
-          { text: 'L P E D', size: 40 },
-          { text: 'P E C F D', size: 27 },
-          { text: 'E D F C Z P', size: 19 },
-          { text: 'F E L O P Z D', size: 14 },
-          { text: 'D E F P O T E C', size: 10 },
-          { text: 'L E F O D P C T', size: 7 }
+          { text: __alloT('stem.raptorhunt.e_f_p', 'E F P'), size: 90 },
+          { text: __alloT('stem.raptorhunt.t_o_z', 'T O Z'), size: 60 },
+          { text: __alloT('stem.raptorhunt.l_p_e_d', 'L P E D'), size: 40 },
+          { text: __alloT('stem.raptorhunt.p_e_c_f_d', 'P E C F D'), size: 27 },
+          { text: __alloT('stem.raptorhunt.e_d_f_c_z_p', 'E D F C Z P'), size: 19 },
+          { text: __alloT('stem.raptorhunt.f_e_l_o_p_z_d', 'F E L O P Z D'), size: 14 },
+          { text: __alloT('stem.raptorhunt.d_e_f_p_o_t_e_c', 'D E F P O T E C'), size: 10 },
+          { text: __alloT('stem.raptorhunt.l_e_f_o_d_p_c_t', 'L E F O D P C T'), size: 7 }
         ];
         // 6 species presets
         var presets = [
-          { id: 'human', label: 'Human', zoom: 1.0, color: 'slate', desc: 'Baseline — 20/20 reads the bottom line at 20 ft.' },
-          { id: 'cat', label: 'Domestic Cat', zoom: 0.4, color: 'slate', desc: 'Cats are ~40% of human acuity. They\'re great at low-light + movement, but poor at sharpness.' },
-          { id: 'peregrine', label: 'Peregrine Falcon', zoom: 2.6, color: 'amber', desc: 'Peregrines see ~2.6× sharper than humans at fovea center.' },
-          { id: 'redTail', label: 'Red-tailed Hawk', zoom: 4.0, color: 'amber', desc: 'A red-tail can read the bottom line at 80 ft (vs human 20 ft).' },
-          { id: 'baldEagle', label: 'Bald Eagle', zoom: 5.0, color: 'orange', desc: 'A bald eagle sees fine detail at ~5× human acuity.' },
-          { id: 'goldenEagle', label: 'Golden Eagle', zoom: 5.5, color: 'red', desc: 'Spots a rabbit at 2 miles. Reads the bottom Snellen line at 110 ft.' },
-          { id: 'theoretical', label: 'Theoretical max', zoom: 8.0, color: 'red', desc: 'Some claims of 8× acuity in select raptor species. Likely overstated but plausible upper bound.' }
+          { id: 'human', label: __alloT('stem.raptorhunt.human_2', 'Human'), zoom: 1.0, color: 'slate', desc: __alloT('stem.raptorhunt.baseline_20_20_reads_the_bottom_line_a', 'Baseline — 20/20 reads the bottom line at 20 ft.') },
+          { id: 'cat', label: __alloT('stem.raptorhunt.domestic_cat', 'Domestic Cat'), zoom: 0.4, color: 'slate', desc: __alloT('stem.raptorhunt.cats_are_40_of_human_acuity_they_re_gr', 'Cats are ~40% of human acuity. They\'re great at low-light + movement, but poor at sharpness.') },
+          { id: 'peregrine', label: __alloT('stem.raptorhunt.peregrine_falcon_3', 'Peregrine Falcon'), zoom: 2.6, color: 'amber', desc: __alloT('stem.raptorhunt.peregrines_see_2_6_sharper_than_humans', 'Peregrines see ~2.6× sharper than humans at fovea center.') },
+          { id: 'redTail', label: __alloT('stem.raptorhunt.red_tailed_hawk_3', 'Red-tailed Hawk'), zoom: 4.0, color: 'amber', desc: __alloT('stem.raptorhunt.a_red_tail_can_read_the_bottom_line_at', 'A red-tail can read the bottom line at 80 ft (vs human 20 ft).') },
+          { id: 'baldEagle', label: __alloT('stem.raptorhunt.bald_eagle_3', 'Bald Eagle'), zoom: 5.0, color: 'orange', desc: __alloT('stem.raptorhunt.a_bald_eagle_sees_fine_detail_at_5_hum', 'A bald eagle sees fine detail at ~5× human acuity.') },
+          { id: 'goldenEagle', label: __alloT('stem.raptorhunt.golden_eagle_3', 'Golden Eagle'), zoom: 5.5, color: 'red', desc: __alloT('stem.raptorhunt.spots_a_rabbit_at_2_miles_reads_the_bo', 'Spots a rabbit at 2 miles. Reads the bottom Snellen line at 110 ft.') },
+          { id: 'theoretical', label: __alloT('stem.raptorhunt.theoretical_max', 'Theoretical max'), zoom: 8.0, color: 'red', desc: __alloT('stem.raptorhunt.some_claims_of_8_acuity_in_select_rapt', 'Some claims of 8× acuity in select raptor species. Likely overstated but plausible upper bound.') }
         ];
         var activePreset = presets.filter(function(p) { return Math.abs(p.zoom - av.zoom) < 0.05; })[0] || null;
 
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-violet-900/40 to-indigo-900/40 border border-violet-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-violet-200 mb-2 tracking-tight' }, '👁️‍🗨️ Vision Acuity Demo'),
+            h('div', { className: 'text-lg font-bold text-violet-200 mb-2 tracking-tight' }, __alloT('stem.raptorhunt.vision_acuity_demo_2', '👁️‍🗨️ Vision Acuity Demo')),
             h('div', { className: 'text-sm text-violet-100/90 leading-relaxed' },
-              'Acuity multipliers are abstract until you ',
+              __alloT('stem.raptorhunt.acuity_multipliers_are_abstract_until_', 'Acuity multipliers are abstract until you '),
               h('span', { className: 'font-bold text-amber-300' }, 'see'),
-              ' what they feel like. The Snellen-style chart below starts at human-scale (1×). Slide the zoom or click a species to scale the text up to raptor vision. A peregrine reads the bottom line at 52 ft instead of 20. A golden eagle reads it at 110 ft. The numbers don\'t mean much until you watch the text grow.'
+              __alloT('stem.raptorhunt.what_they_feel_like_the_snellen_style_', ' what they feel like. The Snellen-style chart below starts at human-scale (1×). Slide the zoom or click a species to scale the text up to raptor vision. A peregrine reads the bottom line at 52 ft instead of 20. A golden eagle reads it at 110 ft. The numbers don\'t mean much until you watch the text grow.')
             )
           ),
 
@@ -14170,20 +14171,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4 space-y-3' },
             h('div', null,
               h('label', { className: 'text-xs text-violet-300 flex justify-between items-center' },
-                h('span', null, 'Zoom (acuity multiplier)'),
+                h('span', null, __alloT('stem.raptorhunt.zoom_acuity_multiplier', 'Zoom (acuity multiplier)')),
                 h('span', { className: 'font-mono text-amber-300' }, av.zoom.toFixed(2) + '×')
               ),
               h('input', {
                 type: 'range', min: 0.4, max: 8, step: 0.1, value: av.zoom,
                 onInput: function(e) { setAV({ zoom: parseFloat(e.target.value) }); },
                 className: 'w-full',
-                'aria-label': 'Visual acuity zoom multiplier'
+                'aria-label': __alloT('stem.raptorhunt.visual_acuity_zoom_multiplier', 'Visual acuity zoom multiplier')
               }),
               h('div', { className: 'flex justify-between text-[10px] text-slate-500' },
-                h('span', null, '0.4× (cat)'),
-                h('span', null, '1× (human)'),
-                h('span', null, '5× (eagle)'),
-                h('span', null, '8× (max)')
+                h('span', null, __alloT('stem.raptorhunt.0_4_cat', '0.4× (cat)')),
+                h('span', null, __alloT('stem.raptorhunt.1_human', '1× (human)')),
+                h('span', null, __alloT('stem.raptorhunt.5_eagle', '5× (eagle)')),
+                h('span', null, __alloT('stem.raptorhunt.8_max', '8× (max)'))
               )
             ),
 
@@ -14210,7 +14211,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // The chart itself
           h('div', { className: 'bg-white rounded-xl p-6 overflow-hidden', style: { minHeight: '500px', maxHeight: '70vh', overflowY: 'auto' } },
             h('div', { className: 'text-center' },
-              h('div', { className: 'text-[10px] uppercase tracking-widest text-slate-400 mb-4' }, '— Acuity Demonstration Chart —'),
+              h('div', { className: 'text-[10px] uppercase tracking-widest text-slate-400 mb-4' }, __alloT('stem.raptorhunt.acuity_demonstration_chart', '— Acuity Demonstration Chart —')),
               lines.map(function(line, i) {
                 var scaledSize = line.size * av.zoom;
                 return h('div', {
@@ -14227,7 +14228,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   }
                 }, line.text);
               }),
-              h('div', { className: 'text-[10px] text-slate-400 mt-6 italic' }, 'Larger text = closer-equivalent / sharper-equivalent vision. A bird that can see at this zoom level can read the same lines from much further away.')
+              h('div', { className: 'text-[10px] text-slate-400 mt-6 italic' }, __alloT('stem.raptorhunt.larger_text_closer_equivalent_sharper_', 'Larger text = closer-equivalent / sharper-equivalent vision. A bird that can see at this zoom level can read the same lines from much further away.'))
             )
           ),
 
@@ -14237,10 +14238,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             // The view zoom is the same av.zoom value (1-8×).
             // At 1× (human) the vole is barely a pixel; at 5× (eagle) it's clearly visible.
             return h('div', { className: 'bg-slate-900/40 border border-emerald-700/40 rounded-xl p-4' },
-              h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, '🌾 Hidden-Prey Meadow — Can you spot the vole?'),
-              h('div', { className: 'text-xs text-slate-400 italic mb-3' }, 'A scaled-down meadow scene 200 ft away. A vole is hiding in the grass. At human acuity (1×) it\'s barely a speck. Crank the zoom up to red-tail or eagle vision and the vole becomes obvious.'),
+              h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, __alloT('stem.raptorhunt.hidden_prey_meadow_can_you_spot_the_vo', '🌾 Hidden-Prey Meadow — Can you spot the vole?')),
+              h('div', { className: 'text-xs text-slate-400 italic mb-3' }, __alloT('stem.raptorhunt.a_scaled_down_meadow_scene_200_ft_away', 'A scaled-down meadow scene 200 ft away. A vole is hiding in the grass. At human acuity (1×) it\'s barely a speck. Crank the zoom up to red-tail or eagle vision and the vole becomes obvious.')),
               h('div', { className: 'bg-slate-950 rounded-lg overflow-hidden border border-slate-700' },
-                h('svg', { viewBox: '0 0 600 320', style: { width: '100%', height: 'auto', maxHeight: '400px' }, role: 'img', 'aria-label': 'Meadow scene with hidden vole' },
+                h('svg', { viewBox: '0 0 600 320', style: { width: '100%', height: 'auto', maxHeight: '400px' }, role: 'img', 'aria-label': __alloT('stem.raptorhunt.meadow_scene_with_hidden_vole', 'Meadow scene with hidden vole') },
                   // Sky gradient
                   h('defs', null,
                     h('linearGradient', { id: 'mdSky', x1: 0, y1: 0, x2: 0, y2: 1 },
@@ -14301,12 +14302,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                       // "you found it" label at >= 4×
                       av.zoom >= 4.0 && h('g', null,
                         h('circle', { cx: vx, cy: vy, r: voleSize * 4, fill: 'none', stroke: '#fbbf24', strokeWidth: 1, strokeDasharray: '3,3', opacity: 0.6 }),
-                        h('text', { x: vx + voleSize * 4 + 4, y: vy + 4, fontSize: 11, fill: '#fbbf24', fontWeight: 'bold' }, '← vole!')
+                        h('text', { x: vx + voleSize * 4 + 4, y: vy + 4, fontSize: 11, fill: '#fbbf24', fontWeight: 'bold' }, __alloT('stem.raptorhunt.vole', '← vole!'))
                       )
                     );
                   })(),
                   // Distance scale
-                  h('text', { x: 8, y: 18, fontSize: 10, fill: '#1c1917', fontWeight: 'bold' }, '200 ft from observer'),
+                  h('text', { x: 8, y: 18, fontSize: 10, fill: '#1c1917', fontWeight: 'bold' }, __alloT('stem.raptorhunt.200_ft_from_observer', '200 ft from observer')),
                   h('text', { x: 8, y: 314, fontSize: 9, fill: '#fefce8' }, 'Current zoom: ' + av.zoom.toFixed(1) + '× — ' + (av.zoom < 1.5 ? 'human can barely see anything' : av.zoom < 3 ? 'kestrel-class sees a speck' : av.zoom < 5 ? 'hawk-class sees the vole clearly' : 'eagle-class sees the eye glint'))
                 )
               ),
@@ -14332,16 +14333,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
           // What this means
           h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, '💡 The "100-foot newspaper" demonstration'),
+            h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, __alloT('stem.raptorhunt.the_100_foot_newspaper_demonstration', '💡 The "100-foot newspaper" demonstration')),
             h('div', { className: 'text-xs text-emerald-100/90 leading-relaxed space-y-2' },
-              h('p', null, 'A common claim: "a red-tailed hawk can read a newspaper headline at 100 feet." Where does that come from?'),
+              h('p', null, __alloT('stem.raptorhunt.a_common_claim_a_red_tailed_hawk_can_r', 'A common claim: "a red-tailed hawk can read a newspaper headline at 100 feet." Where does that come from?')),
               h('p', null,
-                'A 20/20 human reads a newspaper headline at ~25 feet under normal lighting. A red-tail with ~4× acuity should be able to read the same headline at ~4 × 25 = ',
-                h('span', { className: 'font-bold text-amber-300' }, '100 feet'),
-                '. A golden eagle at 5.5× should read it at ~140 feet. A peregrine at 2.6× should read it at ~65 feet.'
+                __alloT('stem.raptorhunt.a_20_20_human_reads_a_newspaper_headli', 'A 20/20 human reads a newspaper headline at ~25 feet under normal lighting. A red-tail with ~4× acuity should be able to read the same headline at ~4 × 25 = '),
+                h('span', { className: 'font-bold text-amber-300' }, __alloT('stem.raptorhunt.100_feet', '100 feet')),
+                __alloT('stem.raptorhunt.a_golden_eagle_at_5_5_should_read_it_a', '. A golden eagle at 5.5× should read it at ~140 feet. A peregrine at 2.6× should read it at ~65 feet.')
               ),
-              h('p', null, 'These are simplifications — real raptor vision also has 2 foveas per eye, wider visual field, UV in falconids, and head-mounting that lets the bird scan with much less head motion than a human. The acuity number is just ONE axis of "better seeing."'),
-              h('p', { className: 'italic text-emerald-200/80' }, 'Try toggling between human, peregrine, and golden eagle on the slider above. The eagle-scale chart isn\'t just bigger text — it\'s the experiential equivalent of being 5× closer than you actually are.')
+              h('p', null, __alloT('stem.raptorhunt.these_are_simplifications_real_raptor_', 'These are simplifications — real raptor vision also has 2 foveas per eye, wider visual field, UV in falconids, and head-mounting that lets the bird scan with much less head motion than a human. The acuity number is just ONE axis of "better seeing."')),
+              h('p', { className: 'italic text-emerald-200/80' }, __alloT('stem.raptorhunt.try_toggling_between_human_peregrine_a', 'Try toggling between human, peregrine, and golden eagle on the slider above. The eagle-scale chart isn\'t just bigger text — it\'s the experiential equivalent of being 5× closer than you actually are.'))
             )
           )
         );
@@ -14413,7 +14414,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           function xAt(y) { return pad + (y - yMin) / (yMax - yMin) * (pw - 2 * pad); }
           function yAt(p) { return ph - pad - (Math.log10(Math.max(1, p)) - lMin) / Math.max(0.1, (lMax - lMin)) * (ph - 2 * pad); }
           var pathD = pts.map(function(pt, i) { return (i === 0 ? 'M ' : 'L ') + xAt(pt.y).toFixed(1) + ' ' + yAt(pt.p).toFixed(1); }).join(' ');
-          return h('svg', { viewBox: '0 0 ' + pw + ' ' + ph, style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': 'Population trajectory plot' },
+          return h('svg', { viewBox: '0 0 ' + pw + ' ' + ph, style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': __alloT('stem.raptorhunt.population_trajectory_plot_2', 'Population trajectory plot') },
             h('rect', { x: 0, y: 0, width: pw, height: ph, fill: '#0f172a' }),
             // Axes
             h('line', { x1: pad, y1: ph - pad, x2: pw - pad, y2: ph - pad, stroke: '#475569', strokeWidth: 1 }),
@@ -14438,13 +14439,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               );
             }),
             // Y-axis label
-            h('text', { x: 4, y: ph / 2, fontSize: 9, fill: '#94a3b8', transform: 'rotate(-90 4 ' + (ph / 2) + ')' }, 'Population (log)')
+            h('text', { x: 4, y: ph / 2, fontSize: 9, fill: '#94a3b8', transform: 'rotate(-90 4 ' + (ph / 2) + ')' }, __alloT('stem.raptorhunt.population_log', 'Population (log)'))
           );
         }
 
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-emerald-900/40 to-cyan-900/40 border border-emerald-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-emerald-200 mb-2 tracking-tight' }, '🏆 Recovery Case Studies'),
+            h('div', { className: 'text-lg font-bold text-emerald-200 mb-2 tracking-tight' }, __alloT('stem.raptorhunt.recovery_case_studies_2', '🏆 Recovery Case Studies')),
             h('div', { className: 'text-sm text-emerald-100/90 leading-relaxed' },
               RECOVERIES.intro,
               h('span', { className: 'font-bold text-amber-300' }, RECOVERIES.introBold)
@@ -14462,7 +14463,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 ),
                 // ── NEW v0.8: Population trajectory plot ──
                 trajectories[c.id] && h('div', { className: 'bg-slate-950/60 border border-amber-700/30 rounded-lg p-2 mb-3' },
-                  h('div', { className: 'text-[10px] text-amber-300 mb-1 font-bold uppercase tracking-wider' }, '📈 Population trajectory (log scale)'),
+                  h('div', { className: 'text-[10px] text-amber-300 mb-1 font-bold uppercase tracking-wider' }, __alloT('stem.raptorhunt.population_trajectory_log_scale', '📈 Population trajectory (log scale)')),
                   trajectorySvg(c.id)
                 ),
                 // Crisis
@@ -14482,22 +14483,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 // Person + status grid
                 h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2 mb-3' },
                   h('div', { className: 'bg-slate-800/40 rounded p-2.5' },
-                    h('div', { className: 'text-[10px] uppercase tracking-wider text-amber-300 mb-1' }, '👤 Key People'),
+                    h('div', { className: 'text-[10px] uppercase tracking-wider text-amber-300 mb-1' }, __alloT('stem.raptorhunt.key_people', '👤 Key People')),
                     h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, c.keyPerson)
                   ),
                   h('div', { className: 'bg-slate-800/40 rounded p-2.5' },
-                    h('div', { className: 'text-[10px] uppercase tracking-wider text-emerald-300 mb-1' }, '📊 Current Status'),
+                    h('div', { className: 'text-[10px] uppercase tracking-wider text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.current_status', '📊 Current Status')),
                     h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, c.currentStatus)
                   )
                 ),
                 // What next + lesson
                 h('div', { className: 'space-y-2' },
                   h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-2.5' },
-                    h('div', { className: 'text-[10px] uppercase tracking-wider text-amber-300 mb-1' }, '🔮 What\'s next'),
+                    h('div', { className: 'text-[10px] uppercase tracking-wider text-amber-300 mb-1' }, __alloT('stem.raptorhunt.what_s_next', '🔮 What\'s next')),
                     h('div', { className: 'text-xs text-amber-100/90 leading-relaxed' }, c.whatNext)
                   ),
                   h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-2.5' },
-                    h('div', { className: 'text-[10px] uppercase tracking-wider text-emerald-300 mb-1' }, '✦ Lesson'),
+                    h('div', { className: 'text-[10px] uppercase tracking-wider text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.lesson', '✦ Lesson')),
                     h('div', { className: 'text-xs text-emerald-100/90 leading-relaxed italic' }, c.lesson)
                   )
                 )
@@ -14571,10 +14572,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-cyan-900/40 to-sky-900/40 border border-cyan-700/40 rounded-xl p-4' },
             h('div', { className: 'flex items-start justify-between gap-3 flex-wrap mb-2' },
-              h('div', { className: 'text-lg font-bold text-cyan-200 tracking-tight' }, '🪂 Wing-Loading Predictor'),
+              h('div', { className: 'text-lg font-bold text-cyan-200 tracking-tight' }, __alloT('stem.raptorhunt.wing_loading_predictor_2', '🪂 Wing-Loading Predictor')),
               // ── NEW v0.16: Mode toggle ──
               h('div', { className: 'flex gap-1 bg-slate-900/60 rounded-lg p-1' },
-                [{ id: 'design', label: '🎚 Design' }, { id: 'franken', label: '🧬 Frankenraptor' }].map(function(m) {
+                [{ id: 'design', label: __alloT('stem.raptorhunt.design', '🎚 Design') }, { id: 'franken', label: __alloT('stem.raptorhunt.frankenraptor', '🧬 Frankenraptor') }].map(function(m) {
                   var active = predictorMode === m.id;
                   return h('button', {
                     key: m.id,
@@ -14589,33 +14590,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               )
             ),
             h('div', { className: 'text-sm text-cyan-100/90 leading-relaxed' },
-              'In the Flight Physics module you learned that wing loading + aspect ratio predict hunt style. This is the inverse: ',
-              h('span', { className: 'font-bold text-amber-300' }, 'design a raptor by setting its body dimensions'),
-              ' + the tool tells you what hunt strategy that bird would evolve. Compare to real species. The fingers-of-the-glove fit between body geometry + behavior is the core insight of raptor flight biology.'
+              __alloT('stem.raptorhunt.in_the_flight_physics_module_you_learn', 'In the Flight Physics module you learned that wing loading + aspect ratio predict hunt style. This is the inverse: '),
+              h('span', { className: 'font-bold text-amber-300' }, __alloT('stem.raptorhunt.design_a_raptor_by_setting_its_body_di', 'design a raptor by setting its body dimensions')),
+              __alloT('stem.raptorhunt.the_tool_tells_you_what_hunt_strategy_', ' + the tool tells you what hunt strategy that bird would evolve. Compare to real species. The fingers-of-the-glove fit between body geometry + behavior is the core insight of raptor flight biology.')
             )
           ),
 
           // ── NEW v0.16: Frankenraptor picker (only in franken mode) ──
           predictorMode === 'franken' && h('div', { className: 'bg-purple-900/30 border border-purple-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-purple-300 mb-2' }, '🧬 Build a Frankenraptor — mix species body parts'),
-            h('div', { className: 'text-xs text-purple-100/80 italic mb-3' }, 'Pick wings from one species and body from another. The tool computes what hunt style your hybrid would evolve toward.'),
+            h('div', { className: 'text-sm font-bold text-purple-300 mb-2' }, __alloT('stem.raptorhunt.build_a_frankenraptor_mix_species_body', '🧬 Build a Frankenraptor — mix species body parts')),
+            h('div', { className: 'text-xs text-purple-100/80 italic mb-3' }, __alloT('stem.raptorhunt.pick_wings_from_one_species_and_body_f', 'Pick wings from one species and body from another. The tool computes what hunt style your hybrid would evolve toward.')),
             h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
               h('div', null,
-                h('label', { className: 'text-xs text-purple-300 font-bold block mb-1' }, '🪶 Wings from'),
+                h('label', { className: 'text-xs text-purple-300 font-bold block mb-1' }, __alloT('stem.raptorhunt.wings_from', '🪶 Wings from')),
                 h('select', {
                   value: fr.wingsFrom, onChange: function(e) { setFR({ wingsFrom: e.target.value }); },
                   className: 'w-full px-3 py-2 rounded-lg bg-slate-800 text-purple-100 border border-purple-700 text-sm',
-                  'aria-label': 'Wings species'
+                  'aria-label': __alloT('stem.raptorhunt.wings_species', 'Wings species')
                 },
                   SPECIES.map(function(s) { return h('option', { key: s.id, value: s.id }, s.emoji + ' ' + s.name + ' wings (span ' + s.wingspanM + ' m, AR ' + s.aspectRatio + ')'); })
                 )
               ),
               h('div', null,
-                h('label', { className: 'text-xs text-purple-300 font-bold block mb-1' }, '🦴 Body / mass from'),
+                h('label', { className: 'text-xs text-purple-300 font-bold block mb-1' }, __alloT('stem.raptorhunt.body_mass_from', '🦴 Body / mass from')),
                 h('select', {
                   value: fr.bodyFrom, onChange: function(e) { setFR({ bodyFrom: e.target.value }); },
                   className: 'w-full px-3 py-2 rounded-lg bg-slate-800 text-purple-100 border border-purple-700 text-sm',
-                  'aria-label': 'Body species'
+                  'aria-label': __alloT('stem.raptorhunt.body_species', 'Body species')
                 },
                   SPECIES.map(function(s) { return h('option', { key: s.id, value: s.id }, s.emoji + ' ' + s.name + ' body (' + s.massKg + ' kg)'); })
                 )
@@ -14626,7 +14627,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               var wSp = findSpecies(fr.wingsFrom), bSp = findSpecies(fr.bodyFrom);
               return h('div', { className: 'mt-3 p-3 bg-slate-900/60 rounded-lg text-center' },
                 h('div', { className: 'text-2xl mb-1' }, wSp.emoji + ' wings + ' + bSp.emoji + ' body'),
-                h('div', { className: 'text-xs text-purple-200' }, 'Synthetic dimensions: ',
+                h('div', { className: 'text-xs text-purple-200' }, __alloT('stem.raptorhunt.synthetic_dimensions', 'Synthetic dimensions: '),
                   h('span', { className: 'font-mono text-amber-300' }, bSp.massKg + ' kg / ' + wSp.wingspanM + ' m span / ' + wSp.wingAreaSqM + ' m² area')
                 ),
                 h('div', { className: 'text-[10px] text-purple-300/80 italic mt-1' },
@@ -14641,33 +14642,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
               h('div', null,
                 h('label', { className: 'text-xs text-cyan-300 flex justify-between' },
-                  h('span', null, 'Body mass'),
+                  h('span', null, __alloT('stem.raptorhunt.body_mass_2', 'Body mass')),
                   h('span', { className: 'font-mono text-amber-300' }, pr.mass.toFixed(2) + ' kg')
                 ),
                 h('input', { type: 'range', min: 0.1, max: 10, step: 0.1, value: pr.mass,
                   onInput: function(e) { setPR({ mass: parseFloat(e.target.value) }); },
-                  className: 'w-full', 'aria-label': 'Body mass kg' }),
-                h('div', { className: 'text-[10px] text-slate-500' }, 'Kestrel 0.1 · peregrine 0.9 · golden 4.2 · harpy 7.5')
+                  className: 'w-full', 'aria-label': __alloT('stem.raptorhunt.body_mass_kg', 'Body mass kg') }),
+                h('div', { className: 'text-[10px] text-slate-500' }, __alloT('stem.raptorhunt.kestrel_0_1_peregrine_0_9_golden_4_2_h', 'Kestrel 0.1 · peregrine 0.9 · golden 4.2 · harpy 7.5'))
               ),
               h('div', null,
                 h('label', { className: 'text-xs text-cyan-300 flex justify-between' },
-                  h('span', null, 'Wingspan'),
+                  h('span', null, __alloT('stem.raptorhunt.wingspan', 'Wingspan')),
                   h('span', { className: 'font-mono text-amber-300' }, pr.wingspan.toFixed(2) + ' m')
                 ),
                 h('input', { type: 'range', min: 0.5, max: 3.0, step: 0.05, value: pr.wingspan,
                   onInput: function(e) { setPR({ wingspan: parseFloat(e.target.value) }); },
-                  className: 'w-full', 'aria-label': 'Wingspan m' }),
-                h('div', { className: 'text-[10px] text-slate-500' }, 'Kestrel 0.6 · peregrine 1.05 · golden 2.1 · harpy 2.05')
+                  className: 'w-full', 'aria-label': __alloT('stem.raptorhunt.wingspan_m_2', 'Wingspan m') }),
+                h('div', { className: 'text-[10px] text-slate-500' }, __alloT('stem.raptorhunt.kestrel_0_6_peregrine_1_05_golden_2_1_', 'Kestrel 0.6 · peregrine 1.05 · golden 2.1 · harpy 2.05'))
               ),
               h('div', null,
                 h('label', { className: 'text-xs text-cyan-300 flex justify-between' },
-                  h('span', null, 'Wing area'),
+                  h('span', null, __alloT('stem.raptorhunt.wing_area', 'Wing area')),
                   h('span', { className: 'font-mono text-amber-300' }, pr.wingArea.toFixed(2) + ' m²')
                 ),
                 h('input', { type: 'range', min: 0.02, max: 1.0, step: 0.01, value: pr.wingArea,
                   onInput: function(e) { setPR({ wingArea: parseFloat(e.target.value) }); },
-                  className: 'w-full', 'aria-label': 'Wing area m²' }),
-                h('div', { className: 'text-[10px] text-slate-500' }, 'Kestrel 0.05 · peregrine 0.11 · golden 0.65 · harpy 0.50')
+                  className: 'w-full', 'aria-label': __alloT('stem.raptorhunt.wing_area_m', 'Wing area m²') }),
+                h('div', { className: 'text-[10px] text-slate-500' }, __alloT('stem.raptorhunt.kestrel_0_05_peregrine_0_11_golden_0_6', 'Kestrel 0.05 · peregrine 0.11 · golden 0.65 · harpy 0.50'))
               )
             )
           ),
@@ -14675,14 +14676,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // Derived values + prediction
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
             h('div', { className: 'bg-slate-900/40 border border-slate-700/50 rounded-lg p-3 text-center' },
-              h('div', { className: 'text-[10px] uppercase tracking-wider text-slate-400' }, 'Wing Loading'),
+              h('div', { className: 'text-[10px] uppercase tracking-wider text-slate-400' }, __alloT('stem.raptorhunt.wing_loading', 'Wing Loading')),
               h('div', { className: 'text-2xl font-bold text-amber-300 my-1 tracking-tight' }, wingLoading.toFixed(1)),
-              h('div', { className: 'text-[10px] text-slate-400' }, 'kg / m²')
+              h('div', { className: 'text-[10px] text-slate-400' }, __alloT('stem.raptorhunt.kg_m', 'kg / m²'))
             ),
             h('div', { className: 'bg-slate-900/40 border border-slate-700/50 rounded-lg p-3 text-center' },
-              h('div', { className: 'text-[10px] uppercase tracking-wider text-slate-400' }, 'Aspect Ratio'),
+              h('div', { className: 'text-[10px] uppercase tracking-wider text-slate-400' }, __alloT('stem.raptorhunt.aspect_ratio_3', 'Aspect Ratio')),
               h('div', { className: 'text-2xl font-bold text-amber-300 my-1 tracking-tight' }, aspectRatio.toFixed(1)),
-              h('div', { className: 'text-[10px] text-slate-400' }, 'wingspan² / area')
+              h('div', { className: 'text-[10px] text-slate-400' }, __alloT('stem.raptorhunt.wingspan_area', 'wingspan² / area'))
             )
           ),
 
@@ -14691,7 +14692,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-baseline gap-3 mb-2' },
               h('div', { className: 'text-3xl' }, styleEmoji),
               h('div', null,
-                h('div', { className: 'text-[10px] uppercase tracking-wider text-' + styleColor + '-300' }, 'Predicted hunt style'),
+                h('div', { className: 'text-[10px] uppercase tracking-wider text-' + styleColor + '-300' }, __alloT('stem.raptorhunt.predicted_hunt_style', 'Predicted hunt style')),
                 h('div', { className: 'text-lg font-bold text- tracking-tight' + styleColor + '-200' }, huntStyle)
               )
             ),
@@ -14700,14 +14701,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
           // Closest real species
           h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-amber-300 mb-3' }, '🎯 Closest real species (in loading × AR space)'),
+            h('div', { className: 'text-sm font-bold text-amber-300 mb-3' }, __alloT('stem.raptorhunt.closest_real_species_in_loading_ar_spa', '🎯 Closest real species (in loading × AR space)')),
             h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2' },
               closest.map(function(c, i) {
                 return h('div', { key: c.s.id, className: 'bg-slate-800/40 rounded p-3 text-center border ' + (i === 0 ? 'border-amber-500 ring-2 ring-amber-400/30' : 'border-slate-700/40') },
                   h('div', { className: 'text-2xl mb-1' }, c.s.emoji),
                   h('div', { className: 'text-sm font-bold text-amber-200' }, c.s.name),
                   h('div', { className: 'text-[10px] text-slate-400 font-mono mt-1' }, 'Loading: ' + c.s.wingLoading + ' · AR: ' + c.s.aspectRatio),
-                  i === 0 && h('div', { className: 'text-[10px] text-amber-300 mt-1 font-bold' }, '★ Best match')
+                  i === 0 && h('div', { className: 'text-[10px] text-amber-300 mt-1 font-bold' }, __alloT('stem.raptorhunt.best_match', '★ Best match'))
                 );
               })
             )
@@ -14715,14 +14716,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
           // Presets
           h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-3' },
-            h('div', { className: 'text-xs font-bold text-cyan-300 mb-2' }, '⚡ Try a preset'),
+            h('div', { className: 'text-xs font-bold text-cyan-300 mb-2' }, __alloT('stem.raptorhunt.try_a_preset', '⚡ Try a preset')),
             h('div', { className: 'flex flex-wrap gap-2' },
               [
-                { label: 'Peregrine', mass: 0.95, wingspan: 1.05, wingArea: 0.108 },
-                { label: 'Red-tailed Hawk', mass: 1.15, wingspan: 1.3, wingArea: 0.31 },
-                { label: 'Bald Eagle', mass: 4.5, wingspan: 2.0, wingArea: 0.62 },
-                { label: 'Goshawk', mass: 1.0, wingspan: 1.1, wingArea: 0.20 },
-                { label: 'Harpy Eagle', mass: 7.5, wingspan: 2.05, wingArea: 0.50 },
+                { label: __alloT('stem.raptorhunt.peregrine_2', 'Peregrine'), mass: 0.95, wingspan: 1.05, wingArea: 0.108 },
+                { label: __alloT('stem.raptorhunt.red_tailed_hawk_4', 'Red-tailed Hawk'), mass: 1.15, wingspan: 1.3, wingArea: 0.31 },
+                { label: __alloT('stem.raptorhunt.bald_eagle_4', 'Bald Eagle'), mass: 4.5, wingspan: 2.0, wingArea: 0.62 },
+                { label: __alloT('stem.raptorhunt.goshawk', 'Goshawk'), mass: 1.0, wingspan: 1.1, wingArea: 0.20 },
+                { label: __alloT('stem.raptorhunt.harpy_eagle_2', 'Harpy Eagle'), mass: 7.5, wingspan: 2.05, wingArea: 0.50 },
                 { label: 'Owl', mass: 1.45, wingspan: 1.4, wingArea: 0.40 }
               ].map(function(p) {
                 return h('button', { key: p.label,
@@ -14777,21 +14778,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var pw = 700, ph = 240;
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-purple-900/40 to-fuchsia-900/40 border border-purple-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-purple-200 mb-2 tracking-tight' }, '⭐ Famous Birds & Cultural Symbols'),
+            h('div', { className: 'text-lg font-bold text-purple-200 mb-2 tracking-tight' }, __alloT('stem.raptorhunt.famous_birds_cultural_symbols', '⭐ Famous Birds & Cultural Symbols')),
             h('div', { className: 'text-sm text-purple-100/90 leading-relaxed' }, FAMOUS.intro)
           ),
 
           // ── NEW v0.10: 5000-year historical timeline SVG ──
           h('div', { className: 'bg-slate-900/40 border border-purple-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-purple-300 mb-1' }, '📜 5,000-Year Timeline — Cultural Symbols + Famous Individuals'),
-            h('div', { className: 'text-xs text-slate-400 italic mb-3' }, 'Compressed time axis: ancient era (left 60%) + modern era (right 40%). Top lane = cultural-symbol adoptions. Bottom lane = famous individual birds.'),
-            h('svg', { viewBox: '0 0 ' + pw + ' ' + ph, style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': '5000-year raptor history timeline' },
+            h('div', { className: 'text-sm font-bold text-purple-300 mb-1' }, __alloT('stem.raptorhunt.5_000_year_timeline_cultural_symbols_f', '📜 5,000-Year Timeline — Cultural Symbols + Famous Individuals')),
+            h('div', { className: 'text-xs text-slate-400 italic mb-3' }, __alloT('stem.raptorhunt.compressed_time_axis_ancient_era_left_', 'Compressed time axis: ancient era (left 60%) + modern era (right 40%). Top lane = cultural-symbol adoptions. Bottom lane = famous individual birds.')),
+            h('svg', { viewBox: '0 0 ' + pw + ' ' + ph, style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': __alloT('stem.raptorhunt.5000_year_raptor_history_timeline', '5000-year raptor history timeline') },
               h('rect', { x: 0, y: 0, width: pw, height: ph, fill: '#0f172a' }),
               // Central timeline bar
               h('line', { x1: 30, y1: 120, x2: pw - 30, y2: 120, stroke: '#475569', strokeWidth: 2 }),
               // Time scale change marker
               h('line', { x1: compressedX(1700), y1: 30, x2: compressedX(1700), y2: ph - 30, stroke: '#64748b', strokeWidth: 1, strokeDasharray: '4,4' }),
-              h('text', { x: compressedX(1700), y: 22, fontSize: 9, fill: '#94a3b8', textAnchor: 'middle' }, '— scale change —'),
+              h('text', { x: compressedX(1700), y: 22, fontSize: 9, fill: '#94a3b8', textAnchor: 'middle' }, __alloT('stem.raptorhunt.scale_change', '— scale change —')),
               // Time ticks
               [-3000, -2000, -1000, 0, 1000, 1700, 1800, 1900, 2000].map(function(yk, i) {
                 return h('g', { key: 'tk' + i },
@@ -14825,12 +14826,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 );
               })
             ),
-            h('div', { className: 'text-[10px] text-slate-500 italic mt-2' }, 'No other animal group has been a continuous human cultural symbol for 5,000+ years. From Horus to Pale Male, raptors keep showing up in our flags, legions, myths, and front-page headlines.')
+            h('div', { className: 'text-[10px] text-slate-500 italic mt-2' }, __alloT('stem.raptorhunt.no_other_animal_group_has_been_a_conti', 'No other animal group has been a continuous human cultural symbol for 5,000+ years. From Horus to Pale Male, raptors keep showing up in our flags, legions, myths, and front-page headlines.'))
           ),
 
           // Famous individuals
           h('div', { className: 'space-y-3' },
-            h('div', { className: 'text-sm font-bold text-amber-300' }, '🦅 Famous Individual Raptors'),
+            h('div', { className: 'text-sm font-bold text-amber-300' }, __alloT('stem.raptorhunt.famous_individual_raptors', '🦅 Famous Individual Raptors')),
             FAMOUS.individuals.map(function(b, i) {
               return h('div', { key: i, className: 'bg-slate-800/40 border border-slate-700/50 rounded-lg p-4' },
                 h('div', { className: 'flex items-baseline justify-between gap-2 mb-2' },
@@ -14847,7 +14848,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
           // Cultural symbols
           h('div', { className: 'space-y-3' },
-            h('div', { className: 'text-sm font-bold text-amber-300' }, '🏛 Cultural & National Symbols'),
+            h('div', { className: 'text-sm font-bold text-amber-300' }, __alloT('stem.raptorhunt.cultural_national_symbols', '🏛 Cultural & National Symbols')),
             FAMOUS.symbols.map(function(s, i) {
               return h('div', { key: i, className: 'bg-slate-800/40 border border-slate-700/50 rounded-lg p-4' },
                 h('div', { className: 'flex items-baseline justify-between gap-2 mb-2' },
@@ -14874,17 +14875,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var rehabTab = rh.rehabTab || 'conditions';
         function setRehabTab(t) { setRH({ rehabTab: t }); }
         var tabs = [
-          { id: 'conditions', label: '🩹 Common Conditions' },
-          { id: 'steps', label: '👣 What To Do' },
-          { id: 'ethics', label: '🤔 Ethical Dilemmas' },
-          { id: 'directory', label: '🇺🇸 State Directory' }
+          { id: 'conditions', label: __alloT('stem.raptorhunt.common_conditions', '🩹 Common Conditions') },
+          { id: 'steps', label: __alloT('stem.raptorhunt.what_to_do', '👣 What To Do') },
+          { id: 'ethics', label: __alloT('stem.raptorhunt.ethical_dilemmas', '🤔 Ethical Dilemmas') },
+          { id: 'directory', label: __alloT('stem.raptorhunt.state_directory', '🇺🇸 State Directory') }
         ];
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-emerald-900/40 to-teal-900/40 border border-emerald-700/40 rounded-xl p-5' },
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🏥'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-emerald-200 tracking-tight' }, 'Wildlife Rehabilitation & Veterinary Care'),
+                h('div', { className: 'text-xl font-bold text-emerald-200 tracking-tight' }, __alloT('stem.raptorhunt.wildlife_rehabilitation_veterinary_car', 'Wildlife Rehabilitation & Veterinary Care')),
                 h('div', { className: 'text-sm text-emerald-100/85 mt-1' }, REHAB_ENCYCLOPEDIA.overview)
               )
             )
@@ -14911,15 +14912,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('div', { className: 'text-base font-bold text-emerald-300 mb-2' }, c.name),
                 h('div', { className: 'grid md:grid-cols-3 gap-2 text-xs' },
                   h('div', { className: 'bg-rose-900/20 border border-rose-700/40 rounded p-2' },
-                    h('div', { className: 'font-bold text-rose-300 mb-1' }, '🩺 Symptoms'),
+                    h('div', { className: 'font-bold text-rose-300 mb-1' }, __alloT('stem.raptorhunt.symptoms', '🩺 Symptoms')),
                     h('div', { className: 'text-rose-100/90' }, c.symptoms)
                   ),
                   h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded p-2' },
-                    h('div', { className: 'font-bold text-cyan-300 mb-1' }, '💉 Treatment'),
+                    h('div', { className: 'font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.treatment', '💉 Treatment')),
                     h('div', { className: 'text-cyan-100/90' }, c.treatment)
                   ),
                   h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-2' },
-                    h('div', { className: 'font-bold text-amber-300 mb-1' }, '🛡 Prevention'),
+                    h('div', { className: 'font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.prevention', '🛡 Prevention')),
                     h('div', { className: 'text-amber-100/90' }, c.prevention)
                   )
                 )
@@ -14928,15 +14929,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           ),
           // Steps tab
           rehabTab === 'steps' && h('div', { className: 'bg-slate-800/40 border border-emerald-700/30 rounded-lg p-4' },
-            h('div', { className: 'text-base font-bold text-emerald-300 mb-3' }, 'If you find an injured raptor:'),
+            h('div', { className: 'text-base font-bold text-emerald-300 mb-3' }, __alloT('stem.raptorhunt.if_you_find_an_injured_raptor_2', 'If you find an injured raptor:')),
             h('ol', { className: 'space-y-2 list-decimal list-inside text-sm text-slate-200' },
               REHAB_ENCYCLOPEDIA.rehabSteps.map(function(s, i) {
                 return h('li', { key: i, className: 'leading-relaxed' }, s);
               })
             ),
             h('div', { className: 'mt-4 bg-rose-900/20 border border-rose-700/40 rounded p-3 text-sm text-rose-100' },
-              h('div', { className: 'font-bold text-rose-300 mb-1' }, '⚠ FEDERAL LAW'),
-              'Possessing raptors (live or dead, feathers or bones) without USFWS permit is a federal crime. ALL injured raptors must be transferred to a licensed rehabilitator within 24 hours.'
+              h('div', { className: 'font-bold text-rose-300 mb-1' }, __alloT('stem.raptorhunt.federal_law', '⚠ FEDERAL LAW')),
+              __alloT('stem.raptorhunt.possessing_raptors_live_or_dead_feathe', 'Possessing raptors (live or dead, feathers or bones) without USFWS permit is a federal crime. ALL injured raptors must be transferred to a licensed rehabilitator within 24 hours.')
             )
           ),
           // Ethics tab
@@ -14960,13 +14961,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var stateFilter = rh.rehabStateFilter || 'all';
         function setStateFilter(s) { setRH({ rehabStateFilter: s }); }
         var regions = [
-          { id: 'all', label: 'All Regions' },
-          { id: 'northeast', label: 'Northeast' },
+          { id: 'all', label: __alloT('stem.raptorhunt.all_regions', 'All Regions') },
+          { id: 'northeast', label: __alloT('stem.raptorhunt.northeast', 'Northeast') },
           { id: 'midatlantic', label: 'Mid-Atlantic' },
-          { id: 'south', label: 'South' },
-          { id: 'midwest', label: 'Midwest' },
-          { id: 'mountainwest', label: 'Mountain West' },
-          { id: 'pacific', label: 'Pacific' }
+          { id: 'south', label: __alloT('stem.raptorhunt.south', 'South') },
+          { id: 'midwest', label: __alloT('stem.raptorhunt.midwest', 'Midwest') },
+          { id: 'mountainwest', label: __alloT('stem.raptorhunt.mountain_west', 'Mountain West') },
+          { id: 'pacific', label: __alloT('stem.raptorhunt.pacific', 'Pacific') }
         ];
         var filtered = REHAB_DIRECTORY.facilities.filter(function(f) {
           return stateFilter === 'all' || f.region === stateFilter;
@@ -15002,8 +15003,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             })
           ),
           h('div', { className: 'mt-3 bg-amber-900/20 border border-amber-700/40 rounded-lg p-3 text-xs text-amber-100/90' },
-            h('div', { className: 'font-bold text-amber-300 mb-1' }, 'Not in your state?'),
-            'Most state wildlife agencies maintain rehab directories. Search "[your state] wildlife rehabilitator directory" or call your state Department of Fish + Game. The Association of Avian Veterinarians (aav.org) also maintains a referral list.'
+            h('div', { className: 'font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.not_in_your_state', 'Not in your state?')),
+            __alloT('stem.raptorhunt.most_state_wildlife_agencies_maintain_', 'Most state wildlife agencies maintain rehab directories. Search "[your state] wildlife rehabilitator directory" or call your state Department of Fish + Game. The Association of Avian Veterinarians (aav.org) also maintains a referral list.')
           )
         );
       }
@@ -15015,11 +15016,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var historyEra = rh.historyEra || 'all';
         function setEra(e) { setRH({ historyEra: e }); }
         var eras = [
-          { id: 'all', label: 'All Eras' },
-          { id: 'ancient', label: 'Ancient (pre-1500)', range: function(y) { return y < 1500; } },
-          { id: 'early', label: 'Early Modern (1500-1900)', range: function(y) { return y >= 1500 && y < 1900; } },
-          { id: 'crisis', label: 'Crisis & Recovery (1900-2000)', range: function(y) { return y >= 1900 && y < 2000; } },
-          { id: 'modern', label: 'Modern (2000+)', range: function(y) { return y >= 2000; } }
+          { id: 'all', label: __alloT('stem.raptorhunt.all_eras', 'All Eras') },
+          { id: 'ancient', label: __alloT('stem.raptorhunt.ancient_pre_1500', 'Ancient (pre-1500)'), range: function(y) { return y < 1500; } },
+          { id: 'early', label: __alloT('stem.raptorhunt.early_modern_1500_1900', 'Early Modern (1500-1900)'), range: function(y) { return y >= 1500 && y < 1900; } },
+          { id: 'crisis', label: __alloT('stem.raptorhunt.crisis_recovery_1900_2000', 'Crisis & Recovery (1900-2000)'), range: function(y) { return y >= 1900 && y < 2000; } },
+          { id: 'modern', label: __alloT('stem.raptorhunt.modern_2000', 'Modern (2000+)'), range: function(y) { return y >= 2000; } }
         ];
         var activeEra = eras.find(function(e) { return e.id === historyEra; }) || eras[0];
         var filtered = activeEra.range ? HISTORY_TIMELINE.filter(function(ev) { return activeEra.range(ev.year); }) : HISTORY_TIMELINE;
@@ -15028,7 +15029,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '📜'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, 'History of Raptor Science'),
+                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, __alloT('stem.raptorhunt.history_of_raptor_science_2', 'History of Raptor Science')),
                 h('div', { className: 'text-sm text-amber-100/85 mt-1' }, '5,000 years of human relationship with raptors — from Horus to eBird. ' + HISTORY_TIMELINE.length + ' key events.')
               )
             )
@@ -15077,7 +15078,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '📡'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-cyan-200 tracking-tight' }, 'Tracking Technology'),
+                h('div', { className: 'text-xl font-bold text-cyan-200 tracking-tight' }, __alloT('stem.raptorhunt.tracking_technology_2', 'Tracking Technology')),
                 h('div', { className: 'text-sm text-cyan-100/85 mt-1' }, TRACKING_TECH.intro)
               )
             )
@@ -15101,39 +15102,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'text-lg font-bold text-cyan-300 tracking-tight' }, active.name),
             h('div', { className: 'grid md:grid-cols-4 gap-2 text-xs' },
               h('div', { className: 'bg-slate-900/60 rounded p-2' },
-                h('div', { className: 'text-slate-400 mb-1' }, 'Cost'),
+                h('div', { className: 'text-slate-400 mb-1' }, __alloT('stem.raptorhunt.cost', 'Cost')),
                 h('div', { className: 'text-cyan-200 font-bold' }, active.cost)
               ),
               h('div', { className: 'bg-slate-900/60 rounded p-2' },
-                h('div', { className: 'text-slate-400 mb-1' }, 'Accuracy'),
+                h('div', { className: 'text-slate-400 mb-1' }, __alloT('stem.raptorhunt.accuracy', 'Accuracy')),
                 h('div', { className: 'text-cyan-200 font-bold' }, active.accuracy)
               ),
               h('div', { className: 'bg-slate-900/60 rounded p-2' },
-                h('div', { className: 'text-slate-400 mb-1' }, 'Weight'),
+                h('div', { className: 'text-slate-400 mb-1' }, __alloT('stem.raptorhunt.weight', 'Weight')),
                 h('div', { className: 'text-cyan-200 font-bold' }, active.weight)
               ),
               h('div', { className: 'bg-slate-900/60 rounded p-2' },
-                h('div', { className: 'text-slate-400 mb-1' }, 'Battery'),
+                h('div', { className: 'text-slate-400 mb-1' }, __alloT('stem.raptorhunt.battery', 'Battery')),
                 h('div', { className: 'text-cyan-200 font-bold' }, active.battery)
               )
             ),
             h('div', { className: 'text-xs text-slate-400 italic' }, 'Invented: ' + active.invented),
             h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '🔧 How it works'),
+              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.how_it_works', '🔧 How it works')),
               h('div', { className: 'text-sm text-slate-100 leading-relaxed' }, active.howItWorks)
             ),
             h('div', { className: 'grid md:grid-cols-2 gap-2' },
               h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-emerald-300 mb-1' }, '✅ Best for'),
+                h('div', { className: 'font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.best_for', '✅ Best for')),
                 h('div', { className: 'text-emerald-100/90' }, active.bestFor)
               ),
               h('div', { className: 'bg-rose-900/20 border border-rose-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-rose-300 mb-1' }, '⚠ Limitation'),
+                h('div', { className: 'font-bold text-rose-300 mb-1' }, __alloT('stem.raptorhunt.limitation', '⚠ Limitation')),
                 h('div', { className: 'text-rose-100/90' }, active.limitation)
               )
             ),
             h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-amber-300 mb-1' }, '★ Notable'),
+              h('div', { className: 'font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.notable', '★ Notable')),
               h('div', { className: 'text-amber-100/90 leading-relaxed' }, active.notable)
             )
           )
@@ -15152,7 +15153,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🌐'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-purple-200 tracking-tight' }, 'Raptor Folklore by Culture'),
+                h('div', { className: 'text-xl font-bold text-purple-200 tracking-tight' }, __alloT('stem.raptorhunt.raptor_folklore_by_culture', 'Raptor Folklore by Culture')),
                 h('div', { className: 'text-sm text-purple-100/85 mt-1' }, FOLKLORE_BY_CULTURE.intro)
               )
             )
@@ -15175,15 +15176,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'bg-slate-800/40 border border-purple-700/40 rounded-xl p-4 space-y-3' },
             h('div', { className: 'text-lg font-bold text-purple-300 tracking-tight' }, active.culture),
             h('div', { className: 'bg-purple-900/30 border border-purple-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, '⭐ Symbol'),
+              h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.symbol', '⭐ Symbol')),
               h('div', { className: 'text-sm text-amber-100 italic' }, active.symbol)
             ),
             h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-purple-300 mb-1' }, '📖 The Story'),
+              h('div', { className: 'text-xs font-bold text-purple-300 mb-1' }, __alloT('stem.raptorhunt.the_story', '📖 The Story')),
               h('div', { className: 'text-sm text-slate-100 leading-relaxed' }, active.story)
             ),
             h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '🌱 Modern Echo'),
+              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.modern_echo', '🌱 Modern Echo')),
               h('div', { className: 'text-sm text-emerald-100/90 leading-relaxed' }, active.modernEcho)
             )
           )
@@ -15199,10 +15200,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var photoSpecies = rh.photoSpecies == null ? 0 : rh.photoSpecies;
         function setPhotoSpecies(i) { setRH({ photoSpecies: i }); }
         var tabs = [
-          { id: 'ethics', label: '⚖ Ethics' },
-          { id: 'gear', label: '📷 Gear' },
-          { id: 'settings', label: '⚙ Settings' },
-          { id: 'species', label: '🦅 Per Species' }
+          { id: 'ethics', label: __alloT('stem.raptorhunt.ethics', '⚖ Ethics') },
+          { id: 'gear', label: __alloT('stem.raptorhunt.gear', '📷 Gear') },
+          { id: 'settings', label: __alloT('stem.raptorhunt.settings', '⚙ Settings') },
+          { id: 'species', label: __alloT('stem.raptorhunt.per_species', '🦅 Per Species') }
         ];
         var sp = PHOTOGRAPHY_GUIDE.speciesGuides[photoSpecies];
         return h('div', { className: 'space-y-4' },
@@ -15210,7 +15211,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '📷'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-slate-200 tracking-tight' }, 'Raptor Photography Masterclass'),
+                h('div', { className: 'text-xl font-bold text-slate-200 tracking-tight' }, __alloT('stem.raptorhunt.raptor_photography_masterclass', 'Raptor Photography Masterclass')),
                 h('div', { className: 'text-sm text-slate-300 mt-1' }, PHOTOGRAPHY_GUIDE.intro)
               )
             )
@@ -15231,7 +15232,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             })
           ),
           photoTab === 'ethics' && h('div', { className: 'bg-rose-900/20 border border-rose-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-base font-bold text-rose-300 mb-2' }, 'Photography Ethics — Federal Compliance + Conservation'),
+            h('div', { className: 'text-base font-bold text-rose-300 mb-2' }, __alloT('stem.raptorhunt.photography_ethics_federal_compliance_', 'Photography Ethics — Federal Compliance + Conservation')),
             h('ul', { className: 'space-y-2 text-sm text-rose-100/90 list-disc list-inside' },
               PHOTOGRAPHY_GUIDE.ethics.map(function(e, i) {
                 return h('li', { key: i, className: 'leading-relaxed' }, e);
@@ -15270,19 +15271,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'text-base font-bold text-cyan-300' }, sp.species),
               h('div', { className: 'grid gap-2' },
                 h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-2 text-xs' },
-                  h('div', { className: 'font-bold text-emerald-300 mb-1' }, '⏰ Best Window'),
+                  h('div', { className: 'font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.best_window', '⏰ Best Window')),
                   h('div', { className: 'text-emerald-100/90' }, sp.bestWindow)
                 ),
                 h('div', { className: 'bg-rose-900/20 border border-rose-700/40 rounded p-2 text-xs' },
-                  h('div', { className: 'font-bold text-rose-300 mb-1' }, '⚠ Challenge'),
+                  h('div', { className: 'font-bold text-rose-300 mb-1' }, __alloT('stem.raptorhunt.challenge', '⚠ Challenge')),
                   h('div', { className: 'text-rose-100/90' }, sp.challenge)
                 ),
                 h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded p-2 text-xs' },
-                  h('div', { className: 'font-bold text-cyan-300 mb-1' }, '💡 Tip'),
+                  h('div', { className: 'font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.tip', '💡 Tip')),
                   h('div', { className: 'text-cyan-100/90' }, sp.tip)
                 ),
                 h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-2 text-xs' },
-                  h('div', { className: 'font-bold text-amber-300 mb-1' }, '⚖ Ethics'),
+                  h('div', { className: 'font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.ethics_2', '⚖ Ethics')),
                   h('div', { className: 'text-amber-100/90' }, sp.ethics)
                 )
               )
@@ -15304,7 +15305,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '📹'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-blue-200 tracking-tight' }, 'Nest Cam Directory'),
+                h('div', { className: 'text-xl font-bold text-blue-200 tracking-tight' }, __alloT('stem.raptorhunt.nest_cam_directory_2', 'Nest Cam Directory')),
                 h('div', { className: 'text-sm text-blue-100/85 mt-1' }, NEST_CAMS.intro)
               )
             )
@@ -15339,7 +15340,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           ),
           // Viewing tips
           h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-base font-bold text-amber-300 mb-2' }, '💡 Viewing Tips'),
+            h('div', { className: 'text-base font-bold text-amber-300 mb-2' }, __alloT('stem.raptorhunt.viewing_tips', '💡 Viewing Tips')),
             h('ul', { className: 'space-y-1 list-disc list-inside text-sm text-amber-100/90' },
               NEST_CAMS.viewingTips.map(function(t, i) {
                 return h('li', { key: i }, t);
@@ -15361,14 +15362,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🔊'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-pink-200 tracking-tight' }, 'Raptor Calls & Vocalizations'),
+                h('div', { className: 'text-xl font-bold text-pink-200 tracking-tight' }, __alloT('stem.raptorhunt.raptor_calls_vocalizations', 'Raptor Calls & Vocalizations')),
                 h('div', { className: 'text-sm text-pink-100/85 mt-1' }, RAPTOR_CALLS.intro)
               )
             )
           ),
           // Call types reference
           h('div', { className: 'bg-slate-800/40 border border-pink-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-pink-300 mb-2' }, '📚 Call Types'),
+            h('div', { className: 'text-sm font-bold text-pink-300 mb-2' }, __alloT('stem.raptorhunt.call_types', '📚 Call Types')),
             h('div', { className: 'grid md:grid-cols-3 gap-2 text-xs' },
               Object.keys(RAPTOR_CALLS.callTypes).map(function(k, i) {
                 return h('div', { key: i, className: 'bg-slate-900/40 rounded p-2' },
@@ -15394,27 +15395,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'bg-slate-800/40 border border-pink-700/40 rounded-xl p-4 space-y-2' },
             h('div', { className: 'text-base font-bold text-pink-300' }, sp.species),
             h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, '🔉 Primary Call'),
+              h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.primary_call', '🔉 Primary Call')),
               h('div', { className: 'text-sm text-slate-100 italic leading-relaxed' }, sp.primaryCall)
             ),
             h('div', { className: 'grid md:grid-cols-2 gap-2' },
               h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-emerald-300 mb-1' }, '🎯 Context'),
+                h('div', { className: 'font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.context', '🎯 Context')),
                 h('div', { className: 'text-emerald-100/90' }, sp.context)
               ),
               h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-cyan-300 mb-1' }, '📊 Acoustic Notes'),
+                h('div', { className: 'font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.acoustic_notes', '📊 Acoustic Notes')),
                 h('div', { className: 'text-cyan-100/90' }, sp.acousticNote)
               )
             ),
             h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-amber-300 mb-1' }, '🎬 Hollywood Says'),
+              h('div', { className: 'font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.hollywood_says', '🎬 Hollywood Says')),
               h('div', { className: 'text-amber-100/90 italic' }, sp.hollywoodLie)
             )
           ),
           // Listen where
           h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-cyan-300 mb-2' }, '🎧 Where to Listen'),
+            h('div', { className: 'text-sm font-bold text-cyan-300 mb-2' }, __alloT('stem.raptorhunt.where_to_listen', '🎧 Where to Listen')),
             h('ul', { className: 'space-y-1 list-disc list-inside text-xs text-cyan-100/90' },
               RAPTOR_CALLS.listenWhere.map(function(w, i) {
                 return h('li', { key: i, className: 'leading-relaxed' }, w);
@@ -15436,7 +15437,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🎯'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-red-200 tracking-tight' }, 'Hunting Strategies'),
+                h('div', { className: 'text-xl font-bold text-red-200 tracking-tight' }, __alloT('stem.raptorhunt.hunting_strategies_2', 'Hunting Strategies')),
                 h('div', { className: 'text-sm text-red-100/85 mt-1' }, HUNTING_STRATEGIES.intro)
               )
             )
@@ -15460,33 +15461,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'text-xs italic text-amber-200/80' }, 'Practiced by: ' + active.usedBy)
             ),
             h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '📖 Description'),
+              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.description', '📖 Description')),
               h('div', { className: 'text-sm text-slate-100 leading-relaxed' }, active.description)
             ),
             h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, '⚛ Physics + Biomechanics'),
+              h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.physics_biomechanics', '⚛ Physics + Biomechanics')),
               h('div', { className: 'text-sm text-cyan-100/90 leading-relaxed' }, active.physics)
             ),
             h('div', { className: 'grid md:grid-cols-2 gap-2' },
               h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-amber-300 mb-1' }, '🐾 Prey'),
+                h('div', { className: 'font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.prey_3', '🐾 Prey')),
                 h('div', { className: 'text-amber-100/90' }, active.prey)
               ),
               h('div', { className: 'bg-rose-900/20 border border-rose-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-rose-300 mb-1' }, '🛡 Countermeasures'),
+                h('div', { className: 'font-bold text-rose-300 mb-1' }, __alloT('stem.raptorhunt.countermeasures', '🛡 Countermeasures')),
                 h('div', { className: 'text-rose-100/90' }, active.countermeasures)
               ),
               h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-purple-300 mb-1' }, '⚡ Kill Mechanism'),
+                h('div', { className: 'font-bold text-purple-300 mb-1' }, __alloT('stem.raptorhunt.kill_mechanism', '⚡ Kill Mechanism')),
                 h('div', { className: 'text-purple-100/90' }, active.kill)
               ),
               h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-emerald-300 mb-1' }, '✅ Success Rate'),
+                h('div', { className: 'font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.success_rate', '✅ Success Rate')),
                 h('div', { className: 'text-emerald-100/90' }, active.successRate)
               )
             ),
             h('div', { className: 'bg-slate-900/60 border border-slate-700/40 rounded p-3 text-xs' },
-              h('div', { className: 'font-bold text-yellow-300 mb-1' }, '⚖ Energetics'),
+              h('div', { className: 'font-bold text-yellow-300 mb-1' }, __alloT('stem.raptorhunt.energetics', '⚖ Energetics')),
               h('div', { className: 'text-yellow-100/90' }, active.energetics)
             )
           )
@@ -15501,14 +15502,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         function setBehCat(c) { setRH({ behaviorCat: c }); }
         var categories = [
           { id: 'all', label: 'All' },
-          { id: 'courtship', label: '💕 Courtship' },
-          { id: 'territorial', label: '⚔ Territorial' },
-          { id: 'parenting', label: '🐣 Parenting' },
-          { id: 'social', label: '🤝 Social' },
-          { id: 'feeding', label: '🍖 Feeding' },
-          { id: 'comfort', label: '🛁 Comfort' },
-          { id: 'thermoregulation', label: '🌡 Thermoregulation' },
-          { id: 'play', label: '🎈 Play' }
+          { id: 'courtship', label: __alloT('stem.raptorhunt.courtship', '💕 Courtship') },
+          { id: 'territorial', label: __alloT('stem.raptorhunt.territorial', '⚔ Territorial') },
+          { id: 'parenting', label: __alloT('stem.raptorhunt.parenting', '🐣 Parenting') },
+          { id: 'social', label: __alloT('stem.raptorhunt.social', '🤝 Social') },
+          { id: 'feeding', label: __alloT('stem.raptorhunt.feeding', '🍖 Feeding') },
+          { id: 'comfort', label: __alloT('stem.raptorhunt.comfort', '🛁 Comfort') },
+          { id: 'thermoregulation', label: __alloT('stem.raptorhunt.thermoregulation', '🌡 Thermoregulation') },
+          { id: 'play', label: __alloT('stem.raptorhunt.play', '🎈 Play') }
         ];
         var filtered = behCat === 'all' ? BEHAVIOR_REPERTOIRE.behaviors : BEHAVIOR_REPERTOIRE.behaviors.filter(function(b) { return b.category === behCat; });
         return h('div', { className: 'space-y-4' },
@@ -15516,7 +15517,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🌗'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-indigo-200 tracking-tight' }, 'Behavior Repertoire'),
+                h('div', { className: 'text-xl font-bold text-indigo-200 tracking-tight' }, __alloT('stem.raptorhunt.behavior_repertoire_2', 'Behavior Repertoire')),
                 h('div', { className: 'text-sm text-indigo-100/85 mt-1' }, BEHAVIOR_REPERTOIRE.intro)
               )
             )
@@ -15565,16 +15566,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         function setUrbanSp(i) { setRH({ urbanSpecies: i }); }
         var sp = URBAN_RAPTORS.species[urbanSpeciesIdx];
         var tabs = [
-          { id: 'species', label: '🦅 Species' },
-          { id: 'challenges', label: '⚠ Challenges' },
-          { id: 'success', label: '🏆 Success Stories' }
+          { id: 'species', label: __alloT('stem.raptorhunt.species_7', '🦅 Species') },
+          { id: 'challenges', label: __alloT('stem.raptorhunt.challenges', '⚠ Challenges') },
+          { id: 'success', label: __alloT('stem.raptorhunt.success_stories', '🏆 Success Stories') }
         ];
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-zinc-800/40 to-slate-800/40 border border-zinc-600/40 rounded-xl p-5' },
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🏙'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-zinc-200 tracking-tight' }, 'Urban Raptors'),
+                h('div', { className: 'text-xl font-bold text-zinc-200 tracking-tight' }, __alloT('stem.raptorhunt.urban_raptors_2', 'Urban Raptors')),
                 h('div', { className: 'text-sm text-zinc-300 mt-1' }, URBAN_RAPTORS.intro)
               )
             )
@@ -15608,29 +15609,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'bg-slate-800/40 border border-zinc-600/40 rounded-xl p-4 space-y-2' },
               h('div', { className: 'text-lg font-bold text-zinc-200 tracking-tight' }, sp.name),
               h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-emerald-300 mb-1' }, '📈 Status'),
+                h('div', { className: 'font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.status', '📈 Status')),
                 h('div', { className: 'text-emerald-100/90' }, sp.urbanStatus)
               ),
               h('div', { className: 'grid md:grid-cols-2 gap-2' },
                 h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                  h('div', { className: 'font-bold text-cyan-300 mb-1' }, '🏗 Nest'),
+                  h('div', { className: 'font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.nest', '🏗 Nest')),
                   h('div', { className: 'text-cyan-100/90' }, sp.nest)
                 ),
                 h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                  h('div', { className: 'font-bold text-amber-300 mb-1' }, '🍴 Diet'),
+                  h('div', { className: 'font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.diet', '🍴 Diet')),
                   h('div', { className: 'text-amber-100/90' }, sp.diet)
                 )
               ),
               h('div', { className: 'bg-rose-900/20 border border-rose-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-rose-300 mb-1' }, '⚠ Hazards'),
+                h('div', { className: 'font-bold text-rose-300 mb-1' }, __alloT('stem.raptorhunt.hazards', '⚠ Hazards')),
                 h('div', { className: 'text-rose-100/90' }, sp.hazards)
               ),
               h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-purple-300 mb-1' }, '🏆 Success'),
+                h('div', { className: 'font-bold text-purple-300 mb-1' }, __alloT('stem.raptorhunt.success', '🏆 Success')),
                 h('div', { className: 'text-purple-100/90' }, sp.success)
               ),
               h('div', { className: 'bg-yellow-900/20 border border-yellow-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-yellow-300 mb-1' }, '📍 Viewing Site'),
+                h('div', { className: 'font-bold text-yellow-300 mb-1' }, __alloT('stem.raptorhunt.viewing_site', '📍 Viewing Site')),
                 h('div', { className: 'text-yellow-100/90' }, sp.viewingSite)
               )
             )
@@ -15663,18 +15664,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var climateTab = rh.climateTab || 'range';
         function setClimateTab(t) { setRH({ climateTab: t }); }
         var tabs = [
-          { id: 'range', label: '🗺 Range Shifts' },
-          { id: 'timing', label: '⏰ Timing Decoupling' },
-          { id: 'extreme', label: '🌪 Extreme Weather' },
-          { id: 'prey', label: '🐭 Prey Shifts' },
-          { id: 'action', label: '🤝 Conservation Action' }
+          { id: 'range', label: __alloT('stem.raptorhunt.range_shifts', '🗺 Range Shifts') },
+          { id: 'timing', label: __alloT('stem.raptorhunt.timing_decoupling', '⏰ Timing Decoupling') },
+          { id: 'extreme', label: __alloT('stem.raptorhunt.extreme_weather', '🌪 Extreme Weather') },
+          { id: 'prey', label: __alloT('stem.raptorhunt.prey_shifts', '🐭 Prey Shifts') },
+          { id: 'action', label: __alloT('stem.raptorhunt.conservation_action', '🤝 Conservation Action') }
         ];
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-orange-900/40 to-red-900/40 border border-orange-700/40 rounded-xl p-5' },
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🌡'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-orange-200 tracking-tight' }, 'Climate Change Impact on Raptors'),
+                h('div', { className: 'text-xl font-bold text-orange-200 tracking-tight' }, __alloT('stem.raptorhunt.climate_change_impact_on_raptors', 'Climate Change Impact on Raptors')),
                 h('div', { className: 'text-sm text-orange-100/85 mt-1' }, CLIMATE_IMPACT.intro)
               )
             )
@@ -15703,7 +15704,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             })
           ),
           climateTab === 'timing' && h('div', { className: 'bg-slate-800/40 border border-orange-700/30 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-orange-300 mb-2' }, '⏰ Phenological Mismatch'),
+            h('div', { className: 'text-sm font-bold text-orange-300 mb-2' }, __alloT('stem.raptorhunt.phenological_mismatch_2', '⏰ Phenological Mismatch')),
             h('div', { className: 'text-sm text-slate-100 leading-relaxed' }, CLIMATE_IMPACT.timingDecoupling)
           ),
           climateTab === 'extreme' && h('div', { className: 'space-y-2' },
@@ -15726,7 +15727,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           ),
           climateTab === 'action' && h('div', { className: 'space-y-3' },
             h('div', { className: 'bg-slate-800/40 border border-emerald-700/40 rounded-lg p-4' },
-              h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, '🌱 Conservation Actions'),
+              h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, __alloT('stem.raptorhunt.conservation_actions', '🌱 Conservation Actions')),
               h('ul', { className: 'space-y-1 list-disc list-inside text-sm text-emerald-100/90' },
                 CLIMATE_IMPACT.conservationActions.map(function(a, i) {
                   return h('li', { key: i, className: 'leading-relaxed' }, a);
@@ -15734,7 +15735,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               )
             ),
             h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded-lg p-4' },
-              h('div', { className: 'text-sm font-bold text-cyan-300 mb-2' }, '📊 Climate Indicators'),
+              h('div', { className: 'text-sm font-bold text-cyan-300 mb-2' }, __alloT('stem.raptorhunt.climate_indicators', '📊 Climate Indicators')),
               h('ul', { className: 'space-y-1 list-disc list-inside text-sm text-cyan-100/90' },
                 CLIMATE_IMPACT.indicators.map(function(d, i) {
                   return h('li', { key: i, className: 'leading-relaxed' }, d);
@@ -15757,7 +15758,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '❤️'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-rose-200 tracking-tight' }, 'Physiology Deep Dive'),
+                h('div', { className: 'text-xl font-bold text-rose-200 tracking-tight' }, __alloT('stem.raptorhunt.physiology_deep_dive_2', 'Physiology Deep Dive')),
                 h('div', { className: 'text-sm text-rose-100/85 mt-1' }, PHYSIOLOGY.intro)
               )
             )
@@ -15778,7 +15779,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'bg-slate-800/40 border border-rose-700/40 rounded-xl p-4 space-y-3' },
             h('div', { className: 'text-lg font-bold text-rose-300 tracking-tight' }, sys.icon + ' ' + sys.name + ' System'),
             h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-cyan-300 mb-2' }, '📋 Key Facts'),
+              h('div', { className: 'text-xs font-bold text-cyan-300 mb-2' }, __alloT('stem.raptorhunt.key_facts', '📋 Key Facts')),
               h('ul', { className: 'space-y-1 list-disc list-inside text-sm text-slate-100' },
                 sys.keyFacts.map(function(f, i) {
                   return h('li', { key: i, className: 'leading-relaxed' }, f);
@@ -15786,7 +15787,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               )
             ),
             h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-emerald-300 mb-2' }, '🚀 Adaptations'),
+              h('div', { className: 'text-xs font-bold text-emerald-300 mb-2' }, __alloT('stem.raptorhunt.adaptations', '🚀 Adaptations')),
               h('ul', { className: 'space-y-1 list-disc list-inside text-sm text-emerald-100/90' },
                 sys.adaptations.map(function(a, i) {
                   return h('li', { key: i, className: 'leading-relaxed' }, a);
@@ -15794,7 +15795,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               )
             ),
             h('div', { className: 'bg-rose-900/20 border border-rose-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-rose-300 mb-2' }, '🦠 Diseases + Disorders'),
+              h('div', { className: 'text-xs font-bold text-rose-300 mb-2' }, __alloT('stem.raptorhunt.diseases_disorders', '🦠 Diseases + Disorders')),
               h('ul', { className: 'space-y-1 list-disc list-inside text-sm text-rose-100/90' },
                 sys.diseases.map(function(d, i) {
                   return h('li', { key: i, className: 'leading-relaxed' }, d);
@@ -15815,16 +15816,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         function setHab(i) { setRH({ ecologyHabitat: i }); }
         var hab = ECOLOGY.foodWebs[habitatIdx];
         var tabs = [
-          { id: 'niche', label: '🧠 Niche Concepts' },
-          { id: 'webs', label: '🕸 Food Webs by Habitat' },
-          { id: 'services', label: '💎 Ecosystem Services' }
+          { id: 'niche', label: __alloT('stem.raptorhunt.niche_concepts', '🧠 Niche Concepts') },
+          { id: 'webs', label: __alloT('stem.raptorhunt.food_webs_by_habitat', '🕸 Food Webs by Habitat') },
+          { id: 'services', label: __alloT('stem.raptorhunt.ecosystem_services', '💎 Ecosystem Services') }
         ];
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-green-900/40 to-emerald-900/40 border border-green-700/40 rounded-xl p-5' },
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🕸'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-green-200 tracking-tight' }, 'Ecology & Food Webs'),
+                h('div', { className: 'text-xl font-bold text-green-200 tracking-tight' }, __alloT('stem.raptorhunt.ecology_food_webs_2', 'Ecology & Food Webs')),
                 h('div', { className: 'text-sm text-green-100/85 mt-1' }, ECOLOGY.intro)
               )
             )
@@ -15866,23 +15867,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'bg-slate-800/40 border border-green-700/40 rounded-xl p-4 space-y-2' },
               h('div', { className: 'text-lg font-bold text-green-300 tracking-tight' }, hab.habitat),
               h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
-                h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, '🦅 Primary Raptors'),
+                h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.primary_raptors', '🦅 Primary Raptors')),
                 h('div', { className: 'text-sm text-amber-100/90' }, hab.primaryRaptors.join(' · '))
               ),
               h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
-                h('div', { className: 'text-xs font-bold text-purple-300 mb-1' }, '🐭 Key Prey'),
+                h('div', { className: 'text-xs font-bold text-purple-300 mb-1' }, __alloT('stem.raptorhunt.key_prey', '🐭 Key Prey')),
                 h('div', { className: 'text-sm text-purple-100/90' }, hab.keyPrey)
               ),
               h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
-                h('div', { className: 'text-xs font-bold text-orange-300 mb-1' }, '⚔ Competitors'),
+                h('div', { className: 'text-xs font-bold text-orange-300 mb-1' }, __alloT('stem.raptorhunt.competitors', '⚔ Competitors')),
                 h('div', { className: 'text-sm text-orange-100/90' }, hab.competitors)
               ),
               h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-3' },
-                h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '💎 Ecosystem Services'),
+                h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.ecosystem_services_2', '💎 Ecosystem Services')),
                 h('div', { className: 'text-sm text-emerald-100/90 leading-relaxed' }, hab.ecosystemServices)
               ),
               h('div', { className: 'bg-rose-900/20 border border-rose-700/40 rounded p-3' },
-                h('div', { className: 'text-xs font-bold text-rose-300 mb-1' }, '⚠ Threats'),
+                h('div', { className: 'text-xs font-bold text-rose-300 mb-1' }, __alloT('stem.raptorhunt.threats', '⚠ Threats')),
                 h('div', { className: 'text-sm text-rose-100/90 leading-relaxed' }, hab.threats)
               )
             )
@@ -15906,17 +15907,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var evoTab = rh.evolutionTab || 'timeline';
         function setEvoTab(t) { setRH({ evolutionTab: t }); }
         var tabs = [
-          { id: 'timeline', label: '📅 Evolutionary Timeline' },
-          { id: 'convergence', label: '🔀 Convergent Evolution' },
-          { id: 'taxonomy', label: '🧬 Modern Taxonomy' },
-          { id: 'extinct', label: '💀 Extinct Species' }
+          { id: 'timeline', label: __alloT('stem.raptorhunt.evolutionary_timeline', '📅 Evolutionary Timeline') },
+          { id: 'convergence', label: __alloT('stem.raptorhunt.convergent_evolution', '🔀 Convergent Evolution') },
+          { id: 'taxonomy', label: __alloT('stem.raptorhunt.modern_taxonomy', '🧬 Modern Taxonomy') },
+          { id: 'extinct', label: __alloT('stem.raptorhunt.extinct_species', '💀 Extinct Species') }
         ];
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-violet-900/40 to-purple-900/40 border border-violet-700/40 rounded-xl p-5' },
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🧬'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-violet-200 tracking-tight' }, 'Evolution & Taxonomy'),
+                h('div', { className: 'text-xl font-bold text-violet-200 tracking-tight' }, __alloT('stem.raptorhunt.evolution_taxonomy_2', 'Evolution & Taxonomy')),
                 h('div', { className: 'text-sm text-violet-100/85 mt-1' }, EVOLUTION_TAX.intro)
               )
             )
@@ -15954,7 +15955,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           ),
           evoTab === 'taxonomy' && h('div', { className: 'space-y-3' },
             h('div', { className: 'bg-slate-800/40 border border-violet-700/30 rounded-lg p-3' },
-              h('div', { className: 'text-sm font-bold text-violet-300 mb-2' }, 'Orders'),
+              h('div', { className: 'text-sm font-bold text-violet-300 mb-2' }, __alloT('stem.raptorhunt.orders', 'Orders')),
               h('div', { className: 'space-y-2' },
                 EVOLUTION_TAX.taxonomy.order.map(function(o, i) {
                   return h('div', { key: i, className: 'bg-slate-900/40 rounded p-2' },
@@ -15966,7 +15967,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               )
             ),
             h('div', { className: 'bg-slate-800/40 border border-violet-700/30 rounded-lg p-3' },
-              h('div', { className: 'text-sm font-bold text-violet-300 mb-2' }, 'Families'),
+              h('div', { className: 'text-sm font-bold text-violet-300 mb-2' }, __alloT('stem.raptorhunt.families', 'Families')),
               h('div', { className: 'grid md:grid-cols-2 gap-2' },
                 EVOLUTION_TAX.taxonomy.families.map(function(f, i) {
                   return h('div', { key: i, className: 'bg-slate-900/40 rounded p-2 text-xs' },
@@ -15997,17 +15998,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var fnTab = rh.fieldnatTab || 'skills';
         function setFnTab(t) { setRH({ fieldnatTab: t }); }
         var tabs = [
-          { id: 'skills', label: '🛠 Skills' },
-          { id: 'surveys', label: '📊 Surveys + Counts' },
-          { id: 'banding', label: '🎯 Banding Stations' },
-          { id: 'ethics', label: '⚖ Ethics' }
+          { id: 'skills', label: __alloT('stem.raptorhunt.skills', '🛠 Skills') },
+          { id: 'surveys', label: __alloT('stem.raptorhunt.surveys_counts', '📊 Surveys + Counts') },
+          { id: 'banding', label: __alloT('stem.raptorhunt.banding_stations', '🎯 Banding Stations') },
+          { id: 'ethics', label: __alloT('stem.raptorhunt.ethics_3', '⚖ Ethics') }
         ];
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-emerald-900/40 to-teal-900/40 border border-emerald-700/40 rounded-xl p-5' },
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '📓'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-emerald-200 tracking-tight' }, 'Field Naturalist'),
+                h('div', { className: 'text-xl font-bold text-emerald-200 tracking-tight' }, __alloT('stem.raptorhunt.field_naturalist_2', 'Field Naturalist')),
                 h('div', { className: 'text-sm text-emerald-100/85 mt-1' }, FIELD_NATURALIST.intro)
               )
             )
@@ -16057,7 +16058,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             })
           ),
           fnTab === 'ethics' && h('div', { className: 'bg-rose-900/20 border border-rose-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-base font-bold text-rose-300 mb-2' }, '⚖ Field Ethics — The Naturalist\'s Code'),
+            h('div', { className: 'text-base font-bold text-rose-300 mb-2' }, __alloT('stem.raptorhunt.field_ethics_the_naturalist_s_code', '⚖ Field Ethics — The Naturalist\'s Code')),
             h('ul', { className: 'space-y-1 list-disc list-inside text-sm text-rose-100/90' },
               FIELD_NATURALIST.ethicalGuidelines.map(function(g, i) {
                 return h('li', { key: i, className: 'leading-relaxed' }, g);
@@ -16074,18 +16075,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var pelletTab = rh.pelletKeyTab || 'method';
         function setPelletTab(t) { setRH({ pelletKeyTab: t }); }
         var tabs = [
-          { id: 'method', label: '🔧 Method' },
-          { id: 'skulls', label: '💀 Skull Key' },
-          { id: 'bones', label: '🦴 Bone Key' },
-          { id: 'analysis', label: '📊 Data Analysis' },
-          { id: 'pedagogy', label: '👩‍🏫 Pedagogy' }
+          { id: 'method', label: __alloT('stem.raptorhunt.method', '🔧 Method') },
+          { id: 'skulls', label: __alloT('stem.raptorhunt.skull_key', '💀 Skull Key') },
+          { id: 'bones', label: __alloT('stem.raptorhunt.bone_key', '🦴 Bone Key') },
+          { id: 'analysis', label: __alloT('stem.raptorhunt.data_analysis', '📊 Data Analysis') },
+          { id: 'pedagogy', label: __alloT('stem.raptorhunt.pedagogy_3', '👩‍🏫 Pedagogy') }
         ];
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-amber-900/40 to-yellow-900/40 border border-amber-700/40 rounded-xl p-5' },
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🔬'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, 'Pellet ID Key'),
+                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, __alloT('stem.raptorhunt.pellet_id_key_2', 'Pellet ID Key')),
                 h('div', { className: 'text-sm text-amber-100/85 mt-1' }, PELLET_ID_KEY.intro)
               )
             )
@@ -16106,7 +16107,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           ),
           pelletTab === 'method' && h('div', { className: 'space-y-3' },
             h('div', { className: 'bg-slate-800/40 border border-amber-700/40 rounded-xl p-4' },
-              h('div', { className: 'text-sm font-bold text-amber-300 mb-2' }, '🛠 Materials Needed'),
+              h('div', { className: 'text-sm font-bold text-amber-300 mb-2' }, __alloT('stem.raptorhunt.materials_needed', '🛠 Materials Needed')),
               h('ul', { className: 'space-y-1 list-disc list-inside text-sm text-slate-200' },
                 PELLET_ID_KEY.materials.map(function(m, i) {
                   return h('li', { key: i }, m);
@@ -16114,7 +16115,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               )
             ),
             h('div', { className: 'bg-slate-800/40 border border-amber-700/40 rounded-xl p-4' },
-              h('div', { className: 'text-sm font-bold text-amber-300 mb-2' }, '📋 Method (step-by-step)'),
+              h('div', { className: 'text-sm font-bold text-amber-300 mb-2' }, __alloT('stem.raptorhunt.method_step_by_step', '📋 Method (step-by-step)')),
               h('ol', { className: 'space-y-1 list-decimal list-inside text-sm text-slate-200' },
                 PELLET_ID_KEY.method.map(function(m, i) {
                   return h('li', { key: i, className: 'leading-relaxed' }, m);
@@ -16144,7 +16145,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             })
           ),
           pelletTab === 'analysis' && h('div', { className: 'bg-slate-800/40 border border-amber-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-amber-300 mb-2' }, '📊 Data Analysis Steps'),
+            h('div', { className: 'text-sm font-bold text-amber-300 mb-2' }, __alloT('stem.raptorhunt.data_analysis_steps', '📊 Data Analysis Steps')),
             h('ol', { className: 'space-y-1 list-decimal list-inside text-sm text-slate-200' },
               PELLET_ID_KEY.dataAnalysis.map(function(d, i) {
                 return h('li', { key: i, className: 'leading-relaxed' }, d);
@@ -16152,7 +16153,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             )
           ),
           pelletTab === 'pedagogy' && h('div', { className: 'bg-slate-800/40 border border-purple-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-purple-300 mb-2' }, '👩‍🏫 Pedagogical Notes for Teachers'),
+            h('div', { className: 'text-sm font-bold text-purple-300 mb-2' }, __alloT('stem.raptorhunt.pedagogical_notes_for_teachers', '👩‍🏫 Pedagogical Notes for Teachers')),
             h('ul', { className: 'space-y-1 list-disc list-inside text-sm text-purple-100/90' },
               PELLET_ID_KEY.pedagogy.map(function(p, i) {
                 return h('li', { key: i, className: 'leading-relaxed' }, p);
@@ -16174,7 +16175,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🔭'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-cyan-200 tracking-tight' }, 'Birding Gear Guide'),
+                h('div', { className: 'text-xl font-bold text-cyan-200 tracking-tight' }, __alloT('stem.raptorhunt.birding_gear_guide_2', 'Birding Gear Guide')),
                 h('div', { className: 'text-sm text-cyan-100/85 mt-1' }, GEAR_GUIDE.intro)
               )
             )
@@ -16195,11 +16196,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'bg-slate-800/40 border border-cyan-700/40 rounded-xl p-4 space-y-3' },
             h('div', { className: 'text-lg font-bold text-cyan-300 tracking-tight' }, cat.category),
             h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '💡 Why it matters'),
+              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.why_it_matters', '💡 Why it matters')),
               h('div', { className: 'text-sm text-slate-100 leading-relaxed' }, cat.whyItMatters)
             ),
             h('div', { className: 'space-y-2' },
-              h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, '💰 Budget Tiers'),
+              h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.budget_tiers', '💰 Budget Tiers')),
               cat.budgetTiers.map(function(t, i) {
                 return h('div', { key: i, className: 'bg-slate-900/40 border-l-4 border-amber-600 rounded-r p-3' },
                   h('div', { className: 'text-sm font-bold text-amber-200' }, t.tier),
@@ -16209,7 +16210,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               })
             ),
             h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '🎯 Tips'),
+              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.tips', '🎯 Tips')),
               h('ul', { className: 'space-y-1 list-disc list-inside text-xs text-emerald-100/90' },
                 cat.tips.map(function(t, i) {
                   return h('li', { key: i, className: 'leading-relaxed' }, t);
@@ -16232,7 +16233,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '💼'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-yellow-200 tracking-tight' }, 'Careers in Raptor Biology'),
+                h('div', { className: 'text-xl font-bold text-yellow-200 tracking-tight' }, __alloT('stem.raptorhunt.careers_in_raptor_biology_2', 'Careers in Raptor Biology')),
                 h('div', { className: 'text-sm text-yellow-100/85 mt-1' }, CAREERS.intro)
               )
             )
@@ -16254,34 +16255,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'text-lg font-bold text-yellow-300 tracking-tight' }, c.title),
             h('div', { className: 'grid md:grid-cols-2 gap-2' },
               h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-cyan-300 mb-1' }, '🎓 Education'),
+                h('div', { className: 'font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.education', '🎓 Education')),
                 h('div', { className: 'text-cyan-100/90' }, c.education)
               ),
               h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-amber-300 mb-1' }, '📜 License'),
+                h('div', { className: 'font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.license', '📜 License')),
                 h('div', { className: 'text-amber-100/90' }, c.license)
               ),
               h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-emerald-300 mb-1' }, '💰 Salary'),
+                h('div', { className: 'font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.salary', '💰 Salary')),
                 h('div', { className: 'text-emerald-100/90' }, c.salary)
               ),
               h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-purple-300 mb-1' }, '🛤 Path'),
+                h('div', { className: 'font-bold text-purple-300 mb-1' }, __alloT('stem.raptorhunt.path', '🛤 Path')),
                 h('div', { className: 'text-purple-100/90' }, c.path)
               )
             ),
             h('div', { className: 'bg-rose-900/20 border border-rose-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-rose-300 mb-1' }, '🏢 Top Employers'),
+              h('div', { className: 'font-bold text-rose-300 mb-1' }, __alloT('stem.raptorhunt.top_employers', '🏢 Top Employers')),
               h('div', { className: 'text-rose-100/90' }, c.topEmployers)
             ),
             h('div', { className: 'bg-yellow-900/20 border border-yellow-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-yellow-300 mb-1' }, '💡 Notes'),
+              h('div', { className: 'font-bold text-yellow-300 mb-1' }, __alloT('stem.raptorhunt.notes', '💡 Notes')),
               h('div', { className: 'text-yellow-100/90' }, c.notes)
             )
           ),
           // Advice
           h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-amber-300 mb-2' }, '🎯 Career-Building Advice'),
+            h('div', { className: 'text-sm font-bold text-amber-300 mb-2' }, __alloT('stem.raptorhunt.career_building_advice', '🎯 Career-Building Advice')),
             h('ul', { className: 'space-y-1 list-disc list-inside text-xs text-amber-100/90' },
               CAREERS.advice.map(function(a, i) {
                 return h('li', { key: i, className: 'leading-relaxed' }, a);
@@ -16301,18 +16302,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         function setLevel(i) { setRH({ falconryLevel: i }); }
         var lvl = FALCONRY_CURRICULUM.levels[levelIdx];
         var tabs = [
-          { id: 'levels', label: '📜 Levels' },
-          { id: 'species', label: '🦅 Species Progression' },
-          { id: 'equipment', label: '🛠 Equipment' },
-          { id: 'training', label: '🎯 Training' },
-          { id: 'legal', label: '⚖ Legal' }
+          { id: 'levels', label: __alloT('stem.raptorhunt.levels', '📜 Levels') },
+          { id: 'species', label: __alloT('stem.raptorhunt.species_progression', '🦅 Species Progression') },
+          { id: 'equipment', label: __alloT('stem.raptorhunt.equipment', '🛠 Equipment') },
+          { id: 'training', label: __alloT('stem.raptorhunt.training', '🎯 Training') },
+          { id: 'legal', label: __alloT('stem.raptorhunt.legal', '⚖ Legal') }
         ];
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-orange-900/40 to-amber-900/40 border border-orange-700/40 rounded-xl p-5' },
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '📚'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-orange-200 tracking-tight' }, 'Falconry Curriculum'),
+                h('div', { className: 'text-xl font-bold text-orange-200 tracking-tight' }, __alloT('stem.raptorhunt.falconry_curriculum_2', 'Falconry Curriculum')),
                 h('div', { className: 'text-sm text-orange-100/85 mt-1' }, FALCONRY_CURRICULUM.intro)
               )
             )
@@ -16346,7 +16347,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'bg-slate-800/40 border border-orange-700/40 rounded-xl p-4 space-y-2' },
               h('div', { className: 'text-lg font-bold text-orange-300 tracking-tight' }, lvl.level),
               h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
-                h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, '📋 Requirements'),
+                h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.requirements', '📋 Requirements')),
                 h('ul', { className: 'space-y-1 list-disc list-inside text-xs text-cyan-100/90' },
                   lvl.requirements.map(function(r, i) {
                     return h('li', { key: i, className: 'leading-relaxed' }, r);
@@ -16355,19 +16356,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               ),
               h('div', { className: 'grid md:grid-cols-2 gap-2' },
                 h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-2 text-xs' },
-                  h('div', { className: 'font-bold text-amber-300 mb-1' }, '✨ What You Have'),
+                  h('div', { className: 'font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.what_you_have', '✨ What You Have')),
                   h('div', { className: 'text-amber-100/90' }, lvl.whatYouHave)
                 ),
                 h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-2 text-xs' },
-                  h('div', { className: 'font-bold text-emerald-300 mb-1' }, '📚 What You Learn'),
+                  h('div', { className: 'font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.what_you_learn', '📚 What You Learn')),
                   h('div', { className: 'text-emerald-100/90' }, lvl.whatYouLearn)
                 ),
                 h('div', { className: 'bg-rose-900/20 border border-rose-700/40 rounded p-2 text-xs' },
-                  h('div', { className: 'font-bold text-rose-300 mb-1' }, '⚠ Common Problems'),
+                  h('div', { className: 'font-bold text-rose-300 mb-1' }, __alloT('stem.raptorhunt.common_problems', '⚠ Common Problems')),
                   h('div', { className: 'text-rose-100/90' }, lvl.commonProblems)
                 ),
                 h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded p-2 text-xs' },
-                  h('div', { className: 'font-bold text-purple-300 mb-1' }, '⏰ Duration'),
+                  h('div', { className: 'font-bold text-purple-300 mb-1' }, __alloT('stem.raptorhunt.duration', '⏰ Duration')),
                   h('div', { className: 'text-purple-100/90' }, lvl.averageDuration)
                 )
               )
@@ -16397,7 +16398,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           ),
           fcTab === 'training' && h('div', { className: 'space-y-3' },
             h('div', { className: 'bg-slate-800/40 border border-orange-700/40 rounded-xl p-4' },
-              h('div', { className: 'text-sm font-bold text-orange-300 mb-2' }, '🏥 Daily Husbandry'),
+              h('div', { className: 'text-sm font-bold text-orange-300 mb-2' }, __alloT('stem.raptorhunt.daily_husbandry', '🏥 Daily Husbandry')),
               h('ul', { className: 'space-y-1 list-disc list-inside text-sm text-slate-200' },
                 FALCONRY_CURRICULUM.husbandry.map(function(h2, i) {
                   return h('li', { key: i, className: 'leading-relaxed' }, h2);
@@ -16405,7 +16406,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               )
             ),
             h('div', { className: 'bg-slate-800/40 border border-orange-700/40 rounded-xl p-4' },
-              h('div', { className: 'text-sm font-bold text-orange-300 mb-2' }, '🎯 Flight Training Progression'),
+              h('div', { className: 'text-sm font-bold text-orange-300 mb-2' }, __alloT('stem.raptorhunt.flight_training_progression', '🎯 Flight Training Progression')),
               h('ol', { className: 'space-y-1 list-decimal list-inside text-sm text-slate-200' },
                 FALCONRY_CURRICULUM.flightTraining.map(function(f, i) {
                   return h('li', { key: i, className: 'leading-relaxed' }, f);
@@ -16415,7 +16416,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           ),
           fcTab === 'legal' && h('div', { className: 'space-y-3' },
             h('div', { className: 'bg-rose-900/20 border border-rose-700/40 rounded-xl p-4' },
-              h('div', { className: 'text-sm font-bold text-rose-300 mb-2' }, '⚖ Legal Framework'),
+              h('div', { className: 'text-sm font-bold text-rose-300 mb-2' }, __alloT('stem.raptorhunt.legal_framework', '⚖ Legal Framework')),
               h('ul', { className: 'space-y-1 list-disc list-inside text-sm text-rose-100/90' },
                 FALCONRY_CURRICULUM.legalNotes.map(function(l, i) {
                   return h('li', { key: i, className: 'leading-relaxed' }, l);
@@ -16423,7 +16424,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               )
             ),
             h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded-xl p-4' },
-              h('div', { className: 'text-sm font-bold text-cyan-300 mb-2' }, '📚 Learn More'),
+              h('div', { className: 'text-sm font-bold text-cyan-300 mb-2' }, __alloT('stem.raptorhunt.learn_more', '📚 Learn More')),
               h('ul', { className: 'space-y-1 list-disc list-inside text-sm text-cyan-100/90' },
                 FALCONRY_CURRICULUM.learnMore.map(function(l, i) {
                   return h('li', { key: i, className: 'leading-relaxed' }, l);
@@ -16446,7 +16447,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🦴'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-stone-200 tracking-tight' }, 'Anatomy Atlas'),
+                h('div', { className: 'text-xl font-bold text-stone-200 tracking-tight' }, __alloT('stem.raptorhunt.anatomy_atlas', 'Anatomy Atlas')),
                 h('div', { className: 'text-sm text-stone-300 mt-1' }, ANATOMY_ATLAS.intro)
               )
             )
@@ -16468,7 +16469,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'text-lg font-bold text-stone-200 tracking-tight' }, v.icon + ' ' + v.name),
             h('div', { className: 'text-sm text-slate-100 italic leading-relaxed' }, v.description),
             h('div', { className: 'space-y-2' },
-              h('div', { className: 'text-sm font-bold text-amber-300' }, 'Key Structures'),
+              h('div', { className: 'text-sm font-bold text-amber-300' }, __alloT('stem.raptorhunt.key_structures', 'Key Structures')),
               v.keyStructures.map(function(s, i) {
                 return h('div', { key: i, className: 'bg-slate-900/40 border-l-4 border-amber-600 rounded-r p-3' },
                   h('div', { className: 'text-sm font-bold text-amber-300 mb-1' }, s.name),
@@ -16498,7 +16499,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🐭'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, 'Prey Atlas'),
+                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, __alloT('stem.raptorhunt.prey_atlas_2', 'Prey Atlas')),
                 h('div', { className: 'text-sm text-amber-100/85 mt-1' }, PREY_ATLAS.intro + ' (' + PREY_ATLAS.prey.length + ' prey entries)')
               )
             )
@@ -16507,17 +16508,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'flex items-center gap-2' },
             h('input', {
               type: 'text',
-              placeholder: 'Search prey, predator, or habitat...',
+              placeholder: __alloT('stem.raptorhunt.search_prey_predator_or_habitat', 'Search prey, predator, or habitat...'),
               value: preySearch,
               onChange: function(e) { setPreySearch(e.target.value); },
               className: 'flex-1 px-3 py-2 bg-slate-800/60 border border-amber-700/40 rounded text-sm text-slate-100',
-              'aria-label': 'Search prey atlas'
+              'aria-label': __alloT('stem.raptorhunt.search_prey_atlas', 'Search prey atlas')
             }),
             preySearch && h('button', {
               onClick: function() { setPreySearch(''); },
               className: 'transition-colors px-3 py-2 bg-slate-700 text-slate-200 rounded text-xs hover:bg-slate-600 active:scale-[0.97]',
-              'aria-label': 'Clear search'
-            }, 'Clear'),
+              'aria-label': __alloT('stem.raptorhunt.clear_search', 'Clear search')
+            }, __alloT('stem.raptorhunt.clear', 'Clear')),
             h('div', { className: 'text-xs text-amber-200 font-mono' }, filtered.length + ' shown')
           ),
           // Prey grid
@@ -16528,9 +16529,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   h('div', { className: 'text-sm font-bold text-amber-300' }, p.name),
                   h('div', { className: 'text-xs text-cyan-300 font-mono' }, p.mass)
                 ),
-                h('div', { className: 'text-xs text-red-200/90 mb-1' }, '🎯 Predators: ', h('span', { className: 'text-slate-200' }, p.predators)),
-                h('div', { className: 'text-xs text-emerald-200/90 mb-1' }, '⚡ Strategy: ', h('span', { className: 'text-slate-200' }, p.strategy)),
-                h('div', { className: 'text-xs text-cyan-200/90 mb-1' }, '🌿 Habitat: ', h('span', { className: 'text-slate-200' }, p.habitat)),
+                h('div', { className: 'text-xs text-red-200/90 mb-1' }, __alloT('stem.raptorhunt.predators', '🎯 Predators: '), h('span', { className: 'text-slate-200' }, p.predators)),
+                h('div', { className: 'text-xs text-emerald-200/90 mb-1' }, __alloT('stem.raptorhunt.strategy', '⚡ Strategy: '), h('span', { className: 'text-slate-200' }, p.strategy)),
+                h('div', { className: 'text-xs text-cyan-200/90 mb-1' }, __alloT('stem.raptorhunt.habitat', '🌿 Habitat: '), h('span', { className: 'text-slate-200' }, p.habitat)),
                 h('div', { className: 'text-[10px] italic text-purple-200/80 mt-1' }, p.notes)
               );
             })
@@ -16545,15 +16546,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var fossilTab = rh.fossilTab || 'fossils';
         function setFossilTab(t) { setRH({ fossilTab: t }); }
         var tabs = [
-          { id: 'fossils', label: '🦴 Famous Fossils' },
-          { id: 'events', label: '📅 Key Events' }
+          { id: 'fossils', label: __alloT('stem.raptorhunt.famous_fossils', '🦴 Famous Fossils') },
+          { id: 'events', label: __alloT('stem.raptorhunt.key_events', '📅 Key Events') }
         ];
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-stone-800/40 to-amber-900/40 border border-stone-600/40 rounded-xl p-5' },
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🦖'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-stone-200 tracking-tight' }, 'Fossil Record'),
+                h('div', { className: 'text-xl font-bold text-stone-200 tracking-tight' }, __alloT('stem.raptorhunt.fossil_record_2', 'Fossil Record')),
                 h('div', { className: 'text-sm text-stone-300 mt-1' }, FOSSIL_RECORD.intro)
               )
             )
@@ -16607,17 +16608,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var demoTab = rh.demoTab || 'life';
         function setDemoTab(t) { setRH({ demoTab: t }); }
         var tabs = [
-          { id: 'life', label: '📊 Life History Table' },
-          { id: 'concepts', label: '🧠 Population Concepts' },
-          { id: 'actions', label: '🤝 Conservation Actions' },
-          { id: 'examples', label: '🏆 Recovery Examples' }
+          { id: 'life', label: __alloT('stem.raptorhunt.life_history_table', '📊 Life History Table') },
+          { id: 'concepts', label: __alloT('stem.raptorhunt.population_concepts', '🧠 Population Concepts') },
+          { id: 'actions', label: __alloT('stem.raptorhunt.conservation_actions_2', '🤝 Conservation Actions') },
+          { id: 'examples', label: __alloT('stem.raptorhunt.recovery_examples', '🏆 Recovery Examples') }
         ];
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-teal-900/40 to-cyan-900/40 border border-teal-700/40 rounded-xl p-5' },
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '📊'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-teal-200 tracking-tight' }, 'Population & Demographics'),
+                h('div', { className: 'text-xl font-bold text-teal-200 tracking-tight' }, __alloT('stem.raptorhunt.population_demographics_2', 'Population & Demographics')),
                 h('div', { className: 'text-sm text-teal-100/85 mt-1' }, DEMOGRAPHICS.intro)
               )
             )
@@ -16640,14 +16641,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('table', { className: 'w-full text-xs', role: 'table' },
               h('thead', null,
                 h('tr', { className: 'bg-slate-900/60 border-b border-teal-700/40' },
-                  h('th', { className: 'p-2 text-left text-teal-300' }, 'Species'),
-                  h('th', { className: 'p-2 text-left text-teal-300' }, 'Lifespan'),
-                  h('th', { className: 'p-2 text-left text-teal-300' }, 'Maturity'),
-                  h('th', { className: 'p-2 text-left text-teal-300' }, 'Clutch'),
-                  h('th', { className: 'p-2 text-left text-teal-300' }, 'Fledging Rate'),
-                  h('th', { className: 'p-2 text-left text-teal-300' }, '1st Yr Mortality'),
-                  h('th', { className: 'p-2 text-left text-teal-300' }, 'Density'),
-                  h('th', { className: 'p-2 text-left text-teal-300' }, 'Notes')
+                  h('th', { className: 'p-2 text-left text-teal-300' }, __alloT('stem.raptorhunt.species_8', 'Species')),
+                  h('th', { className: 'p-2 text-left text-teal-300' }, __alloT('stem.raptorhunt.lifespan', 'Lifespan')),
+                  h('th', { className: 'p-2 text-left text-teal-300' }, __alloT('stem.raptorhunt.maturity', 'Maturity')),
+                  h('th', { className: 'p-2 text-left text-teal-300' }, __alloT('stem.raptorhunt.clutch', 'Clutch')),
+                  h('th', { className: 'p-2 text-left text-teal-300' }, __alloT('stem.raptorhunt.fledging_rate', 'Fledging Rate')),
+                  h('th', { className: 'p-2 text-left text-teal-300' }, __alloT('stem.raptorhunt.1st_yr_mortality', '1st Yr Mortality')),
+                  h('th', { className: 'p-2 text-left text-teal-300' }, __alloT('stem.raptorhunt.density', 'Density')),
+                  h('th', { className: 'p-2 text-left text-teal-300' }, __alloT('stem.raptorhunt.notes_2', 'Notes'))
                 )
               ),
               h('tbody', null,
@@ -16676,7 +16677,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             })
           ),
           demoTab === 'actions' && h('div', { className: 'bg-slate-800/40 border border-emerald-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, '🤝 Conservation Action Toolkit'),
+            h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, __alloT('stem.raptorhunt.conservation_action_toolkit', '🤝 Conservation Action Toolkit')),
             h('ul', { className: 'space-y-1 list-disc list-inside text-sm text-emerald-100/90' },
               DEMOGRAPHICS.conservationActions.map(function(a, i) {
                 return h('li', { key: i, className: 'leading-relaxed' }, a);
@@ -16707,7 +16708,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🏞'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-green-200 tracking-tight' }, 'Habitat Atlas'),
+                h('div', { className: 'text-xl font-bold text-green-200 tracking-tight' }, __alloT('stem.raptorhunt.habitat_atlas_2', 'Habitat Atlas')),
                 h('div', { className: 'text-sm text-green-100/85 mt-1' }, HABITAT_ATLAS.intro)
               )
             )
@@ -16730,27 +16731,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'text-xs italic text-amber-200/80' }, '📍 ' + hab.states),
             h('div', { className: 'text-xs italic text-cyan-200/80 mb-2' }, '🌡 ' + hab.climate),
             h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-emerald-300 mb-1' }, '🌳 Vegetation'),
+              h('div', { className: 'font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.vegetation', '🌳 Vegetation')),
               h('div', { className: 'text-emerald-100/90' }, hab.trees)
             ),
             h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-amber-300 mb-1' }, '🦅 Key Raptor Species'),
+              h('div', { className: 'font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.key_raptor_species', '🦅 Key Raptor Species')),
               h('div', { className: 'text-amber-100/90' }, hab.keySpecies.join(' · '))
             ),
             h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-purple-300 mb-1' }, '🐭 Prey Base'),
+              h('div', { className: 'font-bold text-purple-300 mb-1' }, __alloT('stem.raptorhunt.prey_base', '🐭 Prey Base')),
               h('div', { className: 'text-purple-100/90' }, hab.preyBase)
             ),
             h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-cyan-300 mb-1' }, '👀 Best Viewing'),
+              h('div', { className: 'font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.best_viewing', '👀 Best Viewing')),
               h('div', { className: 'text-cyan-100/90' }, hab.bestViewing)
             ),
             h('div', { className: 'bg-rose-900/20 border border-rose-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-rose-300 mb-1' }, '⚠ Challenges'),
+              h('div', { className: 'font-bold text-rose-300 mb-1' }, __alloT('stem.raptorhunt.challenges_2', '⚠ Challenges')),
               h('div', { className: 'text-rose-100/90' }, hab.challenges)
             ),
             h('div', { className: 'bg-yellow-900/20 border border-yellow-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-yellow-300 mb-1' }, '📅 Seasonal Patterns'),
+              h('div', { className: 'font-bold text-yellow-300 mb-1' }, __alloT('stem.raptorhunt.seasonal_patterns', '📅 Seasonal Patterns')),
               h('div', { className: 'text-yellow-100/90' }, hab.seasonal)
             )
           )
@@ -16769,7 +16770,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🎒'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-blue-200 tracking-tight' }, 'Lesson Plan Library'),
+                h('div', { className: 'text-xl font-bold text-blue-200 tracking-tight' }, __alloT('stem.raptorhunt.lesson_plan_library_2', 'Lesson Plan Library')),
                 h('div', { className: 'text-sm text-blue-100/85 mt-1' }, LESSON_PLANS.intro)
               )
             )
@@ -16793,7 +16794,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'text-xs italic text-amber-200/80' }, lp.grade + ' · ' + lp.subject + ' · ' + lp.duration)
             ),
             h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '🎯 Objectives'),
+              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.objectives', '🎯 Objectives')),
               h('ul', { className: 'space-y-1 list-disc list-inside text-xs text-emerald-100/90' },
                 lp.objectives.map(function(o, i) {
                   return h('li', { key: i, className: 'leading-relaxed' }, o);
@@ -16801,7 +16802,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               )
             ),
             h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, '🛠 Materials'),
+              h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.materials', '🛠 Materials')),
               h('ul', { className: 'space-y-1 list-disc list-inside text-xs text-amber-100/90' },
                 lp.materials.map(function(m, i) {
                   return h('li', { key: i }, m);
@@ -16809,7 +16810,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               )
             ),
             h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, '📋 Procedure'),
+              h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.procedure', '📋 Procedure')),
               h('ol', { className: 'space-y-1 list-decimal list-inside text-xs text-cyan-100/90' },
                 lp.procedure.map(function(p, i) {
                   return h('li', { key: i, className: 'leading-relaxed' }, p);
@@ -16818,18 +16819,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             ),
             h('div', { className: 'grid md:grid-cols-2 gap-2' },
               h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-purple-300 mb-1' }, '✓ Assessment'),
+                h('div', { className: 'font-bold text-purple-300 mb-1' }, __alloT('stem.raptorhunt.assessment', '✓ Assessment')),
                 h('div', { className: 'text-purple-100/90' }, lp.assessment)
               ),
               h('div', { className: 'bg-rose-900/20 border border-rose-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-rose-300 mb-1' }, '🌟 Extensions'),
+                h('div', { className: 'font-bold text-rose-300 mb-1' }, __alloT('stem.raptorhunt.extensions', '🌟 Extensions')),
                 h('div', { className: 'text-rose-100/90' }, lp.extensions)
               )
             )
           ),
           // Teaching tips
           h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-cyan-300 mb-2' }, '👩‍🏫 Pedagogical Tips'),
+            h('div', { className: 'text-sm font-bold text-cyan-300 mb-2' }, __alloT('stem.raptorhunt.pedagogical_tips', '👩‍🏫 Pedagogical Tips')),
             h('ul', { className: 'space-y-1 list-disc list-inside text-xs text-cyan-100/90' },
               LESSON_PLANS.tips.map(function(t, i) {
                 return h('li', { key: i, className: 'leading-relaxed' }, t);
@@ -16858,7 +16859,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🕵'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-purple-200 tracking-tight' }, 'ID Mystery Cases'),
+                h('div', { className: 'text-xl font-bold text-purple-200 tracking-tight' }, __alloT('stem.raptorhunt.id_mystery_cases_2', 'ID Mystery Cases')),
                 h('div', { className: 'text-sm text-purple-100/85 mt-1' }, MYSTERY_CASES.intro)
               )
             )
@@ -16883,11 +16884,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'text-xs font-mono px-2 py-1 rounded ' + (c.difficulty === 'Easy' ? 'bg-emerald-900/40 text-emerald-300' : c.difficulty === 'Medium' ? 'bg-amber-900/40 text-amber-300' : c.difficulty === 'Hard' ? 'bg-rose-900/40 text-rose-300' : 'bg-purple-900/40 text-purple-300') }, c.difficulty)
             ),
             h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, '👀 Observations'),
+              h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.observations', '👀 Observations')),
               h('div', { className: 'text-sm text-slate-100 leading-relaxed' }, c.observations)
             ),
             h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, '💡 Clues'),
+              h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.clues', '💡 Clues')),
               h('ul', { className: 'space-y-1 list-disc list-inside text-xs text-amber-100/90' },
                 c.clues.map(function(cl, i) {
                   return h('li', { key: i, className: 'leading-relaxed' }, cl);
@@ -16895,30 +16896,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               )
             ),
             h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-purple-300 mb-1' }, '❓ Your Guess'),
+              h('div', { className: 'text-xs font-bold text-purple-300 mb-1' }, __alloT('stem.raptorhunt.your_guess', '❓ Your Guess')),
               h('div', { className: 'text-xs text-slate-200' }, c.possibleSpecies.join(' / '))
             ),
             // Reveal button
             !revealed && h('button', {
               onClick: toggleReveal,
               className: 'w-full py-3 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white rounded-lg font-bold hover:from-purple-700 hover:to-fuchsia-700',
-              'aria-label': 'Reveal answer'
-            }, '🔓 Reveal Answer'),
+              'aria-label': __alloT('stem.raptorhunt.reveal_answer', 'Reveal answer')
+            }, __alloT('stem.raptorhunt.reveal_answer_2', '🔓 Reveal Answer')),
             // Revealed answer
             revealed && h('div', { className: 'space-y-2' },
               h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-3' },
-                h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '✅ Answer'),
+                h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.answer_2', '✅ Answer')),
                 h('div', { className: 'text-base font-bold text-emerald-100' }, c.answer)
               ),
               h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded p-3' },
-                h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, '📖 Why'),
+                h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.why', '📖 Why')),
                 h('div', { className: 'text-xs text-cyan-100/90 leading-relaxed' }, c.why)
               ),
               h('button', {
                 onClick: toggleReveal,
                 className: 'transition-colors text-xs text-purple-300 hover:text-purple-200',
-                'aria-label': 'Hide answer'
-              }, '🔒 Hide Answer')
+                'aria-label': __alloT('stem.raptorhunt.hide_answer', 'Hide answer')
+              }, __alloT('stem.raptorhunt.hide_answer_2', '🔒 Hide Answer'))
             )
           )
         );
@@ -16936,7 +16937,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🗺'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, 'Regional Field Guides'),
+                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, __alloT('stem.raptorhunt.regional_field_guides_2', 'Regional Field Guides')),
                 h('div', { className: 'text-sm text-amber-100/85 mt-1' }, REGIONAL_GUIDES.intro)
               )
             )
@@ -16959,32 +16960,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'text-sm italic text-cyan-200/90' }, r.characteristic),
             h('div', { className: 'grid md:grid-cols-2 gap-2' },
               h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-emerald-300 mb-1' }, '🏠 Year-Round Residents'),
+                h('div', { className: 'font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.year_round_residents', '🏠 Year-Round Residents')),
                 h('div', { className: 'text-emerald-100/90' }, r.residents.join(' · '))
               ),
               h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-cyan-300 mb-1' }, '🌱 Breeding Visitors'),
+                h('div', { className: 'font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.breeding_visitors', '🌱 Breeding Visitors')),
                 h('div', { className: 'text-cyan-100/90' }, r.breeders.join(' · '))
               ),
               h('div', { className: 'bg-blue-900/20 border border-blue-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-blue-300 mb-1' }, '❄ Winter Visitors'),
+                h('div', { className: 'font-bold text-blue-300 mb-1' }, __alloT('stem.raptorhunt.winter_visitors', '❄ Winter Visitors')),
                 h('div', { className: 'text-blue-100/90' }, r.winterers.join(' · '))
               ),
               h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-amber-300 mb-1' }, '📍 Must-See Sites'),
+                h('div', { className: 'font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.must_see_sites', '📍 Must-See Sites')),
                 h('div', { className: 'text-amber-100/90' }, r.mustSeeSites.join(' · '))
               )
             ),
             h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-purple-300 mb-1' }, '📅 Best Season'),
+              h('div', { className: 'font-bold text-purple-300 mb-1' }, __alloT('stem.raptorhunt.best_season', '📅 Best Season')),
               h('div', { className: 'text-purple-100/90' }, r.bestSeason)
             ),
             h('div', { className: 'bg-rose-900/20 border border-rose-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-rose-300 mb-1' }, '⚠ Conservation Challenges'),
+              h('div', { className: 'font-bold text-rose-300 mb-1' }, __alloT('stem.raptorhunt.conservation_challenges', '⚠ Conservation Challenges')),
               h('div', { className: 'text-rose-100/90' }, r.challenges)
             ),
             h('div', { className: 'bg-yellow-900/20 border border-yellow-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-yellow-300 mb-1' }, '⭐ Signature Birds'),
+              h('div', { className: 'font-bold text-yellow-300 mb-1' }, __alloT('stem.raptorhunt.signature_birds', '⭐ Signature Birds')),
               h('div', { className: 'text-yellow-100/90' }, r.signatureBirds)
             )
           )
@@ -17003,7 +17004,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🌍'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-blue-200 tracking-tight' }, 'World Tour'),
+                h('div', { className: 'text-xl font-bold text-blue-200 tracking-tight' }, __alloT('stem.raptorhunt.world_tour_2', 'World Tour')),
                 h('div', { className: 'text-sm text-blue-100/85 mt-1' }, WORLD_TOUR.intro)
               )
             )
@@ -17026,24 +17027,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             ),
             h('div', { className: 'text-xs italic text-amber-200/80' }, '📅 ' + d.season),
             h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-amber-300 mb-1' }, '🦅 Species'),
+              h('div', { className: 'font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.species_9', '🦅 Species')),
               h('div', { className: 'text-amber-100/90' }, d.species)
             ),
             h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-emerald-300 mb-1' }, '⭐ Attraction'),
+              h('div', { className: 'font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.attraction', '⭐ Attraction')),
               h('div', { className: 'text-emerald-100/90' }, d.attraction)
             ),
             h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-cyan-300 mb-1' }, '🎯 Why Visit'),
+              h('div', { className: 'font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.why_visit', '🎯 Why Visit')),
               h('div', { className: 'text-cyan-100/90' }, d.whyVisit)
             ),
             h('div', { className: 'grid md:grid-cols-2 gap-2' },
               h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-yellow-300 mb-1' }, '💰 Cost'),
+                h('div', { className: 'font-bold text-yellow-300 mb-1' }, __alloT('stem.raptorhunt.cost_2', '💰 Cost')),
                 h('div', { className: 'text-yellow-100/90' }, d.cost)
               ),
               h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-purple-300 mb-1' }, '✈ Airport'),
+                h('div', { className: 'font-bold text-purple-300 mb-1' }, __alloT('stem.raptorhunt.airport', '✈ Airport')),
                 h('div', { className: 'text-purple-100/90' }, d.nearestAirport)
               )
             )
@@ -17060,7 +17061,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🏅'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-yellow-200 tracking-tight' }, 'Raptor Records & Superlatives'),
+                h('div', { className: 'text-xl font-bold text-yellow-200 tracking-tight' }, __alloT('stem.raptorhunt.raptor_records_superlatives', 'Raptor Records & Superlatives')),
                 h('div', { className: 'text-sm text-yellow-100/85 mt-1' }, RAPTOR_RECORDS.intro)
               )
             )
@@ -17091,7 +17092,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '⚠️'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-rose-200 tracking-tight' }, 'Threats Database'),
+                h('div', { className: 'text-xl font-bold text-rose-200 tracking-tight' }, __alloT('stem.raptorhunt.threats_database_2', 'Threats Database')),
                 h('div', { className: 'text-sm text-rose-100/85 mt-1' }, THREATS_DB.intro)
               )
             )
@@ -17110,23 +17111,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'bg-slate-800/40 border border-rose-700/40 rounded-xl p-4 space-y-2' },
             h('div', { className: 'text-lg font-bold text-rose-300 tracking-tight' }, '⚠ ' + t.threat),
             h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-amber-300 mb-1' }, '🎯 Affects'),
+              h('div', { className: 'font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.affects', '🎯 Affects')),
               h('div', { className: 'text-amber-100/90' }, t.affects)
             ),
             h('div', { className: 'bg-rose-900/20 border border-rose-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-rose-300 mb-1' }, '📊 Scale'),
+              h('div', { className: 'font-bold text-rose-300 mb-1' }, __alloT('stem.raptorhunt.scale', '📊 Scale')),
               h('div', { className: 'text-rose-100/90' }, t.scale)
             ),
             h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-purple-300 mb-1' }, '🔬 Mechanism'),
+              h('div', { className: 'font-bold text-purple-300 mb-1' }, __alloT('stem.raptorhunt.mechanism', '🔬 Mechanism')),
               h('div', { className: 'text-purple-100/90' }, t.mechanism)
             ),
             h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-emerald-300 mb-1' }, '💡 Mitigation'),
+              h('div', { className: 'font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.mitigation', '💡 Mitigation')),
               h('div', { className: 'text-emerald-100/90' }, t.mitigation)
             ),
             h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-cyan-300 mb-1' }, '🤝 How You Can Help'),
+              h('div', { className: 'font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.how_you_can_help', '🤝 How You Can Help')),
               h('div', { className: 'text-cyan-100/90' }, t.howHelp)
             )
           )
@@ -17145,7 +17146,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🧑‍🔬'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-violet-200 tracking-tight' }, 'Expert Spotlights'),
+                h('div', { className: 'text-xl font-bold text-violet-200 tracking-tight' }, __alloT('stem.raptorhunt.expert_spotlights_2', 'Expert Spotlights')),
                 h('div', { className: 'text-sm text-violet-100/85 mt-1' }, EXPERT_SPOTLIGHTS.intro)
               )
             )
@@ -17167,15 +17168,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'text-xs text-amber-200 font-mono' }, e.country + ' · ' + e.years)
             ),
             h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, '🔬 Contribution'),
+              h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.contribution', '🔬 Contribution')),
               h('div', { className: 'text-sm text-cyan-100/90 leading-relaxed' }, e.contribution)
             ),
             h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '🌟 Legacy'),
+              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.legacy', '🌟 Legacy')),
               h('div', { className: 'text-sm text-emerald-100/90 leading-relaxed' }, e.legacy)
             ),
             h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, '📚 How to Learn More'),
+              h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.how_to_learn_more', '📚 How to Learn More')),
               h('div', { className: 'text-sm text-amber-100/90 leading-relaxed' }, e.howRemember)
             )
           )
@@ -17197,7 +17198,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🌲'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-green-200 tracking-tight' }, 'Field Scenarios'),
+                h('div', { className: 'text-xl font-bold text-green-200 tracking-tight' }, __alloT('stem.raptorhunt.field_scenarios_2', 'Field Scenarios')),
                 h('div', { className: 'text-sm text-green-100/85 mt-1' }, FIELD_SCENARIOS.intro)
               )
             )
@@ -17216,11 +17217,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'bg-slate-800/40 border border-green-700/40 rounded-xl p-4 space-y-3' },
             h('div', { className: 'text-lg font-bold text-green-300 tracking-tight' }, s.title),
             h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, '📜 Setting'),
+              h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.setting', '📜 Setting')),
               h('div', { className: 'text-sm text-slate-100 leading-relaxed' }, s.setting)
             ),
             h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, '❓ Challenge'),
+              h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.challenge_2', '❓ Challenge')),
               h('div', { className: 'text-sm text-amber-100 leading-relaxed' }, s.challenge)
             ),
             !revealed && h('div', { className: 'space-y-2' },
@@ -17236,7 +17237,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             ),
             revealed && h('div', { className: 'space-y-2' },
               h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('span', { className: 'text-cyan-300' }, 'You chose: '),
+                h('span', { className: 'text-cyan-300' }, __alloT('stem.raptorhunt.you_chose', 'You chose: ')),
                 h('span', { className: 'text-amber-300 font-bold' }, choice)
               ),
               h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-3' },
@@ -17244,14 +17245,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('div', { className: 'text-sm text-emerald-100/90 leading-relaxed' }, s.response)
               ),
               h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded p-3' },
-                h('div', { className: 'text-xs font-bold text-purple-300 mb-1' }, '💡 Learnings'),
+                h('div', { className: 'text-xs font-bold text-purple-300 mb-1' }, __alloT('stem.raptorhunt.learnings', '💡 Learnings')),
                 h('div', { className: 'text-sm text-purple-100/90 italic leading-relaxed' }, s.learnings)
               ),
               h('button', {
                 onClick: function() { setRH({ scenarioRevealed: false, scenarioChoice: null }); },
                 className: 'transition-colors text-xs text-green-300 hover:text-green-200',
-                'aria-label': 'Reset scenario'
-              }, '↺ Try again')
+                'aria-label': __alloT('stem.raptorhunt.reset_scenario', 'Reset scenario')
+              }, __alloT('stem.raptorhunt.try_again_3', '↺ Try again'))
             )
           )
         );
@@ -17269,7 +17270,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🐦'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, 'Species Profile Library'),
+                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, __alloT('stem.raptorhunt.species_profile_library', 'Species Profile Library')),
                 h('div', { className: 'text-sm text-amber-100/85 mt-1' }, SPECIES_PROFILES.intro)
               )
             )
@@ -17289,40 +17290,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'text-lg font-bold text-amber-300 tracking-tight' }, sp.name),
             h('div', { className: 'grid md:grid-cols-2 gap-2' },
               h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-cyan-300 mb-1' }, '📏 Wingspan'),
+                h('div', { className: 'font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.wingspan_2', '📏 Wingspan')),
                 h('div', { className: 'text-cyan-100/90 font-mono' }, sp.wingspan)
               ),
               h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-purple-300 mb-1' }, '🏋 Mass'),
+                h('div', { className: 'font-bold text-purple-300 mb-1' }, __alloT('stem.raptorhunt.mass_2', '🏋 Mass')),
                 h('div', { className: 'text-purple-100/90 font-mono' }, sp.mass)
               ),
               h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-emerald-300 mb-1' }, '🌍 Range'),
+                h('div', { className: 'font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.range', '🌍 Range')),
                 h('div', { className: 'text-emerald-100/90' }, sp.range)
               ),
               h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-blue-300 mb-1' }, '🌳 Habitat'),
+                h('div', { className: 'font-bold text-blue-300 mb-1' }, __alloT('stem.raptorhunt.habitat_2', '🌳 Habitat')),
                 h('div', { className: 'text-blue-100/90' }, sp.habitat)
               ),
               h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-rose-300 mb-1' }, '🍖 Diet'),
+                h('div', { className: 'font-bold text-rose-300 mb-1' }, __alloT('stem.raptorhunt.diet_2', '🍖 Diet')),
                 h('div', { className: 'text-rose-100/90' }, sp.diet)
               ),
               h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-yellow-300 mb-1' }, '🐣 Breeding'),
+                h('div', { className: 'font-bold text-yellow-300 mb-1' }, __alloT('stem.raptorhunt.breeding_2', '🐣 Breeding')),
                 h('div', { className: 'text-yellow-100/90' }, sp.breeding)
               )
             ),
             h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-emerald-300 mb-1' }, '🛡 Conservation Status'),
+              h('div', { className: 'font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.conservation_status', '🛡 Conservation Status')),
               h('div', { className: 'text-emerald-100/90' }, sp.conservationStatus)
             ),
             h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-amber-300 mb-1' }, '🎯 Fun Fact'),
+              h('div', { className: 'font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.fun_fact', '🎯 Fun Fact')),
               h('div', { className: 'text-amber-100/90' }, sp.funFact)
             ),
             h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-purple-300 mb-1' }, '🔬 Did You Know?'),
+              h('div', { className: 'font-bold text-purple-300 mb-1' }, __alloT('stem.raptorhunt.did_you_know', '🔬 Did You Know?')),
               h('div', { className: 'text-purple-100/90 leading-relaxed' }, sp.didYouKnow)
             )
           )
@@ -17341,7 +17342,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '⚖'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-pink-200 tracking-tight' }, 'Comparative Anatomy'),
+                h('div', { className: 'text-xl font-bold text-pink-200 tracking-tight' }, __alloT('stem.raptorhunt.comparative_anatomy_2', 'Comparative Anatomy')),
                 h('div', { className: 'text-sm text-pink-100/85 mt-1' }, COMPARATIVE_ANATOMY.intro)
               )
             )
@@ -17366,7 +17367,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('table', { className: 'w-full text-xs' },
               h('thead', null,
                 h('tr', { className: 'border-b border-pink-700/40' },
-                  h('th', { className: 'p-2 text-left text-pink-300' }, 'Feature'),
+                  h('th', { className: 'p-2 text-left text-pink-300' }, __alloT('stem.raptorhunt.feature', 'Feature')),
                   h('th', { className: 'p-2 text-left text-amber-300' }, p.a),
                   h('th', { className: 'p-2 text-left text-cyan-300' }, p.b)
                 )
@@ -17382,7 +17383,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               )
             ),
             h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '🔑 Key Diagnostic'),
+              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.key_diagnostic', '🔑 Key Diagnostic')),
               h('div', { className: 'text-sm text-emerald-100/90 italic leading-relaxed' }, p.keyDiagnostic)
             )
           )
@@ -17398,7 +17399,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '💥'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-orange-200 tracking-tight' }, 'Raptor Mythbusters'),
+                h('div', { className: 'text-xl font-bold text-orange-200 tracking-tight' }, __alloT('stem.raptorhunt.raptor_mythbusters_2', 'Raptor Mythbusters')),
                 h('div', { className: 'text-sm text-orange-100/85 mt-1' }, MYTHBUSTERS.intro)
               )
             )
@@ -17430,7 +17431,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🔬'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-indigo-200 tracking-tight' }, 'Active Research Stations'),
+                h('div', { className: 'text-xl font-bold text-indigo-200 tracking-tight' }, __alloT('stem.raptorhunt.active_research_stations', 'Active Research Stations')),
                 h('div', { className: 'text-sm text-indigo-100/85 mt-1' }, RESEARCH_STATIONS.intro)
               )
             )
@@ -17460,7 +17461,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🏛'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-emerald-200 tracking-tight' }, 'Conservation Organizations'),
+                h('div', { className: 'text-xl font-bold text-emerald-200 tracking-tight' }, __alloT('stem.raptorhunt.conservation_organizations', 'Conservation Organizations')),
                 h('div', { className: 'text-sm text-emerald-100/85 mt-1' }, CONSERVATION_ORGS.intro)
               )
             )
@@ -17491,7 +17492,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🏛'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, 'Raptor Museums'),
+                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, __alloT('stem.raptorhunt.raptor_museums_2', 'Raptor Museums')),
                 h('div', { className: 'text-sm text-amber-100/85 mt-1' }, RAPTOR_MUSEUMS.intro)
               )
             )
@@ -17524,7 +17525,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '📕'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-purple-200 tracking-tight' }, 'Recommended Reading'),
+                h('div', { className: 'text-xl font-bold text-purple-200 tracking-tight' }, __alloT('stem.raptorhunt.recommended_reading_2', 'Recommended Reading')),
                 h('div', { className: 'text-sm text-purple-100/85 mt-1' }, BOOK_LIBRARY.intro)
               )
             )
@@ -17565,7 +17566,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🎥'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-red-200 tracking-tight' }, 'Documentaries & Films'),
+                h('div', { className: 'text-xl font-bold text-red-200 tracking-tight' }, __alloT('stem.raptorhunt.documentaries_films_2', 'Documentaries & Films')),
                 h('div', { className: 'text-sm text-red-100/85 mt-1' }, DOCUMENTARIES.intro)
               )
             )
@@ -17598,7 +17599,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🪺'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, 'Nest-Build Cookbook'),
+                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, __alloT('stem.raptorhunt.nest_build_cookbook_2', 'Nest-Build Cookbook')),
                 h('div', { className: 'text-sm text-amber-100/85 mt-1' }, NEST_COOKBOOK.intro)
               )
             )
@@ -17618,27 +17619,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'text-lg font-bold text-amber-300 tracking-tight' }, '🪺 ' + n.species),
             h('div', { className: 'grid md:grid-cols-2 gap-2' },
               h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-cyan-300 mb-1' }, '📍 Location'),
+                h('div', { className: 'font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.location', '📍 Location')),
                 h('div', { className: 'text-cyan-100/90' }, n.location)
               ),
               h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-purple-300 mb-1' }, '📐 Size'),
+                h('div', { className: 'font-bold text-purple-300 mb-1' }, __alloT('stem.raptorhunt.size', '📐 Size')),
                 h('div', { className: 'text-purple-100/90' }, n.size)
               ),
               h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-emerald-300 mb-1' }, '🌿 Materials'),
+                h('div', { className: 'font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.materials_2', '🌿 Materials')),
                 h('div', { className: 'text-emerald-100/90' }, n.materials)
               ),
               h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-yellow-300 mb-1' }, '🔨 Construction'),
+                h('div', { className: 'font-bold text-yellow-300 mb-1' }, __alloT('stem.raptorhunt.construction', '🔨 Construction')),
                 h('div', { className: 'text-yellow-100/90' }, n.construction)
               ),
               h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-rose-300 mb-1' }, '📋 Stages'),
+                h('div', { className: 'font-bold text-rose-300 mb-1' }, __alloT('stem.raptorhunt.stages', '📋 Stages')),
                 h('div', { className: 'text-rose-100/90' }, n.stages)
               ),
               h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-blue-300 mb-1' }, '📅 Timing'),
+                h('div', { className: 'font-bold text-blue-300 mb-1' }, __alloT('stem.raptorhunt.timing', '📅 Timing')),
                 h('div', { className: 'text-blue-100/90' }, n.timing)
               )
             )
@@ -17665,7 +17666,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🧮'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-blue-200 tracking-tight' }, 'Raptor Math Lab'),
+                h('div', { className: 'text-xl font-bold text-blue-200 tracking-tight' }, __alloT('stem.raptorhunt.raptor_math_lab_2', 'Raptor Math Lab')),
                 h('div', { className: 'text-sm text-blue-100/85 mt-1' }, MATH_LAB.intro)
               )
             )
@@ -17684,36 +17685,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'bg-slate-800/40 border border-blue-700/40 rounded-xl p-4 space-y-3' },
             h('div', { className: 'text-xs uppercase font-mono text-cyan-300' }, '📊 ' + p.category),
             h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-blue-300 mb-1' }, '❓ Problem'),
+              h('div', { className: 'text-xs font-bold text-blue-300 mb-1' }, __alloT('stem.raptorhunt.problem', '❓ Problem')),
               h('div', { className: 'text-sm text-slate-100 leading-relaxed' }, p.problem)
             ),
             !revealed && h('button', {
               onClick: toggleRev,
               className: 'w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-bold',
-              'aria-label': 'Reveal solution'
-            }, '🔓 Reveal Solution'),
+              'aria-label': __alloT('stem.raptorhunt.reveal_solution', 'Reveal solution')
+            }, __alloT('stem.raptorhunt.reveal_solution_2', '🔓 Reveal Solution')),
             revealed && h('div', { className: 'space-y-2' },
               h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-cyan-300 mb-1' }, '🛤 Approach'),
+                h('div', { className: 'font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.approach', '🛤 Approach')),
                 h('div', { className: 'text-cyan-100/90' }, p.approach)
               ),
               h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-emerald-300 mb-1' }, '🔢 Calculation'),
+                h('div', { className: 'font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.calculation', '🔢 Calculation')),
                 h('div', { className: 'text-emerald-100/90 font-mono' }, p.calc)
               ),
               h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-amber-300 mb-1' }, '✅ Answer'),
+                h('div', { className: 'font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.answer_3', '✅ Answer')),
                 h('div', { className: 'text-amber-100/90 font-bold' }, p.answer)
               ),
               h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-purple-300 mb-1' }, '💡 Interpretation'),
+                h('div', { className: 'font-bold text-purple-300 mb-1' }, __alloT('stem.raptorhunt.interpretation', '💡 Interpretation')),
                 h('div', { className: 'text-purple-100/90 italic leading-relaxed' }, p.interpretation)
               ),
               h('button', {
                 onClick: toggleRev,
                 className: 'transition-colors text-xs text-blue-300 hover:text-blue-200',
-                'aria-label': 'Hide solution'
-              }, '🔒 Hide')
+                'aria-label': __alloT('stem.raptorhunt.hide_solution', 'Hide solution')
+              }, __alloT('stem.raptorhunt.hide', '🔒 Hide'))
             )
           )
         );
@@ -17728,7 +17729,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '📢'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-emerald-200 tracking-tight' }, 'Public Engagement'),
+                h('div', { className: 'text-xl font-bold text-emerald-200 tracking-tight' }, __alloT('stem.raptorhunt.public_engagement_2', 'Public Engagement')),
                 h('div', { className: 'text-sm text-emerald-100/85 mt-1' }, PUBLIC_ENGAGEMENT.intro)
               )
             )
@@ -17760,7 +17761,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🅱'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-indigo-200 tracking-tight' }, 'Deep Glossary B'),
+                h('div', { className: 'text-xl font-bold text-indigo-200 tracking-tight' }, __alloT('stem.raptorhunt.deep_glossary_b_2', 'Deep Glossary B')),
                 h('div', { className: 'text-sm text-indigo-100/85 mt-1' }, DEEP_GLOSSARY_B.intro)
               )
             )
@@ -17768,11 +17769,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'flex items-center gap-2' },
             h('input', {
               type: 'text',
-              placeholder: 'Search terms...',
+              placeholder: __alloT('stem.raptorhunt.search_terms', 'Search terms...'),
               value: search2,
               onChange: function(e) { setSearch2(e.target.value); },
               className: 'flex-1 px-3 py-2 bg-slate-800/60 border border-indigo-700/40 rounded text-sm text-slate-100',
-              'aria-label': 'Search advanced glossary'
+              'aria-label': __alloT('stem.raptorhunt.search_advanced_glossary', 'Search advanced glossary')
             }),
             h('div', { className: 'text-xs text-indigo-300 font-mono' }, filtered.length + ' terms')
           ),
@@ -17794,11 +17795,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-orange-900/40 via-amber-900/40 to-yellow-900/40 border border-amber-700/40 rounded-xl p-6 text-center' },
             h('div', { className: 'text-7xl mb-4' }, '🌅'),
-            h('div', { className: 'text-2xl font-bold text-amber-100 tracking-tight' }, 'You Are Now A Raptor Scholar'),
-            h('div', { className: 'text-sm text-amber-200/80 mt-2 italic' }, '60+ sections · 20+ species · 100s of facts · centuries of knowledge')
+            h('div', { className: 'text-2xl font-bold text-amber-100 tracking-tight' }, __alloT('stem.raptorhunt.you_are_now_a_raptor_scholar', 'You Are Now A Raptor Scholar')),
+            h('div', { className: 'text-sm text-amber-200/80 mt-2 italic' }, __alloT('stem.raptorhunt.60_sections_20_species_100s_of_facts_c', '60+ sections · 20+ species · 100s of facts · centuries of knowledge'))
           ),
           h('div', { className: 'bg-slate-800/40 border border-amber-700/40 rounded-xl p-5 space-y-3' },
-            h('div', { className: 'text-base font-bold text-amber-300' }, '🎓 What you\'ve learned'),
+            h('div', { className: 'text-base font-bold text-amber-300' }, __alloT('stem.raptorhunt.what_you_ve_learned', '🎓 What you\'ve learned')),
             h('ul', { className: 'space-y-2 text-sm text-slate-100' },
               [
                 'The physics of a 240 mph peregrine stoop + how the body survives 14g forces.',
@@ -17817,7 +17818,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             )
           ),
           h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, '🎯 What Next'),
+            h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, __alloT('stem.raptorhunt.what_next', '🎯 What Next')),
             h('ul', { className: 'space-y-1 list-disc list-inside text-sm text-emerald-100/90' },
               [
                 'Visit a hawkwatch site this fall.',
@@ -17837,18 +17838,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             )
           ),
           h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-purple-300 mb-2' }, '🦅 A Closing Thought'),
+            h('div', { className: 'text-sm font-bold text-purple-300 mb-2' }, __alloT('stem.raptorhunt.a_closing_thought', '🦅 A Closing Thought')),
             h('div', { className: 'text-sm text-purple-100/90 italic leading-relaxed' },
-              'Raptors have been on this planet for 60+ million years. Humans have been here for 0.04 million. ',
-              'In our short overlap, we have nearly extinguished species (peregrine, condor, Mauritius kestrel) ',
-              '— and brought them back from the brink. ',
-              'Every choice you make — what you eat, what you spray on your lawn, what kind of ammunition you use, ',
-              'what light you leave on at night — affects raptors somewhere. ',
+              __alloT('stem.raptorhunt.raptors_have_been_on_this_planet_for_6', 'Raptors have been on this planet for 60+ million years. Humans have been here for 0.04 million. '),
+              __alloT('stem.raptorhunt.in_our_short_overlap_we_have_nearly_ex', 'In our short overlap, we have nearly extinguished species (peregrine, condor, Mauritius kestrel) '),
+              __alloT('stem.raptorhunt.and_brought_them_back_from_the_brink', '— and brought them back from the brink. '),
+              __alloT('stem.raptorhunt.every_choice_you_make_what_you_eat_wha', 'Every choice you make — what you eat, what you spray on your lawn, what kind of ammunition you use, '),
+              __alloT('stem.raptorhunt.what_light_you_leave_on_at_night_affec', 'what light you leave on at night — affects raptors somewhere. '),
               'You are now part of the story. Make it a good one.'
             )
           ),
           h('div', { className: 'text-center text-xs text-slate-500 italic mt-6' },
-            'Raptor Hunt: Predator Physics + Biology · AlloFlow STEM Lab · Built with rigor + care.'
+            __alloT('stem.raptorhunt.raptor_hunt_predator_physics_biology_a', 'Raptor Hunt: Predator Physics + Biology · AlloFlow STEM Lab · Built with rigor + care.')
           )
         );
       }
@@ -17865,7 +17866,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🚑'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-red-200 tracking-tight' }, 'Rescue Decision Tree'),
+                h('div', { className: 'text-xl font-bold text-red-200 tracking-tight' }, __alloT('stem.raptorhunt.rescue_decision_tree_2', 'Rescue Decision Tree')),
                 h('div', { className: 'text-sm text-red-100/85 mt-1' }, RESCUE_TREE.intro)
               )
             )
@@ -17884,7 +17885,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'bg-slate-800/40 border border-red-700/40 rounded-xl p-4 space-y-3' },
             h('div', { className: 'text-base font-bold text-red-300' }, '⚠ ' + s.situation),
             h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-cyan-300 mb-2' }, '📋 Action Steps'),
+              h('div', { className: 'text-xs font-bold text-cyan-300 mb-2' }, __alloT('stem.raptorhunt.action_steps', '📋 Action Steps')),
               h('ol', { className: 'space-y-1 list-decimal list-inside text-sm text-slate-100' },
                 s.steps.map(function(step, i) {
                   return h('li', { key: i, className: 'leading-relaxed' }, step);
@@ -17892,7 +17893,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               )
             ),
             h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, '⚖ Legal'),
+              h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.legal_2', '⚖ Legal')),
               h('div', { className: 'text-sm text-amber-100/90 leading-relaxed' }, s.legal)
             )
           )
@@ -17911,7 +17912,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🎨'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-fuchsia-200 tracking-tight' }, 'Age & Plumage Guide'),
+                h('div', { className: 'text-xl font-bold text-fuchsia-200 tracking-tight' }, __alloT('stem.raptorhunt.age_plumage_guide_2', 'Age & Plumage Guide')),
                 h('div', { className: 'text-sm text-fuchsia-100/85 mt-1' }, AGE_PLUMAGE.intro)
               )
             )
@@ -17934,20 +17935,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             ),
             h('div', { className: 'grid md:grid-cols-3 gap-2' },
               h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-emerald-300 mb-1' }, '🐣 Juvenile (Year 1)'),
+                h('div', { className: 'font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.juvenile_year_1', '🐣 Juvenile (Year 1)')),
                 h('div', { className: 'text-emerald-100/90' }, s.juvPattern)
               ),
               h('div', { className: 'bg-yellow-900/20 border border-yellow-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-yellow-300 mb-1' }, '🌱 Sub-adult (Year 2-3)'),
+                h('div', { className: 'font-bold text-yellow-300 mb-1' }, __alloT('stem.raptorhunt.sub_adult_year_2_3', '🌱 Sub-adult (Year 2-3)')),
                 h('div', { className: 'text-yellow-100/90' }, s.subadultPattern)
               ),
               h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-amber-300 mb-1' }, '🦅 Adult'),
+                h('div', { className: 'font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.adult', '🦅 Adult')),
                 h('div', { className: 'text-amber-100/90' }, s.adultPattern)
               )
             ),
             h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-cyan-300 mb-1' }, '⏰ Timing'),
+              h('div', { className: 'font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.timing_2', '⏰ Timing')),
               h('div', { className: 'text-cyan-100/90' }, s.timing)
             )
           )
@@ -17963,7 +17964,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🪶'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-stone-200 tracking-tight' }, 'Molt Atlas'),
+                h('div', { className: 'text-xl font-bold text-stone-200 tracking-tight' }, __alloT('stem.raptorhunt.molt_atlas_2', 'Molt Atlas')),
                 h('div', { className: 'text-sm text-stone-300 mt-1' }, MOLT_ATLAS.intro)
               )
             )
@@ -17977,7 +17978,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             })
           ),
           h('div', { className: 'bg-slate-800/40 border border-slate-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-stone-300 mb-2' }, '📅 Molt Timetable by Species'),
+            h('div', { className: 'text-sm font-bold text-stone-300 mb-2' }, __alloT('stem.raptorhunt.molt_timetable_by_species', '📅 Molt Timetable by Species')),
             h('div', { className: 'space-y-2' },
               MOLT_ATLAS.timetable.map(function(t, i) {
                 return h('div', { key: i, className: 'bg-slate-900/40 border-l-4 border-amber-600 rounded-r p-2' },
@@ -18002,7 +18003,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '📐'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-blue-200 tracking-tight' }, 'Wing Formula Calculator'),
+                h('div', { className: 'text-xl font-bold text-blue-200 tracking-tight' }, __alloT('stem.raptorhunt.wing_formula_calculator_2', 'Wing Formula Calculator')),
                 h('div', { className: 'text-sm text-blue-100/85 mt-1' }, WING_FORMULA.intro)
               )
             )
@@ -18019,10 +18020,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('table', { className: 'w-full text-xs' },
               h('thead', null,
                 h('tr', { className: 'border-b border-blue-700/40' },
-                  h('th', { className: 'p-2 text-left text-blue-300' }, 'Species'),
-                  h('th', { className: 'p-2 text-left text-blue-300' }, 'Formula'),
-                  h('th', { className: 'p-2 text-left text-blue-300' }, 'High Aspect Ratio?'),
-                  h('th', { className: 'p-2 text-left text-blue-300' }, 'Notes')
+                  h('th', { className: 'p-2 text-left text-blue-300' }, __alloT('stem.raptorhunt.species_10', 'Species')),
+                  h('th', { className: 'p-2 text-left text-blue-300' }, __alloT('stem.raptorhunt.formula', 'Formula')),
+                  h('th', { className: 'p-2 text-left text-blue-300' }, __alloT('stem.raptorhunt.high_aspect_ratio', 'High Aspect Ratio?')),
+                  h('th', { className: 'p-2 text-left text-blue-300' }, __alloT('stem.raptorhunt.notes_3', 'Notes'))
                 )
               ),
               h('tbody', null,
@@ -18052,7 +18053,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '📋'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-slate-200 tracking-tight' }, 'Data Reference Tables'),
+                h('div', { className: 'text-xl font-bold text-slate-200 tracking-tight' }, __alloT('stem.raptorhunt.data_reference_tables_2', 'Data Reference Tables')),
                 h('div', { className: 'text-sm text-slate-300 mt-1' }, DATA_TABLES.intro)
               )
             )
@@ -18106,7 +18107,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🏷'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-gray-200 tracking-tight' }, 'Banding Codes'),
+                h('div', { className: 'text-xl font-bold text-gray-200 tracking-tight' }, __alloT('stem.raptorhunt.banding_codes_2', 'Banding Codes')),
                 h('div', { className: 'text-sm text-gray-300 mt-1' }, BANDING_CODES.intro)
               )
             )
@@ -18114,11 +18115,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'flex items-center gap-2' },
             h('input', {
               type: 'text',
-              placeholder: 'Search code or species...',
+              placeholder: __alloT('stem.raptorhunt.search_code_or_species', 'Search code or species...'),
               value: bcSearch,
               onChange: function(e) { setBcSearch(e.target.value); },
               className: 'flex-1 px-3 py-2 bg-slate-800/60 border border-gray-600/40 rounded text-sm text-slate-100',
-              'aria-label': 'Search banding codes'
+              'aria-label': __alloT('stem.raptorhunt.search_banding_codes', 'Search banding codes')
             }),
             h('div', { className: 'text-xs text-gray-300 font-mono' }, filtered.length + ' codes')
           ),
@@ -18146,7 +18147,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🎵'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-pink-200 tracking-tight' }, 'Sonogram & Audio Guide'),
+                h('div', { className: 'text-xl font-bold text-pink-200 tracking-tight' }, __alloT('stem.raptorhunt.sonogram_audio_guide_2', 'Sonogram & Audio Guide')),
                 h('div', { className: 'text-sm text-pink-100/85 mt-1' }, AUDIO_GUIDE.intro)
               )
             )
@@ -18165,29 +18166,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'bg-slate-800/40 border border-pink-700/40 rounded-xl p-4 space-y-2' },
             h('div', { className: 'text-lg font-bold text-pink-300 tracking-tight' }, '🔊 ' + a.species),
             h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, '🎤 Call'),
+              h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.call', '🎤 Call')),
               h('div', { className: 'text-sm text-cyan-100 italic font-mono' }, a.call)
             ),
             h('div', { className: 'grid md:grid-cols-2 gap-2' },
               h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-amber-300 mb-1' }, '📊 Pitch Range'),
+                h('div', { className: 'font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.pitch_range', '📊 Pitch Range')),
                 h('div', { className: 'text-amber-100/90 font-mono' }, a.pitchRange)
               ),
               h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-emerald-300 mb-1' }, '⏱ Duration'),
+                h('div', { className: 'font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.duration_2', '⏱ Duration')),
                 h('div', { className: 'text-emerald-100/90 font-mono' }, a.duration)
               ),
               h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-purple-300 mb-1' }, '🌊 Pattern'),
+                h('div', { className: 'font-bold text-purple-300 mb-1' }, __alloT('stem.raptorhunt.pattern', '🌊 Pattern')),
                 h('div', { className: 'text-purple-100/90' }, a.pattern)
               ),
               h('div', { className: 'bg-yellow-900/20 border border-yellow-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-yellow-300 mb-1' }, '🔑 Diagnostic'),
+                h('div', { className: 'font-bold text-yellow-300 mb-1' }, __alloT('stem.raptorhunt.diagnostic', '🔑 Diagnostic')),
                 h('div', { className: 'text-yellow-100/90' }, a.diagnostic)
               )
             ),
             h('div', { className: 'bg-rose-900/20 border border-rose-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-rose-300 mb-1' }, '⚠ Similar to'),
+              h('div', { className: 'font-bold text-rose-300 mb-1' }, __alloT('stem.raptorhunt.similar_to', '⚠ Similar to')),
               h('div', { className: 'text-rose-100/90' }, a.similarTo)
             )
           )
@@ -18203,7 +18204,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '📍'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-teal-200 tracking-tight' }, 'Local Hot Spots Guide'),
+                h('div', { className: 'text-xl font-bold text-teal-200 tracking-tight' }, __alloT('stem.raptorhunt.local_hot_spots_guide_2', 'Local Hot Spots Guide')),
                 h('div', { className: 'text-sm text-teal-100/85 mt-1' }, LOCAL_HOTSPOTS.intro)
               )
             )
@@ -18235,7 +18236,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '❓'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-violet-200 tracking-tight' }, 'Frequently Asked Questions'),
+                h('div', { className: 'text-xl font-bold text-violet-200 tracking-tight' }, __alloT('stem.raptorhunt.frequently_asked_questions', 'Frequently Asked Questions')),
                 h('div', { className: 'text-sm text-violet-100/85 mt-1' }, FAQ.intro)
               )
             )
@@ -18271,13 +18272,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🌳'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-green-200 tracking-tight' }, 'Backyard Feeder Hawks'),
+                h('div', { className: 'text-xl font-bold text-green-200 tracking-tight' }, __alloT('stem.raptorhunt.backyard_feeder_hawks_2', 'Backyard Feeder Hawks')),
                 h('div', { className: 'text-sm text-green-100/85 mt-1' }, FEEDER_HAWKS.intro)
               )
             )
           ),
           h('div', { className: 'space-y-2' },
-            h('div', { className: 'text-sm font-bold text-amber-300' }, '🦅 Common backyard hawks'),
+            h('div', { className: 'text-sm font-bold text-amber-300' }, __alloT('stem.raptorhunt.common_backyard_hawks', '🦅 Common backyard hawks')),
             FEEDER_HAWKS.common.map(function(c, i) {
               return h('div', { key: i, className: 'bg-slate-800/40 border border-green-700/30 rounded-lg p-3' },
                 h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
@@ -18290,7 +18291,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             })
           ),
           h('div', { className: 'space-y-2' },
-            h('div', { className: 'text-sm font-bold text-cyan-300' }, '🔧 Management strategies'),
+            h('div', { className: 'text-sm font-bold text-cyan-300' }, __alloT('stem.raptorhunt.management_strategies', '🔧 Management strategies')),
             FEEDER_HAWKS.management.map(function(m, i) {
               return h('div', { key: i, className: 'bg-slate-800/40 border border-cyan-700/30 rounded-lg p-3' },
                 h('div', { className: 'text-sm font-bold text-cyan-300 mb-1' }, '✓ ' + m.strategy),
@@ -18299,11 +18300,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             })
           ),
           h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-amber-300 mb-2' }, '⚖ Ethics'),
+            h('div', { className: 'text-sm font-bold text-amber-300 mb-2' }, __alloT('stem.raptorhunt.ethics_4', '⚖ Ethics')),
             h('div', { className: 'text-sm text-amber-100/90 italic leading-relaxed' }, FEEDER_HAWKS.ethics)
           ),
           h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, '🎯 Tips'),
+            h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, __alloT('stem.raptorhunt.tips_2', '🎯 Tips')),
             h('ul', { className: 'space-y-1 list-disc list-inside text-sm text-emerald-100/90' },
               FEEDER_HAWKS.tips.map(function(t, i) {
                 return h('li', { key: i, className: 'leading-relaxed' }, t);
@@ -18325,7 +18326,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🖼'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, 'Illustration Gallery'),
+                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, __alloT('stem.raptorhunt.illustration_gallery_2', 'Illustration Gallery')),
                 h('div', { className: 'text-sm text-amber-100/85 mt-1' }, ILLUSTRATIONS.intro)
               )
             )
@@ -18353,11 +18354,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               )
             ),
             h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '📝 Description'),
+              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.description_2', '📝 Description')),
               h('div', { className: 'text-sm text-emerald-100/90 leading-relaxed' }, ill.description)
             ),
             h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-purple-300 mb-1' }, '🎯 Symbolism'),
+              h('div', { className: 'text-xs font-bold text-purple-300 mb-1' }, __alloT('stem.raptorhunt.symbolism', '🎯 Symbolism')),
               h('div', { className: 'text-sm text-purple-100/90 italic leading-relaxed' }, ill.symbolism)
             )
           )
@@ -18373,7 +18374,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '📜'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-purple-200 tracking-tight' }, 'Songs, Poems, Slogans'),
+                h('div', { className: 'text-xl font-bold text-purple-200 tracking-tight' }, __alloT('stem.raptorhunt.songs_poems_slogans', 'Songs, Poems, Slogans')),
                 h('div', { className: 'text-sm text-purple-100/85 mt-1' }, SONG_SCRIPTS.intro)
               )
             )
@@ -18406,7 +18407,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🧘'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-indigo-200 tracking-tight' }, 'Field Meditations'),
+                h('div', { className: 'text-xl font-bold text-indigo-200 tracking-tight' }, __alloT('stem.raptorhunt.field_meditations_2', 'Field Meditations')),
                 h('div', { className: 'text-sm text-indigo-100/85 mt-1' }, FIELD_MEDITATIONS.intro)
               )
             )
@@ -18442,7 +18443,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🌾'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-lime-200 tracking-tight' }, 'Habitat Restoration Cookbook'),
+                h('div', { className: 'text-xl font-bold text-lime-200 tracking-tight' }, __alloT('stem.raptorhunt.habitat_restoration_cookbook', 'Habitat Restoration Cookbook')),
                 h('div', { className: 'text-sm text-lime-100/85 mt-1' }, HABITAT_COOKBOOK.intro)
               )
             )
@@ -18462,24 +18463,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'text-lg font-bold text-lime-300 tracking-tight' }, '🌱 ' + p.name),
             h('div', { className: 'grid md:grid-cols-3 gap-2' },
               h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-cyan-300 mb-1' }, '📐 Size'),
+                h('div', { className: 'font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.size_2', '📐 Size')),
                 h('div', { className: 'text-cyan-100/90' }, p.size)
               ),
               h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-amber-300 mb-1' }, '💰 Cost'),
+                h('div', { className: 'font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.cost_3', '💰 Cost')),
                 h('div', { className: 'text-amber-100/90' }, p.cost)
               ),
               h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-emerald-300 mb-1' }, '⏰ Timeline'),
+                h('div', { className: 'font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.timeline', '⏰ Timeline')),
                 h('div', { className: 'text-emerald-100/90' }, p.timeline)
               )
             ),
             h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-purple-300 mb-1' }, '⚡ Impact'),
+              h('div', { className: 'text-xs font-bold text-purple-300 mb-1' }, __alloT('stem.raptorhunt.impact', '⚡ Impact')),
               h('div', { className: 'text-sm text-purple-100/90 leading-relaxed' }, p.impact)
             ),
             h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, '📋 Steps'),
+              h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.steps', '📋 Steps')),
               h('ol', { className: 'space-y-1 list-decimal list-inside text-sm text-cyan-100/90' },
                 p.steps.map(function(s, i) {
                   return h('li', { key: i, className: 'leading-relaxed' }, s);
@@ -18502,7 +18503,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           { id: 'K-2', label: 'K-2' },
           { id: '3-5', label: '3-5' },
           { id: '6-8', label: '6-8' },
-          { id: 'All', label: 'Family' }
+          { id: 'All', label: __alloT('stem.raptorhunt.family', 'Family') }
         ];
         var filtered = ageFilter === 'all' ? KIDS_ACTIVITIES.activities : KIDS_ACTIVITIES.activities.filter(function(a) { return a.age === ageFilter; });
         return h('div', { className: 'space-y-4' },
@@ -18510,7 +18511,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🎨'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-rose-200 tracking-tight' }, 'Kids Activities'),
+                h('div', { className: 'text-xl font-bold text-rose-200 tracking-tight' }, __alloT('stem.raptorhunt.kids_activities_2', 'Kids Activities')),
                 h('div', { className: 'text-sm text-rose-100/85 mt-1' }, KIDS_ACTIVITIES.intro)
               )
             )
@@ -18553,7 +18554,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '📚'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-cyan-200 tracking-tight' }, 'Reading Levels'),
+                h('div', { className: 'text-xl font-bold text-cyan-200 tracking-tight' }, __alloT('stem.raptorhunt.reading_levels_2', 'Reading Levels')),
                 h('div', { className: 'text-sm text-cyan-100/85 mt-1' }, READING_LEVELS.intro)
               )
             )
@@ -18572,19 +18573,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'bg-slate-800/40 border border-cyan-700/40 rounded-xl p-4 space-y-3' },
             h('div', { className: 'text-lg font-bold text-cyan-300 tracking-tight' }, '📚 ' + s.topic),
             h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '🌱 K-2 (Kindergarten through 2nd)'),
+              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.k_2_kindergarten_through_2nd', '🌱 K-2 (Kindergarten through 2nd)')),
               h('div', { className: 'text-sm text-emerald-100/90 leading-relaxed' }, s.k2)
             ),
             h('div', { className: 'bg-yellow-900/20 border border-yellow-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-yellow-300 mb-1' }, '🌿 Grades 3-5'),
+              h('div', { className: 'text-xs font-bold text-yellow-300 mb-1' }, __alloT('stem.raptorhunt.grades_3_5', '🌿 Grades 3-5')),
               h('div', { className: 'text-sm text-yellow-100/90 leading-relaxed' }, s.g35)
             ),
             h('div', { className: 'bg-orange-900/20 border border-orange-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-orange-300 mb-1' }, '🌳 Grades 6-8'),
+              h('div', { className: 'text-xs font-bold text-orange-300 mb-1' }, __alloT('stem.raptorhunt.grades_6_8', '🌳 Grades 6-8')),
               h('div', { className: 'text-sm text-orange-100/90 leading-relaxed' }, s.g68)
             ),
             h('div', { className: 'bg-rose-900/20 border border-rose-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-rose-300 mb-1' }, '🌲 Grades 9-12'),
+              h('div', { className: 'text-xs font-bold text-rose-300 mb-1' }, __alloT('stem.raptorhunt.grades_9_12', '🌲 Grades 9-12')),
               h('div', { className: 'text-sm text-rose-100/90 leading-relaxed' }, s.g912)
             )
           )
@@ -18604,7 +18605,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '❓'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, 'Question Bank'),
+                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, __alloT('stem.raptorhunt.question_bank_2', 'Question Bank')),
                 h('div', { className: 'text-sm text-amber-100/85 mt-1' }, QUESTION_BANK.intro)
               )
             )
@@ -18650,7 +18651,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🛡'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-rose-200 tracking-tight' }, 'IUCN Red List Status Atlas'),
+                h('div', { className: 'text-xl font-bold text-rose-200 tracking-tight' }, __alloT('stem.raptorhunt.iucn_red_list_status_atlas', 'IUCN Red List Status Atlas')),
                 h('div', { className: 'text-sm text-rose-100/85 mt-1' }, IUCN_ATLAS.intro)
               )
             )
@@ -18695,7 +18696,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '✈'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-sky-200 tracking-tight' }, 'Flight Dynamics'),
+                h('div', { className: 'text-xl font-bold text-sky-200 tracking-tight' }, __alloT('stem.raptorhunt.flight_dynamics_2', 'Flight Dynamics')),
                 h('div', { className: 'text-sm text-sky-100/85 mt-1' }, FLIGHT_DYNAMICS.intro)
               )
             )
@@ -18715,15 +18716,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'text-lg font-bold text-sky-300 tracking-tight' }, '✈ ' + m.name),
             h('div', { className: 'text-sm italic text-cyan-200 leading-relaxed' }, m.description),
             h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, '⚛ Physics'),
+              h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.physics', '⚛ Physics')),
               h('div', { className: 'text-sm text-amber-100/90 leading-relaxed' }, m.physics)
             ),
             h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '🦅 Species That Use This'),
+              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.species_that_use_this', '🦅 Species That Use This')),
               h('div', { className: 'text-sm text-emerald-100/90' }, m.species)
             ),
             h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-purple-300 mb-1' }, '⚡ Efficiency'),
+              h('div', { className: 'text-xs font-bold text-purple-300 mb-1' }, __alloT('stem.raptorhunt.efficiency', '⚡ Efficiency')),
               h('div', { className: 'text-sm text-purple-100/90 leading-relaxed' }, m.efficiency)
             )
           )
@@ -18739,7 +18740,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '📱'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-indigo-200 tracking-tight' }, 'Social Media for Raptor Science'),
+                h('div', { className: 'text-xl font-bold text-indigo-200 tracking-tight' }, __alloT('stem.raptorhunt.social_media_for_raptor_science', 'Social Media for Raptor Science')),
                 h('div', { className: 'text-sm text-indigo-100/85 mt-1' }, SOCIAL_MEDIA.intro)
               )
             )
@@ -18755,7 +18756,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             })
           ),
           h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, '⭐ Best Practices'),
+            h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, __alloT('stem.raptorhunt.best_practices', '⭐ Best Practices')),
             h('ul', { className: 'space-y-1 list-disc list-inside text-sm text-emerald-100/90' },
               SOCIAL_MEDIA.bestPractices.map(function(bp, i) {
                 return h('li', { key: i, className: 'leading-relaxed' }, bp);
@@ -18772,7 +18773,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-amber-900/40 via-orange-900/40 to-yellow-900/40 border border-amber-700/40 rounded-xl p-5 text-center' },
             h('div', { className: 'text-6xl mb-2' }, '🏆'),
-            h('div', { className: 'text-2xl font-bold text-amber-200 tracking-tight' }, 'Master Index'),
+            h('div', { className: 'text-2xl font-bold text-amber-200 tracking-tight' }, __alloT('stem.raptorhunt.master_index_2', 'Master Index')),
             h('div', { className: 'text-sm text-amber-100/85 mt-1' }, MASTER_INDEX.intro)
           ),
           // Stats
@@ -18800,8 +18801,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded-xl p-5 text-center' },
             h('div', { className: 'text-base font-bold text-purple-200 mb-2' }, '🎓 You are now a raptor scholar.'),
             h('div', { className: 'text-sm text-purple-100/90 italic leading-relaxed' },
-              'Bookmark this tool. Return often. Use the search + filters to find exactly what you need. ',
-              'Most importantly: take what you\'ve learned outside. Find a hawk. Watch it. Learn.'
+              __alloT('stem.raptorhunt.bookmark_this_tool_return_often_use_th', 'Bookmark this tool. Return often. Use the search + filters to find exactly what you need. '),
+              __alloT('stem.raptorhunt.most_importantly_take_what_you_ve_lear', 'Most importantly: take what you\'ve learned outside. Find a hawk. Watch it. Learn.')
             )
           )
         );
@@ -18816,7 +18817,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '💾'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-cyan-200 tracking-tight' }, 'Open Datasets'),
+                h('div', { className: 'text-xl font-bold text-cyan-200 tracking-tight' }, __alloT('stem.raptorhunt.open_datasets_2', 'Open Datasets')),
                 h('div', { className: 'text-sm text-cyan-100/85 mt-1' }, DATASETS.intro)
               )
             )
@@ -18848,14 +18849,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🏅'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-yellow-200 tracking-tight' }, 'Achievements & Quests'),
+                h('div', { className: 'text-xl font-bold text-yellow-200 tracking-tight' }, __alloT('stem.raptorhunt.achievements_quests_2', 'Achievements & Quests')),
                 h('div', { className: 'text-sm text-yellow-100/85 mt-1' }, ACHIEVEMENTS.intro)
               )
             )
           ),
           // Quests
           h('div', { className: 'space-y-2' },
-            h('div', { className: 'text-sm font-bold text-amber-300' }, '🎯 Quests'),
+            h('div', { className: 'text-sm font-bold text-amber-300' }, __alloT('stem.raptorhunt.quests', '🎯 Quests')),
             ACHIEVEMENTS.quests.map(function(q, i) {
               return h('div', { key: i, className: 'bg-slate-800/40 border border-yellow-700/30 rounded-lg p-3' },
                 h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
@@ -18870,7 +18871,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           ),
           // Levels
           h('div', { className: 'bg-slate-800/40 border border-yellow-700/30 rounded-xl p-4 space-y-2' },
-            h('div', { className: 'text-sm font-bold text-amber-300 mb-2' }, '📈 Levels'),
+            h('div', { className: 'text-sm font-bold text-amber-300 mb-2' }, __alloT('stem.raptorhunt.levels_2', '📈 Levels')),
             ACHIEVEMENTS.levels.map(function(l, i) {
               return h('div', { key: i, className: 'bg-slate-900/40 border-l-4 border-amber-600 rounded-r p-2' },
                 h('div', { className: 'flex items-baseline justify-between mb-1' },
@@ -18883,7 +18884,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           ),
           // Rewards
           h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, '🌟 Real Rewards'),
+            h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, __alloT('stem.raptorhunt.real_rewards', '🌟 Real Rewards')),
             h('ul', { className: 'space-y-1 list-disc list-inside text-sm text-emerald-100/90' },
               ACHIEVEMENTS.rewards.map(function(r, i) {
                 return h('li', { key: i, className: 'leading-relaxed' }, r);
@@ -18900,11 +18901,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-violet-900/40 via-purple-900/40 to-indigo-900/40 border border-violet-700/40 rounded-xl p-6 text-center' },
             h('div', { className: 'text-7xl mb-4' }, '🌟'),
-            h('div', { className: 'text-3xl font-bold text-violet-200 tracking-tight' }, 'You\'ve Reached the End'),
-            h('div', { className: 'text-base text-violet-100/85 mt-3 italic' }, '80+ sections · 19,500+ lines · 5,000+ years of human-raptor relationship · 60M+ years of raptor evolution')
+            h('div', { className: 'text-3xl font-bold text-violet-200 tracking-tight' }, __alloT('stem.raptorhunt.you_ve_reached_the_end', 'You\'ve Reached the End')),
+            h('div', { className: 'text-base text-violet-100/85 mt-3 italic' }, __alloT('stem.raptorhunt.80_sections_19_500_lines_5_000_years_o', '80+ sections · 19,500+ lines · 5,000+ years of human-raptor relationship · 60M+ years of raptor evolution'))
           ),
           h('div', { className: 'bg-slate-800/40 border border-violet-700/40 rounded-xl p-5 space-y-3' },
-            h('div', { className: 'text-base font-bold text-violet-300 mb-2' }, '🦅 What This Tool Aims To Do'),
+            h('div', { className: 'text-base font-bold text-violet-300 mb-2' }, __alloT('stem.raptorhunt.what_this_tool_aims_to_do', '🦅 What This Tool Aims To Do')),
             h('ul', { className: 'space-y-2 text-sm text-slate-100' },
               [
                 'Show that raptors are not just predators but masterpieces of natural engineering.',
@@ -18919,43 +18920,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             )
           ),
           h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded-xl p-5' },
-            h('div', { className: 'text-base font-bold text-amber-300 mb-2' }, '🙏 Credits + Acknowledgments'),
+            h('div', { className: 'text-base font-bold text-amber-300 mb-2' }, __alloT('stem.raptorhunt.credits_acknowledgments', '🙏 Credits + Acknowledgments')),
             h('div', { className: 'text-sm text-amber-100/90 space-y-2 leading-relaxed' },
-              h('div', null, '✦ Cornell Lab of Ornithology + eBird volunteers worldwide.'),
-              h('div', null, '✦ Peregrine Fund, Hawk Mountain Sanctuary, Audubon Society.'),
-              h('div', null, '✦ Carl Jones + Tom Cade + Rosalie Edge + Rachel Carson + Roger Tory Peterson.'),
-              h('div', null, '✦ Indigenous nations who held raptors sacred for millennia.'),
-              h('div', null, '✦ Falconers + rehabbers + biologists who work to protect raptors.'),
-              h('div', null, '✦ Every photographer, illustrator, scientist whose work informs this tool.'),
-              h('div', null, '✦ Especially: every parent who took a kid to see their first hawk.')
+              h('div', null, __alloT('stem.raptorhunt.cornell_lab_of_ornithology_ebird_volun', '✦ Cornell Lab of Ornithology + eBird volunteers worldwide.')),
+              h('div', null, __alloT('stem.raptorhunt.peregrine_fund_hawk_mountain_sanctuary', '✦ Peregrine Fund, Hawk Mountain Sanctuary, Audubon Society.')),
+              h('div', null, __alloT('stem.raptorhunt.carl_jones_tom_cade_rosalie_edge_rache', '✦ Carl Jones + Tom Cade + Rosalie Edge + Rachel Carson + Roger Tory Peterson.')),
+              h('div', null, __alloT('stem.raptorhunt.indigenous_nations_who_held_raptors_sa', '✦ Indigenous nations who held raptors sacred for millennia.')),
+              h('div', null, __alloT('stem.raptorhunt.falconers_rehabbers_biologists_who_wor', '✦ Falconers + rehabbers + biologists who work to protect raptors.')),
+              h('div', null, __alloT('stem.raptorhunt.every_photographer_illustrator_scienti', '✦ Every photographer, illustrator, scientist whose work informs this tool.')),
+              h('div', null, __alloT('stem.raptorhunt.especially_every_parent_who_took_a_kid', '✦ Especially: every parent who took a kid to see their first hawk.'))
             )
           ),
           h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded-xl p-5' },
-            h('div', { className: 'text-base font-bold text-cyan-300 mb-2' }, '✨ Final Words'),
+            h('div', { className: 'text-base font-bold text-cyan-300 mb-2' }, __alloT('stem.raptorhunt.final_words', '✨ Final Words')),
             h('div', { className: 'text-sm text-cyan-100/90 italic leading-relaxed' },
-              'Raptors are the highest expression of vertebrate flight. ',
-              'They have outlasted dinosaurs. Survived mass extinctions. Adapted to every habitat humans have created. ',
-              'Their existence is a gift. Their decline would be a loss we cannot undo. ',
+              __alloT('stem.raptorhunt.raptors_are_the_highest_expression_of_', 'Raptors are the highest expression of vertebrate flight. '),
+              __alloT('stem.raptorhunt.they_have_outlasted_dinosaurs_survived', 'They have outlasted dinosaurs. Survived mass extinctions. Adapted to every habitat humans have created. '),
+              __alloT('stem.raptorhunt.their_existence_is_a_gift_their_declin', 'Their existence is a gift. Their decline would be a loss we cannot undo. '),
               h('br', null), h('br', null),
-              h('span', { className: 'font-bold text-amber-200' }, 'Look up. ',
-                'See the hawk circling on a thermal. ',
-                'The owl gliding through twilight. ',
-                'The peregrine on the cliff. ',
-                'The eagle on the dead branch. '),
+              h('span', { className: 'font-bold text-amber-200' }, __alloT('stem.raptorhunt.look_up', 'Look up. '),
+                __alloT('stem.raptorhunt.see_the_hawk_circling_on_a_thermal', 'See the hawk circling on a thermal. '),
+                __alloT('stem.raptorhunt.the_owl_gliding_through_twilight', 'The owl gliding through twilight. '),
+                __alloT('stem.raptorhunt.the_peregrine_on_the_cliff', 'The peregrine on the cliff. '),
+                __alloT('stem.raptorhunt.the_eagle_on_the_dead_branch', 'The eagle on the dead branch. ')),
               h('br', null), h('br', null),
-              'They are looking back at you. ',
+              __alloT('stem.raptorhunt.they_are_looking_back_at_you', 'They are looking back at you. '),
               'You are part of their world. ',
-              'Make it a better one.'
+              __alloT('stem.raptorhunt.make_it_a_better_one', 'Make it a better one.')
             )
           ),
           h('div', { className: 'text-center text-xs text-slate-500 italic mt-6' },
-            'Raptor Hunt: Predator Physics + Biology'
+            __alloT('stem.raptorhunt.raptor_hunt_predator_physics_biology_2', 'Raptor Hunt: Predator Physics + Biology')
           ),
           h('div', { className: 'text-center text-xs text-slate-500 italic' },
-            'AlloFlow STEM Lab'
+            __alloT('stem.raptorhunt.alloflow_stem_lab', 'AlloFlow STEM Lab')
           ),
           h('div', { className: 'text-center text-xs text-slate-500 italic' },
-            'Built with rigor, care, + love for these magnificent birds.'
+            __alloT('stem.raptorhunt.built_with_rigor_care_love_for_these_m', 'Built with rigor, care, + love for these magnificent birds.')
           )
         );
       }
@@ -18972,7 +18973,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🧑'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, 'Hero Biographies'),
+                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, __alloT('stem.raptorhunt.hero_biographies_2', 'Hero Biographies')),
                 h('div', { className: 'text-sm text-amber-100/85 mt-1' }, HERO_BIOGRAPHIES.intro)
               )
             )
@@ -18992,15 +18993,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'text-lg font-bold text-amber-300 tracking-tight' }, '🧑 ' + b.name),
             h('div', { className: 'text-xs italic text-cyan-300' }, b.country + ' · ' + b.role),
             h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, '📖 Story'),
+              h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.story', '📖 Story')),
               h('div', { className: 'text-sm text-slate-100 leading-relaxed' }, b.story)
             ),
             h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '🌟 Legacy'),
+              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.legacy_2', '🌟 Legacy')),
               h('div', { className: 'text-sm text-emerald-100/90 leading-relaxed' }, b.legacy)
             ),
             h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-purple-300 mb-1' }, '💬 Quote'),
+              h('div', { className: 'text-xs font-bold text-purple-300 mb-1' }, __alloT('stem.raptorhunt.quote', '💬 Quote')),
               h('div', { className: 'text-sm text-purple-100/90 italic leading-relaxed' }, b.quote)
             )
           )
@@ -19016,7 +19017,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🔗'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-blue-200 tracking-tight' }, 'Curated Links'),
+                h('div', { className: 'text-xl font-bold text-blue-200 tracking-tight' }, __alloT('stem.raptorhunt.curated_links_2', 'Curated Links')),
                 h('div', { className: 'text-sm text-blue-100/85 mt-1' }, CURATED_LINKS.intro)
               )
             )
@@ -19047,7 +19048,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '💬'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-purple-200 tracking-tight' }, 'Big Quotes'),
+                h('div', { className: 'text-xl font-bold text-purple-200 tracking-tight' }, __alloT('stem.raptorhunt.big_quotes_2', 'Big Quotes')),
                 h('div', { className: 'text-sm text-purple-100/85 mt-1' }, BIG_QUOTES.intro)
               )
             )
@@ -19077,7 +19078,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🔤'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-teal-200 tracking-tight' }, 'Final Vocabulary'),
+                h('div', { className: 'text-xl font-bold text-teal-200 tracking-tight' }, __alloT('stem.raptorhunt.final_vocabulary_2', 'Final Vocabulary')),
                 h('div', { className: 'text-sm text-teal-100/85 mt-1' }, GLOSSARY_C.intro)
               )
             )
@@ -19085,11 +19086,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'flex items-center gap-2' },
             h('input', {
               type: 'text',
-              placeholder: 'Search terms...',
+              placeholder: __alloT('stem.raptorhunt.search_terms_2', 'Search terms...'),
               value: search3,
               onChange: function(e) { setSearch3(e.target.value); },
               className: 'flex-1 px-3 py-2 bg-slate-800/60 border border-teal-700/40 rounded text-sm text-slate-100',
-              'aria-label': 'Search final glossary'
+              'aria-label': __alloT('stem.raptorhunt.search_final_glossary', 'Search final glossary')
             }),
             h('div', { className: 'text-xs text-teal-300 font-mono' }, filtered.length + ' terms')
           ),
@@ -19111,26 +19112,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-yellow-900/60 via-orange-900/60 to-red-900/60 border border-amber-700/60 rounded-xl p-8 text-center' },
             h('div', { className: 'text-8xl mb-4' }, '🎆'),
-            h('div', { className: 'text-4xl font-bold text-amber-200 mb-2 tracking-tight' }, '20,000 Lines'),
-            h('div', { className: 'text-xl text-amber-100/90' }, 'The Largest Single Educational Raptor Tool Ever Built'),
-            h('div', { className: 'text-sm text-amber-200/80 mt-3 italic' }, '90+ sections · 200+ data structures · 20+ species deep profiles · 60M+ years of raptor evolution distilled')
+            h('div', { className: 'text-4xl font-bold text-amber-200 mb-2 tracking-tight' }, __alloT('stem.raptorhunt.20_000_lines', '20,000 Lines')),
+            h('div', { className: 'text-xl text-amber-100/90' }, __alloT('stem.raptorhunt.the_largest_single_educational_raptor_', 'The Largest Single Educational Raptor Tool Ever Built')),
+            h('div', { className: 'text-sm text-amber-200/80 mt-3 italic' }, __alloT('stem.raptorhunt.90_sections_200_data_structures_20_spe', '90+ sections · 200+ data structures · 20+ species deep profiles · 60M+ years of raptor evolution distilled'))
           ),
           h('div', { className: 'bg-slate-800/40 border border-amber-700/40 rounded-xl p-5 space-y-3' },
-            h('div', { className: 'text-base font-bold text-amber-300 mb-2' }, '📊 What You Have In Front Of You'),
+            h('div', { className: 'text-base font-bold text-amber-300 mb-2' }, __alloT('stem.raptorhunt.what_you_have_in_front_of_you', '📊 What You Have In Front Of You')),
             h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2' },
               [
-                { label: 'Sections', value: '90+' },
-                { label: 'Lines', value: '20,000' },
-                { label: 'Species', value: '25+' },
-                { label: 'Quiz Q\'s', value: '70' },
-                { label: 'Glossary terms', value: '210+' },
-                { label: 'Math problems', value: '20' },
-                { label: 'Scenarios', value: '14' },
-                { label: 'Habitats', value: '12' },
-                { label: 'Strategies', value: '14' },
-                { label: 'Threats', value: '17' },
-                { label: 'Lesson plans', value: '12' },
-                { label: 'Cultures', value: '12' }
+                { label: __alloT('stem.raptorhunt.sections', 'Sections'), value: '90+' },
+                { label: __alloT('stem.raptorhunt.lines', 'Lines'), value: '20,000' },
+                { label: __alloT('stem.raptorhunt.species_11', 'Species'), value: '25+' },
+                { label: __alloT('stem.raptorhunt.quiz_q_s', 'Quiz Q\'s'), value: '70' },
+                { label: __alloT('stem.raptorhunt.glossary_terms', 'Glossary terms'), value: '210+' },
+                { label: __alloT('stem.raptorhunt.math_problems', 'Math problems'), value: '20' },
+                { label: __alloT('stem.raptorhunt.scenarios', 'Scenarios'), value: '14' },
+                { label: __alloT('stem.raptorhunt.habitats', 'Habitats'), value: '12' },
+                { label: __alloT('stem.raptorhunt.strategies', 'Strategies'), value: '14' },
+                { label: __alloT('stem.raptorhunt.threats_2', 'Threats'), value: '17' },
+                { label: __alloT('stem.raptorhunt.lesson_plans', 'Lesson plans'), value: '12' },
+                { label: __alloT('stem.raptorhunt.cultures', 'Cultures'), value: '12' }
               ].map(function(s, i) {
                 return h('div', { key: i, className: 'bg-slate-900/40 border border-amber-700/30 rounded-lg p-3 text-center' },
                   h('div', { className: 'text-2xl font-bold text-amber-300 tracking-tight' }, s.value),
@@ -19140,63 +19141,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             )
           ),
           h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-5' },
-            h('div', { className: 'text-base font-bold text-emerald-300 mb-2' }, '🎯 What This Means'),
+            h('div', { className: 'text-base font-bold text-emerald-300 mb-2' }, __alloT('stem.raptorhunt.what_this_means', '🎯 What This Means')),
             h('div', { className: 'text-sm text-emerald-100/90 space-y-2 italic leading-relaxed' },
               h('div', null,
-                'This is more comprehensive than most introductory ornithology textbooks. ',
-                'More accessible than a doctoral dissertation. ',
-                'More interactive than a museum exhibit. '
+                __alloT('stem.raptorhunt.this_is_more_comprehensive_than_most_i', 'This is more comprehensive than most introductory ornithology textbooks. '),
+                __alloT('stem.raptorhunt.more_accessible_than_a_doctoral_disser', 'More accessible than a doctoral dissertation. '),
+                __alloT('stem.raptorhunt.more_interactive_than_a_museum_exhibit', 'More interactive than a museum exhibit. ')
               ),
               h('div', null,
-                'It exists because raptors deserve this level of attention. ',
-                'It exists because students deserve this depth + breadth in one place. ',
-                'It exists because the planet\'s ecosystems need more raptor advocates.'
+                __alloT('stem.raptorhunt.it_exists_because_raptors_deserve_this', 'It exists because raptors deserve this level of attention. '),
+                __alloT('stem.raptorhunt.it_exists_because_students_deserve_thi', 'It exists because students deserve this depth + breadth in one place. '),
+                __alloT('stem.raptorhunt.it_exists_because_the_planet_s_ecosyst', 'It exists because the planet\'s ecosystems need more raptor advocates.')
               )
             )
           ),
           h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded-xl p-5' },
-            h('div', { className: 'text-base font-bold text-purple-300 mb-2' }, '🌅 What\'s Next'),
+            h('div', { className: 'text-base font-bold text-purple-300 mb-2' }, __alloT('stem.raptorhunt.what_s_next_2', '🌅 What\'s Next')),
             h('div', { className: 'text-sm text-purple-100/90 space-y-2 leading-relaxed' },
               h('div', null,
-                'Bookmark this tool. Return to it monthly. Share it with one student or birder each season. '
+                __alloT('stem.raptorhunt.bookmark_this_tool_return_to_it_monthl', 'Bookmark this tool. Return to it monthly. Share it with one student or birder each season. ')
               ),
               h('div', null,
-                'Take what you\'ve learned outside. Find a hawk. Watch it. Document it on eBird. '
+                __alloT('stem.raptorhunt.take_what_you_ve_learned_outside_find_', 'Take what you\'ve learned outside. Find a hawk. Watch it. Document it on eBird. ')
               ),
               h('div', null,
-                'Volunteer at a rehab. Donate $25 to Peregrine Fund. Plant a native shrub in your yard. '
+                __alloT('stem.raptorhunt.volunteer_at_a_rehab_donate_25_to_pere', 'Volunteer at a rehab. Donate $25 to Peregrine Fund. Plant a native shrub in your yard. ')
               ),
               h('div', null,
-                'Each action protects the future of these magnificent birds.'
+                __alloT('stem.raptorhunt.each_action_protects_the_future_of_the', 'Each action protects the future of these magnificent birds.')
               )
             )
           ),
           h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded-xl p-5' },
-            h('div', { className: 'text-base font-bold text-amber-300 mb-2' }, '✨ A Final Image'),
+            h('div', { className: 'text-base font-bold text-amber-300 mb-2' }, __alloT('stem.raptorhunt.a_final_image', '✨ A Final Image')),
             h('div', { className: 'text-sm text-amber-100/90 italic leading-relaxed' },
               h('span', { className: 'font-bold' }, 'Imagine: '),
               h('br', null),
               h('div', { className: 'mt-2' },
-                'A peregrine falcon perches on a Manhattan skyscraper. ',
-                'A snowy owl sleeps in the New England snow. ',
-                'A golden eagle rides a thermal over Mongolian steppe. ',
-                'A harpy eagle waits in the Amazon canopy. ',
-                'A bald eagle catches a salmon at Skagit. ',
-                'A barn owl glides through a Florida swamp at midnight. '
+                __alloT('stem.raptorhunt.a_peregrine_falcon_perches_on_a_manhat', 'A peregrine falcon perches on a Manhattan skyscraper. '),
+                __alloT('stem.raptorhunt.a_snowy_owl_sleeps_in_the_new_england_', 'A snowy owl sleeps in the New England snow. '),
+                __alloT('stem.raptorhunt.a_golden_eagle_rides_a_thermal_over_mo', 'A golden eagle rides a thermal over Mongolian steppe. '),
+                __alloT('stem.raptorhunt.a_harpy_eagle_waits_in_the_amazon_cano', 'A harpy eagle waits in the Amazon canopy. '),
+                __alloT('stem.raptorhunt.a_bald_eagle_catches_a_salmon_at_skagi', 'A bald eagle catches a salmon at Skagit. '),
+                __alloT('stem.raptorhunt.a_barn_owl_glides_through_a_florida_sw', 'A barn owl glides through a Florida swamp at midnight. ')
               ),
               h('div', { className: 'mt-3 text-center text-base text-amber-200' },
-                'All right now. All connected. All here for you to find. '
+                __alloT('stem.raptorhunt.all_right_now_all_connected_all_here_f', 'All right now. All connected. All here for you to find. ')
               ),
               h('div', { className: 'mt-3 text-center text-base text-emerald-200 font-bold' },
-                'The hunt continues.'
+                __alloT('stem.raptorhunt.the_hunt_continues', 'The hunt continues.')
               )
             )
           ),
           h('div', { className: 'text-center mt-8 space-y-1' },
-            h('div', { className: 'text-xs text-slate-500 italic' }, '🦅 Raptor Hunt: Predator Physics + Biology'),
-            h('div', { className: 'text-xs text-slate-500 italic' }, '🎓 AlloFlow STEM Lab · 20K+ Lines · 90+ Sections'),
-            h('div', { className: 'text-xs text-slate-500 italic' }, '🌅 Built with rigor, care, + reverence for these magnificent birds.'),
-            h('div', { className: 'text-xs text-slate-500 italic mt-3' }, 'Thank you for completing this journey.')
+            h('div', { className: 'text-xs text-slate-500 italic' }, __alloT('stem.raptorhunt.raptor_hunt_predator_physics_biology_3', '🦅 Raptor Hunt: Predator Physics + Biology')),
+            h('div', { className: 'text-xs text-slate-500 italic' }, __alloT('stem.raptorhunt.alloflow_stem_lab_20k_lines_90_section', '🎓 AlloFlow STEM Lab · 20K+ Lines · 90+ Sections')),
+            h('div', { className: 'text-xs text-slate-500 italic' }, __alloT('stem.raptorhunt.built_with_rigor_care_reverence_for_th', '🌅 Built with rigor, care, + reverence for these magnificent birds.')),
+            h('div', { className: 'text-xs text-slate-500 italic mt-3' }, __alloT('stem.raptorhunt.thank_you_for_completing_this_journey', 'Thank you for completing this journey.'))
           )
         );
       }
@@ -19224,12 +19225,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var categorized = GLOSSARY.map(function(g) { return Object.assign({}, g, { cat: categorize(g.term, g.def) }); });
         var categories = [
           { id: 'all', label: 'All' },
-          { id: 'anatomy', label: '🦴 Anatomy', color: 'amber' },
-          { id: 'physics', label: '📐 Physics', color: 'cyan' },
-          { id: 'behavior', label: '🌗 Behavior', color: 'indigo' },
-          { id: 'falconry', label: '🤝 Falconry', color: 'orange' },
-          { id: 'taxonomy', label: '🧬 Taxonomy', color: 'emerald' },
-          { id: 'conservation', label: '🌍 Conservation', color: 'green' }
+          { id: 'anatomy', label: __alloT('stem.raptorhunt.anatomy_2', '🦴 Anatomy'), color: 'amber' },
+          { id: 'physics', label: __alloT('stem.raptorhunt.physics_2', '📐 Physics'), color: 'cyan' },
+          { id: 'behavior', label: __alloT('stem.raptorhunt.behavior', '🌗 Behavior'), color: 'indigo' },
+          { id: 'falconry', label: __alloT('stem.raptorhunt.falconry', '🤝 Falconry'), color: 'orange' },
+          { id: 'taxonomy', label: __alloT('stem.raptorhunt.taxonomy', '🧬 Taxonomy'), color: 'emerald' },
+          { id: 'conservation', label: __alloT('stem.raptorhunt.conservation_4', '🌍 Conservation'), color: 'green' }
         ];
         var catCounts = {};
         categorized.forEach(function(g) { catCounts[g.cat] = (catCounts[g.cat] || 0) + 1; });
@@ -19245,12 +19246,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'bg-gradient-to-br from-slate-800/40 to-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
             h('div', { className: 'flex items-start justify-between gap-3 flex-wrap mb-2' },
               h('div', null,
-                h('div', { className: 'text-lg font-bold text-amber-200 mb-1 tracking-tight' }, '📖 Raptor Glossary'),
+                h('div', { className: 'text-lg font-bold text-amber-200 mb-1 tracking-tight' }, __alloT('stem.raptorhunt.raptor_glossary', '📖 Raptor Glossary')),
                 h('div', { className: 'text-sm text-slate-300 leading-relaxed' }, GLOSSARY.length + ' terms — A-Z reference covering anatomy, behavior, conservation, falconry, taxonomy, and physics.')
               ),
               // ── NEW v0.17: Mode toggle ──
               h('div', { className: 'flex gap-1 bg-slate-900/60 rounded-lg p-1' },
-                [{ id: 'list', label: '📋 List' }, { id: 'flashcards', label: '🎴 Flashcards' }].map(function(m) {
+                [{ id: 'list', label: __alloT('stem.raptorhunt.list', '📋 List') }, { id: 'flashcards', label: __alloT('stem.raptorhunt.flashcards', '🎴 Flashcards') }].map(function(m) {
                   var active = glossMode === m.id;
                   return h('button', {
                     key: m.id,
@@ -19280,8 +19281,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               // Stats bar
               h('div', { className: 'flex items-center justify-between text-xs' },
                 h('div', { className: 'text-slate-300' },
-                  'Card ', h('span', { className: 'font-mono text-amber-300' }, (fc.deckIdx % deck.length + 1) + '/' + deck.length),
-                  ' in active deck · ',
+                  __alloT('stem.raptorhunt.card', 'Card '), h('span', { className: 'font-mono text-amber-300' }, (fc.deckIdx % deck.length + 1) + '/' + deck.length),
+                  __alloT('stem.raptorhunt.in_active_deck', ' in active deck · '),
                   h('span', { className: 'text-emerald-300' }, knownCount + ' known'),
                   ' · ',
                   h('span', { className: 'text-cyan-300' }, reviewedCount + ' reviewed this session')
@@ -19289,8 +19290,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('button', {
                   onClick: function() { setFC({ knownIds: {}, reviewedIds: {} }); rhAnnounce('Flashcard progress reset'); },
                   className: 'transition-colors text-[10px] text-slate-500 hover:text-amber-300 italic',
-                  'aria-label': 'Reset flashcard progress'
-                }, '↺ Reset')
+                  'aria-label': __alloT('stem.raptorhunt.reset_flashcard_progress', 'Reset flashcard progress')
+                }, __alloT('stem.raptorhunt.reset', '↺ Reset'))
               ),
               // Flashcard
               h('div', { className: 'relative', style: { minHeight: '240px', perspective: '1000px' } },
@@ -19303,14 +19304,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   'aria-label': fc.flipped ? 'Definition (click to flip back)' : 'Term (click to flip)'
                 },
                   fc.flipped ? h('div', { className: 'space-y-3' },
-                    h('div', { className: 'text-[10px] uppercase tracking-wider text-emerald-300 font-bold' }, 'Definition'),
+                    h('div', { className: 'text-[10px] uppercase tracking-wider text-emerald-300 font-bold' }, __alloT('stem.raptorhunt.definition', 'Definition')),
                     h('div', { className: 'text-xl font-bold text-emerald-200 tracking-tight' }, card.term),
                     h('div', { className: 'text-sm text-emerald-100/90 leading-relaxed' }, card.def),
-                    h('div', { className: 'text-[10px] text-emerald-300 italic mt-3' }, '↻ Click card to flip back')
+                    h('div', { className: 'text-[10px] text-emerald-300 italic mt-3' }, __alloT('stem.raptorhunt.click_card_to_flip_back', '↻ Click card to flip back'))
                   ) : h('div', { className: 'space-y-3 text-center py-8' },
-                    h('div', { className: 'text-[10px] uppercase tracking-wider text-amber-300 font-bold' }, 'Term'),
+                    h('div', { className: 'text-[10px] uppercase tracking-wider text-amber-300 font-bold' }, __alloT('stem.raptorhunt.term', 'Term')),
                     h('div', { className: 'text-3xl font-bold text-amber-200 tracking-tight' }, card.term),
-                    h('div', { className: 'text-xs text-amber-300/70 italic' }, 'Try to define this term, then click to flip')
+                    h('div', { className: 'text-xs text-amber-300/70 italic' }, __alloT('stem.raptorhunt.try_to_define_this_term_then_click_to_', 'Try to define this term, then click to flip'))
                   )
                 )
               ),
@@ -19326,8 +19327,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     rhAnnounce("Marked: didn't know. Next card.");
                   },
                   className: 'transition-colors px-3 py-2 rounded-lg text-xs font-bold bg-red-900/40 text-red-200 hover:bg-red-800/50 border border-red-700/40 active:scale-[0.97]',
-                  'aria-label': "Didn't know"
-                }, "✗ Didn't Know"),
+                  'aria-label': __alloT('stem.raptorhunt.didn_t_know', "Didn't know")
+                }, __alloT('stem.raptorhunt.didn_t_know_2', "✗ Didn't Know")),
                 h('button', {
                   onClick: function() {
                     var newReviewed = Object.assign({}, fc.reviewedIds);
@@ -19336,8 +19337,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     rhAnnounce('Marked: still learning. Next card.');
                   },
                   className: 'transition-colors px-3 py-2 rounded-lg text-xs font-bold bg-amber-900/40 text-amber-200 hover:bg-amber-800/50 border border-amber-700/40 active:scale-[0.97]',
-                  'aria-label': 'Still learning'
-                }, '? Still Learning'),
+                  'aria-label': __alloT('stem.raptorhunt.still_learning', 'Still learning')
+                }, __alloT('stem.raptorhunt.still_learning_2', '? Still Learning')),
                 h('button', {
                   onClick: function() {
                     var newKnown = Object.assign({}, fc.knownIds);
@@ -19349,18 +19350,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     if (ctx.awardXP) ctx.awardXP(1, 'Glossary flashcard: known');
                   },
                   className: 'transition-colors px-3 py-2 rounded-lg text-xs font-bold bg-emerald-900/40 text-emerald-200 hover:bg-emerald-800/50 border border-emerald-700/40 active:scale-[0.97]',
-                  'aria-label': 'Mark as known'
-                }, '✓ Knew It')
+                  'aria-label': __alloT('stem.raptorhunt.mark_as_known', 'Mark as known')
+                }, __alloT('stem.raptorhunt.knew_it', '✓ Knew It'))
               ),
               // Skip button (always)
               !fc.flipped && h('button', {
                 onClick: function() { setFC({ deckIdx: fc.deckIdx + 1, flipped: false }); rhAnnounce('Skipped to next card'); },
                 className: 'transition-colors w-full px-3 py-2 rounded-lg text-xs font-bold bg-slate-700 text-slate-200 hover:bg-slate-600 active:scale-[0.97]',
-                'aria-label': 'Skip card'
-              }, '➡ Skip — next card'),
+                'aria-label': __alloT('stem.raptorhunt.skip_card', 'Skip card')
+              }, __alloT('stem.raptorhunt.skip_next_card', '➡ Skip — next card')),
               // Help
               h('div', { className: 'text-[10px] text-slate-500 italic text-center' },
-                'Self-test: try to define the term in your head, click to reveal the definition, then mark whether you knew it. "Knew it" terms drop out of the active deck. Spaced-repetition active recall.'
+                __alloT('stem.raptorhunt.self_test_try_to_define_the_term_in_yo', 'Self-test: try to define the term in your head, click to reveal the definition, then mark whether you knew it. "Knew it" terms drop out of the active deck. Spaced-repetition active recall.')
               )
             );
           })(),
@@ -19369,11 +19370,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           glossMode === 'list' && h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-lg p-3' },
             h('input', {
               type: 'text',
-              placeholder: '🔍 Search terms or definitions...',
+              placeholder: __alloT('stem.raptorhunt.search_terms_or_definitions', '🔍 Search terms or definitions...'),
               value: glossSearch,
               onInput: function(e) { setSearch(e.target.value); },
               className: 'w-full px-3 py-2 rounded-lg bg-slate-800 text-amber-200 border border-slate-700 focus:border-amber-500 focus:outline-none text-sm',
-              'aria-label': 'Search glossary'
+              'aria-label': __alloT('stem.raptorhunt.search_glossary', 'Search glossary')
             })
           ),
 
@@ -19398,7 +19399,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           glossMode === 'list' && h('div', { className: 'text-[10px] text-slate-400' }, filtered.length + ' of ' + GLOSSARY.length + ' terms shown' + (glossSearch ? ' (search: ' + glossSearch + ')' : '') + (glossCategory !== 'all' ? ' (category: ' + glossCategory + ')' : '')),
 
           // Glossary entries (list mode only)
-          glossMode === 'list' && (filtered.length === 0 ? h('div', { className: 'text-center text-slate-500 italic py-8' }, 'No matches.') :
+          glossMode === 'list' && (filtered.length === 0 ? h('div', { className: 'text-center text-slate-500 italic py-8' }, __alloT('stem.raptorhunt.no_matches', 'No matches.')) :
             h('div', { className: 'space-y-2' },
               filtered.map(function(g, i) {
                 var catColors = { anatomy: 'amber', physics: 'cyan', behavior: 'indigo', falconry: 'orange', taxonomy: 'emerald', conservation: 'green', other: 'slate' };
@@ -19423,42 +19424,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var region = rh.resourceRegion || 'national';
         function setRegion(r) { setRH({ resourceRegion: r }); }
         var regions = [
-          { id: 'national', label: '🇺🇸 National', desc: 'Sources covering all of North America' },
-          { id: 'northeast', label: '🏞 Northeast', desc: 'New England + Mid-Atlantic ridge sites' },
-          { id: 'southeast', label: '🌴 Southeast', desc: 'Gulf Coast + Atlantic wintering grounds' },
-          { id: 'midwest', label: '🌾 Midwest', desc: 'Mississippi flyway + Great Lakes' },
-          { id: 'southwest', label: '🏜 Southwest', desc: 'Desert raptors + condor range' },
-          { id: 'northwest', label: '🌲 Northwest', desc: 'Pacific flyway + boreal forest' }
+          { id: 'national', label: __alloT('stem.raptorhunt.national', '🇺🇸 National'), desc: __alloT('stem.raptorhunt.sources_covering_all_of_north_america', 'Sources covering all of North America') },
+          { id: 'northeast', label: __alloT('stem.raptorhunt.northeast_2', '🏞 Northeast'), desc: __alloT('stem.raptorhunt.new_england_mid_atlantic_ridge_sites', 'New England + Mid-Atlantic ridge sites') },
+          { id: 'southeast', label: __alloT('stem.raptorhunt.southeast', '🌴 Southeast'), desc: __alloT('stem.raptorhunt.gulf_coast_atlantic_wintering_grounds', 'Gulf Coast + Atlantic wintering grounds') },
+          { id: 'midwest', label: __alloT('stem.raptorhunt.midwest_2', '🌾 Midwest'), desc: __alloT('stem.raptorhunt.mississippi_flyway_great_lakes', 'Mississippi flyway + Great Lakes') },
+          { id: 'southwest', label: __alloT('stem.raptorhunt.southwest', '🏜 Southwest'), desc: __alloT('stem.raptorhunt.desert_raptors_condor_range', 'Desert raptors + condor range') },
+          { id: 'northwest', label: __alloT('stem.raptorhunt.northwest', '🌲 Northwest'), desc: __alloT('stem.raptorhunt.pacific_flyway_boreal_forest', 'Pacific flyway + boreal forest') }
         ];
         // Regional sites (additional to the national RESOURCES)
         var regionalSites = {
           northeast: [
-            { name: 'Hawk Mountain Sanctuary (PA)', url: 'https://www.hawkmountain.org/', desc: 'The original 1934 raptor sanctuary. Visit during fall migration to see thousands of broadwings + sharp-shins funneling along the Kittatinny Ridge. 8 lookouts + free public access mid-Aug to mid-Dec.' },
-            { name: 'Cape May Hawkwatch (NJ)', url: 'https://njaudubon.org/centers/cape-may-bird-observatory/', desc: 'Cape May Bird Observatory\'s coastal funnel — best raptor watching on the East Coast on NW-wind days in October. ~40,000 birds counted annually.' },
-            { name: 'Quaker Ridge Hawkwatch (CT)', url: 'https://greenwich.audubon.org/conservation/hawkwatch', desc: 'Audubon-run; great accessible hawkwatch in southern New England.' },
-            { name: 'Lighthouse Point Park, New Haven', url: 'https://www.newhaven-ct.gov/', desc: 'Free + accessible — coastal fall migration site.' }
+            { name: __alloT('stem.raptorhunt.hawk_mountain_sanctuary_pa', 'Hawk Mountain Sanctuary (PA)'), url: 'https://www.hawkmountain.org/', desc: __alloT('stem.raptorhunt.the_original_1934_raptor_sanctuary_vis', 'The original 1934 raptor sanctuary. Visit during fall migration to see thousands of broadwings + sharp-shins funneling along the Kittatinny Ridge. 8 lookouts + free public access mid-Aug to mid-Dec.') },
+            { name: __alloT('stem.raptorhunt.cape_may_hawkwatch_nj', 'Cape May Hawkwatch (NJ)'), url: 'https://njaudubon.org/centers/cape-may-bird-observatory/', desc: __alloT('stem.raptorhunt.cape_may_bird_observatory_s_coastal_fu', 'Cape May Bird Observatory\'s coastal funnel — best raptor watching on the East Coast on NW-wind days in October. ~40,000 birds counted annually.') },
+            { name: __alloT('stem.raptorhunt.quaker_ridge_hawkwatch_ct', 'Quaker Ridge Hawkwatch (CT)'), url: 'https://greenwich.audubon.org/conservation/hawkwatch', desc: __alloT('stem.raptorhunt.audubon_run_great_accessible_hawkwatch', 'Audubon-run; great accessible hawkwatch in southern New England.') },
+            { name: __alloT('stem.raptorhunt.lighthouse_point_park_new_haven', 'Lighthouse Point Park, New Haven'), url: 'https://www.newhaven-ct.gov/', desc: __alloT('stem.raptorhunt.free_accessible_coastal_fall_migration', 'Free + accessible — coastal fall migration site.') }
           ],
           southeast: [
-            { name: 'Audubon Center for Birds of Prey (FL)', url: 'https://cbop.audubon.org/', desc: 'Florida\'s premier raptor rehab + education center. Visit + see ambassador birds.' },
-            { name: 'Curry Hammock State Park (FL Keys)', url: 'https://www.floridastateparks.org/parks-and-trails/curry-hammock-state-park', desc: 'Famous fall hawkwatch — peregrines + merlins funnel through the Keys.' },
-            { name: 'Hawk Hill / Florida Keys Hawkwatch', url: 'https://hawkcount.org/', desc: 'October peregrine days here are legendary — sometimes 500+ peregrines in a single day.' }
+            { name: __alloT('stem.raptorhunt.audubon_center_for_birds_of_prey_fl', 'Audubon Center for Birds of Prey (FL)'), url: 'https://cbop.audubon.org/', desc: __alloT('stem.raptorhunt.florida_s_premier_raptor_rehab_educati', 'Florida\'s premier raptor rehab + education center. Visit + see ambassador birds.') },
+            { name: __alloT('stem.raptorhunt.curry_hammock_state_park_fl_keys', 'Curry Hammock State Park (FL Keys)'), url: 'https://www.floridastateparks.org/parks-and-trails/curry-hammock-state-park', desc: __alloT('stem.raptorhunt.famous_fall_hawkwatch_peregrines_merli', 'Famous fall hawkwatch — peregrines + merlins funnel through the Keys.') },
+            { name: __alloT('stem.raptorhunt.hawk_hill_florida_keys_hawkwatch', 'Hawk Hill / Florida Keys Hawkwatch'), url: 'https://hawkcount.org/', desc: __alloT('stem.raptorhunt.october_peregrine_days_here_are_legend', 'October peregrine days here are legendary — sometimes 500+ peregrines in a single day.') }
           ],
           midwest: [
-            { name: 'Hawk Ridge Bird Observatory (Duluth, MN)', url: 'https://hawkridge.org/', desc: '60-90K raptors counted annually. Lake Superior\'s western shore concentrates birds reluctant to cross open water.' },
-            { name: 'Whitefish Point Bird Observatory (MI)', url: 'https://wpbo.org/', desc: 'Upper Peninsula migration corridor. Spring + fall raptor counts.' },
-            { name: 'Illinois Beach State Park Hawkwatch', url: 'https://www.dnr.illinois.gov/parks/park.illinoisbeach.html', desc: 'Lake Michigan western shore — excellent fall raptor passage.' }
+            { name: __alloT('stem.raptorhunt.hawk_ridge_bird_observatory_duluth_mn', 'Hawk Ridge Bird Observatory (Duluth, MN)'), url: 'https://hawkridge.org/', desc: __alloT('stem.raptorhunt.60_90k_raptors_counted_annually_lake_s', '60-90K raptors counted annually. Lake Superior\'s western shore concentrates birds reluctant to cross open water.') },
+            { name: __alloT('stem.raptorhunt.whitefish_point_bird_observatory_mi', 'Whitefish Point Bird Observatory (MI)'), url: 'https://wpbo.org/', desc: __alloT('stem.raptorhunt.upper_peninsula_migration_corridor_spr', 'Upper Peninsula migration corridor. Spring + fall raptor counts.') },
+            { name: __alloT('stem.raptorhunt.illinois_beach_state_park_hawkwatch', 'Illinois Beach State Park Hawkwatch'), url: 'https://www.dnr.illinois.gov/parks/park.illinoisbeach.html', desc: __alloT('stem.raptorhunt.lake_michigan_western_shore_excellent_', 'Lake Michigan western shore — excellent fall raptor passage.') }
           ],
           southwest: [
-            { name: 'HawkWatch International (UT)', url: 'https://hawkwatch.org/', desc: 'Long-term monitoring across the Intermountain West. Volunteer counts at 20+ sites.' },
-            { name: 'Smith Point Hawk Watch (TX Gulf Coast)', url: 'https://hawkcount.org/', desc: 'Gulf-coast funnel site — Mississippi flyway birds + Veracruz-bound migrants pass through here.' },
-            { name: 'Hopper Mountain National Wildlife Refuge (CA)', url: 'https://www.fws.gov/refuge/hopper-mountain', desc: 'Original California condor reintroduction site.' },
-            { name: 'Big Bend National Park (TX)', url: 'https://www.nps.gov/bibe/', desc: 'Year-round raptor diversity — golden eagles, peregrines, harriers, kites.' }
+            { name: __alloT('stem.raptorhunt.hawkwatch_international_ut', 'HawkWatch International (UT)'), url: 'https://hawkwatch.org/', desc: __alloT('stem.raptorhunt.long_term_monitoring_across_the_interm', 'Long-term monitoring across the Intermountain West. Volunteer counts at 20+ sites.') },
+            { name: __alloT('stem.raptorhunt.smith_point_hawk_watch_tx_gulf_coast', 'Smith Point Hawk Watch (TX Gulf Coast)'), url: 'https://hawkcount.org/', desc: __alloT('stem.raptorhunt.gulf_coast_funnel_site_mississippi_fly', 'Gulf-coast funnel site — Mississippi flyway birds + Veracruz-bound migrants pass through here.') },
+            { name: __alloT('stem.raptorhunt.hopper_mountain_national_wildlife_refu', 'Hopper Mountain National Wildlife Refuge (CA)'), url: 'https://www.fws.gov/refuge/hopper-mountain', desc: __alloT('stem.raptorhunt.original_california_condor_reintroduct', 'Original California condor reintroduction site.') },
+            { name: __alloT('stem.raptorhunt.big_bend_national_park_tx', 'Big Bend National Park (TX)'), url: 'https://www.nps.gov/bibe/', desc: __alloT('stem.raptorhunt.year_round_raptor_diversity_golden_eag', 'Year-round raptor diversity — golden eagles, peregrines, harriers, kites.') }
           ],
           northwest: [
-            { name: 'Goshute Mountains Hawkwatch (NV)', url: 'https://hawkwatch.org/', desc: 'High-altitude desert ridge — best peregrine + goshawk site in the West.' },
-            { name: 'Bonney Butte Hawkwatch (OR)', url: 'https://hawkwatch.org/', desc: 'Pacific Northwest fall migration.' },
-            { name: 'Cape Mendocino (CA)', url: 'https://www.audubon.org/', desc: 'Coastal raptor concentration point.' },
-            { name: 'Golden Gate Raptor Observatory (CA)', url: 'https://www.parksconservancy.org/programs/golden-gate-raptor-observatory', desc: '30,000 raptors per year. Marin Headlands.' }
+            { name: __alloT('stem.raptorhunt.goshute_mountains_hawkwatch_nv', 'Goshute Mountains Hawkwatch (NV)'), url: 'https://hawkwatch.org/', desc: __alloT('stem.raptorhunt.high_altitude_desert_ridge_best_peregr', 'High-altitude desert ridge — best peregrine + goshawk site in the West.') },
+            { name: __alloT('stem.raptorhunt.bonney_butte_hawkwatch_or', 'Bonney Butte Hawkwatch (OR)'), url: 'https://hawkwatch.org/', desc: __alloT('stem.raptorhunt.pacific_northwest_fall_migration', 'Pacific Northwest fall migration.') },
+            { name: __alloT('stem.raptorhunt.cape_mendocino_ca', 'Cape Mendocino (CA)'), url: 'https://www.audubon.org/', desc: __alloT('stem.raptorhunt.coastal_raptor_concentration_point', 'Coastal raptor concentration point.') },
+            { name: __alloT('stem.raptorhunt.golden_gate_raptor_observatory_ca', 'Golden Gate Raptor Observatory (CA)'), url: 'https://www.parksconservancy.org/programs/golden-gate-raptor-observatory', desc: __alloT('stem.raptorhunt.30_000_raptors_per_year_marin_headland', '30,000 raptors per year. Marin Headlands.') }
           ],
           national: []
         };
@@ -19468,25 +19469,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var now = new Date();
         var month = now.getMonth(); // 0-11
         var monthData = [
-          { name: 'January', focus: 'Winter — bald eagles concentrated along open rivers + reservoirs. Snowy owl irruption years peak now.', action: 'Visit a known eagle wintering site (Mississippi River pools, Klamath Basin CA, Skagit River WA). Bring binoculars.' },
-          { name: 'February', focus: 'Bald eagles + great horned owls already nesting + incubating eggs. Courtship displays of golden eagles in west.', action: 'Listen for great horned owl duetting at dusk (the deep "hoo-hoo-hoooo"). Wisconsin Eagle Days festivals run mid-Feb.' },
-          { name: 'March', focus: 'Northbound migration begins. Ospreys returning to northern lakes.', action: 'Set up + monitor an osprey nest platform if you have one. Submit early-arrival dates to eBird — they\'re shifting earlier with climate change.' },
-          { name: 'April', focus: 'Peak northbound migration. Eilat Israel + Cape May spring counts active. Most species back on territory.', action: 'Eilat International Birding Centre runs guided spring trips. Hawk Mountain reopens for spring count.' },
+          { name: __alloT('stem.raptorhunt.january', 'January'), focus: 'Winter — bald eagles concentrated along open rivers + reservoirs. Snowy owl irruption years peak now.', action: 'Visit a known eagle wintering site (Mississippi River pools, Klamath Basin CA, Skagit River WA). Bring binoculars.' },
+          { name: __alloT('stem.raptorhunt.february', 'February'), focus: 'Bald eagles + great horned owls already nesting + incubating eggs. Courtship displays of golden eagles in west.', action: 'Listen for great horned owl duetting at dusk (the deep "hoo-hoo-hoooo"). Wisconsin Eagle Days festivals run mid-Feb.' },
+          { name: __alloT('stem.raptorhunt.march', 'March'), focus: 'Northbound migration begins. Ospreys returning to northern lakes.', action: 'Set up + monitor an osprey nest platform if you have one. Submit early-arrival dates to eBird — they\'re shifting earlier with climate change.' },
+          { name: __alloT('stem.raptorhunt.april', 'April'), focus: 'Peak northbound migration. Eilat Israel + Cape May spring counts active. Most species back on territory.', action: 'Eilat International Birding Centre runs guided spring trips. Hawk Mountain reopens for spring count.' },
           { name: 'May', focus: 'Nesting season. Eggs hatched in most species. Adults very protective — keep distance.', action: 'Volunteer at a banding station. Hawk Mountain + many state agencies need helpers for nest monitoring.' },
-          { name: 'June', focus: 'Chicks growing rapidly. Photographer-friendly window — birds at nest, predictable schedule.', action: 'Visit a nest cam (Decorah Eagles, Cornell). Volunteer for songbird-decline observation (which affects raptor prey base).' },
-          { name: 'July', focus: 'Fledglings on the wing for the first time. Many awkward + obvious — first-year mortality begins.', action: 'Report dependent fledglings to local rehab if injured. Avoid disturbing nests during peak fledgling weeks.' },
-          { name: 'August', focus: 'Broad-winged hawks gathering for kettles. Hawk Mountain count BEGINS mid-Aug.', action: 'Hawk Mountain North Lookout opens 15 Aug. Plan a fall hawkwatch visit for mid-Sept peak.' },
-          { name: 'September', focus: 'PEAK FALL MIGRATION. Broadwings kettling — 1M+ birds at Veracruz on cold-front days. Cape May coastal funnel active.', action: 'This is THE month for hawkwatch trips. Veracruz River of Raptors festivals run Sept-Oct. Visit Hawk Mountain on a cold-front + NW wind day.' },
-          { name: 'October', focus: 'Peregrines, kestrels, sharp-shinned hawks dominate the Cape May coastal counts. Buteo migration continues.', action: 'Cape May Bird Observatory hosts October peregrine festivals. Bring a scope for distant ridge birds.' },
-          { name: 'November', focus: 'Late-season migration. Rough-legged hawks arriving from Arctic. Bald eagles + golden eagles peaking at northern sites.', action: 'Eagle viewing at Conowingo Dam (MD), Mississippi River pools, BC Squamish Eagle Run.' },
-          { name: 'December', focus: 'Winter raptor count begins. Snowy owl irruption years detectable now. Christmas Bird Count happens nationally.', action: 'Join an Audubon Christmas Bird Count (Dec 14-Jan 5). 80,000 volunteers, world\'s longest-running citizen-science count.' }
+          { name: __alloT('stem.raptorhunt.june', 'June'), focus: 'Chicks growing rapidly. Photographer-friendly window — birds at nest, predictable schedule.', action: 'Visit a nest cam (Decorah Eagles, Cornell). Volunteer for songbird-decline observation (which affects raptor prey base).' },
+          { name: __alloT('stem.raptorhunt.july', 'July'), focus: 'Fledglings on the wing for the first time. Many awkward + obvious — first-year mortality begins.', action: 'Report dependent fledglings to local rehab if injured. Avoid disturbing nests during peak fledgling weeks.' },
+          { name: __alloT('stem.raptorhunt.august', 'August'), focus: 'Broad-winged hawks gathering for kettles. Hawk Mountain count BEGINS mid-Aug.', action: 'Hawk Mountain North Lookout opens 15 Aug. Plan a fall hawkwatch visit for mid-Sept peak.' },
+          { name: __alloT('stem.raptorhunt.september', 'September'), focus: 'PEAK FALL MIGRATION. Broadwings kettling — 1M+ birds at Veracruz on cold-front days. Cape May coastal funnel active.', action: 'This is THE month for hawkwatch trips. Veracruz River of Raptors festivals run Sept-Oct. Visit Hawk Mountain on a cold-front + NW wind day.' },
+          { name: __alloT('stem.raptorhunt.october', 'October'), focus: 'Peregrines, kestrels, sharp-shinned hawks dominate the Cape May coastal counts. Buteo migration continues.', action: 'Cape May Bird Observatory hosts October peregrine festivals. Bring a scope for distant ridge birds.' },
+          { name: __alloT('stem.raptorhunt.november', 'November'), focus: 'Late-season migration. Rough-legged hawks arriving from Arctic. Bald eagles + golden eagles peaking at northern sites.', action: 'Eagle viewing at Conowingo Dam (MD), Mississippi River pools, BC Squamish Eagle Run.' },
+          { name: __alloT('stem.raptorhunt.december', 'December'), focus: 'Winter raptor count begins. Snowy owl irruption years detectable now. Christmas Bird Count happens nationally.', action: 'Join an Audubon Christmas Bird Count (Dec 14-Jan 5). 80,000 volunteers, world\'s longest-running citizen-science count.' }
         ];
         var thisMonth = monthData[month];
 
         return h('div', { className: 'space-y-3' },
           h('div', { className: 'bg-gradient-to-br from-slate-800/40 to-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-amber-200 mb-1 tracking-tight' }, '📚 Resources + Citizen Science'),
-            h('div', { className: 'text-sm text-slate-300' }, 'Where to keep learning + how to contribute real data to raptor research.')
+            h('div', { className: 'text-lg font-bold text-amber-200 mb-1 tracking-tight' }, __alloT('stem.raptorhunt.resources_citizen_science', '📚 Resources + Citizen Science')),
+            h('div', { className: 'text-sm text-slate-300' }, __alloT('stem.raptorhunt.where_to_keep_learning_how_to_contribu', 'Where to keep learning + how to contribute real data to raptor research.'))
           ),
 
           // ── NEW v0.13: This-month seasonal panel ──
@@ -19499,14 +19500,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('span', { className: 'font-bold' }, 'Focus: '), thisMonth.focus
             ),
             h('div', { className: 'bg-slate-900/50 rounded-lg p-3 border border-amber-700/30' },
-              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '🎯 Suggested action this month'),
+              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.suggested_action_this_month', '🎯 Suggested action this month')),
               h('div', { className: 'text-xs text-emerald-100/90 leading-relaxed' }, thisMonth.action)
             )
           ),
 
           // ── NEW v0.13: Region selector ──
           h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-3' },
-            h('div', { className: 'text-xs font-bold text-amber-300 mb-2' }, '🌎 Filter by region'),
+            h('div', { className: 'text-xs font-bold text-amber-300 mb-2' }, __alloT('stem.raptorhunt.filter_by_region', '🌎 Filter by region')),
             h('div', { className: 'flex flex-wrap gap-2' },
               regions.map(function(r) {
                 var active = region === r.id;
@@ -19526,7 +19527,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
           // Regional hawk-watch sites (if non-national)
           regionalForCurrent.length > 0 && h('div', null,
-            h('div', { className: 'text-sm font-bold text-cyan-300 mb-2' }, '📍 Regional hawk-watch sites + rehab facilities'),
+            h('div', { className: 'text-sm font-bold text-cyan-300 mb-2' }, __alloT('stem.raptorhunt.regional_hawk_watch_sites_rehab_facili', '📍 Regional hawk-watch sites + rehab facilities')),
             h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
               regionalForCurrent.map(function(r, i) {
                 return h('a', { key: i, href: r.url, target: '_blank', rel: 'noopener noreferrer',
@@ -19542,7 +19543,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
           // National resources (always shown)
           h('div', null,
-            h('div', { className: 'text-sm font-bold text-amber-300 mb-2' }, '🌎 National + global resources'),
+            h('div', { className: 'text-sm font-bold text-amber-300 mb-2' }, __alloT('stem.raptorhunt.national_global_resources', '🌎 National + global resources')),
             h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
               RESOURCES.map(function(r, i) {
                 return h('a', { key: i, href: r.url, target: '_blank', rel: 'noopener noreferrer',
@@ -19557,8 +19558,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           ),
 
           h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-4 text-xs text-emerald-100/90' },
-            h('div', { className: 'font-bold text-emerald-300 mb-1' }, '💡 Start with one observation'),
-            'Open eBird or iNaturalist. Pick any raptor you saw today. Log it. You\'ve just contributed to one of the largest biodiversity datasets in human history — and you\'ve learned the species better than any textbook will teach you.'
+            h('div', { className: 'font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.start_with_one_observation', '💡 Start with one observation')),
+            __alloT('stem.raptorhunt.open_ebird_or_inaturalist_pick_any_rap', 'Open eBird or iNaturalist. Pick any raptor you saw today. Log it. You\'ve just contributed to one of the largest biodiversity datasets in human history — and you\'ve learned the species better than any textbook will teach you.')
           ),
 
           // ── NEW v0.16: Math Practice Problems ──
@@ -19807,9 +19808,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               }
             ];
             return h('details', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-3' },
-              h('summary', { className: 'text-sm font-bold text-emerald-300 cursor-pointer' }, '🧮 Math Practice Problems — 50 numerical workouts'),
+              h('summary', { className: 'text-sm font-bold text-emerald-300 cursor-pointer' }, __alloT('stem.raptorhunt.math_practice_problems_50_numerical_wo', '🧮 Math Practice Problems — 50 numerical workouts')),
               h('div', { className: 'mt-3 space-y-2' },
-                h('div', { className: 'text-xs text-slate-400 italic mb-2' }, 'Real physics problems from this tool. Work them out on paper, then click Show Solution to check. Topics: wing loading, terminal velocity, KE, aspect ratio, acuity scaling, population λ, talon pressure, fall time, pellet biomass, glide ratio.'),
+                h('div', { className: 'text-xs text-slate-400 italic mb-2' }, __alloT('stem.raptorhunt.real_physics_problems_from_this_tool_w', 'Real physics problems from this tool. Work them out on paper, then click Show Solution to check. Topics: wing loading, terminal velocity, KE, aspect ratio, acuity scaling, population λ, talon pressure, fall time, pellet biomass, glide ratio.')),
                 problems.map(function(p) {
                   var shown = !!mathShown[p.id];
                   return h('div', { key: p.id, className: 'bg-slate-800/40 rounded-lg p-3' },
@@ -19832,117 +19833,117 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
           // ── NEW v0.22: Field-Trip Planning Checklist ──
           h('details', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded-xl p-3' },
-            h('summary', { className: 'text-sm font-bold text-cyan-300 cursor-pointer' }, '🚌 Field-Trip Planning Checklist — printable for hawkwatch trips'),
+            h('summary', { className: 'text-sm font-bold text-cyan-300 cursor-pointer' }, __alloT('stem.raptorhunt.field_trip_planning_checklist_printabl', '🚌 Field-Trip Planning Checklist — printable for hawkwatch trips')),
             h('div', { className: 'mt-3 bg-white text-slate-900 rounded-lg p-4' },
               h('div', { className: 'border-b-2 border-slate-800 pb-2 mb-3' },
-                h('div', { className: 'text-base font-bold' }, '🦅 RAPTOR FIELD TRIP — Planning Checklist'),
-                h('div', { className: 'text-xs italic mt-1' }, 'Print + use to organize a 1-day class trip to a local hawkwatch site.')
+                h('div', { className: 'text-base font-bold' }, __alloT('stem.raptorhunt.raptor_field_trip_planning_checklist', '🦅 RAPTOR FIELD TRIP — Planning Checklist')),
+                h('div', { className: 'text-xs italic mt-1' }, __alloT('stem.raptorhunt.print_use_to_organize_a_1_day_class_tr', 'Print + use to organize a 1-day class trip to a local hawkwatch site.'))
               ),
               h('div', { className: 'grid grid-cols-3 gap-3 text-xs mb-3' },
-                h('div', null, h('div', { className: 'font-bold' }, 'Trip leader:'), h('div', { className: 'border-b border-slate-400 h-5' })),
-                h('div', null, h('div', { className: 'font-bold' }, 'Target date:'), h('div', { className: 'border-b border-slate-400 h-5' })),
+                h('div', null, h('div', { className: 'font-bold' }, __alloT('stem.raptorhunt.trip_leader', 'Trip leader:')), h('div', { className: 'border-b border-slate-400 h-5' })),
+                h('div', null, h('div', { className: 'font-bold' }, __alloT('stem.raptorhunt.target_date', 'Target date:')), h('div', { className: 'border-b border-slate-400 h-5' })),
                 h('div', null, h('div', { className: 'font-bold' }, '# students:'), h('div', { className: 'border-b border-slate-400 h-5' }))
               ),
               // Section 1: Site selection
               h('div', { className: 'border border-slate-300 rounded p-3 mb-3 text-xs' },
-                h('div', { className: 'font-bold mb-2' }, '📍 1. Site selection (use the Resources by-region panel in the tool)'),
+                h('div', { className: 'font-bold mb-2' }, __alloT('stem.raptorhunt.1_site_selection_use_the_resources_by_', '📍 1. Site selection (use the Resources by-region panel in the tool)')),
                 h('div', { className: 'space-y-1 text-[11px]' },
-                  h('div', null, '☐ Identified nearby hawkwatch site (within 2-hour drive)'),
-                  h('div', null, '☐ Confirmed site is OPEN for visitors on target date'),
-                  h('div', null, '☐ Site coordinator contacted (introduce yourself + group size)'),
-                  h('div', null, '☐ Backup site identified in case of weather/closure')
+                  h('div', null, __alloT('stem.raptorhunt.identified_nearby_hawkwatch_site_withi', '☐ Identified nearby hawkwatch site (within 2-hour drive)')),
+                  h('div', null, __alloT('stem.raptorhunt.confirmed_site_is_open_for_visitors_on', '☐ Confirmed site is OPEN for visitors on target date')),
+                  h('div', null, __alloT('stem.raptorhunt.site_coordinator_contacted_introduce_y', '☐ Site coordinator contacted (introduce yourself + group size)')),
+                  h('div', null, __alloT('stem.raptorhunt.backup_site_identified_in_case_of_weat', '☐ Backup site identified in case of weather/closure'))
                 )
               ),
               // Section 2: Timing
               h('div', { className: 'border border-slate-300 rounded p-3 mb-3 text-xs' },
-                h('div', { className: 'font-bold mb-2' }, '🗓 2. Timing (use the Migration Calendar in the tool)'),
+                h('div', { className: 'font-bold mb-2' }, __alloT('stem.raptorhunt.2_timing_use_the_migration_calendar_in', '🗓 2. Timing (use the Migration Calendar in the tool)')),
                 h('div', { className: 'space-y-1 text-[11px]' },
-                  h('div', null, '☐ Check target month: peak migration window for your region'),
-                  h('div', null, '☐ Check weather forecast 3 days out: cold-front + NW wind = best raptor activity'),
-                  h('div', null, '☐ Plan arrival 8-9 AM (raptors start moving after thermals build)'),
-                  h('div', null, '☐ Allow 4-6 hours on site (raptor watching is patient work)')
+                  h('div', null, __alloT('stem.raptorhunt.check_target_month_peak_migration_wind', '☐ Check target month: peak migration window for your region')),
+                  h('div', null, __alloT('stem.raptorhunt.check_weather_forecast_3_days_out_cold', '☐ Check weather forecast 3 days out: cold-front + NW wind = best raptor activity')),
+                  h('div', null, __alloT('stem.raptorhunt.plan_arrival_8_9_am_raptors_start_movi', '☐ Plan arrival 8-9 AM (raptors start moving after thermals build)')),
+                  h('div', null, __alloT('stem.raptorhunt.allow_4_6_hours_on_site_raptor_watchin', '☐ Allow 4-6 hours on site (raptor watching is patient work)'))
                 )
               ),
               // Section 3: Equipment
               h('div', { className: 'border border-slate-300 rounded p-3 mb-3 text-xs' },
-                h('div', { className: 'font-bold mb-2' }, '🎒 3. Equipment per student'),
+                h('div', { className: 'font-bold mb-2' }, __alloT('stem.raptorhunt.3_equipment_per_student', '🎒 3. Equipment per student')),
                 h('div', { className: 'grid grid-cols-2 gap-x-3 gap-y-1 text-[11px]' },
-                  h('div', null, '☐ Binoculars (8× or 10× — ask the site if they loan'),
-                  h('div', null, '☐ Field guide (Sibley, Crossley, or printed Raptor Hunt silhouettes)'),
-                  h('div', null, '☐ Notebook + pencil (no pen — pens freeze in cold)'),
-                  h('div', null, '☐ Water + snacks'),
-                  h('div', null, '☐ Warm layers (windy ridgetop sites are cold)'),
-                  h('div', null, '☐ Hat + sunscreen (yes, even in October)'),
-                  h('div', null, '☐ Phone for photos + eBird submission'),
-                  h('div', null, '☐ Print-out of the Field Journal worksheet (Resources section)')
+                  h('div', null, __alloT('stem.raptorhunt.binoculars_8_or_10_ask_the_site_if_the', '☐ Binoculars (8× or 10× — ask the site if they loan')),
+                  h('div', null, __alloT('stem.raptorhunt.field_guide_sibley_crossley_or_printed', '☐ Field guide (Sibley, Crossley, or printed Raptor Hunt silhouettes)')),
+                  h('div', null, __alloT('stem.raptorhunt.notebook_pencil_no_pen_pens_freeze_in_', '☐ Notebook + pencil (no pen — pens freeze in cold)')),
+                  h('div', null, __alloT('stem.raptorhunt.water_snacks', '☐ Water + snacks')),
+                  h('div', null, __alloT('stem.raptorhunt.warm_layers_windy_ridgetop_sites_are_c', '☐ Warm layers (windy ridgetop sites are cold)')),
+                  h('div', null, __alloT('stem.raptorhunt.hat_sunscreen_yes_even_in_october', '☐ Hat + sunscreen (yes, even in October)')),
+                  h('div', null, __alloT('stem.raptorhunt.phone_for_photos_ebird_submission', '☐ Phone for photos + eBird submission')),
+                  h('div', null, __alloT('stem.raptorhunt.print_out_of_the_field_journal_workshe', '☐ Print-out of the Field Journal worksheet (Resources section)'))
                 )
               ),
               // Section 4: Safety + logistics
               h('div', { className: 'border border-slate-300 rounded p-3 mb-3 text-xs' },
-                h('div', { className: 'font-bold mb-2' }, '🛡 4. Safety + permissions'),
+                h('div', { className: 'font-bold mb-2' }, __alloT('stem.raptorhunt.4_safety_permissions', '🛡 4. Safety + permissions')),
                 h('div', { className: 'space-y-1 text-[11px]' },
-                  h('div', null, '☐ Parent/guardian permission forms collected'),
-                  h('div', null, '☐ Bus or van transport arranged'),
-                  h('div', null, '☐ Adult chaperones at 1:8 ratio minimum'),
-                  h('div', null, '☐ First aid kit + emergency contacts list'),
-                  h('div', null, '☐ Lunch plan (bag lunch or pre-arranged stop)'),
-                  h('div', null, '☐ Restroom availability checked at site')
+                  h('div', null, __alloT('stem.raptorhunt.parent_guardian_permission_forms_colle', '☐ Parent/guardian permission forms collected')),
+                  h('div', null, __alloT('stem.raptorhunt.bus_or_van_transport_arranged', '☐ Bus or van transport arranged')),
+                  h('div', null, __alloT('stem.raptorhunt.adult_chaperones_at_1_8_ratio_minimum', '☐ Adult chaperones at 1:8 ratio minimum')),
+                  h('div', null, __alloT('stem.raptorhunt.first_aid_kit_emergency_contacts_list', '☐ First aid kit + emergency contacts list')),
+                  h('div', null, __alloT('stem.raptorhunt.lunch_plan_bag_lunch_or_pre_arranged_s', '☐ Lunch plan (bag lunch or pre-arranged stop)')),
+                  h('div', null, __alloT('stem.raptorhunt.restroom_availability_checked_at_site', '☐ Restroom availability checked at site'))
                 )
               ),
               // Section 5: Educational content
               h('div', { className: 'border border-slate-300 rounded p-3 mb-3 text-xs' },
-                h('div', { className: 'font-bold mb-2' }, '📚 5. Pre-trip prep (1 week before)'),
+                h('div', { className: 'font-bold mb-2' }, __alloT('stem.raptorhunt.5_pre_trip_prep_1_week_before', '📚 5. Pre-trip prep (1 week before)')),
                 h('div', { className: 'space-y-1 text-[11px]' },
-                  h('div', null, '☐ Students complete Raptor Hunt Hub + Roster sections'),
-                  h('div', null, '☐ Students complete the Field ID section (silhouettes) + take the 70-question quiz'),
-                  h('div', null, '☐ Practice with binoculars in classroom or schoolyard'),
-                  h('div', null, '☐ Review what to record: date / location / weather / species / behavior')
+                  h('div', null, __alloT('stem.raptorhunt.students_complete_raptor_hunt_hub_rost', '☐ Students complete Raptor Hunt Hub + Roster sections')),
+                  h('div', null, __alloT('stem.raptorhunt.students_complete_the_field_id_section', '☐ Students complete the Field ID section (silhouettes) + take the 70-question quiz')),
+                  h('div', null, __alloT('stem.raptorhunt.practice_with_binoculars_in_classroom_', '☐ Practice with binoculars in classroom or schoolyard')),
+                  h('div', null, __alloT('stem.raptorhunt.review_what_to_record_date_location_we', '☐ Review what to record: date / location / weather / species / behavior'))
                 )
               ),
               // Section 6: At the site
               h('div', { className: 'border border-slate-300 rounded p-3 mb-3 text-xs' },
-                h('div', { className: 'font-bold mb-2' }, '👁 6. At the site'),
+                h('div', { className: 'font-bold mb-2' }, __alloT('stem.raptorhunt.6_at_the_site', '👁 6. At the site')),
                 h('div', { className: 'space-y-1 text-[11px]' },
-                  h('div', null, '☐ Sign in with the site coordinator'),
-                  h('div', null, '☐ Each student fills out a Field Journal page'),
-                  h('div', null, '☐ Use binoculars in pairs — one spots, one counts'),
-                  h('div', null, '☐ Listen to the site\'s on-staff naturalist if available'),
-                  h('div', null, '☐ Submit a group eBird checklist before leaving'),
-                  h('div', null, '☐ Take a class photo for the school newsletter')
+                  h('div', null, __alloT('stem.raptorhunt.sign_in_with_the_site_coordinator', '☐ Sign in with the site coordinator')),
+                  h('div', null, __alloT('stem.raptorhunt.each_student_fills_out_a_field_journal', '☐ Each student fills out a Field Journal page')),
+                  h('div', null, __alloT('stem.raptorhunt.use_binoculars_in_pairs_one_spots_one_', '☐ Use binoculars in pairs — one spots, one counts')),
+                  h('div', null, __alloT('stem.raptorhunt.listen_to_the_site_s_on_staff_naturali', '☐ Listen to the site\'s on-staff naturalist if available')),
+                  h('div', null, __alloT('stem.raptorhunt.submit_a_group_ebird_checklist_before_', '☐ Submit a group eBird checklist before leaving')),
+                  h('div', null, __alloT('stem.raptorhunt.take_a_class_photo_for_the_school_news', '☐ Take a class photo for the school newsletter'))
                 )
               ),
               // Section 7: Post-trip
               h('div', { className: 'border border-slate-300 rounded p-3 mb-3 text-xs' },
-                h('div', { className: 'font-bold mb-2' }, '✍ 7. Post-trip (within 1 week)'),
+                h('div', { className: 'font-bold mb-2' }, __alloT('stem.raptorhunt.7_post_trip_within_1_week', '✍ 7. Post-trip (within 1 week)')),
                 h('div', { className: 'space-y-1 text-[11px]' },
-                  h('div', null, '☐ Class discussion: what did each student see?'),
-                  h('div', null, '☐ Each student writes a 1-page reflection (species + behavior + what surprised them)'),
-                  h('div', null, '☐ Compile group sightings into a class poster'),
-                  h('div', null, '☐ Send thank-you note to the hawkwatch site'),
-                  h('div', null, '☐ Plan a follow-up trip OR a "raptor in our schoolyard" observation week')
+                  h('div', null, __alloT('stem.raptorhunt.class_discussion_what_did_each_student', '☐ Class discussion: what did each student see?')),
+                  h('div', null, __alloT('stem.raptorhunt.each_student_writes_a_1_page_reflectio', '☐ Each student writes a 1-page reflection (species + behavior + what surprised them)')),
+                  h('div', null, __alloT('stem.raptorhunt.compile_group_sightings_into_a_class_p', '☐ Compile group sightings into a class poster')),
+                  h('div', null, __alloT('stem.raptorhunt.send_thank_you_note_to_the_hawkwatch_s', '☐ Send thank-you note to the hawkwatch site')),
+                  h('div', null, __alloT('stem.raptorhunt.plan_a_follow_up_trip_or_a_raptor_in_o', '☐ Plan a follow-up trip OR a "raptor in our schoolyard" observation week'))
                 )
               ),
-              h('div', { className: 'text-[10px] text-slate-500 italic text-center mt-3' }, 'For Raptor Hunt — alloflow.app · Adapt freely for your group.')
+              h('div', { className: 'text-[10px] text-slate-500 italic text-center mt-3' }, __alloT('stem.raptorhunt.for_raptor_hunt_alloflow_app_adapt_fre', 'For Raptor Hunt — alloflow.app · Adapt freely for your group.'))
             )
           ),
 
           // ── NEW v0.17: 5-Day Lesson Plan Template ──
           h('details', { className: 'bg-purple-900/20 border border-purple-700/40 rounded-xl p-3' },
-            h('summary', { className: 'text-sm font-bold text-purple-300 cursor-pointer' }, '🗓 5-Day Lesson Plan Template — teacher unit outline'),
+            h('summary', { className: 'text-sm font-bold text-purple-300 cursor-pointer' }, __alloT('stem.raptorhunt.5_day_lesson_plan_template_teacher_uni', '🗓 5-Day Lesson Plan Template — teacher unit outline')),
             h('div', { className: 'mt-3 bg-white text-slate-900 rounded-lg p-4' },
               h('div', { className: 'border-b-2 border-slate-800 pb-2 mb-3' },
-                h('div', { className: 'text-base font-bold' }, '🦅 RAPTOR HUNT — 5-Day Classroom Unit Plan'),
-                h('div', { className: 'text-xs italic mt-1' }, 'Designed for middle school or HS biology / environmental science. Adapt to your block schedule.')
+                h('div', { className: 'text-base font-bold' }, __alloT('stem.raptorhunt.raptor_hunt_5_day_classroom_unit_plan', '🦅 RAPTOR HUNT — 5-Day Classroom Unit Plan')),
+                h('div', { className: 'text-xs italic mt-1' }, __alloT('stem.raptorhunt.designed_for_middle_school_or_hs_biolo', 'Designed for middle school or HS biology / environmental science. Adapt to your block schedule.'))
               ),
               // Header table
               h('div', { className: 'grid grid-cols-3 gap-3 text-xs mb-3' },
                 h('div', null, h('div', { className: 'font-bold' }, 'Teacher:'), h('div', { className: 'border-b border-slate-400 h-5' })),
-                h('div', null, h('div', { className: 'font-bold' }, 'Grade level:'), h('div', { className: 'border-b border-slate-400 h-5' })),
-                h('div', null, h('div', { className: 'font-bold' }, 'Unit start date:'), h('div', { className: 'border-b border-slate-400 h-5' }))
+                h('div', null, h('div', { className: 'font-bold' }, __alloT('stem.raptorhunt.grade_level', 'Grade level:')), h('div', { className: 'border-b border-slate-400 h-5' })),
+                h('div', null, h('div', { className: 'font-bold' }, __alloT('stem.raptorhunt.unit_start_date', 'Unit start date:')), h('div', { className: 'border-b border-slate-400 h-5' }))
               ),
               // NGSS alignment box
               h('div', { className: 'border-2 border-slate-300 rounded p-2 mb-3 text-xs bg-slate-50' },
-                h('div', { className: 'font-bold mb-1' }, '📋 NGSS Standards covered (check applicable):'),
+                h('div', { className: 'font-bold mb-1' }, __alloT('stem.raptorhunt.ngss_standards_covered_check_applicabl', '📋 NGSS Standards covered (check applicable):')),
                 h('div', { className: 'grid grid-cols-2 gap-1' },
                   [
                     'HS-LS2-2: Mathematical representations of ecosystem dynamics',
@@ -19993,7 +19994,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   return h('div', { key: di, className: 'border border-slate-300 rounded p-2 text-xs' },
                     h('div', { className: 'font-bold text-slate-800 mb-1' }, d.day),
                     h('div', { className: 'mb-1' }, h('span', { className: 'font-bold' }, 'Objective: '), d.objective),
-                    h('div', { className: 'mb-1' }, h('span', { className: 'font-bold' }, 'Activities (60-75 min): '), d.activities),
+                    h('div', { className: 'mb-1' }, h('span', { className: 'font-bold' }, __alloT('stem.raptorhunt.activities_60_75_min', 'Activities (60-75 min): ')), d.activities),
                     h('div', null, h('span', { className: 'font-bold' }, 'Homework: '), d.homework)
                   );
                 })
@@ -20001,41 +20002,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               // Assessment + extension
               h('div', { className: 'grid grid-cols-2 gap-3 mt-3 text-xs' },
                 h('div', { className: 'border border-slate-300 rounded p-2' },
-                  h('div', { className: 'font-bold mb-1' }, '✅ Assessment options'),
+                  h('div', { className: 'font-bold mb-1' }, __alloT('stem.raptorhunt.assessment_options', '✅ Assessment options')),
                   h('div', { className: 'space-y-1 text-[11px]' },
-                    h('div', null, '☐ Field ID Quiz score (10 pts)'),
-                    h('div', null, '☐ Pellet dissection lab sheet (15 pts)'),
-                    h('div', null, '☐ Math practice problems (20 pts)'),
-                    h('div', null, '☐ Final 1-page recovery analysis (40 pts)'),
-                    h('div', null, '☐ Anatomy Quiz Mode score (15 pts)')
+                    h('div', null, __alloT('stem.raptorhunt.field_id_quiz_score_10_pts', '☐ Field ID Quiz score (10 pts)')),
+                    h('div', null, __alloT('stem.raptorhunt.pellet_dissection_lab_sheet_15_pts', '☐ Pellet dissection lab sheet (15 pts)')),
+                    h('div', null, __alloT('stem.raptorhunt.math_practice_problems_20_pts', '☐ Math practice problems (20 pts)')),
+                    h('div', null, __alloT('stem.raptorhunt.final_1_page_recovery_analysis_40_pts', '☐ Final 1-page recovery analysis (40 pts)')),
+                    h('div', null, __alloT('stem.raptorhunt.anatomy_quiz_mode_score_15_pts', '☐ Anatomy Quiz Mode score (15 pts)'))
                   )
                 ),
                 h('div', { className: 'border border-slate-300 rounded p-2' },
-                  h('div', { className: 'font-bold mb-1' }, '🎯 Extensions'),
+                  h('div', { className: 'font-bold mb-1' }, __alloT('stem.raptorhunt.extensions_2', '🎯 Extensions')),
                   h('div', { className: 'space-y-1 text-[11px]' },
-                    h('div', null, '☐ Field trip to local hawkwatch (see Resources by region)'),
-                    h('div', null, '☐ Real pellet dissection lab from sterilized supplier'),
-                    h('div', null, '☐ eBird/iNaturalist citizen-science submission'),
-                    h('div', null, '☐ Compare-and-contrast essay using the Duel mode'),
-                    h('div', null, '☐ Frankenraptor design + justify (CCSS write argument)')
+                    h('div', null, __alloT('stem.raptorhunt.field_trip_to_local_hawkwatch_see_reso', '☐ Field trip to local hawkwatch (see Resources by region)')),
+                    h('div', null, __alloT('stem.raptorhunt.real_pellet_dissection_lab_from_steril', '☐ Real pellet dissection lab from sterilized supplier')),
+                    h('div', null, __alloT('stem.raptorhunt.ebird_inaturalist_citizen_science_subm', '☐ eBird/iNaturalist citizen-science submission')),
+                    h('div', null, __alloT('stem.raptorhunt.compare_and_contrast_essay_using_the_d', '☐ Compare-and-contrast essay using the Duel mode')),
+                    h('div', null, __alloT('stem.raptorhunt.frankenraptor_design_justify_ccss_writ', '☐ Frankenraptor design + justify (CCSS write argument)'))
                   )
                 )
               ),
-              h('div', { className: 'text-[10px] text-slate-500 italic text-center mt-3' }, 'Generated for Raptor Hunt — alloflow.app · Modify freely.')
+              h('div', { className: 'text-[10px] text-slate-500 italic text-center mt-3' }, __alloT('stem.raptorhunt.generated_for_raptor_hunt_alloflow_app', 'Generated for Raptor Hunt — alloflow.app · Modify freely.'))
             )
           ),
 
           // ── NEW v0.15: Printable Classroom Worksheets ──
           h('details', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded-xl p-3' },
-            h('summary', { className: 'text-sm font-bold text-cyan-300 cursor-pointer' }, '🖨 Printable Classroom Worksheets — Field Journal · Pellet Lab · ID Quiz'),
+            h('summary', { className: 'text-sm font-bold text-cyan-300 cursor-pointer' }, __alloT('stem.raptorhunt.printable_classroom_worksheets_field_j', '🖨 Printable Classroom Worksheets — Field Journal · Pellet Lab · ID Quiz')),
             h('div', { className: 'mt-3 space-y-3' },
-              h('div', { className: 'text-xs text-slate-400 italic' }, 'Three classroom-ready worksheets. Use your browser\'s Print function (Ctrl/Cmd+P) on each card to get a printable page. Each is designed to fit one US Letter page.'),
+              h('div', { className: 'text-xs text-slate-400 italic' }, __alloT('stem.raptorhunt.three_classroom_ready_worksheets_use_y', 'Three classroom-ready worksheets. Use your browser\'s Print function (Ctrl/Cmd+P) on each card to get a printable page. Each is designed to fit one US Letter page.')),
 
               // Field Journal worksheet
               h('div', { className: 'bg-white text-slate-900 rounded-lg p-4', style: { minHeight: '400px' } },
                 h('div', { className: 'flex items-center justify-between border-b-2 border-slate-800 pb-2 mb-3' },
-                  h('div', { className: 'text-base font-bold' }, '🦅 RAPTOR FIELD JOURNAL'),
-                  h('div', { className: 'text-xs italic' }, 'Page 1 of 1 · cut/copy or print')
+                  h('div', { className: 'text-base font-bold' }, __alloT('stem.raptorhunt.raptor_field_journal', '🦅 RAPTOR FIELD JOURNAL')),
+                  h('div', { className: 'text-xs italic' }, __alloT('stem.raptorhunt.page_1_of_1_cut_copy_or_print', 'Page 1 of 1 · cut/copy or print'))
                 ),
                 h('div', { className: 'grid grid-cols-3 gap-3 text-xs mb-3' },
                   h('div', null, h('div', { className: 'font-bold' }, 'Date:'), h('div', { className: 'border-b border-slate-400 h-5' })),
@@ -20044,55 +20045,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 ),
                 h('div', { className: 'grid grid-cols-2 gap-3 text-xs mb-3' },
                   h('div', null, h('div', { className: 'font-bold' }, 'Location:'), h('div', { className: 'border-b border-slate-400 h-5' })),
-                  h('div', null, h('div', { className: 'font-bold' }, 'Weather + wind:'), h('div', { className: 'border-b border-slate-400 h-5' }))
+                  h('div', null, h('div', { className: 'font-bold' }, __alloT('stem.raptorhunt.weather_wind', 'Weather + wind:')), h('div', { className: 'border-b border-slate-400 h-5' }))
                 ),
                 h('div', { className: 'border border-slate-400 rounded p-2 mb-3' },
-                  h('div', { className: 'text-xs font-bold mb-1' }, '👁 Species (or closest guess) + count:'),
+                  h('div', { className: 'text-xs font-bold mb-1' }, __alloT('stem.raptorhunt.species_or_closest_guess_count', '👁 Species (or closest guess) + count:')),
                   h('div', { className: 'border-b border-slate-300 h-5 mb-1' }),
                   h('div', { className: 'border-b border-slate-300 h-5' })
                 ),
                 h('div', { className: 'border border-slate-400 rounded p-2 mb-3' },
-                  h('div', { className: 'text-xs font-bold mb-1' }, '🪶 Wing shape + flight pattern:'),
+                  h('div', { className: 'text-xs font-bold mb-1' }, __alloT('stem.raptorhunt.wing_shape_flight_pattern', '🪶 Wing shape + flight pattern:')),
                   h('div', { className: 'border-b border-slate-300 h-5 mb-1' }),
                   h('div', { className: 'border-b border-slate-300 h-5' })
                 ),
                 h('div', { className: 'border border-slate-400 rounded p-2 mb-3' },
-                  h('div', { className: 'text-xs font-bold mb-1' }, '🎯 Behavior (perched / soaring / kettling / kiting / stooping / mantling / other):'),
+                  h('div', { className: 'text-xs font-bold mb-1' }, __alloT('stem.raptorhunt.behavior_perched_soaring_kettling_kiti', '🎯 Behavior (perched / soaring / kettling / kiting / stooping / mantling / other):')),
                   h('div', { className: 'border-b border-slate-300 h-5 mb-1' }),
                   h('div', { className: 'border-b border-slate-300 h-5' })
                 ),
                 h('div', { className: 'border border-slate-400 rounded p-2' },
-                  h('div', { className: 'text-xs font-bold mb-1' }, '✏ Sketch (silhouette, head pattern, tail markings, anything distinctive):'),
+                  h('div', { className: 'text-xs font-bold mb-1' }, __alloT('stem.raptorhunt.sketch_silhouette_head_pattern_tail_ma', '✏ Sketch (silhouette, head pattern, tail markings, anything distinctive):')),
                   h('div', { style: { height: '120px' }, className: 'bg-slate-50 border border-slate-200' })
                 ),
-                h('div', { className: 'text-[10px] text-slate-500 italic text-center mt-3' }, 'Submit observations to eBird (ebird.org) or iNaturalist (inaturalist.org) to contribute to real ornithology data.')
+                h('div', { className: 'text-[10px] text-slate-500 italic text-center mt-3' }, __alloT('stem.raptorhunt.submit_observations_to_ebird_ebird_org', 'Submit observations to eBird (ebird.org) or iNaturalist (inaturalist.org) to contribute to real ornithology data.'))
               ),
 
               // Pellet Dissection lab sheet
               h('div', { className: 'bg-white text-slate-900 rounded-lg p-4', style: { minHeight: '400px' } },
                 h('div', { className: 'flex items-center justify-between border-b-2 border-slate-800 pb-2 mb-3' },
-                  h('div', { className: 'text-base font-bold' }, '🥚 PELLET DISSECTION LAB SHEET'),
-                  h('div', { className: 'text-xs italic' }, 'Use sterilized pellets only (Pellet.com, Carolina Biological)')
+                  h('div', { className: 'text-base font-bold' }, __alloT('stem.raptorhunt.pellet_dissection_lab_sheet', '🥚 PELLET DISSECTION LAB SHEET')),
+                  h('div', { className: 'text-xs italic' }, __alloT('stem.raptorhunt.use_sterilized_pellets_only_pellet_com', 'Use sterilized pellets only (Pellet.com, Carolina Biological)'))
                 ),
                 h('div', { className: 'grid grid-cols-3 gap-3 text-xs mb-3' },
-                  h('div', null, h('div', { className: 'font-bold' }, 'Student name:'), h('div', { className: 'border-b border-slate-400 h-5' })),
+                  h('div', null, h('div', { className: 'font-bold' }, __alloT('stem.raptorhunt.student_name', 'Student name:')), h('div', { className: 'border-b border-slate-400 h-5' })),
                   h('div', null, h('div', { className: 'font-bold' }, 'Date:'), h('div', { className: 'border-b border-slate-400 h-5' })),
-                  h('div', null, h('div', { className: 'font-bold' }, 'Lab partner:'), h('div', { className: 'border-b border-slate-400 h-5' }))
+                  h('div', null, h('div', { className: 'font-bold' }, __alloT('stem.raptorhunt.lab_partner', 'Lab partner:')), h('div', { className: 'border-b border-slate-400 h-5' }))
                 ),
                 h('div', { className: 'grid grid-cols-3 gap-3 text-xs mb-3' },
-                  h('div', null, h('div', { className: 'font-bold' }, 'Pellet ID#:'), h('div', { className: 'border-b border-slate-400 h-5' })),
-                  h('div', null, h('div', { className: 'font-bold' }, 'Length (cm):'), h('div', { className: 'border-b border-slate-400 h-5' })),
-                  h('div', null, h('div', { className: 'font-bold' }, 'Mass (g):'), h('div', { className: 'border-b border-slate-400 h-5' }))
+                  h('div', null, h('div', { className: 'font-bold' }, __alloT('stem.raptorhunt.pellet_id', 'Pellet ID#:')), h('div', { className: 'border-b border-slate-400 h-5' })),
+                  h('div', null, h('div', { className: 'font-bold' }, __alloT('stem.raptorhunt.length_cm', 'Length (cm):')), h('div', { className: 'border-b border-slate-400 h-5' })),
+                  h('div', null, h('div', { className: 'font-bold' }, __alloT('stem.raptorhunt.mass_g', 'Mass (g):')), h('div', { className: 'border-b border-slate-400 h-5' }))
                 ),
                 h('div', { className: 'mb-3' },
-                  h('div', { className: 'text-xs font-bold mb-1' }, 'Prey inventory — count each species identified by skull/teeth/long-bone fragments:'),
+                  h('div', { className: 'text-xs font-bold mb-1' }, __alloT('stem.raptorhunt.prey_inventory_count_each_species_iden', 'Prey inventory — count each species identified by skull/teeth/long-bone fragments:')),
                   h('table', { className: 'w-full text-xs border border-slate-400' },
                     h('thead', null,
                       h('tr', { className: 'bg-slate-100' },
-                        h('th', { className: 'border border-slate-400 p-1 text-left' }, 'Species'),
-                        h('th', { className: 'border border-slate-400 p-1 text-left' }, 'Count'),
-                        h('th', { className: 'border border-slate-400 p-1 text-left' }, 'Diagnostic features observed'),
-                        h('th', { className: 'border border-slate-400 p-1 text-left' }, 'Biomass est. (g)')
+                        h('th', { className: 'border border-slate-400 p-1 text-left' }, __alloT('stem.raptorhunt.species_12', 'Species')),
+                        h('th', { className: 'border border-slate-400 p-1 text-left' }, __alloT('stem.raptorhunt.count', 'Count')),
+                        h('th', { className: 'border border-slate-400 p-1 text-left' }, __alloT('stem.raptorhunt.diagnostic_features_observed', 'Diagnostic features observed')),
+                        h('th', { className: 'border border-slate-400 p-1 text-left' }, __alloT('stem.raptorhunt.biomass_est_g', 'Biomass est. (g)'))
                       )
                     ),
                     h('tbody', null,
@@ -20108,12 +20109,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   )
                 ),
                 h('div', { className: 'border border-slate-400 rounded p-2 mb-2 text-xs' },
-                  h('div', { className: 'font-bold mb-1' }, '📊 Discussion (3+ sentences):'),
-                  h('div', null, '1. What does this pellet tell you about the owl\'s diet during this hunting period?'),
+                  h('div', { className: 'font-bold mb-1' }, __alloT('stem.raptorhunt.discussion_3_sentences', '📊 Discussion (3+ sentences):')),
+                  h('div', null, __alloT('stem.raptorhunt.1_what_does_this_pellet_tell_you_about', '1. What does this pellet tell you about the owl\'s diet during this hunting period?')),
                   h('div', { className: 'border-b border-slate-300 h-5 mt-1 mb-1' }),
-                  h('div', null, '2. If 50 pellets at this roost contained the same prey distribution, how much biomass per year would that represent?'),
+                  h('div', null, __alloT('stem.raptorhunt.2_if_50_pellets_at_this_roost_containe', '2. If 50 pellets at this roost contained the same prey distribution, how much biomass per year would that represent?')),
                   h('div', { className: 'border-b border-slate-300 h-5 mt-1 mb-1' }),
-                  h('div', null, '3. What does the most-common prey species tell you about the local ecosystem?'),
+                  h('div', null, __alloT('stem.raptorhunt.3_what_does_the_most_common_prey_speci', '3. What does the most-common prey species tell you about the local ecosystem?')),
                   h('div', { className: 'border-b border-slate-300 h-5 mt-1' })
                 )
               ),
@@ -20121,13 +20122,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               // Field ID Quiz Sheet
               h('div', { className: 'bg-white text-slate-900 rounded-lg p-4', style: { minHeight: '400px' } },
                 h('div', { className: 'flex items-center justify-between border-b-2 border-slate-800 pb-2 mb-3' },
-                  h('div', { className: 'text-base font-bold' }, '🔍 RAPTOR FIELD ID QUIZ — Silhouette + Behavior'),
-                  h('div', { className: 'text-xs italic' }, 'Match silhouette/behavior to family. Circle one.')
+                  h('div', { className: 'text-base font-bold' }, __alloT('stem.raptorhunt.raptor_field_id_quiz_silhouette_behavi', '🔍 RAPTOR FIELD ID QUIZ — Silhouette + Behavior')),
+                  h('div', { className: 'text-xs italic' }, __alloT('stem.raptorhunt.match_silhouette_behavior_to_family_ci', 'Match silhouette/behavior to family. Circle one.'))
                 ),
                 h('div', { className: 'grid grid-cols-3 gap-3 text-xs mb-3' },
-                  h('div', null, h('div', { className: 'font-bold' }, 'Student name:'), h('div', { className: 'border-b border-slate-400 h-5' })),
+                  h('div', null, h('div', { className: 'font-bold' }, __alloT('stem.raptorhunt.student_name_2', 'Student name:')), h('div', { className: 'border-b border-slate-400 h-5' })),
                   h('div', null, h('div', { className: 'font-bold' }, 'Date:'), h('div', { className: 'border-b border-slate-400 h-5' })),
-                  h('div', null, h('div', { className: 'font-bold' }, 'Score: __ / 10'), h('div', { className: 'border-b border-slate-400 h-5' }))
+                  h('div', null, h('div', { className: 'font-bold' }, __alloT('stem.raptorhunt.score_10', 'Score: __ / 10')), h('div', { className: 'border-b border-slate-400 h-5' }))
                 ),
                 h('div', { className: 'space-y-2 text-xs' },
                   [
@@ -20148,19 +20149,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     );
                   })
                 ),
-                h('div', { className: 'mt-3 text-[10px] text-slate-500 italic' }, 'Answer key (teachers): 1F 2E 3A 4B 5H 6Osp 7Ow 8K 9GH 10P')
+                h('div', { className: 'mt-3 text-[10px] text-slate-500 italic' }, __alloT('stem.raptorhunt.answer_key_teachers_1f_2e_3a_4b_5h_6os', 'Answer key (teachers): 1F 2E 3A 4B 5H 6Osp 7Ow 8K 9GH 10P'))
               ),
 
-              h('div', { className: 'text-[10px] text-slate-500 italic text-center' }, 'Tip: Print the active section only via your browser\'s "Print > More Settings > Selection only" option.')
+              h('div', { className: 'text-[10px] text-slate-500 italic text-center' }, __alloT('stem.raptorhunt.tip_print_the_active_section_only_via_', 'Tip: Print the active section only via your browser\'s "Print > More Settings > Selection only" option.'))
             )
           ),
 
           // ── NEW v0.14: Academic Bibliography (with v0.21 BibTeX export) ──
           h('details', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-3' },
-            h('summary', { className: 'text-sm font-bold text-amber-300 cursor-pointer' }, '📚 Academic Bibliography — every citation used in this tool'),
+            h('summary', { className: 'text-sm font-bold text-amber-300 cursor-pointer' }, __alloT('stem.raptorhunt.academic_bibliography_every_citation_u', '📚 Academic Bibliography — every citation used in this tool')),
             h('div', { className: 'mt-3 space-y-2 text-xs' },
               h('div', { className: 'flex items-center justify-between gap-2 mb-2' },
-                h('div', { className: 'text-slate-400 italic' }, 'Primary scientific sources cited throughout Raptor Hunt. Click any DOI or journal link to read the full paper.'),
+                h('div', { className: 'text-slate-400 italic' }, __alloT('stem.raptorhunt.primary_scientific_sources_cited_throu', 'Primary scientific sources cited throughout Raptor Hunt. Click any DOI or journal link to read the full paper.')),
                 // ── NEW v0.21: BibTeX export button ──
                 h('button', {
                   onClick: function() {
@@ -20205,8 +20206,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     }
                   },
                   className: 'flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:from-amber-700 hover:to-orange-700',
-                  'aria-label': 'Copy BibTeX bibliography to clipboard'
-                }, '📋 Copy as BibTeX')
+                  'aria-label': __alloT('stem.raptorhunt.copy_bibtex_bibliography_to_clipboard', 'Copy BibTeX bibliography to clipboard')
+                }, __alloT('stem.raptorhunt.copy_as_bibtex', '📋 Copy as BibTeX'))
               ),
 
               // Group by topic
@@ -20214,69 +20215,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 {
                   topic: '🪂 Flight + Stoop Physics',
                   refs: [
-                    { cite: 'Tucker, V.A. (1998). Curved flight paths and sideways vision in peregrine falcons (Falco peregrinus). Journal of Experimental Biology, 201(3), 403-414.', note: 'The foundational paper on logarithmic-spiral stoop trajectories. Demonstrated peregrines fly a constant-retinal-angle approach matching the proportional-navigation algorithm used by air-to-air missiles.' },
-                    { cite: 'Tucker, V.A. (1990). Body drag, feather drag and interference drag of the mounting strut in a peregrine falcon, Falco peregrinus. Journal of Experimental Biology, 149, 449-468.', note: 'Wind-tunnel measurements of drag coefficient for a peregrine in stoop posture (~Cd = 0.18).' },
-                    { cite: 'Cade, T.J. (1969). The Falcons of the World. Cornell University Press / Ithaca, NY.', note: 'Pioneering work on peregrine biology + the basis for Cornell\'s captive-breeding program.' },
-                    { cite: 'Ponitz, B. et al. (2014). Diving-flight aerodynamics of a peregrine falcon (Falco peregrinus). PLoS ONE, 9(2): e86506.', note: 'High-speed video + computational fluid dynamics of stoop posture. Confirmed ~240 mph terminal velocity.' }
+                    { cite: 'Tucker, V.A. (1998). Curved flight paths and sideways vision in peregrine falcons (Falco peregrinus). Journal of Experimental Biology, 201(3), 403-414.', note: __alloT('stem.raptorhunt.the_foundational_paper_on_logarithmic_', 'The foundational paper on logarithmic-spiral stoop trajectories. Demonstrated peregrines fly a constant-retinal-angle approach matching the proportional-navigation algorithm used by air-to-air missiles.') },
+                    { cite: 'Tucker, V.A. (1990). Body drag, feather drag and interference drag of the mounting strut in a peregrine falcon, Falco peregrinus. Journal of Experimental Biology, 149, 449-468.', note: __alloT('stem.raptorhunt.wind_tunnel_measurements_of_drag_coeff', 'Wind-tunnel measurements of drag coefficient for a peregrine in stoop posture (~Cd = 0.18).') },
+                    { cite: 'Cade, T.J. (1969). The Falcons of the World. Cornell University Press / Ithaca, NY.', note: __alloT('stem.raptorhunt.pioneering_work_on_peregrine_biology_t', 'Pioneering work on peregrine biology + the basis for Cornell\'s captive-breeding program.') },
+                    { cite: 'Ponitz, B. et al. (2014). Diving-flight aerodynamics of a peregrine falcon (Falco peregrinus). PLoS ONE, 9(2): e86506.', note: __alloT('stem.raptorhunt.high_speed_video_computational_fluid_d', 'High-speed video + computational fluid dynamics of stoop posture. Confirmed ~240 mph terminal velocity.') }
                   ]
                 },
                 {
                   topic: '👁 Vision + UV Sensitivity',
                   refs: [
-                    { cite: 'Viitala, J., Korpimäki, E., Palokangas, P., & Koivula, M. (1995). Attraction of kestrels to vole scent marks visible in ultraviolet light. Nature, 373, 425-427.', note: 'The discovery that American kestrels detect vole urine + dung trails via UV reflection. Foundational paper on raptor UV vision.' },
-                    { cite: 'Lind, O., Mitkus, M., Olsson, P., & Kelber, A. (2013). Ultraviolet sensitivity and colour vision in raptor foraging. Journal of Experimental Biology, 216(10), 1819-1826.', note: 'Quantitative UV-sensitivity measurements across raptor species.' },
-                    { cite: 'Lind, O., Karlsson, S., & Kelber, A. (2014). Brightness discrimination thresholds in raptors. Journal of Comparative Physiology A, 200(8), 727-737.', note: 'Visual acuity measurements vs. mammals.' },
-                    { cite: 'Mitkus, M., Olsson, P., Toomey, M.B., Corbo, J.C., & Kelber, A. (2017). Specialized photoreceptor composition in the raptor fovea. Journal of Comparative Neurology, 525(9), 2152-2163.', note: 'Photoreceptor density in the central and temporal foveas of raptors.' }
+                    { cite: 'Viitala, J., Korpimäki, E., Palokangas, P., & Koivula, M. (1995). Attraction of kestrels to vole scent marks visible in ultraviolet light. Nature, 373, 425-427.', note: __alloT('stem.raptorhunt.the_discovery_that_american_kestrels_d', 'The discovery that American kestrels detect vole urine + dung trails via UV reflection. Foundational paper on raptor UV vision.') },
+                    { cite: 'Lind, O., Mitkus, M., Olsson, P., & Kelber, A. (2013). Ultraviolet sensitivity and colour vision in raptor foraging. Journal of Experimental Biology, 216(10), 1819-1826.', note: __alloT('stem.raptorhunt.quantitative_uv_sensitivity_measuremen', 'Quantitative UV-sensitivity measurements across raptor species.') },
+                    { cite: 'Lind, O., Karlsson, S., & Kelber, A. (2014). Brightness discrimination thresholds in raptors. Journal of Comparative Physiology A, 200(8), 727-737.', note: __alloT('stem.raptorhunt.visual_acuity_measurements_vs_mammals', 'Visual acuity measurements vs. mammals.') },
+                    { cite: 'Mitkus, M., Olsson, P., Toomey, M.B., Corbo, J.C., & Kelber, A. (2017). Specialized photoreceptor composition in the raptor fovea. Journal of Comparative Neurology, 525(9), 2152-2163.', note: __alloT('stem.raptorhunt.photoreceptor_density_in_the_central_a', 'Photoreceptor density in the central and temporal foveas of raptors.') }
                   ]
                 },
                 {
                   topic: '🦉 Owl Hearing + Silent Flight',
                   refs: [
-                    { cite: 'Payne, R.S. (1962). How the Barn Owl Locates Prey by Hearing. Living Bird, 1, 151-159.', note: 'The famous total-darkness barn owl strike experiment. First demonstration of acoustic localization accurate to ~1° in pitch black.' },
-                    { cite: 'Bachmann, T., Klän, S., Baumgartner, W., Klaas, M., Schröder, W., & Wagner, H. (2007). Morphometric characterisation of wing feathers of the barn owl (Tyto alba) and the pigeon (Columba livia). Frontiers in Zoology, 4(1), 23.', note: 'Detailed morphometric comparison of owl-feather silencing structures.' },
-                    { cite: 'Wagner, H., Weger, M., Klaas, M., & Schröder, W. (2017). Features of owl wings that promote silent flight. Interface Focus, 7(1), 20160078.', note: 'Modern review of comb leading edge + fringed trailing edge + velvet dorsal mechanisms.' },
-                    { cite: 'Bachmann, T., Wagner, H., & Tropea, C. (2012). Inner vane fringes of barn owl feathers reconsidered: morphometric data and functional aspects. Journal of Anatomy, 221(1), 1-8.', note: 'Quantitative measurement of trailing-edge fringe structure.' }
+                    { cite: 'Payne, R.S. (1962). How the Barn Owl Locates Prey by Hearing. Living Bird, 1, 151-159.', note: __alloT('stem.raptorhunt.the_famous_total_darkness_barn_owl_str', 'The famous total-darkness barn owl strike experiment. First demonstration of acoustic localization accurate to ~1° in pitch black.') },
+                    { cite: 'Bachmann, T., Klän, S., Baumgartner, W., Klaas, M., Schröder, W., & Wagner, H. (2007). Morphometric characterisation of wing feathers of the barn owl (Tyto alba) and the pigeon (Columba livia). Frontiers in Zoology, 4(1), 23.', note: __alloT('stem.raptorhunt.detailed_morphometric_comparison_of_ow', 'Detailed morphometric comparison of owl-feather silencing structures.') },
+                    { cite: 'Wagner, H., Weger, M., Klaas, M., & Schröder, W. (2017). Features of owl wings that promote silent flight. Interface Focus, 7(1), 20160078.', note: __alloT('stem.raptorhunt.modern_review_of_comb_leading_edge_fri', 'Modern review of comb leading edge + fringed trailing edge + velvet dorsal mechanisms.') },
+                    { cite: 'Bachmann, T., Wagner, H., & Tropea, C. (2012). Inner vane fringes of barn owl feathers reconsidered: morphometric data and functional aspects. Journal of Anatomy, 221(1), 1-8.', note: __alloT('stem.raptorhunt.quantitative_measurement_of_trailing_e', 'Quantitative measurement of trailing-edge fringe structure.') }
                   ]
                 },
                 {
                   topic: '🪝 Talon + Grip Force',
                   refs: [
-                    { cite: 'Sustaita, D., Pouydebat, E., Manzano, A., Abdala, V., Hertel, F., & Herrel, A. (2013). Getting a grip on tetrapod grasping: form, function, and evolution. Biological Reviews, 88(2), 380-405.', note: 'Comparative review of grip force across vertebrates including raptors.' },
-                    { cite: 'Fowler, D.W., Freedman, E.A., & Scannella, J.B. (2009). Predatory functional morphology in raptors: interdigital variation in talon size is related to prey restraint and immobilisation technique. PLoS ONE, 4(11): e7999.', note: 'Why some species have one outsized killing talon (hallux) and others have proportional talons.' }
+                    { cite: 'Sustaita, D., Pouydebat, E., Manzano, A., Abdala, V., Hertel, F., & Herrel, A. (2013). Getting a grip on tetrapod grasping: form, function, and evolution. Biological Reviews, 88(2), 380-405.', note: __alloT('stem.raptorhunt.comparative_review_of_grip_force_acros', 'Comparative review of grip force across vertebrates including raptors.') },
+                    { cite: 'Fowler, D.W., Freedman, E.A., & Scannella, J.B. (2009). Predatory functional morphology in raptors: interdigital variation in talon size is related to prey restraint and immobilisation technique. PLoS ONE, 4(11): e7999.', note: __alloT('stem.raptorhunt.why_some_species_have_one_outsized_kil', 'Why some species have one outsized killing talon (hallux) and others have proportional talons.') }
                   ]
                 },
                 {
                   topic: '🐣 Population Demographics',
                   refs: [
-                    { cite: 'Therrien, J.F., Gauthier, G., Korpimäki, E., & Bêty, J. (2014). Predation pressure by avian predators suggests summer limitation of small-mammal populations in the Canadian Arctic. Ecology, 95(1), 56-67.', note: 'Snowy owl + lemming population dynamics — basis for irruption-year predictions.' },
-                    { cite: 'Newton, I. (2002). Population Limitation in Birds. Academic Press.', note: 'Standard textbook on raptor demographic limitation. Source for K-selected vs r-selected framework.' },
-                    { cite: 'Wiens, J.D., Anthony, R.G., & Forsman, E.D. (2014). Competitive interactions and resource partitioning between northern spotted owls and barred owls in western Oregon. Wildlife Monographs, 185(1), 1-50.', note: 'Long-term raptor demographic study cited in lifecycle survivorship curve.' }
+                    { cite: 'Therrien, J.F., Gauthier, G., Korpimäki, E., & Bêty, J. (2014). Predation pressure by avian predators suggests summer limitation of small-mammal populations in the Canadian Arctic. Ecology, 95(1), 56-67.', note: __alloT('stem.raptorhunt.snowy_owl_lemming_population_dynamics_', 'Snowy owl + lemming population dynamics — basis for irruption-year predictions.') },
+                    { cite: 'Newton, I. (2002). Population Limitation in Birds. Academic Press.', note: __alloT('stem.raptorhunt.standard_textbook_on_raptor_demographi', 'Standard textbook on raptor demographic limitation. Source for K-selected vs r-selected framework.') },
+                    { cite: 'Wiens, J.D., Anthony, R.G., & Forsman, E.D. (2014). Competitive interactions and resource partitioning between northern spotted owls and barred owls in western Oregon. Wildlife Monographs, 185(1), 1-50.', note: __alloT('stem.raptorhunt.long_term_raptor_demographic_study_cit', 'Long-term raptor demographic study cited in lifecycle survivorship curve.') }
                   ]
                 },
                 {
                   topic: '🌍 Conservation + DDT Recovery',
                   refs: [
-                    { cite: 'Cade, T.J., Enderson, J.H., Thelander, C.G., & White, C.M. (1988). Peregrine Falcon Populations: Their Management and Recovery. The Peregrine Fund / Boise, ID.', note: 'The definitive history of the peregrine DDT-era recovery.' },
-                    { cite: 'Carson, R. (1962). Silent Spring. Houghton Mifflin.', note: 'The book that started the DDT-ban movement + raptor recovery era.' },
-                    { cite: 'Snyder, N. & Snyder, H. (2000). The California Condor: A Saga of Natural History and Conservation. Academic Press.', note: 'Complete history of the condor decline + captive-breeding recovery.' },
-                    { cite: 'Jones, C.G., Heck, W., Lewis, R.E., Mungroo, Y., Slade, G., & Cade, T. (1995). The restoration of the Mauritius Kestrel Falco punctatus population. Ibis, 137(s1), S173-S180.', note: 'The 4-bird-to-800-bird recovery, written by the biologist who led it.' },
-                    { cite: 'Bedrosian, B.E., Craighead, D., & Crandall, R. (2012). Lead exposure in bald eagles from big game hunting, the continental implications and successful mitigation efforts. PLoS ONE, 7(12): e51978.', note: 'Lead-shot poisoning impact + cited in the threat impact calculator.' }
+                    { cite: 'Cade, T.J., Enderson, J.H., Thelander, C.G., & White, C.M. (1988). Peregrine Falcon Populations: Their Management and Recovery. The Peregrine Fund / Boise, ID.', note: __alloT('stem.raptorhunt.the_definitive_history_of_the_peregrin', 'The definitive history of the peregrine DDT-era recovery.') },
+                    { cite: 'Carson, R. (1962). Silent Spring. Houghton Mifflin.', note: __alloT('stem.raptorhunt.the_book_that_started_the_ddt_ban_move', 'The book that started the DDT-ban movement + raptor recovery era.') },
+                    { cite: 'Snyder, N. & Snyder, H. (2000). The California Condor: A Saga of Natural History and Conservation. Academic Press.', note: __alloT('stem.raptorhunt.complete_history_of_the_condor_decline', 'Complete history of the condor decline + captive-breeding recovery.') },
+                    { cite: 'Jones, C.G., Heck, W., Lewis, R.E., Mungroo, Y., Slade, G., & Cade, T. (1995). The restoration of the Mauritius Kestrel Falco punctatus population. Ibis, 137(s1), S173-S180.', note: __alloT('stem.raptorhunt.the_4_bird_to_800_bird_recovery_writte', 'The 4-bird-to-800-bird recovery, written by the biologist who led it.') },
+                    { cite: 'Bedrosian, B.E., Craighead, D., & Crandall, R. (2012). Lead exposure in bald eagles from big game hunting, the continental implications and successful mitigation efforts. PLoS ONE, 7(12): e51978.', note: __alloT('stem.raptorhunt.lead_shot_poisoning_impact_cited_in_th', 'Lead-shot poisoning impact + cited in the threat impact calculator.') }
                   ]
                 },
                 {
                   topic: '🧭 Migration',
                   refs: [
-                    { cite: 'Bildstein, K.L. (2017). Raptors: The Curious Nature of Diurnal Birds of Prey. Cornell University Press.', note: 'Comprehensive raptor biology text, used for migration corridor + thermal kettle physics.' },
-                    { cite: 'Bildstein, K.L. & Klem Jr., D. (2008). Hawks Aloft: Fifty Years of Northern Goshawk Banding in Northeastern North America. Hawk Mountain Sanctuary Association.', note: 'Hawk Mountain\'s 50-year dataset.' },
-                    { cite: 'Smith, J.P. & Goodrich, L.J. (2005). The Birds of North America: Online (Cornell Lab of Ornithology).', note: 'All Cornell Lab species accounts used for the species roster + Field ID section.' }
+                    { cite: 'Bildstein, K.L. (2017). Raptors: The Curious Nature of Diurnal Birds of Prey. Cornell University Press.', note: __alloT('stem.raptorhunt.comprehensive_raptor_biology_text_used', 'Comprehensive raptor biology text, used for migration corridor + thermal kettle physics.') },
+                    { cite: 'Bildstein, K.L. & Klem Jr., D. (2008). Hawks Aloft: Fifty Years of Northern Goshawk Banding in Northeastern North America. Hawk Mountain Sanctuary Association.', note: __alloT('stem.raptorhunt.hawk_mountain_s_50_year_dataset', 'Hawk Mountain\'s 50-year dataset.') },
+                    { cite: 'Smith, J.P. & Goodrich, L.J. (2005). The Birds of North America: Online (Cornell Lab of Ornithology).', note: __alloT('stem.raptorhunt.all_cornell_lab_species_accounts_used_', 'All Cornell Lab species accounts used for the species roster + Field ID section.') }
                   ]
                 },
                 {
                   topic: '🤝 Falconry + Cultural History',
                   refs: [
-                    { cite: 'Frederick II of Hohenstaufen. (~1240). De Arte Venandi cum Avibus [The Art of Hunting with Birds]. Translated by Wood, C.A. & Fyfe, F.M. (1943) Stanford University Press.', note: 'The first scientific treatise on falconry + raptor biology — also one of the first scientific texts in Western Europe.' },
-                    { cite: 'Berners, J. (~1486). Boke of Saint Albans. Wynkyn de Worde / London.', note: 'Medieval English falconry guide; source for the feudal hierarchy of species assignments.' },
-                    { cite: 'UNESCO Intangible Cultural Heritage list. (2010, expanded 2021). Falconry, a living human heritage. https://ich.unesco.org/en/RL/falconry-a-living-human-heritage-01708', note: 'Official UNESCO listing — now covers 24 nations.' }
+                    { cite: 'Frederick II of Hohenstaufen. (~1240). De Arte Venandi cum Avibus [The Art of Hunting with Birds]. Translated by Wood, C.A. & Fyfe, F.M. (1943) Stanford University Press.', note: __alloT('stem.raptorhunt.the_first_scientific_treatise_on_falco', 'The first scientific treatise on falconry + raptor biology — also one of the first scientific texts in Western Europe.') },
+                    { cite: 'Berners, J. (~1486). Boke of Saint Albans. Wynkyn de Worde / London.', note: __alloT('stem.raptorhunt.medieval_english_falconry_guide_source', 'Medieval English falconry guide; source for the feudal hierarchy of species assignments.') },
+                    { cite: 'UNESCO Intangible Cultural Heritage list. (2010, expanded 2021). Falconry, a living human heritage. https://ich.unesco.org/en/RL/falconry-a-living-human-heritage-01708', note: __alloT('stem.raptorhunt.official_unesco_listing_now_covers_24_', 'Official UNESCO listing — now covers 24 nations.') }
                   ]
                 }
               ].map(function(group, gi) {
@@ -20300,9 +20301,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // ────────────────────────────────────────────────────────
       // MAIN RENDER — Tab nav + active section
       // ────────────────────────────────────────────────────────
-      return h('div', { className: 'space-y-4', role: 'region', 'aria-label': 'Raptor Hunt tool' },
+      return h('div', { className: 'space-y-4', role: 'region', 'aria-label': __alloT('stem.raptorhunt.raptor_hunt_tool', 'Raptor Hunt tool') },
         // Tool subtitle (updated for 9-category hub)
-        h('div', { className: 'text-[11px] text-slate-500 uppercase tracking-wider' }, '9 categories · 100+ sections · 25 species · 6 labs · 70-Q quiz'),
+        h('div', { className: 'text-[11px] text-slate-500 uppercase tracking-wider' }, __alloT('stem.raptorhunt.9_categories_100_sections_25_species_6', '9 categories · 100+ sections · 25 species · 6 labs · 70-Q quiz')),
         // Category-aware navigation
         (function() {
           var activeCategoryId = rh.activeCategory || null;
@@ -20340,18 +20341,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           elements.push(h('div', { key: 'topbar', className: 'flex flex-wrap items-center gap-2 mb-2' },
             h('button', {
               onClick: function() { setCategory(null); goSection('hub'); },
-              'aria-label': 'Go to Hub',
+              'aria-label': __alloT('stem.raptorhunt.go_to_hub', 'Go to Hub'),
               className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (atHub ? 'bg-amber-600 text-white' : 'transition-colors bg-slate-800 text-amber-200 hover:bg-slate-700 active:scale-[0.97]')
-            }, '🏠 Hub'),
+            }, __alloT('stem.raptorhunt.hub', '🏠 Hub')),
             activeCategory && h('span', { className: 'text-xs text-slate-400' }, '/'),
             activeCategory && h('span', { className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800/60 text-amber-200' }, activeCategory.icon + ' ' + activeCategory.label),
             h('div', { className: 'ml-auto flex items-center gap-2' },
               h('input', {
                 type: 'text',
-                placeholder: 'Search all 90+ sections...',
+                placeholder: __alloT('stem.raptorhunt.search_all_90_sections', 'Search all 90+ sections...'),
                 value: rh.sectionSearch || '',
                 onChange: function(e) { setRH(function(cur) { return Object.assign({}, cur, { sectionSearch: e.target.value, activeCategory: null }); }); },
-                'aria-label': 'Search sections',
+                'aria-label': __alloT('stem.raptorhunt.search_sections', 'Search sections'),
                 className: 'px-2 py-1.5 text-xs bg-slate-800 border border-slate-700 rounded text-slate-100 placeholder-slate-500 w-48'
               }),
               searchTerm && h('span', { className: 'text-xs text-slate-400 font-mono' }, searchResults.length + ' match')
@@ -20362,7 +20363,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (searchResults) {
             elements.push(h('div', { key: 'search', className: 'flex flex-wrap gap-1.5 mb-3 p-2 bg-slate-900/40 rounded' },
               searchResults.length === 0
-                ? h('span', { className: 'text-xs text-slate-500 italic' }, 'No sections match. Try a different keyword.')
+                ? h('span', { className: 'text-xs text-slate-500 italic' }, __alloT('stem.raptorhunt.no_sections_match_try_a_different_keyw', 'No sections match. Try a different keyword.'))
                 : searchResults.map(function(s) {
                     return h('button', {
                       key: s.id,
@@ -20524,11 +20525,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             else if (iq.speed > 80) strat = 'sprint';
             else strat = 'opportunist';
             var sm = {
-              ambush:      { label: '🌳 Ambush (stealth + surprise)', color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: 'Goshawk-style: hide in cover, single strike.' },
-              pursuit:     { label: '🏃 Pursuit (speed + tracking)', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Peregrine-style: high-speed chase + dive.' },
-              endurance:   { label: '🦅 Endurance (long persistence)', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Harrier-style: low slow patrolling.' },
-              sprint:      { label: '⚡ Sprint (burst)', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Falcon-stoop tactic. Energy-intensive.' },
-              opportunist: { label: '🦉 Opportunist (mixed)', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Generalist. Owl-style; uses whatever works.' }
+              ambush:      { label: __alloT('stem.raptorhunt.ambush_stealth_surprise', '🌳 Ambush (stealth + surprise)'), color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: __alloT('stem.raptorhunt.goshawk_style_hide_in_cover_single_str', 'Goshawk-style: hide in cover, single strike.') },
+              pursuit:     { label: __alloT('stem.raptorhunt.pursuit_speed_tracking', '🏃 Pursuit (speed + tracking)'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.raptorhunt.peregrine_style_high_speed_chase_dive', 'Peregrine-style: high-speed chase + dive.') },
+              endurance:   { label: __alloT('stem.raptorhunt.endurance_long_persistence', '🦅 Endurance (long persistence)'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.raptorhunt.harrier_style_low_slow_patrolling', 'Harrier-style: low slow patrolling.') },
+              sprint:      { label: __alloT('stem.raptorhunt.sprint_burst', '⚡ Sprint (burst)'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.raptorhunt.falcon_stoop_tactic_energy_intensive', 'Falcon-stoop tactic. Energy-intensive.') },
+              opportunist: { label: __alloT('stem.raptorhunt.opportunist_mixed', '🦉 Opportunist (mixed)'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: __alloT('stem.raptorhunt.generalist_owl_style_uses_whatever_wor', 'Generalist. Owl-style; uses whatever works.') }
             }[strat];
             var H = h;
             return H('div', { style: { padding: 16, background: '#fff', borderRadius: 10, border: '1px solid #cbd5e1' } },
@@ -20579,7 +20580,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 H('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ st: iq.stealth, sp: iq.speed, a: iq.ambush, p: iq.persistence, str: strat }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#e2e8f0', color: '#475569', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
                 H('button', { onClick: function() { setIQ({ stealth: 50, speed: 50, ambush: 50, persistence: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: '#fff', color: '#64748b', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset')
               ),
-              H('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: Which strategy is most energy-efficient?',
+              H('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.raptorhunt.hypothesis_which_strategy_is_most_ener', 'Hypothesis: Which strategy is most energy-efficient?'),
                 style: { width: '100%', minHeight: 50, padding: 6, border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 8 }, rows: 2 }),
               !iq.stuckRevealed && H('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: '#fef3c7', color: '#92400e', border: '1px solid #fcd34d', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, '🤔 Stuck — show open prompts'),
               iq.stuckRevealed && H('div', { style: { padding: 10, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 4, fontSize: 11, color: '#475569', marginBottom: 8 } },
@@ -20589,7 +20590,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   H('li', null, 'What environment favors ambush vs pursuit?'))),
               H('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#059669', cursor: 'pointer' } },
                 H('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand — explain'),
-              iq.understood && H('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how raptor traits compose hunting strategy.',
+              iq.understood && H('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.raptorhunt.explain_how_raptor_traits_compose_hunt', 'Explain how raptor traits compose hunting strategy.'),
                 style: { width: '100%', minHeight: 60, padding: 6, border: '1px solid #86efac', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 3 }),
               H('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: '#64748b' } }, 'Design note: discrete 5-strategy marker; SVG radar chart; no hunt-success score — by design.')
             );
