@@ -37,7 +37,7 @@ describe('recov-score-order — re-score changes the reported number when the do
   it('a lower post-restore axe score yields a lower final than the pre-restore headline', () => {
     const ai = 80;
     const preBlend = reBlend(ai, 90, null);   // before recovery: min(80,90) → 80
-    const postBlend = reBlend(ai, 60, null);  // injected un-leveled <h2> trips axe heading-order → min(80,60) → 60
+    const postBlend = reBlend(ai, 60, null);  // a lower post-restore axe score (e.g. a WCAG-tagged violation introduced by the restore) → min(80,60) → 60. NOTE: axe's heading-order / page-has-heading-one are BEST-PRACTICE rules, NOT loaded by runAxeAudit's WCAG-tag filter — heading-order is caught deterministically (headingOutlineIssue), not by this axe blend.
     expect(preBlend).toBe(80);
     expect(postBlend).toBe(60);
     expect(postBlend).not.toBe(preBlend);      // the shipped score now reflects the downloaded doc

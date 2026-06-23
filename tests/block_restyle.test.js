@@ -90,6 +90,73 @@ describe('restyleBlock("list"): only when items are unambiguous; content preserv
   });
 });
 
+describe('restyleBlock("heading"): re-tags a title paragraph to a real heading, content-preserving + OUTLINE-SAFE', () => {
+  it('promotes a short paragraph to <h2> by default (no preceding heading) and preserves the text', () => {
+    const r = restyleBlock('<p>Section Overview</p>', 'heading', {});
+    expect(r.ok).toBe(true);
+    expect(r.kind).toBe('heading');
+    expect(r.html).toBe('<h2>Section Overview</h2>');
+    expect(r.level).toBe(2);
+    expect(preserves('<p>Section Overview</p>', r.html)).toBe(true);
+  });
+  it('chooses an outline-SAFE level = at most (preceding heading + 1), never skipping', () => {
+    // preceding H2 → a subheading is H3; an over-deep request is clamped to H3 (no H2→H4 skip)
+    expect(restyleBlock('<p>Sub topic</p>', 'heading', { level: 3, precedingLevel: 2 }).html).toBe('<h3>Sub topic</h3>');
+    expect(restyleBlock('<p>Deep req</p>', 'heading', { level: 6, precedingLevel: 2 }).html).toBe('<h3>Deep req</h3>');
+    // default (no requested level) under a preceding H3 → H4
+    expect(restyleBlock('<p>Next</p>', 'heading', { precedingLevel: 3 }).level).toBe(4);
+    // a same-or-higher section level is allowed (not a skip)
+    expect(restyleBlock('<p>New section</p>', 'heading', { level: 2, precedingLevel: 3 }).html).toBe('<h2>New section</h2>');
+  });
+  it('NEVER creates an <h1> (clamps to 2) even when asked', () => {
+    expect(restyleBlock('<p>Title</p>', 'heading', { level: 1, precedingLevel: 0 }).html).toBe('<h2>Title</h2>');
+  });
+  it('preserves inner markup, links, AND a11y attributes (id/lang/dir/aria) — re-tag only', () => {
+    const src = '<p id="sec-methods" lang="es" dir="ltr" aria-label="Métodos">Métodos del <em>estudio</em> <a href="https://k.test">aquí</a></p>';
+    const r = restyleBlock(src, 'heading', { precedingLevel: 1 });
+    expect(r.html).toContain('<em>estudio</em>');
+    expect(countTag(r.html, 'a[href="https://k.test"]')).toBe(1);
+    expect(r.html).toMatch(/id="sec-methods"/);     // anchor/TOC target preserved
+    expect(r.html).toMatch(/lang="es"/);            // SR pronunciation preserved
+    expect(r.html).toMatch(/aria-label="Métodos"/); // accessible name preserved
+    expect(preserves(src, r.html)).toBe(true);
+  });
+  it('refuses a block that is already a heading', () => {
+    expect(restyleBlock('<h2>Already</h2>', 'heading', {}).reason).toBe('already-heading');
+  });
+  it('refuses a block too long to be a heading (>100 chars of prose)', () => {
+    const longText = 'This is a full sentence of body prose that goes well past any reasonable heading length and must never become a heading.';
+    expect(restyleBlock('<p>' + longText + '</p>', 'heading', {}).reason).toBe('too-long');
+  });
+  it('refuses NON-TITLE content the gate alone would pass (sentence prose, link-only, multi-line)', () => {
+    expect(restyleBlock('<p>Please remember to bring your signed permission slip to the office before Friday afternoon.</p>', 'heading', {}).reason).toBe('not-title');
+    expect(restyleBlock('<p><a href="/more">Read more about the study results here</a></p>', 'heading', {}).reason).toBe('link-only');
+    expect(restyleBlock('<p>Chapter 1<br>An Introduction</p>', 'heading', {}).reason).toBe('multi-line');
+  });
+  it('refuses an outline-hostile ancestor (caller-detected) and an invalid-nesting target', () => {
+    expect(restyleBlock('<p>Quick links</p>', 'heading', { badAncestor: true }).reason).toBe('bad-context');
+    expect(restyleBlock('<li>Item</li>', 'heading', {}).reason).toMatch(/bad-context|no-block/);
+  });
+});
+
+describe('precedingHeadingLevel + headingOutlineIssue (deterministic outline helpers)', () => {
+  const grab = (decl, endMarker) => { const s = dp.indexOf(decl); const e = dp.indexOf(endMarker, s) + endMarker.length; return dp.slice(s, e); };
+  const precedingHeadingLevel = new Function(grab('function precedingHeadingLevel(html, blockHtml) {', '\n}') + '\nreturn precedingHeadingLevel;')();
+  const headingOutlineIssue = new Function(grab('function _headingOutlineIssue(html) {', '\n}\n') + '\nreturn _headingOutlineIssue;')();
+  it('precedingHeadingLevel finds the nearest heading before the block', () => {
+    const html = '<h1>Title</h1><h2>Sec</h2><p id="t">body here</p>';
+    expect(precedingHeadingLevel(html, '<p id="t">body here</p>')).toBe(2);
+    expect(precedingHeadingLevel('<p>no heading before me at all</p>', '<p>no heading before me at all</p>')).toBe(0);
+  });
+  it('headingOutlineIssue flags missing-h1 and level skips', () => {
+    expect(headingOutlineIssue('<h2>a</h2><h3>b</h3>').missingH1).toBe(true);
+    expect(headingOutlineIssue('<h1>a</h1><h2>b</h2>').missingH1).toBe(false);
+    expect(headingOutlineIssue('<h1>a</h1><h2>b</h2><h4>c</h4>').skip).toBe(true);
+    expect(headingOutlineIssue('<h1>a</h1><h2>b</h2><h3>c</h3>').skip).toBe(false);
+    expect(headingOutlineIssue('<p>no headings</p>').missingH1).toBe(false);
+  });
+});
+
 describe('regression: the content-loss bugs the adversarial review found are now refused, not silently shipped', () => {
   it('R4 — a hyperlink (or any inline element) spanning a <br> never multiplies into N links', () => {
     const src = '<p>Notes: <a href="mailto:t@s.edu">contact me<br>about your child<br>privately</a></p>';
@@ -176,14 +243,17 @@ describe('anti-drift: exported on the factory + wired into the region editor via
     expect(mod).toMatch(/restyleBlock/);
   });
   it('_restyleRegion runs the transform, splices via _spliceBlock, snapshots revert, surfaces a failed re-audit', () => {
-    const h = view.slice(view.indexOf('const _restyleRegion = async (kind) => {'), view.indexOf('const _restyleRegion = async (kind) => {') + 4200);
-    expect(h).toMatch(/_docPipeline\.restyleBlock\(original, kind, \{\}\)/);
+    const h = view.slice(view.indexOf('const _restyleRegion = async (kind) => {'), view.indexOf('const _restyleRegion = async (kind) => {') + 5400);
+    expect(h).toMatch(/_docPipeline\.restyleBlock\(original, kind, topts\)/);
+    expect(h).toMatch(/precedingHeadingLevel\(pdfFixResult\.accessibleHtml, original\)/);   // outline-safe leveling
+    expect(h).toMatch(/badAncestor = !!rgn\.badAncestor/);                                  // outline-hostile-ancestor refusal
     expect(h).toMatch(/const sp = _spliceBlock\(pdfFixResult\.accessibleHtml, original, res\.html\)/);
     expect(h).toMatch(/accessibleHtml: sp\.html, _preCmdHtml: _before/);
     expect(h).toMatch(/await _reauditAndScore\(sp\.html, null\)/);
     expect(h).toMatch(/why === 'reading-order'/);
     expect(h).toMatch(/why === 'bad-context'/);   // honest refusal for invalid-nesting targets
     expect(h).toMatch(/_rescore && _rescore\.ok === false/);   // surfaces a throttled re-audit (R11)
+    expect(h).toMatch(/_warnHeadingOutline\(_before, sp\.html\)/);   // honest deterministic outline backstop
   });
   it('the region editor exposes the no-AI restyle chips with an honest label', () => {
     expect(view).toMatch(/onClick=\{\(\) => _restyleRegion\('callout'\)\}/);

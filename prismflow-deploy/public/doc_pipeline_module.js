@@ -706,10 +706,84 @@ function _restyleToList(blockHtml, opts) {
   var _r = { ok: true, html: html, kind: 'list', reason: 'ok' };
   return _r;
 }
+// Level (1–6) of the nearest heading that appears in `html` BEFORE the block `blockHtml` (by string
+// position), or 0 if none. Lets a block-scoped heading promotion choose an OUTLINE-SAFE level (never skip
+// past preceding+1) without re-parsing the whole DOM. Pure. (2026-06-23, heading-transform hardening.)
+function precedingHeadingLevel(html, blockHtml) {
+  var s = String(html || ''), b = String(blockHtml || '');
+  var pos = b ? s.indexOf(b) : -1;
+  var scan = pos >= 0 ? s.slice(0, pos) : s;
+  var m = scan.match(/<h([1-6])[\s>]/gi);
+  if (!m || !m.length) { var _z = 0; return _z; }
+  var d = m[m.length - 1].match(/[1-6]/);
+  return d ? parseInt(d[0], 10) : 0;
+}
+// Deterministic heading-outline check (the re-audit's axe run does NOT load heading-order / page-has-heading-one
+// — they are best-practice rules, not WCAG-tagged — so this is the honest backstop). Returns
+// { missingH1, skip } for a document. Used post-apply to WARN when a heading edit left an outline problem.
+function _headingOutlineIssue(html) {
+  var out = { missingH1: false, skip: false };
+  if (typeof DOMParser === 'undefined') return out;
+  try {
+    var doc = new DOMParser().parseFromString(String(html || ''), 'text/html');
+    var hs = doc.body ? doc.body.querySelectorAll('h1,h2,h3,h4,h5,h6') : [];
+    if (!hs.length) return out;
+    var hasH1 = false, prev = 0;
+    for (var i = 0; i < hs.length; i++) { var lv = parseInt(hs[i].tagName.charAt(1), 10); if (lv === 1) hasH1 = true; if (prev && lv > prev + 1) out.skip = true; prev = lv; }
+    if (!hasH1) out.missingH1 = true;
+  } catch (_) {}
+  return out;
+}
+// Promote a paragraph that is really a HEADING into a real <hN> — one of the highest-impact a11y wins
+// (heading structure = SR navigation + tagged-PDF outline). Content-preserving RE-TAG (keeps inner markup,
+// links, AND the a11y-significant attributes id/lang/dir/role/aria-* — dropping those breaks anchors/TOC,
+// pronunciation, bidi). Hardened (2026-06-23) after adversarial review showed heading promotion is really an
+// OUTLINE operation: it now refuses non-title content (link-only, multi-line, full-sentence prose, >100ch),
+// refuses outline-hostile ancestors (nav/header/footer/aside/figure — caller-detected via opts.badAncestor),
+// and chooses an OUTLINE-SAFE level that never skips past (preceding heading + 1) and never creates an <h1>.
+// The caller passes opts.precedingLevel (see precedingHeadingLevel) + opts.badAncestor.
+function _restyleToHeading(blockHtml, opts) {
+  var wrap = _restyleParseBlock(blockHtml);
+  if (!wrap) { var _np = { ok: false, reason: 'no-domparser' }; return _np; }
+  var block = wrap.firstElementChild;
+  if (!block) { var _nb = { ok: false, reason: 'no-block' }; return _nb; }
+  if (/^H[1-6]$/.test(block.tagName)) { var _ah = { ok: false, reason: 'already-heading' }; return _ah; }
+  if (_RESTYLE_BAD_CONTEXT[block.tagName]) { var _bc = { ok: false, reason: 'bad-context' }; return _bc; }
+  if (opts && opts.badAncestor) { var _ba = { ok: false, reason: 'bad-context' }; return _ba; }   // inside nav/header/footer/aside/figure
+  for (var ci = 0; ci < block.children.length; ci++) { if (_RESTYLE_BLOCK_CHILD.test(block.children[ci].tagName)) { var _mb = { ok: false, reason: 'multi-block' }; return _mb; } }
+  for (var bi = 0; bi < block.childNodes.length; bi++) { var nn = block.childNodes[bi]; if (nn.nodeType === 1 && nn.tagName === 'BR') { var _ml = { ok: false, reason: 'multi-line' }; return _ml; } }  // a forced line break = body content, not a title
+  var text = String(block.textContent || '').replace(/\s+/g, ' ').trim();
+  if (!text) { var _e = { ok: false, reason: 'no-block' }; return _e; }
+  if (text.length > 100) { var _tl = { ok: false, reason: 'too-long' }; return _tl; }                 // a heading should be a short title
+  if (block.children.length === 1 && block.children[0].tagName === 'A' && String(block.children[0].textContent || '').replace(/\s+/g, ' ').trim() === text) { var _lo = { ok: false, reason: 'link-only' }; return _lo; }  // a lone link is navigation, not a heading
+  if (/[.?!]$/.test(text) && text.split(/\s+/).length > 10) { var _nt = { ok: false, reason: 'not-title' }; return _nt; }  // a full sentence is body prose
+  // OUTLINE-SAFE level: never skip past (nearest preceding heading + 1), never <h2 (no auto-h1), never >h6.
+  var preceding = (opts && opts.precedingLevel != null) ? parseInt(opts.precedingLevel, 10) : 0;
+  if (!(preceding >= 1 && preceding <= 6)) preceding = 0;
+  var base = preceding >= 1 ? preceding : 1;
+  var requested = (opts && opts.level != null) ? parseInt(opts.level, 10) : 0;
+  var level = requested >= 2 ? requested : (base + 1);
+  level = Math.max(2, Math.min(level, base + 1, 6));
+  var doc = block.ownerDocument;
+  var h = doc.createElement('h' + level);
+  h.innerHTML = block.innerHTML;                              // re-tag only — inner markup/links preserved
+  var CARRY = ['id', 'lang', 'dir', 'role', 'title'];        // carry a11y-significant attrs (anchors/TOC, pronunciation, bidi, naming)
+  for (var ki = 0; ki < CARRY.length; ki++) { if (block.hasAttribute(CARRY[ki])) h.setAttribute(CARRY[ki], block.getAttribute(CARRY[ki])); }
+  var attrs = block.attributes;
+  for (var qi = 0; attrs && qi < attrs.length; qi++) { if (/^aria-/i.test(attrs[qi].name)) h.setAttribute(attrs[qi].name, attrs[qi].value); }
+  _restyleScrubHandlers(h);
+  _restyleCarryColor(block, h);                              // keep contrast the source had
+  var html = h.outerHTML;
+  var g = _restyleGate(blockHtml, html);
+  if (!g.ok) return g;
+  var _r = { ok: true, html: html, kind: 'heading', level: level, reason: 'ok' };
+  return _r;
+}
 function restyleBlock(blockHtml, kind, opts) {
   if (!blockHtml || !kind) { var _b = { ok: false, reason: 'no-input' }; return _b; }
   if (kind === 'callout') return _restyleToCallout(blockHtml, opts);
   if (kind === 'list') return _restyleToList(blockHtml, opts);
+  if (kind === 'heading') return _restyleToHeading(blockHtml, opts);
   var _u = { ok: false, reason: 'unknown-kind' };
   return _u;
 }
@@ -21035,14 +21109,18 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     try { dom = new DOMParser().parseFromString(src, 'text/html'); } catch (_) { return null; }
     if (!dom.body) return null;
     var all = Array.prototype.slice.call(dom.body.querySelectorAll('p,blockquote'));
-    var candidates = [], byRef = {};
+    var candidates = [], byRef = {}, seenText = {};
     for (var i = 0; i < all.length; i++) {
       var el = all[i];
       if (el.querySelector('p,blockquote')) continue;  // LEAF-MOST only: a blockquote wrapping a <p> would
                                                         // otherwise list the same text twice (ancestor + child)
                                                         // and overlap splice targets — keep the inner block.
       var text = String(el.textContent || '').replace(/\s+/g, ' ').trim();
-      if (text.length < 40) continue;                 // too short to benefit from a structure change
+      if (text.length < 8) continue;                  // skip tiny fragments (short title-like blocks ARE kept — they may be headings)
+      if (/^(page\s+\d+(\s+of\s+\d+)?|p\.?\s*\d+|\d{1,4})$/i.test(text)) continue;   // pagination chrome (page numbers) — never a heading
+      var tkey = text.toLowerCase();
+      if (seenText[tkey]) continue;                   // running header/footer repeated across pages — list once
+      seenText[tkey] = 1;
       // Only offer a block we can ACTUALLY apply: its serialized markup must occur EXACTLY ONCE in the stored
       // string. accessibleHtml is raw model output (not a DOMParser round-trip), so a block authored with
       // non-canonical markup (uppercase tag, single-quoted attr, &nbsp; vs U+00A0) won't byte-match the
@@ -21051,19 +21129,24 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       var outer = el.outerHTML;
       var at = src.indexOf(outer);
       if (at === -1 || src.indexOf(outer, at + outer.length) !== -1) continue;
-      var c = { ref: i, tag: el.tagName.toLowerCase(), text: text.slice(0, 180), el: el, original: outer };
+      // outline context for a possible heading pick: is this inside content that must NOT contribute to the
+      // section outline, and what's the nearest preceding heading level (for no-skip levelling)?
+      var bad = false, anc = el.parentElement;
+      while (anc) { if (/^(NAV|HEADER|FOOTER|ASIDE|FIGURE|FIGCAPTION)$/.test(anc.tagName)) { bad = true; break; } anc = anc.parentElement; }
+      var c = { ref: i, tag: el.tagName.toLowerCase(), text: text.slice(0, 180), el: el, original: outer, badAncestor: bad, precedingLevel: precedingHeadingLevel(src, outer) };
       candidates.push(c); byRef[i] = c;
       if (candidates.length >= 60) break;             // cap prompt size
     }
     if (!candidates.length) { return { proposals: [], considered: 0, suggested: 0 }; }
     var listing = candidates.map(function (x) { return '#' + x.ref + ' [' + x.tag + '] ' + x.text; }).join('\n');
-    var prompt = 'You are improving the visual rhythm of an ACCESSIBLE document. Below are numbered text blocks.\n'
+    var prompt = 'You are improving the structure + visual rhythm of an ACCESSIBLE document. Below are numbered text blocks.\n'
       + 'Pick AT MOST ' + max + ' blocks where a structure change would clearly help a reader:\n'
+      + '- "heading": a SHORT title-like block that is really a section heading (often the start of a section, sometimes bold). Give a "level" 2–6 reflecting its place in the outline (2 = top-level section, 3 = subsection, …). This is the highest-value pick for accessibility.\n'
       + '- "callout": a key takeaway / note / warning that deserves visual emphasis.\n'
       + '- "list": prose that is really a sequence of items and would read better as a bulleted list.\n'
       + 'RULES: do NOT rewrite, summarize, or invent any text — only SELECT existing blocks by their number. '
       + 'Most blocks need NO change; be selective (quality over quantity).\n'
-      + 'Return ONLY a JSON array: [{"ref":<number>,"kind":"callout"|"list","reason":"<short why>"}]. No prose, no markdown.\n\n'
+      + 'Return ONLY a JSON array: [{"ref":<number>,"kind":"heading"|"callout"|"list","level":<2-6, headings only>,"reason":"<short why>"}]. No prose, no markdown.\n\n'
       + 'BLOCKS:\n' + listing;
     var resp;
     try { resp = await callGemini(prompt); } catch (_) { return null; }
@@ -21075,14 +21158,16 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       var p = parsed[j];
       if (!p || typeof p !== 'object') continue;
       var ref = (typeof p.ref === 'number') ? p.ref : parseInt(p.ref, 10);
-      var kind = (p.kind === 'callout' || p.kind === 'list') ? p.kind : null;
+      var kind = (p.kind === 'callout' || p.kind === 'list' || p.kind === 'heading') ? p.kind : null;
       if (!kind || !Object.prototype.hasOwnProperty.call(byRef, ref) || seen[ref]) continue;
       seen[ref] = 1; suggested++;
       var cand = byRef[ref];
       var original = cand.original;                    // the exact, uniquely-locatable stored substring
-      var res = restyleBlock(original, kind, {});     // DETERMINISTIC GATE — drop a pick that can't apply safely
+      var topts = {};
+      if (kind === 'heading') { var lvl = parseInt(p.level, 10); topts = { level: (lvl >= 2 && lvl <= 6) ? lvl : undefined, precedingLevel: cand.precedingLevel, badAncestor: cand.badAncestor }; }
+      var res = restyleBlock(original, kind, topts);  // DETERMINISTIC GATE — drop a pick that can't apply safely (incl. outline-hostile ancestor, non-title, skip-level)
       if (!res || !res.ok) continue;
-      proposals.push({ ref: ref, kind: kind, reason: String(p.reason || '').slice(0, 140), original: original, html: res.html, preview: cand.text.slice(0, 120), tag: cand.tag });
+      proposals.push({ ref: ref, kind: kind, level: res.level, reason: String(p.reason || '').slice(0, 140), original: original, html: res.html, preview: cand.text.slice(0, 120), tag: cand.tag });
       if (proposals.length >= max) break;
     }
     return { proposals: proposals, considered: candidates.length, suggested: suggested, kept: proposals.length };
@@ -27625,6 +27710,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     palettePresets: PALETTE_PRESETS,
     checkReadingOrderPreserved: checkReadingOrderPreserved,
     restyleBlock: restyleBlock,
+    precedingHeadingLevel: precedingHeadingLevel,
+    headingOutlineIssue: _headingOutlineIssue,
     runPdfAccessibilityAudit: _wrapAsync(runPdfAccessibilityAudit),
     auditOutputAccessibility: _wrapAsync(auditOutputAccessibility),
     runAxeAudit: _wrapAsync(runAxeAudit),

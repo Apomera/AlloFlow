@@ -3040,7 +3040,10 @@ function PdfAuditView(props) {
       }
     } catch (_) {}
     if (!original) original = el.outerHTML;                   // last-resort fallback (may carry live styles → splice may not-find → graceful)
-    _setIssueEdit((prev) => ({ ...prev, ['__region__']: { original: original, draft: original, intent: '', _region: true, tag: (el.tagName || '').toLowerCase(), preview: norm(el.textContent).slice(0, 140) } }));
+    // Outline-hostility for a possible heading promotion: a block inside nav/header/footer/aside/figure must
+    // not become a section heading. Captured here from the live element (same structure as the stored doc).
+    let _badAnc = false; try { let _a = el.parentElement; while (_a) { if (/^(NAV|HEADER|FOOTER|ASIDE|FIGURE|FIGCAPTION)$/.test(_a.tagName)) { _badAnc = true; break; } _a = _a.parentElement; } } catch (_) {}
+    _setIssueEdit((prev) => ({ ...prev, ['__region__']: { original: original, draft: original, intent: '', _region: true, tag: (el.tagName || '').toLowerCase(), preview: norm(el.textContent).slice(0, 140), badAncestor: _badAnc } }));
     try { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); const _prev = el.style.outline; el.style.outline = '3px solid #4f46e5'; el.style.outlineOffset = '2px'; setTimeout(() => { try { el.style.outline = _prev; el.style.outlineOffset = ''; } catch (_) {} }, 3000); } catch (_) {}
     try { const p = document.getElementById('allo-region-editor'); if (p) p.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
     addToast(t('pdf_audit.region.selected') || '▭ Region selected — describe the change, then Apply with AI (scoped to just this block).', 'info');
@@ -3059,8 +3062,14 @@ function PdfAuditView(props) {
     if (!_docPipeline || typeof _docPipeline.restyleBlock !== 'function') { addToast(t('pdf_audit.region.unavailable') || 'Restyle tools are still loading — try again in a moment.', 'info'); return; }
     const original = String(rgn.original || '');
     if (!original) return;
+    let topts = {};
+    if (kind === 'heading') {
+      // outline-safe: pick a no-skip level from the nearest preceding heading, and refuse outline-hostile ancestors
+      topts.precedingLevel = (typeof _docPipeline.precedingHeadingLevel === 'function') ? _docPipeline.precedingHeadingLevel(pdfFixResult.accessibleHtml, original) : 0;
+      topts.badAncestor = !!rgn.badAncestor;
+    }
     let res = null;
-    try { res = _docPipeline.restyleBlock(original, kind, {}); } catch (_) {}
+    try { res = _docPipeline.restyleBlock(original, kind, topts); } catch (_) {}
     if (!res || !res.ok) {
       const why = res && res.reason;
       // Honest, reason-specific refusal — every one of these is the deterministic guard REFUSING rather than
@@ -3072,6 +3081,8 @@ function PdfAuditView(props) {
         : why === 'no-delimiter' ? (t('pdf_audit.region.restyle_nolist') || 'Couldn’t find list items here — separate items with line breaks or bullets first.')
         : why === 'already-list' ? (t('pdf_audit.region.restyle_already') || 'This block is already a list.')
         : why === 'already-callout' ? (t('pdf_audit.region.restyle_already_callout') || 'This block is already a callout.')
+        : why === 'already-heading' ? (t('pdf_audit.region.restyle_already_heading') || 'This block is already a heading.')
+        : why === 'too-long' ? (t('pdf_audit.region.restyle_toolong') || 'That block is too long to be a heading — headings should be short titles.')
         : (t('pdf_audit.region.restyle_cant') || 'Couldn’t restyle this block.');
       addToast(msg, 'info'); return;
     }
@@ -3088,9 +3099,22 @@ function PdfAuditView(props) {
     setPdfFixResult((p) => p ? { ...p, accessibleHtml: sp.html, _preCmdHtml: _before } : p);
     _setIssueEdit((prev) => { const n = { ...prev }; delete n['__region__']; return n; });
     addToast(t('pdf_audit.region.restyled') || '✨ Restyled this block — re-checking…', 'success');
+    if (kind === 'heading') _warnHeadingOutline(_before, sp.html);   // axe's heading-order/no-h1 are best-practice (not in the WCAG re-audit) — warn deterministically
     const _rescore = await _reauditAndScore(sp.html, null);
     // R11: don't leave the headline score silently stale if the re-audit was throttled — say so (parity with _saveManualEdit).
     if (_rescore && _rescore.ok === false) addToast(t('pdf_audit.region.restyle_norescore') || '✨ Restyle applied. Couldn’t re-score automatically (the checker was busy) — the document is updated; re-run the audit when ready.', 'info');
+  };
+  // Deterministic heading-outline warning (honest backstop): the re-audit's axe run loads only WCAG-tagged
+  // rules, and heading-order / page-has-heading-one are best-practice — so they would NOT surface a heading
+  // edit that left the outline broken. Compare before/after and warn ONLY on a newly-introduced problem.
+  const _warnHeadingOutline = (beforeHtml, afterHtml) => {
+    try {
+      if (!_docPipeline || typeof _docPipeline.headingOutlineIssue !== 'function') return;
+      const b = _docPipeline.headingOutlineIssue(beforeHtml) || {};
+      const a = _docPipeline.headingOutlineIssue(afterHtml) || {};
+      if (a.skip && !b.skip) addToast(t('pdf_audit.region.heading_skip') || '⚠ Heading added, but it skips a level (e.g. H2 → H4). Re-level it (or the surrounding headings) so the outline has no gaps.', 'info');
+      else if (a.missingH1 && !b.missingH1) addToast(t('pdf_audit.region.heading_no_h1') || '⚠ Heading added, but this document has no H1. Mark the document title as the single top-level heading (H1) so the outline is complete.', 'info');
+    } catch (_) {}
   };
 
   // S3 block-restyle slice 2 (2026-06-23): ask the AI WHERE a callout/list would help. proposeRestyles sends
@@ -3129,6 +3153,7 @@ function PdfAuditView(props) {
     setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: sp.html, _preCmdHtml: _before } : prev);
     setRestyleProposals((prev) => prev ? prev.filter((x) => x !== p) : prev);
     addToast(t('pdf_audit.region.suggest_applied') || '✨ Applied — re-checking…', 'success');
+    if (p.kind === 'heading') _warnHeadingOutline(_before, sp.html);   // honest outline backstop (axe best-practice rules aren't in the re-audit)
     const _rs = await _reauditAndScore(sp.html, null);
     if (_rs && _rs.ok === false) addToast(t('pdf_audit.region.restyle_norescore') || '✨ Applied. Couldn’t re-score automatically (the checker was busy) — the document is updated; re-run the audit when ready.', 'info');
   };
@@ -10103,7 +10128,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               <ul className="space-y-1.5">
                                 {_restyleProposals.map((p, idx) => (
                                   <li key={idx} className="bg-white border border-indigo-200 rounded-lg p-2 flex items-start gap-2">
-                                    <span className={'shrink-0 px-1.5 py-0.5 rounded text-[10px] font-bold ' + (p.kind === 'callout' ? 'bg-amber-100 text-amber-800' : 'bg-sky-100 text-sky-800')}>{p.kind === 'callout' ? ('📌 ' + (t('pdf_audit.region.make_callout') || 'Make a callout')) : ('• ' + (t('pdf_audit.region.make_list') || 'Make a list'))}</span>
+                                    <span className={'shrink-0 px-1.5 py-0.5 rounded text-[10px] font-bold ' + (p.kind === 'heading' ? 'bg-emerald-100 text-emerald-800' : p.kind === 'callout' ? 'bg-amber-100 text-amber-800' : 'bg-sky-100 text-sky-800')}>{p.kind === 'heading' ? ('🔠 ' + (t('pdf_audit.region.make_heading') || 'Make a heading') + (p.level ? (' (H' + p.level + ')') : '')) : p.kind === 'callout' ? ('📌 ' + (t('pdf_audit.region.make_callout') || 'Make a callout')) : ('• ' + (t('pdf_audit.region.make_list') || 'Make a list'))}</span>
                                     <div className="min-w-0 flex-1">
                                       {p.reason && <div className="text-[11px] text-slate-700">{p.reason}</div>}
                                       <div className="text-[10px] text-slate-500 truncate" title={p.preview}>“{p.preview}”</div>
@@ -14055,6 +14080,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     className="w-full text-xs border border-indigo-300 rounded-lg p-2 bg-white text-slate-800 placeholder:text-slate-500" />
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="text-[10px] font-bold text-indigo-700">{t('pdf_audit.region.restyle_label') || 'Quick restyle (no-AI edit):'}</span>
+                    <button onClick={() => _restyleRegion('heading')} disabled={!!_rgn.saving} className={'px-2 py-0.5 rounded border border-indigo-300 bg-white text-indigo-700 text-[11px] font-bold ' + (_rgn.saving ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-100')} title={t('pdf_audit.region.make_heading_title') || 'Promote this short title-like paragraph to a real heading at an outline-safe level (never skips a level, never an H1). A fixed transform — text unchanged. Re-level with Ctrl+2/3 in the preview if needed.'}>🔠 {t('pdf_audit.region.make_heading') || 'Make a heading'}</button>
                     <button onClick={() => _restyleRegion('callout')} disabled={!!_rgn.saving} className={'px-2 py-0.5 rounded border border-indigo-300 bg-white text-indigo-700 text-[11px] font-bold ' + (_rgn.saving ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-100')} title={t('pdf_audit.region.make_callout_title') || 'Wrap this block as a callout. A fixed transform (the AI never rewrites your content); refused if it would move or drop a word, link, or image. The usual re-check still runs after.'}>📌 {t('pdf_audit.region.make_callout') || 'Make a callout'}</button>
                     <button onClick={() => _restyleRegion('list')} disabled={!!_rgn.saving} className={'px-2 py-0.5 rounded border border-indigo-300 bg-white text-indigo-700 text-[11px] font-bold ' + (_rgn.saving ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-100')} title={t('pdf_audit.region.make_list_title') || 'Turn line-broken or bulleted text into a real list. A fixed transform (no AI rewrite); refused if it would flatten a link/format or move content. The usual re-check still runs after.'}>• {t('pdf_audit.region.make_list') || 'Make a list'}</button>
                   </div>
@@ -14106,7 +14132,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     });
                     doc.addEventListener('keydown', function(e) {
                       if (e.ctrlKey || e.metaKey) {
-                        if (e.key === '1') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h1>'); }
+                        if (e.key === '1') { e.preventDefault(); if (!doc.querySelector('h1')) { doc.execCommand('formatBlock', false, '<h1>'); } } /* single-h1 policy: only when none exists */
                         else if (e.key === '2') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h2>'); }
                         else if (e.key === '3') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h3>'); }
                         else if (e.key === '0') { e.preventDefault(); doc.execCommand('formatBlock', false, '<p>'); }

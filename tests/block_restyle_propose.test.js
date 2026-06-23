@@ -54,6 +54,34 @@ describe('proposeRestyles: gates every AI pick through restyleBlock', () => {
   });
 });
 
+describe('proposeRestyles: heading suggestions (the highest-value a11y pick)', () => {
+  const HEADING_DOC = '<body>'
+    + '<p>Chapter One Overview</p>'   // ref 0 — short, title-like (candidate now that the floor is 8 chars)
+    + '<p>This is the body paragraph that follows the heading and explains the topic in ordinary prose here.</p>'
+    + '</body>';
+  it('promotes a short title block to a real heading at the model-chosen level', async () => {
+    const fn = make(async () => JSON.stringify([{ ref: 0, kind: 'heading', level: 2, reason: 'section title' }]));
+    const out = await fn(HEADING_DOC, {});
+    expect(out.proposals.length).toBe(1);
+    expect(out.proposals[0].kind).toBe('heading');
+    expect(out.proposals[0].level).toBe(2);
+    expect(out.proposals[0].html).toBe('<h2>Chapter One Overview</h2>');
+  });
+  it('clamps an invalid / missing level to 2 (never h1)', async () => {
+    const fn = make(async () => JSON.stringify([{ ref: 0, kind: 'heading', level: 1, reason: 'x' }]));
+    const out = await fn(HEADING_DOC, {});
+    expect(out.proposals[0].level).toBe(2);
+    expect(out.proposals[0].html).toBe('<h2>Chapter One Overview</h2>');
+  });
+  it('the prompt lists short title blocks as candidates (floor lowered to include headings)', async () => {
+    let seen = '';
+    const fn = make(async (p) => { seen = p; return '[]'; });
+    await fn(HEADING_DOC, {});
+    expect(seen).toContain('Chapter One Overview');
+    expect(seen).toMatch(/"heading"/);   // heading offered in the instructions
+  });
+});
+
 describe('proposeRestyles: validation + de-duplication', () => {
   it('ignores refs that do not exist, bad kinds, and non-objects', async () => {
     const fn = make(async () => JSON.stringify([{ ref: 99, kind: 'list' }, { ref: 0, kind: 'bogus' }, 'nope', { kind: 'callout' }]));
