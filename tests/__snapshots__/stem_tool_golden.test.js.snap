@@ -74,8 +74,8 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 {
   "buttons": 19,
   "inputs": 1,
-  "lengthBucket": 53,
-  "sha": "835afd2ab94000ab",
+  "lengthBucket": 54,
+  "sha": "0110f8689236ca46",
   "svgs": 1,
 }
 `;
