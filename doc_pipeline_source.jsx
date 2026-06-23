@@ -551,6 +551,48 @@ function checkReadingOrderPreserved(beforeHtml, afterHtml) {
   return _r;
 }
 
+// Order-SENSITIVE round-trip signal (H-5, audit 2026-06-23). The shipped tagged-PDF round-trip check compares
+// token SETS (membership) — order-insensitive by construction — so a tagged PDF whose tag-tree reading order
+// is SCRAMBLED (multi-column content streams drawing the right column before the left) passes at ~100%
+// coverage and still earns the PDF/UA-1 declaration. This returns the fraction of textA's tokens that also
+// occur in textB IN INCREASING POSITION (a greedy monotonic-match ratio): 1.0 = same order, ~0.5 = a clean
+// two-column swap, lower = more scrambled. Cheap (O(n log m)), capped for large docs, robust to repeated
+// common words. Pure → testable. WARN-first: surfaced as a signal; calibrate the threshold against real
+// multi-column PDFs + a veraPDF smoke BEFORE it gates the PDF/UA-1 claim (mirrors the H-4 discipline).
+function readingOrderSequenceRatio(textA, textB) {
+  var _tok = function (s) {
+    var out = [], parts = String(s || '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim().split(/\s+/);
+    for (var i = 0; i < parts.length && out.length < 20000; i++) if (parts[i].length >= 3) out.push(parts[i]);
+    return out;
+  };
+  var a = _tok(textA), b = _tok(textB);
+  if (!a.length) { var _one = 1; return _one; }
+  var posMap = Object.create(null);
+  for (var i = 0; i < b.length; i++) { (posMap[b[i]] || (posMap[b[i]] = [])).push(i); }
+  // ratio = LCS(a,b) / (a-tokens that occur in b). LCS via the classic patience-sorting reduction: for each
+  // a-token, push its b-positions in DESCENDING order; the longest STRICTLY-INCREASING subsequence of that
+  // stream is the LCS length (descending-per-token guarantees ≤1 position per token in any increasing run).
+  // This is robust to dropped tokens and repeated common words (a greedy nearest-position match is NOT — a
+  // shared common word would force the cursor to jump and falsely depress the ratio). Skip ultra-frequent
+  // tokens (>CAP occurrences) — they're poor order anchors and bound the cost.
+  var seq = [], present = 0, CAP = 40;
+  for (var j = 0; j < a.length; j++) {
+    var positions = posMap[a[j]];
+    if (!positions || positions.length > CAP) continue;   // absent (coverage handles loss) / too-common to anchor order
+    present++;
+    for (var k = positions.length - 1; k >= 0; k--) seq.push(positions[k]);
+  }
+  if (!present) { var _p1 = 1; return _p1; }
+  var tails = [];
+  for (var m = 0; m < seq.length; m++) {
+    var x = seq[m], lo = 0, hi = tails.length;
+    while (lo < hi) { var mid = (lo + hi) >> 1; if (tails[mid] < x) lo = mid + 1; else hi = mid; }
+    tails[lo] = x;                                         // strictly-increasing LIS (replace first tail ≥ x)
+  }
+  var _r = tails.length / present;
+  return _r;
+}
+
 // S3 block-restyle (2026-06-23; hardened after adversarial review). A CURATED, content-preserving
 // structure-transform library. The AI's role (a later slice) is only to SELECT one of these — it never
 // authors freeform HTML, which is exactly what breaks tagged-PDF structure + reading order. Every transform
@@ -20820,6 +20862,13 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
             else _missing.push(t);
           }
           const _coverage = _origTokens.size ? _shared / _origTokens.size : 1;
+          // H-5 (audit 2026-06-23): the coverage above is token-SET membership — ORDER-BLIND. A tagged PDF
+          // whose reading order is scrambled (multi-column streams) passes coverage at ~100% yet violates
+          // PDF/UA-1 §7.2. Add an ORDER-sensitive signal comparing the original reading-order text SEQUENCE
+          // vs the shipped (re-extracted) SEQUENCE. WARN-first: surfaced as a check + warning; it does NOT
+          // yet flip _roundTrip.ok or withhold pdfuaid (the marker is written earlier, at stamp time) — that
+          // enforcement waits on threshold calibration against real multi-column PDFs + a veraPDF smoke.
+          const _orderRatio = (typeof readingOrderSequenceRatio === 'function') ? readingOrderSequenceRatio(_origText, _shipText) : 1;
           // 2026-06-07: observability-only split of `_missing` into the subset that
           // becomes equivalent to a shipped token after applying the existing
           // de-hyphenation + whitespace-collapse + case-fold normalizer (the same
@@ -20877,6 +20926,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
           } catch (_pgErr) { /* non-fatal — banner just won't show per-page breakdown */ }
           _roundTrip.textDiff = {
             coveragePct: Math.round(_coverage * 1000) / 10,
+            readingOrderRatio: Math.round(_orderRatio * 1000) / 10, // H-5: order-sensitive (coverage is order-blind)
             missingTokens: _missing.slice(0, 200),
             missingTokenCount: _missing.length,
             originalTokenCount: _origTokens.size,
@@ -20897,6 +20947,15 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
               return acc;
             }, {}),
           };
+          // H-5: reading-order check — fires INDEPENDENTLY of coverage (a scrambled tag tree keeps ~100%
+          // coverage). WARN-first: surfaced as a check + warning, never 'fail' and never flips _roundTrip.ok
+          // (so an uncalibrated heuristic can't false-fail a legit doc). Once the threshold is calibrated on
+          // real multi-column PDFs + veraPDF, raise to 'fail' and withhold pdfuaid at stamp time (follow-up).
+          if (_orderRatio < 0.90) {
+            const _roStatus = _orderRatio < 0.80 ? 'warn' : 'info';
+            (_roundTrip.checks = _roundTrip.checks || []).push({ rule: 'Reading order preserved in the tagged tree (sequence match)', status: _roStatus, detail: Math.round(_orderRatio * 100) + '% of text is in source order — a low value suggests the tagged-PDF reading order was scrambled (common with multi-column layouts). The PDF/UA-1 claim is NOT order-verified; confirm with a PDF/UA validator.' });
+            (_roundTrip.warnings = _roundTrip.warnings || []).push('Reading-order signal: ' + Math.round(_orderRatio * 100) + '% of the text is in the same order as the source. A low value can mean the tagged-PDF reading order is scrambled (multi-column streams) — verify with a PDF/UA validator before relying on the PDF/UA-1 declaration.');
+          }
           if (_coverage < 0.99) {
             const _msg = 'Text-level verification: ' + _missing.length + ' tokens missing total (' + Math.round(_coverage * 100) + '% coverage). Of those, ' + _normEquivCount + ' differ only in hyphenation/whitespace/case (likely cosmetic) and ' + _residualCount + ' are residual (review). The [Re-run with restoration] action gates on residual count.';
             (_roundTrip.warnings = _roundTrip.warnings || []).push(_msg);
@@ -27735,6 +27794,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     proposeRestyles: proposeRestyles,
     palettePresets: PALETTE_PRESETS,
     checkReadingOrderPreserved: checkReadingOrderPreserved,
+    readingOrderSequenceRatio: readingOrderSequenceRatio,
     restyleBlock: restyleBlock,
     precedingHeadingLevel: precedingHeadingLevel,
     headingOutlineIssue: _headingOutlineIssue,
