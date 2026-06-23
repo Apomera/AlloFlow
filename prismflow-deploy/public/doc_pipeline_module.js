@@ -10958,6 +10958,45 @@ HTML section ${chunkNum}/${chunks.length}:
     return { html: fixed, fixCount };
   };
 
+  // ── fixTableCaptionsFromHeadings: give a caption-less <table> a REAL, descriptive <caption>
+  // inferred from the heading IMMEDIATELY above it. In real documents a data table's title is the
+  // adjacent heading, so this is genuine semantics — not the generic "Data table N" structural
+  // filler. Rendered sr-only so it doesn't visually duplicate the heading, but screen-reader table
+  // navigation (which can jump straight to a table) gets a meaningful accessible name. Conservative:
+  // fires ONLY when nothing but whitespace sits between the heading close and the <table> open (never
+  // a distant section header), and only when the table has no caption yet (idempotent across loop
+  // passes). Pure string splice — inserts the caption node only, rewrites nothing else, so no content
+  // round-trip risk. Context-less tables (no adjacent heading) are LEFT for the AI tier /
+  // fixComplexTables' structural fallback. Runs BEFORE fixComplexTables so a heading-titled complex
+  // table gets its real title instead of the generic placeholder. (2026-06-22) ──
+  const fixTableCaptionsFromHeadings = (htmlContent) => {
+    if (!htmlContent) return { html: htmlContent, fixCount: 0 };
+    let fixCount = 0;
+    // Strip the heading's nested tags but KEEP its entity escaping — the inner HTML is already valid,
+    // escaped character data (e.g. "Cost &amp; Risk"), so it drops straight into <caption> without
+    // re-escaping (re-escaping would double it to "&amp;amp;").
+    const _capText = (innerHtml) => String(innerHtml || '')
+      .replace(/<[^>]+>/g, ' ')        // strip any nested markup in the heading
+      .replace(/&nbsp;/gi, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 180);                  // headings are short — cap pathological lengths
+    // <hN>…</hN> [only whitespace] <table…>  where the table does NOT already open with a <caption>.
+    const fixed = htmlContent.replace(
+      /(<h([1-6])\b[^>]*>)([\s\S]*?)(<\/h\2>)(\s*)(<table\b[^>]*>)(\s*)(?!<caption\b)/gi,
+      (full, hOpen, lvl, headingInner, hClose, ws1, tableOpen, ws2) => {
+        const text = _capText(headingInner);
+        if (!text) return full;        // empty heading → nothing useful to caption with
+        fixCount++;
+        // `full` ends exactly at the table's first-child position (caption must be first child),
+        // so appending the caption here makes it the table's first child.
+        return full + `<caption class="sr-only">${text}</caption>`;
+      }
+    );
+    if (fixCount > 0) warnLog(`[Table Captions] Inferred ${fixCount} table caption(s) from adjacent headings`);
+    return { html: fixed, fixCount };
+  };
+
   // ── fixComplexTables: add headers="..." associations for merged-cell tables (WCAG 1.3.1) ──
   const fixComplexTables = (htmlContent) => {
     if (!htmlContent) return { html: htmlContent, fixCount: 0 };
@@ -11396,6 +11435,9 @@ HTML section ${chunkNum}/${chunks.length}:
     let result = html;
     try { result = fixFormLabels(result).html; } catch (e) { warnLog('[Det WCAG] fixFormLabels failed:', e?.message); }
     try { result = fixDecorativeImages(result).html; } catch (e) { warnLog('[Det WCAG] fixDecorativeImages failed:', e?.message); }
+    // Heading→caption BEFORE fixComplexTables so a heading-titled table gets its real title, not the
+    // generic "Data table N" placeholder; fixComplexTables then only fills caption-less complex tables.
+    try { result = fixTableCaptionsFromHeadings(result).html; } catch (e) { warnLog('[Det WCAG] fixTableCaptionsFromHeadings failed:', e?.message); }
     try { result = fixComplexTables(result).html; } catch (e) { warnLog('[Det WCAG] fixComplexTables failed:', e?.message); }
     // Geometry-aware <th> scope (audit #14): runs EACH loop iteration so a scope-less row header an
     // AI pass re-emits gets scope="row" (not a blanket "col"). Pre-loop stamp at the inline step is
