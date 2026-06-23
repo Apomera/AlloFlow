@@ -113,6 +113,63 @@ describe('ConceptGraph3D.buildScene (pure scene model)', () => {
   });
 });
 
+function chainGraph() {
+  return {
+    version: 'acg/v1',
+    nodes: [
+      { id: 'a', label: 'A', category: 'Bio', x: 0, y: 0, z: 0 },
+      { id: 'b', label: 'B', category: 'Bio', x: 10, y: 0, z: 0 },
+      { id: 'c', label: 'C', category: 'Chem', x: 20, y: 0, z: 0 },
+    ],
+    edges: [
+      { fromId: 'a', toId: 'b', type: 'prerequisite' },
+      { fromId: 'b', toId: 'c', type: 'sequence' },
+    ],
+    layers: [],
+  };
+}
+
+describe('ConceptGraph3D — pure a11y / navigation seams', () => {
+  it('navigateFocus walks teaching order (next/prev/first/last) with clamping', () => {
+    const s = CG3D.buildScene(chainGraph(), { project: false });
+    expect(s.outline.order).toEqual(['a', 'b', 'c']);
+    expect(CG3D.navigateFocus(s, null, 'first')).toBe('a');
+    expect(CG3D.navigateFocus(s, null, 'last')).toBe('c');
+    expect(CG3D.navigateFocus(s, 'a', 'next')).toBe('b');
+    expect(CG3D.navigateFocus(s, 'c', 'next')).toBe('c');   // clamp at end
+    expect(CG3D.navigateFocus(s, 'b', 'prev')).toBe('a');
+    expect(CG3D.navigateFocus(s, 'b', 'neighbor-next')).toBe('a'); // adjacency b = [a, c]
+    expect(CG3D.navigateFocus({ outline: { order: [] } }, null, 'next')).toBe(null);
+  });
+
+  it('describeNodeForSR announces label, strand, connections, and position', () => {
+    const s = CG3D.buildScene(chainGraph(), { project: false });
+    const d = CG3D.describeNodeForSR(s, 'b', null);
+    expect(d).toMatch(/^B,/);
+    expect(d).toMatch(/strand Bio/);
+    expect(d).toMatch(/2 connections/);
+    expect(d).toMatch(/step 2 of 3/);
+    expect(CG3D.describeNodeForSR(s, 'nope', null)).toBe('');
+  });
+
+  it('derivePrereqChain walks prerequisites/sequence backward, cycle-safe', () => {
+    const s = CG3D.buildScene(chainGraph(), { project: false });
+    expect(CG3D.derivePrereqChain(s, 'c').ids).toEqual(['b', 'a']); // c<-b (seq) <-a (prereq)
+    expect(CG3D.derivePrereqChain(s, 'a').ids).toEqual([]);
+    // cycle must not infinite-loop
+    const cyc = CG3D.buildScene({ version: 'acg/v1', nodes: [{ id: 'a', x: 0, y: 0, z: 0 }, { id: 'b', x: 1, y: 0, z: 0 }], edges: [{ fromId: 'a', toId: 'b', type: 'prerequisite' }, { fromId: 'b', toId: 'a', type: 'prerequisite' }], layers: [] }, { project: false });
+    expect(CG3D.derivePrereqChain(cyc, 'a').ids).toEqual(['b']);
+  });
+
+  it('directed links carry an arrowhead (head+dir); associations do not', () => {
+    const g = { version: 'acg/v1', nodes: [{ id: 'a', x: 0, y: 0, z: 0 }, { id: 'b', x: 100, y: 0, z: 0 }, { id: 'c', x: 200, y: 0, z: 0 }], edges: [{ fromId: 'a', toId: 'b', type: 'sequence' }, { fromId: 'a', toId: 'c', type: 'associates' }], layers: [] };
+    const s = CG3D.buildScene(g, { project: false });
+    const seq = s.links.find((l) => l.toId === 'b'), assoc = s.links.find((l) => l.toId === 'c');
+    expect(seq.directed).toBe(true); expect(seq.head).toBeTruthy(); expect(seq.dir).toBeTruthy();
+    expect(assoc.directed).toBe(false); expect(assoc.head).toBe(null);
+  });
+});
+
 describe('ConceptGraph3D — graceful degradation (no WebGL in jsdom)', () => {
   it('isWebGLAvailable() is false under jsdom', () => {
     expect(CG3D.isWebGLAvailable()).toBe(false);

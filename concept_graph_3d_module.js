@@ -102,10 +102,21 @@
     var links = (projected.edges || []).map(function (e) {
       var a = byId[e.fromId], b = byId[e.toId];
       if (!a || !b) return null;
-      var prereq = e.type === 'prerequisite';
+      var ty = e.type || 'associates';
+      var prereq = ty === 'prerequisite';
+      var directed = ty !== 'associates';     // sequence/prerequisite/cause/elaborates have a direction
+      var head = null, dir = null;
+      if (directed) {
+        var dx = b.sx - a.sx, dy = b.sy - a.sy, dz = b.sz - a.sz;
+        var len = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
+        dir = { x: dx / len, y: dy / len, z: dz / len };
+        var back = 9 * (b.size || 1) + 6;     // sit the arrowhead just off the target node's surface
+        head = { x: b.sx - dir.x * back, y: b.sy - dir.y * back, z: b.sz - dir.z * back };
+      }
       return {
-        fromId: e.fromId, toId: e.toId, type: e.type || 'associates',
+        fromId: e.fromId, toId: e.toId, type: ty, directed: directed,
         from: { x: a.sx, y: a.sy, z: a.sz }, to: { x: b.sx, y: b.sy, z: b.sz },
+        head: head, dir: dir,
         color: prereq ? EDGE_PREREQ : EDGE_DEFAULT, dashed: prereq
       };
     }).filter(Boolean);
@@ -131,6 +142,61 @@
 
   function accessibleName(n) {
     return n.label + (n.category ? ' — ' + n.category : '') + (n.type && n.type !== 'node' ? ' (' + n.type + ')' : '');
+  }
+
+  // ── Pure a11y / navigation helpers (operate on the buildScene model; unit-tested) ──
+  function _tr(t, k, fallback) { try { var v = t && t(k); return (v && v !== k) ? v : fallback; } catch (e) { return fallback; } }
+
+  // Move focus across nodes deterministically. action: next|prev|first|last (teaching
+  // order = outline.order) or neighbor-next|neighbor-prev (jump to a connection).
+  function navigateFocus(scene, currentId, action) {
+    var order = (scene && scene.outline && scene.outline.order) || [];
+    if (!order.length) return null;
+    if (action === 'first') return order[0];
+    if (action === 'last') return order[order.length - 1];
+    var i = order.indexOf(currentId);
+    if (action === 'next') return i < 0 ? order[0] : order[Math.min(order.length - 1, i + 1)];
+    if (action === 'prev') return i < 0 ? order[0] : order[Math.max(0, i - 1)];
+    if (action === 'neighbor-next' || action === 'neighbor-prev') {
+      var nb = (scene.adjacency && scene.adjacency[currentId]) || [];
+      if (!nb.length) return currentId || order[0];
+      return action === 'neighbor-next' ? nb[0] : nb[nb.length - 1];
+    }
+    return currentId || order[0];
+  }
+
+  // Screen-reader announcement for a node: label, strand, connection count, and
+  // teaching-order position. t() optional (host i18n; English fallbacks).
+  function describeNodeForSR(scene, id, t) {
+    var n = null, nodes = (scene && scene.nodes) || [];
+    for (var i = 0; i < nodes.length; i++) { if (nodes[i].id === id) { n = nodes[i]; break; } }
+    if (!n) return '';
+    var order = (scene.outline && scene.outline.order) || [];
+    var pos = order.indexOf(id);
+    var conn = ((scene.adjacency && scene.adjacency[id]) || []).length;
+    var parts = [n.label];
+    if (n.category) parts.push(_tr(t, 'cg3d.sr_strand', 'strand') + ' ' + n.category);
+    parts.push(conn + ' ' + _tr(t, 'cg3d.sr_connections', conn === 1 ? 'connection' : 'connections'));
+    if (pos >= 0) parts.push(_tr(t, 'cg3d.sr_step', 'step') + ' ' + (pos + 1) + ' ' + _tr(t, 'cg3d.sr_of', 'of') + ' ' + order.length);
+    return parts.join(', ');
+  }
+
+  // The prerequisite ladder behind a node: walk edges BACKWARD over prerequisite +
+  // sequence ("what must be taught first"). Cycle-safe. Returns {ids, order} excluding
+  // the start node; order = discovery order (closest prerequisite first).
+  function derivePrereqChain(scene, id) {
+    var links = (scene && scene.links) || [];
+    var incoming = {};
+    links.forEach(function (lk) {
+      if (lk.type === 'prerequisite' || lk.type === 'sequence') { (incoming[lk.toId] = incoming[lk.toId] || []).push(lk.fromId); }
+    });
+    var ids = [], seen = {}; seen[id] = true;
+    var queue = [id];
+    while (queue.length) {
+      var cur = queue.shift();
+      (incoming[cur] || []).forEach(function (pid) { if (!seen[pid]) { seen[pid] = true; ids.push(pid); queue.push(pid); } });
+    }
+    return { ids: ids, order: ids.slice() };
   }
 
   // ── Accessible outline DOM (the source of truth across every mode) ──
@@ -329,6 +395,18 @@
       group.add(line);
       if (isSeq) flowMats.push(mat);                         // animate teaching-order flow in tick
       edgeObjs.push({ mat: mat, fromId: lk.fromId, toId: lk.toId, baseOpacity: mat.opacity });
+      // directional arrowhead — edges carry direction (fromId->toId); show it statically
+      if (lk.directed && lk.head && lk.dir) {
+        try {
+          var cone = new THREE.Mesh(new THREE.ConeGeometry(4, 9.6, 12),
+            new THREE.MeshBasicMaterial({ color: new THREE.Color(lk.color), transparent: true, opacity: 0.9 }));
+          cone.position.set(lk.head.x, lk.head.y, lk.head.z);
+          var d = new THREE.Vector3(lk.dir.x, lk.dir.y, lk.dir.z);
+          cone.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), Math.abs(d.y) > 0.9999 ? new THREE.Vector3(0, d.y >= 0 ? 1 : -1, 0) : d);
+          group.add(cone);
+          edgeObjs.push({ mat: cone.material, fromId: lk.fromId, toId: lk.toId, baseOpacity: 0.9 });
+        } catch (e) {}
+      }
     });
 
     // Self-contained orbit with damping (no 2nd CDN dep). `current` eases toward
@@ -361,11 +439,9 @@
       var hits = raycaster.intersectObjects(spheres, false);
       return hits.length ? hits[0].object.userData.nodeId : null;
     }
-    function applyHighlight(id) {
-      var keep = {};
-      if (id) { keep[id] = 1; (scene.adjacency[id] || []).forEach(function (nid) { keep[nid] = 1; }); }
+    function setKeep(keep, hotId) {   // keep: map of kept ids (null = keep all)
       nodeMeshes.forEach(function (m) {
-        var on = !id || keep[m.node.id], isHot = id && m.node.id === id;
+        var on = !keep || keep[m.node.id], isHot = hotId && m.node.id === hotId;
         m.sphere.material.opacity = on ? 1 : 0.16;
         m.sphere.material.emissiveIntensity = isHot ? 1.5 : m.baseEmissive * (on ? 1 : 0.4);
         m.glow.material.opacity = on ? (isHot ? 1 : 0.85) : 0.1;
@@ -373,9 +449,18 @@
         m.label.material.opacity = on ? 1 : 0.1;
       });
       edgeObjs.forEach(function (eo) {
-        var inc = !id || eo.fromId === id || eo.toId === id;
+        var inc = !keep || eo.fromId === hotId || eo.toId === hotId || (keep[eo.fromId] && keep[eo.toId]);
         eo.mat.opacity = inc ? eo.baseOpacity : 0.04;
       });
+    }
+    function applyHighlight(id) {
+      var keep = null;
+      if (id) { keep = {}; keep[id] = 1; (scene.adjacency[id] || []).forEach(function (nid) { keep[nid] = 1; }); }
+      setKeep(keep, id);
+    }
+    function highlightChain(ids, hotId) {   // path/prereq highlight: keep an explicit set
+      var keep = {}; (ids || []).forEach(function (i) { keep[i] = 1; });
+      setKeep(keep, hotId);
     }
     var tip = document.createElement('div');
     tip.style.cssText = 'position:absolute;pointer-events:none;z-index:6;background:rgba(2,6,23,0.92);color:#e2e8f0;border:1px solid #334155;border-radius:8px;padding:6px 10px;font-size:12px;max-width:240px;display:none;box-shadow:0 6px 18px rgba(0,0,0,0.45);';
@@ -420,6 +505,13 @@
           b.onclick = function () { var tn = nodeById3d[nid].node; tTarget.set(tn.sx, tn.sy, tn.sz); selectNode(nid); };
           panel.appendChild(b);
         });
+      }
+      var chain = derivePrereqChain(scene, selectedId);
+      if (chain.ids.length) {
+        var pb = document.createElement('button'); pb.textContent = '⛓ ' + (t('cg3d.show_prereqs') || 'Show prerequisites') + ' (' + chain.ids.length + ')';
+        pb.style.cssText = 'margin-top:8px;width:100%;padding:6px;border:1px solid #d97706;background:#3b2a12;color:#fde68a;border-radius:7px;cursor:pointer;font-weight:700;';
+        pb.onclick = function () { highlightChain([selectedId].concat(chain.ids), selectedId); };
+        panel.appendChild(pb);
       }
       if (typeof opts.onOpenNode === 'function') {
         var jb = document.createElement('button'); jb.textContent = '↗ ' + (t('cg3d.open') || 'Open');
@@ -515,13 +607,52 @@
       }
     } catch (e) { composer = null; }
 
+    // ── Keyboard + screen-reader operability of the 3D canvas itself ──
+    el.setAttribute('tabindex', '0');
+    el.setAttribute('role', 'application');
+    el.setAttribute('aria-roledescription', _tr(t, 'cg3d.canvas_role', 'Interactive 3D concept map'));
+    el.setAttribute('aria-label', _tr(t, 'cg3d.canvas_label', '3D concept map. Use arrow keys to move through lessons in teaching order.'));
+    var instrId = 'cg3d-instr-' + (window.__cg3dSeq = (window.__cg3dSeq || 0) + 1);
+    var instr = document.createElement('p'); instr.id = instrId; instr.style.cssText = SR_ONLY;
+    instr.textContent = _tr(t, 'cg3d.canvas_instructions', 'Arrow keys move through lessons in teaching order. N jumps to a connection. Enter opens the focused lesson. Escape deselects.');
+    var live = document.createElement('div'); live.setAttribute('aria-live', 'polite'); live.setAttribute('role', 'status'); live.style.cssText = SR_ONLY;
+    holder.appendChild(instr); holder.appendChild(live);
+    el.setAttribute('aria-describedby', instrId);
+    // visual chrome is conveyed via the live region + the linear outline — hide from AT to avoid double-speak
+    [legend, panel, tip, resetBtn].forEach(function (nd) { try { nd.setAttribute('aria-hidden', 'true'); } catch (e) {} });
+    var kbFocusId = null;
+    function kbFocus(id) {
+      if (!id || !nodeById3d[id]) return;
+      kbFocusId = id; var n = nodeById3d[id].node;
+      selectNode(id); tTarget.set(n.sx, n.sy, n.sz);
+      try { if (live) live.textContent = describeNodeForSR(scene, id, t); } catch (e) {}
+    }
+    function onKeyDown(e) {
+      var k = e.key, act = null;
+      if (k === 'ArrowRight' || k === 'ArrowDown') act = 'next';
+      else if (k === 'ArrowLeft' || k === 'ArrowUp') act = 'prev';
+      else if (k === 'Home') act = 'first';
+      else if (k === 'End') act = 'last';
+      else if (k === 'n' || k === 'N') act = 'neighbor-next';
+      else if (k === 'Enter') { if (kbFocusId && typeof opts.onOpenNode === 'function') { e.preventDefault(); opts.onOpenNode(kbFocusId); } return; }
+      else if (k === 'Escape') { kbFocusId = null; selectNode(null); if (live) live.textContent = ''; return; }
+      else return;
+      e.preventDefault();
+      var nx = navigateFocus(scene, kbFocusId, act);
+      if (nx) kbFocus(nx);
+    }
+    el.addEventListener('keydown', onKeyDown);
+
     state.cleanup.push(function () {
       el.removeEventListener('pointerdown', onDown); window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp); el.removeEventListener('wheel', onWheel);
+      el.removeEventListener('keydown', onKeyDown);
       try { if (tip.parentNode) tip.parentNode.removeChild(tip); } catch (e) {}
       try { if (legend.parentNode) legend.parentNode.removeChild(legend); } catch (e) {}
       try { if (panel.parentNode) panel.parentNode.removeChild(panel); } catch (e) {}
       try { if (resetBtn.parentNode) resetBtn.parentNode.removeChild(resetBtn); } catch (e) {}
+      try { if (instr.parentNode) instr.parentNode.removeChild(instr); } catch (e) {}
+      try { if (live.parentNode) live.parentNode.removeChild(live); } catch (e) {}
       try { if (composer && composer.dispose) composer.dispose(); } catch (e) {}
     });
 
@@ -604,7 +735,8 @@
     }
 
     var holder = document.createElement('div');
-    holder.setAttribute('aria-hidden', 'true');
+    // NOT aria-hidden: the canvas is a focusable role=application widget with its own
+    // aria-live announcer; decorative chrome inside is individually aria-hidden in mountGL.
     holder.style.cssText = 'position:absolute;inset:0;';
     container.appendChild(holder);
 
@@ -657,6 +789,9 @@
     version: VERSION,
     PALETTE: PALETTE,
     buildScene: buildScene,
+    navigateFocus: navigateFocus,
+    describeNodeForSR: describeNodeForSR,
+    derivePrereqChain: derivePrereqChain,
     isWebGLAvailable: isWebGLAvailable,
     loadThree: loadThree,
     render: render,
