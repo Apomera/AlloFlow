@@ -53,3 +53,34 @@ describe('the inserted "Accessibility Statement" no longer asserts certified com
     expect(audit).toMatch(/not an independently validated WCAG, ADA, Section 508, or PDF\/UA conformance audit/);
   });
 });
+
+describe('(2026-06-22) Content Audit Score cards read before→after, not reversed', () => {
+  // The score block showed POST(90) → PRE(0): post on the left, pre on the right — backwards for a
+  // before→after progression. Cards now read PRE → POST (before on the left, the result emphasized
+  // on the right), keeping the → arrow (flipping it would be wrong).
+  it('Pre-Remediation card renders BEFORE the Post-Remediation card', () => {
+    const pre = dp.indexOf('text-transform:uppercase">Pre-Remediation');
+    const post = dp.indexOf('text-transform:uppercase">Post-Remediation');
+    expect(pre).toBeGreaterThan(-1);
+    expect(post).toBeGreaterThan(-1);
+    expect(pre).toBeLessThan(post);
+  });
+  it('keeps the → arrow (not reversed) and marks it aria-hidden', () => {
+    expect(dp).toContain('color:#475569" aria-hidden="true">→</div>');
+    // the score block's before→after row has no reversed arrow
+    expect(dp).not.toMatch(/font-size:24px;color:#64748b">→/);
+  });
+});
+
+describe('(2026-06-22) marginal #64748b footer/meta hardened to a comfortable AA shade', () => {
+  // #64748b on white is 4.76:1 — technically passes AA but borderline (and the export footer is injected
+  // AFTER the contrast pass, so it never got checked). The distributed-doc footer + the report's own meta
+  // line are bumped to #475569 (~7.6:1) so they're no longer borderline / re-flagged.
+  it('the export remediation footer uses #475569, not the borderline #64748b', () => {
+    expect(dp).toMatch(/remediationFooter = `<footer role="contentinfo"[^`]*color:#475569/);
+    expect(dp).not.toMatch(/remediationFooter = `<footer role="contentinfo"[^`]*color:#64748b/);
+  });
+  it('the conformance-report Document meta line uses #475569', () => {
+    expect(dp).toMatch(/<p style="color:#475569;font-size:13px">Document:/);
+  });
+});

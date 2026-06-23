@@ -8756,7 +8756,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
 
     // ── Inject accessibility remediation footer into the output ──
     const axeViolationCount = curAxeResults ? curAxeResults.totalViolations : 0;
-    const remediationFooter = `<footer role="contentinfo" style="margin-top:48px;padding:16px 20px;border-top:2px solid ${batchDocStyle.accentColor || '#6366f1'};font-family:system-ui,sans-serif;font-size:11px;color:#64748b;page-break-inside:avoid">` +
+    const remediationFooter = `<footer role="contentinfo" style="margin-top:48px;padding:16px 20px;border-top:2px solid ${batchDocStyle.accentColor || '#6366f1'};font-family:system-ui,sans-serif;font-size:11px;color:#475569;page-break-inside:avoid">` +
       `<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">` +
       `<span>\u267f Accessibility remediated by AlloFlow \u2014 Score: ${finalScore || '?'}/100 | ${axeViolationCount} axe violation${axeViolationCount !== 1 ? 's' : ''} | ${autoFixPasses} fix pass${autoFixPasses !== 1 ? 'es' : ''}</span>` +
       `<span>${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>` +
@@ -16857,7 +16857,7 @@ tr { page-break-inside: avoid; }
 <a href="#audit-content" class="sr-only" style="position:absolute;left:-9999px">Skip to audit results</a>
 <main id="audit-content" role="main">
 <h1>Accessibility Audit Report</h1>
-<p style="color:#64748b;font-size:13px">Document: <strong>${esc(fileName)}</strong><br>Date: ${date}<br>Standards: WCAG 2.1 Level AA &bull; ADA Title II &bull; Section 508 &bull; EN 301 549<br>Methodology: multi-pass AI self-consistency review + axe-core (Deque) automated verification<br>Tool: AlloFlow Document Accessibility Pipeline</p>`;
+<p style="color:#475569;font-size:13px">Document: <strong>${esc(fileName)}</strong><br>Date: ${date}<br>Standards: WCAG 2.1 Level AA &bull; ADA Title II &bull; Section 508 &bull; EN 301 549<br>Methodology: multi-pass AI self-consistency review + axe-core (Deque) automated verification<br>Tool: AlloFlow Document Accessibility Pipeline</p>`;
 
     // Score
     const score = isBeforeAfter ? (d.after?.score ?? d.afterScore ?? '?') : (d.score ?? '?');
@@ -17171,16 +17171,16 @@ tr { page-break-inside: avoid; }
       <h2 style="font-size:18px;margin-top:32px;color:#0f172a;border-bottom:2px solid #e2e8f0;padding-bottom:6px">Content Audit Score <span style="font-size:12px;font-weight:600;color:#64748b">(HTML reconstruction — not the tagged-PDF bytes)</span></h2>
       <p style="font-size:11px;color:#64748b;margin:0 0 8px;font-style:italic">This score measures the remediated HTML/text content (AI rubric + axe-core run on a reconstruction). It is NOT a PDF/UA conformance verdict for the tagged PDF you export — see the PDF/UA Validation section for that.</p>
       <div style="display:flex;gap:16px;margin-bottom:12px;align-items:center">
+        ${fr.beforeScore != null ? `<div style="flex:0 0 auto;text-align:center;padding:12px 20px;background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0">
+          <div style="font-size:24px;font-weight:700;color:#475569">${fr.beforeScore}</div>
+          <div style="font-size:11px;color:#475569;font-weight:600;text-transform:uppercase">Pre-Remediation</div>
+        </div>
+        <div style="font-size:24px;color:#475569" aria-hidden="true">→</div>` : ''}
         <div style="flex:0 0 auto;text-align:center;padding:16px 24px;background:#f1f5f9;border-radius:12px;border:2px solid #cbd5e1">
           <div style="font-size:36px;font-weight:900;color:${(fr.afterScore || 0) >= 80 ? '#16a34a' : (fr.afterScore || 0) >= 50 ? '#d97706' : '#dc2626'}">${fr.afterScore ?? '?'}</div>
           <div style="font-size:11px;color:#475569;font-weight:600;text-transform:uppercase">Post-Remediation</div>
         </div>
-        ${fr.beforeScore != null ? `<div style="font-size:24px;color:#64748b">→</div>
-        <div style="flex:0 0 auto;text-align:center;padding:12px 20px;background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0">
-          <div style="font-size:24px;font-weight:700;color:#475569">${fr.beforeScore}</div>
-          <div style="font-size:11px;color:#475569;font-weight:600;text-transform:uppercase">Pre-Remediation</div>
-        </div>
-        <div style="font-size:14px;color:${(fr.afterScore - fr.beforeScore) >= 0 ? '#16a34a' : '#dc2626'};font-weight:700">${(fr.afterScore - fr.beforeScore) >= 0 ? '+' : ''}${fr.afterScore - fr.beforeScore} points</div>` : ''}
+        ${fr.beforeScore != null ? `<div style="font-size:14px;color:${(fr.afterScore - fr.beforeScore) >= 0 ? '#16a34a' : '#dc2626'};font-weight:700">${(fr.afterScore - fr.beforeScore) >= 0 ? '+' : ''}${fr.afterScore - fr.beforeScore} points</div>` : ''}
       </div>
       ${blendOk ? `<p style="font-size:12px;color:#475569;margin:0">Headline is the <strong>weakest-layer score</strong> — the LOWER (more conservative) of the AI rubric (${aiOnly}) and the deterministic engine (axe-core / IBM Equal Access, ${axeOnly}). The weakest layer governs, so neither engine's high score can mask the other's low one.</p>` : '<p style="font-size:12px;color:#475569;margin:0">Score derived from the AI rubric only (the deterministic engine did not return a score for these bytes).</p>'}
     `;
