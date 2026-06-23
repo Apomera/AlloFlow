@@ -353,6 +353,12 @@
     function resize() { var w = container.clientWidth || 600, h = container.clientHeight || 420; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
     resize();
     var ro = null; try { ro = new ResizeObserver(resize); ro.observe(container); } catch (e) {}
+    // the flex container may not have its final size on the first frame (canvas
+    // renders tiny / in a corner); re-measure after layout settles + on fullscreen.
+    eng.resize = function () { if (!eng.disposed) resize(); };
+    setTimeout(function () { if (!eng.disposed) resize(); }, 60);
+    setTimeout(function () { if (!eng.disposed) resize(); }, 250);
+    try { requestAnimationFrame(function () { if (!eng.disposed) resize(); }); } catch (e) {}
 
     var t = 0, raf = null;
     function loop() { if (eng.disposed) return; raf = requestAnimationFrame(loop); t += 0.016; magmaGlow.intensity = 1.5 + Math.sin(t * 2) * 0.3; try { updateEruption(); } catch (e) {} if (controls) controls.update(); renderer.render(scene, camera); }
@@ -388,7 +394,10 @@
     ],
     render: function (ctx) {
       var React = ctx.React, h = React.createElement;
-      var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
+      // Robust: fall back to the English default whenever the host's t() returns
+      // nothing for a key (geology's stem.geology.* keys aren't in the lang packs
+      // yet, and ctx.t returns undefined for a miss — which showed as "undefined").
+      var t = function (k, fb) { var v; try { v = ctx.t ? ctx.t(k, fb) : null; } catch (e) {} return (v == null || v === '' || v === k) ? (fb != null ? fb : k) : v; };
       var isDark = ctx.isDark;
       var d = (ctx.toolData && ctx.toolData.geologyExplorer) || {};
       var setStemLabTool = ctx.setStemLabTool;
@@ -398,6 +407,8 @@
 
       // ── hooks (all unconditional) ──
       var containerRef = React.useRef(null);
+      var fsRef = React.useRef(null);
+      var fss = React.useState(false); var isFs = fss[0], setIsFs = fss[1];
       var identifiedRef = React.useRef(d.identified || {}); identifiedRef.current = d.identified || {};
       var st = React.useState(false); var webglError = st[0], setWebglError = st[1];
       var ss = React.useState(null); var selected = ss[0], setSelected = ss[1];
@@ -472,6 +483,19 @@
         eruptTimer.current = setTimeout(tick, 1500);
       }
       React.useEffect(function () { return function () { if (histTimer.current) clearTimeout(histTimer.current); if (eruptTimer.current) clearTimeout(eruptTimer.current); }; }, []);
+      function toggleFullscreen() {
+        try {
+          var el = fsRef.current; if (!el) return;
+          var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+          if (!fsEl) { (el.requestFullscreen || el.webkitRequestFullscreen || function () {}).call(el); }
+          else { (document.exitFullscreen || document.webkitExitFullscreen || function () {}).call(document); }
+        } catch (e) {}
+      }
+      React.useEffect(function () {
+        function onFs() { setIsFs(!!(document.fullscreenElement || document.webkitFullscreenElement)); try { if (window[ENGINE_KEY] && window[ENGINE_KEY].resize) setTimeout(window[ENGINE_KEY].resize, 80); } catch (e) {} }
+        try { document.addEventListener('fullscreenchange', onFs); document.addEventListener('webkitfullscreenchange', onFs); } catch (e) {}
+        return function () { try { document.removeEventListener('fullscreenchange', onFs); document.removeEventListener('webkitfullscreenchange', onFs); } catch (e) {} };
+      }, []);
 
       React.useEffect(function () {
         if (!threeReady || webglError || !containerRef.current || window[ENGINE_KEY]) return;
@@ -681,7 +705,9 @@
               h('div', { className: 'text-2xl mb-2 animate-pulse' }, '🔷'),
               h('div', { className: 'text-sm ' + muted }, t('stem.geology.loading3d', 'Loading the 3D engine…'))));
         }
-        return h('div', { ref: containerRef, className: 'rounded-xl overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300'), style: { height: 'min(58vh, 460px)', minHeight: 320, background: '#060913', cursor: excavate ? 'crosshair' : 'grab' }, role: 'img', 'aria-label': 'Interactive 3D voxel cross-section of the crust. Use the rock list below for a non-visual version.' });
+        return h('div', { ref: fsRef, className: 'relative rounded-xl overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+          h('div', { ref: containerRef, style: { height: isFs ? '100vh' : 'min(58vh, 460px)', minHeight: 320, background: '#060913', cursor: excavate ? 'crosshair' : 'grab' }, role: 'img', 'aria-label': 'Interactive 3D voxel cross-section of the crust. Use the rock list below for a non-visual version.' }),
+          h('button', { type: 'button', onClick: toggleFullscreen, title: isFs ? t('stem.geology.exit_fullscreen', 'Exit fullscreen') : t('stem.geology.fullscreen', 'Fullscreen'), 'aria-label': isFs ? 'Exit fullscreen 3D view' : 'Fullscreen 3D view', className: 'absolute top-2 right-2 z-10 transition-colors active:scale-[0.97] text-base leading-none px-2 py-1.5 rounded-lg border ' + (isDark ? 'bg-slate-900/80 border-slate-600 text-slate-100 hover:bg-slate-800' : 'bg-white/85 border-slate-300 text-slate-700 hover:bg-white') }, isFs ? '✕' : '⛶'));
       }
 
       var btn = 'transition-colors active:scale-[0.97] text-xs font-bold px-3 py-2 rounded-lg border ';
