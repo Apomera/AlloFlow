@@ -20768,6 +20768,40 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     return themed;
   };
 
+  // proposePaletteFromIntent(intent) — S2 slice-3: the AI-PROPOSES half. Given a user TASTE intent (a mood
+  // like "warm and calm", a brand hex, "more energetic"), ask Gemini for a semantic-token palette. The model
+  // proposes INTENT only (hexes for the mood); it NEVER authors CSS, and we NEVER trust its hexes to be
+  // accessible — the downstream clamp (buildPaletteCss/applyPaletteToHtml) GUARANTEES WCAG regardless of what
+  // it returns. FERPA: only the short intent string is sent — NO document content. Returns { tokens } or null
+  // (caller falls back to the vetted presets — graceful under a Canvas throttle). Validates every hex.
+  const proposePaletteFromIntent = async (intent) => {
+    if (!callGemini || !intent || !String(intent).trim()) return null;
+    const _intent = String(intent).trim().slice(0, 200);
+    const TOKENS = ['bg', 'surface', 'text', 'heading', 'link', 'accent', 'border', 'headerBg', 'headerText', 'calloutBg', 'calloutText'];
+    const prompt = 'Propose a cohesive DOCUMENT colour palette for this mood/brand: "' + _intent + '".\n'
+      + 'Return ONLY a JSON object with these keys, each a "#rrggbb" hex string: ' + TOKENS.join(', ') + '.\n'
+      + '- bg = page background (usually light unless the mood is clearly dark). surface = a subtle card/section background.\n'
+      + '- headerBg/calloutBg = accent surfaces. text/heading/link/accent/headerText/calloutText = inks. border = a divider colour.\n'
+      + 'Choose tasteful colours for the mood — do NOT worry about contrast; accessibility is enforced automatically afterward. No prose, no markdown — JSON only.';
+    let resp;
+    try { resp = await callGemini(prompt); } catch (_) { return null; }
+    let parsed = null;
+    try { parsed = JSON.parse(stripFence(String(resp || ''))); } catch (_) { return null; }
+    if (!parsed || typeof parsed !== 'object') return null;
+    const _hex6 = /^#[0-9a-f]{6}$/;
+    const tokens = {};
+    for (let i = 0; i < TOKENS.length; i++) {
+      const k = TOKENS[i];
+      let v = parsed[k];
+      if (typeof v !== 'string') continue;
+      v = v.trim().toLowerCase();
+      if (/^#[0-9a-f]{3}$/.test(v)) v = '#' + v[1] + v[1] + v[2] + v[2] + v[3] + v[3];
+      if (_hex6.test(v)) tokens[k] = v;
+    }
+    if (!tokens.bg || !tokens.text) return null; // need at least a background + ink to be usable
+    return { tokens: tokens };
+  };
+
   // ── PDF Preview: Update iframe content ──
   // Accept overrides to avoid stale closure — state may not have updated yet when called from setTimeout
   // ── Word-like drag-resize for preview images (2026-06-11, maintainer ask) ──
@@ -27300,6 +27334,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     clampPaletteContrast: clampPaletteContrast,
     buildPaletteCss: buildPaletteCss,
     applyPaletteToHtml: applyPaletteToHtml,
+    proposePaletteFromIntent: proposePaletteFromIntent,
     palettePresets: PALETTE_PRESETS,
     runPdfAccessibilityAudit: _wrapAsync(runPdfAccessibilityAudit),
     auditOutputAccessibility: _wrapAsync(auditOutputAccessibility),

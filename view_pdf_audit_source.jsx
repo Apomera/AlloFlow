@@ -1937,6 +1937,7 @@ function PdfAuditView(props) {
   const _paletteSnapshotRef = useRef(null);                     // pre-palette accessibleHtml, for revert
   const [_appliedPalette, setAppliedPalette] = useState(null);  // { id, name, worst, allPass }
   const [_paletteBusy, setPaletteBusy] = useState(false);
+  const [_paletteIntent, setPaletteIntent] = useState('');      // slice-3: AI palette intent (mood/brand text)
   const runVeraPdfValidation = (bytes) => new Promise((resolve, reject) => {
     let win = null;
     try { win = window.open(VERAPDF_VALIDATOR_URL, 'alloflow-verapdf', 'width=480,height=380'); } catch (e) {}
@@ -2943,6 +2944,22 @@ function PdfAuditView(props) {
       }
     } catch (e) { addToast((t('pdf_audit.palette.failed') || 'Palette apply failed:') + ' ' + ((e && e.message) || 'unknown'), 'error'); }
     setPaletteBusy(false);
+  };
+  // S2 slice-3: ask the AI for a palette from a taste intent (mood/brand), then run it through the SAME
+  // deterministic clamp→apply→re-audit as the presets — so the AI only contributes TASTE; accessibility is
+  // still guaranteed. FERPA: only the intent string is sent (proposePaletteFromIntent sends no doc content).
+  // Graceful under throttle: a null result falls back to "pick a preset" (contrast is guaranteed either way).
+  const _suggestPalette = async () => {
+    const intent = String(_paletteIntent || '').trim();
+    if (!intent || _paletteBusy) return;
+    if (!_docPipeline || typeof _docPipeline.proposePaletteFromIntent !== 'function') { addToast(t('pdf_audit.palette.unavailable') || 'Palette tools are still loading — try again in a moment.', 'info'); return; }
+    setPaletteBusy(true);
+    addToast((t('pdf_audit.palette.ai_asking') || '✨ Asking the AI for a palette:') + ' "' + intent + '"…', 'info');
+    let proposed = null;
+    try { proposed = await _docPipeline.proposePaletteFromIntent(intent); } catch (_) {}
+    setPaletteBusy(false); // _applyPalette manages its own busy flag
+    if (!proposed || !proposed.tokens) { addToast(t('pdf_audit.palette.ai_failed') || 'The AI couldn’t suggest a palette right now (it may be busy) — pick a preset above; contrast is guaranteed either way.', 'info'); return; }
+    await _applyPalette({ id: 'ai:' + intent.slice(0, 24), name: 'AI: ' + intent.slice(0, 24), tokens: proposed.tokens });
   };
   const _revertPalette = async () => {
     const snap = _paletteSnapshotRef.current;
@@ -9799,7 +9816,16 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 <button onClick={_revertPalette} disabled={_paletteBusy} className={'px-2.5 py-1 rounded-full text-[11px] font-bold border border-slate-300 bg-white text-slate-600 hover:bg-slate-100 ' + (_paletteBusy ? 'opacity-50 cursor-wait' : '')} title={t('pdf_audit.palette.revert_title') || 'Restore the original colours'}>↩ {t('pdf_audit.palette.revert') || 'Revert'}</button>
                               )}
                             </div>
-                            <p className="text-[10px] text-slate-400 italic">{t('pdf_audit.palette.note') || 'Deterministic — no AI, so it works even when the AI service is busy. AI-suggested palettes are coming next.'}</p>
+                            {_docPipeline && typeof _docPipeline.proposePaletteFromIntent === 'function' && (
+                              <form className="flex gap-1.5 items-center" onSubmit={(e) => { e.preventDefault(); _suggestPalette(); }}>
+                                <input type="text" value={_paletteIntent} onChange={(e) => setPaletteIntent(e.target.value)} disabled={_paletteBusy}
+                                  placeholder={t('pdf_audit.palette.ai_placeholder') || 'Or describe a mood / brand colour — e.g. "warm and calm", "#0d9488"'}
+                                  aria-label={t('pdf_audit.palette.ai_aria') || 'Describe a palette for the AI to suggest (contrast is still guaranteed)'}
+                                  className="flex-1 min-w-0 px-2 py-1 text-[11px] border border-violet-300 rounded-lg focus:ring-2 focus:ring-violet-400" />
+                                <button type="submit" disabled={_paletteBusy || !String(_paletteIntent || '').trim()} className={'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-violet-600 text-white shrink-0 ' + ((_paletteBusy || !String(_paletteIntent || '').trim()) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-violet-700')} title={t('pdf_audit.palette.ai_btn_title') || 'The AI suggests colours for the mood; we still clamp them to meet WCAG before applying.'}>✨ {t('pdf_audit.palette.ai_btn') || 'Suggest'}</button>
+                              </form>
+                            )}
+                            <p className="text-[10px] text-slate-400 italic">{t('pdf_audit.palette.note') || 'The AI contributes taste only — every colour is still clamped to meet WCAG before it is applied. Presets work with no AI at all, even when the AI service is busy.'}</p>
                           </div>
                         </details>
                       )}
