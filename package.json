@@ -58,6 +58,7 @@
     "verify:stale": "node dev-tools/i18n/check_lang_staleness.cjs",
     "i18n:feedback": "node dev-tools/i18n/ingest_translation_feedback.cjs",
     "i18n:bless": "node dev-tools/i18n/bless_lang_sources.cjs",
+    "i18n:merge-stale": "node dev-tools/i18n/merge_stale_translations.cjs",
     "verify:iife-lazy": "node dev-tools/check_iife_lazy_lookup.cjs",
     "verify:dashes": "node dev-tools/check_em_en_dashes.cjs",
     "verify:security": "node dev-tools/check_secrets.cjs && node dev-tools/check_cors_strict.cjs && node dev-tools/check_xss_surface.cjs && node dev-tools/check_eval.cjs && node dev-tools/check_npm_audit.cjs && node dev-tools/check_lti_surface.cjs",

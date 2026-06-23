@@ -29,10 +29,23 @@ npm run i18n:bless           # refuses to clobber an existing baseline
 npm run verify:stale         # report; writes lang_staleness/<lang>.json + _summary.json
 #   add --gate to make it exit 1 (for CI), --quiet for a one-line summary
 
-# 3. After you re-translate the flagged keys, clear just those (per-key, so unrelated
-#    flags and other packs' state are untouched):
+# 3. Re-translate the flagged keys (the companion to merge_missing_translations.cjs;
+#    REPLACES stale translations rather than filling blanks). Dry-run by default:
+npm run i18n:merge-stale                        # preview: what would change, in which packs
+GEMINI_API_KEY=... npm run i18n:merge-stale -- --apply   # actually write (with *.bak.stale backups)
+#    Native-review-hold packs (lingala, acholi, marshallese, chin_falam/hakha, karen) are
+#    SKIPPED by default and reported for a human; --include-held overrides. A placeholder
+#    guard refuses any translation that drops/adds a ${slot}.
+
+# 4. After review, clear the keys you re-translated (per-key, so unrelated flags and
+#    other packs' state are untouched). merge-stale --bless auto-clears keys that end
+#    up stale in zero packs; otherwise do it explicitly:
 node dev-tools/i18n/bless_lang_sources.cjs --key common.foo --key alerts.bar
 ```
+
+`merge_stale_translations.cjs` deliberately defaults to a dry run and never auto-blesses
+(replacing a stale string with fresh AI output doesn't prove it's correct) — re-blessing
+stays a deliberate act after review.
 
 `_summary.json.changedKeys` is the list of English strings that moved since baseline;
 each `lang_staleness/<lang>.json` has a `stale: { key: currentEnglish }` block in the

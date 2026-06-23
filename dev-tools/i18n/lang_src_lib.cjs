@@ -101,7 +101,49 @@ function loadPack(slug) {
   }
 }
 
+// The committed English baseline snapshot ({ key: hash }), or null if not yet blessed.
+function loadBaseline() {
+  if (!fs.existsSync(BASELINE_PATH)) return null;
+  return JSON.parse(fs.readFileSync(BASELINE_PATH, 'utf8'));
+}
+
+// Single source of truth for "what is stale". Both check_lang_staleness.cjs and
+// merge_stale_translations.cjs use this so their notion of staleness can't drift.
+//   changedKeys : English keys whose wording changed since they were blessed
+//   newKeys     : source keys absent from the baseline (added since → gap-report territory, not stale)
+//   perPack     : { slug: { key: currentEnglish } } — packs that hold a translation predating the change
+//   byKey       : { key: [slug,…] } — which packs are stale for each changed key
+//   parseErrors : [slug,…] packs that didn't parse (check_lang_json owns that)
+function computeStaleness(opts) {
+  opts = opts || {};
+  const baseline = opts.baseline || loadBaseline() || {};
+  const source = opts.source || loadSourceStrings();
+  const slugs = opts.slugs || getLangSlugs();
+  const changedKeys = [], newKeys = [];
+  for (const k of Object.keys(source)) {
+    if (!(k in baseline)) { newKeys.push(k); continue; }
+    if (baseline[k] !== hashEn(source[k])) changedKeys.push(k);
+  }
+  const changedSet = new Set(changedKeys);
+  const perPack = {}, byKey = {}, parseErrors = [];
+  for (const slug of slugs) {
+    const pack = loadPack(slug);
+    if (!pack) { parseErrors.push(slug); continue; }
+    const stale = {};
+    for (const k of changedSet) {
+      const pv = pack[k];
+      if (pv === undefined) continue;                 // missing → gap report's job
+      if (norm(pv) === norm(source[k])) continue;     // still English (passthrough) → gap report's job
+      stale[k] = source[k];                           // real translation against OLD English → STALE
+      (byKey[k] = byKey[k] || []).push(slug);
+    }
+    if (Object.keys(stale).length) perPack[slug] = stale;
+  }
+  return { changedKeys: changedKeys.sort(), newKeys, perPack, byKey, parseErrors };
+}
+
 module.exports = {
   ROOT, UI_STRINGS, HELP_STRINGS, LANG_DIR, BASELINE_PATH, STALE_DIR, EXCLUDE,
   flatten, norm, hashEn, loadUiStrings, loadHelpStrings, loadSourceStrings, getLangSlugs, loadPack,
+  loadBaseline, computeStaleness,
 };

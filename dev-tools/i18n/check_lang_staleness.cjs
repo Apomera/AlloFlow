@@ -36,33 +36,17 @@ if (!fs.existsSync(L.BASELINE_PATH)) {
 }
 
 const baseline = JSON.parse(fs.readFileSync(L.BASELINE_PATH, 'utf8'));
-const source = L.loadSourceStrings();
-
-// English keys whose wording changed since they were blessed (and brand-new, never-blessed keys).
-const changed = [];   // existed in baseline, hash differs now
-const newKeys = [];   // in source but not in baseline (added since baseline → gap-report territory)
-for (const k of Object.keys(source)) {
-  if (!(k in baseline)) { newKeys.push(k); continue; }
-  if (baseline[k] !== L.hashEn(source[k])) changed.push(k);
-}
-const changedSet = new Set(changed);
+const slugs = L.getLangSlugs();
+const { changedKeys: changed, newKeys, perPack } = L.computeStaleness({ baseline, slugs });
 
 fs.mkdirSync(L.STALE_DIR, { recursive: true });
 
-const slugs = L.getLangSlugs();
+// Write a per-pack report for every pack (including the clean ones), matching the
+// gap-report convention so a worklist file always exists for each slug.
 const summary = [];
 let totalStale = 0;
-
 for (const slug of slugs) {
-  const pack = L.loadPack(slug);
-  if (!pack) { summary.push({ slug, error: 'parse' }); continue; }
-  const stale = {};
-  for (const k of changedSet) {
-    const pv = pack[k];
-    if (pv === undefined) continue;                 // missing → gap report's job
-    if (L.norm(pv) === L.norm(source[k])) continue; // still English (passthrough) → gap report's job
-    stale[k] = source[k];                           // has a real translation against OLD English → STALE
-  }
+  const stale = perPack[slug] || {};
   const n = Object.keys(stale).length;
   totalStale += n;
   fs.writeFileSync(
