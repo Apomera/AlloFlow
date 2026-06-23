@@ -96,12 +96,14 @@ describe('wiring: the drag box flows into the proven bounded-apply path (no new 
     expect(src).toMatch(/const hits = _elementsInBox\(live, box\)/);
     expect(src).toMatch(/const el = _dominantBlock\(hits\)/);
   });
-  it('_runRegionSelect bridges the LIVE element to the STORED source by anchor (so the splice can match)', () => {
+  it('_runRegionSelect bridges the LIVE element to the STORED source by POSITION, refusing on ambiguity', () => {
     const h = src.slice(src.indexOf('const _runRegionSelect = async'), src.indexOf('_regionHandlerRef.current = _runRegionSelect'));
     expect(h).toMatch(/new DOMParser\(\)\.parseFromString\(pdfFixResult\.accessibleHtml, 'text\/html'\)/);
-    expect(h).toMatch(/const pick = sameTag \|\| found/);          // prefer the same-tag block
-    expect(h).toMatch(/\['__region__'\]: \{ original: original/);   // opens the region editor
-    expect(h).not.toMatch(/processExpertCommand/);                  // it only SELECTS — the bounded apply is the shared path
+    expect(h).toMatch(/const liveIdx = liveBlocks\.indexOf\(el\)/);          // bridge by document-order position
+    expect(h).toMatch(/offBlocks\.length === liveBlocks\.length/);          // positional only when the lists line up
+    expect(h).toMatch(/pool\.length > 1.*pdf_audit\.region\.ambiguous/s);   // refuse on ambiguity, don't guess the first
+    expect(h).toMatch(/\['__region__'\]: \{ original: original/);           // opens the region editor
+    expect(h).not.toMatch(/processExpertCommand/);                          // it only SELECTS — the bounded apply is the shared path
   });
   it('the region editor reuses _applyScopedIntent / _saveManualEdit keyed off the reserved __region__ key', () => {
     expect(src).toMatch(/_applyScopedIntent\(null, '__region__'\)/);

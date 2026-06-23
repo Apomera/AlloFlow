@@ -2981,7 +2981,8 @@ function PdfAuditView(props) {
     _setIssueEdit((prev) => { const n = { ...prev }; delete n[key]; return n; });
     _setIssueSourceOpen((prev) => ({ ...prev, [key]: false }));
     addToast(t('pdf_audit.issue.ai_applied') || '✨ Applied to this section — re-checking…', 'success');
-    await _reauditAndScore(sp.html, null);
+    const _ra = await _reauditAndScore(sp.html, null);
+    if (_ra && _ra.ok === false) addToast(t('pdf_audit.issue.ai_norescore') || '✨ Applied. Couldn’t re-score automatically (the checker was busy) — the document is updated; re-run the audit when ready.', 'info');
   };
 
   // S1 freehand region-select (2026-06-23). The user drags a box over the preview; this resolves it to the
@@ -2999,29 +3000,93 @@ function PdfAuditView(props) {
     const hits = _elementsInBox(live, box);
     const el = _dominantBlock(hits);
     if (!el) { addToast(t('pdf_audit.region.empty') || 'No block was at least half inside that box — try a box that covers a paragraph or heading.', 'info'); return; }
+    const _RSEL = 'p,li,h1,h2,h3,h4,h5,h6,blockquote,figure,figcaption,img,table,tr,td,th,ul,ol,dl,dt,dd,pre,aside,section,article,header,footer,div';
     const norm = (x) => String(x == null ? '' : x).replace(/\s+/g, ' ').trim().toLowerCase();
     const anchor = norm(el.textContent).slice(0, 80);
     let original = '';
     try {
-      if (anchor && anchor.length >= 6 && typeof DOMParser !== 'undefined') {
+      if (typeof DOMParser !== 'undefined') {
         const dom = new DOMParser().parseFromString(pdfFixResult.accessibleHtml, 'text/html');
         if (dom.body) {
           const tag = el.tagName;
-          const blocks = dom.body.querySelectorAll('p,li,h1,h2,h3,h4,h5,h6,blockquote,figure,figcaption,img,table,tr,td,th,ul,ol,dl,dt,dd,pre,aside,section,article,header,footer,div');
-          let found = null, sameTag = null;
-          for (const b of blocks) { if (norm(b.textContent).indexOf(anchor) !== -1) { if (!found) found = b; if (b.tagName === tag) { sameTag = b; break; } } }
-          const pick = sameTag || found;
+          const liveBlocks = Array.prototype.slice.call(live.body.querySelectorAll(_RSEL));
+          const offBlocks = Array.prototype.slice.call(dom.body.querySelectorAll(_RSEL));
+          const liveIdx = liveBlocks.indexOf(el);
+          let pick = null;
+          // 1) Bridge by DOCUMENT-ORDER POSITION: when the live + stored block lists line up (the common
+          //    case), the dragged element's index maps straight to the stored block — no text guessing. This
+          //    is what stops "two blocks share an 80-char prefix → edit the FIRST" from silently hitting the
+          //    wrong section (the highlight is on the right one, so a wrong-target edit would be invisible).
+          if (liveIdx >= 0 && offBlocks.length === liveBlocks.length && offBlocks[liveIdx]) {
+            const cand = offBlocks[liveIdx];
+            if (!anchor || cand.tagName === tag || norm(cand.textContent).indexOf(anchor) !== -1) pick = cand;
+          }
+          // 2) Fallback (lists diverged, e.g. A11y-inspect injected nodes): anchor search, but REFUSE on
+          //    ambiguity instead of guessing the first match.
+          if (!pick && anchor && anchor.length >= 6) {
+            const matches = offBlocks.filter((b) => norm(b.textContent).indexOf(anchor) !== -1);
+            const sameTagMatches = matches.filter((b) => b.tagName === tag);
+            const pool = sameTagMatches.length ? sameTagMatches : matches;
+            if (pool.length === 1) pick = pool[0];
+            else if (pool.length > 1) { addToast(t('pdf_audit.region.ambiguous') || 'That block looks identical to another one — I can’t tell them apart safely. Use the issue list or the Expert Workbench for a targeted fix.', 'info'); return; }
+          }
           if (pick && pick.outerHTML) original = pick.outerHTML;
         }
       }
     } catch (_) {}
-    if (!original) original = el.outerHTML;                   // fallback (may carry live styles → splice may not-find → graceful)
+    if (!original) original = el.outerHTML;                   // last-resort fallback (may carry live styles → splice may not-find → graceful)
     _setIssueEdit((prev) => ({ ...prev, ['__region__']: { original: original, draft: original, intent: '', _region: true, tag: (el.tagName || '').toLowerCase(), preview: norm(el.textContent).slice(0, 140) } }));
     try { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); const _prev = el.style.outline; el.style.outline = '3px solid #4f46e5'; el.style.outlineOffset = '2px'; setTimeout(() => { try { el.style.outline = _prev; el.style.outlineOffset = ''; } catch (_) {} }, 3000); } catch (_) {}
     try { const p = document.getElementById('allo-region-editor'); if (p) p.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
     addToast(t('pdf_audit.region.selected') || '▭ Region selected — describe the change, then Apply with AI (scoped to just this block).', 'info');
   };
   _regionHandlerRef.current = _runRegionSelect;               // keep the iframe's once-bound listener calling the LATEST handler (never stale)
+
+  // S3 block-restyle (2026-06-23): apply a CURATED, content-preserving structure transform (callout/list) to
+  // the selected region. The TRANSFORM is deterministic + AI-free (restyleBlock never calls the model) and
+  // triple-gated (reading order + link/image fidelity + valid-nesting context) so it refuses rather than
+  // corrupt. Splices the candidate in via _spliceBlock, snapshots _preCmdHtml for one-click revert, then runs
+  // the SAME re-check the rest of the pipeline uses (which IS an AI audit) — so the SCORE refresh is not
+  // throttle-immune, and a throttled re-audit is surfaced (R11) rather than left silently stale.
+  const _restyleRegion = async (kind) => {
+    const rgn = _issueEdit['__region__'];
+    if (!rgn || rgn.saving || !pdfFixResult || !pdfFixResult.accessibleHtml) return;
+    if (!_docPipeline || typeof _docPipeline.restyleBlock !== 'function') { addToast(t('pdf_audit.region.unavailable') || 'Restyle tools are still loading — try again in a moment.', 'info'); return; }
+    const original = String(rgn.original || '');
+    if (!original) return;
+    let res = null;
+    try { res = _docPipeline.restyleBlock(original, kind, {}); } catch (_) {}
+    if (!res || !res.ok) {
+      const why = res && res.reason;
+      // Honest, reason-specific refusal — every one of these is the deterministic guard REFUSING rather than
+      // shipping a content-loss/invalid-nesting edit (the whole point of the self-gate).
+      const msg = (why === 'reading-order' || why === 'link-fidelity' || why === 'image-fidelity') ? (t('pdf_audit.region.restyle_ro') || 'Skipped — that restyle would have changed the content or reading order (a link, image, or word would move/disappear), so it was refused for content safety.')
+        : why === 'inline-markup' ? (t('pdf_audit.region.restyle_inline') || 'Skipped — this text has links or formatting that a list would flatten. Add line breaks between items, or use “Apply with AI”.')
+        : why === 'bad-context' ? (t('pdf_audit.region.restyle_context') || 'Pick the whole list / parent block, not a single item (list item, table cell, or caption) — restyling it in place would break the structure.')
+        : why === 'multi-block' ? (t('pdf_audit.region.restyle_multiblock') || 'That selection holds several blocks — select a single paragraph to make a list, or use “Make a callout” to wrap them.')
+        : why === 'no-delimiter' ? (t('pdf_audit.region.restyle_nolist') || 'Couldn’t find list items here — separate items with line breaks or bullets first.')
+        : why === 'already-list' ? (t('pdf_audit.region.restyle_already') || 'This block is already a list.')
+        : why === 'already-callout' ? (t('pdf_audit.region.restyle_already_callout') || 'This block is already a callout.')
+        : (t('pdf_audit.region.restyle_cant') || 'Couldn’t restyle this block.');
+      addToast(msg, 'info'); return;
+    }
+    const sp = _spliceBlock(pdfFixResult.accessibleHtml, original, res.html);
+    if (!sp.ok) {
+      addToast(sp.reason === 'ambiguous'
+        ? (t('pdf_audit.issue.edit_ambiguous') || 'This exact markup appears more than once — use the Expert Workbench for a targeted fix instead.')
+        : (t('pdf_audit.issue.edit_moved') || 'That section changed since you opened it — close and reopen Source, then try again.'),
+        sp.reason === 'ambiguous' ? 'info' : 'error');
+      return;
+    }
+    _setIssueEdit((prev) => ({ ...prev, ['__region__']: { ...prev['__region__'], saving: true } }));
+    const _before = pdfFixResult.accessibleHtml;
+    setPdfFixResult((p) => p ? { ...p, accessibleHtml: sp.html, _preCmdHtml: _before } : p);
+    _setIssueEdit((prev) => { const n = { ...prev }; delete n['__region__']; return n; });
+    addToast(t('pdf_audit.region.restyled') || '✨ Restyled this block — re-checking…', 'success');
+    const _rescore = await _reauditAndScore(sp.html, null);
+    // R11: don't leave the headline score silently stale if the re-audit was throttled — say so (parity with _saveManualEdit).
+    if (_rescore && _rescore.ok === false) addToast(t('pdf_audit.region.restyle_norescore') || '✨ Restyle applied. Couldn’t re-score automatically (the checker was busy) — the document is updated; re-run the audit when ready.', 'info');
+  };
 
   // Recovery residual source (Option B, 2026-06-22): decide what missing-token list drives the Tier-B
   // "Re-run with restoration" UI. PREFER the tagged-PDF round-trip snapshot (tokens lost in PDF tagging)
@@ -13902,6 +13967,11 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     onKeyDown={(e) => { if (e.key === 'Enter' && typeof processExpertCommand === 'function' && (_rgn.intent || '').trim() && !_rgn.saving) { e.preventDefault(); _applyScopedIntent(null, '__region__'); } }}
                     placeholder={t('pdf_audit.region.intent_ph') || 'Describe the change for this block — e.g. “make this a bulleted list”, “turn this into a callout”, “simplify the wording”'}
                     className="w-full text-xs border border-indigo-300 rounded-lg p-2 bg-white text-slate-800 placeholder:text-slate-500" />
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[10px] font-bold text-indigo-700">{t('pdf_audit.region.restyle_label') || 'Quick restyle (no-AI edit):'}</span>
+                    <button onClick={() => _restyleRegion('callout')} disabled={!!_rgn.saving} className={'px-2 py-0.5 rounded border border-indigo-300 bg-white text-indigo-700 text-[11px] font-bold ' + (_rgn.saving ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-100')} title={t('pdf_audit.region.make_callout_title') || 'Wrap this block as a callout. A fixed transform (the AI never rewrites your content); refused if it would move or drop a word, link, or image. The usual re-check still runs after.'}>📌 {t('pdf_audit.region.make_callout') || 'Make a callout'}</button>
+                    <button onClick={() => _restyleRegion('list')} disabled={!!_rgn.saving} className={'px-2 py-0.5 rounded border border-indigo-300 bg-white text-indigo-700 text-[11px] font-bold ' + (_rgn.saving ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-100')} title={t('pdf_audit.region.make_list_title') || 'Turn line-broken or bulleted text into a real list. A fixed transform (no AI rewrite); refused if it would flatten a link/format or move content. The usual re-check still runs after.'}>• {t('pdf_audit.region.make_list') || 'Make a list'}</button>
+                  </div>
                   <div className="flex items-center gap-2 flex-wrap">
                     {typeof processExpertCommand === 'function' && (
                       <button onClick={() => _applyScopedIntent(null, '__region__')} disabled={!!_rgn.saving || !((_rgn.intent) || '').trim()}
@@ -13916,7 +13986,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                           className="w-full text-[11px] font-mono border border-indigo-300 rounded p-2 bg-white text-slate-800" />
                         <button onClick={() => _saveManualEdit(null, '__region__')} disabled={!!_rgn.saving || (String(_rgn.draft || '').trim() === String(_rgn.original || '').trim())}
                           className={'px-3 py-1 rounded bg-emerald-600 text-white text-xs font-bold ' + ((_rgn.saving || String(_rgn.draft || '').trim() === String(_rgn.original || '').trim()) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-emerald-700')}>
-                          💾 {t('pdf_audit.region.save_recheck') || 'Save & re-check (no AI)'}
+                          💾 {t('pdf_audit.region.save_recheck') || 'Save (no-AI edit) & re-check'}
                         </button>
                       </div>
                     </details>

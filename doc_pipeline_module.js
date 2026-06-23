@@ -523,10 +523,15 @@ function checkReadingOrderPreserved(beforeHtml, afterHtml) {
         var p = n.parentNode, skip = false;
         while (p && p.nodeType === 1) { if (SKIP[p.tagName]) { skip = true; break; } p = p.parentNode; }
         if (skip) continue;
-        var norm = String(n.nodeValue || '').toLowerCase().replace(/[^a-z0-9À-ɏ]+/g, ' ').trim();
+        // Unicode-aware: \p{L}\p{N} covers EVERY script (Arabic, CJK, Cyrillic, Devanagari, Vietnamese, …)
+        // — a Latin-only class made this a vacuous no-op for non-Latin docs. Keep length-1 tokens too: the
+        // class already strips punctuation, so a single char here is a real letter/digit/CJK glyph (article
+        // "a", pronoun "I", a single-digit step number, a one-character math variable), and dropping it must
+        // be caught. (2026-06-23, hardened after adversarial review.)
+        var norm = String(n.nodeValue || '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
         if (!norm) continue;
         var parts = norm.split(/\s+/);
-        for (var k = 0; k < parts.length; k++) if (parts[k].length >= 2) out.push(parts[k]);
+        for (var k = 0; k < parts.length; k++) if (parts[k]) out.push(parts[k]);
       }
     } catch (_) {}
     return out;
@@ -546,6 +551,167 @@ function checkReadingOrderPreserved(beforeHtml, afterHtml) {
     afterCount: after.length,
   };
   return _r;
+}
+
+// S3 block-restyle (2026-06-23; hardened after adversarial review). A CURATED, content-preserving
+// structure-transform library. The AI's role (a later slice) is only to SELECT one of these — it never
+// authors freeform HTML, which is exactly what breaks tagged-PDF structure + reading order. Every transform
+// is DOM-level (so the browser balances markup and elements/images survive) and TRIPLE-gated before it is
+// accepted: (1) checkReadingOrderPreserved — text tokens, all scripts, single chars, in order; (2)
+// _restyleContentFidelity — the <a href> and <img src+alt> multisets are unchanged (catches link loss /
+// link multiplication / dropped images, which the token guard is blind to); (3) context guards that refuse
+// when the result would be invalid nesting (a list item, table cell, definition term, figcaption, …). It
+// REFUSES (ok:false, reason) rather than silently corrupt. restyleBlock dispatches by kind; each returns
+// { ok, html, kind, reason }.
+function _restyleEscHtml(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function _restyleEscAttr(s) { return _restyleEscHtml(s).replace(/"/g, '&quot;'); }
+function _restyleParseBlock(blockHtml) {
+  // Parse the fragment in a known wrapper so we can read its first element + its inner markup.
+  if (typeof DOMParser === 'undefined') return null;
+  try {
+    var doc = new DOMParser().parseFromString('<div id="__allorestyle__">' + String(blockHtml || '') + '</div>', 'text/html');
+    return doc.getElementById('__allorestyle__');
+  } catch (_) { return null; }
+}
+// Elements that MUST be a direct child of a specific parent — wrapping them in <aside> or replacing them
+// with <ul> in place breaks the parent's content model (e.g. <ul><aside><li></aside></ul>). Refuse.
+var _RESTYLE_BAD_CONTEXT = { LI: 1, DT: 1, DD: 1, FIGCAPTION: 1, TH: 1, TD: 1, TR: 1, THEAD: 1, TBODY: 1, TFOOT: 1, CAPTION: 1, COL: 1, COLGROUP: 1, OPTION: 1, SUMMARY: 1 };
+var _RESTYLE_BLOCK_CHILD = /^(P|DIV|SECTION|ARTICLE|ASIDE|HEADER|FOOTER|NAV|MAIN|H1|H2|H3|H4|H5|H6|UL|OL|DL|TABLE|BLOCKQUOTE|FIGURE|PRE|HR|FORM)$/;
+// Structural fidelity: the set of link destinations and image (src,alt) pairs must be IDENTICAL before/after
+// (multiset). Catches what the text-token guard cannot see — a dropped/duplicated <a href> or a vanished
+// <img alt> (the b0d24ae3 content-loss class on markup, not text).
+function _restyleContentFidelity(beforeHtml, afterHtml) {
+  if (typeof DOMParser === 'undefined') { var _sk = { ok: true, reason: 'no-domparser-skip' }; return _sk; }
+  var _sig = function (html) {
+    var hrefs = [], imgs = [];
+    try {
+      var doc = new DOMParser().parseFromString(String(html || ''), 'text/html');
+      var as = doc.querySelectorAll('a[href]'); for (var i = 0; i < as.length; i++) hrefs.push(String(as[i].getAttribute('href') || ''));
+      var ims = doc.querySelectorAll('img'); for (var j = 0; j < ims.length; j++) imgs.push(String(ims[j].getAttribute('src') || '') + ' ' + String(ims[j].getAttribute('alt') || ''));
+    } catch (_) {}
+    hrefs.sort(); imgs.sort();
+    return { hrefs: hrefs.join(''), imgs: imgs.join('') };
+  };
+  var b = _sig(beforeHtml), a = _sig(afterHtml);
+  if (b.hrefs !== a.hrefs) { var _lf = { ok: false, reason: 'link-fidelity' }; return _lf; }
+  if (b.imgs !== a.imgs) { var _if = { ok: false, reason: 'image-fidelity' }; return _if; }
+  var _ok = { ok: true, reason: 'ok' };
+  return _ok;
+}
+// Final gate shared by every transform: reading order + structural fidelity. Returns {ok, reason}.
+function _restyleGate(beforeHtml, afterHtml) {
+  var ck = checkReadingOrderPreserved(beforeHtml, afterHtml);
+  if (!ck.ok) { var _ro = { ok: false, reason: 'reading-order' }; return _ro; }
+  var fid = _restyleContentFidelity(beforeHtml, afterHtml);
+  if (!fid.ok) return fid;
+  var _ok = { ok: true, reason: 'ok' };
+  return _ok;
+}
+// Carry the source block's explicit inline color/background onto a freshly-built element, so a paragraph
+// whose colour was set to PASS contrast against a local surface doesn't go illegible after restyle (R8).
+function _restyleCarryColor(fromEl, toEl) {
+  try {
+    var c = fromEl.style && fromEl.style.color, bg = fromEl.style && fromEl.style.backgroundColor;
+    var extra = '';
+    if (c) extra += 'color:' + c + ';';
+    if (bg) extra += 'background-color:' + bg + ';';
+    if (extra) toEl.setAttribute('style', (toEl.getAttribute('style') || '') + extra);
+  } catch (_) {}
+}
+// Defense-in-depth (R12): strip on* event-handler attributes from the restyle output, so the produced HTML
+// is guaranteed handler-free even if a stale on* somehow rode in on the source block. on* attributes are not
+// part of the fidelity signature, so this never trips the gate. (URL-scheme scrubbing stays the upstream
+// sanitizer's job — the source is already-sanitized accessibleHtml.)
+function _restyleScrubHandlers(root) {
+  try {
+    var all = root.querySelectorAll ? root.querySelectorAll('*') : [];
+    for (var i = 0; i < all.length; i++) {
+      var attrs = Array.prototype.slice.call(all[i].attributes || []);
+      for (var j = 0; j < attrs.length; j++) { if (/^on/i.test(attrs[j].name)) all[i].removeAttribute(attrs[j].name); }
+    }
+  } catch (_) {}
+}
+function _restyleToCallout(blockHtml, opts) {
+  var wrap = _restyleParseBlock(blockHtml);
+  if (!wrap) { var _np = { ok: false, reason: 'no-domparser' }; return _np; }
+  var block = wrap.firstElementChild;
+  if (!block) { var _nb = { ok: false, reason: 'no-block' }; return _nb; }
+  if (_RESTYLE_BAD_CONTEXT[block.tagName]) { var _bc = { ok: false, reason: 'bad-context' }; return _bc; }
+  if (block.tagName === 'ASIDE' && (block.getAttribute('role') === 'note' || /allo-callout/.test(block.className || ''))) { var _ac = { ok: false, reason: 'already-callout' }; return _ac; }
+  _restyleScrubHandlers(wrap);
+  var label = (opts && typeof opts.label === 'string') ? opts.label.trim() : '';
+  var labelHtml = label ? ('<p class="allo-callout-label" style="font-weight:700;margin:0 0 4px 0;">' + _restyleEscHtml(label) + '</p>') : '';
+  var aria = label ? (' aria-label="' + _restyleEscAttr(label) + '"') : '';
+  // Decorative left-border only (no background fill) → the original ink is untouched, so contrast cannot
+  // regress. role="note" gives the callout a landmark; the optional label is its accessible name. Wrapping
+  // is content-additive (the whole original block, incl. its inline style, is preserved inside).
+  var html = '<aside class="allo-callout" role="note"' + aria + ' style="border-left:4px solid #4f46e5;padding:8px 12px;margin:12px 0;">' + labelHtml + wrap.innerHTML + '</aside>';
+  var g = _restyleGate(blockHtml, html);
+  if (!g.ok) return g;
+  var _r = { ok: true, html: html, kind: 'callout', reason: 'ok' };
+  return _r;
+}
+function _restyleToList(blockHtml, opts) {
+  var wrap = _restyleParseBlock(blockHtml);
+  if (!wrap) { var _np = { ok: false, reason: 'no-domparser' }; return _np; }
+  var block = wrap.firstElementChild;
+  if (!block) { var _nb = { ok: false, reason: 'no-block' }; return _nb; }
+  if (block.tagName === 'UL' || block.tagName === 'OL') { var _al = { ok: false, reason: 'already-list' }; return _al; }
+  if (_RESTYLE_BAD_CONTEXT[block.tagName]) { var _bc = { ok: false, reason: 'bad-context' }; return _bc; }
+  // A container with block-level children isn't a flat list candidate — refuse rather than collapse N
+  // distinct blocks into list items.
+  for (var ci = 0; ci < block.children.length; ci++) { if (_RESTYLE_BLOCK_CHILD.test(block.children[ci].tagName)) { var _mb = { ok: false, reason: 'multi-block' }; return _mb; } }
+  var doc = block.ownerDocument;
+  // Strip only a DECORATIVE leading glyph: a true bullet (•·‣▪), or a dash FOLLOWED BY whitespace. A dash
+  // glued to a digit/letter ("-10") or a lone "-" is CONTENT and is kept (R7).
+  var _stripText = function (s) { return String(s || '').replace(/^\s*[•·‣▪]\s*/, '').replace(/^\s*[–‐‑-]\s+/, '').replace(/^\s+/, ''); };
+  var items = [];
+  var topLevelBr = false;
+  for (var bi = 0; bi < block.childNodes.length; bi++) { var nn = block.childNodes[bi]; if (nn.nodeType === 1 && nn.tagName === 'BR') { topLevelBr = true; break; } }
+  if (topLevelBr) {
+    // DOM-level split at TOP-LEVEL <br> only: clone each inter-<br> run into a fresh <li>, so the browser
+    // balances inline tags per item (no link/emphasis bleeding across items) and any inline <img> survives.
+    var li = doc.createElement('li');
+    var _commit = function () {
+      // strip a leading bullet from the li's first text node (decorative)
+      var f = li.firstChild;
+      if (f && f.nodeType === 3) { var stripped = _stripText(f.nodeValue); if (stripped) { f.nodeValue = stripped; } else { li.removeChild(f); } }
+      var hasEl = li.querySelector('*'); var hasTxt = String(li.textContent || '').trim();
+      if (hasEl || hasTxt) items.push(li);
+      li = doc.createElement('li');
+    };
+    var kids = Array.prototype.slice.call(block.childNodes);
+    for (var ki = 0; ki < kids.length; ki++) { var node = kids[ki]; if (node.nodeType === 1 && node.tagName === 'BR') { _commit(); continue; } li.appendChild(node.cloneNode(true)); }
+    _commit();
+    if (items.length < 2) { var _nd = { ok: false, reason: 'no-delimiter' }; return _nd; }
+  } else {
+    // No top-level <br>. textContent splitting would FLATTEN inline markup (links/emphasis), so only do it
+    // when the block is PURE TEXT (no element children at all), and only on explicit bullet glyphs — the
+    // bare-";" heuristic was dropped (it turned ordinary prose into bogus lists). (R5, R10)
+    if (block.children.length > 0) { var _im = { ok: false, reason: 'inline-markup' }; return _im; }
+    var text = String(block.textContent || '').trim();
+    if (!/[•·‣▪]/.test(text)) { var _nd2 = { ok: false, reason: 'no-delimiter' }; return _nd2; }
+    var parts = text.split(/[•·‣▪]/).map(_stripText).filter(Boolean);
+    if (parts.length < 2) { var _nd3 = { ok: false, reason: 'no-delimiter' }; return _nd3; }
+    for (var pi = 0; pi < parts.length; pi++) { var li2 = doc.createElement('li'); li2.textContent = parts[pi]; items.push(li2); }
+  }
+  var ul = doc.createElement('ul');
+  ul.setAttribute('style', 'margin:8px 0;padding-left:24px;');
+  _restyleCarryColor(block, ul);                       // preserve contrast the source had (R8)
+  for (var ii = 0; ii < items.length; ii++) ul.appendChild(items[ii]);
+  _restyleScrubHandlers(ul);
+  var html = ul.outerHTML;
+  var g = _restyleGate(blockHtml, html);
+  if (!g.ok) return g;
+  var _r = { ok: true, html: html, kind: 'list', reason: 'ok' };
+  return _r;
+}
+function restyleBlock(blockHtml, kind, opts) {
+  if (!blockHtml || !kind) { var _b = { ok: false, reason: 'no-input' }; return _b; }
+  if (kind === 'callout') return _restyleToCallout(blockHtml, opts);
+  if (kind === 'list') return _restyleToList(blockHtml, opts);
+  var _u = { ok: false, reason: 'unknown-kind' };
+  return _u;
 }
 
 // Convert an INTERACTIVE image-placeholder <figure> (upload buttons, drop zone, on* handlers, the resize
@@ -27388,6 +27554,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     proposePaletteFromIntent: proposePaletteFromIntent,
     palettePresets: PALETTE_PRESETS,
     checkReadingOrderPreserved: checkReadingOrderPreserved,
+    restyleBlock: restyleBlock,
     runPdfAccessibilityAudit: _wrapAsync(runPdfAccessibilityAudit),
     auditOutputAccessibility: _wrapAsync(auditOutputAccessibility),
     runAxeAudit: _wrapAsync(runAxeAudit),

@@ -115,6 +115,31 @@ describe('checkReadingOrderPreserved: edge cases', () => {
   });
 });
 
+describe('hardening (2026-06-23 adversarial review): single-char + non-Latin coverage', () => {
+  it('catches a dropped single LETTER (was invisible when tokens <2 chars were ignored)', () => {
+    const r = checkReadingOrderPreserved('<p>x marks the spot</p>', '<p>marks the spot</p>');
+    expect(r.ok).toBe(false);
+    expect(r.droppedToken).toBe('x');
+  });
+  it('catches dropped single DIGITS (step numbers)', () => {
+    expect(checkReadingOrderPreserved('<p>step 1 then 2 then 3</p>', '<p>step then then</p>').ok).toBe(false);
+  });
+  it('catches a dropped one-letter word ("I")', () => {
+    expect(checkReadingOrderPreserved('<p>I am here</p>', '<p>am here</p>').ok).toBe(false);
+  });
+  it('is NOT vacuously true for Cyrillic — a real reorder/replace is caught', () => {
+    expect(checkReadingOrderPreserved('<p>Привет мир документ</p>', '<p>Привет мир документ</p>').ok).toBe(true);
+    expect(checkReadingOrderPreserved('<p>Привет мир документ</p>', '<p>совершенно другой текст</p>').ok).toBe(false);
+  });
+  it('is NOT vacuously true for Arabic / CJK (was a no-op under the Latin-only tokenizer)', () => {
+    expect(checkReadingOrderPreserved('<p>مرحبا بالعالم الوثيقة</p>', '<p>نص مختلف تماما هنا</p>').ok).toBe(false);
+    expect(checkReadingOrderPreserved('<p>文档内容测试</p>', '<p>完全不同</p>').ok).toBe(false);
+  });
+  it('still passes for identical non-Latin content', () => {
+    expect(checkReadingOrderPreserved('<p>مرحبا بالعالم</p>', '<aside><p>مرحبا بالعالم</p></aside>').ok).toBe(true);
+  });
+});
+
 describe('anti-drift: the guard is exported on the factory API', () => {
   it('checkReadingOrderPreserved is on the doc-pipeline factory return', () => {
     expect(dp).toMatch(/checkReadingOrderPreserved: checkReadingOrderPreserved,/);

@@ -3298,7 +3298,8 @@ function PdfAuditView(props) {
     });
     _setIssueSourceOpen((prev) => ({ ...prev, [key]: false }));
     addToast(t("pdf_audit.issue.ai_applied") || "\u2728 Applied to this section \u2014 re-checking\u2026", "success");
-    await _reauditAndScore(sp.html, null);
+    const _ra = await _reauditAndScore(sp.html, null);
+    if (_ra && _ra.ok === false) addToast(t("pdf_audit.issue.ai_norescore") || "\u2728 Applied. Couldn\u2019t re-score automatically (the checker was busy) \u2014 the document is updated; re-run the audit when ready.", "info");
   };
   const _runRegionSelect = async (box) => {
     setRegionArmed(false);
@@ -3317,26 +3318,33 @@ function PdfAuditView(props) {
       addToast(t("pdf_audit.region.empty") || "No block was at least half inside that box \u2014 try a box that covers a paragraph or heading.", "info");
       return;
     }
+    const _RSEL = "p,li,h1,h2,h3,h4,h5,h6,blockquote,figure,figcaption,img,table,tr,td,th,ul,ol,dl,dt,dd,pre,aside,section,article,header,footer,div";
     const norm = (x) => String(x == null ? "" : x).replace(/\s+/g, " ").trim().toLowerCase();
     const anchor = norm(el.textContent).slice(0, 80);
     let original = "";
     try {
-      if (anchor && anchor.length >= 6 && typeof DOMParser !== "undefined") {
+      if (typeof DOMParser !== "undefined") {
         const dom = new DOMParser().parseFromString(pdfFixResult.accessibleHtml, "text/html");
         if (dom.body) {
           const tag = el.tagName;
-          const blocks = dom.body.querySelectorAll("p,li,h1,h2,h3,h4,h5,h6,blockquote,figure,figcaption,img,table,tr,td,th,ul,ol,dl,dt,dd,pre,aside,section,article,header,footer,div");
-          let found = null, sameTag = null;
-          for (const b of blocks) {
-            if (norm(b.textContent).indexOf(anchor) !== -1) {
-              if (!found) found = b;
-              if (b.tagName === tag) {
-                sameTag = b;
-                break;
-              }
+          const liveBlocks = Array.prototype.slice.call(live.body.querySelectorAll(_RSEL));
+          const offBlocks = Array.prototype.slice.call(dom.body.querySelectorAll(_RSEL));
+          const liveIdx = liveBlocks.indexOf(el);
+          let pick = null;
+          if (liveIdx >= 0 && offBlocks.length === liveBlocks.length && offBlocks[liveIdx]) {
+            const cand = offBlocks[liveIdx];
+            if (!anchor || cand.tagName === tag || norm(cand.textContent).indexOf(anchor) !== -1) pick = cand;
+          }
+          if (!pick && anchor && anchor.length >= 6) {
+            const matches = offBlocks.filter((b) => norm(b.textContent).indexOf(anchor) !== -1);
+            const sameTagMatches = matches.filter((b) => b.tagName === tag);
+            const pool = sameTagMatches.length ? sameTagMatches : matches;
+            if (pool.length === 1) pick = pool[0];
+            else if (pool.length > 1) {
+              addToast(t("pdf_audit.region.ambiguous") || "That block looks identical to another one \u2014 I can\u2019t tell them apart safely. Use the issue list or the Expert Workbench for a targeted fix.", "info");
+              return;
             }
           }
-          const pick = sameTag || found;
           if (pick && pick.outerHTML) original = pick.outerHTML;
         }
       }
@@ -3366,6 +3374,46 @@ function PdfAuditView(props) {
     addToast(t("pdf_audit.region.selected") || "\u25AD Region selected \u2014 describe the change, then Apply with AI (scoped to just this block).", "info");
   };
   _regionHandlerRef.current = _runRegionSelect;
+  const _restyleRegion = async (kind) => {
+    const rgn = _issueEdit["__region__"];
+    if (!rgn || rgn.saving || !pdfFixResult || !pdfFixResult.accessibleHtml) return;
+    if (!_docPipeline || typeof _docPipeline.restyleBlock !== "function") {
+      addToast(t("pdf_audit.region.unavailable") || "Restyle tools are still loading \u2014 try again in a moment.", "info");
+      return;
+    }
+    const original = String(rgn.original || "");
+    if (!original) return;
+    let res = null;
+    try {
+      res = _docPipeline.restyleBlock(original, kind, {});
+    } catch (_) {
+    }
+    if (!res || !res.ok) {
+      const why = res && res.reason;
+      const msg = why === "reading-order" || why === "link-fidelity" || why === "image-fidelity" ? t("pdf_audit.region.restyle_ro") || "Skipped \u2014 that restyle would have changed the content or reading order (a link, image, or word would move/disappear), so it was refused for content safety." : why === "inline-markup" ? t("pdf_audit.region.restyle_inline") || "Skipped \u2014 this text has links or formatting that a list would flatten. Add line breaks between items, or use \u201CApply with AI\u201D." : why === "bad-context" ? t("pdf_audit.region.restyle_context") || "Pick the whole list / parent block, not a single item (list item, table cell, or caption) \u2014 restyling it in place would break the structure." : why === "multi-block" ? t("pdf_audit.region.restyle_multiblock") || "That selection holds several blocks \u2014 select a single paragraph to make a list, or use \u201CMake a callout\u201D to wrap them." : why === "no-delimiter" ? t("pdf_audit.region.restyle_nolist") || "Couldn\u2019t find list items here \u2014 separate items with line breaks or bullets first." : why === "already-list" ? t("pdf_audit.region.restyle_already") || "This block is already a list." : why === "already-callout" ? t("pdf_audit.region.restyle_already_callout") || "This block is already a callout." : t("pdf_audit.region.restyle_cant") || "Couldn\u2019t restyle this block.";
+      addToast(msg, "info");
+      return;
+    }
+    const sp = _spliceBlock(pdfFixResult.accessibleHtml, original, res.html);
+    if (!sp.ok) {
+      addToast(
+        sp.reason === "ambiguous" ? t("pdf_audit.issue.edit_ambiguous") || "This exact markup appears more than once \u2014 use the Expert Workbench for a targeted fix instead." : t("pdf_audit.issue.edit_moved") || "That section changed since you opened it \u2014 close and reopen Source, then try again.",
+        sp.reason === "ambiguous" ? "info" : "error"
+      );
+      return;
+    }
+    _setIssueEdit((prev) => ({ ...prev, ["__region__"]: { ...prev["__region__"], saving: true } }));
+    const _before = pdfFixResult.accessibleHtml;
+    setPdfFixResult((p) => p ? { ...p, accessibleHtml: sp.html, _preCmdHtml: _before } : p);
+    _setIssueEdit((prev) => {
+      const n = { ...prev };
+      delete n["__region__"];
+      return n;
+    });
+    addToast(t("pdf_audit.region.restyled") || "\u2728 Restyled this block \u2014 re-checking\u2026", "success");
+    const _rescore = await _reauditAndScore(sp.html, null);
+    if (_rescore && _rescore.ok === false) addToast(t("pdf_audit.region.restyle_norescore") || "\u2728 Restyle applied. Couldn\u2019t re-score automatically (the checker was busy) \u2014 the document is updated; re-run the audit when ready.", "info");
+  };
   const _recoveryResidualSource = (td, sourceText, finalText) => {
     const _normTokenForDiff = (s) => String(s || "").toLowerCase().replace(/[\u200b\u200c\u200d\ufeff]/g, "").replace(/\ufb00/g, "ff").replace(/\ufb01/g, "fi").replace(/\ufb02/g, "fl").replace(/\ufb03/g, "ffi").replace(/\ufb04/g, "ffl").replace(/[\u2018\u2019]/g, "'").replace(/[\u201c\u201d]/g, '"').replace(/(\p{L})[-\u00ad\u2010\u2011](\p{L})/gu, "$1$2").replace(/\u00ad/g, "").replace(/\s+/g, "");
     const _normalize = (s) => String(s || "").toLowerCase().replace(/\s+/g, " ").trim();
@@ -12423,7 +12471,7 @@ Return ONLY JSON:
           placeholder: t("pdf_audit.region.intent_ph") || "Describe the change for this block \u2014 e.g. \u201Cmake this a bulleted list\u201D, \u201Cturn this into a callout\u201D, \u201Csimplify the wording\u201D",
           className: "w-full text-xs border border-indigo-300 rounded-lg p-2 bg-white text-slate-800 placeholder:text-slate-500"
         }
-      ), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, typeof processExpertCommand === "function" && /* @__PURE__ */ React.createElement(
+      ), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 flex-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-indigo-700" }, t("pdf_audit.region.restyle_label") || "Quick restyle (no-AI edit):"), /* @__PURE__ */ React.createElement("button", { onClick: () => _restyleRegion("callout"), disabled: !!_rgn.saving, className: "px-2 py-0.5 rounded border border-indigo-300 bg-white text-indigo-700 text-[11px] font-bold " + (_rgn.saving ? "opacity-50 cursor-not-allowed" : "hover:bg-indigo-100"), title: t("pdf_audit.region.make_callout_title") || "Wrap this block as a callout. A fixed transform (the AI never rewrites your content); refused if it would move or drop a word, link, or image. The usual re-check still runs after." }, "\u{1F4CC} ", t("pdf_audit.region.make_callout") || "Make a callout"), /* @__PURE__ */ React.createElement("button", { onClick: () => _restyleRegion("list"), disabled: !!_rgn.saving, className: "px-2 py-0.5 rounded border border-indigo-300 bg-white text-indigo-700 text-[11px] font-bold " + (_rgn.saving ? "opacity-50 cursor-not-allowed" : "hover:bg-indigo-100"), title: t("pdf_audit.region.make_list_title") || "Turn line-broken or bulleted text into a real list. A fixed transform (no AI rewrite); refused if it would flatten a link/format or move content. The usual re-check still runs after." }, "\u2022 ", t("pdf_audit.region.make_list") || "Make a list")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, typeof processExpertCommand === "function" && /* @__PURE__ */ React.createElement(
         "button",
         {
           onClick: () => _applyScopedIntent(null, "__region__"),
@@ -12450,7 +12498,7 @@ Return ONLY JSON:
           className: "px-3 py-1 rounded bg-emerald-600 text-white text-xs font-bold " + (_rgn.saving || String(_rgn.draft || "").trim() === String(_rgn.original || "").trim() ? "opacity-50 cursor-not-allowed" : "hover:bg-emerald-700")
         },
         "\u{1F4BE} ",
-        t("pdf_audit.region.save_recheck") || "Save & re-check (no AI)"
+        t("pdf_audit.region.save_recheck") || "Save (no-AI edit) & re-check"
       )))), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-indigo-700 block" }, t("pdf_audit.region.honesty") || "Bounded to this block only \u2014 the rest of the document is untouched. Re-checks after applying; one-click revert if you don\u2019t like it."));
     })(), /* @__PURE__ */ React.createElement(
       "iframe",
