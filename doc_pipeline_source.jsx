@@ -385,6 +385,83 @@ function _serializeDomEdit(originalHtml, doc) {
   return doc.body ? doc.body.innerHTML : doc.documentElement.outerHTML;
 }
 
+// ── Deterministic palette contrast clamp (S2, 2026-06-23) — the ENFORCEMENT core of "AI proposes a
+// palette → we GUARANTEE accessibility". Given a semantic-token palette (the AI's / a preset's INTENT),
+// this NEVER trusts the proposed hex to be accessible: for every rendered foreground/background PAIR it
+// computes the WCAG contrast ratio and, when it fails, nudges the FOREGROUND's luminance (hue-preserving
+// uniform scale — toward black on light surfaces, toward white on dark) until it clears the floor: 4.5:1
+// body text, 3:1 large text (headings) + non-text UI (accent/border, WCAG 1.4.11). The surfaces/accents
+// (the "mood") are the anchors; the INK adapts. Pairs check the RENDERED combination (ink over its actual
+// surface), never raw hex in isolation. Pure + deterministic → testable, and the SAME engine feeds the
+// live ratio badge + the export (so the badge can never lie). Same luminance/nudge math as
+// fixContrastViolations, intentionally self-contained (like _serializeDomEdit). Returns
+// { palette: <corrected token→hex>, report: [{token, against, before, after, target, clamped}], allPass }.
+function clampPaletteContrast(palette, opts) {
+  var o = opts || {};
+  var _hexToRgb = function (hex) {
+    var h = String(hex || '').replace('#', '').trim();
+    if (h.length === 3) return [parseInt(h[0] + h[0], 16), parseInt(h[1] + h[1], 16), parseInt(h[2] + h[2], 16)];
+    if (h.length === 6) return [parseInt(h.substr(0, 2), 16), parseInt(h.substr(2, 2), 16), parseInt(h.substr(4, 2), 16)];
+    return null;
+  };
+  var _rgbToHex = function (r, g, b) { return '#' + [r, g, b].map(function (c) { return Math.max(0, Math.min(255, Math.round(c))).toString(16).padStart(2, '0'); }).join(''); };
+  var _lum = function (r, g, b) {
+    var ch = [r / 255, g / 255, b / 255].map(function (c) { return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); });
+    return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
+  };
+  var _ratio = function (a, b) { var l1 = _lum(a[0], a[1], a[2]), l2 = _lum(b[0], b[1], b[2]); return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05); };
+  var _parse = function (s) {
+    if (!s) return null;
+    var str = String(s).trim().toLowerCase();
+    if (str.charAt(0) === '#') return _hexToRgb(str);
+    var m = str.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+    if (m) return [parseInt(m[1]), parseInt(m[2]), parseInt(m[3])];
+    return null;
+  };
+  var _fixToPass = function (fg, bg, target) {
+    var r = fg[0], g = fg[1], b = fg[2];
+    var isDarkBg = _lum(bg[0], bg[1], bg[2]) < 0.18;
+    for (var i = 0; i < 40 && _ratio([r, g, b], bg) < target; i++) {
+      if (isDarkBg) { r = Math.min(255, Math.round(r + (255 - r) * 0.15)); g = Math.min(255, Math.round(g + (255 - g) * 0.15)); b = Math.min(255, Math.round(b + (255 - b) * 0.15)); }
+      else { r = Math.max(0, Math.round(r * 0.82)); g = Math.max(0, Math.round(g * 0.82)); b = Math.max(0, Math.round(b * 0.82)); }
+    }
+    return [r, g, b];
+  };
+  var _round = function (x) { return Math.round(x * 100) / 100; };
+  // Rendered-combination spec: fg = the ink (clamped); bg = the surface/anchor (design intent, untouched).
+  var DEFAULT_PAIRS = [
+    { fg: 'text', bg: 'bg', target: 4.5 },
+    { fg: 'text', bg: 'surface', target: 4.5 },
+    { fg: 'heading', bg: 'bg', target: 3.0 },          // headings = large text
+    { fg: 'link', bg: 'bg', target: 4.5 },
+    { fg: 'headerText', bg: 'headerBg', target: 4.5 },
+    { fg: 'calloutText', bg: 'calloutBg', target: 4.5 },
+    { fg: 'accent', bg: 'bg', target: 3.0 },           // non-text UI (1.4.11)
+    { fg: 'border', bg: 'bg', target: 3.0 },           // non-text UI (1.4.11)
+  ];
+  var pairs = Array.isArray(o.pairs) ? o.pairs : DEFAULT_PAIRS;
+  var out = {};
+  for (var k in (palette || {})) { if (Object.prototype.hasOwnProperty.call(palette, k)) out[k] = palette[k]; }
+  var report = [];
+  for (var pi = 0; pi < pairs.length; pi++) {
+    var pair = pairs[pi];
+    var fgRgb = _parse(out[pair.fg]); var bgRgb = _parse(out[pair.bg]);
+    if (!fgRgb || !bgRgb) continue; // a token not present in this palette → skip its pair
+    var target = typeof pair.target === 'number' ? pair.target : 4.5;
+    var before = _ratio(fgRgb, bgRgb);
+    if (before >= target) { report.push({ token: pair.fg, against: pair.bg, before: _round(before), after: _round(before), target: target, clamped: false, color: out[pair.fg] }); continue; }
+    var fixed = _fixToPass(fgRgb, bgRgb, target);
+    var fromHex = out[pair.fg];
+    out[pair.fg] = _rgbToHex(fixed[0], fixed[1], fixed[2]);
+    report.push({ token: pair.fg, against: pair.bg, before: _round(before), after: _round(_ratio(fixed, bgRgb)), target: target, clamped: true, from: fromHex, color: out[pair.fg] });
+  }
+  var allPass = report.every(function (r) { return r.after >= r.target - 0.01; });
+  // NOTE: avoid a bare 2-space `return {…}` here — check-pipeline-integrity.js finds the factory's
+  // public-API export object via the FIRST 2-space `return {`, so a top-level helper must return a var.
+  var _r = { palette: out, report: report, allPass: allPass };
+  return _r;
+}
+
 // Convert an INTERACTIVE image-placeholder <figure> (upload buttons, drop zone, on* handlers, the resize
 // bar) into a clean STATIC figure that preserves the description — for the AUDIT and EXPORT, never the
 // live preview. Two callers: (1) the leaked-handler repair below, and (2) the audit chrome-strip. The
@@ -27164,6 +27241,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
   var _wrapAsync = function(fn) { return async function() { _bindState(); return fn.apply(this, arguments); }; };
   return {
     getPipelineStats: _getPipelineStats,
+    clampPaletteContrast: clampPaletteContrast,
     runPdfAccessibilityAudit: _wrapAsync(runPdfAccessibilityAudit),
     auditOutputAccessibility: _wrapAsync(auditOutputAccessibility),
     runAxeAudit: _wrapAsync(runAxeAudit),
