@@ -20405,10 +20405,19 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
           // silently re-classify hyphen-variants like resign / re-sign as "cosmetic"
           // (they're distinct English words). This change makes ZERO mutation and
           // ZERO classification — pure count surfacing.
+          // (2026-06-23) Fold COSMETIC rendering variants - the SAME word rendered with different
+          // code points - so they are not false-flagged 'missing' (shrinks the residual count + the
+          // need to restore, with ZERO document change - measurement only). SAFE classes: ligatures,
+          // zero-width/BOM, and smart quotes can NEVER merge two distinct words; U+2010/2011 extend the
+          // existing line-break-hyphen fold. NOT folding en/em-dashes or numeric separators - they can
+          // join genuinely distinct tokens (the resign/re-sign concern above).
           const _normTokenForDiff = (t) => String(t || '')
             .toLowerCase()
-            .replace(/(\p{L})[-­](\p{L})/gu, '$1$2')
-            .replace(/­/g, '')
+            .replace(/[\u200b\u200c\u200d\ufeff]/g, '')  // zero-width + BOM
+            .replace(/\ufb00/g, 'ff').replace(/\ufb01/g, 'fi').replace(/\ufb02/g, 'fl').replace(/\ufb03/g, 'ffi').replace(/\ufb04/g, 'ffl')  // ligatures
+            .replace(/[\u2018\u2019]/g, "'").replace(/[\u201c\u201d]/g, '"')  // smart quotes
+            .replace(/(\p{L})[-\u00ad\u2010\u2011](\p{L})/gu, '$1$2')  // line-break hyphenation
+            .replace(/\u00ad/g, '')  // remaining soft hyphen
             .replace(/\s+/g, '');
           const _shipNormSet = new Set();
           for (const t of _shipTokens) _shipNormSet.add(_normTokenForDiff(t));

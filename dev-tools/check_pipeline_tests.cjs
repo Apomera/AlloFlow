@@ -30,7 +30,7 @@ const QUIET = process.argv.includes('--quiet');
 // scoring / security / export surface. Broad on purpose so new tests in these domains gate automatically.
 const INCLUDE = [
   'doc_pipeline', 'pdf', 'pdfua', 'view_pdf_audit', 'audit_', 'audit_trail', 'scoring', 'ocr_', 'table_',
-  'export_css', 'export_odt', 'epub', 'rawhtml', 'expert_direct', 'skip_link', 'contrast_pair', 'footnote', 'sanitize_style', 'brand_profile', 'verapdf',
+  'export_css', 'export_odt', 'epub', 'rawhtml', 'expert_direct', 'skip_link', 'residual', 'contrast_pair', 'footnote', 'sanitize_style', 'brand_profile', 'verapdf',
   'live_chunk', 'live_polling', 'issue_locator', 'issue_source', 'tag_inspector', 'recov', 'reliability_',
   'chunk_', 'pipeline_', 'redaction', 'multisession', 'degraded', 'conformance_banner', 'document_builder',
   'heading_', 'th_scope', 'reading_order', 'form_field', 'figure_caption', 'image_placeholder',
