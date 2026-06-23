@@ -192,8 +192,13 @@
     var renderer = new THREE.WebGLRenderer({ canvas: cnv, antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     var scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x060913);
-    scene.fog = new THREE.Fog(0x060913, 28, 64);
+    // subtle vertical-gradient sky (deep blue up top → near-black below) for depth
+    var bgCanvas = document.createElement('canvas'); bgCanvas.width = 4; bgCanvas.height = 256;
+    var bgCtx = bgCanvas.getContext('2d');
+    if (bgCtx) { var bgGrad = bgCtx.createLinearGradient(0, 0, 0, 256); bgGrad.addColorStop(0, '#13243f'); bgGrad.addColorStop(0.45, '#0a1322'); bgGrad.addColorStop(1, '#06080f'); bgCtx.fillStyle = bgGrad; bgCtx.fillRect(0, 0, 4, 256); }
+    var bgTex = new THREE.CanvasTexture(bgCanvas);
+    scene.background = bgTex;
+    scene.fog = new THREE.Fog(0x0a1322, 30, 70);
     var camera = new THREE.PerspectiveCamera(55, 1, 0.1, 200);
     camera.position.set(NX * 1.15, NY * 1.05, NZ * 1.4);
     var controls = THREE.OrbitControls ? new THREE.OrbitControls(camera, renderer.domElement) : null;
@@ -393,6 +398,14 @@
     function loop() { if (eng.disposed) return; raf = requestAnimationFrame(loop); t += 0.016; magmaGlow.intensity = 1.9 + Math.sin(t * 2) * 0.4; try { updateEruption(); } catch (e) {} if (controls) controls.update(); renderer.render(scene, camera); }
     loop();
 
+    eng.setView = function (name) {
+      if (!controls) return;
+      var V = { iso: [[NX * 1.15, NY * 1.05, NZ * 1.4], [0, -NY * 0.18, 0]], front: [[0, -NY * 0.1, NZ * 1.75], [0, -NY * 0.18, 0]], top: [[0.01, NY * 2.4, 0.02], [0, 0, 0]] }[name];
+      if (!V) return;
+      camera.position.set(V[0][0], V[0][1], V[0][2]);
+      controls.target.set(V[1][0], V[1][1], V[1][2]);
+      controls.update();
+    };
     eng.setSlice = function (z) { sliceZ = z | 0; waterMesh.scale.z = (NZ - sliceZ) / NZ; waterMesh.position.z = sliceZ / 2; rebuild(); };
     eng.setExcavate = function (b) { excavate = !!b; };
     eng.setWaterTable = function (b) { waterMesh.visible = !!b; };
@@ -405,7 +418,7 @@
       cnv.removeEventListener('pointerdown', onDown); cnv.removeEventListener('pointerup', onUp); cnv.removeEventListener('webglcontextlost', onLost);
       cnv.removeEventListener('pointermove', onMoveHover); cnv.removeEventListener('pointerleave', onLeaveHover);
       if (ro) try { ro.disconnect(); } catch (e) {}
-      try { geo.dispose(); mat.dispose(); renderer.dispose(); hoverBox.geometry.dispose(); hoverBox.material.dispose(); waterMesh.geometry.dispose(); waterMesh.material.dispose(); if (eng._treeGeo) eng._treeGeo.forEach(function (g) { g.dispose(); }); if (eng._treeMat) eng._treeMat.forEach(function (m) { m.dispose(); }); if (eng._volcanoDispose) eng._volcanoDispose.forEach(function (x) { x.dispose(); }); } catch (e) {}
+      try { geo.dispose(); mat.dispose(); renderer.dispose(); hoverBox.geometry.dispose(); hoverBox.material.dispose(); waterMesh.geometry.dispose(); waterMesh.material.dispose(); if (eng._treeGeo) eng._treeGeo.forEach(function (g) { g.dispose(); }); if (eng._treeMat) eng._treeMat.forEach(function (m) { m.dispose(); }); if (eng._volcanoDispose) eng._volcanoDispose.forEach(function (x) { x.dispose(); }); if (bgTex) bgTex.dispose(); } catch (e) {}
       if (cnv.parentNode) cnv.parentNode.removeChild(cnv);
     };
     return eng;
@@ -773,6 +786,10 @@
         }
         return h('div', { ref: fsRef, className: 'relative rounded-xl overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
           h('div', { ref: containerRef, style: { height: isFs ? '100vh' : 'min(58vh, 460px)', minHeight: 320, background: '#060913', cursor: excavate ? 'crosshair' : 'grab' }, role: 'img', 'aria-label': 'Interactive 3D voxel cross-section of the crust. Use the rock list below for a non-visual version.' }),
+          h('div', { className: 'absolute top-2 left-2 z-10 flex gap-1' },
+            [['iso', '3D'], ['front', 'Front'], ['top', 'Top']].map(function (vw) {
+              return h('button', { key: vw[0], type: 'button', onClick: function () { try { if (window[ENGINE_KEY] && window[ENGINE_KEY].setView) window[ENGINE_KEY].setView(vw[0]); } catch (e) {} }, 'aria-label': 'Camera view: ' + vw[1], className: 'transition-colors active:scale-[0.97] text-[10px] font-bold px-2 py-1 rounded-md border ' + (isDark ? 'bg-slate-900/75 border-slate-600 text-slate-100 hover:bg-slate-800' : 'bg-white/80 border-slate-300 text-slate-700 hover:bg-white') }, vw[1]);
+            })),
           h('button', { type: 'button', onClick: toggleFullscreen, title: isFs ? t('stem.geology.exit_fullscreen', 'Exit fullscreen') : t('stem.geology.fullscreen', 'Fullscreen'), 'aria-label': isFs ? 'Exit fullscreen 3D view' : 'Fullscreen 3D view', className: 'absolute top-2 right-2 z-10 transition-colors active:scale-[0.97] text-base leading-none px-2 py-1.5 rounded-lg border ' + (isDark ? 'bg-slate-900/80 border-slate-600 text-slate-100 hover:bg-slate-800' : 'bg-white/85 border-slate-300 text-slate-700 hover:bg-white') }, isFs ? '✕' : '⛶'));
       }
 
