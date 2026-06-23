@@ -6806,8 +6806,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 document's per-issue pile can't bury them. Presence only — never a conformance score. */}
                             {_structuralFoundations && _structuralFoundations.present && _structuralFoundations.present.length > 0 && (
                               <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap bg-sky-100 text-sky-800"
-                                title={(t('pdf_audit.dashboard.foundations_title') || 'Length-independent structural foundations DETECTED in the remediated document — presence only, not validated for correctness, and separate from the per-issue content score above. Present:') + ' ' + _structuralFoundations.present.join('; ')}>
-                                🏗️ {_structuralFoundations.present.length}{_structuralFoundations.checked ? '/' + _structuralFoundations.checked : ''} {t('pdf_audit.dashboard.foundations') || 'foundations'}
+                                title={(t('pdf_audit.dashboard.foundations_title') || 'HTML structural foundations DETECTED in the remediated document (lang, title, landmarks, headings, lists, etc.) — presence only, not validated for correctness. This is DIFFERENT from the “PDF/UA self-check” chip, which checks the EXPORTED PDF’s byte-level structure — the two happen to both count to 18 but measure different things. Present:') + ' ' + _structuralFoundations.present.join('; ')}>
+                                🏗️ {_structuralFoundations.present.length}{_structuralFoundations.checked ? '/' + _structuralFoundations.checked : ''} {t('pdf_audit.dashboard.foundations') || 'HTML foundations'}
                               </span>
                             )}
                             {/* Distinct PDF/UA verdict for the EXPORTED tagged PDF — separate from the content score above.

@@ -5671,13 +5671,13 @@ Return ONLY JSON:
         "span",
         {
           className: "px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap bg-sky-100 text-sky-800",
-          title: (t("pdf_audit.dashboard.foundations_title") || "Length-independent structural foundations DETECTED in the remediated document \u2014 presence only, not validated for correctness, and separate from the per-issue content score above. Present:") + " " + _structuralFoundations.present.join("; ")
+          title: (t("pdf_audit.dashboard.foundations_title") || "HTML structural foundations DETECTED in the remediated document (lang, title, landmarks, headings, lists, etc.) \u2014 presence only, not validated for correctness. This is DIFFERENT from the \u201CPDF/UA self-check\u201D chip, which checks the EXPORTED PDF\u2019s byte-level structure \u2014 the two happen to both count to 18 but measure different things. Present:") + " " + _structuralFoundations.present.join("; ")
         },
         "\u{1F3D7}\uFE0F ",
         _structuralFoundations.present.length,
         _structuralFoundations.checked ? "/" + _structuralFoundations.checked : "",
         " ",
-        t("pdf_audit.dashboard.foundations") || "foundations"
+        t("pdf_audit.dashboard.foundations") || "HTML foundations"
       ), veraPdfBusy && /* @__PURE__ */ React.createElement("span", { className: "px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap bg-indigo-100 text-indigo-700", title: t("pdf_audit.pdfua_badge.validating") || "Validating PDF/UA-1 (ISO 14289-1) with veraPDF\u2026" }, "\u23F3 ", t("pdf_audit.dashboard.pdfua_validating") || "PDF/UA: validating\u2026"), !veraPdfBusy && lastTaggedValidation && (() => {
         const _v = lastTaggedValidation.veraPdf;
         const _pev = lastTaggedValidation.postExportValidator && lastTaggedValidation.postExportValidator.summary;
