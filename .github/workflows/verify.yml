@@ -80,6 +80,14 @@ jobs:
       - run: npm install --no-audit --no-fund
       - name: npm run verify (surfaces translation gaps + mirror drift)
         run: npm run verify
+      - name: Translation staleness (reworded English vs existing translations)
+        # Non-blocking visibility: lists packs holding a translation of an English
+        # string that changed since the lang_source_baseline.json snapshot. To make
+        # the signal louder, append `--gate` (still non-blocking here under the job's
+        # continue-on-error). if: always() so it runs even when the verify step above
+        # reports pre-existing debt and exits non-zero.
+        if: always()
+        run: npm run verify:stale
 
   smoke:
     name: Render smoke — deployed demo (non-blocking)
