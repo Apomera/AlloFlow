@@ -139,11 +139,20 @@ function placeholders(s) {
 async function retranslateOne(slug, staleBlock) {
   const langPath = path.join(L.LANG_DIR, slug + '.js');
   const targetLang = LANG_NAMES[slug] || slug;
-  const keys = Object.keys(staleBlock);
-  console.log(`[${slug}] ${keys.length} stale → re-translating to ${targetLang}...`);
+  // Only machine-translate STRING leaves. Array/object-valued keys (structured config
+  // like about.features_list.items, or word lists like codenames.*) must never be fed
+  // to a string-translation prompt — they're reported for manual handling instead.
+  const strBlock = {}; const nonStringKeys = [];
+  for (const [k, v] of Object.entries(staleBlock)) {
+    if (typeof v === 'string') strBlock[k] = v; else nonStringKeys.push(k);
+  }
+  const keys = Object.keys(strBlock);
+  console.log(`[${slug}] ${keys.length} stale → re-translating to ${targetLang}` +
+    (nonStringKeys.length ? ` (${nonStringKeys.length} non-string skipped)` : '') + '...');
+  if (keys.length === 0) return { slug, status: 'ok', merged: 0, skippedPh: 0, nonString: nonStringKeys, appliedKeys: [] };
 
   let text;
-  try { text = await callGemini(buildPrompt(targetLang, staleBlock)); }
+  try { text = await callGemini(buildPrompt(targetLang, strBlock)); }
   catch (e) { return { slug, status: 'api-error', error: e.message }; }
 
   let translated;
@@ -160,7 +169,7 @@ async function retranslateOne(slug, staleBlock) {
   for (const k of keys) {
     if (!(k in translated)) continue;
     // Placeholder integrity guard — never write a translation that drops/adds a ${slot}.
-    if (placeholders(translated[k]) !== placeholders(staleBlock[k])) { skippedPh++; continue; }
+    if (placeholders(translated[k]) !== placeholders(strBlock[k])) { skippedPh++; continue; }
     setDeep(langJson, k, translated[k]);
     appliedKeys.push(k);
     merged++;
@@ -170,7 +179,7 @@ async function retranslateOne(slug, staleBlock) {
     fs.copyFileSync(langPath, langPath + '.bak.stale');
     fs.writeFileSync(langPath, JSON.stringify(langJson, null, 2) + '\n');
   }
-  return { slug, status: 'ok', merged, skippedPh, appliedKeys };
+  return { slug, status: 'ok', merged, skippedPh, nonString: nonStringKeys, appliedKeys };
 }
 
 // ─── Driver ──────────────────────────────────────────────────────────────
@@ -207,11 +216,13 @@ async function retranslateOne(slug, staleBlock) {
   const ok = results.filter(r => r.status === 'ok');
   const totalMerged = ok.reduce((a, r) => a + r.merged, 0);
   const totalPh = ok.reduce((a, r) => a + (r.skippedPh || 0), 0);
+  const nonStringSet = new Set(); ok.forEach(r => (r.nonString || []).forEach(k => nonStringSet.add(k)));
   const errs = results.filter(r => r.status !== 'ok');
   console.log(`\n── ${DRY_RUN ? 'Dry-run' : 'Done'} ──`);
   console.log(`  packs re-translated: ${ok.length}`);
   console.log(`  keys ${DRY_RUN ? 'that would be ' : ''}written: ${totalMerged}`);
   if (totalPh) console.log(`  ⚠ keys skipped for placeholder mismatch: ${totalPh}`);
+  if (nonStringSet.size) console.log(`  ⚠ ${nonStringSet.size} non-string key(s) skipped — translate manually: ${[...nonStringSet].slice(0, 5).join(', ')}${nonStringSet.size > 5 ? '…' : ''}`);
   if (errs.length) { console.log(`  errors: ${errs.length}`); errs.forEach(r => console.log(`    ${r.slug}: ${r.status}${r.error ? ' — ' + r.error.slice(0, 90) : ''}`)); }
 
   if (DRY_RUN) {

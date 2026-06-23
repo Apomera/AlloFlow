@@ -61,6 +61,10 @@ same shape the `merge_*_missing` tools consume, so a re-translation pass can rea
   the `merge_*_missing` flow re-translates a key across all packs in one run. If you
   re-translate a key in only *some* packs (e.g. while native-review holds lag), re-bless
   it only after the lagging packs are caught up, or the held packs will read as current.
+- **Non-string keys:** the detector flags array/object-valued keys too (e.g. the 3 in
+  `ui_strings.js`: `codenames.adjectives`, `codenames.animals`, `about.features_list.items`),
+  but `merge_stale` will NOT machine-translate them — feeding structured data to a
+  string-translation prompt would mangle it. It skips them and lists them for manual handling.
 - **Not wired into `verify:gate`** by default: a hard staleness gate would block every
   deploy the moment any English string is reworded until it's re-translated/re-blessed.
   That's a deliberate policy call — to opt in, append to the `verify:gate` chain in
