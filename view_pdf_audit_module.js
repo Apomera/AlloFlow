@@ -3193,6 +3193,27 @@ function PdfAuditView(props) {
     if (res && res.ok) addToast((t("pdf_audit.issue.edit_rechecked") || "\u{1F4CA} Re-checked: ") + res.score + "/100 \xB7 " + res.issues + " issue(s) remaining", "success");
     else addToast(t("pdf_audit.issue.edit_applied_no_reaudit") || "\u270F Edit applied. (Couldn\u2019t re-score automatically \u2014 the preview is updated; re-run audit when ready.)", "info");
   };
+  const _recoveryResidualSource = (td, sourceText, finalText) => {
+    const _normTokenForDiff = (s) => String(s || "").toLowerCase().replace(/(\p{L})[-­](\p{L})/gu, "$1$2").replace(/­/g, "").replace(/\s+/g, "");
+    const _normalize = (s) => String(s || "").toLowerCase().replace(/\s+/g, " ").trim();
+    const snap = td && typeof td.residualMissingCount === "number" ? td.residualMissingCount : null;
+    if (td && snap && snap > 0 && Array.isArray(td.missingTokens)) {
+      return { missingTokens: td.missingTokens, residual: snap, freshMode: false };
+    }
+    if (finalText && sourceText) {
+      const shipSet = new Set(_normalize(finalText).split(" ").filter((w) => w.length >= 3).map(_normTokenForDiff));
+      const seen = /* @__PURE__ */ new Set();
+      const uniq = [];
+      for (const w of _normalize(sourceText).split(" ").filter((w2) => w2.length >= 3)) {
+        const k = _normTokenForDiff(w);
+        if (!k || shipSet.has(k) || seen.has(k)) continue;
+        seen.add(k);
+        uniq.push(w);
+      }
+      return { missingTokens: uniq, residual: uniq.length, freshMode: true };
+    }
+    return { missingTokens: [], residual: 0, freshMode: false };
+  };
   const _axeTarget = (v) => {
     const nd = v && Array.isArray(v.nodeDetails) ? v.nodeDetails[0] : null;
     const raw = nd && nd.target;
@@ -7182,11 +7203,12 @@ Return ONLY JSON:
       veraPdfFixing ? "\u23F3 " + (t("pdf_audit.verapdf.fixing") || "Auto-fixing to PDF/UA-1 (validate \u2192 repair \u2192 re-validate)\u2026") : "\u{1F527} " + (t("pdf_audit.verapdf.autofix") || "Auto-fix remaining issues (veraPDF closed loop)")
     ), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 italic mt-1" }, t("pdf_audit.verapdf.disclaimer") || "Independent open-source validation \u2014 not a legal accessibility certificate; human review still recommended."))), (() => {
       const td = lastTaggedValidation && lastTaggedValidation.roundTrip && lastTaggedValidation.roundTrip.textDiff;
-      const residual = td && typeof td.residualMissingCount === "number" ? td.residualMissingCount : null;
-      if (!td || !residual || residual <= 0) return null;
       if (!pdfFixResult || !pdfFixResult.accessibleHtml) return null;
       const sourceText = pdfFixResult.sourceText || typeof window !== "undefined" && (window.__lastGroundTruthPageMap || []).map((p) => p && p.text).filter(Boolean).join("\n\n") || "";
       if (!sourceText) return null;
+      const _rs = _recoveryResidualSource(td, sourceText, pdfFixResult.finalText);
+      const residual = _rs.residual;
+      if (!residual || residual <= 0) return null;
       const hasDiffInputs = !!(pdfFixResult.sourceText && pdfFixResult.finalText);
       return /* @__PURE__ */ React.createElement(React.Fragment, null, hasDiffInputs && /* @__PURE__ */ React.createElement("button", { onClick: async () => {
         setDiffViewOpen(true);
@@ -7201,7 +7223,7 @@ Return ONLY JSON:
           const _normalize = (s) => String(s).toLowerCase().replace(/\s+/g, " ").trim();
           const shipTokens = _normalize(pdfFixResult.finalText || "").split(" ").filter((t2) => t2.length >= 3);
           for (const t2 of shipTokens) shipNorm.add(_normTokenForDiff(t2));
-          const residualTokens = (td.missingTokens || []).filter((w) => !shipNorm.has(_normTokenForDiff(w)));
+          const residualTokens = _rs.missingTokens.filter((w) => !shipNorm.has(_normTokenForDiff(w)));
           if (residualTokens.length === 0) {
             addToast("No residual tokens to restore (all cosmetic). Nothing to do.", "info");
             setPdfFixStep && setPdfFixStep("");
@@ -7236,11 +7258,12 @@ Return ONLY JSON:
               warnLog("[TierB] restoreSentencesDeterministic failed: " + (e3 && e3.message));
             }
           }
-          setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: html, htmlChars: html.length } : prev);
+          const _restoredText = html.replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/&[a-z]+;/gi, " ").replace(/\s+/g, " ").trim();
+          setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: html, htmlChars: html.length, finalText: _restoredText } : prev);
           setTierBStage("re-tag");
           setPdfFixStep && setPdfFixStep("Restoring (3/3): re-tagging PDF with restored content\u2026");
           try {
-            const _freshFixResult = { ...pdfFixResult, accessibleHtml: html, htmlChars: html.length };
+            const _freshFixResult = { ...pdfFixResult, accessibleHtml: html, htmlChars: html.length, finalText: _restoredText };
             const _bytes = pendingPdfBase64 ? Uint8Array.from(atob(pendingPdfBase64.includes(",") ? pendingPdfBase64.split(",")[1] : pendingPdfBase64), (c) => c.charCodeAt(0)) : null;
             if (_bytes && createTaggedPdf) {
               const _tbm = pdfMetaOverride || {};
@@ -7259,7 +7282,12 @@ Return ONLY JSON:
             }
           } catch (eRe) {
             warnLog("[TierB] re-tag failed: " + (eRe && eRe.message));
-            addToast(`Restored ${allRestored.length} inline; re-tag failed \u2014 try the Tagged PDF button to regenerate.`, "info");
+            try {
+              _lastTaggedBytesRef.current = null;
+            } catch (_) {
+            }
+            setLastTaggedValidation((prev) => prev ? { ...prev, _staleAfterRestore: true } : prev);
+            addToast(`Restored ${allRestored.length} inline, but re-tagging the PDF failed \u2014 click \u201CTagged PDF\u201D to regenerate it with the restored content (the previous tagged file no longer matches).`, "info");
           }
           setPdfFixStep && setPdfFixStep("");
           setTierBStage("");

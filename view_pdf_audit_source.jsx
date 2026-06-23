@@ -2886,6 +2886,32 @@ function PdfAuditView(props) {
     else addToast(t('pdf_audit.issue.edit_applied_no_reaudit') || '✏ Edit applied. (Couldn’t re-score automatically — the preview is updated; re-run audit when ready.)', 'info');
   };
 
+  // Recovery residual source (Option B, 2026-06-22): decide what missing-token list drives the Tier-B
+  // "Re-run with restoration" UI. PREFER the tagged-PDF round-trip snapshot (tokens lost in PDF tagging)
+  // when it's fresh; otherwise — e.g. after the auto-continue loop, which updates the document but never
+  // refreshes lastTaggedValidation — FALL BACK to a fresh source-vs-final-text diff (tokens lost in
+  // remediation) so Recovery is runnable any time after remediation, not only right after a Tagged PDF
+  // export. Pure (no closure deps) → testable. Returns { missingTokens, residual, freshMode }.
+  const _recoveryResidualSource = (td, sourceText, finalText) => {
+    const _normTokenForDiff = (s) => String(s || '').toLowerCase().replace(/(\p{L})[-­](\p{L})/gu, '$1$2').replace(/­/g, '').replace(/\s+/g, '');
+    const _normalize = (s) => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+    const snap = td && typeof td.residualMissingCount === 'number' ? td.residualMissingCount : null;
+    if (td && snap && snap > 0 && Array.isArray(td.missingTokens)) {
+      return { missingTokens: td.missingTokens, residual: snap, freshMode: false };
+    }
+    if (finalText && sourceText) {
+      const shipSet = new Set(_normalize(finalText).split(' ').filter((w) => w.length >= 3).map(_normTokenForDiff));
+      const seen = new Set(); const uniq = [];
+      for (const w of _normalize(sourceText).split(' ').filter((w) => w.length >= 3)) {
+        const k = _normTokenForDiff(w);
+        if (!k || shipSet.has(k) || seen.has(k)) continue;
+        seen.add(k); uniq.push(w);
+      }
+      return { missingTokens: uniq, residual: uniq.length, freshMode: true };
+    }
+    return { missingTokens: [], residual: 0, freshMode: false };
+  };
+
   // Same actions for an axe violation — its nodeDetails[0].target is an EXACT CSS selector (more
   // precise than the AI text-anchor search), so Find resolves it directly against the live preview.
   const _axeTarget = (v) => {
@@ -8980,11 +9006,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 diff UX — just make it easier to reach. */}
                             {(() => {
                               const td = lastTaggedValidation && lastTaggedValidation.roundTrip && lastTaggedValidation.roundTrip.textDiff;
-                              const residual = td && typeof td.residualMissingCount === 'number' ? td.residualMissingCount : null;
-                              if (!td || !residual || residual <= 0) return null;
                               if (!pdfFixResult || !pdfFixResult.accessibleHtml) return null;
                               const sourceText = pdfFixResult.sourceText || (typeof window !== 'undefined' && (window.__lastGroundTruthPageMap || []).map(p => p && p.text).filter(Boolean).join('\n\n')) || '';
                               if (!sourceText) return null;
+                              // Prefer the tagged-PDF round-trip snapshot when fresh; else a fresh source-vs-final diff
+                              // so Recovery runs ANY time after remediation (Option B) — not only right after a Tagged
+                              // PDF export (lastTaggedValidation goes stale across the auto-continue loop).
+                              const _rs = _recoveryResidualSource(td, sourceText, pdfFixResult.finalText);
+                              const residual = _rs.residual;
+                              if (!residual || residual <= 0) return null;
                               const hasDiffInputs = !!(pdfFixResult.sourceText && pdfFixResult.finalText);
                               return (
                                 <>
@@ -9012,7 +9042,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     const _normalize = (s) => String(s).toLowerCase().replace(/\s+/g, ' ').trim();
                                     const shipTokens = _normalize(pdfFixResult.finalText || '').split(' ').filter(t => t.length >= 3);
                                     for (const t of shipTokens) shipNorm.add(_normTokenForDiff(t));
-                                    const residualTokens = (td.missingTokens || []).filter(w => !shipNorm.has(_normTokenForDiff(w)));
+                                    const residualTokens = _rs.missingTokens.filter(w => !shipNorm.has(_normTokenForDiff(w)));
                                     if (residualTokens.length === 0) { addToast('No residual tokens to restore (all cosmetic). Nothing to do.', 'info'); setPdfFixStep && setPdfFixStep(''); setTierBStage(''); return; }
                                     const missingEntries = residualTokens.map(w => ({ word: w }));
                                     let html = pdfFixResult.accessibleHtml;
@@ -9030,11 +9060,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                         if (r3 && r3.html) { html = r3.html; allRestored = allRestored.concat(r3.restoredViaSentence || []); allUnplaceable = r3.stillMissing || []; }
                                       } catch (e3) { warnLog('[TierB] restoreSentencesDeterministic failed: ' + (e3 && e3.message)); }
                                     }
-                                    setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: html, htmlChars: html.length } : prev);
+                                    // Refresh finalText to the restored plain text so the integrity/coverage displays and the
+                                    // fresh (Option B) residual recompute reflect the just-restored words, not the pre-restore text.
+                                    const _restoredText = html.replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&[a-z]+;/gi, ' ').replace(/\s+/g, ' ').trim();
+                                    setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: html, htmlChars: html.length, finalText: _restoredText } : prev);
                                     setTierBStage('re-tag');
                                     setPdfFixStep && setPdfFixStep('Restoring (3/3): re-tagging PDF with restored content…');
                                     try {
-                                      const _freshFixResult = { ...pdfFixResult, accessibleHtml: html, htmlChars: html.length };
+                                      const _freshFixResult = { ...pdfFixResult, accessibleHtml: html, htmlChars: html.length, finalText: _restoredText };
                                       const _bytes = pendingPdfBase64 ? Uint8Array.from(atob(pendingPdfBase64.includes(',') ? pendingPdfBase64.split(',')[1] : pendingPdfBase64), c => c.charCodeAt(0)) : null;
                                       if (_bytes && createTaggedPdf) {
                                         const _tbm = pdfMetaOverride || {};
@@ -9057,7 +9090,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       }
                                     } catch (eRe) {
                                       warnLog('[TierB] re-tag failed: ' + (eRe && eRe.message));
-                                      addToast(`Restored ${allRestored.length} inline; re-tag failed — try the Tagged PDF button to regenerate.`, 'info');
+                                      // Desync guard (2026-06-22): the HTML was restored but re-tagging FAILED, so the previously
+                                      // tagged bytes no longer match the visible (restored) document. Drop the cached bytes + flag
+                                      // the validation stale so a later "Tagged PDF" export regenerates from the RESTORED html
+                                      // instead of silently shipping the pre-restoration file (the display↔export divergence).
+                                      try { _lastTaggedBytesRef.current = null; } catch (_) {}
+                                      setLastTaggedValidation(prev => prev ? { ...prev, _staleAfterRestore: true } : prev);
+                                      addToast(`Restored ${allRestored.length} inline, but re-tagging the PDF failed — click “Tagged PDF” to regenerate it with the restored content (the previous tagged file no longer matches).`, 'info');
                                     }
                                     setPdfFixStep && setPdfFixStep('');
                                     setTierBStage('');
