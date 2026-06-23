@@ -462,6 +462,41 @@ function clampPaletteContrast(palette, opts) {
   return _r;
 }
 
+// Curated, VETTED palette presets (S2, 2026-06-23) — semantic-token maps designed to pass, and re-clamped
+// on apply as belt-and-suspenders. The AI-propose path (later slice) emits the same token shape, so it
+// flows through the identical clamp→build→apply pipeline. The model never authors CSS; it picks/parameterizes.
+var PALETTE_PRESETS = [
+  { id: 'classic',     name: 'Classic',        tokens: { bg:'#ffffff', surface:'#f8fafc', text:'#1f2937', heading:'#0f172a', link:'#1d4ed8', accent:'#2563eb', border:'#cbd5e1', headerBg:'#1e293b', headerText:'#ffffff', calloutBg:'#eff6ff', calloutText:'#1e3a8a' } },
+  { id: 'slate',       name: 'Slate (neutral)', tokens: { bg:'#ffffff', surface:'#f1f5f9', text:'#1e293b', heading:'#0f172a', link:'#475569', accent:'#334155', border:'#cbd5e1', headerBg:'#334155', headerText:'#ffffff', calloutBg:'#f8fafc', calloutText:'#334155' } },
+  { id: 'warm',        name: 'Warm',           tokens: { bg:'#fffdf7', surface:'#fef3e2', text:'#422006', heading:'#7c2d12', link:'#9a3412', accent:'#c2410c', border:'#fed7aa', headerBg:'#7c2d12', headerText:'#ffffff', calloutBg:'#fff7ed', calloutText:'#7c2d12' } },
+  { id: 'calm',        name: 'Calm (teal)',    tokens: { bg:'#ffffff', surface:'#f0fdfa', text:'#134e4a', heading:'#115e59', link:'#0f766e', accent:'#0d9488', border:'#99f6e4', headerBg:'#134e4a', headerText:'#ffffff', calloutBg:'#f0fdfa', calloutText:'#115e59' } },
+  { id: 'highContrast', name: 'High contrast', tokens: { bg:'#ffffff', surface:'#f5f5f5', text:'#000000', heading:'#000000', link:'#00339c', accent:'#00339c', border:'#000000', headerBg:'#000000', headerText:'#ffffff', calloutBg:'#f5f5f5', calloutText:'#000000' } },
+];
+
+// buildPaletteCss(palette, opts): clamp the palette to GUARANTEE contrast, then emit a de-stackable <style>
+// block that applies it to the remediated document. Uses !important so the palette wins over the INLINE
+// docStyle colors the renderer emits, and keeps a non-color cue on links (underline) so color never carries
+// meaning alone (WCAG 1.4.1). Only emits rules for tokens actually present. Pure → testable; the same
+// clamped palette feeds the live ratio badge. Returns { css, palette: <clamped>, report, allPass }.
+function buildPaletteCss(palette, opts) {
+  var clamped = clampPaletteContrast(palette || {}, opts);
+  var p = clamped.palette;
+  var rule = function (sel, parts) { var d = parts.filter(Boolean).join(';'); return d ? sel + '{' + d + '}' : ''; };
+  var imp = function (prop, val) { return val ? prop + ':' + val + ' !important' : ''; };
+  var lines = [
+    rule('body', [imp('background', p.bg), imp('color', p.text)]),
+    rule('h1,h2,h3,h4,h5,h6', [imp('color', p.heading)]),
+    p.link ? 'a{color:' + p.link + ' !important;text-decoration:underline}' : '',   // color-not-alone cue
+    rule('th', [imp('background', p.surface), imp('color', p.text)]),
+    rule('table,td,th', [imp('border-color', p.border)]),
+    rule('aside,blockquote,.allo-callout', [imp('background', p.calloutBg), imp('color', p.calloutText), p.accent ? 'border-left:4px solid ' + p.accent : '']),
+    rule('header[role="banner"]', [imp('background', p.headerBg), imp('color', p.headerText)]),
+  ].filter(Boolean);
+  var css = '/*__ALLO_PALETTE__*/' + lines.join('') + '/*__ALLO_PALETTE_END__*/';
+  var _r = { css: css, palette: p, report: clamped.report, allPass: clamped.allPass };
+  return _r;
+}
+
 // Convert an INTERACTIVE image-placeholder <figure> (upload buttons, drop zone, on* handlers, the resize
 // bar) into a clean STATIC figure that preserves the description — for the AUDIT and EXPORT, never the
 // live preview. Two callers: (1) the leaked-handler repair below, and (2) the audit chrome-strip. The
@@ -20712,6 +20747,27 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
   // Backward compat alias
   const applyThemeToPdfHtml = applyStyleSeedToHtml;
 
+  // applyPaletteToHtml(html, palette, opts) — S2 apply-to-document. Clamps the palette (guarantee), builds
+  // the de-stackable palette <style> (buildPaletteCss), strips any previously-applied palette block so
+  // re-applies don't accumulate (mirrors the style-seed de-stack), injects it, then runs sanitizeStyleForWCAG
+  // as belt-and-suspenders for any UN-modeled inline combination (text over an image, a per-element colour the
+  // palette didn't touch). Deterministic html→html; the caller snapshots for accept/revert + re-audits.
+  const applyPaletteToHtml = (html, palette, opts) => {
+    if (!html || !palette) return html;
+    var built;
+    try { built = buildPaletteCss(palette, opts); } catch (_) { return html; }
+    if (!built || !built.css) return html;
+    const OPEN = '/*__ALLO_PALETTE__*/', CLOSE = '/*__ALLO_PALETTE_END__*/';
+    let base = html;
+    try { base = base.split(OPEN).map((seg, i) => i === 0 ? seg : seg.slice(seg.indexOf(CLOSE) === -1 ? 0 : seg.indexOf(CLOSE) + CLOSE.length)).join(''); } catch (_) { base = html; }
+    let themed;
+    if (base.includes('</style>')) themed = base.replace('</style>', built.css + '\n</style>');
+    else if (base.includes('</head>')) themed = base.replace('</head>', '<style>' + built.css + '</style>\n</head>');
+    else themed = '<style>' + built.css + '</style>\n' + base;
+    try { const san = sanitizeStyleForWCAG(themed, { level: 'AA' }); if (san && san.html) themed = san.html; } catch (_) {}
+    return themed;
+  };
+
   // ── PDF Preview: Update iframe content ──
   // Accept overrides to avoid stale closure — state may not have updated yet when called from setTimeout
   // ── Word-like drag-resize for preview images (2026-06-11, maintainer ask) ──
@@ -27242,6 +27298,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
   return {
     getPipelineStats: _getPipelineStats,
     clampPaletteContrast: clampPaletteContrast,
+    buildPaletteCss: buildPaletteCss,
+    applyPaletteToHtml: applyPaletteToHtml,
+    palettePresets: PALETTE_PRESETS,
     runPdfAccessibilityAudit: _wrapAsync(runPdfAccessibilityAudit),
     auditOutputAccessibility: _wrapAsync(auditOutputAccessibility),
     runAxeAudit: _wrapAsync(runAxeAudit),

@@ -13,6 +13,10 @@ const _tail = '\n  return _r;\n}';
 const _e = dp.indexOf(_tail, _s) + _tail.length;
 if (_s === -1 || _e < _tail.length) throw new Error('extraction markers for clampPaletteContrast missing');
 const clampPaletteContrast = new Function(dp.slice(_s, _e) + '\nreturn clampPaletteContrast;')();
+// Extract the presets + buildPaletteCss (which calls clampPaletteContrast) as one self-contained slice.
+const _be = dp.indexOf('\n  return _r;\n}', dp.indexOf('function buildPaletteCss(palette, opts) {')) + '\n  return _r;\n}'.length;
+const _mod = new Function(dp.slice(_s, _be) + '\nreturn { buildPaletteCss: buildPaletteCss, PALETTE_PRESETS: PALETTE_PRESETS };')();
+const { buildPaletteCss, PALETTE_PRESETS } = _mod;
 
 // Independent WCAG contrast (so we verify the engine against a SEPARATE implementation).
 const rgb = (hex) => { const h = hex.replace('#', ''); return [0, 2, 4].map((i) => parseInt(h.substr(i, 2), 16)); };
@@ -90,8 +94,58 @@ describe('clampPaletteContrast: hue-preserving + robust', () => {
   });
 });
 
-describe('anti-drift: the engine is exported on the factory API', () => {
-  it('clampPaletteContrast is on the public return', () => {
+describe('curated presets + buildPaletteCss: every preset is GUARANTEED-accessible after build', () => {
+  it('there are several vetted presets, each with full semantic tokens', () => {
+    expect(PALETTE_PRESETS.length).toBeGreaterThanOrEqual(4);
+    for (const preset of PALETTE_PRESETS) {
+      expect(preset.id).toBeTruthy(); expect(preset.name).toBeTruthy();
+      for (const tok of ['bg', 'text', 'heading', 'link', 'headerBg', 'headerText']) {
+        expect(preset.tokens[tok], `${preset.id}.${tok}`).toMatch(/^#[0-9a-f]{6}$/i);
+      }
+    }
+  });
+  it('EVERY preset, built, passes WCAG on every modeled pair (independently recomputed)', () => {
+    for (const preset of PALETTE_PRESETS) {
+      const { palette, report, allPass } = buildPaletteCss(preset.tokens);
+      expect(allPass, `${preset.id} allPass`).toBe(true);
+      for (const r of report) {
+        const got = ratio(palette[r.token], palette[r.against]);
+        expect(got, `${preset.id}: ${r.token} on ${r.against} = ${got.toFixed(2)} (target ${r.target})`).toBeGreaterThanOrEqual(r.target - 0.05);
+      }
+    }
+  });
+  it('the CSS uses !important (wins over inline docStyle colors), a link underline, and de-stack markers', () => {
+    const { css } = buildPaletteCss(PALETTE_PRESETS[0].tokens);
+    expect(css).toContain('/*__ALLO_PALETTE__*/');
+    expect(css).toContain('/*__ALLO_PALETTE_END__*/');
+    expect(css).toMatch(/body\{[^}]*background:[^;]+!important[^}]*color:[^;]+!important/);
+    expect(css).toMatch(/h1,h2,h3,h4,h5,h6\{color:[^;]+!important\}/);
+    expect(css).toMatch(/a\{color:#[0-9a-f]{6} !important;text-decoration:underline\}/i); // color-not-alone
+  });
+  it('a FAILING palette emits the CLAMPED (corrected) colors, not the proposed ones', () => {
+    const { css, palette } = buildPaletteCss({ bg: '#ffffff', text: '#aaaaaa', heading: '#cccccc' });
+    expect(palette.text).not.toBe('#aaaaaa');           // was clamped
+    expect(css).toContain(palette.text);                // CSS carries the clamped color
+    expect(css).not.toContain('#aaaaaa !important');    // not the failing original
+  });
+  it('a partial palette only emits rules for tokens that are present', () => {
+    const { css } = buildPaletteCss({ bg: '#ffffff', text: '#111827' }); // no heading/link/header/callout
+    expect(css).toMatch(/body\{/);
+    expect(css).not.toMatch(/h1,h2,h3/);   // no heading token → no heading rule
+    expect(css).not.toMatch(/header\[role/);
+  });
+});
+
+describe('anti-drift: the engine + apply are exported, and apply de-stacks', () => {
+  it('clampPaletteContrast / buildPaletteCss / applyPaletteToHtml / palettePresets are on the public return', () => {
     expect(dp).toMatch(/clampPaletteContrast: clampPaletteContrast,/);
+    expect(dp).toMatch(/buildPaletteCss: buildPaletteCss,/);
+    expect(dp).toMatch(/applyPaletteToHtml: applyPaletteToHtml,/);
+    expect(dp).toMatch(/palettePresets: PALETTE_PRESETS,/);
+  });
+  it('applyPaletteToHtml strips a previous palette block before injecting (no accumulation on re-apply)', () => {
+    // it splits on the OPEN marker and drops through the CLOSE marker — the de-stack contract
+    expect(dp).toMatch(/base\.split\(OPEN\)\.map\(\(seg, i\) => i === 0 \? seg : seg\.slice/);
+    expect(dp).toMatch(/sanitizeStyleForWCAG\(themed, \{ level: 'AA' \}\)/); // belt-and-suspenders
   });
 });
