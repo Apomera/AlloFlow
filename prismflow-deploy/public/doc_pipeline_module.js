@@ -748,6 +748,52 @@ function _restyleToList(blockHtml, opts) {
   var _r = { ok: true, html: html, kind: 'list', reason: 'ok' };
   return _r;
 }
+// Convert table cells that use BULLET GLYPHS (• · ‣ ▪) as a visual list into a semantic <ul><li> (WCAG 1.3.1
+// — remediation sometimes emits "• item<br>• item" inside a <td> instead of a real list). Deterministic +
+// SAFE: a cell is converted only when it has ≥2 <br>-separated bullet-glyph items and no existing list/nested
+// table; and the WHOLE pass is reverted to the original bytes if it didn't preserve reading order + link/image
+// fidelity (so it can only ever help, never corrupt — and it's a byte-for-byte no-op when no cell qualifies).
+function listifyTableCellBullets(html) {
+  var src = String(html || '');
+  if (typeof DOMParser === 'undefined' || !/[•·‣▪]/.test(src)) return src; // cheap bail: no bullet glyphs at all
+  var doc;
+  try { doc = new DOMParser().parseFromString(src, 'text/html'); } catch (_) { return src; }
+  if (!doc.body) return src;
+  var changed = false;
+  var cells = doc.body.querySelectorAll('td, th');
+  var _bullet = /^\s*(?:&nbsp;|\s)*[•·‣▪]\s*/;
+  for (var ci = 0; ci < cells.length; ci++) {
+    var cell = cells[ci];
+    if (cell.querySelector('ul, ol, li, table')) continue;          // already structured / nested
+    var inner = cell.innerHTML;
+    if (!/[•·‣▪]/.test(inner)) continue;
+    var segs = inner.split(/<br\s*\/?>/i);
+    if (segs.length < 2) continue;
+    var lead = [], items = [];
+    for (var si = 0; si < segs.length; si++) {
+      var seg = segs[si];
+      if (_bullet.test(seg)) { var it = seg.replace(_bullet, '').trim(); if (it) items.push(it); }
+      else if (!items.length) { if (seg.trim()) lead.push(seg); }   // pre-bullet lead text (kept above the list)
+      else if (seg.trim()) { items[items.length - 1] += '<br>' + seg; } // continuation of the previous item — never drop it
+    }
+    if (items.length < 2) continue;                                  // need a real list, not a single stray bullet
+    var ul = doc.createElement('ul');
+    ul.setAttribute('style', 'margin:4px 0;padding-left:20px;');
+    for (var ii = 0; ii < items.length; ii++) { var li = doc.createElement('li'); li.innerHTML = items[ii]; ul.appendChild(li); }
+    var newInner = (lead.length ? lead.join('<br>') : '') + ul.outerHTML;
+    var tag = cell.tagName.toLowerCase();
+    if (!checkReadingOrderPreserved('<' + tag + '>' + inner + '</' + tag + '>', '<' + tag + '>' + newInner + '</' + tag + '>').ok) continue; // per-cell order guard
+    cell.innerHTML = newInner;
+    changed = true;
+  }
+  if (!changed) return src;                                          // no qualifying cell → return ORIGINAL bytes (no reserialize)
+  var out;
+  try { out = doc.documentElement.outerHTML; } catch (_) { return src; }
+  if (/^\s*<!DOCTYPE/i.test(src)) out = '<!DOCTYPE html>\n' + out;
+  // Whole-doc safety net: never ship a reserialization that lost/reordered content or changed a link/image.
+  try { if (!checkReadingOrderPreserved(src, out).ok || !_restyleContentFidelity(src, out).ok) return src; } catch (_) { return src; }
+  return out;
+}
 // Level (1–6) of the nearest heading that appears in `html` BEFORE the block `blockHtml` (by string
 // position), or 0 if none. Lets a block-scoped heading promotion choose an OUTLINE-SAFE level (never skip
 // past preceding+1) without re-parsing the whole DOM. Pure. (2026-06-23, heading-transform hardening.)
@@ -10973,29 +11019,39 @@ HTML section ${chunkNum}/${chunks.length}:
     };
     const defaultBg = detectDocBg(htmlContent);
 
+    // Does the `color:` at `offset` sit in a context that declares its OWN background — either an inline
+    // style="..." attribute OR a CSS rule { ... } inside a <style> block? If so, the document body bg is the
+    // WRONG reference; darkening against it breaks a correctly-authored pair. (2026-06-23, maintainer Canvas
+    // test: this was darkening `.sr-only:focus { background:#2563eb; color:white }` → #737373 = 1.48:1 on the
+    // focused skip link.) Pass 4 re-fixes inline fg+bg against the right local bg; CSS-rule pairs are authored
+    // correctly, so the safe move is to leave them alone here.
+    const _hasLocalBg = (fullStr, offset) => {
+      const back = fullStr.substring(Math.max(0, offset - 600), offset);
+      const lastStyleOpen = back.lastIndexOf('style="');
+      if (lastStyleOpen !== -1) {
+        const afterStyleOpen = back.substring(lastStyleOpen + 7);
+        if (!afterStyleOpen.includes('"')) {
+          const fwd = fullStr.substring(offset, Math.min(fullStr.length, offset + 600));
+          const closingQuote = fwd.indexOf('"');
+          const styleFragment = afterStyleOpen + (closingQuote >= 0 ? fwd.substring(0, closingQuote) : fwd);
+          if (/background(?:-color)?\s*:/i.test(styleFragment)) return true;
+        }
+      }
+      // CSS rule context: nearest unclosed '{' before the match, up to the next '}'.
+      const lastBrace = back.lastIndexOf('{'), lastClose = back.lastIndexOf('}');
+      if (lastBrace !== -1 && lastBrace > lastClose) {
+        const fwd = fullStr.substring(offset, Math.min(fullStr.length, offset + 600));
+        const closeIdx = fwd.indexOf('}');
+        const ruleFragment = back.substring(lastBrace + 1) + (closeIdx >= 0 ? fwd.substring(0, closeIdx) : fwd);
+        if (/background(?:-color)?\s*:/i.test(ruleFragment)) return true;
+      }
+      return false;
+    };
+
     // ── Pass 1: Fix color:#hex declarations against detected background ──
-    // Skip any match that lives inside an inline style="..." attribute that ALSO
-    // declares its own background — Pass 4 below handles those holistically with
-    // the correct local bg context. Previously this pass naively darkened #ffffff
-    // against the document background when it actually sits on a blue button, so
-    // white button text rendered as dark-orange-on-blue.
     fixed = fixed.replace(/([;"\s])color:\s*(#[0-9a-fA-F]{3,6})\b/g, (match, prefix, hex, offset, fullStr) => {
       try {
-        // Look backward for the opening of an inline style="..." attribute. If found
-        // unclosed before this match, inspect the full style fragment for a background.
-        const back = fullStr.substring(Math.max(0, offset - 400), offset);
-        const lastStyleOpen = back.lastIndexOf('style="');
-        if (lastStyleOpen !== -1) {
-          const afterStyleOpen = back.substring(lastStyleOpen + 7);
-          if (!afterStyleOpen.includes('"')) {
-            const fwd = fullStr.substring(offset, Math.min(fullStr.length, offset + 400));
-            const closingQuote = fwd.indexOf('"');
-            const styleFragment = afterStyleOpen + (closingQuote >= 0 ? fwd.substring(0, closingQuote) : fwd);
-            if (/background(?:-color)?\s*:/i.test(styleFragment)) {
-              return match; // Pass 4 owns this inline style
-            }
-          }
-        }
+        if (_hasLocalBg(fullStr, offset)) return match; // a local background governs — don't darken against the body bg
         const rgb = hexToRgb(hex);
         if (contrastRatio(rgb, defaultBg) < 4.5) {
           const [fr, fg, fb] = fixToPass(rgb, defaultBg);
@@ -11012,7 +11068,8 @@ HTML section ${chunkNum}/${chunks.length}:
     // was banner watermark text styled with `color: rgba(255,255,255,0.4)` on a dark
     // gradient — the RGB contrast (white on navy) reads 14:1 and passes the old check, but
     // the rendered text is unreadable because of the alpha.
-    fixed = fixed.replace(/color:\s*rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+)\s*)?\)/gi, (match, r, g, b, a) => {
+    fixed = fixed.replace(/color:\s*rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+)\s*)?\)/gi, (match, r, g, b, a, offset, fullStr) => {
+      if (_hasLocalBg(fullStr, offset)) return match; // a local background governs this color
       const rgb = [parseInt(r), parseInt(g), parseInt(b)];
       const alpha = a !== undefined ? parseFloat(a) : 1;
       let out = rgb;
@@ -11033,9 +11090,10 @@ HTML section ${chunkNum}/${chunks.length}:
 
     // ── Pass 3: Fix named CSS color values ──
     const namedColorRegex = new RegExp('([;"\\s])color:\\s*(' + Object.keys(namedColorMap).join('|') + ')\\b', 'gi');
-    fixed = fixed.replace(namedColorRegex, (match, prefix, name) => {
+    fixed = fixed.replace(namedColorRegex, (match, prefix, name, offset, fullStr) => {
       const hex = namedColorMap[name.toLowerCase()];
       if (!hex) return match;
+      if (_hasLocalBg(fullStr, offset)) return match; // a local background governs (e.g. .sr-only:focus{background:#2563eb;color:white})
       try {
         const rgb = hexToRgb(hex);
         if (contrastRatio(rgb, defaultBg) < 4.5) {
@@ -16040,6 +16098,13 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           warnLog(`[PDF Fix] Deterministic contrast fix: ${contrastFix.fixCount} patterns fixed`);
         }
       }
+
+      // ── Step 4b-2: Listify bullet-glyph table cells (WCAG 1.3.1) — a remediation that emits "• item<br>• item"
+      //    inside a <td> instead of a real list. Self-gated (only converts cells it can verify; no-op otherwise). ──
+      try {
+        const _listified = listifyTableCellBullets(accessibleHtml);
+        if (_listified !== accessibleHtml) { accessibleHtml = _listified; warnLog('[PDF Fix] Converted bullet-glyph table cell(s) to semantic <ul><li> (WCAG 1.3.1)'); }
+      } catch (_) {}
 
       // ── Step 4b-1: Deterministic WCAG gap closures (form labels, decorative images, complex tables, lang spans) ──
       updateProgress(4, 'Running deterministic WCAG fixes...');
@@ -27807,6 +27872,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     checkReadingOrderPreserved: checkReadingOrderPreserved,
     readingOrderSequenceRatio: readingOrderSequenceRatio,
     restyleBlock: restyleBlock,
+    listifyTableCellBullets: listifyTableCellBullets,
     precedingHeadingLevel: precedingHeadingLevel,
     headingOutlineIssue: _headingOutlineIssue,
     runPdfAccessibilityAudit: _wrapAsync(runPdfAccessibilityAudit),
