@@ -8003,6 +8003,11 @@ Return ONLY valid JSON:
       const _mMinor    = _attachAgreement(mergeIssues(...parsedAudits.map(a => a.minor)));
       const _consolidatedDed = _alloBinDed(_mCritical, 15) + _alloBinDed(_mSerious, 10) + _alloBinDed(_mModerate, 5) + _alloBinDed(_mMinor, 2);
       const _consolidatedContentScore = Math.max(0, 100 - Math.round(_consolidatedDed));
+      // Cross-pass agreement is MEANINGLESS when there's only one pass, or when every pass floored to 0 (the
+      // deduction clamp pins them at the floor — "excellent agreement" on five 0s reads as a contradiction
+      // and reflects the clamp, not stable scoring). Flag it so the UI shows an honest "n/a" + explanation
+      // instead of an "excellent" verdict. (2026-06-23, maintainer Canvas test.)
+      const _reliabilityDegenerate = n < 2 || scores.every(s => s === 0);
       const triangulated = {
         score: _consolidatedContentScore, // headline = deduction on the displayed consolidated list (reproducible)
         _aiPanelMeanScore: avgScore,       // mean of the N per-auditor scores — retained for the agreement band only
@@ -8017,7 +8022,8 @@ Return ONLY valid JSON:
         auditorCount: n,
         requestedAuditors: numAuditors,
         needsAdditionalAnalysis: false, // High variance on pre-remediation is expected — flag only post-remediation
-        reliability: icc >= 0.9 ? 'excellent' : icc >= 0.75 ? 'good' : icc >= 0.5 ? 'moderate' : 'variable',
+        reliability: _reliabilityDegenerate ? 'n/a' : (icc >= 0.9 ? 'excellent' : icc >= 0.75 ? 'good' : icc >= 0.5 ? 'moderate' : 'variable'),
+        reliabilityDegenerate: _reliabilityDegenerate, // true = uniform-at-floor / single pass → agreement not meaningful
         summary: scoreRange > 25
           ? `Scores varied significantly (range: ${scoreRange}, SD: ${scoreSD}) across ${n} audits. ${parsedAudits[0].summary}`
           : `${parsedAudits[0].summary} (${n}-pass self-consistency, SD: ${scoreSD})`,
@@ -17494,10 +17500,10 @@ tr { page-break-inside: avoid; }
       html += `<h2>Cross-Pass Agreement Metrics</h2><div class="meta-grid">
         <div class="meta-card"><div class="meta-val">${audit.ci95 ? audit.ci95[0] + '&ndash;' + audit.ci95[1] : 'N/A'}</div><div class="meta-label">95% Confidence Interval</div></div>
         <div class="meta-card"><div class="meta-val">${audit.scoreSD ?? 'N/A'}</div><div class="meta-label">Standard Deviation</div></div>
-        <div class="meta-card"><div class="meta-val">${audit.icc ?? 'N/A'}</div><div class="meta-label">Cross-pass agreement (heuristic index)</div></div>
-        ${audit.cronbachAlpha !== null && audit.cronbachAlpha !== undefined ? '<div class="meta-card"><div class="meta-val">' + audit.cronbachAlpha + '</div><div class="meta-label">Cross-pass agreement (consistency heuristic)</div></div>' : ''}
+        <div class="meta-card"><div class="meta-val">${audit.reliabilityDegenerate ? 'N/A' : (audit.icc ?? 'N/A')}</div><div class="meta-label">Cross-pass agreement (heuristic index)</div></div>
+        ${(audit.cronbachAlpha !== null && audit.cronbachAlpha !== undefined && !audit.reliabilityDegenerate) ? '<div class="meta-card"><div class="meta-val">' + audit.cronbachAlpha + '</div><div class="meta-label">Cross-pass agreement (consistency heuristic)</div></div>' : ''}
       </div>
-      <p style="font-size:12px;color:#64748b">AI passes: ${audit.auditorCount || audit.scores.length} | Individual scores: ${audit.scores.join(', ')} | SEM: &plusmn;${audit.scoreSEM || 'N/A'} | Range: ${audit.scoreRange || 'N/A'} | Reliability: ${audit.reliability || 'N/A'}</p>`;
+      <p style="font-size:12px;color:#64748b">AI passes: ${audit.auditorCount || audit.scores.length} | Individual scores: ${audit.scores.join(', ')} | SEM: &plusmn;${audit.scoreSEM || 'N/A'} | Range: ${audit.scoreRange || 'N/A'} | Reliability: ${audit.reliability || 'N/A'}</p>${audit.reliabilityDegenerate ? '<p style="font-size:12px;color:#92400e;padding:6px 10px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px">&#9888; Agreement is not meaningful here (' + (audit.auditorCount < 2 ? 'single pass' : 'all passes pinned at the deduction floor') + ') — it reflects the floor/sample, not stable scoring.</p>' : ''}`;
     }
 
     // Document info
@@ -17757,12 +17763,13 @@ tr { page-break-inside: avoid; }
           <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Standard Deviation (across passes)</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${ar.scoreSD ?? 'n/a'}</td></tr>
           <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Standard error of pass scores (SEM)</td><td style="padding:6px 10px;border:1px solid #e2e8f0">±${ar.scoreSEM ?? 'n/a'}</td></tr>
           <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">95% Confidence Interval</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${Array.isArray(ar.ci95) ? ar.ci95.join(' – ') : 'n/a'}</td></tr>
-          <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Cross-pass agreement (heuristic index)</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${ar.icc ?? 'n/a'}</td></tr>
-          ${ar.cronbachAlpha != null ? `<tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Cross-pass agreement (consistency heuristic)</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${ar.cronbachAlpha}</td></tr>` : ''}
+          <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Cross-pass agreement (heuristic index)</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${ar.reliabilityDegenerate ? 'n/a' : (ar.icc ?? 'n/a')}</td></tr>
+          ${(ar.cronbachAlpha != null && !ar.reliabilityDegenerate) ? `<tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Cross-pass agreement (consistency heuristic)</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${ar.cronbachAlpha}</td></tr>` : ''}
           <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Agreement Classification</td><td style="padding:6px 10px;border:1px solid #e2e8f0;text-transform:capitalize">${_esc(ar.reliability || 'n/a')}</td></tr>
           <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Individual pass scores</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${Array.isArray(ar.scores) ? ar.scores.join(', ') : 'n/a'}</td></tr>
         </tbody>
       </table>
+      ${ar.reliabilityDegenerate ? `<p style="font-size:12px;color:#92400e;margin:0 0 8px;padding:8px 12px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px">⚠ Cross-pass agreement is <strong>not meaningful</strong> for this run: ${ar.auditorCount < 2 ? 'only one pass was scored' : 'every pass scored 0 (pinned at the deduction floor)'}, so an "agreement" verdict would describe the floor/single sample, not stable scoring. Re-run (ideally without throttling) for a non-degraded comparison.</p>` : ''}
       <p style="font-size:11px;color:#64748b;margin-top:0">No commercial PDF accessibility validator currently reports a cross-pass agreement signal. This is an AlloFlow extension: these are agreement heuristics computed across multiple AI audit passes of the same single model — repeat-measurement stability, <strong>not</strong> independent human reviewer agreement. Read them as a consistency signal, not a validity guarantee.</p>
     ` : '';
 

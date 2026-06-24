@@ -121,6 +121,26 @@ describe('Canvas-test fixes (2026-06-23): conformance overclaim, re-scan save, r
   });
 });
 
+describe('Reliability honesty (2026-06-23): no "excellent agreement" on degenerate all-0 / single-pass scores', () => {
+  it('the triangulator flags degenerate agreement and downgrades the classification', () => {
+    // all passes pinned at the deduction floor (0,0,0,0,0) → SD 0 → icc 1 would have read "excellent"
+    expect(dp).toMatch(/const _reliabilityDegenerate = n < 2 \|\| scores\.every\(s => s === 0\)/);
+    expect(dp).toMatch(/reliability: _reliabilityDegenerate \? 'n\/a' :/);
+    expect(dp).toMatch(/reliabilityDegenerate: _reliabilityDegenerate/);
+  });
+  it('both report blocks show n/a + a note for the degenerate case (not a number next to "n/a")', () => {
+    expect(dp).toMatch(/\$\{ar\.reliabilityDegenerate \? 'n\/a' : \(ar\.icc \?\? 'n\/a'\)\}/);   // Score Stability section
+    expect(dp).toMatch(/\$\{audit\.reliabilityDegenerate \? 'N\/A' : \(audit\.icc \?\? 'N\/A'\)\}/); // meta-card report
+    expect(dp).toMatch(/Cross-pass agreement is <strong>not meaningful<\/strong> for this run/);
+  });
+  it('the live UI verdict no longer says "Excellent agreement" when scores are degenerate', () => {
+    expect(view).toMatch(/pdfAuditResult\.reliabilityDegenerate\s*\n?\s*\?\s*\(pdfAuditResult\.auditorCount < 2/);
+    expect(view).toMatch(/pinned at the deduction floor/);
+    // the icc value renders n/a (not the misleading 1) when degenerate
+    expect(view).toMatch(/pdfAuditResult\.reliabilityDegenerate \? 'n\/a' : pdfAuditResult\.icc/);
+  });
+});
+
 describe('H-8: Load Project resets per-document holdovers (no cross-document state bleed)', () => {
   it('the results-screen loader clears the palette snapshot ref + the other per-doc state before continuing', () => {
     const _s = view.indexOf('// H-8 (audit 2026-06-23): the component never remounts on Load Project');

@@ -4977,10 +4977,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="text-[11px] text-slate-600 font-bold uppercase">{t('pdf_audit.reliability.std_dev') || 'Standard Deviation'}</div>
                           </div>
                           <div className="bg-white rounded-lg p-2 text-center border border-indigo-100">
-                            <div className={`text-lg font-black ${pdfAuditResult.icc >= 0.75 ? 'text-green-700' : pdfAuditResult.icc >= 0.5 ? 'text-amber-700' : 'text-red-700'}`}>{pdfAuditResult.icc}</div>
+                            <div className={`text-lg font-black ${pdfAuditResult.reliabilityDegenerate ? 'text-slate-400' : pdfAuditResult.icc >= 0.75 ? 'text-green-700' : pdfAuditResult.icc >= 0.5 ? 'text-amber-700' : 'text-red-700'}`}>{pdfAuditResult.reliabilityDegenerate ? 'n/a' : pdfAuditResult.icc}</div>
                             <div className="text-[11px] text-slate-600 font-bold uppercase" title={t('pdf_audit.reliability.icc_title') || 'Custom 1−(SD/50) index; not textbook ICC'}>{t('pdf_audit.reliability.icc_label') || 'Auditor Consistency (ICC-like)'}</div>
                           </div>
-                          {pdfAuditResult.cronbachAlpha !== null && (
+                          {pdfAuditResult.cronbachAlpha !== null && !pdfAuditResult.reliabilityDegenerate && (
                             <div className="bg-white rounded-lg p-2 text-center border border-indigo-100">
                               <div className={`text-lg font-black ${pdfAuditResult.cronbachAlpha >= 0.7 ? 'text-green-700' : 'text-amber-700'}`}>{pdfAuditResult.cronbachAlpha}</div>
                               <div className="text-[11px] text-slate-600 font-bold uppercase" title={t('pdf_audit.reliability.cronbach_title') || 'CV + pairwise hybrid heuristic across AI passes; not textbook Cronbach’s α'}>{t('pdf_audit.reliability.cronbach') || 'Auditor Consistency (α-like)'}</div>
@@ -4991,7 +4991,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <div className="italic text-slate-500 normal-case">{t('pdf_audit.reliability.basis_note') || 'These figures measure how consistently the AI auditors agreed with each other across re-prompts (reproducibility) — they are NOT the measurement uncertainty of the document’s true accessibility, and a tight range does not mean the score is correct.'}</div>
                           <div>SEM: ±{pdfAuditResult.scoreSEM} <span className="text-slate-400">(re-prompt spread)</span> | Range: {pdfAuditResult.scoreRange} | Auditors: {pdfAuditResult.auditorCount}/{pdfAuditResult.requestedAuditors}</div>
                           <div>Individual scores: {pdfAuditResult.scores.join(', ')}</div>
-                          <div>{pdfAuditResult.icc >= 0.9 ? '✅ Excellent agreement — auditors highly consistent' : pdfAuditResult.icc >= 0.75 ? '✅ Good agreement — scores clustered tightly' : pdfAuditResult.icc >= 0.5 ? '⚠️ Moderate agreement — some variation between auditors' : '⚠️ Variable agreement — consider increasing auditor count'}</div>
+                          <div>{pdfAuditResult.reliabilityDegenerate
+                            ? (pdfAuditResult.auditorCount < 2 ? '⚠️ Single pass — no cross-pass agreement to report' : '⚠️ Every pass scored 0 (pinned at the deduction floor) — “agreement” here reflects the floor, not stable scoring, so it is not meaningful')
+                            : pdfAuditResult.icc >= 0.9 ? '✅ Excellent agreement — auditors highly consistent' : pdfAuditResult.icc >= 0.75 ? '✅ Good agreement — scores clustered tightly' : pdfAuditResult.icc >= 0.5 ? '⚠️ Moderate agreement — some variation between auditors' : '⚠️ Variable agreement — consider increasing auditor count'}</div>
                         </div>
                       </div>
                     </details>
