@@ -16143,7 +16143,13 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       const _aiIssueCount = verification && verification.issues ? verification.issues.length : 0;
       const _totalIssues = bestAxeViolations + _aiIssueCount;
       const _targetScore = pdfTargetScore || 95;
-      if (maxFixPasses > 0 && _totalIssues > 0 && (bestAxeViolations > 0 || bestAiScore < _targetScore)) {
+      // A PARTIAL audit (throttle failed some sections) scored only PART of the document, so a high score does
+      // NOT verifiably meet the target — the un-audited sections could still have issues. Don't let a partial
+      // "target met" stop the loop before it starts; keep going to try for complete coverage. This mirrors the
+      // per-pass break below, which already refuses to stop on a partial re-audit (`!_rePartial`). The loop is
+      // still bounded by maxFixPasses + the plateau / consecutive-fix-error stops. (2026-06-24, maintainer ask.)
+      const _auditPartial = !!(verification && verification._partialAudit);
+      if (maxFixPasses > 0 && (_totalIssues > 0 || _auditPartial) && (bestAxeViolations > 0 || bestAiScore < _targetScore || _auditPartial)) {
         // Emit live remediation session start so UI shows progress panel
         warnLog(`[Auto-fix] Starting fix loop: ${_totalIssues} issues (${bestAxeViolations} axe, ${_aiIssueCount} AI), score ${bestAiScore}, target ${_targetScore}`);
         // Emit specific issues list for UI to display during fix passes

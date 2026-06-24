@@ -121,6 +121,14 @@ describe('Canvas-test fixes (2026-06-23): conformance overclaim, re-scan save, r
   });
 });
 
+describe('Auto-fix loop: a PARTIAL audit does not count as "target met" (do not stop early on incomplete coverage)', () => {
+  it('the loop entry gate keeps going when the audit was partial (mirrors the per-pass !_rePartial break)', () => {
+    expect(dp).toMatch(/const _auditPartial = !!\(verification && verification\._partialAudit\);/);
+    // the gate must OR in _auditPartial in both the issue-count clause and the target-met clause
+    expect(dp).toMatch(/if \(maxFixPasses > 0 && \(_totalIssues > 0 \|\| _auditPartial\) && \(bestAxeViolations > 0 \|\| bestAiScore < _targetScore \|\| _auditPartial\)\)/);
+  });
+});
+
 describe('Reliability honesty (2026-06-23): no "excellent agreement" on degenerate all-0 / single-pass scores', () => {
   it('the triangulator flags degenerate agreement and downgrades the classification', () => {
     // all passes pinned at the deduction floor (0,0,0,0,0) → SD 0 → icc 1 would have read "excellent"
