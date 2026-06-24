@@ -35,7 +35,8 @@
     magma:     { name: 'Magma chamber',     type: 'Molten',              color: 0xff7a33, glow: 1, formation: 'Molten rock — the source. It cools to igneous rock and the cycle restarts.',     minerals: '—',                             age: 'Active now — still forming.' },
     basalt:    { name: 'Basalt',            type: 'Igneous (extrusive)', color: 0x4a4a55, formation: 'Lava that ERUPTED and cooled FAST at the surface → crystals too tiny to see (the opposite of slow-cooled granite).', minerals: 'Plagioclase + pyroxene (fine-grained)', age: 'Newest rock — just erupted onto the surface.' }
   };
-  var TYPE_COLOR = { 'Surface': '#92786a', 'Sedimentary': '#38bdf8', 'Igneous (intrusive)': '#ec4899', 'Igneous (extrusive)': '#f97316', 'Metamorphic': '#a78bfa', 'Molten': '#fb923c' };
+  var TYPE_COLOR = { 'Surface': '#92786a', 'Sedimentary': '#38bdf8', 'Igneous (intrusive)': '#ec4899', 'Igneous (extrusive)': '#f97316', 'Metamorphic': '#a78bfa', 'Molten': '#fb923c',
+    'Crust': '#92786a', 'Mantle': '#ef4444', 'Outer core': '#fb923c', 'Inner core': '#fbbf24', 'Mineral': '#22d3ee', 'Mineral (silica)': '#5eead4', 'Mineral (quartz)': '#a78bfa' };
   var ROCK_ORDER = ['soil', 'sandstone', 'shale', 'limestone', 'basement', 'magma', 'intrusion', 'marble', 'hornfels'];
   // Index fossils per depositional environment (illustrative). Sedimentary layers
   // record life; igneous/metamorphic/molten rock does not — melting and
@@ -142,6 +143,87 @@
     var depthRaw = (R && R.depthKm != null) ? R.depthKm : y * KM_PER_VOXEL;   // radial scenes carry their own depth
     var g = (SCENE ? SCENE.geotherm : crustGeotherm)(depthRaw, key);
     return { key: key, R: R, depthKm: depthRaw.toFixed(1), tempC: g.tempC, presMPa: g.presMPa, state: g.state };
+  }
+
+  // ── First-person "drop into the world" explorer — pure, testable seams ─────────
+  // GHOST/FLY model (no collision): you fly THROUGH rock to read depth/temp/pressure
+  // anywhere — essential for the radial deep-Earth core and the geode void. The HUD
+  // defers ALL science to rockFacts() so each scene keeps its own geotherm (crust
+  // linear, deepEarth non-linear — never the ~160,000°C artifact). NO pointer-lock /
+  // fullscreen API (both blocked in the Canvas iframe): look = drag + keyboard.
+  function fpClampN(n, a, b) { return n < a ? a : (n > b ? b : n); }
+  function easeInOutCubic(x) { return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; }
+  function fpClampPitch(p) { var M = Math.PI / 2 - 0.05; return p < -M ? -M : (p > M ? M : p); }
+  function fpForward(yaw, pitch) { var cp = Math.cos(pitch); return { x: -Math.sin(yaw) * cp, y: Math.sin(pitch), z: -Math.cos(yaw) * cp }; }
+  function fpBounds() { var hx = WORLD.w / 2, hy = WORLD.h / 2, hz = WORLD.d / 2; var m = Math.max(WORLD.w, WORLD.h, WORLD.d) * 0.9; return { min: [-(hx + m), -(hy + m), -(hz + m)], max: [hx + m, hy + m, hz + m] }; }
+  function fpStep(pos, fwd, input, dt, speed, bounds) {
+    var dtc = dt < 0.05 ? dt : 0.05;                          // stalled-tab guard so a long frame can't leap past the clamp
+    var rx = -fwd.z, rz = fwd.x, rl = Math.sqrt(rx * rx + rz * rz) || 1; rx /= rl; rz /= rl;   // right = forward turned 90° in XZ
+    var s = speed * dtc;
+    var nx = pos.x + (fwd.x * input.fwd + rx * input.strafe) * s;
+    var ny = pos.y + (fwd.y * input.fwd) * s + (input.vert || 0) * s;
+    var nz = pos.z + (fwd.z * input.fwd + rz * input.strafe) * s;
+    return { x: fpClampN(nx, bounds.min[0], bounds.max[0]), y: fpClampN(ny, bounds.min[1], bounds.max[1]), z: fpClampN(nz, bounds.min[2], bounds.max[2]) };
+  }
+  function fpWorldToVoxel(wx, wy, wz) {                       // exact inverse of worldPos() — clamped to the grid
+    return { x: fpClampN(Math.round(wx / VOXEL + (NX - 1) / 2), 0, NX - 1),
+             y: fpClampN(Math.round((NY - 1) / 2 - wy / VOXEL), 0, NY - 1),
+             z: fpClampN(Math.round(wz / VOXEL + (NZ - 1) / 2), 0, NZ - 1) };
+  }
+  function fpSeedPose(sceneId) {                              // drop-in eye-point + facing per scene (faces into the block)
+    if (sceneId === 'deepEarth') return { pos: { x: 0, y: 0, z: WORLD.d * 0.46 }, yaw: 0, pitch: 0 };
+    if (sceneId === 'geode') return { pos: { x: 0, y: 0, z: WORLD.d * 0.42 }, yaw: 0, pitch: 0 };
+    return { pos: { x: 0, y: WORLD.h * 0.5 - 1.5, z: WORLD.d * 0.34 }, yaw: 0, pitch: -0.12 };
+  }
+  function fpBob(time, moving, reduced, amp) { return (reduced || !moving) ? 0 : Math.sin(time * 9) * amp; }   // reduced-motion / idle → no bob
+  function layerChanged(prev, next) { return next != null && next !== prev; }
+  // Second-person, present-tense "you are inside THIS" lines (distinct register from R.formation), per scene.
+  var FP_BLURB_CRUST = {
+    soil: 'You’re at the very surface — loose weathered rock and roots.',
+    sandstone: 'You’re in young sandstone — the highest, newest sedimentary layer.',
+    shale: 'You’re in shale — older than the sandstone above (superposition).',
+    limestone: 'You’re in limestone — the oldest sedimentary layer, an ancient sea floor.',
+    basement: 'You’re in ancient granite basement — the crystalline floor the layers rest on.',
+    intrusion: 'You’re inside the granite pluton — it cut these layers, so it’s YOUNGER.',
+    marble: 'You’re in marble — limestone recrystallised by the pluton’s heat.',
+    hornfels: 'You’re in hornfels — shale baked hard beside the pluton.',
+    magma: 'You’re in the magma chamber — molten source where the rock cycle restarts.',
+    basalt: 'You’re on fresh basalt — lava that erupted and froze fast.'
+  };
+  var FP_BLURB_GEODE = {
+    limestone: 'You’re in the limestone host — the rock the cavity grew inside.',
+    chalcedony: 'You’re on the cavity wall — the first silica to precipitate.',
+    agate: 'You’re in agate banding — each band is one growth pulse.',
+    quartz: 'You’re among quartz that grew INTO open space — room = big crystals.',
+    amethyst: 'You’re in amethyst — purple quartz, colour from trace iron.'
+  };
+  var FP_BLURB_DEEP = {
+    crust: 'You’re in the thin brittle crust — the shell we live on.',
+    upperMantle: 'You’re in the SOLID upper mantle — it creeps slowly; it is NOT lava.',
+    lowerMantle: 'You’re in the SOLID lower mantle — convecting under huge pressure.',
+    outerCore: 'You’re in the LIQUID iron outer core — this flow makes Earth’s magnetic field.',
+    innerCore: 'You’re at the SOLID inner core — hotter than the outer core, frozen by pressure.'
+  };
+  function fpBlurb(sceneId, key) { var m = sceneId === 'geode' ? FP_BLURB_GEODE : (sceneId === 'deepEarth' ? FP_BLURB_DEEP : FP_BLURB_CRUST); return (m && m[key]) || ''; }
+  var FP_BUST = {
+    upperMantle: 'Myth-bust: the mantle is SOLID rock that flows slowly — not a sea of molten lava.',
+    lowerMantle: 'Myth-bust: still SOLID here, just convecting extremely slowly under pressure.',
+    outerCore: 'This LIQUID iron’s convection is the geodynamo — S-waves can’t cross it, which is how we know.',
+    innerCore: 'It’s HOTTER than the outer core yet SOLID — crushing pressure raises iron’s melting point.'
+  };
+  function fpBust(key) { return FP_BUST[key] || null; }
+  function fpProbe(wx, wy, wz) {                              // you-are-here readout; defers all science to rockFacts (scene-aware)
+    var v = fpWorldToVoxel(wx, wy, wz);
+    var key = SCENE.gen(v.x, v.y, v.z);
+    while (key === 'void' && v.y < NY - 1) key = SCENE.gen(v.x, ++v.y, v.z);     // geode hollow is thick → fall to the lining you actually see (mutates v.y so depth is the lining's)
+    if (key === 'void') return null;                                            // fully enclosed (defensive) — never fabricate science for empty space
+    var f = rockFacts(key, v.y);
+    return { key: key, voxelY: v.y, depthKm: f.depthKm, tempC: f.tempC, presMPa: f.presMPa, state: f.state, layerName: f.R ? f.R.name : key, type: f.R ? f.R.type : '', blurb: fpBlurb(SCENE.id, key), bust: fpBust(key) };
+  }
+  function fpAnnounceText(p) {
+    return 'You are inside ' + p.layerName + ', ' + p.type + '. Depth about ' + p.depthKm + ' kilometres, '
+      + (typeof p.tempC === 'number' ? p.tempC : String(p.tempC)) + ' degrees Celsius, ' + p.state + '.'
+      + (p.bust ? ' ' + p.bust : '');
   }
 
   // Representative depth (voxel rows) for a rock picked from the list / cycle, so
@@ -322,12 +404,16 @@
     var TARGET = new THREE.Vector3(0, -WORLD.h * 0.05, 0);
     camera.lookAt(TARGET); // aim at the block immediately — keeps it CENTRED even if OrbitControls never loads
     var controls = null, orbitTried = false;
+    // first-person explorer state (default off; drives the SAME camera, never OrbitControls)
+    var fp = { active: false, intro: null, pos: { x: 0, y: 0, z: 0 }, yaw: 0, pitch: 0, input: { fwd: 0, strafe: 0, vert: 0, sprint: false }, turn: { yaw: 0, pitch: 0 }, reduced: false, savedPos: null, savedTgt: null, savedEnabled: true, lastHud: 0, lastKey: '__none', speed: WORLD.h * 0.5 };
+    var fpPrev = null;   // last pointer point for drag-look (separate from `down` so taps still pick)
     function ensureControls() {
       if (controls) return;
       if (THREE.OrbitControls) {
         controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true; controls.dampingFactor = 0.08; controls.target.copy(TARGET); controls.minDistance = 8; controls.maxDistance = 60;
         controls.update();
+        controls.enabled = !fp.active;   // if orbit loads while FP is on, keep it suspended until exit
       } else if (!orbitTried) {
         // host may have set _threeLoaded without OrbitControls (stem_lab_module.js:1492) — load it ourselves
         orbitTried = true;
@@ -507,10 +593,17 @@
         if (opts.onSelect) opts.onSelect(rockFacts(v.key, v.y));
       }
     }
-    function onDown(e) { down = { x: e.clientX, y: e.clientY }; }
-    function onUp(e) { if (!down) return; var moved = Math.abs(e.clientX - down.x) + Math.abs(e.clientY - down.y); down = null; if (moved < 6) pick(e); }
+    function onDown(e) { down = { x: e.clientX, y: e.clientY }; if (fp.active) fpPrev = { x: e.clientX, y: e.clientY }; }
+    function onUp(e) { if (!down) return; var moved = Math.abs(e.clientX - down.x) + Math.abs(e.clientY - down.y); down = null; fpPrev = null; if (moved < 6 && !fp.active) pick(e); }   // no tap-pick from inside the rock during FP
     cnv.addEventListener('pointerdown', onDown); cnv.addEventListener('pointerup', onUp);
+    // drag-to-look while FP is active (no Pointer Lock); uses fpPrev so `down` stays intact for tap-to-identify
+    function fpLookMove(e) {
+      if (!fp.active || !fpPrev) return;
+      if (e.buttons !== undefined && (e.buttons & 1) === 0) { fpPrev = null; return; }   // button released (maybe off-canvas) → stop; no buttonless rotation on re-entry
+      fp.yaw -= (e.clientX - fpPrev.x) * 0.0046; fp.pitch = fpClampPitch(fp.pitch - (e.clientY - fpPrev.y) * 0.0046); fpPrev = { x: e.clientX, y: e.clientY };
+    }
     function onMoveHover(e) {
+      if (fp.active) return;   // FP owns the pointer (drag-look); skip the hover raycast
       if (down) { if (hoverBox.visible) hoverBox.visible = false; return; }
       var now = (window.performance && performance.now) ? performance.now() : 0;
       if (now - lastHover < 40) return; lastHover = now;
@@ -521,10 +614,62 @@
       if (hits.length) { var v = instanceToVoxel[hits[0].instanceId]; if (v) { var p = worldPos(v); hoverBox.position.set(p[0], p[1], p[2]); hoverBox.visible = true; return; } }
       hoverBox.visible = false;
     }
-    function onLeaveHover() { hoverBox.visible = false; }
+    function onLeaveHover() { hoverBox.visible = false; if (fp.active) { down = null; fpPrev = null; } }   // dropping the look-drag off the canvas ends it cleanly
     cnv.addEventListener('pointermove', onMoveHover); cnv.addEventListener('pointerleave', onLeaveHover);
     function onLost(e) { e.preventDefault(); if (opts.onContextLost) opts.onContextLost(); }
     cnv.addEventListener('webglcontextlost', onLost, false);
+
+    // ── first-person controller (drives `camera`; pure math lives in the module seams) ──
+    function enterFP(o) {
+      if (fp.active) return;                                  // idempotent — no double-binding
+      fp.active = true; fp.reduced = !!(o && o.reduced);
+      fp.savedPos = camera.position.clone();
+      fp.savedTgt = controls ? controls.target.clone() : TARGET.clone();
+      fp.savedEnabled = controls ? controls.enabled : true;
+      if (controls) controls.enabled = false;                // hand the camera to FP
+      var seed = fpSeedPose(SCENE.id);
+      fp.pos = { x: seed.pos.x, y: seed.pos.y, z: seed.pos.z }; fp.yaw = seed.yaw; fp.pitch = seed.pitch;
+      fp.input = { fwd: 0, strafe: 0, vert: 0, sprint: false }; fp.turn = { yaw: 0, pitch: 0 }; fp.lastKey = '__none'; fp.lastHud = 0;
+      fp.intro = fp.reduced ? null : { t: 0, from: camera.position.clone(), dur: 0.7 };   // eased "drop in"
+      hoverBox.visible = false;
+      cnv.addEventListener('pointermove', fpLookMove);
+      if (fp.reduced) applyFP(0);                            // snap to the eye-point immediately
+    }
+    function exitFP() {
+      if (!fp.active) return;
+      fp.active = false; fp.intro = null;
+      cnv.removeEventListener('pointermove', fpLookMove); fpPrev = null;
+      fp.input = { fwd: 0, strafe: 0, vert: 0, sprint: false }; fp.turn = { yaw: 0, pitch: 0 };
+      if (fp.savedPos) camera.position.copy(fp.savedPos);
+      if (controls) { if (fp.savedTgt) controls.target.copy(fp.savedTgt); controls.enabled = fp.savedEnabled; controls.update(); }
+      else if (fp.savedTgt) camera.lookAt(fp.savedTgt);
+      if (opts.onFpExit) opts.onFpExit();
+    }
+    function applyFP(dt) {
+      if (fp.intro) {                                         // drop-in tween: ease from the orbit pose into the eye-point
+        fp.intro.t += dt / fp.intro.dur; var tt = fp.intro.t < 1 ? fp.intro.t : 1; var e = easeInOutCubic(tt);
+        var f0 = fp.intro.from;
+        camera.position.set(f0.x + (fp.pos.x - f0.x) * e, f0.y + (fp.pos.y - f0.y) * e, f0.z + (fp.pos.z - f0.z) * e);
+        var fw0 = fpForward(fp.yaw, fp.pitch);
+        camera.lookAt(camera.position.x + fw0.x, camera.position.y + fw0.y, camera.position.z + fw0.z);
+        if (tt >= 1) fp.intro = null;
+        return;                                               // ignore movement until the dive finishes
+      }
+      if (fp.turn.yaw || fp.turn.pitch) { fp.yaw += fp.turn.yaw * 1.7 * dt; fp.pitch = fpClampPitch(fp.pitch + fp.turn.pitch * 1.7 * dt); }   // keyboard look (drag-look writes fp.yaw/pitch directly)
+      var fwd = fpForward(fp.yaw, fp.pitch);
+      var spd = fp.speed * (fp.input.sprint ? 2 : 1);
+      fp.pos = fpStep(fp.pos, fwd, fp.input, dt, spd, fpBounds());
+      var moving = !!(fp.input.fwd || fp.input.strafe || fp.input.vert);
+      var bob = fpBob(t, moving, fp.reduced, 0.05);
+      camera.position.set(fp.pos.x, fp.pos.y + bob, fp.pos.z);
+      camera.lookAt(fp.pos.x + fwd.x, fp.pos.y + fwd.y, fp.pos.z + fwd.z);
+      var now = (window.performance && performance.now) ? performance.now() : 0;
+      if (now - fp.lastHud > 110) {                           // ~9Hz HUD sample; only push on a layer change
+        fp.lastHud = now;
+        var p = fpProbe(fp.pos.x, fp.pos.y, fp.pos.z);
+        if (p && p.key !== fp.lastKey) { fp.lastKey = p.key; if (opts.onFpProbe) opts.onFpProbe(p); }
+      }
+    }
 
     var lastW = 0, lastH = 0;
     function resize() { var w = container.clientWidth || 600, h = container.clientHeight || 420; lastW = w; lastH = h; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
@@ -542,11 +687,13 @@
       if (waterMesh.visible) waterMesh.material.opacity = 0.34 + Math.sin(t * 1.6) * 0.07; // water shimmer
       try { updateEruption(); } catch (e) {}
       if (!controls) ensureControls();   // OrbitControls may load a moment after the engine starts
-      if (controls) controls.update(); renderer.render(scene, camera);
+      if (fp.active) { try { applyFP(0.016); } catch (e) {} } else if (controls) controls.update();
+      renderer.render(scene, camera);
     }
     loop();
 
     eng.setView = function (name) {
+      if (fp.active) return;   // camera is owned by first-person mode
       if (!controls) return;
       var V = { iso: [[NX * 1.15, NY * 1.05, NZ * 1.4], [0, -NY * 0.18, 0]], front: [[0, -NY * 0.1, NZ * 1.75], [0, -NY * 0.18, 0]], top: [[0.01, NY * 2.4, 0.02], [0, 0, 0]] }[name];
       if (!V) return;
@@ -561,7 +708,12 @@
     eng.setHighlight = function (k) { highlightKey = (k && SCENE.voxelKeys && SCENE.voxelKeys.indexOf(k) >= 0) ? k : null; rebuild(); };
     eng.setStage = function (n) { showStage = (n == null) ? 99 : n; rebuild(); };
     eng.reset = function () { removed = {}; sliceZ = 0; rebuild(); };
+    eng.setFirstPerson = function (on, o) { if (on) enterFP(o || {}); else exitFP(); };
+    eng.fpInput = function (cmd, v) { if (cmd === 'move' && v) fp.input = Object.assign(fp.input, v); else if (cmd === 'look' && v) fp.turn = Object.assign(fp.turn, v); };
+    eng.fpActive = function () { return !!fp.active; };
+    eng._fpExit = exitFP;
     eng.dispose = function () {
+      try { exitFP(); } catch (e) {}   // tear down FP listeners first so nothing leaks across re-init
       eng.disposed = true; if (raf) cancelAnimationFrame(raf);
       cnv.removeEventListener('pointerdown', onDown); cnv.removeEventListener('pointerup', onUp); cnv.removeEventListener('webglcontextlost', onLost);
       cnv.removeEventListener('pointermove', onMoveHover); cnv.removeEventListener('pointerleave', onLeaveHover);
@@ -579,6 +731,8 @@
     window.__alloGeologyPure = {
       rockKeyAt: rockKeyAt, geodeKeyAt: geodeKeyAt, deepEarthKeyAt: deepEarthKeyAt, hasFossilAt: hasFossilAt, computeCore: computeCore, rockFacts: rockFacts, aoCount: aoCount,
       crustGeotherm: crustGeotherm, deepEarthGeotherm: deepEarthGeotherm, setGrid: setGrid, setScene: setScene, RES_MULT: RES_MULT, WORLD: WORLD,
+      fpForward: fpForward, fpClampPitch: fpClampPitch, fpBounds: fpBounds, fpStep: fpStep, fpWorldToVoxel: fpWorldToVoxel,
+      fpSeedPose: fpSeedPose, fpBob: fpBob, layerChanged: layerChanged, fpBlurb: fpBlurb, fpBust: fpBust, fpProbe: fpProbe, fpAnnounceText: fpAnnounceText, easeInOutCubic: easeInOutCubic,
       scenes: function () { return Object.keys(SCENES); }, sceneId: function () { return SCENE.id; },
       grid: function () { return { NX: NX, NY: NY, NZ: NZ, KM_PER_VOXEL: KM_PER_VOXEL, VOXEL: VOXEL }; }
     };
@@ -634,6 +788,9 @@
       var threeReady = !!(ctx.toolData && ctx.toolData._threeLoaded) && !!window.THREE;
       var rsr = React.useState((d.res === 'low' || d.res === 'high') ? d.res : 'standard'); var res = rsr[0], setRes = rsr[1];
       var scn = React.useState((d.scene && SCENES[d.scene]) ? d.scene : 'crust'); var scene = scn[0], setSceneState = scn[1];
+      var fpp = React.useState(false); var fpOn = fpp[0], setFpOn = fpp[1];          // first-person explorer (default off)
+      var fph = React.useState(null); var fpHud = fph[0], setFpHud = fph[1];          // live "you are here" readout
+      var fpToggleRef = React.useRef(null); var fpPrevFocusRef = React.useRef(null); var fpAnnAtRef = React.useRef(0);   // SR announce debounce clock
       setScene(scene); setGrid(res);   // sync active scene + module grid (NX/NY/NZ/VOXEL/KM_PER_VOXEL) before render + effects read them
       var feat = SCENE.features;
 
@@ -716,11 +873,55 @@
             onSelect: function (facts) { selectRock(facts); },
             onUncover: function (k) { uncoverFossil(k); },
             onFlash: function (m) { addToast(m, 'info'); },
+            onFpProbe: function (p) { if (!p) return; setFpHud(p); var nw = (window.performance && performance.now) ? performance.now() : Date.now(); if (nw - fpAnnAtRef.current > 1200) { fpAnnAtRef.current = nw; announce(fpAnnounceText(p)); } },   // HUD every layer change; SR debounced so fast flight can't flood it
             onContextLost: function () { setWebglError(true); try { if (window[ENGINE_KEY]) { window[ENGINE_KEY].dispose(); window[ENGINE_KEY] = null; } } catch (e) {} }
           });
         } catch (e) { setWebglError(true); }
         return function () { try { if (window[ENGINE_KEY]) { window[ENGINE_KEY].dispose(); window[ENGINE_KEY] = null; } } catch (e) {} };
       }, [threeReady, webglError, res, scene]);
+
+      // ── first-person: ARM the engine (re-runs whenever the engine is rebuilt on scene/detail change, so FP survives a world switch) ──
+      React.useEffect(function () {
+        if (!threeReady || webglError) return;
+        var E = window[ENGINE_KEY]; if (!E || !E.setFirstPerson) return;
+        var reduced = false; try { reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+        try { E.setFirstPerson(fpOn, { reduced: reduced }); } catch (e) {}
+        return function () { try { if (window[ENGINE_KEY]) window[ENGINE_KEY].setFirstPerson(false); } catch (e) {} };
+      }, [fpOn, threeReady, webglError, res, scene]);
+
+      // ── first-person: focus + announce ONLY on a real enter/exit transition (deps [fpOn]) — never re-fired by a scene rebuild ──
+      React.useEffect(function () {
+        if (fpOn) {
+          fpAnnAtRef.current = 0;   // let the first layer announce immediately on entry
+          try { fpPrevFocusRef.current = document.activeElement; } catch (e) {}
+          setTimeout(function () { try { if (containerRef.current) containerRef.current.focus(); } catch (e) {} }, 0);
+          announce(t('stem.geology.fp_on', 'First-person mode on. W A S D or arrow keys to fly, Q and E for up and down, I J K L or drag to look, Escape to exit.'));
+        } else {
+          setFpHud(null);
+          try { var pf = fpPrevFocusRef.current; if (pf && pf.focus) pf.focus(); else if (fpToggleRef.current) fpToggleRef.current.focus(); } catch (e) {}
+        }
+      }, [fpOn]);
+
+      // ── first-person: keyboard, scoped to the focused viewport so it never hijacks page keys (re-binds on engine rebuild so held keys don't stall) ──
+      React.useEffect(function () {
+        if (!fpOn) return;
+        var el = containerRef.current; if (!el) return;
+        var ax = { fwd: 0, strafe: 0, vert: 0, sprint: false }, lk = { yaw: 0, pitch: 0 };
+        var MOVE = { w: 'fwd+', arrowup: 'fwd+', s: 'fwd-', arrowdown: 'fwd-', a: 'strafe-', arrowleft: 'strafe-', d: 'strafe+', arrowright: 'strafe+', e: 'vert+', q: 'vert-' };
+        var LOOK = { j: 'yaw+', l: 'yaw-', i: 'pitch+', k: 'pitch-' };   // keyboard turn (WCAG: look must be keyboard-operable, not drag-only)
+        function pushMove() { try { if (window[ENGINE_KEY]) window[ENGINE_KEY].fpInput('move', { fwd: ax.fwd, strafe: ax.strafe, vert: ax.vert, sprint: ax.sprint }); } catch (e) {} }
+        function pushLook() { try { if (window[ENGINE_KEY]) window[ENGINE_KEY].fpInput('look', { yaw: lk.yaw, pitch: lk.pitch }); } catch (e) {} }
+        function set(e, on) {
+          var key = (e.key || '').toLowerCase();
+          if (key === 'escape') { if (on) { try { e.preventDefault(); e.stopPropagation(); } catch (x) {} setFpOn(false); } return; }   // exit FP only — don't also collapse fullscreen
+          if (key === 'shift') { ax.sprint = on; pushMove(); return; }
+          var m = MOVE[key]; if (m) { e.preventDefault(); ax[m.slice(0, -1)] = on ? (m.slice(-1) === '+' ? 1 : -1) : 0; pushMove(); return; }
+          var lo = LOOK[key]; if (lo) { e.preventDefault(); lk[lo.slice(0, -1)] = on ? (lo.slice(-1) === '+' ? 1 : -1) : 0; pushLook(); return; }
+        }
+        function kd(e) { set(e, true); } function ku(e) { set(e, false); }
+        el.addEventListener('keydown', kd); el.addEventListener('keyup', ku);
+        return function () { el.removeEventListener('keydown', kd); el.removeEventListener('keyup', ku); try { if (window[ENGINE_KEY]) { window[ENGINE_KEY].fpInput('move', { fwd: 0, strafe: 0, vert: 0, sprint: false }); window[ENGINE_KEY].fpInput('look', { yaw: 0, pitch: 0 }); } } catch (e) {} };
+      }, [fpOn, threeReady, webglError, res, scene]);
 
       // ── styling helpers ──
       var cardBg = isDark ? 'bg-slate-800/70 border-slate-700 shadow-md shadow-black/20' : 'bg-white border-slate-200 shadow-sm';
@@ -736,7 +937,7 @@
           h('span', { className: 'inline-block text-[11px] font-bold px-2 py-0.5 rounded-full mt-1 mb-2', style: { color: tc, background: tc + '22', border: '1px solid ' + tc + '55' } }, R.type),
           h('div', { className: 'grid gap-1 text-[12px] ' + ink, style: { gridTemplateColumns: '64px 1fr' } },
             h('span', { className: muted }, t('stem.geology.depth', 'Depth')), h('span', null, '≈ ' + f.depthKm + ' km'),
-            h('span', { className: muted }, t('stem.geology.temp', 'Temp')), h('span', null, '≈ ' + f.tempC + ' °C'),
+            h('span', { className: muted }, t('stem.geology.temp', 'Temp')), h('span', null, (typeof f.tempC === 'number' ? '≈ ' + f.tempC : f.tempC) + ' °C'),
             h('span', { className: muted }, t('stem.geology.pressure', 'Pressure')), h('span', null, '≈ ' + f.presMPa + ' MPa'),
             (f.state && f.state !== 'solid') ? h('span', { className: muted }, t('stem.geology.state', 'State')) : null,
             (f.state && f.state !== 'solid') ? h('span', { className: 'font-semibold', style: { color: '#f59e0b' } }, f.state) : null,
@@ -993,17 +1194,46 @@
               h('div', { className: 'text-2xl mb-2 animate-pulse' }, '🔷'),
               h('div', { className: 'text-sm ' + muted }, t('stem.geology.loading3d', 'Loading the 3D engine…'))));
         }
+        function fpSet(axis, val) { try { var o = {}; o[axis] = val; if (window[ENGINE_KEY]) window[ENGINE_KEY].fpInput('move', o); } catch (e) {} }
+        function padBtn(label, axis, val, aria) {
+          return h('button', { key: aria, type: 'button', 'aria-label': aria,
+            onPointerDown: function (e) { try { e.preventDefault(); } catch (x) {} fpSet(axis, val); },
+            onPointerUp: function () { fpSet(axis, 0); }, onPointerLeave: function () { fpSet(axis, 0); },
+            className: 'w-8 h-8 flex items-center justify-center rounded-md border text-sm font-bold select-none touch-none ' + (isDark ? 'bg-slate-900/80 border-slate-600 text-slate-100 active:bg-slate-700' : 'bg-white/85 border-slate-300 text-slate-700 active:bg-slate-200') }, label);
+        }
+        var emptyCell = function (k) { return h('span', { key: k }); };
         return h('div', { ref: fsRef, className: (isFs ? 'fixed inset-0 z-[9999] overflow-hidden bg-[#060913]' : 'relative rounded-xl overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300')) },
-          h('div', { ref: containerRef, style: { height: isFs ? '100vh' : 'min(58vh, 460px)', minHeight: 320, background: '#060913', cursor: excavate ? 'crosshair' : 'grab' }, role: 'img', 'aria-label': 'Interactive 3D voxel cross-section of the crust. Use the rock list below for a non-visual version.' }),
+          h('div', { ref: containerRef, tabIndex: fpOn ? 0 : undefined, style: { height: isFs ? '100vh' : 'min(58vh, 460px)', minHeight: 320, background: '#060913', cursor: fpOn ? 'move' : (excavate ? 'crosshair' : 'grab'), outline: 'none' }, role: fpOn ? 'application' : 'img', 'aria-label': fpOn ? 'First-person geology explorer. W A S D or arrow keys to fly, Q and E for up and down, I J K L or drag to look, Escape to exit.' : 'Interactive 3D voxel cross-section of the crust. Use the rock list below for a non-visual version.' }),
           h('div', { className: 'absolute top-2 left-2 z-10 flex gap-1' },
             [['iso', '3D'], ['front', 'Front'], ['top', 'Top']].map(function (vw) {
-              return h('button', { key: vw[0], type: 'button', onClick: function () { try { if (window[ENGINE_KEY] && window[ENGINE_KEY].setView) window[ENGINE_KEY].setView(vw[0]); } catch (e) {} }, 'aria-label': 'Camera view: ' + vw[1], className: 'transition-colors active:scale-[0.97] text-[10px] font-bold px-2 py-1 rounded-md border ' + (isDark ? 'bg-slate-900/75 border-slate-600 text-slate-100 hover:bg-slate-800' : 'bg-white/80 border-slate-300 text-slate-700 hover:bg-white') }, vw[1]);
-            })),
+              return h('button', { key: vw[0], type: 'button', disabled: fpOn, onClick: function () { try { if (window[ENGINE_KEY] && window[ENGINE_KEY].setView) window[ENGINE_KEY].setView(vw[0]); } catch (e) {} }, 'aria-label': 'Camera view: ' + vw[1], className: 'transition-colors active:scale-[0.97] text-[10px] font-bold px-2 py-1 rounded-md border ' + (fpOn ? 'opacity-40 cursor-not-allowed ' : '') + (isDark ? 'bg-slate-900/75 border-slate-600 text-slate-100 hover:bg-slate-800' : 'bg-white/80 border-slate-300 text-slate-700 hover:bg-white') }, vw[1]);
+            }).concat([
+              h('button', { key: 'fp', ref: fpToggleRef, type: 'button', 'aria-pressed': fpOn ? 'true' : 'false', 'aria-label': fpOn ? 'Exit first-person explorer' : 'Drop into the world — first-person explorer', onClick: function () { setFpOn(function (v) { return !v; }); }, className: 'transition-colors active:scale-[0.97] text-[10px] font-bold px-2 py-1 rounded-md border ' + (fpOn ? 'bg-emerald-500 border-emerald-400 text-emerald-950' : (isDark ? 'bg-slate-900/75 border-slate-600 text-slate-100 hover:bg-slate-800' : 'bg-white/80 border-slate-300 text-slate-700 hover:bg-white')) }, fpOn ? ('🚪 ' + t('stem.geology.fp_exit', 'Exit')) : ('🚶 ' + t('stem.geology.fp_enter', 'Drop in')))
+            ])),
           h('button', { type: 'button', onClick: toggleFullscreen, title: isFs ? t('stem.geology.exit_fullscreen', 'Exit fullscreen') : t('stem.geology.fullscreen', 'Fullscreen'), 'aria-label': isFs ? 'Exit fullscreen 3D view' : 'Fullscreen 3D view', className: 'absolute top-2 right-2 z-10 transition-colors active:scale-[0.97] text-base leading-none px-2 py-1.5 rounded-lg border ' + (isDark ? 'bg-slate-900/80 border-slate-600 text-slate-100 hover:bg-slate-800' : 'bg-white/85 border-slate-300 text-slate-700 hover:bg-white') }, isFs ? '✕' : '⛶'),
-          h('select', { value: res, 'aria-label': t('stem.geology.detail', 'Voxel detail level'), title: t('stem.geology.detail_tip', 'Higher detail = smaller, sharper voxels (heavier on weak devices)'), onChange: function (e) { var v = e.target.value; setRes(v); upd('res', v); setSlice(0); setExcavate(false); }, className: 'absolute bottom-2 left-2 z-10 text-[10px] font-bold px-1.5 py-1 rounded-md border cursor-pointer ' + (isDark ? 'bg-slate-900/80 border-slate-600 text-slate-100' : 'bg-white/85 border-slate-300 text-slate-700') },
+          fpOn ? null : h('select', { value: res, 'aria-label': t('stem.geology.detail', 'Voxel detail level'), title: t('stem.geology.detail_tip', 'Higher detail = smaller, sharper voxels (heavier on weak devices)'), onChange: function (e) { var v = e.target.value; setRes(v); upd('res', v); setSlice(0); setExcavate(false); }, className: 'absolute bottom-2 left-2 z-10 text-[10px] font-bold px-1.5 py-1 rounded-md border cursor-pointer ' + (isDark ? 'bg-slate-900/80 border-slate-600 text-slate-100' : 'bg-white/85 border-slate-300 text-slate-700') },
             h('option', { value: 'low' }, t('stem.geology.detail_low', 'Detail: Low')),
             h('option', { value: 'standard' }, t('stem.geology.detail_std', 'Detail: Standard')),
-            h('option', { value: 'high' }, t('stem.geology.detail_high', 'Detail: High'))));
+            h('option', { value: 'high' }, t('stem.geology.detail_high', 'Detail: High'))),
+          // first-person touch move-pad (forward/back/strafe + up/down) — tablets; keyboard does the same
+          fpOn ? h('div', { className: 'absolute bottom-2 left-2 z-10 grid gap-1', style: { gridTemplateColumns: 'repeat(3, auto)' }, role: 'group', 'aria-label': 'First-person move controls' },
+            emptyCell('a'), padBtn('▲', 'fwd', 1, 'Move forward'), emptyCell('b'),
+            padBtn('◀', 'strafe', -1, 'Move left'), padBtn('▼', 'fwd', -1, 'Move back'), padBtn('▶', 'strafe', 1, 'Move right'),
+            padBtn('⤒', 'vert', 1, 'Move up'), emptyCell('c'), padBtn('⤓', 'vert', -1, 'Move down')) : null,
+          // on-screen key legend (visual; SR gets layer announcements via the live region)
+          fpOn ? h('div', { className: 'absolute bottom-2 left-1/2 -translate-x-1/2 z-10 text-[9.5px] px-2 py-1 rounded-md whitespace-nowrap ' + (isDark ? 'bg-slate-900/70 text-slate-300' : 'bg-white/80 text-slate-600'), 'aria-hidden': 'true' }, t('stem.geology.fp_keys', 'WASD / arrows fly · Q E up·down · IJKL / drag look · Esc exit')) : null,
+          // live "you are here" science HUD (announced separately via the polite live region)
+          (fpOn && fpHud) ? h('div', { className: 'absolute bottom-2 right-2 z-10 max-w-[220px] p-2.5 rounded-xl border ' + (isDark ? 'bg-slate-900/85 border-slate-600 text-slate-100' : 'bg-white/90 border-slate-300 text-slate-800'), role: 'status', 'aria-hidden': 'true' },
+            h('div', { className: 'text-[12px] font-extrabold' }, '📍 ' + fpHud.layerName),
+            fpHud.type ? h('span', { className: 'inline-block text-[10px] font-bold px-1.5 py-0.5 rounded-full mt-0.5 mb-1', style: { color: (TYPE_COLOR[fpHud.type] || '#64748b'), background: (TYPE_COLOR[fpHud.type] || '#64748b') + '22' } }, fpHud.type) : null,
+            h('div', { className: 'grid gap-0.5 text-[11px]', style: { gridTemplateColumns: 'auto 1fr' } },
+              h('span', { className: muted }, t('stem.geology.depth', 'Depth')), h('span', null, '≈ ' + fpHud.depthKm + ' km'),
+              h('span', { className: muted }, t('stem.geology.temp', 'Temp')), h('span', null, (typeof fpHud.tempC === 'number' ? '≈ ' + fpHud.tempC : fpHud.tempC) + ' °C'),
+              h('span', { className: muted }, t('stem.geology.pressure', 'Pressure')), h('span', null, '≈ ' + fpHud.presMPa + ' MPa'),
+              (fpHud.state && fpHud.state !== 'solid') ? h('span', { className: muted }, t('stem.geology.state', 'State')) : null,
+              (fpHud.state && fpHud.state !== 'solid') ? h('span', { className: 'font-semibold', style: { color: '#f59e0b' } }, fpHud.state) : null),
+            fpHud.blurb ? h('div', { className: 'mt-1 text-[10.5px] leading-snug' }, fpHud.blurb) : null,
+            fpHud.bust ? h('div', { className: 'mt-1 text-[10.5px] leading-snug font-semibold', style: { color: '#f59e0b' } }, '⚠ ' + fpHud.bust) : null) : null);
       }
 
       var btn = 'transition-colors active:scale-[0.97] text-xs font-bold px-3 py-2 rounded-lg border ';

@@ -177,3 +177,142 @@ describe('Geology Explorer — ambient occlusion (the de-Minecrafting shade)', (
     expect(P.aoCount(full, 5, 5, 5)).toBe(6);                                 // fully enclosed
   });
 });
+
+describe('Geology Explorer — first-person explorer (pure flight + you-are-here HUD)', () => {
+  // worldPos mirror (engine line ~351) for the round-trip lock
+  const wp = (x, y, z) => [(x - (14 - 1) / 2) * 1, ((12 - 1) / 2 - y) * 1, (z - (14 - 1) / 2) * 1];
+
+  it('fpForward gives a unit look vector with the documented axis convention', () => {
+    const f0 = P.fpForward(0, 0);
+    expect(f0.x).toBeCloseTo(0, 6); expect(f0.y).toBeCloseTo(0, 6); expect(f0.z).toBeCloseTo(-1, 6);  // yaw0,pitch0 → -Z
+    const fy = P.fpForward(Math.PI / 2, 0);
+    expect(fy.x).toBeCloseTo(-1, 6); expect(fy.z).toBeCloseTo(0, 6);
+    const fp = P.fpForward(0, Math.PI / 4);
+    expect(Math.hypot(fp.x, fp.y, fp.z)).toBeCloseTo(1, 6);                                            // always unit length
+  });
+
+  it('fpClampPitch prevents gimbal flip', () => {
+    expect(P.fpClampPitch(5)).toBeLessThan(Math.PI / 2);
+    expect(P.fpClampPitch(-5)).toBeGreaterThan(-Math.PI / 2);
+    expect(P.fpClampPitch(0)).toBe(0);
+  });
+
+  it('fpWorldToVoxel is the exact inverse of worldPos, and clamps out-of-block points to the nearest edge', () => {
+    [[7, 6, 7], [0, 0, 0], [13, 11, 13], [1, 4, 1]].forEach(([x, y, z]) => {
+      const [wx, wy, wz] = wp(x, y, z);
+      expect(P.fpWorldToVoxel(wx, wy, wz)).toEqual({ x, y, z });
+    });
+    expect(P.fpWorldToVoxel(1000, 1000, 1000)).toEqual({ x: 13, y: 0, z: 13 });    // +worldY = shallow → voxel y 0
+    expect(P.fpWorldToVoxel(-1000, -1000, -1000)).toEqual({ x: 0, y: 11, z: 0 });
+  });
+
+  it('fpBounds is detail-invariant (WORLD-based) and contains the default camera pose', () => {
+    const b = {};
+    ['low', 'standard', 'high'].forEach((r) => { P.setGrid(r); b[r] = P.fpBounds(); });
+    expect(b.high).toEqual(b.standard); expect(b.standard).toEqual(b.low);          // same at every detail
+    const W = P.WORLD, pose = [W.w * 1.15, W.h * 1.05, W.d * 1.4];
+    pose.forEach((c, i) => { expect(b.standard.max[i]).toBeGreaterThanOrEqual(c); expect(b.standard.min[i]).toBeLessThanOrEqual(-c + 0.001); });
+  });
+
+  it('fpStep flies along the look basis, clamps dt, clamps to bounds, and is pure', () => {
+    const bounds = { min: [-100, -100, -100], max: [100, 100, 100] };
+    const pos = { x: 0, y: 0, z: 0 };
+    const np = P.fpStep(pos, { x: 0, y: 0, z: -1 }, { fwd: 1, strafe: 0, vert: 0 }, 0.5, 2, bounds);  // dt 0.5 → clamped to 0.05
+    expect(np.z).toBeCloseTo(-0.1, 6); expect(np.x).toBeCloseTo(0, 6);
+    expect(pos).toEqual({ x: 0, y: 0, z: 0 });                                       // input not mutated
+    const far = P.fpStep({ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: -1 }, { fwd: 1, strafe: 0, vert: 0 }, 0.016, 1e6, bounds);
+    expect(far.z).toBe(-100);                                                        // pinned at the wall, never escapes
+  });
+
+  it('fpProbe HUD stays scene-correct: crust linear, deepEarth radial non-linear (no ~160,000°C leak)', () => {
+    P.setScene('crust'); P.setGrid('standard');
+    const c = P.fpProbe(-5.5, 1.5, -5.5);                                            // maps to voxel (1,4,1) = shale
+    expect(c.key).toBe('shale');
+    expect(c.tempC).toBe(105);                                                       // 15 + 3.6km*25 — linear crust geotherm
+    expect(c.layerName).toBeTruthy();
+
+    P.setScene('deepEarth'); P.setGrid('standard');
+    const core = P.fpProbe(0, 0, 0);                                                 // geometric centre
+    expect(core.key).toBe('innerCore');
+    expect(core.tempC).toBe(5200);                                                   // non-linear table, NOT ~159,000
+    expect(core.tempC).toBeLessThan(6000);
+    expect(core.state).toBe('solid');
+    P.setScene('crust');
+  });
+
+  it('fpBust surfaces the misconception busts only inside the mantle/core layers', () => {
+    expect(P.fpBust('upperMantle')).toMatch(/solid/i); expect(P.fpBust('upperMantle')).toMatch(/not/i);
+    expect(P.fpBust('lowerMantle')).toMatch(/solid/i);
+    expect(P.fpBust('outerCore')).toMatch(/liquid/i); expect(P.fpBust('outerCore')).toMatch(/geodynamo|magnetic/i);
+    expect(P.fpBust('innerCore')).toMatch(/hotter/i); expect(P.fpBust('innerCore')).toMatch(/solid/i);
+    expect(P.fpBust('crust')).toBeNull(); expect(P.fpBust('sandstone')).toBeNull(); expect(P.fpBust('quartz')).toBeNull();
+  });
+
+  it('every voxel layer in every scene has a you-are-here blurb', () => {
+    const KEYS = {
+      crust: ['soil', 'sandstone', 'shale', 'limestone', 'basement', 'intrusion', 'marble', 'hornfels', 'magma'],
+      geode: ['limestone', 'chalcedony', 'agate', 'quartz', 'amethyst'],
+      deepEarth: ['crust', 'upperMantle', 'lowerMantle', 'outerCore', 'innerCore'],
+    };
+    Object.keys(KEYS).forEach((sid) => KEYS[sid].forEach((k) => {
+      const b = P.fpBlurb(sid, k);
+      expect(typeof b).toBe('string'); expect(b.length).toBeGreaterThan(0);
+    }));
+  });
+
+  it('layerChanged fires once per entry, never on staying put or entering void', () => {
+    expect(P.layerChanged(null, 'soil')).toBe(true);
+    expect(P.layerChanged('soil', 'soil')).toBe(false);
+    expect(P.layerChanged('soil', 'shale')).toBe(true);
+    expect(P.layerChanged('shale', null)).toBe(false);
+  });
+
+  it('fpBob respects reduced-motion and only oscillates while moving', () => {
+    expect(P.fpBob(1.0, true, true, 0.05)).toBe(0);     // reduced-motion → no bob
+    expect(P.fpBob(1.0, false, false, 0.05)).toBe(0);   // stationary → no bob
+    const b = P.fpBob(0.3, true, false, 0.05);
+    expect(Math.abs(b)).toBeLessThanOrEqual(0.05);
+  });
+
+  it('fpAnnounceText composes depth+temp+state and appends a bust only when present', () => {
+    P.setScene('deepEarth'); P.setGrid('standard');
+    const core = P.fpProbe(0, 0, 0);
+    const a = P.fpAnnounceText(core);
+    expect(a).toMatch(/5200/); expect(a).toMatch(/solid/); expect(a).toMatch(/pressure/i);   // inner-core bust tail
+    P.setScene('crust'); P.setGrid('standard');
+    const shale = P.fpProbe(-5.5, 1.5, -5.5);
+    const s = P.fpAnnounceText(shale);
+    expect(s).toMatch(/105/); expect(s).not.toMatch(/Myth-bust/);                             // crust → no bust
+    P.setScene('crust');
+  });
+
+  it('fpSeedPose drops you in near the surface for crust and at mid-depth for deep Earth', () => {
+    const crust = P.fpSeedPose('crust'), deep = P.fpSeedPose('deepEarth');
+    expect(crust.pos.y).toBeGreaterThan(0);            // just under the surface
+    expect(deep.pos.y).toBe(0);                        // mid-globe for the radial scene
+    expect(crust.pos.y).not.toBe(deep.pos.y);
+  });
+
+  it('flying into the geode hollow resolves to the real crystal lining — never a fabricated "void" readout', () => {
+    ['low', 'standard', 'high'].forEach((r) => {
+      P.setScene('geode'); P.setGrid(r);
+      const c = P.fpProbe(0, 0, 0);                    // the centre of the hollow cavity
+      expect(c).not.toBeNull();
+      expect(c.key).not.toBe('void');                  // single-step escape used to leave this as 'void'
+      expect(c.layerName).not.toBe('void');
+      expect(c.blurb.length).toBeGreaterThan(0);       // a real crystal/host layer always has a you-are-here line
+      expect(typeof c.depthKm).toBe('string');
+    });
+    P.setScene('crust'); P.setGrid('standard');
+  });
+
+  it('fpAnnounceText keeps the °C unit even for the string-valued magma temperature', () => {
+    P.setScene('crust'); P.setGrid('standard');
+    const magma = P.fpProbe(-5.5, -5.5, -5.5);         // edge column, bottom row → magma
+    expect(magma.key).toBe('magma');
+    const a = P.fpAnnounceText(magma);
+    expect(a).toMatch(/1000/);
+    expect(a).toMatch(/degrees Celsius/);              // unit must not be dropped for the string temp
+    P.setScene('crust');
+  });
+});
