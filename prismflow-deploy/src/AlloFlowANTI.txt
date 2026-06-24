@@ -3548,29 +3548,33 @@ const AlloFlowContent = () => {
   }, []);
   const [guidedMode, setGuidedMode] = useState(false);
   const [guidedStep, setGuidedStep] = useState(0);
+  // Each step carries teaching content for the hands-on guided tutorial:
+  //   action  = the short imperative shown in the banner ("do this now"), pointing
+  //             at the highlighted tool. success = the encouraging note shown once
+  //             the teacher engages that tool. (English here; banner chrome is i18n.)
   const GUIDED_STEPS = [
-    { id: 'source-input', label: 'Source Material' },
-    { id: 'analysis', label: 'Analyze Source Material' },
-    { id: 'glossary', label: 'Glossary & Language Selection' },
-    { id: 'simplified', label: 'Text Adaptation' },
-    { id: 'ui-tool-wordsounds', label: 'Word Sounds' },
-    { id: 'outline', label: 'Visual Organizer' },
-    { id: 'anchor-chart', label: 'Anchor Charts' },
-    { id: 'image', label: 'Visual Support' },
-    { id: 'faq', label: 'FAQ Generator' },
-    { id: 'sentence-frames', label: 'Writing Scaffolds' },
-    { id: 'note-taking', label: 'Note-Taking Templates' },
-    { id: 'brainstorm', label: 'Brainstorm Activity Ideas' },
-    { id: 'persona', label: 'Interview Mode' },
-    { id: 'timeline', label: 'Sequence Builder' },
-    { id: 'concept-sort', label: 'Concept Sort' },
-    { id: 'dbq', label: 'Document-Based Question' },
-    { id: 'math', label: 'STEM Lab' },
-    { id: 'adventure', label: 'Adventure Mode' },
-    { id: 'quiz', label: 'Exit Ticket' },
-    { id: 'alignment', label: 'Standards & UDL Alignment' },
-    { id: 'lesson-plan', label: 'Lesson Plan' },
-    { id: '_final', label: 'Full Resource Pack & Standards Report' },
+    { id: 'source-input', label: 'Source Material', action: 'Paste or type the text you want to adapt. Everything else builds from it.', success: 'Source captured. Now let us find what students will struggle with.' },
+    { id: 'analysis', label: 'Analyze Source Material', action: 'Run Analyze to scan the reading level, key concepts, and tricky vocabulary.', success: 'Analysis done. That shows you where to scaffold.' },
+    { id: 'glossary', label: 'Glossary & Language Selection', action: 'Generate a glossary of the key terms, in your students’ languages if needed.', success: 'Glossary ready. Front-loading vocabulary helps multilingual learners most.' },
+    { id: 'simplified', label: 'Text Adaptation', action: 'Create a simplified version at a reading level your students can access.', success: 'Adapted text ready. Keep the original on hand for your stronger readers.' },
+    { id: 'ui-tool-wordsounds', label: 'Word Sounds', action: 'Build Word Sounds practice for the decoding and phonics targets.', success: 'Word Sounds set. Great support for your emerging readers.' },
+    { id: 'outline', label: 'Visual Organizer', action: 'Generate a visual organizer so students can see how the ideas connect.', success: 'Organizer ready. Structure helps content stick.' },
+    { id: 'anchor-chart', label: 'Anchor Charts', action: 'Make an anchor chart of the big ideas to keep on display.', success: 'Anchor chart ready to post.' },
+    { id: 'image', label: 'Visual Support', action: 'Add a visual so abstract ideas get a concrete picture.', success: 'Visual added. Dual coding helps recall.' },
+    { id: 'faq', label: 'FAQ Generator', action: 'Generate an FAQ that answers the questions students actually ask.', success: 'FAQ ready.' },
+    { id: 'sentence-frames', label: 'Writing Scaffolds', action: 'Create writing scaffolds and sentence frames to lower the writing bar.', success: 'Scaffolds ready. They free up working memory for ideas.' },
+    { id: 'note-taking', label: 'Note-Taking Templates', action: 'Build a note-taking template students fill in as they read.', success: 'Template ready.' },
+    { id: 'brainstorm', label: 'Brainstorm Activity Ideas', action: 'Brainstorm activity ideas tuned to this content.', success: 'Ideas generated. Pick what fits your class.' },
+    { id: 'persona', label: 'Interview Mode', action: 'Set up Interview Mode so students can question a historical or expert persona.', success: 'Interview ready. Great for perspective-taking.' },
+    { id: 'timeline', label: 'Sequence Builder', action: 'Build a sequence so students can order events or steps.', success: 'Sequence ready.' },
+    { id: 'concept-sort', label: 'Concept Sort', action: 'Create a Concept Sort to surface how students group ideas.', success: 'Concept Sort ready.' },
+    { id: 'dbq', label: 'Document-Based Question', action: 'Generate a Document-Based Question to push analysis with evidence.', success: 'DBQ ready.' },
+    { id: 'math', label: 'STEM Lab', action: 'Open the STEM Lab to add a hands-on math or science tool.', success: 'STEM tool added.' },
+    { id: 'adventure', label: 'Adventure Mode', action: 'Turn the lesson into an Adventure students can play through.', success: 'Adventure ready.' },
+    { id: 'quiz', label: 'Exit Ticket', action: 'Create an Exit Ticket to check what stuck.', success: 'Quiz ready. Use it to plan tomorrow.' },
+    { id: 'alignment', label: 'Standards & UDL Alignment', action: 'Check Standards and UDL alignment so the lesson maps to your goals.', success: 'Alignment checked.' },
+    { id: 'lesson-plan', label: 'Lesson Plan', action: 'Generate a Lesson Plan that ties the pieces together.', success: 'Lesson plan ready.' },
+    { id: '_final', label: 'Full Resource Pack & Standards Report', action: 'Download the full Resource Pack and Standards Report whenever you are happy with it.', success: 'All set. Nice work building this lesson.' },
   ];
   const isGuidedToolVisible = (toolId) => {
     if (!guidedMode) return true;
@@ -3582,6 +3586,8 @@ const AlloFlowContent = () => {
   const handleGuidedSkip = () => { if (guidedStep < GUIDED_STEPS.length - 1) setGuidedStep(s => s + 1); };
   const handleExitGuidedMode = () => { setGuidedMode(false); };
   const [showGuidedTip, setShowGuidedTip] = useState(false);
+  const [guidedRect, setGuidedRect] = useState(null);        // active tool's screen rect, for the highlight ring
+  const [guidedEngaged, setGuidedEngaged] = useState(false); // has the teacher interacted with the current step's tool?
   useEffect(() => { setShowGuidedTip(false); }, [guidedStep]);
   useEffect(() => {
     if (guidedMode && guidedStep === 0 && inputText && inputText.trim().length > 20) {
@@ -3613,6 +3619,37 @@ const AlloFlowContent = () => {
     'lesson-plan': 'tour-tool-lesson-plan',
     '_final': 'tour-tool-fullpack',
   };
+  // Hands-on guided tutorial: anchor the active step to its real tool — scroll it into
+  // view, ring it, announce it, and notice when the teacher actually uses it (engaged).
+  useEffect(() => {
+    if (!guidedMode) { setGuidedRect(null); return; }
+    const step = GUIDED_STEPS[guidedStep];
+    const domId = step && GUIDED_TOUR_MAP[step.id];
+    const el = domId ? document.getElementById(domId) : null;
+    setGuidedEngaged(false);
+    if (!el) { setGuidedRect(null); return; }
+    try { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
+    const measure = () => { const r = el.getBoundingClientRect(); setGuidedRect({ top: r.top, left: r.left, width: r.width, height: r.height }); };
+    const raf = requestAnimationFrame(measure);
+    const onMove = () => measure();
+    window.addEventListener('scroll', onMove, { passive: true, capture: true });
+    window.addEventListener('resize', onMove);
+    const onEngage = () => {
+      setGuidedEngaged(true);
+      if (typeof window !== 'undefined' && window.alloAnnounce) window.alloAnnounce('Nice. When you are ready, continue to the next step.', 'polite');
+    };
+    el.addEventListener('click', onEngage, { once: true });
+    if (typeof window !== 'undefined' && window.alloAnnounce && step) {
+      const n = Math.min(guidedStep + 1, GUIDED_STEPS.length);
+      window.alloAnnounce('Step ' + n + ' of ' + GUIDED_STEPS.length + '. ' + step.label + '. ' + (step.action || ''), 'polite');
+    }
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('scroll', onMove, { capture: true });
+      window.removeEventListener('resize', onMove);
+      el.removeEventListener('click', onEngage);
+    };
+  }, [guidedMode, guidedStep]);
   useEffect(() => {
     // Splash screen dismiss: wait for BOTH (a) the first-paint critical modules
     // to be loaded AND (b) a minimum dwell time so the splash doesn't flicker
@@ -4439,7 +4476,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '19671284';
+    var pluginCdnVersion = '60d5f14a';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -10569,7 +10606,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [pdfAuditorCount, setPdfAuditorCount] = useState(5);
   const [pdfPolishPasses, setPdfPolishPasses] = useState(2);
   const [pdfAutoFixPasses, setPdfAutoFixPasses] = useState(8);
-  const [pdfTargetScore, setPdfTargetScore] = useState(90);
+  const [pdfTargetScore, setPdfTargetScore] = useState(95); // default raised 90→95 (2026-06-23, maintainer ask): auto-remediation aims for "Near-perfect" by default. Bounded by pdfAutoFixPasses (8) — docs that plateau below 95 return best-effort, they don't fail.
   // OCR language override (2026-06-20): '' = auto-detect (a Vision call picks the ISO code). A manual
   // choice lets a teacher tell the pipeline a scanned handout is e.g. Somali so Tesseract uses the right
   // model — its word boxes drive the searchable text layer, and 'eng' mis-segments non-Latin scripts.
@@ -25055,7 +25092,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             style={{ width: window.innerWidth >= 768 ? `${leftWidth}%` : '100%', height: '100%' }}
         >
           {isTeacherMode && <SidebarTabsNav activeSidebarTab={activeSidebarTab} handleSetActiveSidebarTabToCreate={handleSetActiveSidebarTabToCreate} isHistoryPulsing={isHistoryPulsing} setActiveSidebarTab={setActiveSidebarTab} setIsHistoryPulsing={setIsHistoryPulsing} t={t} />}
-          {guidedMode && <GuidedModeBanner GUIDED_STEPS={GUIDED_STEPS} GUIDED_TOUR_MAP={GUIDED_TOUR_MAP} guidedStep={guidedStep} handleExitGuidedMode={handleExitGuidedMode} handleGuidedSkip={handleGuidedSkip} setGuidedStep={setGuidedStep} setShowGuidedTip={setShowGuidedTip} showGuidedTip={showGuidedTip} t={t} tourSteps={tourSteps} />}
+          {guidedMode && <GuidedModeBanner GUIDED_STEPS={GUIDED_STEPS} GUIDED_TOUR_MAP={GUIDED_TOUR_MAP} guidedStep={guidedStep} guidedRect={guidedRect} guidedEngaged={guidedEngaged} handleExitGuidedMode={handleExitGuidedMode} handleGuidedSkip={handleGuidedSkip} setGuidedStep={setGuidedStep} setShowGuidedTip={setShowGuidedTip} showGuidedTip={showGuidedTip} t={t} tourSteps={tourSteps} />}
           {isTeacherMode && <UDLGuideButton handleToggleShowUDLGuide={handleToggleShowUDLGuide} showUDLGuide={showUDLGuide} t={t} />}
           {isTeacherMode && activeSidebarTab === 'create' && (
           <div style={{display: isGuidedToolVisible('source-input') ? undefined : 'none'}} id="tour-input-panel" data-help-key="source_input" className={`bg-white rounded-3xl shadow-indigo-500/10 border transition-all overflow-hidden shrink-0 ${activeView === 'input' ? 'border-indigo-600 shadow-indigo-500/20' : 'border-slate-200 hover:border-indigo-200'}`}>
