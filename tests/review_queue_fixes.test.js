@@ -66,8 +66,10 @@ describe('anti-drift: critic #3 — veraPDF verdict cannot survive a re-tag', ()
     expect(view).toMatch(/if \(_reBytes instanceof Uint8Array\) _lastTaggedBytesRef\.current = _reBytes/);
     expect(view).toMatch(/pdfUa1Checks: _re\.pdfUa1Checks \|\| prev\.pdfUa1Checks, veraPdf: null/);
   });
-  it('the report only claims green ISO-verified when the self-check ALSO agrees (no "Mostly")', () => {
-    expect(pipe).toMatch(/_vera\.compliant === true && conformanceLabel\.indexOf\('Non-Conformant'\) === -1 && conformanceLabel\.indexOf\('Mostly'\) === -1/);
+  it('the report only claims green ISO-verified when there IS a current tagged PDF (hasChecks) AND the self-check agrees (no "Mostly")', () => {
+    // hardened 2026-06-23 (Canvas test): also require hasChecks, so a stale compliant veraPDF result can't
+    // upgrade "Awaiting Tagged PDF" (0 self-check rules) to a green "Conformant (veraPDF verified)" claim.
+    expect(pipe).toMatch(/_vera\.compliant === true && hasChecks && conformanceLabel\.indexOf\('Non-Conformant'\) === -1 && conformanceLabel\.indexOf\('Mostly'\) === -1/);
   });
 });
 

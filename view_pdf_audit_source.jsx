@@ -7522,7 +7522,17 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 <span className="text-lg" aria-hidden="true">🎯</span>
                                 <div>
                                   <div className="text-xs font-bold text-emerald-800">{t('pdf_audit.resolution.heading') || 'Issue Resolution'}</div>
-                                  <div className="text-[11px] text-emerald-600">{t('pdf_audit.resolution.subheading', { resolved: s.resolvedCount, total: s.totalPre, pct }) || `Resolved ${s.resolvedCount} of ${s.totalPre} original issues (${pct}%)`}</div>
+                                  {/* State-aware subheading (2026-06-23, maintainer Canvas test): give an explicit
+                                      "no remaining issues" affirmative when all originals are resolved, and — when
+                                      new issues were introduced — say so plainly so "100%" isn't misread as
+                                      "issue-free" (100% is about ORIGINAL issues; the new ones still need attention). */}
+                                  <div className="text-[11px] text-emerald-600">{
+                                    (s.persistedCount === 0 && s.introducedCount === 0)
+                                      ? (t('pdf_audit.resolution.all_clean', { total: s.totalPre }) || `✓ All ${s.totalPre} original issues resolved — none remaining`)
+                                      : (s.persistedCount === 0)
+                                        ? (t('pdf_audit.resolution.all_resolved_new', { total: s.totalPre, introduced: s.introducedCount }) || `✓ All ${s.totalPre} original issues resolved · ⊕ ${s.introducedCount} new issue${s.introducedCount === 1 ? '' : 's'} introduced — review below`)
+                                        : (t('pdf_audit.resolution.subheading', { resolved: s.resolvedCount, total: s.totalPre, pct }) || `Resolved ${s.resolvedCount} of ${s.totalPre} original issues (${pct}%) · ${s.persistedCount} still present`)
+                                  }</div>
                                 </div>
                               </div>
                               <div className="flex gap-1.5 text-[11px] font-bold shrink-0">
@@ -9695,6 +9705,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         const _lowConf = (typeof window !== 'undefined' && Array.isArray(window.__lastOcrLowConfidencePages)) ? window.__lastOcrLowConfidencePages : [];
                         const _lowPages = _lowConf.map((p) => p && p.pageNum).filter((n) => typeof n === 'number');
                         const _reRun = async (force) => {
+                          // Re-scanning re-runs the WHOLE pipeline and REPLACES the current results (2026-06-23,
+                          // maintainer Canvas test: this was wiping a good audit with no warning). When there's a
+                          // result to lose, confirm first and offer to save the project so it isn't discarded.
+                          if (pdfFixResult && pdfFixResult.accessibleHtml && typeof window !== 'undefined' && typeof window.confirm === 'function') {
+                            if (!window.confirm(t('pdf_audit.rescan_confirm') || 'Re-scanning with OCR starts the audit over and REPLACES your current results. Continue?')) return;
+                            if (typeof saveProjectToFile === 'function' && window.confirm(t('pdf_audit.rescan_save_first') || 'Save your current project first?\n\nOK = download a .alloflow.json now, then re-scan.\nCancel = re-scan without saving.')) {
+                              try { saveProjectToFile(false); addToast(t('pdf_audit.rescan_saved') || '💾 Project saved — re-scanning…', 'info'); } catch (_) {}
+                            }
+                          }
                           try { window.__alloForceOcr = force; } catch (_) {}
                           const fb = await ensurePdfBase64();
                           if (!fb) { try { window.__alloForceOcr = null; } catch (_) {} return; } // user cancelled re-attach

@@ -17670,11 +17670,15 @@ tr { page-break-inside: avoid; }
       const _vfail = (_vera.failedRules && _vera.failedRules.length) || 0;
       conformanceLabel = 'Non-Conformant (veraPDF · ISO 14289-1' + (_vfail ? ', ' + _vfail + ' rule' + (_vfail === 1 ? '' : 's') + ' failed' : '') + ')';
       conformanceColor = '#dc2626';
-    } else if (_vera && _vera.compliant === true && conformanceLabel.indexOf('Non-Conformant') === -1 && conformanceLabel.indexOf('Mostly') === -1) {
+    } else if (_vera && _vera.compliant === true && hasChecks && conformanceLabel.indexOf('Non-Conformant') === -1 && conformanceLabel.indexOf('Mostly') === -1) {
       // Only claim the green ISO-verified headline when veraPDF says compliant AND the current-bytes
       // self-check agrees. A compliant veraPDF verdict sitting next to self-check FAILURES ('Mostly
       // Conformant') is a contradiction that usually means the veraPDF result is STALE (validated different
       // bytes, e.g. before a Tier-B re-tag) — don't upgrade to green in that case. (critic gap #3, 2026-06-21)
+      // hasChecks GUARD (2026-06-23, maintainer Canvas test): if there is NO current tagged PDF (hasChecks
+      // false → 'Awaiting Tagged PDF', 0 self-check rules), a `compliant:true` veraPDF result is necessarily
+      // STALE (it validated a PRIOR export). Without this guard the report claimed "Conformant (veraPDF
+      // verified)" next to "No tagged PDF available · 0 rules checked" — a false conformance claim.
       conformanceLabel = 'Conformant (veraPDF · ISO 14289-1 verified)';
       conformanceColor = '#16a34a';
     }
@@ -17739,6 +17743,11 @@ tr { page-break-inside: avoid; }
       }
       if (_vera.error) {
         return _h + '<p style="font-size:13px;color:#d97706;margin:0 0 8px">veraPDF validation could not complete (' + _esc(_vera.error) + '). Validate externally in veraPDF / PAC 2024 before claiming conformance.</p>';
+      }
+      if (!hasChecks) {
+        // A veraPDF result is on file but there is NO current tagged PDF self-check — it validated a PRIOR
+        // export, so it can't speak to the current document. Don't show a green PASS (2026-06-23 Canvas test).
+        return _h + '<p style="font-size:13px;color:#92400e;margin:0 0 8px;padding:10px 16px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px"><strong>A previous veraPDF result is on file, but this session has no current tagged PDF to validate.</strong> That earlier result does not apply to the current document. Generate a Tagged PDF and re-run "Independently validate with veraPDF" before relying on a PDF/UA-1 verdict.</p>';
       }
       const _vfr = _vera.failedRules || [];
       const _ok = _vera.compliant === true;

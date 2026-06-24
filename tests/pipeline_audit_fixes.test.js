@@ -91,6 +91,36 @@ describe('H-9: _reauditAndScore drops a stale write (score must describe the byt
   });
 });
 
+describe('Canvas-test fixes (2026-06-23): conformance overclaim, re-scan save, resolution affirmative', () => {
+  it('the green "Conformant (veraPDF verified)" header requires a CURRENT tagged PDF (hasChecks)', () => {
+    // was: a stale compliant veraPDF result upgraded "Awaiting Tagged PDF" → green "Conformant", next to
+    // "No tagged PDF available · 0 rules checked" (a false conformance claim).
+    const block = dp.slice(dp.indexOf("conformanceLabel === 'Conformant'"), dp.indexOf("// Reliability block"));
+    expect(block).toMatch(/_vera && _vera\.compliant === true && hasChecks &&/);
+    expect(block).toMatch(/conformanceLabel = 'Conformant \(veraPDF · ISO 14289-1 verified\)'/);
+  });
+  it('the veraPDF section shows a STALE note (not "PASSES") when there is no current tagged PDF', () => {
+    const veraBlock = dp.slice(dp.indexOf('const _veraBlock = (() =>'), dp.indexOf('// Issue resolution block'));
+    expect(veraBlock).toMatch(/if \(!hasChecks\) \{/);
+    expect(veraBlock).toMatch(/no current tagged PDF to validate/);
+    // the "✓ PASSES PDF/UA-1" label must come AFTER the !hasChecks guard (so it can't show without a tagged PDF)
+    expect(veraBlock.indexOf('if (!hasChecks)')).toBeLessThan(veraBlock.indexOf('PASSES PDF/UA-1'));
+  });
+  it('Re-scan with OCR confirms + offers to save the project before wiping the result', () => {
+    const fn = view.slice(view.indexOf('const _reRun = async (force) => {'), view.indexOf('const _reRun = async (force) => {') + 1300);
+    expect(fn).toMatch(/REPLACES your current results/);                 // the warning
+    expect(fn).toMatch(/saveProjectToFile\(false\)/);                    // saves if the user opts in
+    expect(fn).toMatch(/pdf_audit\.rescan_save_first/);
+    // the confirm must gate the destructive fixAndVerifyPdf (return on cancel)
+    expect(fn).toMatch(/if \(!window\.confirm\([^)]*rescan_confirm[^)]*\)[^)]*\)\) return;/s);
+  });
+  it('the issue-resolution subheading is state-aware (no-remaining affirmative + new-issues honesty)', () => {
+    expect(view).toMatch(/pdf_audit\.resolution\.all_clean/);            // "All N resolved — none remaining"
+    expect(view).toMatch(/pdf_audit\.resolution\.all_resolved_new/);     // "All resolved · M new introduced"
+    expect(view).toMatch(/s\.persistedCount === 0 && s\.introducedCount === 0/);
+  });
+});
+
 describe('H-8: Load Project resets per-document holdovers (no cross-document state bleed)', () => {
   it('the results-screen loader clears the palette snapshot ref + the other per-doc state before continuing', () => {
     const _s = view.indexOf('// H-8 (audit 2026-06-23): the component never remounts on Load Project');
