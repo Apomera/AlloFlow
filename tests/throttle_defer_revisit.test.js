@@ -64,8 +64,10 @@ describe('defer-and-revisit catch-up: results splice back at the correct index',
 });
 
 describe('anti-drift: the breaker recovers over time + fails fast', () => {
-  it('time-decay recovery steps the cap back up as cooldowns elapse', () => {
-    expect(pipe).toMatch(/_geminiCap = Math\.min\(_GEMINI_MAX_CONCURRENT, _geminiCap \+ 1\);\s*\n\s*_geminiCooldownUntil = 0;/);
+  it('time-decay recovery steps the cap back up as cooldowns elapse (toward this run\'s effective ceiling)', () => {
+    // 2026-06-24: recovery now climbs toward _geminiEffectiveMax (the per-run ceiling, lowered for heavy/scanned
+    // docs by _applyGeminiPacing) instead of the raw global _GEMINI_MAX_CONCURRENT — so pacing isn't undone.
+    expect(pipe).toMatch(/_geminiCap = Math\.min\(_geminiEffectiveMax, _geminiCap \+ 1\);\s*\n\s*_geminiCooldownUntil = 0;/);
   });
   it('one inline auth retry (then defer), not three', () => {
     expect(pipe).toMatch(/var _GEMINI_AUTH_RETRIES = 1;/);

@@ -1784,6 +1784,16 @@ var createDocPipeline = function(deps) {
   var _GEMINI_RECOVER_HITS = 4;     // consecutive successes needed to restore full concurrency
   var _GEMINI_AUTH_RETRIES = 1;     // (2026-06-21) ONE quick jittered retry, then DEFER the call to the end-of-pass catch-up drain — was 3, which serialized 4 attempts/call through escalating cooldowns and burned 6-17 min PER CALL on a sustained rate-limit. A rate-limit eases over TIME, so revisiting later (catch-up) beats grinding inline now.
   var _geminiCap = _GEMINI_MAX_CONCURRENT;
+  // PROACTIVE PACING (2026-06-24, maintainer ask): for heavy/scanned docs — the ones that fire a big burst of
+  // calls (5 OCR passes + parallel audit passes + parallel fix chunks) and trip the Canvas rate-limit — lower
+  // the per-run concurrency CEILING and SPACE the call starts, so the same burst is SPREAD over time instead
+  // of hitting the service all at once. Crucially this drops NO calls: the queue (_geminiWaiters) holds the
+  // excess and the pump drains them as slots free — every audit pass / chunk still runs, just later. So it's
+  // "slower but just as thorough", and it AVOIDS the storm rather than reacting to it. Reset per-run.
+  var _geminiEffectiveMax = _GEMINI_MAX_CONCURRENT; // ceiling for THIS run (recovery never restores above it)
+  var _geminiStaggerMs = 0;                          // MIN gap between consecutive call STARTS (0 = fire as slots free; >0 = space them)
+  var _geminiStaggerTimer = null;
+  var _geminiLastStartAt = 0;                        // epoch ms of the most recent call start (drives the min-interval spacing)
   var _geminiInFlight = 0;
   var _geminiWaiters = [];
   var _geminiAuthStreak = 0;        // consecutive canvas-auth failures
@@ -1809,14 +1819,32 @@ var createDocPipeline = function(deps) {
     // so recover over time: gently (one step per elapsed cooldown, not a jump back to full) to probe rather
     // than re-storm. Consumed by zeroing _geminiCooldownUntil so one elapsed cooldown bumps once; the next
     // failure re-arms it. The fast _geminiNoteSuccess path (4 clean successes → full) still applies too.
-    if (_geminiCap < _GEMINI_MAX_CONCURRENT && _geminiCooldownUntil > 0) {
-      _geminiCap = Math.min(_GEMINI_MAX_CONCURRENT, _geminiCap + 1);
+    if (_geminiCap < _geminiEffectiveMax && _geminiCooldownUntil > 0) {
+      _geminiCap = Math.min(_geminiEffectiveMax, _geminiCap + 1);
       _geminiCooldownUntil = 0;
-      if (_geminiCap >= _GEMINI_MAX_CONCURRENT) _geminiStormAnnounced = false;
+      if (_geminiCap >= _geminiEffectiveMax) _geminiStormAnnounced = false;
     }
     while (_geminiInFlight < _geminiCap && _geminiWaiters.length) {
+      // STAGGER (heavy/scanned mode): enforce a MIN gap between consecutive call starts, so the calls are
+      // spread over time instead of all firing the instant a slot is free. The first start fires immediately
+      // (_geminiLastStartAt == 0); each later one waits until staggerMs has elapsed since the previous start.
+      // Nothing is dropped — the waiter stays queued and the timer re-pumps once the gap passes.
+      if (_geminiStaggerMs > 0 && _geminiLastStartAt > 0) {
+        var _sinceLast = now - _geminiLastStartAt;
+        if (_sinceLast < _geminiStaggerMs) {
+          if (!_geminiStaggerTimer) _geminiStaggerTimer = setTimeout(function () { _geminiStaggerTimer = null; _geminiPump(); }, (_geminiStaggerMs - _sinceLast) + 5);
+          break;
+        }
+      }
       _geminiInFlight++;
+      _geminiLastStartAt = now;
       (_geminiWaiters.shift())();
+      // If another call could start now (spare slot + queue), still hold it for the next gap rather than
+      // firing back-to-back — schedule the next pump one staggerMs out.
+      if (_geminiStaggerMs > 0 && _geminiInFlight < _geminiCap && _geminiWaiters.length) {
+        if (!_geminiStaggerTimer) _geminiStaggerTimer = setTimeout(function () { _geminiStaggerTimer = null; _geminiPump(); }, _geminiStaggerMs);
+        break;
+      }
     }
   };
   var _acquireGeminiSlot = function() {
@@ -1875,17 +1903,17 @@ var createDocPipeline = function(deps) {
   var _geminiNoteSuccess = function() {
     _geminiAuthStreak = 0;
     _geminiTransientStreak = 0;
-    if (_geminiCap < _GEMINI_MAX_CONCURRENT) {
+    if (_geminiCap < _geminiEffectiveMax) {
       _geminiOkStreak++;
       if (_geminiOkStreak >= _GEMINI_RECOVER_HITS) {
-        _geminiCap = _GEMINI_MAX_CONCURRENT;
+        _geminiCap = _geminiEffectiveMax; // restore to THIS run's ceiling (lower for heavy/scanned docs)
         _geminiOkStreak = 0;
         _geminiStormAnnounced = false; // ready to warn again if a NEW storm starts later
         // CB-2 (2026-06-21): also clear the cooldown. The last storm may have pushed _geminiCooldownUntil
         // up to 90s out; without this, _geminiPump still refuses to start queued waiters until that stale
         // timestamp elapses, so "restoring concurrency to 3" was a lie for up to ~90s.
         _geminiCooldownUntil = 0;
-        warnLog('[GeminiGate] Throttle cleared — restoring concurrency to ' + _GEMINI_MAX_CONCURRENT);
+        warnLog('[GeminiGate] Throttle cleared — restoring concurrency to ' + _geminiEffectiveMax);
         _geminiPump();
       }
     }
@@ -1904,6 +1932,30 @@ var createDocPipeline = function(deps) {
     _geminiCooldownUntil = 0;
     _geminiStormAnnounced = false;
     if (_geminiCooldownTimer) { try { clearTimeout(_geminiCooldownTimer); } catch (_) {} _geminiCooldownTimer = null; }
+    // Pacing is per-run too — clear any heavy-doc stagger from the previous document; the current run re-applies
+    // it via _applyGeminiPacing once it knows whether THIS doc is heavy/scanned.
+    _geminiEffectiveMax = _GEMINI_MAX_CONCURRENT;
+    _geminiStaggerMs = 0;
+    _geminiLastStartAt = 0;
+    if (_geminiStaggerTimer) { try { clearTimeout(_geminiStaggerTimer); } catch (_) {} _geminiStaggerTimer = null; }
+  };
+  // Proactively pace this run's Gemini calls for HEAVY/SCANNED docs: lower the concurrency ceiling + space the
+  // call starts so the burst is spread over time and avoids tripping the Canvas rate-limit — WITHOUT dropping
+  // any calls (the queue defers + drains them; same passes, same chunks, just slower). Idempotent + safe to
+  // call repeatedly (e.g. once on page-count, again when OCR confirms scanned). (2026-06-24, maintainer ask.)
+  var _applyGeminiPacing = function (heavy, opts) {
+    opts = opts || {};
+    if (heavy) {
+      var _max = (typeof opts.maxConcurrent === 'number') ? opts.maxConcurrent : 2; // 3 → 2: gentle, not fully serial
+      _geminiEffectiveMax = Math.max(1, Math.min(_GEMINI_MAX_CONCURRENT, _max));
+      _geminiStaggerMs = (typeof opts.staggerMs === 'number') ? opts.staggerMs : 700; // ~0.7s between starts
+      if (_geminiCap > _geminiEffectiveMax) _geminiCap = _geminiEffectiveMax; // don't exceed the new ceiling
+      warnLog('[GeminiGate] Pacing for a heavy/scanned doc — concurrency ≤' + _geminiEffectiveMax + ', staggering call starts ~' + Math.round(_geminiStaggerMs) + 'ms apart (no calls dropped; this run will be a bit slower but just as thorough)');
+    } else {
+      _geminiEffectiveMax = _GEMINI_MAX_CONCURRENT;
+      _geminiStaggerMs = 0;
+    }
+    try { _geminiPump(); } catch (_) {}
   };
   // Pulse the dead-man watchdog (reset its 8-min idle timer): a RETRY / throttle cooldown IS pipeline
   // activity, not silence. The [Retry]/[GeminiGate] throttle logs are plain warnLog and never fired
@@ -13451,6 +13503,18 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     // session (the pipeline is a singleton) doesn't start THIS run already throttled to 1 concurrent with
     // a stale cooldown + stale "rate-limiting" message. The current run earns its own storm signal.
     _resetGeminiBreaker();
+    // Heavy-doc PROACTIVE pacing (2026-06-24): a large or scanned PDF fires many Vision/audit calls in a tight
+    // burst, which is exactly what trips the Canvas rate-limit — and once it trips, the breaker reacts by
+    // dropping to 1 concurrent + a long cooldown. Spreading the burst up front (lower ceiling + staggered
+    // starts) keeps us UNDER the limit instead of recovering from it. This drops NO calls and changes no
+    // passes/chunks — same thoroughness, just spaced out. Re-applied below if OCR later confirms scanned.
+    try {
+      var _heavyPages = (_auditResult && (_auditResult.pageCount || (_auditResult.pages && _auditResult.pages.length))) || 0;
+      var _heavyScanned = !!(_auditResult && _auditResult.isScanned);
+      if (_heavyScanned || _heavyPages >= 8) {
+        _applyGeminiPacing(true, _heavyPages >= 20 ? { maxConcurrent: 2, staggerMs: 1000 } : {});
+      }
+    } catch (_pcErr) {}
     _pipeLog('Init', 'Pipeline starting', { file: _fileName, batch: _isBatch, hasAudit: !!_auditResult, pageCount: _auditResult?.pageCount, base64KB: _base64 ? Math.round(_base64.length * 0.75 / 1024) : 0 });
     warnLog('[fixAndVerifyPdf] Starting — batch:', _isBatch, 'base64:', !!_base64, 'audit:', !!_auditResult, 'file:', _fileName);
 
@@ -13791,6 +13855,9 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                 : det.pageCount;
             }
             warnLog(`[Det] PDF appears scanned (${det.sourceCharCount} chars / ${det.pageCount} pages) — falling through to Vision OCR`);
+            // Scanned confirmed (the audit may not have flagged it): pace the upcoming Vision-OCR burst so the
+            // many chunk calls are staggered under the rate-limit. Idempotent with the proactive call above.
+            try { _applyGeminiPacing(true, (det.pageCount >= 20) ? { maxConcurrent: 2, staggerMs: 1000 } : {}); } catch (_pcErr2) {}
           }
         }
       } catch (detErr) {
