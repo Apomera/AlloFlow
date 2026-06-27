@@ -939,12 +939,32 @@ function _repairLeakedImagePlaceholders(html) {
     return (dm ? dm[0] + '\n' : '') + doc.documentElement.outerHTML;
   } catch (_) { return html; }
 }
+// Remove EXECUTABLE <script> blocks from a remediated document before it is audited or exported. An
+// accessibility-remediated document is STATIC content (screen-reader / PDF consumption); an embedded
+// <script> is active content that (a) won't function out of context, (b) is untrusted — the preview iframe
+// and the axe audit already strip it (8505 / 10235) — and (c) makes the AI auditor flag colours that live in
+// JavaScript, not in the rendered document (the "Apply Crop" #737373-on-blue button a maintainer Canvas test
+// caught, 2026-06-24). DATA scripts are not executable, so JSON-LD (application/ld+json) and application/json
+// are KEPT — they carry structured metadata a reader/search engine may use. <noscript> is never matched (it
+// is not a <script>). Pure + side-effect-free so it's unit-testable.
+function _stripExecutableScripts(html) {
+  if (!html || typeof html !== 'string' || !/<script/i.test(html)) return html; // case-insensitive: <SCRIPT> executes too
+  return html.replace(/<script\b([^>]*)>[\s\S]*?<\/script\s*>/gi, function (full, attrs) {
+    var m = (attrs || '').match(/\btype\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/i);
+    var type = m ? (m[1] || m[2] || m[3] || '').toLowerCase().trim() : '';
+    // KEEP non-executable DATA / template scripts; REMOVE everything executable (no type, text/javascript,
+    // module, application/javascript, …).
+    if (/^(?:application\/(?:ld\+json|json)|text\/(?:template|html|plain))$/.test(type)) return full;
+    return '';
+  });
+}
 // Applied to a TRANSIENT copy before the deterministic scoring audits: remove the editor chrome and
 // staticize ALL placeholders so axe/EA score the EXPORT-EQUIVALENT document. The chrome-free baseline
 // was audited without this UI, so leaving it in made the deterministic "checks" half appear to REGRESS.
 function _stripChromeForAudit(html) {
   if (typeof DOMParser === 'undefined' || !html) return html;
   try {
+    html = _stripExecutableScripts(html); // scripts aren't part of the export-equivalent static document
     var doc = new DOMParser().parseFromString(String(html), 'text/html');
     var chrome = doc.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], #allo-img-resize-style, #allo-table-refine-style');
     for (var c = 0; c < chrome.length; c++) chrome[c].remove();
@@ -16199,6 +16219,15 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       try {
         const _listified = listifyTableCellBullets(accessibleHtml);
         if (_listified !== accessibleHtml) { accessibleHtml = _listified; warnLog('[PDF Fix] Converted bullet-glyph table cell(s) to semantic <ul><li> (WCAG 1.3.1)'); }
+      } catch (_) {}
+
+      // ── Step 4b-2b: Strip embedded EXECUTABLE <script> from the remediated output. An accessibility
+      //    document is static content; active scripts shouldn't ride into the audit or the export (the
+      //    preview + the axe audit already strip them). JSON-LD / data scripts are kept. This is what makes
+      //    an uploaded doc's embedded widget (e.g. an "Apply Crop" image editor) stop surfacing in the audit. ──
+      try {
+        const _deScripted = _stripExecutableScripts(accessibleHtml);
+        if (_deScripted !== accessibleHtml) { accessibleHtml = _deScripted; warnLog('[PDF Fix] Removed embedded executable <script>(s) — active content is not part of an accessible static export (data/JSON-LD scripts kept)'); }
       } catch (_) {}
 
       // ── Step 4b-1: Deterministic WCAG gap closures (form labels, decorative images, complex tables, lang spans) ──
