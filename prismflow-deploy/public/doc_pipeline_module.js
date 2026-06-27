@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -11048,6 +11048,19 @@ HTML section ${chunkNum}/${chunks.length}:
     let fixed = htmlContent;
     let fixCount = 0;
 
+    // Stash <script> blocks so the color passes NEVER rewrite JavaScript. A <script> can build elements at
+    // runtime and set their colors via a `cssText='...'` STRING (e.g. 'background:#2563eb;color:white'), where
+    // the sibling background sits in the SAME string — invisible to the per-`color:` regex + the _hasLocalBg
+    // guard (which only understand HTML style="..." attributes and CSS { } rules). Without this the fixer
+    // darkened a correctly-authored button against the body bg → the #737373-on-#2563eb "Apply Crop" regression
+    // a maintainer Canvas test caught (2026-06-24). The contrast fixer works on rendered CSS/HTML; editing
+    // script source is both wrong (can't reason about runtime) and unsafe. Restored verbatim before return.
+    const _scriptStash = [];
+    fixed = fixed.replace(/<script[\s\S]*?<\/script>/gi, function (m) {
+      _scriptStash.push(m);
+      return '<!--alloflow:script-stash:' + (_scriptStash.length - 1) + '-->';
+    });
+
     // ── Detect document background color instead of assuming white ──
     // Search for background on <body> or <html> elements; fall back to white
     const detectDocBg = (html) => {
@@ -11229,6 +11242,13 @@ HTML section ${chunkNum}/${chunks.length}:
       fixCount++;
     }
 
+    // Restore the stashed <script> blocks verbatim — the color passes above never saw them.
+    if (_scriptStash.length) {
+      fixed = fixed.replace(/<!--alloflow:script-stash:(\d+)-->/g, function (m, i) {
+        var s = _scriptStash[parseInt(i, 10)];
+        return s !== undefined ? s : m;
+      });
+    }
     warnLog(`[Contrast Fix] Fixed ${fixCount} color-contrast issues deterministically`);
     return { html: fixed, fixCount };
   };
@@ -11277,6 +11297,9 @@ HTML section ${chunkNum}/${chunks.length}:
       if (bodyBgM) { try { const p = hexToRgb(bodyBgM[1].trim()); if (p) aaaBg = p; } catch(e) {} }
       else if (styleBgM) { try { const p = hexToRgb(styleBgM[1].trim()); if (p) aaaBg = p; } catch(e) {} }
 
+      // Same JS-safety as fixContrastViolations: never darken a color:#hex inside <script> source.
+      const _aaaScripts = [];
+      html = html.replace(/<script[\s\S]*?<\/script>/gi, function (m) { _aaaScripts.push(m); return '<!--alloflow:script-stash:' + (_aaaScripts.length - 1) + '-->'; });
       html = html.replace(/([;"\s])color:\s*(#[0-9a-fA-F]{3,6})\b/g, (match, prefix, hex) => {
         try {
           const rgb = hexToRgb(hex);
@@ -11288,6 +11311,7 @@ HTML section ${chunkNum}/${chunks.length}:
         } catch(e) {}
         return match;
       });
+      if (_aaaScripts.length) html = html.replace(/<!--alloflow:script-stash:(\d+)-->/g, function (m, i) { var s = _aaaScripts[parseInt(i, 10)]; return s !== undefined ? s : m; });
     }
 
     // 3. Enforce minimum font-size
@@ -28051,11 +28075,6 @@ window.AlloModules.createDocPipeline.ocrBlockLayout = _alloOcrBlockLayout; // st
 window.AlloModules.createDocPipeline.structuralFoundations = _alloStructuralFoundations; // static: exposed for tests
 window.AlloModules.createDocPipeline.weightedDeductions = _alloWeightedDeductions; // static: exposed for tests (#5)
 window.AlloModules.createDocPipeline.contrastFixPair = _alloContrastFixPair; // static: exposed for tests (contrast pair-fixer)
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 })();

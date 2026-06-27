@@ -35,6 +35,45 @@ describe('skip-link contrast: a color inside a rule with its OWN background is n
   });
 });
 
+describe('contrast fixer leaves <script> content alone (does not darken JS-built element colors)', () => {
+  // The "Apply Crop" / Cancel regression (maintainer Canvas test, 2026-06-24): a document's embedded
+  // <script> set a button's colors via element.style.cssText='...background:#2563eb;color:white...'. The
+  // contrast fixer matched color:white inside the JS STRING, couldn't see the sibling background (it's not
+  // an HTML style="" attr nor a CSS {} rule), and darkened white → #737373 ≈ 1.2:1 gray-on-blue. The fixer
+  // now stashes <script> blocks before its passes and restores them verbatim.
+  it('does NOT darken color:white inside a <script> cssText string (the #737373-on-blue regression)', () => {
+    const doc = '<html><head><style>body{background:#ffffff}</style></head><body>'
+      + '<script>var applyBtn = document.createElement("button"); applyBtn.textContent = " Apply Crop ";'
+      + ' applyBtn.style.cssText = "padding:8px 20px;background:#2563eb;color:white;border:none";</script>'
+      + '</body></html>';
+    const out = fixContrastViolations(doc).html;
+    expect(out).not.toMatch(/#737373/);                  // not darkened to the fixer's gray anywhere
+    // the button's cssText is byte-identical — BOTH background:#2563eb AND color:white survive
+    // (note: the fixer still injects its <head> safety-net CSS, which legitimately has hex colors —
+    //  so we assert on the SCRIPT's exact text, not "no hex anywhere in the document")
+    expect(out).toMatch(/cssText = "padding:8px 20px;background:#2563eb;color:white;border:none"/);
+  });
+  it('fixes a real failing color OUTSIDE the script while leaving the script intact (no over-reach)', () => {
+    const doc = '<html><head><style>body{background:#ffffff}</style></head><body>'
+      + '<p style="color:white">invisible white text on white</p>'
+      + '<script>el.style.cssText="color:white";</script>'
+      + '</body></html>';
+    const r = fixContrastViolations(doc);
+    expect(r.fixCount).toBeGreaterThan(0);               // the <p> white-on-white IS still fixed
+    expect(r.html).toMatch(/<p style="color:#[0-9a-f]{6}/i); // ...the paragraph got darkened
+    expect(r.html).toMatch(/cssText="color:white"/);     // ...but the script string is byte-identical
+  });
+  it('restores multiple scripts verbatim (placeholder indexing is correct) + leaves no placeholder', () => {
+    const doc = '<body><script>a.style.cssText="color:white"</script>'
+      + '<p style="color:#cccccc">gray</p>'
+      + '<script>b.style.cssText="color:#ffffff"</script></body>';
+    const out = fixContrastViolations(doc).html;
+    expect(out).toMatch(/a\.style\.cssText="color:white"/);   // script 0 intact
+    expect(out).toMatch(/b\.style\.cssText="color:#ffffff"/); // script 1 intact (no #hex darkening)
+    expect(out).not.toMatch(/alloflow:script-stash/);         // no placeholder left behind
+  });
+});
+
 describe('listifyTableCellBullets: bullet-glyph cells → semantic <ul><li> (WCAG 1.3.1)', () => {
   const has = (s) => new DOMParser().parseFromString(s, 'text/html');
   it('converts a <td> of "• a<br>• b<br>• c" into a <ul> with 3 <li>', () => {
@@ -78,5 +117,12 @@ describe('anti-drift: listify is exported + wired into the cleanup', () => {
   it('the contrast fixer guards passes 1–3 with _hasLocalBg', () => {
     // 3 call sites (hex / rgb / named-color passes); the 4th occurrence is the helper definition signature
     expect((dp.match(/if \(_hasLocalBg\(fullStr, offset\)\) return match/g) || []).length).toBeGreaterThanOrEqual(3);
+  });
+  it('the contrast fixer stashes <script> blocks so it never rewrites JS color literals', () => {
+    expect(dp).toMatch(/_scriptStash\.push\(m\)/);
+    expect(dp).toMatch(/<!--alloflow:script-stash:/);
+    expect(dp).toMatch(/Restore the stashed <script> blocks verbatim/);
+    // the sibling AAA pass in sanitizeStyleForWCAG carries the same guard
+    expect(dp).toMatch(/Same JS-safety as fixContrastViolations: never darken a color:#hex inside <script> source/);
   });
 });
