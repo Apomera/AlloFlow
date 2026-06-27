@@ -426,7 +426,7 @@
       }
 
       var INDIGO = '#6366f1', INDIGO_LIGHT = '#eef2ff', INDIGO_DARK = '#3730a3';
-      var BG = '#0f172a';
+      var BG = 'var(--allo-stem-canvas, #0f172a)';
 
       // ──────────────────────────────────────────────────────────────
       // Tab Bar
@@ -451,7 +451,7 @@
 
       var tabBar = h('div', {
         role: 'tablist', 'aria-label': __alloT('stem.astronomy.astronomy_sections', 'Astronomy sections'),
-        style: { display: 'flex', gap: 4, padding: '10px 12px', borderBottom: '1px solid #1e293b', overflowX: 'auto', flexShrink: 0, background: '#0a0e1a' }
+        style: { display: 'flex', gap: 4, padding: '10px 12px', borderBottom: '1px solid #1e293b', overflowX: 'auto', flexShrink: 0, background: 'var(--allo-stem-deeper, #0a0e1a)' }
       },
         TABS.map(function(t) {
           var active = d.tab === t.id;
@@ -489,9 +489,9 @@
         return h('div', {
           role: 'region',
           'aria-label': typeof title === 'string' ? title : undefined,
-          style: { padding: 14, borderRadius: 12, background: '#1e293b', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + accent, marginBottom: 12 }
+          style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + accent, marginBottom: 12 }
         },
-          title ? h('div', { style: { fontSize: 14, fontWeight: 800, color: '#e2e8f0', marginBottom: 8 } }, title) : null,
+          title ? h('div', { style: { fontSize: 14, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8 } }, title) : null,
           children
         );
       }
@@ -616,7 +616,7 @@
                 onChange: function(e) { upd({ askInput: e.target.value }); },
                 placeholder: __alloT('stem.astronomy.your_question', 'Your question...'),
                 rows: 3,
-                style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 13, fontFamily: 'inherit', resize: 'vertical' }
+                style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #334155', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, fontFamily: 'inherit', resize: 'vertical' }
               }),
               h('div', { style: { marginTop: 8, display: 'flex', gap: 8, alignItems: 'center' } },
                 h('button', {
@@ -640,7 +640,7 @@
                 }, d.askLoading ? 'Thinking…' : '🔭 Ask'),
                 !callGemini ? h('div', { style: { fontSize: 11, color: '#94a3b8' } }, __alloT('stem.astronomy.ai_unavailable_in_this_session', '(AI unavailable in this session)')) : null
               ),
-              d.askResponse ? h('div', { style: { marginTop: 10, padding: 12, borderRadius: 8, background: '#0f172a', border: '1px solid #334155', fontSize: 13, color: '#e2e8f0', lineHeight: 1.65, whiteSpace: 'pre-wrap' } }, d.askResponse) : null
+              d.askResponse ? h('div', { style: { marginTop: 10, padding: 12, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid #334155', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65, whiteSpace: 'pre-wrap' } }, d.askResponse) : null
             )
           )
         );

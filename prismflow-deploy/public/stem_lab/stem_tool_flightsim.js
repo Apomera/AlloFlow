@@ -19742,7 +19742,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
       // ── MENU VIEW ──
       if (view === 'menu') {
-        return h('div', { style: { minHeight: '500px', height: '100%', maxHeight: 'calc(100vh - 80px)', background: 'linear-gradient(135deg, #0c1222 0%, #122740 50%, #102a3e 100%)', borderRadius: '16px', overflow: 'auto', position: 'relative' } },
+        return h('div', { style: { minHeight: '500px', height: '100%', maxHeight: 'calc(100vh - 80px)', background: 'var(--allo-stem-canvas, linear-gradient(135deg, #0c1222 0%, #122740 50%, #102a3e 100%))', borderRadius: '16px', overflow: 'auto', position: 'relative' } },
           // FAA Part 107 Drone Briefing Modal (gates drone_survey mission)
           d.droneBriefing && h('div', {
             role: 'dialog',
@@ -19885,7 +19885,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Flight Planner
           h('div', { style: { padding: '0 24px 16px' } },
             h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, __alloT('stem.flightsim.flight_planner', '🗺️ Flight Planner')),
-            h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #1e3a5f' } },
+            h('div', { style: { background: 'var(--allo-stem-deeper, #0f172a)', borderRadius: '10px', padding: '12px', border: '1px solid #1e3a5f' } },
               h('div', { style: { display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center' } },
                 h('div', { style: { flex: 1 } },
                   h('div', { style: { fontSize: '8px', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '2px' } }, __alloT('stem.flightsim.from', 'From')),

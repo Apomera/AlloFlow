@@ -2624,11 +2624,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
     return h('div', { style: { padding: '14px', maxWidth: '760px', margin: '0 auto' } },
       h('button', { onClick: props.onExit, style: { fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700, marginBottom: '8px' } }, '← Menu'),
-      h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #1e293b))' } },
-        h('div', { style: { fontSize: '15px', fontWeight: 800, color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))', marginBottom: '4px' } }, scn.label + ' · ' + scn.difficulty),
-        h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '10px' } }, feedbackText),
-        h('canvas', { ref: canvasRef, role: 'img', 'aria-label': 'Top-down 2D driving scenario: your car, obstacles (cones, parked cars, or boundary lines), and the dashed practice boundary. The scene updates as you drive with WASD or arrow keys.', style: { width: '100%', height: '480px', borderRadius: '8px', background: 'var(--allo-stem-panel, var(--allo-stem-panel, #1e293b))', display: 'block' } }),
-        h('div', { style: { marginTop: '8px', fontSize: '11px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))' } },
+      h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, #1e293b)' } },
+        h('div', { style: { fontSize: '15px', fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: '4px' } }, scn.label + ' · ' + scn.difficulty),
+        h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '10px' } }, feedbackText),
+        h('canvas', { ref: canvasRef, role: 'img', 'aria-label': 'Top-down 2D driving scenario: your car, obstacles (cones, parked cars, or boundary lines), and the dashed practice boundary. The scene updates as you drive with WASD or arrow keys.', style: { width: '100%', height: '480px', borderRadius: '8px', background: 'var(--allo-stem-panel, #1e293b)', display: 'block' } }),
+        h('div', { style: { marginTop: '8px', fontSize: '11px', color: 'var(--allo-stem-text, #cbd5e1)' } },
           'WASD or arrows to drive. SHIFT or down arrow = reverse. R = reset. Stay inside the dashed boundary if shown.'
         )
       )

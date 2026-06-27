@@ -1798,7 +1798,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 return h('button', { key: nation.id,
                   onClick: function() { upd('selectedNation', nation.id); },
                   style: {
-                    background: viewed ? nation.color + '18' : '#0f172a',
+                    background: viewed ? nation.color + '18' : 'var(--allo-stem-deeper, #0f172a)',
                     border: '1px solid ' + nation.color + '44',
                     borderRadius: 12, padding: 16, cursor: 'pointer', textAlign: 'left',
                     transition: 'all 0.2s'
@@ -1891,7 +1891,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 return h('button', { key: eco.id,
                   onClick: function() { upd('selectedEcosystem', eco.id); },
                   style: {
-                    background: viewed ? eco.color + '18' : '#0f172a',
+                    background: viewed ? eco.color + '18' : 'var(--allo-stem-deeper, #0f172a)',
                     border: '1px solid ' + eco.color + '44',
                     borderRadius: 12, padding: 16, cursor: 'pointer', textAlign: 'left',
                     transition: 'all 0.2s'

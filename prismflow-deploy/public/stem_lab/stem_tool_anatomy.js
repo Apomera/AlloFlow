@@ -3816,7 +3816,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 
                 // Label callout box
                 cCtx.beginPath(); cCtx.roundRect(htx, hty, boxW, boxH, 4);
-                cCtx.fillStyle = 'rgba(15,23,42,0.85)'; cCtx.fill();
+                cCtx.fillStyle = 'var(--allo-stem-deeper, rgba(15,23,42,0.85))'; cCtx.fill();
                 cCtx.strokeStyle = sys.accent + '60'; cCtx.lineWidth = 0.8; cCtx.stroke();
 
                 // Structure name text

@@ -73,7 +73,7 @@ window.StemLab = window.StemLab || {
       '.circuit-active { animation: circuitPulse 2s ease-in-out infinite; }',
       '.circuit-short { animation: circuitShortSpark 0.8s ease-out; }',
       '*:focus-visible { outline: 2px solid #eab308 !important; outline-offset: 2px !important; box-shadow: 0 0 0 4px rgba(234, 179, 8, 0.4) !important; }',
-      '.glass-panel { background: rgba(15, 23, 42, 0.6) !important; backdrop-filter: blur(12px) !important; border: 1px solid rgba(255, 255, 255, 0.08) !important; }',
+      '.glass-panel { background: var(--allo-stem-deeper, rgba(15, 23, 42, 0.6)) !important; backdrop-filter: blur(12px) !important; border: 1px solid var(--allo-stem-border, rgba(255, 255, 255, 0.08)) !important; }',
       '.short-active-flash { animation: shortRedFlash 1s ease-in-out infinite !important; }',
       '.glow-button { transition: all 0.2s ease; }',
       '.glow-button:hover { transform: translateY(-1px); box-shadow: 0 0 10px currentColor; }'
@@ -2484,7 +2484,7 @@ window.StemLab = window.StemLab || {
             svgChildren.push(h('text', { x: 100, y: 95, textAnchor: 'middle', fontSize: 9, fill: '#92400e', fontWeight: 'bold' }, bulbs[1].R + 'Ω'));
             // close circuit via battery
           }
-          return h('svg', { viewBox: '0 0 250 130', width: '100%', style: { maxWidth: 280, height: 'auto', background: 'rgba(15,23,42,0.85)', borderRadius: 8, padding: 4 } }, svgChildren);
+          return h('svg', { viewBox: '0 0 250 130', width: '100%', style: { maxWidth: 280, height: 'auto', background: 'var(--allo-stem-deeper, rgba(15,23,42,0.85))', borderRadius: 8, padding: 4 } }, svgChildren);
         }
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, '💡 Predict the bulb'),
@@ -3226,13 +3226,13 @@ window.StemLab = window.StemLab || {
               { label: 'Power', val: power.toFixed(3) + ' W' },
               { label: 'Ohm check', val: (iq.voltage).toFixed(2) + 'V = ' + current.toFixed(3) + 'A × ' + iq.resistance + 'Ω' }
             ].map(function(m) {
-              return h('div', { key: m.label, style: { padding: 6, borderRadius: 4, background: '#0a0a1a', border: '1px solid ' + sm.border, textAlign: 'center' } },
+              return h('div', { key: m.label, style: { padding: 6, borderRadius: 4, background: 'var(--allo-stem-deeper, #0a0a1a)', border: '1px solid ' + sm.border, textAlign: 'center' } },
                 h('div', { style: { fontSize: 9, opacity: 0.6 } }, m.label),
                 h('div', { style: { fontSize: 11, fontWeight: 700, color: sm.color, fontFamily: 'monospace' } }, m.val)
               );
             })
           ),
-          h('svg', { width: '100%', height: 160, viewBox: '0 0 320 160', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 } },
+          h('svg', { width: '100%', height: 160, viewBox: '0 0 320 160', style: { background: 'var(--allo-stem-deeper, #0a0a1a)', borderRadius: 6, marginBottom: 10 } },
             h('line', { x1: 30, y1: 130, x2: 310, y2: 130, stroke: '#1e293b' }),
             h('line', { x1: 30, y1: 10, x2: 30, y2: 130, stroke: '#1e293b' }),
             [0, 250, 500, 750, 1000].map(function(r, i) { return h('text', { key: 'rx' + i, x: 30 + (r / 1000) * 280, y: 145, fill: '#64748b', fontSize: 8, textAnchor: 'middle' }, r + 'Ω'); }),
@@ -3257,15 +3257,15 @@ window.StemLab = window.StemLab || {
               var t = new Date().toISOString().slice(11, 19);
               setIQ({ log: iq.log.concat([{ t: t, V: iq.voltage, R: iq.resistance, I: current.toFixed(3), P: power.toFixed(3), state: sm.label }]) });
             }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '📋 Log this V/R/I/P snapshot'),
-            h('button', { onClick: function() { setIQ({ voltage: 9, resistance: 100 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
+            h('button', { onClick: function() { setIQ({ voltage: 9, resistance: 100 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: 'var(--allo-stem-deeper, #0a0a1a)', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
           ),
-          iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
+          iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: 'var(--allo-stem-deeper, #0a0a1a)', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
             iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · V' + e.V + ' R' + e.R + ' I' + e.I + ' P' + e.P); })
           ),
           h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (which moves dissipation fastest — voltage or resistance? In which direction?)'),
-          h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., doubling voltage quadruples power; halving resistance also quadruples — wait, does it?', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
-          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
-          iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
+          h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., doubling voltage quadruples power; halving resistance also quadruples — wait, does it?', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: 'var(--allo-stem-deeper, #0a0a1a)', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: 'var(--allo-stem-deeper, #0a0a1a)', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
+          iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: 'var(--allo-stem-deeper, #0a0a1a)', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
             h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
             h('ul', { style: { margin: 0, paddingLeft: 16 } },
               h('li', null, 'P = V²/R and P = I²R both express power. When does each form make intuition easier?'),

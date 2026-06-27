@@ -1045,7 +1045,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     { tool: 'Wooden spoons + spatula', priority: 'Essential', cost: '$5-20', skillNote: 'Heat-safe, won\'t scratch pans.' },
     { tool: 'Can opener', priority: 'Essential', cost: '$10', skillNote: 'Manual fine; electric for accessibility.' },
     { tool: 'Colander/strainer', priority: 'Essential', cost: '$10-25', skillNote: 'Pasta, draining beans, washing produce.' },
-    { tool: 'Cast iron pan', priority: 'Helpful', cost: '$20-50', skillNote: 'Adds iron to food, retains heat. Care: dry + oil.' },
+{ tool: 'Cast iron pan', priority: 'Helpful', cost: '$20-50', skillNote: 'Adds iron to food, retains heat. Care: dry + oil.' },
     { tool: 'Dutch oven (5-7 qt)', priority: 'Helpful', cost: '$50-300', skillNote: 'Stews, braises, bread, soups. Lifetime tool.' },
     { tool: 'Blender', priority: 'Helpful', cost: '$25-200', skillNote: 'Smoothies, soups, sauces.' },
     { tool: 'Food processor', priority: 'Helpful', cost: '$50-200', skillNote: 'Chopping, hummus, pesto, doughs.' },
@@ -1090,8 +1090,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
   function nlCard(props, children) {
     var p = props || {};
     return nlH('div', { style: Object.assign({
-      padding: 14, borderRadius: 12, background: '#fff',
-      border: '1px solid #d1d5db', boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+      padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #ffffff)',
+      border: '1px solid var(--allo-stem-border, #d1d5db)', boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+      color: 'var(--allo-stem-text, #0f172a)',
       marginBottom: 10
     }, p.style || {}) }, children);
   }
@@ -1100,8 +1101,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     var variant = p.variant || 'primary';
     var palette = {
       primary:   { bg: '#059669', color: '#fff',   border: '#047857' },
-      secondary: { bg: '#fff',     color: '#0f766e', border: '#0d9488' },
-      ghost:     { bg: '#f1f5f9',  color: '#94a3b8', border: 'var(--allo-stem-border, #cbd5e1)' },
+      secondary: { bg: 'var(--allo-stem-panel, #ffffff)', color: 'var(--allo-stem-text, #0f766e)', border: '#0d9488' },
+      ghost:     { bg: 'var(--allo-stem-deeper, #f1f5f9)',  color: 'var(--allo-stem-text-soft, #94a3b8)', border: 'var(--allo-stem-border, #cbd5e1)' },
       danger:    { bg: '#fee2e2',  color: '#991b1b', border: '#fecaca' },
       success:   { bg: '#dcfce7',  color: '#166534', border: '#86efac' },
       warning:   { bg: '#fef3c7',  color: '#78350f', border: '#fcd34d' }
@@ -1127,8 +1128,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       'aria-label': p['aria-label'] || p.placeholder,
       style: Object.assign({
         width: '100%', padding: '8px 10px', borderRadius: 8,
-        border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13, color: '#0f172a',
-        background: '#fff'
+        border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13, color: 'var(--allo-stem-text, #0f172a)',
+        background: 'var(--allo-stem-panel, #ffffff)'
       }, p.style || {})
     }, p));
   }
@@ -1142,8 +1143,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       'aria-label': p['aria-label'] || p.placeholder,
       style: Object.assign({
         width: '100%', padding: '8px 10px', borderRadius: 8,
-        border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13, color: '#0f172a',
-        background: '#fff', resize: 'vertical', fontFamily: 'inherit'
+        border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13, color: 'var(--allo-stem-text, #0f172a)',
+        background: 'var(--allo-stem-panel, #ffffff)', resize: 'vertical', fontFamily: 'inherit'
       }, p.style || {})
     });
   }

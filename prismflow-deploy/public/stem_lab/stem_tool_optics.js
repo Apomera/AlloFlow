@@ -344,7 +344,7 @@
         role: 'img',
         'aria-label': 'Mirror ray diagram. ' + mt + ' mirror' + (mt !== 'plane' ? ', f = ' + (f).toFixed(1) + ' cm' : '') + ', object at ' + d_o.toFixed(1) + ' cm. ' + _mirrorVT + '.',
         onClick: onObjDrag,
-        style: { background: '#0b1220', borderRadius: 8, cursor: 'crosshair', maxWidth: 460 }
+        style: { background: 'var(--allo-stem-deeper, #0b1220)', borderRadius: 8, cursor: 'crosshair', maxWidth: 460 }
       },
         // Background grid
         (function() {
@@ -360,9 +360,9 @@
         // Optical axis
         h('line', { x1: pad.l, y1: sy(0), x2: W - pad.r, y2: sy(0), stroke: '#475569', strokeWidth: 1, strokeDasharray: '3 3' }),
         // Focal points (for curved mirrors)
-        f !== Infinity && h('circle', { cx: sx(-f), cy: sy(0), r: 3, fill: '#fbbf24', stroke: '#0b1220', strokeWidth: 1 }),
+        f !== Infinity && h('circle', { cx: sx(-f), cy: sy(0), r: 3, fill: '#fbbf24', stroke: 'var(--allo-stem-deeper, #0b1220)', strokeWidth: 1 }),
         f !== Infinity && h('text', { x: sx(-f), y: sy(0) - 6, fill: '#fbbf24', fontSize: 9, textAnchor: 'middle' }, 'F'),
-        f !== Infinity && h('circle', { cx: sx(-2 * f), cy: sy(0), r: 3, fill: '#94a3b8', stroke: '#0b1220', strokeWidth: 1 }),
+        f !== Infinity && h('circle', { cx: sx(-2 * f), cy: sy(0), r: 3, fill: '#94a3b8', stroke: 'var(--allo-stem-deeper, #0b1220)', strokeWidth: 1 }),
         f !== Infinity && h('text', { x: sx(-2 * f), y: sy(0) - 6, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'C'),
         // Mirror at x = 0 (rendered as a vertical line with a curve indication for non-plane)
         (function() {
@@ -706,7 +706,7 @@
         role: 'img',
         'aria-label': 'Refraction diagram. n1=' + n1 + ', n2=' + n2 + ', incident angle=' + theta1Deg.toFixed(1) + '°.' + (isTIR ? ' Total internal reflection.' : ' Refraction angle=' + radToDeg(theta2).toFixed(1) + '°.'),
         onClick: onClick,
-        style: { background: '#0b1220', borderRadius: 8, cursor: 'crosshair', maxWidth: 460 }
+        style: { background: 'var(--allo-stem-deeper, #0b1220)', borderRadius: 8, cursor: 'crosshair', maxWidth: 460 }
       },
         // Top medium tint
         h('rect', { x: 0, y: 0, width: W, height: cy, fill: 'rgba(56,189,248,0.06)' }),
@@ -1095,7 +1095,7 @@
         role: 'img',
         'aria-label': lt + ' lens, f = ' + f.toFixed(1) + ' cm, object distance ' + d_o.toFixed(1) + ' cm.' + (d_i != null ? (' Image distance ' + d_i.toFixed(1) + ' cm, magnification ' + m.toFixed(2) + ', ' + (d_i > 0 ? 'real' : 'virtual') + '.') : ''),
         onClick: onClickSetObj,
-        style: { background: '#0b1220', borderRadius: 8, cursor: 'crosshair', maxWidth: 460 }
+        style: { background: 'var(--allo-stem-deeper, #0b1220)', borderRadius: 8, cursor: 'crosshair', maxWidth: 460 }
       },
         // Background grid
         (function() {
@@ -2053,7 +2053,7 @@
         width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H,
         role: 'img',
         'aria-label': 'Polarizer chain. P1 axis 0°, P2 axis ' + theta2 + '°' + (useP3 ? ', P3 axis ' + theta3 + '°' : '') + '. Final intensity ' + ((useP3 ? afterP3 : afterP2) * 100).toFixed(1) + '% of I₀.',
-        style: { background: '#0b1220', borderRadius: 8, maxWidth: 460 }
+        style: { background: 'var(--allo-stem-deeper, #0b1220)', borderRadius: 8, maxWidth: 460 }
       },
         // Light source label
         h('text', { x: pad.l + 4, y: midY - 14, fill: '#fef3c7', fontSize: 10, fontWeight: 700 }, 'unpolarized'),

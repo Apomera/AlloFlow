@@ -508,7 +508,7 @@
 
     var containerClass = 'rounded-2xl border-2 overflow-hidden mt-5 ' + (isDark ? 'border-slate-800' : 'border-emerald-400');
     var containerStyle = isDark
-      ? { background: 'linear-gradient(135deg, rgba(15,23,42,0.85) 0%, rgba(15,23,42,0.7) 100%)' }
+      ? { background: 'linear-gradient(135deg, var(--allo-stem-deeper, rgba(15,23,42,0.85)) 0%, var(--allo-stem-panel, rgba(15,23,42,0.7)) 100%)' }
       : { background: 'linear-gradient(135deg, #ecfdf5 0%, #a7f3d0 100%)' };
     var headerStyle = isDark ? { background: 'rgba(16,185,129,0.15)' } : { background: 'rgba(16,185,129,0.2)' };
     var titleClass = 'text-sm font-bold ' + (isDark ? 'text-emerald-300' : 'text-emerald-900');
@@ -928,7 +928,7 @@
   var info = BOUNDARY[s.mode];
 
   var containerClass = 'rounded-2xl border-2 overflow-hidden mt-5 plate-tectonics-container ' + (isDark ? 'border-slate-800 text-slate-200' : 'border-orange-400');
-  var containerStyle = isDark ? { background: 'linear-gradient(135deg, rgba(15,23,42,0.85) 0%, rgba(30,41,59,0.7) 100%)', backdropFilter: 'blur(12px)' } : { background: 'linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%)' };
+  var containerStyle = isDark ? { background: 'linear-gradient(135deg, var(--allo-stem-deeper, rgba(15,23,42,0.85)) 0%, var(--allo-stem-panel, rgba(30,41,59,0.7)) 100%)', backdropFilter: 'blur(12px)' } : { background: 'linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%)' };
   var headerStyle = isDark ? { background: 'rgba(30,41,59,0.5)' } : { background: 'rgba(234,88,12,0.15)' };
   var headerBorderClass = isDark ? 'px-3 py-2 flex items-center gap-2 border-b border-slate-800' : 'px-3 py-2 flex items-center gap-2 border-b border-orange-300';
   var badgeClass = 'px-2 py-0.5 rounded-full text-[10px] font-bold text-white';
@@ -5166,7 +5166,7 @@ var d = labToolData.plateTectonics || {};
 
           var isDark = !!(props && props.darkMode);
           var _gRed = isDark ? 'linear-gradient(135deg, #991b1b, #7f1d1d, #450a0a)' : 'linear-gradient(135deg, #dc2626, #ef4444, #f87171)';
-          var _gCard = isDark ? 'linear-gradient(135deg, rgba(30,41,59,0.7) 0%, rgba(15,23,42,0.85) 100%)' : 'linear-gradient(135deg, #fef2f2, #fee2e2, #fef2f2)';
+          var _gCard = isDark ? 'linear-gradient(135deg, var(--allo-stem-panel, rgba(30,41,59,0.7)) 0%, var(--allo-stem-deeper, rgba(15,23,42,0.85)) 100%)' : 'linear-gradient(135deg, #fef2f2, #fee2e2, #fef2f2)';
 
           // Sonification refs & helpers
           var sonifyOscRef = React.useRef(null);
@@ -6665,7 +6665,7 @@ var d = labToolData.plateTectonics || {};
 
                   ].map(function(w2) {
 
-                    return React.createElement("div", { key: w2.name, className: "p-3 rounded-xl border text-center " + (isDark ? "border-slate-800" : ""), style: { borderColor: isDark ? undefined : w2.color + '44', background: isDark ? 'rgba(15,23,42,0.4)' : w2.color + '08' } },
+                    return React.createElement("div", { key: w2.name, className: "p-3 rounded-xl border text-center " + (isDark ? "border-slate-800" : ""), style: { borderColor: isDark ? undefined : w2.color + '44', background: isDark ? 'var(--allo-stem-deeper, rgba(15,23,42,0.4))' : w2.color + '08' } },
 
                       React.createElement("div", { className: "text-lg font-mono" }, w2.icon),
 
