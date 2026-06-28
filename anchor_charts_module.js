@@ -447,6 +447,7 @@ ${bulletText}`;
   const data = generatedContent.data || {};
   const title = data.title || "";
   const chartType = data.chartType || "reference";
+  const layout = { process: "process", comparison: "comparison", "concept-map": "concept-map" }[chartType] || "reference";
   const sections = Array.isArray(data.sections) ? data.sections : [];
   const lessonRef = data.lessonRef || {};
   const annotations = Array.isArray(data.annotations) ? data.annotations : [];
@@ -476,6 +477,10 @@ ${bulletText}`;
   const [studentAnswers, setStudentAnswers] = React.useState({});
   const [gradingState, setGradingState] = React.useState("idle");
   const [gradingResult, setGradingResult] = React.useState(null);
+  const [awardedXp, setAwardedXp] = React.useState(0);
+  React.useEffect(() => {
+    setAwardedXp(0);
+  }, [generatedContent && generatedContent.id]);
   const callGeminiProp = props.callGemini || typeof window !== "undefined" && window.callGemini || null;
   const addXpProp = typeof props.addXp === "function" ? props.addXp : null;
   const addToastProp = typeof props.addToast === "function" ? props.addToast : (msg) => {
@@ -648,7 +653,7 @@ ${bulletText}`;
 ` + a.answers.map((t3, i) => `  ${i + 1}. ${t3}`).join("\n")
       ).join("\n\n");
       const prompt = [
-        "You are an encouraging K-12 teacher grading a student's anchor chart submission.",
+        "You are an encouraging K-12 teacher giving feedback on a student's anchor chart submission. You are NOT a grader \u2014 the student does NOT see a numeric score.",
         "",
         "TOPIC: " + (title || "(no title)"),
         "",
@@ -661,30 +666,32 @@ ${bulletText}`;
         "STUDENT'S ANSWERS:",
         answerBlock,
         "",
-        "Grade the student on TWO dimensions, each 0-100:",
-        "  - accuracyScore: how factually accurate + on-topic their answers are vs. the rubric",
-        "  - thoughtfulnessScore: how thoughtful, original, and developed their answers are (not just one-word responses)",
+        "Give strengths-first feedback: lead with ONE specific thing the student did well, quoting their own words. Then ONE concrete growth nudge \u2014 not a list. If their work is already solid, make the nudge an elaboration: connect to prior knowledge, a real-world example, or an analogy of their own. Keep each to 1-2 sentences.",
         "",
-        "Then suggest XP: 0-30 = brief/off-topic; 30-60 = developing; 60-90 = solid; 90-120 = exceptional. Cap at 120.",
+        "Also provide INTERNAL rubric scores \u2014 the student will NOT see these; they only drive an XP award:",
+        "  - accuracyScore 0-100: factual accuracy + on-topic vs the rubric",
+        "  - thoughtfulnessScore 0-100: how developed/original (not one-word answers)",
+        "Suggest XP from those: 0-30 = brief/off-topic; 30-60 = developing; 60-90 = solid; 90-120 = exceptional. Cap at 120.",
         "",
         "Reply ONLY with valid JSON, no markdown:",
-        '{"accuracyScore": <int 0-100>, "thoughtfulnessScore": <int 0-100>, "feedback": "<2-3 sentence supportive specific feedback>", "suggestedXP": <int 0-120>}'
+        '{"strength": "<1-2 sentences, quote their words>", "growthNudge": "<1-2 sentences, one next step>", "accuracyScore": <int 0-100>, "thoughtfulnessScore": <int 0-100>, "suggestedXP": <int 0-120>}'
       ].join("\n");
       const raw = await callGeminiProp(prompt);
       let txt = String(raw || "").trim();
       txt = txt.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
       const m = txt.match(/\{[\s\S]*\}/);
       const parsed = m ? JSON.parse(m[0]) : JSON.parse(txt);
-      const accuracy = Math.max(0, Math.min(100, Math.round(parsed.accuracyScore || 0)));
-      const thoughtfulness = Math.max(0, Math.min(100, Math.round(parsed.thoughtfulnessScore || 0)));
-      const xp = Math.max(0, Math.min(120, Math.round(parsed.suggestedXP || 0)));
-      const feedback = String(parsed.feedback || "").slice(0, 800);
-      const result = { accuracyScore: accuracy, thoughtfulnessScore: thoughtfulness, feedback, xpAwarded: xp };
+      const xpRaw = Math.max(0, Math.min(120, Math.round(parsed.suggestedXP || 0)));
+      const delta = Math.max(0, xpRaw - awardedXp);
+      const strength = String(parsed.strength || "").slice(0, 600);
+      const growthNudge = String(parsed.growthNudge || "").slice(0, 600);
+      const result = { strength, growthNudge, xpAwarded: delta, hadPriorXp: awardedXp > 0 && delta === 0 };
       setGradingResult(result);
       setGradingState("done");
-      if (xp > 0 && addXpProp) {
-        addXpProp(xp);
-        addToastProp(`\u2728 +${xp} XP earned!`);
+      if (delta > 0 && addXpProp) {
+        addXpProp(delta);
+        setAwardedXp(xpRaw);
+        addToastProp(`\u2728 +${delta} XP earned!`);
       }
     } catch (err) {
       console.warn("[AnchorChart] grading failed", err && err.message);
@@ -804,103 +811,110 @@ ${bulletText}`;
       style: { fontSize: "42px", color: "#7a4a1e" },
       "aria-label": "Chart title"
     }
-  ) : /* @__PURE__ */ React.createElement("h1", { className: "ac-title", style: { fontSize: "42px", color: "#7a4a1e", margin: 0 } }, title || "(untitled chart)"), lessonRef.generatedAt ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700/70 italic mt-1" }, "Created ", new Date(lessonRef.generatedAt).toLocaleDateString()) : null), /* @__PURE__ */ React.createElement("div", { className: "ac-sections" }, sections.map((s, idx) => {
-    const isDraggingThis = dragSrcIdx === idx;
-    const isDropTarget = isEditing && dragSrcIdx >= 0 && dragSrcIdx !== idx && dragOverIdx === idx;
-    return /* @__PURE__ */ React.createElement(
-      "div",
-      {
-        key: s.id || idx,
-        className: "relative group",
-        onDragOver: (e) => {
-          if (!isEditing || dragSrcIdx < 0) return;
-          e.preventDefault();
-          try {
-            e.dataTransfer.dropEffect = "move";
-          } catch (_) {
-          }
-          if (dragOverIdx !== idx) setDragOverIdx(idx);
-        },
-        onDragLeave: () => {
-          if (dragOverIdx === idx) setDragOverIdx(-1);
-        },
-        onDrop: (e) => {
-          if (!isEditing || dragSrcIdx < 0) return;
-          e.preventDefault();
-          handleReorderSection(dragSrcIdx, idx);
-          setDragSrcIdx(-1);
-          setDragOverIdx(-1);
-        },
-        style: {
-          opacity: isDraggingThis ? 0.4 : 1,
-          transition: "opacity 0.15s"
-        }
-      },
-      isDropTarget ? /* @__PURE__ */ React.createElement("div", { className: "absolute -top-1 left-2 right-2 h-1 bg-amber-500 rounded-full shadow-md pointer-events-none z-10", "aria-hidden": "true" }) : null,
-      isEditing ? /* @__PURE__ */ React.createElement(
+  ) : /* @__PURE__ */ React.createElement("h1", { className: "ac-title", style: { fontSize: "42px", color: "#7a4a1e", margin: 0 } }, title || "(untitled chart)"), lessonRef.generatedAt ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700/70 italic mt-1" }, "Created ", new Date(lessonRef.generatedAt).toLocaleDateString()) : null), layout === "process" && sections.length > 1 ? /* @__PURE__ */ React.createElement("div", { className: "text-center text-[11px] text-amber-700/80 italic mb-1" }, "Follow the steps in order \u2193") : layout === "comparison" && sections.length > 1 ? /* @__PURE__ */ React.createElement("div", { className: "text-center text-[11px] text-amber-700/80 italic mb-1" }, "Compare side by side \u2194") : layout === "concept-map" ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-center mb-1" }, /* @__PURE__ */ React.createElement("div", { style: { width: 2, height: 16, background: "#cbb27e" }, "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700/80 italic" }, "central idea branches into\u2026")) : null, /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      className: "ac-sections",
+      style: layout === "comparison" ? { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "10px", alignItems: "start" } : layout === "concept-map" ? { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "10px", alignItems: "start" } : void 0
+    },
+    sections.map((s, idx) => {
+      const isDraggingThis = dragSrcIdx === idx;
+      const isDropTarget = isEditing && dragSrcIdx >= 0 && dragSrcIdx !== idx && dragOverIdx === idx;
+      return /* @__PURE__ */ React.createElement(React.Fragment, { key: s.id || idx }, /* @__PURE__ */ React.createElement(
         "div",
         {
-          className: "absolute top-3 -left-1 text-amber-700 text-base opacity-30 group-hover:opacity-90 cursor-grab active:cursor-grabbing select-none ac-no-print",
-          title: "Drag to reorder",
-          "aria-label": `Drag handle for section ${idx + 1}`,
-          role: "button",
-          tabIndex: -1,
-          draggable: true,
-          onDragStart: (e) => {
-            setDragSrcIdx(idx);
+          className: "relative group",
+          onDragOver: (e) => {
+            if (!isEditing || dragSrcIdx < 0) return;
+            e.preventDefault();
             try {
-              e.dataTransfer.effectAllowed = "move";
+              e.dataTransfer.dropEffect = "move";
             } catch (_) {
             }
-            try {
-              e.dataTransfer.setData("text/plain", String(idx));
-            } catch (_) {
-            }
+            if (dragOverIdx !== idx) setDragOverIdx(idx);
           },
-          onDragEnd: () => {
+          onDragLeave: () => {
+            if (dragOverIdx === idx) setDragOverIdx(-1);
+          },
+          onDrop: (e) => {
+            if (!isEditing || dragSrcIdx < 0) return;
+            e.preventDefault();
+            handleReorderSection(dragSrcIdx, idx);
             setDragSrcIdx(-1);
             setDragOverIdx(-1);
           },
-          style: { userSelect: "none" }
+          style: {
+            opacity: isDraggingThis ? 0.4 : 1,
+            transition: "opacity 0.15s"
+          }
         },
-        "\u22EE\u22EE"
-      ) : null,
-      /* @__PURE__ */ React.createElement(
-        AnchorChartSection,
-        {
-          section: s,
-          sectionIndex: idx,
-          isEditing,
-          onChange: (next) => updateSection(idx, next),
-          onRegenIcon: handleRegenIcon,
-          isRegeneratingIcon: regenIdx === idx,
-          interactiveArmed: !!interactive.armed,
-          viewerIsStudent: !isTeacherMode,
-          studentAnswers: (function() {
-            const sid = s.id || s.label;
-            const sec = studentAnswers[sid] || {};
-            const arr = [];
-            Object.keys(sec).forEach((k) => {
-              arr[Number(k)] = sec[k];
-            });
-            return arr;
-          })(),
-          onStudentAnswerChange: (bidx, text) => handleStudentAnswerChange(s.id || s.label, bidx, text),
-          callGeminiImageEdit,
-          addToast: addToastProp
-        }
-      ),
-      isEditing ? /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          onClick: () => handleRemoveSection(idx),
-          className: "absolute top-1 right-1 opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs px-1.5 py-0.5 bg-white/80 rounded-full border border-slate-200",
-          "aria-label": `Remove section ${idx + 1}`
-        },
-        "\u2715 remove"
-      ) : null
-    );
-  }), isEditing ? /* @__PURE__ */ React.createElement("div", { className: "text-center mt-3 space-y-2" }, /* @__PURE__ */ React.createElement(
+        layout === "process" ? /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", style: { position: "absolute", top: -10, left: -10, zIndex: 6, width: 28, height: 28, borderRadius: "999px", background: "#dd6b20", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: '"Permanent Marker","Patrick Hand",cursive', fontSize: "15px", boxShadow: "0 1px 3px rgba(0,0,0,0.3)" } }, idx + 1) : null,
+        isDropTarget ? /* @__PURE__ */ React.createElement("div", { className: "absolute -top-1 left-2 right-2 h-1 bg-amber-500 rounded-full shadow-md pointer-events-none z-10", "aria-hidden": "true" }) : null,
+        isEditing ? /* @__PURE__ */ React.createElement(
+          "div",
+          {
+            className: "absolute top-3 -left-1 text-amber-700 text-base opacity-30 group-hover:opacity-90 cursor-grab active:cursor-grabbing select-none ac-no-print",
+            title: "Drag to reorder",
+            "aria-label": `Drag handle for section ${idx + 1}`,
+            role: "button",
+            tabIndex: -1,
+            draggable: true,
+            onDragStart: (e) => {
+              setDragSrcIdx(idx);
+              try {
+                e.dataTransfer.effectAllowed = "move";
+              } catch (_) {
+              }
+              try {
+                e.dataTransfer.setData("text/plain", String(idx));
+              } catch (_) {
+              }
+            },
+            onDragEnd: () => {
+              setDragSrcIdx(-1);
+              setDragOverIdx(-1);
+            },
+            style: { userSelect: "none" }
+          },
+          "\u22EE\u22EE"
+        ) : null,
+        /* @__PURE__ */ React.createElement(
+          AnchorChartSection,
+          {
+            section: s,
+            sectionIndex: idx,
+            isEditing,
+            onChange: (next) => updateSection(idx, next),
+            onRegenIcon: handleRegenIcon,
+            isRegeneratingIcon: regenIdx === idx,
+            interactiveArmed: !!interactive.armed,
+            viewerIsStudent: !isTeacherMode,
+            studentAnswers: (function() {
+              const sid = s.id || s.label;
+              const sec = studentAnswers[sid] || {};
+              const arr = [];
+              Object.keys(sec).forEach((k) => {
+                arr[Number(k)] = sec[k];
+              });
+              return arr;
+            })(),
+            onStudentAnswerChange: (bidx, text) => handleStudentAnswerChange(s.id || s.label, bidx, text),
+            callGeminiImageEdit,
+            addToast: addToastProp
+          }
+        ),
+        isEditing ? /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            onClick: () => handleRemoveSection(idx),
+            className: "absolute top-1 right-1 opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs px-1.5 py-0.5 bg-white/80 rounded-full border border-slate-200",
+            "aria-label": `Remove section ${idx + 1}`
+          },
+          "\u2715 remove"
+        ) : null
+      ), layout === "process" && idx < sections.length - 1 ? /* @__PURE__ */ React.createElement("div", { className: "flex justify-center", "aria-hidden": "true", style: { margin: "-2px 0 2px" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "24px", color: "#b7791f", lineHeight: 1 } }, "\u2193")) : null);
+    })
+  ), isEditing ? /* @__PURE__ */ React.createElement("div", { className: "text-center mt-3 space-y-2" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: handleAddSection,
@@ -908,7 +922,7 @@ ${bulletText}`;
       "data-help-key": "anchor_chart_add_section"
     },
     "+ Add section"
-  ), sections.length > 1 ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700/70 italic" }, "Tip: drag the \u22EE\u22EE handle on any section to reorder.") : null) : null), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700/70 italic text-center mt-4 ac-no-print" }, "Saved to your history. Open Critique mode to leave I notice / I wonder notes for peers."), interactive.armed && !isTeacherMode ? /* @__PURE__ */ React.createElement("div", { className: "mt-6 ac-no-print rounded-xl border-2 border-fuchsia-300 bg-gradient-to-br from-fuchsia-50 to-purple-50 p-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3 mb-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-fuchsia-900" }, "\u{1F3AF} Interactive Anchor Chart"), /* @__PURE__ */ React.createElement("div", { className: "text-[12px] text-fuchsia-800/80 mt-1" }, "Fill in your best answer for each section above, then submit to get AI feedback + earn XP.")), /* @__PURE__ */ React.createElement(
+  ), sections.length > 1 ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700/70 italic" }, "Tip: drag the \u22EE\u22EE handle on any section to reorder.") : null) : null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700/70 italic text-center mt-4 ac-no-print" }, "Saved to your history. Open Critique mode to leave I notice / I wonder notes for peers."), interactive.armed && !isTeacherMode ? /* @__PURE__ */ React.createElement("div", { className: "mt-6 ac-no-print rounded-xl border-2 border-fuchsia-300 bg-gradient-to-br from-fuchsia-50 to-purple-50 p-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3 mb-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-fuchsia-900" }, "\u{1F3AF} Interactive Anchor Chart"), /* @__PURE__ */ React.createElement("div", { className: "text-[12px] text-fuchsia-800/80 mt-1" }, "Fill in your best answer for each section above, then submit to get AI feedback + earn XP.")), /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: handleSubmitForGrading,
@@ -917,7 +931,7 @@ ${bulletText}`;
       "aria-busy": gradingState === "submitting"
     },
     gradingState === "submitting" ? "\u23F3 Grading\u2026" : "\u2728 Submit for AI feedback"
-  )), gradingState === "done" && gradingResult ? /* @__PURE__ */ React.createElement("div", { className: "mt-3 p-3 rounded-lg bg-white border border-fuchsia-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4 mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold uppercase text-emerald-700" }, "Accuracy"), /* @__PURE__ */ React.createElement("span", { className: "text-lg font-black text-emerald-700" }, gradingResult.accuracyScore), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-emerald-700/70" }, "/100")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold uppercase text-sky-700" }, "Thoughtfulness"), /* @__PURE__ */ React.createElement("span", { className: "text-lg font-black text-sky-700" }, gradingResult.thoughtfulnessScore), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-sky-700/70" }, "/100")), gradingResult.xpAwarded > 0 ? /* @__PURE__ */ React.createElement("div", { className: "ml-auto px-3 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-sm font-black" }, "\u2728 +", gradingResult.xpAwarded, " XP") : null), gradingResult.feedback ? /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-800 italic leading-relaxed" }, gradingResult.feedback) : null) : null, gradingState === "error" ? /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-[12px] text-red-700" }, "Couldn't reach the AI grader \u2014 try again in a moment.") : null) : null), showInteractiveDialog ? /* @__PURE__ */ React.createElement(
+  )), gradingState === "done" && gradingResult ? /* @__PURE__ */ React.createElement("div", { className: "mt-3 p-3 rounded-lg bg-white border border-fuchsia-200 space-y-2" }, gradingResult.strength ? /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border-l-4 border-emerald-400 rounded-r-md p-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wider text-emerald-800 mb-0.5" }, "What you did well"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-800 leading-relaxed" }, gradingResult.strength)) : null, gradingResult.growthNudge ? /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border-l-4 border-amber-400 rounded-r-md p-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wider text-amber-900 mb-0.5" }, "One thing to try next"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-800 leading-relaxed" }, gradingResult.growthNudge)) : null, gradingResult.xpAwarded > 0 ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center gap-2 text-sm font-bold text-amber-900 bg-amber-100 border border-amber-300 rounded-full px-3 py-1" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2728"), /* @__PURE__ */ React.createElement("span", null, "+", gradingResult.xpAwarded, " XP earned")) : gradingResult.hadPriorXp ? /* @__PURE__ */ React.createElement("div", { className: "text-center text-[11px] italic text-slate-500" }, "You've already earned XP here \u2014 improve your answers to earn more.") : null) : null, gradingState === "error" ? /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-[12px] text-red-700" }, "Couldn't reach the AI grader \u2014 try again in a moment.") : null) : null), showInteractiveDialog ? /* @__PURE__ */ React.createElement(
     "div",
     {
       className: "fixed inset-0 z-[80] flex items-center justify-center bg-black/40 p-4",

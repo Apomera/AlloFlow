@@ -502,6 +502,10 @@ const AnchorChartView = React.memo((props) => {
   const data = generatedContent.data || {};
   const title = data.title || '';
   const chartType = data.chartType || 'reference';
+  // Type-aware layout: chartType now shapes presentation, not just a badge.
+  // process → numbered steps + connectors; comparison → side-by-side columns;
+  // concept-map → hub caption + radiating grid; reference → classic stacked list.
+  const layout = ({ process: 'process', comparison: 'comparison', 'concept-map': 'concept-map' })[chartType] || 'reference';
   const sections = Array.isArray(data.sections) ? data.sections : [];
   const lessonRef = data.lessonRef || {};
   const annotations = Array.isArray(data.annotations) ? data.annotations : [];
@@ -538,7 +542,12 @@ const AnchorChartView = React.memo((props) => {
   // Student-side state: answers keyed by section id+idx, and grading result.
   const [studentAnswers, setStudentAnswers] = React.useState({}); // { [sectionId]: { [idx]: text } }
   const [gradingState, setGradingState] = React.useState('idle'); // 'idle' | 'submitting' | 'done' | 'error'
-  const [gradingResult, setGradingResult] = React.useState(null); // { accuracyScore, thoughtfulnessScore, feedback, xpAwarded } | null
+  const [gradingResult, setGradingResult] = React.useState(null); // { strength, growthNudge, xpAwarded, hadPriorXp } | null
+  // Anti-regrind guard (mirrors the note-taking module): only XP ABOVE this
+  // session's previous best for this chart is awarded, so resubmitting can't
+  // farm XP. Local-only — resets on reload, which also clears the answers.
+  const [awardedXp, setAwardedXp] = React.useState(0);
+  React.useEffect(() => { setAwardedXp(0); }, [generatedContent && generatedContent.id]);
   const callGeminiProp = props.callGemini || (typeof window !== 'undefined' && window.callGemini) || null;
   const addXpProp = typeof props.addXp === 'function' ? props.addXp : null;
   const addToastProp = typeof props.addToast === 'function' ? props.addToast : (msg) => { try { console.log('[anchor-toast]', msg); } catch (_) {} };
@@ -723,7 +732,7 @@ const AnchorChartView = React.memo((props) => {
         `Section: ${a.section}\n` + a.answers.map((t, i) => `  ${i + 1}. ${t}`).join('\n')
       ).join('\n\n');
       const prompt = [
-        'You are an encouraging K-12 teacher grading a student\'s anchor chart submission.',
+        'You are an encouraging K-12 teacher giving feedback on a student\'s anchor chart submission. You are NOT a grader — the student does NOT see a numeric score.',
         '',
         'TOPIC: ' + (title || '(no title)'),
         '',
@@ -736,14 +745,15 @@ const AnchorChartView = React.memo((props) => {
         'STUDENT\'S ANSWERS:',
         answerBlock,
         '',
-        'Grade the student on TWO dimensions, each 0-100:',
-        '  - accuracyScore: how factually accurate + on-topic their answers are vs. the rubric',
-        '  - thoughtfulnessScore: how thoughtful, original, and developed their answers are (not just one-word responses)',
+        'Give strengths-first feedback: lead with ONE specific thing the student did well, quoting their own words. Then ONE concrete growth nudge — not a list. If their work is already solid, make the nudge an elaboration: connect to prior knowledge, a real-world example, or an analogy of their own. Keep each to 1-2 sentences.',
         '',
-        'Then suggest XP: 0-30 = brief/off-topic; 30-60 = developing; 60-90 = solid; 90-120 = exceptional. Cap at 120.',
+        'Also provide INTERNAL rubric scores — the student will NOT see these; they only drive an XP award:',
+        '  - accuracyScore 0-100: factual accuracy + on-topic vs the rubric',
+        '  - thoughtfulnessScore 0-100: how developed/original (not one-word answers)',
+        'Suggest XP from those: 0-30 = brief/off-topic; 30-60 = developing; 60-90 = solid; 90-120 = exceptional. Cap at 120.',
         '',
         'Reply ONLY with valid JSON, no markdown:',
-        '{"accuracyScore": <int 0-100>, "thoughtfulnessScore": <int 0-100>, "feedback": "<2-3 sentence supportive specific feedback>", "suggestedXP": <int 0-120>}'
+        '{"strength": "<1-2 sentences, quote their words>", "growthNudge": "<1-2 sentences, one next step>", "accuracyScore": <int 0-100>, "thoughtfulnessScore": <int 0-100>, "suggestedXP": <int 0-120>}'
       ].join('\n');
       const raw = await callGeminiProp(prompt);
       // Robust JSON extraction (strip any code fences if model added them)
@@ -751,16 +761,18 @@ const AnchorChartView = React.memo((props) => {
       txt = txt.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
       const m = txt.match(/\{[\s\S]*\}/);
       const parsed = m ? JSON.parse(m[0]) : JSON.parse(txt);
-      const accuracy = Math.max(0, Math.min(100, Math.round(parsed.accuracyScore || 0)));
-      const thoughtfulness = Math.max(0, Math.min(100, Math.round(parsed.thoughtfulnessScore || 0)));
-      const xp = Math.max(0, Math.min(120, Math.round(parsed.suggestedXP || 0)));
-      const feedback = String(parsed.feedback || '').slice(0, 800);
-      const result = { accuracyScore: accuracy, thoughtfulnessScore: thoughtfulness, feedback: feedback, xpAwarded: xp };
+      const xpRaw = Math.max(0, Math.min(120, Math.round(parsed.suggestedXP || 0)));
+      // Anti-regrind: only award XP above this session's previous best for the chart.
+      const delta = Math.max(0, xpRaw - awardedXp);
+      const strength = String(parsed.strength || '').slice(0, 600);
+      const growthNudge = String(parsed.growthNudge || '').slice(0, 600);
+      const result = { strength: strength, growthNudge: growthNudge, xpAwarded: delta, hadPriorXp: awardedXp > 0 && delta === 0 };
       setGradingResult(result);
       setGradingState('done');
-      if (xp > 0 && addXpProp) {
-        addXpProp(xp);
-        addToastProp(`✨ +${xp} XP earned!`);
+      if (delta > 0 && addXpProp) {
+        addXpProp(delta);
+        setAwardedXp(xpRaw);
+        addToastProp(`✨ +${delta} XP earned!`);
       }
     } catch (err) {
       console.warn('[AnchorChart] grading failed', err && err.message);
@@ -889,13 +901,33 @@ const AnchorChartView = React.memo((props) => {
             </div>
           ) : null}
         </div>
-        <div className="ac-sections">
+        {/* Type-aware framing caption (process / comparison / concept-map). */}
+        {layout === 'process' && sections.length > 1 ? (
+          <div className="text-center text-[11px] text-amber-700/80 italic mb-1">Follow the steps in order ↓</div>
+        ) : layout === 'comparison' && sections.length > 1 ? (
+          <div className="text-center text-[11px] text-amber-700/80 italic mb-1">Compare side by side ↔</div>
+        ) : layout === 'concept-map' ? (
+          <div className="flex flex-col items-center mb-1">
+            <div style={{ width: 2, height: 16, background: '#cbb27e' }} aria-hidden="true" />
+            <div className="text-[11px] text-amber-700/80 italic">central idea branches into…</div>
+          </div>
+        ) : null}
+        <div
+          className="ac-sections"
+          style={
+            layout === 'comparison'
+              ? { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '10px', alignItems: 'start' }
+              : layout === 'concept-map'
+              ? { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '10px', alignItems: 'start' }
+              : undefined
+          }
+        >
           {sections.map((s, idx) => {
             const isDraggingThis = dragSrcIdx === idx;
             const isDropTarget = isEditing && dragSrcIdx >= 0 && dragSrcIdx !== idx && dragOverIdx === idx;
             return (
+              <React.Fragment key={s.id || idx}>
               <div
-                key={s.id || idx}
                 className="relative group"
                 onDragOver={(e) => {
                   if (!isEditing || dragSrcIdx < 0) return;
@@ -918,6 +950,10 @@ const AnchorChartView = React.memo((props) => {
                   transition: 'opacity 0.15s',
                 }}
               >
+                {/* Process layout: a numbered step badge per section. */}
+                {layout === 'process' ? (
+                  <div aria-hidden="true" style={{ position: 'absolute', top: -10, left: -10, zIndex: 6, width: 28, height: 28, borderRadius: '999px', background: '#dd6b20', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"Permanent Marker","Patrick Hand",cursive', fontSize: '15px', boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>{idx + 1}</div>
+                ) : null}
                 {isDropTarget ? (
                   <div className="absolute -top-1 left-2 right-2 h-1 bg-amber-500 rounded-full shadow-md pointer-events-none z-10" aria-hidden="true" />
                 ) : null}
@@ -967,21 +1003,28 @@ const AnchorChartView = React.memo((props) => {
                   >✕ remove</button>
                 ) : null}
               </div>
+              {/* Process layout: a downward connector between consecutive steps. */}
+              {layout === 'process' && idx < sections.length - 1 ? (
+                <div className="flex justify-center" aria-hidden="true" style={{ margin: '-2px 0 2px' }}>
+                  <span style={{ fontSize: '24px', color: '#b7791f', lineHeight: 1 }}>↓</span>
+                </div>
+              ) : null}
+              </React.Fragment>
             );
           })}
-          {isEditing ? (
-            <div className="text-center mt-3 space-y-2">
-              <button
-                onClick={handleAddSection}
-                className="px-4 py-1.5 text-sm font-bold rounded-full bg-white border-2 border-dashed border-amber-400 text-amber-800 hover:bg-amber-50"
-                data-help-key="anchor_chart_add_section"
-              >+ Add section</button>
-              {sections.length > 1 ? (
-                <div className="text-[11px] text-amber-700/70 italic">Tip: drag the ⋮⋮ handle on any section to reorder.</div>
-              ) : null}
-            </div>
-          ) : null}
         </div>
+        {isEditing ? (
+          <div className="text-center mt-3 space-y-2">
+            <button
+              onClick={handleAddSection}
+              className="px-4 py-1.5 text-sm font-bold rounded-full bg-white border-2 border-dashed border-amber-400 text-amber-800 hover:bg-amber-50"
+              data-help-key="anchor_chart_add_section"
+            >+ Add section</button>
+            {sections.length > 1 ? (
+              <div className="text-[11px] text-amber-700/70 italic">Tip: drag the ⋮⋮ handle on any section to reorder.</div>
+            ) : null}
+          </div>
+        ) : null}
         <div className="text-[11px] text-amber-700/70 italic text-center mt-4 ac-no-print">
           Saved to your history. Open Critique mode to leave I notice / I wonder notes for peers.
         </div>
@@ -1001,26 +1044,25 @@ const AnchorChartView = React.memo((props) => {
               >{gradingState === 'submitting' ? '⏳ Grading…' : '✨ Submit for AI feedback'}</button>
             </div>
             {gradingState === 'done' && gradingResult ? (
-              <div className="mt-3 p-3 rounded-lg bg-white border border-fuchsia-200">
-                <div className="flex items-center gap-4 mb-2">
-                  <div className="flex items-center gap-1">
-                    <span className="text-[11px] font-bold uppercase text-emerald-700">Accuracy</span>
-                    <span className="text-lg font-black text-emerald-700">{gradingResult.accuracyScore}</span>
-                    <span className="text-[10px] text-emerald-700/70">/100</span>
+              <div className="mt-3 p-3 rounded-lg bg-white border border-fuchsia-200 space-y-2">
+                {gradingResult.strength ? (
+                  <div className="bg-emerald-50 border-l-4 border-emerald-400 rounded-r-md p-2">
+                    <div className="text-[10px] font-black uppercase tracking-wider text-emerald-800 mb-0.5">What you did well</div>
+                    <div className="text-sm text-slate-800 leading-relaxed">{gradingResult.strength}</div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-[11px] font-bold uppercase text-sky-700">Thoughtfulness</span>
-                    <span className="text-lg font-black text-sky-700">{gradingResult.thoughtfulnessScore}</span>
-                    <span className="text-[10px] text-sky-700/70">/100</span>
+                ) : null}
+                {gradingResult.growthNudge ? (
+                  <div className="bg-amber-50 border-l-4 border-amber-400 rounded-r-md p-2">
+                    <div className="text-[10px] font-black uppercase tracking-wider text-amber-900 mb-0.5">One thing to try next</div>
+                    <div className="text-sm text-slate-800 leading-relaxed">{gradingResult.growthNudge}</div>
                   </div>
-                  {gradingResult.xpAwarded > 0 ? (
-                    <div className="ml-auto px-3 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-sm font-black">
-                      ✨ +{gradingResult.xpAwarded} XP
-                    </div>
-                  ) : null}
-                </div>
-                {gradingResult.feedback ? (
-                  <div className="text-sm text-slate-800 italic leading-relaxed">{gradingResult.feedback}</div>
+                ) : null}
+                {gradingResult.xpAwarded > 0 ? (
+                  <div className="flex items-center justify-center gap-2 text-sm font-bold text-amber-900 bg-amber-100 border border-amber-300 rounded-full px-3 py-1">
+                    <span aria-hidden="true">✨</span><span>+{gradingResult.xpAwarded} XP earned</span>
+                  </div>
+                ) : gradingResult.hadPriorXp ? (
+                  <div className="text-center text-[11px] italic text-slate-500">You've already earned XP here — improve your answers to earn more.</div>
                 ) : null}
               </div>
             ) : null}
