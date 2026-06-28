@@ -83,7 +83,7 @@ describe('Geology Explorer — resolution / detail refactor (world↔voxel decou
 describe('Geology Explorer — scene registry + Crystal Cavern (geode)', () => {
   it('crust stays the default scene and its generator is unchanged (registry is behavior-preserving)', () => {
     expect(P.sceneId()).toBe('crust');
-    expect(P.scenes()).toEqual(['crust', 'geode', 'deepEarth']);
+    expect(P.scenes()).toEqual(['crust', 'geode', 'deepEarth', 'subduction']);
     P.setScene('crust');
     expect(P.rockKeyAt(1, 0, 1)).toBe('soil');
     expect(P.rockKeyAt(7, 7, 7)).toBe('intrusion');
@@ -121,7 +121,7 @@ describe('Geology Explorer — scene registry + Crystal Cavern (geode)', () => {
 
 describe('Geology Explorer — Deep Earth scene (radial structure + honest geotherm)', () => {
   it('is registered as a third scene without disturbing the crust default', () => {
-    expect(P.scenes()).toEqual(['crust', 'geode', 'deepEarth']);
+    expect(P.scenes()).toEqual(['crust', 'geode', 'deepEarth', 'subduction']);
     expect(P.sceneId()).toBe('crust');                       // still the default after beforeEach
   });
 
@@ -314,5 +314,71 @@ describe('Geology Explorer — first-person explorer (pure flight + you-are-here
     expect(a).toMatch(/1000/);
     expect(a).toMatch(/degrees Celsius/);              // unit must not be dropped for the string temp
     P.setScene('crust');
+  });
+});
+
+describe('Geology Explorer — Subduction zone scene (convergent margin + thermal anomaly)', () => {
+  it('is registered as a fourth scene and leaves crust the default', () => {
+    expect(P.scenes()).toEqual(['crust', 'geode', 'deepEarth', 'subduction']);
+    expect(P.sceneId()).toBe('crust');
+  });
+
+  it('lays out an ocean plate, a descending slab, an overriding continent, and an arc', () => {
+    P.setScene('subduction'); P.setGrid('standard');
+    expect(P.subductionKeyAt(1, 0, 7)).toBe('oceanWater');     // sea over the ocean plate
+    expect(P.subductionKeyAt(1, 1, 7)).toBe('oceanCrust');     // dense ocean crust below it
+    expect(P.subductionKeyAt(12, 0, 7)).toBe('contCrust');     // buoyant continent (right)
+    expect(P.subductionKeyAt(8, 0, 7)).toBe('arcVolcano');     // the arc volcano at the surface
+    expect(P.subductionKeyAt(8, 2, 7)).toBe('arcMagma');       // magma conduit rising under it
+    expect(P.subductionKeyAt(5, 2, 7)).toBe('slab');           // the subducting slab
+    expect(P.subductionKeyAt(12, 7, 7)).toBe('wedge');         // hot mantle wedge above the slab
+    expect(P.subductionKeyAt(1, 8, 7)).toBe('asthenosphere');  // ductile mantle below
+    // every modelled layer is reachable somewhere in the section
+    const g = P.grid(), keys = {};
+    for (let x = 0; x < g.NX; x++) for (let y = 0; y < g.NY; y++) keys[P.subductionKeyAt(x, y, 7)] = 1;
+    ['oceanWater', 'oceanCrust', 'contCrust', 'slab', 'lithMantle', 'wedge', 'asthenosphere', 'arcMagma', 'arcVolcano'].forEach((k) => expect(keys[k]).toBe(1));
+    P.setScene('crust');
+  });
+
+  it('the slab descends to the right as you go deeper (a dipping plate, not a vertical wall)', () => {
+    P.setScene('subduction'); P.setGrid('standard');
+    const slabX = (y) => { for (let x = 0; x < P.grid().NX; x++) if (P.subductionKeyAt(x, y, 7) === 'slab') return x; return -1; };
+    expect(slabX(2)).toBeGreaterThan(0);
+    expect(slabX(8)).toBeGreaterThan(slabX(2));                // deeper slab is further right (dipping)
+    P.setScene('crust');
+  });
+
+  it('its geotherm encodes the COLD slab vs HOT wedge anomaly (honest, not depth-linear)', () => {
+    const slab = P.subductionGeotherm(120, 'slab');
+    const wedge = P.subductionGeotherm(110, 'wedge');
+    const asth = P.subductionGeotherm(200, 'asthenosphere');
+    expect(slab.tempC).toBeLessThan(wedge.tempC);              // the slab is the cold anomaly
+    expect(slab.tempC).toBeLessThan(asth.tempC);
+    expect(slab.state).toMatch(/cold/);
+    expect(wedge.state).toMatch(/melt/);                       // wedge partially melts → arc magma
+    expect(asth.state).toMatch(/solid/);                      // asthenosphere is SOLID (flows), not liquid
+    expect(P.subductionGeotherm(30, 'arcMagma').state).toBe('molten');
+    ['slab', 'wedge', 'asthenosphere', 'arcMagma', 'contCrust', 'oceanCrust'].forEach((k) => expect(P.subductionGeotherm(100, k).tempC).toBeLessThan(2000));
+    P.setScene('crust');
+  });
+
+  it('fpProbe reads the wedge as a hot partial-melt zone (scene-aware HUD)', () => {
+    P.setScene('subduction'); P.setGrid('standard');
+    const w = P.fpProbe(5.5, -1.5, 0.5);                       // world coords mapping to voxel (12,7,7) = wedge
+    expect(w.key).toBe('wedge');
+    expect(w.tempC).toBe(1300);
+    expect(w.state).toMatch(/melt/);
+    expect(w.bust).toMatch(/water|wedge/i);                    // the flux-melting bust surfaces here
+    P.setScene('crust');
+  });
+
+  it('every subduction layer has a you-are-here blurb, and the key myths carry busts', () => {
+    ['oceanWater', 'oceanCrust', 'contCrust', 'slab', 'lithMantle', 'wedge', 'asthenosphere', 'arcMagma', 'arcVolcano'].forEach((k) => {
+      expect(P.fpBlurb('subduction', k).length).toBeGreaterThan(0);
+    });
+    expect(P.fpBust('wedge')).toMatch(/water|melt/i);          // magma from the fluxed wedge, not the slab
+    expect(P.fpBust('asthenosphere')).toMatch(/solid|flow/i);  // not a liquid the plates float on
+    expect(P.fpBust('slab')).toMatch(/cold/i);
+    expect(P.fpBust('oceanWater')).toBeNull();
   });
 });
