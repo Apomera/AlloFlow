@@ -60,6 +60,61 @@ window.StemLab = window.StemLab || {
   function sfxMolClick() { molTone(600, 0.03, "sine", 0.04); }
   function sfxMolSuccess() { molTone(523, 0.08, "sine", 0.07); setTimeout(function() { molTone(659, 0.08, "sine", 0.07); }, 70); setTimeout(function() { molTone(784, 0.1, "sine", 0.08); }, 140); }
 
+  // ── Hydrogen-like atomic orbitals (Z=1, a₀=1) — the REAL quantum picture ─────────
+  // PURE + testable. An orbital is NOT an orbit: ψ is a wavefunction and |ψ|² is the
+  // probability DENSITY of finding the electron (Born rule) — a cloud, not a path.
+  // R_nl(r) are the standard hydrogen radial functions; the angular factor gives the
+  // shape (s sphere, p dumbbell, d cloverleaf). The SIGN of ψ is the phase (the two
+  // colours in the cloud); where ψ=0 is a NODE — a place the electron is never found.
+  var ORBITALS = {
+    '1s': { n: 1, l: 0, sub: 's', label: '1s', shape: 'sphere',               box: 6 },
+    '2s': { n: 2, l: 0, sub: 's', label: '2s', shape: 'sphere + inner shell', box: 16 },
+    '2p': { n: 2, l: 1, sub: 'p', label: '2p', shape: 'dumbbell',             box: 15 },
+    '3s': { n: 3, l: 0, sub: 's', label: '3s', shape: 'sphere + 2 shells',    box: 30 },
+    '3p': { n: 3, l: 1, sub: 'p', label: '3p', shape: 'dumbbell + shell',     box: 30 },
+    '3d': { n: 3, l: 2, sub: 'd', label: '3d', shape: 'cloverleaf (4 lobes)',  box: 28 }
+  };
+  var ORBITAL_ORDER = ['1s', '2s', '2p', '3s', '3p', '3d'];
+  function orbRadial(key, r) {                       // R_nl(r), Z=1, a₀=1 (Bohr radii)
+    switch (key) {
+      case '1s': return 2 * Math.exp(-r);
+      case '2s': return (1 / (2 * Math.SQRT2)) * (2 - r) * Math.exp(-r / 2);
+      case '2p': return (1 / (2 * Math.sqrt(6))) * r * Math.exp(-r / 2);
+      case '3s': return (2 / (81 * Math.sqrt(3))) * (27 - 18 * r + 2 * r * r) * Math.exp(-r / 3);
+      case '3p': return (4 / (81 * Math.sqrt(6))) * (6 * r - r * r) * Math.exp(-r / 3);
+      case '3d': return (4 / (81 * Math.sqrt(30))) * r * r * Math.exp(-r / 3);
+      default: return 0;
+    }
+  }
+  function orbAngular(key, x, y, z, r) {              // representative real orientation: p_z, d_xy
+    var o = ORBITALS[key]; if (!o) return 1;
+    if (o.l === 0) return 1;                          // s — isotropic (spherical)
+    if (r === 0) return 0;                            // p/d vanish at the nucleus
+    if (o.l === 1) return z / r;                      // p_z  (cosθ) — dumbbell along z
+    return (x * y) / (r * r);                          // d_xy — the classic cloverleaf (4 lobes; nodal planes x=0 & y=0)
+  }
+  function orbPsi(key, x, y, z) {                     // signed wavefunction ψ (sign = phase)
+    var r = Math.sqrt(x * x + y * y + z * z);
+    return orbRadial(key, r) * orbAngular(key, x, y, z, r);
+  }
+  function orbDensity(key, x, y, z) { var p = orbPsi(key, x, y, z); return p * p; }   // |ψ|² (Born rule)
+  function orbRadialDistribution(key, r) { var R = orbRadial(key, r); return r * r * R * R; }   // P(r)=r²R² — "where is the electron?"
+  function orbNodes(key) {                            // node counts: total = n−1, angular = ℓ, radial = n−ℓ−1
+    var o = ORBITALS[key]; if (!o) return null;
+    return { radial: o.n - o.l - 1, angular: o.l, total: o.n - 1 };
+  }
+  function orbPeakRadius(key) {                       // most-probable radius (argmax of P(r)); 1s → 1 a₀ (the Bohr radius!)
+    var best = -1, bestR = 0, box = (ORBITALS[key] || { box: 30 }).box;
+    for (var r = 0.002; r <= box * 1.6; r += 0.01) { var p = orbRadialDistribution(key, r); if (p > best) { best = p; bestR = r; } }
+    return bestR;
+  }
+  try {
+    window.__alloMoleculePure = {
+      ORBITALS: ORBITALS, ORBITAL_ORDER: ORBITAL_ORDER, orbRadial: orbRadial, orbAngular: orbAngular,
+      orbPsi: orbPsi, orbDensity: orbDensity, orbRadialDistribution: orbRadialDistribution, orbNodes: orbNodes, orbPeakRadius: orbPeakRadius
+    };
+  } catch (e) {}
+
   if (window.StemLab && window.StemLab.isRegistered && window.StemLab.isRegistered('molecule')) return;
 
   window.StemLab.registerTool('molecule', {
@@ -2575,7 +2630,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                           })()),
 
-                          React.createElement("p", { className: "text-[11px] text-slate-600 italic mt-1" }, __alloT('stem.molecule.electrons_orbit_the_nucleus_in_energy_', "\u26A1 Electrons orbit the nucleus in energy levels called \"shells.\" Inner shells fill first before outer ones begin."))
+                          React.createElement("p", { className: "text-[11px] text-slate-600 italic mt-1" }, __alloT('stem.molecule.bohr_model_caption_honest', "\u26A1 The Bohr model draws electrons on tidy \u201Cshells\u201D that fill inside-out \u2014 a useful first picture, but electrons don\u2019t actually circle like planets. See the \u2630 Orbital clouds tab for where they really are (probability clouds, not orbits)."))
 
                         )
 
@@ -3151,6 +3206,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
             { id: 'bonds', label: __alloT('stem.molecule.bond_types', 'Bond types'), icon: '⚛︎' },
             { id: 'imf', label: __alloT('stem.molecule.intermol_forces', 'Intermol. forces'), icon: '↔' },
             { id: 'quantum', label: __alloT('stem.molecule.quantum_numbers', 'Quantum numbers'), icon: '𝑛' },
+            { id: 'orbitals', label: __alloT('stem.molecule.orbital_clouds', 'Orbital clouds'), icon: '☁️' },
             { id: 'periodic', label: __alloT('stem.molecule.periodic_trends', 'Periodic trends'), icon: '📊' },
             { id: 'isomers', label: __alloT('stem.molecule.isomers', 'Isomers'), icon: '⇄' }
           ] },
@@ -3465,6 +3521,102 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
               );
             })
           )
+        );
+      }
+
+      function renderOrbitalsSection() {
+        var h = React.createElement;
+        var key = (d2 && d2.orbChoice && ORBITALS[d2.orbChoice]) ? d2.orbChoice : '2p';
+        var o = ORBITALS[key];
+        var nodes = orbNodes(key);
+        var peak = orbPeakRadius(key);
+        var subColor = o.sub === 's' ? '#0891b2' : (o.sub === 'p' ? '#7c3aed' : '#d97706');
+        // radial-distribution plot P(r)=r²R² (the accessible, rigorous "where is the electron" view)
+        var PW = 300, PH = 96, rmax = o.box, N = 140, pmax = 0, vals = [];
+        for (var i = 0; i <= N; i++) { var rr = rmax * i / N; var v = orbRadialDistribution(key, rr); vals.push(v); if (v > pmax) pmax = v; }
+        if (pmax <= 0) pmax = 1;
+        var poly = vals.map(function (v, i) { return (4 + (PW - 8) * i / N).toFixed(1) + ',' + (PH - 6 - (PH - 12) * v / pmax).toFixed(1); }).join(' ');
+        // radial nodes = sign changes of R(r) in (0, rmax)
+        var radialNodes = [];
+        var prev = orbRadial(key, 0.01);
+        for (var j = 1; j <= 400; j++) { var r2 = rmax * j / 400; var cur = orbRadial(key, r2); if (prev !== 0 && cur !== 0 && (prev < 0) !== (cur < 0)) radialNodes.push(r2); prev = cur; }
+        var BUSTS = [
+          { t: 'Orbit → orbital', d: 'Electrons do NOT trace circles. An orbital is a probability CLOUD — a map of where the electron is likely to be, not a path it follows. The Bohr “orbits” are a useful first cartoon, not reality.' },
+          { t: 'You can’t watch it go around', d: 'Heisenberg uncertainty: pin down an electron’s position and its momentum becomes undefined. There is no trajectory to film — only odds of finding it here vs. there.' },
+          { t: 'Shells = energy levels, not rings', d: 'n is an energy level. The plot shows the electron smeared over a RANGE of distances with a most-probable radius (' + peak.toFixed(1) + ' a₀) — not parked on one fixed circle.' },
+          { t: 'Nodes are forbidden zones', d: 'Where ψ = 0 (the colour boundary in the cloud) the electron is NEVER found — ' + nodes.radial + ' radial + ' + nodes.angular + ' angular node' + (nodes.total === 1 ? '' : 's') + ' here. Bizarre for a particle on a path; natural for a wave.' }
+        ];
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, __alloT('stem.molecule.orbital_clouds_title', '☁️ Orbital clouds — where electrons really are')),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.orbital_clouds_intro', 'An atom is not a tiny solar system. Electrons don’t orbit the nucleus on tracks — they exist as a fuzzy cloud of probability (|ψ|²). The two colours are the wavefunction’s + and − phases; where they meet, the electron is never found (a node).')),
+          // orbital picker
+          h('div', { className: 'flex flex-wrap gap-1.5 mb-3', role: 'group', 'aria-label': 'Choose an orbital' },
+            ORBITAL_ORDER.map(function (k) {
+              var on = k === key, oo = ORBITALS[k];
+              return h('button', { key: k, type: 'button', 'aria-pressed': on ? 'true' : 'false', onClick: function () { try { setExp({ orbChoice: k }); } catch (e) {} try { var lr = document.getElementById('allo-live-molecule'); if (lr) lr.textContent = oo.label + ' orbital: ' + oo.shape + ', ' + (oo.n - oo.l - 1) + ' radial and ' + oo.l + ' angular nodes.'; } catch (e) {} },
+                className: 'px-2.5 py-1 rounded-md text-xs font-bold border transition-colors ' + (on ? 'text-white' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'), style: on ? { background: subColor, borderColor: subColor } : {} }, oo.label);
+            })),
+          h('div', { className: 'text-[10.5px] text-slate-500 leading-snug mb-2 p-2 rounded-lg bg-slate-50 border border-slate-200' }, __alloT('stem.molecule.orbital_caveat', 'These are exact one-electron (hydrogen-like, Z = 1) orbitals. Real multi-electron atoms keep the same shapes but with shifted sizes and energies. Each subshell is a set (3 p’s, 5 d’s — including the differently-shaped d_z²); we show one representative orientation of each.')),
+          h('div', { className: 'grid gap-3', style: { gridTemplateColumns: 'minmax(0,260px) minmax(0,1fr)' } },
+            // the cloud (canvas) + nucleus
+            h('div', null,
+              h('canvas', { width: 260, height: 260, key: 'orb-' + key, className: 'rounded-xl border border-slate-700 w-full', style: { background: '#0b1220', display: 'block' },
+                role: 'img', 'aria-label': 'Probability cloud of the ' + o.label + ' orbital — shape: ' + o.shape + '. ' + nodes.radial + ' radial nodes, ' + nodes.angular + ' angular nodes. The bar chart beside it gives the same data non-visually.',
+                ref: function (canvas) {
+                  if (!canvas) return;
+                  var cx = canvas.getContext && canvas.getContext('2d'); if (!cx) return;
+                  var W = canvas.width, Hh = canvas.height, box = o.box;
+                  var maxD = 0, gi; for (gi = 0; gi < 1600; gi++) { var gx = (Math.random() * 2 - 1) * box, gy = (Math.random() * 2 - 1) * box, gz = (Math.random() * 2 - 1) * box; var dd = orbDensity(key, gx, gy, gz); if (dd > maxD) maxD = dd; }
+                  if (maxD <= 0) maxD = 1;
+                  var pts = [], att = 0; while (pts.length < 2600 && att < 120000) { att++; var ax = (Math.random() * 2 - 1) * box, ay = (Math.random() * 2 - 1) * box, az = (Math.random() * 2 - 1) * box; var ps = orbPsi(key, ax, ay, az); if (ps * ps > Math.random() * maxD) pts.push({ x: ax, y: ay, z: az, s: ps >= 0 ? 1 : -1 }); }
+                  var scale = (Math.min(W, Hh) * 0.5) / box * 0.92;
+                  var POS = subColor === '#0891b2' ? '#22d3ee' : (subColor === '#7c3aed' ? '#a78bfa' : '#fbbf24'), NEG = '#fb7185';
+                  var reduced = false; try { reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+                  var ang = 0.6;
+                  function frame() {
+                    if (!canvas.isConnected) return;
+                    if (!reduced) ang += 0.006;
+                    cx.fillStyle = '#0b1220'; cx.fillRect(0, 0, W, Hh);
+                    var ca = Math.cos(ang), sa = Math.sin(ang), ct = Math.cos(0.42), st = Math.sin(0.42), i2;
+                    for (i2 = 0; i2 < pts.length; i2++) {
+                      var p = pts[i2];
+                      var rx = p.x * ca - p.z * sa, rz = p.x * sa + p.z * ca;
+                      var ry = p.y * ct - rz * st, depth = p.y * st + rz * ct;
+                      var tt = (depth / box + 1) / 2;
+                      cx.globalAlpha = 0.16 + 0.5 * (1 - tt);
+                      cx.fillStyle = p.s > 0 ? POS : NEG;
+                      cx.beginPath(); cx.arc(W / 2 + rx * scale, Hh / 2 - ry * scale, 1.0 + 1.5 * (1 - tt), 0, 6.2832); cx.fill();
+                    }
+                    cx.globalAlpha = 1; cx.fillStyle = '#fde68a'; cx.beginPath(); cx.arc(W / 2, Hh / 2, 2.4, 0, 6.2832); cx.fill();
+                    if (!reduced) requestAnimationFrame(frame);
+                  }
+                  frame();
+                }
+              }),
+              h('div', { className: 'flex items-center justify-center gap-3 mt-1 text-[10px] text-slate-600' },
+                h('span', null, h('span', { 'aria-hidden': 'true', style: { color: subColor } }, '● '), __alloT('stem.molecule.phase_plus', 'ψ > 0 (one phase)')),
+                h('span', null, h('span', { 'aria-hidden': 'true', style: { color: '#fb7185' } }, '● '), __alloT('stem.molecule.phase_minus', 'ψ < 0 (other phase)')),
+                h('span', null, h('span', { 'aria-hidden': 'true', style: { color: '#fbbf24' } }, '● '), __alloT('stem.molecule.nucleus', 'nucleus')))),
+            // info + radial distribution
+            h('div', null,
+              h('div', { className: 'grid grid-cols-2 gap-1.5 text-[11px] mb-2' },
+                h('div', { className: 'p-2 rounded-lg bg-slate-50 border border-slate-200' }, h('div', { className: 'text-slate-500' }, __alloT('stem.molecule.shape', 'Shape')), h('div', { className: 'font-bold text-slate-800' }, o.shape)),
+                h('div', { className: 'p-2 rounded-lg bg-slate-50 border border-slate-200' }, h('div', { className: 'text-slate-500' }, __alloT('stem.molecule.most_likely_radius', 'Most-likely radius')), h('div', { className: 'font-bold text-slate-800' }, '≈ ' + peak.toFixed(1) + ' a₀')),
+                h('div', { className: 'p-2 rounded-lg bg-slate-50 border border-slate-200' }, h('div', { className: 'text-slate-500' }, __alloT('stem.molecule.radial_nodes', 'Radial nodes')), h('div', { className: 'font-bold text-slate-800' }, String(nodes.radial))),
+                h('div', { className: 'p-2 rounded-lg bg-slate-50 border border-slate-200' }, h('div', { className: 'text-slate-500' }, __alloT('stem.molecule.angular_nodes', 'Angular nodes')), h('div', { className: 'font-bold text-slate-800' }, String(nodes.angular)))),
+              h('div', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.radial_distribution', 'Radial distribution P(r) = r²R²')),
+              h('svg', { viewBox: '0 0 ' + PW + ' ' + PH, width: '100%', height: PH, role: 'img', 'aria-label': 'Radial probability for the ' + o.label + ' orbital: most likely near ' + peak.toFixed(1) + ' Bohr radii, with ' + nodes.radial + ' radial node' + (nodes.radial === 1 ? '' : 's') + '.', className: 'rounded-lg bg-slate-50 border border-slate-200' },
+                radialNodes.map(function (rn, ri) { var xx = 4 + (PW - 8) * (rn / rmax); return h('line', { key: 'rn' + ri, x1: xx, y1: 4, x2: xx, y2: PH - 6, stroke: '#ef4444', strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.7 }); }),
+                h('line', { x1: 4 + (PW - 8) * (peak / rmax), y1: 4, x2: 4 + (PW - 8) * (peak / rmax), y2: PH - 6, stroke: '#10b981', strokeWidth: 1.5, opacity: 0.8 }),
+                h('polyline', { points: poly, fill: 'none', stroke: subColor, strokeWidth: 2 })),
+              h('div', { className: 'text-[10px] text-slate-500 mt-0.5' }, h('span', { style: { color: '#10b981' } }, '— ' + __alloT('stem.molecule.peak', 'most likely')), '   ', (radialNodes.length ? h('span', { style: { color: '#ef4444' } }, '┊ ' + __alloT('stem.molecule.node', 'node (P = 0)')) : null)))),
+          // misconception busts
+          h('div', { className: 'grid sm:grid-cols-2 gap-2 mt-3' },
+            BUSTS.map(function (b, bi) {
+              return h('div', { key: 'b' + bi, className: 'p-2.5 rounded-lg border border-amber-200 bg-amber-50' },
+                h('div', { className: 'text-[11.5px] font-black text-amber-900 mb-0.5' }, '⚠ ' + b.t),
+                h('div', { className: 'text-[11px] text-amber-900/90 leading-snug' }, b.d));
+            }))
         );
       }
 
@@ -4705,6 +4857,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
         if (expSection === 'library') return renderLibrarySection();
         if (expSection === 'acidbase') return renderAcidBaseSection();
         if (expSection === 'quantum') return renderQuantumSection();
+        if (expSection === 'orbitals') return renderOrbitalsSection();
         if (expSection === 'periodic') return renderPeriodicSection();
         if (expSection === 'molarity') return renderMolaritySection();
         if (expSection === 'stoich') return renderStoichSection();

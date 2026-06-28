@@ -249,13 +249,13 @@ exports[`science-sim + studio render goldens > renders + pins a digest for micro
 
 exports[`science-sim + studio render goldens > renders + pins a digest for molecule [ssr] 1`] = `
 {
-  "buttons": 97,
+  "buttons": 98,
   "canvases": 0,
   "inputs": 1,
-  "lengthBucket": 152,
+  "lengthBucket": 154,
   "paths": 0,
   "selects": 0,
-  "sha": "8466e5d9249a036a",
+  "sha": "35bbbbf360576d7e",
   "svgs": 1,
 }
 `;
