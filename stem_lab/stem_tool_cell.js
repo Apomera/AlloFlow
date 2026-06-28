@@ -17851,7 +17851,7 @@ var d = labToolData.cell || {};
 
                 cctx.closePath();
 
-                cctx.fillStyle = 'rgba(15,23,42,0.85)';
+                cctx.fillStyle = 'var(--allo-stem-deeper, rgba(15,23,42,0.85))';
 
                 cctx.fill();
 
@@ -18659,7 +18659,7 @@ var d = labToolData.cell || {};
 
                 // Background
 
-                cctx.fillStyle = 'rgba(15,23,42,0.93)';
+                cctx.fillStyle = 'var(--allo-stem-deeper, rgba(15,23,42,0.93))';
 
                 cctx.beginPath();
 
@@ -18863,7 +18863,7 @@ var d = labToolData.cell || {};
 
                 // Pill background
 
-                cctx.fillStyle = 'rgba(15,23,42,0.75)';
+                cctx.fillStyle = 'var(--allo-stem-deeper, rgba(15,23,42,0.75))';
 
                 cctx.beginPath();
 
@@ -18935,7 +18935,7 @@ var d = labToolData.cell || {};
 
                 htY = Math.max(2 * dpr, htY);
 
-                cctx.fillStyle = 'rgba(15,23,42,0.8)';
+                cctx.fillStyle = 'var(--allo-stem-deeper, rgba(15,23,42,0.8))';
 
                 cctx.beginPath();
 
@@ -18979,7 +18979,7 @@ var d = labToolData.cell || {};
 
               var mlx = 6 * dpr, mly = HH - 22 * dpr, mlw = 48 * dpr, mlh = 16 * dpr;
 
-              cctx.fillStyle = 'rgba(15,23,42,0.45)';
+              cctx.fillStyle = 'var(--allo-stem-deeper, rgba(15,23,42,0.45))';
 
               cctx.beginPath();
 
@@ -19021,7 +19021,7 @@ var d = labToolData.cell || {};
 
                 // Background pill
 
-                cctx.fillStyle = 'rgba(15,23,42,0.55)';
+                cctx.fillStyle = 'var(--allo-stem-deeper, rgba(15,23,42,0.55))';
 
                 cctx.beginPath();
 

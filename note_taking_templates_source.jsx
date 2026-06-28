@@ -9,6 +9,15 @@
 // ── Helpers ─────────────────────────────────────────────────────────────
 const _genId = (prefix) => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 
+// Loose comparison for Guided Notes self-check: case/space/punctuation-insensitive
+// so "Mitochondria." matches "mitochondria". Deliberately forgiving — the point
+// is recall of the concept, not exact spelling/punctuation.
+const _normalizeBlank = (s) => String(s == null ? '' : s)
+  .trim()
+  .toLowerCase()
+  .replace(/\s+/g, ' ')
+  .replace(/[.,;:!?'"()]/g, '');
+
 const _CardSection = ({ title, hint, color = 'indigo', children }) => {
   const colors = {
     indigo: { bg: 'bg-indigo-50/60', border: 'border-indigo-200', header: 'text-indigo-800' },
@@ -90,6 +99,48 @@ const _NOTE_RUBRICS = {
       'pushing past the first thought to a deeper response',
     ],
   },
+  'double-entry': {
+    strengthsFocus: [
+      'quote selection (did the student pick a meaningful, specific passage rather than a random line?)',
+      'response depth (does the right column analyze/react, or just restate the quote?)',
+      'dialogue with the text (does the response question, connect, or interpret rather than summarize?)',
+      'balance (are both columns substantive, or is one side thin?)',
+    ],
+    growthAreas: [
+      'a response that interprets or questions the quote rather than restating it',
+      'choosing a quote that genuinely puzzled or struck you, not just the first line',
+      'connecting the quote to a bigger idea, another text, or your own experience',
+      'pushing one response past the first reaction to a deeper "why does this matter?"',
+    ],
+  },
+  'guided-notes': {
+    strengthsFocus: [
+      'completion (did the student fill in the blanks rather than leaving them empty?)',
+      'accuracy of the key terms (do filled answers match the concept?)',
+      "own-notes quality (does the extra notes space add the student's own thinking?)",
+      'engagement with the material beyond the blanks',
+    ],
+    growthAreas: [
+      'using the "my own notes" space to add an example or question of your own',
+      'going back to fill any blanks you skipped — the gaps are the key terms worth knowing',
+      'rephrasing a filled-in term in your own words to check you understand it',
+      'noting which blanks were hardest — those are worth a second look',
+    ],
+  },
+  'q-and-a': {
+    strengthsFocus: [
+      'question quality (are questions higher-order "why/how" rather than only recall "what"?)',
+      'answer completeness (do answers fully address the question?)',
+      'coverage (do the pairs span the key ideas, not just one corner of the topic?)',
+      'self-testing value (could a peer study from these pairs?)',
+    ],
+    growthAreas: [
+      'mixing in a "why" or "how" question, not only "what" recall questions',
+      'an answer that explains rather than just names — add the reasoning',
+      'covering an idea from the source you have not turned into a question yet',
+      'writing one question you genuinely are not sure of the answer to',
+    ],
+  },
 };
 
 // Build a compact text dump of the student's filled-in template, suitable for
@@ -122,6 +173,32 @@ function _serializeTemplateForFeedback(templateType, data) {
     if (data.thinkings) parts.push(`THINKING: ${data.thinkings}`);
     if (data.connection && data.connection.text) parts.push(`CONNECTION (${data.connection.type || 'text-to-self'}): ${data.connection.text}`);
     if (data.question) parts.push(`QUESTION: ${data.question}`);
+  } else if (templateType === 'double-entry') {
+    if (data.author) parts.push(`AUTHOR: ${data.author}`);
+    if (data.pageRange) parts.push(`PAGES: ${data.pageRange}`);
+    const entries = (Array.isArray(data.entries) ? data.entries : [])
+      .filter(en => en && ((en.quote || '').trim() || (en.response || '').trim()));
+    if (entries.length) {
+      parts.push('DOUBLE-ENTRY (quote → response):\n' + entries.map((en, i) =>
+        `  ${i + 1}. QUOTE: ${(en.quote || '').trim() || '(none)'}\n     RESPONSE: ${(en.response || '').trim() || '(none)'}`).join('\n'));
+    }
+  } else if (templateType === 'guided-notes') {
+    const blanks = Array.isArray(data.blanks) ? data.blanks : [];
+    const filled = blanks.filter(b => b && (b.studentAnswer || '').trim());
+    if (blanks.length) {
+      const correct = filled.filter(b => _normalizeBlank(b.studentAnswer) === _normalizeBlank(b.answer)).length;
+      parts.push(`GUIDED NOTES: ${filled.length}/${blanks.length} blanks filled, ${correct} matching the key term.`);
+      parts.push('STATEMENTS:\n' + blanks.map((b, i) =>
+        `  ${i + 1}. ${(b.before || '')}[${(b.studentAnswer || '').trim() || '___'}]${(b.after || '')}`).join('\n'));
+    }
+    if (data.notesExtra) parts.push(`MY OWN NOTES: ${data.notesExtra}`);
+  } else if (templateType === 'q-and-a') {
+    const pairs = (Array.isArray(data.pairs) ? data.pairs : [])
+      .filter(p => p && ((p.question || '').trim() || (p.answer || '').trim()));
+    if (pairs.length) {
+      parts.push('Q&A PAIRS:\n' + pairs.map((p, i) =>
+        `  ${i + 1}. Q: ${(p.question || '').trim() || '(none)'}\n     A: ${(p.answer || '').trim() || '(none)'}`).join('\n'));
+    }
   }
   return parts.join('\n\n');
 }
@@ -141,6 +218,18 @@ function _checkTemplateReadyForFeedback(templateType, data) {
     if (!(data.thinkings || '').trim() && !(data.connection && data.connection.text || '').trim()) {
       return { ok: false, reason: 'reading_needs_thinking' };
     }
+  } else if (templateType === 'double-entry') {
+    const responded = (Array.isArray(data.entries) ? data.entries : []).filter(en => en && (en.response || '').trim());
+    if (responded.length < 1) return { ok: false, reason: 'double_entry_needs_response' };
+  } else if (templateType === 'guided-notes') {
+    const blanks = Array.isArray(data.blanks) ? data.blanks : [];
+    const filled = blanks.filter(b => b && (b.studentAnswer || '').trim());
+    if (filled.length < Math.max(1, Math.ceil(blanks.length / 2)) && !(data.notesExtra || '').trim()) {
+      return { ok: false, reason: 'guided_needs_blanks' };
+    }
+  } else if (templateType === 'q-and-a') {
+    const complete = (Array.isArray(data.pairs) ? data.pairs : []).filter(p => p && (p.question || '').trim() && (p.answer || '').trim());
+    if (complete.length < 2) return { ok: false, reason: 'qanda_needs_pairs' };
   }
   return { ok: true, reason: '' };
 }
@@ -156,6 +245,9 @@ function _buildNotesFeedbackPrompt(templateType, data, sourceText) {
     'cornell-notes': 'Cornell Notes',
     'lab-report': 'Lab Report',
     'reading-response': 'Reading Response',
+    'double-entry': 'Double-Entry Journal',
+    'guided-notes': 'Guided Notes',
+    'q-and-a': 'Q&A Study Notes',
   })[templateType] || 'Note Template';
   return `
 You are a supportive teacher giving feedback on a student's ${templateLabel} note-taking work.
@@ -280,6 +372,9 @@ function _useNotesFeedback(props, templateType) {
         cornell_needs_notes: t('notes_feedback.cornell_needs_notes') || 'Add at least 2 rows of notes before asking for feedback.',
         lab_needs_substance: t('notes_feedback.lab_needs_substance') || 'Fill in the hypothesis, analysis, or conclusion before asking for feedback.',
         reading_needs_thinking: t('notes_feedback.reading_needs_thinking') || 'Write at least your thinking or connection before asking for feedback.',
+        double_entry_needs_response: t('notes_feedback.double_entry_needs_response') || 'Respond to at least one quote before asking for feedback.',
+        guided_needs_blanks: t('notes_feedback.guided_needs_blanks') || 'Fill in at least half the blanks (or add your own notes) before asking for feedback.',
+        qanda_needs_pairs: t('notes_feedback.qanda_needs_pairs') || 'Write at least 2 complete question-and-answer pairs before asking for feedback.',
         empty: t('notes_feedback.empty') || 'Fill in some of the template before asking for feedback.',
       })[ready.reason] || (t('notes_feedback.empty') || 'Fill in some of the template before asking for feedback.');
       addToast(reasonMsg, 'info');
@@ -302,6 +397,9 @@ function _useNotesFeedback(props, templateType) {
         'cornell-notes': 'Cornell Notes Feedback',
         'lab-report': 'Lab Report Feedback',
         'reading-response': 'Reading Response Feedback',
+        'double-entry': 'Double-Entry Journal Feedback',
+        'guided-notes': 'Guided Notes Feedback',
+        'q-and-a': 'Q&A Study Notes Feedback',
       })[templateType] || 'Notes Feedback';
       if (typeof handleScoreUpdate === 'function' && resourceId) {
         // handleScoreUpdate returns void; we compute the actual delta by
@@ -342,6 +440,8 @@ const _GetFeedbackButton = ({ onClick, isLoading, t, colorClass = 'emerald' }) =
     emerald: 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-700',
     sky: 'bg-sky-600 hover:bg-sky-700 text-white border-sky-700',
     violet: 'bg-violet-600 hover:bg-violet-700 text-white border-violet-700',
+    rose: 'bg-rose-600 hover:bg-rose-700 text-white border-rose-700',
+    cyan: 'bg-cyan-600 hover:bg-cyan-700 text-white border-cyan-700',
   })[colorClass] || 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-700';
   return (
     <div className="flex justify-center pt-2">
@@ -752,6 +852,344 @@ const ReadingResponseView = React.memo((props) => {
   );
 });
 
+// ── Double-Entry (Dialectical) Journal ───────────────────────────────────
+// Two paired columns: a quote/passage FROM the text on the left, the student's
+// response/interpretation on the right. Distinct from Reading Response (a single
+// reflection) and from the AI-generated T-Chart (a sorting task) — this is a
+// running dialogue with the text. Left column seeded with salient quotes; the
+// student writes the right column.
+const DoubleEntryView = React.memo((props) => {
+  const generatedContent = props.generatedContent;
+  const handleNoteUpdate = props.handleNoteUpdate || (() => {});
+  const t = props.t || ((k, d) => d || k);
+  const data = (generatedContent && generatedContent.data) || {};
+  const title = data.title || '';
+  const author = data.author || '';
+  const pageRange = data.pageRange || '';
+  const entries = Array.isArray(data.entries) ? data.entries : [];
+  const lessonRef = data.lessonRef || {};
+  const fb = _useNotesFeedback(props, 'double-entry');
+  const rowCount = Math.max(entries.length, 1);
+  const updateEntry = (idx, field, value) => {
+    const next = entries.slice();
+    while (next.length <= idx) next.push({ id: _genId('de'), quote: '', response: '' });
+    next[idx] = { ...next[idx], [field]: value };
+    handleNoteUpdate('entries', next);
+  };
+  const addRow = () => handleNoteUpdate('entries', entries.concat([{ id: _genId('de'), quote: '', response: '' }]));
+  const removeRow = (idx) => handleNoteUpdate('entries', entries.filter((_, i) => i !== idx));
+  return (
+    <div className="max-w-5xl mx-auto px-4 py-6 space-y-4" data-help-key="double_entry_panel">
+      <div className="bg-slate-50 border-l-4 border-rose-600 p-3 rounded">
+        <div className="text-xs font-bold text-rose-700 uppercase tracking-wider mb-1">Double-Entry Journal</div>
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => handleNoteUpdate('title', e.target.value)}
+          placeholder="Title of what you read"
+          className="w-full text-xl font-black text-slate-800 bg-transparent border-b border-slate-300 focus:border-rose-500 outline-none py-1"
+          aria-label="Reading title"
+          data-help-key="double_entry_title_field"
+        />
+        <div className="flex flex-col sm:flex-row gap-2 mt-2">
+          <input type="text" value={author} onChange={(e) => handleNoteUpdate('author', e.target.value)} placeholder="Author" className="flex-1 text-sm text-slate-600 bg-transparent border-b border-slate-200 focus:border-rose-300 outline-none py-1" aria-label="Author" />
+          <input type="text" value={pageRange} onChange={(e) => handleNoteUpdate('pageRange', e.target.value)} placeholder="Pages or chapter" className="sm:w-40 text-sm text-slate-600 bg-transparent border-b border-slate-200 focus:border-rose-300 outline-none py-1" aria-label="Pages or chapter" />
+        </div>
+        {lessonRef.generatedAt ? (
+          <div className="text-[11px] text-slate-500 mt-1">Started: {new Date(lessonRef.generatedAt).toLocaleString()}</div>
+        ) : null}
+      </div>
+      <div className="border-2 border-slate-300 rounded-xl overflow-hidden bg-white" data-help-key="double_entry_grid">
+        <div className="grid grid-cols-2 bg-slate-100 border-b border-slate-300">
+          <div className="px-4 py-2 font-black text-xs uppercase tracking-wider text-slate-700 border-r border-slate-300">Quote / Passage from the text</div>
+          <div className="px-4 py-2 font-black text-xs uppercase tracking-wider text-slate-700">My response / thinking</div>
+        </div>
+        {Array.from({ length: rowCount }).map((_, idx) => {
+          const en = entries[idx] || { quote: '', response: '' };
+          return (
+            <div key={(en && en.id) || idx} className="grid grid-cols-2 border-b border-slate-200 last:border-b-0 group">
+              <div className="px-3 py-2 border-r border-slate-200">
+                <textarea
+                  value={en.quote || ''}
+                  onChange={(e) => updateEntry(idx, 'quote', e.target.value)}
+                  placeholder={idx === 0 ? '"Copy a line or passage that struck you..." (p. ___)' : ''}
+                  className="w-full text-sm italic text-slate-700 bg-transparent resize-none outline-none focus:ring-2 focus:ring-rose-300 rounded p-1 min-h-[70px]"
+                  rows={3}
+                  aria-label={`Quote ${idx + 1}`}
+                />
+              </div>
+              <div className="px-3 py-2 relative">
+                <textarea
+                  value={en.response || ''}
+                  onChange={(e) => updateEntry(idx, 'response', e.target.value)}
+                  placeholder={idx === 0 ? 'React, question, interpret. Why did this strike you? What does it make you think?' : ''}
+                  className="w-full text-sm text-slate-700 bg-transparent resize-none outline-none focus:ring-2 focus:ring-rose-300 rounded p-1 min-h-[70px]"
+                  rows={3}
+                  aria-label={`Response ${idx + 1}`}
+                />
+                <button
+                  onClick={() => removeRow(idx)}
+                  className="absolute right-1 top-1 opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs px-1"
+                  aria-label={`Remove row ${idx + 1}`}
+                  title="Remove row"
+                >✕</button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="flex justify-center">
+        <button
+          onClick={addRow}
+          className="px-4 py-1.5 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-300 rounded-full hover:bg-rose-100"
+          aria-label="Add a new quote and response row"
+          data-help-key="double_entry_add_row_button"
+        >+ Add entry</button>
+      </div>
+      <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} t={t} colorClass="rose" />
+      <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} />
+      <div className="text-[11px] text-slate-500 italic text-center">Double-Entry Journal: quotes on the left, your thinking on the right. A dialogue with the text — saved to your notebook.</div>
+    </div>
+  );
+});
+
+// ── Guided Notes (fill-in-the-blank) ─────────────────────────────────────
+// Teacher-style skeleton notes with the key terms blanked out. The AI generates
+// the statements + correct answers from the source; the student completes the
+// blanks during the lesson and self-checks. A deterministic "Check answers"
+// reveal scores locally (no AI needed); the AI feedback button reflects on the
+// student's own-notes space + overall engagement.
+const GuidedNotesView = React.memo((props) => {
+  const generatedContent = props.generatedContent;
+  const handleNoteUpdate = props.handleNoteUpdate || (() => {});
+  const t = props.t || ((k, d) => d || k);
+  const data = (generatedContent && generatedContent.data) || {};
+  const title = data.title || '';
+  const blanks = Array.isArray(data.blanks) ? data.blanks : [];
+  const notesExtra = typeof data.notesExtra === 'string' ? data.notesExtra : '';
+  const lessonRef = data.lessonRef || {};
+  const fb = _useNotesFeedback(props, 'guided-notes');
+  const [revealed, setRevealed] = React.useState(false);
+  const updateBlank = (idx, value) => {
+    if (!blanks[idx]) return;
+    const next = blanks.slice();
+    next[idx] = { ...next[idx], studentAnswer: value };
+    handleNoteUpdate('blanks', next);
+  };
+  const filledCount = blanks.filter(b => b && (b.studentAnswer || '').trim()).length;
+  const correctCount = blanks.filter(b => b && _normalizeBlank(b.studentAnswer) && _normalizeBlank(b.studentAnswer) === _normalizeBlank(b.answer)).length;
+  return (
+    <div className="max-w-3xl mx-auto px-4 py-6 space-y-4" data-help-key="guided_notes_panel">
+      <div className="bg-slate-50 border-l-4 border-emerald-600 p-3 rounded">
+        <div className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1">Guided Notes</div>
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => handleNoteUpdate('title', e.target.value)}
+          placeholder="Today's lesson title"
+          className="w-full text-xl font-black text-slate-800 bg-transparent border-b border-slate-300 focus:border-emerald-500 outline-none py-1"
+          aria-label="Lesson title"
+          data-help-key="guided_notes_title_field"
+        />
+        {lessonRef.generatedAt ? (
+          <div className="text-[11px] text-slate-500 mt-1">Started: {new Date(lessonRef.generatedAt).toLocaleString()}</div>
+        ) : null}
+      </div>
+      <_CardSection title="Fill in the blanks" hint="Read or listen along, then complete each key term. Use Check answers when you're done to see how you did — matching ignores capitals and punctuation." color="emerald">
+        {blanks.length === 0 ? (
+          <p className="text-xs text-slate-600 italic">No guided notes were generated for this source. Use the notes space below to take your own.</p>
+        ) : (
+          <ol className="space-y-3">
+            {blanks.map((b, idx) => {
+              const studentAnswer = b.studentAnswer || '';
+              const isCorrect = !!_normalizeBlank(studentAnswer) && _normalizeBlank(studentAnswer) === _normalizeBlank(b.answer);
+              const showState = revealed && !!studentAnswer.trim();
+              const inputBorder = showState
+                ? (isCorrect ? 'border-emerald-500 bg-emerald-50' : 'border-rose-400 bg-rose-50')
+                : 'border-slate-300 focus:ring-2 focus:ring-emerald-300';
+              return (
+                <li key={b.id || idx} className="text-sm text-slate-700 leading-relaxed">
+                  <span className="text-slate-500 text-xs font-bold mr-1">{idx + 1}.</span>
+                  <span>{b.before || ''}</span>
+                  <input
+                    type="text"
+                    value={studentAnswer}
+                    onChange={(e) => updateBlank(idx, e.target.value)}
+                    placeholder="________"
+                    className={`inline-block mx-1 px-2 py-0.5 text-sm font-semibold text-slate-800 bg-white border-b-2 rounded-sm outline-none align-baseline ${inputBorder}`}
+                    aria-label={`Blank ${idx + 1}`}
+                    style={{ width: Math.max(110, ((b.answer || '').length + 4) * 9) + 'px' }}
+                  />
+                  <span>{b.after || ''}</span>
+                  {revealed && studentAnswer.trim() && isCorrect ? (
+                    <span className="ml-1 text-xs font-black text-emerald-700" aria-label="Correct">✓</span>
+                  ) : null}
+                  {revealed && !isCorrect ? (
+                    <span className="ml-2 text-xs font-bold text-emerald-700">
+                      {studentAnswer.trim() ? <span className="text-rose-700" aria-label="Incorrect">✗ </span> : null}→ {b.answer}
+                    </span>
+                  ) : null}
+                </li>
+              );
+            })}
+          </ol>
+        )}
+        {blanks.length > 0 ? (
+          <div className="flex items-center gap-3 mt-4">
+            <button
+              onClick={() => setRevealed(r => !r)}
+              className="px-3 py-1.5 text-xs font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 rounded-full hover:bg-emerald-200"
+              aria-pressed={revealed}
+              data-help-key="guided_notes_check_button"
+            >{revealed ? 'Hide answers' : 'Check answers'}</button>
+            {revealed ? (
+              <span className="text-xs font-bold text-slate-600">{correctCount}/{blanks.length} correct · {filledCount}/{blanks.length} filled</span>
+            ) : null}
+          </div>
+        ) : null}
+      </_CardSection>
+      <_CardSection title="My own notes" hint="Add anything else worth remembering — an example, a question, or a connection of your own." color="indigo">
+        <textarea
+          value={notesExtra}
+          onChange={(e) => handleNoteUpdate('notesExtra', e.target.value)}
+          placeholder="Your own notes, questions, examples..."
+          className="w-full text-sm text-slate-700 bg-white border border-slate-200 rounded-md p-3 outline-none focus:ring-2 focus:ring-indigo-300 resize-y min-h-[80px]"
+          rows={3}
+          aria-label="My own notes"
+          data-help-key="guided_notes_own_notes_field"
+        />
+      </_CardSection>
+      <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} t={t} colorClass="emerald" />
+      <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} />
+      <div className="text-[11px] text-slate-500 italic text-center">Guided Notes saved to your notebook. The blanks are the key terms — revisit them to study.</div>
+    </div>
+  );
+});
+
+// ── Q&A Study Notes ──────────────────────────────────────────────────────
+// Question/answer pairs for active-recall self-testing. Seeded with study
+// questions + model answers from the source; the student edits/adds their own.
+// "Quiz me" mode hides the answers so the student must retrieve them — the
+// retrieval-practice payoff that a plain two-column table does not provide.
+const QAndAView = React.memo((props) => {
+  const generatedContent = props.generatedContent;
+  const handleNoteUpdate = props.handleNoteUpdate || (() => {});
+  const t = props.t || ((k, d) => d || k);
+  const data = (generatedContent && generatedContent.data) || {};
+  const title = data.title || '';
+  const pairs = Array.isArray(data.pairs) ? data.pairs : [];
+  const lessonRef = data.lessonRef || {};
+  const fb = _useNotesFeedback(props, 'q-and-a');
+  const [quizMode, setQuizMode] = React.useState(false);
+  const [shown, setShown] = React.useState({});
+  const rowCount = Math.max(pairs.length, 1);
+  const updatePair = (idx, field, value) => {
+    const next = pairs.slice();
+    while (next.length <= idx) next.push({ id: _genId('qa'), question: '', answer: '' });
+    next[idx] = { ...next[idx], [field]: value };
+    handleNoteUpdate('pairs', next);
+  };
+  const addPair = () => handleNoteUpdate('pairs', pairs.concat([{ id: _genId('qa'), question: '', answer: '' }]));
+  const removePair = (idx) => handleNoteUpdate('pairs', pairs.filter((_, i) => i !== idx));
+  const toggleShown = (key) => setShown(s => ({ ...s, [key]: !s[key] }));
+  const hasStudyable = pairs.some(p => p && (p.question || '').trim() && (p.answer || '').trim());
+  const quizPairs = pairs.filter(p => p && (p.question || '').trim());
+  return (
+    <div className="max-w-3xl mx-auto px-4 py-6 space-y-4" data-help-key="qanda_panel">
+      <div className="bg-slate-50 border-l-4 border-cyan-600 p-3 rounded">
+        <div className="flex items-center justify-between gap-2">
+          <div className="text-xs font-bold text-cyan-700 uppercase tracking-wider mb-1">Q&amp;A Study Notes</div>
+          {hasStudyable ? (
+            <button
+              onClick={() => setQuizMode(q => !q)}
+              className="px-3 py-1 text-xs font-bold rounded-full border border-cyan-300 text-cyan-800 bg-cyan-50 hover:bg-cyan-100"
+              aria-pressed={quizMode}
+              data-help-key="qanda_quiz_toggle"
+            >{quizMode ? '✏️ Edit mode' : '🎯 Quiz me'}</button>
+          ) : null}
+        </div>
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => handleNoteUpdate('title', e.target.value)}
+          placeholder="Study set title"
+          className="w-full text-xl font-black text-slate-800 bg-transparent border-b border-slate-300 focus:border-cyan-500 outline-none py-1"
+          aria-label="Study set title"
+          data-help-key="qanda_title_field"
+        />
+        {lessonRef.generatedAt ? (
+          <div className="text-[11px] text-slate-500 mt-1">Started: {new Date(lessonRef.generatedAt).toLocaleString()}</div>
+        ) : null}
+      </div>
+      {quizMode ? (
+        <div className="space-y-3" data-help-key="qanda_quiz_view">
+          {quizPairs.map((p, idx) => {
+            const key = p.id || idx;
+            return (
+              <div key={key} className="bg-white border border-slate-200 rounded-lg p-4">
+                <div className="text-sm font-bold text-slate-800 mb-2"><span className="text-cyan-700 mr-1">Q{idx + 1}.</span>{p.question}</div>
+                {shown[key] ? (
+                  <>
+                    <div className="text-sm text-slate-700 bg-cyan-50 border-l-4 border-cyan-400 rounded-r p-2">
+                      {(p.answer || '').trim() ? p.answer : <span className="italic text-slate-600">No answer written yet.</span>}
+                    </div>
+                    <button onClick={() => toggleShown(key)} className="mt-2 text-[11px] text-slate-500 hover:text-slate-700 underline">Hide answer</button>
+                  </>
+                ) : (
+                  <button onClick={() => toggleShown(key)} className="text-xs font-bold text-cyan-700 bg-cyan-50 border border-cyan-300 rounded-full px-3 py-1 hover:bg-cyan-100">Show answer</button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <>
+          {Array.from({ length: rowCount }).map((_, idx) => {
+            const p = pairs[idx] || { question: '', answer: '' };
+            return (
+              <div key={(p && p.id) || idx} className="bg-white border border-slate-200 rounded-lg p-3 group">
+                <div className="flex items-start gap-2">
+                  <span className="text-cyan-700 text-xs font-black mt-2 w-8 flex-shrink-0">Q{idx + 1}</span>
+                  <div className="flex-1 space-y-2">
+                    <textarea
+                      value={p.question || ''}
+                      onChange={(e) => updatePair(idx, 'question', e.target.value)}
+                      placeholder={idx === 0 ? 'Write a study question (try a "why" or "how", not just "what")...' : 'Question...'}
+                      className="w-full text-sm font-semibold text-slate-800 bg-slate-50 border border-slate-200 rounded p-2 outline-none focus:ring-2 focus:ring-cyan-300 resize-y min-h-[48px]"
+                      rows={1}
+                      aria-label={`Question ${idx + 1}`}
+                    />
+                    <textarea
+                      value={p.answer || ''}
+                      onChange={(e) => updatePair(idx, 'answer', e.target.value)}
+                      placeholder="Answer — explain, don't just name."
+                      className="w-full text-sm text-slate-700 bg-white border border-slate-200 rounded p-2 outline-none focus:ring-2 focus:ring-cyan-300 resize-y min-h-[48px]"
+                      rows={2}
+                      aria-label={`Answer ${idx + 1}`}
+                    />
+                  </div>
+                  <button onClick={() => removePair(idx)} className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs mt-2" aria-label={`Remove pair ${idx + 1}`} title="Remove">✕</button>
+                </div>
+              </div>
+            );
+          })}
+          <div className="flex justify-center">
+            <button
+              onClick={addPair}
+              className="px-4 py-1.5 text-xs font-bold text-cyan-700 bg-cyan-50 border border-cyan-300 rounded-full hover:bg-cyan-100"
+              aria-label="Add a question and answer pair"
+              data-help-key="qanda_add_pair_button"
+            >+ Add question</button>
+          </div>
+        </>
+      )}
+      <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} t={t} colorClass="cyan" />
+      <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} />
+      <div className="text-[11px] text-slate-500 italic text-center">Q&amp;A Study Notes saved to your notebook. Switch to Quiz me to self-test with active recall.</div>
+    </div>
+  );
+});
+
 // ── Dispatcher ───────────────────────────────────────────────────────────
 const NoteTakingView = React.memo((props) => {
   const generatedContent = props.generatedContent;
@@ -760,6 +1198,9 @@ const NoteTakingView = React.memo((props) => {
   if (templateType === 'cornell-notes') return React.createElement(CornellNotesView, props);
   if (templateType === 'lab-report') return React.createElement(LabReportView, props);
   if (templateType === 'reading-response') return React.createElement(ReadingResponseView, props);
+  if (templateType === 'double-entry') return React.createElement(DoubleEntryView, props);
+  if (templateType === 'guided-notes') return React.createElement(GuidedNotesView, props);
+  if (templateType === 'q-and-a') return React.createElement(QAndAView, props);
   return null;
 });
 
@@ -770,10 +1211,13 @@ const NoteTakingView = React.memo((props) => {
 // Matches the teacher-mode "jump to lesson plan" header-button precedent —
 // first-class concept, dedicated surface, easy discovery.
 const NOTEBOOK_TEMPLATE_META = {
-  'cornell-notes':    { label: 'Cornell Notes',     accent: 'indigo',  short: 'Cornell',  icon: '📓' },
-  'lab-report':       { label: 'Lab Report',        accent: 'sky',     short: 'Lab',      icon: '🧪' },
-  'reading-response': { label: 'Reading Response',  accent: 'violet',  short: 'Reading',  icon: '📖' },
-  'anchor-chart':     { label: 'Anchor Chart',      accent: 'amber',   short: 'Chart',    icon: '📋' },
+  'cornell-notes':    { label: 'Cornell Notes',         accent: 'indigo',  short: 'Cornell',   icon: '📓' },
+  'lab-report':       { label: 'Lab Report',            accent: 'sky',     short: 'Lab',       icon: '🧪' },
+  'reading-response': { label: 'Reading Response',      accent: 'violet',  short: 'Reading',   icon: '📖' },
+  'double-entry':     { label: 'Double-Entry Journal',  accent: 'rose',    short: 'Dialectic', icon: '✍️' },
+  'guided-notes':     { label: 'Guided Notes',          accent: 'emerald', short: 'Guided',    icon: '📝' },
+  'q-and-a':          { label: 'Q&A Study Notes',       accent: 'cyan',    short: 'Q&A',       icon: '❓' },
+  'anchor-chart':     { label: 'Anchor Chart',          accent: 'amber',   short: 'Chart',     icon: '📋' },
 };
 
 // Normalize an entry to a single "kind" key. Note-taking entries discriminate
@@ -791,6 +1235,9 @@ const _accentClasses = (accent, kind) => {
     sky:    { chip: 'bg-sky-600 text-white border-sky-700',       chipOff: 'bg-white text-sky-700 border-sky-300 hover:bg-sky-50',         badge: 'bg-sky-100 text-sky-800 border-sky-300',         bar: 'bg-sky-500' },
     violet: { chip: 'bg-violet-600 text-white border-violet-700', chipOff: 'bg-white text-violet-700 border-violet-300 hover:bg-violet-50', badge: 'bg-violet-100 text-violet-800 border-violet-300', bar: 'bg-violet-500' },
     amber:  { chip: 'bg-amber-600 text-white border-amber-700',   chipOff: 'bg-white text-amber-800 border-amber-300 hover:bg-amber-50',   badge: 'bg-amber-100 text-amber-900 border-amber-300',   bar: 'bg-amber-500' },
+    rose:   { chip: 'bg-rose-600 text-white border-rose-700',     chipOff: 'bg-white text-rose-700 border-rose-300 hover:bg-rose-50',     badge: 'bg-rose-100 text-rose-800 border-rose-300',     bar: 'bg-rose-500' },
+    emerald:{ chip: 'bg-emerald-600 text-white border-emerald-700', chipOff: 'bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50', badge: 'bg-emerald-100 text-emerald-800 border-emerald-300', bar: 'bg-emerald-500' },
+    cyan:   { chip: 'bg-cyan-600 text-white border-cyan-700',     chipOff: 'bg-white text-cyan-700 border-cyan-300 hover:bg-cyan-50',     badge: 'bg-cyan-100 text-cyan-800 border-cyan-300',     bar: 'bg-cyan-500' },
     slate:  { chip: 'bg-slate-700 text-white border-slate-800',   chipOff: 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50',   badge: 'bg-slate-100 text-slate-700 border-slate-300',   bar: 'bg-slate-500' },
   };
   return (map[accent] || map.slate)[kind] || '';
@@ -819,6 +1266,29 @@ const _entryPreview = (entry) => {
   if (tt === 'reading-response') {
     return data.thinkings || data.favoriteLine || (data.connection && data.connection.text) || '';
   }
+  if (tt === 'double-entry') {
+    const entries = Array.isArray(data.entries) ? data.entries : [];
+    const withResp = entries.find(en => en && (en.response || '').trim());
+    if (withResp) return withResp.response;
+    const withQuote = entries.find(en => en && (en.quote || '').trim());
+    if (withQuote) return withQuote.quote;
+    return '';
+  }
+  if (tt === 'guided-notes') {
+    if ((data.notesExtra || '').trim()) return data.notesExtra;
+    const blanks = Array.isArray(data.blanks) ? data.blanks : [];
+    const first = blanks.find(b => b && ((b.before || '').trim() || (b.studentAnswer || '').trim()));
+    if (first) return ((first.before || '') + ((first.studentAnswer || '').trim() || '___') + (first.after || '')).trim();
+    return '';
+  }
+  if (tt === 'q-and-a') {
+    const pairs = Array.isArray(data.pairs) ? data.pairs : [];
+    const firstQ = pairs.find(p => p && (p.question || '').trim());
+    if (firstQ) return firstQ.question;
+    const firstA = pairs.find(p => p && (p.answer || '').trim());
+    if (firstA) return firstA.answer;
+    return '';
+  }
   return '';
 };
 
@@ -836,7 +1306,7 @@ const _entryTitle = (entry) => {
 // time, and is NOT scored or XP-bearing. The point is growth, not evaluation.
 function _buildNoteInsightsPrompt(noteEntries) {
   // Group entries by type + summarize each so we don't blow the context window.
-  const byType = { 'cornell-notes': [], 'lab-report': [], 'reading-response': [] };
+  const byType = { 'cornell-notes': [], 'lab-report': [], 'reading-response': [], 'double-entry': [], 'guided-notes': [], 'q-and-a': [] };
   for (const entry of noteEntries) {
     const tt = (entry && entry.data && entry.data.templateType) || null;
     if (!tt || !byType[tt]) continue;
@@ -845,7 +1315,7 @@ function _buildNoteInsightsPrompt(noteEntries) {
   const blocks = [];
   for (const [type, samples] of Object.entries(byType)) {
     if (samples.length === 0) continue;
-    const label = ({ 'cornell-notes': 'Cornell Notes', 'lab-report': 'Lab Reports', 'reading-response': 'Reading Responses' })[type];
+    const label = ({ 'cornell-notes': 'Cornell Notes', 'lab-report': 'Lab Reports', 'reading-response': 'Reading Responses', 'double-entry': 'Double-Entry Journals', 'guided-notes': 'Guided Notes', 'q-and-a': 'Q&A Study Notes' })[type];
     blocks.push(`=== ${label} (${samples.length} entries) ===\n${samples.slice(0, 5).map((s, i) => `--- entry ${i + 1} ---\n${s}`).join('\n\n')}`);
   }
   return `
@@ -1002,6 +1472,9 @@ const NotebookOverlay = React.memo((props) => {
     'cornell-notes':    sortedEntries.filter(e => _entryKind(e) === 'cornell-notes').length,
     'lab-report':       sortedEntries.filter(e => _entryKind(e) === 'lab-report').length,
     'reading-response': sortedEntries.filter(e => _entryKind(e) === 'reading-response').length,
+    'double-entry':     sortedEntries.filter(e => _entryKind(e) === 'double-entry').length,
+    'guided-notes':     sortedEntries.filter(e => _entryKind(e) === 'guided-notes').length,
+    'q-and-a':          sortedEntries.filter(e => _entryKind(e) === 'q-and-a').length,
     'anchor-chart':     sortedEntries.filter(e => _entryKind(e) === 'anchor-chart').length,
   };
   const handlePrintAll = () => {
@@ -1012,6 +1485,9 @@ const NotebookOverlay = React.memo((props) => {
     { id: 'cornell-notes',    label: 'Cornell Notes',   accent: 'indigo' },
     { id: 'lab-report',       label: 'Lab Reports',     accent: 'sky' },
     { id: 'reading-response', label: 'Reading',         accent: 'violet' },
+    { id: 'double-entry',     label: 'Double-Entry',    accent: 'rose' },
+    { id: 'guided-notes',     label: 'Guided Notes',    accent: 'emerald' },
+    { id: 'q-and-a',          label: 'Q&A',             accent: 'cyan' },
     { id: 'anchor-chart',     label: 'Anchor Charts',   accent: 'amber' },
   ];
   return (
@@ -1031,7 +1507,7 @@ const NotebookOverlay = React.memo((props) => {
           <div>
             <div className="text-[11px] font-bold text-indigo-700 uppercase tracking-wider">My Notebook</div>
             <h2 className="text-2xl font-black text-slate-800 mt-0.5">📓 Notebook</h2>
-            <p className="text-xs text-slate-600 mt-1 leading-snug">Everything you've saved across sessions — Cornell Notes, Lab Reports, Reading Responses, and Anchor Charts.</p>
+            <p className="text-xs text-slate-600 mt-1 leading-snug">Everything you've saved across sessions — Cornell Notes, Lab Reports, Reading Responses, Double-Entry Journals, Guided Notes, Q&amp;A sets, and Anchor Charts.</p>
           </div>
           <button
             onClick={onClose}

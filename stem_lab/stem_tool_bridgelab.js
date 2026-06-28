@@ -810,7 +810,7 @@
           ),
 
           // SVG
-          h('div', { style: { padding: 12, borderRadius: 12, background: '#0a0e1a', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 8, overflowX: 'auto' } },
+          h('div', { style: { padding: 12, borderRadius: 12, background: 'var(--allo-stem-deeper, #0a0e1a)', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 8, overflowX: 'auto' } },
             trussSvg()
           ),
 
@@ -1041,7 +1041,7 @@
                         h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11.5, minWidth: 580 } },
                           h('thead', null, h('tr', null,
                             ['Rank', 'Material', 'Cross-section', 'SF yield', 'SF buckling', 'Mass', 'Cost (USD)'].map(function(c, i) {
-                              return h('th', { key: i, style: { padding: 6, textAlign: 'left', background: '#0a0e1a', color: '#fbbf24', borderBottom: '2px solid ' + AMBER, fontWeight: 800 } }, c);
+                              return h('th', { key: i, style: { padding: 6, textAlign: 'left', background: 'var(--allo-stem-deeper, #0a0e1a)', color: '#fbbf24', borderBottom: '2px solid ' + AMBER, fontWeight: 800 } }, c);
                             })
                           )),
                           h('tbody', null,
@@ -1728,19 +1728,19 @@
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: includeSuspensionAnalyzer ? 12 : 0 } },
                 h('strong', null, 'Examples: '), t.examples
               ),
-              includeSuspensionAnalyzer ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0a0e1a', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + AMBER, marginTop: 8 } },
+              includeSuspensionAnalyzer ? h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-deeper, #0a0e1a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + AMBER, marginTop: 8 } },
                 h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, __alloT('stem.bridgelab.interactive_catenary_cable_analyzer', '⌣ Interactive catenary cable analyzer')),
                 suspensionAnalyzer()
               ) : null,
-              includeArchAnalyzer ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0a0e1a', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + AMBER, marginTop: 8 } },
+              includeArchAnalyzer ? h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-deeper, #0a0e1a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + AMBER, marginTop: 8 } },
                 h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, __alloT('stem.bridgelab.interactive_arch_thrust_analyzer', '∩ Interactive arch thrust analyzer')),
                 archAnalyzer()
               ) : null,
-              includeBeamAnalyzer ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0a0e1a', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + AMBER, marginTop: 8 } },
+              includeBeamAnalyzer ? h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-deeper, #0a0e1a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + AMBER, marginTop: 8 } },
                 h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, __alloT('stem.bridgelab.interactive_beam_bending_analyzer', '═ Interactive beam bending analyzer')),
                 beamAnalyzer()
               ) : null,
-              includeCableStayedAnalyzer ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0a0e1a', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + AMBER, marginTop: 8 } },
+              includeCableStayedAnalyzer ? h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-deeper, #0a0e1a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + AMBER, marginTop: 8 } },
                 h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, __alloT('stem.bridgelab.interactive_cable_stayed_analyzer', '✦ Interactive cable-stayed analyzer')),
                 cableStayedAnalyzer()
               ) : null

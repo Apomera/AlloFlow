@@ -5146,7 +5146,7 @@ window.StemLab = window.StemLab || {
       }
 
       // belt canvas (timed only) — decorative + forgiving miss timer; aria-hidden
-      var belt = g.timed ? h('div', { className: 'rounded-xl overflow-hidden border-2 border-green-200', style: { background: '#0f1f17', height: 96 }, 'aria-hidden': 'true' },
+      var belt = g.timed ? h('div', { className: 'rounded-xl overflow-hidden border-2 border-green-200', style: { background: 'var(--allo-stem-deeper, #0f1f17)', height: 96 }, 'aria-hidden': 'true' },
         h('canvas', {
           style: { width: '100%', height: '100%', display: 'block' },
           ref: function(cv) {
@@ -5161,9 +5161,10 @@ window.StemLab = window.StemLab || {
               var L = window._prLive || {};
               W = cv.offsetWidth || W; H = cv.offsetHeight || H;
               c2.clearRect(0, 0, W, H);
-              c2.fillStyle = '#0f1f17'; c2.fillRect(0, 0, W, H);
+              var astP1 = (window.AlloStemTheme && window.AlloStemTheme.palette) ? window.AlloStemTheme.palette() : { deeper: '#0f1f17', panel: '#1f3b2c' };
+              c2.fillStyle = astP1.deeper || '#0f1f17'; c2.fillRect(0, 0, W, H);
               // belt band
-              c2.fillStyle = '#1f3b2c'; c2.fillRect(0, H * 0.55, W, H * 0.25);
+              c2.fillStyle = astP1.panel || '#1f3b2c'; c2.fillRect(0, H * 0.55, W, H * 0.25);
               // pass window (left)
               c2.fillStyle = 'rgba(250,204,21,0.18)'; c2.fillRect(0, 0, 64, H);
               c2.strokeStyle = '#facc15'; c2.lineWidth = 2; c2.strokeRect(2, 2, 60, H - 4);
@@ -9770,7 +9771,7 @@ window.StemLab = window.StemLab || {
                 onChange: function(e) { upd({ calcN1: parseInt(e.target.value) || 1 }); },
                 'aria-label': __alloT('stem.fractions.first_numerator', 'First numerator'),
                 className: 'w-16 px-2 py-1 rounded border border-slate-300 text-center text-xl font-bold' }),
-              h('div', { style: { width: 50, height: 2, background: '#0f172a', margin: '4px 0' } }),
+              h('div', { style: { width: 50, height: 2, background: 'var(--allo-stem-text, #0f172a)', margin: '4px 0' } }),
               h('input', { type: 'number', min: 1, max: 99, value: cD1,
                 onChange: function(e) { upd({ calcD1: parseInt(e.target.value) || 1 }); },
                 'aria-label': __alloT('stem.fractions.first_denominator', 'First denominator'),
@@ -9791,7 +9792,7 @@ window.StemLab = window.StemLab || {
                 onChange: function(e) { upd({ calcN2: parseInt(e.target.value) || 1 }); },
                 'aria-label': __alloT('stem.fractions.second_numerator', 'Second numerator'),
                 className: 'w-16 px-2 py-1 rounded border border-slate-300 text-center text-xl font-bold' }),
-              h('div', { style: { width: 50, height: 2, background: '#0f172a', margin: '4px 0' } }),
+              h('div', { style: { width: 50, height: 2, background: 'var(--allo-stem-text, #0f172a)', margin: '4px 0' } }),
               h('input', { type: 'number', min: 1, max: 99, value: cD2,
                 onChange: function(e) { upd({ calcD2: parseInt(e.target.value) || 1 }); },
                 'aria-label': __alloT('stem.fractions.second_denominator', 'Second denominator'),
@@ -11075,7 +11076,7 @@ window.StemLab = window.StemLab || {
       // \u2550\u2550\u2550 EQUIVALENT FRACTIONS \u2550\u2550\u2550
       h('div', { className: 'mt-5 rounded-2xl border border-pink-300 bg-white p-3 shadow-sm' },
         h('h4', { className: 'text-sm font-bold text-pink-700 mb-2' }, __alloT('stem.fractions.equivalent_fractions_same_value_differ', '\uD83C\uDF70 Equivalent Fractions \u2014 Same value, different forms')),
-        h('div', { className: 'rounded-xl overflow-hidden border border-pink-200', style: { background: '#020210', aspectRatio: '16/5' } },
+        h('div', { className: 'rounded-xl overflow-hidden border border-pink-200', style: { background: 'var(--allo-stem-deeper, #020210)', aspectRatio: '16/5' } },
           h('canvas', {
             ref: function(cvEl) {
               if (!cvEl) return;
@@ -11087,7 +11088,8 @@ window.StemLab = window.StemLab || {
               cvEl.width = W * 2; cvEl.height = H * 2;
               c2.scale(2, 2);
               function drawEf() {
-                c2.fillStyle = '#020210';
+                var astP2 = (window.AlloStemTheme && window.AlloStemTheme.palette) ? window.AlloStemTheme.palette() : { deeper: '#020210', panel: '#1e293b', textSoft: '#cbd5e1' };
+                c2.fillStyle = astP2.deeper || '#020210';
                 c2.fillRect(0, 0, W, H);
                 var fracs = [
                   { num: 1, den: 2, color: '#f472b6' },
@@ -11107,14 +11109,14 @@ window.StemLab = window.StemLab || {
                     var filled = slc < f.num;
                     c2.save();
                     if (filled) { c2.shadowColor = f.color; c2.shadowBlur = 10; }
-                    c2.fillStyle = filled ? f.color : '#1e293b';
+                    c2.fillStyle = filled ? f.color : (astP2.panel || '#1e293b');
                     c2.beginPath();
                     c2.moveTo(cx, cy);
                     c2.arc(cx, cy, R, a1, a2);
                     c2.closePath();
                     c2.fill();
                     c2.restore();
-                    c2.strokeStyle = '#020210'; c2.lineWidth = 0.5; c2.stroke();
+                    c2.strokeStyle = astP2.deeper || '#020210'; c2.lineWidth = 0.5; c2.stroke();
                   }
                   // Glossy dome highlight (upper-left light) clipped to the pie
                   c2.save();
@@ -11131,7 +11133,7 @@ window.StemLab = window.StemLab || {
                   c2.stroke();
                   c2.font = 'bold 13px monospace'; c2.fillStyle = f.color; c2.textAlign = 'center';
                   c2.fillText(f.num + '/' + f.den, cx, cy + R + 18);
-                  c2.font = '8px monospace'; c2.fillStyle = '#cbd5e1';
+                  c2.font = '8px monospace'; c2.fillStyle = astP2.textSoft || '#cbd5e1';
                   c2.fillText('= 0.5', cx, cy + R + 30);
                 });
                 c2.fillStyle = 'rgba(0,0,0,0.85)';
@@ -11151,6 +11153,9 @@ window.StemLab = window.StemLab || {
               });
               cvEl._efRO = ro;
               ro.observe(cvEl);
+              if (window.AlloStemTheme && window.AlloStemTheme.onChange) {
+                window.AlloStemTheme.onChange(drawEf);
+              }
             },
             style: { width: '100%', height: '100%', display: 'block' }
           })

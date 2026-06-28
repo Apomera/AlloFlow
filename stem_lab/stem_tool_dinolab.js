@@ -13,9 +13,31 @@
  * Registered tool ID: "dinoLab"
  * Registry: window.StemLab.registerTool()
  */
+// ═══ Defensive StemLab guard ═══
+window.StemLab = window.StemLab || {
+  _registry: {},
+  _order: [],
+  registerTool: function(id, config) {
+    config.id = id;
+    config.ready = config.ready !== false;
+    this._registry[id] = config;
+    if (this._order.indexOf(id) === -1) this._order.push(id);
+    console.log('[StemLab] Registered tool: ' + id);
+  },
+  getRegisteredTools: function() {
+    var self = this;
+    return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean);
+  },
+  isRegistered: function(id) { return !!this._registry[id]; },
+  renderTool: function(id, ctx) {
+    var tool = this._registry[id];
+    if (!tool || !tool.render) return null;
+    try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; }
+  }
+};
+
 (function () {
   'use strict';
-  if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
 
   // ── Theme tokens (STEM Lab CSS custom properties, dark fallbacks) ──
   var T = {

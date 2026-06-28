@@ -57,10 +57,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for astro
   "buttons": 16,
   "canvases": 0,
   "inputs": 0,
-  "lengthBucket": 51,
+  "lengthBucket": 52,
   "paths": 0,
   "selects": 0,
-  "sha": "ce9dc383d93444c1",
+  "sha": "84ccffcc8a12ef56",
   "svgs": 0,
 }
 `;
@@ -83,10 +83,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for bridg
   "buttons": 22,
   "canvases": 0,
   "inputs": 7,
-  "lengthBucket": 173,
+  "lengthBucket": 174,
   "paths": 0,
   "selects": 0,
-  "sha": "b36ee26b99a8343f",
+  "sha": "4a7feaaaa6227d92",
   "svgs": 1,
 }
 `;
@@ -174,10 +174,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for fireE
   "buttons": 29,
   "canvases": 0,
   "inputs": 1,
-  "lengthBucket": 112,
+  "lengthBucket": 113,
   "paths": 0,
   "selects": 0,
-  "sha": "b74a8ff3b55d716b",
+  "sha": "a5ff7965fd681d56",
   "svgs": 0,
 }
 `;
@@ -187,10 +187,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for fligh
   "buttons": 45,
   "canvases": 0,
   "inputs": 0,
-  "lengthBucket": 189,
+  "lengthBucket": 190,
   "paths": 0,
   "selects": 2,
-  "sha": "1c2cf4d364903f42",
+  "sha": "3b6fe982a79d3ba1",
   "svgs": 0,
 }
 `;
@@ -239,10 +239,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for micro
   "buttons": 18,
   "canvases": 0,
   "inputs": 0,
-  "lengthBucket": 191,
+  "lengthBucket": 192,
   "paths": 0,
   "selects": 0,
-  "sha": "3837ed8e1f5b9020",
+  "sha": "9c8fc20524924c40",
   "svgs": 0,
 }
 `;

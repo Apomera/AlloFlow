@@ -137,6 +137,35 @@ describe('computeNotebookQualitySignals — registry-dispatched quality signals'
   });
 });
 
+describe('computeAllQualitySignals — new template signals (double-entry / guided / Q&A)', () => {
+  const note = (data) => ({ type: 'note-taking', data });
+  it('surfaces double-entry response rate, guided completion, and Q&A answer rate', () => {
+    const data = [
+      { history: [
+        // double-entry: entry A has a substantive (>=15-word) response, entry B does not → 1/2 = 50%
+        note({ templateType: 'double-entry', entries: [{ quote: 'q1', response: 'word '.repeat(20) }] }),
+        note({ templateType: 'double-entry', entries: [{ quote: 'q2', response: 'short' }] }),
+        // guided-notes: 2 of 4 blanks filled → 50%
+        note({ templateType: 'guided-notes', blanks: [
+          { answer: 'a', studentAnswer: 'a' }, { answer: 'b', studentAnswer: 'b' },
+          { answer: 'c', studentAnswer: '' }, { answer: 'd', studentAnswer: '' },
+        ] }),
+        // q-and-a: 2 of 3 questions answered → 67%
+        note({ templateType: 'q-and-a', pairs: [
+          { question: 'Q1?', answer: 'A1' }, { question: 'Q2?', answer: 'A2' }, { question: 'Q3?', answer: '' },
+        ] }),
+      ] },
+    ];
+    const flat = M.computeAllQualitySignals(data);
+    const byKey = Object.fromEntries(flat.map(s => [s.key, s]));
+    expect(byKey.deResponseRate.value).toBe(50);   // 1 of 2 double-entry entries has a substantive response
+    expect(byKey.guidedCompletion.value).toBe(50); // 2/4 blanks filled
+    expect(byKey.qaAnswerRate.value).toBe(67);     // 2/3 answered, rounded
+    // every signal carries a real denom string (regression guard for the 0/0 bug)
+    flat.forEach(s => expect(typeof s.denom === 'string' && s.denom.length > 0).toBe(true));
+  });
+});
+
 describe('computeCrossToolMisconceptions — envelope', () => {
   it('empty data → the three category arrays, all empty', () => {
     const r = M.computeCrossToolMisconceptions([]);
@@ -147,5 +176,20 @@ describe('computeCrossToolMisconceptions — envelope', () => {
     const r = M.computeCrossToolMisconceptions(data);
     expect(Array.isArray(r.noteTaking)).toBe(true);
     expect(Array.isArray(r.conceptSort)).toBe(true);
+  });
+  it('flags a class-wide gap in a new template type (guided-notes blanks left empty)', () => {
+    const note = (data) => ({ type: 'note-taking', data });
+    // 3 guided-notes entries, all with <half the blanks filled → should surface
+    const emptyGuided = note({ templateType: 'guided-notes', blanks: [
+      { answer: 'a', studentAnswer: '' }, { answer: 'b', studentAnswer: '' }, { answer: 'c', studentAnswer: '' },
+    ], notesExtra: '' });
+    const data = [
+      { history: [emptyGuided, emptyGuided] },
+      { history: [emptyGuided] },
+    ];
+    const r = M.computeCrossToolMisconceptions(data);
+    const guidedGap = r.noteTaking.find(p => p.template === 'Guided Notes' && p.field === 'blanksFilled');
+    expect(guidedGap).toBeTruthy();
+    expect(guidedGap.missingPct).toBeGreaterThanOrEqual(40);
   });
 });

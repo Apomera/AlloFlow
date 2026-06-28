@@ -304,6 +304,27 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
       const f = files[i];
       try {
         const text = await f.text();
+        // Plain-JSON submission (student saved offline with no class key) — the file
+        // content IS the decrypted payload, so add it as already-decrypted (no key needed).
+        const looksJson = /\.json$/i.test(f.name || '') || text.trim().charAt(0) === '{';
+        if (looksJson) {
+          try {
+            const p = JSON.parse(text);
+            if (p && p.responses && typeof p.responses === 'object' && !p.ciphertext) {
+              newRows.push({
+                fileName: f.name,
+                nickname: p.nickname || '?',
+                docTitle: p.docTitle || '',
+                timestamp: p.timestamp || null,
+                encryptedBlob: null,
+                payload: p,
+                status: 'decrypted',
+                error: null
+              });
+              continue;
+            }
+          } catch (e) { /* not plain JSON — fall through to encrypted-HTML parsing */ }
+        }
         const match = text.match(/<script type="application\/json" id="alloflow-submission">([\s\S]*?)<\/script>/);
         if (!match) {
           newRows.push({
@@ -839,13 +860,13 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
         ),
 
         // Step 2: submission files
-        /*#__PURE__*/React.createElement('div', { style: { background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: '14px 16px', marginBottom: 14, opacity: privateJwk ? 1 : 0.55 } },
+        /*#__PURE__*/React.createElement('div', { style: { background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: '14px 16px', marginBottom: 14 } },
           /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' } },
             /*#__PURE__*/React.createElement('div', null,
               /*#__PURE__*/React.createElement('div', { style: { fontWeight: 700, color: '#166534', marginBottom: 2 } }, '2. Student submission files'),
               /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.85rem', color: '#475569' } },
                 queue.length === 0
-                  ? 'Select one or more .alloflow.html files (the encrypted submissions students saved).'
+                  ? 'Select the files students saved — encrypted .alloflow.html (needs the class key) or plain .json (no key needed).'
                   : (queue.length + ' file' + (queue.length === 1 ? '' : 's') + ' loaded · ' +
                      (counts.decrypted || 0) + ' decrypted · ' +
                      (counts.pending || 0) + ' pending · ' +
@@ -854,8 +875,8 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
             ),
             /*#__PURE__*/React.createElement('div', { style: { display: 'flex', gap: 8 } },
               /*#__PURE__*/React.createElement('button', {
-                type: 'button', onClick: () => subInputRef.current?.click(), disabled: !privateJwk,
-                style: { padding: '8px 16px', background: '#16a34a', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, cursor: privateJwk ? 'pointer' : 'not-allowed', fontSize: '0.88rem', opacity: privateJwk ? 1 : 0.5 }
+                type: 'button', onClick: () => subInputRef.current?.click(),
+                style: { padding: '8px 16px', background: '#16a34a', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: '0.88rem' }
               }, '＋ Add submissions'),
               queue.length > 0 && /*#__PURE__*/React.createElement('button', {
                 type: 'button', onClick: clearQueue,
@@ -864,7 +885,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
             )
           ),
           /*#__PURE__*/React.createElement('input', {
-            ref: subInputRef, type: 'file', accept: '.html,.alloflow.html,text/html', multiple: true,
+            ref: subInputRef, type: 'file', accept: '.html,.alloflow.html,text/html,.json,application/json', multiple: true,
             onChange: handleSubmissionFiles, style: { display: 'none' }, 'aria-label': 'Submission files'
           })
         ),

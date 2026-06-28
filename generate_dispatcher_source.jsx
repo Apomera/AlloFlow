@@ -3865,6 +3865,86 @@ Return ONLY JSON:
                   question: '',
                   lessonRef,
               };
+          } else if (templateType === 'double-entry') {
+              // Seed the LEFT column with salient quotes; the student writes responses.
+              const prompt = `
+                  Analyze the following source text. Extract 3-5 short, vivid QUOTES or passages (each 1-2 sentences, copied verbatim) that a ${effectiveGrade} student could respond to in a double-entry (dialectical) journal. Pick lines that are striking, puzzling, or important — the kind worth thinking about. Also extract the title and author if present.
+                  Source: "${(textToProcess || '').substring(0, 3000)}"
+                  Return ONLY a JSON object:
+                  { "title": "Reading title", "author": "Author or empty string", "quotes": ["Quote 1", "Quote 2", ...] }
+              `;
+              let scaffolded = { title: sourceTopic || '', author: '', quotes: [] };
+              try {
+                  const result = await callGemini(prompt, true);
+                  scaffolded = JSON.parse(cleanJson(result));
+              } catch (parseErr) {
+                  warnLog('Double-Entry scaffold parse failed:', parseErr);
+              }
+              const quotesArr = Array.isArray(scaffolded.quotes) ? scaffolded.quotes : [];
+              const seeded = quotesArr.slice(0, 5).map((q, i) => ({ id: `de-${Date.now()}-${i}`, quote: String(q || ''), response: '' }));
+              content = {
+                  templateType: 'double-entry',
+                  title: scaffolded.title || sourceTopic || 'Double-Entry Journal',
+                  author: scaffolded.author || '',
+                  pageRange: '',
+                  entries: seeded.length ? seeded : [{ id: `de-${Date.now()}-0`, quote: '', response: '' }],
+                  lessonRef,
+              };
+          } else if (templateType === 'guided-notes') {
+              // AI generates fill-in-the-blank statements with the key term as the answer.
+              const prompt = `
+                  Create GUIDED NOTES (fill-in-the-blank) from the following source text for a ${effectiveGrade} student. Produce 6-10 statements that capture the most important facts/concepts. In each statement, blank out ONE key term (the single most important word or short phrase). Split each statement into the text BEFORE the blank, the ANSWER (the blanked term), and the text AFTER the blank. Keep statements concise and factually grounded in the source.
+                  Source: "${(textToProcess || '').substring(0, 3000)}"
+                  Return ONLY a JSON object:
+                  { "title": "Lesson title", "blanks": [ { "before": "The powerhouse of the cell is the ", "answer": "mitochondria", "after": "." }, ... ] }
+              `;
+              let scaffolded = { title: sourceTopic || '', blanks: [] };
+              try {
+                  const result = await callGemini(prompt, true);
+                  scaffolded = JSON.parse(cleanJson(result));
+              } catch (parseErr) {
+                  warnLog('Guided Notes scaffold parse failed:', parseErr);
+              }
+              const blanksArr = Array.isArray(scaffolded.blanks) ? scaffolded.blanks : [];
+              content = {
+                  templateType: 'guided-notes',
+                  title: scaffolded.title || sourceTopic || 'Guided Notes',
+                  blanks: blanksArr.slice(0, 12).map((b, i) => ({
+                      id: `gn-${Date.now()}-${i}`,
+                      before: String((b && b.before) || ''),
+                      answer: String((b && b.answer) || ''),
+                      after: String((b && b.after) || ''),
+                      studentAnswer: '',
+                  })).filter(b => b.answer),
+                  notesExtra: '',
+                  lessonRef,
+              };
+          } else if (templateType === 'q-and-a') {
+              // Seed study questions + model answers; student edits/adds + self-quizzes.
+              const prompt = `
+                  Analyze the following source text. Generate 4-6 STUDY QUESTIONS a ${effectiveGrade} student could use for self-testing (active recall). Mix recall ("what/when") with higher-order ("why/how") questions. For each, also write a concise, correct model answer grounded in the source.
+                  Source: "${(textToProcess || '').substring(0, 3000)}"
+                  Return ONLY a JSON object:
+                  { "title": "Study set title", "pairs": [ { "question": "Why does ...?", "answer": "Because ..." }, ... ] }
+              `;
+              let scaffolded = { title: sourceTopic || '', pairs: [] };
+              try {
+                  const result = await callGemini(prompt, true);
+                  scaffolded = JSON.parse(cleanJson(result));
+              } catch (parseErr) {
+                  warnLog('Q&A scaffold parse failed:', parseErr);
+              }
+              const pairsArr = Array.isArray(scaffolded.pairs) ? scaffolded.pairs : [];
+              content = {
+                  templateType: 'q-and-a',
+                  title: scaffolded.title || sourceTopic || 'Q&A Study Notes',
+                  pairs: pairsArr.slice(0, 8).map((p, i) => ({
+                      id: `qa-${Date.now()}-${i}`,
+                      question: String((p && p.question) || ''),
+                      answer: String((p && p.answer) || ''),
+                  })).filter(p => p.question || p.answer),
+                  lessonRef,
+              };
           } else {
               content = { templateType: 'cornell-notes', title: sourceTopic || 'Notes', cues: [], notes: [], summary: '', lessonRef };
           }

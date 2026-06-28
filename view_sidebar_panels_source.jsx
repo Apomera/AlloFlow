@@ -2479,6 +2479,9 @@ function NoteTakingPanel(props) {
             <option value="cornell-notes">{t('note_taking.cornell') || 'Cornell Notes (2-column + summary)'}</option>
             <option value="lab-report">{t('note_taking.lab_report') || 'Lab Report (Q / Hypothesis / Method / Data / CER / Conclusion)'}</option>
             <option value="reading-response">{t('note_taking.reading_response') || 'Reading Response Journal Entry'}</option>
+            <option value="double-entry">{t('note_taking.double_entry') || 'Double-Entry Journal (quote ↔ response)'}</option>
+            <option value="guided-notes">{t('note_taking.guided_notes') || 'Guided Notes (fill-in-the-blank)'}</option>
+            <option value="q-and-a">{t('note_taking.q_and_a') || 'Q&A Study Notes (self-quiz)'}</option>
           </select>
         </div>
         <p className="text-[11px] text-slate-500 italic leading-snug">

@@ -3355,7 +3355,7 @@ window.StemLab = window.StemLab || {
               return h('div', {
                 style: {
                   position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                  backgroundColor: 'rgba(15, 23, 42, 0.65)',
+                  backgroundColor: 'var(--allo-stem-deeper, rgba(15, 23, 42, 0.65))',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   zIndex: 9999, padding: 16, backdropFilter: 'blur(4px)',
                   animation: 'fadeIn 0.2s ease-out'

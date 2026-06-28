@@ -2665,6 +2665,9 @@ const _BUILTIN_METRIC_REGISTRY = [
         'cornell-notes':    { fields: ['summary', 'cuesFilled', 'notesFilled'], counts: {}, total: 0 },
         'lab-report':       { fields: ['hypothesis', 'analysis', 'conclusion', 'procedureFilled'], counts: {}, total: 0 },
         'reading-response': { fields: ['favoriteLine', 'thinkings', 'connection', 'question'], counts: {}, total: 0 },
+        'double-entry':     { fields: ['responsesFilled'], counts: {}, total: 0 },
+        'guided-notes':     { fields: ['blanksFilled', 'ownNotes'], counts: {}, total: 0 },
+        'q-and-a':          { fields: ['answersFilled'], counts: {}, total: 0 },
       };
       Object.keys(ntStats).forEach(tt => ntStats[tt].fields.forEach(f => ntStats[tt].counts[f] = 0));
       (dashboardData || []).forEach(s => {
@@ -2692,6 +2695,18 @@ const _BUILTIN_METRIC_REGISTRY = [
             if (!(d.thinkings || '').trim()) ntStats[tt].counts.thinkings++;
             if (!(d.connection && d.connection.text || '').trim()) ntStats[tt].counts.connection++;
             if (!(d.question || '').trim()) ntStats[tt].counts.question++;
+          } else if (tt === 'double-entry') {
+            const respCount = (Array.isArray(d.entries) ? d.entries : []).filter(en => en && (en.response || '').trim()).length;
+            if (respCount === 0) ntStats[tt].counts.responsesFilled++;
+          } else if (tt === 'guided-notes') {
+            const blanks = Array.isArray(d.blanks) ? d.blanks : [];
+            const filledBlanks = blanks.filter(b => b && (b.studentAnswer || '').trim()).length;
+            if (blanks.length > 0 && filledBlanks < Math.ceil(blanks.length / 2)) ntStats[tt].counts.blanksFilled++;
+            if (!(d.notesExtra || '').trim()) ntStats[tt].counts.ownNotes++;
+          } else if (tt === 'q-and-a') {
+            const pairs = Array.isArray(d.pairs) ? d.pairs : [];
+            const hasUnanswered = pairs.some(p => p && (p.question || '').trim() && !(p.answer || '').trim());
+            if (hasUnanswered) ntStats[tt].counts.answersFilled++;
           }
         });
       });
@@ -2713,8 +2728,18 @@ const _BUILTIN_METRIC_REGISTRY = [
           connection: 'Connection (text-to-self / text / world — Keene & Zimmermann)',
           question: 'Open question (genuine inquiry — metacognitive engagement)',
         },
+        'double-entry': {
+          responsesFilled: 'Response column (the thinking — dialogue with the text, not just copied quotes)',
+        },
+        'guided-notes': {
+          blanksFilled: 'Blanks completion (under half filled — retrieval of the core key terms)',
+          ownNotes: 'Own-notes space (student-generated elaboration beyond the blanks)',
+        },
+        'q-and-a': {
+          answersFilled: 'Unanswered questions (questions written but left unanswered — retrieval practice incomplete)',
+        },
       };
-      const templateNames = { 'cornell-notes': 'Cornell Notes', 'lab-report': 'Lab Report', 'reading-response': 'Reading Response' };
+      const templateNames = { 'cornell-notes': 'Cornell Notes', 'lab-report': 'Lab Report', 'reading-response': 'Reading Response', 'double-entry': 'Double-Entry Journal', 'guided-notes': 'Guided Notes', 'q-and-a': 'Q&A Study Notes' };
       const results = [];
       Object.keys(ntStats).forEach(tt => {
         const stats = ntStats[tt];
@@ -2740,6 +2765,9 @@ const _BUILTIN_METRIC_REGISTRY = [
       let rrCount = 0, rrWithEvidence = 0;
       let studentsWithRR = 0, studentsWith2PlusConnTypes = 0;
       let studentsWithNotebook = 0, studentsWithFeedback = 0;
+      let deCount = 0, deWithResponse = 0;
+      let gnBlanksTotal = 0, gnBlanksFilled = 0;
+      let qaPairsWithQ = 0, qaPairsAnswered = 0;
       (dashboardData || []).forEach(s => {
         const hist = s.history || [];
         const notes = hist.filter(h => h && h.type === 'note-taking');
@@ -2764,6 +2792,19 @@ const _BUILTIN_METRIC_REGISTRY = [
             rrCount++; studentHasRR = true;
             if ((d.favoriteLine || '').trim()) rrWithEvidence++;
             if (d.connection && d.connection.type) connTypesSeen.add(d.connection.type);
+          } else if (tt === 'double-entry') {
+            deCount++;
+            if ((Array.isArray(d.entries) ? d.entries : []).some(en => en && wc(en.response) >= 15)) deWithResponse++;
+          } else if (tt === 'guided-notes') {
+            const blanks = Array.isArray(d.blanks) ? d.blanks : [];
+            if (blanks.length > 0) {
+              gnBlanksTotal += blanks.length;
+              gnBlanksFilled += blanks.filter(b => b && (b.studentAnswer || '').trim()).length;
+            }
+          } else if (tt === 'q-and-a') {
+            (Array.isArray(d.pairs) ? d.pairs : []).forEach(p => {
+              if (p && (p.question || '').trim()) { qaPairsWithQ++; if ((p.answer || '').trim()) qaPairsAnswered++; }
+            });
           }
         });
         if (studentHasRR) { studentsWithRR++; if (connTypesSeen.size >= 2) studentsWith2PlusConnTypes++; }
@@ -2794,6 +2835,18 @@ const _BUILTIN_METRIC_REGISTRY = [
       if (studentsWithNotebook > 0) {
         const v = Math.round((studentsWithFeedback / studentsWithNotebook) * 100);
         signals.push({ key: 'selfAssessment', label: 'Self-assessment use', value: v, suffix: '%', denom: `${studentsWithFeedback}/${studentsWithNotebook} students`, hint: '% of students who have requested AI feedback ≥1× (metacognitive engagement proxy)', tone: _tone(v, 50, 25) });
+      }
+      if (deCount > 0) {
+        const v = Math.round((deWithResponse / deCount) * 100);
+        signals.push({ key: 'deResponseRate', label: 'Double-entry response rate', value: v, suffix: '%', denom: `${deWithResponse}/${deCount}`, hint: '% of double-entry journals with a substantive (≥15-word) response — dialogue with the text, not just copied quotes', tone: _tone(v, 60, 30) });
+      }
+      if (gnBlanksTotal > 0) {
+        const v = Math.round((gnBlanksFilled / gnBlanksTotal) * 100);
+        signals.push({ key: 'guidedCompletion', label: 'Guided-notes completion', value: v, suffix: '%', denom: `${gnBlanksFilled}/${gnBlanksTotal} blanks`, hint: '% of guided-note blanks completed across the class — engagement with the key terms', tone: _tone(v, 70, 40) });
+      }
+      if (qaPairsWithQ > 0) {
+        const v = Math.round((qaPairsAnswered / qaPairsWithQ) * 100);
+        signals.push({ key: 'qaAnswerRate', label: 'Q&A answer rate', value: v, suffix: '%', denom: `${qaPairsAnswered}/${qaPairsWithQ} pairs`, hint: '% of study questions that have an answer written — completed retrieval-practice sets', tone: _tone(v, 70, 40) });
       }
       return signals;
     },
@@ -3157,7 +3210,10 @@ const ClassNotebookSection = React.memo(({ dashboardData, callGemini, addToast, 
 
   // Deterministic notebook quality signals — computed from data alone (no AI).
   // Surfaced as a color-coded card grid for at-a-glance class diagnostics.
-  const qualitySignals = React.useMemo(() => _computeNotebookQualitySignals(dashboardData), [dashboardData]);
+  // Flat array of all note-taking quality signals (registry-driven). Each carries
+  // its own tone + denom, so we render them generically — new template signals
+  // surface automatically without per-key wiring.
+  const qualitySignals = React.useMemo(() => _computeAllQualitySignals(dashboardData), [dashboardData]);
 
   // Aggregate notebook activity across the whole roster.
   const agg = React.useMemo(() => {
@@ -3167,9 +3223,12 @@ const ClassNotebookSection = React.memo(({ dashboardData, callGemini, addToast, 
       cornell: 0,
       labReport: 0,
       readingResponse: 0,
+      doubleEntry: 0,
+      guidedNotes: 0,
+      qAndA: 0,
       anchorChart: 0,
       feedbackRequests: 0,
-      byStudent: [], // [{ name, total, cornell, labReport, readingResponse, anchorChart, feedbackRequests }]
+      byStudent: [], // [{ name, total, cornell, labReport, readingResponse, doubleEntry, guidedNotes, qAndA, anchorChart, feedbackRequests }]
     };
     (dashboardData || []).forEach(s => {
       const hist = s.history || [];
@@ -3177,20 +3236,28 @@ const ClassNotebookSection = React.memo(({ dashboardData, callGemini, addToast, 
       const anchors = hist.filter(h => h && h.type === 'anchor-chart');
       if (notes.length === 0 && anchors.length === 0) return;
       out.studentsWithNotebook++;
-      const sCornell = notes.filter(e => (e.data && e.data.templateType) === 'cornell-notes').length;
-      const sLab = notes.filter(e => (e.data && e.data.templateType) === 'lab-report').length;
-      const sReading = notes.filter(e => (e.data && e.data.templateType) === 'reading-response').length;
+      const countType = (tt) => notes.filter(e => (e.data && e.data.templateType) === tt).length;
+      const sCornell = countType('cornell-notes');
+      const sLab = countType('lab-report');
+      const sReading = countType('reading-response');
+      const sDouble = countType('double-entry');
+      const sGuided = countType('guided-notes');
+      const sQA = countType('q-and-a');
       const sFeedback = notes.reduce((sum, e) => sum + ((e.data && e.data.feedbackCount) || 0), 0);
       out.cornell += sCornell;
       out.labReport += sLab;
       out.readingResponse += sReading;
+      out.doubleEntry += sDouble;
+      out.guidedNotes += sGuided;
+      out.qAndA += sQA;
       out.anchorChart += anchors.length;
       out.feedbackRequests += sFeedback;
       out.totalEntries += notes.length + anchors.length;
       out.byStudent.push({
         name: s.studentNickname || 'Anonymous',
         total: notes.length + anchors.length,
-        cornell: sCornell, labReport: sLab, readingResponse: sReading, anchorChart: anchors.length,
+        cornell: sCornell, labReport: sLab, readingResponse: sReading,
+        doubleEntry: sDouble, guidedNotes: sGuided, qAndA: sQA, anchorChart: anchors.length,
         feedbackRequests: sFeedback,
       });
     });
@@ -3222,6 +3289,9 @@ const ClassNotebookSection = React.memo(({ dashboardData, callGemini, addToast, 
             'cornell-notes': () => `cues=${(d.cues || []).length}, notes=${(d.notes || []).length}, summary_len=${(d.summary || '').length}`,
             'lab-report': () => `hyp_len=${(d.hypothesis || '').length}, analysis_len=${(d.analysis || '').length}, conclusion_len=${(d.conclusion || '').length}`,
             'reading-response': () => `evidence_len=${(d.favoriteLine || '').length}, thinking_len=${(d.thinkings || '').length}, connection_type=${(d.connection && d.connection.type) || 'none'}`,
+            'double-entry': () => { const en = Array.isArray(d.entries) ? d.entries : []; return `entries=${en.length}, with_response=${en.filter(x => x && (x.response || '').trim()).length}`; },
+            'guided-notes': () => { const bl = Array.isArray(d.blanks) ? d.blanks : []; return `blanks=${bl.length}, filled=${bl.filter(b => b && (b.studentAnswer || '').trim()).length}, own_notes_len=${(d.notesExtra || '').length}`; },
+            'q-and-a': () => { const pr = Array.isArray(d.pairs) ? d.pairs : []; return `pairs=${pr.length}, answered=${pr.filter(p => p && (p.answer || '').trim()).length}`; },
           })[tt];
           sampleEntries.push(`${s.studentNickname || 'Anon'} (${tt}): ${headline ? headline() : 'no data'}`);
         });
@@ -3235,6 +3305,9 @@ CLASS COMPOSITION:
 - Total Cornell Notes entries: ${agg.cornell}
 - Total Lab Reports: ${agg.labReport}
 - Total Reading Responses: ${agg.readingResponse}
+- Total Double-Entry Journals: ${agg.doubleEntry}
+- Total Guided Notes: ${agg.guidedNotes}
+- Total Q&A Study Notes: ${agg.qAndA}
 - Total Anchor Charts: ${agg.anchorChart}
 - Total AI feedback requests across class: ${agg.feedbackRequests}
 
@@ -3287,7 +3360,7 @@ Return ONLY JSON:
           {insightsLoading ? '⏳' : '✨'} {t('dashboard.class_notebook.ai_button') || 'AI Class Insights'}
         </button>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
         <div className="bg-violet-50 rounded-xl p-3 text-center border border-violet-200">
           <div className="text-2xl font-black text-violet-700">{agg.studentsWithNotebook}</div>
           <div className="text-[10px] font-bold text-violet-600 uppercase mt-1">{t('dashboard.class_notebook.students_with') || 'Students using'}</div>
@@ -3304,6 +3377,18 @@ Return ONLY JSON:
           <div className="text-2xl font-black text-fuchsia-700">{agg.readingResponse}</div>
           <div className="text-[10px] font-bold text-fuchsia-600 uppercase mt-1">📖 Reading</div>
         </div>}
+        {agg.doubleEntry > 0 && <div className="bg-rose-50 rounded-xl p-3 text-center border border-rose-200">
+          <div className="text-2xl font-black text-rose-700">{agg.doubleEntry}</div>
+          <div className="text-[10px] font-bold text-rose-600 uppercase mt-1">✍️ Double-Entry</div>
+        </div>}
+        {agg.guidedNotes > 0 && <div className="bg-emerald-50 rounded-xl p-3 text-center border border-emerald-200">
+          <div className="text-2xl font-black text-emerald-700">{agg.guidedNotes}</div>
+          <div className="text-[10px] font-bold text-emerald-600 uppercase mt-1">📝 Guided</div>
+        </div>}
+        {agg.qAndA > 0 && <div className="bg-cyan-50 rounded-xl p-3 text-center border border-cyan-200">
+          <div className="text-2xl font-black text-cyan-700">{agg.qAndA}</div>
+          <div className="text-[10px] font-bold text-cyan-600 uppercase mt-1">❓ Q&amp;A</div>
+        </div>}
         {agg.anchorChart > 0 && <div className="bg-amber-50 rounded-xl p-3 text-center border border-amber-200">
           <div className="text-2xl font-black text-amber-700">{agg.anchorChart}</div>
           <div className="text-[10px] font-bold text-amber-600 uppercase mt-1">📋 Anchor Chart</div>
@@ -3315,76 +3400,27 @@ Return ONLY JSON:
           <span className="text-emerald-700"> across the class. A useful proxy for metacognitive engagement (students who request feedback are practicing self-assessment).</span>
         </div>
       )}
-      {/* Deterministic quality signals — no AI required, color-coded against research thresholds */}
-      {(qualitySignals.summaryFillRate.value !== null
-        || qualitySignals.avgCerWords.value !== null
-        || qualitySignals.rrEvidenceRate.value !== null
-        || qualitySignals.selfAssessment.value !== null) && (
+      {/* Deterministic quality signals — no AI required, color-coded against research
+          thresholds. Rendered generically from the registry-driven flat array so
+          every template's signals (incl. new ones) surface with correct denominators. */}
+      {Array.isArray(qualitySignals) && qualitySignals.length > 0 && (
         <div className="mb-4" data-help-key="dashboard_class_notebook_quality_signals">
           <div className="flex items-center justify-between mb-2">
             <h5 className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">{t('dashboard.class_notebook.quality_signals_label') || 'Quality Signals (research thresholds)'}</h5>
             <span className="text-[10px] text-slate-500 italic">{t('dashboard.class_notebook.quality_signals_legend') || 'green = healthy · amber = partial · red = needs attention'}</span>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-            {qualitySignals.summaryFillRate.value !== null && (
+            {qualitySignals.map((sig) => (
               <_NotebookQualityCard
-                tone={_signalTone('summaryFillRate', qualitySignals.summaryFillRate.value)}
-                label={t('dashboard.class_notebook.signal_summary_fill') || 'Cornell summary rate'}
-                value={qualitySignals.summaryFillRate.value}
-                suffix="%"
-                denom={`${qualitySignals.summaryFillRate.count}/${qualitySignals.summaryFillRate.total}`}
-                hint={t('dashboard.class_notebook.signal_summary_fill_hint') || '% of Cornell entries with ≥20-word summary (research threshold; Pauk/Kiewra)'}
+                key={sig.key}
+                tone={sig.tone || 'gray'}
+                label={t('dashboard.class_notebook.signal_' + sig.key) || sig.label}
+                value={sig.value}
+                suffix={sig.suffix || ''}
+                denom={sig.denom || ''}
+                hint={t('dashboard.class_notebook.signal_' + sig.key + '_hint') || sig.hint}
               />
-            )}
-            {qualitySignals.avgCues.value !== null && (
-              <_NotebookQualityCard
-                tone={_signalTone('avgCues', qualitySignals.avgCues.value)}
-                label={t('dashboard.class_notebook.signal_avg_cues') || 'Cornell cue density'}
-                value={qualitySignals.avgCues.value}
-                denom={`avg / ${qualitySignals.avgCues.n} entries`}
-                hint={t('dashboard.class_notebook.signal_avg_cues_hint') || 'Avg cues per Cornell entry. ≥5 is healthy retrieval-practice density'}
-              />
-            )}
-            {qualitySignals.avgCerWords.value !== null && (
-              <_NotebookQualityCard
-                tone={_signalTone('avgCerWords', qualitySignals.avgCerWords.value)}
-                label={t('dashboard.class_notebook.signal_cer_length') || 'Lab CER length'}
-                value={qualitySignals.avgCerWords.value}
-                suffix=" wd"
-                denom={`avg / ${qualitySignals.avgCerWords.n} reports`}
-                hint={t('dashboard.class_notebook.signal_cer_length_hint') || 'Avg word count of CER analysis. ≥30 words is where reasoning lives (McNeill & Krajcik)'}
-              />
-            )}
-            {qualitySignals.rrEvidenceRate.value !== null && (
-              <_NotebookQualityCard
-                tone={_signalTone('rrEvidenceRate', qualitySignals.rrEvidenceRate.value)}
-                label={t('dashboard.class_notebook.signal_rr_evidence') || 'Reading evidence rate'}
-                value={qualitySignals.rrEvidenceRate.value}
-                suffix="%"
-                denom={`${qualitySignals.rrEvidenceRate.count}/${qualitySignals.rrEvidenceRate.total}`}
-                hint={t('dashboard.class_notebook.signal_rr_evidence_hint') || '% of Reading Responses with a favorite line filled (close-reading anchor)'}
-              />
-            )}
-            {qualitySignals.connectionVariety.value !== null && (
-              <_NotebookQualityCard
-                tone={_signalTone('connectionVariety', qualitySignals.connectionVariety.value)}
-                label={t('dashboard.class_notebook.signal_conn_variety') || 'Connection variety'}
-                value={qualitySignals.connectionVariety.value}
-                suffix="%"
-                denom={`${qualitySignals.connectionVariety.count}/${qualitySignals.connectionVariety.total} students`}
-                hint={t('dashboard.class_notebook.signal_conn_variety_hint') || '% of students using ≥2 of 3 connection types (text-to-self/text/world)'}
-              />
-            )}
-            {qualitySignals.selfAssessment.value !== null && (
-              <_NotebookQualityCard
-                tone={_signalTone('selfAssessment', qualitySignals.selfAssessment.value)}
-                label={t('dashboard.class_notebook.signal_self_assess') || 'Self-assessment use'}
-                value={qualitySignals.selfAssessment.value}
-                suffix="%"
-                denom={`${qualitySignals.selfAssessment.count}/${qualitySignals.selfAssessment.total} students`}
-                hint={t('dashboard.class_notebook.signal_self_assess_hint') || '% of students who have requested AI feedback ≥1× (metacognitive engagement proxy)'}
-              />
-            )}
+            ))}
           </div>
         </div>
       )}
@@ -4677,7 +4713,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
         t('dashboard.csv.header_level'),
         t('dashboard.csv.header_quiz_avg'),
         t('dashboard.csv.header_total_xp')
-    , 'Probes', 'Avg WCPM', 'Surveys', 'Sessions', 'Cornell Notes', 'Lab Reports', 'Reading Responses', 'Anchor Charts', 'Notebook Feedback Requests', ...registryHeaders];
+    , 'Probes', 'Avg WCPM', 'Surveys', 'Sessions', 'Cornell Notes', 'Lab Reports', 'Reading Responses', 'Double-Entry Journals', 'Guided Notes', 'Q&A Study Notes', 'Anchor Charts', 'Notebook Feedback Requests', ...registryHeaders];
     const rows = dashboardData.map(student => {
         const name = (student.studentNickname || "Anonymous").replace(/"/g, '""');
         const date = new Date(student.timestamp).toLocaleDateString();
@@ -4716,12 +4752,15 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
         const cornellCount = noteEntries.filter(e => (e.data && e.data.templateType) === 'cornell-notes').length;
         const labCount = noteEntries.filter(e => (e.data && e.data.templateType) === 'lab-report').length;
         const readingCount = noteEntries.filter(e => (e.data && e.data.templateType) === 'reading-response').length;
+        const doubleEntryCount = noteEntries.filter(e => (e.data && e.data.templateType) === 'double-entry').length;
+        const guidedCount = noteEntries.filter(e => (e.data && e.data.templateType) === 'guided-notes').length;
+        const qAndACount = noteEntries.filter(e => (e.data && e.data.templateType) === 'q-and-a').length;
         const anchorCount = hist.filter(h => h && h.type === 'anchor-chart').length;
         const feedbackCount = noteEntries.reduce((sum, e) => sum + ((e.data && e.data.feedbackCount) || 0), 0);
         // Registry-driven per-tool counts (extends with each new registry entry,
         // including externally-registered tools)
         const registryCounts = getTeacherMetricRegistry().map(entry => entry.count(student));
-        return `"${name}","${date}","${level}","${quizAvg}","${xp}","${probeCount}","${avgWcpm}","${surveyCount}","${sessionCount}","${cornellCount}","${labCount}","${readingCount}","${anchorCount}","${feedbackCount}",${registryCounts.map(n => `"${n}"`).join(',')}`;
+        return `"${name}","${date}","${level}","${quizAvg}","${xp}","${probeCount}","${avgWcpm}","${surveyCount}","${sessionCount}","${cornellCount}","${labCount}","${readingCount}","${doubleEntryCount}","${guidedCount}","${qAndACount}","${anchorCount}","${feedbackCount}",${registryCounts.map(n => `"${n}"`).join(',')}`;
     });
     const csvContent = [headers.join(","), ...rows].join("\n");
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -4974,6 +5013,9 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                      'cornell-notes': noteEntries.filter(e => (e.data && e.data.templateType) === 'cornell-notes').length,
                                      'lab-report': noteEntries.filter(e => (e.data && e.data.templateType) === 'lab-report').length,
                                      'reading-response': noteEntries.filter(e => (e.data && e.data.templateType) === 'reading-response').length,
+                                     'double-entry': noteEntries.filter(e => (e.data && e.data.templateType) === 'double-entry').length,
+                                     'guided-notes': noteEntries.filter(e => (e.data && e.data.templateType) === 'guided-notes').length,
+                                     'q-and-a': noteEntries.filter(e => (e.data && e.data.templateType) === 'q-and-a').length,
                                      'anchor-chart': anchorEntries.length,
                                  };
                                  const feedbackEvents = noteEntries.reduce((sum, e) => sum + ((e.data && e.data.feedbackCount) || 0), 0);
@@ -4985,6 +5027,9 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                              {byType['cornell-notes'] > 0 && <div className="flex justify-between"><span>📓 Cornell</span><span className="font-bold">{byType['cornell-notes']}</span></div>}
                                              {byType['lab-report'] > 0 && <div className="flex justify-between"><span>🧪 Lab Report</span><span className="font-bold">{byType['lab-report']}</span></div>}
                                              {byType['reading-response'] > 0 && <div className="flex justify-between"><span>📖 Reading</span><span className="font-bold">{byType['reading-response']}</span></div>}
+                                             {byType['double-entry'] > 0 && <div className="flex justify-between"><span>✍️ Double-Entry</span><span className="font-bold">{byType['double-entry']}</span></div>}
+                                             {byType['guided-notes'] > 0 && <div className="flex justify-between"><span>📝 Guided Notes</span><span className="font-bold">{byType['guided-notes']}</span></div>}
+                                             {byType['q-and-a'] > 0 && <div className="flex justify-between"><span>❓ Q&amp;A</span><span className="font-bold">{byType['q-and-a']}</span></div>}
                                              {byType['anchor-chart'] > 0 && <div className="flex justify-between"><span>📋 Anchor Chart</span><span className="font-bold">{byType['anchor-chart']}</span></div>}
                                              {feedbackEvents > 0 && <div className="flex justify-between text-violet-700 font-semibold pt-1 mt-1 border-t border-violet-200"><span>💬 AI feedback</span><span>{feedbackEvents}×</span></div>}
                                          </div>

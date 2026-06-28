@@ -1276,7 +1276,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         'radial-gradient(ellipse 75% 50% at 50% 0%, rgba(96, 165, 250, 0.18), transparent 70%), ' +
         'radial-gradient(ellipse 90% 55% at 50% 100%, rgba(251, 146, 60, 0.16), transparent 75%), ' +
         'url("' + ceGrainSvg + '"), ' +
-        'linear-gradient(135deg, #0d2922 0%, #0f172a 50%, #0d2922 100%)';
+        'linear-gradient(135deg, var(--allo-stem-deeper, #0d2922) 0%, var(--allo-stem-canvas, #0f172a) 50%, var(--allo-stem-deeper, #0d2922) 100%)';
       return el('div', {
         style: {
           background: ceBgLayers,
@@ -1376,7 +1376,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               margin: '12px 24px 0',
               padding: '12px 16px',
               borderRadius: 12,
-              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%)',
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, var(--allo-stem-deeper, rgba(15,23,42,0)) 100%)',
               border: '1px solid ' + meta.accent + '55',
               borderLeft: '4px solid ' + meta.accent,
               display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap'
@@ -1536,7 +1536,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 if (ct.total <= parisKg) { status = '\u2713 At or under Paris-aligned target'; statusColor = '#4ade80'; }
                 else if (ct.total <= globalAvgKg) { status = '\u2193 Below global average, still ' + Math.round(ct.total - parisKg) + ' kg over Paris'; statusColor = '#fbbf24'; }
                 else { status = '\u2191 Above global average \u2014 ' + Math.round(ct.total - parisKg).toLocaleString() + ' kg over Paris target'; statusColor = '#fca5a5'; }
-                return el('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.45)', border: '1px solid rgba(255,255,255,0.08)' } },
+                return el('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: 'var(--allo-stem-deeper, rgba(15,23,42,0.45))', border: '1px solid rgba(255,255,255,0.08)' } },
                   el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 } },
                     el('span', { style: { color: '#a5b4fc', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '\uD83C\uDF0D Your footprint vs benchmarks'),
                     el('span', { style: { color: statusColor, fontSize: 11, fontWeight: 800 } }, status)
@@ -1776,7 +1776,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   el('button', { onClick: function() { upd('exportedReport', null); }, style: { padding: '2px 8px', borderRadius: 6, border: 'none', background: 'rgba(255,255,255,0.05)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, '✕ Close')
                 ),
                 el('p', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, marginBottom: 6 } }, 'Select all (Ctrl/Cmd+A), then copy:'),
-                el('textarea', { readOnly: true, value: d.exportedReport, style: { width: '100%', height: 220, fontFamily: 'monospace', fontSize: 10, padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.8)', border: '1px solid rgba(96,165,250,0.15)', color: 'var(--allo-stem-text, #cbd5e1)' } })
+                el('textarea', { readOnly: true, value: d.exportedReport, style: { width: '100%', height: 220, fontFamily: 'monospace', fontSize: 10, padding: 8, borderRadius: 6, background: 'var(--allo-stem-deeper, rgba(15,23,42,0.8))', border: '1px solid rgba(96,165,250,0.15)', color: 'var(--allo-stem-text, #cbd5e1)' } })
               )
             )
           ),
@@ -2250,7 +2250,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   )
                 ),
                 // Impact display
-                el('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(59,130,246,0.15)' } },
+                el('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-deeper, rgba(15,23,42,0.5))', border: '1px solid rgba(59,130,246,0.15)' } },
                   el('div', { style: { display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 6 } },
                     el('div', { style: { color: '#93c5fd', fontSize: 20, fontWeight: 900, fontFamily: 'monospace' } }, '+' + slr + ' m'),
                     el('div', { style: { color: '#60a5fa', fontSize: 14, fontWeight: 800 } }, impact.displaced > 0 ? impact.displaced + 'M people displaced' : 'No displacement')
@@ -3126,7 +3126,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 upd('dsStreak', newStreak);
                 upd('dsBest', newBest);
               }
-              return el('div', { style: { padding: 16, marginBottom: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(34,197,94,0.08), rgba(15,23,42,0.4))', border: '2px solid rgba(34,197,94,0.30)' } },
+              return el('div', { style: { padding: 16, marginBottom: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(34,197,94,0.08), var(--allo-stem-deeper, rgba(15,23,42,0.4)))', border: '2px solid rgba(34,197,94,0.30)' } },
                 el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap', gap: 8 } },
                   el('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                     el('span', { style: { fontSize: 22 }, 'aria-hidden': 'true' }, '\uD83D\uDD75\uFE0F'),
@@ -3564,7 +3564,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               var applicable = PATHWAY_TECHNIQUES.filter(function(t) { return t.appliesTo === 'any' || t.appliesTo.indexOf(id) >= 0; });
               return el('div', {
                 role: 'dialog', 'aria-modal': 'true',
-                style: { background: 'linear-gradient(135deg, ' + def.color + '20 0%, rgba(15,23,42,0.85) 60%)', border: '1px solid ' + def.color + '88', borderLeft: '4px solid ' + def.color, borderRadius: 14, padding: 18, marginBottom: 16 }
+                style: { background: 'linear-gradient(135deg, ' + def.color + '20 0%, var(--allo-stem-deeper, rgba(15,23,42,0.85)) 60%)', border: '1px solid ' + def.color + '88', borderLeft: '4px solid ' + def.color, borderRadius: 14, padding: 18, marginBottom: 16 }
               },
                 el('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 10 } },
                   el('span', { style: { fontSize: 36 } }, def.icon),
@@ -3574,18 +3574,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     el('div', { style: { color: def.color, fontSize: 13, marginTop: 4, fontStyle: 'italic' } }, def.role)
                   ),
                   el('button', { onClick: closePathDeepDive,
-                    style: { background: 'rgba(15,23,42,0.6)', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', cursor: 'pointer', borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 13 } }, '\u2715 Close')
+                    style: { background: 'var(--allo-stem-deeper, rgba(15,23,42,0.6))', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', cursor: 'pointer', borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 13 } }, '\u2715 Close')
                 ),
                 el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 } },
-                  el('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
+                  el('div', { style: { background: 'var(--allo-stem-deeper, rgba(15,23,42,0.7))', borderRadius: 10, padding: 12 } },
                     el('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '\ud83d\udd2c Policy mechanics'),
                     el('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.knowledge)
                   ),
-                  el('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
+                  el('div', { style: { background: 'var(--allo-stem-deeper, rgba(15,23,42,0.7))', borderRadius: 10, padding: 12 } },
                     el('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '\ud83d\udcf0 Case work'),
                     el('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.casework)
                   ),
-                  el('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
+                  el('div', { style: { background: 'var(--allo-stem-deeper, rgba(15,23,42,0.7))', borderRadius: 10, padding: 12 } },
                     el('div', { style: { fontSize: 11, fontWeight: 700, color: '#38bdf8', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '\ud83c\udf0d Maine context'),
                     el('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.modernContext)
                   )
@@ -3708,7 +3708,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               }
               if (!path.aiReadResponse) return null;
               return el('div', { role: 'region', 'aria-label': t('stem.climateExplorer.ai_climate_policy_reading', 'AI Climate Policy Reading'),
-                style: { padding: 14, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(56,189,248,0.10) 0%, rgba(15,23,42,0.4) 100%)', borderTop: '1px solid rgba(56,189,248,0.5)', borderRight: '1px solid rgba(56,189,248,0.5)', borderBottom: '1px solid rgba(56,189,248,0.5)', borderLeft: '3px solid #38bdf8' } },
+                style: { padding: 14, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(56,189,248,0.10) 0%, var(--allo-stem-deeper, rgba(15,23,42,0.4)) 100%)', borderTop: '1px solid rgba(56,189,248,0.5)', borderRight: '1px solid rgba(56,189,248,0.5)', borderBottom: '1px solid rgba(56,189,248,0.5)', borderLeft: '3px solid #38bdf8' } },
                 el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
                   el('span', { style: { fontSize: 20 } }, '\ud83d\udd0d'),
                   el('strong', { style: { color: '#38bdf8', fontSize: 14 } }, 'AI Climate Policy Reading'),
@@ -3790,7 +3790,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               var baselineAvgDecarb = Math.round(baseline.reduce(function(a, s) { return a + s.decarb; }, 0) / baseline.length);
               return el('div', { style: { maxWidth: 720, margin: '0 auto' } },
                 pathDeepDive,
-                el('div', { style: { padding: 18, borderRadius: 14, marginBottom: 12, background: 'linear-gradient(135deg, ' + o.color + '24 0%, rgba(15,23,42,0) 100%)', border: '1px solid ' + o.color + '88', borderLeft: '4px solid ' + o.color } },
+                el('div', { style: { padding: 18, borderRadius: 14, marginBottom: 12, background: 'linear-gradient(135deg, ' + o.color + '24 0%, var(--allo-stem-deeper, rgba(15,23,42,0)) 100%)', border: '1px solid ' + o.color + '88', borderLeft: '4px solid ' + o.color } },
                   el('div', { style: { fontSize: 40, marginBottom: 6 } }, o.icon),
                   el('h3', { style: { margin: 0, color: o.color, fontSize: 22 } }, o.label),
                   el('p', { style: { margin: '8px 0 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } }, o.desc)
@@ -3819,7 +3819,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     );
                   })
                 ),
-                el('div', { style: { padding: 12, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(15,23,42,1) 0%, rgba(127,29,29,0.18) 100%)', border: '1px solid rgba(248,113,113,0.4)' } },
+                el('div', { style: { padding: 12, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, var(--allo-stem-deeper, rgba(15,23,42,1)) 0%, rgba(127,29,29,0.18) 100%)', border: '1px solid rgba(248,113,113,0.4)' } },
                   el('strong', { style: { color: '#fecaca', fontSize: 14, display: 'block', marginBottom: 8 } }, '\u2194 What if you had done nothing for 40 years?'),
                   el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
                     el('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 10, borderRadius: 8, borderLeft: '3px solid ' + o.color } },
@@ -3907,7 +3907,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               ) : null,
               renderPathAIPanel(),
               // HUD
-              el('div', { style: { padding: '10px 14px', borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(21,128,61,0.18) 0%, rgba(15,23,42,0) 100%)', border: '1px solid ' + T_GREEN + '66', borderLeft: '4px solid ' + T_GREEN, display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' } },
+              el('div', { style: { padding: '10px 14px', borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(21,128,61,0.18) 0%, var(--allo-stem-deeper, rgba(15,23,42,0)) 100%)', border: '1px solid ' + T_GREEN + '66', borderLeft: '4px solid ' + T_GREEN, display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' } },
                 el('div', null,
                   el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Period'),
                   el('div', { style: { fontSize: 18, fontWeight: 800, color: T_GREEN_HI } }, pathwayYearLabel(path.year))

@@ -2268,7 +2268,10 @@ function NoteTakingPanel(props) {
     },
     /* @__PURE__ */ React.createElement("option", { value: "cornell-notes" }, t("note_taking.cornell") || "Cornell Notes (2-column + summary)"),
     /* @__PURE__ */ React.createElement("option", { value: "lab-report" }, t("note_taking.lab_report") || "Lab Report (Q / Hypothesis / Method / Data / CER / Conclusion)"),
-    /* @__PURE__ */ React.createElement("option", { value: "reading-response" }, t("note_taking.reading_response") || "Reading Response Journal Entry")
+    /* @__PURE__ */ React.createElement("option", { value: "reading-response" }, t("note_taking.reading_response") || "Reading Response Journal Entry"),
+    /* @__PURE__ */ React.createElement("option", { value: "double-entry" }, t("note_taking.double_entry") || "Double-Entry Journal (quote \u2194 response)"),
+    /* @__PURE__ */ React.createElement("option", { value: "guided-notes" }, t("note_taking.guided_notes") || "Guided Notes (fill-in-the-blank)"),
+    /* @__PURE__ */ React.createElement("option", { value: "q-and-a" }, t("note_taking.q_and_a") || "Q&A Study Notes (self-quiz)")
   )), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic leading-snug" }, t("note_taking.help") || "Each template is scaffolded from today's source text but persists in your history so you can keep adding to it across lessons.")), /* @__PURE__ */ React.createElement(
     "button",
     {

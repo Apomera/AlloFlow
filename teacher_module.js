@@ -2008,7 +2008,10 @@ const _BUILTIN_METRIC_REGISTRY = [
       const ntStats = {
         "cornell-notes": { fields: ["summary", "cuesFilled", "notesFilled"], counts: {}, total: 0 },
         "lab-report": { fields: ["hypothesis", "analysis", "conclusion", "procedureFilled"], counts: {}, total: 0 },
-        "reading-response": { fields: ["favoriteLine", "thinkings", "connection", "question"], counts: {}, total: 0 }
+        "reading-response": { fields: ["favoriteLine", "thinkings", "connection", "question"], counts: {}, total: 0 },
+        "double-entry": { fields: ["responsesFilled"], counts: {}, total: 0 },
+        "guided-notes": { fields: ["blanksFilled", "ownNotes"], counts: {}, total: 0 },
+        "q-and-a": { fields: ["answersFilled"], counts: {}, total: 0 }
       };
       Object.keys(ntStats).forEach((tt) => ntStats[tt].fields.forEach((f) => ntStats[tt].counts[f] = 0));
       (dashboardData || []).forEach((s2) => {
@@ -2036,6 +2039,18 @@ const _BUILTIN_METRIC_REGISTRY = [
             if (!(d.thinkings || "").trim()) ntStats[tt].counts.thinkings++;
             if (!(d.connection && d.connection.text || "").trim()) ntStats[tt].counts.connection++;
             if (!(d.question || "").trim()) ntStats[tt].counts.question++;
+          } else if (tt === "double-entry") {
+            const respCount = (Array.isArray(d.entries) ? d.entries : []).filter((en) => en && (en.response || "").trim()).length;
+            if (respCount === 0) ntStats[tt].counts.responsesFilled++;
+          } else if (tt === "guided-notes") {
+            const blanks = Array.isArray(d.blanks) ? d.blanks : [];
+            const filledBlanks = blanks.filter((b) => b && (b.studentAnswer || "").trim()).length;
+            if (blanks.length > 0 && filledBlanks < Math.ceil(blanks.length / 2)) ntStats[tt].counts.blanksFilled++;
+            if (!(d.notesExtra || "").trim()) ntStats[tt].counts.ownNotes++;
+          } else if (tt === "q-and-a") {
+            const pairs = Array.isArray(d.pairs) ? d.pairs : [];
+            const hasUnanswered = pairs.some((p) => p && (p.question || "").trim() && !(p.answer || "").trim());
+            if (hasUnanswered) ntStats[tt].counts.answersFilled++;
           }
         });
       });
@@ -2056,9 +2071,19 @@ const _BUILTIN_METRIC_REGISTRY = [
           thinkings: "What this made me think about (substantive reflection)",
           connection: "Connection (text-to-self / text / world \u2014 Keene & Zimmermann)",
           question: "Open question (genuine inquiry \u2014 metacognitive engagement)"
+        },
+        "double-entry": {
+          responsesFilled: "Response column (the thinking \u2014 dialogue with the text, not just copied quotes)"
+        },
+        "guided-notes": {
+          blanksFilled: "Blanks completion (under half filled \u2014 retrieval of the core key terms)",
+          ownNotes: "Own-notes space (student-generated elaboration beyond the blanks)"
+        },
+        "q-and-a": {
+          answersFilled: "Unanswered questions (questions written but left unanswered \u2014 retrieval practice incomplete)"
         }
       };
-      const templateNames = { "cornell-notes": "Cornell Notes", "lab-report": "Lab Report", "reading-response": "Reading Response" };
+      const templateNames = { "cornell-notes": "Cornell Notes", "lab-report": "Lab Report", "reading-response": "Reading Response", "double-entry": "Double-Entry Journal", "guided-notes": "Guided Notes", "q-and-a": "Q&A Study Notes" };
       const results = [];
       Object.keys(ntStats).forEach((tt) => {
         const stats = ntStats[tt];
@@ -2087,6 +2112,9 @@ const _BUILTIN_METRIC_REGISTRY = [
       let rrCount = 0, rrWithEvidence = 0;
       let studentsWithRR = 0, studentsWith2PlusConnTypes = 0;
       let studentsWithNotebook = 0, studentsWithFeedback = 0;
+      let deCount = 0, deWithResponse = 0;
+      let gnBlanksTotal = 0, gnBlanksFilled = 0;
+      let qaPairsWithQ = 0, qaPairsAnswered = 0;
       (dashboardData || []).forEach((s2) => {
         const hist = s2.history || [];
         const notes = hist.filter((h) => h && h.type === "note-taking");
@@ -2118,6 +2146,22 @@ const _BUILTIN_METRIC_REGISTRY = [
             studentHasRR = true;
             if ((d.favoriteLine || "").trim()) rrWithEvidence++;
             if (d.connection && d.connection.type) connTypesSeen.add(d.connection.type);
+          } else if (tt === "double-entry") {
+            deCount++;
+            if ((Array.isArray(d.entries) ? d.entries : []).some((en) => en && wc(en.response) >= 15)) deWithResponse++;
+          } else if (tt === "guided-notes") {
+            const blanks = Array.isArray(d.blanks) ? d.blanks : [];
+            if (blanks.length > 0) {
+              gnBlanksTotal += blanks.length;
+              gnBlanksFilled += blanks.filter((b) => b && (b.studentAnswer || "").trim()).length;
+            }
+          } else if (tt === "q-and-a") {
+            (Array.isArray(d.pairs) ? d.pairs : []).forEach((p) => {
+              if (p && (p.question || "").trim()) {
+                qaPairsWithQ++;
+                if ((p.answer || "").trim()) qaPairsAnswered++;
+              }
+            });
           }
         });
         if (studentHasRR) {
@@ -2151,6 +2195,18 @@ const _BUILTIN_METRIC_REGISTRY = [
       if (studentsWithNotebook > 0) {
         const v = Math.round(studentsWithFeedback / studentsWithNotebook * 100);
         signals.push({ key: "selfAssessment", label: "Self-assessment use", value: v, suffix: "%", denom: `${studentsWithFeedback}/${studentsWithNotebook} students`, hint: "% of students who have requested AI feedback \u22651\xD7 (metacognitive engagement proxy)", tone: _tone(v, 50, 25) });
+      }
+      if (deCount > 0) {
+        const v = Math.round(deWithResponse / deCount * 100);
+        signals.push({ key: "deResponseRate", label: "Double-entry response rate", value: v, suffix: "%", denom: `${deWithResponse}/${deCount}`, hint: "% of double-entry journals with a substantive (\u226515-word) response \u2014 dialogue with the text, not just copied quotes", tone: _tone(v, 60, 30) });
+      }
+      if (gnBlanksTotal > 0) {
+        const v = Math.round(gnBlanksFilled / gnBlanksTotal * 100);
+        signals.push({ key: "guidedCompletion", label: "Guided-notes completion", value: v, suffix: "%", denom: `${gnBlanksFilled}/${gnBlanksTotal} blanks`, hint: "% of guided-note blanks completed across the class \u2014 engagement with the key terms", tone: _tone(v, 70, 40) });
+      }
+      if (qaPairsWithQ > 0) {
+        const v = Math.round(qaPairsAnswered / qaPairsWithQ * 100);
+        signals.push({ key: "qaAnswerRate", label: "Q&A answer rate", value: v, suffix: "%", denom: `${qaPairsAnswered}/${qaPairsWithQ} pairs`, hint: "% of study questions that have an answer written \u2014 completed retrieval-practice sets", tone: _tone(v, 70, 40) });
       }
       return signals;
     }
@@ -2356,7 +2412,7 @@ const TeacherCommentThread = React.memo(({ studentId, resourceId, comments, onAd
 const ClassNotebookSection = React.memo(({ dashboardData, callGemini, addToast: addToast2, t }) => {
   const [insights, setInsights] = React.useState(null);
   const [insightsLoading, setInsightsLoading] = React.useState(false);
-  const qualitySignals = React.useMemo(() => _computeNotebookQualitySignals(dashboardData), [dashboardData]);
+  const qualitySignals = React.useMemo(() => _computeAllQualitySignals(dashboardData), [dashboardData]);
   const agg = React.useMemo(() => {
     const out = {
       studentsWithNotebook: 0,
@@ -2364,10 +2420,13 @@ const ClassNotebookSection = React.memo(({ dashboardData, callGemini, addToast: 
       cornell: 0,
       labReport: 0,
       readingResponse: 0,
+      doubleEntry: 0,
+      guidedNotes: 0,
+      qAndA: 0,
       anchorChart: 0,
       feedbackRequests: 0,
       byStudent: []
-      // [{ name, total, cornell, labReport, readingResponse, anchorChart, feedbackRequests }]
+      // [{ name, total, cornell, labReport, readingResponse, doubleEntry, guidedNotes, qAndA, anchorChart, feedbackRequests }]
     };
     (dashboardData || []).forEach((s2) => {
       const hist = s2.history || [];
@@ -2375,13 +2434,20 @@ const ClassNotebookSection = React.memo(({ dashboardData, callGemini, addToast: 
       const anchors = hist.filter((h) => h && h.type === "anchor-chart");
       if (notes.length === 0 && anchors.length === 0) return;
       out.studentsWithNotebook++;
-      const sCornell = notes.filter((e) => (e.data && e.data.templateType) === "cornell-notes").length;
-      const sLab = notes.filter((e) => (e.data && e.data.templateType) === "lab-report").length;
-      const sReading = notes.filter((e) => (e.data && e.data.templateType) === "reading-response").length;
+      const countType = (tt) => notes.filter((e) => (e.data && e.data.templateType) === tt).length;
+      const sCornell = countType("cornell-notes");
+      const sLab = countType("lab-report");
+      const sReading = countType("reading-response");
+      const sDouble = countType("double-entry");
+      const sGuided = countType("guided-notes");
+      const sQA = countType("q-and-a");
       const sFeedback = notes.reduce((sum, e) => sum + (e.data && e.data.feedbackCount || 0), 0);
       out.cornell += sCornell;
       out.labReport += sLab;
       out.readingResponse += sReading;
+      out.doubleEntry += sDouble;
+      out.guidedNotes += sGuided;
+      out.qAndA += sQA;
       out.anchorChart += anchors.length;
       out.feedbackRequests += sFeedback;
       out.totalEntries += notes.length + anchors.length;
@@ -2391,6 +2457,9 @@ const ClassNotebookSection = React.memo(({ dashboardData, callGemini, addToast: 
         cornell: sCornell,
         labReport: sLab,
         readingResponse: sReading,
+        doubleEntry: sDouble,
+        guidedNotes: sGuided,
+        qAndA: sQA,
         anchorChart: anchors.length,
         feedbackRequests: sFeedback
       });
@@ -2419,7 +2488,19 @@ const ClassNotebookSection = React.memo(({ dashboardData, callGemini, addToast: 
           const headline = {
             "cornell-notes": () => `cues=${(d.cues || []).length}, notes=${(d.notes || []).length}, summary_len=${(d.summary || "").length}`,
             "lab-report": () => `hyp_len=${(d.hypothesis || "").length}, analysis_len=${(d.analysis || "").length}, conclusion_len=${(d.conclusion || "").length}`,
-            "reading-response": () => `evidence_len=${(d.favoriteLine || "").length}, thinking_len=${(d.thinkings || "").length}, connection_type=${d.connection && d.connection.type || "none"}`
+            "reading-response": () => `evidence_len=${(d.favoriteLine || "").length}, thinking_len=${(d.thinkings || "").length}, connection_type=${d.connection && d.connection.type || "none"}`,
+            "double-entry": () => {
+              const en = Array.isArray(d.entries) ? d.entries : [];
+              return `entries=${en.length}, with_response=${en.filter((x) => x && (x.response || "").trim()).length}`;
+            },
+            "guided-notes": () => {
+              const bl = Array.isArray(d.blanks) ? d.blanks : [];
+              return `blanks=${bl.length}, filled=${bl.filter((b) => b && (b.studentAnswer || "").trim()).length}, own_notes_len=${(d.notesExtra || "").length}`;
+            },
+            "q-and-a": () => {
+              const pr = Array.isArray(d.pairs) ? d.pairs : [];
+              return `pairs=${pr.length}, answered=${pr.filter((p) => p && (p.answer || "").trim()).length}`;
+            }
           }[tt];
           sampleEntries.push(`${s2.studentNickname || "Anon"} (${tt}): ${headline ? headline() : "no data"}`);
         });
@@ -2433,6 +2514,9 @@ CLASS COMPOSITION:
 - Total Cornell Notes entries: ${agg.cornell}
 - Total Lab Reports: ${agg.labReport}
 - Total Reading Responses: ${agg.readingResponse}
+- Total Double-Entry Journals: ${agg.doubleEntry}
+- Total Guided Notes: ${agg.guidedNotes}
+- Total Q&A Study Notes: ${agg.qAndA}
 - Total Anchor Charts: ${agg.anchorChart}
 - Total AI feedback requests across class: ${agg.feedbackRequests}
 
@@ -2479,66 +2563,18 @@ Return ONLY JSON:
     insightsLoading ? "\u23F3" : "\u2728",
     " ",
     t("dashboard.class_notebook.ai_button") || "AI Class Insights"
-  )), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-5 gap-3 mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-violet-50 rounded-xl p-3 text-center border border-violet-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-violet-700" }, agg.studentsWithNotebook), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-violet-600 uppercase mt-1" }, t("dashboard.class_notebook.students_with") || "Students using")), agg.cornell > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 rounded-xl p-3 text-center border border-indigo-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-indigo-700" }, agg.cornell), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-indigo-600 uppercase mt-1" }, "\u{1F4D3} Cornell")), agg.labReport > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-sky-50 rounded-xl p-3 text-center border border-sky-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-sky-700" }, agg.labReport), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-sky-600 uppercase mt-1" }, "\u{1F9EA} Lab Report")), agg.readingResponse > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-fuchsia-50 rounded-xl p-3 text-center border border-fuchsia-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-fuchsia-700" }, agg.readingResponse), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-fuchsia-600 uppercase mt-1" }, "\u{1F4D6} Reading")), agg.anchorChart > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 rounded-xl p-3 text-center border border-amber-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-amber-700" }, agg.anchorChart), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-amber-600 uppercase mt-1" }, "\u{1F4CB} Anchor Chart"))), agg.feedbackRequests > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border-l-4 border-emerald-400 rounded-r-md p-3 mb-4 text-sm" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-emerald-800" }, "\u{1F4AC} ", agg.feedbackRequests, " AI-feedback request", agg.feedbackRequests === 1 ? "" : "s"), /* @__PURE__ */ React.createElement("span", { className: "text-emerald-700" }, " across the class. A useful proxy for metacognitive engagement (students who request feedback are practicing self-assessment).")), (qualitySignals.summaryFillRate.value !== null || qualitySignals.avgCerWords.value !== null || qualitySignals.rrEvidenceRate.value !== null || qualitySignals.selfAssessment.value !== null) && /* @__PURE__ */ React.createElement("div", { className: "mb-4", "data-help-key": "dashboard_class_notebook_quality_signals" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("h5", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, t("dashboard.class_notebook.quality_signals_label") || "Quality Signals (research thresholds)"), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-500 italic" }, t("dashboard.class_notebook.quality_signals_legend") || "green = healthy \xB7 amber = partial \xB7 red = needs attention")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-3 gap-2" }, qualitySignals.summaryFillRate.value !== null && /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-3 mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-violet-50 rounded-xl p-3 text-center border border-violet-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-violet-700" }, agg.studentsWithNotebook), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-violet-600 uppercase mt-1" }, t("dashboard.class_notebook.students_with") || "Students using")), agg.cornell > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 rounded-xl p-3 text-center border border-indigo-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-indigo-700" }, agg.cornell), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-indigo-600 uppercase mt-1" }, "\u{1F4D3} Cornell")), agg.labReport > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-sky-50 rounded-xl p-3 text-center border border-sky-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-sky-700" }, agg.labReport), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-sky-600 uppercase mt-1" }, "\u{1F9EA} Lab Report")), agg.readingResponse > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-fuchsia-50 rounded-xl p-3 text-center border border-fuchsia-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-fuchsia-700" }, agg.readingResponse), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-fuchsia-600 uppercase mt-1" }, "\u{1F4D6} Reading")), agg.doubleEntry > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-rose-50 rounded-xl p-3 text-center border border-rose-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-rose-700" }, agg.doubleEntry), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-rose-600 uppercase mt-1" }, "\u270D\uFE0F Double-Entry")), agg.guidedNotes > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 rounded-xl p-3 text-center border border-emerald-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-emerald-700" }, agg.guidedNotes), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-emerald-600 uppercase mt-1" }, "\u{1F4DD} Guided")), agg.qAndA > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-cyan-50 rounded-xl p-3 text-center border border-cyan-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-cyan-700" }, agg.qAndA), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-cyan-600 uppercase mt-1" }, "\u2753 Q&A")), agg.anchorChart > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 rounded-xl p-3 text-center border border-amber-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-amber-700" }, agg.anchorChart), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-amber-600 uppercase mt-1" }, "\u{1F4CB} Anchor Chart"))), agg.feedbackRequests > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border-l-4 border-emerald-400 rounded-r-md p-3 mb-4 text-sm" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-emerald-800" }, "\u{1F4AC} ", agg.feedbackRequests, " AI-feedback request", agg.feedbackRequests === 1 ? "" : "s"), /* @__PURE__ */ React.createElement("span", { className: "text-emerald-700" }, " across the class. A useful proxy for metacognitive engagement (students who request feedback are practicing self-assessment).")), Array.isArray(qualitySignals) && qualitySignals.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mb-4", "data-help-key": "dashboard_class_notebook_quality_signals" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("h5", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, t("dashboard.class_notebook.quality_signals_label") || "Quality Signals (research thresholds)"), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-500 italic" }, t("dashboard.class_notebook.quality_signals_legend") || "green = healthy \xB7 amber = partial \xB7 red = needs attention")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-3 gap-2" }, qualitySignals.map((sig) => /* @__PURE__ */ React.createElement(
     _NotebookQualityCard,
     {
-      tone: _signalTone("summaryFillRate", qualitySignals.summaryFillRate.value),
-      label: t("dashboard.class_notebook.signal_summary_fill") || "Cornell summary rate",
-      value: qualitySignals.summaryFillRate.value,
-      suffix: "%",
-      denom: `${qualitySignals.summaryFillRate.count}/${qualitySignals.summaryFillRate.total}`,
-      hint: t("dashboard.class_notebook.signal_summary_fill_hint") || "% of Cornell entries with \u226520-word summary (research threshold; Pauk/Kiewra)"
+      key: sig.key,
+      tone: sig.tone || "gray",
+      label: t("dashboard.class_notebook.signal_" + sig.key) || sig.label,
+      value: sig.value,
+      suffix: sig.suffix || "",
+      denom: sig.denom || "",
+      hint: t("dashboard.class_notebook.signal_" + sig.key + "_hint") || sig.hint
     }
-  ), qualitySignals.avgCues.value !== null && /* @__PURE__ */ React.createElement(
-    _NotebookQualityCard,
-    {
-      tone: _signalTone("avgCues", qualitySignals.avgCues.value),
-      label: t("dashboard.class_notebook.signal_avg_cues") || "Cornell cue density",
-      value: qualitySignals.avgCues.value,
-      denom: `avg / ${qualitySignals.avgCues.n} entries`,
-      hint: t("dashboard.class_notebook.signal_avg_cues_hint") || "Avg cues per Cornell entry. \u22655 is healthy retrieval-practice density"
-    }
-  ), qualitySignals.avgCerWords.value !== null && /* @__PURE__ */ React.createElement(
-    _NotebookQualityCard,
-    {
-      tone: _signalTone("avgCerWords", qualitySignals.avgCerWords.value),
-      label: t("dashboard.class_notebook.signal_cer_length") || "Lab CER length",
-      value: qualitySignals.avgCerWords.value,
-      suffix: " wd",
-      denom: `avg / ${qualitySignals.avgCerWords.n} reports`,
-      hint: t("dashboard.class_notebook.signal_cer_length_hint") || "Avg word count of CER analysis. \u226530 words is where reasoning lives (McNeill & Krajcik)"
-    }
-  ), qualitySignals.rrEvidenceRate.value !== null && /* @__PURE__ */ React.createElement(
-    _NotebookQualityCard,
-    {
-      tone: _signalTone("rrEvidenceRate", qualitySignals.rrEvidenceRate.value),
-      label: t("dashboard.class_notebook.signal_rr_evidence") || "Reading evidence rate",
-      value: qualitySignals.rrEvidenceRate.value,
-      suffix: "%",
-      denom: `${qualitySignals.rrEvidenceRate.count}/${qualitySignals.rrEvidenceRate.total}`,
-      hint: t("dashboard.class_notebook.signal_rr_evidence_hint") || "% of Reading Responses with a favorite line filled (close-reading anchor)"
-    }
-  ), qualitySignals.connectionVariety.value !== null && /* @__PURE__ */ React.createElement(
-    _NotebookQualityCard,
-    {
-      tone: _signalTone("connectionVariety", qualitySignals.connectionVariety.value),
-      label: t("dashboard.class_notebook.signal_conn_variety") || "Connection variety",
-      value: qualitySignals.connectionVariety.value,
-      suffix: "%",
-      denom: `${qualitySignals.connectionVariety.count}/${qualitySignals.connectionVariety.total} students`,
-      hint: t("dashboard.class_notebook.signal_conn_variety_hint") || "% of students using \u22652 of 3 connection types (text-to-self/text/world)"
-    }
-  ), qualitySignals.selfAssessment.value !== null && /* @__PURE__ */ React.createElement(
-    _NotebookQualityCard,
-    {
-      tone: _signalTone("selfAssessment", qualitySignals.selfAssessment.value),
-      label: t("dashboard.class_notebook.signal_self_assess") || "Self-assessment use",
-      value: qualitySignals.selfAssessment.value,
-      suffix: "%",
-      denom: `${qualitySignals.selfAssessment.count}/${qualitySignals.selfAssessment.total} students`,
-      hint: t("dashboard.class_notebook.signal_self_assess_hint") || "% of students who have requested AI feedback \u22651\xD7 (metacognitive engagement proxy)"
-    }
-  ))), insightsLoading ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-8" }, /* @__PURE__ */ React.createElement("div", { className: "text-4xl mb-2 animate-pulse" }, "\u{1F4D3}"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 font-bold" }, t("dashboard.class_notebook.loading") || "AI is reading across the class...")) : insights ? /* @__PURE__ */ React.createElement("div", { className: "space-y-3 mt-4 bg-slate-50 rounded-xl p-4 border border-slate-200" }, insights.classSummary && /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-200 rounded-md p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1" }, t("dashboard.class_notebook.overview_label") || "Class overview"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed" }, insights.classSummary)), Array.isArray(insights.patterns) && insights.patterns.map((p, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-white border-l-4 border-violet-400 rounded-r-md p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-black text-violet-800 mb-1" }, p.title), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed mb-2" }, p.observation), /* @__PURE__ */ React.createElement("div", { className: "text-xs bg-violet-50 border border-violet-200 rounded p-2 text-violet-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("dashboard.class_notebook.mini_lesson_label") || "Try a mini-lesson:"), " ", p.miniLesson))), insights.celebration && /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border-2 border-emerald-300 rounded-md p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-emerald-800 uppercase tracking-wider mb-1" }, "\u{1F331} ", t("dashboard.class_notebook.celebration_label") || "Class strength"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed" }, insights.celebration))) : null);
+  )))), insightsLoading ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-8" }, /* @__PURE__ */ React.createElement("div", { className: "text-4xl mb-2 animate-pulse" }, "\u{1F4D3}"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 font-bold" }, t("dashboard.class_notebook.loading") || "AI is reading across the class...")) : insights ? /* @__PURE__ */ React.createElement("div", { className: "space-y-3 mt-4 bg-slate-50 rounded-xl p-4 border border-slate-200" }, insights.classSummary && /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-200 rounded-md p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1" }, t("dashboard.class_notebook.overview_label") || "Class overview"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed" }, insights.classSummary)), Array.isArray(insights.patterns) && insights.patterns.map((p, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-white border-l-4 border-violet-400 rounded-r-md p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-black text-violet-800 mb-1" }, p.title), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed mb-2" }, p.observation), /* @__PURE__ */ React.createElement("div", { className: "text-xs bg-violet-50 border border-violet-200 rounded p-2 text-violet-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("dashboard.class_notebook.mini_lesson_label") || "Try a mini-lesson:"), " ", p.miniLesson))), insights.celebration && /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border-2 border-emerald-300 rounded-md p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-emerald-800 uppercase tracking-wider mb-1" }, "\u{1F331} ", t("dashboard.class_notebook.celebration_label") || "Class strength"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed" }, insights.celebration))) : null);
 });
 const LearnerProgressView = React.memo(({
   globalPoints = 0,
@@ -3452,6 +3488,9 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
       "Cornell Notes",
       "Lab Reports",
       "Reading Responses",
+      "Double-Entry Journals",
+      "Guided Notes",
+      "Q&A Study Notes",
       "Anchor Charts",
       "Notebook Feedback Requests",
       ...registryHeaders
@@ -3493,10 +3532,13 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
       const cornellCount = noteEntries.filter((e) => (e.data && e.data.templateType) === "cornell-notes").length;
       const labCount = noteEntries.filter((e) => (e.data && e.data.templateType) === "lab-report").length;
       const readingCount = noteEntries.filter((e) => (e.data && e.data.templateType) === "reading-response").length;
+      const doubleEntryCount = noteEntries.filter((e) => (e.data && e.data.templateType) === "double-entry").length;
+      const guidedCount = noteEntries.filter((e) => (e.data && e.data.templateType) === "guided-notes").length;
+      const qAndACount = noteEntries.filter((e) => (e.data && e.data.templateType) === "q-and-a").length;
       const anchorCount = hist.filter((h) => h && h.type === "anchor-chart").length;
       const feedbackCount = noteEntries.reduce((sum, e) => sum + (e.data && e.data.feedbackCount || 0), 0);
       const registryCounts = getTeacherMetricRegistry().map((entry) => entry.count(student));
-      return `"${name}","${date}","${level}","${quizAvg}","${xp}","${probeCount}","${avgWcpm}","${surveyCount}","${sessionCount}","${cornellCount}","${labCount}","${readingCount}","${anchorCount}","${feedbackCount}",${registryCounts.map((n) => `"${n}"`).join(",")}`;
+      return `"${name}","${date}","${level}","${quizAvg}","${xp}","${probeCount}","${avgWcpm}","${surveyCount}","${sessionCount}","${cornellCount}","${labCount}","${readingCount}","${doubleEntryCount}","${guidedCount}","${qAndACount}","${anchorCount}","${feedbackCount}",${registryCounts.map((n) => `"${n}"`).join(",")}`;
     });
     const csvContent = [headers.join(","), ...rows].join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -3635,10 +3677,13 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
         "cornell-notes": noteEntries.filter((e) => (e.data && e.data.templateType) === "cornell-notes").length,
         "lab-report": noteEntries.filter((e) => (e.data && e.data.templateType) === "lab-report").length,
         "reading-response": noteEntries.filter((e) => (e.data && e.data.templateType) === "reading-response").length,
+        "double-entry": noteEntries.filter((e) => (e.data && e.data.templateType) === "double-entry").length,
+        "guided-notes": noteEntries.filter((e) => (e.data && e.data.templateType) === "guided-notes").length,
+        "q-and-a": noteEntries.filter((e) => (e.data && e.data.templateType) === "q-and-a").length,
         "anchor-chart": anchorEntries.length
       };
       const feedbackEvents = noteEntries.reduce((sum, e) => sum + (e.data && e.data.feedbackCount || 0), 0);
-      return /* @__PURE__ */ React.createElement("div", { className: "bg-violet-50 rounded-xl p-4 border border-violet-200", "data-help-key": "dashboard_notebook_activity_tile" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-violet-700" }, totalNotebook), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-violet-600 uppercase mt-1" }, t("dashboard.notebook_activity") || "Notebook Activity"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-2 space-y-0.5" }, byType["cornell-notes"] > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F4D3} Cornell"), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, byType["cornell-notes"])), byType["lab-report"] > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F9EA} Lab Report"), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, byType["lab-report"])), byType["reading-response"] > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F4D6} Reading"), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, byType["reading-response"])), byType["anchor-chart"] > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F4CB} Anchor Chart"), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, byType["anchor-chart"])), feedbackEvents > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-violet-700 font-semibold pt-1 mt-1 border-t border-violet-200" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F4AC} AI feedback"), /* @__PURE__ */ React.createElement("span", null, feedbackEvents, "\xD7"))));
+      return /* @__PURE__ */ React.createElement("div", { className: "bg-violet-50 rounded-xl p-4 border border-violet-200", "data-help-key": "dashboard_notebook_activity_tile" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-violet-700" }, totalNotebook), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-violet-600 uppercase mt-1" }, t("dashboard.notebook_activity") || "Notebook Activity"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-2 space-y-0.5" }, byType["cornell-notes"] > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F4D3} Cornell"), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, byType["cornell-notes"])), byType["lab-report"] > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F9EA} Lab Report"), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, byType["lab-report"])), byType["reading-response"] > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F4D6} Reading"), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, byType["reading-response"])), byType["double-entry"] > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, "\u270D\uFE0F Double-Entry"), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, byType["double-entry"])), byType["guided-notes"] > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F4DD} Guided Notes"), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, byType["guided-notes"])), byType["q-and-a"] > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, "\u2753 Q&A"), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, byType["q-and-a"])), byType["anchor-chart"] > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F4CB} Anchor Chart"), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, byType["anchor-chart"])), feedbackEvents > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-violet-700 font-semibold pt-1 mt-1 border-t border-violet-200" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F4AC} AI feedback"), /* @__PURE__ */ React.createElement("span", null, feedbackEvents, "\xD7"))));
     })()), selectedStudent.probeHistory && Object.keys(selectedStudent.probeHistory).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-4 space-y-2" }, /* @__PURE__ */ React.createElement("h5", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("research.recent_probe_results")), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5" }, Object.entries(selectedStudent.probeHistory).flatMap(
       ([name, probes]) => probes.slice(-3).map((p, i) => /* @__PURE__ */ React.createElement("div", { key: name + "-" + i, className: "flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2 border border-slate-100 text-xs" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, name), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, p.probeType || p.type || "Probe"), p.wcpm !== void 0 && /* @__PURE__ */ React.createElement("span", { className: "font-mono font-bold text-amber-700" }, p.wcpm, " WCPM"), p.dcpm !== void 0 && /* @__PURE__ */ React.createElement("span", { className: "font-mono font-bold text-amber-700" }, p.dcpm, " DCPM"), p.accuracy !== void 0 && /* @__PURE__ */ React.createElement("span", { className: "font-mono font-bold text-emerald-700" }, Math.round(p.accuracy * 100), "%"), p.score !== void 0 && /* @__PURE__ */ React.createElement("span", { className: "font-mono font-bold text-indigo-700" }, p.score), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, new Date(p.timestamp || p.date || Date.now()).toLocaleDateString()))))
     ))), selectedStudent.externalCBMScores && Object.keys(selectedStudent.externalCBMScores).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-4" }, /* @__PURE__ */ React.createElement("h5", { className: "text-[11px] font-bold text-slate-600 uppercase mb-2" }, t("research.external_cbm_scores")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-3 gap-2" }, Object.entries(selectedStudent.externalCBMScores).map(([source, scores]) => /* @__PURE__ */ React.createElement("div", { key: source, className: "bg-slate-50 rounded-lg px-3 py-2 border border-slate-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, source), Array.isArray(scores) ? scores.slice(-1).map((s2, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "text-sm font-bold text-slate-800" }, s2.score || s2.value || JSON.stringify(s2))) : /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-800" }, JSON.stringify(scores))))))), /* @__PURE__ */ React.createElement("div", { className: "flex-grow overflow-y-auto custom-scrollbar space-y-6 pb-10" }, (selectedStudent.history || []).map((item, idx) => /* @__PURE__ */ React.createElement("div", { key: item.id || idx, className: "bg-white p-6 rounded-xl border border-slate-400 shadow-sm hover:border-indigo-300 transition-colors" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start mb-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-lg text-slate-800" }, item.title || "Untitled Resource"), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-600 uppercase tracking-wider bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100" }, item.type)), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 font-mono" }, new Date(item.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))), item.meta && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 italic border-l-2 border-slate-200 pl-3 mb-4" }, item.meta), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-lg p-4 border border-slate-100 overflow-x-auto" }, /* @__PURE__ */ React.createElement(
@@ -4072,6 +4117,7 @@ window.AlloModules.TeacherModule = true;
 window.AlloModules.TeacherAnalyticsInternals = {
   calculateAnalyticsMetrics: calculateAnalyticsMetrics,
   computeNotebookQualitySignals: _computeNotebookQualitySignals,
+  computeAllQualitySignals: _computeAllQualitySignals,
   computeCrossToolMisconceptions: _computeCrossToolMisconceptions,
 };
   console.log('[TeacherModule] 11 components registered:', ["RosterKeyPanel","SimpleBarChart","SimpleDonutChart","LongitudinalProgressChart","ConfettiEffect","StudentEscapeRoomOverlay","EscapeRoomTeacherControls","TeacherLiveQuizControls","calculateAnalyticsMetrics","LearnerProgressView","TeacherDashboard"]);

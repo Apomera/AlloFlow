@@ -4464,9 +4464,9 @@
         }
       }
 
-      return el('div', { role: 'application', 'aria-label': __alloT('stem.geometryworld.geometry_world_3d_block_based_math_exp', 'Geometry World - 3D block-based math explorer. Use WASD to move, mouse to look, left-click to break blocks, right-click to place blocks.'), style: { display: 'flex', flexDirection: 'column', height: '100%', position: 'relative', background: '#000' } },
+      return el('div', { role: 'application', 'aria-label': __alloT('stem.geometryworld.geometry_world_3d_block_based_math_exp', 'Geometry World - 3D block-based math explorer. Use WASD to move, mouse to look, left-click to break blocks, right-click to place blocks.'), style: { display: 'flex', flexDirection: 'column', height: '100%', position: 'relative', background: 'var(--allo-stem-canvas, #000)' } },
         // Top bar — glass style
-        el('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(100,116,139,0.15)', flexShrink: 0, flexWrap: 'wrap' } },
+        el('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'var(--allo-stem-deeper, rgba(15,23,42,0.85))', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(100,116,139,0.15)', flexShrink: 0, flexWrap: 'wrap' } },
           el('span', { style: { fontSize: '18px' } }, '\uD83E\uDDF1'),
           el('span', { style: { fontWeight: 800, color: '#fff', fontSize: '14px' } }, 'Geometry World'),
           el('span', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginRight: 'auto' } }, currentLesson.title || ''),

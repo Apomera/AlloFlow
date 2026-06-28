@@ -6,10 +6,13 @@
 // cholera map, Fleming's penicillin, MRSA, COVID, fecal transplants).
 (function() {
   'use strict';
-  if (!window.StemLab || !window.StemLab.registerTool) {
-    console.warn('[StemLab] stem_tool_microbiology.js loaded before StemLab registry - bailing');
-    return;
-  }
+  // ═══ Defensive StemLab guard ═══
+  window.StemLab = window.StemLab || {
+    _registry: {}, _order: [],
+    registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); },
+    isRegistered: function(id) { return !!this._registry[id]; },
+    renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; return tool.render(ctx); }
+  };
 
   // ──────────────────────────────────────────────────────────────────
   // DATA: Bacteria
@@ -432,7 +435,7 @@
     var pctRes = totalAlive > 0 ? Math.round((totalRes / totalAlive) * 100) : 0;
     var initialPct = history.length > 0 ? Math.round((history[0].resistant / Math.max(1, (history[0].sensitive + history[0].resistant))) * 100) : initRes;
 
-    return hh('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 12, padding: 16, marginBottom: 14, borderTop: '1px solid rgba(239,68,68,0.30)', borderRight: '1px solid rgba(239,68,68,0.30)', borderBottom: '1px solid rgba(239,68,68,0.30)', borderLeft: '4px solid #ef4444', boxShadow: '0 4px 20px rgba(239,68,68,0.10)' } },
+    return hh('div', { style: { background: 'var(--allo-stem-deeper, rgba(15,23,42,0.7))', borderRadius: 12, padding: 16, marginBottom: 14, borderTop: '1px solid rgba(239,68,68,0.30)', borderRight: '1px solid rgba(239,68,68,0.30)', borderBottom: '1px solid rgba(239,68,68,0.30)', borderLeft: '4px solid #ef4444', boxShadow: '0 4px 20px rgba(239,68,68,0.10)' } },
       hh('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
         hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(239,68,68,0.18)', border: '1.5px solid #ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '🧫'),
         hh('div', { style: { flex: 1, minWidth: 200 } },
@@ -441,7 +444,7 @@
         )
       ),
       hh('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(220px, 1fr) minmax(180px, 1fr)', gap: 12, marginBottom: 12 } },
-        hh('div', { style: { background: 'rgba(2,6,23,0.7)', borderRadius: 10, padding: 8 } },
+        hh('div', { style: { background: 'var(--allo-stem-deeper, rgba(2,6,23,0.7))', borderRadius: 10, padding: 8 } },
           hh('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4, textAlign: 'center' } }, 'Petri dish · Day ' + day + ' of ' + duration),
           hh('svg', { viewBox: '0 0 200 200', preserveAspectRatio: 'xMidYMid meet', 'aria-label': 'Petri dish showing bacterial population', style: { width: '100%', maxWidth: 240, display: 'block', margin: '0 auto' } },
             hh('defs', null, hh('radialGradient', { id: 'dishBg', cx: '50%', cy: '50%', r: '50%' }, hh('stop', { offset: '0%', stopColor: '#1e293b' }), hh('stop', { offset: '100%', stopColor: '#0f172a' }))),
@@ -458,7 +461,7 @@
             hh('span', null, hh('span', { style: { display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#ef4444', marginRight: 4, verticalAlign: 'middle' } }), 'resistant')
           )
         ),
-        hh('div', { style: { background: 'rgba(2,6,23,0.7)', borderRadius: 10, padding: 10 } },
+        hh('div', { style: { background: 'var(--allo-stem-deeper, rgba(2,6,23,0.7))', borderRadius: 10, padding: 10 } },
           hh('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6, textAlign: 'center' } }, '% resistant over time'),
           hh('svg', { viewBox: '0 0 100 60', preserveAspectRatio: 'none', 'aria-hidden': 'true', style: { width: '100%', height: 100, display: 'block' } },
             hh('line', { x1: 4, y1: 56, x2: 96, y2: 56, stroke: 'rgba(148,163,184,0.30)', strokeWidth: 0.4 }),
@@ -599,7 +602,7 @@
           top: (activeTooltip.y / 3) + '%',
           left: (activeTooltip.x / 4) + '%',
           transform: 'translate(-50%, -120%)',
-          background: 'rgba(15, 23, 42, 0.95)',
+          background: 'var(--allo-stem-deeper, rgba(15, 23, 42, 0.95))',
           border: '1.5px solid #a855f7',
           padding: '6px 10px',
           borderRadius: '6px',
@@ -617,7 +620,7 @@
       );
     }
 
-    return hh('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 12, padding: 16, marginBottom: 14, borderTop: '1px solid rgba(168,85,247,0.30)', borderRight: '1px solid rgba(168,85,247,0.30)', borderBottom: '1px solid rgba(168,85,247,0.30)', borderLeft: '4px solid #a855f7' } },
+    return hh('div', { style: { background: 'var(--allo-stem-deeper, rgba(15,23,42,0.7))', borderRadius: 12, padding: 16, marginBottom: 14, borderTop: '1px solid rgba(168,85,247,0.30)', borderRight: '1px solid rgba(168,85,247,0.30)', borderBottom: '1px solid rgba(168,85,247,0.30)', borderLeft: '4px solid #a855f7' } },
       hh('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
         hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(168,85,247,0.18)', border: '1.5px solid #a855f7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '🗺️'),
         hh('div', { style: { flex: 1, minWidth: 200 } },
@@ -625,7 +628,7 @@
           hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, 'Walk through 6 weeks of the outbreak. Try removing the Broad Street pump handle. Watch the data move.')
         )
       ),
-      hh('div', { style: { position: 'relative', background: 'rgba(2,6,23,0.7)', borderRadius: 10, padding: 8, marginBottom: 10 } },
+      hh('div', { style: { position: 'relative', background: 'var(--allo-stem-deeper, rgba(2,6,23,0.7))', borderRadius: 10, padding: 8, marginBottom: 10 } },
         hh('svg', { viewBox: '0 0 400 300', preserveAspectRatio: 'xMidYMid meet', 'aria-label': '1854 Soho map showing cholera deaths clustered around Broad Street water pump', style: { width: '100%', maxHeight: 300, display: 'block' } },
           hh('rect', { x: 0, y: 0, width: 400, height: 300, fill: '#1a1410', onClick: function() { setActiveTooltip(null); } }),
           hh('rect', { x: 0, y: 0, width: 400, height: 300, fill: '#3d2f1f', opacity: 0.4, onClick: function() { setActiveTooltip(null); } }),
@@ -787,7 +790,7 @@
         hh('input', { type: 'range', min: 0, max: WEEKS.length - 1, step: 1, value: week, 'aria-label': 'Outbreak week', onChange: function(e) { setWeek(parseInt(e.target.value, 10)); }, style: { flex: 1, minWidth: 120, accentColor: '#a855f7' } }),
         hh('div', { style: { padding: '4px 10px', borderRadius: 999, background: 'rgba(220,38,38,0.18)', color: '#fca5a5', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', border: '1px solid rgba(220,38,38,0.40)' } }, w.deaths + ' deaths')
       ),
-      hh('div', { style: { padding: '10px 12px', borderRadius: 8, marginBottom: 10, background: 'rgba(2,6,23,0.5)', borderLeft: '3px solid #a855f7' } },
+      hh('div', { style: { padding: '10px 12px', borderRadius: 8, marginBottom: 10, background: 'var(--allo-stem-deeper, rgba(2,6,23,0.5))', borderLeft: '3px solid #a855f7' } },
         hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, w.note)
       ),
       hh('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 10 } },
@@ -930,7 +933,7 @@
       return null;
     }
 
-    return hh('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 12, padding: 16, marginBottom: 14, borderTop: '1px solid rgba(16,185,129,0.30)', borderRight: '1px solid rgba(16,185,129,0.30)', borderBottom: '1px solid rgba(16,185,129,0.30)', borderLeft: '4px solid #10b981' } },
+    return hh('div', { style: { background: 'var(--allo-stem-deeper, rgba(15,23,42,0.7))', borderRadius: 12, padding: 16, marginBottom: 14, borderTop: '1px solid rgba(16,185,129,0.30)', borderRight: '1px solid rgba(16,185,129,0.30)', borderBottom: '1px solid rgba(16,185,129,0.30)', borderLeft: '4px solid #10b981' } },
       hh('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
         hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(16,185,129,0.18)', border: '1.5px solid #10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '🔬'),
         hh('div', { style: { flex: 1, minWidth: 200 } },
@@ -960,7 +963,7 @@
           );
         })
       ),
-      hh('div', { style: { background: '#0a0e1a', borderRadius: '50%', width: '100%', maxWidth: 320, height: 280, margin: '0 auto 12px', position: 'relative', overflow: 'hidden', border: '4px solid #1f2937', boxShadow: 'inset 0 0 55px rgba(0,0,0,0.45), inset 0 0 40px rgba(16,185,129,0.10), 0 0 30px rgba(0,0,0,0.5)' } },
+      hh('div', { style: { background: 'var(--allo-stem-deeper, #0a0e1a)', borderRadius: '50%', width: '100%', maxWidth: 320, height: 280, margin: '0 auto 12px', position: 'relative', overflow: 'hidden', border: '4px solid #1f2937', boxShadow: 'inset 0 0 55px rgba(0,0,0,0.45), inset 0 0 40px rgba(16,185,129,0.10), 0 0 30px rgba(0,0,0,0.5)' } },
         hh('svg', { viewBox: '0 0 200 200', preserveAspectRatio: 'xMidYMid meet', 'aria-label': 'Microscope view of ' + sel.name + ' at ' + mag + 'x', style: { width: '100%', height: '100%', display: 'block' } },
           hh('defs', null, hh('pattern', { id: 'mscope-grid', x: 0, y: 0, width: 20, height: 20, patternUnits: 'userSpaceOnUse' }, hh('path', { d: 'M 20 0 L 0 0 0 20', fill: 'none', stroke: '#1e293b', strokeWidth: 0.3 }))),
           hh('rect', { x: 0, y: 0, width: 200, height: 200, fill: 'url(#mscope-grid)' }),
@@ -1002,7 +1005,7 @@
           style: { width: '100%', accentColor: '#10b981' }
         })
       ),
-      hh('div', { style: { padding: '10px 12px', borderRadius: 8, background: 'rgba(2,6,23,0.5)', borderLeft: '3px solid ' + sel.color } },
+      hh('div', { style: { padding: '10px 12px', borderRadius: 8, background: 'var(--allo-stem-deeper, rgba(2,6,23,0.5))', borderLeft: '3px solid ' + sel.color } },
         hh('div', { style: { fontSize: 11, fontWeight: 800, color: sel.color, marginBottom: 4 } }, sel.icon + ' ' + sel.name + ' · ' + sel.kingdom),
         hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } }, sel.info)
       )
@@ -1359,30 +1362,30 @@
           var posOpacity = step === 0 ? 0.3 : 0.9;
           var negOpacity = (step === 0 || step === 3) ? 0.3 : 0.9;
 
-          return h('div', { style: { background: 'rgba(15,23,42,0.4)', padding: 12, borderRadius: 12, border: '1px solid rgba(124,58,237,0.2)', marginBottom: 12 } },
+          return h('div', { style: { background: 'var(--allo-stem-deeper, rgba(15,23,42,0.4))', padding: 12, borderRadius: 12, border: '1px solid rgba(124,58,237,0.2)', marginBottom: 12 } },
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 } },
               h('div', null,
                 h('div', { style: { fontSize: 12, fontWeight: 800, color: '#c4b5fd', marginBottom: 6, display: 'flex', justifyContent: 'space-between' } },
                   h('span', null, __alloT('stem.microbiology.slide_smear_1000x_oil_immersion', '🔬 Slide Smear (1000x Oil Immersion)')),
                   h('span', { style: { color: '#a78bfa' } }, step === 0 ? 'Step 0: Heat-Fixed Smear' : 'Step ' + step + ': ' + stepLabels[step - 1])
                 ),
-                h('svg', { viewBox: '0 0 200 150', style: { width: '100%', height: 160, display: 'block', background: '#070a13', borderRadius: 8, border: '1px solid #334155' } },
+                h('svg', { viewBox: '0 0 200 150', style: { width: '100%', height: 160, display: 'block', background: 'var(--allo-stem-deeper, #070a13)', borderRadius: 8, border: '1px solid #334155' } },
                   h('circle', { cx: 100, cy: 75, r: 72, fill: 'none', stroke: '#1e293b', strokeWidth: 0.5 }),
                   h('line', { x1: 100, y1: 3, x2: 100, y2: 147, stroke: '#1e293b', strokeWidth: 0.3, strokeDasharray: '2,2' }),
                   h('line', { x1: 25, y1: 75, x2: 175, y2: 75, stroke: '#1e293b', strokeWidth: 0.3, strokeDasharray: '2,2' }),
                   h('g', null,
                     [0, 1, 2, 3, 4].map(function(i) {
-                      return h('circle', { key: 'gpc1-' + i, cx: 50 + i * 7, cy: 50 + Math.sin(i) * 2, r: 4, fill: posColor, opacity: posOpacity, stroke: '#070a13', strokeWidth: 0.3 });
+                      return h('circle', { key: 'gpc1-' + i, cx: 50 + i * 7, cy: 50 + Math.sin(i) * 2, r: 4, fill: posColor, opacity: posOpacity, stroke: 'var(--allo-stem-deeper, #070a13)', strokeWidth: 0.3 });
                     }),
                     [0, 1, 2, 3].map(function(i) {
-                      return h('circle', { key: 'gpc2-' + i, cx: 120 + i * 7, cy: 90 + Math.cos(i) * 2, r: 4, fill: posColor, opacity: posOpacity, stroke: '#070a13', strokeWidth: 0.3 });
+                      return h('circle', { key: 'gpc2-' + i, cx: 120 + i * 7, cy: 90 + Math.cos(i) * 2, r: 4, fill: posColor, opacity: posOpacity, stroke: 'var(--allo-stem-deeper, #070a13)', strokeWidth: 0.3 });
                     }),
                     h('text', { x: 50, y: 41, fill: posColor, fontSize: 5.5, fontWeight: 700, opacity: posOpacity }, __alloT('stem.microbiology.gram_positive_cocci', 'Gram-positive (cocci)'))
                   ),
                   h('g', null,
-                    h('rect', { x: 45, y: 85, width: 14, height: 6, rx: 3, transform: 'rotate(15 52 88)', fill: negColor, opacity: negOpacity, stroke: '#070a13', strokeWidth: 0.3 }),
-                    h('rect', { x: 130, y: 45, width: 14, height: 6, rx: 3, transform: 'rotate(-30 137 48)', fill: negColor, opacity: negOpacity, stroke: '#070a13', strokeWidth: 0.3 }),
-                    h('rect', { x: 90, y: 65, width: 14, height: 6, rx: 3, transform: 'rotate(45 97 68)', fill: negColor, opacity: negOpacity, stroke: '#070a13', strokeWidth: 0.3 }),
+                    h('rect', { x: 45, y: 85, width: 14, height: 6, rx: 3, transform: 'rotate(15 52 88)', fill: negColor, opacity: negOpacity, stroke: 'var(--allo-stem-deeper, #070a13)', strokeWidth: 0.3 }),
+                    h('rect', { x: 130, y: 45, width: 14, height: 6, rx: 3, transform: 'rotate(-30 137 48)', fill: negColor, opacity: negOpacity, stroke: 'var(--allo-stem-deeper, #070a13)', strokeWidth: 0.3 }),
+                    h('rect', { x: 90, y: 65, width: 14, height: 6, rx: 3, transform: 'rotate(45 97 68)', fill: negColor, opacity: negOpacity, stroke: 'var(--allo-stem-deeper, #070a13)', strokeWidth: 0.3 }),
                     h('text', { x: 110, y: 38, fill: negColor, fontSize: 5.5, fontWeight: 700, opacity: negOpacity }, __alloT('stem.microbiology.gram_negative_bacilli', 'Gram-negative (bacilli)'))
                   )
                 )
@@ -1426,7 +1429,7 @@
                     style: { width: '100%', padding: 4, borderRadius: 4, background: 'rgba(148,163,184,0.1)', color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid rgba(148,163,184,0.2)', fontSize: 9, fontWeight: 700, cursor: 'pointer' }
                   }, __alloT('stem.microbiology.clear_smear', '↺ Clear Smear'))
                 ),
-                h('div', { style: { padding: 8, borderRadius: 6, background: '#0a0e1a', border: '1px solid #1e293b' } },
+                h('div', { style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-deeper, #0a0e1a)', border: '1px solid #1e293b' } },
                   h('div', { style: { fontSize: 9, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', marginBottom: 2 } }, __alloT('stem.microbiology.stain_chemistry', 'Stain chemistry')),
                   h('div', { style: { fontSize: 10.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.4 } },
                     step === 0 ? 'Select a reagent bottle to start the staining procedure on your heat-fixed slide smear.' : stepDescriptions[step - 1]
@@ -4643,7 +4646,7 @@
           '.micro-tab-btn.active { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; font-weight: 700; border-color: rgba(16, 185, 129, 0.3); box-shadow: 0 0 12px rgba(16, 185, 129, 0.1); }\n' +
           '.micro-tab-btn.active::after { content: ""; position: absolute; bottom: 0px; left: 15%; right: 15%; height: 2.5px; background: #10b981; border-radius: 999px; box-shadow: 0 0 8px #10b981; }\n' +
           '.micro-tab-btn:focus-visible { outline: 2px solid #10b981 !important; outline-offset: 2px !important; }\n' +
-          '.microscope-slide-btn { flex: 1 1 100px; min-width: 80px; padding: 8px 6px; border-radius: 8px; background: rgba(15, 23, 42, 0.5); color: #94a3b8; border: 1px solid rgba(100, 116, 139, 0.2); font-size: 11px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; text-align: center; }\n' +
+          '.microscope-slide-btn { flex: 1 1 100px; min-width: 80px; padding: 8px 6px; border-radius: 8px; background: var(--allo-stem-deeper, rgba(15, 23, 42, 0.5)); color: #94a3b8; border: 1px solid rgba(100, 116, 139, 0.2); font-size: 11px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; text-align: center; }\n' +
           '.microscope-slide-btn:hover { background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.3); color: #e2e8f0; }\n' +
           '.microscope-slide-btn.active { background: rgba(16, 185, 129, 0.12); border-color: var(--slide-color, #10b981); color: var(--slide-color, #10b981); font-weight: 700; box-shadow: 0 0 10px rgba(16, 185, 129, 0.05); }\n' +
           '.microscope-slide-btn:focus-visible { outline: 2px solid var(--slide-color, #10b981) !important; outline-offset: 2px !important; }\n' +

@@ -24291,7 +24291,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               : `<textarea class="interactive-textarea" aria-label="${text}" placeholder="${t('common.type_answer_here')}"></textarea>`;
           const reflectionHtml = Array.isArray(item.data.reflections)
               ? item.data.reflections.map(r => {
-                  const text = typeof r === 'string' ? r : r.text;
+                  const text = typeof r === 'string' ? r : (r.text || r.prompt || r.question || r.q || r.label || r.title || '');
                   const textEn = typeof r === 'object' && r.text_en ? r.text_en : null;
                   return `
                       <div class="reflection-block">
@@ -25577,14 +25577,15 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               </div>
           `;
       } else if (item.type === 'note-taking') {
-          // Student-authored note-taking template (Cornell / Lab Report / Reading Response).
+          // Student-authored note-taking template (Cornell / Lab Report / Reading Response /
+          // Double-Entry Journal / Guided Notes / Q&A Study Notes).
           // Renders the FILLED-IN student work for teacher review, plus the AI-feedback
           // summary if the student has requested feedback on this entry.
           const tt = (item.data && item.data.templateType) || 'cornell-notes';
           const d = item.data || {};
-          const ttLabel = ({ 'cornell-notes': 'Cornell Notes', 'lab-report': 'Lab Report', 'reading-response': 'Reading Response' })[tt] || 'Note';
-          const ttIcon = ({ 'cornell-notes': '📓', 'lab-report': '🧪', 'reading-response': '📖' })[tt] || '📝';
-          const ttColor = ({ 'cornell-notes': '#4f46e5', 'lab-report': '#0284c7', 'reading-response': '#7c3aed' })[tt] || '#475569';
+          const ttLabel = ({ 'cornell-notes': 'Cornell Notes', 'lab-report': 'Lab Report', 'reading-response': 'Reading Response', 'double-entry': 'Double-Entry Journal', 'guided-notes': 'Guided Notes', 'q-and-a': 'Q&A Study Notes' })[tt] || 'Note';
+          const ttIcon = ({ 'cornell-notes': '📓', 'lab-report': '🧪', 'reading-response': '📖', 'double-entry': '✍️', 'guided-notes': '📝', 'q-and-a': '❓' })[tt] || '📝';
+          const ttColor = ({ 'cornell-notes': '#4f46e5', 'lab-report': '#0284c7', 'reading-response': '#7c3aed', 'double-entry': '#e11d48', 'guided-notes': '#059669', 'q-and-a': '#0891b2' })[tt] || '#475569';
           const feedbackCount = d.feedbackCount || 0;
           const feedbackScore = d.prevFeedbackScore || 0;
           const escapeHtml = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -25629,6 +25630,36 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       sec(`Connection (${conn.type || 'text-to-self'})`, conn.text, '#eff6ff'),
                       sec('One Question I Have', d.question, '#ecfdf5'),
                   ].filter(Boolean).join('');
+              }
+              if (tt === 'double-entry') {
+                  const author = d.author || '';
+                  const pageRange = d.pageRange || '';
+                  const meta = (author || pageRange) ? `<div style="font-size:0.85em; color:#64748b; margin-bottom:8px;">${escapeHtml(author)}${author && pageRange ? ' · ' : ''}${escapeHtml(pageRange)}</div>` : '';
+                  const entries = (Array.isArray(d.entries) ? d.entries : []).filter(en => en && ((en.quote || '').trim() || (en.response || '').trim()));
+                  const rowsHtml = entries.map(en => `<tr><td style="border:1px solid #cbd5e1; padding:8px; vertical-align:top; width:45%; background:#fff1f2; font-style:italic;">${escapeHtml((en.quote || '').trim())}</td><td style="border:1px solid #cbd5e1; padding:8px; vertical-align:top;">${escapeHtml((en.response || '').trim())}</td></tr>`).join('');
+                  return `${meta}<table style="width:100%; border-collapse:collapse; margin-bottom:12px;"><thead><tr><th style="border:1px solid #cbd5e1; background:#ffe4e6; padding:8px; text-align:left; font-size:0.85em; text-transform:uppercase;">Quote / Passage</th><th style="border:1px solid #cbd5e1; background:#ffe4e6; padding:8px; text-align:left; font-size:0.85em; text-transform:uppercase;">Response / Thinking</th></tr></thead><tbody>${rowsHtml || '<tr><td colspan="2" style="border:1px solid #cbd5e1; padding:12px; text-align:center; color:#64748b; font-style:italic;">No entries filled in yet.</td></tr>'}</tbody></table>`;
+              }
+              if (tt === 'guided-notes') {
+                  const blanks = Array.isArray(d.blanks) ? d.blanks : [];
+                  const itemsHtml = blanks.map((b, i) => {
+                      const ans = (b && b.studentAnswer || '').trim();
+                      const filled = ans
+                          ? `<strong style="color:#065f46;">${escapeHtml(ans)}</strong>`
+                          : '<span style="color:#94a3b8;">________</span>';
+                      return `<li style="font-size:0.95em; color:#1e293b; margin-bottom:4px;">${escapeHtml(b && b.before || '')}${filled}${escapeHtml(b && b.after || '')}</li>`;
+                  }).join('');
+                  const blanksBlock = blanks.length
+                      ? `<ol style="margin:0 0 8px; padding-left:20px;">${itemsHtml}</ol>`
+                      : '<div style="font-size:0.85em; color:#64748b; font-style:italic;">No guided-note blanks for this entry.</div>';
+                  const own = (d.notesExtra || '').trim()
+                      ? `<div style="background:#eef2ff; border-radius:6px; padding:10px; margin-top:8px;"><div style="font-size:0.75em; font-weight:bold; text-transform:uppercase; color:#3730a3; margin-bottom:4px;">My Own Notes</div><div style="font-size:0.95em; color:#1e293b; line-height:1.5; white-space:pre-wrap;">${escapeHtml(d.notesExtra)}</div></div>`
+                      : '';
+                  return blanksBlock + own;
+              }
+              if (tt === 'q-and-a') {
+                  const pairs = (Array.isArray(d.pairs) ? d.pairs : []).filter(p => p && ((p.question || '').trim() || (p.answer || '').trim()));
+                  const pairsHtml = pairs.map((p, i) => `<div style="background:#ecfeff; border-radius:6px; padding:10px; margin-bottom:8px;"><div style="font-size:0.9em; font-weight:bold; color:#155e75; margin-bottom:4px;">Q${i + 1}. ${escapeHtml((p.question || '').trim())}</div><div style="font-size:0.95em; color:#1e293b; line-height:1.5; white-space:pre-wrap;">${(p.answer || '').trim() ? escapeHtml(p.answer.trim()) : '<span style="color:#94a3b8; font-style:italic;">No answer written yet.</span>'}</div></div>`).join('');
+                  return pairsHtml || '<div style="font-size:0.85em; color:#64748b; font-style:italic;">No question-and-answer pairs yet.</div>';
               }
               return '<div style="font-size:0.85em; color:#64748b; font-style:italic;">Unknown note-taking template.</div>';
           };
@@ -27681,6 +27712,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         counter.textContent = len + ' / ' + max + (len > 0 ? ' characters' : '');
                         counter.style.color = pct > 0.9 ? '#dc2626' : pct > 0.75 ? '#ca8a04' : '#64748b';
                     };
+                    if (tx.nextElementSibling && tx.nextElementSibling.classList && tx.nextElementSibling.classList.contains('allo-ta-counter')) tx.nextElementSibling.remove();
                     tx.parentNode.insertBefore(counter, tx.nextSibling);
                     updateCounter();
                     // ── Debounced autosave on input ──

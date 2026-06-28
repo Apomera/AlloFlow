@@ -815,19 +815,11 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         effectiveVisualStyle = visualStyle;
     }
     const effectiveQuizCount = configOverride.quizCount || quizMcqCount;
-    // isolatedContext: when set (e.g. by Dynamic Assessment), generate PURELY
-    // from the passed directive (textOverride) and suppress ALL ambient
-    // lesson/curriculum context — Lesson DNA, target standards, roster-group
-    // differentiation, selected concepts, source topic, and main-app custom
-    // instructions. This keeps a DA support self-contained to the assessment
-    // item so no outside topic/vocabulary leaks into the measure. Absent the
-    // flag, behavior is unchanged for every main-app generation path.
-    const isolated = !!(configOverride && configOverride.isolatedContext);
-    const lessonDNA = isolated ? null : (configOverride.lessonDNA || persistedLessonDNA || null);
+    const lessonDNA = configOverride.lessonDNA || persistedLessonDNA || null;
     const dnaPromptBlock = formatLessonDNA(lessonDNA);
     const effCustomInstructions = (configOverride && configOverride.customInstructions)
         ? configOverride.customInstructions
-        : isolated ? '' : (
+        : (
             type === 'simplified' ? leveledTextCustomInstructions :
             type === 'quiz' ? quizCustomInstructions :
             type === 'glossary' ? glossaryCustomInstructions :
@@ -901,7 +893,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
     setIsReviewGame(false);
     setReviewGameState({ claimed: new Set(), activeQuestion: null, showAnswer: false });
     const effectiveLanguage = langOverride || leveledTextLanguage;
-    const differentiationContext = isolated ? '' : getGroupDifferentiationContext();
+    const differentiationContext = getGroupDifferentiationContext();
     const dialectInstruction = effectiveLanguage !== 'English' ? "STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese' vs 'European Portuguese'), explicitly use that region's vocabulary, spelling, and grammar conventions." : "";
     if (effectiveLanguage === 'All Selected Languages' && !langOverride) {
         if (type === 'glossary') {
@@ -1130,7 +1122,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                                 warnLog(`⚠️ Rate limited on "${item.term}", will retry...`);
                                 continue;
                             }
-                            console.warn(`[Imagen] ⚠️ Image failed for "${item.term}" after ${attempt + 1} attempts (skipped, content continues without it):`, e.message);
+                            console.error(`[Imagen] ❌ Image failed for "${item.term}" after ${attempt + 1} attempts:`, e.message);
                             return item;
                         }
                     }
@@ -1575,7 +1567,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           ${structureHint}
           ${effCustomInstructions ? `Custom Instructions: ${effCustomInstructions}` : ''}
           Adapt the language to ${effectiveLanguage} and the complexity to ${gradeLevel}.
-          ${(!isolated && standardsPromptString) ? `Ensure the structure supports the cognitive requirements of Standards: "${standardsPromptString}".` : ''}
+          ${standardsPromptString ? `Ensure the structure supports the cognitive requirements of Standards: "${standardsPromptString}".` : ''}
           ${useEmojis ? 'Include a relevant emoji at the start of every "main", "title", and "item" field to serve as a visual anchor.' : 'Do not use emojis.'}
           ${dialectInstruction}
           Return ONLY JSON matching this structure exactly (conceptually map the requested type to this hierarchy):
@@ -1674,7 +1666,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                     if (visualPlan) visualPlan.layout = visualLayoutMode;
                 }
             } catch (planErr) {
-                console.log('[VisualDebug] generateVisualPlan threw:', planErr);
+                console.error('[VisualDebug] generateVisualPlan threw:', planErr);
                 warnLog('[ArtDirector] Plan generation failed, falling back to single image', planErr);
             }
         }
@@ -1682,7 +1674,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             setGenerationStep(t('visual_director.generating_panels') || 'Generating multi-panel illustration...');
             const executedPlan = await executeVisualPlan(visualPlan, targetWidth, targetQual, effectiveVisualStyle);
             if (!executedPlan?.panels?.some(p => p?.imageUrl)) {
-                console.log('[VisualDebug] executeVisualPlan returned all-null panels:', executedPlan);
+                console.error('[VisualDebug] executeVisualPlan returned all-null panels:', executedPlan);
             }
             content = {
                 prompt: finalPrompt,
@@ -1698,13 +1690,13 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         try {
             imageBase64 = await callImagen(finalPrompt, targetWidth, targetQual);
         } catch(e) {
-            console.log('[VisualDebug] callImagen threw:', e);
+            console.error('[VisualDebug] callImagen threw:', e);
             warnLog('Image generation failed:', e);
             if (typeof setError === 'function') setError(`Image generation failed: ${e?.message || e}`);
             return;
         }
         if (!imageBase64) {
-            console.log('[VisualDebug] callImagen returned falsy imageBase64; bailing');
+            console.error('[VisualDebug] callImagen returned falsy imageBase64; bailing');
             if (typeof setError === 'function') setError('Image generation produced no output');
             return;
         }
@@ -2454,9 +2446,9 @@ ${_itemsBlock}`;
             Create writing supports (Scaffolds) based on the text below for ${gradeLevel} students.
             Type: ${frameType}
             Language: ${effectiveLanguage}.
-            ${(!isolated && studentInterests.length > 0) ? `Context: Relate to ${studentInterests.join(', ')} if possible.` : ''}
+            ${studentInterests.length > 0 ? `Context: Relate to ${studentInterests.join(', ')} if possible.` : ''}
             ${effCustomInstructions ? `Instructions: ${effCustomInstructions}` : ''}
-            ${(!isolated && standardsPromptString) ? `Design scaffolds to support the skills required by Standards: "${standardsPromptString}".` : ''}
+            ${standardsPromptString ? `Design scaffolds to support the skills required by Standards: "${standardsPromptString}".` : ''}
             ${effectiveLanguage !== 'English' ? 'Provide English translations for all text.' : 'Do NOT provide translations.'}
             ${dialectInstruction}
             ${useEmojis ? 'Include relevant emojis in the sentence starters or prompts.' : 'Do not use emojis.'}
@@ -3051,11 +3043,7 @@ ${_itemsBlock}`;
       } else if (type === 'timeline') {
          setGenerationStep(t('status_steps.extracting_sequence'));
          const effectiveCount = configOverride.timelineCount || timelineItemCount;
-         // isolated: derive the sequence purely from the directive (textToProcess),
-         // never the main-app timelineTopic/sourceTopic.
-         const effectiveTopic = isolated
-             ? (effCustomInstructions || "the sequence described in the text below")
-             : (effCustomInstructions || timelineTopic || sourceTopic || "General Sequence");
+         const effectiveTopic = effCustomInstructions || timelineTopic || sourceTopic || "General Sequence";
          const effectiveMode = configOverride.timelineMode || timelineMode || 'auto';
          const isAutoMode = effectiveMode === 'auto';
          const modeDef = !isAutoMode ? TIMELINE_MODE_DEFINITIONS[effectiveMode] : null;
@@ -3367,7 +3355,7 @@ ${modeListForAuto}
             ? `2. Generate items (cards) for students to sort into these categories. *** ITEM COUNT RULE *** Generate ONLY as many items as the source text can clearly support — items must be unambiguous, distinctive, and sortable into exactly ONE of the categories. Minimum 6 items. Maximum 30 items. Preferred: 12-18 items if the text supports it (richer texts can support more). Do NOT pad with weak or ambiguous items just to reach a count.`
             : `2. Generate exactly ${conceptItemCount} items (cards) that students must sort into these categories.`;
          let categoryInstruction = "1. Identify 2 or 3 contrasting categories, concepts, or themes central to the text (e.g., \"Renewable vs Non-Renewable\", \"Federalist vs Anti-Federalist\", \"Input vs Output\").";
-         if (!isolated && selectedConcepts.length > 0) {
+         if (selectedConcepts.length > 0) {
              categoryInstruction = `1. Use these specific categories: ${selectedConcepts.join(', ')}. Ensure items fit clearly into exactly one of these categories.`;
          }
          const prompt = `
@@ -3878,6 +3866,86 @@ Return ONLY JSON:
                   thinkings: '',
                   connection: { type: 'text-to-self', text: '' },
                   question: '',
+                  lessonRef,
+              };
+          } else if (templateType === 'double-entry') {
+              // Seed the LEFT column with salient quotes; the student writes responses.
+              const prompt = `
+                  Analyze the following source text. Extract 3-5 short, vivid QUOTES or passages (each 1-2 sentences, copied verbatim) that a ${effectiveGrade} student could respond to in a double-entry (dialectical) journal. Pick lines that are striking, puzzling, or important — the kind worth thinking about. Also extract the title and author if present.
+                  Source: "${(textToProcess || '').substring(0, 3000)}"
+                  Return ONLY a JSON object:
+                  { "title": "Reading title", "author": "Author or empty string", "quotes": ["Quote 1", "Quote 2", ...] }
+              `;
+              let scaffolded = { title: sourceTopic || '', author: '', quotes: [] };
+              try {
+                  const result = await callGemini(prompt, true);
+                  scaffolded = JSON.parse(cleanJson(result));
+              } catch (parseErr) {
+                  warnLog('Double-Entry scaffold parse failed:', parseErr);
+              }
+              const quotesArr = Array.isArray(scaffolded.quotes) ? scaffolded.quotes : [];
+              const seeded = quotesArr.slice(0, 5).map((q, i) => ({ id: `de-${Date.now()}-${i}`, quote: String(q || ''), response: '' }));
+              content = {
+                  templateType: 'double-entry',
+                  title: scaffolded.title || sourceTopic || 'Double-Entry Journal',
+                  author: scaffolded.author || '',
+                  pageRange: '',
+                  entries: seeded.length ? seeded : [{ id: `de-${Date.now()}-0`, quote: '', response: '' }],
+                  lessonRef,
+              };
+          } else if (templateType === 'guided-notes') {
+              // AI generates fill-in-the-blank statements with the key term as the answer.
+              const prompt = `
+                  Create GUIDED NOTES (fill-in-the-blank) from the following source text for a ${effectiveGrade} student. Produce 6-10 statements that capture the most important facts/concepts. In each statement, blank out ONE key term (the single most important word or short phrase). Split each statement into the text BEFORE the blank, the ANSWER (the blanked term), and the text AFTER the blank. Keep statements concise and factually grounded in the source.
+                  Source: "${(textToProcess || '').substring(0, 3000)}"
+                  Return ONLY a JSON object:
+                  { "title": "Lesson title", "blanks": [ { "before": "The powerhouse of the cell is the ", "answer": "mitochondria", "after": "." }, ... ] }
+              `;
+              let scaffolded = { title: sourceTopic || '', blanks: [] };
+              try {
+                  const result = await callGemini(prompt, true);
+                  scaffolded = JSON.parse(cleanJson(result));
+              } catch (parseErr) {
+                  warnLog('Guided Notes scaffold parse failed:', parseErr);
+              }
+              const blanksArr = Array.isArray(scaffolded.blanks) ? scaffolded.blanks : [];
+              content = {
+                  templateType: 'guided-notes',
+                  title: scaffolded.title || sourceTopic || 'Guided Notes',
+                  blanks: blanksArr.slice(0, 12).map((b, i) => ({
+                      id: `gn-${Date.now()}-${i}`,
+                      before: String((b && b.before) || ''),
+                      answer: String((b && b.answer) || ''),
+                      after: String((b && b.after) || ''),
+                      studentAnswer: '',
+                  })).filter(b => b.answer),
+                  notesExtra: '',
+                  lessonRef,
+              };
+          } else if (templateType === 'q-and-a') {
+              // Seed study questions + model answers; student edits/adds + self-quizzes.
+              const prompt = `
+                  Analyze the following source text. Generate 4-6 STUDY QUESTIONS a ${effectiveGrade} student could use for self-testing (active recall). Mix recall ("what/when") with higher-order ("why/how") questions. For each, also write a concise, correct model answer grounded in the source.
+                  Source: "${(textToProcess || '').substring(0, 3000)}"
+                  Return ONLY a JSON object:
+                  { "title": "Study set title", "pairs": [ { "question": "Why does ...?", "answer": "Because ..." }, ... ] }
+              `;
+              let scaffolded = { title: sourceTopic || '', pairs: [] };
+              try {
+                  const result = await callGemini(prompt, true);
+                  scaffolded = JSON.parse(cleanJson(result));
+              } catch (parseErr) {
+                  warnLog('Q&A scaffold parse failed:', parseErr);
+              }
+              const pairsArr = Array.isArray(scaffolded.pairs) ? scaffolded.pairs : [];
+              content = {
+                  templateType: 'q-and-a',
+                  title: scaffolded.title || sourceTopic || 'Q&A Study Notes',
+                  pairs: pairsArr.slice(0, 8).map((p, i) => ({
+                      id: `qa-${Date.now()}-${i}`,
+                      question: String((p && p.question) || ''),
+                      answer: String((p && p.answer) || ''),
+                  })).filter(p => p.question || p.answer),
                   lessonRef,
               };
           } else {

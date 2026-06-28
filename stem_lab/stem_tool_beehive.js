@@ -17712,7 +17712,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 className: 'p-1.5 rounded-lg text-sm transition-all ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-300') }, '⌨️'))),
 
           // ═══ MODE SELECTOR TABS ═══
-          h('div', { className: 'flex gap-1 p-1 rounded-xl ' + (dk ? 'bg-slate-800' : 'bg-slate-100'), role: 'tablist', 'aria-label': __alloT('stem.beehive.simulation_perspective', 'Simulation perspective') },
+          h('div', { className: 'flex gap-1 p-1 rounded-xl ' + (dk ? 'bg-slate-800' : 'bg-slate-100'), style: { background: 'var(--allo-stem-deeper, ' + (dk ? '#1e293b' : '#f1f5f9') + ')' }, role: 'tablist', 'aria-label': __alloT('stem.beehive.simulation_perspective', 'Simulation perspective') },
             [
               { id: 'beekeeper', icon: '🧑‍🌾', label: __alloT('stem.beehive.beekeeper', 'Beekeeper'), desc: __alloT('stem.beehive.manage_the_colony_from_outside', 'Manage the colony from outside') },
               { id: 'queen', icon: '👑', label: __alloT('stem.beehive.queen_rts', 'Queen RTS'), desc: __alloT('stem.beehive.command_the_hive_from_within', 'Command the hive from within') },

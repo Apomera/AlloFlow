@@ -7966,7 +7966,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               { k: 'F', d: 'Drop seeded line (at lease)', c: '#5eead4' },
               { k: 'P', d: 'Probe water quality (at lease)', c: '#bef264' }
             ].map(function(c, i) {
-              return h('div', { key: i, style: { padding: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 6, borderLeft: '3px solid ' + c.c } },
+              return h('div', { key: i, style: { padding: 8, background: 'var(--allo-stem-deeper, rgba(15,23,42,0.55))', borderRadius: 6, borderLeft: '3px solid ' + c.c } },
                 h('div', { style: { fontWeight: 800, color: c.c, fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 2 } }, c.k),
                 h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, c.d));
             }))));
@@ -8018,7 +8018,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '🦪 Species & Methods'),
           SPECIES.map(function(s, i) {
-            return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
+            return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'var(--allo-stem-deeper, rgba(15,23,42,0.55))', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
               h('div', { style: { display: 'flex', gap: 12, alignItems: 'flex-start', marginBottom: 6 } },
                 h('div', { style: { fontSize: 28 }, 'aria-hidden': 'true' }, s.emoji),
                 h('div', null,
@@ -8042,7 +8042,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           h('div', { style: headerStyle }, '💧 Water Quality Parameters'),
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } }, 'Six parameters every shellfish farmer monitors. NERACOOS + Bigelow + Maine DMR all provide near-real-time data along the coast.'),
           WATER_QUALITY.map(function(p, i) {
-            return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8 } },
+            return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'var(--allo-stem-deeper, rgba(15,23,42,0.55))', borderRadius: 8 } },
               h('div', { style: { fontSize: 14, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, p.param + ' (' + p.symbol + ')'),
               h('div', { style: { fontSize: 11, color: '#bef264', marginBottom: 3 } }, h('b', null, 'Optimal: '), p.optimal),
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Effect: '), p.effect),
