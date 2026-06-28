@@ -1734,6 +1734,10 @@
       // (activity switch or answer submitted). Option-play loops capture it and
       // bail when it changes, so audio never bleeds into the next activity/item.
       const audioRunIdRef = React.useRef(0);
+      // Tracks the post-error anchor "replay the sound" timeout so it can be
+      // cleared on cleanup/teardown — otherwise it fires (and plays a phoneme)
+      // after the tool has been closed or minimized.
+      const anchorReplayTimeoutRef = React.useRef(null);
       const [ttsSpeed, setTtsSpeed] = React.useState(wordSoundsTtsSpeed || 1.0);
       const modalRef = React.useRef(null);
       const submissionLockRef = React.useRef(false);
@@ -2257,10 +2261,10 @@
         const anchor = getAnchor(anchorTarget);
         if (anchor && anchor.keyWord) {
           // Brief delay so the incorrect-feedback chime plays first.
-          setTimeout(function() { handleAnchorPlay(((anchor.graphemes && anchor.graphemes[0]) || anchorTarget), anchor.keyWord); }, 400);
+          anchorReplayTimeoutRef.current = setTimeout(function() { anchorReplayTimeoutRef.current = null; handleAnchorPlay(((anchor.graphemes && anchor.graphemes[0]) || anchorTarget), anchor.keyWord); }, 400);
         }
         const t = setTimeout(function() { setAnchorErrorFlash(false); }, 1600);
-        return function() { clearTimeout(t); };
+        return function() { clearTimeout(t); if (anchorReplayTimeoutRef.current) { clearTimeout(anchorReplayTimeoutRef.current); anchorReplayTimeoutRef.current = null; } };
       }, [wordSoundsFeedback, anchorTarget, handleAnchorPlay]);
       React.useEffect(() => {
         if (!showSessionComplete) return;
@@ -2302,6 +2306,31 @@
       const ttsQuotaExhausted = React.useRef(false);
       const ttsInflight = React.useRef(new Map());
       const currentActiveAudio = React.useRef(null);
+      // ── Durable audio teardown ──────────────────────────────────────────────
+      // Stops ALL Word Sounds audio and permanently cancels any in-flight phoneme
+      // sequence (blending / anchor / instruction). Fixes phonemes leaking out of
+      // the tool after it is closed or minimized: the activity-switch cancel flag
+      // self-resets after 50ms (un-cancelling raced audio) and the post-error
+      // anchor "replay" timeout was never cleared, so queued / in-flight phonemes
+      // kept firing from the global PHONEME bank while Word Sounds was not in view.
+      const stopAllWordSoundsAudio = React.useCallback(function () {
+        audioCancelledRef.current = true;   // hard-cancel (NOT auto-reset here)
+        audioRunIdRef.current++;            // invalidate any run-id-guarded loop
+        try { if (currentActiveAudio.current) { currentActiveAudio.current.pause(); currentActiveAudio.current = null; } } catch (e) {}
+        try { if (audioInstances.current) audioInstances.current.forEach(function (a) { try { a.pause(); } catch (e) {} }); } catch (e) {}
+        try { if (feedbackAudioRef.current) { feedbackAudioRef.current.pause(); feedbackAudioRef.current = null; } } catch (e) {}
+        try { if (instructionAudioRef.current) { instructionAudioRef.current.pause(); instructionAudioRef.current = null; } } catch (e) {}
+        try { if (typeof window !== "undefined" && window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
+        try { if (anchorReplayTimeoutRef.current) { clearTimeout(anchorReplayTimeoutRef.current); anchorReplayTimeoutRef.current = null; } } catch (e) {}
+      }, []);
+      // On unmount (tool closed), phonemes must not outlive the component.
+      React.useEffect(function () { return function () { stopAllWordSoundsAudio(); }; }, [stopAllWordSoundsAudio]);
+      // On minimize (component stays mounted but the tool is "not in use") stop
+      // audio; re-enable playback when the tool is restored.
+      React.useEffect(function () {
+        if (isMinimized) stopAllWordSoundsAudio();
+        else audioCancelledRef.current = false;
+      }, [isMinimized, stopAllWordSoundsAudio]);
       // Ref-mirror of wordSoundsAudioLibrary so handleAudio reads the LATEST
       // value at call time, not a closure-captured snapshot. Fixes the
       // regenerate-word bug where a stale closure inside handleRegenerateWord's

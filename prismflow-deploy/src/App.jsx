@@ -4476,7 +4476,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '58f3d27d';
+    var pluginCdnVersion = '748573ef';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -17384,6 +17384,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   const executeSaveFile = () => {
     const _m = window.AlloModules && window.AlloModules.PhaseKHelpers;
     if (_m && typeof _m.executeSaveFile === "function") return _m.executeSaveFile({
+        guidedTourProgress: guidedMode ? { version: 1, guidedStep, completedSteps: GUIDED_STEPS.slice(0, guidedStep).map(s => s.id) } : null,
         isPlaying,
         isPaused,
         isMuted,
@@ -17613,6 +17614,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     const _m = window.AlloModules && window.AlloModules.MiscHandlers;
     if (_m && typeof _m.handleLoadProject === "function") return _m.handleLoadProject(e, {
         setStudentProgressLog,
+        setGuidedStep,
+        setGuidedMode,
         setStudentProjectSettings,
         setIsIndependentMode,
         setIsTeacherMode,

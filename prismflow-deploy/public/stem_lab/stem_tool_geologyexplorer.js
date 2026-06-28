@@ -173,6 +173,7 @@
   function fpSeedPose(sceneId) {                              // drop-in eye-point + facing per scene (faces into the block)
     if (sceneId === 'deepEarth') return { pos: { x: 0, y: 0, z: WORLD.d * 0.46 }, yaw: 0, pitch: 0 };
     if (sceneId === 'geode') return { pos: { x: 0, y: 0, z: WORLD.d * 0.42 }, yaw: 0, pitch: 0 };
+    if (sceneId === 'subduction') return { pos: { x: 0, y: WORLD.h * 0.28, z: WORLD.d * 0.40 }, yaw: 0, pitch: -0.1 };   // above the margin, looking across the section
     return { pos: { x: 0, y: WORLD.h * 0.5 - 1.5, z: WORLD.d * 0.34 }, yaw: 0, pitch: -0.12 };
   }
   function fpBob(time, moving, reduced, amp) { return (reduced || !moving) ? 0 : Math.sin(time * 9) * amp; }   // reduced-motion / idle → no bob
@@ -204,12 +205,27 @@
     outerCore: 'You’re in the LIQUID iron outer core — this flow makes Earth’s magnetic field.',
     innerCore: 'You’re at the SOLID inner core — hotter than the outer core, frozen by pressure.'
   };
-  function fpBlurb(sceneId, key) { var m = sceneId === 'geode' ? FP_BLURB_GEODE : (sceneId === 'deepEarth' ? FP_BLURB_DEEP : FP_BLURB_CRUST); return (m && m[key]) || ''; }
+  var FP_BLURB_SUB = {
+    oceanWater: 'You’re in the ocean above the plate that’s about to dive.',
+    oceanCrust: 'You’re in dense oceanic crust — heavy enough to sink and subduct.',
+    contCrust: 'You’re in buoyant continental crust — too light to subduct, so it overrides.',
+    slab: 'You’re riding the slab DOWN — cold and dense, carrying seawater into the mantle.',
+    lithMantle: 'You’re in rigid mantle welded under the crust — together they’re one plate.',
+    wedge: 'You’re in the mantle wedge — slab water makes it melt. Arc magma is born HERE.',
+    asthenosphere: 'You’re in the asthenosphere — SOLID mantle that flows; plates glide on it.',
+    arcMagma: 'You’re in rising arc magma — wedge melt climbing through the crust.',
+    arcVolcano: 'You’re in an arc volcano — built by wedge melt, not by the slab.'
+  };
+  function fpBlurb(sceneId, key) { var m = sceneId === 'geode' ? FP_BLURB_GEODE : (sceneId === 'deepEarth' ? FP_BLURB_DEEP : (sceneId === 'subduction' ? FP_BLURB_SUB : FP_BLURB_CRUST)); return (m && m[key]) || ''; }
   var FP_BUST = {
     upperMantle: 'Myth-bust: the mantle is SOLID rock that flows slowly — not a sea of molten lava.',
     lowerMantle: 'Myth-bust: still SOLID here, just convecting extremely slowly under pressure.',
     outerCore: 'This LIQUID iron’s convection is the geodynamo — S-waves can’t cross it, which is how we know.',
-    innerCore: 'It’s HOTTER than the outer core yet SOLID — crushing pressure raises iron’s melting point.'
+    innerCore: 'It’s HOTTER than the outer core yet SOLID — crushing pressure raises iron’s melting point.',
+    wedge: 'Myth-bust: the arc’s magma forms when slab WATER melts the mantle wedge — the slab itself mostly doesn’t melt.',
+    asthenosphere: 'Myth-bust: the asthenosphere is SOLID rock that flows slowly — plates don’t float on a liquid.',
+    slab: 'The slab is COLDER than the mantle around it — that’s why deep earthquakes fire off inside it.',
+    contCrust: 'Continental crust is too buoyant to subduct — so the dense ocean plate dives under it instead.'
   };
   function fpBust(key) { return FP_BUST[key] || null; }
   function fpProbe(wx, wy, wz) {                              // you-are-here readout; defers all science to rockFacts (scene-aware)
@@ -357,6 +373,51 @@
     return { tempC: (T[key] != null ? T[key] : Math.round(15 + depthKm * 25)), presMPa: (P[key] != null ? P[key] : Math.round(depthKm * 27)), state: (S[key] || 'solid') };
   }
 
+  // Subduction zone — a convergent ocean–continent margin (an Andes/Cascadia cross-section).
+  // SCHEMATIC / not to scale. The science payload: a dense OCEANIC plate bends at the trench
+  // and sinks beneath a buoyant CONTINENTAL plate; the COLD slab carries seawater down; at
+  // ~100 km that water lowers the melting point of the overlying MANTLE WEDGE, which partially
+  // melts → that melt rises to build the volcanic arc. Its OWN geotherm encodes the thermal
+  // ANOMALY (cold slab, hot wedge) by key, so flying in reads honest cold-vs-hot.
+  var SUBDUCTION_ROCKS = {
+    oceanWater:    { name: 'Ocean',                type: 'Water',                color: 0x2b6cb0, depthKm: 0,   glow: 0, formation: 'The sea sitting over the oceanic plate, deepest right above the trench.', minerals: 'Seawater', age: 'Hydrates the plate before it dives.' },
+    oceanCrust:    { name: 'Oceanic crust',        type: 'Igneous (basalt)',     color: 0x33414d, depthKm: 6,   glow: 0, formation: 'Thin, DENSE basalt + gabbro. Old oceanic plate is cold and heavy, so it sinks and subducts.', minerals: 'Basalt, gabbro', age: 'Made at mid-ocean ridges, recycled here.' },
+    contCrust:     { name: 'Continental crust',    type: 'Continental',          color: 0xb08d57, depthKm: 20,  glow: 0, formation: 'Thick, LOW-density granite. Too buoyant to sink — so it overrides while the ocean plate dives under it.', minerals: 'Granite', age: 'The buoyant raft that never subducts.' },
+    slab:          { name: 'Subducting slab',      type: 'Subducting plate',     color: 0x3a4a58, depthKm: 120, glow: 0, formation: 'The oceanic plate bending DOWN into the mantle — COLD and dense, dragging seawater locked in its minerals down with it.', minerals: 'Basalt → eclogite', age: 'Colder than the mantle around it → deep earthquakes happen inside it.' },
+    lithMantle:    { name: 'Lithospheric mantle',  type: 'Mantle (rigid)',       color: 0x6b3f33, depthKm: 60,  glow: 0, formation: 'Rigid mantle welded under the crust — crust + this rigid lid together make a tectonic plate.', minerals: 'Peridotite', age: 'Moves as one with the crust above it.' },
+    wedge:         { name: 'Mantle wedge',         type: 'Mantle (melting)',     color: 0xc2452b, depthKm: 110, glow: 0, formation: 'Hot mantle ABOVE the slab. Water driven off the slab lowers its melting point so it PARTIALLY MELTS — this is where arc magma is born, NOT the slab itself.', minerals: 'Peridotite + water', age: 'The true source of the volcanoes.' },
+    asthenosphere: { name: 'Asthenosphere',        type: 'Mantle (ductile)',     color: 0x8a2f22, depthKm: 200, glow: 0, formation: 'SOLID mantle that flows slowly by plastic creep — the plates glide on it. It is NOT a liquid layer.', minerals: 'Peridotite', age: 'Convects over millions of years.' },
+    arcMagma:      { name: 'Arc magma',            type: 'Molten',               color: 0xff7a33, depthKm: 30,  glow: 1, formation: 'Melt from the mantle wedge rising buoyantly up through the continental crust toward the surface.', minerals: 'Silicate melt + water', age: 'Cooling at depth makes granite; erupting makes andesite.' },
+    arcVolcano:    { name: 'Arc volcano',          type: 'Igneous (extrusive)',  color: 0xd9603a, depthKm: 0,   glow: 1, formation: 'A stratovolcano of the volcanic arc (the Andes, Cascades, Japan) built by magma from the WEDGE — not from the slab.', minerals: 'Andesite, ash', age: 'The surface signature of subduction.' }
+  };
+  function subductionKeyAt(x, y, z) {
+    var fx = NX > 1 ? x / (NX - 1) : 0;   // 0 = left (ocean) → 1 = right (continent)
+    var fy = NY > 1 ? y / (NY - 1) : 0;   // 0 = surface → 1 = deep
+    var trench = 0.30;                      // where the ocean plate bends down
+    var slabFx = trench + fy * 0.62;       // slab centreline descends to the lower-right
+    if (fy > 0.06 && Math.abs(fx - slabFx) < 0.07) return 'slab';   // the descending plate
+    if (fx < trench) {                     // ocean side (not yet subducted)
+      if (fy < 0.08) return 'oceanWater';
+      if (fy < 0.22) return 'oceanCrust';
+      if (fy < 0.42) return 'lithMantle';
+      return 'asthenosphere';
+    }
+    // continent side: the magma conduit + volcano cut UP through the crust at the arc
+    if (Math.abs(fx - 0.60) < 0.045 && fy < 0.50) return fy < 0.05 ? 'arcVolcano' : 'arcMagma';
+    var crustBottom = Math.min(0.34, 0.06 + (fx - trench) * 0.5);   // crust thickens inland
+    if (fy < crustBottom) return 'contCrust';
+    var lidBottom = Math.min(0.46, crustBottom + 0.12);
+    if (fy < lidBottom) return 'lithMantle';
+    var slabDepthHere = (fx - trench) / 0.62;   // fy where the slab sits at this column
+    if (fy < slabDepthHere) return 'wedge';      // between the rigid lid and the slab → mantle wedge
+    return 'asthenosphere';                       // below / beyond the slab
+  }
+  function subductionGeotherm(depthKm, key) {
+    var T = { oceanWater: 4, oceanCrust: 150, contCrust: 400, slab: 700, lithMantle: 900, asthenosphere: 1330, wedge: 1300, arcMagma: 1100, arcVolcano: 900 };   // slab COLD, wedge HOT (the anomaly)
+    var S = { oceanWater: 'liquid', oceanCrust: 'solid', contCrust: 'solid', slab: 'solid (cold slab)', lithMantle: 'solid (rigid)', asthenosphere: 'solid (ductile — flows)', wedge: 'solid → partial melt', arcMagma: 'molten', arcVolcano: 'erupting' };
+    return { tempC: (T[key] != null ? T[key] : Math.round(15 + depthKm * 25)), presMPa: Math.round(depthKm * 30), state: (S[key] || 'solid') };
+  }
+
   var SCENES = {
     crust: {
       id: 'crust', label: '⛰️ Layered crust', gen: rockKeyAt, palette: ROCKS, order: ROCK_ORDER, voxelKeys: ROCK_ORDER,
@@ -377,6 +438,14 @@
       geotherm: deepEarthGeotherm, kmPerWorldH: 6371,
       features: {},
       blurb: 'A radial slice to Earth’s centre (schematic — not to scale). Four shells: a thin brittle CRUST; a SOLID MANTLE that convects by slow creep — it is NOT molten lava, only a tiny % melts near the top; a LIQUID iron–nickel OUTER CORE whose convection is the geodynamo that powers Earth’s magnetic field (our shield against the solar wind); and a SOLID INNER CORE that — despite being HOTTER than the outer core (≈ 5200 °C, about the Sun’s surface) — stays solid because the crushing pressure raises iron’s melting point above the local temperature. We know the outer core is liquid because S-waves can’t pass through it. Slice the globe to reveal the core.'
+    },
+    subduction: {
+      id: 'subduction', label: '🌊 Subduction zone', gen: subductionKeyAt, palette: SUBDUCTION_ROCKS,
+      order: ['oceanWater', 'oceanCrust', 'contCrust', 'slab', 'lithMantle', 'wedge', 'arcMagma', 'arcVolcano', 'asthenosphere'],
+      voxelKeys: ['oceanWater', 'oceanCrust', 'contCrust', 'slab', 'lithMantle', 'wedge', 'arcMagma', 'arcVolcano', 'asthenosphere'],
+      geotherm: subductionGeotherm, kmPerWorldH: 200,
+      features: {},
+      blurb: 'A convergent margin (schematic — not to scale). A dense OCEANIC plate on the left bends at the trench and sinks beneath a buoyant CONTINENTAL plate on the right. The cold slab carries seawater down; at about 100 km that water escapes and lowers the melting point of the overlying MANTLE WEDGE, which partially melts — and THAT melt rises to build the line of arc volcanoes (the Andes, Cascades, Japan). Three myths busted: the asthenosphere is SOLID rock that flows (not a liquid the plates float on); the magma comes from the fluxed WEDGE, not the melting slab; and continental crust is too buoyant to subduct. Fly in to feel the COLD slab against the HOT wedge.'
     }
   };
   var SCENE = SCENES.crust;
@@ -729,8 +798,8 @@
   // baseline that locks current strata before the upcoming resolution refactor.
   try {
     window.__alloGeologyPure = {
-      rockKeyAt: rockKeyAt, geodeKeyAt: geodeKeyAt, deepEarthKeyAt: deepEarthKeyAt, hasFossilAt: hasFossilAt, computeCore: computeCore, rockFacts: rockFacts, aoCount: aoCount,
-      crustGeotherm: crustGeotherm, deepEarthGeotherm: deepEarthGeotherm, setGrid: setGrid, setScene: setScene, RES_MULT: RES_MULT, WORLD: WORLD,
+      rockKeyAt: rockKeyAt, geodeKeyAt: geodeKeyAt, deepEarthKeyAt: deepEarthKeyAt, subductionKeyAt: subductionKeyAt, hasFossilAt: hasFossilAt, computeCore: computeCore, rockFacts: rockFacts, aoCount: aoCount,
+      crustGeotherm: crustGeotherm, deepEarthGeotherm: deepEarthGeotherm, subductionGeotherm: subductionGeotherm, setGrid: setGrid, setScene: setScene, RES_MULT: RES_MULT, WORLD: WORLD,
       fpForward: fpForward, fpClampPitch: fpClampPitch, fpBounds: fpBounds, fpStep: fpStep, fpWorldToVoxel: fpWorldToVoxel,
       fpSeedPose: fpSeedPose, fpBob: fpBob, layerChanged: layerChanged, fpBlurb: fpBlurb, fpBust: fpBust, fpProbe: fpProbe, fpAnnounceText: fpAnnounceText, easeInOutCubic: easeInOutCubic,
       scenes: function () { return Object.keys(SCENES); }, sceneId: function () { return SCENE.id; },
@@ -1286,7 +1355,7 @@
                   crossSectionSVG(),
                   h('p', { className: 'text-[11px] leading-relaxed ' + muted }, t('stem.geology.teach', 'Deeper sedimentary layers are older (superposition). The granite pluton is YOUNGER than the layers it cuts (cross-cutting), and it bakes a metamorphic rim (contact metamorphism). Heat + pressure rise with depth toward the magma — where the rock cycle restarts.')))
               : (SCENE.blurb ? h('div', { className: 'p-2.5 rounded-xl border ' + cardBg, role: 'region', 'aria-label': 'About this scene' }, h('div', { className: 'text-[11px] leading-relaxed ' + ink }, SCENE.blurb)) : null),
-            h('div', { className: 'text-[11px] font-bold ' + muted }, feat.crossSection ? t('stem.geology.rocks', 'Rock types') : (SCENE.id === 'deepEarth' ? t('stem.geology.layers', 'Layers') : t('stem.geology.minerals', 'Minerals'))),
+            h('div', { className: 'text-[11px] font-bold ' + muted }, feat.crossSection ? t('stem.geology.rocks', 'Rock types') : ((SCENE.id === 'deepEarth' || SCENE.id === 'subduction') ? t('stem.geology.layers', 'Layers') : t('stem.geology.minerals', 'Minerals'))),
             strataList(),
             feat.fossils ? fossilStrip() : null,
             feat.cores ? h('div', { className: 'space-y-1.5' },

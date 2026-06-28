@@ -647,7 +647,7 @@
           h('div', { style: { display: 'flex', flex: 1, overflow: 'hidden' } },
 
             // Left sidebar
-            h('div', { style: { width: '220px', borderRight: '1px solid rgba(99,102,241,0.15)', display: 'flex', flexDirection: 'column', background: 'rgba(15,23,42,0.8)' } },
+            h('div', { style: { width: '220px', borderRight: '1px solid rgba(99,102,241,0.15)', display: 'flex', flexDirection: 'column', background: 'var(--allo-stem-deeper, rgba(15,23,42,0.8))' } },
               h('div', { style: { padding: '10px 12px', borderBottom: '1px solid rgba(99,102,241,0.1)', fontSize: '11px', fontWeight: 'bold', color: '#818cf8', letterSpacing: '1px' } }, __alloT('stem.graphcalc.functions', '\uD83D\uDCDD FUNCTIONS')),
               h('div', { style: { flex: 1, overflowY: 'auto', padding: '8px' } },
                 funcs.map(function(fn, i) {
@@ -743,7 +743,7 @@
                   return h('label', { key: k, style: { display: 'flex', alignItems: 'center', gap: '3px', fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, k + ':', h('input', { type: 'number', value: win[k], onChange: function(e) { var nw = Object.assign({}, win); nw[k] = parseFloat(e.target.value) || 0; upd('window', nw); }, style: { width: '50px', padding: '2px 4px', borderRadius: '4px', border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.1)', color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'monospace', fontSize: '10px' } }));
                 })
               ) : null,
-              showTable ? h('div', { style: { maxHeight: '150px', overflowY: 'auto', borderTop: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.95)' } },
+              showTable ? h('div', { style: { maxHeight: '150px', overflowY: 'auto', borderTop: '1px solid rgba(99,102,241,0.2)', background: 'var(--allo-stem-deeper, rgba(15,23,42,0.95))' } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px', borderBottom: '1px solid rgba(99,102,241,0.1)' } },
                   h('span', { style: { fontSize: '10px', fontWeight: 'bold', color: '#818cf8' } }, __alloT('stem.graphcalc.table_2', '\uD83D\uDCCA TABLE')),
                   h('label', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', display: 'flex', alignItems: 'center', gap: '3px' } }, 'Start:', h('input', { type: 'number', value: tableX, onChange: function(e) { upd('tableX', parseFloat(e.target.value) || 0); }, style: { width: '40px', padding: '1px 3px', borderRadius: '3px', border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(99,102,241,0.1)', color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'monospace', fontSize: '11px' } })),
@@ -757,7 +757,7 @@
             ),
 
             // Right sidebar
-            h('div', { style: { width: '230px', borderLeft: '1px solid rgba(99,102,241,0.15)', display: 'flex', flexDirection: 'column', background: 'rgba(15,23,42,0.8)' } },
+            h('div', { style: { width: '230px', borderLeft: '1px solid rgba(99,102,241,0.15)', display: 'flex', flexDirection: 'column', background: 'var(--allo-stem-deeper, rgba(15,23,42,0.8))' } },
               h('div', { style: { display: 'flex', borderBottom: '1px solid rgba(99,102,241,0.1)' } },
                 [{ id: 'coach', label: __alloT('stem.graphcalc.coach', '\uD83D\uDCA1 Coach') }, { id: 'challenge', label: __alloT('stem.graphcalc.tasks', '\uD83C\uDFAF Tasks') }, { id: 'ai', label: __alloT('stem.graphcalc.ai', '\uD83E\uDD16 AI') }, { id: 'badges', label: '\uD83C\uDFC5' }, { id: 'inquiry', label: __alloT('stem.graphcalc.inquiry', '\u2754 Inquiry') }].map(function(st) {
                   var active = (d._sideTab || 'coach') === st.id;
