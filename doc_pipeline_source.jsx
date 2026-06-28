@@ -15271,7 +15271,13 @@ ACCESSIBILITY RULES (WCAG 2.1 AA):
 - Preserve the LOGICAL reading order (which may differ from visual layout).
   For multi-column layouts: determine the intended reading sequence, don't just read left-to-right across columns.
 - Heading hierarchy MUST be sequential: h1 → h2 → h3. Never skip a level.
-  If the PDF uses bold text as a heading, identify it as such and assign the correct level.
+  If a line of bold or larger text LABELS the block that follows it — a section or subsection title, a
+  numbered outline heading (e.g. "1. Background", "2. Method"), or a short category label (e.g.
+  "Screening", "Eligibility") standing on its own line — promote it to a real heading at the correct
+  NESTED level: a sub-topic under an h2 becomes an h3 (a sub-point under that, an h4), so the heading
+  granularity matches the document's actual outline. Do NOT flatten every section to h2, and do NOT
+  leave a standalone label as bold body text. GUARD: only promote text that is a STANDALONE label for
+  what follows — never turn in-sentence <strong>/<em> emphasis into a heading.
 - For images: "alt" should answer "what information does this image convey?" not "what does it look like?"
   BAD: "Image of a graph" / "Photo" / "image1.png"
   GOOD: "Bar graph showing enrollment increased 45% from 2020 to 2024"
