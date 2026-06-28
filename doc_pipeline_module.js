@@ -10182,24 +10182,45 @@ Return ONLY JSON:
       // Always include the <head> section in chunk 0 for global checks (lang, title)
       // Audit chunks in parallel (max 4 concurrent to avoid rate limits)
       const chunkResults = [];
+      const _failedIdx = []; // 0-based indices of chunks whose audit returned null (a parse miss or — usually — a transient throttle)
       const batchSize = 6;
-      for (let b = 0; b < chunks.length; b += batchSize) {
-        const batch = chunks.slice(b, b + batchSize);
-        const results = await Promise.all(batch.map((chunk, idx) => {
-          const chunkNum = b + idx + 1;
-          const isFirst = chunkNum === 1;
-          const prompt = `You are a WCAG 2.1 AA accessibility auditor. Audit this HTML section (section ${chunkNum} of ${chunks.length}) for accessibility compliance.
+      // One chunk's audit call, framed by its position (chunk 1 carries the global checks). Returns the parsed
+      // audit object, or null on a transient throttle / empty-body / parse miss. Hoisted so the throttle
+      // self-heal pass below can re-invoke EXACTLY the same call for a specific failed section.
+      const _auditOneChunk = (chunk, chunkNum) => {
+        const isFirst = chunkNum === 1;
+        const prompt = `You are a WCAG 2.1 AA accessibility auditor. Audit this HTML section (section ${chunkNum} of ${chunks.length}) for accessibility compliance.
 ${isFirst ? 'This is the FIRST section — check global items (lang, title, skip-nav, landmarks).' : 'This is a MIDDLE/END section — focus on content-level issues (headings, images, tables, links, lists, contrast). Skip global checks (lang, title) since those only appear in the first section.'}
 
 ${AUDIT_RUBRIC_PROMPT}
 
 HTML section ${chunkNum}/${chunks.length}:
 """${_neutralizePromptFence(chunk)}"""`;
-          return callGemini(prompt, true, false, 0 /* temperature=0: deterministic, reproducible scoring */).then(r => {
-            try { return parseAuditJson(r); } catch { return null; }
-          }).catch(() => null);
-        }));
-        chunkResults.push(...results.filter(Boolean));
+        return callGemini(prompt, true, false, 0 /* temperature=0: deterministic, reproducible scoring */).then(r => {
+          try { return parseAuditJson(r); } catch { return null; }
+        }).catch(() => null);
+      };
+      for (let b = 0; b < chunks.length; b += batchSize) {
+        const batch = chunks.slice(b, b + batchSize);
+        const results = await Promise.all(batch.map((chunk, idx) => _auditOneChunk(chunk, b + idx + 1)));
+        results.forEach((res, idx) => { if (res) chunkResults.push(res); else _failedIdx.push(b + idx); });
+      }
+      // Throttle self-heal (2026-06-28): a chunk that returned null is almost always a TRANSIENT Canvas throttle
+      // (empty body / rate-limit), not a permanent failure — and the old code silently DROPPED it, capping
+      // coverage at "N of M sections audited" and shipping an artificially-high partial score. Instead, RETURN TO
+      // THE FAILED SECTIONS: re-audit ONLY those indices once, after a brief settle so the GeminiGate storm
+      // cooldown can elapse (callGemini itself also waits out the cooldown, so this never hammers). Recovered
+      // sections fold straight into the merge + the coverage math below, so a transient throttle no longer
+      // silently caps the score. Skip when NOTHING returned (a total outage — retrying won't help); single pass.
+      if (_failedIdx.length > 0 && chunkResults.length > 0) {
+        await new Promise((res) => setTimeout(res, Math.min(8000, 1200 * _failedIdx.length)));
+        let _recovered = 0;
+        for (let b = 0; b < _failedIdx.length; b += batchSize) {
+          const slice = _failedIdx.slice(b, b + batchSize);
+          const rr = await Promise.all(slice.map((ci) => _auditOneChunk(chunks[ci], ci + 1)));
+          rr.forEach((res) => { if (res) { chunkResults.push(res); _recovered++; } });
+        }
+        if (_recovered > 0) warnLog(`[Output Audit] Throttle self-heal: recovered ${_recovered}/${_failedIdx.length} previously-failed section(s) on retry`);
       }
       if (chunkResults.length === 0) return null;
       // Merge: deduplicate issues across chunks using WCAG code + violation category
@@ -23422,8 +23443,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       const tv = typeVisuals[item.type] || { icon: '📄', color: '#475569', bg: '#f8fafc', label: '' };
       const enhancedHeader = `<h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid ${tv.color};background:${tv.bg};display:flex;align-items:center;gap:8px;"><span aria-hidden="true" style="font-size:1.3em;">${tv.icon}</span> ${title}${item.meta ? ` <span style="font-weight:normal;font-size:0.8em;color:#64748b;">(${item.meta})</span>` : ''}</h2>`;
       if (item.type === 'simplified') {
+          // Reading passage. Tagged data-ka-readable so the HTML export's
+          // download-time read-aloud step can convert it into inline sentence-karaoke.
           return `
-              <div class="section" id="${item.id}" style="border-left:4px solid #2563eb;border-radius:12px;">
+              <div class="section" id="${item.id}" data-ka-readable style="border-left:4px solid #2563eb;border-radius:12px;">
                   ${enhancedHeader}
                   <div style="font-family:Georgia,'Times New Roman',serif;font-size:1.05em;line-height:1.9;color:#1e293b;padding:8px 4px;">${parseMarkdownToHTML(item.data)}</div>
               </div>
@@ -25748,29 +25771,54 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               </div>
           `;
       } else if (item.type === 'anchor-chart') {
-          // EL-style class anchor chart. Render the chart's sections + items so the
-          // teacher can see what students built. Critique-mode annotations (if any)
-          // appear as appended notes.
+          // EL-style class anchor chart. Type-aware export layout (Tier 1): process =
+          // numbered steps + downward connectors; comparison / concept-map = side-by-side
+          // columns; reference = stacked cards. Critique annotations append as notes.
           const d = item.data || {};
           const sections = Array.isArray(d.sections) ? d.sections : [];
           const chartType = d.chartType || d.type || 'reference';
+          const layout = ({ process: 'process', comparison: 'comparison', 'concept-map': 'concept-map' })[chartType] || 'reference';
           const escapeHtml = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
           const typeLabel = ({ reference: 'Reference', process: 'Process', 'concept-map': 'Concept Map', comparison: 'Comparison' })[chartType] || chartType;
-          const sectionsHtml = sections.length === 0
-              ? '<div style="font-size:0.85em; color:#64748b; font-style:italic; padding:12px;">No sections yet.</div>'
-              : sections.map((s, i) => {
-                  const bullets = Array.isArray(s && s.bullets) ? s.bullets : [];
-                  const label = (s && s.label) || `Section ${i + 1}`;
-                  const icon = (s && s.icon) || '';
-                  return `<div style="margin-bottom:12px; padding:12px; background:#fff7ed; border:1px solid #fdba74; border-radius:8px;"><div style="font-weight:bold; font-size:1.05em; color:#9a3412; margin-bottom:6px;">${icon ? icon + ' ' : ''}${escapeHtml(label)}</div>${bullets.length ? `<ul style="margin:0; padding-left:20px;">${bullets.map(b => `<li style="font-size:0.92em; color:#1e293b; margin-bottom:2px;">${escapeHtml(b)}</li>`).join('')}</ul>` : '<div style="font-size:0.85em; color:#9ca3af; font-style:italic;">(empty)</div>'}</div>`;
-              }).join('');
+          const _acCaption = (layout === 'process' && sections.length > 1) ? 'Follow the steps in order &#8595;'
+              : (layout === 'comparison' && sections.length > 1) ? 'Compare side by side &#8596;'
+              : (layout === 'concept-map') ? 'Central idea branches into&#8230;' : '';
+          const _acCaptionHtml = _acCaption ? ('<div style="text-align:center; font-size:0.8em; color:#b45309; font-style:italic; margin-bottom:8px;">' + _acCaption + '</div>') : '';
+          const _acCard = (s, i) => {
+              const bullets = Array.isArray(s && s.bullets) ? s.bullets : [];
+              const label = (s && s.label) || ('Section ' + (i + 1));
+              const icon = (s && s.icon) || '';
+              const _isImg = typeof icon === 'string' && /^(data:|https?:)/.test(icon);
+              const _iconHtml = icon ? (_isImg ? ('<img src="' + escapeHtml(icon) + '" alt="" style="height:1.3em; width:auto; vertical-align:-0.25em; margin-right:5px;" />') : (escapeHtml(icon) + ' ')) : '';
+              const _badge = (layout === 'process') ? ('<div aria-hidden="true" style="position:absolute; top:-10px; left:-10px; z-index:6; width:26px; height:26px; border-radius:999px; background:#dd6b20; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; box-shadow:0 1px 3px rgba(0,0,0,0.3);">' + (i + 1) + '</div>') : '';
+              const _mb = (layout === 'process') ? '0' : '12px';
+              return '<div style="position:relative; margin-bottom:' + _mb + '; padding:12px; background:#fff7ed; border:1px solid #fdba74; border-radius:8px; break-inside:avoid; page-break-inside:avoid;">' + _badge
+                  + '<div style="font-weight:bold; font-size:1.05em; color:#9a3412; margin-bottom:6px;">' + _iconHtml + escapeHtml(label) + '</div>'
+                  + (bullets.length
+                      ? ('<ul style="margin:0; padding-left:20px;">' + bullets.map(b => '<li style="font-size:0.92em; color:#1e293b; margin-bottom:2px;">' + escapeHtml(b) + '</li>').join('') + '</ul>')
+                      : '<div style="font-size:0.85em; color:#9ca3af; font-style:italic;">(empty)</div>')
+                  + '</div>';
+          };
+          let sectionsHtml;
+          if (sections.length === 0) {
+              sectionsHtml = '<div style="font-size:0.85em; color:#64748b; font-style:italic; padding:12px;">No sections yet.</div>';
+          } else if (layout === 'comparison' || layout === 'concept-map') {
+              const _minw = layout === 'comparison' ? '220px' : '240px';
+              sectionsHtml = '<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(' + _minw + ', 1fr)); gap:10px; align-items:start;">' + sections.map((s, i) => _acCard(s, i)).join('') + '</div>';
+          } else if (layout === 'process') {
+              const _conn = '<div style="text-align:center; margin:-2px 0 2px;" aria-hidden="true"><span style="font-size:22px; color:#b7791f; line-height:1;">&#8595;</span></div>';
+              sectionsHtml = '<div style="padding:14px 2px 2px 16px;">' + sections.map((s, i) => _acCard(s, i) + (i < sections.length - 1 ? _conn : '')).join('') + '</div>';
+          } else {
+              sectionsHtml = sections.map((s, i) => _acCard(s, i)).join('');
+          }
           const annotations = Array.isArray(d.annotations) ? d.annotations : [];
           const annotationsHtml = annotations.length > 0
-              ? `<div style="margin-top:12px; padding:10px; background:#fef3c7; border-left:4px solid #f59e0b; border-radius:4px;"><div style="font-size:0.75em; font-weight:bold; text-transform:uppercase; color:#92400e; margin-bottom:6px;">Critique Mode — Student Annotations (${annotations.length})</div><ul style="margin:0; padding-left:18px;">${annotations.slice(0, 12).map(a => `<li style="font-size:0.88em; color:#1e293b; margin-bottom:3px;"><strong>${escapeHtml(a.kind || 'note')}:</strong> ${escapeHtml(a.text || '')}</li>`).join('')}</ul>${annotations.length > 12 ? `<div style="font-size:0.75em; color:#92400e; margin-top:4px; font-style:italic;">… and ${annotations.length - 12} more.</div>` : ''}</div>`
+              ? ('<div style="margin-top:12px; padding:10px; background:#fef3c7; border-left:4px solid #f59e0b; border-radius:4px;"><div style="font-size:0.75em; font-weight:bold; text-transform:uppercase; color:#92400e; margin-bottom:6px;">Critique Mode &#8212; Student Annotations (' + annotations.length + ')</div><ul style="margin:0; padding-left:18px;">' + annotations.slice(0, 12).map(a => '<li style="font-size:0.88em; color:#1e293b; margin-bottom:3px;"><strong>' + escapeHtml(a.kind || 'note') + ':</strong> ' + escapeHtml(a.text || '') + '</li>').join('') + '</ul>' + (annotations.length > 12 ? ('<div style="font-size:0.75em; color:#92400e; margin-top:4px; font-style:italic;">&#8230; and ' + (annotations.length - 12) + ' more.</div>') : '') + '</div>')
               : '';
           return `
               <div class="section" id="${item.id}">
-                  <div class="resource-header" style="border-left:4px solid #f59e0b;">📋 ${title} <span style="font-size:0.75em; font-weight:normal; color:#64748b; margin-left:8px;">(Anchor Chart — ${typeLabel})</span></div>
+                  <div class="resource-header" style="border-left:4px solid #f59e0b;">&#128203; ${title} <span style="font-size:0.75em; font-weight:normal; color:#64748b; margin-left:8px;">(Anchor Chart &#8212; ${typeLabel})</span></div>
+                  ${_acCaptionHtml}
                   ${sectionsHtml}
                   ${annotationsHtml}
               </div>
@@ -26474,6 +26522,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           html[data-alloflow-theme="dark"] .alloflow-reading-tools { background: rgba(15,23,42,0.96); border-bottom-color: #334155; }
           html[data-alloflow-theme="dark"] .alloflow-reading-tools-group { background: #1e293b; border-color: #475569; }
           html[data-alloflow-theme="dark"] .alloflow-reading-tools-label { background: #0f172a; color: #94a3b8; border-right-color: #475569; }
+          .allo-ka-passage .ka-s { transition: background-color 0.12s ease, box-shadow 0.12s ease; border-radius: 3px; }
+          .allo-ka-passage .ka-s.ka-on { background-color: #fde047; color: #1e293b; box-shadow: 0 0 0 3px #fde047; }
+          html[data-alloflow-theme="dark"] .allo-ka-passage .ka-s.ka-on { background-color: #ca8a04; color: #ffffff; box-shadow: 0 0 0 3px #ca8a04; }
+          .allo-ka-play:hover { filter: brightness(1.08); }
+          @media print { .allo-ka-bar { display: none !important; } }
           html[data-alloflow-theme="dark"] .alloflow-rt-btn { color: #cbd5e1; border-left-color: #475569; }
           html[data-alloflow-theme="dark"] .alloflow-rt-btn:hover { background: #334155; }
           html[data-alloflow-theme="dark"] .alloflow-rt-btn[aria-pressed="true"] { background: #6366f1; color: white; }
@@ -26731,6 +26784,52 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               else if (a === 'reset') { st.s = 1; st.l = 0; }
               else if (a === 'spacing') st.l = (st.l + 1) % LEADS.length;
               apply(true);
+            });
+          })();
+        </script>
+        <script>
+          // Karaoke read-aloud: play one audio clip per sentence in order,
+          // lighting each sentence while its own clip plays. No timing guesses.
+          (function () {
+            if (window.__alloKaBound) return; window.__alloKaBound = true;
+            var active = null;
+            function clearHi(spans) { for (var i = 0; i < spans.length; i++) spans[i].classList.remove("ka-on"); }
+            function stop() {
+              if (!active) return;
+              try { var a = active.audios[active.idx]; if (a) { a.pause(); a.onended = null; } } catch (e) {}
+              clearHi(active.spans);
+              if (active.btn) active.btn.textContent = "\u{1F50A} Read aloud";
+              active = null;
+            }
+            function step(state, i) {
+              if (!active || active !== state) return;
+              if (i >= state.audios.length) { stop(); return; }
+              state.idx = i;
+              var a = state.audios[i];
+              if (!a) { step(state, i + 1); return; }
+              var sidx = a.getAttribute("data-ka-s");
+              clearHi(state.spans);
+              for (var k = 0; k < state.spans.length; k++) {
+                if (sidx !== null && state.spans[k].getAttribute("data-ka-s") === sidx) state.spans[k].classList.add("ka-on");
+              }
+              try { a.currentTime = 0; } catch (e) {}
+              a.onended = function () { step(state, i + 1); };
+              var p = a.play();
+              if (p && p.catch) p.catch(function () { stop(); });
+            }
+            document.addEventListener("click", function (e) {
+              var btn = e.target && e.target.closest && e.target.closest(".allo-ka-play");
+              if (!btn) return;
+              if (active) { stop(); return; }
+              var id = btn.getAttribute("data-ka-for");
+              var box = document.querySelector('.allo-ka-audios[data-ka-for="' + id + '"]');
+              var sec = btn.closest(".section") || document;
+              var spans = Array.prototype.slice.call(sec.querySelectorAll(".ka-s"));
+              var audios = box ? Array.prototype.slice.call(box.querySelectorAll("audio")) : [];
+              if (!audios.length || !spans.length) return;
+              btn.textContent = "\u23F9 Stop";
+              active = { audios: audios, spans: spans, idx: 0, btn: btn };
+              step(active, 0);
             });
           })();
         </script>

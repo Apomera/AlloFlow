@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -10182,24 +10182,45 @@ Return ONLY JSON:
       // Always include the <head> section in chunk 0 for global checks (lang, title)
       // Audit chunks in parallel (max 4 concurrent to avoid rate limits)
       const chunkResults = [];
+      const _failedIdx = []; // 0-based indices of chunks whose audit returned null (a parse miss or — usually — a transient throttle)
       const batchSize = 6;
-      for (let b = 0; b < chunks.length; b += batchSize) {
-        const batch = chunks.slice(b, b + batchSize);
-        const results = await Promise.all(batch.map((chunk, idx) => {
-          const chunkNum = b + idx + 1;
-          const isFirst = chunkNum === 1;
-          const prompt = `You are a WCAG 2.1 AA accessibility auditor. Audit this HTML section (section ${chunkNum} of ${chunks.length}) for accessibility compliance.
+      // One chunk's audit call, framed by its position (chunk 1 carries the global checks). Returns the parsed
+      // audit object, or null on a transient throttle / empty-body / parse miss. Hoisted so the throttle
+      // self-heal pass below can re-invoke EXACTLY the same call for a specific failed section.
+      const _auditOneChunk = (chunk, chunkNum) => {
+        const isFirst = chunkNum === 1;
+        const prompt = `You are a WCAG 2.1 AA accessibility auditor. Audit this HTML section (section ${chunkNum} of ${chunks.length}) for accessibility compliance.
 ${isFirst ? 'This is the FIRST section — check global items (lang, title, skip-nav, landmarks).' : 'This is a MIDDLE/END section — focus on content-level issues (headings, images, tables, links, lists, contrast). Skip global checks (lang, title) since those only appear in the first section.'}
 
 ${AUDIT_RUBRIC_PROMPT}
 
 HTML section ${chunkNum}/${chunks.length}:
 """${_neutralizePromptFence(chunk)}"""`;
-          return callGemini(prompt, true, false, 0 /* temperature=0: deterministic, reproducible scoring */).then(r => {
-            try { return parseAuditJson(r); } catch { return null; }
-          }).catch(() => null);
-        }));
-        chunkResults.push(...results.filter(Boolean));
+        return callGemini(prompt, true, false, 0 /* temperature=0: deterministic, reproducible scoring */).then(r => {
+          try { return parseAuditJson(r); } catch { return null; }
+        }).catch(() => null);
+      };
+      for (let b = 0; b < chunks.length; b += batchSize) {
+        const batch = chunks.slice(b, b + batchSize);
+        const results = await Promise.all(batch.map((chunk, idx) => _auditOneChunk(chunk, b + idx + 1)));
+        results.forEach((res, idx) => { if (res) chunkResults.push(res); else _failedIdx.push(b + idx); });
+      }
+      // Throttle self-heal (2026-06-28): a chunk that returned null is almost always a TRANSIENT Canvas throttle
+      // (empty body / rate-limit), not a permanent failure — and the old code silently DROPPED it, capping
+      // coverage at "N of M sections audited" and shipping an artificially-high partial score. Instead, RETURN TO
+      // THE FAILED SECTIONS: re-audit ONLY those indices once, after a brief settle so the GeminiGate storm
+      // cooldown can elapse (callGemini itself also waits out the cooldown, so this never hammers). Recovered
+      // sections fold straight into the merge + the coverage math below, so a transient throttle no longer
+      // silently caps the score. Skip when NOTHING returned (a total outage — retrying won't help); single pass.
+      if (_failedIdx.length > 0 && chunkResults.length > 0) {
+        await new Promise((res) => setTimeout(res, Math.min(8000, 1200 * _failedIdx.length)));
+        let _recovered = 0;
+        for (let b = 0; b < _failedIdx.length; b += batchSize) {
+          const slice = _failedIdx.slice(b, b + batchSize);
+          const rr = await Promise.all(slice.map((ci) => _auditOneChunk(chunks[ci], ci + 1)));
+          rr.forEach((res) => { if (res) { chunkResults.push(res); _recovered++; } });
+        }
+        if (_recovered > 0) warnLog(`[Output Audit] Throttle self-heal: recovered ${_recovered}/${_failedIdx.length} previously-failed section(s) on retry`);
       }
       if (chunkResults.length === 0) return null;
       // Merge: deduplicate issues across chunks using WCAG code + violation category
@@ -26770,6 +26791,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           // Karaoke read-aloud: play one audio clip per sentence in order,
           // lighting each sentence while its own clip plays. No timing guesses.
           (function () {
+            if (window.__alloKaBound) return; window.__alloKaBound = true;
             var active = null;
             function clearHi(spans) { for (var i = 0; i < spans.length; i++) spans[i].classList.remove("ka-on"); }
             function stop() {
@@ -28487,11 +28509,6 @@ window.AlloModules.createDocPipeline.ocrBlockLayout = _alloOcrBlockLayout; // st
 window.AlloModules.createDocPipeline.structuralFoundations = _alloStructuralFoundations; // static: exposed for tests
 window.AlloModules.createDocPipeline.weightedDeductions = _alloWeightedDeductions; // static: exposed for tests (#5)
 window.AlloModules.createDocPipeline.contrastFixPair = _alloContrastFixPair; // static: exposed for tests (contrast pair-fixer)
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 })();
