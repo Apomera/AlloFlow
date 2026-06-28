@@ -844,12 +844,20 @@ function _restyleToHeading(blockHtml, opts) {
   if (block.children.length === 1 && block.children[0].tagName === 'A' && String(block.children[0].textContent || '').replace(/\s+/g, ' ').trim() === text) { var _lo = { ok: false, reason: 'link-only' }; return _lo; }  // a lone link is navigation, not a heading
   if (/[.?!]$/.test(text) && text.split(/\s+/).length > 10) { var _nt = { ok: false, reason: 'not-title' }; return _nt; }  // a full sentence is body prose
   // OUTLINE-SAFE level: never skip past (nearest preceding heading + 1), never <h2 (no auto-h1), never >h6.
-  var preceding = (opts && opts.precedingLevel != null) ? parseInt(opts.precedingLevel, 10) : 0;
-  if (!(preceding >= 1 && preceding <= 6)) preceding = 0;
-  var base = preceding >= 1 ? preceding : 1;
-  var requested = (opts && opts.level != null) ? parseInt(opts.level, 10) : 0;
-  var level = requested >= 2 ? requested : (base + 1);
-  level = Math.max(2, Math.min(level, base + 1, 6));
+  // EXCEPTION — title-promotion (Tier 2): opts.h1 marks a caller-VERIFIED document title in a doc with NO
+  // existing <h1>. The <h1> is by definition the top of the outline, so the no-skip / never-<h1> rules don't
+  // apply — promoting the page title to <h1> is the correct outline operation. ONLY _proposeTitleHeading sets it.
+  var level;
+  if (opts && opts.h1) {
+    level = 1;
+  } else {
+    var preceding = (opts && opts.precedingLevel != null) ? parseInt(opts.precedingLevel, 10) : 0;
+    if (!(preceding >= 1 && preceding <= 6)) preceding = 0;
+    var base = preceding >= 1 ? preceding : 1;
+    var requested = (opts && opts.level != null) ? parseInt(opts.level, 10) : 0;
+    level = requested >= 2 ? requested : (base + 1);
+    level = Math.max(2, Math.min(level, base + 1, 6));
+  }
   var doc = block.ownerDocument;
   var h = doc.createElement('h' + level);
   h.innerHTML = block.innerHTML;                              // re-tag only — inner markup/links preserved
@@ -864,6 +872,51 @@ function _restyleToHeading(blockHtml, opts) {
   if (!g.ok) return g;
   var _r = { ok: true, html: html, kind: 'heading', level: level, reason: 'ok' };
   return _r;
+}
+// Tier 2 (2026-06-24): DETERMINISTICALLY propose promoting the DOCUMENT TITLE to <h1> when the document has
+// none. proposeRestyles only proposes section headings (h2–h6, AI-selected) and never an <h1> (the outline-
+// safety rule), so a page whose title is a styled <div>/<p> keeps shipping with no <h1> (audit finding #3).
+// Which block is "the title" is a JUDGMENT call, so this is a PROPOSAL the teacher confirms — never auto-applied.
+// High-precision: requires a real title SIGNAL (text matches <head><title>, or heading-like bold/large styling,
+// or an all-bold block) AND that the block sits BEFORE any existing heading; restyleBlock({h1}) then GATES it
+// (short, single-line, not a sentence, reading-order + fidelity preserved). Returns one proposal in the
+// standard shape (so it rides the existing review queue + apply path), or null. Pure + side-effect-free.
+function _proposeTitleHeading(src, dom) {
+  try {
+    if (!src || !dom || !dom.body) return null;
+    if (dom.body.querySelector('h1')) return null;                 // already has an <h1> — nothing to promote
+    var titleText = '';
+    var tEl = dom.querySelector('head > title');
+    if (tEl) titleText = String(tEl.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
+    var blocks = Array.prototype.slice.call(dom.body.querySelectorAll('div,p,h2,h3,h4,h5,h6'));
+    for (var i = 0; i < blocks.length; i++) {
+      var el = blocks[i];
+      if (/^H[2-6]$/.test(el.tagName)) return null;                // a heading appears before any title block → ambiguous, don't guess
+      if (el.querySelector('div,p,h1,h2,h3,h4,h5,h6,table,ul,ol,figure')) continue; // a container, not a single title line
+      var text = String(el.textContent || '').replace(/\s+/g, ' ').trim();
+      if (text.length < 2 || text.length > 100) continue;          // titles are short (restyleBlock re-checks)
+      // Title SIGNAL: matches <head><title>, OR heading-like styling (bold / large font), OR an all-bold block.
+      var signal = false;
+      if (titleText && text.toLowerCase() === titleText) signal = true;
+      if (!signal) {
+        var style = (el.getAttribute('style') || '');
+        if (/font-weight\s*:\s*(?:bold|[6-9]00)/i.test(style)) signal = true;
+        var fm = style.match(/font-size\s*:\s*(\d+(?:\.\d+)?)\s*(px|pt|em|rem|%)/i);
+        if (fm) { var n = parseFloat(fm[1]), u = fm[2].toLowerCase(); if ((u === 'px' && n >= 18) || (u === 'pt' && n >= 14) || ((u === 'em' || u === 'rem') && n >= 1.3) || (u === '%' && n >= 130)) signal = true; }
+        if (!signal && el.children.length === 1 && /^(B|STRONG)$/.test(el.children[0].tagName) && String(el.children[0].textContent || '').replace(/\s+/g, ' ').trim() === text) signal = true;
+      }
+      if (!signal) continue;
+      var outer = el.outerHTML;                                    // must be uniquely locatable in the STORED string (splice key)
+      var at = src.indexOf(outer);
+      if (at === -1 || src.indexOf(outer, at + outer.length) !== -1) continue;
+      var res = restyleBlock(outer, 'heading', { h1: true });      // deterministic gate (short/single-line/not-sentence + fidelity)
+      if (!res || !res.ok) continue;
+      return { ref: -1, kind: 'heading', level: 1, title: true,
+               reason: 'This looks like the document title. Promoting it to a level-1 heading (<h1>) gives the page a proper title for screen readers and a correct document outline.',
+               original: outer, html: res.html, preview: text.slice(0, 120), tag: el.tagName.toLowerCase() };
+    }
+    return null;
+  } catch (_) { return null; }
 }
 function restyleBlock(blockHtml, kind, opts) {
   if (!blockHtml || !kind) { var _b = { ok: false, reason: 'no-input' }; return _b; }
@@ -21456,6 +21509,10 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     var dom;
     try { dom = new DOMParser().parseFromString(src, 'text/html'); } catch (_) { return null; }
     if (!dom.body) return null;
+    // Tier 2: deterministic DOCUMENT-TITLE → <h1> proposal — high value, and it SURVIVES an AI failure below
+    // (so a throttled "Suggest" run still offers the title fix). Prepended to the AI-selected proposals.
+    var _titleProp = _proposeTitleHeading(src, dom);
+    var _onlyTitle = function () { return _titleProp ? { proposals: [_titleProp], considered: candidates.length, suggested: 1, kept: 1 } : null; };
     var all = Array.prototype.slice.call(dom.body.querySelectorAll('p,blockquote'));
     var candidates = [], byRef = {}, seenText = {};
     for (var i = 0; i < all.length; i++) {
@@ -21485,7 +21542,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       candidates.push(c); byRef[i] = c;
       if (candidates.length >= 60) break;             // cap prompt size
     }
-    if (!candidates.length) { return { proposals: [], considered: 0, suggested: 0 }; }
+    if (!candidates.length) { return _onlyTitle() || { proposals: [], considered: 0, suggested: 0 }; }
     var listing = candidates.map(function (x) { return '#' + x.ref + ' [' + x.tag + '] ' + x.text; }).join('\n');
     var prompt = 'You are improving the structure + visual rhythm of an ACCESSIBLE document. Below are numbered text blocks.\n'
       + 'Pick AT MOST ' + max + ' blocks where a structure change would clearly help a reader:\n'
@@ -21497,11 +21554,11 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       + 'Return ONLY a JSON array: [{"ref":<number>,"kind":"heading"|"callout"|"list","level":<2-6, headings only>,"reason":"<short why>"}]. No prose, no markdown.\n\n'
       + 'BLOCKS:\n' + listing;
     var resp;
-    try { resp = await callGemini(prompt); } catch (_) { return null; }
+    try { resp = await callGemini(prompt); } catch (_) { return _onlyTitle(); }
     var parsed = null;
-    try { parsed = JSON.parse(stripFence(String(resp || ''))); } catch (_) { return null; }
-    if (!Array.isArray(parsed)) return null;
-    var proposals = [], seen = {}, suggested = 0;
+    try { parsed = JSON.parse(stripFence(String(resp || ''))); } catch (_) { return _onlyTitle(); }
+    if (!Array.isArray(parsed)) return _onlyTitle();
+    var proposals = _titleProp ? [_titleProp] : [], seen = {}, suggested = _titleProp ? 1 : 0;
     for (var j = 0; j < parsed.length; j++) {
       var p = parsed[j];
       if (!p || typeof p !== 'object') continue;
