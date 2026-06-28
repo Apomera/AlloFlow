@@ -81,8 +81,18 @@ describe('anti-drift: pipeline ships the degraded flag + deterministic fallback'
 describe('anti-drift: the view renders it honestly', () => {
   it('reads the incomplete flag + neutralises the headline + suppresses +gain', () => {
     expect(viewSrc).toMatch(/const _aiIncomplete = !!pdfFixResult\._aiVerificationIncomplete/);
-    expect(viewSrc).toMatch(/_aiIncomplete \? 'text-slate-500'/);
+    expect(viewSrc).toMatch(/_aiIncomplete \? 'text-slate-400'/); // big headline neutralised (slate, no green)
     expect(viewSrc).toMatch(/\{gain > 0 && !_aiIncomplete &&/);
+  });
+  it('(2026-06-28) AI-incomplete: the big headline shows a DASH — the structural number is NOT the headline — and is demoted to a caption', () => {
+    // the structural figure (afterDisplay) is gated behind the NON-incomplete branch; the incomplete branch renders a labeled dash
+    expect(viewSrc).toContain("t('pdf_audit.score.after_incomplete_title')");
+    expect(viewSrc).toMatch(/after_incomplete_aria'\)[\s\S]{0,120}: \(<>\{afterDisplay\}/);
+    // afterDisplay reappears only as a small DEMOTED "structural only" caption, not as the headline
+    expect(viewSrc).toMatch(/structural_caption'\)[^\n]*\{afterDisplay\}/);
+  });
+  it('(2026-06-28) the dashboard mini-bar also suppresses the after-number (dash, not N/100) when AI-incomplete', () => {
+    expect(viewSrc).toMatch(/pdfFixResult\._aiVerificationIncomplete \? \(<span className="text-slate-500">[\s\S]{0,20}<\/span>\) : \(<>\{\(pdfFixResult\.afterScore/);
   });
   it('the breakdown shows a structural-only label, and the summary line is reconciled (no "Score unavailable" contradiction)', () => {
     expect(viewSrc).toMatch(/structural\/automated checks only; AI semantic audit incomplete/);

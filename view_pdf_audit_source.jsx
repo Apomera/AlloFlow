@@ -7238,7 +7238,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           )}
                           <div data-help-key="pdf_audit_dashboard_bar" className="sticky -top-5 -mx-5 px-5 py-2 bg-white/95 backdrop-blur border-b border-emerald-200 rounded-t-2xl z-20 flex items-center gap-1.5 flex-wrap" role="navigation" aria-label={t('pdf_audit.dashboard.aria') || 'Remediation results overview and section navigation'}>
                             <span className={'text-xs font-black whitespace-nowrap ' + (pdfFixResult._aiVerificationIncomplete ? 'text-slate-500' : 'text-emerald-800')} title={(pdfFixResult._aiVerificationIncomplete ? ((t('pdf_audit.dashboard.score_incomplete_title') || 'Structural/automated checks only — the AI semantic audit was throttled and did not finish, so this is NOT a verified content score.') + ' ') : '') + (t('pdf_audit.dashboard.score_title') || 'Content audit score (HTML reconstruction: AI rubric + axe), before → after. This is NOT PDF/UA conformance of the exported PDF — see the PDF/UA chip.')}>
-                              {(pdfFixResult.beforeScore ?? pdfAuditResult?.score ?? '–')} → {(pdfFixResult.afterScore ?? '–')}<span className="font-normal text-slate-500">/100</span> <span className="font-normal text-slate-400 text-[9px] uppercase tracking-wide">{pdfFixResult._aiVerificationIncomplete ? (t('pdf_audit.dashboard.content_structural_tag') || 'structural only') : (t('pdf_audit.dashboard.content_tag') || 'content')}</span>{pdfFixResult.fidelityLimited ? <span className="text-amber-600 font-bold" aria-hidden="true">*</span> : null}
+                              {(pdfFixResult.beforeScore ?? pdfAuditResult?.score ?? '–')} → {pdfFixResult._aiVerificationIncomplete ? (<span className="text-slate-500">{'—'}</span>) : (<>{(pdfFixResult.afterScore ?? '–')}<span className="font-normal text-slate-500">/100</span></>)} <span className="font-normal text-slate-400 text-[9px] uppercase tracking-wide">{pdfFixResult._aiVerificationIncomplete ? (t('pdf_audit.dashboard.content_structural_tag') || 'structural only') : (t('pdf_audit.dashboard.content_tag') || 'content')}</span>{pdfFixResult.fidelityLimited ? <span className="text-amber-600 font-bold" aria-hidden="true">*</span> : null}
                             </span>
                             {/* #1 score↔fidelity coupling — a high accessibility number must not read as
                                 "all good" when source content may not have carried over. */}
@@ -7479,10 +7479,21 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         </div>
                         <div className="text-2xl text-slate-600">{'\u2192'}</div>
                         <div className="text-center">
-                          <div className={`text-3xl font-black ${_aiIncomplete ? 'text-slate-500' : (blendedAfter || 0) < 50 ? 'text-red-600' : (blendedAfter || 0) < 80 ? 'text-amber-600' : 'text-green-600'}`}>
-                            {afterDisplay}<span className="text-sm opacity-60">/100</span>
+                          {/* Headline honesty (2026-06-28): when the AI semantic audit didn't finish (throttled),
+                              the "after" number is the STRUCTURAL-only score — NOT a verified content score. Showing
+                              it as the big headline (even in slate) reads as "your doc is now N/100". Render a dash
+                              instead so there is no headline number, and demote the structural figure to a small
+                              caption below. The "re-run for a full score" CTA lives in the sub-line beneath. */}
+                          <div className={`text-3xl font-black ${_aiIncomplete ? 'text-slate-400' : (blendedAfter || 0) < 50 ? 'text-red-600' : (blendedAfter || 0) < 80 ? 'text-amber-600' : 'text-green-600'}`}
+                            title={_aiIncomplete ? (t('pdf_audit.score.after_incomplete_title') || 'No verified score yet — the AI semantic audit was throttled and did not finish. Re-run for a full score. The structural-only number is shown below.') : undefined}>
+                            {_aiIncomplete
+                              ? (<span aria-label={t('pdf_audit.score.after_incomplete_aria') || 'No verified score yet — re-run for a full score'}>{'—'}</span>)
+                              : (<>{afterDisplay}<span className="text-sm opacity-60">/100</span></>)}
                           </div>
                           <div className="text-[11px] font-bold text-slate-600 uppercase">After</div>
+                          {_aiIncomplete && (
+                            <div className="text-[10px] font-semibold text-slate-500 mt-0.5 whitespace-nowrap">{t('pdf_audit.score.structural_caption') || 'structural only'}: {afterDisplay}<span className="opacity-60">/100</span></div>
+                          )}
                         </div>
                         {gain > 0 && !_aiIncomplete && (
                           <div className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-bold">
