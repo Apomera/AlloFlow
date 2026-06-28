@@ -453,6 +453,25 @@ const AnchorChartView = React.memo((props) => {
   const callImagen = props.callImagen || null;
   const callGeminiImageEdit = props.callGeminiImageEdit || (typeof window !== 'undefined' && window.callGeminiImageEdit) || null;
   const t = props.t || ((k, d) => d || k);
+  const activeSessionCode = props.activeSessionCode || null;
+  const onPlayPictionary = typeof props.onPlayPictionary === 'function' ? props.onPlayPictionary : null;
+
+  // Derive chart data DEFENSIVELY — generatedContent can briefly be null or a
+  // different resource type during the full-pack run (activeView flips to
+  // 'anchor-chart' before the content object is populated). EVERY hook below
+  // must run unconditionally (Rules of Hooks); the type gate that returns null
+  // lives AFTER all hooks, just before the JSX.
+  const data = (generatedContent && generatedContent.data) || {};
+  const title = data.title || '';
+  const chartType = data.chartType || 'reference';
+  // Type-aware layout: chartType now shapes presentation, not just a badge.
+  // process → numbered steps + connectors; comparison → side-by-side columns;
+  // concept-map → hub caption + radiating grid; reference → classic stacked list.
+  const layout = ({ process: 'process', comparison: 'comparison', 'concept-map': 'concept-map' })[chartType] || 'reference';
+  const sections = Array.isArray(data.sections) ? data.sections : [];
+  const lessonRef = data.lessonRef || {};
+  const annotations = Array.isArray(data.annotations) ? data.annotations : [];
+  const interactive = data.interactive || { armed: false, rubric: '' };
 
   const [isGeneratingRubric, setIsGeneratingRubric] = React.useState(false);
 
@@ -492,24 +511,6 @@ const AnchorChartView = React.memo((props) => {
     }
   };
 
-  // Bridge to Concept Pictionary — when present + session active, surfaces a
-  // "Play Pictionary with these terms" button that hands the chart's section
-  // labels to the Pictionary host as the round's concept candidates.
-  const activeSessionCode = props.activeSessionCode || null;
-  const onPlayPictionary = typeof props.onPlayPictionary === 'function' ? props.onPlayPictionary : null;
-
-  if (!generatedContent || generatedContent.type !== 'anchor-chart') return null;
-  const data = generatedContent.data || {};
-  const title = data.title || '';
-  const chartType = data.chartType || 'reference';
-  // Type-aware layout: chartType now shapes presentation, not just a badge.
-  // process → numbered steps + connectors; comparison → side-by-side columns;
-  // concept-map → hub caption + radiating grid; reference → classic stacked list.
-  const layout = ({ process: 'process', comparison: 'comparison', 'concept-map': 'concept-map' })[chartType] || 'reference';
-  const sections = Array.isArray(data.sections) ? data.sections : [];
-  const lessonRef = data.lessonRef || {};
-  const annotations = Array.isArray(data.annotations) ? data.annotations : [];
-
   const [isEditing, setIsEditing] = React.useState(false);
   const [showCritique, setShowCritique] = React.useState(false);
   const [regenIdx, setRegenIdx] = React.useState(-1);
@@ -519,8 +520,7 @@ const AnchorChartView = React.memo((props) => {
   // When `interactive.armed`, students see blanked bullets + input fields and
   // can submit for AI feedback graded against `interactive.rubric`. Teacher
   // arms / disarms via the dialog. State lives on `data.interactive` so it
-  // round-trips through save/load.
-  const interactive = data.interactive || { armed: false, rubric: '' };
+  // round-trips through save/load. (`interactive` is derived defensively above.)
   const [showInteractiveDialog, setShowInteractiveDialog] = React.useState(false);
   const [rubricDraft, setRubricDraft] = React.useState(interactive.rubric || '');
   React.useEffect(() => { setRubricDraft(interactive.rubric || ''); }, [interactive.rubric, generatedContent && generatedContent.id]);
@@ -562,7 +562,7 @@ const AnchorChartView = React.memo((props) => {
   // Each section's `iconPrompt` is biased toward the hand-drawn marker look.
   const triedRef = React.useRef({});
   React.useEffect(() => {
-    if (!callImagen) return;
+    if (!callImagen || !generatedContent) return;
     sections.forEach((s, idx) => {
       if (!s) return;
       const key = `${generatedContent.id}::${s.id || idx}`;
@@ -588,7 +588,7 @@ const AnchorChartView = React.memo((props) => {
         handleNoteUpdate('sections', (data.sections || []).map((sec, i) => i === idx ? { ...sec, iconUrl: finalUrl } : sec));
       }).catch(() => { /* swallow — section renders placeholder */ });
     });
-  }, [generatedContent.id, sections.length, callImagen, callGeminiImageEdit]);
+  }, [generatedContent && generatedContent.id, sections.length, callImagen, callGeminiImageEdit]);
 
   const updateSection = (idx, nextSection) => {
     const next = sections.map((s, i) => i === idx ? nextSection : s);
@@ -780,6 +780,13 @@ const AnchorChartView = React.memo((props) => {
       addToastProp('AI grading hit an error. Try again in a moment.');
     }
   };
+
+  // Type gate AFTER all hooks (Rules of Hooks): if this isn't an anchor-chart
+  // resource — e.g. a transient render during the full-pack run, where activeView
+  // flips to 'anchor-chart' before generatedContent is populated — render nothing.
+  // Every hook above already ran, so the hook count stays constant across renders
+  // and React won't throw "Rendered more hooks than during the previous render."
+  if (!generatedContent || generatedContent.type !== 'anchor-chart') return null;
 
   return (
     <div className="ac-root max-w-5xl mx-auto px-4 py-6" data-help-key="anchor_chart_view_panel">

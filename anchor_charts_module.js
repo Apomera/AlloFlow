@@ -404,6 +404,16 @@ const AnchorChartView = React.memo((props) => {
   const callImagen = props.callImagen || null;
   const callGeminiImageEdit = props.callGeminiImageEdit || typeof window !== "undefined" && window.callGeminiImageEdit || null;
   const t2 = props.t || ((k, d) => d || k);
+  const activeSessionCode = props.activeSessionCode || null;
+  const onPlayPictionary = typeof props.onPlayPictionary === "function" ? props.onPlayPictionary : null;
+  const data = generatedContent && generatedContent.data || {};
+  const title = data.title || "";
+  const chartType = data.chartType || "reference";
+  const layout = { process: "process", comparison: "comparison", "concept-map": "concept-map" }[chartType] || "reference";
+  const sections = Array.isArray(data.sections) ? data.sections : [];
+  const lessonRef = data.lessonRef || {};
+  const annotations = Array.isArray(data.annotations) ? data.annotations : [];
+  const interactive = data.interactive || { armed: false, rubric: "" };
   const [isGeneratingRubric, setIsGeneratingRubric] = React.useState(false);
   const handleSuggestRubric = async () => {
     if (!props.callGemini && !window.callGemini) {
@@ -441,22 +451,11 @@ ${bulletText}`;
       setIsGeneratingRubric(false);
     }
   };
-  const activeSessionCode = props.activeSessionCode || null;
-  const onPlayPictionary = typeof props.onPlayPictionary === "function" ? props.onPlayPictionary : null;
-  if (!generatedContent || generatedContent.type !== "anchor-chart") return null;
-  const data = generatedContent.data || {};
-  const title = data.title || "";
-  const chartType = data.chartType || "reference";
-  const layout = { process: "process", comparison: "comparison", "concept-map": "concept-map" }[chartType] || "reference";
-  const sections = Array.isArray(data.sections) ? data.sections : [];
-  const lessonRef = data.lessonRef || {};
-  const annotations = Array.isArray(data.annotations) ? data.annotations : [];
   const [isEditing, setIsEditing] = React.useState(false);
   const [showCritique, setShowCritique] = React.useState(false);
   const [regenIdx, setRegenIdx] = React.useState(-1);
   const [exportState, setExportState] = React.useState("idle");
   const paperRef = React.useRef(null);
-  const interactive = data.interactive || { armed: false, rubric: "" };
   const [showInteractiveDialog, setShowInteractiveDialog] = React.useState(false);
   const [rubricDraft, setRubricDraft] = React.useState(interactive.rubric || "");
   React.useEffect(() => {
@@ -493,7 +492,7 @@ ${bulletText}`;
   const [dragOverIdx, setDragOverIdx] = React.useState(-1);
   const triedRef = React.useRef({});
   React.useEffect(() => {
-    if (!callImagen) return;
+    if (!callImagen || !generatedContent) return;
     sections.forEach((s, idx) => {
       if (!s) return;
       const key = `${generatedContent.id}::${s.id || idx}`;
@@ -520,7 +519,7 @@ ${bulletText}`;
       }).catch(() => {
       });
     });
-  }, [generatedContent.id, sections.length, callImagen, callGeminiImageEdit]);
+  }, [generatedContent && generatedContent.id, sections.length, callImagen, callGeminiImageEdit]);
   const updateSection = (idx, nextSection) => {
     const next = sections.map((s, i) => i === idx ? nextSection : s);
     handleNoteUpdate("sections", next);
@@ -699,6 +698,7 @@ ${bulletText}`;
       addToastProp("AI grading hit an error. Try again in a moment.");
     }
   };
+  if (!generatedContent || generatedContent.type !== "anchor-chart") return null;
   return /* @__PURE__ */ React.createElement("div", { className: "ac-root max-w-5xl mx-auto px-4 py-6", "data-help-key": "anchor_chart_view_panel" }, /* @__PURE__ */ React.createElement("style", null, `
         .ac-paper {
           background-color: #fdfaf2;
