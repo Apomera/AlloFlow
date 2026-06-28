@@ -939,6 +939,58 @@ function _repairLeakedImagePlaceholders(html) {
     return (dm ? dm[0] + '\n' : '') + doc.documentElement.outerHTML;
   } catch (_) { return html; }
 }
+// Deterministic FOUNDATIONS backstop (Tier 1, 2026-06-24): guarantee the universal HTML landmarks/foundations
+// every accessible document needs — for the case where the AI-DIRECTED fixes (fix_add_landmark / fix_skip_nav
+// / fix_title / fix_lang) didn't fire because the model didn't emit the directive (atypical documents). These
+// are the foundations that have NO wrong answer, so they're safe to add unconditionally; the judgment calls
+// (which <div> is the title; whether a <header>/<nav>/<footer> is warranted) are deliberately NOT here — those
+// belong in a propose-and-confirm flow. Markup MIRRORS the AI-directed fixes above (same <main id> + skip-link
+// style) so output is consistent regardless of which path added them. Every step is GATED on absence, so it's
+// idempotent (safe to run on each deterministic-fix pass). FULL-DOCUMENT ONLY: a chunk fragment (no <body>) is
+// left untouched — wrapping a fragment in <main> would be wrong. Pure + side-effect-free → unit-testable.
+function fixLandmarkFoundations(html) {
+  if (!html || typeof html !== 'string') return html;
+  if (!/<body[\s>]/i.test(html)) return html; // fragment (body-inner) — not a full document; do nothing
+  var out = html;
+
+  // 1) <main> landmark — wrap the body content if there's no <main>/role="main"; otherwise make sure the
+  //    existing <main> carries the canonical id so the skip-link below has a real target.
+  var hasMain = /<main[\s>]/i.test(out) || /role\s*=\s*["']main["']/i.test(out);
+  if (!hasMain) {
+    out = out.replace(/<body([^>]*)>/i, '<body$1>\n<main id="main-content" role="main">')
+             .replace(/<\/body>/i, '</main>\n</body>');
+  } else if (!/id\s*=\s*["']main-content["']/i.test(out)) {
+    out = out.replace(/<main\b([^>]*)>/i, function (m, a) { return /\sid\s*=/i.test(a) ? m : '<main' + a + ' id="main-content">'; });
+  }
+
+  // 2) Skip-to-content link → #main-content as the first body child (only meaningful once a #main-content
+  //    target exists, guaranteed by step 1). Idempotent via the same guard fix_skip_nav uses.
+  if (/id\s*=\s*["']main-content["']/i.test(out) && !/skip.to|skip-nav|skipnav/i.test(out)) {
+    out = out.replace(/<body([^>]*)>/i, '<body$1>\n<a href="#main-content" class="sr-only" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:9999">Skip to main content</a>');
+  }
+
+  // 3) <title> — derive from the first <h1> (else first heading) if <head> exists with no <title>.
+  if (/<head[\s>]/i.test(out) && !/<title>[^<]*<\/title>/i.test(out)) {
+    var hm = out.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i) || out.match(/<h[1-6][^>]*>([\s\S]*?)<\/h[1-6]>/i);
+    var ttl = hm ? hm[1].replace(/<[^>]+>/g, '').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim() : '';
+    if (ttl) out = out.replace(/<\/head>/i, function () { return '<title>' + ttl + '</title>\n</head>'; });
+  }
+
+  // 4) <meta charset> if <head> exists without one.
+  if (/<head[\s>]/i.test(out) && !/<meta[^>]+charset/i.test(out)) {
+    out = out.replace(/<head([^>]*)>/i, '<head$1>\n<meta charset="utf-8">');
+  }
+
+  // 5) <html lang> FALLBACK — only if <html> exists with NO lang at all. The apply-detected-lang feature
+  //    sets the correct language when it can; this is a last-resort so a missing-lang CRITICAL can't ship.
+  //    'en' matches the pilot's documents + the existing scaffold defaults (an explicit wrong-language tag
+  //    is the only thing worse than none, and that only happens if a real signal existed — which it didn't).
+  if (/<html[\s>]/i.test(out) && !/<html[^>]*\slang\s*=/i.test(out)) {
+    out = out.replace(/<html((?:(?!\slang\s*=)[^>])*)>/i, '<html$1 lang="en">');
+  }
+
+  return out;
+}
 // Remove EXECUTABLE <script> blocks from a remediated document before it is audited or exported. An
 // accessibility-remediated document is STATIC content (screen-reader / PDF consumption); an embedded
 // <script> is active content that (a) won't function out of context, (b) is untrusted — the preview iframe
@@ -12117,6 +12169,10 @@ HTML section ${chunkNum}/${chunks.length}:
   const runDeterministicWcagFixes = (html) => {
     if (!html) return html;
     let result = html;
+    // Foundations backstop FIRST (Tier 1): guarantee the universal landmarks/foundations (single <main>,
+    // skip-link, <title>, <meta charset>, <html lang> fallback) when the AI-directed fixes didn't add them.
+    // Fragment-safe + idempotent. Runs first so the rest of the deterministic fixes operate on a scaffolded doc.
+    try { result = fixLandmarkFoundations(result); } catch (e) { warnLog('[Det WCAG] fixLandmarkFoundations failed:', e?.message); }
     try { result = fixFormLabels(result).html; } catch (e) { warnLog('[Det WCAG] fixFormLabels failed:', e?.message); }
     try { result = fixDecorativeImages(result).html; } catch (e) { warnLog('[Det WCAG] fixDecorativeImages failed:', e?.message); }
     // Heading→caption BEFORE fixComplexTables so a heading-titled table gets its real title, not the

@@ -33,7 +33,7 @@ const INCLUDE = [
   'export_css', 'export_odt', 'epub', 'rawhtml', 'expert_direct', 'skip_link', 'residual', 'restoration', 'palette', 'region_select', 'block_restyle', 'contrast_pair', 'footnote', 'sanitize_style', 'brand_profile', 'verapdf',
   'live_chunk', 'live_polling', 'issue_locator', 'issue_source', 'tag_inspector', 'recov', 'reliability_',
   'chunk_', 'pipeline_', 'redaction', 'multisession', 'degraded', 'conformance_banner', 'document_builder',
-  'heading_', 'th_scope', 'reading_order', 'form_field', 'figure_caption', 'image_placeholder',
+  'heading_', 'th_scope', 'reading_order', 'form_field', 'figure_caption', 'image_placeholder', 'landmark', 'foundations',
   'decorative_image', 'value_fidelity', 'numeric_fidelity', 'structural_fidelity', 'roundtrip_coverage',
   'integrity_recovery', 'make_accessible', 'handsoff', 'throttle_', 'watchdog_', 'vision_chunk',
   'mini_audit', 'no_mean_blend', 'no_dangling_refs', 'auto_verapdf', 'auto_restore', 'autofix_loop',
