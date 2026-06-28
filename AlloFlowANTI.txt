@@ -4492,7 +4492,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '4b5a48d7';
+    var pluginCdnVersion = '24ddcd61';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -17934,6 +17934,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           case 'poettree-submission': return t('output.title_poettree_submission') || '🌳 Poem Submission';
           case 'litlab-config': return t('output.title_litlab_config') || '🎭 LitLab Assignment';
           case 'litlab-submission': return t('output.title_litlab_submission') || '🎭 Performance Submission';
+          case 'note-taking': return t('help_mode.tool_note_taking') || 'Note-Taking Templates';
+          case 'anchor-chart': return t('help_mode.tool_anchor_chart') || 'Anchor Chart';
           default: return t('common.resource') || 'Resource';
       }
   };

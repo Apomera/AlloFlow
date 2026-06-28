@@ -25766,29 +25766,54 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               </div>
           `;
       } else if (item.type === 'anchor-chart') {
-          // EL-style class anchor chart. Render the chart's sections + items so the
-          // teacher can see what students built. Critique-mode annotations (if any)
-          // appear as appended notes.
+          // EL-style class anchor chart. Type-aware export layout (Tier 1): process =
+          // numbered steps + downward connectors; comparison / concept-map = side-by-side
+          // columns; reference = stacked cards. Critique annotations append as notes.
           const d = item.data || {};
           const sections = Array.isArray(d.sections) ? d.sections : [];
           const chartType = d.chartType || d.type || 'reference';
+          const layout = ({ process: 'process', comparison: 'comparison', 'concept-map': 'concept-map' })[chartType] || 'reference';
           const escapeHtml = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
           const typeLabel = ({ reference: 'Reference', process: 'Process', 'concept-map': 'Concept Map', comparison: 'Comparison' })[chartType] || chartType;
-          const sectionsHtml = sections.length === 0
-              ? '<div style="font-size:0.85em; color:#64748b; font-style:italic; padding:12px;">No sections yet.</div>'
-              : sections.map((s, i) => {
-                  const bullets = Array.isArray(s && s.bullets) ? s.bullets : [];
-                  const label = (s && s.label) || `Section ${i + 1}`;
-                  const icon = (s && s.icon) || '';
-                  return `<div style="margin-bottom:12px; padding:12px; background:#fff7ed; border:1px solid #fdba74; border-radius:8px;"><div style="font-weight:bold; font-size:1.05em; color:#9a3412; margin-bottom:6px;">${icon ? icon + ' ' : ''}${escapeHtml(label)}</div>${bullets.length ? `<ul style="margin:0; padding-left:20px;">${bullets.map(b => `<li style="font-size:0.92em; color:#1e293b; margin-bottom:2px;">${escapeHtml(b)}</li>`).join('')}</ul>` : '<div style="font-size:0.85em; color:#9ca3af; font-style:italic;">(empty)</div>'}</div>`;
-              }).join('');
+          const _acCaption = (layout === 'process' && sections.length > 1) ? 'Follow the steps in order &#8595;'
+              : (layout === 'comparison' && sections.length > 1) ? 'Compare side by side &#8596;'
+              : (layout === 'concept-map') ? 'Central idea branches into&#8230;' : '';
+          const _acCaptionHtml = _acCaption ? ('<div style="text-align:center; font-size:0.8em; color:#b45309; font-style:italic; margin-bottom:8px;">' + _acCaption + '</div>') : '';
+          const _acCard = (s, i) => {
+              const bullets = Array.isArray(s && s.bullets) ? s.bullets : [];
+              const label = (s && s.label) || ('Section ' + (i + 1));
+              const icon = (s && s.icon) || '';
+              const _isImg = typeof icon === 'string' && /^(data:|https?:)/.test(icon);
+              const _iconHtml = icon ? (_isImg ? ('<img src="' + escapeHtml(icon) + '" alt="" style="height:1.3em; width:auto; vertical-align:-0.25em; margin-right:5px;" />') : (escapeHtml(icon) + ' ')) : '';
+              const _badge = (layout === 'process') ? ('<div aria-hidden="true" style="position:absolute; top:-10px; left:-10px; z-index:6; width:26px; height:26px; border-radius:999px; background:#dd6b20; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; box-shadow:0 1px 3px rgba(0,0,0,0.3);">' + (i + 1) + '</div>') : '';
+              const _mb = (layout === 'process') ? '0' : '12px';
+              return '<div style="position:relative; margin-bottom:' + _mb + '; padding:12px; background:#fff7ed; border:1px solid #fdba74; border-radius:8px; break-inside:avoid; page-break-inside:avoid;">' + _badge
+                  + '<div style="font-weight:bold; font-size:1.05em; color:#9a3412; margin-bottom:6px;">' + _iconHtml + escapeHtml(label) + '</div>'
+                  + (bullets.length
+                      ? ('<ul style="margin:0; padding-left:20px;">' + bullets.map(b => '<li style="font-size:0.92em; color:#1e293b; margin-bottom:2px;">' + escapeHtml(b) + '</li>').join('') + '</ul>')
+                      : '<div style="font-size:0.85em; color:#9ca3af; font-style:italic;">(empty)</div>')
+                  + '</div>';
+          };
+          let sectionsHtml;
+          if (sections.length === 0) {
+              sectionsHtml = '<div style="font-size:0.85em; color:#64748b; font-style:italic; padding:12px;">No sections yet.</div>';
+          } else if (layout === 'comparison' || layout === 'concept-map') {
+              const _minw = layout === 'comparison' ? '220px' : '240px';
+              sectionsHtml = '<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(' + _minw + ', 1fr)); gap:10px; align-items:start;">' + sections.map((s, i) => _acCard(s, i)).join('') + '</div>';
+          } else if (layout === 'process') {
+              const _conn = '<div style="text-align:center; margin:-2px 0 2px;" aria-hidden="true"><span style="font-size:22px; color:#b7791f; line-height:1;">&#8595;</span></div>';
+              sectionsHtml = '<div style="padding:14px 2px 2px 16px;">' + sections.map((s, i) => _acCard(s, i) + (i < sections.length - 1 ? _conn : '')).join('') + '</div>';
+          } else {
+              sectionsHtml = sections.map((s, i) => _acCard(s, i)).join('');
+          }
           const annotations = Array.isArray(d.annotations) ? d.annotations : [];
           const annotationsHtml = annotations.length > 0
-              ? `<div style="margin-top:12px; padding:10px; background:#fef3c7; border-left:4px solid #f59e0b; border-radius:4px;"><div style="font-size:0.75em; font-weight:bold; text-transform:uppercase; color:#92400e; margin-bottom:6px;">Critique Mode — Student Annotations (${annotations.length})</div><ul style="margin:0; padding-left:18px;">${annotations.slice(0, 12).map(a => `<li style="font-size:0.88em; color:#1e293b; margin-bottom:3px;"><strong>${escapeHtml(a.kind || 'note')}:</strong> ${escapeHtml(a.text || '')}</li>`).join('')}</ul>${annotations.length > 12 ? `<div style="font-size:0.75em; color:#92400e; margin-top:4px; font-style:italic;">… and ${annotations.length - 12} more.</div>` : ''}</div>`
+              ? ('<div style="margin-top:12px; padding:10px; background:#fef3c7; border-left:4px solid #f59e0b; border-radius:4px;"><div style="font-size:0.75em; font-weight:bold; text-transform:uppercase; color:#92400e; margin-bottom:6px;">Critique Mode &#8212; Student Annotations (' + annotations.length + ')</div><ul style="margin:0; padding-left:18px;">' + annotations.slice(0, 12).map(a => '<li style="font-size:0.88em; color:#1e293b; margin-bottom:3px;"><strong>' + escapeHtml(a.kind || 'note') + ':</strong> ' + escapeHtml(a.text || '') + '</li>').join('') + '</ul>' + (annotations.length > 12 ? ('<div style="font-size:0.75em; color:#92400e; margin-top:4px; font-style:italic;">&#8230; and ' + (annotations.length - 12) + ' more.</div>') : '') + '</div>')
               : '';
           return `
               <div class="section" id="${item.id}">
-                  <div class="resource-header" style="border-left:4px solid #f59e0b;">📋 ${title} <span style="font-size:0.75em; font-weight:normal; color:#64748b; margin-left:8px;">(Anchor Chart — ${typeLabel})</span></div>
+                  <div class="resource-header" style="border-left:4px solid #f59e0b;">&#128203; ${title} <span style="font-size:0.75em; font-weight:normal; color:#64748b; margin-left:8px;">(Anchor Chart &#8212; ${typeLabel})</span></div>
+                  ${_acCaptionHtml}
                   ${sectionsHtml}
                   ${annotationsHtml}
               </div>
