@@ -37,6 +37,8 @@ function GuidedModeBanner({
   showGuidedTip,
   t,
   tourSteps,
+  history,
+  getDefaultTitle,
 }) {
   const step = GUIDED_STEPS[guidedStep] || {};
   const isLast = guidedStep >= GUIDED_STEPS.length - 1;
@@ -44,6 +46,9 @@ function GuidedModeBanner({
   const allSteps = allGuidedSteps || GUIDED_STEPS;
   // null selection = every step on; source-input is always on (the pipeline needs it).
   const isStepOn = (id) => !guidedSelectedIds || id === 'source-input' || guidedSelectedIds.indexOf(id) !== -1;
+  // End-of-flow recap: what the teacher actually built (from history).
+  const humanize = (type) => (getDefaultTitle ? getDefaultTitle(type) : String(type || '').replace(/[-_]/g, ' '));
+  const recapItems = isLast ? (history || []).filter(h => h && h.type && h.type !== 'udl-advice' && h.type !== 'guided').map(h => h.title || humanize(h.type)) : [];
   return (
     <>
       <style>{`@keyframes alloGuidedRingPulse{0%,100%{box-shadow:0 0 0 2px rgba(99,102,241,.7),0 0 22px rgba(99,102,241,.45)}50%{box-shadow:0 0 0 3px rgba(129,140,248,.95),0 0 36px rgba(99,102,241,.65)}}@media (prefers-reduced-motion: reduce){.allo-guided-ring{animation:none !important}}`}</style>
@@ -69,6 +74,27 @@ function GuidedModeBanner({
           <div role="status" style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', background: guidedEngaged ? 'rgba(34,197,94,0.14)' : 'rgba(99,102,241,0.18)', border: '1px solid ' + (guidedEngaged ? 'rgba(74,222,128,0.4)' : 'rgba(129,140,248,0.35)'), borderRadius: '12px', padding: '10px 12px', marginBottom: '10px' }}>
             <span aria-hidden="true" style={{ fontSize: '14px', lineHeight: '1.4' }}>{guidedEngaged ? '✅' : '👉'}</span>
             <span style={{ fontSize: '11.5px', color: 'white', fontWeight: 600, lineHeight: '1.5' }}>{guidedEngaged ? (step.success || step.action) : step.action}</span>
+          </div>
+        )}
+        {isLast && (
+          <div role="status" style={{ marginBottom: '10px', padding: '11px 13px', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(74,222,128,0.35)', borderRadius: '12px' }}>
+            <div style={{ fontSize: '12px', fontWeight: 800, color: 'white', marginBottom: '6px' }}>🎉 {t('guided.recap_title') || 'Your lesson is built'}</div>
+            {recapItems.length > 0 ? (
+              <>
+                <div style={{ fontSize: '11px', color: 'rgba(203,213,225,0.9)', marginBottom: '6px' }}>{(t('guided.recap_count') || 'You created {n} resources:').replace('{n}', recapItems.length)}</div>
+                <div style={{ maxHeight: '120px', overflowY: 'auto' }}>
+                  {recapItems.slice(0, 12).map((title, i) => (
+                    <div key={i} style={{ fontSize: '11px', color: 'white', display: 'flex', gap: '6px', marginBottom: '2px', alignItems: 'flex-start' }}>
+                      <span aria-hidden="true" style={{ color: '#4ade80' }}>✓</span><span>{title}</span>
+                    </div>
+                  ))}
+                  {recapItems.length > 12 && <div style={{ fontSize: '11px', color: 'rgba(203,213,225,0.7)' }}>+{recapItems.length - 12} {t('guided.recap_more') || 'more'}</div>}
+                </div>
+              </>
+            ) : (
+              <div style={{ fontSize: '11px', color: 'rgba(203,213,225,0.9)' }}>{t('guided.recap_empty') || 'Generate resources from the tools, then download your full pack below.'}</div>
+            )}
+            <div style={{ fontSize: '11px', color: 'rgba(203,213,225,0.8)', marginTop: '8px', fontStyle: 'italic' }}>{t('guided.recap_hub') || 'Looking for more? The Learning Hub has StoryForge, PoetTree, and LitLab.'}</div>
           </div>
         )}
         <div style={{ display: 'flex', gap: '8px' }}>
