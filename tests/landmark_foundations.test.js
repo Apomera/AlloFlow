@@ -26,8 +26,8 @@ describe('fixLandmarkFoundations: Tier 1 deterministic foundations backstop', ()
     expect(mains.length).toBe(1);
     expect(mains[0].id).toBe('main-content');
     expect(mains[0].getAttribute('role')).toBe('main');
-    expect(mains[0].querySelector('h1').textContent).toBe('Weekly Worksheet'); // content moved inside
-    expect(mains[0].querySelector('p').textContent).toBe('Body text.');
+    expect(mains[0].querySelector('p').textContent).toBe('Body text.'); // body content moved inside <main>
+    expect(mains[0].querySelector('h1')).toBeNull(); // the opening title <h1> is lifted into a banner <header> (see the lift suite)
   });
 
   it('adds a skip-to-content link targeting #main-content as the first body child', () => {
@@ -98,6 +98,56 @@ describe('fixLandmarkFoundations: Tier 1 deterministic foundations backstop', ()
   });
 });
 
+describe('banner <header> lift: a leading title becomes a top-level banner landmark (2026-06-28)', () => {
+  const titled = '<!DOCTYPE html><html><head></head><body><h1>Weekly Worksheet</h1><p>Intro.</p><h2>Part 1</h2><p>x</p></body></html>';
+
+  it('lifts the opening <h1> into a <header> that is a SIBLING of <main> (banner landmark), not inside it', () => {
+    const d = dom(fixLandmarkFoundations(titled));
+    const header = d.querySelector('header');
+    expect(header).toBeTruthy();
+    expect(header.querySelector('h1').textContent).toBe('Weekly Worksheet');
+    expect(d.querySelector('main header')).toBeNull(); // header is NOT nested inside main
+    expect(d.querySelector('main h1')).toBeNull();     // ...and the title is not in main
+    const top = Array.from(d.body.children).map((c) => c.tagName.toLowerCase());
+    expect(top.indexOf('header')).toBeLessThan(top.indexOf('main')); // <header> precedes <main>
+  });
+
+  it('the rest of the content (after the title) stays inside <main>', () => {
+    const main = dom(fixLandmarkFoundations(titled)).querySelector('main');
+    expect(main.querySelector('h2').textContent).toBe('Part 1');
+    expect(main.textContent).toContain('Intro.');
+  });
+
+  it('also lifts an immediate tagline/subtitle along with the title', () => {
+    const d = dom(fixLandmarkFoundations('<body><h1>Title</h1><p class="subtitle">A short subtitle</p><p>Body.</p></body>'));
+    expect(d.querySelector('header p.subtitle')).toBeTruthy();
+    expect(d.querySelector('main p.subtitle')).toBeNull();
+  });
+
+  it('CONSERVATIVE: when the body does NOT start with an <h1>, nothing is lifted (plain <main> wrap)', () => {
+    const d = dom(fixLandmarkFoundations('<body><p>Some intro paragraph before any heading.</p><h1>Later Title</h1><p>x</p></body>'));
+    expect(d.querySelector('header')).toBeNull();                       // nothing lifted
+    expect(d.querySelectorAll('main').length).toBe(1);                  // still wrapped in main
+    expect(d.querySelector('main h1').textContent).toBe('Later Title'); // the h1 stays in main
+  });
+
+  it('skip-link → header → main order (a keyboard user skips the banner to the content)', () => {
+    const order = Array.from(dom(fixLandmarkFoundations(titled)).body.children).map((c) => c.tagName.toLowerCase());
+    expect(order[0]).toBe('a'); // skip-link first
+    expect(order.indexOf('a')).toBeLessThan(order.indexOf('header'));
+    expect(order.indexOf('header')).toBeLessThan(order.indexOf('main'));
+  });
+
+  it('idempotent: a second pass does not double-lift or nest (one top-level banner)', () => {
+    const once = fixLandmarkFoundations(titled);
+    const twice = fixLandmarkFoundations(once);
+    expect(twice).toBe(once);
+    const d = dom(twice);
+    expect(d.querySelectorAll('header').length).toBe(1);
+    expect(d.querySelector('main header')).toBeNull();
+  });
+});
+
 describe('A — landmark-nesting guard: never wrap an existing top-level banner/contentinfo inside <main>', () => {
   it('does NOT wrap when the doc already has a top-level <header> (would nest a banner in main)', () => {
     const d = dom(fixLandmarkFoundations('<html lang="en"><head><title>T</title></head><body><header>Site title</header><p>content</p></body></html>'));
@@ -140,6 +190,10 @@ describe('anti-drift: fixLandmarkFoundations is wired into the deterministic WCA
   it('A: the landmark-nesting guard ships', () => {
     expect(dp).toContain('var _wouldNestLandmark');
     expect(dp).toContain('Landmark-nesting guard');
+  });
+  it('the banner <header> lift ships in the main-wrap branch', () => {
+    expect(dp).toContain('LIFT a leading document title');
+    expect(dp).toContain("'<header>\\n' + _lift[2].trim() + '\\n</header>\\n'");
   });
   it('B: the id-stamp also handles a role="main" element', () => {
     expect(dp).toContain('any element bearing role="main"');

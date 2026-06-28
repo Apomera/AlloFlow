@@ -1056,8 +1056,19 @@ function fixLandmarkFoundations(html) {
   // invalid nested structure. <nav>/<aside> are valid inside <main>, so they don't block the wrap.
   var _wouldNestLandmark = /<(?:header|footer)[\s>]/i.test(out);
   if (!hasMain && !_wouldNestLandmark) {
-    out = out.replace(/<body([^>]*)>/i, '<body$1>\n<main id="main-content" role="main">')
-             .replace(/<\/body>/i, '</main>\n</body>');
+    // Wrap the body content in <main>, but first LIFT a leading document title (an <h1> that opens the
+    // body, plus an optional tagline/subtitle) into a banner <header> placed BEFORE <main>. A converted
+    // PDF/worksheet otherwise buries its title inside <main>, so the document exposes no banner landmark
+    // (axe / the AI rubric flag "lacks <header>") and the title reads as just another content heading. A
+    // top-level <header> (sibling of <main>) IS the banner landmark by ARIA default — no role="banner"
+    // (it can collide with a host page's banner when embedded). Conservative: only lifts when the body
+    // STARTS with the <h1>; any other leading content ⇒ no lift, plain <main> wrap exactly as before.
+    out = out.replace(/(<body[^>]*>)([\s\S]*?)(<\/body>)/i, function (full, bodyOpen, inner, bodyClose) {
+      var _lift = inner.match(/^(\s*)(<h1\b[^>]*>[\s\S]*?<\/h1>\s*(?:<(?:p|div)\b[^>]*class="[^"]*(?:tagline|subtitle)[^"]*"[^>]*>[\s\S]*?<\/(?:p|div)>\s*)?)/i);
+      var headerHtml = _lift ? '<header>\n' + _lift[2].trim() + '\n</header>\n' : '';
+      var rest = _lift ? inner.slice(_lift[0].length) : inner;
+      return bodyOpen + '\n' + headerHtml + '<main id="main-content" role="main">' + rest + '</main>\n' + bodyClose;
+    });
   } else if (hasMain && !/id\s*=\s*["']main-content["']/i.test(out)) {
     // Stamp the canonical id on the MAIN landmark — a <main> tag OR any element bearing role="main"
     // (e.g. <div role="main">) — so the skip-link below has a real target. (Fix B, 2026-06-24)
