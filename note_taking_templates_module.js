@@ -80,7 +80,8 @@ const _NOTE_RUBRICS = {
       'cues that are more inferential ("Why might X have led to Y?") rather than purely factual ("What year did X happen?")',
       "fuller summary that connects ideas rather than listing them",
       "cues that map directly to notes so retrieval practice works",
-      "specific examples in the notes column to anchor abstract ideas"
+      "specific examples in the notes column to anchor abstract ideas",
+      "a connection to something outside the lesson \u2014 another subject, a real-world example, or a memory hook of your own"
     ]
   },
   "lab-report": {
@@ -96,7 +97,8 @@ const _NOTE_RUBRICS = {
       "specific measurements with units rather than vague descriptions",
       "procedure detail sufficient for reproducibility",
       "naming sources of error in the conclusion",
-      'a testable hypothesis with reasoning ("because ___") rather than a guess'
+      'a testable hypothesis with reasoning ("because ___") rather than a guess',
+      "a connection from the results to the real world, another experiment, or a concept from class"
     ]
   },
   "reading-response": {
@@ -138,7 +140,8 @@ const _NOTE_RUBRICS = {
       'using the "my own notes" space to add an example or question of your own',
       "going back to fill any blanks you skipped \u2014 the gaps are the key terms worth knowing",
       "rephrasing a filled-in term in your own words to check you understand it",
-      "noting which blanks were hardest \u2014 those are worth a second look"
+      "noting which blanks were hardest \u2014 those are worth a second look",
+      "a memory hook or analogy of your own for one of the trickier key terms"
     ]
   },
   "q-and-a": {
@@ -152,7 +155,8 @@ const _NOTE_RUBRICS = {
       'mixing in a "why" or "how" question, not only "what" recall questions',
       "an answer that explains rather than just names \u2014 add the reasoning",
       "covering an idea from the source you have not turned into a question yet",
-      "writing one question you genuinely are not sure of the answer to"
+      "writing one question you genuinely are not sure of the answer to",
+      "a question that connects this topic to something outside it (another subject or real life)"
     ]
   }
 };
@@ -207,6 +211,7 @@ function _serializeTemplateForFeedback(templateType, data) {
      A: ${(p.answer || "").trim() || "(none)"}`).join("\n"));
     }
   }
+  if (data.connections && String(data.connections).trim()) parts.push(`CONNECTIONS & MEMORY HOOKS: ${String(data.connections).trim()}`);
   return parts.join("\n\n");
 }
 function _checkTemplateReadyForFeedback(templateType, data) {
@@ -257,6 +262,8 @@ ${(sourceText || "").slice(0, 3e3)}
 You are a supportive teacher giving feedback on a student's ${templateLabel} note-taking work.
 
 Your tone is strengths-first. You ALWAYS lead with one specific thing the student did well, citing what they actually wrote. Then you give ONE growth nudge \u2014 not a list, just one concrete next step. Multiple critiques in one feedback episode reduce the chance the student acts on any of them (Hattie). If the student's work is rough, the strength can be effort-based ("you filled in every section even when it was hard"), but it must be specific.
+
+When the student's work is already substantively complete and accurate, prefer a growth nudge that pushes ELABORATION rather than fixing a gap: invite them to connect this to something they already know (another subject, a real-world example, a personal experience), to explain in their own words WHY it matters or why it's true, or to invent an analogy or memory hook of their own. This generative connection-making (elaborative interrogation / self-explanation) is where durable understanding forms. If the student already wrote a "Connections & Memory Hooks" note, acknowledge it specifically and push it one step further. Keep it to ONE such invitation, never a list.
 
 You are NOT a grader. The student does not see a numeric score. You provide rubric scores in the JSON for the system's internal XP calculation only.
 
@@ -381,6 +388,29 @@ function _useNotesFeedback(props, templateType) {
   }, []);
   return { feedback, isLoading, xpEarned, requestFeedback, dismiss };
 }
+const _ConnectionsSection = ({ value, onChange, hint, t }) => {
+  const tt = t || ((k, d) => d || k);
+  return /* @__PURE__ */ React.createElement(
+    _CardSection,
+    {
+      title: tt("notes_connections.title") || "Connections & Memory Hooks",
+      hint: hint || (tt("notes_connections.hint") || "Optional \u2014 link this to something you already know: another subject, a real-world example, an analogy, or a memory trick of your own. Making your own connections is what makes learning stick."),
+      color: "violet"
+    },
+    /* @__PURE__ */ React.createElement(
+      "textarea",
+      {
+        value: value || "",
+        onChange,
+        placeholder: tt("notes_connections.placeholder") || "e.g. This is like\u2026 / It connects to\u2026 / A way to remember this is\u2026",
+        className: "w-full text-sm text-slate-700 bg-white border border-slate-200 rounded-md p-3 outline-none focus:ring-2 focus:ring-violet-300 resize-y min-h-[70px]",
+        rows: 3,
+        "aria-label": tt("a11y.notes_connections") || "Connections and memory hooks",
+        "data-help-key": "notes_connections_field"
+      }
+    )
+  );
+};
 const _GetFeedbackButton = ({ onClick, isLoading, t, colorClass = "emerald" }) => {
   const palette = {
     emerald: "bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-700",
@@ -502,7 +532,7 @@ const CornellNotesView = React.memo((props) => {
       "aria-label": t("a11y.cornell_summary"),
       "data-help-key": "cornell_notes_summary_section"
     }
-  )), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, t, colorClass: "emerald" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, "Cornell Notes: cues on the left, notes on the right, summary below. Saved to your history so this entry stays with you across lessons."));
+  )), /* @__PURE__ */ React.createElement(_ConnectionsSection, { value: data.connections, onChange: (e) => handleNoteUpdate("connections", e.target.value), t }), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, t, colorClass: "emerald" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, "Cornell Notes: cues on the left, notes on the right, summary below. Saved to your history so this entry stays with you across lessons."));
 });
 const LabReportView = React.memo((props) => {
   const generatedContent = props.generatedContent;
@@ -619,7 +649,7 @@ const LabReportView = React.memo((props) => {
       "aria-label": "Conclusion",
       "data-help-key": "lab_report_conclusion_field"
     }
-  )), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, t, colorClass: "sky" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, "Lab Report saved to your history. Open it later to keep adding observations across days."));
+  )), /* @__PURE__ */ React.createElement(_ConnectionsSection, { value: data.connections, onChange: (e) => handleNoteUpdate("connections", e.target.value), hint: "Optional \u2014 how do these results connect to the real world, another experiment, or a concept you've learned? An analogy or memory hook is welcome too.", t }), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, t, colorClass: "sky" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, "Lab Report saved to your history. Open it later to keep adding observations across days."));
 });
 const ReadingResponseView = React.memo((props) => {
   const generatedContent = props.generatedContent;
@@ -861,7 +891,7 @@ const GuidedNotesView = React.memo((props) => {
       "data-help-key": "guided_notes_check_button"
     },
     revealed ? "Hide answers" : "Check answers"
-  ), revealed ? /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600" }, correctCount, "/", blanks.length, " correct \xB7 ", filledCount, "/", blanks.length, " filled") : null) : null), /* @__PURE__ */ React.createElement(_CardSection, { title: "My own notes", hint: "Add anything else worth remembering \u2014 an example, a question, or a connection of your own.", color: "indigo" }, /* @__PURE__ */ React.createElement(
+  ), revealed ? /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600" }, correctCount, "/", blanks.length, " correct \xB7 ", filledCount, "/", blanks.length, " filled") : null) : null), /* @__PURE__ */ React.createElement(_CardSection, { title: "My own notes", hint: "Add anything else worth remembering \u2014 an example, a question, a connection to something you already know, or a memory hook of your own.", color: "indigo" }, /* @__PURE__ */ React.createElement(
     "textarea",
     {
       value: notesExtra,
@@ -953,7 +983,7 @@ const QAndAView = React.memo((props) => {
       "data-help-key": "qanda_add_pair_button"
     },
     "+ Add question"
-  ))), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, t, colorClass: "cyan" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, "Q&A Study Notes saved to your notebook. Switch to Quiz me to self-test with active recall."));
+  ))), /* @__PURE__ */ React.createElement(_ConnectionsSection, { value: data.connections, onChange: (e) => handleNoteUpdate("connections", e.target.value), hint: "Optional \u2014 connect this topic to another subject or real life, or invent a memory hook of your own for a tricky answer.", t }), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, t, colorClass: "cyan" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, "Q&A Study Notes saved to your notebook. Switch to Quiz me to self-test with active recall."));
 });
 const NoteTakingView = React.memo((props) => {
   const generatedContent = props.generatedContent;

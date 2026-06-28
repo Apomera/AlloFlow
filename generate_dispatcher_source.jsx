@@ -3811,6 +3811,7 @@ Return ONLY JSON:
                   cues: cuesArr.slice(0, 8).map((text, i) => ({ id: `cue-${Date.now()}-${i}`, text: String(text || '') })),
                   notes: cuesArr.slice(0, 8).map((_, i) => ({ id: `note-${Date.now()}-${i}`, text: '' })),
                   summary: '',
+                  connections: '',
                   lessonRef,
               };
           } else if (templateType === 'lab-report') {
@@ -3838,6 +3839,7 @@ Return ONLY JSON:
                   data: '',
                   analysis: '',
                   conclusion: '',
+                  connections: '',
                   lessonRef,
               };
           } else if (templateType === 'reading-response') {
@@ -3943,6 +3945,7 @@ Return ONLY JSON:
                       question: String((p && p.question) || ''),
                       answer: String((p && p.answer) || ''),
                   })).filter(p => p.question || p.answer),
+                  connections: '',
                   lessonRef,
               };
           } else {
