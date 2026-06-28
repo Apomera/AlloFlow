@@ -30,6 +30,10 @@ function EducatorHubModal(props) {
     // passes a closure mirroring startLessonFlow({}) (show bot + trigger Auto-Fill).
     // Optional default so legacy hosts that don't pass it still render the hub.
     startLessonFlow = (() => {}),
+    // Family Bridge launcher (2026-06-28): opens the live-translation panel so the
+    // bridge feature is reachable from the hub, not only the History sidebar tab.
+    // Optional default so a host that hasn't wired the setter still renders the hub.
+    setBridgeSendOpen = (() => {}),
   } = props;
 
   // ── Platform Check (2026-06-12) ──
@@ -156,6 +160,13 @@ function EducatorHubModal(props) {
               <button onClick={() => setShowEducatorHub(false)} className="p-2 -m-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors text-xl" aria-label={t('educator_hub.close_aria') || 'Close educator tools'}>✕</button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <button data-help-key="educator_hub_bridge_card" onClick={() => { setShowEducatorHub(false); setBridgeSendOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-cyan-50 to-sky-50 border border-cyan-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
+                <span className="text-3xl mt-1">🌉</span>
+                <div>
+                  <h3 className="font-bold text-cyan-800">{t('educator_hub.bridge_title') || 'Family Bridge'}</h3>
+                  <p className="text-xs text-cyan-700 mt-1">{t('educator_hub.bridge_desc') || 'Live two-way translation to connect with multilingual families and students: speak or type, hear it read back, and save key terms.'}</p>
+                </div>
+              </button>
               <button data-help-key="educator_hub_behavior_lens_card" onClick={() => { setShowEducatorHub(false); setShowBehaviorLens(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
                 <span className="text-3xl mt-1">🧠</span>
                 <div>

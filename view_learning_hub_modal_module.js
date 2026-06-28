@@ -25,11 +25,16 @@ function LearningHubModal(props) {
     setShowStoryForge,
     setStemLabTab,
     showLearningHub,
+    setBridgeSendOpen = (() => {
+    }),
     t
   } = props;
   return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4", onClick: () => setShowLearningHub(false), role: "button", tabIndex: 0, onKeyDown: (e) => {
     if (e.key === "Escape") setShowLearningHub(false);
   } }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8", role: "dialog", "aria-modal": "true", "aria-label": t("learning_hub.title") || "Learning Tools", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-6" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-xl font-bold text-slate-800 flex items-center gap-2" }, "\u{1F9E9}", " ", t("learning_hub.title") || "Learning Tools"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mt-1" }, t("learning_hub.subtitle") || "Choose a tool to explore")), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowLearningHub(false), className: "p-2 -m-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors text-xl", "aria-label": t("learning_hub.close_aria") || "Close learning hub" }, "\u2715")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-4" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
+    setShowLearningHub(false);
+    setBridgeSendOpen(true);
+  }, className: "flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-cyan-50 to-sky-50 border border-cyan-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl" }, "\u{1F309}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-cyan-800" }, t("learning_hub.bridge_title") || "Family Bridge"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-cyan-700 mt-1" }, t("learning_hub.bridge_desc") || "Talk across languages in real time: speak or type, and hear it read back."))), /* @__PURE__ */ React.createElement("button", { onClick: () => {
     setShowLearningHub(false);
     setShowStemLab(true);
     setStemLabTab("explore");
