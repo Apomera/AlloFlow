@@ -26768,6 +26768,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           // Karaoke read-aloud: play one audio clip per sentence in order,
           // lighting each sentence while its own clip plays. No timing guesses.
           (function () {
+            if (window.__alloKaBound) return; window.__alloKaBound = true;
             var active = null;
             function clearHi(spans) { for (var i = 0; i < spans.length; i++) spans[i].classList.remove("ka-on"); }
             function stop() {
