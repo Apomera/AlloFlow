@@ -79,3 +79,16 @@ describe('anti-drift: advisory is computed in the engine + rendered honestly in 
     expect(view).toMatch(/NOT WCAG failures and are NOT counted in the score/);
   });
 });
+
+describe("anti-drift: AlloFlow's own injected provenance footer passes contrast (2026-06-24)", () => {
+  // The <footer role="contentinfo"> provenance line ("…automatically transformed…by AlloFlow…") was
+  // hardcoded at color:#64748b — ~4.1:1 on the document's off-white background (a self-inflicted 1.4.3
+  // failure the auditor flagged on AlloFlow's OWN injected text). Darkened to #475569 (slate-600, ~6.7:1),
+  // matching the batch-remediation footer that already used it.
+  it('the provenance + interactive-export footers use #475569, not the failing #64748b', () => {
+    expect(dp).toContain('font-size:0.75rem;color:#475569;');                  // provenance footer
+    expect(dp).not.toContain('font-size:0.75rem;color:#64748b;');
+    expect(dp).toContain('text-align:center;color:#475569;font-size:0.8rem');  // interactive-export footer
+    expect(dp).not.toContain('text-align:center;color:#64748b;font-size:0.8rem');
+  });
+});

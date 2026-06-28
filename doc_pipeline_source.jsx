@@ -25996,7 +25996,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           <p style="margin:0 0 12px 0;font-size:1.05rem;color:#166534;font-weight:700;">Done with your work?</p>
           <p style="margin:0 0 16px 0;font-size:0.9rem;color:#475569;">Click below to save an encrypted file with your answers. Send the downloaded file to your teacher.</p>
           <button type="button" id="alloflow-save-submission-btn" style="padding:12px 28px;background:#16a34a;color:white;border:none;border-radius:10px;font-weight:700;font-size:1rem;cursor:pointer;box-shadow:0 2px 6px rgba(22,163,74,0.3);">📝 Save my work</button>
-          <p style="margin:12px 0 0 0;font-size:0.75rem;color:#64748b;">🔐 Your responses are encrypted with your class key. Only your teacher can open the file.</p>
+          <p style="margin:12px 0 0 0;font-size:0.75rem;color:#475569;">🔐 Your responses are encrypted with your class key. Only your teacher can open the file.</p>
         </div>
       ` : '';
       // Click handler — appended inside the existing DOMContentLoaded block.
@@ -27719,9 +27719,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           <p style="margin:0 0 12px 0;font-size:1.05rem;color:#3730a3;font-weight:700;">Done with your work?</p>
           <p style="margin:0 0 16px 0;font-size:0.9rem;color:#475569;">Save a file of your answers and send it to your teacher.</p>
           <button type="button" id="alloflow-savejson-btn" style="padding:12px 28px;background:#4f46e5;color:white;border:none;border-radius:10px;font-weight:700;font-size:1rem;cursor:pointer;box-shadow:0 2px 6px rgba(79,70,229,0.3);">&#128190; Save my answers</button>
-          <p style="margin:12px 0 0 0;font-size:0.75rem;color:#64748b;">Saves a .json file your teacher opens in AlloFlow.</p>
+          <p style="margin:12px 0 0 0;font-size:0.75rem;color:#475569;">Saves a .json file your teacher opens in AlloFlow.</p>
         </div>
-        <footer role="contentinfo" style="text-align:center;color:#64748b;font-size:0.8rem;margin-top:3rem;padding:24px 0;border-top:1px solid #e2e8f0;">
+        <footer role="contentinfo" style="text-align:center;color:#475569;font-size:0.8rem;margin-top:3rem;padding:24px 0;border-top:1px solid #e2e8f0;">
             <p style="margin:0;">${t('output.generated_via')}</p>
         </footer>
         <script>
