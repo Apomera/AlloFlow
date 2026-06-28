@@ -30,12 +30,19 @@
   var spotlightOpenTimeRef = props.spotlightOpenTimeRef;
   var setIsSpotlightMode = props.setIsSpotlightMode;
   // Move focus onto the popup when it opens so screen-reader and keyboard users land on the
-  // help/tour text (the panel has role=dialog + aria-label). Escape is handled by the host.
+  // help/tour text (the panel has role=dialog + aria-label). On close, return focus to the
+  // control that opened it (standard dialog pattern). Escape is handled by the host.
   var panelRef = React.useRef(null);
   React.useEffect(function () {
+    var prevFocus = typeof document !== 'undefined' ? document.activeElement : null;
     try {
       if (panelRef.current) panelRef.current.focus();
     } catch (e) {}
+    return function () {
+      try {
+        if (prevFocus && prevFocus.focus && document.contains(prevFocus)) prevFocus.focus();
+      } catch (e) {}
+    };
   }, []);
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     "data-help-ignore": "true",
