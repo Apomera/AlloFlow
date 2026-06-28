@@ -24278,8 +24278,21 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               const _userLabelHtml = _userLs.filter(l => l && l.text).map(l =>
                   `<div class="vp-label vp-label-user" style="left:${l.x}%;top:${l.y}%;">${_vpEsc(l.text)}</div>`
               ).join('');
+              // Adaptive whitespace so off-image / edge labels are not clipped on export.
+              const _vpAllPts = _resolved.filter(r => r.text).map(r => ({ x: r.left, y: r.top }))
+                  .concat(_userLs.filter(l => l && l.text).map(l => ({ x: l.x, y: l.y })));
+              let _vpPadL = 0, _vpPadR = 0, _vpPadT = 0, _vpPadB = 0;
+              if (_vpAllPts.length) {
+                  const _vpH = 15, _vpV = 7, _vpCap = 45;
+                  const _xs = _vpAllPts.map(p => p.x), _ys = _vpAllPts.map(p => p.y);
+                  _vpPadL = Math.min(_vpCap, Math.max(0, _vpH - Math.min.apply(null, _xs)));
+                  _vpPadR = Math.min(_vpCap, Math.max(0, Math.max.apply(null, _xs) - (100 - _vpH)));
+                  _vpPadT = Math.min(_vpCap, Math.max(0, _vpV - Math.min.apply(null, _ys)));
+                  _vpPadB = Math.min(_vpCap, Math.max(0, Math.max.apply(null, _ys) - (100 - _vpV)));
+              }
+              const _vpPad = (_vpPadL || _vpPadR || _vpPadT || _vpPadB) ? ` padding:${_vpPadT}% ${_vpPadR}% ${_vpPadB}% ${_vpPadL}%;` : '';
               return `
-                  <figure class="vp-panel" style="margin:0;background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
+                  <figure class="vp-panel" style="margin:0;background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:visible;${_vpPad}">
                       <div class="vp-image-wrap" style="position:relative;">
                           ${_imgUrl ? `<img loading="lazy" src="${_vpEsc(_imgUrl)}" alt="${_vpEsc(_cap || 'Panel ' + (idx + 1))}" style="width:100%;height:auto;display:block;" />` : '<div style="padding:32px;text-align:center;color:#64748b;">(no image)</div>'}
                           ${_svgHtml}
