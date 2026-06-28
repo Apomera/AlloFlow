@@ -3548,6 +3548,7 @@ const AlloFlowContent = () => {
   }, []);
   const [guidedMode, setGuidedMode] = useState(false);
   const [guidedStep, setGuidedStep] = useState(0);
+  const [guidedSelectedIds, setGuidedSelectedIds] = useState(null); // null = all 22 steps; else array of included step ids (source-input always implied)
   // Each step carries teaching content for the hands-on guided tutorial:
   //   action  = the short imperative shown in the banner ("do this now"), pointing
   //             at the highlighted tool. success = the encouraging note shown once
@@ -3576,21 +3577,32 @@ const AlloFlowContent = () => {
     { id: 'lesson-plan', label: 'Lesson Plan', action: 'Generate a Lesson Plan that ties the pieces together.', success: 'Lesson plan ready.' },
     { id: '_final', label: 'Full Resource Pack & Standards Report', action: 'Download the full Resource Pack and Standards Report whenever you are happy with it.', success: 'All set. Nice work building this lesson.' },
   ];
+  // Right-sizing: a teacher can pick a subset of steps; the tour runs over the
+  // selected steps only (source-input is always included). null = the full 22.
+  const guidedActiveSteps = guidedSelectedIds ? GUIDED_STEPS.filter(s => s.id === 'source-input' || guidedSelectedIds.includes(s.id)) : GUIDED_STEPS;
+  const toggleGuidedStepId = (id) => {
+    if (id === 'source-input') return; // source text is required for everything downstream
+    setGuidedSelectedIds(prev => {
+      const base = prev || GUIDED_STEPS.map(s => s.id);
+      return base.includes(id) ? base.filter(x => x !== id) : [...base, id];
+    });
+    setGuidedStep(0); // re-customizing restarts the tour at the top
+  };
   const isGuidedToolVisible = (toolId) => {
     if (!guidedMode) return true;
-    const currentStep = GUIDED_STEPS[guidedStep];
+    const currentStep = guidedActiveSteps[guidedStep];
     if (!currentStep) return false;
     if (currentStep.id === '_final') return toolId === 'lesson-plan';
     return toolId === currentStep.id;
   };
-  const handleGuidedSkip = () => { if (guidedStep < GUIDED_STEPS.length - 1) setGuidedStep(s => s + 1); };
+  const handleGuidedSkip = () => { if (guidedStep < guidedActiveSteps.length - 1) setGuidedStep(s => s + 1); };
   const handleExitGuidedMode = () => { setGuidedMode(false); };
   const [showGuidedTip, setShowGuidedTip] = useState(false);
   const [guidedRect, setGuidedRect] = useState(null);        // active tool's screen rect, for the highlight ring
   const [guidedEngaged, setGuidedEngaged] = useState(false); // has the teacher interacted with the current step's tool?
   useEffect(() => { setShowGuidedTip(false); }, [guidedStep]);
   useEffect(() => {
-    if (guidedMode && guidedStep === 0 && inputText && inputText.trim().length > 20) {
+    if (guidedMode && guidedStep === 0 && inputText && inputText.trim().length > 20 && guidedActiveSteps.length > 1) {
       const advanceTimer = setTimeout(() => setGuidedStep(1), 1500);
       return () => clearTimeout(advanceTimer);
     }
@@ -3622,8 +3634,12 @@ const AlloFlowContent = () => {
   // Hands-on guided tutorial: anchor the active step to its real tool — scroll it into
   // view, ring it, announce it, and notice when the teacher actually uses it (engaged).
   useEffect(() => {
-    if (!guidedMode) { setGuidedRect(null); return; }
-    const step = GUIDED_STEPS[guidedStep];
+    // Guided mode can be enabled at mode-selection, before the user has picked a role
+    // and entered the workspace. Don't ring anything until they're actually in it,
+    // or the ring floats over the welcome/role-selection screen (tour-input-panel
+    // exists in the DOM behind that modal).
+    if (!guidedMode || !hasSelectedRole) { setGuidedRect(null); return; }
+    const step = guidedActiveSteps[guidedStep];
     const domId = step && GUIDED_TOUR_MAP[step.id];
     const el = domId ? document.getElementById(domId) : null;
     setGuidedEngaged(false);
@@ -3640,8 +3656,8 @@ const AlloFlowContent = () => {
     };
     el.addEventListener('click', onEngage, { once: true });
     if (typeof window !== 'undefined' && window.alloAnnounce && step) {
-      const n = Math.min(guidedStep + 1, GUIDED_STEPS.length);
-      window.alloAnnounce('Step ' + n + ' of ' + GUIDED_STEPS.length + '. ' + step.label + '. ' + (step.action || ''), 'polite');
+      const n = Math.min(guidedStep + 1, guidedActiveSteps.length);
+      window.alloAnnounce('Step ' + n + ' of ' + guidedActiveSteps.length + '. ' + step.label + '. ' + (step.action || ''), 'polite');
     }
     return () => {
       cancelAnimationFrame(raf);
@@ -3649,7 +3665,7 @@ const AlloFlowContent = () => {
       window.removeEventListener('resize', onMove);
       el.removeEventListener('click', onEngage);
     };
-  }, [guidedMode, guidedStep]);
+  }, [guidedMode, guidedStep, hasSelectedRole]);
   useEffect(() => {
     // Splash screen dismiss: wait for BOTH (a) the first-paint critical modules
     // to be loaded AND (b) a minimum dwell time so the splash doesn't flicker
@@ -4476,7 +4492,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '748573ef';
+    var pluginCdnVersion = '36522f62';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -17384,7 +17400,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   const executeSaveFile = () => {
     const _m = window.AlloModules && window.AlloModules.PhaseKHelpers;
     if (_m && typeof _m.executeSaveFile === "function") return _m.executeSaveFile({
-        guidedTourProgress: guidedMode ? { version: 1, guidedStep, completedSteps: GUIDED_STEPS.slice(0, guidedStep).map(s => s.id) } : null,
+        guidedTourProgress: guidedMode ? { version: 1, guidedStep, selectedIds: guidedSelectedIds, completedSteps: guidedActiveSteps.slice(0, guidedStep).map(s => s.id) } : null,
         isPlaying,
         isPaused,
         isMuted,
@@ -17616,6 +17632,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         setStudentProgressLog,
         setGuidedStep,
         setGuidedMode,
+        setGuidedSelectedIds,
         setStudentProjectSettings,
         setIsIndependentMode,
         setIsTeacherMode,
@@ -25095,7 +25112,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             style={{ width: window.innerWidth >= 768 ? `${leftWidth}%` : '100%', height: '100%' }}
         >
           {isTeacherMode && <SidebarTabsNav activeSidebarTab={activeSidebarTab} handleSetActiveSidebarTabToCreate={handleSetActiveSidebarTabToCreate} isHistoryPulsing={isHistoryPulsing} setActiveSidebarTab={setActiveSidebarTab} setIsHistoryPulsing={setIsHistoryPulsing} t={t} />}
-          {guidedMode && <GuidedModeBanner GUIDED_STEPS={GUIDED_STEPS} GUIDED_TOUR_MAP={GUIDED_TOUR_MAP} guidedStep={guidedStep} guidedRect={guidedRect} guidedEngaged={guidedEngaged} handleExitGuidedMode={handleExitGuidedMode} handleGuidedSkip={handleGuidedSkip} setGuidedStep={setGuidedStep} setShowGuidedTip={setShowGuidedTip} showGuidedTip={showGuidedTip} t={t} tourSteps={tourSteps} />}
+          {guidedMode && <GuidedModeBanner GUIDED_STEPS={guidedActiveSteps} allGuidedSteps={GUIDED_STEPS} guidedSelectedIds={guidedSelectedIds} toggleGuidedStepId={toggleGuidedStepId} GUIDED_TOUR_MAP={GUIDED_TOUR_MAP} guidedStep={guidedStep} guidedRect={guidedRect} guidedEngaged={guidedEngaged} handleExitGuidedMode={handleExitGuidedMode} handleGuidedSkip={handleGuidedSkip} setGuidedStep={setGuidedStep} setShowGuidedTip={setShowGuidedTip} showGuidedTip={showGuidedTip} t={t} tourSteps={tourSteps} history={history} getDefaultTitle={getDefaultTitle} />}
           {isTeacherMode && <UDLGuideButton handleToggleShowUDLGuide={handleToggleShowUDLGuide} showUDLGuide={showUDLGuide} t={t} />}
           {isTeacherMode && activeSidebarTab === 'create' && (
           <div style={{display: isGuidedToolVisible('source-input') ? undefined : 'none'}} id="tour-input-panel" data-help-key="source_input" className={`bg-white rounded-3xl shadow-indigo-500/10 border transition-all overflow-hidden shrink-0 ${activeView === 'input' ? 'border-indigo-600 shadow-indigo-500/20' : 'border-slate-200 hover:border-indigo-200'}`}>
@@ -25656,7 +25673,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           lessonCustomAdditions, setLessonCustomAdditions, t
                  })}
             </div>
-            <div style={{display: (!guidedMode || GUIDED_STEPS[guidedStep]?.id === '_final') ? undefined : 'none'}} id="tour-tool-fullpack" data-help-key="tool_fullpack" className="relative z-10 bg-gradient-to-r from-indigo-600 to-purple-600 p-1 rounded-3xl shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 transition-all group">
+            <div style={{display: (!guidedMode || guidedActiveSteps[guidedStep]?.id === '_final') ? undefined : 'none'}} id="tour-tool-fullpack" data-help-key="tool_fullpack" className="relative z-10 bg-gradient-to-r from-indigo-600 to-purple-600 p-1 rounded-3xl shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 transition-all group">
                 <div className="flex items-center justify-between mb-1 px-3 pt-2 text-white/90">
                     <div className="flex items-center gap-2">
                         <input aria-label={t('common.toggle_is_auto_config_enabled')}
@@ -25719,7 +25736,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     <ArrowRight size={16} className="text-indigo-300 group-hover:text-indigo-600" />
                 </button>
             </div>
-            <div style={{display: (!guidedMode || GUIDED_STEPS[guidedStep]?.id === 'alignment' || GUIDED_STEPS[guidedStep]?.id === '_final') ? undefined : 'none'}} id="tour-tool-alignment" data-help-key="tool_alignment" className="bg-gradient-to-r from-teal-500 to-emerald-500 p-1 rounded-3xl shadow-lg shadow-teal-500/30 hover:shadow-xl hover:shadow-teal-500/40 transition-all group">
+            <div style={{display: (!guidedMode || guidedActiveSteps[guidedStep]?.id === 'alignment' || guidedActiveSteps[guidedStep]?.id === '_final') ? undefined : 'none'}} id="tour-tool-alignment" data-help-key="tool_alignment" className="bg-gradient-to-r from-teal-500 to-emerald-500 p-1 rounded-3xl shadow-lg shadow-teal-500/30 hover:shadow-xl hover:shadow-teal-500/40 transition-all group">
                 <button
                     data-help-key="tool_alignment"
                     onClick={() => handleGenerate('alignment-report')}
