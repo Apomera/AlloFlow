@@ -116,6 +116,34 @@
         var _exBody = _exClone.querySelector('body');
         if (_exBody) _exBody.removeAttribute('data-allo-user-edited');
       } catch (_exStripErr) { /* strip is best-effort — never block an export */ }
+      // Inline sentence-karaoke: for each read-aloud passage, generate one audio
+      // clip per sentence-span (selected voice — Gemini or Kokoro) and inject it
+      // into the passage's placeholder. Reads the EXACT rendered spans so clip i
+      // lines up with sentence i; the export's highlighter plays them in order.
+      if (exportConfig && exportConfig.includeAudioLeveled && callTTS) {
+        try {
+          const _kaPassages = _exClone.querySelectorAll('.allo-ka-passage');
+          if (_kaPassages.length && addToast) addToast('Generating read-aloud audio… this may take a moment.', 'info');
+          for (let _pi = 0; _pi < _kaPassages.length; _pi++) {
+            const _sec = _kaPassages[_pi].closest('.section');
+            const _box = _sec ? _sec.querySelector('.allo-ka-audios') : null;
+            if (!_box) continue;
+            const _spans = _kaPassages[_pi].querySelectorAll('.ka-s');
+            for (let _si = 0; _si < _spans.length; _si++) {
+              const _txt = (_spans[_si].textContent || '').trim();
+              if (!_txt) continue;
+              const _au = await callTTS(_txt, selectedVoice || 'Puck', 1);
+              if (_au && typeof _au === 'string' && _au.indexOf('data:') === 0) {
+                const _aEl = (_exClone.ownerDocument || document).createElement('audio');
+                _aEl.setAttribute('preload', 'none');
+                _aEl.setAttribute('data-ka-s', String(_si));
+                _aEl.src = _au;
+                _box.appendChild(_aEl);
+              }
+            }
+          }
+        } catch (_kaErr) { console.warn('[Export] karaoke audio failed', _kaErr); }
+      }
       htmlContent = '<!DOCTYPE html>\n<html' + _exClone.outerHTML.substring(5);
       console.log('[Export] ✅ Using edited iframe content, chrome stripped (' + htmlContent.length + ' chars)');
     } else {
@@ -149,19 +177,8 @@
             if (audioHtml) htmlContent = htmlContent.replace('</main>', audioHtml + '</main>');
           }
         }
-        if (exportConfig.includeAudioLeveled) {
-          const simplifiedItem = (history || []).find(function(h) { return h && h.type === 'simplified'; });
-          const leveledText = (simplifiedItem && simplifiedItem.data && typeof simplifiedItem.data === 'string') ? simplifiedItem.data : '';
-          if (leveledText) {
-            const audioHtml = await generateExportAudio(leveledText, 'Leveled Text Read-Aloud', deps);
-            if (audioHtml) {
-              const insertPoint = htmlContent.indexOf('</div>', htmlContent.indexOf('id="' + simplifiedItem.id + '"'));
-              if (insertPoint > 0) {
-                htmlContent = htmlContent.substring(0, insertPoint) + audioHtml + htmlContent.substring(insertPoint);
-              }
-            }
-          }
-        }
+        // Leveled-text read-aloud is now inline sentence-karaoke, generated on the
+        // DOM clone above (one clip per sentence injected into the passage placeholder).
         if (addToast) addToast('Audio embedded successfully!', 'success');
       } catch (e) {
         console.warn('[Export] Audio embedding failed:', e);

@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -23422,10 +23422,28 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       const tv = typeVisuals[item.type] || { icon: '📄', color: '#475569', bg: '#f8fafc', label: '' };
       const enhancedHeader = `<h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid ${tv.color};background:${tv.bg};display:flex;align-items:center;gap:8px;"><span aria-hidden="true" style="font-size:1.3em;">${tv.icon}</span> ${title}${item.meta ? ` <span style="font-weight:normal;font-size:0.8em;color:#64748b;">(${item.meta})</span>` : ''}</h2>`;
       if (item.type === 'simplified') {
+          const _kaOn = cfg.includeAudioLeveled && !isWorksheet;
+          const _kaEsc = (x) => String(x == null ? '' : x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          const _kaWrap = (html) => {
+              const txt = String(html)
+                  .replace(/<\/(p|div|h[1-6]|li)>/gi, '\n\n').replace(/<br\s*\/?\>/gi, '\n')
+                  .replace(/<[^>]+>/g, '').replace(/&nbsp;/gi, ' ')
+                  .replace(/&amp;/gi, '&').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').trim();
+              const paras = txt.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
+              let _ki = 0;
+              const body = paras.map(p => {
+                  const sents = p.match(/[^.!?]+[.!?]+["')\]]*|\S[^.!?]*$/g) || [p];
+                  return '<p style="margin:0 0 0.8em;">' + sents.map(se => '<span class="ka-s" data-ka-s="' + (_ki++) + '">' + _kaEsc(se.trim()) + '</span>').join(' ') + '</p>';
+              }).join('');
+              return body || ('<p>' + _kaEsc(txt) + '</p>');
+          };
+          const _kaBody = _kaOn ? _kaWrap(parseMarkdownToHTML(item.data)) : parseMarkdownToHTML(item.data);
+          const _kaCtrl = _kaOn ? ('<div class="allo-ka-bar" style="margin:6px 0 10px;"><button type="button" class="allo-ka-play" data-ka-for="' + item.id + '" style="padding:7px 16px;background:#0369a1;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9em;">\u{1F50A} Read aloud</button></div><span class="allo-ka-audios" data-ka-for="' + item.id + '" hidden></span>') : '';
           return `
               <div class="section" id="${item.id}" style="border-left:4px solid #2563eb;border-radius:12px;">
                   ${enhancedHeader}
-                  <div style="font-family:Georgia,'Times New Roman',serif;font-size:1.05em;line-height:1.9;color:#1e293b;padding:8px 4px;">${parseMarkdownToHTML(item.data)}</div>
+                  ${_kaCtrl}
+                  <div class="${_kaOn ? 'allo-ka-passage' : ''}" style="font-family:Georgia,'Times New Roman',serif;font-size:1.05em;line-height:1.9;color:#1e293b;padding:8px 4px;">${_kaBody}</div>
               </div>
           `;
       } else if (item.type === 'glossary') {
@@ -26474,6 +26492,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           html[data-alloflow-theme="dark"] .alloflow-reading-tools { background: rgba(15,23,42,0.96); border-bottom-color: #334155; }
           html[data-alloflow-theme="dark"] .alloflow-reading-tools-group { background: #1e293b; border-color: #475569; }
           html[data-alloflow-theme="dark"] .alloflow-reading-tools-label { background: #0f172a; color: #94a3b8; border-right-color: #475569; }
+          .allo-ka-passage .ka-s { transition: background-color 0.12s ease, box-shadow 0.12s ease; border-radius: 3px; }
+          .allo-ka-passage .ka-s.ka-on { background-color: #fde047; color: #1e293b; box-shadow: 0 0 0 3px #fde047; }
+          html[data-alloflow-theme="dark"] .allo-ka-passage .ka-s.ka-on { background-color: #ca8a04; color: #ffffff; box-shadow: 0 0 0 3px #ca8a04; }
+          .allo-ka-play:hover { filter: brightness(1.08); }
+          @media print { .allo-ka-bar { display: none !important; } }
           html[data-alloflow-theme="dark"] .alloflow-rt-btn { color: #cbd5e1; border-left-color: #475569; }
           html[data-alloflow-theme="dark"] .alloflow-rt-btn:hover { background: #334155; }
           html[data-alloflow-theme="dark"] .alloflow-rt-btn[aria-pressed="true"] { background: #6366f1; color: white; }
@@ -26731,6 +26754,51 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               else if (a === 'reset') { st.s = 1; st.l = 0; }
               else if (a === 'spacing') st.l = (st.l + 1) % LEADS.length;
               apply(true);
+            });
+          })();
+        </script>
+        <script>
+          // Karaoke read-aloud: play one audio clip per sentence in order,
+          // lighting each sentence while its own clip plays. No timing guesses.
+          (function () {
+            var active = null;
+            function clearHi(spans) { for (var i = 0; i < spans.length; i++) spans[i].classList.remove("ka-on"); }
+            function stop() {
+              if (!active) return;
+              try { var a = active.audios[active.idx]; if (a) { a.pause(); a.onended = null; } } catch (e) {}
+              clearHi(active.spans);
+              if (active.btn) active.btn.textContent = "\u{1F50A} Read aloud";
+              active = null;
+            }
+            function step(state, i) {
+              if (!active || active !== state) return;
+              if (i >= state.audios.length) { stop(); return; }
+              state.idx = i;
+              var a = state.audios[i];
+              if (!a) { step(state, i + 1); return; }
+              var sidx = a.getAttribute("data-ka-s");
+              clearHi(state.spans);
+              for (var k = 0; k < state.spans.length; k++) {
+                if (sidx !== null && state.spans[k].getAttribute("data-ka-s") === sidx) state.spans[k].classList.add("ka-on");
+              }
+              try { a.currentTime = 0; } catch (e) {}
+              a.onended = function () { step(state, i + 1); };
+              var p = a.play();
+              if (p && p.catch) p.catch(function () { stop(); });
+            }
+            document.addEventListener("click", function (e) {
+              var btn = e.target && e.target.closest && e.target.closest(".allo-ka-play");
+              if (!btn) return;
+              if (active) { stop(); return; }
+              var id = btn.getAttribute("data-ka-for");
+              var box = document.querySelector('.allo-ka-audios[data-ka-for="' + id + '"]');
+              var sec = btn.closest(".section") || document;
+              var spans = Array.prototype.slice.call(sec.querySelectorAll(".ka-s"));
+              var audios = box ? Array.prototype.slice.call(box.querySelectorAll("audio")) : [];
+              if (!audios.length || !spans.length) return;
+              btn.textContent = "\u23F9 Stop";
+              active = { audios: audios, spans: spans, idx: 0, btn: btn };
+              step(active, 0);
             });
           })();
         </script>
@@ -28410,6 +28478,11 @@ window.AlloModules.createDocPipeline.ocrBlockLayout = _alloOcrBlockLayout; // st
 window.AlloModules.createDocPipeline.structuralFoundations = _alloStructuralFoundations; // static: exposed for tests
 window.AlloModules.createDocPipeline.weightedDeductions = _alloWeightedDeductions; // static: exposed for tests (#5)
 window.AlloModules.createDocPipeline.contrastFixPair = _alloContrastFixPair; // static: exposed for tests (contrast pair-fixer)
+window.AlloModules.DocPipelineModule = true;
+console.log('[DocPipelineModule] Pipeline factory registered');
+
+window.AlloModules = window.AlloModules || {};
+window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 })();

@@ -12,6 +12,145 @@
   }
 
   // ──────────────────────────────────────────────────────────────────
+  // SKY ENGINE — real positional astronomy (Paul Schlyter low-precision
+  // ephemerides). PURE + testable: turns a date + place into actual Sun,
+  // Moon and naked-eye-planet positions in the sky (alt/az), so "tonight's
+  // sky" is computed, not a cartoon. Accuracy ~a few arcminutes (Sun/Moon
+  // with perturbations) to ~a few arcmin (planets) — schematic but honest.
+  // ──────────────────────────────────────────────────────────────────
+  var D2R = Math.PI / 180, R2D = 180 / Math.PI;
+  function rev(x) { x = x % 360; return x < 0 ? x + 360 : x; }
+  function sind(x) { return Math.sin(x * D2R); }
+  function cosd(x) { return Math.cos(x * D2R); }
+  function tand(x) { return Math.tan(x * D2R); }
+  function asind(x) { return Math.asin(x) * R2D; }
+  function atan2d(y, x) { return Math.atan2(y, x) * R2D; }
+  // Day number from epoch 2000.0 (1999 Dec 31.0 UT); D may include fractional UT.
+  function astroDayNumber(Y, M, D, UTh) { return 367 * Y - Math.floor(7 * (Y + Math.floor((M + 9) / 12)) / 4) + Math.floor(275 * M / 9) + D - 730530 + (UTh || 0) / 24; }
+  function obliquity(d) { return 23.4393 - 3.563e-7 * d; }
+  function eccAnomaly(M, e) { var E = M + R2D * e * sind(M) * (1 + e * cosd(M)); for (var k = 0; k < 6; k++) { var dE = (E - R2D * e * sind(E) - M) / (1 - e * cosd(E)); E -= dE; if (Math.abs(dE) < 1e-6) break; } return E; }
+  // Sun → geocentric ecliptic (xs,ys), true longitude, distance, mean longitude Ls.
+  function sunEcliptic(d) {
+    var w = 282.9404 + 4.70935e-5 * d, e = 0.016709 - 1.151e-9 * d, M = rev(356.0470 + 0.9856002585 * d);
+    var E = eccAnomaly(M, e);
+    var xv = cosd(E) - e, yv = Math.sqrt(1 - e * e) * sind(E);
+    var v = atan2d(yv, xv), r = Math.sqrt(xv * xv + yv * yv), lon = rev(v + w);
+    return { lon: lon, r: r, M: M, Ls: rev(w + M), xs: r * cosd(lon), ys: r * sind(lon) };
+  }
+  function eclToEqu(xg, yg, zg, oblecl) {
+    var xe = xg, ye = yg * cosd(oblecl) - zg * sind(oblecl), ze = yg * sind(oblecl) + zg * cosd(oblecl);
+    return { ra: rev(atan2d(ye, xe)), dec: atan2d(ze, Math.sqrt(xe * xe + ye * ye)), dist: Math.sqrt(xe * xe + ye * ye + ze * ze) };
+  }
+  function sunRaDec(d) { var s = sunEcliptic(d), o = obliquity(d); return eclToEqu(s.xs, s.ys, 0, o); }
+  // Moon → geocentric RA/Dec + ecliptic longitude (with the main Schlyter perturbations).
+  function moonEcl(d) {
+    var N = 125.1228 - 0.0529538083 * d, i = 5.1454, w = 318.0634 + 0.1643573223 * d;
+    var a = 60.2666, e = 0.054900, M = rev(115.3654 + 13.0649929509 * d);
+    var E = eccAnomaly(M, e);
+    var xv = a * (cosd(E) - e), yv = a * Math.sqrt(1 - e * e) * sind(E);
+    var v = atan2d(yv, xv), r = Math.sqrt(xv * xv + yv * yv);
+    var xh = r * (cosd(N) * cosd(v + w) - sind(N) * sind(v + w) * cosd(i));
+    var yh = r * (sind(N) * cosd(v + w) + cosd(N) * sind(v + w) * cosd(i));
+    var zh = r * sind(v + w) * sind(i);
+    var lon = atan2d(yh, xh), lat = atan2d(zh, Math.sqrt(xh * xh + yh * yh));
+    var s = sunEcliptic(d), Ls = s.Ls, Ms = s.M, Lm = rev(N + w + M), Dm = rev(Lm - Ls), F = rev(Lm - N);
+    lon += -1.274 * sind(M - 2 * Dm) + 0.658 * sind(2 * Dm) - 0.186 * sind(Ms) - 0.059 * sind(2 * M - 2 * Dm)
+      - 0.057 * sind(M - 2 * Dm + Ms) + 0.053 * sind(M + 2 * Dm) + 0.046 * sind(2 * Dm - Ms) + 0.041 * sind(M - Ms)
+      - 0.035 * sind(Dm) - 0.031 * sind(M + Ms) - 0.015 * sind(2 * F - 2 * Dm) + 0.011 * sind(M - 4 * Dm);
+    lat += -0.173 * sind(F - 2 * Dm) - 0.055 * sind(M - F - 2 * Dm) - 0.046 * sind(M + F - 2 * Dm)
+      + 0.033 * sind(F + 2 * Dm) + 0.017 * sind(2 * M + F);
+    return { lon: rev(lon), lat: lat, r: r };
+  }
+  function moonRaDec(d) { var m = moonEcl(d), o = obliquity(d); return eclToEqu(m.r * cosd(m.lon) * cosd(m.lat), m.r * sind(m.lon) * cosd(m.lat), m.r * sind(m.lat), o); }
+  // Moon phase: illuminated fraction from Sun–Moon elongation; waxing/waning from longitude lead.
+  function moonPhaseAt(d) {
+    var s = sunEcliptic(d), m = moonEcl(d), elong = rev(m.lon - s.lon);
+    var illum = (1 - cosd(elong)) / 2;            // 0 = new, 1 = full
+    var waxing = elong < 180;
+    var name;
+    if (illum < 0.04) name = 'New Moon';
+    else if (illum > 0.96) name = 'Full Moon';
+    else if (Math.abs(illum - 0.5) < 0.06) name = waxing ? 'First Quarter' : 'Last Quarter';
+    else if (illum < 0.5) name = waxing ? 'Waxing Crescent' : 'Waning Crescent';
+    else name = waxing ? 'Waxing Gibbous' : 'Waning Gibbous';
+    return { illum: illum, elongation: elong, waxing: waxing, name: name, ageDays: rev(elong) / 360 * 29.53059 };
+  }
+  var PLANET_EL = {
+    mercury: { N: [48.3313, 3.24587e-5], i: [7.0047, 5.00e-8], w: [29.1241, 1.01444e-5], a: 0.387098, e: [0.205635, 5.59e-10], M: [168.6562, 4.0923344368], color: '#b08d6a', icon: '☿', maxElong: 28 },
+    venus: { N: [76.6799, 2.46590e-5], i: [3.3946, 2.75e-8], w: [54.8910, 1.38374e-5], a: 0.723330, e: [0.006773, -1.302e-9], M: [48.0052, 1.6021302244], color: '#e8d9a8', icon: '♀', maxElong: 48 },
+    mars: { N: [49.5574, 2.11081e-5], i: [1.8497, -1.78e-8], w: [286.5016, 2.92961e-5], a: 1.523688, e: [0.093405, 2.516e-9], M: [18.6021, 0.5240207766], color: '#d76f43', icon: '♂', maxElong: 180 },
+    jupiter: { N: [100.4542, 2.76854e-5], i: [1.3030, -1.557e-7], w: [273.8777, 1.64505e-5], a: 5.20256, e: [0.048498, 4.469e-9], M: [19.8950, 0.0830853001], color: '#cBaE89', icon: '♃', maxElong: 180 },
+    saturn: { N: [113.6634, 2.38980e-5], i: [2.4886, -1.081e-7], w: [339.3939, 2.97661e-5], a: 9.55475, e: [0.055546, -9.499e-9], M: [316.9670, 0.0334442282], color: '#e6d39f', icon: '♄', maxElong: 180 }
+  };
+  function planetRaDec(id, d) {
+    var p = PLANET_EL[id]; if (!p) return null;
+    var N = p.N[0] + p.N[1] * d, i = p.i[0] + p.i[1] * d, w = p.w[0] + p.w[1] * d, a = p.a, e = p.e[0] + p.e[1] * d, M = rev(p.M[0] + p.M[1] * d);
+    var E = eccAnomaly(M, e);
+    var xv = a * (cosd(E) - e), yv = a * Math.sqrt(1 - e * e) * sind(E);
+    var v = atan2d(yv, xv), r = Math.sqrt(xv * xv + yv * yv);
+    var xh = r * (cosd(N) * cosd(v + w) - sind(N) * sind(v + w) * cosd(i));
+    var yh = r * (sind(N) * cosd(v + w) + cosd(N) * sind(v + w) * cosd(i));
+    var zh = r * sind(v + w) * sind(i);
+    var lon = atan2d(yh, xh), lat = atan2d(zh, Math.sqrt(xh * xh + yh * yh));
+    if (id === 'jupiter' || id === 'saturn') {     // major Jupiter/Saturn perturbations (Schlyter)
+      var Mj = rev(19.8950 + 0.0830853001 * d), Ms = rev(316.9670 + 0.0334442282 * d);
+      if (id === 'jupiter') lon += -0.332 * sind(2 * Mj - 5 * Ms - 67.6) - 0.056 * sind(2 * Mj - 2 * Ms + 21) + 0.042 * sind(3 * Mj - 5 * Ms + 21) - 0.036 * sind(Mj - 2 * Ms) + 0.022 * cosd(Mj - Ms) + 0.023 * sind(2 * Mj - 3 * Ms + 52) - 0.016 * sind(Mj - 5 * Ms - 69);
+      else lon += 0.812 * sind(2 * Mj - 5 * Ms - 67.6) - 0.229 * cosd(2 * Mj - 4 * Ms - 2) + 0.119 * sind(Mj - 2 * Ms - 3) + 0.046 * sind(2 * Mj - 6 * Ms - 69) + 0.014 * sind(Mj - 3 * Ms + 32);
+    }
+    var rl = r * cosd(lat);
+    var s = sunEcliptic(d), o = obliquity(d);      // heliocentric → geocentric (add Sun's geocentric vector)
+    var xg = rl * cosd(lon) + s.xs, yg = rl * sind(lon) + s.ys, zg = r * sind(lat);
+    var eq = eclToEqu(xg, yg, zg, o);
+    return eq;
+  }
+  // Local sidereal time (hours) and equatorial→horizon (alt/az, az from North clockwise).
+  function siderealTime(Y, M, D, UTh, lonEast) { var d = astroDayNumber(Y, M, D, UTh); var Ls = sunEcliptic(d).Ls; return rev((Ls + 180) + UTh * 15.04107 + lonEast) / 15; }
+  function equToHorizon(ra, dec, lstHours, latDeg) {
+    var ha = rev(lstHours * 15 - ra);
+    var sinAlt = sind(dec) * sind(latDeg) + cosd(dec) * cosd(latDeg) * cosd(ha);
+    var alt = asind(Math.max(-1, Math.min(1, sinAlt)));
+    var cosAz = (sind(dec) - sind(latDeg) * sinAlt) / (cosd(latDeg) * Math.cos(alt * D2R) || 1e-9);
+    var az = Math.acos(Math.max(-1, Math.min(1, cosAz))) * R2D;
+    if (sind(ha) > 0) az = 360 - az;               // object west of meridian
+    return { alt: alt, az: az };
+  }
+  function angularSep(ra1, dec1, ra2, dec2) { return Math.acos(Math.max(-1, Math.min(1, sind(dec1) * sind(dec2) + cosd(dec1) * cosd(dec2) * cosd(ra1 - ra2)))) * R2D; }
+  // ~2 dozen of the brightest stars — RA hours, Dec deg, visual magnitude.
+  var BRIGHT_STARS = [
+    { name: 'Sirius', con: 'Canis Major', ra: 6.752, dec: -16.716, mag: -1.46 }, { name: 'Canopus', con: 'Carina', ra: 6.399, dec: -52.696, mag: -0.74 },
+    { name: 'Arcturus', con: 'Boötes', ra: 14.261, dec: 19.182, mag: -0.05 }, { name: 'Vega', con: 'Lyra', ra: 18.616, dec: 38.784, mag: 0.03 },
+    { name: 'Capella', con: 'Auriga', ra: 5.278, dec: 45.998, mag: 0.08 }, { name: 'Rigel', con: 'Orion', ra: 5.242, dec: -8.202, mag: 0.13 },
+    { name: 'Procyon', con: 'Canis Minor', ra: 7.655, dec: 5.225, mag: 0.34 }, { name: 'Betelgeuse', con: 'Orion', ra: 5.919, dec: 7.407, mag: 0.50 },
+    { name: 'Altair', con: 'Aquila', ra: 19.846, dec: 8.868, mag: 0.76 }, { name: 'Aldebaran', con: 'Taurus', ra: 4.599, dec: 16.509, mag: 0.85 },
+    { name: 'Antares', con: 'Scorpius', ra: 16.490, dec: -26.432, mag: 1.09 }, { name: 'Spica', con: 'Virgo', ra: 13.420, dec: -11.161, mag: 0.97 },
+    { name: 'Pollux', con: 'Gemini', ra: 7.755, dec: 28.026, mag: 1.14 }, { name: 'Fomalhaut', con: 'Piscis Austrinus', ra: 22.961, dec: -29.622, mag: 1.16 },
+    { name: 'Deneb', con: 'Cygnus', ra: 20.690, dec: 45.280, mag: 1.25 }, { name: 'Regulus', con: 'Leo', ra: 10.140, dec: 11.967, mag: 1.35 },
+    { name: 'Castor', con: 'Gemini', ra: 7.577, dec: 31.888, mag: 1.58 }, { name: 'Dubhe', con: 'Ursa Major', ra: 11.062, dec: 61.751, mag: 1.79 },
+    { name: 'Alkaid', con: 'Ursa Major', ra: 13.792, dec: 49.313, mag: 1.85 }, { name: 'Polaris', con: 'Ursa Minor', ra: 2.530, dec: 89.264, mag: 1.98 },
+    { name: 'Bellatrix', con: 'Orion', ra: 5.418, dec: 6.350, mag: 1.64 }, { name: 'Alnilam', con: 'Orion', ra: 5.604, dec: -1.202, mag: 1.69 },
+    { name: 'Mizar', con: 'Ursa Major', ra: 13.399, dec: 54.925, mag: 2.04 }, { name: 'Algol', con: 'Perseus', ra: 3.136, dec: 40.956, mag: 2.12 }
+  ];
+  // Aggregate: everything in the sky for a place + UT instant.
+  function skyNow(Y, M, D, UTh, latDeg, lonEast) {
+    var d = astroDayNumber(Y, M, D, UTh), o = obliquity(d), lst = siderealTime(Y, M, D, UTh, lonEast);
+    function place(ra, dec) { var hz = equToHorizon(ra, dec, lst, latDeg); return { ra: ra, dec: dec, alt: hz.alt, az: hz.az, up: hz.alt > 0 }; }
+    var sun = sunRaDec(d), moon = moonRaDec(d), out = { lst: lst };
+    out.sun = Object.assign({ name: 'Sun', icon: '☀', color: '#fde68a' }, place(sun.ra, sun.dec));
+    out.moon = Object.assign({ name: 'Moon', icon: '🌙', color: '#e2e8f0' }, place(moon.ra, moon.dec), { phase: moonPhaseAt(d) });
+    out.daytime = out.sun.alt > -6;                // brighter than civil twilight
+    out.planets = Object.keys(PLANET_EL).map(function (id) { var pr = planetRaDec(id, d); var pl = PLANET_EL[id]; return Object.assign({ id: id, name: id.charAt(0).toUpperCase() + id.slice(1), icon: pl.icon, color: pl.color }, place(pr.ra, pr.dec)); });
+    out.stars = BRIGHT_STARS.map(function (s) { return Object.assign({ name: s.name, con: s.con, mag: s.mag }, place(s.ra * 15, s.dec)); });
+    return out;
+  }
+  try {
+    window.__alloAstroPure = {
+      astroDayNumber: astroDayNumber, obliquity: obliquity, sunRaDec: sunRaDec, sunEcliptic: sunEcliptic,
+      moonRaDec: moonRaDec, moonPhaseAt: moonPhaseAt, planetRaDec: planetRaDec, siderealTime: siderealTime,
+      equToHorizon: equToHorizon, angularSep: angularSep, skyNow: skyNow, BRIGHT_STARS: BRIGHT_STARS, PLANET_EL: PLANET_EL
+    };
+  } catch (e) {}
+
+  // ──────────────────────────────────────────────────────────────────
   // DATA: Constellations (Greek + Wabanaki + cross-cultural traditions)
   // ──────────────────────────────────────────────────────────────────
   var CONSTELLATIONS = [
@@ -433,6 +572,7 @@
       // ──────────────────────────────────────────────────────────────
       var TABS = [
         { id: 'tonight',      icon: '🌙', label: __alloT('stem.astronomy.tonight', 'Tonight') },
+        { id: 'skymap',       icon: '🧭', label: __alloT('stem.astronomy.sky_map', 'Sky Map') },
         { id: 'constellations', icon: '⭐', label: __alloT('stem.astronomy.constellations', 'Constellations') },
         { id: 'moon',         icon: '🌖', label: __alloT('stem.astronomy.moon', 'Moon') },
         { id: 'planets',      icon: '🪐', label: __alloT('stem.astronomy.planets', 'Planets') },
@@ -572,13 +712,10 @@
           summer: ['Scorpius (low south)', 'Sagittarius / Milky Way center (south)', 'Cygnus + Summer Triangle (overhead)', 'Lyra with Vega'],
           fall:   ['Pegasus + Andromeda (east)', 'Cassiopeia (overhead)', 'Last of Summer Triangle (west)', 'Perseus']
         };
-        // Estimate moon phase from date (simplified)
-        var newMoonRef = new Date('2024-01-11T00:00:00Z').getTime(); // known new moon
-        var cycle = 29.53058867;
-        var daysSince = (now.getTime() - newMoonRef) / 86400000;
-        var phaseAge = ((daysSince % cycle) + cycle) % cycle;
-        var phaseIdx = Math.round(phaseAge / cycle * 8) % 8;
-        var moonPhase = MOON_PHASES[phaseIdx];
+        // Real moon phase from the sky engine (illuminated fraction + named phase)
+        var _mp = moonPhaseAt(astroDayNumber(now.getUTCFullYear(), now.getUTCMonth() + 1, now.getUTCDate(), now.getUTCHours() + now.getUTCMinutes() / 60));
+        var moonPhase = MOON_PHASES.find(function (p) { return p.name === _mp.name; }) || MOON_PHASES[0];
+        var phaseAge = _mp.ageDays, moonIllum = Math.round(_mp.illum * 100);
 
         return h('div', { style: { padding: 16 } },
           sectionCard('🌙 Right now (' + now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' }) + ')',
@@ -644,6 +781,101 @@
             )
           )
         );
+      }
+
+      // ──────────────────────────────────────────────────────────────
+      // SKY MAP — the real computed sky (alt/az dome) for a place + time
+      // ──────────────────────────────────────────────────────────────
+      var SKY_LOCS = [
+        { id: 'portland', name: 'Portland, Maine', lat: 43.66, lon: -70.26 },
+        { id: 'nyc', name: 'New York', lat: 40.71, lon: -74.01 },
+        { id: 'la', name: 'Los Angeles', lat: 34.05, lon: -118.24 },
+        { id: 'london', name: 'London', lat: 51.51, lon: -0.13 },
+        { id: 'quito', name: 'Equator (Quito)', lat: -0.18, lon: -78.47 },
+        { id: 'sydney', name: 'Sydney · S. hemisphere', lat: -33.87, lon: 151.21 }
+      ];
+      function azCompass(az) { return ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'][Math.round(rev(az) / 22.5) % 16]; }
+      function renderSkyMap() {
+        var loc = SKY_LOCS.find(function (l) { return l.id === (d.skyLoc || 'portland'); }) || SKY_LOCS[0];
+        var hourOff = (typeof d.skyHourOffset === 'number') ? d.skyHourOffset : 0;
+        var dayOff = (typeof d.skyDayOffset === 'number') ? d.skyDayOffset : 0;
+        var base = new Date(); base.setUTCDate(base.getUTCDate() + dayOff);
+        var ut = base.getUTCHours() + base.getUTCMinutes() / 60 + hourOff;
+        var sky = skyNow(base.getUTCFullYear(), base.getUTCMonth() + 1, base.getUTCDate(), ut, loc.lat, loc.lon);
+        var localShown = new Date(base.getTime() + hourOff * 3600000);
+        // dome geometry
+        var R = 150, cx = 165, cy = 165;
+        function proj(alt, az) { var rp = R * (90 - alt) / 90; return [cx - rp * sind(az), cy - rp * cosd(az)]; }   // overhead view: N up, E left
+        var night = !sky.daytime;
+        var domeFill = night ? '#070b18' : '#1d3a63';
+        var els = [];
+        // alt rings + cardinal points
+        [30, 60].forEach(function (a) { els.push(h('circle', { key: 'ring' + a, cx: cx, cy: cy, r: R * (90 - a) / 90, fill: 'none', stroke: '#1e293b', strokeWidth: 1 })); });
+        [['N', 0], ['E', 90], ['S', 180], ['W', 270]].forEach(function (c) { var p = proj(0, c[1]); els.push(h('text', { key: 'c' + c[0], x: p[0], y: p[1], dx: c[1] === 90 ? -8 : (c[1] === 270 ? 8 : 0), dy: c[1] === 0 ? -4 : (c[1] === 180 ? 12 : 4), fill: '#64748b', fontSize: 12, fontWeight: 700, textAnchor: 'middle' }, c[0])); });
+        // stars (only above the horizon)
+        sky.stars.forEach(function (s, i) { if (s.alt <= 0) return; var p = proj(s.alt, s.az); var rad = Math.max(0.6, 2.7 - s.mag * 0.55); els.push(h('circle', { key: 'st' + i, cx: p[0], cy: p[1], r: rad, fill: '#fff', opacity: night ? Math.max(0.4, 1 - s.mag * 0.18) : 0.25 })); if (s.mag < 0.6) els.push(h('text', { key: 'stl' + i, x: p[0] + 4, y: p[1] + 3, fill: '#cbd5e1', fontSize: 8.5, opacity: night ? 0.8 : 0.3 }, s.name)); });
+        // planets
+        sky.planets.forEach(function (pl, i) { if (pl.alt <= 0) return; var p = proj(pl.alt, pl.az); els.push(h('circle', { key: 'pl' + i, cx: p[0], cy: p[1], r: 3.6, fill: pl.color, stroke: '#0b1220', strokeWidth: 0.6 })); els.push(h('text', { key: 'pll' + i, x: p[0] + 5, y: p[1] + 3.5, fill: pl.color, fontSize: 10, fontWeight: 700 }, pl.icon + ' ' + pl.name)); });
+        // moon (drawn as its phase)
+        if (sky.moon.alt > 0) {
+          var mp = proj(sky.moon.alt, sky.moon.az), f = sky.moon.phase.illum, wax = sky.moon.phase.waxing, mr = 7;
+          var rx = mr * (1 - 2 * f), sO = wax ? 1 : 0, sI = (rx >= 0) ? (wax ? 1 : 0) : (wax ? 0 : 1);
+          els.push(h('circle', { key: 'moondark', cx: mp[0], cy: mp[1], r: mr, fill: '#1e293b', stroke: '#475569', strokeWidth: 0.7 }));
+          els.push(h('path', { key: 'moonlit', d: 'M ' + mp[0] + ' ' + (mp[1] - mr) + ' A ' + mr + ' ' + mr + ' 0 0 ' + sO + ' ' + mp[0] + ' ' + (mp[1] + mr) + ' A ' + Math.abs(rx) + ' ' + mr + ' 0 0 ' + sI + ' ' + mp[0] + ' ' + (mp[1] - mr) + ' Z', fill: '#fde68a' }));
+        }
+        // sun
+        if (sky.sun.alt > 0) { var sp = proj(sky.sun.alt, sky.sun.az); els.push(h('circle', { key: 'sun', cx: sp[0], cy: sp[1], r: 8, fill: '#fde047', stroke: '#f59e0b', strokeWidth: 1 })); }
+        var upPlanets = sky.planets.filter(function (p) { return p.alt > 0; });
+        var BUSTS = [
+          ['Planets WANDER', 'The word planet means “wanderer.” Unlike the fixed star patterns, planets drift along the ecliptic night to night. Step the date forward and watch a planet move against the stars.'],
+          ['A phase is NOT Earth’s shadow', 'The Moon’s phase is just how much of its sunlit half faces us (Sun–Moon–Earth geometry). Earth’s shadow only falls on the Moon during a lunar eclipse — that’s a different, rare event.'],
+          ['The sky turns because EARTH spins', 'Stars rise in the east and set in the west because Earth rotates west-to-east — the stars aren’t moving. Drag the time slider to spin the sky.'],
+          ['Five planets, no telescope', 'Mercury, Venus, Mars, Jupiter and Saturn are all bright enough to see with just your eyes — Venus is often the brilliant “evening/morning star.”']
+        ];
+        function ctrlBtn(label, on, onClick, key) { return h('button', { key: key, onClick: onClick, className: 'astr-focus astr-btn', style: { padding: '5px 10px', borderRadius: 7, border: '1px solid ' + (on ? INDIGO : '#334155'), background: on ? 'rgba(99,102,241,0.25)' : 'transparent', color: on ? '#c7d2fe' : '#94a3b8', fontWeight: on ? 700 : 500, fontSize: 11.5, cursor: 'pointer', whiteSpace: 'nowrap' } }, label); }
+        return h('div', { style: { padding: 16 } },
+          h('div', { style: { fontSize: 12.5, color: '#94a3b8', marginBottom: 10, lineHeight: 1.6 } }, __alloT('stem.astronomy.skymap_intro', 'The real sky overhead, computed for your place and time — Sun, Moon (with its true phase), the five naked-eye planets, and the brightest stars. Hold it over your head facing North: this is an overhead view, so East is on your left.')),
+          // location + time controls
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }, role: 'group', 'aria-label': 'Location' },
+            SKY_LOCS.map(function (l) { return ctrlBtn(l.name, l.id === loc.id, function () { upd({ skyLoc: l.id }); }, l.id); })),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginBottom: 10 } },
+            ctrlBtn('● Now', hourOff === 0 && dayOff === 0, function () { upd({ skyHourOffset: 0, skyDayOffset: 0 }); }, 'now'),
+            h('label', { style: { fontSize: 11.5, color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 6 } }, __alloT('stem.astronomy.spin_time', 'Spin time'),
+              h('input', { type: 'range', min: -12, max: 12, step: 0.5, value: hourOff, 'aria-label': 'Hours from now', onChange: function (e) { upd({ skyHourOffset: parseFloat(e.target.value) }); }, style: { width: 130 } }),
+              h('span', { style: { color: '#cbd5e1', minWidth: 64 } }, (hourOff >= 0 ? '+' : '') + hourOff + 'h')),
+            ctrlBtn('◀ day', false, function () { upd({ skyDayOffset: dayOff - 1 }); }, 'dprev'),
+            h('span', { style: { fontSize: 11.5, color: '#cbd5e1', minWidth: 30, textAlign: 'center' } }, (dayOff >= 0 ? '+' : '') + dayOff + 'd'),
+            ctrlBtn('day ▶', false, function () { upd({ skyDayOffset: dayOff + 1 }); }, 'dnext')),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 14 } },
+            // the dome
+            h('div', null,
+              h('svg', { viewBox: '0 0 330 350', width: 330, height: 350, role: 'img', 'aria-label': skyAria(sky, loc, localShown), style: { maxWidth: '100%' } },
+                h('circle', { cx: cx, cy: cy, r: R, fill: domeFill, stroke: '#334155', strokeWidth: 1.5 }),
+                els,
+                sky.daytime ? h('text', { x: cx, y: 332, fill: '#fbbf24', fontSize: 12, fontWeight: 700, textAnchor: 'middle' }, __alloT('stem.astronomy.daytime_note', '☀ Daytime — stars are up but the Sun outshines them')) :
+                  h('text', { x: cx, y: 332, fill: '#64748b', fontSize: 11, textAnchor: 'middle' }, localShown.toLocaleString(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' }) + ' · ' + loc.name))),
+            // what's up
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              sectionCard('🌙 ' + __alloT('stem.astronomy.the_moon', 'The Moon'),
+                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.6 } },
+                  h('strong', { style: { color: '#fde68a' } }, sky.moon.phase.name), ' · ' + Math.round(sky.moon.phase.illum * 100) + '% ' + __alloT('stem.astronomy.lit', 'lit'),
+                  h('div', { style: { color: '#94a3b8', fontSize: 11.5, marginTop: 2 } }, sky.moon.alt > 0 ? (__alloT('stem.astronomy.up_in_the', 'up in the ') + azCompass(sky.moon.az) + ', ' + Math.round(sky.moon.alt) + '° ' + __alloT('stem.astronomy.high', 'high')) : __alloT('stem.astronomy.below_the_horizon', 'below the horizon right now')))),
+              sectionCard('🪐 ' + __alloT('stem.astronomy.planets_up_now', 'Planets up now'),
+                upPlanets.length ? h('div', { style: { display: 'grid', gap: 4 } }, upPlanets.map(function (p) {
+                  return h('div', { key: p.id, style: { fontSize: 12.5, color: '#e2e8f0' } }, h('span', { style: { color: p.color, fontWeight: 700 } }, p.icon + ' ' + p.name), h('span', { style: { color: '#94a3b8' } }, ' — ' + azCompass(p.az) + ', ' + Math.round(p.alt) + '° ' + __alloT('stem.astronomy.high', 'high')));
+                })) : h('div', { style: { fontSize: 12, color: '#94a3b8' } }, __alloT('stem.astronomy.no_naked_eye_planets', 'No naked-eye planets above the horizon at this moment — try spinning time or stepping the date.'))),
+              sectionCard('☀ ' + __alloT('stem.astronomy.the_sun', 'The Sun'),
+                h('div', { style: { fontSize: 12.5, color: '#cbd5e1' } }, sky.sun.alt > 0 ? (__alloT('stem.astronomy.up_in_the', 'up in the ') + azCompass(sky.sun.az) + ', ' + Math.round(sky.sun.alt) + '° ' + __alloT('stem.astronomy.high', 'high')) : (__alloT('stem.astronomy.below_horizon_alt', 'below the horizon (') + Math.round(sky.sun.alt) + '°) — ' + (sky.sun.alt < -18 ? __alloT('stem.astronomy.full_dark', 'full dark') : __alloT('stem.astronomy.twilight', 'twilight')))))
+            )),
+          // misconception busts
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginTop: 12 } },
+            BUSTS.map(function (b, i) { return h('div', { key: 'b' + i, style: { padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.07)', border: '1px solid rgba(251,191,36,0.3)' } }, h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fcd34d', marginBottom: 3 } }, '⚠ ' + b[0]), h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.5 } }, b[1])); })),
+          h('div', { style: { fontSize: 10.5, color: '#64748b', marginTop: 10, lineHeight: 1.5 } }, __alloT('stem.astronomy.skymap_disclaimer', 'Positions are computed (schematic, accurate to about a degree). For pinpoint observing use Stellarium or your local planetarium.'))
+        );
+      }
+      function skyAria(sky, loc, when) {
+        var ups = sky.planets.filter(function (p) { return p.alt > 0; }).map(function (p) { return p.name; });
+        return 'Computed sky for ' + loc.name + '. ' + (sky.daytime ? 'Daytime. ' : 'Night. ') + 'Moon: ' + sky.moon.phase.name + ', ' + Math.round(sky.moon.phase.illum * 100) + '% lit. ' + (ups.length ? 'Planets up: ' + ups.join(', ') + '.' : 'No naked-eye planets above the horizon.');
       }
 
       // ──────────────────────────────────────────────────────────────
@@ -6702,6 +6934,7 @@
       // ──────────────────────────────────────────────────────────────
       var body;
       switch (d.tab) {
+        case 'skymap':         body = renderSkyMap(); break;
         case 'constellations': body = renderConstellations(); break;
         case 'moon':           body = renderMoon(); break;
         case 'planets':        body = renderPlanets(); break;

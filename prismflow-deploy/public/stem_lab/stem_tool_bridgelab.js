@@ -1431,7 +1431,7 @@
                   var yy = (4 * aRise / (aSpan * aSpan)) * xx * (aSpan - xx);
                   pts.push(tx(xx) + ',' + ty(yy));
                 }
-                return h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, width: '100%', height: svgH, role: 'img', 'aria-labelledby': 'archTitle archDesc' },
+                return h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, width: '100%', height: svgH, role: 'img', 'aria-labelledby': 'archTitle archDesc', style: { background: 'linear-gradient(180deg, #090e1a 0%, #030712 100%)', borderRadius: 12, border: '1px solid var(--allo-stem-border, #1e293b)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', overflow: 'hidden' } },
                   h('title', { id: 'archTitle' }, __alloT('stem.bridgelab.arch_bridge_thrust_diagram', 'Arch bridge thrust diagram')),
                   h('desc', { id: 'archDesc' }, 'A parabolic arch with span ' + aSpan + ' meters and rise ' + aRise + ' meters under uniform load. Horizontal thrust at each abutment is ' + H.toFixed(0) + ' kN per meter of bridge width. Maximum axial compression at supports is ' + Cmax.toFixed(0) + ' kN per meter.'),
                   // Ground line at top (deck-level baseline)
@@ -1594,7 +1594,7 @@
                   deflPts.push(tx(xf * L) + ',' + (baseY + deflPx));
                 }
 
-                return h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, width: '100%', height: svgH, role: 'img', 'aria-labelledby': 'beamTitle beamDesc' },
+                return h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, width: '100%', height: svgH, role: 'img', 'aria-labelledby': 'beamTitle beamDesc', style: { background: 'linear-gradient(180deg, #090e1a 0%, #030712 100%)', borderRadius: 12, border: '1px solid var(--allo-stem-border, #1e293b)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', overflow: 'hidden' } },
                   h('title', { id: 'beamTitle' }, __alloT('stem.bridgelab.beam_bending_diagram', 'Beam bending diagram')),
                   h('desc', { id: 'beamDesc' }, 'A simply-supported beam of length ' + L + ' meters with a ' + P + ' kN load applied. Max bending stress ' + sigmaMax_MPa.toFixed(0) + ' MPa, max deflection ' + delta_mm.toFixed(1) + ' mm.'),
                   // Ground / supports
@@ -1749,7 +1749,7 @@
                 var twrX = padL + plotW / 2;
                 var twrTop = deckY - (csTowerH / 200) * plotH;
                 var stayMaxLen = Math.sqrt(halfSpan * halfSpan + csTowerH * csTowerH);
-                return h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, width: '100%', height: svgH, role: 'img', 'aria-labelledby': 'csTitle csDesc' },
+                return h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, width: '100%', height: svgH, role: 'img', 'aria-labelledby': 'csTitle csDesc', style: { background: 'linear-gradient(180deg, #090e1a 0%, #030712 100%)', borderRadius: 12, border: '1px solid var(--allo-stem-border, #1e293b)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', overflow: 'hidden' } },
                   h('title', { id: 'csTitle' }, __alloT('stem.bridgelab.cable_stayed_bridge_diagram', 'Cable-stayed bridge diagram')),
                   h('desc', { id: 'csDesc' }, 'A cable-stayed bridge with span ' + csSpan + ' meters, tower height ' + csTowerH + ' meters, and ' + csNStays + ' stays per side. Each stay carries part of the deck load directly to the tower.'),
                   // Ground
@@ -2356,7 +2356,7 @@
                   var beamY = 70;
                   var beamH = 35;
                   // Show three states: rest (precompressed), under load (net tension or net compression)
-                  return h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, width: '100%', height: svgH, role: 'img', 'aria-labelledby': 'preTitle preDesc' },
+                  return h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, width: '100%', height: svgH, role: 'img', 'aria-labelledby': 'preTitle preDesc', style: { background: 'linear-gradient(180deg, #090e1a 0%, #030712 100%)', borderRadius: 12, border: '1px solid var(--allo-stem-border, #1e293b)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', overflow: 'hidden' } },
                     h('title', { id: 'preTitle' }, __alloT('stem.bridgelab.prestressed_beam_stress_diagram', 'Prestressed beam stress diagram')),
                     h('desc', { id: 'preDesc' }, 'A concrete beam with internal compression from prestressing tendons. Bending from external load adds tension at the bottom — but the precompression ' + (cracking ? 'is not enough to prevent cracking.' : 'cancels it, keeping the bottom in compression.')),
                     // Beam outline
@@ -2663,7 +2663,7 @@
                 // Current operating point
                 var opX = stress < enduranceLimit ? xOf(1e9) : xOf(Ncrit);
                 var opY = yOf(stress);
-                return h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, width: '100%', height: svgH, role: 'img', 'aria-labelledby': 'snTitle snDesc' },
+                return h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, width: '100%', height: svgH, role: 'img', 'aria-labelledby': 'snTitle snDesc', style: { background: 'linear-gradient(180deg, #090e1a 0%, #030712 100%)', borderRadius: 12, border: '1px solid var(--allo-stem-border, #1e293b)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', overflow: 'hidden' } },
                   h('title', { id: 'snTitle' }, __alloT('stem.bridgelab.s_n_curve_stress_vs_cycles_to_failure', 'S-N curve (stress vs cycles to failure)')),
                   h('desc', { id: 'snDesc' }, 'A logarithmic plot of cycle count on the x-axis vs stress amplitude on the y-axis. Operating at ' + stress + ' MPa, the predicted cycles to failure is ' + (Ncrit === Infinity ? 'infinite (below endurance limit)' : Ncrit.toExponential(2)) + '.'),
                   h('rect', { x: padL, y: padT, width: plotW, height: plotH, fill: '#0a0e1a', stroke: '#334155', strokeWidth: 1 }),
@@ -3494,7 +3494,7 @@
           styleBlock,
 
           // SVG of the deck
-          h('svg', { viewBox: '0 0 400 180', width: '100%', height: 180, role: 'img', 'aria-labelledby': 'flutterTitle flutterDesc' },
+          h('svg', { viewBox: '0 0 400 180', width: '100%', height: 180, role: 'img', 'aria-labelledby': 'flutterTitle flutterDesc', style: { background: 'linear-gradient(180deg, #090e1a 0%, #030712 100%)', borderRadius: 12, border: '1px solid var(--allo-stem-border, #1e293b)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', overflow: 'hidden' } },
             h('title', { id: 'flutterTitle' }, __alloT('stem.bridgelab.tacoma_narrows_flutter_animation', 'Tacoma Narrows flutter animation')),
             h('desc', { id: 'flutterDesc' }, 'A schematic bridge deck oscillating in wind. Amplitude grows with wind speed. At ' + windSpeed + ' miles per hour, the deck is ' + (safe ? 'stable' : resonance ? 'in resonant flutter' : 'failing') + '.'),
             // Towers (fixed)
@@ -3595,7 +3595,7 @@
           styleBlock,
 
           // SVG of the bridge with pedestrians
-          h('svg', { viewBox: '0 0 400 160', width: '100%', height: 160, role: 'img', 'aria-labelledby': 'millTitle millDesc' },
+          h('svg', { viewBox: '0 0 400 160', width: '100%', height: 160, role: 'img', 'aria-labelledby': 'millTitle millDesc', style: { background: 'linear-gradient(180deg, #090e1a 0%, #030712 100%)', borderRadius: 12, border: '1px solid var(--allo-stem-border, #1e293b)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', overflow: 'hidden' } },
             h('title', { id: 'millTitle' }, __alloT('stem.bridgelab.millennium_bridge_pedestrian_synchroni', 'Millennium Bridge pedestrian synchronization animation')),
             h('desc', { id: 'millDesc' }, 'A schematic pedestrian bridge with ' + nPeds + ' people. Lateral amplitude is ' + amplitude.toFixed(0) + ' pixels — ' + status + '.'),
             // Towers (fixed)
