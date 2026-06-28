@@ -66,12 +66,39 @@ describe('structural foundations advisory — best-practice gaps (NOT WCAG, neve
   });
 });
 
+describe('region + landmark-nesting (best-practice advisory completeness, 2026-06-24)', () => {
+  it('flags a <header> nested directly inside <main> (a banner must be top-level)', () => {
+    expect(adv('<body><main><header>Site title</header><p>x</p></main></body>')).toContain('landmark-nesting');
+  });
+  it('flags a <footer> nested directly inside <main> (contentinfo must be top-level)', () => {
+    expect(adv('<body><main><p>x</p><footer>© 2026</footer></main></body>')).toContain('landmark-nesting');
+  });
+  it('does NOT flag a <header> that is a SIBLING of <main> (correct structure)', () => {
+    expect(adv('<body><header>Title</header><main><p>x</p></main></body>')).not.toContain('landmark-nesting');
+  });
+  it('does NOT flag an ARTICLE header inside <main> (sectioning header, not a banner)', () => {
+    expect(adv('<body><main><article><header>Section</header><p>x</p></article></main></body>')).not.toContain('landmark-nesting');
+  });
+  it('flags substantial content sitting OUTSIDE any landmark (region)', () => {
+    const stray = '<body><header>h</header><p>' + 'word '.repeat(60) + '</p></body>'; // 300 chars outside any landmark
+    expect(adv(stray)).toContain('region');
+  });
+  it('does NOT flag region when all content is inside <main>', () => {
+    expect(adv('<body><main><p>' + 'word '.repeat(60) + '</p></main></body>')).not.toContain('region');
+  });
+  it('the skip-link before <main> does not trip region', () => {
+    expect(adv('<body><a href="#main-content" class="sr-only">Skip to main content</a><main><p>' + 'word '.repeat(60) + '</p></main></body>')).not.toContain('region');
+  });
+});
+
 describe('anti-drift: advisory is computed in the engine + rendered honestly in the view', () => {
   it('the engine returns an advisory array of best-practice gaps', () => {
     expect(dp).toContain('var _foundations = { present: present, checked: 18, advisory: advisory };');
     expect(dp).toContain("id: 'landmark-main'");
     expect(dp).toContain("id: 'page-has-heading-one'");
     expect(dp).toContain("id: 'heading-order'");
+    expect(dp).toContain("id: 'landmark-nesting'");
+    expect(dp).toContain("id: 'region'");
   });
   it('the view renders the advisory chip, labeled NOT WCAG / not scored', () => {
     expect(view).toContain('_structuralFoundations.advisory');

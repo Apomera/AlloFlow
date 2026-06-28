@@ -113,6 +113,30 @@ var _alloStructuralFoundations = function (html) {
   if (!/<h1[\s>]/.test(lc) && (/<h[2-6][\s>]/.test(lc) || _bodyTextLen > 400)) advisory.push({ id: 'page-has-heading-one', label: 'No level-1 heading (<h1>) — there is real content but no top-level title heading. Add an <h1> (e.g. promote the document title via “Suggest”).' });
   var _ho = _headingOutlineIssue(htmlContent);
   if (_ho.skip) advisory.push({ id: 'heading-order', label: 'Heading levels skip (e.g. an <h2> is followed by an <h4>) — keep the outline sequential so the hierarchy reads cleanly.' });
+  // region + landmark-nesting (best-practice, advisory — needs the DOM, like the heading check). region:
+  // meaningful content that sits OUTSIDE every landmark; landmark-nesting: a <header> (banner) or <footer>
+  // (contentinfo) placed directly INSIDE <main>, which is invalid (it must be a top-level sibling). Both are
+  // axe best-practice rules the WCAG-tagged re-audit never runs. Conservative to avoid noise. (2026-06-24)
+  try {
+    if (typeof DOMParser !== 'undefined') {
+      var _sfDoc = new DOMParser().parseFromString(htmlContent, 'text/html');
+      if (_sfDoc && _sfDoc.body) {
+        if (_sfDoc.querySelector('main > header, main > footer, [role="main"] > header, [role="main"] > footer')) {
+          advisory.push({ id: 'landmark-nesting', label: 'A <header> or <footer> sits inside <main> — banner/contentinfo landmarks must be top-level siblings of <main>, not nested inside it.' });
+        }
+        var _outsideLen = 0, _sfKids = _sfDoc.body.children;
+        for (var _ki = 0; _ki < _sfKids.length; _ki++) {
+          var _sfKid = _sfKids[_ki], _sfTag = _sfKid.tagName;
+          if (/^(MAIN|HEADER|NAV|FOOTER|ASIDE|SCRIPT|STYLE|TEMPLATE)$/.test(_sfTag)) continue;          // a landmark / non-content
+          var _sfRole = (_sfKid.getAttribute && _sfKid.getAttribute('role')) || '';
+          if (/^(main|navigation|banner|contentinfo|complementary)$/.test(_sfRole)) continue;           // an ARIA landmark
+          if (_sfTag === 'A' && /sr-only|skip/i.test(_sfKid.className || '')) continue;                 // the skip-link legitimately precedes <main>
+          _outsideLen += String(_sfKid.textContent || '').replace(/\s+/g, ' ').trim().length;
+        }
+        if (_outsideLen > 200) advisory.push({ id: 'region', label: 'Some content sits outside any landmark — wrapping all meaningful content in <main>/<header>/<nav>/<footer> helps screen-reader users navigate by region.' });
+      }
+    }
+  } catch (_) {}
   // checked = the number of distinct foundation TYPES this looks for (the denominator for "N of M present").
   var _foundations = { present: present, checked: 18, advisory: advisory };
   return _foundations;
