@@ -318,11 +318,17 @@ const filterEducationalSources = (chunks) => {
     });
 };
 
-const generateBibliographyString = (metadata, citationStyle = 'Links Only', title = 'Verified Sources') => {
+const generateBibliographyString = (metadata, citationStyle = 'Links Only', title = 'Referenced Sources') => {
     if (!metadata || !metadata.groundingChunks || metadata.groundingChunks.length === 0) return "";
     const chunks = filterEducationalSources(metadata.groundingChunks);
     if (chunks.length === 0) return "";
-    let bib = `\n\n### ${title}\n\n`;
+    // Honesty (2026-06-24): these are raw AI-search grounding chunks — Gemini can ground on a mismatched
+    // page and the links are often ephemeral redirects. NOT "Verified Sources" (the old default — it
+    // overclaimed); carry a verify-before-citing caveat so a teacher never hands a student an unverified
+    // link presented as authoritative. Mirrors the hardened content_engine copy; `t` isn't in scope in
+    // this module, so the caveat is the English source string (the content_engine path carries the i18n key).
+    const _caveat = 'These sources were surfaced by AI-assisted search and have not been independently verified — confirm each one before citing it.';
+    let bib = `\n\n### ${title}\n\n*${_caveat}*\n\n`;
     chunks.forEach((chunk, i) => {
         const num = i + 1;
         const title = chunk.web?.title || "Unknown Source";

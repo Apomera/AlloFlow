@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -16150,11 +16150,13 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       {
         let aiFixCount = 0;
 
-        // 1. Missing alt on images → derive from figcaption or add descriptive placeholder
+        // 1. Missing alt on images → add an HONEST placeholder. NOT a generic "Document image": that clears
+        //    axe image-alt by PRESENCE while telling a screen-reader user nothing. Use the same honest text the
+        //    surgical path already uses ("Image (needs description)") so the gap stays visible. (2026-06-24)
         accessibleHtml = accessibleHtml.replace(/<img([^>]*)>/gi, (match, attrs) => {
           if (/alt\s*=/.test(attrs)) return match;
           aiFixCount++;
-          return `<img alt="Document image"${attrs}>`;
+          return `<img alt="Image (needs description)"${attrs}>`;
         });
 
         // 1b. Heading contrast inside dark-background wrappers.
@@ -28314,11 +28316,6 @@ window.AlloModules.createDocPipeline.ocrBlockLayout = _alloOcrBlockLayout; // st
 window.AlloModules.createDocPipeline.structuralFoundations = _alloStructuralFoundations; // static: exposed for tests
 window.AlloModules.createDocPipeline.weightedDeductions = _alloWeightedDeductions; // static: exposed for tests (#5)
 window.AlloModules.createDocPipeline.contrastFixPair = _alloContrastFixPair; // static: exposed for tests (contrast pair-fixer)
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 })();

@@ -4327,6 +4327,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
         addToast("\u{1F501} " + (t("toasts.handsoff_retry_loop") || "Hands-off mode \u2014 below target; retrying the loop") + " (" + _loopTries + "/" + _HANDSOFF_MAX + ", " + _s + "/100, target " + pdfTargetScore + ")\u2026", "info");
         await new Promise((res) => setTimeout(res, 1500 * _loopTries));
       }
+      const _finCur = pdfFixResultRef.current;
+      if (!_aiThrottledClean && !_stopped() && _finCur && _finCur.accessibleHtml && (_loopTries > 0 || _finCur._aiVerificationIncomplete)) {
+        addToast("\u{1F50D} " + (t("toasts.handsoff_final_audit") || "Finalizing \u2014 running one full audit so the score covers the whole document\u2026"), "info");
+        try {
+          await _reauditAndScore(_finCur.accessibleHtml, null);
+        } catch (_) {
+        }
+      }
       if (pdfFixResultRef.current && pdfAutoSaveProject) {
         saveProjectToFile(true);
       }

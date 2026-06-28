@@ -4074,6 +4074,19 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       addToast('🔁 ' + (t('toasts.handsoff_retry_loop') || 'Hands-off mode — below target; retrying the loop') + ' (' + _loopTries + '/' + _HANDSOFF_MAX + ', ' + _s + '/100, target ' + pdfTargetScore + ')…', 'info');
                       await new Promise((res) => setTimeout(res, 1500 * _loopTries));
                     }
+                    // Hands-off FINAL state (2026-06-24): the auto-continue loop's passes are INCREMENTAL, so the
+                    // run ends on an incremental pass — a throttle-degraded final audit leaves the headline computed
+                    // from a PARTIAL pass ("N/M sections audited") and the Verification section stale. End on a
+                    // COMPLETE audit: re-run the full content audit via _reauditAndScore (same weakest-layer score +
+                    // H-9 stale-guard; it refreshes verificationAudit and clears the throttle-degraded flag ONLY when
+                    // the re-audit returns a real score — so a re-throttle leaves the honest partial state untouched
+                    // rather than masking it). The GeminiGate stagger makes a re-throttle far less likely. Skip the
+                    // explicit throttle-bail case (we already decided more AI passes can't help there) and honor Stop.
+                    const _finCur = pdfFixResultRef.current;
+                    if (!_aiThrottledClean && !_stopped() && _finCur && _finCur.accessibleHtml && (_loopTries > 0 || _finCur._aiVerificationIncomplete)) {
+                      addToast('🔍 ' + (t('toasts.handsoff_final_audit') || 'Finalizing — running one full audit so the score covers the whole document…'), 'info');
+                      try { await _reauditAndScore(_finCur.accessibleHtml, null); } catch (_) {}
+                    }
                     if (pdfFixResultRef.current && pdfAutoSaveProject) { saveProjectToFile(true); }
                     // (2026-06-20) Auto veraPDF: validate the remediated OUTPUT on the warm window opened at
                     // the click. Generate the tagged PDF (pure compute) then validate it on the already-open,

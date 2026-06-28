@@ -16148,11 +16148,13 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       {
         let aiFixCount = 0;
 
-        // 1. Missing alt on images → derive from figcaption or add descriptive placeholder
+        // 1. Missing alt on images → add an HONEST placeholder. NOT a generic "Document image": that clears
+        //    axe image-alt by PRESENCE while telling a screen-reader user nothing. Use the same honest text the
+        //    surgical path already uses ("Image (needs description)") so the gap stays visible. (2026-06-24)
         accessibleHtml = accessibleHtml.replace(/<img([^>]*)>/gi, (match, attrs) => {
           if (/alt\s*=/.test(attrs)) return match;
           aiFixCount++;
-          return `<img alt="Document image"${attrs}>`;
+          return `<img alt="Image (needs description)"${attrs}>`;
         });
 
         // 1b. Heading contrast inside dark-background wrappers.
