@@ -74,6 +74,159 @@ window.StemLab = window.StemLab || {
     { id: 'study_vocab', label: 'Study 3 vocabulary terms', icon: '📇', desc: 'Study flashcards for cell biology terms', check: function(u) { return Object.keys(u.studiedVocab || {}).length >= 3; } }
   ];
 
+  // \u2500\u2500 INSIDE THE CELL \u2014 living cross-section engine \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  // The iconic cell-interior view the tool was missing: a single eukaryotic (or
+  // bacterial) cell from the inside, with its organelles ALIVE. The catalogue is
+  // real biology (which organelles each cell type actually has) so it doubles as
+  // misconception-busting: bacteria have NO nucleus, plants AND animals both have
+  // mitochondria, every cell has ribosomes, only plants have chloroplasts/wall.
+  var CELL_ORGANELLES = {
+    cellMembrane: { name: 'Cell membrane', fn: 'A fluid phospholipid bilayer \u2014 a flexible gatekeeper, not a solid wall \u2014 controlling what enters and leaves.', types: ['animal', 'plant', 'bacterium'], color: '#7dd3fc' },
+    cellWall: { name: 'Cell wall', fn: 'A rigid outer layer for support and shape. Plants, bacteria and fungi have one; animal cells do NOT.', types: ['plant', 'bacterium'], color: '#a3b18a' },
+    cytoplasm: { name: 'Cytoplasm', fn: 'The crowded, jelly-like fluid where most reactions happen \u2014 a living cell is PACKED with machinery, not empty.', types: ['animal', 'plant', 'bacterium'], color: '#0e7490' },
+    nucleus: { name: 'Nucleus', fn: 'The membrane-bound control center holding the DNA. Only EUKARYOTES (plant + animal) have one.', types: ['animal', 'plant'], color: '#a78bfa' },
+    nucleolus: { name: 'Nucleolus', fn: 'A dense spot inside the nucleus where ribosomes are assembled.', types: ['animal', 'plant'], color: '#7c3aed' },
+    nucleoid: { name: 'Nucleoid (free DNA)', fn: 'In bacteria the DNA floats free in a tangled loop \u2014 there is NO nucleus wrapped around it.', types: ['bacterium'], color: '#c4b5fd', bust: 'Not every cell has a nucleus. Bacteria (prokaryotes) keep their DNA loose in the cytoplasm.' },
+    plasmid: { name: 'Plasmid', fn: 'A small extra ring of DNA bacteria can swap with each other \u2014 one way antibiotic resistance spreads.', types: ['bacterium'], color: '#f0abfc' },
+    mitochondria: { name: 'Mitochondria', fn: 'The powerhouse: it CONVERTS the energy in food into ATP (it does not make energy from nothing). BOTH plant and animal cells have them.', types: ['animal', 'plant'], color: '#fb7185', bust: 'Mitochondria don\u2019t create energy \u2014 they release the energy stored in food and repackage it as ATP. And plant cells have them too, not just animals.' },
+    chloroplast: { name: 'Chloroplast', fn: 'Captures sunlight to build sugar (photosynthesis). PLANT cells only \u2014 the headline plant-vs-animal difference.', types: ['plant'], color: '#22c55e', bust: 'Chloroplasts are the plant-only organelle \u2014 but plant cells STILL have mitochondria too.' },
+    roughER: { name: 'Rough ER', fn: 'A folded membrane network studded with ribosomes \u2014 the protein factory and the start of the shipping line.', types: ['animal', 'plant'], color: '#38bdf8' },
+    smoothER: { name: 'Smooth ER', fn: 'Ribosome-free membranes that build lipids and detoxify chemicals.', types: ['animal', 'plant'], color: '#67e8f9' },
+    golgi: { name: 'Golgi apparatus', fn: 'The post office: it modifies, packages and ships proteins out in vesicles.', types: ['animal', 'plant'], color: '#fcd34d' },
+    ribosomes: { name: 'Ribosomes', fn: 'Tiny machines that build proteins. EVERY living cell has them \u2014 including bacteria.', types: ['animal', 'plant', 'bacterium'], color: '#fde68a', bust: 'Ribosomes are in ALL cells, not just plants \u2014 they\u2019re how every living thing makes protein.' },
+    vesicle: { name: 'Vesicles', fn: 'Membrane bubbles that ferry cargo along the line: ER \u2192 Golgi \u2192 cell membrane.', types: ['animal', 'plant'], color: '#fbbf24' },
+    lysosome: { name: 'Lysosome', fn: 'The recycling crew: enzyme-filled sacs that break down worn-out parts (mainly in animal cells).', types: ['animal'], color: '#f472b6' },
+    vacuole: { name: 'Central vacuole', fn: 'A huge water-filled sac that props the plant cell firm (turgor pressure) and stores material. Animal cells have only small vacuoles by comparison.', types: ['plant'], color: '#5eead4' },
+    centriole: { name: 'Centrioles', fn: 'Paired barrels that organize the spindle fibers during animal-cell division.', types: ['animal'], color: '#cbd5e1' },
+    flagellum: { name: 'Flagellum', fn: 'A whip-like tail some bacteria spin like a propeller to swim.', types: ['bacterium'], color: '#94a3b8' }
+  };
+  function interiorHas(type, key) { var o = CELL_ORGANELLES[key]; return !!(o && o.types.indexOf(type) >= 0); }
+  function interiorOrganelles(type) { return Object.keys(CELL_ORGANELLES).filter(function (k) { return interiorHas(type, k); }); }
+  // Deterministic layout (positions in a 0..1 box) per cell type \u2014 drives drawing + click hit-testing.
+  function interiorLayout(type) {
+    var L = [];
+    function add(key, x, y, r, extra) { if (interiorHas(type, key)) L.push(Object.assign({ key: key, x: x, y: y, r: r }, extra || {})); }
+    if (type === 'bacterium') {
+      add('nucleoid', 0.5, 0.5, 0.20);
+      add('plasmid', 0.74, 0.34, 0.05);
+      add('flagellum', 0.04, 0.5, 0.06);
+      for (var b = 0; b < 26; b++) L.push({ key: 'ribosomes', x: 0.18 + (b * 0.137 % 0.66), y: 0.22 + ((b * 0.231) % 0.58), r: 0.012, dot: true });
+      return L;
+    }
+    if (type === 'plant') {
+      add('vacuole', 0.5, 0.54, 0.26);
+      add('nucleus', 0.76, 0.30, 0.115); add('nucleolus', 0.78, 0.31, 0.04);
+      [[0.2, 0.26], [0.32, 0.74], [0.7, 0.78], [0.18, 0.56], [0.84, 0.58]].forEach(function (p, i) { add('chloroplast', p[0], p[1], 0.06, { phase: i }); });
+      [[0.26, 0.4], [0.62, 0.18], [0.8, 0.74]].forEach(function (p, i) { add('mitochondria', p[0], p[1], 0.045, { phase: i }); });
+      add('roughER', 0.6, 0.36, 0.1); add('golgi', 0.28, 0.6, 0.07);
+      for (var pr = 0; pr < 14; pr++) L.push({ key: 'ribosomes', x: 0.5 + 0.42 * Math.cos(pr), y: 0.5 + 0.42 * Math.sin(pr * 1.7), r: 0.01, dot: true });
+      return L;
+    }
+    // animal (default)
+    add('nucleus', 0.62, 0.44, 0.155); add('nucleolus', 0.64, 0.46, 0.05);
+    [[0.24, 0.3], [0.78, 0.66], [0.34, 0.72], [0.7, 0.22], [0.2, 0.58]].forEach(function (p, i) { add('mitochondria', p[0], p[1], 0.05, { phase: i }); });
+    add('roughER', 0.45, 0.42, 0.13); add('smoothER', 0.5, 0.68, 0.1);
+    add('golgi', 0.32, 0.56, 0.08);
+    add('lysosome', 0.8, 0.4, 0.035); add('lysosome', 0.5, 0.24, 0.03);
+    add('centriole', 0.78, 0.5, 0.03);
+    [[0.4, 0.5], [0.55, 0.58], [0.68, 0.52]].forEach(function (p, i) { add('vesicle', p[0], p[1], 0.018, { phase: i }); });
+    for (var r2 = 0; r2 < 18; r2++) L.push({ key: 'ribosomes', x: 0.2 + (r2 * 0.17 % 0.62), y: 0.18 + ((r2 * 0.29) % 0.66), r: 0.011, dot: true });
+    return L;
+  }
+  function interiorHitTest(type, nx, ny) {           // normalized click \u2192 organelle key (nearest within radius)
+    var L = interiorLayout(type), best = null, bd = 1e9;
+    for (var i = 0; i < L.length; i++) { var o = L[i]; if (o.dot) continue; var dx = nx - o.x, dy = ny - o.y, dd = Math.sqrt(dx * dx + dy * dy); if (dd < o.r * 1.25 && dd < bd) { bd = dd; best = o.key; } }
+    if (best) return best;
+    var cdx = nx - 0.5, cdy = ny - 0.5, cr = Math.sqrt(cdx * cdx + cdy * cdy);   // edge \u2192 wall/membrane
+    if (cr > 0.42) return interiorHas(type, 'cellWall') ? 'cellWall' : 'cellMembrane';
+    return 'cytoplasm';
+  }
+  function _ih(i) { var s = Math.sin(i * 12.9898) * 43758.5453; return s - Math.floor(s); }   // deterministic hash 0..1
+  function drawCellInterior(cx2d, W, H, type, t, sel, reduced) {
+    var pad = Math.min(W, H) * 0.06, cx = W / 2, cy = H / 2, RX = W / 2 - pad, RY = H / 2 - pad;
+    function P(nx, ny) { return [cx + (nx - 0.5) * 2 * RX, cy + (ny - 0.5) * 2 * RY]; }
+    function S(nr) { return nr * 2 * Math.min(RX, RY); }
+    cx2d.clearRect(0, 0, W, H);
+    // cytoplasm
+    var g = cx2d.createRadialGradient(cx, cy, 10, cx, cy, Math.max(RX, RY) * 1.2);
+    g.addColorStop(0, '#0b3b46'); g.addColorStop(0.7, '#072a33'); g.addColorStop(1, '#04181d');
+    cx2d.fillStyle = '#02101400'; cx2d.fillRect(0, 0, W, H);
+    // boundary
+    cx2d.save(); cx2d.beginPath(); cx2d.ellipse(cx, cy, RX, RY, 0, 0, 6.2832); cx2d.closePath();
+    if (interiorHas(type, 'cellWall')) { cx2d.lineWidth = S(0.03); cx2d.strokeStyle = '#7c8f5e'; cx2d.stroke(); }
+    cx2d.fillStyle = g; cx2d.fill(); cx2d.clip();
+    // cytoplasmic streaming particles
+    var drift = reduced ? 0 : t;
+    for (var i = 0; i < 80; i++) { var a = _ih(i) * 6.2832 + drift * (0.2 + _ih(i + 99) * 0.3), rr = _ih(i + 7) * 0.46; var pp = P(0.5 + Math.cos(a) * rr, 0.5 + Math.sin(a) * rr * (RY / RX)); cx2d.fillStyle = 'rgba(125,211,252,' + (0.04 + _ih(i + 3) * 0.06) + ')'; cx2d.beginPath(); cx2d.arc(pp[0], pp[1], 1 + _ih(i + 5) * 1.6, 0, 6.2832); cx2d.fill(); }
+    // membrane (fluid bilayer dots)
+    cx2d.lineWidth = S(0.012); cx2d.strokeStyle = '#22d3ee'; cx2d.globalAlpha = 0.5; cx2d.beginPath(); cx2d.ellipse(cx, cy, RX, RY, 0, 0, 6.2832); cx2d.stroke(); cx2d.globalAlpha = 1;
+    var L = interiorLayout(type);
+    // dot clusters first (ribosomes) so organelles sit on top
+    L.forEach(function (o) { if (!o.dot) return; var p = P(o.x, o.y); cx2d.fillStyle = CELL_ORGANELLES.ribosomes.color; cx2d.globalAlpha = 0.9; cx2d.beginPath(); cx2d.arc(p[0], p[1], Math.max(1.3, S(o.r)), 0, 6.2832); cx2d.fill(); });
+    cx2d.globalAlpha = 1;
+    L.forEach(function (o) {
+      if (o.dot) return;
+      var ph = (o.phase || 0), wob = reduced ? 0 : Math.sin(t * 0.7 + ph * 1.3) * 0.006;
+      var p = P(o.x + wob, o.y - wob), R = S(o.r), org = CELL_ORGANELLES[o.key], col = org.color;
+      var on = sel === o.key;
+      if (on) { cx2d.save(); cx2d.shadowColor = '#fff'; cx2d.shadowBlur = 16; }
+      cx2d.lineWidth = Math.max(1, R * 0.12);
+      if (o.key === 'nucleus') {
+        var ng = cx2d.createRadialGradient(p[0], p[1], R * 0.2, p[0], p[1], R); ng.addColorStop(0, '#c4b5fd'); ng.addColorStop(1, '#7c5cd6');
+        cx2d.fillStyle = ng; cx2d.beginPath(); cx2d.arc(p[0], p[1], R, 0, 6.2832); cx2d.fill();
+        cx2d.strokeStyle = '#ede9fe'; cx2d.beginPath(); cx2d.arc(p[0], p[1], R, 0, 6.2832); cx2d.stroke();
+        for (var np = 0; np < 12; np++) { var na = np / 12 * 6.2832; cx2d.fillStyle = '#4c1d95'; cx2d.beginPath(); cx2d.arc(p[0] + Math.cos(na) * R, p[1] + Math.sin(na) * R, R * 0.07, 0, 6.2832); cx2d.fill(); }   // pores
+        cx2d.strokeStyle = 'rgba(76,29,149,0.5)'; cx2d.lineWidth = R * 0.05;   // chromatin
+        for (var ch = 0; ch < 5; ch++) { cx2d.beginPath(); for (var s2 = 0; s2 <= 8; s2++) { var aa = ch + s2 * 0.6 + t * 0.1, rr2 = R * (0.2 + 0.5 * _ih(ch * 9 + s2)); var xx = p[0] + Math.cos(aa) * rr2, yy = p[1] + Math.sin(aa) * rr2; if (s2 === 0) cx2d.moveTo(xx, yy); else cx2d.lineTo(xx, yy); } cx2d.stroke(); }
+      } else if (o.key === 'nucleolus') {
+        cx2d.fillStyle = col; cx2d.globalAlpha = 0.85; cx2d.beginPath(); cx2d.arc(p[0], p[1], R, 0, 6.2832); cx2d.fill(); cx2d.globalAlpha = 1;
+      } else if (o.key === 'mitochondria') {
+        var pulse = reduced ? 0.5 : (0.5 + 0.5 * Math.sin(t * 2 + ph));
+        cx2d.save(); cx2d.translate(p[0], p[1]); cx2d.rotate(ph * 1.1);
+        cx2d.shadowColor = '#fb7185'; cx2d.shadowBlur = 6 + pulse * 10;
+        cx2d.fillStyle = '#9f1239'; cx2d.beginPath(); cx2d.ellipse(0, 0, R, R * 0.55, 0, 0, 6.2832); cx2d.fill();
+        cx2d.shadowBlur = 0; cx2d.strokeStyle = '#fda4af'; cx2d.lineWidth = R * 0.1;   // cristae
+        for (var cr2 = -2; cr2 <= 2; cr2++) { cx2d.beginPath(); cx2d.moveTo(cr2 * R * 0.32, -R * 0.5); cx2d.quadraticCurveTo(cr2 * R * 0.32 + R * 0.18, 0, cr2 * R * 0.32, R * 0.5); cx2d.stroke(); }
+        cx2d.restore();
+      } else if (o.key === 'chloroplast') {
+        cx2d.save(); cx2d.translate(p[0], p[1]); cx2d.rotate(0.5 + ph);
+        cx2d.fillStyle = '#166534'; cx2d.beginPath(); cx2d.ellipse(0, 0, R, R * 0.6, 0, 0, 6.2832); cx2d.fill();
+        cx2d.fillStyle = '#4ade80';   // grana stacks
+        for (var gr = -2; gr <= 2; gr++) { cx2d.beginPath(); cx2d.ellipse(gr * R * 0.34, 0, R * 0.12, R * 0.34, 0, 0, 6.2832); cx2d.fill(); }
+        cx2d.restore();
+      } else if (o.key === 'vacuole') {
+        cx2d.fillStyle = 'rgba(94,234,212,0.16)'; cx2d.strokeStyle = 'rgba(94,234,212,0.55)';
+        cx2d.beginPath(); cx2d.arc(p[0], p[1], R, 0, 6.2832); cx2d.fill(); cx2d.stroke();
+      } else if (o.key === 'roughER' || o.key === 'smoothER') {
+        cx2d.strokeStyle = col; cx2d.lineWidth = R * 0.14;
+        for (var er = 0; er < 4; er++) { cx2d.beginPath(); for (var w = 0; w <= 16; w++) { var wx = p[0] + (w / 16 - 0.5) * R * 2, wy = p[1] + (er - 1.5) * R * 0.32 + Math.sin(w * 0.8 + er) * R * 0.12; if (w === 0) cx2d.moveTo(wx, wy); else cx2d.lineTo(wx, wy); } cx2d.stroke(); }
+        if (o.key === 'roughER') { cx2d.fillStyle = CELL_ORGANELLES.ribosomes.color; for (var rr3 = 0; rr3 < 22; rr3++) { var rx = p[0] + (_ih(rr3) - 0.5) * R * 2, ry = p[1] + (_ih(rr3 + 5) - 0.5) * R * 1.2; cx2d.beginPath(); cx2d.arc(rx, ry, R * 0.06, 0, 6.2832); cx2d.fill(); } }
+      } else if (o.key === 'golgi') {
+        cx2d.strokeStyle = col; cx2d.lineWidth = R * 0.16;
+        for (var go = 0; go < 4; go++) { cx2d.beginPath(); cx2d.arc(p[0], p[1] + go * R * 0.28 - R * 0.4, R * (1 - go * 0.12), -0.6, 0.6); cx2d.stroke(); }
+      } else if (o.key === 'lysosome' || o.key === 'vesicle' || o.key === 'plasmid') {
+        var vp = (o.key === 'vesicle' && !reduced) ? (t * 0.3 + ph) % 1 : 0;
+        var vx = p[0] + vp * S(0.12), vy = p[1] - vp * S(0.06);
+        cx2d.fillStyle = col; cx2d.globalAlpha = 0.85; cx2d.beginPath(); cx2d.arc(vx, vy, R, 0, 6.2832); cx2d.fill(); cx2d.globalAlpha = 1;
+        if (o.key === 'lysosome') { cx2d.fillStyle = '#831843'; for (var ly = 0; ly < 4; ly++) { cx2d.beginPath(); cx2d.arc(vx + (_ih(ly) - 0.5) * R, vy + (_ih(ly + 2) - 0.5) * R, R * 0.18, 0, 6.2832); cx2d.fill(); } }
+      } else if (o.key === 'centriole') {
+        cx2d.strokeStyle = col; cx2d.lineWidth = R * 0.3;
+        cx2d.strokeRect(p[0] - R, p[1] - R * 0.4, R * 1.2, R * 0.8); cx2d.strokeRect(p[0] - R * 0.2, p[1] - R, R * 0.8, R * 1.2);
+      } else if (o.key === 'nucleoid') {
+        cx2d.strokeStyle = col; cx2d.lineWidth = R * 0.12; cx2d.beginPath();
+        for (var nd = 0; nd <= 60; nd++) { var ta = nd / 60 * 6.2832 * 3, rr4 = R * (0.5 + 0.4 * Math.sin(nd * 0.5)); var ax = p[0] + Math.cos(ta) * rr4 * (0.8 + 0.2 * Math.sin(nd)), ay = p[1] + Math.sin(ta) * rr4 * 0.7; if (nd === 0) cx2d.moveTo(ax, ay); else cx2d.lineTo(ax, ay); } cx2d.stroke();
+      } else if (o.key === 'flagellum') {
+        cx2d.strokeStyle = col; cx2d.lineWidth = R * 0.3; cx2d.beginPath();
+        for (var fl = 0; fl <= 24; fl++) { var fx = p[0] - fl / 24 * S(0.16), fy = p[1] + Math.sin(fl * 0.6 + (reduced ? 0 : t * 4)) * R * 1.2; if (fl === 0) cx2d.moveTo(fx, fy); else cx2d.lineTo(fx, fy); } cx2d.stroke();
+      }
+      if (on) cx2d.restore();
+    });
+    cx2d.restore();   // un-clip
+  }
+  try {
+    window.__alloCellPure = { CELL_ORGANELLES: CELL_ORGANELLES, interiorHas: interiorHas, interiorOrganelles: interiorOrganelles, interiorLayout: interiorLayout, interiorHitTest: interiorHitTest };
+  } catch (e) {}
+
   window.StemLab.registerTool('cell', {
     icon: '\uD83D\uDD2C',
     label: 'Cell Simulator',
@@ -19527,8 +19680,8 @@ var d = labToolData.cell || {};
 
               (function() {
                 var CELL_CATEGORIES = [
-                  { id: 'interactive', label: 'Interactive Sim', icon: '🔬', desc: 'Watch, play, or quiz', color: 'green',
-                    modes: ['observe', 'play', 'quiz'] },
+                  { id: 'interactive', label: 'Interactive Sim', icon: '🔬', desc: 'Watch, go inside a cell, play, or quiz', color: 'green',
+                    modes: ['observe', 'interior', 'play', 'quiz'] },
                   { id: 'browse', label: 'Browse Organisms', icon: '🦠', desc: 'Encyclopedia + filter + compare', color: 'cyan',
                     modes: ['encyclopedia', 'filter', 'compare'] },
                   { id: 'knowledge', label: 'Knowledge & History', icon: '📚', desc: 'History, biologists, labs, diseases, ecology', color: 'amber',
@@ -19537,7 +19690,7 @@ var d = labToolData.cell || {};
                     modes: ['glossary', 'finale'] }
                 ];
                 var CELL_MODE_LABELS = {
-                  observe: '👁 Observe', play: '🎮 Play', quiz: '🧠 Quiz',
+                  observe: '👁 Observe', interior: '🔬 Inside the Cell', play: '🎮 Play', quiz: '🧠 Quiz',
                   encyclopedia: '📚 Encyclopedia', filter: '🔍 Filter', compare: '⚖ Compare',
                   history: '📜 History', biologists: '🧑‍🔬 Biologists', lab: '🔬 Lab Techniques',
                   disease: '🦠 Diseases', ecology: '🌍 Ecology',
@@ -19550,7 +19703,7 @@ var d = labToolData.cell || {};
                 var atHub = !d._cellCategory && !d._cellSearch && !d._cellPicked;
                 var activeCat = CELL_CATEGORIES.find(function(c) { return c.id === activeCategoryId; });
                 var searchTerm = (d._cellSearch || '').toLowerCase();
-                var allModes = ['observe','play','quiz','encyclopedia','filter','compare','history','biologists','lab','disease','ecology','glossary','finale'];
+                var allModes = ['observe','interior','play','quiz','encyclopedia','filter','compare','history','biologists','lab','disease','ecology','glossary','finale'];
                 // Grade gate: hide the Diseases mode (STIs, death tolls) from K-2 and 3-5.
                 if (!cellBandAllowsClinical) { CELL_CATEGORIES.forEach(function(c) { c.modes = c.modes.filter(function(m) { return m !== 'disease'; }); }); allModes = allModes.filter(function(m) { return m !== 'disease'; }); }
                 var searchResults = searchTerm ? allModes.filter(function(m) { return (CELL_MODE_LABELS[m] || m).toLowerCase().indexOf(searchTerm) !== -1; }) : null;
@@ -19704,9 +19857,9 @@ var d = labToolData.cell || {};
 
 
 
-            // Canvas
+            // Canvas (petri dish) — hidden while the "Inside the Cell" interior view is active
 
-            React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-green-200 bg-green-50", style: { height: '520px' } },
+            d.mode !== 'interior' && React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-green-200 bg-green-50", style: { height: '520px' } },
 
               React.createElement("canvas", {
 
@@ -20587,6 +20740,73 @@ var d = labToolData.cell || {};
 
             )
 
+
+            ,
+
+            // ═══════════════════════════════════════════════════════════
+            // INSIDE THE CELL — living cross-section
+            // ═══════════════════════════════════════════════════════════
+            d.mode === 'interior' && (function() {
+              var h = React.createElement;
+              var ctype = d.interiorCellType || 'animal';
+              var sel = d.interiorSel || null;
+              var seen = d.interiorSeen || [];
+              var reducedMo = false; try { reducedMo = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+              var CTYPES = [
+                { id: 'animal', label: '🐾 Animal', note: 'A typical animal cell — nucleus, mitochondria, ER, Golgi, lysosomes. No cell wall and no chloroplasts.' },
+                { id: 'plant', label: '🌿 Plant', note: 'An animal cell PLUS a rigid cell wall, green chloroplasts (photosynthesis) and a huge central vacuole — and it STILL has mitochondria.' },
+                { id: 'bacterium', label: '🦠 Bacterium', note: 'A prokaryote: NO nucleus (its DNA floats free as a nucleoid) and no membrane-bound organelles — but it still has ribosomes and a wall.' }
+              ];
+              var note = (CTYPES.find(function (c) { return c.id === ctype; }) || CTYPES[0]).note;
+              var orgKeys = interiorOrganelles(ctype).filter(function (k) { return k !== 'cytoplasm'; });
+              var selOrg = sel && CELL_ORGANELLES[sel] ? CELL_ORGANELLES[sel] : null;
+              function pick(key) { upd('interiorSel', key); if (CELL_ORGANELLES[key] && seen.indexOf(key) < 0) upd('interiorSeen', seen.concat([key])); }
+              return h('div', { className: 'mt-4' },
+                h('p', { className: 'text-[13px] text-slate-700 mb-2 leading-relaxed' }, '🔬 ', h('strong', null, 'You are inside a single cell.'), ' This is the textbook cross-section — but alive: organelles drift in the cytoplasm, mitochondria pulse, vesicles shuttle cargo. Switch the cell type to see what changes, and tap any organelle.'),
+                // cell-type toggle
+                h('div', { className: 'flex flex-wrap gap-2 mb-2', role: 'group', 'aria-label': 'Cell type' },
+                  CTYPES.map(function (c) {
+                    var on = c.id === ctype;
+                    return h('button', { key: c.id, 'aria-pressed': on ? 'true' : 'false', onClick: function () { upd('interiorCellType', c.id); upd('interiorSel', null); }, className: 'px-3 py-1.5 rounded-lg text-sm font-bold border transition-colors active:scale-[0.97] ' + (on ? 'bg-green-700 text-white border-green-800' : 'bg-white text-green-800 border-green-300 hover:bg-green-50') }, c.label);
+                  })),
+                h('div', { className: 'text-[12px] text-slate-600 mb-2 p-2 rounded-lg bg-green-50 border border-green-200 leading-snug' }, note),
+                // the living cell
+                h('div', { className: 'rounded-xl overflow-hidden border-2 border-slate-800', style: { background: '#04181d' } },
+                  h('canvas', { key: 'interior-' + ctype + '-' + (sel || 'none'), width: 760, height: 440, role: 'img',
+                    'aria-label': 'Cross-section of a living ' + ctype + ' cell. ' + (selOrg ? ('Selected: ' + selOrg.name + '. ' + selOrg.fn) : 'Tap an organelle, or use the buttons below, to learn what each one does.'),
+                    style: { width: '100%', height: 'auto', display: 'block', cursor: 'pointer' },
+                    onClick: function (e) { var cv = e.currentTarget, r = cv.getBoundingClientRect(); pick(interiorHitTest(ctype, (e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height)); },
+                    ref: function (cv) {
+                      if (!cv) return; var cx2d = cv.getContext && cv.getContext('2d'); if (!cx2d) return;
+                      var tt = { v: 0 };
+                      function frame() { if (!cv.isConnected) return; if (!reducedMo) tt.v += 0.016; try { drawCellInterior(cx2d, cv.width, cv.height, ctype, tt.v, sel, reducedMo); } catch (e) {} if (!reducedMo) requestAnimationFrame(frame); }
+                      frame();
+                    } })),
+                h('div', { className: 'text-[10.5px] text-slate-500 mt-1 leading-snug' }, __alloT('stem.cell.interior_caveat', 'Schematic, not to scale: organelle sizes and numbers are simplified (a real cell has hundreds of mitochondria), and this is one 2-D slice of a 3-D cell. Cells also specialize — this is a “typical” one.')),
+                // organelle legend (keyboard-accessible selection)
+                h('div', { className: 'flex flex-wrap gap-1.5 mt-2', role: 'group', 'aria-label': 'Organelles — tap to inspect' },
+                  orgKeys.map(function (k) {
+                    var o = CELL_ORGANELLES[k], on = sel === k;
+                    return h('button', { key: k, 'aria-pressed': on ? 'true' : 'false', onClick: function () { pick(k); }, className: 'px-2 py-1 rounded-md text-[11.5px] font-bold border transition-colors active:scale-[0.97] ' + (on ? 'text-white' : 'bg-white text-slate-700 hover:bg-slate-50'), style: on ? { background: o.color, borderColor: o.color } : { borderColor: o.color } },
+                      h('span', { 'aria-hidden': 'true', style: { color: on ? '#fff' : o.color } }, '● '), o.name);
+                  })),
+                h('div', { className: 'text-[11px] text-slate-500 mt-1' }, '🔎 ' + __alloT('stem.cell.explored', 'Explored') + ' ' + seen.filter(function (k) { return orgKeys.indexOf(k) >= 0 || ['cellWall', 'cellMembrane'].indexOf(k) >= 0; }).length + ' / ' + orgKeys.length + ' ' + __alloT('stem.cell.organelles', 'organelles in this cell')),
+                // selected organelle info
+                selOrg ? h('div', { className: 'mt-3 p-3 rounded-xl border-2 shadow-sm', style: { borderColor: selOrg.color, background: '#fff' }, role: 'status', 'aria-live': 'polite' },
+                  h('div', { className: 'flex items-center gap-2 mb-1' },
+                    h('span', { className: 'inline-block w-3 h-3 rounded-full', 'aria-hidden': 'true', style: { background: selOrg.color } }),
+                    h('span', { className: 'text-base font-black text-slate-800' }, selOrg.name)),
+                  h('div', { className: 'text-[13px] text-slate-700 leading-relaxed mb-1.5' }, selOrg.fn),
+                  h('div', { className: 'flex flex-wrap gap-1 items-center mb-1' },
+                    h('span', { className: 'text-[10.5px] font-bold text-slate-400 uppercase tracking-wide' }, __alloT('stem.cell.found_in', 'Found in') + ':'),
+                    ['animal', 'plant', 'bacterium'].map(function (tp) {
+                      var has = selOrg.types.indexOf(tp) >= 0;
+                      return h('span', { key: tp, className: 'text-[10.5px] font-bold px-1.5 py-0.5 rounded-full ' + (has ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-400 line-through') }, tp);
+                    })),
+                  selOrg.bust ? h('div', { className: 'mt-1.5 p-2 rounded-lg text-[12px] leading-snug', style: { background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.4)', color: '#92400e' } }, '⚠ ', h('strong', null, 'Myth-bust: '), selOrg.bust) : null
+                ) : h('div', { className: 'mt-3 p-3 rounded-xl border border-dashed border-slate-300 text-[12.5px] text-slate-500 text-center' }, __alloT('stem.cell.tap_organelle', 'Tap an organelle in the cell (or a button above) to see what it does — and which cells have it.'))
+              );
+            })()
 
             ,
 
