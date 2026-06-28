@@ -1489,7 +1489,21 @@
       // ── 3D Tools: Load Three.js on demand (Geometry Sandbox + Architecture Studio) ──
       React.useEffect(function () {
         if (stemLabTab !== 'explore' || (stemLabTool !== 'geoSandbox' && stemLabTool !== 'archStudio' && stemLabTool !== 'geometryWorld' && stemLabTool !== 'echolocation' && stemLabTool !== 'geologyExplorer')) return;
-        if (window.THREE) { setLabToolData(function (p) { return Object.assign({}, p, { _threeLoaded: true }); }); return; }
+        // THREE already present — but make sure OrbitControls came with it. This
+        // early-return used to skip OrbitControls whenever THREE was cached, so a
+        // 3D tool opened after the first got _threeLoaded with controls=null → the
+        // camera was never aimed (scene stuck in a corner, no orbit). If it's
+        // missing, load it first, THEN mark ready.
+        if (window.THREE) {
+          if (window.THREE.OrbitControls) { setLabToolData(function (p) { return Object.assign({}, p, { _threeLoaded: true }); }); return; }
+          var scOC = document.createElement('script');
+          scOC.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js';
+          scOC.async = true;
+          scOC.onload = function () { setLabToolData(function (p) { return Object.assign({}, p, { _threeLoaded: true }); }); };
+          scOC.onerror = function () { console.warn('[StemLab] OrbitControls failed to load, proceeding without orbit controls'); setLabToolData(function (p) { return Object.assign({}, p, { _threeLoaded: true }); }); };
+          document.head.appendChild(scOC);
+          return;
+        }
         var s = document.createElement('script');
         s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
         s.async = true;
