@@ -16019,7 +16019,7 @@ window.__pdfCropImage = function(imgId) {
 <main id="main-content" role="main">
 ${bodyContent}
 </main>
-<footer role="contentinfo" style="margin-top:3rem;padding-top:1rem;border-top:1px solid #e2e8f0;font-size:0.75rem;color:#64748b;">
+<footer role="contentinfo" style="margin-top:3rem;padding-top:1rem;border-top:1px solid #e2e8f0;font-size:0.75rem;color:#475569;">
 <p>This document was automatically transformed for accessibility compliance (WCAG 2.1 AA) by AlloFlow. Original: ${(_fileName || 'unknown')} (${pageCount} pages). Transformed: ${new Date().toLocaleDateString()}.</p>
 </footer>
 </body>
@@ -25020,7 +25020,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       ${instructionsHtml}
                       ${interactiveControlsHtml}
                       ${stripsHtml}
-                      ${answerKeyHtml}
+                      ${isTeacher ? answerKeyHtml : ''}
                   </div>
               `;
           }
@@ -25132,7 +25132,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   ${categoryCardsHtml}
                   ${interactiveControlsHtml}
                   ${stripsHtml}
-                  ${answerKeyHtml}
+                  ${isTeacher ? answerKeyHtml : ''}
               </div>
           `;
       } else if (item.type === 'dbq') {
@@ -25677,10 +25677,16 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           const feedbackBadge = feedbackCount > 0
               ? `<div style="margin-top:12px; padding:8px 12px; background:#f5f3ff; border-left:4px solid #8b5cf6; border-radius:4px; font-size:0.85em; color:#5b21b6;"><strong>AI Feedback:</strong> Student requested feedback ${feedbackCount}× on this entry${feedbackScore > 0 ? ` (best score: ${feedbackScore}/28 internal rubric)` : ''}. Their last attempt earned XP.</div>`
               : `<div style="margin-top:12px; padding:8px 12px; background:#f1f5f9; border-left:4px solid #94a3b8; border-radius:4px; font-size:0.85em; color:#475569; font-style:italic;">Student has not requested AI feedback on this entry.</div>`;
+          // Optional student-authored elaboration field (cross-template). Rendered
+          // once here so it can't become a per-template export gap.
+          const connectionsBlock = (d.connections && String(d.connections).trim())
+              ? `<div style="margin-top:10px; background:#f5f3ff; border-left:4px solid #8b5cf6; border-radius:4px; padding:10px;"><div style="font-size:0.75em; font-weight:bold; text-transform:uppercase; color:#5b21b6; margin-bottom:4px;">Connections &amp; Memory Hooks</div><div style="font-size:0.95em; color:#1e293b; line-height:1.5; white-space:pre-wrap;">${escapeHtml(d.connections)}</div></div>`
+              : '';
           return `
               <div class="section" id="${item.id}">
                   <div class="resource-header" style="border-left:4px solid ${ttColor};">${ttIcon} ${title} <span style="font-size:0.75em; font-weight:normal; color:#64748b; margin-left:8px;">(${ttLabel})</span></div>
                   ${renderRows()}
+                  ${connectionsBlock}
                   ${feedbackBadge}
               </div>
           `;
@@ -26573,6 +26579,13 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             <button type="button" class="alloflow-rt-btn" data-rt-theme="sepia" aria-pressed="false" title="Sepia (warm, low-glare)">\u{1F4DC} Sepia</button>
             <button type="button" class="alloflow-rt-btn" data-rt-theme="hc" aria-pressed="false" title="High Contrast (WCAG AAA)">◼ High Contrast</button>
           </div>
+          <div class="alloflow-reading-tools-group" role="group" aria-label="Text size">
+            <span class="alloflow-reading-tools-label">Text</span>
+            <button type="button" class="alloflow-rt-btn" data-rt-text="smaller" title="Smaller text" aria-label="Smaller text">A-</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-text="reset" title="Reset text size" aria-label="Reset text size">A</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-text="larger" title="Larger text" aria-label="Larger text">A+</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-text="spacing" title="Cycle line spacing" aria-label="Line spacing">Spacing</button>
+          </div>
           <div class="alloflow-reading-tools-group" role="group" aria-label="Annotations">
             <span class="alloflow-reading-tools-label">Annotate</span>
             <button type="button" class="alloflow-rt-btn" data-rt-anno="off" aria-pressed="true" title="Off">✖ Off</button>
@@ -26635,6 +26648,32 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               var btn = e.target && e.target.closest && e.target.closest('[data-rt-theme]');
               if (!btn) return;
               applyTheme(btn.getAttribute('data-rt-theme'), true);
+            });
+          })();
+        </script>
+        <script>
+          // Reading Tools - text size + line spacing (offline; event delegation).
+          (function () {
+            var KEY = 'alloflow-reader-text';
+            var SCALES = [0.9, 1, 1.15, 1.3, 1.5, 1.75];
+            var LEADS = [1.5, 1.8, 2.1];
+            var st = { s: 1, l: 0 };
+            try { var sv = JSON.parse(localStorage.getItem(KEY)); if (sv && typeof sv.s === "number") st = sv; } catch (e) {}
+            function apply(save) {
+              var host = document.getElementById('main-export-content') || document.body;
+              if (host) { host.style.fontSize = (SCALES[st.s] || 1) + 'em'; host.style.lineHeight = String(LEADS[st.l] || 1.5); }
+              if (save) { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
+            }
+            if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { apply(false); }); else apply(false);
+            document.addEventListener('click', function (e) {
+              var b = e.target && e.target.closest && e.target.closest('[data-rt-text]');
+              if (!b) return;
+              var a = b.getAttribute('data-rt-text');
+              if (a === 'larger') st.s = Math.min(SCALES.length - 1, st.s + 1);
+              else if (a === 'smaller') st.s = Math.max(0, st.s - 1);
+              else if (a === 'reset') { st.s = 1; st.l = 0; }
+              else if (a === 'spacing') st.l = (st.l + 1) % LEADS.length;
+              apply(true);
             });
           })();
         </script>

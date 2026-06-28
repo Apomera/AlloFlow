@@ -503,6 +503,10 @@ function ExportPreviewView(props) {
                       <input type="checkbox" checked={exportConfig.includeStudentResponses} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, includeStudentResponses: e.target.checked }))} className="rounded" />
                       📝 Student Responses
                     </label>
+                    <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
+                      <input type="checkbox" checked={exportConfig.singleFileHtml} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, singleFileHtml: e.target.checked }))} className="rounded" />
+                      📄 Single file (.html, no zip)
+                    </label>
                   </div>
                 </div>
 
