@@ -184,7 +184,11 @@
         if (window.AlloFlowUX) window.AlloFlowUX.toast((t && t('export_status.popup_blocked')) || 'Pop-up blocked — please allow pop-ups for this site to print.', 'error'); else alert((t && t('export_status.popup_blocked')) || 'Pop-up blocked — please allow pop-ups for this site to print.');
       }
     } else if (mode === 'html') {
-      if (window.JSZip) {
+      // Single-file option: skip the zip and download just the self-contained
+      // .html (images are base64-inlined), so teachers can email one file that
+      // offline students double-click. The zip path still bundles allo-project.json.
+      const _wantSingleFile = !!(exportConfig && exportConfig.singleFileHtml);
+      if (window.JSZip && !_wantSingleFile) {
         if (addToast) addToast((t && t('export_status.bundling_zip')) || 'Bundling export...', 'info');
         const zip = new window.JSZip();
         zip.file('index.html', htmlContent);

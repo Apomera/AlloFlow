@@ -474,12 +474,86 @@
             selectedCase: 'tacoma',
             selectedStep: 'define',
             quizIdx: 0, quizAnswers: [], quizSubmitted: false, quizCorrect: 0,
-            designName: '', designNotes: ''
+            designName: '', designNotes: '',
+            autoDriving: false
           }});
         });
         return h('div', { style: { padding: 24, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center' } }, __alloT('stem.bridgelab.initializing_bridge_lab', '🌉 Initializing Bridge Lab...'));
       }
       var d = labToolData.bridgeLab;
+
+      // ── Web Audio API Sound Effects Engine ──
+      var _bridgeACRef = React.useRef ? React.useRef(null) : { current: null };
+      function getBridgeAC() {
+        if (!_bridgeACRef.current) {
+          try { _bridgeACRef.current = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+        }
+        if (_bridgeACRef.current && _bridgeACRef.current.state === 'suspended') {
+          try { _bridgeACRef.current.resume(); } catch(e) {}
+        }
+        return _bridgeACRef.current;
+      }
+      function playBridgeTone(freq, dur, type, vol) {
+        var ac = getBridgeAC(); if (!ac) return;
+        try {
+          var osc = ac.createOscillator(); var gain = ac.createGain();
+          osc.type = type || 'sine'; osc.frequency.value = freq;
+          gain.gain.setValueAtTime(vol || 0.08, ac.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + (dur || 0.12));
+          osc.connect(gain); gain.connect(ac.destination);
+          osc.start(); osc.stop(ac.currentTime + (dur || 0.12));
+        } catch(e) {}
+      }
+      var playBridgeSound = function(type) {
+        try {
+          switch (type) {
+            case 'click':
+              playBridgeTone(600, 0.04, 'sine', 0.06);
+              break;
+            case 'drive':
+              playBridgeTone(140, 0.06, 'triangle', 0.05);
+              setTimeout(function() { playBridgeTone(180, 0.05, 'triangle', 0.04); }, 40);
+              break;
+            case 'creak':
+              playBridgeTone(220, 0.1, 'sawtooth', 0.05);
+              setTimeout(function() { playBridgeTone(260, 0.08, 'sawtooth', 0.04); }, 50);
+              break;
+            case 'collapse':
+              playBridgeTone(120, 0.25, 'sawtooth', 0.1);
+              playBridgeTone(90, 0.3, 'square', 0.08);
+              break;
+            case 'success':
+              playBridgeTone(523, 0.08, 'sine', 0.08);
+              setTimeout(function() { playBridgeTone(659, 0.08, 'sine', 0.08); }, 70);
+              setTimeout(function() { playBridgeTone(784, 0.12, 'sine', 0.1); }, 140);
+              break;
+            default:
+              playBridgeTone(440, 0.06, 'sine', 0.05);
+          }
+          if (window._alloHaptic) {
+            if (type === 'collapse') window._alloHaptic('wrong');
+            else if (type === 'success') window._alloHaptic('correct');
+            else window._alloHaptic('tap');
+          }
+        } catch(e) {}
+      };
+
+      // WCAG 4.1.3 Live Region announcement helper
+      var announceStatus = function(msg) {
+        try {
+          var lr = document.getElementById('allo-live-bridgelab');
+          if (!lr) {
+            lr = document.createElement('div');
+            lr.id = 'allo-live-bridgelab';
+            lr.setAttribute('aria-live', 'polite');
+            lr.setAttribute('aria-atomic', 'true');
+            lr.className = 'sr-only';
+            lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+            document.body.appendChild(lr);
+          }
+          lr.textContent = msg;
+        } catch(e) {}
+      };
 
       function upd(patch) {
         setLabToolData(function(prev) {
@@ -731,19 +805,37 @@
             );
           };
           var styleLabel = { warren: 'Warren', pratt: 'Pratt', howe: 'Howe', ktruss: 'K-truss' }[style] || 'Warren';
-          return h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, width: '100%', height: svgH, role: 'img', 'aria-labelledby': 'trussSvgT trussSvgD' },
+          return h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, width: '100%', height: svgH, role: 'img', 'aria-labelledby': 'trussSvgT trussSvgD', style: { background: 'linear-gradient(180deg, #090e1a 0%, #030712 100%)', borderRadius: 12, border: '1px solid var(--allo-stem-border, #1e293b)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', overflow: 'hidden' } },
             h('title', { id: 'trussSvgT' }, styleLabel + ' truss diagram'),
             h('desc', { id: 'trussSvgD' }, styleLabel + ' truss with ' + n + ' bays, span ' + d.span + ' meters, height ' + d.height + ' meters. Red members are in tension; blue members are in compression. Thickness shows magnitude of force.'),
+            h('defs', null,
+              h('linearGradient', { id: 'riverGrad', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                h('stop', { offset: '0%', stopColor: '#0284c7', stopOpacity: 0.2 }),
+                h('stop', { offset: '50%', stopColor: '#38bdf8', stopOpacity: 0.45 }),
+                h('stop', { offset: '100%', stopColor: '#0284c7', stopOpacity: 0.2 })
+              ),
+              h('linearGradient', { id: 'headlightGrad', x1: '0%', y1: '50%', x2: '100%', y2: '50%' },
+                h('stop', { offset: '0%', stopColor: '#fef08a', stopOpacity: 0.7 }),
+                h('stop', { offset: '100%', stopColor: '#fef08a', stopOpacity: 0 })
+              ),
+              h('filter', { id: 'nodeGlow', x: '-20%', y: '-20%', width: '140%', height: '140%' },
+                h('feGaussianBlur', { stdDeviation: '2', result: 'blur' }),
+                h('feComposite', { in: 'SourceGraphic', in2: 'blur', operator: 'over' })
+              )
+            ),
+            // Background Environment (Valley & River)
+            h('path', { d: 'M 0,' + ty(0) + ' L ' + (tx(0) - 15) + ',' + ty(0) + ' L ' + (tx(0) - 40) + ',' + svgH + ' L 0,' + svgH + ' Z', fill: '#1e293b' }),
+            h('path', { d: 'M ' + svgW + ',' + ty(0) + ' L ' + (tx(d.span) + 15) + ',' + ty(0) + ' L ' + (tx(d.span) + 40) + ',' + svgH + ' L ' + svgW + ',' + svgH + ' Z', fill: '#1e293b' }),
+            h('rect', { x: tx(0) - 15, y: ty(0), width: d.span * scale + 30, height: svgH - ty(0), fill: 'url(#riverGrad)' }),
+            // Water ripples
+            h('path', { d: 'M ' + tx(0) + ',' + (ty(0) + 18) + ' Q ' + (tx(d.span*0.25)) + ',' + (ty(0) + 14) + ' ' + (tx(d.span*0.5)) + ',' + (ty(0) + 18) + ' T ' + tx(d.span) + ',' + (ty(0) + 18), stroke: 'rgba(56,189,248,0.3)', strokeWidth: 1, fill: 'none' }),
             // Ground line
-            h('line', { x1: 0, y1: ty(0), x2: svgW, y2: ty(0), stroke: '#475569', strokeWidth: 1, strokeDasharray: '4 4' }),
+            h('line', { x1: 0, y1: ty(0), x2: svgW, y2: ty(0), stroke: '#475569', strokeWidth: 1.5, strokeDasharray: '4 4' }),
             // Members — pass member id so MOJ-exact coloring works
             bottomChord.map(function(m, i) { return renderMember(m, i, bottomChord.length, 'chord', 'BC' + i); }),
             topChord.map(function(m, i) { return renderMember(m, i, topChord.length, 'chord', 'TC' + i); }),
             verticals.map(function(m, i) { return renderMember(m, i, verticals.length, 'vert', 'V' + i); }),
             diagonals.map(function(m, i) {
-              // Diagonal IDs differ by truss style:
-              //   warren: DL0/DR0/DL1/DR1/... alternating (i even = DL{i/2}, i odd = DR{(i-1)/2})
-              //   pratt/howe: ED0, ED1, ID0, ID1, ... (we push ED0 first, then ED1, then IDs)
               var midDiag = null;
               if (style === 'warren') {
                 var di = Math.floor(i / 2);
@@ -755,49 +847,64 @@
               }
               return renderMember(m, i, diagonals.length, 'diag', midDiag);
             }),
-            // Joints
+            // Joints with metallic glow
             bottoms.concat(tops).map(function(j, i) {
-              return h('circle', { key: 'jt_' + i, cx: tx(j.x), cy: ty(j.y), r: 4, fill: '#fbbf24', stroke: '#78350f', strokeWidth: 1 });
+              return h('g', { key: 'jt_' + i, filter: 'url(#nodeGlow)' },
+                h('circle', { cx: tx(j.x), cy: ty(j.y), r: 4.5, fill: '#fbbf24', stroke: '#78350f', strokeWidth: 1.2 }),
+                h('circle', { cx: tx(j.x), cy: ty(j.y), r: 1.5, fill: '#ffffff' })
+              );
             }),
             // Support symbols at B0 and Bn
             (function() {
               var b0x = tx(0), bnx = tx(d.span), gy = ty(0);
               return [
-                // Pin support (fixed) at B0 — plain triangle
-                h('polygon', { key: 'sup0', points: (b0x - 8) + ',' + (gy + 12) + ' ' + (b0x + 8) + ',' + (gy + 12) + ' ' + b0x + ',' + (gy + 2), fill: '#94a3b8' }),
-                // Roller support at Bn — triangle sitting on rollers (free to move horizontally)
-                h('polygon', { key: 'supN', points: (bnx - 8) + ',' + (gy + 10) + ' ' + (bnx + 8) + ',' + (gy + 10) + ' ' + bnx + ',' + (gy + 2), fill: '#94a3b8' }),
-                h('circle', { key: 'supNr1', cx: bnx - 4, cy: gy + 13, r: 2.3, fill: '#94a3b8' }),
-                h('circle', { key: 'supNr2', cx: bnx + 4, cy: gy + 13, r: 2.3, fill: '#94a3b8' })
+                // Pin support (fixed) at B0
+                h('polygon', { key: 'sup0', points: (b0x - 10) + ',' + (gy + 14) + ' ' + (b0x + 10) + ',' + (gy + 14) + ' ' + b0x + ',' + (gy + 2), fill: '#64748b', stroke: '#334155', strokeWidth: 1 }),
+                // Roller support at Bn
+                h('polygon', { key: 'supN', points: (bnx - 10) + ',' + (gy + 10) + ' ' + (bnx + 10) + ',' + (gy + 10) + ' ' + bnx + ',' + (gy + 2), fill: '#64748b', stroke: '#334155', strokeWidth: 1 }),
+                h('circle', { key: 'supNr1', cx: bnx - 5, cy: gy + 14, r: 2.5, fill: '#cbd5e1' }),
+                h('circle', { key: 'supNr2', cx: bnx + 5, cy: gy + 14, r: 2.5, fill: '#cbd5e1' })
               ];
             })(),
-            // Load indicators
+            // Load indicators / Dynamic illuminated vehicle
             loadMode === 'vehicle' ? (function() {
               var vx = (d.vehiclePos != null ? d.vehiclePos : 0.5) * d.span;
               var vxScreen = tx(vx);
               var vTop = ty(d.height) - 14;
               return h('g', { key: 'vehicle' },
-                // Truck silhouette
-                h('rect', { x: vxScreen - 18, y: vTop - 10, width: 36, height: 12, rx: 2, fill: '#10b981', stroke: '#064e3b', strokeWidth: 1 }),
-                h('rect', { x: vxScreen - 14, y: vTop - 7, width: 14, height: 6, fill: '#0a0e1a' }),
-                h('circle', { cx: vxScreen - 10, cy: vTop + 4, r: 3, fill: '#0a0e1a' }),
-                h('circle', { cx: vxScreen + 10, cy: vTop + 4, r: 3, fill: '#0a0e1a' }),
-                h('line', { x1: vxScreen, y1: vTop + 2, x2: vxScreen, y2: ty(d.height) - 2, stroke: '#22c55e', strokeWidth: 1.5, strokeDasharray: '3 2' }),
-                h('text', { x: vxScreen, y: vTop - 14, textAnchor: 'middle', fill: '#86efac', fontSize: 10, fontWeight: 700 }, (d.vehicleLoad || 150) + ' kN')
+                // Headlight Beam Cone
+                h('polygon', { points: (vxScreen + 18) + ',' + (vTop - 3) + ' ' + (vxScreen + 60) + ',' + (vTop - 12) + ' ' + (vxScreen + 60) + ',' + (vTop + 8), fill: 'url(#headlightGrad)' }),
+                // Truck Body
+                h('rect', { x: vxScreen - 20, y: vTop - 12, width: 38, height: 14, rx: 3, fill: '#10b981', stroke: '#34d399', strokeWidth: 1.2 }),
+                // Cab window
+                h('rect', { x: vxScreen + 2, y: vTop - 9, width: 14, height: 6, rx: 1, fill: '#38bdf8', opacity: 0.9 }),
+                // Metallic Wheels
+                h('g', null,
+                  h('circle', { cx: vxScreen - 12, cy: vTop + 4, r: 3.5, fill: '#0f172a', stroke: '#94a3b8', strokeWidth: 1 }),
+                  h('circle', { cx: vxScreen - 12, cy: vTop + 4, r: 1, fill: '#ffffff' }),
+                  h('circle', { cx: vxScreen + 12, cy: vTop + 4, r: 3.5, fill: '#0f172a', stroke: '#94a3b8', strokeWidth: 1 }),
+                  h('circle', { cx: vxScreen + 12, cy: vTop + 4, r: 1, fill: '#ffffff' })
+                ),
+                // Load line down to bridge deck
+                h('line', { x1: vxScreen, y1: vTop + 4, x2: vxScreen, y2: ty(d.height) - 2, stroke: '#facc15', strokeWidth: 2, strokeDasharray: '3 2' }),
+                // Load Badge
+                h('g', null,
+                  h('rect', { x: vxScreen - 30, y: vTop - 28, width: 60, height: 16, rx: 8, fill: 'rgba(16,185,129,0.9)', stroke: '#34d399', strokeWidth: 1 }),
+                  h('text', { x: vxScreen, y: vTop - 16, textAnchor: 'middle', fill: '#ffffff', fontSize: 10, fontWeight: 800 }, (d.vehicleLoad || 150) + ' kN')
+                )
               );
             })() : tops.map(function(j, i) {
-              // Only show on actual TOP joints (not midJoints of K-truss)
               if (style === 'ktruss' && j.y < d.height) return null;
-              var jx = tx(j.x), jy = ty(j.y) - 20;
+              var jx = tx(j.x), jy = ty(j.y) - 22;
               return h('g', { key: 'load_' + i },
                 h('line', { x1: jx, y1: jy, x2: jx, y2: ty(j.y) - 2, stroke: '#22c55e', strokeWidth: 2 }),
-                h('polygon', { points: (jx - 4) + ',' + (ty(j.y) - 6) + ' ' + (jx + 4) + ',' + (ty(j.y) - 6) + ' ' + jx + ',' + (ty(j.y) - 1), fill: '#22c55e' }),
-                h('text', { x: jx, y: jy - 4, textAnchor: 'middle', fill: '#86efac', fontSize: 9 }, d.loadPerJoint + 'kN')
+                h('polygon', { points: (jx - 5) + ',' + (ty(j.y) - 7) + ' ' + (jx + 5) + ',' + (ty(j.y) - 7) + ' ' + jx + ',' + (ty(j.y) - 1), fill: '#22c55e' }),
+                h('text', { x: jx, y: jy - 4, textAnchor: 'middle', fill: '#86efac', fontSize: 9.5, fontWeight: 700 }, d.loadPerJoint + 'kN')
               );
             }),
             // Span dim line
             h('line', { x1: tx(0), y1: ty(0) + 28, x2: tx(d.span), y2: ty(0) + 28, stroke: '#64748b', strokeWidth: 1 }),
-            h('text', { x: (tx(0) + tx(d.span)) / 2, y: ty(0) + 40, textAnchor: 'middle', fill: '#94a3b8', fontSize: 10 }, 'Span = ' + d.span + ' m')
+            h('text', { x: (tx(0) + tx(d.span)) / 2, y: ty(0) + 40, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10, fontWeight: 600 }, 'Span = ' + d.span + ' m')
           );
         }
 
@@ -842,7 +949,20 @@
               ),
               loadMode === 'vehicle'
                 ? h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.6, padding: 8, background: 'rgba(245,158,11,0.10)', borderRadius: 6, border: '1px solid rgba(245,158,11,0.3)' } },
-                    h('strong', null, __alloT('stem.bridgelab.moving_load_analysis', 'Moving-load analysis: ')),
+                    h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 6 } },
+                      h('strong', null, __alloT('stem.bridgelab.moving_load_analysis', 'Moving-load analysis: ')),
+                      h('button', {
+                        onClick: function() {
+                          var next = !d.autoDriving;
+                          upd({ autoDriving: next, vehiclePos: next ? 0 : d.vehiclePos });
+                          if (next) {
+                            playBridgeSound('drive');
+                            announceStatus('Vehicle starting automated drive across bridge span');
+                          }
+                        },
+                        style: { padding: '5px 12px', borderRadius: 6, background: d.autoDriving ? '#dc2626' : '#10b981', border: 'none', color: '#ffffff', fontWeight: 700, fontSize: 11, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }
+                      }, d.autoDriving ? '⏸ Stop Drive' : '🚗 Auto-Drive Vehicle Across Bridge')
+                    ),
                     __alloT('stem.bridgelab.real_bridges_are_designed_by_sliding_t', 'real bridges are designed by sliding the worst possible vehicle across every point on the span and recording the maximum force in each member. The "influence line" of a member is how its force varies with the load\'s position. Each member has its own worst case — usually NOT in the same place as the worst case for any other member.')
                   )
                 : h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5, padding: 8 } }, __alloT('stem.bridgelab.uniform_mode_treats_the_load_as_equall', 'Uniform mode treats the load as equally distributed across all top joints — useful for studying the bridge under its own weight + typical dead loads.'))
@@ -1140,61 +1260,77 @@
           var angleAtSupport = Math.atan2(V, H) * 180 / Math.PI;
 
           // Sweet-spot guidance: real bridge sag/span ratios are usually 1/8 to 1/12
-          var sagRatioGood = sagRatio >= 1/14 && sagRatio <= 1/6;
-
           function catenarySvg() {
             var svgW = 600, svgH = 220;
             var padL = 40, padR = 40, padT = 30, padB = 50;
             var plotW = svgW - padL - padR;
             var plotH = svgH - padT - padB;
-            // Scale: x = 0..cSpan, y = 0..cSag (downward)
             function tx(x) { return padL + (x / cSpan) * plotW; }
             function ty(y) { return padT + (y / Math.max(cSag, 1)) * plotH; }
-            // Build cable points (parabola y = (4s/L²) x(L-x))
             var pts = [];
             for (var i = 0; i <= 50; i++) {
               var xx = (i / 50) * cSpan;
               var yy = (4 * cSag / (cSpan * cSpan)) * xx * (cSpan - xx);
               pts.push(tx(xx) + ',' + ty(yy));
             }
-            return h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, width: '100%', height: svgH, role: 'img', 'aria-labelledby': 'catTitle catDesc' },
+            return h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, width: '100%', height: svgH, role: 'img', 'aria-labelledby': 'catTitle catDesc', style: { background: 'linear-gradient(180deg, #090e1a 0%, #030712 100%)', borderRadius: 12, border: '1px solid var(--allo-stem-border, #1e293b)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', overflow: 'hidden' } },
               h('title', { id: 'catTitle' }, __alloT('stem.bridgelab.suspension_bridge_cable_shape', 'Suspension bridge cable shape')),
               h('desc', { id: 'catDesc' }, 'A parabolic cable hanging between two towers over a span of ' + cSpan + ' meters with a sag of ' + cSag + ' meters. Maximum tension at supports is ' + Tmax.toFixed(0) + ' kN per meter of bridge width.'),
-              // Towers
-              h('rect', { x: tx(0) - 6, y: padT - 10, width: 12, height: plotH + 15, fill: '#475569' }),
-              h('rect', { x: tx(cSpan) - 6, y: padT - 10, width: 12, height: plotH + 15, fill: '#475569' }),
-              h('text', { x: tx(0), y: 18, textAnchor: 'middle', fill: '#94a3b8', fontSize: 10 }, __alloT('stem.bridgelab.tower', 'Tower')),
-              h('text', { x: tx(cSpan), y: 18, textAnchor: 'middle', fill: '#94a3b8', fontSize: 10 }, __alloT('stem.bridgelab.tower_2', 'Tower')),
-              // Anchorages (ground)
+              h('defs', null,
+                h('linearGradient', { id: 'catWaterGrad', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                  h('stop', { offset: '0%', stopColor: '#0284c7', stopOpacity: 0.25 }),
+                  h('stop', { offset: '50%', stopColor: '#38bdf8', stopOpacity: 0.5 }),
+                  h('stop', { offset: '100%', stopColor: '#0284c7', stopOpacity: 0.25 })
+                ),
+                h('filter', { id: 'cableGlow', x: '-20%', y: '-20%', width: '140%', height: '140%' },
+                  h('feGaussianBlur', { stdDeviation: '1.5', result: 'blur' }),
+                  h('feComposite', { in: 'SourceGraphic', in2: 'blur', operator: 'over' })
+                )
+              ),
+              // River background
+              h('rect', { x: 0, y: ty(cSag) + 6, width: svgW, height: svgH - (ty(cSag) + 6), fill: 'url(#catWaterGrad)' }),
+              // Towers with metallic caps
+              h('rect', { x: tx(0) - 8, y: padT - 10, width: 16, height: plotH + 16, fill: '#334155', stroke: '#475569', strokeWidth: 1.5, rx: 2 }),
+              h('rect', { x: tx(0) - 10, y: padT - 12, width: 20, height: 4, fill: '#f8fafc', rx: 1 }),
+              h('rect', { x: tx(cSpan) - 8, y: padT - 10, width: 16, height: plotH + 16, fill: '#334155', stroke: '#475569', strokeWidth: 1.5, rx: 2 }),
+              h('rect', { x: tx(cSpan) - 10, y: padT - 12, width: 20, height: 4, fill: '#f8fafc', rx: 1 }),
+              h('text', { x: tx(0), y: 16, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10, fontWeight: 700 }, __alloT('stem.bridgelab.tower', 'Tower')),
+              h('text', { x: tx(cSpan), y: 16, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10, fontWeight: 700 }, __alloT('stem.bridgelab.tower_2', 'Tower')),
+              // Anchorages (ground blocks)
+              h('rect', { x: 4, y: padT + plotH, width: 30, height: 20, rx: 3, fill: '#475569', stroke: '#64748b', strokeWidth: 1 }),
+              h('rect', { x: svgW - 34, y: padT + plotH, width: 30, height: 20, rx: 3, fill: '#475569', stroke: '#64748b', strokeWidth: 1 }),
               h('line', { x1: 0, y1: padT + plotH + 12, x2: svgW, y2: padT + plotH + 12, stroke: '#475569', strokeWidth: 1, strokeDasharray: '4 4' }),
-              h('text', { x: 8, y: padT + plotH + 28, fill: '#94a3b8', fontSize: 10 }, __alloT('stem.bridgelab.anchor', 'Anchor')),
-              h('text', { x: svgW - 50, y: padT + plotH + 28, fill: '#94a3b8', fontSize: 10 }, __alloT('stem.bridgelab.anchor_2', 'Anchor')),
-              // Cable
-              h('polyline', { points: pts.join(' '), fill: 'none', stroke: '#fbbf24', strokeWidth: 2.5 }),
+              h('text', { x: 19, y: padT + plotH + 14, textAnchor: 'middle', fill: '#f1f5f9', fontSize: 9, fontWeight: 700 }, __alloT('stem.bridgelab.anchor', 'Anchor')),
+              h('text', { x: svgW - 19, y: padT + plotH + 14, textAnchor: 'middle', fill: '#f1f5f9', fontSize: 9, fontWeight: 700 }, __alloT('stem.bridgelab.anchor_2', 'Anchor')),
+              // Glowing Main Cable
+              h('polyline', { points: pts.join(' '), fill: 'none', stroke: '#facc15', strokeWidth: 3, filter: 'url(#cableGlow)' }),
+              // Backstay cables to anchorages
+              h('line', { x1: tx(0), y1: padT - 10, x2: 19, y2: padT + plotH, stroke: '#facc15', strokeWidth: 2 }),
+              h('line', { x1: tx(cSpan), y1: padT - 10, x2: svgW - 19, y2: padT + plotH, stroke: '#facc15', strokeWidth: 2 }),
               // Hangers (verticals from cable to deck)
               [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9].map(function(t, i) {
                 var xx = t * cSpan;
                 var yy = (4 * cSag / (cSpan * cSpan)) * xx * (cSpan - xx);
-                return h('line', { key: 'hg' + i, x1: tx(xx), y1: ty(yy), x2: tx(xx), y2: ty(cSag), stroke: '#64748b', strokeWidth: 0.7 });
+                return h('line', { key: 'hg' + i, x1: tx(xx), y1: ty(yy), x2: tx(xx), y2: ty(cSag), stroke: '#94a3b8', strokeWidth: 1 });
               }),
-              // Deck
-              h('rect', { x: tx(0), y: ty(cSag), width: plotW, height: 6, fill: '#475569' }),
-              h('text', { x: padL + plotW / 2, y: ty(cSag) + 18, textAnchor: 'middle', fill: '#94a3b8', fontSize: 10 }, 'Deck (load: ' + cLoad + ' kN/m)'),
+              // Reinforced Deck
+              h('rect', { x: tx(0) - 10, y: ty(cSag), width: plotW + 20, height: 8, rx: 2, fill: '#334155', stroke: '#64748b', strokeWidth: 1 }),
+              h('text', { x: padL + plotW / 2, y: ty(cSag) + 20, textAnchor: 'middle', fill: '#38bdf8', fontSize: 10, fontWeight: 700 }, 'Deck (load: ' + cLoad + ' kN/m)'),
               // Tension force vectors at left tower
               (function() {
                 var fx = tx(0), fy = ty(0);
-                var scale = 30; // pixels per kN magnitude unit
+                var scale = 30;
                 var Hpx = Math.min(scale, scale * (H / Tmax));
                 var Vpx = Math.min(scale, scale * (V / Tmax));
                 return h('g', null,
                   // Horizontal H (pulling left, away from bridge)
-                  h('line', { x1: fx, y1: fy, x2: fx - Hpx, y2: fy, stroke: '#ef4444', strokeWidth: 2 }),
+                  h('line', { x1: fx, y1: fy, x2: fx - Hpx, y2: fy, stroke: '#ef4444', strokeWidth: 2.5 }),
                   h('polygon', { points: (fx - Hpx) + ',' + (fy - 3) + ' ' + (fx - Hpx) + ',' + (fy + 3) + ' ' + (fx - Hpx - 5) + ',' + fy, fill: '#ef4444' }),
-                  h('text', { x: fx - Hpx - 10, y: fy + 4, textAnchor: 'end', fill: '#fca5a5', fontSize: 10, fontWeight: 700 }, 'H'),
+                  h('text', { x: fx - Hpx - 10, y: fy + 4, textAnchor: 'end', fill: '#fca5a5', fontSize: 10, fontWeight: 800 }, 'H'),
                   // Vertical V (pulling up)
-                  h('line', { x1: fx, y1: fy, x2: fx, y2: fy - Vpx, stroke: '#3b82f6', strokeWidth: 2 }),
+                  h('line', { x1: fx, y1: fy, x2: fx, y2: fy - Vpx, stroke: '#3b82f6', strokeWidth: 2.5 }),
                   h('polygon', { points: (fx - 3) + ',' + (fy - Vpx) + ' ' + (fx + 3) + ',' + (fy - Vpx) + ' ' + fx + ',' + (fy - Vpx - 5), fill: '#3b82f6' }),
-                  h('text', { x: fx + 6, y: fy - Vpx, fill: '#93c5fd', fontSize: 10, fontWeight: 700 }, 'V')
+                  h('text', { x: fx + 6, y: fy - Vpx, fill: '#93c5fd', fontSize: 10, fontWeight: 800 }, 'V')
                 );
               })()
             );

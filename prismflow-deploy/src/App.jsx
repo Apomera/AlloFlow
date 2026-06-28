@@ -4492,7 +4492,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = 'cd9f65ed';
+    var pluginCdnVersion = 'a23dae4d';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -7231,47 +7231,87 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
               showSpotlight(element, title, text);
           }
       };
+      const FALLBACK_HELP = "Help for this isn't written yet. If a tip here would help, let us know and we'll add one.";
+      const deriveTitle = (k) => {
+          if (!k) return 'This control';
+          const _rawTitle = t('help_mode.' + k + '_title', { defaultValue: '' });
+          if (_rawTitle && _rawTitle !== 'help_mode.' + k + '_title') return _rawTitle;
+          let title = k
+              .replace(/^(header_|tool_|export_|sidebar_|chat_|bot_|glossary_|quiz_|math_|word_sounds_|xp_|persona_|brainstorm_|dashboard_|outline_|faq_|timeline_|lesson_plan_|simplified_|scaffolds_|concept_sort_|adventure_|alignment_|source_|educator_hub_|pdf_audit_|ws_)/, '')
+              .replace(/_/g, ' ')
+              .replace(/\b\w/g, c => c.toUpperCase())
+              .replace(/\b(Udl|Xp|Tts|Dok|Qti|Faq|Pdf|Csv|Ai|Url|Ipa|Ell|Iep|Sel|Rti|Api|Ocr)\b/g, m => m.toUpperCase())
+              .replace(/\bBtn\b/g, 'Button').replace(/\bChk\b/g, 'Check').replace(/\bDesc\b/g, '').replace(/\bLbl\b/g, '').replace(/\bAria\b/g, '');
+          return (title || 'Help').replace(/\s{2,}/g, ' ').trim();
+      };
       const explicitHelp = e.target.closest('[data-help-key]');
       if (explicitHelp) {
         const key = explicitHelp.getAttribute('data-help-key');
         const _rawHelp = t('help_mode.' + key, { defaultValue: '' });
         const localizedHelp = (_rawHelp && _rawHelp !== 'help_mode.' + key) ? _rawHelp : '';
-        const helpText = localizedHelp || _helpLookup(key);
+        let helpText = localizedHelp || _helpLookup(key);
+        let helpTitle = deriveTitle(key);
         if (helpText) {
             // Translation-feedback hook: offer a "suggest a better translation" pill for
-            // this string when help-mode is on. Fully guarded — no-op if the module isn't
-            // loaded; never alters the existing help-popover behavior below.
+            // this string when help-mode is on. Fully guarded — no-op if the module isn't loaded.
             try {
                 if (currentUiLanguage && currentUiLanguage !== 'English' && window.AlloModules && window.AlloModules.TranslationFeedback) {
                     window.AlloModules.TranslationFeedback.offerFor({ key: 'help_mode.' + key, current: helpText, language: currentUiLanguage });
                 }
             } catch (_) {}
-            const deriveTitle = (k) => {
-                const _rawTitle = t('help_mode.' + k + '_title', { defaultValue: '' });
-                if (_rawTitle && _rawTitle !== 'help_mode.' + k + '_title') return _rawTitle;
-                let title = k
-                    .replace(/^(header_|tool_|export_|sidebar_|chat_|bot_|glossary_|quiz_|math_|word_sounds_|xp_|persona_|brainstorm_|dashboard_|outline_|faq_|timeline_|lesson_plan_|simplified_|scaffolds_|concept_sort_|adventure_|alignment_|source_)/, '')
-                    .replace(/_/g, ' ')
-                    .replace(/\b\w/g, c => c.toUpperCase())
-                    .replace(/\b(Udl|Xp|Tts|Dok|Qti|Faq|Pdf|Csv|Ai|Url|Ipa|Ell|Iep|Sel|Rti|Api)\b/g, m => m.toUpperCase())
-                    .replace(/\bBtn\b/g, 'Button').replace(/\bChk\b/g, 'Check').replace(/\bDesc\b/g, '').replace(/\bLbl\b/g, '').replace(/\bAria\b/g, '');
-                return (title || 'Help').replace(/\s{2,}/g, ' ').trim();
-            };
-            setTimeout(() => expandAndShow(explicitHelp, key, deriveTitle(key), helpText), 100);
         } else {
-             const idx = tourSteps.findIndex(s => s.id === key);
-             if (idx !== -1) {
-                 setTimeout(() => expandAndShow(explicitHelp, key, tourSteps[idx].title, tourSteps[idx].text), 100);
-             } else {
-                 warnLog(`[Help Mode] Missing string for key: ${key}`);
-             }
+            const idx = tourSteps.findIndex(s => s.id === key);
+            if (idx !== -1) { helpText = tourSteps[idx].text; helpTitle = tourSteps[idx].title; }
+            else {
+                // Graceful fallback: a documented element with no text shouldn't be a dead click.
+                warnLog(`[Help Mode] No help text for key: ${key} — showing graceful fallback`);
+                helpText = FALLBACK_HELP;
+            }
         }
+        setTimeout(() => expandAndShow(explicitHelp, key, helpTitle, helpText), 100);
         return;
+      }
+      // No data-help-key ancestor: if an interactive control was clicked, still show a
+      // friendly "no help yet" popup so help mode never feels broken. Plain background is left alone.
+      const interactive = e.target.closest('button, a, input, select, textarea, label, [role="button"], [role="link"], [role="checkbox"], [role="tab"], [role="switch"], [tabindex]');
+      if (interactive) {
+        const label = (interactive.getAttribute && (interactive.getAttribute('aria-label') || interactive.getAttribute('title'))) || (interactive.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 48);
+        showSpotlight(interactive, label || 'This control', FALLBACK_HELP);
       }
     };
     document.addEventListener('click', handleHelpClick, true);
     return () => document.removeEventListener('click', handleHelpClick, true);
   }, [isHelpMode, tourSteps]);
+  // Announce help mode on/off to screen readers (skip the initial mount).
+  const _helpAnnouncedRef = useRef(false);
+  useEffect(() => {
+    if (!_helpAnnouncedRef.current) { _helpAnnouncedRef.current = true; return; }
+    try {
+      if (window.alloAnnounce) window.alloAnnounce(isHelpMode
+        ? 'Help mode on. Select any control, or click it, to hear what it does. Press Escape or the question-mark button to exit.'
+        : 'Help mode off.', 'polite');
+    } catch (_) {}
+  }, [isHelpMode]);
+  // Keyboard support for help mode: "?" toggles it (outside text fields); Escape closes an
+  // open help popup, or exits help mode if none is open. (Buttons/links already trigger help
+  // via the native Enter/Space click, which the capture handler above intercepts.)
+  useEffect(() => {
+    const onHelpKeyDown = (e) => {
+      const inField = e.target && e.target.closest && e.target.closest('input, textarea, select, [contenteditable=""], [contenteditable="true"]');
+      if (e.key === '?' && !inField && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        handleToggleIsHelpMode();
+        return;
+      }
+      if (e.key === 'Escape' && isHelpMode) {
+        if (isSpotlightMode) { setIsSpotlightMode(false); }
+        else { handleToggleIsHelpMode(); }
+        e.preventDefault();
+      }
+    };
+    document.addEventListener('keydown', onHelpKeyDown, true);
+    return () => document.removeEventListener('keydown', onHelpKeyDown, true);
+  }, [isHelpMode, isSpotlightMode]);
   useEffect(() => {
     if (isHelpMode) {
       document.body.classList.add('help-mode-active');
@@ -7409,6 +7449,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           box-shadow: 0 0 0 3px #8b5cf6, 0 0 20px rgba(139, 92, 246, 0.6) !important;
           border-radius: 50%;
         }
+        @media (prefers-reduced-motion: reduce) {
+          .help-mode-active [data-help-key] { transition: none !important; }
+          .help-mode-active [data-help-key]:hover { transform: none !important; }
+        }
       `;
       document.head.appendChild(style);
       const disabledEls = document.querySelectorAll('button[disabled], input[disabled], textarea[disabled]');
@@ -7522,6 +7566,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       setSpotlightMessage({ title, text });
       spotlightOpenTimeRef.current = Date.now();
       setIsSpotlightMode(true);
+      // Screen-reader users get the help/tour text read immediately (the popup is otherwise silent).
+      try { if (window.alloAnnounce) window.alloAnnounce((title ? title + '. ' : '') + (text || ''), 'polite'); } catch (_) {}
   }, []);
   const getStageElementId = (stageName) => {
       const map = {
@@ -10848,7 +10894,8 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     includeMath: true,
     includeDbq: true,
     includeStudentResponses: true,
-    includeTeacherKey: true,
+    includeTeacherKey: false,
+    singleFileHtml: false,
     includeAudioSource: false,
     includeAudioLeveled: false,
     fontSize: 16,
@@ -27171,7 +27218,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         onClick={(e) => { try { e.preventDefault(); e.stopPropagation(); } catch (_) {} handleToggleIsHelpMode(); }}
         aria-label={isHelpMode ? t('help_mode.deactivate') : t('help_mode.activate')}
         title={isHelpMode ? t('help_mode.deactivate') : t('help_mode.activate')}
-        className={`fixed right-3 top-1/2 -translate-y-1/2 z-[10999] w-9 h-9 rounded-full flex items-center justify-center shadow-lg border-2 transition-all duration-300 no-print ${
+        className={`fixed right-3 top-1/2 -translate-y-1/2 z-[10999] w-9 h-9 rounded-full flex items-center justify-center shadow-lg border-2 transition-all duration-300 no-print motion-reduce:animate-none ${
           isHelpMode
             ? 'bg-yellow-400 border-yellow-500 text-slate-900 scale-110 animate-pulse shadow-yellow-400/50'
             : 'bg-white/90 border-indigo-300/60 text-indigo-400 hover:bg-white hover:border-indigo-400 hover:text-indigo-600 hover:scale-110 hover:shadow-xl backdrop-blur-sm animate-[help-breathe_3s_ease-in-out_infinite]'
