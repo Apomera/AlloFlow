@@ -1022,13 +1022,24 @@ function fixLandmarkFoundations(html) {
   var out = html;
 
   // 1) <main> landmark — wrap the body content if there's no <main>/role="main"; otherwise make sure the
-  //    existing <main> carries the canonical id so the skip-link below has a real target.
+  //    existing main landmark carries the canonical id so the skip-link below has a real target.
   var hasMain = /<main[\s>]/i.test(out) || /role\s*=\s*["']main["']/i.test(out);
-  if (!hasMain) {
+  // Landmark-nesting guard (2026-06-24): a <header> (banner) or <footer> (contentinfo) wrapped INSIDE
+  // <main> is INVALID (axe landmark-banner/contentinfo-is-top-level). If either exists with no <main>,
+  // SKIP the blanket wrap and let the advisory honestly flag the missing <main> rather than ship an
+  // invalid nested structure. <nav>/<aside> are valid inside <main>, so they don't block the wrap.
+  var _wouldNestLandmark = /<(?:header|footer)[\s>]/i.test(out);
+  if (!hasMain && !_wouldNestLandmark) {
     out = out.replace(/<body([^>]*)>/i, '<body$1>\n<main id="main-content" role="main">')
              .replace(/<\/body>/i, '</main>\n</body>');
-  } else if (!/id\s*=\s*["']main-content["']/i.test(out)) {
-    out = out.replace(/<main\b([^>]*)>/i, function (m, a) { return /\sid\s*=/i.test(a) ? m : '<main' + a + ' id="main-content">'; });
+  } else if (hasMain && !/id\s*=\s*["']main-content["']/i.test(out)) {
+    // Stamp the canonical id on the MAIN landmark — a <main> tag OR any element bearing role="main"
+    // (e.g. <div role="main">) — so the skip-link below has a real target. (Fix B, 2026-06-24)
+    if (/<main\b[^>]*>/i.test(out)) {
+      out = out.replace(/<main\b([^>]*)>/i, function (m, a) { return /\sid\s*=/i.test(a) ? m : '<main' + a + ' id="main-content">'; });
+    } else {
+      out = out.replace(/<(\w+)([^>]*\srole\s*=\s*["']main["'][^>]*)>/i, function (m, tag, a) { return /\sid\s*=/i.test(a) ? m : '<' + tag + a + ' id="main-content">'; });
+    }
   }
 
   // 2) Skip-to-content link → #main-content as the first body child (only meaningful once a #main-content

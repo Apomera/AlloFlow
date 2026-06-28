@@ -98,9 +98,56 @@ describe('fixLandmarkFoundations: Tier 1 deterministic foundations backstop', ()
   });
 });
 
+describe('A — landmark-nesting guard: never wrap an existing top-level banner/contentinfo inside <main>', () => {
+  it('does NOT wrap when the doc already has a top-level <header> (would nest a banner in main)', () => {
+    const d = dom(fixLandmarkFoundations('<html lang="en"><head><title>T</title></head><body><header>Site title</header><p>content</p></body></html>'));
+    expect(d.querySelectorAll('main').length).toBe(0); // no main forced (wrapping would nest the header)
+    expect(d.querySelector('header')).toBeTruthy();     // header preserved
+    expect(d.querySelector('main header')).toBeNull();  // and NOT nested inside a main
+  });
+  it('does NOT wrap when the doc has a top-level <footer> (contentinfo)', () => {
+    expect(dom(fixLandmarkFoundations('<html lang="en"><head><title>T</title></head><body><p>content</p><footer>© 2026</footer></body></html>')).querySelectorAll('main').length).toBe(0);
+  });
+  it('STILL wraps when the only landmark is <nav> (valid INSIDE <main>)', () => {
+    const d = dom(fixLandmarkFoundations('<html lang="en"><head><title>T</title></head><body><nav>links</nav><p>content</p></body></html>'));
+    expect(d.querySelectorAll('main').length).toBe(1);
+    expect(d.querySelector('main nav')).toBeTruthy();
+  });
+  it('regression: a plain doc with NO header/footer is still wrapped', () => {
+    expect(dom(fixLandmarkFoundations('<body><p>just content, no landmarks here at all today</p></body>')).querySelectorAll('main').length).toBe(1);
+  });
+});
+
+describe('B — skip-link target: stamp id="main-content" on a role="main" element, not just <main> tags', () => {
+  it('a <div role="main"> (no id) gets id="main-content" AND the skip-link gets a real target', () => {
+    const d = dom(fixLandmarkFoundations('<html lang="en"><head><title>T</title></head><body><div role="main"><h1>Doc</h1><p>x</p></div></body></html>'));
+    expect(d.querySelector('[role="main"]').id).toBe('main-content');
+    expect(d.querySelector('a[href="#main-content"]')).toBeTruthy();
+  });
+  it('a plain <main> (no role, no id) still gets the id (existing behavior preserved)', () => {
+    expect(dom(fixLandmarkFoundations('<html lang="en"><head><title>T</title></head><body><main><p>x</p></main></body></html>')).querySelector('main').id).toBe('main-content');
+  });
+  it('does not re-stamp when id="main-content" already exists', () => {
+    expect(dom(fixLandmarkFoundations('<html lang="en"><head><title>T</title></head><body><main id="main-content"><p>x</p></main></body></html>')).querySelectorAll('#main-content').length).toBe(1);
+  });
+});
+
 describe('anti-drift: fixLandmarkFoundations is wired into the deterministic WCAG pass', () => {
   it('is defined and called (first) in runDeterministicWcagFixes', () => {
     expect(dp).toContain('function fixLandmarkFoundations(html)');
     expect(dp).toContain('result = fixLandmarkFoundations(result);');
+  });
+  it('A: the landmark-nesting guard ships', () => {
+    expect(dp).toContain('var _wouldNestLandmark');
+    expect(dp).toContain('Landmark-nesting guard');
+  });
+  it('B: the id-stamp also handles a role="main" element', () => {
+    expect(dp).toContain('any element bearing role="main"');
+  });
+  it('C: the advisory-chip i18n keys exist in ui_strings.js', () => {
+    const ui = readFileSync(resolve(process.cwd(), 'ui_strings.js'), 'utf8');
+    expect(ui).toContain('"foundations": "HTML foundations"');
+    expect(ui).toContain('"foundations_tips"');
+    expect(ui).toContain('"foundations_advisory_title"');
   });
 });

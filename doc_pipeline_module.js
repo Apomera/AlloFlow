@@ -1024,13 +1024,24 @@ function fixLandmarkFoundations(html) {
   var out = html;
 
   // 1) <main> landmark — wrap the body content if there's no <main>/role="main"; otherwise make sure the
-  //    existing <main> carries the canonical id so the skip-link below has a real target.
+  //    existing main landmark carries the canonical id so the skip-link below has a real target.
   var hasMain = /<main[\s>]/i.test(out) || /role\s*=\s*["']main["']/i.test(out);
-  if (!hasMain) {
+  // Landmark-nesting guard (2026-06-24): a <header> (banner) or <footer> (contentinfo) wrapped INSIDE
+  // <main> is INVALID (axe landmark-banner/contentinfo-is-top-level). If either exists with no <main>,
+  // SKIP the blanket wrap and let the advisory honestly flag the missing <main> rather than ship an
+  // invalid nested structure. <nav>/<aside> are valid inside <main>, so they don't block the wrap.
+  var _wouldNestLandmark = /<(?:header|footer)[\s>]/i.test(out);
+  if (!hasMain && !_wouldNestLandmark) {
     out = out.replace(/<body([^>]*)>/i, '<body$1>\n<main id="main-content" role="main">')
              .replace(/<\/body>/i, '</main>\n</body>');
-  } else if (!/id\s*=\s*["']main-content["']/i.test(out)) {
-    out = out.replace(/<main\b([^>]*)>/i, function (m, a) { return /\sid\s*=/i.test(a) ? m : '<main' + a + ' id="main-content">'; });
+  } else if (hasMain && !/id\s*=\s*["']main-content["']/i.test(out)) {
+    // Stamp the canonical id on the MAIN landmark — a <main> tag OR any element bearing role="main"
+    // (e.g. <div role="main">) — so the skip-link below has a real target. (Fix B, 2026-06-24)
+    if (/<main\b[^>]*>/i.test(out)) {
+      out = out.replace(/<main\b([^>]*)>/i, function (m, a) { return /\sid\s*=/i.test(a) ? m : '<main' + a + ' id="main-content">'; });
+    } else {
+      out = out.replace(/<(\w+)([^>]*\srole\s*=\s*["']main["'][^>]*)>/i, function (m, tag, a) { return /\sid\s*=/i.test(a) ? m : '<' + tag + a + ' id="main-content">'; });
+    }
   }
 
   // 2) Skip-to-content link → #main-content as the first body child (only meaningful once a #main-content
@@ -26638,6 +26649,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           (function () {
             // Storage key — same scheme as the existing interactive-textarea
             // autosave so different exports don't collide.
+            function __annoInit() {
             var docTitle = (document.title || 'doc').slice(0, 40);
             var bodyLen = (document.body.textContent || '').length;
             // Per-student namespace on SHARED devices: localStorage is per-browser-profile, so
@@ -27638,6 +27650,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                 render();
               });
             });
+            }
+            if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', __annoInit); } else { __annoInit(); }
           })();
         </script>
         <main id="main-export-content" role="main">
@@ -27662,6 +27676,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         </div>
         </main>
         ${_submissionSaveButton}
+        <div id="alloflow-savejson-cta" style="margin:32px auto 16px;text-align:center;padding:20px;background:#eef2ff;border:2px solid #c7d2fe;border-radius:12px;max-width:600px;break-inside:avoid;page-break-inside:avoid;">
+          <p style="margin:0 0 12px 0;font-size:1.05rem;color:#3730a3;font-weight:700;">Done with your work?</p>
+          <p style="margin:0 0 16px 0;font-size:0.9rem;color:#475569;">Save a file of your answers and send it to your teacher.</p>
+          <button type="button" id="alloflow-savejson-btn" style="padding:12px 28px;background:#4f46e5;color:white;border:none;border-radius:10px;font-weight:700;font-size:1rem;cursor:pointer;box-shadow:0 2px 6px rgba(79,70,229,0.3);">&#128190; Save my answers</button>
+          <p style="margin:12px 0 0 0;font-size:0.75rem;color:#64748b;">Saves a .json file your teacher opens in AlloFlow.</p>
+        </div>
         <footer role="contentinfo" style="text-align:center;color:#64748b;font-size:0.8rem;margin-top:3rem;padding:24px 0;border-top:1px solid #e2e8f0;">
             <p style="margin:0;">${t('output.generated_via')}</p>
         </footer>
@@ -28140,6 +28160,36 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     });
                 })();
                 ${_submissionSaveHandler}
+                // -- Plain-JSON 'Save my answers' (always available; offline, no class key needed). Same payload shape as a decrypted submission so the Inbox parses it natively. --
+                (function() {
+                    var pbtn = document.getElementById('alloflow-savejson-btn');
+                    if (!pbtn) return;
+                    var pcta = document.getElementById('alloflow-savejson-cta');
+                    if (document.getElementById('alloflow-save-submission-btn')) { if (pcta) pcta.style.display = 'none'; return; }
+                    if (document.querySelectorAll('.interactive-textarea, .question[data-correct]').length === 0) { if (pcta) pcta.style.display = 'none'; return; }
+                    var _pcollect = function() {
+                        var out = {};
+                        var prefixes = ['allo-ta:' + _docKey + ':', 'allo-bx:' + _docKey + ':'];
+                        try { for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (!k) continue; for (var p = 0; p < prefixes.length; p++) { if (k.indexOf(prefixes[p]) === 0) { out[k] = localStorage.getItem(k); break; } } } } catch (e) {}
+                        document.querySelectorAll('.question[data-correct]').forEach(function(q, idx) { var ch = q.querySelector('input[type=\"radio\"]:checked'); if (ch) { out['allo-mcq:' + (ch.getAttribute('name') || ('q' + idx))] = ch.value; } });
+                        return out;
+                    };
+                    pbtn.addEventListener('click', function() {
+                        var up = new URLSearchParams(window.location.search);
+                        var nick = up.get('nickname') || prompt('Enter your name or nickname so your teacher knows this is yours:');
+                        if (!nick) return; nick = String(nick).trim().slice(0, 60); if (!nick) return;
+                        var payload = { schemaVersion: 1, nickname: nick, docTitle: document.title || 'Worksheet', timestamp: new Date().toISOString(), responses: _pcollect() };
+                        try {
+                            var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+                            var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+                            a.download = (nick.replace(/[^a-z0-9]+/gi, '_').slice(0, 40) || 'student') + '-answers-' + new Date().toISOString().slice(0, 10) + '.json';
+                            document.body.appendChild(a); a.click();
+                            setTimeout(function() { if (a.parentNode) a.parentNode.removeChild(a); URL.revokeObjectURL(a.href); }, 200);
+                            pbtn.textContent = 'Saved! Send the file to your teacher';
+                            setTimeout(function() { pbtn.textContent = 'Save my answers'; }, 2600);
+                        } catch (e) { alert('Could not save your answers: ' + e.message); }
+                    });
+                })();
             });
         </script>
         ${_brandFooterHTML}
