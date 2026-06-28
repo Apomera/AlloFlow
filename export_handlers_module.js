@@ -112,7 +112,10 @@
     const callTTS = opts.callTTS, selectedVoice = opts.selectedVoice, addToast = opts.addToast;
     const doc = root.ownerDocument || document;
     const sections = root.querySelectorAll('[data-ka-readable]');
-    if (!sections.length) return;
+    if (!sections.length) {
+      if (addToast) addToast('No reading passages in this document to read aloud — exporting without audio.', 'info');
+      return;
+    }
     if (addToast) addToast('Generating read-aloud audio... this may take a moment.', 'info');
     for (let si = 0; si < sections.length; si++) {
       const sec = sections[si];
@@ -142,8 +145,23 @@
       for (let k = 0; k < items.length; k++) {
         let au = null;
         try { au = await callTTS(items[k].text, selectedVoice || 'Puck', 1); } catch (e) { au = null; }
-        if (au && typeof au === 'string' && au.indexOf('data:') === 0) {
-          const a = doc.createElement('audio'); a.setAttribute('preload', 'none'); a.setAttribute('data-ka-s', String(items[k].idx)); a.src = au;
+        if (!au || typeof au !== 'string') continue;
+        let dataUrl = null;
+        if (au.indexOf('data:') === 0) {
+          dataUrl = au;
+        } else {
+          // callTTS returns a blob: object URL (session-scoped, in-memory). Fetch
+          // it and convert to a base64 data: URL so the clip embeds in the file and
+          // plays fully offline after download.
+          try {
+            const _resp = await fetch(au);
+            const _blob = await _resp.blob();
+            dataUrl = await new Promise((res, rej) => { const fr = new FileReader(); fr.onloadend = () => res(fr.result); fr.onerror = () => rej(new Error('read')); fr.readAsDataURL(_blob); });
+          } catch (e) { dataUrl = null; }
+          if (au.indexOf('blob:') === 0) { try { URL.revokeObjectURL(au); } catch (e) {} }
+        }
+        if (dataUrl && typeof dataUrl === 'string' && dataUrl.indexOf('data:') === 0) {
+          const a = doc.createElement('audio'); a.setAttribute('preload', 'none'); a.setAttribute('data-ka-s', String(items[k].idx)); a.src = dataUrl;
           abox.appendChild(a);
         }
       }
