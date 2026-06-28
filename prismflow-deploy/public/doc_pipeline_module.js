@@ -23428,7 +23428,16 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               const txt = String(html)
                   .replace(/<\/(p|div|h[1-6]|li)>/gi, '\n\n').replace(/<br\s*\/?\>/gi, '\n')
                   .replace(/<[^>]+>/g, '').replace(/&nbsp;/gi, ' ')
-                  .replace(/&amp;/gi, '&').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').trim();
+                  .replace(/&amp;/gi, '&').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>')
+                  // Reuse the app's TTS cleaning so the voice never reads markdown
+                  // symbols aloud. Pair-aware order (bold/__ before italic/_), then
+                  // strike/code/link(text only)/heading/list markers. (tts_source.jsx)
+                  .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+                  .replace(/\*\*([^*]+)\*\*/g, '$1').replace(/__([^_]+)__/g, '$1')
+                  .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1$2').replace(/(^|[^_])_([^_\n]+)_(?!_)/g, '$1$2')
+                  .replace(/~~([^~]+)~~/g, '$1').replace(/`([^`\n]+)`/g, '$1')
+                  .replace(/^#{1,6}\s+/gm, '').replace(/^\s*\d+\.\s+/gm, '').replace(/^\s*[-*•]\s+/gm, '')
+                  .trim();
               const paras = txt.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
               let _ki = 0;
               const body = paras.map(p => {
