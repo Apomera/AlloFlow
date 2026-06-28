@@ -111,12 +111,45 @@
   const _alloKaraokeProcess = async (root, opts) => {
     const callTTS = opts.callTTS, selectedVoice = opts.selectedVoice, addToast = opts.addToast;
     const doc = root.ownerDocument || document;
-    const sections = root.querySelectorAll('[data-ka-readable]');
+    let sections = root.querySelectorAll('[data-ka-readable]');
+    if (!sections.length) {
+      // Fallback (the CDN may still serve an older doc without the tags): detect
+      // reading passages by content — .section blocks of real prose with no
+      // interactive widgets (quizzes, blanks, tables, visual panels).
+      const _all = root.querySelectorAll('.section');
+      const _picked = [];
+      for (let _qi = 0; _qi < _all.length; _qi++) {
+        const _s = _all[_qi];
+        if (_s.querySelector('input, textarea, .question, table, .quiz-box, .interactive-textarea, [data-correct], .vp-panel, .allo-ka-passage')) continue;
+        const _ps = _s.querySelectorAll('p');
+        let _len = 0;
+        for (let _pj = 0; _pj < _ps.length; _pj++) _len += (_ps[_pj].textContent || '').trim().length;
+        if (_ps.length && _len > 180) _picked.push(_s);
+      }
+      sections = _picked;
+    }
     if (!sections.length) {
       if (addToast) addToast('No reading passages in this document to read aloud — exporting without audio.', 'info');
       return;
     }
     if (addToast) addToast('Generating read-aloud audio... this may take a moment.', 'info');
+    // Self-contained highlighter + CSS — inject so the file works even when the
+    // CDN serves an older doc_pipeline that lacks them. Idempotent at runtime via
+    // window.__alloKaBound (a freshly-propagated doc highlighter sets it too).
+    try {
+      const _head = root.querySelector('head') || root;
+      const _body = root.querySelector('body') || root;
+      if (!root.querySelector('#allo-ka-style')) {
+        const _st = doc.createElement('style'); _st.id = 'allo-ka-style';
+        _st.textContent = '.allo-ka-passage .ka-s{transition:background-color .12s ease,box-shadow .12s ease;border-radius:3px;}.allo-ka-passage .ka-s.ka-on{background-color:#fde047;color:#1e293b;box-shadow:0 0 0 3px #fde047;}html[data-alloflow-theme="dark"] .allo-ka-passage .ka-s.ka-on{background-color:#ca8a04;color:#fff;box-shadow:0 0 0 3px #ca8a04;}.allo-ka-play:hover{filter:brightness(1.08);}@media print{.allo-ka-bar{display:none !important;}}';
+        _head.appendChild(_st);
+      }
+      if (!root.querySelector('#allo-ka-script')) {
+        const _sc = doc.createElement('script'); _sc.id = 'allo-ka-script';
+        _sc.textContent = `(function(){if(window.__alloKaBound)return;window.__alloKaBound=true;var active=null;function clearHi(s){for(var i=0;i<s.length;i++)s[i].classList.remove("ka-on");}function stop(){if(!active)return;try{var a=active.audios[active.idx];if(a){a.pause();a.onended=null;}}catch(e){}clearHi(active.spans);if(active.btn)active.btn.textContent="\u{1F50A} Read aloud";active=null;}function step(state,i){if(!active||active!==state)return;if(i>=state.audios.length){stop();return;}state.idx=i;var a=state.audios[i];if(!a){step(state,i+1);return;}var sidx=a.getAttribute("data-ka-s");clearHi(state.spans);for(var k=0;k<state.spans.length;k++){if(sidx!==null&&state.spans[k].getAttribute("data-ka-s")===sidx)state.spans[k].classList.add("ka-on");}try{a.currentTime=0;}catch(e){}a.onended=function(){step(state,i+1);};var p=a.play();if(p&&p.catch)p.catch(function(){stop();});}document.addEventListener("click",function(e){var btn=e.target&&e.target.closest&&e.target.closest(".allo-ka-play");if(!btn)return;if(active){stop();return;}var id=btn.getAttribute("data-ka-for");var box=document.querySelector('.allo-ka-audios[data-ka-for="'+id+'"]');var sec=btn.closest(".section")||document;var spans=Array.prototype.slice.call(sec.querySelectorAll(".ka-s"));var audios=box?Array.prototype.slice.call(box.querySelectorAll("audio")):[];if(!audios.length||!spans.length)return;btn.textContent="⏹ Stop";active={audios:audios,spans:spans,idx:0,btn:btn};step(active,0);});})();`;
+        _body.appendChild(_sc);
+      }
+    } catch (e) { /* injection best-effort */ }
     for (let si = 0; si < sections.length; si++) {
       const sec = sections[si];
       const ps = sec.querySelectorAll('p');
