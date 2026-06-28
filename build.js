@@ -1410,11 +1410,15 @@ content = content.replace(LOAD_MODULE_RE, (match, moduleName, currentUrl) => {
         // Point to local file for hot-reloading during development
         newUrl = `./${moduleDef.filename}`;
     } else {
-        // Production: Cloudflare Pages serves the file from its edge network.
-        // No @hash needed — Cloudflare auto-invalidates by content on each push.
+        // Production: Cloudflare Pages serves from its edge network, which caches
+        // by filename and can serve a STALE copy of large stable-named files — the
+        // 1.9MB doc_pipeline_module.js got stuck across deploys while small modules
+        // refreshed. Append the deploy hash as a cache-buster so every deploy is a
+        // NEW URL the edge has never cached → always fresh. (The earlier "Cloudflare
+        // auto-invalidates by content" assumption was false for the big file.)
         // moduleDef.cdnBase (legacy jsdelivr URL) is left in the MODULES table
         // but unused; kept for diff readability if we ever need to switch back.
-        newUrl = `${CLOUDFLARE_CDN_BASE}/${moduleDef.filename}`;
+        newUrl = `${CLOUDFLARE_CDN_BASE}/${moduleDef.filename}?v=${gitHash}`;
     }
 
     replacementCount++;
