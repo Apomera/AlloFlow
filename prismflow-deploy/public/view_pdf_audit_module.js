@@ -6136,6 +6136,16 @@ Return ONLY JSON:
         _structuralFoundations.checked ? "/" + _structuralFoundations.checked : "",
         " ",
         t("pdf_audit.dashboard.foundations") || "HTML foundations"
+      ), _structuralFoundations && Array.isArray(_structuralFoundations.advisory) && _structuralFoundations.advisory.length > 0 && /* @__PURE__ */ React.createElement(
+        "span",
+        {
+          className: "px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap bg-amber-100 text-amber-800",
+          title: (t("pdf_audit.dashboard.foundations_advisory_title") || "Best-practice structure recommendations \u2014 these IMPROVE the document outline / landmarks but are NOT WCAG failures and are NOT counted in the score (axe\u2019s region / page-has-heading-one / heading-order are best-practice rules). Recommendations:") + " " + _structuralFoundations.advisory.map((a) => a.label).join("  \u2022  ")
+        },
+        "\u{1F4A1} ",
+        _structuralFoundations.advisory.length,
+        " ",
+        t("pdf_audit.dashboard.foundations_tips") || "best-practice tip(s)"
       ), veraPdfBusy && /* @__PURE__ */ React.createElement("span", { className: "px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap bg-indigo-100 text-indigo-700", title: t("pdf_audit.pdfua_badge.validating") || "Validating PDF/UA-1 (ISO 14289-1) with veraPDF\u2026" }, "\u23F3 ", t("pdf_audit.dashboard.pdfua_validating") || "PDF/UA: validating\u2026"), !veraPdfBusy && lastTaggedValidation && (() => {
         const _v = lastTaggedValidation.veraPdf;
         const _pev = lastTaggedValidation.postExportValidator && lastTaggedValidation.postExportValidator.summary;

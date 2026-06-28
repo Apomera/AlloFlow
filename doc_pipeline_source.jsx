@@ -96,8 +96,23 @@ var _alloStructuralFoundations = function (html) {
   if (/<figcaption[\s>]/.test(lc)) present.push('Figure captions provide image descriptions');
   if (/<label[\s>]/.test(lc) || /aria-label/.test(lc)) present.push('Form elements have associated labels');
   if (/role="(main|navigation|banner|contentinfo|complementary)"/.test(lc)) present.push('ARIA landmark roles are used for page structure');
+  // ADVISORY (best-practice, NOT WCAG): the structural gaps the WCAG-tagged audit can't see — axe's
+  // region / landmark-one-main / page-has-heading-one / heading-order are best-practice rules that
+  // runAxeAudit never loads, so the re-audit is silent on them. Surfaced as RECOMMENDATIONS only (never
+  // counted in the conformance score), so the report can honestly say what's missing AND confirm the Tier-1
+  // foundations + Tier-2a title→h1 actually landed, instead of staying silent on everything outside WCAG.
+  // Deterministic (presence-based) on purpose: more reliable than a second axe iframe pass, and it maps
+  // straight onto the foundations we add. (2026-06-24)
+  var advisory = [];
+  var _mainCount = (lc.match(/<main[\s>]/g) || []).length;
+  if (_mainCount === 0 && !/role="main"/.test(lc)) advisory.push({ id: 'landmark-main', label: 'No <main> landmark — the primary content should sit inside <main> so screen-reader users can skip straight to it.' });
+  else if (_mainCount > 1) advisory.push({ id: 'landmark-one-main', label: 'More than one <main> landmark — a document should have exactly one.' });
+  var _bodyTextLen = htmlContent.replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().length;
+  if (!/<h1[\s>]/.test(lc) && (/<h[2-6][\s>]/.test(lc) || _bodyTextLen > 400)) advisory.push({ id: 'page-has-heading-one', label: 'No level-1 heading (<h1>) — there is real content but no top-level title heading. Add an <h1> (e.g. promote the document title via “Suggest”).' });
+  var _ho = _headingOutlineIssue(htmlContent);
+  if (_ho.skip) advisory.push({ id: 'heading-order', label: 'Heading levels skip (e.g. an <h2> is followed by an <h4>) — keep the outline sequential so the hierarchy reads cleanly.' });
   // checked = the number of distinct foundation TYPES this looks for (the denominator for "N of M present").
-  var _foundations = { present: present, checked: 18 };
+  var _foundations = { present: present, checked: 18, advisory: advisory };
   return _foundations;
 };
 // ── Deterministic contrast PAIR fixer (2026-06-21) ──

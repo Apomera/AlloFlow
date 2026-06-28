@@ -7250,6 +7250,16 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 🏗️ {_structuralFoundations.present.length}{_structuralFoundations.checked ? '/' + _structuralFoundations.checked : ''} {t('pdf_audit.dashboard.foundations') || 'HTML foundations'}
                               </span>
                             )}
+                            {/* Best-practice STRUCTURE recommendations (advisory, NOT WCAG, never scored): the gaps the
+                                WCAG-tagged re-audit can't see — no <main>, no <h1>, heading-order skips. Surfaced honestly
+                                so "0 WCAG issues" can't imply a perfect outline, and so a teacher can see the Tier-1/2a
+                                fixes land (the chip shrinks as they're applied). (2026-06-24) */}
+                            {_structuralFoundations && Array.isArray(_structuralFoundations.advisory) && _structuralFoundations.advisory.length > 0 && (
+                              <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap bg-amber-100 text-amber-800"
+                                title={(t('pdf_audit.dashboard.foundations_advisory_title') || 'Best-practice structure recommendations — these IMPROVE the document outline / landmarks but are NOT WCAG failures and are NOT counted in the score (axe’s region / page-has-heading-one / heading-order are best-practice rules). Recommendations:') + ' ' + _structuralFoundations.advisory.map((a) => a.label).join('  •  ')}>
+                                💡 {_structuralFoundations.advisory.length} {t('pdf_audit.dashboard.foundations_tips') || 'best-practice tip(s)'}
+                              </span>
+                            )}
                             {/* Distinct PDF/UA verdict for the EXPORTED tagged PDF — separate from the content score above.
                                 Prefers the independent veraPDF verdict; falls back to the byte/self-check. A failing
                                 PDF/UA chip never lets a green content chip stand alone (the inconsistency we fixed). */}
