@@ -29,6 +29,14 @@
   var spotlightMessage = props.spotlightMessage;
   var spotlightOpenTimeRef = props.spotlightOpenTimeRef;
   var setIsSpotlightMode = props.setIsSpotlightMode;
+  // Move focus onto the popup when it opens so screen-reader and keyboard users land on the
+  // help/tour text (the panel has role=dialog + aria-label). Escape is handled by the host.
+  var panelRef = React.useRef(null);
+  React.useEffect(function () {
+    try {
+      if (panelRef.current) panelRef.current.focus();
+    } catch (e) {}
+  }, []);
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     "data-help-ignore": "true",
     className: "fixed inset-0 z-[10998] pointer-events-none bg-black/5",
@@ -51,7 +59,12 @@
     }
   }, /*#__PURE__*/React.createElement("div", {
     id: "spotlight-message-panel",
-    className: "bg-slate-900/95 backdrop-blur-2xl p-6 rounded-2xl shadow-[0_0_40px_rgba(139,92,246,0.3)] border border-white/10 ring-1 ring-white/20 relative overflow-hidden group transition-all duration-300 hover:shadow-[0_0_60px_rgba(139,92,246,0.5)]"
+    ref: panelRef,
+    tabIndex: -1,
+    role: "dialog",
+    "aria-modal": "false",
+    "aria-label": spotlightMessage && spotlightMessage.title || 'Help',
+    className: "bg-slate-900/95 backdrop-blur-2xl p-6 rounded-2xl shadow-[0_0_40px_rgba(139,92,246,0.3)] border border-white/10 ring-1 ring-white/20 relative overflow-hidden group transition-all duration-300 hover:shadow-[0_0_60px_rgba(139,92,246,0.5)] focus:outline-none"
   }, /*#__PURE__*/React.createElement("div", {
     className: "absolute -top-20 -right-20 w-40 h-40 bg-violet-600/30 rounded-full blur-[80px] pointer-events-none animate-pulse"
   }), /*#__PURE__*/React.createElement("div", {

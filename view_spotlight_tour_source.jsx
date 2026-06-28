@@ -6,6 +6,10 @@ function SpotlightTourView(props) {
   var spotlightMessage = props.spotlightMessage;
   var spotlightOpenTimeRef = props.spotlightOpenTimeRef;
   var setIsSpotlightMode = props.setIsSpotlightMode;
+  // Move focus onto the popup when it opens so screen-reader and keyboard users land on the
+  // help/tour text (the panel has role=dialog + aria-label). Escape is handled by the host.
+  var panelRef = React.useRef(null);
+  React.useEffect(function () { try { if (panelRef.current) panelRef.current.focus(); } catch (e) {} }, []);
   return (
         <>
             <div
@@ -28,7 +32,7 @@ function SpotlightTourView(props) {
                      width: '380px',
                  }}
             >
-                <div id="spotlight-message-panel" className="bg-slate-900/95 backdrop-blur-2xl p-6 rounded-2xl shadow-[0_0_40px_rgba(139,92,246,0.3)] border border-white/10 ring-1 ring-white/20 relative overflow-hidden group transition-all duration-300 hover:shadow-[0_0_60px_rgba(139,92,246,0.5)]">
+                <div id="spotlight-message-panel" ref={panelRef} tabIndex={-1} role="dialog" aria-modal="false" aria-label={(spotlightMessage && spotlightMessage.title) || 'Help'} className="bg-slate-900/95 backdrop-blur-2xl p-6 rounded-2xl shadow-[0_0_40px_rgba(139,92,246,0.3)] border border-white/10 ring-1 ring-white/20 relative overflow-hidden group transition-all duration-300 hover:shadow-[0_0_60px_rgba(139,92,246,0.5)] focus:outline-none">
                      <div className="absolute -top-20 -right-20 w-40 h-40 bg-violet-600/30 rounded-full blur-[80px] pointer-events-none animate-pulse"></div>
                      <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-indigo-600/30 rounded-full blur-[80px] pointer-events-none animate-pulse" style={{animationDelay: '1s'}}></div>
                      <div className="flex items-start justify-between mb-4 relative z-10">

@@ -2,6 +2,12 @@
 // Loaded on-demand when help mode is activated
 // GitHub: https://raw.githubusercontent.com/Apomera/AlloFlow/main/help_strings.js
 {
+    'educator_hub_cinematic_studio_card': "Open Cinematic Studio: turn a lesson or document into a short narrated video with scenes and captions, then download it. Useful for flipped lessons, review, and students who were absent.",
+    'educator_hub_lesson_builder_card': "Open the Lesson Builder, the main workspace where you paste a source text and adapt it into a full set of student resources: glossary, simplified text, scaffolds, a quiz, and more.",
+    'educator_hub_professional_dev_card': "Open Professional Development: short community-built courses where you can learn a strategy, earn a portfolio certificate, and author your own modules to share.",
+    'pdf_audit_view_ocr_language': "Pick the language a scanned PDF is written in so the text recognition (OCR) reads it accurately. Set this before auditing a scanned or image-only document.",
+    'pdf_audit_writing_check_btn': "Run a writing check over the document text: grammar, clarity, and spelling suggestions you can review and accept or dismiss before exporting.",
+    'ws_gen_voice_pack': "Generate a voice pack: spoken audio for the word-sounds set so students can hear each phoneme and word read aloud, including for at-home practice.",
     'header_ai_backend': "AI Backend Configuration:\nToggle or select your preferred AI provider globally (e.g., Google Gemini, Anthropic Claude, OpenAI, or local Ollama). This dictates which model handles complex NLP tasks and data generation across all tools.",
     'header_analytics': "Analytics & Privacy:\nAccess system usage statistics or configure telemetry. In offline or FERPA-compliant modes, analytics will be strictly local. This helps track tool engagement and fidelity for school reporting.",
     'global_mute_toggle': "Universal audio mute toggle. When enabled, ALL sounds are silenced including: AI text-to-speech voices, AlloBot's typing bleeps and flight sounds, browser fallback speech, game audio effects, and notification sounds. Perfect for quiet classrooms, testing environments, or when students need to work silently. The button turns red with a pulsing indicator when active. Audio automatically resumes when you click to unmute. The setting is remembered while you work (in installed or hosted versions it also survives reloads).",
