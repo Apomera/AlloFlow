@@ -2727,17 +2727,35 @@ var createDocPipeline = function(deps) {
   const HTML_FIX_CHUNK = 16000; // with maxOutputTokens=65536, 16KB chunks are well within capacity
   const splitHtmlOnTagBoundary = (html, size) => {
     if (!html || html.length <= size) return [html || ''];
-    const chunks = [];
-    let i = 0;
+    // H-6 (2026-06-24): never cut a chunk INSIDE a table/list/figure/dl. A boundary between </td> and <td>
+    // (or </li>/<li>, or inside a <figure>) lets the per-chunk fixer duplicate a header row, drop continuation
+    // rows, or orphan a cell — none of which the char-count gate catches. So: precompute the SAFE cut points
+    // (just after a tag, at container-depth 0), prefer the last one before the target, and let a chunk GROW
+    // (up to 2×) to keep a container whole; only fall back to a raw '>' cut when a single container is larger
+    // than that cap (a genuinely huge table — rare; a mid-table split beats a 5× chunk that blows the budget).
+    var CONTAINER = /^(?:table|ul|ol|figure|dl)$/i;
+    var tagRe = /<(\/?)([a-zA-Z][\w-]*)\b[^>]*>/g;
+    var safe = [], depth = 0, m;
+    while ((m = tagRe.exec(html))) {
+      if (CONTAINER.test(m[2])) { if (m[1] === '/') { if (depth > 0) depth--; } else { depth++; } }
+      if (depth === 0) safe.push(m.index + m[0].length);   // safe to END a chunk right after this top-level tag
+    }
+    var chunks = [], i = 0, sp = 0;
     while (i < html.length) {
-      let end = Math.min(i + size, html.length);
-      if (end < html.length) {
-        // Back up to the last '>' boundary so we never cut mid-tag
-        const lastClose = html.lastIndexOf('>', end);
-        if (lastClose > i + size * 0.6) end = lastClose + 1;
-      }
-      chunks.push(html.slice(i, end));
-      i = end;
+      if (html.length - i <= size) { chunks.push(html.slice(i)); break; }
+      var target = i + size;
+      while (sp < safe.length && safe[sp] <= i) sp++;        // drop safe points already consumed (amortized O(n))
+      var lastBefore = -1, firstAfter = -1, q = sp;
+      while (q < safe.length && safe[q] <= target) { lastBefore = safe[q]; q++; }
+      if (q < safe.length) firstAfter = safe[q];
+      var cut;
+      if (lastBefore > i + size * 0.5) cut = lastBefore;                          // ideal: safe boundary, latter half
+      else if (firstAfter !== -1 && firstAfter <= i + size * 2) cut = firstAfter; // grow to finish a container whole
+      else if (lastBefore > i) cut = lastBefore;                                  // a safe-but-early boundary beats an unsafe cut
+      else { var lc = html.lastIndexOf('>', target); cut = (lc > i) ? lc + 1 : target; } // last resort: accept the cut
+      if (cut <= i) cut = Math.min(target, html.length);     // guarantee forward progress
+      chunks.push(html.slice(i, cut));
+      i = cut;
     }
     return chunks;
   };
