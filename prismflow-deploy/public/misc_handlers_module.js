@@ -273,6 +273,13 @@ const handleLoadProject = (e, deps) => {
             if (rawData.progressLog && Array.isArray(rawData.progressLog)) {
                 setStudentProgressLog(rawData.progressLog);
             }
+            // Guided-tour resume: a teacher who saved mid-tutorial drops back in at their
+            // step (Canvas has no cross-session storage, so progress rides the project file).
+            if (rawData.guidedTourProgress && typeof rawData.guidedTourProgress.guidedStep === 'number') {
+                if (deps.setGuidedStep) deps.setGuidedStep(rawData.guidedTourProgress.guidedStep);
+                if (deps.setGuidedMode) deps.setGuidedMode(true);
+                if (addToast) addToast(t('guided.resumed') || 'Resumed your guided tutorial.', 'success');
+            }
             let loadedHistory = [];
             let isStudentSave = false;
             if (Array.isArray(rawData)) {

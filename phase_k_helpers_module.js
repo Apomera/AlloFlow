@@ -799,6 +799,9 @@ const executeSaveFile = (deps) => {
   if (saveType === "teacher") {
     dataStr = JSON.stringify({
       mode: isIndependentMode ? "independent" : "teacher",
+      // Educator continuity: guided-tour resume point rides the project file
+      // (Canvas wipes origin storage between sessions). null unless in guided mode.
+      guidedTourProgress: deps.guidedTourProgress || null,
       history,
       timestamp: /* @__PURE__ */ new Date(),
       progressLog: studentProgressLog,
