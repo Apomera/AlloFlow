@@ -66,6 +66,90 @@
   // from history. Audio embeds are optional (gated by exportConfig).
   // Slides mode delegates back to the App-scope handleExportSlides
   // because that handler is owned by the doc_pipeline factory binding.
+  // ── Read-aloud (karaoke) for HTML export ────────────────────────────
+  // Vanilla modal asked at download time (no React), + a DOM pass that turns
+  // each [data-ka-readable] passage into inline sentence-karaoke: split into
+  // sentences (markdown stripped so the voice never reads symbols), wrap each in
+  // a .ka-s span, add a Read-aloud button, and generate one clip per sentence
+  // with the selected voice. The doc's highlighter plays them in order, lighting
+  // each sentence as its clip plays.
+  const _alloReadAloudModal = () => new Promise((resolve) => {
+    try {
+      const ov = document.createElement('div');
+      ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true');
+      ov.style.cssText = 'position:fixed;inset:0;z-index:2147483600;background:rgba(15,23,42,0.55);display:flex;align-items:center;justify-content:center;padding:20px;font-family:system-ui,-apple-system,sans-serif;';
+      const box = document.createElement('div');
+      box.style.cssText = 'background:#fff;border-radius:16px;max-width:460px;width:100%;padding:24px;box-shadow:0 20px 50px rgba(0,0,0,0.3);';
+      box.innerHTML =
+        '<h2 style="margin:0 0 8px;font-size:1.2rem;color:#0f172a;">\u{1F50A} Add read-aloud audio?</h2>' +
+        '<p style="margin:0 0 6px;font-size:0.92rem;color:#475569;line-height:1.5;">Generate audio for every reading passage so students can listen offline, with each sentence highlighted as it is read.</p>' +
+        '<p style="margin:0 0 18px;font-size:0.8rem;color:#64748b;line-height:1.45;">Uses your selected voice. Adds a moment to export and some file size.</p>' +
+        '<div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;">' +
+          '<button type="button" data-r="cancel" style="padding:9px 16px;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;border-radius:9px;font-weight:600;cursor:pointer;">Cancel</button>' +
+          '<button type="button" data-r="no" style="padding:9px 16px;background:#fff;color:#0369a1;border:1px solid #7dd3fc;border-radius:9px;font-weight:700;cursor:pointer;">Without audio</button>' +
+          '<button type="button" data-r="yes" style="padding:9px 18px;background:#0369a1;color:#fff;border:none;border-radius:9px;font-weight:700;cursor:pointer;">\u{1F50A} Yes, read aloud</button>' +
+        '</div>';
+      ov.appendChild(box);
+      const done = (val) => { try { ov.remove(); } catch (e) {} resolve(val); };
+      ov.addEventListener('click', (e) => {
+        const b = e.target && e.target.closest && e.target.closest('[data-r]');
+        if (b) { const r = b.getAttribute('data-r'); done(r === 'yes' ? true : (r === 'no' ? false : null)); return; }
+        if (e.target === ov) done(null);
+      });
+      document.body.appendChild(ov);
+      const y = box.querySelector('[data-r="yes"]'); if (y) y.focus();
+    } catch (e) { resolve(false); }
+  });
+  const _alloKaClean = (txt) => String(txt || '')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/\*\*([^*]+)\*\*/g, '$1').replace(/__([^_]+)__/g, '$1')
+    .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1$2').replace(/(^|[^_])_([^_\n]+)_(?!_)/g, '$1$2')
+    .replace(/~~([^~]+)~~/g, '$1').replace(/`([^`\n]+)`/g, '$1')
+    .replace(/^#{1,6}\s+/gm, '').replace(/^\s*[-*•]\s+/gm, '').replace(/\s+/g, ' ').trim();
+  const _alloKaEsc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const _alloKaSplit = (t) => (String(t).match(/[^.!?]+[.!?]+["')\]]*|\S[^.!?]*$/g) || [t]).map((x) => String(x).trim()).filter(Boolean);
+  const _alloKaraokeProcess = async (root, opts) => {
+    const callTTS = opts.callTTS, selectedVoice = opts.selectedVoice, addToast = opts.addToast;
+    const doc = root.ownerDocument || document;
+    const sections = root.querySelectorAll('[data-ka-readable]');
+    if (!sections.length) return;
+    if (addToast) addToast('Generating read-aloud audio... this may take a moment.', 'info');
+    for (let si = 0; si < sections.length; si++) {
+      const sec = sections[si];
+      const ps = sec.querySelectorAll('p');
+      const targets = ps.length ? ps : [sec];
+      const items = [];
+      let gi = 0;
+      for (let pi = 0; pi < targets.length; pi++) {
+        const p = targets[pi];
+        const clean = _alloKaClean(p.textContent || '');
+        if (!clean) continue;
+        const sents = _alloKaSplit(clean);
+        p.innerHTML = sents.map((se) => { const idx = gi++; items.push({ idx: idx, text: se }); return '<span class="ka-s" data-ka-s="' + idx + '">' + _alloKaEsc(se) + '</span>'; }).join(' ');
+      }
+      if (!items.length) continue;
+      sec.classList.add('allo-ka-passage');
+      const forId = sec.id || ('ka' + si);
+      const bar = doc.createElement('div'); bar.className = 'allo-ka-bar'; bar.style.cssText = 'margin:6px 0 10px;';
+      const btn = doc.createElement('button'); btn.type = 'button'; btn.className = 'allo-ka-play'; btn.setAttribute('data-ka-for', forId);
+      btn.style.cssText = 'padding:7px 16px;background:#0369a1;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9em;';
+      btn.textContent = '\u{1F50A} Read aloud';
+      bar.appendChild(btn);
+      const abox = doc.createElement('span'); abox.className = 'allo-ka-audios'; abox.setAttribute('data-ka-for', forId); abox.setAttribute('hidden', '');
+      const fe = sec.firstElementChild;
+      if (fe && fe.nextSibling) sec.insertBefore(bar, fe.nextSibling); else sec.appendChild(bar);
+      sec.appendChild(abox);
+      for (let k = 0; k < items.length; k++) {
+        let au = null;
+        try { au = await callTTS(items[k].text, selectedVoice || 'Puck', 1); } catch (e) { au = null; }
+        if (au && typeof au === 'string' && au.indexOf('data:') === 0) {
+          const a = doc.createElement('audio'); a.setAttribute('preload', 'none'); a.setAttribute('data-ka-s', String(items[k].idx)); a.src = au;
+          abox.appendChild(a);
+        }
+      }
+    }
+  };
+
   const executeExportFromPreview = async (deps) => {
     const {
       _docPipeline, addToast, t,
@@ -81,6 +165,14 @@
     }
     const mode = exportPreviewMode;
     const isWorksheet = mode === 'worksheet';
+    // Read-aloud modal — asked at download time for HTML exports. Yes => inline
+    // sentence-karaoke on every reading passage (generated on the DOM clone below).
+    let _readAloud = false;
+    if (mode === 'html' && typeof callTTS === 'function') {
+      const _ans = await _alloReadAloudModal();
+      if (_ans === null) return; // cancelled — abort the export entirely
+      _readAloud = _ans;
+    }
     let htmlContent;
     const iframe = exportPreviewRef && exportPreviewRef.current;
     const iframeDoc = iframe && iframe.contentDocument;
@@ -116,33 +208,11 @@
         var _exBody = _exClone.querySelector('body');
         if (_exBody) _exBody.removeAttribute('data-allo-user-edited');
       } catch (_exStripErr) { /* strip is best-effort — never block an export */ }
-      // Inline sentence-karaoke: for each read-aloud passage, generate one audio
-      // clip per sentence-span (selected voice — Gemini or Kokoro) and inject it
-      // into the passage's placeholder. Reads the EXACT rendered spans so clip i
-      // lines up with sentence i; the export's highlighter plays them in order.
-      if (exportConfig && exportConfig.includeAudioLeveled && callTTS) {
-        try {
-          const _kaPassages = _exClone.querySelectorAll('.allo-ka-passage');
-          if (_kaPassages.length && addToast) addToast('Generating read-aloud audio… this may take a moment.', 'info');
-          for (let _pi = 0; _pi < _kaPassages.length; _pi++) {
-            const _sec = _kaPassages[_pi].closest('.section');
-            const _box = _sec ? _sec.querySelector('.allo-ka-audios') : null;
-            if (!_box) continue;
-            const _spans = _kaPassages[_pi].querySelectorAll('.ka-s');
-            for (let _si = 0; _si < _spans.length; _si++) {
-              const _txt = (_spans[_si].textContent || '').trim();
-              if (!_txt) continue;
-              const _au = await callTTS(_txt, selectedVoice || 'Puck', 1);
-              if (_au && typeof _au === 'string' && _au.indexOf('data:') === 0) {
-                const _aEl = (_exClone.ownerDocument || document).createElement('audio');
-                _aEl.setAttribute('preload', 'none');
-                _aEl.setAttribute('data-ka-s', String(_si));
-                _aEl.src = _au;
-                _box.appendChild(_aEl);
-              }
-            }
-          }
-        } catch (_kaErr) { console.warn('[Export] karaoke audio failed', _kaErr); }
+      // Read-aloud: turn every [data-ka-readable] passage into inline
+      // sentence-karaoke on the clone (modal-driven, at download time).
+      if (_readAloud && typeof callTTS === 'function') {
+        try { await _alloKaraokeProcess(_exClone, { callTTS: callTTS, selectedVoice: selectedVoice, addToast: addToast }); }
+        catch (_kaErr) { console.warn('[Export] karaoke failed', _kaErr); }
       }
       htmlContent = '<!DOCTYPE html>\n<html' + _exClone.outerHTML.substring(5);
       console.log('[Export] ✅ Using edited iframe content, chrome stripped (' + htmlContent.length + ' chars)');
@@ -166,25 +236,8 @@
       return;
     }
 
-    const needsAudio = exportConfig && (exportConfig.includeAudioSource || exportConfig.includeAudioLeveled);
-    if (needsAudio && callTTS) {
-      if (addToast) addToast('Generating read-aloud audio... this may take a moment.', 'info');
-      try {
-        if (exportConfig.includeAudioSource) {
-          const analysisItem = (history || []).find(function(h) { return h && h.type === 'analysis'; });
-          if (analysisItem && analysisItem.data && analysisItem.data.originalText) {
-            const audioHtml = await generateExportAudio(analysisItem.data.originalText, 'Source Text Read-Aloud', deps);
-            if (audioHtml) htmlContent = htmlContent.replace('</main>', audioHtml + '</main>');
-          }
-        }
-        // Leveled-text read-aloud is now inline sentence-karaoke, generated on the
-        // DOM clone above (one clip per sentence injected into the passage placeholder).
-        if (addToast) addToast('Audio embedded successfully!', 'success');
-      } catch (e) {
-        console.warn('[Export] Audio embedding failed:', e);
-        if (addToast) addToast('Audio generation failed — exporting without audio.', 'info');
-      }
-    }
+    // Read-aloud audio is handled by the download-time modal above (inline
+    // sentence-karaoke on every reading passage), replacing the old per-text toggles.
 
     if (typeof setShowExportPreview === 'function') setShowExportPreview(false);
     if (mode === 'slides') {

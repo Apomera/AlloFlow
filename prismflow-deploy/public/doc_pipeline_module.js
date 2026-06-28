@@ -23422,37 +23422,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       const tv = typeVisuals[item.type] || { icon: '📄', color: '#475569', bg: '#f8fafc', label: '' };
       const enhancedHeader = `<h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid ${tv.color};background:${tv.bg};display:flex;align-items:center;gap:8px;"><span aria-hidden="true" style="font-size:1.3em;">${tv.icon}</span> ${title}${item.meta ? ` <span style="font-weight:normal;font-size:0.8em;color:#64748b;">(${item.meta})</span>` : ''}</h2>`;
       if (item.type === 'simplified') {
-          const _kaOn = cfg.includeAudioLeveled && !isWorksheet;
-          const _kaEsc = (x) => String(x == null ? '' : x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-          const _kaWrap = (html) => {
-              const txt = String(html)
-                  .replace(/<\/(p|div|h[1-6]|li)>/gi, '\n\n').replace(/<br\s*\/?\>/gi, '\n')
-                  .replace(/<[^>]+>/g, '').replace(/&nbsp;/gi, ' ')
-                  .replace(/&amp;/gi, '&').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>')
-                  // Reuse the app's TTS cleaning so the voice never reads markdown
-                  // symbols aloud. Pair-aware order (bold/__ before italic/_), then
-                  // strike/code/link(text only)/heading/list markers. (tts_source.jsx)
-                  .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-                  .replace(/\*\*([^*]+)\*\*/g, '$1').replace(/__([^_]+)__/g, '$1')
-                  .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1$2').replace(/(^|[^_])_([^_\n]+)_(?!_)/g, '$1$2')
-                  .replace(/~~([^~]+)~~/g, '$1').replace(/`([^`\n]+)`/g, '$1')
-                  .replace(/^#{1,6}\s+/gm, '').replace(/^\s*\d+\.\s+/gm, '').replace(/^\s*[-*•]\s+/gm, '')
-                  .trim();
-              const paras = txt.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
-              let _ki = 0;
-              const body = paras.map(p => {
-                  const sents = p.match(/[^.!?]+[.!?]+["')\]]*|\S[^.!?]*$/g) || [p];
-                  return '<p style="margin:0 0 0.8em;">' + sents.map(se => '<span class="ka-s" data-ka-s="' + (_ki++) + '">' + _kaEsc(se.trim()) + '</span>').join(' ') + '</p>';
-              }).join('');
-              return body || ('<p>' + _kaEsc(txt) + '</p>');
-          };
-          const _kaBody = _kaOn ? _kaWrap(parseMarkdownToHTML(item.data)) : parseMarkdownToHTML(item.data);
-          const _kaCtrl = _kaOn ? ('<div class="allo-ka-bar" style="margin:6px 0 10px;"><button type="button" class="allo-ka-play" data-ka-for="' + item.id + '" style="padding:7px 16px;background:#0369a1;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9em;">\u{1F50A} Read aloud</button></div><span class="allo-ka-audios" data-ka-for="' + item.id + '" hidden></span>') : '';
+          // Reading passage. Tagged data-ka-readable so the HTML export's
+          // download-time read-aloud step can convert it into inline sentence-karaoke.
           return `
-              <div class="section" id="${item.id}" style="border-left:4px solid #2563eb;border-radius:12px;">
+              <div class="section" id="${item.id}" data-ka-readable style="border-left:4px solid #2563eb;border-radius:12px;">
                   ${enhancedHeader}
-                  ${_kaCtrl}
-                  <div class="${_kaOn ? 'allo-ka-passage' : ''}" style="font-family:Georgia,'Times New Roman',serif;font-size:1.05em;line-height:1.9;color:#1e293b;padding:8px 4px;">${_kaBody}</div>
+                  <div style="font-family:Georgia,'Times New Roman',serif;font-size:1.05em;line-height:1.9;color:#1e293b;padding:8px 4px;">${parseMarkdownToHTML(item.data)}</div>
               </div>
           `;
       } else if (item.type === 'glossary') {
