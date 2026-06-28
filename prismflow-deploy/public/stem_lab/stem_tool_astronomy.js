@@ -95,7 +95,7 @@
     if (id === 'jupiter' || id === 'saturn') {     // major Jupiter/Saturn perturbations (Schlyter)
       var Mj = rev(19.8950 + 0.0830853001 * d), Ms = rev(316.9670 + 0.0334442282 * d);
       if (id === 'jupiter') lon += -0.332 * sind(2 * Mj - 5 * Ms - 67.6) - 0.056 * sind(2 * Mj - 2 * Ms + 21) + 0.042 * sind(3 * Mj - 5 * Ms + 21) - 0.036 * sind(Mj - 2 * Ms) + 0.022 * cosd(Mj - Ms) + 0.023 * sind(2 * Mj - 3 * Ms + 52) - 0.016 * sind(Mj - 5 * Ms - 69);
-      else lon += 0.812 * sind(2 * Mj - 5 * Ms - 67.6) - 0.229 * cosd(2 * Mj - 4 * Ms - 2) + 0.119 * sind(Mj - 2 * Ms - 3) + 0.046 * sind(2 * Mj - 6 * Ms - 69) + 0.014 * sind(Mj - 3 * Ms + 32);
+      else { lon += 0.812 * sind(2 * Mj - 5 * Ms - 67.6) - 0.229 * cosd(2 * Mj - 4 * Ms - 2) + 0.119 * sind(Mj - 2 * Ms - 3) + 0.046 * sind(2 * Mj - 6 * Ms - 69) + 0.014 * sind(Mj - 3 * Ms + 32); lat += -0.020 * cosd(2 * Mj - 4 * Ms - 2) + 0.018 * sind(2 * Mj - 6 * Ms - 49); }
     }
     var rl = r * cosd(lat);
     var s = sunEcliptic(d), o = obliquity(d);      // heliocentric → geocentric (add Sun's geocentric vector)
@@ -104,7 +104,7 @@
     return eq;
   }
   // Local sidereal time (hours) and equatorial→horizon (alt/az, az from North clockwise).
-  function siderealTime(Y, M, D, UTh, lonEast) { var d = astroDayNumber(Y, M, D, UTh); var Ls = sunEcliptic(d).Ls; return rev((Ls + 180) + UTh * 15.04107 + lonEast) / 15; }
+  function siderealTime(Y, M, D, UTh, lonEast) { var d = astroDayNumber(Y, M, D, UTh); var Ls = sunEcliptic(d).Ls; return rev((Ls + 180) + UTh * 15 + lonEast) / 15; }   // Ls(d) already carries the sidereal/solar correction, so UT is ×15
   function equToHorizon(ra, dec, lstHours, latDeg) {
     var ha = rev(lstHours * 15 - ra);
     var sinAlt = sind(dec) * sind(latDeg) + cosd(dec) * cosd(latDeg) * cosd(ha);
@@ -126,7 +126,7 @@
     { name: 'Pollux', con: 'Gemini', ra: 7.755, dec: 28.026, mag: 1.14 }, { name: 'Fomalhaut', con: 'Piscis Austrinus', ra: 22.961, dec: -29.622, mag: 1.16 },
     { name: 'Deneb', con: 'Cygnus', ra: 20.690, dec: 45.280, mag: 1.25 }, { name: 'Regulus', con: 'Leo', ra: 10.140, dec: 11.967, mag: 1.35 },
     { name: 'Castor', con: 'Gemini', ra: 7.577, dec: 31.888, mag: 1.58 }, { name: 'Dubhe', con: 'Ursa Major', ra: 11.062, dec: 61.751, mag: 1.79 },
-    { name: 'Alkaid', con: 'Ursa Major', ra: 13.792, dec: 49.313, mag: 1.85 }, { name: 'Polaris', con: 'Ursa Minor', ra: 2.530, dec: 89.264, mag: 1.98 },
+    { name: 'Alkaid', con: 'Ursa Major', ra: 13.792, dec: 49.313, mag: 1.85 }, { name: 'Polaris', con: 'Ursa Minor', ra: 2.694, dec: 89.264, mag: 1.98 },
     { name: 'Bellatrix', con: 'Orion', ra: 5.418, dec: 6.350, mag: 1.64 }, { name: 'Alnilam', con: 'Orion', ra: 5.604, dec: -1.202, mag: 1.69 },
     { name: 'Mizar', con: 'Ursa Major', ra: 13.399, dec: 54.925, mag: 2.04 }, { name: 'Algol', con: 'Perseus', ra: 3.136, dec: 40.956, mag: 2.12 }
   ];
@@ -721,9 +721,9 @@
           sectionCard('🌙 Right now (' + now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' }) + ')',
             h('div', null,
               h('div', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.7, marginBottom: 8 } },
-                __alloT('stem.astronomy.approximate_moon_phase', 'Approximate moon phase: '),
+                __alloT('stem.astronomy.moon_phase_now', 'Moon phase now: '),
                 h('strong', { style: { color: '#fde68a' } }, moonPhase.name),
-                ' (~', Math.round(phaseAge), __alloT('stem.astronomy.days_into_the_lunar_cycle', ' days into the lunar cycle).')
+                ' — ' + moonIllum + '% ' + __alloT('stem.astronomy.lit_age', 'lit (~') + Math.round(phaseAge) + __alloT('stem.astronomy.days_into_the_lunar_cycle', ' days into the lunar cycle).')
               ),
               h('div', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.6 } }, moonPhase.visibility)
             )
@@ -741,7 +741,7 @@
               __alloT('stem.astronomy.venus_is_the_brightest_often_the_morni', 'Venus is the brightest — often the "morning star" before dawn or "evening star" after sunset. '),
               __alloT('stem.astronomy.jupiter_and_saturn_are_visible_most_of', 'Jupiter and Saturn are visible most of each year, near the ecliptic (the path the Sun takes through the sky). '),
               __alloT('stem.astronomy.mars_varies_a_lot_it_can_be_very_brigh', 'Mars varies a lot — it can be very bright and red, or hard to find, depending on where it is in its orbit. '),
-              __alloT('stem.astronomy.for_precise_positions_tonight_check_st', 'For precise positions tonight, check Stellarium (free), the NASA Eyes web app, or a sky app like Night Sky or SkyView.')
+              __alloT('stem.astronomy.open_sky_map_for_positions', 'Open the 🧭 Sky Map tab for tonight’s computed positions of the Sun, Moon and planets at your location — or, for pinpoint observing, Stellarium (free) or the NASA Eyes web app.')
             )
           ),
 
@@ -870,7 +870,7 @@
           // misconception busts
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginTop: 12 } },
             BUSTS.map(function (b, i) { return h('div', { key: 'b' + i, style: { padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.07)', border: '1px solid rgba(251,191,36,0.3)' } }, h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fcd34d', marginBottom: 3 } }, '⚠ ' + b[0]), h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.5 } }, b[1])); })),
-          h('div', { style: { fontSize: 10.5, color: '#64748b', marginTop: 10, lineHeight: 1.5 } }, __alloT('stem.astronomy.skymap_disclaimer', 'Positions are computed (schematic, accurate to about a degree). For pinpoint observing use Stellarium or your local planetarium.'))
+          h('div', { style: { fontSize: 10.5, color: '#64748b', marginTop: 10, lineHeight: 1.5 } }, __alloT('stem.astronomy.skymap_disclaimer', 'Positions are computed (schematic, accurate to about a degree). They are geocentric and ignore atmospheric refraction near the horizon, so rise/set timing is approximate. For pinpoint observing use Stellarium or your local planetarium.'))
         );
       }
       function skyAria(sky, loc, when) {
