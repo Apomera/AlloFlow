@@ -3634,7 +3634,11 @@ const AlloFlowContent = () => {
   // Hands-on guided tutorial: anchor the active step to its real tool — scroll it into
   // view, ring it, announce it, and notice when the teacher actually uses it (engaged).
   useEffect(() => {
-    if (!guidedMode) { setGuidedRect(null); return; }
+    // Guided mode can be enabled at mode-selection, before the user has picked a role
+    // and entered the workspace. Don't ring anything until they're actually in it,
+    // or the ring floats over the welcome/role-selection screen (tour-input-panel
+    // exists in the DOM behind that modal).
+    if (!guidedMode || !hasSelectedRole) { setGuidedRect(null); return; }
     const step = guidedActiveSteps[guidedStep];
     const domId = step && GUIDED_TOUR_MAP[step.id];
     const el = domId ? document.getElementById(domId) : null;
@@ -3661,7 +3665,7 @@ const AlloFlowContent = () => {
       window.removeEventListener('resize', onMove);
       el.removeEventListener('click', onEngage);
     };
-  }, [guidedMode, guidedStep]);
+  }, [guidedMode, guidedStep, hasSelectedRole]);
   useEffect(() => {
     // Splash screen dismiss: wait for BOTH (a) the first-paint critical modules
     // to be loaded AND (b) a minimum dwell time so the splash doesn't flicker
