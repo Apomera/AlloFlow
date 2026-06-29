@@ -6724,7 +6724,16 @@ Return ONLY JSON:
                               var host = document.getElementById('before-pane'); if (!host) return;
                               host.innerHTML = '';
                               var st = _paneStatus('\u26A0 Could not render the ' + label + ' here (' + msg + '). ');
-                              try { var u = URL.createObjectURL(new Blob([_b64ToBytes(b64)], { type: 'application/pdf' })); var a = document.createElement('a'); a.href = u; a.target = '_blank'; a.style.color = '#93c5fd'; a.textContent = 'Open it in its own tab instead'; st.appendChild(a); } catch (_) {}
+                              try {
+                                var u = URL.createObjectURL(new Blob([_b64ToBytes(b64)], { type: 'application/pdf' }));
+                                var a = document.createElement('a'); a.href = u; a.target = '_blank'; a.style.color = '#93c5fd'; a.textContent = 'Open it in its own tab instead'; st.appendChild(a);
+                                // C1 (2026-06-28): the fallback link's blob URL (the whole PDF) was never revoked, so every
+                                // failed Compare render leaked one until page close. Free it shortly after a click (the new
+                                // tab has already grabbed it) + a long backstop timeout if it's never clicked.
+                                var _revokeFailUrl = function () { try { URL.revokeObjectURL(u); } catch (_) {} };
+                                a.addEventListener('click', function () { setTimeout(_revokeFailUrl, 1000); });
+                                setTimeout(_revokeFailUrl, 300000);
+                              } catch (_) {}
                             }
                             var _cmpPdfDoc = null; // the pdf.js doc currently rendering in Compare \u2014 tracked so it's destroyed (was leaking every render/toggle)
                             function _renderPdfInto(b64, label) {
@@ -8016,10 +8025,13 @@ Return ONLY JSON:
           }
           if (project.multiSession && Array.isArray(project.multiSession.ranges) && project.multiSession.ranges.length > 0) {
             setPdfMultiSession(project.multiSession);
-            const sortedR = project.multiSession.ranges.slice().sort((a, b) => (a.pages[0] || 0) - (b.pages[0] || 0));
-            const lastEnd = sortedR[sortedR.length - 1].pages[1];
+            const sortedR = project.multiSession.ranges.slice().sort((a, b) => (a.pages && a.pages[0] || 0) - (b.pages && b.pages[0] || 0));
+            const _lastRange = sortedR[sortedR.length - 1];
+            const lastEnd = _lastRange && Array.isArray(_lastRange.pages) ? _lastRange.pages[1] : null;
             const total = project.pageCount || project.multiSession.pageCount || 1;
-            if (lastEnd < total) {
+            if (lastEnd == null) {
+              addToast(t("toasts.multisession_corrupt") || "This project\u2019s multi-session range data looks corrupted \u2014 skipping the resume-range step.", "warning");
+            } else if (lastEnd < total) {
               const nextStart = lastEnd + 1;
               const nextEnd = Math.min(nextStart + 29, total);
               setPdfPageRange({ start: nextStart, end: nextEnd });
@@ -9757,7 +9769,9 @@ Return ONLY JSON:
               audio.addEventListener("ended", revoke);
               audio.addEventListener("error", revoke);
               audio.play().catch(() => {
+                revoke();
               });
+              setTimeout(revoke, 12e4);
             }).catch(() => {
             });
           }

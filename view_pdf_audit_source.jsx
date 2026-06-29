@@ -8369,7 +8369,16 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               var host = document.getElementById('before-pane'); if (!host) return;
                               host.innerHTML = '';
                               var st = _paneStatus('⚠ Could not render the ' + label + ' here (' + msg + '). ');
-                              try { var u = URL.createObjectURL(new Blob([_b64ToBytes(b64)], { type: 'application/pdf' })); var a = document.createElement('a'); a.href = u; a.target = '_blank'; a.style.color = '#93c5fd'; a.textContent = 'Open it in its own tab instead'; st.appendChild(a); } catch (_) {}
+                              try {
+                                var u = URL.createObjectURL(new Blob([_b64ToBytes(b64)], { type: 'application/pdf' }));
+                                var a = document.createElement('a'); a.href = u; a.target = '_blank'; a.style.color = '#93c5fd'; a.textContent = 'Open it in its own tab instead'; st.appendChild(a);
+                                // C1 (2026-06-28): the fallback link's blob URL (the whole PDF) was never revoked, so every
+                                // failed Compare render leaked one until page close. Free it shortly after a click (the new
+                                // tab has already grabbed it) + a long backstop timeout if it's never clicked.
+                                var _revokeFailUrl = function () { try { URL.revokeObjectURL(u); } catch (_) {} };
+                                a.addEventListener('click', function () { setTimeout(_revokeFailUrl, 1000); });
+                                setTimeout(_revokeFailUrl, 300000);
+                              } catch (_) {}
                             }
                             var _cmpPdfDoc = null; // the pdf.js doc currently rendering in Compare — tracked so it's destroyed (was leaking every render/toggle)
                             function _renderPdfInto(b64, label) {
@@ -9852,10 +9861,16 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 } catch (_) {}
                                 if (project.multiSession && Array.isArray(project.multiSession.ranges) && project.multiSession.ranges.length > 0) {
                                   setPdfMultiSession(project.multiSession);
-                                  const sortedR = project.multiSession.ranges.slice().sort((a, b) => (a.pages[0] || 0) - (b.pages[0] || 0));
-                                  const lastEnd = sortedR[sortedR.length - 1].pages[1];
+                                  // B2 (2026-06-28): guard a malformed/hand-edited .alloflow.json whose ranges lack a
+                                  // valid pages array — a bare range.pages[0]/[1] access otherwise throws and strands the
+                                  // teacher on the results screen with no recovery. Degrade: skip the resume-range step.
+                                  const sortedR = project.multiSession.ranges.slice().sort((a, b) => ((a.pages && a.pages[0]) || 0) - ((b.pages && b.pages[0]) || 0));
+                                  const _lastRange = sortedR[sortedR.length - 1];
+                                  const lastEnd = (_lastRange && Array.isArray(_lastRange.pages)) ? _lastRange.pages[1] : null;
                                   const total = project.pageCount || project.multiSession.pageCount || 1;
-                                  if (lastEnd < total) {
+                                  if (lastEnd == null) {
+                                    addToast(t('toasts.multisession_corrupt') || 'This project’s multi-session range data looks corrupted — skipping the resume-range step.', 'warning');
+                                  } else if (lastEnd < total) {
                                     const nextStart = lastEnd + 1;
                                     const nextEnd = Math.min(nextStart + 29, total);
                                     setPdfPageRange({ start: nextStart, end: nextEnd });
@@ -11676,7 +11691,10 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         const revoke = () => { try { URL.revokeObjectURL(url); } catch(_) {} };
                         audio.addEventListener('ended', revoke);
                         audio.addEventListener('error', revoke);
-                        audio.play().catch(() => {});
+                        // C2 (2026-06-28): if play() rejects (autoplay-blocked/muted) neither 'ended' nor 'error' fires,
+                        // so the blob URL + listeners leaked. Revoke on the rejection + a timeout backstop.
+                        audio.play().catch(() => { revoke(); });
+                        setTimeout(revoke, 120000);
                       }).catch(() => {});
                     }
                   }
