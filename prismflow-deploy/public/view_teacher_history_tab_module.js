@@ -15,7 +15,6 @@ function TeacherHistoryTab({
   handleApplyRosterGroup,
   hasSourceOrAnalysis,
   rosterKey,
-  setBridgeSendOpen,
   setIsRosterKeyOpen,
   setShowBatchConfig,
   t

@@ -44,6 +44,7 @@ const KNOWN_GLOBALS = new Set([
   'Uint8Array', 'Uint8ClampedArray', 'Int8Array', 'Uint16Array', 'Int16Array', 'Uint32Array', 'Int32Array',
   'Float32Array', 'Float64Array', 'ArrayBuffer', 'DataView', 'BigInt', 'Intl', 'performance', 'crypto',
   'DOMParser', 'XMLSerializer', 'Node', 'Element', 'HTMLElement', 'Image', 'Audio', 'Event', 'CustomEvent',
+  'KeyboardEvent', 'MouseEvent', 'SpeechSynthesisUtterance', 'speechSynthesis',
   'MutationObserver', 'IntersectionObserver', 'ResizeObserver', 'getComputedStyle', 'matchMedia',
   'localStorage', 'sessionStorage', 'indexedDB', 'alert', 'confirm', 'prompt', 'btoa', 'AudioContext',
   'React', 'ReactDOM', 'process', 'require', 'module', 'exports', '__dirname', '__filename', 'Buffer',

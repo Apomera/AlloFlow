@@ -2,6 +2,8 @@
 // Loaded on-demand when help mode is activated
 // GitHub: https://raw.githubusercontent.com/Apomera/AlloFlow/main/help_strings.js
 {
+    'header_bridge': "Open Family Bridge: a live two-way translator for talking with multilingual families and students. In Face-to-Face mode, you and a family member each speak or type in your own language and every turn is translated and read aloud. You can ask the AI for help finding the right words, and export a copy of the conversation. Conversations are never saved or synced; text is sent to a secure AI service only to translate.",
+    'educator_hub_bridge_card': "Open Family Bridge: real-time two-way translation for family conversations and student messages. Use Face-to-Face mode to talk across languages on one device (speak or type, hear it read back), send a translated, reading-leveled message to a class or group, or ask the AI for phrasing help. Conversations are not saved or synced.",
     'educator_hub_cinematic_studio_card': "Open Cinematic Studio: turn a lesson or document into a short narrated video with scenes and captions, then download it. Useful for flipped lessons, review, and students who were absent.",
     'educator_hub_lesson_builder_card': "Open the Lesson Builder, the main workspace where you paste a source text and adapt it into a full set of student resources: glossary, simplified text, scaffolds, a quiz, and more.",
     'educator_hub_professional_dev_card': "Open Professional Development: short community-built courses where you can learn a strategy, earn a portfolio certificate, and author your own modules to share.",

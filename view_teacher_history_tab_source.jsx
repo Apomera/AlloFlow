@@ -2,8 +2,8 @@
  * AlloFlow — Teacher History Tab Module
  *
  * Roster-groups strip in the teacher-mode sidebar's History tab. Shows
- * colored group pills, a "Differentiate by Group" CTA, and Manage Roster /
- * Bridge Mode quick-action buttons.
+ * colored group pills, a "Differentiate by Group" CTA, and a Manage Roster
+ * quick-action button. (Bridge moved to a header button for discoverability.)
  *
  * Extracted from AlloFlowANTI.txt lines 21320-21367 (May 2026).
  *
@@ -11,7 +11,6 @@
  *   handleApplyRosterGroup — fires when a group pill is clicked
  *   hasSourceOrAnalysis    — gate for the Differentiate CTA
  *   rosterKey              — { groups: {gid: {name, color, profile}} }
- *   setBridgeSendOpen      — opens Bridge Mode modal
  *   setIsRosterKeyOpen     — opens roster management modal
  *   t                      — translation function
  *
@@ -26,7 +25,6 @@ function TeacherHistoryTab({
   handleApplyRosterGroup,
   hasSourceOrAnalysis,
   rosterKey,
-  setBridgeSendOpen,
   setIsRosterKeyOpen,
   setShowBatchConfig,
   t,

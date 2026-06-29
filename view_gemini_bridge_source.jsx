@@ -28,6 +28,18 @@ var BRIDGE_PHRASES = [
   { id: 'plan', icon: '🗓️', label: 'Plan together', phrases: ['Can we set up a time to meet?', 'What time works for you?', 'Please bring this form back when you can.', 'I will send this home with your child.'] },
   { id: 'close', icon: '🙏', label: 'Close', phrases: ['Thank you for your time.', 'Please reach out anytime.', 'We appreciate you.', 'Goodbye, and take care.'] }
 ];
+// Handle to the single active Face-to-Face SpeechRecognition instance. It is
+// created as a bare local inside _startListening, so without this the "stop",
+// "End", and switch-sides paths only flip React state and the recognizer keeps
+// running — its late onresult would then auto-send a phantom message. Stopping
+// it here detaches handlers and aborts so a racing result cannot fire.
+var _bridgeActiveRec = null;
+function _bridgeStopListening() {
+  if (_bridgeActiveRec) {
+    try { _bridgeActiveRec.onresult = null; _bridgeActiveRec.onend = null; _bridgeActiveRec.onerror = null; _bridgeActiveRec.abort(); } catch (e) {}
+    _bridgeActiveRec = null;
+  }
+}
 function _bridgePhrasesPanel(onPick, translating, t) {
   return React.createElement('details', { open: true, style: { marginBottom: '12px' } },
     React.createElement('summary', { style: { cursor: 'pointer', fontSize: '12px', fontWeight: 700, color: '#5eead4', padding: '6px 0' } },
@@ -72,8 +84,8 @@ function _bridgeAiBubble(msg, aLang, bLang, handleAudio, t) {
             React.createElement('div', { style: { fontSize: '14px', color: '#fde68a', lineHeight: 1.6, fontWeight: 500 } }, msg.answer || ''),
             msg.translated ? React.createElement('div', { style: { marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.08)', fontSize: '14px', color: '#99f6e4', lineHeight: 1.6 } }, '🌍 ' + msg.translated) : null,
             React.createElement('div', { style: { marginTop: '8px', display: 'flex', gap: '6px' } },
-              React.createElement('button', { onClick: function () { handleAudio(msg.answer); }, style: { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', padding: '4px 10px', borderRadius: '8px', fontSize: '11px', cursor: 'pointer' } }, '🔊 ' + (aLang || '').slice(0, 3)),
-              msg.translated ? React.createElement('button', { onClick: function () { handleAudio(msg.translated); }, style: { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', padding: '4px 10px', borderRadius: '8px', fontSize: '11px', cursor: 'pointer' } }, '🔊 ' + (bLang || '').slice(0, 3)) : null))));
+              React.createElement('button', { onClick: function () { handleAudio(msg.answer, aLang); }, style: { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', padding: '4px 10px', borderRadius: '8px', fontSize: '11px', cursor: 'pointer' } }, '🔊 ' + (aLang || '').slice(0, 3)),
+              msg.translated ? React.createElement('button', { onClick: function () { handleAudio(msg.translated, bLang); }, style: { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', padding: '4px 10px', borderRadius: '8px', fontSize: '11px', cursor: 'pointer' } }, '🔊 ' + (bLang || '').slice(0, 3)) : null))));
 }
 try { window.__alloBridgePure = { BRIDGE_PHRASES: BRIDGE_PHRASES, _bridgeTranscript: _bridgeTranscript }; } catch (e) {}
 
@@ -732,7 +744,7 @@ function BridgeSendModal(props) {
                           await handleAudio(parsed.english || bridgeSendText);
                           if (parsed.translated) {
                             await new Promise(r => setTimeout(r, 500));
-                            await handleAudio(parsed.translated);
+                            await handleAudio(parsed.translated, targetLang);
                           }
                         } catch(e) { warnLog('Bridge autoplay TTS error', e); }
                       }, 800);
@@ -816,7 +828,7 @@ function BridgeSendModal(props) {
                     const translated = await callGemini('Translate the following ' + fromLang + ' text to ' + toLang + '. Return ONLY the translation, no explanations or notes:\n\n' + text, false, false, 0.3);
                     setBridgeChatMessages(prev => prev.map(m => m.id === msgId ? {...m, translated, translating:false} : m));
                     setTimeout(() => { const c = document.getElementById('bridge-f2f-messages'); if(c) c.scrollTop = c.scrollHeight; }, 50);
-                    try { await handleAudio(translated); } catch(e2) { warnLog('F2F TTS error', e2); }
+                    try { await handleAudio(translated, toLang); } catch(e2) { warnLog('F2F TTS error', e2); }
                   } catch(err) {
                     setBridgeChatMessages(prev => prev.map(m => m.id === msgId ? {...m, translated:'[' + (t('roster.bridge_f2f_translate_failed') || 'Translation failed') + ']', translating:false} : m));
                     addToast((t('roster.bridge_f2f_translate_failed') || 'Translation failed') + ': ' + err.message, 'error');
@@ -826,8 +838,10 @@ function BridgeSendModal(props) {
                 const _startListening = (side, langCode, inputId) => {
                   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
                   if (!SR) { addToast(t('roster.bridge_f2f_no_speech') || 'Speech recognition not supported', 'error'); return; }
-                  if (bridgeF2FListening === side) { setBridgeF2FListening(null); return; }
+                  if (bridgeF2FListening === side) { _bridgeStopListening(); setBridgeF2FListening(null); return; }
+                  _bridgeStopListening(); // abort any recognizer still running on the other side
                   const rec = new SR();
+                  _bridgeActiveRec = rec;
                   rec.lang = langCode;
                   rec.interimResults = false;
                   rec.maxAlternatives = 1;
@@ -837,8 +851,8 @@ function BridgeSendModal(props) {
                     const input = document.getElementById(inputId);
                     if (input) { input.value = text; input.dispatchEvent(new KeyboardEvent('keydown', {key:'Enter',bubbles:true})); }
                   };
-                  rec.onerror = () => setBridgeF2FListening(null);
-                  rec.onend = () => setBridgeF2FListening(null);
+                  rec.onerror = () => { _bridgeActiveRec = null; setBridgeF2FListening(null); };
+                  rec.onend = () => { _bridgeActiveRec = null; setBridgeF2FListening(null); };
                   rec.start();
                 };
                 const _askAI = async (question) => {
@@ -852,18 +866,22 @@ function BridgeSendModal(props) {
                     try { answerTranslated = await callGemini('Translate the following ' + _personALang + ' text to ' + _personBLang + '. Return ONLY the translation, no notes:\n\n' + answer, false, false, 0.3); } catch(e2) {}
                     setBridgeChatMessages(prev => prev.map(m => m.id === msgId ? {...m, answer, translated:answerTranslated, translating:false} : m));
                     setTimeout(() => { const c = document.getElementById('bridge-f2f-messages'); if(c) c.scrollTop = c.scrollHeight; }, 50);
-                    try { await handleAudio(answer); } catch(e3) { warnLog('AI assist TTS error', e3); }
+                    try { await handleAudio(answer, _personALang); } catch(e3) { warnLog('AI assist TTS error', e3); }
                   } catch(err) {
                     setBridgeChatMessages(prev => prev.map(m => m.id === msgId ? {...m, answer:'[' + (t('roster.bridge_ai_unavailable') || 'AI unavailable right now') + ']', translating:false} : m));
                     addToast((t('roster.bridge_ai_unavailable') || 'AI unavailable right now') + ': ' + err.message, 'error');
                   }
                   setBridgeF2FTranslating(false);
                 };
-                const _exportTranscript = () => {
+                const _exportTranscript = async () => {
                   if (!bridgeChatMessages.length) { addToast(t('roster.bridge_no_convo') || 'Nothing to export yet', 'info'); return; }
                   const text = 'Bridge conversation (' + _personALang + ' / ' + _personBLang + ')\n\n' + _bridgeTranscript(bridgeChatMessages, _personALang, _personBLang);
-                  try { navigator.clipboard.writeText(text); addToast(t('roster.bridge_exported') || 'Conversation copied to clipboard', 'success'); } catch(e) {}
+                  // The .txt download is the reliable path; only claim "copied" if the
+                  // clipboard write actually succeeds (it is often blocked in an iframe).
+                  let copied = false;
+                  try { copied = window.alloCopyText ? await window.alloCopyText(text) : (await navigator.clipboard.writeText(text), true); } catch(e) { copied = false; }
                   try { const blob = new Blob([text], {type:'text/plain'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'bridge-conversation.txt'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); } catch(e) {}
+                  addToast(copied ? (t('roster.bridge_exported') || 'Conversation copied to clipboard') : (t('roster.bridge_downloaded') || 'Conversation downloaded'), 'success');
                 };
                 return (
                 <div style={{marginTop:'20px',borderTop:'1px solid rgba(20,184,166,0.15)',paddingTop:'20px'}}>
@@ -872,7 +890,7 @@ function BridgeSendModal(props) {
                       <span>🌐</span> {t('roster.bridge_f2f_title') || 'Face-to-Face Translation'}
                     </h3>
                     <button
-                      onClick={() => { setBridgeChatOpen(false); setBridgeChatMessages([]); setBridgeF2FListening(null); }}
+                      onClick={() => { _bridgeStopListening(); setBridgeChatOpen(false); setBridgeChatMessages([]); setBridgeF2FListening(null); }}
                       style={{background:'rgba(239,68,68,0.15)',border:'1px solid rgba(239,68,68,0.3)',color:'#fca5a5',padding:'6px 14px',borderRadius:'10px',fontSize:'12px',fontWeight:700,cursor:'pointer'}}
                     >{t('roster.bridge_f2f_end') || 'End'}</button>
                   </div>
@@ -1063,7 +1081,7 @@ function BridgeSendModal(props) {
                     </div>
                   </div>
                   <div style={{fontSize:'11px',color:typeof _bt!=='undefined'?_bt.textMuted:'#64748b',marginBottom:'12px',textAlign:'center',fontStyle:'italic'}}>
-                    🔒 {t('roster.bridge_f2f_ferpa') || 'FERPA-Safe — No student data leaves this device'} • {t('roster.bridge_f2f_both_speak') || 'Both sides speak or type in their own language'}
+                    🔒 {t('roster.bridge_f2f_ferpa') || 'Private: never saved or synced. Translation is processed by a secure AI service.'} • {t('roster.bridge_f2f_both_speak') || 'Both sides speak or type in their own language'}
                   </div>
                   {_bridgePhrasesPanel((ph) => _sendMessage('personA', ph, _personALang, _personBLang), bridgeF2FTranslating, t)}
                   {_bridgeAiBar((q) => _askAI(q), _exportTranscript, bridgeF2FTranslating, t)}
@@ -1113,10 +1131,10 @@ function BridgeSendModal(props) {
                             )}
                             {msg.translated && (
                               <div style={{marginTop:'8px',display:'flex',gap:'6px'}}>
-                                <button onClick={() => handleAudio(msg.text)}
+                                <button onClick={() => handleAudio(msg.text, msg.sender === 'personA' ? _personALang : _personBLang)}
                                   style={{background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.1)',color: '#94a3b8',padding:'4px 10px',borderRadius:'8px',fontSize:'11px',cursor:'pointer',display:'flex',alignItems:'center',gap:'4px'}}
                                 >🔊 {msg.sender === 'personA' ? _personALang.slice(0,3) : _personBLang.slice(0,3)}</button>
-                                <button onClick={() => handleAudio(msg.translated)}
+                                <button onClick={() => handleAudio(msg.translated, msg.sender === 'personA' ? _personBLang : _personALang)}
                                   style={{background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.1)',color: '#94a3b8',padding:'4px 10px',borderRadius:'8px',fontSize:'11px',cursor:'pointer',display:'flex',alignItems:'center',gap:'4px'}}
                                 >🔊 {msg.sender === 'personA' ? _personBLang.slice(0,3) : _personALang.slice(0,3)}</button>
                               </div>
@@ -1172,7 +1190,7 @@ function BridgeSendModal(props) {
                   </div>
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:'10px',padding:'0 4px'}}>
                     <span style={{fontSize:'11px',color:'#475569'}}>
-                      🔒 {t('roster.bridge_f2f_local_only') || 'Local only'} • {bridgeChatMessages.length} {t('roster.bridge_f2f_messages') || 'messages'} • {bridgeF2FTranslating ? '⏳ ' + (t('roster.bridge_f2f_translating') || 'Translating...') : '✅ Ready'}
+                      🔒 {t('roster.bridge_f2f_local_only') || 'Not saved'} • {bridgeChatMessages.length} {t('roster.bridge_f2f_messages') || 'messages'} • {bridgeF2FTranslating ? '⏳ ' + (t('roster.bridge_f2f_translating') || 'Translating...') : '✅ Ready'}
                     </span>
                     <span style={{fontSize:'11px',color:'#475569'}}>
                       🔊 {t('roster.bridge_f2f_tts_auto') || 'TTS auto-plays'} • 🎤 {t('roster.bridge_f2f_mic_speak') || 'Hold mic to speak'} • {t('roster.bridge_f2f_enter_send') || 'Enter to send'}
