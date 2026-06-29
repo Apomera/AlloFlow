@@ -76,8 +76,8 @@ function _bridgeAiBubble(msg, aLang, bLang, handleAudio, t) {
       msg.translating
         ? React.createElement('div', { style: { fontSize: '12px', color: '#64748b', fontStyle: 'italic' } }, '⏳ ' + ((t && t('roster.bridge_ai_thinking')) || 'Thinking…'))
         : React.createElement('div', null,
-            React.createElement('div', { style: { fontSize: '14px', color: '#fde68a', lineHeight: 1.6, fontWeight: 500 } }, msg.answer || ''),
-            msg.translated ? React.createElement('div', { style: { marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.08)', fontSize: '14px', color: '#99f6e4', lineHeight: 1.6 } }, '🌍 ' + msg.translated) : null,
+            React.createElement('div', { dir: 'auto', style: { fontSize: '14px', color: '#fde68a', lineHeight: 1.6, fontWeight: 500 } }, msg.answer || ''),
+            msg.translated ? React.createElement('div', { dir: 'auto', style: { marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.08)', fontSize: '14px', color: '#99f6e4', lineHeight: 1.6 } }, '🌍 ' + msg.translated) : null,
             React.createElement('div', { style: { marginTop: '8px', display: 'flex', gap: '6px' } },
               React.createElement('button', { onClick: function () { handleAudio(msg.answer, aLang); }, style: { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', padding: '4px 10px', borderRadius: '8px', fontSize: '11px', cursor: 'pointer' } }, '🔊 ' + (aLang || '').slice(0, 3)),
               msg.translated ? React.createElement('button', { onClick: function () { handleAudio(msg.translated, bLang); }, style: { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', padding: '4px 10px', borderRadius: '8px', fontSize: '11px', cursor: 'pointer' } }, '🔊 ' + (bLang || '').slice(0, 3)) : null))));
@@ -133,6 +133,19 @@ function BridgeSendModal(props) {
     user,
     warnLog
   } = props;
+  // Reset the per-send selection globals each time the modal opens. The mode /
+  // language / grade / target selects are uncontrolled, so on a 2nd open they
+  // show their defaults again while these globals still hold the previous
+  // open's values — which is what the send path reads (mode has no DOM
+  // fallback). Clearing on open keeps "what you see" and "what you send" in sync.
+  React.useEffect(() => {
+    if (bridgeSendOpen) {
+      window.__bridgeMode = undefined;
+      window.__bridgeLang = undefined;
+      window.__bridgeTarget = undefined;
+      window.__bridgeGrade = undefined;
+    }
+  }, [bridgeSendOpen]);
   if (!(bridgeSendOpen && isTeacherMode)) return null;
   const _isDark = theme === "dark";
   const _isContrast = theme === "contrast";
@@ -815,6 +828,8 @@ Concept: ${bridgeSendText}`;
                       timestamp: Date.now(),
                       senderName: user?.displayName || "Teacher",
                       isBlast: selectedTarget === "all",
+                      overrideLang: bridgeOverrideGroups ? targetLang : null,
+                      overrideGrade: bridgeOverrideGroups ? gradeLevel2 : null,
                       languageMap: selectedTarget === "all" && rosterKey?.groups ? Object.fromEntries(Object.entries(rosterKey.groups).map(([gId, g]) => [gId, g.profile?.leveledTextLanguage || "English"])) : null
                     },
                     bridgeReactions: deleteField()
@@ -1238,7 +1253,7 @@ Concept: ${bridgeSendText}`;
           border: "1px solid " + (msg.sender === "personA" ? "rgba(20,184,166,0.2)" : "rgba(99,102,241,0.2)"),
           borderRadius: msg.sender === "personA" ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
           padding: "14px 18px"
-        } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "10px", fontWeight: 700, color: msg.sender === "personA" ? "#5eead4" : "#a5b4fc", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.08em" } }, msg.sender === "personA" ? (t("roster.bridge_f2f_person_a") || "Person A") + " (" + _personALang + ")" : (t("roster.bridge_f2f_person_b") || "Person B") + " (" + _personBLang + ")"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "16px", color: "#e2e8f0", lineHeight: 1.6, fontWeight: 500 } }, msg.text), msg.translated && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "10px", paddingTop: "10px", borderTop: "1px solid rgba(255,255,255,0.06)" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "10px", fontWeight: 700, color: msg.sender === "personA" ? "#a5b4fc" : "#5eead4", marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.08em" } }, "\u{1F30D} ", msg.sender === "personA" ? _personBLang : _personALang), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "16px", color: msg.sender === "personA" ? "#c7d2fe" : "#99f6e4", lineHeight: 1.6, fontWeight: 500 } }, msg.translated)), msg.translating && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "8px", fontSize: "12px", color: "#64748b", fontStyle: "italic" } }, "\u23F3 ", t("roster.bridge_f2f_translating") || "Translating..."), msg.translated && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "8px", display: "flex", gap: "6px" } }, /* @__PURE__ */ React.createElement(
+        } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "10px", fontWeight: 700, color: msg.sender === "personA" ? "#5eead4" : "#a5b4fc", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.08em" } }, msg.sender === "personA" ? (t("roster.bridge_f2f_person_a") || "Person A") + " (" + _personALang + ")" : (t("roster.bridge_f2f_person_b") || "Person B") + " (" + _personBLang + ")"), /* @__PURE__ */ React.createElement("div", { dir: "auto", style: { fontSize: "16px", color: "#e2e8f0", lineHeight: 1.6, fontWeight: 500 } }, msg.text), msg.translated && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "10px", paddingTop: "10px", borderTop: "1px solid rgba(255,255,255,0.06)" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "10px", fontWeight: 700, color: msg.sender === "personA" ? "#a5b4fc" : "#5eead4", marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.08em" } }, "\u{1F30D} ", msg.sender === "personA" ? _personBLang : _personALang), /* @__PURE__ */ React.createElement("div", { dir: "auto", style: { fontSize: "16px", color: msg.sender === "personA" ? "#c7d2fe" : "#99f6e4", lineHeight: 1.6, fontWeight: 500 } }, msg.translated)), msg.translating && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "8px", fontSize: "12px", color: "#64748b", fontStyle: "italic" } }, "\u23F3 ", t("roster.bridge_f2f_translating") || "Translating..."), msg.translated && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "8px", display: "flex", gap: "6px" } }, /* @__PURE__ */ React.createElement(
           "button",
           {
             onClick: () => handleAudio(msg.text, msg.sender === "personA" ? _personALang : _personBLang),
@@ -1428,7 +1443,7 @@ function BridgeMessageModal(props) {
         },
         "\u2715"
       ))),
-      /* @__PURE__ */ React.createElement("div", { style: { padding: "24px 28px" } }, bridgeMessage.imageUrl && /* @__PURE__ */ React.createElement("div", { style: { marginBottom: "20px", borderRadius: "16px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)" } }, /* @__PURE__ */ React.createElement("img", { src: bridgeMessage.imageUrl, alt: t("bridge.visual_aid_alt") || "Visual aid", style: { width: "100%", display: "block", maxHeight: "300px", objectFit: "contain", background: "rgba(0,0,0,0.3)" } })), /* @__PURE__ */ React.createElement("div", { style: { marginBottom: "20px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "16px", padding: "20px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" } }, "\u{1F1FA}\u{1F1F8} ", t("roster.bridge_english") || "English"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: bridgeProjectionMode ? "24px" : "16px", lineHeight: 1.8, letterSpacing: "0.01em" } }, bridgeMessage.english.split(/\s+/).map((word, idx) => {
+      /* @__PURE__ */ React.createElement("div", { style: { padding: "24px 28px" } }, bridgeMessage.imageUrl && /* @__PURE__ */ React.createElement("div", { style: { marginBottom: "20px", borderRadius: "16px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)" } }, /* @__PURE__ */ React.createElement("img", { src: bridgeMessage.imageUrl, alt: t("bridge.visual_aid_alt") || "Visual aid", style: { width: "100%", display: "block", maxHeight: "300px", objectFit: "contain", background: "rgba(0,0,0,0.3)" } })), /* @__PURE__ */ React.createElement("div", { style: { marginBottom: "20px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "16px", padding: "20px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" } }, "\u{1F1FA}\u{1F1F8} ", t("roster.bridge_english") || "English"), /* @__PURE__ */ React.createElement("div", { dir: "auto", style: { fontSize: bridgeProjectionMode ? "24px" : "16px", lineHeight: 1.8, letterSpacing: "0.01em" } }, bridgeMessage.english.split(/\s+/).map((word, idx) => {
         const isBold = /^\*\*(.*?)\*\*$/.test(word.trim());
         const cleanWord = word.replace(/\*\*/g, "");
         return /* @__PURE__ */ React.createElement("span", { key: idx, style: {
@@ -1491,7 +1506,7 @@ function BridgeMessageModal(props) {
         },
         "\u{1F50A} ",
         t("roster.bridge_play_en") || "Play English"
-      ), bridgeTtsPlaying && bridgeActiveLanguage === "en" && /* @__PURE__ */ React.createElement("div", { style: { flex: 1, height: "4px", background: "rgba(255,255,255,0.06)", borderRadius: "2px", overflow: "hidden" } }, /* @__PURE__ */ React.createElement("div", { style: { height: "100%", background: "linear-gradient(90deg,#6366f1,#818cf8)", borderRadius: "2px", transition: "width 0.15s", width: bridgeKaraokeIndex >= 0 ? `${bridgeKaraokeIndex / Math.max(1, bridgeMessage.english.split(/\s+/).length) * 100}%` : "0%" } })))), bridgeMessage.translated && /* @__PURE__ */ React.createElement("div", { style: { marginBottom: "20px", background: "rgba(20,184,166,0.08)", border: "1px solid rgba(20,184,166,0.18)", borderRadius: "16px", padding: "20px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 700, color: "#5eead4", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" } }, "\u{1F310} ", bridgeMessage.languageName || bridgeMessage.language), /* @__PURE__ */ React.createElement("div", { style: { fontSize: bridgeProjectionMode ? "24px" : "16px", lineHeight: 1.8, letterSpacing: "0.01em" } }, bridgeMessage.translated.split(/\s+/).map((word, idx) => {
+      ), bridgeTtsPlaying && bridgeActiveLanguage === "en" && /* @__PURE__ */ React.createElement("div", { style: { flex: 1, height: "4px", background: "rgba(255,255,255,0.06)", borderRadius: "2px", overflow: "hidden" } }, /* @__PURE__ */ React.createElement("div", { style: { height: "100%", background: "linear-gradient(90deg,#6366f1,#818cf8)", borderRadius: "2px", transition: "width 0.15s", width: bridgeKaraokeIndex >= 0 ? `${bridgeKaraokeIndex / Math.max(1, bridgeMessage.english.split(/\s+/).length) * 100}%` : "0%" } })))), bridgeMessage.translated && /* @__PURE__ */ React.createElement("div", { style: { marginBottom: "20px", background: "rgba(20,184,166,0.08)", border: "1px solid rgba(20,184,166,0.18)", borderRadius: "16px", padding: "20px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 700, color: "#5eead4", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" } }, "\u{1F310} ", bridgeMessage.languageName || bridgeMessage.language), /* @__PURE__ */ React.createElement("div", { dir: "auto", style: { fontSize: bridgeProjectionMode ? "24px" : "16px", lineHeight: 1.8, letterSpacing: "0.01em" } }, bridgeMessage.translated.split(/\s+/).map((word, idx) => {
         const isBold = /^\*\*(.*?)\*\*$/.test(word.trim());
         const cleanWord = word.replace(/\*\*/g, "");
         return /* @__PURE__ */ React.createElement("span", { key: idx, style: {

@@ -81,8 +81,8 @@ function _bridgeAiBubble(msg, aLang, bLang, handleAudio, t) {
       msg.translating
         ? React.createElement('div', { style: { fontSize: '12px', color: '#64748b', fontStyle: 'italic' } }, '⏳ ' + ((t && t('roster.bridge_ai_thinking')) || 'Thinking…'))
         : React.createElement('div', null,
-            React.createElement('div', { style: { fontSize: '14px', color: '#fde68a', lineHeight: 1.6, fontWeight: 500 } }, msg.answer || ''),
-            msg.translated ? React.createElement('div', { style: { marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.08)', fontSize: '14px', color: '#99f6e4', lineHeight: 1.6 } }, '🌍 ' + msg.translated) : null,
+            React.createElement('div', { dir: 'auto', style: { fontSize: '14px', color: '#fde68a', lineHeight: 1.6, fontWeight: 500 } }, msg.answer || ''),
+            msg.translated ? React.createElement('div', { dir: 'auto', style: { marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.08)', fontSize: '14px', color: '#99f6e4', lineHeight: 1.6 } }, '🌍 ' + msg.translated) : null,
             React.createElement('div', { style: { marginTop: '8px', display: 'flex', gap: '6px' } },
               React.createElement('button', { onClick: function () { handleAudio(msg.answer, aLang); }, style: { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', padding: '4px 10px', borderRadius: '8px', fontSize: '11px', cursor: 'pointer' } }, '🔊 ' + (aLang || '').slice(0, 3)),
               msg.translated ? React.createElement('button', { onClick: function () { handleAudio(msg.translated, bLang); }, style: { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', padding: '4px 10px', borderRadius: '8px', fontSize: '11px', cursor: 'pointer' } }, '🔊 ' + (bLang || '').slice(0, 3)) : null))));
@@ -105,6 +105,19 @@ function BridgeSendModal(props) {
     setBridgeSending, setBridgeTermsSaved, t, theme,
     updateDoc, user, warnLog
   } = props;
+  // Reset the per-send selection globals each time the modal opens. The mode /
+  // language / grade / target selects are uncontrolled, so on a 2nd open they
+  // show their defaults again while these globals still hold the previous
+  // open's values — which is what the send path reads (mode has no DOM
+  // fallback). Clearing on open keeps "what you see" and "what you send" in sync.
+  React.useEffect(() => {
+    if (bridgeSendOpen) {
+      window.__bridgeMode = undefined;
+      window.__bridgeLang = undefined;
+      window.__bridgeTarget = undefined;
+      window.__bridgeGrade = undefined;
+    }
+  }, [bridgeSendOpen]);
   if (!(bridgeSendOpen && isTeacherMode)) return null;
         const _isDark = theme === 'dark';
         const _isContrast = theme === 'contrast';
@@ -760,6 +773,11 @@ function BridgeSendModal(props) {
                             timestamp: Date.now(),
                             senderName: user?.displayName || 'Teacher',
                             isBlast: selectedTarget === 'all',
+                            // When the teacher enables "Override group settings", the UI promises
+                            // every student gets THIS exact language & reading level. Carry it so
+                            // the consumer can honor that instead of each student's group profile.
+                            overrideLang: bridgeOverrideGroups ? targetLang : null,
+                            overrideGrade: bridgeOverrideGroups ? gradeLevel : null,
                             languageMap: selectedTarget === 'all' && rosterKey?.groups
                               ? Object.fromEntries(Object.entries(rosterKey.groups).map(([gId, g]) => [gId, g.profile?.leveledTextLanguage || 'English']))
                               : null
@@ -1115,13 +1133,13 @@ function BridgeSendModal(props) {
                             <div style={{fontSize:'10px',fontWeight:700,color:msg.sender === 'personA' ? '#5eead4' : '#a5b4fc',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'0.08em'}}>
                               {msg.sender === 'personA' ? (t('roster.bridge_f2f_person_a') || 'Person A') + ' (' + _personALang + ')' : (t('roster.bridge_f2f_person_b') || 'Person B') + ' (' + _personBLang + ')'}
                             </div>
-                            <div style={{fontSize:'16px',color: '#e2e8f0',lineHeight:1.6,fontWeight:500}}>{msg.text}</div>
+                            <div dir="auto" style={{fontSize:'16px',color: '#e2e8f0',lineHeight:1.6,fontWeight:500}}>{msg.text}</div>
                             {msg.translated && (
                               <div style={{marginTop:'10px',paddingTop:'10px',borderTop:'1px solid rgba(255,255,255,0.06)'}}>
                                 <div style={{fontSize:'10px',fontWeight:700,color:msg.sender === 'personA' ? '#a5b4fc' : '#5eead4',marginBottom:'4px',textTransform:'uppercase',letterSpacing:'0.08em'}}>
                                   🌍 {msg.sender === 'personA' ? _personBLang : _personALang}
                                 </div>
-                                <div style={{fontSize:'16px',color:msg.sender === 'personA' ? '#c7d2fe' : '#99f6e4',lineHeight:1.6,fontWeight:500}}>{msg.translated}</div>
+                                <div dir="auto" style={{fontSize:'16px',color:msg.sender === 'personA' ? '#c7d2fe' : '#99f6e4',lineHeight:1.6,fontWeight:500}}>{msg.translated}</div>
                               </div>
                             )}
                             {msg.translating && (
@@ -1294,7 +1312,7 @@ function BridgeMessageModal(props) {
               )}
               <div style={{marginBottom:'20px',background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.06)',borderRadius:'16px',padding:'20px'}}>
                 <div style={{fontSize:'12px',fontWeight:700,color: '#94a3b8',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:'10px'}}>🇺🇸 {t('roster.bridge_english') || 'English'}</div>
-                <div style={{fontSize: bridgeProjectionMode ? '24px' : '16px',lineHeight:1.8,letterSpacing:'0.01em'}}>
+                <div dir="auto" style={{fontSize: bridgeProjectionMode ? '24px' : '16px',lineHeight:1.8,letterSpacing:'0.01em'}}>
                   {bridgeMessage.english.split(/\s+/).map((word, idx) => {
                     const isBold = /^\*\*(.*?)\*\*$/.test(word.trim());
                     const cleanWord = word.replace(/\*\*/g, '');
@@ -1358,7 +1376,7 @@ function BridgeMessageModal(props) {
               {bridgeMessage.translated && (
                 <div style={{marginBottom:'20px',background:'rgba(20,184,166,0.08)',border:'1px solid rgba(20,184,166,0.18)',borderRadius:'16px',padding:'20px'}}>
                   <div style={{fontSize:'12px',fontWeight:700,color:'#5eead4',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:'10px'}}>🌐 {bridgeMessage.languageName || bridgeMessage.language}</div>
-                  <div style={{fontSize: bridgeProjectionMode ? '24px' : '16px',lineHeight:1.8,letterSpacing:'0.01em'}}>
+                  <div dir="auto" style={{fontSize: bridgeProjectionMode ? '24px' : '16px',lineHeight:1.8,letterSpacing:'0.01em'}}>
                     {bridgeMessage.translated.split(/\s+/).map((word, idx) => {
                       const isBold = /^\*\*(.*?)\*\*$/.test(word.trim());
                       const cleanWord = word.replace(/\*\*/g, '');
