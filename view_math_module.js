@@ -37,7 +37,98 @@
   var Sparkles = _lazyIcon('Sparkles');
   var ChevronDown = _lazyIcon('ChevronDown');
 
-  function MathView(props) {
+  // ── Inline parametric diagram renderer (roadmap step 2: editable-diagram foundation) ──
+// Renders a manipulativeSupport {tool,state} spec as an INLINE, ACCESSIBLE SVG
+// (role=img + <title>/<desc> + escaped labels) for the common quantitative types,
+// so the diagram is parametric + screen-readable inline — vs the frozen AI-authored
+// graphData blob (no text alternative) or hiding it behind the Open-in-STEM-Lab
+// button. Pure + deterministic; all dynamic text escaped (safe to inject without
+// the AI-content sanitizer). Returns an SVG string for supported tools, else null
+// (caller falls back to the existing button). Start: numberline + coordinate.
+function _renderDiagramSvg(tool, state, titleText) {
+  if (!tool || !state) return null;
+  var esc = function (s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  };
+  var num = function (v, d) {
+    var n = Number(v);
+    return isFinite(n) ? n : d;
+  };
+  if (tool === 'numberline') {
+    var range = state.range || {};
+    var min = num(range.min, 0),
+      max = num(range.max, 10);
+    if (max <= min) max = min + 10;
+    var W = 380,
+      H = 84,
+      padX = 24,
+      axisY = 46;
+    var sx = function (v) {
+      return padX + (num(v, min) - min) / (max - min) * (W - 2 * padX);
+    };
+    var span = max - min;
+    var step = span <= 10 ? 1 : span <= 20 ? 2 : span <= 50 ? 5 : Math.ceil(span / 10);
+    var ticks = '';
+    for (var tv = Math.ceil(min); tv <= max; tv += step) {
+      var tx = sx(tv);
+      ticks += '<line x1="' + tx + '" y1="' + (axisY - 5) + '" x2="' + tx + '" y2="' + (axisY + 5) + '" stroke="#475569" stroke-width="1.5"/>' + '<text x="' + tx + '" y="' + (axisY + 20) + '" font-size="11" fill="#475569" text-anchor="middle">' + esc(tv) + '</text>';
+    }
+    var markers = '',
+      descParts = [];
+    (Array.isArray(state.markers) ? state.markers : []).forEach(function (m) {
+      var mv = num(m && m.value, null);
+      if (mv == null) return;
+      var mx = sx(mv);
+      var lbl = m && m.label ? String(m.label) : String(mv);
+      markers += '<circle cx="' + mx + '" cy="' + axisY + '" r="6" fill="#4f46e5"/>' + '<text x="' + mx + '" y="' + (axisY - 12) + '" font-size="11" font-weight="bold" fill="#4f46e5" text-anchor="middle">' + esc(lbl) + '</text>';
+      descParts.push(lbl + ' at ' + mv);
+    });
+    var nlTitle = esc(titleText || 'Number line');
+    var nlDesc = esc('Number line from ' + min + ' to ' + max + (descParts.length ? '. Marked: ' + descParts.join(', ') + '.' : '.'));
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + nlTitle + ': ' + nlDesc + '" width="100%" style="max-width:420px"><title>' + nlTitle + '</title><desc>' + nlDesc + '</desc>' + '<line x1="' + padX + '" y1="' + axisY + '" x2="' + (W - padX) + '" y2="' + axisY + '" stroke="#475569" stroke-width="2"/>' + ticks + markers + '</svg>';
+  }
+  if (tool === 'coordinate') {
+    var pts = Array.isArray(state.points) ? state.points.filter(function (p) {
+      return p && isFinite(Number(p.x)) && isFinite(Number(p.y));
+    }) : [];
+    var coords = pts.map(function (p) {
+      return Math.abs(Number(p.x));
+    }).concat(pts.map(function (p) {
+      return Math.abs(Number(p.y));
+    }));
+    var R = coords.length ? Math.max(5, Math.ceil(Math.max.apply(null, coords))) : 10;
+    if (R > 20) R = 20;
+    var S = 240,
+      pad = 16,
+      origin = S / 2,
+      unit = (S / 2 - pad) / R;
+    var cx = function (x) {
+      return origin + num(x, 0) * unit;
+    };
+    var cy = function (y) {
+      return origin - num(y, 0) * unit;
+    };
+    var grid = '';
+    for (var g = -R; g <= R; g++) {
+      grid += '<line x1="' + cx(g) + '" y1="' + pad + '" x2="' + cx(g) + '" y2="' + (S - pad) + '" stroke="#e2e8f0" stroke-width="1"/>' + '<line x1="' + pad + '" y1="' + cy(g) + '" x2="' + (S - pad) + '" y2="' + cy(g) + '" stroke="#e2e8f0" stroke-width="1"/>';
+    }
+    var axes = '<line x1="' + pad + '" y1="' + origin + '" x2="' + (S - pad) + '" y2="' + origin + '" stroke="#475569" stroke-width="1.5"/>' + '<line x1="' + origin + '" y1="' + pad + '" x2="' + origin + '" y2="' + (S - pad) + '" stroke="#475569" stroke-width="1.5"/>';
+    var plotted = '',
+      cDesc = [];
+    pts.forEach(function (p) {
+      var px = cx(p.x),
+        py = cy(p.y);
+      var plbl = (p.label ? String(p.label) + ' ' : '') + '(' + Number(p.x) + ', ' + Number(p.y) + ')';
+      plotted += '<circle cx="' + px + '" cy="' + py + '" r="5" fill="#4f46e5"/>' + '<text x="' + (px + 7) + '" y="' + (py - 7) + '" font-size="10" font-weight="bold" fill="#4f46e5">' + esc(plbl) + '</text>';
+      cDesc.push(plbl);
+    });
+    var cTitle = esc(titleText || 'Coordinate grid');
+    var cDescStr = esc('Coordinate plane, axes from -' + R + ' to ' + R + (cDesc.length ? '. Points: ' + cDesc.join('; ') + '.' : '.'));
+    return '<svg viewBox="0 0 ' + S + ' ' + S + '" role="img" aria-label="' + cTitle + ': ' + cDescStr + '" width="100%" style="max-width:300px"><title>' + cTitle + '</title><desc>' + cDescStr + '</desc>' + grid + axes + plotted + '</svg>';
+  }
+  return null;
+}
+function MathView(props) {
   // State reads
   var t = props.t;
   var generatedContent = props.generatedContent;
@@ -144,6 +235,8 @@
     size: 14
   }), " ", t('math.display.visual_header')), /*#__PURE__*/React.createElement("div", {
     className: "w-full h-auto flex justify-center bg-slate-50 rounded-lg border border-slate-100 p-4 overflow-hidden svg-container",
+    role: "img",
+    "aria-label": generatedContent?.data?.graphAlt || 'Visual diagram for this problem',
     dangerouslySetInnerHTML: {
       __html: sanitizeHtml(generatedContent?.data.graphData)
     },
@@ -189,7 +282,17 @@
     size: 14
   }))), isTeacherMode ? /*#__PURE__*/React.createElement(React.Fragment, null, isIndependentMode && /*#__PURE__*/React.createElement("div", {
     className: "ml-4 sm:ml-12 mt-4 mb-4 space-y-3"
-  }, problem.manipulativeSupport && /*#__PURE__*/React.createElement("button", {
+  }, problem.manipulativeSupport && (() => {
+    // Inline accessible diagram (step 2): show the parametric scaffold inline +
+    // screen-readable for supported types; the Open-in-Lab button below stays for full editing.
+    var _suppSvg = _renderDiagramSvg(problem.manipulativeSupport.tool, problem.manipulativeSupport.state, generatedContent && generatedContent.data && generatedContent.data.title);
+    return _suppSvg ? /*#__PURE__*/React.createElement("div", {
+      className: "mb-2 flex justify-center bg-slate-50 rounded-lg border border-slate-100 p-3 overflow-hidden",
+      dangerouslySetInnerHTML: {
+        __html: _suppSvg
+      }
+    }) : null;
+  })(), problem.manipulativeSupport && /*#__PURE__*/React.createElement("button", {
     onClick: () => {
       setStemLabTool(problem.manipulativeSupport.tool);
       // Scaffold seeding: support is a worked example (NOT the student's answer),

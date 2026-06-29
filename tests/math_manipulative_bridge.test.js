@@ -54,3 +54,41 @@ describe('math<->manipulative bridge step 1b: toggle control + tool-list parity 
     expect(vm).toMatch(/manipulativeResponse\.tool === 'volume'[\s\S]{0,200}\{ l: 1, w: 1, h: 1 \}/);
   });
 });
+
+describe('step 2: inline parametric diagram renderer (_renderDiagramSvg) — accessible SVG', () => {
+  // Extract the REAL pure function from source and run it (no external deps).
+  const m = vm.match(/function _renderDiagramSvg\(tool, state, titleText\) \{[\s\S]*?\n  return null;\n\}/);
+  const render = m ? new Function('return (' + m[0] + ')')() : null;
+
+  it('the renderer exists in source', () => {
+    expect(m).toBeTruthy();
+  });
+  it('numberline → accessible SVG with title/desc/role + the marker label', () => {
+    const svg = render('numberline', { range: { min: 0, max: 10 }, markers: [{ value: 5, label: 'A' }] }, 'My line');
+    expect(svg).toContain('<svg');
+    expect(svg).toContain('role="img"');
+    expect(svg).toContain('<title>My line</title>');
+    expect(svg).toMatch(/<desc>[^<]*Number line from 0 to 10/);
+    expect(svg).toContain('>A<'); // marker label rendered as text
+  });
+  it('coordinate → accessible SVG that lists the plotted point in <desc>', () => {
+    const svg = render('coordinate', { points: [{ x: 2, y: 3, label: 'P' }] }, 'Grid');
+    expect(svg).toContain('role="img"');
+    expect(svg).toContain('<title>Grid</title>');
+    expect(svg).toMatch(/<desc>[^<]*Points:[^<]*P \(2, 3\)/);
+  });
+  it('escapes dynamic label text (no raw markup injection)', () => {
+    const svg = render('numberline', { range: { min: 0, max: 4 }, markers: [{ value: 1, label: '<x>' }] }, 'safe');
+    expect(svg).toContain('&lt;x&gt;');
+    expect(svg).not.toContain('<x>'); // never injected raw
+  });
+  it('returns null for unsupported tools / missing state (caller falls back to the button)', () => {
+    expect(render('volume', { dims: { l: 2, w: 2, h: 2 } })).toBeNull();
+    expect(render('numberline', null)).toBeNull();
+    expect(render(null, {})).toBeNull();
+  });
+  it('is wired inline in the math view + graphData has a text alternative', () => {
+    expect(vm).toMatch(/_renderDiagramSvg\(problem\.manipulativeSupport\.tool, problem\.manipulativeSupport\.state/);
+    expect(vm).toMatch(/role="img"[\s\S]{0,80}aria-label=\{\(generatedContent\?\.data\?\.graphAlt\)/);
+  });
+});
