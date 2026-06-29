@@ -779,13 +779,20 @@ function BridgeSendModal(props) {
                     if (activeSessionCode) {
                       try {
                         const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
-                        await updateDoc(sessionRef, {
+                        // Route the class broadcast through the FERPA Tier-2 gate (writeToSession)
+                        // instead of a raw updateDoc, so it is enforced + auditable like every other
+                        // session write. bridgePayload/bridgeReactions are allowlisted in
+                        // SESSION_TIER1_LEAVES with an explicit justification (see that list). The
+                        // sender is de-identified to 'Teacher' (no account display name). Fail CLOSED
+                        // if the gate is unavailable rather than silently bypassing it.
+                        const _gate = (typeof window !== 'undefined') && window.__alloWriteToSession;
+                        const _bridgeBroadcast = {
                           bridgePayload: {
                             text: bridgeSendText,
                             mode: selectedMode,
                             targetGroup: selectedTarget,
                             timestamp: Date.now(),
-                            senderName: user?.displayName || 'Teacher',
+                            senderName: 'Teacher',
                             isBlast: selectedTarget === 'all',
                             // When the teacher enables "Override group settings", the UI promises
                             // every student gets THIS exact language & reading level. Carry it so
@@ -797,7 +804,9 @@ function BridgeSendModal(props) {
                               : null
                           },
                           bridgeReactions: deleteField()
-                        });
+                        };
+                        if (typeof _gate === 'function') { await _gate(sessionRef, _bridgeBroadcast); }
+                        else { warnLog('Bridge: privacy gate unavailable; class broadcast skipped (not bypassing)'); }
                       } catch(fbErr) { warnLog('Bridge Firebase write failed:', fbErr); }
                     }
                   } catch(err) {

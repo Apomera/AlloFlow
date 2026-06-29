@@ -829,20 +829,26 @@ Concept: ${bridgeSendText}`;
               if (activeSessionCode) {
                 try {
                   const sessionRef = doc(db, "artifacts", appId, "public", "data", "sessions", activeSessionCode);
-                  await updateDoc(sessionRef, {
+                  const _gate = typeof window !== "undefined" && window.__alloWriteToSession;
+                  const _bridgeBroadcast = {
                     bridgePayload: {
                       text: bridgeSendText,
                       mode: selectedMode,
                       targetGroup: selectedTarget,
                       timestamp: Date.now(),
-                      senderName: user?.displayName || "Teacher",
+                      senderName: "Teacher",
                       isBlast: selectedTarget === "all",
                       overrideLang: bridgeOverrideGroups ? targetLang : null,
                       overrideGrade: bridgeOverrideGroups ? gradeLevel2 : null,
                       languageMap: selectedTarget === "all" && rosterKey?.groups ? Object.fromEntries(Object.entries(rosterKey.groups).map(([gId, g]) => [gId, g.profile?.leveledTextLanguage || "English"])) : null
                     },
                     bridgeReactions: deleteField()
-                  });
+                  };
+                  if (typeof _gate === "function") {
+                    await _gate(sessionRef, _bridgeBroadcast);
+                  } else {
+                    warnLog("Bridge: privacy gate unavailable; class broadcast skipped (not bypassing)");
+                  }
                 } catch (fbErr) {
                   warnLog("Bridge Firebase write failed:", fbErr);
                 }
