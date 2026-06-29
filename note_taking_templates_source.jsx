@@ -1228,18 +1228,42 @@ const QAndAView = React.memo((props) => {
   );
 });
 
+// ── Auto-grow textareas ─────────────────────────────────────────────────────
+// Long student responses should expand the box (not scroll inside a small one),
+// and must PRINT in full: a browser prints a <textarea> at its on-screen height,
+// so a fixed / scrolled box silently clips overflow on the handout or PDF. These
+// size each textarea to its content; applied across every note template.
+function _autoGrowTextarea(el) {
+  if (!el || el.tagName !== 'TEXTAREA') return;
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+  el.style.overflowY = 'hidden';
+}
+function _autoGrowAll(root) {
+  if (!root || typeof root.querySelectorAll !== 'function') return;
+  root.querySelectorAll('textarea').forEach(_autoGrowTextarea);
+}
+
 // ── Dispatcher ───────────────────────────────────────────────────────────
 const NoteTakingView = React.memo((props) => {
+  const _autoGrowRootRef = React.useRef(null);
+  // Re-fit every textarea after each render so AI-seeded prompts, restored
+  // entries, and template switches all open at their full content height.
+  React.useEffect(function () { _autoGrowAll(_autoGrowRootRef.current); });
   const generatedContent = props.generatedContent;
   if (!generatedContent || generatedContent.type !== 'note-taking') return null;
   const templateType = (generatedContent.data && generatedContent.data.templateType) || 'cornell-notes';
-  if (templateType === 'cornell-notes') return React.createElement(CornellNotesView, props);
-  if (templateType === 'lab-report') return React.createElement(LabReportView, props);
-  if (templateType === 'reading-response') return React.createElement(ReadingResponseView, props);
-  if (templateType === 'double-entry') return React.createElement(DoubleEntryView, props);
-  if (templateType === 'guided-notes') return React.createElement(GuidedNotesView, props);
-  if (templateType === 'q-and-a') return React.createElement(QAndAView, props);
-  return null;
+  let _view = null;
+  if (templateType === 'cornell-notes') _view = React.createElement(CornellNotesView, props);
+  else if (templateType === 'lab-report') _view = React.createElement(LabReportView, props);
+  else if (templateType === 'reading-response') _view = React.createElement(ReadingResponseView, props);
+  else if (templateType === 'double-entry') _view = React.createElement(DoubleEntryView, props);
+  else if (templateType === 'guided-notes') _view = React.createElement(GuidedNotesView, props);
+  else if (templateType === 'q-and-a') _view = React.createElement(QAndAView, props);
+  if (!_view) return null;
+  // One delegated onInput grows the box as the student types; the wrapper is
+  // layout-neutral and lets a single ref cover every template's textareas.
+  return React.createElement('div', { ref: _autoGrowRootRef, className: 'nt-autogrow', onInput: function (e) { _autoGrowTextarea(e.target); } }, _view);
 });
 
 // ── Notebook Overlay ─────────────────────────────────────────────────────
@@ -1516,7 +1540,12 @@ const NotebookOverlay = React.memo((props) => {
     'anchor-chart':     sortedEntries.filter(e => _entryKind(e) === 'anchor-chart').length,
   };
   const handlePrintAll = () => {
-    try { window.print(); } catch (_) {}
+    try {
+      // Expand note textareas to full content height before printing — a browser
+      // prints a <textarea> at its on-screen height, so longer notes would clip.
+      document.querySelectorAll('.nt-autogrow').forEach(function (root) { _autoGrowAll(root); });
+      window.print();
+    } catch (_) {}
   };
   const filters = [
     { id: 'all',              label: 'All',             accent: 'slate' },
