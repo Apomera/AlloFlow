@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -8522,9 +8522,16 @@ Return ONLY valid JSON:
         needsAdditionalAnalysis: false, // High variance on pre-remediation is expected — flag only post-remediation
         reliability: _reliabilityDegenerate ? 'n/a' : (icc >= 0.9 ? 'excellent' : icc >= 0.75 ? 'good' : icc >= 0.5 ? 'moderate' : 'variable'),
         reliabilityDegenerate: _reliabilityDegenerate, // true = uniform-at-floor / single pass → agreement not meaningful
-        summary: scoreRange > 25
-          ? `Scores varied significantly (range: ${scoreRange}, SD: ${scoreSD}) across ${n} audits. ${parsedAudits[0].summary}`
-          : `${parsedAudits[0].summary} (${n}-pass self-consistency, SD: ${scoreSD})`,
+        // A sliced audit is one merged object (n=1) → scoreSD/scoreRange are 0 by
+        // degeneracy, NOT by measured agreement. Its own summary already says it was
+        // page-sliced + approximate, so do NOT append the "(N-pass self-consistency,
+        // SD: 0)" tag (which would imply a zero-variance multi-pass agreement that
+        // never ran, contradicting the approximate disclosure).
+        summary: (parsedAudits.length === 1 && parsedAudits[0]._slicedAudit)
+          ? parsedAudits[0].summary
+          : (scoreRange > 25
+            ? `Scores varied significantly (range: ${scoreRange}, SD: ${scoreSD}) across ${n} audits. ${parsedAudits[0].summary}`
+            : `${parsedAudits[0].summary} (${n}-pass self-consistency, SD: ${scoreSD})`),
         critical: _mCritical,
         serious: _mSerious,
         moderate: _mModerate,
@@ -17864,6 +17871,12 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         secondEngineAudit: eaResults,
         beforeScore,
         beforeAxeScore,
+        // Carry the BEFORE audit's page-slice provenance so the UI can mark the
+        // before→after delta as approximate: a sliced 'before' (cross-page checks
+        // degraded) is not comparable to a full whole-document 'after'. The flags
+        // live only on the triangulated audit object, so propagate them here.
+        _beforeWasSliced: !!(_auditResult && _auditResult._slicedAudit),
+        _beforeSliceCount: (_auditResult && _auditResult._sliceCount) || undefined,
         afterScore: finalAfterScore,
         axeScore: axeResults ? axeResults.score : null,
         axeViolations: axeResults ? axeResults.totalViolations : 0,
@@ -18002,6 +18015,13 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         // (deterministic-only) is not the same methodology, so the +gain is not meaningful. Mirror the
         // neutral headline; no "remediated!" claim and no success chord. (score-blend-degraded-1, 2026-06-21)
         addToast(`⚠️ Structural/automated checks: ${finalAfterScore}/100 — but the AI semantic audit was throttled and didn't finish${fixNote}. Re-run for a full verified score.`, 'warning');
+        try { window.remediationAudio && window.remediationAudio.refixSuccess(); } catch(e) {}
+      } else if (_auditResult && _auditResult._slicedAudit && finalAfterScore !== null) {
+        // The BEFORE audit was a page-slice approximation (the whole-document audit failed), so
+        // beforeScore and the whole-document finalAfterScore are NOT the same methodology — the
+        // +gain is not a clean apples-to-apples delta. Report it neutrally; no "remediated!" claim
+        // and no success chord. (sliced-baseline-delta, 2026-06-29)
+        addToast(`PDF processed: ${beforeScore} → ${finalAfterScore}${fixNote}. The 'before' score was a page-slice approximation, so this change is approximate — review the Diff before distributing.`, 'info');
         try { window.remediationAudio && window.remediationAudio.refixSuccess(); } catch(e) {}
       } else if (finalAfterScore !== null && finalAfterScore >= 80) {
         addToast(`✅ PDF remediated! Score: ${beforeScore} → ${finalAfterScore} (+${scoreGain})${fixNote}`, 'success');
@@ -18787,7 +18807,7 @@ tr { page-break-inside: avoid; }
   <div class="footer">
     <p><strong>About this report:</strong> AlloFlow's PDF/UA-1 self-check inspects the tagged PDF structure (StructTreeRoot, MarkInfo, ParentTree, MCID linkage, Lang, Title, ViewerPreferences) and reports per-rule pass/fail in the format used by Adobe Accessibility Checker and PAC 3. Self-check results are advisory — for high-stakes compliance filings (federal contracts, ADA Title II audits), pair this report with an independent run through <a href="https://pdfua.foundation/en/pdf-accessibility-checker-pac">PAC 3</a> or Adobe Acrobat Pro's Accessibility Checker.</p>
     <p><strong>Standards referenced:</strong> PDF/UA-1 (ISO 14289-1) · WCAG 2.1 Level AA · ADA Title II (28 CFR Part 35 Subpart H) · Section 508 · EN 301 549</p>
-    <p><strong>Methodology:</strong> Multi-pass AI self-consistency review (up to 10 stakeholder-perspective passes of a single model), axe-core (Deque Systems) automated WCAG 2.1 AA verification, deterministic content-stream MCID wrapping with role inference from font scale + source tag tree, and structural validation against PDF/UA-1 specification requirements.</p>
+    <p><strong>Methodology:</strong> ${((auditResult && auditResult._slicedAudit) || (fixResult && fixResult._beforeWasSliced)) ? `Page-sliced AI review — the initial audit split the document into ${_esc(String((auditResult && auditResult._sliceCount) || (fixResult && fixResult._beforeSliceCount) || 'multiple'))} page-ranges (one pass each) because a single whole-document pass exceeded the model; cross-page checks (reading order, heading continuity) are approximate` : 'Multi-pass AI self-consistency review (up to 10 stakeholder-perspective passes of a single model)'}, axe-core (Deque Systems) automated WCAG 2.1 AA verification, deterministic content-stream MCID wrapping with role inference from font scale + source tag tree, and structural validation against PDF/UA-1 specification requirements.</p>
     <p><strong>Limitations:</strong> Automated checks cannot verify reading order intent, alt-text quality, or contextual appropriateness. For comprehensive compliance verification consider professional accessibility auditing services such as <a href="https://knowbility.org">Knowbility</a> (AccessWorks usability testing with people with disabilities).</p>
     <p>Generated by AlloFlow · Open source (GNU AGPL v3) · ${_esc(date)}</p>
   </div>
@@ -28973,11 +28993,6 @@ window.AlloModules.createDocPipeline.ocrBlockLayout = _alloOcrBlockLayout; // st
 window.AlloModules.createDocPipeline.structuralFoundations = _alloStructuralFoundations; // static: exposed for tests
 window.AlloModules.createDocPipeline.weightedDeductions = _alloWeightedDeductions; // static: exposed for tests (#5)
 window.AlloModules.createDocPipeline.contrastFixPair = _alloContrastFixPair; // static: exposed for tests (contrast pair-fixer)
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 })();

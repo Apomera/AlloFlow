@@ -378,3 +378,47 @@ describe('B6: large-document page-slice audit (chunk-first router + reactive fal
     expect(chunkFirst(3000, 10)).toBe(false);
   });
 });
+
+describe('B7: sliced-audit UI honesty (the score/info surfaces disclose the approximate path)', () => {
+  const vps = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
+
+  // (1) the fabricated "(N-pass self-consistency, SD: 0)" tag is NOT appended for a sliced audit
+  it('triangulated summary skips the self-consistency tag for a sliced (n=1) audit', () => {
+    expect(dp).toMatch(/parsedAudits\.length === 1 && parsedAudits\[0\]\._slicedAudit\)\s*\n?\s*\?\s*parsedAudits\[0\]\.summary/);
+  });
+  // (2) the sliced provenance propagates onto the fix result so the UI can disclose it
+  it('fixAndVerifyPdf result carries _beforeWasSliced / _beforeSliceCount', () => {
+    expect(dp).toMatch(/_beforeWasSliced: !!\(_auditResult && _auditResult\._slicedAudit\)/);
+    expect(dp).toMatch(/_beforeSliceCount:/);
+  });
+  // (3) the post-fix toast does NOT claim "remediated!" / play the success chord on a sliced baseline
+  it('a sliced-baseline delta gets a neutral info toast, not the green success branch', () => {
+    expect(dp).toMatch(/_auditResult && _auditResult\._slicedAudit && finalAfterScore !== null/);
+    expect(dp).toMatch(/page-slice approximation, so this change is approximate/);
+  });
+  // (4) the permanent compliance report stops asserting "Multi-pass self-consistency" for a sliced audit
+  it('the accessibility report methodology is sliced-aware (no false multi-pass claim)', () => {
+    expect(dp).toMatch(/auditResult\._slicedAudit\) \|\| \(fixResult && fixResult\._beforeWasSliced\)\) \? `Page-sliced AI review/);
+  });
+  // (5) the score-badge subtitle: sliced branch + the persona/SD line is gated on scores.length > 1 (no degenerate leak)
+  it('subtitle branches on _slicedAudit and gates the persona/SD line on scores.length > 1', () => {
+    expect(vps).toMatch(/pdfAuditResult\._slicedAudit\s*\n?\s*\?\s*<p[^>]*>One pass per page-slice/);
+    expect(vps).toMatch(/pdfAuditResult\.scores && pdfAuditResult\.scores\.length > 1 &&/);
+  });
+  // (6) a glanceable "Approximate — N page-slices" pill keys off the flag
+  it('renders a glanceable sliced pill on the score badge', () => {
+    expect(vps).toMatch(/pdfAuditResult\._slicedAudit && <p[^>]*>🧩 Approximate — audited in/);
+  });
+  // (7) the PDF/UA quick-chip is warn-aware (amber, warn in denominator) — matches the authoritative badge
+  it('PDF/UA dashboard chip is warn-aware (warnOnly → amber, warn in denominator)', () => {
+    expect(vps).toMatch(/warnOnly = !fail && _w > 0/);
+    expect(vps).toMatch(/warnOnly \? 'bg-amber-100 text-amber-700'/);
+    expect(vps).toMatch(/\(_pev\.pass \|\| 0\) \+ \(_pev\.fail \|\| 0\) \+ _w\)/);
+  });
+  // (8) the before→after green +gain pill is suppressed when the before was sliced (neutral pill instead)
+  it('green +gain pill is gated on !_beforeSliced; a sliced baseline shows a neutral approx pill', () => {
+    expect(vps).toMatch(/const _beforeSliced = !!pdfFixResult\._beforeWasSliced/);
+    expect(vps).toMatch(/gain > 0 && !_aiIncomplete && !_beforeSliced &&/);
+    expect(vps).toMatch(/gain > 0 && !_aiIncomplete && _beforeSliced &&/);
+  });
+});

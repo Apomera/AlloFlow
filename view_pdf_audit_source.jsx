@@ -4926,7 +4926,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                 <div data-help-key="pdf_audit_results_score_badge" className={`p-6 text-center ${pdfAuditResult.score >= 80 ? 'bg-gradient-to-r from-green-500 to-emerald-600' : pdfAuditResult.score >= 50 ? 'bg-gradient-to-r from-amber-500 to-orange-600' : 'bg-gradient-to-r from-red-500 to-rose-600'} text-white rounded-t-2xl`}>
                   <div className="text-5xl font-black mb-1" aria-label={`Score: ${pdfAuditResult.score >= 0 ? pdfAuditResult.score : 'unknown'} out of 100`}>{pdfAuditResult.score >= 0 ? pdfAuditResult.score : '?'}<span className="text-2xl opacity-80" aria-hidden="true">/100</span></div>
                   <h3 className="text-lg font-bold" id="pdf-audit-title">{pdfAuditResult._officeInput ? 'Document Accessibility Score' : 'PDF Accessibility Score'} {pdfAuditResult._scoreIsBlended ? <span className="text-xs font-normal opacity-70">(lower of AI &amp; axe-core)</span> : pdfAuditResult._officeInput ? <span className="text-xs font-normal opacity-70">(axe-core on extracted text)</span> : <span className="text-xs font-normal opacity-70">(AI Rubric)</span>}</h3>
-                  {pdfAuditResult.scores && <p className="text-xs opacity-70 mt-0.5">{pdfAuditResult.auditorCount || pdfAuditResult.scores.length} AI audit passes (varied persona prompts, same model) · scores: {pdfAuditResult.scores.join(', ')} · SD: {pdfAuditResult.scoreSD ?? '?'}</p>}
+                  {pdfAuditResult._slicedAudit && <p className="text-[11px] mt-1 bg-white/20 inline-block px-2 py-0.5 rounded-full font-bold" title="Merged from page-slices because a single whole-document pass exceeded the model; cross-page checks (reading order, heading continuity) are approximate. Not cached.">🧩 Approximate — audited in {pdfAuditResult._sliceCount || 'multiple'} page-slices</p>}
+                  {pdfAuditResult._slicedAudit
+                    ? <p className="text-xs opacity-70 mt-0.5">One pass per page-slice (same model) · approximate cross-page coverage</p>
+                    : (pdfAuditResult.scores && pdfAuditResult.scores.length > 1 && <p className="text-xs opacity-70 mt-0.5">{pdfAuditResult.auditorCount || pdfAuditResult.scores.length} AI audit passes (varied persona prompts, same model) · scores: {pdfAuditResult.scores.join(', ')} · SD: {pdfAuditResult.scoreSD ?? '?'}</p>)}
                   {pdfAuditResult.structTree && pdfAuditResult.structTree.hasTags && (() => {
                     const rc = pdfAuditResult.structTree.roleCounts || {};
                     const top = Object.entries(rc).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([r, n]) => `${r}×${n}`).join(', ');
@@ -7350,22 +7353,26 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               const _v = lastTaggedValidation.veraPdf;
                               const _pev = lastTaggedValidation.postExportValidator && lastTaggedValidation.postExportValidator.summary;
                               const _sc = lastTaggedValidation.pdfUa1Checks && lastTaggedValidation.pdfUa1Checks.summary;
-                              let label = null, fail = false, indep = false;
+                              let label = null, fail = false, indep = false, warnOnly = false;
                               if (_v && !_v.error) {
                                 indep = true; fail = _v.compliant === false;
                                 label = fail ? ('veraPDF: ' + (_v.failedRules ? _v.failedRules.length : 0) + ' rule(s)') : 'veraPDF: passes';
                               } else if (_pev) {
+                                const _w = _pev.warn || 0;
                                 fail = (_pev.fail || 0) > 0;
-                                label = 'PDF/UA self-check: ' + (_pev.pass || 0) + '/' + ((_pev.pass || 0) + (_pev.fail || 0));
+                                warnOnly = !fail && _w > 0; // warn-only must NOT render green — match the authoritative badge + conformancePct = pass/(pass+fail+warn)
+                                label = 'PDF/UA self-check: ' + (_pev.pass || 0) + '/' + ((_pev.pass || 0) + (_pev.fail || 0) + _w) + (_w ? ' (' + _w + ' warn)' : '');
                               } else if (_sc) {
+                                const _w = _sc.warn || 0;
                                 fail = (_sc.fail || 0) > 0;
-                                label = 'PDF/UA self-check: ' + (_sc.conformancePct || 0) + '%';
+                                warnOnly = !fail && _w > 0;
+                                label = 'PDF/UA self-check: ' + (_sc.conformancePct || 0) + '%' + (_w ? ' (' + _w + ' warn)' : '');
                               }
                               if (!label) return null;
                               return (
-                                <span className={'px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap ' + (fail ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700')}
+                                <span className={'px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap ' + (fail ? 'bg-red-100 text-red-700' : (warnOnly ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'))}
                                   title={(t('pdf_audit.dashboard.pdfua_title') || 'PDF/UA conformance of the EXPORTED tagged PDF — the actual file you hand out, distinct from the content score.') + (indep ? '' : ' Run "Independently validate with veraPDF" for the authoritative ISO 14289-1 verdict.')}>
-                                  {(fail ? '❌ ' : '✅ ') + label}
+                                  {(fail ? '❌ ' : (warnOnly ? '⚠️ ' : '✅ ')) + label}
                                 </span>
                               );
                             })()}
@@ -7536,6 +7543,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         // flagged it. Render it NEUTRAL (slate, no green, no +gain) + labeled below, so a
                         // structural-only score is never read as a confident AI-verified result.
                         const _aiIncomplete = !!pdfFixResult._aiVerificationIncomplete;
+                        // The BEFORE audit was a page-slice approximation (the whole-document audit failed),
+                        // so the before↔after delta is NOT apples-to-apples — render it neutrally, no green +gain.
+                        const _beforeSliced = !!pdfFixResult._beforeWasSliced;
                         return (<>
                       <div className="flex items-center justify-center gap-4">
                         <div className="text-center">
@@ -7543,6 +7553,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             {beforeDisplay}<span className="text-sm opacity-60">/100</span>
                           </div>
                           <div className="text-[11px] font-bold text-slate-600 uppercase">Before</div>
+                          {_beforeSliced && (
+                            <div className="text-[10px] font-semibold text-amber-600 mt-0.5 whitespace-nowrap" title="The initial audit was a page-slice approximation because a single whole-document pass exceeded the model; cross-page checks (reading order, heading continuity) are approximate.">\u2248 sliced/approx baseline</div>
+                          )}
                         </div>
                         <div className="text-2xl text-slate-600">{'\u2192'}</div>
                         <div className="text-center">
@@ -7562,9 +7575,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="text-[10px] font-semibold text-slate-500 mt-0.5 whitespace-nowrap">{t('pdf_audit.score.structural_caption') || 'structural only'}: {afterDisplay}<span className="opacity-60">/100</span></div>
                           )}
                         </div>
-                        {gain > 0 && !_aiIncomplete && (
+                        {gain > 0 && !_aiIncomplete && !_beforeSliced && (
                           <div className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-bold">
                             +{gain}
+                          </div>
+                        )}
+                        {gain > 0 && !_aiIncomplete && _beforeSliced && (
+                          <div className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-sm font-bold" title="The 'before' score was a page-slice approximation, so this is not a clean apples-to-apples delta.">
+                            ≈+{gain} <span className="font-normal opacity-70">(approx.)</span>
                           </div>
                         )}
                       </div>
