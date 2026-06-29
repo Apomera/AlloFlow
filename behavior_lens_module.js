@@ -26399,7 +26399,7 @@ Analyze this data and return ONLY valid JSON:
                                     h('h2', { className: 'text-lg font-black' }, t('behavior_lens.ui.welcome_to_behaviorlens') || 'Welcome to BehaviorLens')
                                 ),
                                 h('p', { className: 'text-sm text-indigo-100 mb-4 max-w-lg' },
-                                    '81 clinical tools for behavior analysis, data collection, and intervention planning. Choose your role to get started:'
+                                    '80+ clinical tools for behavior analysis, data collection, and intervention planning. Choose your role to get started:'
                                 ),
                                 h('div', { className: 'flex flex-wrap gap-3 mb-4' },
                                     h('button', { "aria-label": "Dismiss Welcome",
@@ -26463,7 +26463,7 @@ Analyze this data and return ONLY valid JSON:
                                 type: 'text',
                                 value: searchQuery,
                                 onChange: (e) => setSearchQuery(e.target.value),
-                                placeholder: t('behavior_lens.ph.search_81_tools') || '🔍  Search 81+ tools…',
+                                placeholder: t('behavior_lens.ph.search_81_tools') || '🔍  Search 80+ tools…',
                                 'aria-label': 'Search BehaviorLens tools',
                                 className: 'w-full px-4 py-3 ps-10 bg-white rounded-xl border border-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-sm'
                             }),

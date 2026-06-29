@@ -489,15 +489,15 @@ function getFeatureDetails(title) {
     "Symbol Studio": {
       inputs: ["Vocabulary list / target concept", "Student communication profile", "Board layout preference"],
       engine: ["AI PCS-style symbol generation (Imagen + image-to-image)", "Board layout grid builder", "Symbol Quest 4 game modes", "Word Garden familiarity + cross-context tracking", "Carol Gray social-story formatting"],
-      outputs: ["AAC communication boards (8 Quick Board types)", "Visual schedules", "Social stories", "Word Garden growth report (clinical, parent, teacher, poster, CSV)", "Multilingual boards (14 languages)"],
+      outputs: ["AAC communication boards (8 Quick Board types)", "Visual schedules", "Social stories", "Word Garden growth report (clinical, parent, teacher, poster, CSV)", "Multilingual boards (60+ languages)"],
       customizations: ["Per-cell parent voice recording", "Up to 8 student profiles", "Partner-assisted scanning", "Wish-seed capture for unmet vocabulary"],
       proTip: "Word Garden's wish-seed button (\u{1F4AB}) captures the moment a student reaches for a word that isn't on their board \u2014 invaluable data for next-board planning."
     },
     "STEM Lab": {
-      inputs: ["Tool selection from 95+ simulations across 9 subject areas", "Optional grade + standards filters"],
+      inputs: ["Tool selection from 100+ simulations across 9 subject areas", "Optional grade + standards filters"],
       engine: ["Dynamically lazy-loaded per-tool plugin (Cloudflare Pages CDN)", "Per-tool state persistence", "Theme-aware rendering shell"],
       outputs: ["Interactive math labs (Fractions, Algebra CAS, 3D Geometry, Calculus, Probability)", "Life science (Cell, Anatomy, Brain Atlas, DNA Lab, Punnett, Dissection, Ecosystem)", "Earth/Space (Plate Tectonics, Solar System, Universe Timelapse)", "Physics + Chemistry (Wave Simulator, Circuit Builder, Molecule Builder, Titration)", "CS, creative design, social studies, and applied simulation tools"],
-      customizations: ["95+ individual tool configurations", "Some tools support multi-student saved worlds", "Print/export per tool"],
+      customizations: ["100+ individual tool configurations", "Some tools support multi-student saved worlds", "Print/export per tool"],
       proTip: "Open STEM Lab from the Educator Hub and search by keyword \u2014 the catalog filters to tools matching your current lesson topic in real time."
     },
     "DBQ Generator": {

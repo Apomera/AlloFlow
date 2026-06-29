@@ -44,7 +44,7 @@ function LearningHubModal(props) {
                 <span className="text-4xl">{'\uD83D\uDD2C'}</span>
                 <div>
                   <h3 className="font-bold text-indigo-800">{t('learning_hub.stem_title') || 'STEM Lab'}</h3>
-                  <p className="text-xs text-indigo-600 mt-1">{t('learning_hub.stem_desc') || '40+ interactive math & science explorations'}</p>
+                  <p className="text-xs text-indigo-600 mt-1">{t('learning_hub.stem_desc') || '100+ interactive math & science explorations'}</p>
                 </div>
               </button>
               <button onClick={() => { setShowLearningHub(false); setShowStoryForge(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-rose-50 to-pink-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
