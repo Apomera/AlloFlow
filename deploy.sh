@@ -123,6 +123,8 @@ if [[ "${SKIP_RENDER_CHECK:-0}" != "1" ]]; then
   echo "  ✓ no object-typed aria-labels / unguarded tool-state array-spreads."
   node dev-tools/scan_group_t_calls.cjs --quiet
   echo "  ✓ no group-level t() calls (an i18n group OBJECT rendered as a React child = fatal crash; the pdf_audit.fidelity regression)."
+  node dev-tools/check_plugin_files.cjs --quiet
+  echo "  ✓ PLUGIN_FILES ↔ git in sync (no stale-CDN plugins, duplicate entries, or casing 404s — audit B4/B5)."
 fi
 
 # ── Step 1: Source commit ──────────────────────────────────────────

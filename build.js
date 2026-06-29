@@ -818,13 +818,13 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_universe.js',
     'stem_lab/stem_tool_economicslab.js',
     'stem_lab/stem_tool_graphcalc.js',
-    'stem_lab/stem_tool_algebraCAS.js',
+    'stem_lab/stem_tool_algebracas.js',  // lowercase = the git filename (camelCase never got its CDN hash bumped — audit B5 casing)
     'stem_lab/stem_tool_circuit.js',
     'stem_lab/stem_tool_a11yauditor.js',
     'stem_lab/stem_tool_worldbuilder.js',
     'stem_lab/stem_tool_flightsim.js',
-    // atcTower entry moved to the catch-up batch below with the correct camelCase
-    // filename (matches the actual stem_tool_atcTower.js on disk + GitHub).
+    // atcTower entry moved to the catch-up batch below; the on-disk + git filename is LOWERCASE
+    // stem_tool_atctower.js (a camelCase entry 404s on case-sensitive CDNs — audit B5, 2026-06-28).
     'stem_lab/stem_tool_music.js',
     'stem_lab/stem_tool_climateExplorer.js',
     'stem_lab/stem_tool_renewables.js',
@@ -872,7 +872,7 @@ const PLUGIN_FILES = [
     // Catch-up batch (Apr 30 2026): tools that were live in AlloFlowANTI/App.jsx
     // toolModules array but missing here, so build.js couldn't bump their CDN
     // hash. Fixed alongside the atcTower casing + playlab/throwlab full wiring.
-    'stem_lab/stem_tool_atcTower.js',
+    'stem_lab/stem_tool_atctower.js',  // lowercase = the on-disk + git filename (camelCase 404s on case-sensitive CDNs — audit B5)
     'stem_lab/stem_tool_throwlab.js',
     'stem_lab/stem_tool_playlab.js',
     'stem_lab/stem_tool_assessmentliteracy.js',
@@ -894,7 +894,10 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_printingpress.js',
     'stem_lab/stem_tool_aquaculture.js',
     'stem_lab/stem_tool_fisherlab.js',
-    'stem_lab/stem_tool_atcTower.js',
+    // dinolab + lumen are live tools (referenced in toolModules) but were missing here, so build.js
+    // never bumped their CDN hash → Cloudflare served stale code (audit B4, 2026-06-28).
+    'stem_lab/stem_tool_dinolab.js',
+    'stem_lab/stem_tool_lumen.js',
     'sel_hub/sel_safety_layer.js',  // MUST load before any sel_tool_*.js
     'sel_hub/sel_standards_alignment.js',  // standards alignment data + helper used by sel_tool_*.js About views
     'sel_hub/sel_tool_zones.js', 'sel_hub/sel_tool_emotions.js',
