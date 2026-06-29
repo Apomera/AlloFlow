@@ -8,6 +8,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const dp = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+const vp = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
 
 describe('DB-B2: chunk-retry body swap treats document text as DATA, not a replace pattern', () => {
   // mirror of the fixed swap (function replacer)
@@ -86,5 +87,50 @@ describe('timeout + leak hygiene (PDF-C1/C2/C3, DB-B1) — matches the codebase 
   it('axe-core CDN fetch loop is bounded (sibling of DB-B1) — fetch AND body read', () => {
     expect(dp).toMatch(/await _withTimeout\(fetch\(u\), 15000, 'axe-core CDN fetch'\)/);
     expect(dp).toMatch(/await _withTimeout\(r\.text\(\), 15000, 'axe-core CDN body'\)/);
+  });
+});
+
+// ── Audit batch 2 (2026-06-29): honesty/fidelity fixes off the secondary lanes ──
+
+describe('B2-1: aiFixChunked multi-chunk path runs a WARN-only fabrication check (no silent hallucination)', () => {
+  it('assembled chunk output is checked with detectFabrication{faithful} vs the source — WARN only', () => {
+    // Runs detectFabrication on the IMAGE-RESTORED assembly vs the original `html`, mirroring single-pass.
+    expect(dp).toMatch(/const _fabJ = detectFabrication\(_out, html, \{ mode: 'faithful' \}\)/);
+    // WARN-only: surfaces via warnLog / addToast, never rejects — still returns the assembled output.
+    expect(dp).toMatch(/\[Hallucination\] remediation may have ADDED content not in the source/);
+    expect(dp).toMatch(/const _out = _restoreImages\(_joined\);[\s\S]{0,2200}?return _out;/);
+  });
+});
+
+describe('B2-2: "Fix Remaining" re-fix lane runs the main fidelity sweep + carries notes forward', () => {
+  it('doc_pipeline exposes the pure fidelity helpers the re-fix lane reuses', () => {
+    expect(dp).toMatch(/computeStructuralFidelityNotes: _computeStructuralFidelityNotes/);
+    expect(dp).toMatch(/numericFidelityLosses: _numericFidelityLosses/);
+    expect(dp).toMatch(/htmlToPlainText: htmlToPlainText/);
+  });
+  it('the Fix Remaining handler sweeps THIS run and commits fidelityNotes/fidelityLimited (WARN-only)', () => {
+    expect(vp).toMatch(/_docPipeline\.computeStructuralFidelityNotes\(_srcRaw, bestHtml\)/);
+    expect(vp).toMatch(/_docPipeline\.numericFidelityLosses\(_srcRaw, _outText\)/);
+    expect(vp).toMatch(/_docPipeline\.checkReadingOrderPreserved\(prevSnapshot\.html, bestHtml\)/);
+    expect(vp).toMatch(/commit: \{ autoFixPasses:[^}]*fidelityNotes: _refixNotes, fidelityLimited: _refixNotes\.length > 0 \}/);
+  });
+});
+
+describe('B2-3: /auto agent runs the deterministic net + heading-outline guard (cap only on stable missingH1)', () => {
+  it('runs runDeterministicWcagFixes BEFORE the final audit', () => {
+    expect(dp).toMatch(/currentHtml = runDeterministicWcagFixes\(currentHtml\);[\s\S]{0,400}?var finalAxe = await runAxeAudit\(currentHtml\)/);
+  });
+  it('caps the score ONLY on missingH1; skip is WARN-only (parser-divergence safe)', () => {
+    expect(dp).toMatch(/_autoHo = _headingOutlineIssue\(currentHtml\)/);
+    expect(dp).toMatch(/if \(_autoHo\.missingH1\) finalScore = Math\.max\(0, Math\.min\(finalScore, 90\)\)/);
+    // returns the heading-outline state so the verdict is inspectable
+    expect(dp).toMatch(/return \{ html: currentHtml, score: finalScore,[^}]*headingOutline: _autoHo \}/);
+  });
+  // Pure-logic mirror of the cap rule: missingH1 caps to <=90; skip alone does NOT cap.
+  const capRule = (score, ho) => ho.missingH1 ? Math.max(0, Math.min(score, 90)) : score;
+  it('missingH1 caps a perfect score; a skip-only outline does not', () => {
+    expect(capRule(100, { missingH1: true, skip: false })).toBe(90);
+    expect(capRule(100, { missingH1: false, skip: true })).toBe(100);
+    expect(capRule(100, { missingH1: false, skip: false })).toBe(100);
   });
 });

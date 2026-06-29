@@ -5229,11 +5229,36 @@ Return ONLY JSON:
         if (finalAiResult) finalAiResult.score = avgScore;
         const perfect = (finalAiResult?.issues?.length || 0) === 0 && (finalAxeResult?.totalViolations || 0) === 0;
         const startCount = (pdfFixResult.verificationAudit?.issues?.length || 0) + (pdfFixResult.axeAudit?.totalViolations || 0);
+        let _refixNotes = Array.isArray(pdfFixResult.fidelityNotes) ? pdfFixResult.fidelityNotes.slice() : [];
+        try {
+          const _srcRaw = pdfFixResult.sourceText || "";
+          const _outText = _docPipeline && typeof _docPipeline.htmlToPlainText === "function" ? _docPipeline.htmlToPlainText(bestHtml) : "";
+          const _notes = [];
+          if (_srcRaw && _docPipeline && typeof _docPipeline.computeStructuralFidelityNotes === "function") {
+            const _sf = _docPipeline.computeStructuralFidelityNotes(_srcRaw, bestHtml);
+            if (Array.isArray(_sf)) _sf.forEach((n) => _notes.push(n));
+          }
+          if (_srcRaw && _outText && _docPipeline && typeof _docPipeline.numericFidelityLosses === "function") {
+            const _lost = _docPipeline.numericFidelityLosses(_srcRaw, _outText);
+            if (_lost && _lost.length) {
+              const _vs = _lost.slice(0, 8).join(", ") + (_lost.length > 8 ? ", \u2026" : "");
+              _notes.push({ kind: "numeric", msg: _lost.length + " source numeric value(s) not found unchanged in the output (" + _vs + "). A remediation should never change numbers \u2014 review the Diff to confirm scores, dates, and percentages are intact." });
+            }
+          }
+          if (_docPipeline && typeof _docPipeline.checkReadingOrderPreserved === "function") {
+            const _ro = _docPipeline.checkReadingOrderPreserved(prevSnapshot.html, bestHtml);
+            if (_ro && _ro.ok === false) _notes.push({ kind: "reading-order", msg: 'Reading order: content may have moved or been dropped vs the previous version (token "' + (_ro.droppedToken || "") + '"; ' + _ro.beforeCount + "\u2192" + _ro.afterCount + " tokens). Magnitude checks passed but order was not preserved \u2014 review the Diff before distributing." });
+          }
+          _refixNotes = _notes;
+          _notes.forEach((n) => warnLog("[Fix Remaining] fidelity: " + n.msg));
+        } catch (_fidErr) {
+          warnLog("[Fix Remaining] fidelity sweep failed (non-critical): " + (_fidErr && _fidErr.message));
+        }
         const committed = commitOrRevertPdfFix(
           prevSnapshot,
           { html: bestHtml, ai: finalAiResult, axe: finalAxeResult, chars: bestHtml.length, perfect },
           {
-            commit: { autoFixPasses: (pdfFixResult.autoFixPasses || 0) + totalPasses },
+            commit: { autoFixPasses: (pdfFixResult.autoFixPasses || 0) + totalPasses, fidelityNotes: _refixNotes, fidelityLimited: _refixNotes.length > 0 },
             preserveOnRevert: { autoFixPasses: (pdfFixResult.autoFixPasses || 0) + totalPasses }
           },
           "Fix Remaining"

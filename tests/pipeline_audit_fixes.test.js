@@ -53,7 +53,7 @@ describe('H-4: reading-order WARN is wired into the high-volume AI fix path (was
   it('acceptFixedHtml surfaces the warn, and aiFixChunked checks the assembled doc vs the source', () => {
     expect(dp).toMatch(/if \(r && r\.accepted && r\.readingOrderWarn\)/);
     expect(dp).toMatch(/checkReadingOrderPreserved\(html, _joined\)/);   // aiFixChunked whole-doc order check
-    expect(dp).toMatch(/return _restoreImages\(_joined\)/);
+    expect(dp).toMatch(/const _out = _restoreImages\(_joined\)/);        // assembly is image-restored (then fabrication-WARNed, then returned)
   });
 });
 

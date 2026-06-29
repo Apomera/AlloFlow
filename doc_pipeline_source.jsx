@@ -3397,7 +3397,24 @@ var createDocPipeline = function(deps) {
     // (strict token-subsequence; blocking is a follow-up after Canvas calibration). Chunked-split correctness
     // itself is tracked separately (H-6).
     try { var _roj = checkReadingOrderPreserved(html, _joined); if (_roj && _roj.ok === false) warnLog(`[aiFixChunked:${label}] reading-order WARN — content reordered/dropped vs source (token "${_roj.droppedToken || ''}"; ${_roj.beforeCount}->${_roj.afterCount}). Magnitude checks passed but ORDER not preserved; review before distributing.`); } catch (_) {}
-    return _restoreImages(_joined);
+    const _out = _restoreImages(_joined);
+    // Hallucination WARN (faithful) — mirrors the single-pass guard (~L12719). The per-chunk + aggregate
+    // gates above are SHRINK-only (no growth ceiling, no fabrication check), so AI-invented numbers/dates/
+    // URLs in a chunk's output pass silently here even though acceptFixedHtmlDetailed{mode:'faithful'} surfaces
+    // them on the single-pass path. WARN-ONLY: read-only, never alters _out or rejects, so the happy path
+    // (well-behaved docs => suspected:false) is untouched. Compares the IMAGE-RESTORED assembly vs the original
+    // source (matches single-pass); detectFabrication strips <img> tags so data-URLs can't false-positive.
+    try {
+      const _fabJ = detectFabrication(_out, html, { mode: 'faithful' });
+      if (_fabJ && _fabJ.suspected) {
+        const _fs = [].concat(_fabJ.fabricatedNumbers || [], _fabJ.fabricatedDates || [], _fabJ.fabricatedUrls || []).slice(0, 6);
+        const _fd = _fs.length ? ': ' + _fs.join(', ')
+          : (_fabJ.lowGrounding ? ' (only ' + Math.round(_fabJ.tokenRecall * 100) + '% of output words trace to the source, ' + _fabJ.wordCountRatio + '× size)' : '');
+        warnLog(`[aiFixChunked:${label}] [Hallucination] remediation may have ADDED content not in the source` + _fd + ' — review before distributing.');
+        if (typeof addToast === 'function') addToast('⚠ AI remediation may have added content not in the source' + _fd + '. Review the Diff panel before distributing.', 'warning');
+      }
+    } catch (_) {}
+    return _out;
   };
 
   // Strip Markdown triple-backtick code fences from a Gemini response so the
@@ -22201,12 +22218,33 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       }
     }
 
+    // Deterministic WCAG safety net BEFORE the final audit. The autonomous loop scores only off axe
+    // WCAG-tagged rules, but heading-order / page-has-heading-one are axe BEST-PRACTICE rules runAxeAudit
+    // never loads \u2014 so the agent's own fix_heading tool can scramble the outline and the loop would still
+    // report 100. This is the same content-preserving, idempotent net every other path runs (it includes
+    // fixHeadingHierarchy + _collapseHeadingSkipsStrict, which REPAIR a skipping outline); no-op on a clean
+    // doc. Note: it also normalizes /auto output beyond headings (landmarks etc.), matching the main path.
+    try { currentHtml = runDeterministicWcagFixes(currentHtml); } catch (e) { warnLog('[Agent] deterministic net failed: ' + (e && e.message || e)); }
+
     // Final audit summary.
     var finalAxe = await runAxeAudit(currentHtml).catch(function() { return null; });
     var finalScore = finalAxe ? Math.max(0, 100 - ((finalAxe.critical || []).length * 15 + (finalAxe.serious || []).length * 10 + (finalAxe.moderate || []).length * 5 + (finalAxe.minor || []).length * 2)) : prevScore;
+    // Heading-outline regression guard: axe (WCAG-tagged only) is BLIND to outline order, so a residual
+    // skip / missing-h1 the net above couldn't fix is invisible to finalScore \u2014 /auto must not claim a
+    // perfect score over a scrambled outline. SAFETY-SCOPED: cap ONLY on missingH1 (a stable DOM-only fact);
+    // a 'skip' is WARN-only (NO cap) because the regex/source-order heading repairers and the DOMParser-based
+    // _headingOutlineIssue can legitimately disagree, which would risk a false penalty on the happy path.
+    // _headingOutlineIssue returns all-false on a clean outline (and when DOMParser is absent), so this is a
+    // no-op on the happy path.
+    var _autoHo = { missingH1: false, skip: false };
+    try { _autoHo = _headingOutlineIssue(currentHtml) || _autoHo; } catch (_) {}
+    if (_autoHo.missingH1 || _autoHo.skip) {
+      if (_autoHo.missingH1) finalScore = Math.max(0, Math.min(finalScore, 90));
+      logActivity('\u26A0\uFE0F Heading outline issue remains (' + (_autoHo.skip ? 'levels skip' : '') + (_autoHo.skip && _autoHo.missingH1 ? '; ' : '') + (_autoHo.missingH1 ? 'no <h1>' : '') + ') \u2014 not WCAG-scored by axe' + (_autoHo.missingH1 ? '; score held below 100.' : ' (review the outline).'), 'plateau');
+    }
     logActivity('\uD83C\uDFC1 Agent complete. Final score: ' + finalScore + '/100 after ' + passCount + ' passes.', 'complete');
 
-    return { html: currentHtml, score: finalScore, passes: passCount, log: activityLog, axe: finalAxe };
+    return { html: currentHtml, score: finalScore, passes: passCount, log: activityLog, axe: finalAxe, headingOutline: _autoHo };
   };
 
   // ═══════════════════════════════════════════════════════════════
@@ -28498,6 +28536,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     palettePresets: PALETTE_PRESETS,
     checkReadingOrderPreserved: checkReadingOrderPreserved,
     readingOrderSequenceRatio: readingOrderSequenceRatio,
+    // Pure content-fidelity nets — exposed so the re-fix lanes (Fix Remaining) can run the SAME WARN-only
+    // integrity sweep the main path runs (~17270/17290) over THIS run's output, instead of carrying the
+    // prior run's fidelity state onto the panel/amber-asterisk. Pure functions, no state binding.
+    computeStructuralFidelityNotes: _computeStructuralFidelityNotes,
+    numericFidelityLosses: _numericFidelityLosses,
+    htmlToPlainText: htmlToPlainText,
     restyleBlock: restyleBlock,
     listifyTableCellBullets: listifyTableCellBullets,
     precedingHeadingLevel: precedingHeadingLevel,
