@@ -289,14 +289,6 @@
       } else if (problem.manipulativeResponse.tool === 'cell') {
         const lce = labToolData.cell;
         isCorrect = lce.selectedOrganelle === (target.selectedOrganelle || null);
-        const lcl = labToolData.calculus;
-        isCorrect = lcl.mode === (target.mode || 'riemann') && Math.abs(lcl.xMin - (target.xMin || 0)) < 0.1 && Math.abs(lcl.xMax - (target.xMax || 4)) < 0.1 && lcl.n === (target.n || 8);
-      } else if (problem.manipulativeResponse.tool === 'wave') {
-        const lw = labToolData.wave;
-        isCorrect = Math.abs(lw.amplitude - (target.amplitude || 1)) < 0.1 && Math.abs(lw.frequency - (target.frequency || 1)) < 0.1;
-      } else if (problem.manipulativeResponse.tool === 'cell') {
-        const lce = labToolData.cell;
-        isCorrect = lce.selectedOrganelle === (target.selectedOrganelle || null);
       }
       handleStudentInput(generatedContent.id, pIdx, isCorrect ? '(Manipulative: CORRECT ✅)' : '(Manipulative: INCORRECT ❌)');
       addToast(isCorrect ? 'Manipulative match correct! 🎉' : 'Manipulative geometry incorrect. Keep trying!', isCorrect ? 'success' : 'error');
