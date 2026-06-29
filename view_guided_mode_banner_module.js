@@ -21,6 +21,7 @@ function GuidedModeBanner({
   guidedStep,
   guidedRect,
   guidedEngaged,
+  wizardOpen,
   handleExitGuidedMode,
   handleGuidedSkip,
   setGuidedStep,
@@ -38,7 +39,7 @@ function GuidedModeBanner({
   const isStepOn = (id) => !guidedSelectedIds || id === "source-input" || guidedSelectedIds.indexOf(id) !== -1;
   const humanize = (type) => getDefaultTitle ? getDefaultTitle(type) : String(type || "").replace(/[-_]/g, " ");
   const recapItems = isLast ? (history || []).filter((h) => h && h.type && h.type !== "udl-advice" && h.type !== "guided").map((h) => h.title || humanize(h.type)) : [];
-  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("style", null, `@keyframes alloGuidedRingPulse{0%,100%{box-shadow:0 0 0 2px rgba(99,102,241,.7),0 0 22px rgba(99,102,241,.45)}50%{box-shadow:0 0 0 3px rgba(129,140,248,.95),0 0 36px rgba(99,102,241,.65)}}@media (prefers-reduced-motion: reduce){.allo-guided-ring{animation:none !important}}`), guidedRect && guidedRect.width > 0 && /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "allo-guided-ring", style: {
+  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("style", null, `@keyframes alloGuidedRingPulse{0%,100%{box-shadow:0 0 0 2px rgba(99,102,241,.7),0 0 22px rgba(99,102,241,.45)}50%{box-shadow:0 0 0 3px rgba(129,140,248,.95),0 0 36px rgba(99,102,241,.65)}}@media (prefers-reduced-motion: reduce){.allo-guided-ring{animation:none !important}}`), guidedRect && guidedRect.width > 0 && !wizardOpen && /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "allo-guided-ring", style: {
     position: "fixed",
     top: guidedRect.top - 6,
     left: guidedRect.left - 6,
