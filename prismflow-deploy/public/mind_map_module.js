@@ -1073,7 +1073,8 @@
         concepts: (Array.isArray(g.proposal.goldenThread) ? g.proposal.goldenThread : []).map(function (s) { return String(s).trim(); }).filter(Boolean),
         keyTerms: (Array.isArray(g.proposal.keyTerms) ? g.proposal.keyTerms : []).map(function (s) { return String(s).trim(); }).filter(Boolean),
         desiredResults: (Array.isArray(g.proposal.desiredResults) ? g.proposal.desiredResults : []).map(function (s) { return String(s).trim(); }).filter(Boolean),
-        essentialQuestion: g.proposal.essentialQuestion || ''
+        essentialQuestion: g.proposal.essentialQuestion || '',
+        sourceConfig: (g.proposal.sourceConfig && typeof g.proposal.sourceConfig === 'object') ? g.proposal.sourceConfig : null
       };
       var prevNodeId = null;
       var i = 0;
@@ -1653,6 +1654,23 @@
             h('div', { style: { fontSize: 11, fontWeight: 700, color: '#475569', marginBottom: 4 } }, t('throughline.gen_key_terms') || 'Key terms (carried through every lesson)'),
             h('div', null, proposal.keyTerms.slice(0, 14).map(function (kt, i) { return chip(kt, 'kt' + i); }))),
           field(t('throughline.gen_golden') || 'Golden thread — recurring concepts carried into every lesson', h('textarea', { value: (proposal.goldenThread || []).join('\n'), rows: 2, onChange: function (e) { patchProposal({ goldenThread: e.target.value.split('\n') }); }, placeholder: t('throughline.gen_golden_ph') || 'One concept per line — these steer every lesson the AI builds', style: Object.assign({}, inStyle, { resize: 'vertical' }) })),
+          (function () {
+            var _scDefault = { lengthWords: 350, tone: 'Informative', readingLevel: proposal.gradeBand || '' };
+            var _sc = (proposal.sourceConfig && typeof proposal.sourceConfig === 'object') ? proposal.sourceConfig : _scDefault;
+            var _setSc = function (patch) { patchProposal({ sourceConfig: Object.assign({}, _scDefault, _sc, patch) }); };
+            var _TONES = ['Informative', 'Engaging Narrative', 'Persuasive', 'Humorous', 'Step-by-Step', 'Dialogue'];
+            var _lblStyle = { fontSize: 11, fontWeight: 700, color: '#475569', display: 'flex', flexDirection: 'column', gap: 3 };
+            return field(
+              t('throughline.gen_source_settings') || 'Reading-passage settings (when you have not loaded your own source, the AI writes a passage per lesson with these — edit before building)',
+              h('div', { style: { display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' } },
+                h('label', { style: _lblStyle }, (t('throughline.gen_source_length') || 'Length (words)'),
+                  h('input', { type: 'number', min: 100, max: 1500, step: 50, value: _sc.lengthWords || 350, onChange: function (e) { _setSc({ lengthWords: Math.max(100, Math.min(1500, parseInt(e.target.value, 10) || 350)) }); }, style: Object.assign({}, inStyle, { width: 110 }) })),
+                h('label', { style: _lblStyle }, (t('throughline.gen_source_tone') || 'Tone'),
+                  h('select', { value: (_TONES.indexOf(_sc.tone) >= 0 ? _sc.tone : 'Informative'), onChange: function (e) { _setSc({ tone: e.target.value }); }, style: Object.assign({}, inStyle, { width: 180 }) },
+                    _TONES.map(function (tn) { return h('option', { key: tn, value: tn }, tn); }))),
+                h('label', { style: _lblStyle }, (t('throughline.gen_source_level') || 'Reading level'),
+                  h('input', { value: _sc.readingLevel || '', onChange: function (e) { _setSc({ readingLevel: e.target.value }); }, placeholder: proposal.gradeBand || 'Grade', style: Object.assign({}, inStyle, { width: 130 }) }))));
+          })(),
           h('div', { style: { fontSize: 12, fontWeight: 800, color: '#1e293b', margin: '12px 0 6px' } }, (t('throughline.gen_lessons_label') || 'Lessons')),
           proposal.lessons.map(function (l, i) {
             return h('div', { key: 'L' + i, style: { border: '1px solid #e2e8f0', borderRadius: 10, padding: 10, marginBottom: 8, background: '#fff' } },
