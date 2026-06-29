@@ -674,25 +674,7 @@ function ExportPreviewView(props) {
                   </div>
                 )}
 
-                {/* Audio Embedding */}
-                <div className={exportPreviewMode !== 'html' ? 'opacity-50' : ''}>
-                  <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">🔊 Audio</div>
-                  <div className="space-y-1">
-                    <label className={`flex items-center gap-2 text-xs text-slate-700 rounded px-1 py-0.5 ${exportPreviewMode === 'html' ? 'cursor-pointer hover:bg-white' : 'cursor-not-allowed'}`}>
-                      <input type="checkbox" checked={exportConfig.includeAudioSource} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, includeAudioSource: e.target.checked }))} className="rounded" disabled={exportPreviewMode !== 'html'} />
-                      Read-aloud: Source text
-                    </label>
-                    <label className={`flex items-center gap-2 text-xs text-slate-700 rounded px-1 py-0.5 ${exportPreviewMode === 'html' ? 'cursor-pointer hover:bg-white' : 'cursor-not-allowed'}`}>
-                      <input type="checkbox" checked={exportConfig.includeAudioLeveled} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, includeAudioLeveled: e.target.checked }))} className="rounded" disabled={exportPreviewMode !== 'html'} />
-                      Read-aloud: Leveled text
-                    </label>
-                    {exportPreviewMode !== 'html' ? (
-                      <p className="text-[11px] text-amber-500 font-medium px-1">Switch to HTML format to enable audio embedding</p>
-                    ) : (
-                      <p className="text-[11px] text-slate-600 italic px-1">Audio embeds as inline players in HTML exports.</p>
-                    )}
-                  </div>
-                </div>
+                {/* Audio embedding moved to the read-aloud modal shown on Download HTML */}
 
                 {/* AI Custom Style */}
                 <div>
