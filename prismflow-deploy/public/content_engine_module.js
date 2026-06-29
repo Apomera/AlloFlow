@@ -240,6 +240,9 @@ var createContentEngine = function(deps) {
       if (!Number.isInteger(citNum) || citNum < 1) return match;
       usedCitations.add(citNum);
       if (bracket && linkPart) return match;
+      // B6 (2026-06-28): strip a bare out-of-range citation (index past the available sources) instead of
+      // leaving a dangling ⁽N⁾ that matches no bibliography entry — mirrors the multi-chunk path's _keepInRange.
+      if (citNum > groundingChunks.length) return '';
       var chunk = groundingChunks[citNum - 1];
       return (chunk && chunk.web && chunk.web.uri) ? '[⁽' + digits + '⁾](' + chunk.web.uri + ')' : '⁽' + digits + '⁾';
     });

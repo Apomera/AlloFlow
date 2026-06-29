@@ -28,10 +28,10 @@ describe('B7 — validateAndRepairCitations never repairs to the wrong (last) so
     expect(out).not.toContain('two.test');   // would be the last source via groundingChunks[-1] without the guard
     expect(out).toContain('⁽⁰⁾');            // left untouched (fail-safe), not silently repointed
   });
-  it('leaves an out-of-range ⁽⁹⁾ (beyond the source list) as a bare marker, not a wrong URL', () => {
+  it('B6: STRIPS an out-of-range ⁽⁹⁾ (beyond the source list) — no dangling orphan, no wrong URL', () => {
     const out = validateAndRepairCitations('Way out ⁽⁹⁾.', CHUNKS);
-    expect(out).toContain('⁽⁹⁾');
-    expect(out).not.toContain('](https://'); // not turned into a link to some other source
+    expect(out).not.toContain('⁽⁹⁾');        // orphan stripped (it matches no bibliography entry), not left dangling
+    expect(out).not.toContain('](https://'); // and certainly not linked to a wrong source
   });
   it('empty / no-chunk inputs pass through unchanged', () => {
     expect(validateAndRepairCitations('', CHUNKS)).toBe('');
@@ -42,6 +42,9 @@ describe('B7 — validateAndRepairCitations never repairs to the wrong (last) so
 describe('anti-drift: the guards ship in source', () => {
   it('B7: the NaN/<1 guard precedes the groundingChunks index', () => {
     expect(ce).toContain('if (!Number.isInteger(citNum) || citNum < 1) return match;');
+  });
+  it('B6: the out-of-range strip ships', () => {
+    expect(ce).toContain('if (citNum > groundingChunks.length) return \'\';');
   });
   it('B8: line.line is guarded like line.action (no raw `${action} ${line.line}` interpolation)', () => {
     expect(ce).toContain('const lineText = line.line ?');
