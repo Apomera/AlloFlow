@@ -3567,6 +3567,7 @@ const AlloFlowContent = () => {
   const [guidedMode, setGuidedMode] = useState(false);
   const [guidedStep, setGuidedStep] = useState(0);
   const [guidedSelectedIds, setGuidedSelectedIds] = useState(null); // null = all 22 steps; else array of included step ids (source-input always implied)
+  const _guidedWizardOpenRef = useRef(false); // mirrors "QuickStart Wizard visible" for the guided effect (declared before showWizard, so it can't read it directly)
   // Each step carries teaching content for the hands-on guided tutorial:
   //   action  = the short imperative shown in the banner ("do this now"), pointing
   //             at the highlighted tool. success = the encouraging note shown once
@@ -3673,7 +3674,7 @@ const AlloFlowContent = () => {
       if (typeof window !== 'undefined' && window.alloAnnounce) window.alloAnnounce('Nice. When you are ready, continue to the next step.', 'polite');
     };
     el.addEventListener('click', onEngage, { once: true });
-    if (typeof window !== 'undefined' && window.alloAnnounce && step) {
+    if (typeof window !== 'undefined' && window.alloAnnounce && step && !_guidedWizardOpenRef.current) {
       const n = Math.min(guidedStep + 1, guidedActiveSteps.length);
       window.alloAnnounce('Step ' + n + ' of ' + guidedActiveSteps.length + '. ' + step.label + '. ' + (step.action || ''), 'polite');
     }
@@ -3747,6 +3748,7 @@ const AlloFlowContent = () => {
   
   const [showStudentEntry, setShowStudentEntry] = useState(false);
   const [showWizard, setShowWizard] = useState(true);
+  _guidedWizardOpenRef.current = showWizard && hasSelectedRole && isTeacherMode; // keep the guided effect's wizard check current each render
   useEffect(() => {
     const wizardCompleted = safeGetItem('allo_wizard_completed');
     if (wizardCompleted) {
