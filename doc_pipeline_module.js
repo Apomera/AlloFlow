@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -8353,7 +8353,14 @@ Return ONLY valid JSON:
         const bodyHtml = _structTreeForBaseline
           ? buildHtmlFromStructTree(_structTreeForBaseline, rawText)
           : rawText.split('\n\n').filter(p => p.trim()).map(p => '<p>' + p.replace(/</g, '&lt;') + '</p>').join('\n');
-        const minimalHtml = `<!DOCTYPE html><html><head><title></title></head><body><main>${bodyHtml}</main></body></html>`;
+        // Give the BASELINE wrapper a lang + title (mirrors the Office baseline at
+        // ~7915). Without them, axe-core penalizes the 'before' score ~20pts for
+        // html-has-lang + document-title — artifacts of OUR extracted-text wrapper,
+        // not the source PDF — which deflated the baseline and inflated the
+        // before→after improvement delta. Crediting both keeps PDF/Office baselines
+        // consistent and stops claiming credit for boilerplate we always add.
+        const _pdfBaseTitle = String((options && options.fileName) || 'Document').replace(/[<>&]/g, ' ');
+        const minimalHtml = `<!DOCTYPE html><html lang="en"><head><title>${_pdfBaseTitle}</title></head><body><main>${bodyHtml}</main></body></html>`;
         // Engine consensus at BASELINE too (2026-06-10, item 6): both
         // deterministic engines run in parallel; when both report, the
         // deterministic half is the MORE CONSERVATIVE — making the
@@ -12729,7 +12736,11 @@ Return ONLY the complete fixed HTML.`, true);
             }
           }
           // Emit single-pass completion so Live UI updates
-          try { window.dispatchEvent(new CustomEvent('alloflow:chunk-fixed', { detail: { index: 0, total: 1, originalHtml: _chunkHtmlPreview(_origHtmlForDiff), fixedHtml: _chunkHtmlPreview(currentHtml), score: 0, deterministicFixCount: 0, surgicalFixCount: 0, integrityPassed: true, aiVerified: true, wasRetried: false, usedOriginal: false, sizeKB: Math.round(currentHtml.length / 1000), timestamp: Date.now() } })); } catch(e) {}
+          // Honest per-pass flags: integrityPassed mirrors the faithful-mode acceptance
+          // decision (which gates on text preservation); aiVerified is false (the
+          // acceptance is a DETERMINISTIC text/fabrication check, not an AI verifier);
+          // usedOriginal is true when the fix was rejected and the original was kept.
+          try { window.dispatchEvent(new CustomEvent('alloflow:chunk-fixed', { detail: { index: 0, total: 1, originalHtml: _chunkHtmlPreview(_origHtmlForDiff), fixedHtml: _chunkHtmlPreview(currentHtml), score: 0, deterministicFixCount: 0, surgicalFixCount: 0, integrityPassed: !!_singlePassDecision.accepted, aiVerified: false, wasRetried: false, usedOriginal: !_singlePassDecision.accepted, sizeKB: Math.round(currentHtml.length / 1000), timestamp: Date.now() } })); } catch(e) {}
           try { window.dispatchEvent(new CustomEvent('alloflow:chunk-session-complete', { detail: { totalChunks: 1, failedCount: 0, retriedCount: 0, timestamp: Date.now() } })); } catch(e) {}
         } else {
           // ── Large document: chunked remediation ──
@@ -16689,10 +16700,16 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
 
           warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI ${newAiScore}/100, axe ${newAxeViolations} violations`);
 
-          // Emit per-pass completion for live UI. snapshotHtml (line ~9224)
-          // captured the BEFORE state of this pass; passing it as originalHtml
-          // gives the diff view something to compare against.
-          try { var _cfDetail = { index: fixPass, total: maxFixPasses, originalHtml: _chunkHtmlPreview(snapshotHtml), fixedHtml: _chunkHtmlPreview(accessibleHtml), score: newAiScore, deterministicFixCount: 0, surgicalFixCount: 0, integrityPassed: true, aiVerified: true, wasRetried: false, usedOriginal: false, sizeKB: Math.round(accessibleHtml.length / 1000), timestamp: Date.now() }; setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:chunk-fixed', { detail: _cfDetail })); }, 0); } catch(e) {}
+          // Emit per-pass completion for live UI. snapshotHtml captured the BEFORE
+          // state of this pass; passing it as originalHtml gives the diff view
+          // something to compare against. integrityPassed now reflects a REAL
+          // word-overlap check of this pass (before→after) instead of a hardcoded
+          // true; aiVerified is false because this loop runs a re-AUDIT, not an AI
+          // content-preservation verifier — claiming "AI verified content preserved"
+          // here was an overclaim (honesty fix).
+          var _stepIntegrityPassed = false;
+          try { _stepIntegrityPassed = !!(verifyChunkIntegrity(snapshotHtml, accessibleHtml) || {}).passed; } catch (_e) { _stepIntegrityPassed = false; }
+          try { var _cfDetail = { index: fixPass, total: maxFixPasses, originalHtml: _chunkHtmlPreview(snapshotHtml), fixedHtml: _chunkHtmlPreview(accessibleHtml), score: newAiScore, deterministicFixCount: 0, surgicalFixCount: 0, integrityPassed: _stepIntegrityPassed, aiVerified: false, wasRetried: false, usedOriginal: false, sizeKB: Math.round(accessibleHtml.length / 1000), timestamp: Date.now() }; setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:chunk-fixed', { detail: _cfDetail })); }, 0); } catch(e) {}
 
           // If BOTH engines report 0 actionable issues, stop regardless of score.
           // reVerify is null only when BOTH AI audits failed this pass (reScores empty) —
@@ -17716,6 +17733,11 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             failureReason: _reason,
             failStage: _st.lastOpenStepLabel || null,
             failMessage: _msg.slice(0, 200),
+            // Bank the active page range so resume knows this extraction is a PARTIAL
+            // slice (e.g. pages 6-10 of a 50-page scan), not the whole document. Without
+            // it the loader re-seeds the partial text as the full doc, skips OCR (text
+            // already present), and silently ships only the resumed pages. (audit fix)
+            pageRange: (Array.isArray(_pageRange) && _pageRange.length === 2) ? [_pageRange[0], _pageRange[1]] : null,
             savedAt: new Date().toISOString(),
           };
         }
@@ -17750,13 +17772,21 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
     // audit report (pre-tag) stays 2-axis.
     let h = '';
     const hasPdfUa = pdfua && (typeof pdfua.pass === 'number') && (typeof pdfua.fail === 'number');
-    // Guard against 0/0 = NaN (validator ran but found no applicable rules) → pct stays null,
-    // and the tile/warning below suppress rather than render "NaN%".
-    const pdfuaPct = (hasPdfUa && (pdfua.pass + pdfua.fail) > 0) ? Math.round((pdfua.pass / (pdfua.pass + pdfua.fail)) * 100) : null;
+    // Denominator must include WARN (a warn is not a pass), matching the canonical
+    // conformancePct (computed at validator time as pass/(pass+fail+warn)) and the
+    // full self-check report. The old tile used pass/(pass+fail), silently dropping
+    // warns — so a permanent WARN (e.g. PDF/UA-1 §7.1 content-marking) read as a
+    // pass and the tile overstated conformance vs the report on the same bytes.
+    const _pdfuaDenom = hasPdfUa ? (pdfua.pass + pdfua.fail + (pdfua.warn || 0)) : 0;
+    // Guard against 0/0 = NaN (validator ran but found no applicable rules) → pct stays null.
+    const pdfuaPct = (hasPdfUa && _pdfuaDenom > 0)
+      ? (typeof pdfua.conformancePct === 'number' ? pdfua.conformancePct : Math.round((pdfua.pass / _pdfuaDenom) * 100))
+      : null;
+    const _pdfuaHasWarn = hasPdfUa && (pdfua.warn || 0) > 0;
     if (typeof structural === 'number' && typeof semantic === 'number') {
       const div = Math.abs(structural - semantic);
       const pdfuaTile = (hasPdfUa && pdfuaPct !== null)
-        ? `<div style="flex:1;min-width:150px;text-align:center;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px"><div style="font-size:1.25rem;font-weight:800;color:#1e3a5f">${pdfuaPct}<span style="font-size:0.75rem;color:#64748b">%</span></div><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;font-weight:600">PDF/UA-1 (self-check)</div><div style="font-size:10px;color:#94a3b8;margin-top:2px">${pdfua.pass}/${pdfua.pass + pdfua.fail} rules</div></div>`
+        ? `<div style="flex:1;min-width:150px;text-align:center;background:${_pdfuaHasWarn ? '#fffbeb' : '#f8fafc'};border:1px solid ${_pdfuaHasWarn ? '#fcd34d' : '#e2e8f0'};border-radius:8px;padding:12px"><div style="font-size:1.25rem;font-weight:800;color:${_pdfuaHasWarn ? '#b45309' : '#1e3a5f'}">${pdfuaPct}<span style="font-size:0.75rem;color:#64748b">%</span></div><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;font-weight:600">PDF/UA-1 (self-check)</div><div style="font-size:10px;color:#94a3b8;margin-top:2px">${pdfua.pass}/${_pdfuaDenom} rules${_pdfuaHasWarn ? ` &middot; &#9888; ${pdfua.warn} warn` : ''}</div></div>`
         : '';
       h += `<div style="display:flex;gap:12px;margin:12px 0;flex-wrap:wrap">
         <div style="flex:1;min-width:150px;text-align:center;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px"><div style="font-size:1.25rem;font-weight:800;color:#1e3a5f">${structural}</div><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;font-weight:600">Structural (axe-core)</div></div>
@@ -19146,6 +19176,13 @@ tr { page-break-inside: avoid; }
           return liRef;
         }
         const d = { Type: PDFName.of('StructElem'), S: PDFName.of(item.role), P: parentRef };
+        // Effective role for the leaf ledger below: defaults to the semantic role,
+        // but becomes 'NonStruct' for decorative images (set in the branch below).
+        // Without this the ledger recorded role:'Figure' while /S was NonStruct, so
+        // the unify/gate accounting counted a decorative logo as an orphaned Figure —
+        // either licensing a spurious /K MCR or withholding an otherwise-honest
+        // PDF/UA-1 part-1 claim. Mirrors header/footer → NonStruct (~18803).
+        let _effRole = item.role;
         if (item.role === 'Figure' || item.role === 'Formula') {
           if (item.isDecorative) {
             // Stage 3 E-lite: decorative images become /NonStruct instead of
@@ -19154,6 +19191,7 @@ tr { page-break-inside: avoid; }
             // without the content-stream rewrite artifact-BMC would require.
             d.S = PDFName.of('NonStruct');
             d.Alt = PDFString.of('');
+            _effRole = 'NonStruct';
           } else {
             d.Alt = PDFString.of(item.alt || '(image)');
           }
@@ -19224,7 +19262,7 @@ tr { page-break-inside: avoid; }
         // Track every leaf StructElem ref for the post-build unify pass
         // (retro-patches /K → MCR when isScanned + single-page; gated below).
         // Inert when unify doesn't trigger — pushing a ref into a list is free.
-        _unifiableLeafRefs.push({ ref: elemRef, role: item.role, text: (item.text || '') });
+        _unifiableLeafRefs.push({ ref: elemRef, role: _effRole, text: (item.text || '') });
         // Stage 5b lite: TH /ID is an indirect spec entry (not inside /A).
         // We collect {id, ref} entries for the /IDTree built after the
         // tree is assembled.
@@ -28562,11 +28600,6 @@ window.AlloModules.createDocPipeline.ocrBlockLayout = _alloOcrBlockLayout; // st
 window.AlloModules.createDocPipeline.structuralFoundations = _alloStructuralFoundations; // static: exposed for tests
 window.AlloModules.createDocPipeline.weightedDeductions = _alloWeightedDeductions; // static: exposed for tests (#5)
 window.AlloModules.createDocPipeline.contrastFixPair = _alloContrastFixPair; // static: exposed for tests (contrast pair-fixer)
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 })();

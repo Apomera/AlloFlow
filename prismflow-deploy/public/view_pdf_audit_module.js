@@ -3848,8 +3848,18 @@ function PdfAuditView(props) {
       }
       addToast(t("toasts.auditing_remediating_html"), "info");
       setPdfFixLoading(true);
-      setPdfFixStep("Applying deterministic fixes...");
+      setPdfFixStep("Auditing original (baseline)...");
       try {
+        let beforeScore = 0;
+        try {
+          const [baseAi, baseAxe] = await Promise.all([auditOutputAccessibility(html), runAxeAudit(html)]);
+          const _bAi = baseAi?.score ?? null;
+          const _bAxe = baseAxe?.score ?? null;
+          beforeScore = _bAi !== null && _bAxe !== null ? _computeHeadline(_bAi, _bAxe) : _bAxe ?? _bAi ?? 0;
+        } catch (_) {
+          beforeScore = 0;
+        }
+        setPdfFixStep("Applying deterministic fixes...");
         let fixed = html;
         const cf = fixContrastViolations(fixed);
         if (cf.fixCount > 0) fixed = cf.html;
@@ -3865,7 +3875,7 @@ function PdfAuditView(props) {
         const finalScore = finalAi && finalAxe ? _computeHeadline(finalAi.score || 0, finalAxe.score || 0) : finalAi?.score || 0;
         setPdfFixResult({
           accessibleHtml: fixed,
-          beforeScore: 0,
+          beforeScore,
           afterScore: finalScore,
           verificationAudit: finalAi,
           axeAudit: finalAxe,
@@ -4741,8 +4751,13 @@ Return ONLY JSON:
               }
             } catch (_) {
             }
+            let _rangeNote = "";
+            if (Array.isArray(project.pageRange) && project.pageRange.length === 2 && typeof setPdfPageRange === "function") {
+              setPdfPageRange({ start: project.pageRange[0], end: project.pageRange[1] });
+              _rangeNote = " \u26A0 This project covers only pages " + project.pageRange[0] + "\u2013" + project.pageRange[1] + " of the original \u2014 finish those, or clear the page range to process the whole file.";
+            }
             const _why = project.failureReason === "auth" ? "an API key / permission problem" : project.failureReason === "quota" ? "a usage or quota limit" : project.failureReason === "network" ? "a dropped connection" : "an AI-service hiccup";
-            addToast("\u{1F4C2} Resumed \u201C" + (project.fileName || "project") + "\u201D \u2014 it stopped last time due to " + _why + ". Your extracted text is restored; click Make Accessible to finish" + (project.pdfBase64 ? "" : " (re-upload the original file first \u2014 its bytes weren\u2019t saved)") + ".", "success");
+            addToast("\u{1F4C2} Resumed \u201C" + (project.fileName || "project") + "\u201D \u2014 it stopped last time due to " + _why + ". Your extracted text is restored; click Make Accessible to finish" + (project.pdfBase64 ? "" : " (re-upload the original file first \u2014 its bytes weren\u2019t saved)") + "." + _rangeNote, "success");
             e.target.value = "";
             return;
           }
@@ -6308,26 +6323,32 @@ Return ONLY JSON:
         const _v = _ltv.veraPdf;
         const _pev = _ltv.postExportValidator && _ltv.postExportValidator.summary;
         const _sc = _ltv.pdfUa1Checks && _ltv.pdfUa1Checks.summary;
-        let label = null, fail = false, indep = false;
+        let label = null, fail = false, indep = false, warnOnly = false;
         if (_v && !_v.error) {
           indep = true;
           fail = _v.compliant === false;
           label = fail ? (_v.failedRules ? _v.failedRules.length : 0) + " rule(s) fail" : "conformant";
         } else if (_pev) {
+          const _warn = _pev.warn || 0;
           fail = (_pev.fail || 0) > 0;
-          label = (_pev.pass || 0) + "/" + ((_pev.pass || 0) + (_pev.fail || 0));
+          warnOnly = !fail && _warn > 0;
+          label = (_pev.pass || 0) + "/" + ((_pev.pass || 0) + (_pev.fail || 0) + _warn) + (_warn ? " (" + _warn + " warn)" : "");
         } else if (_sc) {
+          const _warn = _sc.warn || 0;
           fail = (_sc.fail || 0) > 0;
-          label = (_sc.conformancePct || 0) + "%";
+          warnOnly = !fail && _warn > 0;
+          label = (_sc.conformancePct || 0) + "%" + (_warn ? " (" + _warn + " warn)" : "");
         }
         if (!label) return null;
+        const _badgeCls = fail ? "bg-red-100 text-red-700" : warnOnly ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-700";
+        const _badgeIcon = fail ? "\u274C" : warnOnly ? "\u26A0\uFE0F" : "\u2705";
         return /* @__PURE__ */ React.createElement("div", { className: "text-center mt-1.5" }, /* @__PURE__ */ React.createElement(
           "span",
           {
-            className: "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold " + (fail ? "bg-red-100 text-red-700" : "bg-emerald-100 text-emerald-700"),
-            title: (t("pdf_audit.pdfua_badge.title") || "PDF/UA-1 (ISO 14289-1) conformance of the EXPORTED tagged PDF \u2014 the actual file you hand out. Shown beside the content score, never blended into it (a different artifact).") + (indep ? " Independently validated by veraPDF." : ' AlloFlow self-check \u2014 run "Independently validate with veraPDF" for the authoritative verdict.')
+            className: "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold " + _badgeCls,
+            title: (t("pdf_audit.pdfua_badge.title") || "PDF/UA-1 (ISO 14289-1) conformance of the EXPORTED tagged PDF \u2014 the actual file you hand out. Shown beside the content score, never blended into it (a different artifact).") + (warnOnly ? " One or more rules are WARN (could not be auto-verified) \u2014 not yet conformant." : "") + (indep ? " Independently validated by veraPDF." : ' AlloFlow self-check \u2014 run "Independently validate with veraPDF" for the authoritative verdict.')
           },
-          fail ? "\u274C" : "\u2705",
+          _badgeIcon,
           " ",
           t("pdf_audit.pdfua_badge.lead") || "PDF/UA-1",
           indep ? "" : " (self-check)",

@@ -16214,6 +16214,10 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           failMessage: _override.failMessage || null,
           auditResult: _override.auditResult || pdfAuditResult || null,
           pageCount: (_override.auditResult && _override.auditResult.pageCount) || (pdfAuditResult && pdfAuditResult.pageCount) || null,
+          // Persist the active page range so resume knows this is a PARTIAL extraction
+          // (e.g. pages 6-10), not the whole document — the loader surfaces it instead
+          // of silently shipping the resumed slice as the full doc. (audit fix)
+          pageRange: (Array.isArray(_override.pageRange) && _override.pageRange.length === 2) ? _override.pageRange : null,
           runHistory: pdfRunHistoryRef.current,
           prefs: {
             auditors: pdfAuditorCount,

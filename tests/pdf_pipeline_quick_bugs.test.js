@@ -40,18 +40,24 @@ describe('DB-B2: chunk-retry body swap treats document text as DATA, not a repla
 });
 
 describe('PDF-C4: PDF/UA self-check tile never renders NaN% (zero applicable rules)', () => {
-  // mirror of the fixed pct
-  const pct = (hasPdfUa, pass, fail) => (hasPdfUa && (pass + fail) > 0) ? Math.round((pass / (pass + fail)) * 100) : null;
+  // mirror of the fixed pct — denominator now includes WARN (a warn is not a pass),
+  // matching the canonical conformancePct. Guards 0/0 → null (no NaN%).
+  const pct = (hasPdfUa, pass, fail, warn) => { const denom = pass + fail + (warn || 0); return (hasPdfUa && denom > 0) ? Math.round((pass / denom) * 100) : null; };
   it('0/0 → null (suppressed), not NaN', () => {
-    expect(pct(true, 0, 0)).toBe(null);
-    expect(Number.isNaN(pct(true, 0, 0))).toBe(false);
+    expect(pct(true, 0, 0, 0)).toBe(null);
+    expect(Number.isNaN(pct(true, 0, 0, 0))).toBe(false);
   });
   it('normal rules compute the percentage', () => {
     expect(pct(true, 8, 2)).toBe(80);
     expect(pct(true, 10, 0)).toBe(100);
   });
-  it('source guards the divisor + the tile/warning suppress on null', () => {
-    expect(dp).toMatch(/\(hasPdfUa && \(pdfua\.pass \+ pdfua\.fail\) > 0\)/);
+  it('WARN counts in the denominator (a warn is not a pass)', () => {
+    // 8 pass, 0 fail, 2 warn → 8/10 = 80% (NOT 8/8 = 100% — the old warn-excluded bug)
+    expect(pct(true, 8, 0, 2)).toBe(80);
+  });
+  it('source guards the divisor (warn-inclusive) + the tile/warning suppress on null', () => {
+    expect(dp).toMatch(/const _pdfuaDenom = hasPdfUa \? \(pdfua\.pass \+ pdfua\.fail \+ \(pdfua\.warn \|\| 0\)\)/);
+    expect(dp).toMatch(/const pdfuaPct = \(hasPdfUa && _pdfuaDenom > 0\)/);
     expect(dp).toMatch(/const pdfuaTile = \(hasPdfUa && pdfuaPct !== null\)/);
     expect(dp).toMatch(/if \(hasPdfUa && pdfuaPct !== null && pdfuaPct < 80/);
   });

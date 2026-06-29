@@ -3471,8 +3471,20 @@ function PdfAuditView(props) {
                         if (!html || html.length < 20) { addToast(t('toasts.paste_fetch_html_first'), 'info'); return; }
                         addToast(t('toasts.auditing_remediating_html'), 'info');
                         setPdfFixLoading(true);
-                        setPdfFixStep('Applying deterministic fixes...');
+                        setPdfFixStep('Auditing original (baseline)...');
                         try {
+                          // Honest baseline: audit the ORIGINAL input before changing
+                          // anything, instead of hardcoding 0 — which fabricated a
+                          // "0 -> N points" gain on already-accessible HTML. Mirrors the
+                          // blended scoring the "Audit" button uses on the same input.
+                          let beforeScore = 0;
+                          try {
+                            const [baseAi, baseAxe] = await Promise.all([auditOutputAccessibility(html), runAxeAudit(html)]);
+                            const _bAi = baseAi?.score ?? null;
+                            const _bAxe = baseAxe?.score ?? null;
+                            beforeScore = (_bAi !== null && _bAxe !== null) ? _computeHeadline(_bAi, _bAxe) : (_bAxe ?? _bAi ?? 0);
+                          } catch (_) { beforeScore = 0; }
+                          setPdfFixStep('Applying deterministic fixes...');
                           let fixed = html;
                           const cf = fixContrastViolations(fixed);
                           if (cf.fixCount > 0) fixed = cf.html;
@@ -3485,7 +3497,7 @@ function PdfAuditView(props) {
                           const finalScore = (finalAi && finalAxe) ? _computeHeadline((finalAi.score || 0), (finalAxe.score || 0)) : (finalAi?.score || 0); // weakest-layer-governs (shared)
                           setPdfFixResult({
                             accessibleHtml: fixed,
-                            beforeScore: 0,
+                            beforeScore,
                             afterScore: finalScore,
                             verificationAudit: finalAi,
                             axeAudit: finalAxe,
@@ -4628,11 +4640,20 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               if (_pp.targetScore >= 60 && _pp.targetScore <= 100) setPdfTargetScore(_pp.targetScore);
                               if (_pp.builderFont) { try { localStorage.setItem('allo_selected_font', _pp.builderFont); } catch (_) {} }
                             } catch (_) {}
+                            // Restore the active page range so resume CONTINUES the same
+                            // partial slice (e.g. pages 6-10) instead of silently treating the
+                            // resumed text as the whole document (which shipped only those
+                            // pages, OCR skipped). Surfaced in the toast so the scope is honest.
+                            let _rangeNote = '';
+                            if (Array.isArray(project.pageRange) && project.pageRange.length === 2 && typeof setPdfPageRange === 'function') {
+                              setPdfPageRange({ start: project.pageRange[0], end: project.pageRange[1] });
+                              _rangeNote = ' ⚠ This project covers only pages ' + project.pageRange[0] + '–' + project.pageRange[1] + ' of the original — finish those, or clear the page range to process the whole file.';
+                            }
                             const _why = project.failureReason === 'auth' ? 'an API key / permission problem'
                               : project.failureReason === 'quota' ? 'a usage or quota limit'
                               : project.failureReason === 'network' ? 'a dropped connection'
                               : 'an AI-service hiccup';
-                            addToast('📂 Resumed “' + (project.fileName || 'project') + '” — it stopped last time due to ' + _why + '. Your extracted text is restored; click Make Accessible to finish' + (project.pdfBase64 ? '' : ' (re-upload the original file first — its bytes weren’t saved)') + '.', 'success');
+                            addToast('📂 Resumed “' + (project.fileName || 'project') + '” — it stopped last time due to ' + _why + '. Your extracted text is restored; click Make Accessible to finish' + (project.pdfBase64 ? '' : ' (re-upload the original file first — its bytes weren’t saved)') + '.' + _rangeNote, 'success');
                             e.target.value = '';
                             return;
                           }
@@ -7517,16 +7538,31 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         const _v = _ltv.veraPdf;
                         const _pev = _ltv.postExportValidator && _ltv.postExportValidator.summary;
                         const _sc = _ltv.pdfUa1Checks && _ltv.pdfUa1Checks.summary;
-                        let label = null, fail = false, indep = false;
+                        let label = null, fail = false, indep = false, warnOnly = false;
                         if (_v && !_v.error) { indep = true; fail = _v.compliant === false; label = fail ? ((_v.failedRules ? _v.failedRules.length : 0) + ' rule(s) fail') : 'conformant'; }
-                        else if (_pev) { fail = (_pev.fail || 0) > 0; label = (_pev.pass || 0) + '/' + ((_pev.pass || 0) + (_pev.fail || 0)); }
-                        else if (_sc) { fail = (_sc.fail || 0) > 0; label = (_sc.conformancePct || 0) + '%'; }
+                        else if (_pev) {
+                          // Denominator includes WARN (matches the canonical conformancePct); a warn is
+                          // not a pass. A warn-only state (warn>0, fail=0 — e.g. the §7.1 content-marking
+                          // check that's a permanent WARN) is NOT conformant, so render amber, not green.
+                          const _warn = _pev.warn || 0;
+                          fail = (_pev.fail || 0) > 0;
+                          warnOnly = !fail && _warn > 0;
+                          label = (_pev.pass || 0) + '/' + ((_pev.pass || 0) + (_pev.fail || 0) + _warn) + (_warn ? ' (' + _warn + ' warn)' : '');
+                        }
+                        else if (_sc) {
+                          const _warn = _sc.warn || 0;
+                          fail = (_sc.fail || 0) > 0;
+                          warnOnly = !fail && _warn > 0;
+                          label = (_sc.conformancePct || 0) + '%' + (_warn ? ' (' + _warn + ' warn)' : '');
+                        }
                         if (!label) return null;
+                        const _badgeCls = fail ? 'bg-red-100 text-red-700' : (warnOnly ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-700');
+                        const _badgeIcon = fail ? '❌' : (warnOnly ? '⚠️' : '✅');
                         return (
                           <div className="text-center mt-1.5">
-                            <span className={'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold ' + (fail ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700')}
-                              title={(t('pdf_audit.pdfua_badge.title') || 'PDF/UA-1 (ISO 14289-1) conformance of the EXPORTED tagged PDF — the actual file you hand out. Shown beside the content score, never blended into it (a different artifact).') + (indep ? ' Independently validated by veraPDF.' : ' AlloFlow self-check — run "Independently validate with veraPDF" for the authoritative verdict.')}>
-                              {(fail ? '❌' : '✅')} {t('pdf_audit.pdfua_badge.lead') || 'PDF/UA-1'}{indep ? '' : ' (self-check)'}: {label}
+                            <span className={'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold ' + _badgeCls}
+                              title={(t('pdf_audit.pdfua_badge.title') || 'PDF/UA-1 (ISO 14289-1) conformance of the EXPORTED tagged PDF — the actual file you hand out. Shown beside the content score, never blended into it (a different artifact).') + (warnOnly ? ' One or more rules are WARN (could not be auto-verified) — not yet conformant.' : '') + (indep ? ' Independently validated by veraPDF.' : ' AlloFlow self-check — run "Independently validate with veraPDF" for the authoritative verdict.')}>
+                              {_badgeIcon} {t('pdf_audit.pdfua_badge.lead') || 'PDF/UA-1'}{indep ? '' : ' (self-check)'}: {label}
                             </span>
                           </div>
                         );
