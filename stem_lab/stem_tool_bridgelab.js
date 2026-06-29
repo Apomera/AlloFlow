@@ -459,6 +459,13 @@
       var awardXP = ctx.awardXP;
       var callGemini = ctx.callGemini;
 
+      // ── Web Audio API Sound Effects Engine (ref) ──
+      // This hook MUST run before the loading-gate early return below, so the
+      // hook count stays stable across the empty→seeded mount transition
+      // (Rules of Hooks — otherwise React throws "Rendered more hooks than
+      // during the previous render" the first time the lab opens).
+      var _bridgeACRef = React.useRef ? React.useRef(null) : { current: null };
+
       if (!labToolData || !labToolData.bridgeLab) {
         setLabToolData(function(prev) {
           return Object.assign({}, prev, { bridgeLab: {
@@ -483,7 +490,7 @@
       var d = labToolData.bridgeLab;
 
       // ── Web Audio API Sound Effects Engine ──
-      var _bridgeACRef = React.useRef ? React.useRef(null) : { current: null };
+      // (_bridgeACRef is declared above the loading gate — Rules of Hooks.)
       function getBridgeAC() {
         if (!_bridgeACRef.current) {
           try { _bridgeACRef.current = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
