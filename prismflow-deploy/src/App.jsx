@@ -4988,6 +4988,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         // Jun 2026: Lumen — provenance-bound reactive research canvas (9 honesty-gated chart
         // types). Pairs with the lumen tile (ready:true) + _pluginOnlyTools flag in stem_lab_module.js.
         'stem_lab/stem_tool_lumen.js',
+        // Jun 2026: Tool Forge — teacher-gated plugin-authoring harness (renders a teacher-only
+        // panel for students). Phase A; loadable so Aaron can smoke-test, go-live is his call.
+        'stem_lab/stem_tool_forge.js',
       ];
       var selToolModules = [
         'sel_hub/sel_safety_layer.js', // load first so other SEL tools can hook the safety layer

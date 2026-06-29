@@ -898,6 +898,7 @@ const PLUGIN_FILES = [
     // never bumped their CDN hash → Cloudflare served stale code (audit B4, 2026-06-28).
     'stem_lab/stem_tool_dinolab.js',
     'stem_lab/stem_tool_lumen.js',
+    'stem_lab/stem_tool_forge.js',  // Tool Forge — teacher-gated plugin-authoring harness (Phase A; go-live is Aaron's call)
     'sel_hub/sel_safety_layer.js',  // MUST load before any sel_tool_*.js
     'sel_hub/sel_standards_alignment.js',  // standards alignment data + helper used by sel_tool_*.js About views
     'sel_hub/sel_tool_zones.js', 'sel_hub/sel_tool_emotions.js',
