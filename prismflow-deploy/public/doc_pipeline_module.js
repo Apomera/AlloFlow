@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -3323,14 +3323,14 @@ var createDocPipeline = function(deps) {
               let halfOut = stripFence(await callGemini(halfPrompt, false));
               if (_isJsonWrapped(halfOut)) {
                 const unwrappedHalf = _tryUnwrapJsonHtml(halfOut);
-                if (unwrappedHalf && unwrappedHalf.length >= half.length * 0.85 && textCharCount(unwrappedHalf) >= textCharCount(half) * 0.9) {
+                if (unwrappedHalf && unwrappedHalf.length >= half.length * 0.9 && textCharCount(unwrappedHalf) >= textCharCount(half) * 0.95) {  // B13: half gate ≥ full gate (90%/95%) — a weaker half gate let a split chunk ship degraded content the full gate would reject
                   halfOut = unwrappedHalf;
                 } else {
                   _pipeLog('aiFixChunked:' + label, 'half-chunk ' + (hi + 1) + ' JSON wrapper — keeping original half');
                   return half;
                 }
               }
-              if (halfOut && halfOut.length >= half.length * 0.85 && textCharCount(halfOut) >= textCharCount(half) * 0.9) {
+              if (halfOut && halfOut.length >= half.length * 0.9 && textCharCount(halfOut) >= textCharCount(half) * 0.95) {  // B13: half gate ≥ full gate (matches the line-3313 full-chunk gate)
                 return halfOut;
               }
               warnLog(`[aiFixChunked:${label}] half-chunk ${hi + 1} also rejected — keeping original half`);
@@ -28551,11 +28551,6 @@ window.AlloModules.createDocPipeline.ocrBlockLayout = _alloOcrBlockLayout; // st
 window.AlloModules.createDocPipeline.structuralFoundations = _alloStructuralFoundations; // static: exposed for tests
 window.AlloModules.createDocPipeline.weightedDeductions = _alloWeightedDeductions; // static: exposed for tests (#5)
 window.AlloModules.createDocPipeline.contrastFixPair = _alloContrastFixPair; // static: exposed for tests (contrast pair-fixer)
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 })();
