@@ -127,6 +127,8 @@ if [[ "${SKIP_RENDER_CHECK:-0}" != "1" ]]; then
   echo "  ✓ PLUGIN_FILES ↔ git in sync (no stale-CDN plugins, duplicate entries, or casing 404s — audit B4/B5)."
   node dev-tools/check_tool_contract.cjs --quiet || true
   echo "  ✓ plugin contract audited (ADVISORY: registerTool shape + required fields + ctx-surface conformance; Tool Forge gate, never blocks)."
+  node dev-tools/check_forge_contract_sync.cjs --quiet
+  echo "  ✓ Tool Forge vendored contract core in sync with dev-tools/forge_contract_core.js (no Tier-1/Tier-2 drift)."
 fi
 
 # ── Step 1: Source commit ──────────────────────────────────────────
