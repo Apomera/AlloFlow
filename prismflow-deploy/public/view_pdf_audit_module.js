@@ -4803,6 +4803,15 @@ Return ONLY JSON:
             _plainLanguage: project._plainLanguage || null
           });
           setPendingPdfFile({ name: project.fileName || "loaded-project.pdf" });
+          _paletteSnapshotRef.current = null;
+          _lastTaggedBytesRef.current = null;
+          setAppliedPalette(null);
+          setPaletteIntent("");
+          _setIssueEdit({});
+          setRestyleProposals(null);
+          setRestyleDropped(0);
+          setRegionArmed(false);
+          setTagOutline(null);
           try {
             if (Array.isArray(project.runHistory) && typeof setPdfRunHistory === "function") setPdfRunHistory(project.runHistory.slice(-200));
             const _pp = project.prefs || {};

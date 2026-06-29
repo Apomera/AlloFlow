@@ -7655,9 +7655,55 @@ var createDocPipeline = function(deps) {
       return cached.audit;
     } catch (_) { return null; }
   };
+  // ── Bounded eviction sweep for the PDF audit/remediation caches ──
+  // TTL was enforced LAZILY on read only, so distinct one-off docs never recur and expired entries piled up
+  // forever — risking the browser evicting the WHOLE origin IDB (which also holds the resume / multi-session
+  // stores). This sweep (a) deletes TTL-expired/malformed entries and (b) caps the live count (LRU on
+  // savedAt). PREFIX-SCOPED to 'pdf_audit_'/'pdf_remed_' ONLY: it can NOT match the resume keys
+  // (pdf_active_batch_files_v1 / _status_v1 — different prefix), and the multi-session + chunk-progress data
+  // live in a SEPARATE IndexedDB ('alloflow-chunk-progress') that idbKeyval.keys() (default store) cannot even
+  // see. Fire-and-forget + concurrency-guarded + time-throttled (≤1 scan / 60s) so a write burst triggers at
+  // most one scan; failures never affect the write (same fail-soft posture as the writes below).
+  const _PDF_CACHE_KEY_PREFIXES = ['pdf_audit_', 'pdf_remed_'];
+  const _PDF_CACHE_MAX_ENTRIES = 200;
+  let _pdfCacheSweepRunning = false;
+  let _lastPdfCacheSweepAt = 0;
+  const _sweepPdfCacheStore = async () => {
+    if (_pdfCacheSweepRunning || typeof window === 'undefined' || !window.idbKeyval || typeof window.idbKeyval.keys !== 'function') return;
+    const _nowTs = Date.now();
+    if (_nowTs - _lastPdfCacheSweepAt < 60000) return; // throttle: at most one sweep / 60s regardless of write burst
+    _lastPdfCacheSweepAt = _nowTs;
+    _pdfCacheSweepRunning = true;
+    try {
+      const allKeys = await window.idbKeyval.keys();
+      const candidates = (allKeys || []).filter(k => typeof k === 'string' && _PDF_CACHE_KEY_PREFIXES.some(p => k.startsWith(p)));
+      const now = Date.now();
+      const survivors = [];
+      for (const k of candidates) {
+        let rec = null;
+        try { rec = await storageDB.get(k); } catch (_) { rec = null; }
+        // Drop malformed/legacy records and anything past TTL.
+        if (!rec || typeof rec.savedAt !== 'number' || (now - rec.savedAt) > _AUDIT_CACHE_TTL_MS) {
+          try { await window.idbKeyval.del(k); } catch (_) {}
+          continue;
+        }
+        survivors.push({ key: k, savedAt: rec.savedAt });
+      }
+      // LRU/size cap: evict oldest survivors until under the entry cap.
+      if (survivors.length > _PDF_CACHE_MAX_ENTRIES) {
+        survivors.sort((a, b) => a.savedAt - b.savedAt);
+        const toEvict = survivors.length - _PDF_CACHE_MAX_ENTRIES;
+        for (let i = 0; i < toEvict; i++) {
+          try { await window.idbKeyval.del(survivors[i].key); } catch (_) {}
+        }
+      }
+    } catch (_) { /* sweep is best-effort; never break the write path */ }
+    finally { _pdfCacheSweepRunning = false; }
+  };
   const _writeAuditCache = async (key, audit) => {
     if (!key || typeof window === 'undefined' || !window.idbKeyval || !audit) return;
     try { await storageDB.set(key, { audit, savedAt: Date.now() }); } catch (_) {}
+    _sweepPdfCacheStore(); // fire-and-forget bounded eviction (throttled)
   };
 
   // ── Tier 4 via Tier 5 mechanism: remediation cache ──
@@ -7688,6 +7734,7 @@ var createDocPipeline = function(deps) {
   const _writeRemediationCache = async (key, result) => {
     if (!key || typeof window === 'undefined' || !window.idbKeyval || !result) return;
     try { await storageDB.set(key, { result, savedAt: Date.now() }); } catch (_) {}
+    _sweepPdfCacheStore(); // fire-and-forget bounded eviction (throttled)
   };
 
   // ── Tier 4: Mid-batch resume persistence ──
@@ -13850,25 +13897,45 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         const _nm = { 'english': 'en', 'spanish': 'es', 'french': 'fr', 'german': 'de', 'portuguese': 'pt', 'chinese': 'zh', 'japanese': 'ja', 'korean': 'ko', 'arabic': 'ar', 'vietnamese': 'vi', 'haitian': 'ht', 'haitian creole': 'ht', 'somali': 'so', 'hebrew': 'he', 'russian': 'ru' };
         const _adRaw = (_auditResult && _auditResult.documentLanguage) ? String(_auditResult.documentLanguage).trim().toLowerCase().replace(/_/g, '-') : '';
         const _ad = _vl.test(_adRaw) ? _adRaw : null;
+        // Apply the lang attribute first (inject / keep / override), then — additively and
+        // idempotently — set dir="rtl" on <html> when the FINAL effective language is RTL. Without
+        // this, RTL docs (ar/he/fa/ps/ur/…) pass the lang check but render bidi-scrambled. Mirrors
+        // translateDoc's RTL handling; reuses the shared isRtlLang helper. LTR docs are never touched.
+        let _out;
         if (!/lang=/i.test(html)) {
-          return html.replace(/<html/i, '<html lang="' + (_ad || 'en') + '"');
+          _out = html.replace(/<html/i, '<html lang="' + (_ad || 'en') + '"');
+        } else {
+          _out = html.replace(/<html([^>]*)lang=["']([^"']*)["']/i, (m, before, langVal) => {
+            const trimmed = String(langVal).trim().toLowerCase().replace(/_/g, '-');
+            const invalid = !trimmed || !_vl.test(trimmed);
+            // Compare BASE codes so a more-specific valid region subtag (es-MX, pt-BR, zh-TW) is preserved
+            // when the audit only detected the bare base (es, pt, zh) — only a genuine language change
+            // (en→es) overrides. (lang-ell-3, 2026-06-21) Was `_ad !== trimmed` which dropped es-MX→es.
+            const _trimBase = trimmed.split('-')[0];
+            const _adBase = _ad ? _ad.split('-')[0] : '';
+            const overrideToDetected = !invalid && _ad && _ad !== 'en' && _adBase !== _trimBase;
+            if (invalid || overrideToDetected) {
+              const fixed = _ad || _nm[trimmed] || 'en';
+              try { warnLog('  Deterministic: lang="' + langVal + '" → "' + fixed + '" (' + (_ad ? (overrideToDetected ? 'audit-detected, overrode valid ' + trimmed : 'audit-detected') : (_nm[trimmed] ? 'name-mapped' : 'fallback')) + ')'); } catch (_) {}
+              return '<html' + before + 'lang="' + fixed + '"';
+            }
+            return m;
+          });
         }
-        return html.replace(/<html([^>]*)lang=["']([^"']*)["']/i, (m, before, langVal) => {
-          const trimmed = String(langVal).trim().toLowerCase().replace(/_/g, '-');
-          const invalid = !trimmed || !_vl.test(trimmed);
-          // Compare BASE codes so a more-specific valid region subtag (es-MX, pt-BR, zh-TW) is preserved
-          // when the audit only detected the bare base (es, pt, zh) — only a genuine language change
-          // (en→es) overrides. (lang-ell-3, 2026-06-21) Was `_ad !== trimmed` which dropped es-MX→es.
-          const _trimBase = trimmed.split('-')[0];
-          const _adBase = _ad ? _ad.split('-')[0] : '';
-          const overrideToDetected = !invalid && _ad && _ad !== 'en' && _adBase !== _trimBase;
-          if (invalid || overrideToDetected) {
-            const fixed = _ad || _nm[trimmed] || 'en';
-            try { warnLog('  Deterministic: lang="' + langVal + '" → "' + fixed + '" (' + (_ad ? (overrideToDetected ? 'audit-detected, overrode valid ' + trimmed : 'audit-detected') : (_nm[trimmed] ? 'name-mapped' : 'fallback')) + ')'); } catch (_) {}
-            return '<html' + before + 'lang="' + fixed + '"';
+        // Read back the FINAL effective lang and add dir="rtl" for RTL languages only. Idempotent:
+        // skips when a dir attribute is already present on the <html> tag.
+        try {
+          const _htmlTag = _out.match(/<html[^>]*>/i);
+          if (_htmlTag && !/\sdir=/i.test(_htmlTag[0])) {
+            const _lm = _htmlTag[0].match(/lang=["']([^"']*)["']/i);
+            const _finalLang = _lm ? _lm[1] : '';
+            if (_finalLang && isRtlLang(_finalLang)) {
+              _out = _out.replace(/<html([^>]*)>/i, (m, attrs) => '<html' + attrs + ' dir="rtl">');
+              try { warnLog('  Deterministic: dir="rtl" set for RTL language "' + _finalLang + '"'); } catch (_) {}
+            }
           }
-          return m;
-        });
+        } catch (_) {}
+        return _out;
       } catch (_) { return html; }
     };
 
@@ -13949,6 +14016,13 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       window.__lastOcrVisionText = '';
       window.__lastOcrDisagreements = [];
       window.__lastOcrMethod = null;
+      // Same cross-document-bleed class as the OCR globals above: __pdfPageCanvases (full-page JPEG
+      // dataURLs for the in-session re-crop UI) is SET only inside the image-extraction block (its
+      // start-of-step reset lives INSIDE that `extractedImages.length > 0` gate). A run with images leaves
+      // it pinned on window; a NEXT doc with NO images never re-enters the gate, so the prior doc's page
+      // JPEGs bleed into its re-crop cache (and stay pinned ~1-4MB/page → Canvas-iframe OOM). Clear it
+      // unconditionally per run; the image step re-populates it for THIS doc.
+      window.__pdfPageCanvases = {};
       window.__lastExtractEncrypted = false; // password-cause (2026-06-20): true when a password-protected PDF was detected, so the <20-char abort can name the real cause
       window.__lastIncompleteProject = null; // resumable-incomplete-project (2026-06-20): the catch refills this if a hard AI failure hits after extraction
       // Force-OCR escape hatch (2026-06-20): the "Re-scan with OCR" button sets window.__alloForceOcr
@@ -20628,11 +20702,9 @@ tr { page-break-inside: avoid; }
         } catch (textErr) {
           try { warnLog('[createTaggedPdf] per-page text extract failed (non-fatal): ' + (textErr && textErr.message)); } catch(_) {}
         }
-        // Free the pdf.js worker doc now its last use (per-heading page mapping, just above) is done — it is
-        // released NOWHERE else, so without this every born-digital tagged export leaks a worker doc + its
-        // ArrayBuffer copy, compounding over a batch ZIP. (tagging-pdfua-1, 2026-06-21 — the leak the
-        // reliability-quick-wins commit explicitly deferred.) Best-effort; downstream only uses pageTexts.
-        try { if (pdfjsDocForTagging) { await pdfjsDocForTagging.destroy(); pdfjsDocForTagging = null; } } catch (_) {}
+        // (pdf.js worker doc is freed by the unconditional backstop just after this outline try/catch —
+        // its last use is the per-heading page mapping below. Freeing it ONLY here leaked it on the
+        // no-headings path; the backstop covers every path. See after the catch.)
         const _findPageForHeading = (text) => {
           if (!text) return -1;
           // Normalize the same way the page text was: lowercase, collapsed
@@ -20712,6 +20784,13 @@ tr { page-break-inside: avoid; }
     } catch (outlineErr) {
       try { warnLog('[createTaggedPdf] outline build failed (non-fatal): ' + (outlineErr && outlineErr.message)); } catch(_) {}
     }
+    // Free the pdf.js worker doc on EVERY path now its last use (outline per-heading page mapping, above)
+    // is done — it is released NOWHERE else. Previously the destroy lived inside the headings-only if-block,
+    // so a flat born-digital PDF (no headings) skipped it and leaked a worker doc + its sliced ArrayBuffer
+    // copy on every export, compounding over a batch ZIP. (tagging-pdfua-1; the reliability-quick-wins commit
+    // explicitly deferred this.) Guarded + nulled = idempotent (no double-free); mirrors the hoist+destroy
+    // pattern in extractPdfStructTree / detectPdfBlankFields. Nothing downstream reads pdfjsDocForTagging.
+    try { if (pdfjsDocForTagging) { await pdfjsDocForTagging.destroy(); pdfjsDocForTagging = null; } } catch (_) {}
     // ── ViewerPreferences: DisplayDocTitle ──
     // PDF/UA-1 §7.1 requires this so the window title bar shows the doc
     // title rather than the filename.

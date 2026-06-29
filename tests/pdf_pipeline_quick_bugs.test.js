@@ -134,3 +134,62 @@ describe('B2-3: /auto agent runs the deterministic net + heading-outline guard (
     expect(capRule(100, { missingH1: false, skip: false })).toBe(100);
   });
 });
+
+// ── Audit batch 3 (2026-06-29): reliability cluster (leaks, unbounded cache, RTL, state-reset) ──
+
+describe('B3-1: pdf.js worker doc is freed on EVERY createTaggedPdf path (no leak on flat/no-heading PDFs)', () => {
+  it('the destroy is an unconditional backstop AFTER the outline try/catch, not nested in the headings if-block', () => {
+    // The free now lives right after the outline catch closes, so the no-heading path frees it too.
+    expect(dp).toMatch(/\} catch \(outlineErr\) \{[\s\S]{0,400}?\}\s*\n\s*\/\/ Free the pdf\.js worker doc on EVERY path[\s\S]{0,800}?try \{ if \(pdfjsDocForTagging\) \{ await pdfjsDocForTagging\.destroy\(\); pdfjsDocForTagging = null; \} \} catch \(_\) \{\}/);
+    // the old headings-only "now its last use" free is gone (replaced by a pointer comment)
+    expect(dp).not.toMatch(/Free the pdf\.js worker doc now its last use/);
+  });
+});
+
+describe('B3-2: __pdfPageCanvases is cleared unconditionally per run (no cross-doc bleed)', () => {
+  it('cleared in the ground-truth reset block, right after the OCR globals', () => {
+    expect(dp).toMatch(/window\.__lastOcrMethod = null;[\s\S]{0,800}?window\.__pdfPageCanvases = \{\};/);
+  });
+});
+
+describe('B3-3: PDF audit/remediation IDB cache has a bounded, prefix-scoped eviction sweep', () => {
+  it('sweep is prefix-scoped to pdf_audit_/pdf_remed_ ONLY, throttled, and called by both writers', () => {
+    expect(dp).toMatch(/_PDF_CACHE_KEY_PREFIXES = \['pdf_audit_', 'pdf_remed_'\]/);
+    expect(dp).toMatch(/const _sweepPdfCacheStore = async/);
+    expect(dp).toMatch(/_nowTs - _lastPdfCacheSweepAt < 60000/); // throttle: ≤1 sweep / 60s
+    // both writers fire-and-forget the sweep
+    expect((dp.match(/_sweepPdfCacheStore\(\); \/\/ fire-and-forget bounded eviction/g) || []).length).toBe(2);
+  });
+  // Pure-logic mirror: the prefix filter must NEVER match the resume / multi-session keys.
+  const prefixes = ['pdf_audit_', 'pdf_remed_'];
+  const matches = (k) => prefixes.some(p => k.startsWith(p));
+  it('the filter excludes resume + multi-session keys (no live-data eviction)', () => {
+    expect(matches('pdf_audit_v9_abc_n3_en')).toBe(true);
+    expect(matches('pdf_remed_v9_abc_n3_en_t95_p2')).toBe(true);
+    expect(matches('pdf_active_batch_files_v1')).toBe(false);   // resume
+    expect(matches('pdf_active_batch_status_v1')).toBe(false);  // resume
+    expect(matches('msdoc_123')).toBe(false);                   // multi-session (separate DB anyway)
+    expect(matches('chunk_123')).toBe(false);                   // chunk progress (separate DB anyway)
+  });
+});
+
+describe('B3-4: RTL dir is set on the single-file remediation output for RTL languages', () => {
+  it('_applyDetectedLang injects dir="rtl" via isRtlLang, idempotently (skips when dir already present)', () => {
+    expect(dp).toMatch(/if \(_finalLang && isRtlLang\(_finalLang\)\)/);
+    expect(dp).toMatch(/_out\.replace\(\/<html\(\[\^>\]\*\)>\/i, \(m, attrs\) => '<html' \+ attrs \+ ' dir="rtl">'\)/);
+    expect(dp).toMatch(/if \(_htmlTag && !\/\\sdir=\/i\.test\(_htmlTag\[0\]\)\)/); // idempotent guard
+  });
+  // Pure-logic mirror: LTR docs are never given a dir.
+  const wantsRtl = (lang, isRtl) => !!(lang && isRtl);
+  it('only RTL languages get a dir (LTR untouched)', () => {
+    expect(wantsRtl('ar', true)).toBe(true);
+    expect(wantsRtl('en', false)).toBe(false);
+    expect(wantsRtl('', false)).toBe(false);
+  });
+});
+
+describe('B3-5: H-8 — the loaded-project loader resets per-doc holdovers (palette snapshot etc.)', () => {
+  it('clears _paletteSnapshotRef + the sibling per-doc state after loading a project', () => {
+    expect(vp).toMatch(/setPendingPdfFile\(\{ name: project\.fileName \|\| 'loaded-project\.pdf' \}\);[\s\S]{0,900}?_paletteSnapshotRef\.current = null;[\s\S]{0,400}?setTagOutline\(null\);/);
+  });
+});

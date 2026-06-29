@@ -4691,6 +4691,22 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             _plainLanguage: project._plainLanguage || null,
                           });
                           setPendingPdfFile({ name: project.fileName || 'loaded-project.pdf' });
+                          // H-8 (audit 2026-06-23): this start-screen loader swaps in a DIFFERENT doc's HTML
+                          // but the component never remounts, so per-document refs/state from the PREVIOUS doc
+                          // survive — most dangerously _paletteSnapshotRef, whose stale snapshot lets a palette
+                          // Revert OVERWRITE this freshly-loaded doc with the prior one. Mirror the per-doc reset
+                          // the sidebar "Load Project" loader runs (~9903) so the loaded doc starts clean. Pure
+                          // per-doc-holdover clears (refs / unrelated state slices) — never the loaded
+                          // pdfFixResult / pdfAuditResult / prefs / runHistory set just above.
+                          _paletteSnapshotRef.current = null;
+                          _lastTaggedBytesRef.current = null;
+                          setAppliedPalette(null);
+                          setPaletteIntent('');
+                          _setIssueEdit({});
+                          setRestyleProposals(null);
+                          setRestyleDropped(0);
+                          setRegionArmed(false);
+                          setTagOutline(null);
                           // Restore the cross-session memory the project file carries
                           // (2026-06-10): run history + pipeline prefs. Canvas wipes
                           // origin storage between sessions — the file is the memory.
