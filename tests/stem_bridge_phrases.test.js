@@ -49,3 +49,30 @@ describe('Bridge — quick-phrases phrasebook', () => {
     }));
   });
 });
+
+describe('Bridge — conversation transcript (the exportable log)', () => {
+  it('renders an empty conversation as an empty string', () => {
+    expect(P._bridgeTranscript([], 'English', 'Spanish')).toBe('');
+    expect(P._bridgeTranscript(null, 'English', 'Spanish')).toBe('');
+  });
+
+  it('labels each turn by speaker language and includes original + translation', () => {
+    const out = P._bridgeTranscript([
+      { sender: 'personA', text: 'Your child is doing well.', translated: 'Su hijo va muy bien.' },
+      { sender: 'personB', text: 'Gracias.', translated: 'Thank you.' },
+    ], 'English', 'Spanish');
+    expect(out).toMatch(/English: Your child is doing well\./);
+    expect(out).toMatch(/Spanish: Su hijo va muy bien\./);    // personA's translation labelled with the OTHER language
+    expect(out).toMatch(/Spanish: Gracias\./);
+    expect(out).toMatch(/English: Thank you\./);              // personB's translation labelled English
+  });
+
+  it('marks AI-helper exchanges with the question, answer and its translation', () => {
+    const out = P._bridgeTranscript([
+      { ai: true, text: 'how do I say hello warmly?', answer: 'You can say: Hello, I am so glad to see you.', translated: 'Hola, me alegro mucho de verle.' },
+    ], 'English', 'Spanish');
+    expect(out).toMatch(/\[AI helper\] asked: how do I say hello warmly\?/);
+    expect(out).toMatch(/English: You can say/);
+    expect(out).toMatch(/Spanish: Hola/);
+  });
+});

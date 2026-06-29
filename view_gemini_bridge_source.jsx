@@ -43,7 +43,39 @@ function _bridgePhrasesPanel(onPick, translating, t) {
             })));
       })));
 }
-try { window.__alloBridgePure = { BRIDGE_PHRASES: BRIDGE_PHRASES }; } catch (e) {}
+// Plain-text transcript of a Face-to-Face conversation (the exportable "log"). PURE + testable.
+function _bridgeTranscript(messages, aLang, bLang) {
+  return (messages || []).map(function (m) {
+    if (m.ai) return '[AI helper] asked: ' + m.text + '\n   ' + aLang + ': ' + (m.answer || '') + (m.translated ? '\n   ' + bLang + ': ' + m.translated : '');
+    var who = m.sender === 'personA' ? aLang : bLang, other = m.sender === 'personA' ? bLang : aLang;
+    return who + ': ' + m.text + (m.translated ? '\n   ' + other + ': ' + m.translated : '');
+  }).join('\n\n');
+}
+// The "ask the AI for help" + "export" bar shown above the conversation thread.
+function _bridgeAiBar(onAsk, onExport, translating, t) {
+  function ask() { var el = document.getElementById('bridge-f2f-ai-input'); if (el && el.value.trim()) { onAsk(el.value.trim()); el.value = ''; } }
+  return React.createElement('div', { style: { display: 'flex', gap: '6px', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap' } },
+    React.createElement('span', { 'aria-hidden': 'true', style: { fontSize: '16px' } }, '🤖'),
+    React.createElement('input', { id: 'bridge-f2f-ai-input', type: 'text', disabled: translating, 'aria-label': (t && t('roster.bridge_ai_placeholder')) || 'Ask the AI for help', placeholder: (t && t('roster.bridge_ai_placeholder')) || 'Ask the AI: how do I say…, words for…, explain simply…', onKeyDown: function (e) { if (e.key === 'Enter') { e.preventDefault(); ask(); } }, style: { flex: 1, minWidth: '170px', background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: '12px', padding: '10px 12px', color: '#e2e8f0', fontSize: '13px', outline: 'none', fontFamily: 'inherit', opacity: translating ? 0.5 : 1 } }),
+    React.createElement('button', { disabled: translating, onClick: ask, style: { background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.35)', color: '#fcd34d', padding: '10px 14px', borderRadius: '12px', fontSize: '13px', fontWeight: 700, cursor: translating ? 'default' : 'pointer', whiteSpace: 'nowrap' } }, (t && t('roster.bridge_ai_btn')) || 'Ask AI'),
+    React.createElement('button', { onClick: onExport, title: (t && t('roster.bridge_export')) || 'Export the conversation', 'aria-label': (t && t('roster.bridge_export')) || 'Export the conversation', style: { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', padding: '10px 12px', borderRadius: '12px', fontSize: '13px', cursor: 'pointer', whiteSpace: 'nowrap' } }, '⬇ ' + ((t && t('roster.bridge_export_short')) || 'Export')));
+}
+// A distinct bubble for an AI-helper exchange: the question + the answer + its translation, shown to BOTH sides.
+function _bridgeAiBubble(msg, aLang, bLang, handleAudio, t) {
+  return React.createElement('div', { key: msg.id, style: { display: 'flex', justifyContent: 'center' } },
+    React.createElement('div', { style: { maxWidth: '92%', width: '100%', background: 'linear-gradient(135deg, rgba(251,191,36,0.12), rgba(245,158,11,0.08))', border: '1px solid rgba(251,191,36,0.3)', borderRadius: '14px', padding: '12px 16px' } },
+      React.createElement('div', { style: { fontSize: '10px', fontWeight: 700, color: '#fcd34d', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.08em' } }, '🤖 ' + ((t && t('roster.bridge_ai_helper')) || 'AI helper')),
+      React.createElement('div', { style: { fontSize: '12px', color: '#94a3b8', marginBottom: '6px', fontStyle: 'italic' } }, '“' + msg.text + '”'),
+      msg.translating
+        ? React.createElement('div', { style: { fontSize: '12px', color: '#64748b', fontStyle: 'italic' } }, '⏳ ' + ((t && t('roster.bridge_ai_thinking')) || 'Thinking…'))
+        : React.createElement('div', null,
+            React.createElement('div', { style: { fontSize: '14px', color: '#fde68a', lineHeight: 1.6, fontWeight: 500 } }, msg.answer || ''),
+            msg.translated ? React.createElement('div', { style: { marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.08)', fontSize: '14px', color: '#99f6e4', lineHeight: 1.6 } }, '🌍 ' + msg.translated) : null,
+            React.createElement('div', { style: { marginTop: '8px', display: 'flex', gap: '6px' } },
+              React.createElement('button', { onClick: function () { handleAudio(msg.answer); }, style: { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', padding: '4px 10px', borderRadius: '8px', fontSize: '11px', cursor: 'pointer' } }, '🔊 ' + (aLang || '').slice(0, 3)),
+              msg.translated ? React.createElement('button', { onClick: function () { handleAudio(msg.translated); }, style: { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', padding: '4px 10px', borderRadius: '8px', fontSize: '11px', cursor: 'pointer' } }, '🔊 ' + (bLang || '').slice(0, 3)) : null))));
+}
+try { window.__alloBridgePure = { BRIDGE_PHRASES: BRIDGE_PHRASES, _bridgeTranscript: _bridgeTranscript }; } catch (e) {}
 
 // ── BridgeSendModal: Teacher-side bridge Send modal (gates on bridgeSendOpen + isTeacherMode). Includes nested bridgeChatOpen IIFE inside. ──
 function BridgeSendModal(props) {
@@ -809,6 +841,30 @@ function BridgeSendModal(props) {
                   rec.onend = () => setBridgeF2FListening(null);
                   rec.start();
                 };
+                const _askAI = async (question) => {
+                  const msgId = Date.now();
+                  setBridgeChatMessages(prev => [...prev, {id:msgId, sender:'ai', ai:true, text:question, translating:true, timestamp:Date.now()}]);
+                  setBridgeF2FTranslating(true);
+                  setTimeout(() => { const c = document.getElementById('bridge-f2f-messages'); if(c) c.scrollTop = c.scrollHeight; }, 50);
+                  try {
+                    const answer = await callGemini('You are a warm, concise interpreter-helper for a live conversation between an educator (speaking ' + _personALang + ') and a family member (speaking ' + _personBLang + '). The educator asks for help: "' + question + '". Reply in ' + _personALang + ' in 1 to 3 short sentences, or a short list of words if they asked for vocabulary. Be practical, friendly, and plain. If they asked how to say something, give the exact phrasing. Do not use em dashes.', false, false, 0.4);
+                    let answerTranslated = '';
+                    try { answerTranslated = await callGemini('Translate the following ' + _personALang + ' text to ' + _personBLang + '. Return ONLY the translation, no notes:\n\n' + answer, false, false, 0.3); } catch(e2) {}
+                    setBridgeChatMessages(prev => prev.map(m => m.id === msgId ? {...m, answer, translated:answerTranslated, translating:false} : m));
+                    setTimeout(() => { const c = document.getElementById('bridge-f2f-messages'); if(c) c.scrollTop = c.scrollHeight; }, 50);
+                    try { await handleAudio(answer); } catch(e3) { warnLog('AI assist TTS error', e3); }
+                  } catch(err) {
+                    setBridgeChatMessages(prev => prev.map(m => m.id === msgId ? {...m, answer:'[' + (t('roster.bridge_ai_unavailable') || 'AI unavailable right now') + ']', translating:false} : m));
+                    addToast((t('roster.bridge_ai_unavailable') || 'AI unavailable right now') + ': ' + err.message, 'error');
+                  }
+                  setBridgeF2FTranslating(false);
+                };
+                const _exportTranscript = () => {
+                  if (!bridgeChatMessages.length) { addToast(t('roster.bridge_no_convo') || 'Nothing to export yet', 'info'); return; }
+                  const text = 'Bridge conversation (' + _personALang + ' / ' + _personBLang + ')\n\n' + _bridgeTranscript(bridgeChatMessages, _personALang, _personBLang);
+                  try { navigator.clipboard.writeText(text); addToast(t('roster.bridge_exported') || 'Conversation copied to clipboard', 'success'); } catch(e) {}
+                  try { const blob = new Blob([text], {type:'text/plain'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'bridge-conversation.txt'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); } catch(e) {}
+                };
                 return (
                 <div style={{marginTop:'20px',borderTop:'1px solid rgba(20,184,166,0.15)',paddingTop:'20px'}}>
                   <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'12px'}}>
@@ -1010,6 +1066,7 @@ function BridgeSendModal(props) {
                     🔒 {t('roster.bridge_f2f_ferpa') || 'FERPA-Safe — No student data leaves this device'} • {t('roster.bridge_f2f_both_speak') || 'Both sides speak or type in their own language'}
                   </div>
                   {_bridgePhrasesPanel((ph) => _sendMessage('personA', ph, _personALang, _personBLang), bridgeF2FTranslating, t)}
+                  {_bridgeAiBar((q) => _askAI(q), _exportTranscript, bridgeF2FTranslating, t)}
                   <div id="bridge-f2f-messages" style={{
                     background:'rgba(0,0,0,0.15)',border:'1px solid rgba(255,255,255,0.04)',borderRadius:'16px',
                     padding:'16px',maxHeight:'300px',overflowY:'auto',marginBottom:'16px',
@@ -1022,7 +1079,7 @@ function BridgeSendModal(props) {
                         <div style={{fontSize:'12px',marginTop:'6px',lineHeight:1.5}}>{_personALang} ↔ {_personBLang}<br/>{t('roster.bridge_f2f_ready_desc') || 'Press the microphone or type to begin'}</div>
                       </div>
                     ) : (
-                      bridgeChatMessages.map((msg, ci) => (
+                      bridgeChatMessages.map((msg, ci) => msg.ai ? _bridgeAiBubble(msg, _personALang, _personBLang, handleAudio, t) : (
                         <div key={ci} style={{
                           display:'flex',flexDirection:'column',
                           alignItems: msg.sender === 'personA' ? 'flex-end' : 'flex-start',
