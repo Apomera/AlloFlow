@@ -13,9 +13,31 @@
  * Registered tool ID: "dinoLab"
  * Registry: window.StemLab.registerTool()
  */
+// ═══ Defensive StemLab guard ═══
+window.StemLab = window.StemLab || {
+  _registry: {},
+  _order: [],
+  registerTool: function(id, config) {
+    config.id = id;
+    config.ready = config.ready !== false;
+    this._registry[id] = config;
+    if (this._order.indexOf(id) === -1) this._order.push(id);
+    console.log('[StemLab] Registered tool: ' + id);
+  },
+  getRegisteredTools: function() {
+    var self = this;
+    return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean);
+  },
+  isRegistered: function(id) { return !!this._registry[id]; },
+  renderTool: function(id, ctx) {
+    var tool = this._registry[id];
+    if (!tool || !tool.render) return null;
+    try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; }
+  }
+};
+
 (function () {
   'use strict';
-  if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
 
   // ── Theme tokens (STEM Lab CSS custom properties, dark fallbacks) ──
   var T = {
@@ -5110,6 +5132,8 @@
       { id: 'compare_two', label: 'Compare two dinosaurs side by side', icon: '⚖️', check: function (d) { return (d.compareA && d.compareB) ? true : false; }, progress: function (d) { return (d.compareA && d.compareB) ? 'done' : 'pick 2'; } }
     ],
     render: function (ctx) {
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
+      var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = ctx.React;
       var el = React.createElement;
       var d = (ctx.toolData && ctx.toolData.dinoLab) || {};
@@ -5252,25 +5276,25 @@
       }
 
       var TABS = [
-        { id: 'explore', label: 'Explore', icon: '🔍' },
-        { id: 'timeline', label: 'Timeline', icon: '⏳' },
-        { id: 'deeptime', label: 'Deep Time', icon: '🕰️' },
-        { id: 'sites', label: 'Sites', icon: '🗺️' },
+        { id: 'explore', label: t('stem.dinolab.explore', 'Explore'), icon: '🔍' },
+        { id: 'timeline', label: t('stem.dinolab.timeline', 'Timeline'), icon: '⏳' },
+        { id: 'deeptime', label: t('stem.dinolab.deep_time', 'Deep Time'), icon: '🕰️' },
+        { id: 'sites', label: t('stem.dinolab.sites', 'Sites'), icon: '🗺️' },
         { id: 'map', label: 'Map', icon: '🌎' },
-        { id: 'ecosystem', label: 'Ecosystems', icon: '🌍' },
-        { id: 'compare', label: 'Compare', icon: '⚖️' },
-        { id: 'dig', label: 'Dig Site', icon: '⛏️' },
-        { id: 'classify', label: 'Classify', icon: '🌳' },
-        { id: 'birds', label: 'Bird Link', icon: '🐦' },
-        { id: 'extinction', label: 'Extinction', icon: '☄️' },
-        { id: 'anatomy', label: 'Anatomy', icon: '🦴' },
-        { id: 'records', label: 'Records', icon: '🏆' },
-        { id: 'quiz', label: 'Quiz', icon: '🧠' },
-        { id: 'notes', label: 'Field Notes', icon: '📓' },
-        { id: 'glossary', label: 'Glossary', icon: '📖' },
-        { id: 'classroom', label: 'Classroom', icon: '🍎' }
+        { id: 'ecosystem', label: t('stem.dinolab.ecosystems', 'Ecosystems'), icon: '🌍' },
+        { id: 'compare', label: t('stem.dinolab.compare', 'Compare'), icon: '⚖️' },
+        { id: 'dig', label: t('stem.dinolab.dig_site', 'Dig Site'), icon: '⛏️' },
+        { id: 'classify', label: t('stem.dinolab.classify', 'Classify'), icon: '🌳' },
+        { id: 'birds', label: t('stem.dinolab.bird_link', 'Bird Link'), icon: '🐦' },
+        { id: 'extinction', label: t('stem.dinolab.extinction', 'Extinction'), icon: '☄️' },
+        { id: 'anatomy', label: t('stem.dinolab.anatomy', 'Anatomy'), icon: '🦴' },
+        { id: 'records', label: t('stem.dinolab.records', 'Records'), icon: '🏆' },
+        { id: 'quiz', label: t('stem.dinolab.quiz', 'Quiz'), icon: '🧠' },
+        { id: 'notes', label: t('stem.dinolab.field_notes', 'Field Notes'), icon: '📓' },
+        { id: 'glossary', label: t('stem.dinolab.glossary', 'Glossary'), icon: '📖' },
+        { id: 'classroom', label: t('stem.dinolab.classroom', 'Classroom'), icon: '🍎' }
       ];
-      var tabBar = el('div', { role: 'tablist', 'aria-label': 'Dino Lab sections', style: { display: 'flex', flexWrap: 'wrap', gap: 4, padding: '10px 12px', borderBottom: '1px solid ' + T.border, background: T.deeper } }, TABS.map(function (tb) {
+      var tabBar = el('div', { role: 'tablist', 'aria-label': t('stem.dinolab.dino_lab_sections', 'Dino Lab sections'), style: { display: 'flex', flexWrap: 'wrap', gap: 4, padding: '10px 12px', borderBottom: '1px solid ' + T.border, background: T.deeper } }, TABS.map(function (tb) {
         var active = tab === tb.id;
         return el('button', { key: tb.id, id: 'dinotab-' + tb.id, role: 'tab', 'aria-selected': active ? 'true' : 'false', 'aria-controls': 'dinopanel', onClick: function () { upd('tab', tb.id); announceToSR(tb.label + ' tab'); }, style: { padding: '7px 11px', borderRadius: 9, border: 'none', cursor: 'pointer', fontSize: 12.5, fontWeight: active ? 700 : 500, boxShadow: active ? '0 1px 4px rgba(21,128,61,0.45)' : 'none', background: active ? '#15803d' : 'transparent', color: active ? '#fff' : T.soft, whiteSpace: 'nowrap' } }, tb.icon + ' ' + tb.label);
       }));
@@ -5326,7 +5350,7 @@
         var continentPills = [pill(filterContinent === 'all', 'All places', function () { upd('filterContinent', 'all'); }, 'c_all')];
         continents.forEach(function (c) { continentPills.push(pill(filterContinent === c, c, function () { upd('filterContinent', c); }, 'c_' + c.replace(/\W/g, ''))); });
         var controls = el('div', { style: { marginBottom: 12 } },
-          el('input', { type: 'text', value: query, placeholder: 'Search by name, meaning, clade, or place...', 'aria-label': 'Search dinosaurs', onChange: function (e) { upd('query', e.target.value); }, style: { width: '100%', boxSizing: 'border-box', padding: '10px 12px', borderRadius: 10, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 14, marginBottom: 10 } }),
+          el('input', { type: 'text', value: query, placeholder: t('stem.dinolab.search_by_name_meaning_clade_or_place', 'Search by name, meaning, clade, or place...'), 'aria-label': t('stem.dinolab.search_dinosaurs', 'Search dinosaurs'), onChange: function (e) { upd('query', e.target.value); }, style: { width: '100%', boxSizing: 'border-box', padding: '10px 12px', borderRadius: 10, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 14, marginBottom: 10 } }),
           el('div', { style: { marginBottom: 6 } }, periodPills),
           el('div', { style: { marginBottom: 6 } }, dietPills),
           el('div', { style: { marginBottom: 6 } }, continentPills),
@@ -5338,7 +5362,7 @@
             el('div', { style: { fontWeight: 700, fontSize: 14 } }, dn.common),
             el('div', { style: { fontSize: 11, color: T.soft, fontStyle: 'italic', marginBottom: 6 } }, dn.meaning),
             el('div', null, badge(periodName(dn.period), pColor(dn.period)), badge(cap(dn.diet), dColor(dn.diet))),
-            seen[dn.id] ? el('span', { 'aria-hidden': 'true', title: 'Seen', style: { position: 'absolute', top: 8, right: 10, fontSize: 11, fontWeight: 800, color: T.text } }, '✓') : null
+            seen[dn.id] ? el('span', { 'aria-hidden': 'true', title: t('stem.dinolab.seen', 'Seen'), style: { position: 'absolute', top: 8, right: 10, fontSize: 11, fontWeight: 800, color: T.text } }, '✓') : null
           );
         }));
         var detail = selected ? renderDetail(byId(selected)) : el('div', { style: { color: T.soft, fontSize: 13, padding: '20px 4px' } }, 'Pick a dinosaur to see its full file, including what we are still unsure about.');
@@ -5387,23 +5411,23 @@
           return lbl;
         }
         var EVENTS = [
-          { mya: 4600, icon: '🌍', label: 'Earth forms' },
-          { mya: 3800, icon: '🦠', label: 'First life — simple microbes' },
-          { mya: 2400, icon: '🫧', label: 'Microbes fill the air with oxygen' },
-          { mya: 1800, icon: '🔬', label: 'First complex (eukaryotic) cells' },
-          { mya: 600, icon: '🪼', label: 'First animals' },
-          { mya: 538, icon: '🦐', label: 'Cambrian explosion — animals diversify' },
-          { mya: 470, icon: '🌿', label: 'Plants spread onto land' },
-          { mya: 375, icon: '🐟', label: 'First four-legged animals walk on land' },
-          { mya: 320, icon: '🦎', label: 'First reptiles' },
-          { mya: 252, icon: '💀', label: 'The Great Dying (end-Permian extinction)', dino: true },
-          { mya: 233, icon: '🦕', label: 'First dinosaurs appear', dino: true },
-          { mya: 225, icon: '🐭', label: 'First mammals', dino: true },
-          { mya: 150, icon: '🪶', label: 'First birds (Archaeopteryx)', dino: true },
-          { mya: 66, icon: '☄️', label: 'Asteroid — non-bird dinosaurs end', dino: true },
-          { mya: 7, icon: '🐒', label: 'First human ancestors (hominins)' },
-          { mya: 0.3, icon: '🧑', label: 'First Homo sapiens (us)' },
-          { mya: 0, icon: '📍', label: 'Right now' }
+          { mya: 4600, icon: '🌍', label: t('stem.dinolab.earth_forms', 'Earth forms') },
+          { mya: 3800, icon: '🦠', label: t('stem.dinolab.first_life_simple_microbes', 'First life — simple microbes') },
+          { mya: 2400, icon: '🫧', label: t('stem.dinolab.microbes_fill_the_air_with_oxygen', 'Microbes fill the air with oxygen') },
+          { mya: 1800, icon: '🔬', label: t('stem.dinolab.first_complex_eukaryotic_cells', 'First complex (eukaryotic) cells') },
+          { mya: 600, icon: '🪼', label: t('stem.dinolab.first_animals', 'First animals') },
+          { mya: 538, icon: '🦐', label: t('stem.dinolab.cambrian_explosion_animals_diversify', 'Cambrian explosion — animals diversify') },
+          { mya: 470, icon: '🌿', label: t('stem.dinolab.plants_spread_onto_land', 'Plants spread onto land') },
+          { mya: 375, icon: '🐟', label: t('stem.dinolab.first_four_legged_animals_walk_on_land', 'First four-legged animals walk on land') },
+          { mya: 320, icon: '🦎', label: t('stem.dinolab.first_reptiles', 'First reptiles') },
+          { mya: 252, icon: '💀', label: t('stem.dinolab.the_great_dying_end_permian_extinction', 'The Great Dying (end-Permian extinction)'), dino: true },
+          { mya: 233, icon: '🦕', label: t('stem.dinolab.first_dinosaurs_appear', 'First dinosaurs appear'), dino: true },
+          { mya: 225, icon: '🐭', label: t('stem.dinolab.first_mammals', 'First mammals'), dino: true },
+          { mya: 150, icon: '🪶', label: t('stem.dinolab.first_birds_archaeopteryx', 'First birds (Archaeopteryx)'), dino: true },
+          { mya: 66, icon: '☄️', label: t('stem.dinolab.asteroid_non_bird_dinosaurs_end', 'Asteroid — non-bird dinosaurs end'), dino: true },
+          { mya: 7, icon: '🐒', label: t('stem.dinolab.first_human_ancestors_hominins', 'First human ancestors (hominins)') },
+          { mya: 0.3, icon: '🧑', label: t('stem.dinolab.first_homo_sapiens_us', 'First Homo sapiens (us)') },
+          { mya: 0, icon: '📍', label: t('stem.dinolab.right_now', 'Right now') }
         ];
         var DINO_LO = 66, DINO_HI = 233;
         var unit = scale === 'day' ? 'a single 24-hour day' : 'a single calendar year';
@@ -5482,7 +5506,7 @@
             el('span', { key: 'n', style: { fontSize: 10.5 } }, t.c),
             el('span', { key: 'c', style: { fontSize: 14, fontWeight: 800 } }, String(list.length)));
         });
-        var mapBox = el('div', { role: 'group', 'aria-label': 'Map of where dinosaur fossils are found today, by continent', style: { position: 'relative', width: '100%', height: 0, paddingBottom: '52%', borderRadius: 12, background: 'linear-gradient(180deg, rgba(56,189,248,0.16), rgba(56,189,248,0.05))', border: '1px solid ' + T.border, marginBottom: 8 } }, el('div', { style: { position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 } }, tileEls));
+        var mapBox = el('div', { role: 'group', 'aria-label': t('stem.dinolab.map_of_where_dinosaur_fossils_are_foun', 'Map of where dinosaur fossils are found today, by continent'), style: { position: 'relative', width: '100%', height: 0, paddingBottom: '52%', borderRadius: 12, background: 'linear-gradient(180deg, rgba(56,189,248,0.16), rgba(56,189,248,0.05))', border: '1px solid ' + T.border, marginBottom: 8 } }, el('div', { style: { position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 } }, tileEls));
         var detail;
         if (sel && byCont[sel]) {
           var slist = byCont[sel].slice().sort(function (a, b) { return a.common < b.common ? -1 : 1; });
@@ -5617,7 +5641,7 @@
         var sIdx = (d.sortIdx || 0) % sortPool.length;
         var target = sortPool[sIdx];
         var sAnswered = d.sortAnswered || false, sPicked = d.sortPicked || null;
-        var groups = [{ id: 'theropod', label: 'Theropod (mostly meat-eaters, two legs)' }, { id: 'sauropod', label: 'Sauropodomorph (long-necked plant-eaters)' }, { id: 'ornithischian', label: 'Ornithischian (bird-hipped plant-eaters)' }];
+        var groups = [{ id: 'theropod', label: t('stem.dinolab.theropod_mostly_meat_eaters_two_legs', 'Theropod (mostly meat-eaters, two legs)') }, { id: 'sauropod', label: t('stem.dinolab.sauropodomorph_long_necked_plant_eater', 'Sauropodomorph (long-necked plant-eaters)') }, { id: 'ornithischian', label: t('stem.dinolab.ornithischian_bird_hipped_plant_eaters', 'Ornithischian (bird-hipped plant-eaters)') }];
         function pickGroup(g) { if (sAnswered) return; var correct = g === target.group; upd({ sortPicked: g, sortAnswered: true, sortScore: (d.sortScore || 0) + (correct ? 1 : 0), sortDone: (d.sortDone || 0) + 1 }); }
         function nextSort() { upd({ sortIdx: (sIdx + 1) % sortPool.length, sortAnswered: false, sortPicked: null }); }
         var activity = panel([
@@ -5641,7 +5665,7 @@
               el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' } }, el('span', { style: { fontWeight: 800, fontSize: 14 } }, (ev.id === 'ext_kpg' ? '☄️ ' : '') + ev.name), el('span', { style: { fontSize: 12, color: T.soft } }, ev.mya + ' million years ago')),
               el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 } }, el('div', { style: { flex: 1, height: 10, borderRadius: 6, background: T.deeper, overflow: 'hidden' } }, el('div', { style: { height: '100%', width: ev.pctLost + '%', background: '#ef4444' } })), el('span', { style: { fontSize: 11.5, color: T.text, fontWeight: 700, minWidth: 92, textAlign: 'right' } }, '~' + ev.pctLost + '% species lost'))
             ),
-            open ? panel([el('div', { key: 'c', style: { fontSize: 12.5, lineHeight: 1.55, marginBottom: 6 } }, el('strong', { style: { color: T.text } }, 'Cause: '), ev.cause), el('div', { key: 'e', style: { fontSize: 12.5, lineHeight: 1.55, marginBottom: 6 } }, el('strong', { style: { color: T.text } }, 'Effect: '), ev.effect), el('div', { key: 'n', style: { fontSize: 12, color: T.soft, fontStyle: 'italic' } }, ev.note)], { marginTop: 6 }) : null
+            open ? panel([el('div', { key: 'c', style: { fontSize: 12.5, lineHeight: 1.55, marginBottom: 6 } }, el('strong', { style: { color: T.text } }, 'Cause: '), ev.cause), el('div', { key: 'e', style: { fontSize: 12.5, lineHeight: 1.55, marginBottom: 6 } }, el('strong', { style: { color: T.text } }, 'Effect: '), ev.effect), el('div', { key: 'n', style: { fontSize: 12, color: T.soft, fontStyle: 'italic' } }, __alloT('stem.dinolab.' + (ev.id) + '_note', ev.note))], { marginTop: 6 }) : null
           );
         });
         var kpgEvidence = panel([el('div', { key: 'h', style: { fontWeight: 800, fontSize: 14, marginBottom: 6 } }, '☄️ The K-Pg case, up close'), el('div', { key: 's', style: { fontSize: 12.5, color: T.soft, marginBottom: 8, lineHeight: 1.5 } }, 'Several independent lines of evidence point to the same moment.'), el('div', { key: 'e' }, KPG_EVIDENCE.map(function (ke) { return el('div', { key: ke.id, style: { padding: 10, borderRadius: 8, background: T.deeper, border: '1px solid ' + T.border, marginBottom: 6 } }, el('div', { style: { fontWeight: 700, fontSize: 12.5, marginBottom: 2 } }, ke.label), el('div', { style: { fontSize: 12, color: T.soft, lineHeight: 1.5 } }, ke.text)); }))], { marginTop: 14, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.30)' });
@@ -5659,12 +5683,12 @@
       }
 
       function renderSites() {
-        var cards = SITES.map(function (s) { return panel([el('div', { key: 'n', style: { fontWeight: 800, fontSize: 14 } }, '📍 ' + s.name), el('div', { key: 'w', style: { fontSize: 12, color: T.soft, marginBottom: 6 } }, s.where + '  ·  ' + s.when), el('div', { key: 'f', style: { fontSize: 12.5, marginBottom: 4 } }, el('strong', { style: { color: T.text } }, 'Famous for: '), s.famous), el('div', { key: 'no', style: { fontSize: 12.5, color: T.soft, lineHeight: 1.5 } }, s.note)], { key: s.id }); });
+        var cards = SITES.map(function (s) { return panel([el('div', { key: 'n', style: { fontWeight: 800, fontSize: 14 } }, '📍 ' + s.name), el('div', { key: 'w', style: { fontSize: 12, color: T.soft, marginBottom: 6 } }, s.where + '  ·  ' + s.when), el('div', { key: 'f', style: { fontSize: 12.5, marginBottom: 4 } }, el('strong', { style: { color: T.text } }, 'Famous for: '), s.famous), el('div', { key: 'no', style: { fontSize: 12.5, color: T.soft, lineHeight: 1.5 } }, __alloT('stem.dinolab.' + (s.id) + '_note', s.note))], { key: s.id }); });
         return el('div', null, sectionTitle('🗺️', 'Famous fossil sites', 'Certain rock formations, laid down in the right place at the right time, hold most of what we know.'), el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 } }, cards));
       }
 
       function renderRecords() {
-        var recCards = RECORDS.map(function (r) { return panel([el('div', { key: 't', style: { fontSize: 12, fontWeight: 700, color: T.text, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 2 } }, r.title), el('div', { key: 'h', style: { fontSize: 15, fontWeight: 800, marginBottom: 4 } }, r.holder), el('div', { key: 'd', style: { fontSize: 12.5, color: T.soft, lineHeight: 1.5 } }, r.detail)], { key: r.id }); });
+        var recCards = RECORDS.map(function (r) { return panel([el('div', { key: 't', style: { fontSize: 12, fontWeight: 700, color: T.text, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 2 } }, r.title), el('div', { key: 'h', style: { fontSize: 15, fontWeight: 800, marginBottom: 4 } }, r.holder), el('div', { key: 'd', style: { fontSize: 12.5, color: T.soft, lineHeight: 1.5 } }, __alloT('stem.dinolab.' + (r.id) + '_detail', r.detail))], { key: r.id }); });
         var people = PEOPLE.map(function (p) { return el('div', { key: p.id, style: { padding: 10, borderRadius: 8, background: T.deeper, border: '1px solid ' + T.border, marginBottom: 8 } }, el('div', { style: { fontWeight: 700, fontSize: 13 } }, p.name, el('span', { style: { fontSize: 11, color: T.soft, fontWeight: 400, marginLeft: 6 } }, p.years)), el('div', { style: { fontSize: 12.5, color: T.soft, lineHeight: 1.5, marginTop: 2 } }, p.did)); });
         return el('div', null, sectionTitle('🏆', 'Record holders', 'Biggest, smallest, strongest. Many of these are best estimates, since the very largest animals are known from incomplete skeletons.'), el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginBottom: 16 } }, recCards), panel([el('div', { key: 'h', style: { fontWeight: 800, fontSize: 14, marginBottom: 8 } }, '👥 People who built the science'), el('div', { key: 'p' }, people)]));
       }
@@ -5696,18 +5720,18 @@
         var list = GLOSSARY.slice().sort(function (a, b) { return a.term < b.term ? -1 : 1; });
         if (gq) list = list.filter(function (g) { return (g.term + ' ' + g.def).toLowerCase().indexOf(gq) !== -1; });
         var rows = list.map(function (g) { return el('div', { key: g.term, style: { padding: '8px 0', borderBottom: '1px solid ' + T.border } }, el('div', { style: { fontWeight: 700, fontSize: 13.5, color: T.text } }, g.term), el('div', { style: { fontSize: 12.5, color: T.text, lineHeight: 1.5, marginTop: 2 } }, g.def)); });
-        return el('div', null, sectionTitle('📖', 'Glossary', 'The words paleontologists use, in plain language.'), el('input', { type: 'text', value: d.glossaryQuery || '', placeholder: 'Search terms...', 'aria-label': 'Search glossary', onChange: function (e) { upd('glossaryQuery', e.target.value); }, style: { width: '100%', boxSizing: 'border-box', padding: '10px 12px', borderRadius: 10, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 14, marginBottom: 10 } }), panel(rows.length ? rows : el('div', { style: { color: T.soft, fontSize: 13 } }, 'No terms match that search.')));
+        return el('div', null, sectionTitle('📖', 'Glossary', 'The words paleontologists use, in plain language.'), el('input', { type: 'text', value: d.glossaryQuery || '', placeholder: t('stem.dinolab.search_terms', 'Search terms...'), 'aria-label': t('stem.dinolab.search_glossary', 'Search glossary'), onChange: function (e) { upd('glossaryQuery', e.target.value); }, style: { width: '100%', boxSizing: 'border-box', padding: '10px 12px', borderRadius: 10, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 14, marginBottom: 10 } }), panel(rows.length ? rows : el('div', { style: { color: T.soft, fontSize: 13 } }, 'No terms match that search.')));
       }
 
       function renderBirds() {
         var evidence = [
-          { icon: '🪶', title: 'Feathers', text: 'Dozens of dinosaurs are preserved with feathers, from simple fuzz to true flight feathers. Many were feathered long before any of them could fly.' },
-          { icon: '🦴', title: 'The wishbone', text: 'Birds have a furcula, or wishbone. So did theropod dinosaurs like T. rex and Velociraptor. It is the very same bone.' },
-          { icon: '🎈', title: 'Hollow, air-filled bones', text: 'Bird bones are light and filled with air sacs. The same air-filled bones appear in many dinosaurs, part of a bird-like breathing system.' },
-          { icon: '👣', title: 'Three-toed feet', text: 'The classic bird footprint, three toes forward, matches theropod feet. Fossil dinosaur tracks look like giant bird tracks.' },
-          { icon: '🥚', title: 'Eggs and brooding', text: 'Dinosaurs laid eggs in nests, and some, like Citipati and Oviraptor, sat on them to brood their young, exactly as birds do.' },
-          { icon: '🤚', title: 'A wrist that folds', text: 'Birds fold their wings using a special half-moon wrist bone. The same bone let some dinosaurs tuck their arms against the body.' },
-          { icon: '📈', title: 'Fast growth, warm bodies', text: 'Growth rings in dinosaur bones show many grew quickly and ran warm, more like birds and mammals than like modern reptiles.' }
+          { icon: '🪶', title: t('stem.dinolab.feathers', 'Feathers'), text: t('stem.dinolab.dozens_of_dinosaurs_are_preserved_with', 'Dozens of dinosaurs are preserved with feathers, from simple fuzz to true flight feathers. Many were feathered long before any of them could fly.') },
+          { icon: '🦴', title: t('stem.dinolab.the_wishbone', 'The wishbone'), text: t('stem.dinolab.birds_have_a_furcula_or_wishbone_so_di', 'Birds have a furcula, or wishbone. So did theropod dinosaurs like T. rex and Velociraptor. It is the very same bone.') },
+          { icon: '🎈', title: t('stem.dinolab.hollow_air_filled_bones', 'Hollow, air-filled bones'), text: t('stem.dinolab.bird_bones_are_light_and_filled_with_a', 'Bird bones are light and filled with air sacs. The same air-filled bones appear in many dinosaurs, part of a bird-like breathing system.') },
+          { icon: '👣', title: t('stem.dinolab.three_toed_feet', 'Three-toed feet'), text: t('stem.dinolab.the_classic_bird_footprint_three_toes_', 'The classic bird footprint, three toes forward, matches theropod feet. Fossil dinosaur tracks look like giant bird tracks.') },
+          { icon: '🥚', title: t('stem.dinolab.eggs_and_brooding', 'Eggs and brooding'), text: t('stem.dinolab.dinosaurs_laid_eggs_in_nests_and_some_', 'Dinosaurs laid eggs in nests, and some, like Citipati and Oviraptor, sat on them to brood their young, exactly as birds do.') },
+          { icon: '🤚', title: t('stem.dinolab.a_wrist_that_folds', 'A wrist that folds'), text: t('stem.dinolab.birds_fold_their_wings_using_a_special', 'Birds fold their wings using a special half-moon wrist bone. The same bone let some dinosaurs tuck their arms against the body.') },
+          { icon: '📈', title: t('stem.dinolab.fast_growth_warm_bodies', 'Fast growth, warm bodies'), text: t('stem.dinolab.growth_rings_in_dinosaur_bones_show_ma', 'Growth rings in dinosaur bones show many grew quickly and ran warm, more like birds and mammals than like modern reptiles.') }
         ];
         var feathered = DINOS.filter(function (dn) {
           if (dn.group === 'other') return false; // never list the non-dino foils (Pteranodon's "wing" matched) on the "feathered dinosaurs" panel
