@@ -3988,6 +3988,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                 <div className="mb-4 bg-gradient-to-br from-indigo-50 to-violet-50 border-2 border-indigo-300 rounded-2xl p-4">
                   <button data-help-key="pdf_audit_view_make_accessible_btn" onClick={async () => {
                     if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; }
+                    // B1 (2026-06-28): a PRIOR run's Stop left pdfAutoContinueAbortRef.current = true and it is
+                    // never reset elsewhere — so a fresh "Make Accessible" would see _stopped()===true and skip
+                    // BOTH auto-continue loops (one pass, then a silent stop). Clear it at the start of each run.
+                    try { pdfAutoContinueAbortRef.current = false; } catch (_) {}
                     // (2026-06-20) Auto veraPDF: open + warm the independent ISO validator NOW, inside this
                     // click (a gesture → popup allowed), so it boots during the run and validates the tagged
                     // output at the end with no second popup. Default-on (localStorage opt-out), PDF inputs

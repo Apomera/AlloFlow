@@ -4262,6 +4262,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
         addToast(t("toasts.digest_first") || "Digest the recording first (Step 0 above).", "info");
         return;
       }
+      try {
+        pdfAutoContinueAbortRef.current = false;
+      } catch (_) {
+      }
       let _veraWarm = null;
       let _veraIframe = null;
       try {
