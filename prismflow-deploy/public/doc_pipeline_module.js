@@ -25798,59 +25798,74 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               </div>
           `;
       } else if (item.type === 'anchor-chart') {
-          // EL-style class anchor chart. Type-aware export layout (Tier 1): process =
-          // numbered steps + downward connectors; comparison / concept-map = side-by-side
-          // columns; reference = stacked cards. Critique annotations append as notes.
+          // EL-style anchor chart. Type-aware layout (Tier 1) + hand-drawn poster
+          // aesthetic (Tier 2): per-section marker colours, marker fonts (Google
+          // Fonts online, system-cursive fallback offline), slight rotation jitter.
           const d = item.data || {};
           const sections = Array.isArray(d.sections) ? d.sections : [];
           const chartType = d.chartType || d.type || 'reference';
           const layout = ({ process: 'process', comparison: 'comparison', 'concept-map': 'concept-map' })[chartType] || 'reference';
           const escapeHtml = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
           const typeLabel = ({ reference: 'Reference', process: 'Process', 'concept-map': 'Concept Map', comparison: 'Comparison' })[chartType] || chartType;
+          const _acMk = [
+              { hex: '#c53030', soft: 'rgba(197,48,48,0.08)', ink: '#7b1d1d' },
+              { hex: '#2b6cb0', soft: 'rgba(43,108,176,0.08)', ink: '#1a3f6b' },
+              { hex: '#2f855a', soft: 'rgba(47,133,90,0.08)', ink: '#1c4d36' },
+              { hex: '#dd6b20', soft: 'rgba(221,107,32,0.10)', ink: '#8a4014' },
+              { hex: '#6b46c1', soft: 'rgba(107,70,193,0.08)', ink: '#3f2a73' },
+              { hex: '#2c7a7b', soft: 'rgba(44,122,123,0.08)', ink: '#1c4f50' }
+          ];
+          const _acJit = (key) => { let h = 0; key = String(key || 'x'); for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) | 0; return (((Math.abs(h) % 21) - 10) / 10 * 0.9).toFixed(2); };
+          const _acTF = "'Permanent Marker','Marker Felt','Comic Sans MS',cursive";
+          const _acBF = "'Patrick Hand','Caveat','Bradley Hand','Comic Sans MS',cursive";
           const _acCaption = (layout === 'process' && sections.length > 1) ? 'Follow the steps in order &#8595;'
               : (layout === 'comparison' && sections.length > 1) ? 'Compare side by side &#8596;'
               : (layout === 'concept-map') ? 'Central idea branches into&#8230;' : '';
-          const _acCaptionHtml = _acCaption ? ('<div style="text-align:center; font-size:0.8em; color:#b45309; font-style:italic; margin-bottom:8px;">' + _acCaption + '</div>') : '';
+          const _acCaptionHtml = _acCaption ? ('<div style="text-align:center;font-family:' + _acBF + ';font-size:0.95em;color:#a16207;font-style:italic;margin-bottom:10px;">' + _acCaption + '</div>') : '';
           const _acCard = (s, i) => {
               const bullets = Array.isArray(s && s.bullets) ? s.bullets : [];
               const label = (s && s.label) || ('Section ' + (i + 1));
               const icon = (s && s.icon) || '';
+              const m = _acMk[i % _acMk.length];
+              const rot = _acJit((s && (s.id || s.label)) || ('s' + i));
               const _isImg = typeof icon === 'string' && /^(data:|https?:)/.test(icon);
-              const _iconHtml = icon ? (_isImg ? ('<img src="' + escapeHtml(icon) + '" alt="" style="height:1.3em; width:auto; vertical-align:-0.25em; margin-right:5px;" />') : (escapeHtml(icon) + ' ')) : '';
-              const _badge = (layout === 'process') ? ('<div aria-hidden="true" style="position:absolute; top:-10px; left:-10px; z-index:6; width:26px; height:26px; border-radius:999px; background:#dd6b20; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; box-shadow:0 1px 3px rgba(0,0,0,0.3);">' + (i + 1) + '</div>') : '';
-              const _mb = (layout === 'process') ? '0' : '12px';
-              return '<div style="position:relative; margin-bottom:' + _mb + '; padding:12px; background:#fff7ed; border:1px solid #fdba74; border-radius:8px; break-inside:avoid; page-break-inside:avoid;">' + _badge
-                  + '<div style="font-weight:bold; font-size:1.05em; color:#9a3412; margin-bottom:6px;">' + _iconHtml + escapeHtml(label) + '</div>'
-                  + (bullets.length
-                      ? ('<ul style="margin:0; padding-left:20px;">' + bullets.map(b => '<li style="font-size:0.92em; color:#1e293b; margin-bottom:2px;">' + escapeHtml(b) + '</li>').join('') + '</ul>')
-                      : '<div style="font-size:0.85em; color:#9ca3af; font-style:italic;">(empty)</div>')
-                  + '</div>';
+              const _iconHtml = icon ? (_isImg ? ('<img src="' + escapeHtml(icon) + '" alt="" style="height:1.5em;width:auto;vertical-align:-0.35em;margin-right:6px;" />') : (escapeHtml(icon) + ' ')) : '';
+              const _badge = (layout === 'process') ? ('<div aria-hidden="true" style="position:absolute;top:-12px;left:-12px;z-index:6;width:30px;height:30px;border-radius:999px;background:' + m.hex + ';color:#fff;display:flex;align-items:center;justify-content:center;font-family:' + _acTF + ';font-size:15px;box-shadow:0 1px 3px rgba(0,0,0,0.3);">' + (i + 1) + '</div>') : '';
+              const _mb = (layout === 'process') ? '4px' : '12px';
+              const _bulletsHtml = bullets.length
+                  ? ('<ul style="margin:6px 0 0;padding-left:2px;list-style:none;">' + bullets.map(b => '<li style="display:flex;align-items:flex-start;gap:8px;margin-bottom:3px;"><span style="color:' + m.hex + ';font-weight:bold;line-height:1.3;">&#8226;</span><span style="font-family:' + _acBF + ';font-size:1.15em;color:#2d3748;line-height:1.3;">' + escapeHtml(b) + '</span></li>').join('') + '</ul>')
+                  : ('<div style="font-family:' + _acBF + ';font-size:0.95em;color:#9ca3af;font-style:italic;">(empty)</div>');
+              return '<div style="position:relative;border-left:6px solid ' + m.hex + ';background:linear-gradient(180deg,' + m.soft + ' 0%,rgba(255,255,255,0.85) 60%);box-shadow:0 1px 0 rgba(0,0,0,0.04),0 2px 8px rgba(0,0,0,0.06);transform:rotate(' + rot + 'deg);border-radius:6px;padding:14px 14px 14px 18px;margin-bottom:' + _mb + ';break-inside:avoid;page-break-inside:avoid;">' + _badge
+                  + '<div style="font-family:' + _acTF + ';font-size:1.4em;color:' + m.ink + ';letter-spacing:0.02em;line-height:1.1;">' + _iconHtml + escapeHtml(label) + '</div>'
+                  + _bulletsHtml + '</div>';
           };
           let sectionsHtml;
           if (sections.length === 0) {
-              sectionsHtml = '<div style="font-size:0.85em; color:#64748b; font-style:italic; padding:12px;">No sections yet.</div>';
+              sectionsHtml = '<div style="font-family:' + _acBF + ';font-size:0.95em;color:#64748b;font-style:italic;padding:12px;">No sections yet.</div>';
           } else if (layout === 'comparison' || layout === 'concept-map') {
               const _minw = layout === 'comparison' ? '220px' : '240px';
-              sectionsHtml = '<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(' + _minw + ', 1fr)); gap:10px; align-items:start;">' + sections.map((s, i) => _acCard(s, i)).join('') + '</div>';
+              sectionsHtml = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(' + _minw + ',1fr));gap:14px;align-items:start;">' + sections.map((s, i) => _acCard(s, i)).join('') + '</div>';
           } else if (layout === 'process') {
-              const _conn = '<div style="text-align:center; margin:-2px 0 2px;" aria-hidden="true"><span style="font-size:22px; color:#b7791f; line-height:1;">&#8595;</span></div>';
-              sectionsHtml = '<div style="padding:14px 2px 2px 16px;">' + sections.map((s, i) => _acCard(s, i) + (i < sections.length - 1 ? _conn : '')).join('') + '</div>';
+              const _conn = '<div style="text-align:center;margin:0 0 2px;" aria-hidden="true"><span style="font-size:24px;color:#b7791f;line-height:1;">&#8595;</span></div>';
+              sectionsHtml = '<div style="padding:16px 4px 4px 20px;">' + sections.map((s, i) => _acCard(s, i) + (i < sections.length - 1 ? _conn : '')).join('') + '</div>';
           } else {
               sectionsHtml = sections.map((s, i) => _acCard(s, i)).join('');
           }
           const annotations = Array.isArray(d.annotations) ? d.annotations : [];
           const annotationsHtml = annotations.length > 0
-              ? ('<div style="margin-top:12px; padding:10px; background:#fef3c7; border-left:4px solid #f59e0b; border-radius:4px;"><div style="font-size:0.75em; font-weight:bold; text-transform:uppercase; color:#92400e; margin-bottom:6px;">Critique Mode &#8212; Student Annotations (' + annotations.length + ')</div><ul style="margin:0; padding-left:18px;">' + annotations.slice(0, 12).map(a => '<li style="font-size:0.88em; color:#1e293b; margin-bottom:3px;"><strong>' + escapeHtml(a.kind || 'note') + ':</strong> ' + escapeHtml(a.text || '') + '</li>').join('') + '</ul>' + (annotations.length > 12 ? ('<div style="font-size:0.75em; color:#92400e; margin-top:4px; font-style:italic;">&#8230; and ' + (annotations.length - 12) + ' more.</div>') : '') + '</div>')
+              ? ('<div style="margin-top:14px;padding:10px;background:#fef3c7;border-left:4px solid #f59e0b;border-radius:4px;"><div style="font-size:0.75em;font-weight:bold;text-transform:uppercase;color:#92400e;margin-bottom:6px;">Critique Mode &#8212; Student Annotations (' + annotations.length + ')</div><ul style="margin:0;padding-left:18px;">' + annotations.slice(0, 12).map(a => '<li style="font-family:' + _acBF + ';font-size:1em;color:#1e293b;margin-bottom:3px;"><strong>' + escapeHtml(a.kind || 'note') + ':</strong> ' + escapeHtml(a.text || '') + '</li>').join('') + '</ul>' + (annotations.length > 12 ? ('<div style="font-size:0.75em;color:#92400e;margin-top:4px;font-style:italic;">&#8230; and ' + (annotations.length - 12) + ' more.</div>') : '') + '</div>')
               : '';
           return `
-              <div class="section" id="${item.id}">
-                  <div class="resource-header" style="border-left:4px solid #f59e0b;">&#128203; ${title} <span style="font-size:0.75em; font-weight:normal; color:#64748b; margin-left:8px;">(Anchor Chart &#8212; ${typeLabel})</span></div>
+              <style>@import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Patrick+Hand&family=Caveat:wght@400;600&display=swap');</style>
+              <div class="section" id="${item.id}" style="background:#fffdf7;border:1px solid #f0e6d2;border-radius:10px;padding:8px 14px 14px;">
+                  <div class="resource-header" style="border-left:4px solid #f59e0b;font-family:${_acTF};color:#7a4a1e;font-size:1.5em;">&#128203; ${title} <span style="font-size:0.6em;font-weight:normal;color:#a1887f;margin-left:8px;font-family:system-ui,sans-serif;">(Anchor Chart &#8212; ${typeLabel})</span></div>
                   ${_acCaptionHtml}
                   ${sectionsHtml}
                   ${annotationsHtml}
               </div>
           `;
       }
+
       return '';
   };
   // ── Unified Style Seeds: merge pre-remediation preferences + post-remediation themes ──
