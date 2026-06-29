@@ -69,6 +69,63 @@ function _renderDiagramSvg(tool, state, titleText) {
     return '<svg viewBox="0 0 ' + S + ' ' + S + '" role="img" aria-label="' + cTitle + ': ' + cDescStr + '" width="100%" style="max-width:300px"><title>' + cTitle + '</title><desc>' + cDescStr + '</desc>'
       + grid + axes + plotted + '</svg>';
   }
+  if (tool === 'fractions') {
+    var fDen = Math.max(1, Math.round(num(state.denominator, 1)));
+    var fNum = Math.max(0, Math.min(fDen, Math.round(num(state.numerator, 0))));
+    var fW = 320, fBarY = 12, fBarH = 38, fPadX = 10, fBarW = fW - 2 * fPadX, fpw = fBarW / fDen;
+    var fCells = '';
+    for (var fi = 0; fi < fDen; fi++) {
+      fCells += '<rect x="' + (fPadX + fi * fpw) + '" y="' + fBarY + '" width="' + fpw + '" height="' + fBarH + '" fill="' + (fi < fNum ? '#4f46e5' : '#ffffff') + '" stroke="#475569" stroke-width="1.5"/>';
+    }
+    var frTitle = esc(titleText || ('Fraction ' + fNum + '/' + fDen));
+    var frDesc = esc(fNum + ' of ' + fDen + ' equal parts shaded (' + fNum + '/' + fDen + ').');
+    return '<svg viewBox="0 0 ' + fW + ' 78" role="img" aria-label="' + frTitle + ': ' + frDesc + '" width="100%" style="max-width:360px"><title>' + frTitle + '</title><desc>' + frDesc + '</desc>'
+      + fCells
+      + '<text x="' + (fW / 2) + '" y="' + (fBarY + fBarH + 22) + '" font-size="14" font-weight="bold" fill="#4f46e5" text-anchor="middle">' + esc(fNum + '/' + fDen) + '</text>'
+      + '</svg>';
+  }
+  if (tool === 'base10') {
+    var bH = Math.max(0, Math.round(num(state.hundreds, 0)));
+    var bT = Math.max(0, Math.round(num(state.tens, 0)));
+    var bO = Math.max(0, Math.round(num(state.ones, 0)));
+    var bu = 5, bx = 8, by0 = 8, bParts = '';
+    for (var bhi = 0; bhi < Math.min(bH, 9); bhi++) {
+      bParts += '<rect x="' + bx + '" y="' + by0 + '" width="' + (bu * 10) + '" height="' + (bu * 10) + '" fill="#c7d2fe" stroke="#4f46e5" stroke-width="1.5"/>';
+      for (var bk = 1; bk < 10; bk++) {
+        bParts += '<line x1="' + (bx + bk * bu) + '" y1="' + by0 + '" x2="' + (bx + bk * bu) + '" y2="' + (by0 + bu * 10) + '" stroke="#4f46e5" stroke-width="0.4"/>'
+          + '<line x1="' + bx + '" y1="' + (by0 + bk * bu) + '" x2="' + (bx + bu * 10) + '" y2="' + (by0 + bk * bu) + '" stroke="#4f46e5" stroke-width="0.4"/>';
+      }
+      bx += bu * 10 + 10;
+    }
+    for (var bti = 0; bti < Math.min(bT, 9); bti++) {
+      bParts += '<rect x="' + bx + '" y="' + by0 + '" width="' + bu + '" height="' + (bu * 10) + '" fill="#a5b4fc" stroke="#4f46e5" stroke-width="1"/>';
+      for (var bk2 = 1; bk2 < 10; bk2++) bParts += '<line x1="' + bx + '" y1="' + (by0 + bk2 * bu) + '" x2="' + (bx + bu) + '" y2="' + (by0 + bk2 * bu) + '" stroke="#4f46e5" stroke-width="0.4"/>';
+      bx += bu + 4;
+    }
+    bx += 8;
+    for (var boi = 0; boi < Math.min(bO, 9); boi++) {
+      bParts += '<rect x="' + bx + '" y="' + by0 + '" width="' + bu + '" height="' + bu + '" fill="#818cf8" stroke="#4f46e5" stroke-width="1"/>';
+      bx += bu + 3;
+    }
+    var bTotal = bH * 100 + bT * 10 + bO;
+    var bTitle = esc(titleText || ('Base-ten blocks showing ' + bTotal));
+    var bDesc = esc(bH + ' hundreds, ' + bT + ' tens, ' + bO + ' ones = ' + bTotal + '.');
+    var bVW = Math.max(bx + 8, 80);
+    return '<svg viewBox="0 0 ' + bVW + ' 70" role="img" aria-label="' + bTitle + ': ' + bDesc + '" width="100%" style="max-width:' + Math.min(bVW, 460) + 'px"><title>' + bTitle + '</title><desc>' + bDesc + '</desc>' + bParts + '</svg>';
+  }
+  if (tool === 'protractor') {
+    var pAng = Math.max(0, Math.min(180, num(state.angle, 45)));
+    var pRad = pAng * Math.PI / 180, pvx = 100, pvy = 112, pLen = 84;
+    var pex = (pvx + pLen * Math.cos(pRad)).toFixed(1), pey = (pvy - pLen * Math.sin(pRad)).toFixed(1);
+    var prTitle = esc(titleText || (pAng + ' degree angle'));
+    var prDesc = esc('An angle of ' + pAng + ' degrees between a horizontal ray and a second ray.');
+    return '<svg viewBox="0 0 220 140" role="img" aria-label="' + prTitle + ': ' + prDesc + '" width="100%" style="max-width:240px"><title>' + prTitle + '</title><desc>' + prDesc + '</desc>'
+      + '<line x1="' + pvx + '" y1="' + pvy + '" x2="' + (pvx + pLen) + '" y2="' + pvy + '" stroke="#475569" stroke-width="2"/>'
+      + '<line x1="' + pvx + '" y1="' + pvy + '" x2="' + pex + '" y2="' + pey + '" stroke="#4f46e5" stroke-width="2"/>'
+      + '<circle cx="' + pvx + '" cy="' + pvy + '" r="3" fill="#475569"/>'
+      + '<text x="' + (pvx + 30) + '" y="' + (pvy - 14) + '" font-size="14" font-weight="bold" fill="#4f46e5">' + esc(pAng + '°') + '</text>'
+      + '</svg>';
+  }
   return null;
 }
 

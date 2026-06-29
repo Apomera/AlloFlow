@@ -91,4 +91,25 @@ describe('step 2: inline parametric diagram renderer (_renderDiagramSvg) — acc
     expect(vm).toMatch(/_renderDiagramSvg\(problem\.manipulativeSupport\.tool, problem\.manipulativeSupport\.state/);
     expect(vm).toMatch(/role="img"[\s\S]{0,80}aria-label=\{\(generatedContent\?\.data\?\.graphAlt\)/);
   });
+  it('fractions → divided bar with N/D label + accessible desc', () => {
+    const svg = render('fractions', { numerator: 3, denominator: 4 }, '');
+    expect(svg).toContain('role="img"');
+    expect(svg).toMatch(/<desc>[^<]*3 of 4 equal parts shaded/);
+    expect(svg).toContain('>3/4<');
+  });
+  it('fractions clamps numerator to denominator (no out-of-range shading)', () => {
+    const svg = render('fractions', { numerator: 9, denominator: 4 }, '');
+    expect(svg).toMatch(/<desc>[^<]*4 of 4 equal parts shaded/);
+  });
+  it('base10 → blocks with the correct total in <desc>', () => {
+    const svg = render('base10', { hundreds: 2, tens: 3, ones: 5 }, '');
+    expect(svg).toContain('role="img"');
+    expect(svg).toMatch(/<desc>[^<]*2 hundreds, 3 tens, 5 ones = 235/);
+  });
+  it('protractor → rays + degrees in <desc> and label', () => {
+    const svg = render('protractor', { angle: 60 }, '');
+    expect(svg).toContain('role="img"');
+    expect(svg).toMatch(/<desc>[^<]*60 degrees/);
+    expect(svg).toContain('60°');
+  });
 });
