@@ -9527,10 +9527,12 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
           return m;
         });
 
-        // Run axe-core (local, zero API calls) + 2 Gemini audits per pass
-        // 3 parallel audits every pass — Flash calls are cheap, accuracy is priceless
-        // Prevents false score swings from prematurely ending or continuing remediation
-        const numAudits = 3;
+        // Run axe-core (local, zero API calls) + Gemini audits per pass.
+        // 2 parallel audits every pass (was 3): the adaptive tiebreaker below adds a 3rd ONLY when the
+        // two diverge >15 points, so consensus is preserved where it matters while ~⅓ fewer audit calls
+        // hit the Canvas proxy — fewer of the throttle/timeout failures that cap coverage ("N of M
+        // sections audited"). (audit-throttle 2026-06-29)
+        const numAudits = 2;
         const auditPromises = [];
         for (let ai = 0; ai < numAudits; ai++) auditPromises.push(auditOutputAccessibility(accessibleHtml));
         auditPromises.push(runAxeAudit(accessibleHtml)); // axe-core is local — no API cost
@@ -10268,10 +10270,14 @@ Return ONLY JSON:
         chunks.push(htmlContent.substring(i, end));
       }
       // Always include the <head> section in chunk 0 for global checks (lang, title)
-      // Audit chunks in parallel (max 4 concurrent to avoid rate limits)
+      // Audit chunks in parallel. Match batchSize to the global Gemini concurrency gate
+      // (_GEMINI_MAX_CONCURRENT = 3) so a batch never enqueues MORE calls than the gate can run — the
+      // surplus would otherwise sit in the gate's waiter queue and can age out under the per-call timeout
+      // during a Canvas throttle storm, showing up as "failed" sections. 3-wide drops nothing (the gate
+      // already serialized to 3 anyway) and reduces those spurious timeout failures. (audit-throttle 2026-06-29)
       const chunkResults = [];
       const _failedIdx = []; // 0-based indices of chunks whose audit returned null (a parse miss or — usually — a transient throttle)
-      const batchSize = 6;
+      const batchSize = 3;
       // One chunk's audit call, framed by its position (chunk 1 carries the global checks). Returns the parsed
       // audit object, or null on a transient throttle / empty-body / parse miss. Hoisted so the throttle
       // self-heal pass below can re-invoke EXACTLY the same call for a specific failed section.

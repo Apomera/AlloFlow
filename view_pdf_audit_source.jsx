@@ -7716,6 +7716,31 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <div className={`text-xs font-medium ${pdfFixResult._aiVerificationIncomplete ? 'text-amber-700' : 'text-emerald-700'}`}>{pdfFixResult._aiVerificationIncomplete
                             ? (t('pdf_audit.verification.ai_incomplete_summary') || ('AI semantic verification incomplete' + (pdfFixResult.verificationAudit.chunksAudited != null && pdfFixResult.verificationAudit.chunksRequested != null ? ' (' + pdfFixResult.verificationAudit.chunksAudited + ' of ' + pdfFixResult.verificationAudit.chunksRequested + ' sections audited — the AI service was throttled)' : '') + '. The score shown is structural/automated checks; re-run for a full AI-verified score.'))
                             : pdfFixResult.verificationAudit.summary}</div>
+                          {/* Manual recovery for a throttle-degraded audit (2026-06-29): re-audit the CURRENT
+                              output now that the AI service may have settled. A full re-audit re-checks every
+                              section, so the sections that were throttled last time get covered again. Reuses
+                              the shared _reauditAndScore (stale-HTML guarded), so it folds the refreshed score
+                              + remaining-issues back into the result. */}
+                          {pdfFixResult._aiVerificationIncomplete && pdfFixResult.accessibleHtml && (
+                            <button
+                              disabled={pdfFixLoading}
+                              onClick={async () => {
+                                if (pdfFixLoading) return;
+                                try {
+                                  setPdfFixLoading(true);
+                                  setPdfFixStep(t('pdf_audit.verification.reauditing') || 'Re-auditing all sections…');
+                                  const _r = await _reauditAndScore(pdfFixResult.accessibleHtml);
+                                  if (_r && _r.ok) addToast((t('toasts.reaudit_done') || 'Re-audit complete — score refreshed to ') + _r.score + '/100.', 'success');
+                                  else addToast(t('toasts.reaudit_still_throttled') || 'Re-audit still incomplete — the AI service may still be throttled. Try again in a moment.', 'info');
+                                } catch (e) { addToast((t('toasts.reaudit_failed') || 'Re-audit failed: ') + (e && e.message ? e.message : 'unknown error'), 'error'); }
+                                finally { setPdfFixLoading(false); setPdfFixStep(''); }
+                              }}
+                              className="px-3 py-1.5 text-xs font-bold rounded-full border bg-white text-amber-800 border-amber-300 hover:bg-amber-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                              aria-label={t('pdf_audit.verification.reaudit_aria') || 'Re-run the AI audit on all sections to recover sections the service throttled'}
+                              title={t('pdf_audit.verification.reaudit_title') || 'Re-checks the whole document, so the sections the AI service throttled last time get audited again and the score becomes full-coverage.'}
+                              data-help-key="pdf_audit_reaudit_button"
+                            >🔁 {pdfFixLoading ? (t('pdf_audit.verification.reauditing_short') || 'Re-auditing…') : (t('pdf_audit.verification.reaudit') || 'Re-run audit (recover failed sections)')}</button>
+                          )}
                           {(pdfFixResult.verificationAudit.issues || []).length > 0 && (
                             <div className="bg-amber-50 rounded-lg p-2 border border-amber-200">
                               <div className="text-[11px] font-bold text-amber-600 uppercase mb-1">Remaining Issues ({pdfFixResult.verificationAudit.issues.length})</div>

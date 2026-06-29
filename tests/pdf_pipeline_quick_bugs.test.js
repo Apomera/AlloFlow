@@ -193,3 +193,28 @@ describe('B3-5: H-8 — the loaded-project loader resets per-doc holdovers (pale
     expect(vp).toMatch(/setPendingPdfFile\(\{ name: project\.fileName \|\| 'loaded-project\.pdf' \}\);[\s\S]{0,900}?_paletteSnapshotRef\.current = null;[\s\S]{0,400}?setTagOutline\(null\);/);
   });
 });
+
+// ── Audit batch 4 (2026-06-29): reduce audit-section throttle failures + manual re-audit ──
+
+describe('B4: audit call-volume + pacing reductions to cut throttle failures', () => {
+  it('per-pass auditors lowered 3 → 2 (adaptive tiebreaker still adds a 3rd on divergence)', () => {
+    expect(dp).toMatch(/const numAudits = 2;/);
+    // the adaptive tiebreaker that makes 2 safe must still be present
+    expect(dp).toMatch(/rvScores\.length === 2 && Math\.abs\(rvScores\[0\] - rvScores\[1\]\) > 15/);
+  });
+  it('audit batchSize lowered 6 → 3 to match the concurrency gate (no backlog aging out)', () => {
+    expect(dp).toMatch(/const batchSize = 3;/);
+    expect(dp).toMatch(/var _GEMINI_MAX_CONCURRENT = 3;/); // batchSize is matched to this gate
+  });
+  it('does NOT raise the concurrency gate (raising it would worsen throttling)', () => {
+    expect(dp).not.toMatch(/_GEMINI_MAX_CONCURRENT = [4-9]/);
+  });
+});
+
+describe('B4: manual "Re-run audit" recovery button for a throttle-degraded audit', () => {
+  it('shown only when the audit was incomplete, and re-audits the current output via the shared helper', () => {
+    expect(vp).toMatch(/pdfFixResult\._aiVerificationIncomplete && pdfFixResult\.accessibleHtml &&/);
+    expect(vp).toMatch(/_reauditAndScore\(pdfFixResult\.accessibleHtml\)/);
+    expect(vp).toMatch(/data-help-key="pdf_audit_reaudit_button"/);
+  });
+});
