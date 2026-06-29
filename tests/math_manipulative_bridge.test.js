@@ -112,4 +112,10 @@ describe('step 2: inline parametric diagram renderer (_renderDiagramSvg) — acc
     expect(svg).toMatch(/<desc>[^<]*60 degrees/);
     expect(svg).toContain('60°');
   });
+  it('generation prefers parametric manipulativeSupport over frozen graphData + requires graphAlt (a11y)', () => {
+    const gh = readFileSync(resolve(process.cwd(), 'generation_helpers_source.jsx'), 'utf8');
+    expect(gh).toMatch(/PREFER a parametric "manipulativeSupport"/);
+    expect(gh).toMatch(/ALWAYS set "graphAlt"/);
+    expect(gh).toMatch(/"graphAlt": "one-sentence/);
+  });
 });
