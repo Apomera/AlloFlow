@@ -159,6 +159,7 @@ function HeaderBar(props) {
     setShowClassAnalytics,
     setShowEducatorHub,
     setShowExportMenu,
+    setBridgeSendOpen,
     setShowLearningHub,
     setShowNotebook,
     setShowReadThisPage,
@@ -635,7 +636,7 @@ function HeaderBar(props) {
     },
     /* @__PURE__ */ React.createElement("span", { style: { fontSize: "14px", lineHeight: 1 } }, "\u{1F9E0}"),
     /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, "Learn")
-  ), /* @__PURE__ */ React.createElement("div", { className: "w-px h-5 bg-white/10 mx-0.5" }), /* @__PURE__ */ React.createElement("div", { className: "relative" }, isTeacherMode ? !isIndependentMode && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
+  ), isTeacherMode && !isIndependentMode && setBridgeSendOpen && /* @__PURE__ */ React.createElement("button", { onClick: () => setBridgeSendOpen(true), "data-help-key": "header_bridge", className: "px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider hover:bg-white/10 text-white/80 hover:text-white border border-white/10", title: t("header.bridge_tooltip") || "Family Bridge: live translation to talk with multilingual families & students", "aria-label": t("header.bridge_aria") || "Family Bridge translation" }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "14px", lineHeight: 1 } }, "\u{1F310}"), /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, "Bridge")), /* @__PURE__ */ React.createElement("div", { className: "w-px h-5 bg-white/10 mx-0.5" }), /* @__PURE__ */ React.createElement("div", { className: "relative" }, isTeacherMode ? !isIndependentMode && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
     "button",
     {
       "aria-label": t("common.connect"),

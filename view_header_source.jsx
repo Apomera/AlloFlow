@@ -100,7 +100,7 @@ function HeaderBar(props) {
     setIsGateOpen, setJoinAppIdInput, setJoinCodeInput,
     setPendingRole, setRunTour,
     setSelectedVoice, setSessionData, setShowAIBackendModal,
-    setShowClassAnalytics, setShowEducatorHub, setShowExportMenu, setShowLearningHub, setShowNotebook, setShowReadThisPage,
+    setBridgeSendOpen, setShowClassAnalytics, setShowEducatorHub, setShowExportMenu, setShowLearningHub, setShowNotebook, setShowReadThisPage,
     setShowSessionModal, setShowTextSettings, setShowVoiceSettings, setShowWizard,
     setSliderFontSize, setSpotlightMessage, setTourStep, setVoiceSpeed, setVoiceVolume,
     showExportMenu, showHelpOnboarding, showReadThisPage, showTextSettings,
@@ -738,6 +738,18 @@ function HeaderBar(props) {
                         >
                           <span style={{fontSize:'14px',lineHeight:1}}>🧠</span>
                           <span className="hidden lg:inline">Learn</span>
+                        </button>
+                        )}
+                        {isTeacherMode && !isIndependentMode && setBridgeSendOpen && (
+                        <button
+                          onClick={() => setBridgeSendOpen(true)}
+                          data-help-key="header_bridge"
+                          className="px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider hover:bg-white/10 text-white/80 hover:text-white border border-white/10"
+                          title={t('header.bridge_tooltip') || 'Family Bridge: live translation to talk with multilingual families & students'}
+                          aria-label={t('header.bridge_aria') || 'Family Bridge translation'}
+                        >
+                          <span style={{fontSize:'14px',lineHeight:1}}>🌐</span>
+                          <span className="hidden lg:inline">Bridge</span>
                         </button>
                         )}
                         <div className="w-px h-5 bg-white/10 mx-0.5"></div>
