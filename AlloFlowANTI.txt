@@ -9356,8 +9356,10 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                               } catch(e) { warnLog('Bridge visual generation failed on student device', e); }
                             }
                     setBridgeMessage({
-                              english: parsed.english || bp.text,
-                              translated: parsed.translated || '',
+                              // Coerce to string at the boundary: a non-string english/translated
+                              // from the model would crash the receive modal's .split() rendering.
+                              english: (typeof parsed.english === 'string' ? parsed.english : '') || bp.text,
+                              translated: typeof parsed.translated === 'string' ? parsed.translated : '',
                               language: targetLang,
                               languageName: langNames[targetLang] || ('🌐 ' + targetLang),
                               imageUrl: imageUrl,
@@ -21119,10 +21121,12 @@ Return ONLY valid JSON of this exact shape:
   "desiredResults": ["1-3 enduring understandings"],
   "goldenThread": ["recurring concepts"],
   "keyTerms": ["unit vocabulary"],
+  "sourceConfig": { "lengthWords": 350, "tone": "Informative", "readingLevel": "${grade}" },
   "lessons": [ { "title": "short title", "objective": "measurable objective", "focus": "one-line focus directive", "suggestedResourceTypes": ["analysis","glossary","quiz"] } ]
 }
 Use ONLY these resource type ids (id — when to use):
 ${_toolList}
+For "sourceConfig", propose sensible DEFAULTS (the teacher edits them before building) for auto-writing each lesson's reading passage when no source text is loaded: lengthWords (per-lesson passage length suited to the grade, ~200-500), tone (one of: Informative, Engaging Narrative, Persuasive, Humorous, Step-by-Step, Dialogue), readingLevel (a grade or band).
 Place "lesson-plan" LAST in a lesson's resources when it is a full teaching block. Keep each lesson to 3-6 resources. Produce exactly ${count} lessons.`;
       try {
           const result = await callGemini(prompt, true);
@@ -21140,6 +21144,13 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           parsed.goldenThread = Array.isArray(parsed.goldenThread) ? parsed.goldenThread.slice(0,12) : [];
           parsed.keyTerms = Array.isArray(parsed.keyTerms) ? parsed.keyTerms.slice(0,20) : [];
           parsed.desiredResults = Array.isArray(parsed.desiredResults) ? parsed.desiredResults.slice(0,4) : [];
+          const _ALLOWED_TONES = ['Informative','Engaging Narrative','Persuasive','Humorous','Step-by-Step','Dialogue'];
+          const _sc = (parsed.sourceConfig && typeof parsed.sourceConfig === 'object') ? parsed.sourceConfig : {};
+          parsed.sourceConfig = {
+              lengthWords: Math.max(100, Math.min(1500, parseInt(_sc.lengthWords, 10) || 350)),
+              tone: (_ALLOWED_TONES.indexOf(_sc.tone) >= 0) ? _sc.tone : ((input.tone && _ALLOWED_TONES.indexOf(input.tone) >= 0) ? input.tone : 'Informative'),
+              readingLevel: String(_sc.readingLevel || grade || gradeLevel || '').slice(0, 40)
+          };
           return parsed;
       } catch (e) { warnLog('onProposeUnit failed', e); throw e; }
   };
@@ -21166,6 +21177,23 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       let initialSourceText = inputText;
       const existingAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
       if (existingAnalysis && existingAnalysis.data && existingAnalysis.data.originalText) initialSourceText = existingAnalysis.data.originalText;
+      if (!initialSourceText || !initialSourceText.trim()) {
+          // Topic-based unit (no source loaded): write a grounded reading passage
+          // for THIS lesson using the teacher-editable source settings, so the
+          // blueprint has real text to analyze / build a glossary + lesson from
+          // (resource generators bail on empty source — that was the "no resources
+          // returned" failure). Falls through to the existing path when source exists.
+          const sc = (dna && dna.sourceConfig) || {};
+          const _len = Math.max(100, Math.min(1500, parseInt(sc.lengthWords, 10) || 350));
+          const _tone = sc.tone || 'Informative';
+          const _level = sc.readingLevel || (dna && dna.grade) || gradeLevel || 'middle-school';
+          const _euLine = (_eu && _eu.length) ? ('\nReinforce these enduring understandings: ' + _eu.join('; ') + '.') : '';
+          const _srcPrompt = 'Write an original, factually careful ' + String(_tone).toLowerCase() + ' reading passage of about ' + _len + ' words for a ' + _level + ' reader.\nLesson: "' + (lessonSpec.title || '') + '".\nFocus: ' + (lessonSpec.focus || lessonSpec.objective || '') + '.' + _euLine + '\nWrite ONLY the passage prose — no title, headings, labels, or meta-commentary. Define any domain-specific term in-line with a concrete analogy a ' + _level + ' student would understand.';
+          try {
+              const _srcText = await callGemini(_srcPrompt, false, false, null, null, opts.signal || null);
+              if (_srcText && String(_srcText).trim()) initialSourceText = String(_srcText).trim();
+          } catch (e) { warnLog('unit lesson source generation failed', e); }
+      }
       const res = await _po.executeOneBlueprint(blueprint, { handleGenerate, historyOverride: [...history], dna: seedDna, initialSourceText, signal: opts.signal || null, onResource: opts.onResource });
       let anchorItem = null;
       if (Array.isArray(res.items) && res.items.length) anchorItem = res.items.find(it => it && it.type === 'lesson-plan') || res.items[res.items.length - 1];

@@ -40,18 +40,20 @@ function _bridgeStopListening() {
     _bridgeActiveRec = null;
   }
 }
-function _bridgePhrasesPanel(onPick, translating, t) {
+function _bridgePhrasesPanel(onPick, translating, t, _bt) {
+  _bt = _bt || {};
+  var cAccent = _bt.textAccent || '#5eead4', cMuted = _bt.textMuted || '#64748b';
   return React.createElement('details', { open: true, style: { marginBottom: '12px' } },
-    React.createElement('summary', { style: { cursor: 'pointer', fontSize: '12px', fontWeight: 700, color: '#5eead4', padding: '6px 0' } },
+    React.createElement('summary', { style: { cursor: 'pointer', fontSize: '12px', fontWeight: 700, color: cAccent, padding: '6px 0' } },
       '💬 ' + ((t && t('roster.bridge_phrases_title')) || 'Quick phrases'),
-      React.createElement('span', { style: { color: '#64748b', fontWeight: 500 } }, ' ' + ((t && t('roster.bridge_phrases_hint')) || '(tap to send and speak instantly)'))),
+      React.createElement('span', { style: { color: cMuted, fontWeight: 500 } }, ' ' + ((t && t('roster.bridge_phrases_hint')) || '(tap to send and speak instantly)'))),
     React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' } },
       BRIDGE_PHRASES.map(function (cat, gi) {
         return React.createElement('div', { key: gi },
-          React.createElement('div', { style: { fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' } }, cat.icon + ' ' + cat.label),
+          React.createElement('div', { style: { fontSize: '10px', fontWeight: 700, color: cMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' } }, cat.icon + ' ' + cat.label),
           React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
             cat.phrases.map(function (ph, pi) {
-              return React.createElement('button', { key: pi, disabled: translating, onClick: function () { onPick(ph); }, style: { background: 'rgba(20,184,166,0.08)', border: '1px solid rgba(20,184,166,0.2)', color: '#99f6e4', padding: '6px 10px', borderRadius: '10px', fontSize: '12px', cursor: translating ? 'default' : 'pointer', opacity: translating ? 0.5 : 1, textAlign: 'left' } }, ph);
+              return React.createElement('button', { key: pi, disabled: translating, onClick: function () { onPick(ph); }, style: { background: 'rgba(20,184,166,0.08)', border: '1px solid rgba(20,184,166,0.2)', color: cAccent, padding: '6px 10px', borderRadius: '10px', fontSize: '12px', cursor: translating ? 'default' : 'pointer', opacity: translating ? 0.5 : 1, textAlign: 'left' } }, ph);
             })));
       })));
 }
@@ -64,28 +66,32 @@ function _bridgeTranscript(messages, aLang, bLang) {
   }).join('\n\n');
 }
 // The "ask the AI for help" + "export" bar shown above the conversation thread.
-function _bridgeAiBar(onAsk, onExport, translating, t) {
+function _bridgeAiBar(onAsk, onExport, translating, t, _bt) {
+  _bt = _bt || {};
+  var aiAccent = _bt.aiAccent || '#fcd34d', cText = _bt.inputText || '#e2e8f0', cBg = _bt.cardBg || 'rgba(255,255,255,0.06)', cBorder = _bt.cardBorder || '1px solid rgba(255,255,255,0.1)', cSecondary = _bt.textSecondary || '#94a3b8';
   function ask() { var el = document.getElementById('bridge-f2f-ai-input'); if (el && el.value.trim()) { onAsk(el.value.trim()); el.value = ''; } }
   return React.createElement('div', { style: { display: 'flex', gap: '6px', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap' } },
     React.createElement('span', { 'aria-hidden': 'true', style: { fontSize: '16px' } }, '🤖'),
-    React.createElement('input', { id: 'bridge-f2f-ai-input', type: 'text', disabled: translating, 'aria-label': (t && t('roster.bridge_ai_placeholder')) || 'Ask the AI for help', placeholder: (t && t('roster.bridge_ai_placeholder')) || 'Ask the AI: how do I say…, words for…, explain simply…', onKeyDown: function (e) { if (e.key === 'Enter') { e.preventDefault(); ask(); } }, style: { flex: 1, minWidth: '170px', background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: '12px', padding: '10px 12px', color: '#e2e8f0', fontSize: '13px', outline: 'none', fontFamily: 'inherit', opacity: translating ? 0.5 : 1 } }),
-    React.createElement('button', { disabled: translating, onClick: ask, style: { background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.35)', color: '#fcd34d', padding: '10px 14px', borderRadius: '12px', fontSize: '13px', fontWeight: 700, cursor: translating ? 'default' : 'pointer', whiteSpace: 'nowrap' } }, (t && t('roster.bridge_ai_btn')) || 'Ask AI'),
-    React.createElement('button', { onClick: onExport, title: (t && t('roster.bridge_export')) || 'Export the conversation', 'aria-label': (t && t('roster.bridge_export')) || 'Export the conversation', style: { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', padding: '10px 12px', borderRadius: '12px', fontSize: '13px', cursor: 'pointer', whiteSpace: 'nowrap' } }, '⬇ ' + ((t && t('roster.bridge_export_short')) || 'Export')));
+    React.createElement('input', { id: 'bridge-f2f-ai-input', type: 'text', disabled: translating, 'aria-label': (t && t('roster.bridge_ai_placeholder')) || 'Ask the AI for help', placeholder: (t && t('roster.bridge_ai_placeholder')) || 'Ask the AI: how do I say…, words for…, explain simply…', onKeyDown: function (e) { if (e.key === 'Enter') { e.preventDefault(); ask(); } }, style: { flex: 1, minWidth: '170px', background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: '12px', padding: '10px 12px', color: cText, fontSize: '13px', outline: 'none', fontFamily: 'inherit', opacity: translating ? 0.5 : 1 } }),
+    React.createElement('button', { disabled: translating, onClick: ask, style: { background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.35)', color: aiAccent, padding: '10px 14px', borderRadius: '12px', fontSize: '13px', fontWeight: 700, cursor: translating ? 'default' : 'pointer', whiteSpace: 'nowrap' } }, (t && t('roster.bridge_ai_btn')) || 'Ask AI'),
+    React.createElement('button', { onClick: onExport, title: (t && t('roster.bridge_export')) || 'Export the conversation', 'aria-label': (t && t('roster.bridge_export')) || 'Export the conversation', style: { background: cBg, border: cBorder, color: cSecondary, padding: '10px 12px', borderRadius: '12px', fontSize: '13px', cursor: 'pointer', whiteSpace: 'nowrap' } }, '⬇ ' + ((t && t('roster.bridge_export_short')) || 'Export')));
 }
 // A distinct bubble for an AI-helper exchange: the question + the answer + its translation, shown to BOTH sides.
-function _bridgeAiBubble(msg, aLang, bLang, handleAudio, t) {
+function _bridgeAiBubble(msg, aLang, bLang, handleAudio, t, _bt) {
+  _bt = _bt || {};
+  var aiAccent = _bt.aiAccent || '#fcd34d', aiBubbleBg = _bt.aiBubbleBg || 'linear-gradient(135deg, rgba(251,191,36,0.12), rgba(245,158,11,0.08))', aiBorder = _bt.aiBorder || '1px solid rgba(251,191,36,0.3)', cPrimary = _bt.textPrimary || '#fde68a', cSecondary = _bt.textSecondary || '#94a3b8', cMuted = _bt.textMuted || '#64748b', cBg = _bt.cardBg || 'rgba(255,255,255,0.06)', cBorder = _bt.cardBorder || '1px solid rgba(255,255,255,0.1)';
   return React.createElement('div', { key: msg.id, style: { display: 'flex', justifyContent: 'center' } },
-    React.createElement('div', { style: { maxWidth: '92%', width: '100%', background: 'linear-gradient(135deg, rgba(251,191,36,0.12), rgba(245,158,11,0.08))', border: '1px solid rgba(251,191,36,0.3)', borderRadius: '14px', padding: '12px 16px' } },
-      React.createElement('div', { style: { fontSize: '10px', fontWeight: 700, color: '#fcd34d', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.08em' } }, '🤖 ' + ((t && t('roster.bridge_ai_helper')) || 'AI helper')),
-      React.createElement('div', { style: { fontSize: '12px', color: '#94a3b8', marginBottom: '6px', fontStyle: 'italic' } }, '“' + msg.text + '”'),
+    React.createElement('div', { style: { maxWidth: '92%', width: '100%', background: aiBubbleBg, border: aiBorder, borderRadius: '14px', padding: '12px 16px' } },
+      React.createElement('div', { style: { fontSize: '10px', fontWeight: 700, color: aiAccent, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.08em' } }, '🤖 ' + ((t && t('roster.bridge_ai_helper')) || 'AI helper')),
+      React.createElement('div', { style: { fontSize: '12px', color: cSecondary, marginBottom: '6px', fontStyle: 'italic' } }, '“' + msg.text + '”'),
       msg.translating
-        ? React.createElement('div', { style: { fontSize: '12px', color: '#64748b', fontStyle: 'italic' } }, '⏳ ' + ((t && t('roster.bridge_ai_thinking')) || 'Thinking…'))
+        ? React.createElement('div', { style: { fontSize: '12px', color: cMuted, fontStyle: 'italic' } }, '⏳ ' + ((t && t('roster.bridge_ai_thinking')) || 'Thinking…'))
         : React.createElement('div', null,
-            React.createElement('div', { dir: 'auto', style: { fontSize: '14px', color: '#fde68a', lineHeight: 1.6, fontWeight: 500 } }, msg.answer || ''),
-            msg.translated ? React.createElement('div', { dir: 'auto', style: { marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.08)', fontSize: '14px', color: '#99f6e4', lineHeight: 1.6 } }, '🌍 ' + msg.translated) : null,
+            React.createElement('div', { dir: 'auto', style: { fontSize: '14px', color: cPrimary, lineHeight: 1.6, fontWeight: 500 } }, msg.answer || ''),
+            msg.translated ? React.createElement('div', { dir: 'auto', style: { marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.08)', fontSize: '14px', color: cPrimary, lineHeight: 1.6 } }, '🌍 ' + msg.translated) : null,
             React.createElement('div', { style: { marginTop: '8px', display: 'flex', gap: '6px' } },
-              React.createElement('button', { onClick: function () { handleAudio(msg.answer, aLang); }, style: { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', padding: '4px 10px', borderRadius: '8px', fontSize: '11px', cursor: 'pointer' } }, '🔊 ' + (aLang || '').slice(0, 3)),
-              msg.translated ? React.createElement('button', { onClick: function () { handleAudio(msg.translated, bLang); }, style: { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', padding: '4px 10px', borderRadius: '8px', fontSize: '11px', cursor: 'pointer' } }, '🔊 ' + (bLang || '').slice(0, 3)) : null))));
+              React.createElement('button', { onClick: function () { handleAudio(msg.answer, aLang); }, style: { background: cBg, border: cBorder, color: cSecondary, padding: '4px 10px', borderRadius: '8px', fontSize: '11px', cursor: 'pointer' } }, '🔊 ' + (aLang || '').slice(0, 3)),
+              msg.translated ? React.createElement('button', { onClick: function () { handleAudio(msg.translated, bLang); }, style: { background: cBg, border: cBorder, color: cSecondary, padding: '4px 10px', borderRadius: '8px', fontSize: '11px', cursor: 'pointer' } }, '🔊 ' + (bLang || '').slice(0, 3)) : null))));
 }
 try { window.__alloBridgePure = { BRIDGE_PHRASES: BRIDGE_PHRASES, _bridgeTranscript: _bridgeTranscript }; } catch (e) {}
 
@@ -145,6 +151,11 @@ function BridgeSendModal(props) {
           selectText: _isContrast ? '#FFFF00' : (_isDark ? '#e2e8f0' : '#1e293b'),
           dotActive: _isContrast ? '#FFFF00' : '#14b8a6',
           dotInactive: _isContrast ? '#666600' : (_isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'),
+          // AI-assist amber identity, made theme-aware so the helper UI stays legible in
+          // light/high-contrast (it previously hardcoded light-on-light dark-mode colors).
+          aiAccent: _isContrast ? '#FFFF00' : (_isDark ? '#fcd34d' : '#b45309'),
+          aiBubbleBg: _isContrast ? '#1a1a00' : (_isDark ? 'linear-gradient(135deg, rgba(251,191,36,0.12), rgba(245,158,11,0.08))' : 'linear-gradient(135deg, rgba(251,191,36,0.10), rgba(245,158,11,0.06))'),
+          aiBorder: _isContrast ? '2px solid #FFFF00' : (_isDark ? '1px solid rgba(251,191,36,0.3)' : '1px solid rgba(217,119,6,0.35)'),
         };
         return (
         <div
@@ -601,8 +612,8 @@ function BridgeSendModal(props) {
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setBridgeMessage({
-                                    english: msg.english,
-                                    translated: msg.translated,
+                                    english: typeof msg.english === 'string' ? msg.english : String(msg.english ?? ''),
+                                    translated: typeof msg.translated === 'string' ? msg.translated : String(msg.translated ?? ''),
                                     language: msg.language,
                                     languageName: msg.languageName,
                                     imageUrl: msg.imageUrl,
@@ -723,8 +734,11 @@ function BridgeSendModal(props) {
                     }
                     const langNames = { 'English':'🇺🇸 English','Spanish':'🇪🇸 Español','French':'🇫🇷 Français','Arabic':'🇸🇦 العربية','Somali':'🇸🇴 Soomaali','Vietnamese':'🇻🇳 Tiếng Việt','Portuguese':'🇧🇷 Português','Mandarin':'🇨🇳 中文','Korean':'🇰🇷 한국어','Tagalog':'🇵🇭 Tagalog','Russian':'🇷🇺 Русский','Japanese':'🇯🇵 日本語' };
                     setBridgeMessage({
-                      english: parsed.english || bridgeSendText,
-                      translated: parsed.translated || '',
+                      // Coerce to string at the boundary: a model can occasionally return a
+                      // non-string (object/array) for these fields, which would crash the
+                      // receive modal's .split() word-rendering.
+                      english: (typeof parsed.english === 'string' ? parsed.english : '') || bridgeSendText,
+                      translated: typeof parsed.translated === 'string' ? parsed.translated : '',
                       language: targetLang,
                       languageName: langNames[targetLang] || ('🌐 ' + targetLang),
                       imageUrl: imageUrl || window.__bridgeAttachedImage || null,
@@ -834,10 +848,16 @@ function BridgeSendModal(props) {
                   'Georgian':'ka-GE','Armenian':'hy-AM','Mongolian':'mn-MN','Kazakh':'kk-KZ',
                   'Uzbek':'uz-UZ'
                 };
-                const _personALang = bridgeF2FCustomLangA || bridgeF2FTeacherLang;
-                const _personBLang = bridgeF2FCustomLangB || bridgeF2FLang;
+                // When "Custom..." (sentinel value 'custom') is selected but the text box
+                // is empty, neither the dropdown value nor the custom text is a real
+                // language — resolve to '' so we never send the literal word "custom" to
+                // the translator (or 'cu' to speech recognition). Send paths guard on this.
+                const _resolveBridgeLang = (sel, custom) => { const c = (custom || '').trim(); return c || (sel === 'custom' ? '' : sel); };
+                const _personALang = _resolveBridgeLang(bridgeF2FTeacherLang, bridgeF2FCustomLangA);
+                const _personBLang = _resolveBridgeLang(bridgeF2FLang, bridgeF2FCustomLangB);
                 const _getLangCode = (lang) => _langCodes[lang] || lang.toLowerCase().slice(0,2);
                 const _sendMessage = async (sender, text, fromLang, toLang) => {
+                  if (!fromLang || !toLang) { addToast(t('roster.bridge_f2f_pick_lang') || 'Type the custom language name first', 'warning'); return; }
                   const msgId = Date.now();
                   setBridgeChatMessages(prev => [...prev, {id:msgId, sender, text, translating:true, timestamp:Date.now()}]);
                   setBridgeF2FTranslating(true);
@@ -854,6 +874,7 @@ function BridgeSendModal(props) {
                   setBridgeF2FTranslating(false);
                 };
                 const _startListening = (side, langCode, inputId) => {
+                  if (!langCode) { addToast(t('roster.bridge_f2f_pick_lang') || 'Type the custom language name first', 'warning'); return; }
                   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
                   if (!SR) { addToast(t('roster.bridge_f2f_no_speech') || 'Speech recognition not supported', 'error'); return; }
                   if (bridgeF2FListening === side) { _bridgeStopListening(); setBridgeF2FListening(null); return; }
@@ -874,6 +895,7 @@ function BridgeSendModal(props) {
                   rec.start();
                 };
                 const _askAI = async (question) => {
+                  if (!_personALang || !_personBLang) { addToast(t('roster.bridge_f2f_pick_lang') || 'Type the custom language name first', 'warning'); return; }
                   const msgId = Date.now();
                   setBridgeChatMessages(prev => [...prev, {id:msgId, sender:'ai', ai:true, text:question, translating:true, timestamp:Date.now()}]);
                   setBridgeF2FTranslating(true);
@@ -1101,9 +1123,9 @@ function BridgeSendModal(props) {
                   <div style={{fontSize:'11px',color:typeof _bt!=='undefined'?_bt.textMuted:'#64748b',marginBottom:'12px',textAlign:'center',fontStyle:'italic'}}>
                     🔒 {t('roster.bridge_f2f_ferpa') || 'Private: never saved or synced. Translation is processed by a secure AI service.'} • {t('roster.bridge_f2f_both_speak') || 'Both sides speak or type in their own language'}
                   </div>
-                  {_bridgePhrasesPanel((ph) => _sendMessage('personA', ph, _personALang, _personBLang), bridgeF2FTranslating, t)}
-                  {_bridgeAiBar((q) => _askAI(q), _exportTranscript, bridgeF2FTranslating, t)}
-                  <div id="bridge-f2f-messages" style={{
+                  {_bridgePhrasesPanel((ph) => _sendMessage('personA', ph, _personALang, _personBLang), bridgeF2FTranslating, t, _bt)}
+                  {_bridgeAiBar((q) => _askAI(q), _exportTranscript, bridgeF2FTranslating, t, _bt)}
+                  <div id="bridge-f2f-messages" role="log" aria-live="polite" aria-relevant="additions text" aria-atomic="false" aria-label={t('roster.bridge_f2f_thread_label') || 'Conversation'} style={{
                     background:'rgba(0,0,0,0.15)',border:'1px solid rgba(255,255,255,0.04)',borderRadius:'16px',
                     padding:'16px',maxHeight:'300px',overflowY:'auto',marginBottom:'16px',
                     display:'flex',flexDirection:'column',gap:'12px'
@@ -1115,7 +1137,7 @@ function BridgeSendModal(props) {
                         <div style={{fontSize:'12px',marginTop:'6px',lineHeight:1.5}}>{_personALang} ↔ {_personBLang}<br/>{t('roster.bridge_f2f_ready_desc') || 'Press the microphone or type to begin'}</div>
                       </div>
                     ) : (
-                      bridgeChatMessages.map((msg, ci) => msg.ai ? _bridgeAiBubble(msg, _personALang, _personBLang, handleAudio, t) : (
+                      bridgeChatMessages.map((msg, ci) => msg.ai ? _bridgeAiBubble(msg, _personALang, _personBLang, handleAudio, t, _bt) : (
                         <div key={ci} style={{
                           display:'flex',flexDirection:'column',
                           alignItems: msg.sender === 'personA' ? 'flex-end' : 'flex-start',
@@ -1552,8 +1574,14 @@ function BridgeMessageModal(props) {
                 <button
                   data-help-key="bridge_message_print_btn"
                   onClick={() => {
+                    // HTML-escape everything interpolated into the print document (model/teacher
+                    // text) and restrict the image to safe schemes, since this is written via
+                    // document.write into a new window.
+                    const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+                    const safeImg = (u) => (typeof u === 'string' && /^(data:image\/|blob:|https:)/i.test(u)) ? u : '';
+                    const _img = safeImg(bridgeMessage.imageUrl);
                     const printContent = `
-                      <html><head><title>{t('bridge.bridge_message')}</title>
+                      <html><head><title>${esc(t('bridge.bridge_message') || 'Bridge Message')}</title>
                       <style>
                         body { font-family: Arial, sans-serif; max-width: 700px; margin: 40px auto; padding: 20px; }
                         .lang-label { font-size: 14px; font-weight: bold; color: #666; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
@@ -1563,14 +1591,14 @@ function BridgeMessageModal(props) {
                         .header { text-align: center; margin-bottom: 32px; border-bottom: 2px solid #14b8a6; padding-bottom: 16px; }
                         .header h1 { color: #14b8a6; font-size: 24px; margin: 0; }
                         .header p { color: #999; font-size: 12px; margin: 4px 0 0; }
-                        ${bridgeMessage.imageUrl ? 'img { max-width: 100%; border-radius: 8px; margin-bottom: 24px; }' : ''}
+                        ${_img ? 'img { max-width: 100%; border-radius: 8px; margin-bottom: 24px; }' : ''}
                       </style></head><body>
-                      <div class="header"><h1>🌐 Bridge Message</h1><p>${new Date(bridgeMessage.timestamp).toLocaleString()}</p></div>
-                      ${bridgeMessage.imageUrl ? '<img alt="" src="' + bridgeMessage.imageUrl + '" />' : ''}
+                      <div class="header"><h1>🌐 Bridge Message</h1><p>${esc(new Date(bridgeMessage.timestamp).toLocaleString())}</p></div>
+                      ${_img ? '<img alt="" src="' + esc(_img) + '" />' : ''}
                       <div class="lang-label">🇺🇸 English</div>
-                      <div class="text-block">${bridgeMessage.english}</div>
-                      ${bridgeMessage.translated ? '<div class="lang-label">' + (bridgeMessage.languageName || bridgeMessage.language) + '</div><div class="text-block">' + bridgeMessage.translated + '</div>' : ''}
-                      ${bridgeMessage.terms?.length ? '<div class="lang-label">📖 Key Terms</div><div class="terms">' + bridgeMessage.terms.map(t2 => { const w = typeof t2 === 'object' ? t2.word : t2; const d = typeof t2 === 'object' && t2.definition ? t2.definition : ''; return '<span class="term">' + w + (d ? '<br/><small style="font-weight:400;color:#555">' + d + '</small>' : '') + '</span>'; }).join('') + '</div>' : ''}
+                      <div class="text-block">${esc(bridgeMessage.english)}</div>
+                      ${bridgeMessage.translated ? '<div class="lang-label">' + esc(bridgeMessage.languageName || bridgeMessage.language) + '</div><div class="text-block">' + esc(bridgeMessage.translated) + '</div>' : ''}
+                      ${bridgeMessage.terms?.length ? '<div class="lang-label">📖 Key Terms</div><div class="terms">' + bridgeMessage.terms.map(t2 => { const w = typeof t2 === 'object' ? t2.word : t2; const d = typeof t2 === 'object' && t2.definition ? t2.definition : ''; return '<span class="term">' + esc(w) + (d ? '<br/><small style="font-weight:400;color:#555">' + esc(d) + '</small>' : '') + '</span>'; }).join('') + '</div>' : ''}
                       </body></html>`;
                     const printWin = window.open('', '_blank', 'width=800,height=600');
                     if (printWin) { printWin.document.write(printContent); printWin.document.close(); printWin.print(); }
