@@ -244,6 +244,42 @@ var _extractNumericTokens = function (text) {
   }
   return counts;
 };
+// ── OCR-quality helpers (2026-06-29) — module-scope so the extraction/resume gates + the manual re-OCR
+// splice share ONE definition. ──
+// _ocrJunkRatio: fraction of non-whitespace chars that are NOT letters/digits (empty → 1 = all-junk).
+// A copy of reconcileOcrPages' internal _ocrJunk, kept separate so we don't disturb that tuned closure.
+var _ocrJunkRatio = function (s) {
+  try {
+    var ns = String(s == null ? '' : s).replace(/\s+/g, '');
+    if (!ns.length) return 1;
+    var textChars = (ns.match(/[\p{L}\p{N}]/gu) || []).length;
+    return 1 - textChars / ns.length;
+  } catch (_) { return 0; }
+};
+// _textLayerLooksGarbage: HIGH-PRECISION "broken text layer" detector. Fires ONLY on replacement-char
+// (U+FFFD) + C0/C1 control-char density >= 2% AND an absolute count >= 3 — the unambiguous broken-encoding
+// tell. Deliberately NO junk-ratio branch: reconcile's 0.45 is a RELATIVE (winner-vs-alt) threshold and,
+// used absolutely, false-positives on clean math/table/code PDFs. Returns false on clean text of every
+// script (Latin/CJK/Arabic/math — the density is ~0). Used to FORCE OCR over a present-but-garbled layer.
+var _textLayerLooksGarbage = function (s) {
+  try {
+    var str = String(s == null ? '' : s);
+    var nonWs = 0, bad = 0;
+    for (var i = 0; i < str.length; i++) {
+      var c = str.charCodeAt(i);
+      if (c === 32 || c === 9 || c === 10 || c === 13) continue; // whitespace
+      nonWs++;
+      // U+FFFD replacement char OR a C0/C1 control char (tab/newline/CR already skipped) = broken-encoding tell
+      if (c === 0xFFFD || (c >= 0 && c <= 8) || c === 11 || c === 12 || (c >= 14 && c <= 31) || (c >= 127 && c <= 159)) bad++;
+    }
+    // Conservative floors (2026-06-29 review): a clean page whose decorative/ligature font lacks a ToUnicode
+    // CMap emits a FEW U+FFFD (~2%), so the threshold targets a substantially-broken layer (a broken font is
+    // near-100% U+FFFD), not a handful of ornament glyphs. Need >=120 non-ws chars (don't judge short pages),
+    // >=6 bad chars, AND >=10% density. (A false trip is non-destructive anyway — see the parity check at adopt.)
+    if (nonWs < 120 || bad < 6) return false;
+    return (bad / nonWs) >= 0.10;
+  } catch (_) { return false; }
+};
 // Returns source numeric tokens whose count DROPPED in the output (a value not preserved). Added/extra
 // output numbers (alt text, "Table 1") are intentionally NOT flagged — only LOST source values matter.
 var _numericFidelityLosses = function (srcText, outText) {
@@ -10036,6 +10072,10 @@ Return ONLY the extracted text.`;
         } else {
           setGenerationStep('Extracting PDF text layer...');
           const det = await extractPdfTextDeterministic(pendingPdfBase64);
+          // NOTE (2026-06-29): deliberately NO _textLayerLooksGarbage force-OCR here, unlike the remediation
+          // intake gate. This path feeds the editor textarea (the user sees + can edit the text, and can hit
+          // "Re-scan with OCR"), not a silently-shipped PDF — so a rare garbled layer is visible and recoverable
+          // rather than auto-replaced. Keep this divergence intentional; don't "fix" only one site.
           if (det && !det.isScanned && (det.method === 'transcript' || det.sourceCharCount > 100)) { // transcripts accepted by METHOD (sweep 2026-06-11 LOW[6]): a tiny transcript is still ground truth, not a scan
             extractedText = det.fullText;
             warnLog(`[ProceedTransform Det] PDF → ${det.sourceCharCount} chars from ${det.pageCount} pages`);
@@ -14035,6 +14075,12 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       // those, splicing them back over the text-layer result). Read + consume once so a later normal
       // run is unaffected.
       let _forceFullOcr = false, _forceOcrPages = null;
+      // When we FORCE OCR because a present text layer / banked seed looked garbled, stash that original
+      // text here. _textLayerLooksGarbage can false-positive (e.g. a clean page whose decorative/ligature
+      // font lacks a ToUnicode CMap emits a few U+FFFD), so after OCR we ADOPT the OCR result only if it is
+      // no junkier than the discarded original — otherwise we keep the original. Makes a false trip
+      // non-destructive (worst case = a wasted re-OCR), parity with the manual-splice junk gate.
+      let _garbledFallbackText = null;
       try {
         const _fo = (typeof window !== 'undefined') ? window.__alloForceOcr : null;
         if (_fo === 'all') _forceFullOcr = true;
@@ -14156,6 +14202,16 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         } else if (isPdf) {
           updateProgress(1, 'Extracting PDF text layer deterministically...');
           const det = await extractPdfTextDeterministic(_base64);
+          // Garbled text-layer detector (2026-06-29): isScanned only triggers on a near-EMPTY layer
+          // (<50 chars/page). A scanned page with a thin/mojibake text layer — or a prior bad OCR baked
+          // into the file — clears that gate and would ship unfixed. If the present layer reads like broken
+          // encoding (U+FFFD/control-char density), force the OCR path instead (auto re-scan + honest toast).
+          if (det && !det.isScanned && !_forceFullOcr && det.method !== 'transcript' && _textLayerLooksGarbage(det.fullText)) {
+            _forceFullOcr = true;
+            _garbledFallbackText = det.fullText || null; // keep the discarded layer; adopt OCR only if it's no junkier
+            warnLog('[Extract] Text layer present but looks garbled (broken encoding) — forcing OCR over it (with junk-ratio fallback).');
+            if (typeof addToast === 'function') addToast(t('toasts.garbled_text_layer_ocr') || 'The PDF’s built-in text looks garbled (an encoding problem) — re-scanning it with OCR for a clean copy.', 'info');
+          }
           if (det && !det.isScanned && !_forceFullOcr && (det.method === 'transcript' || det.sourceCharCount > 100)) { // transcripts accepted by METHOD (sweep 2026-06-11 LOW[6]): a tiny transcript is still ground truth, not a scan. _forceFullOcr → reject the text layer so the OCR path below runs (broken-encoding recovery)
             // Multi-session: if a pageRange was specified, narrow the extracted pages to
             // [start, end]. Keeps the full per-page map for later reference but only feeds
@@ -14259,15 +14315,30 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           const _re = await _ocrSpecificPages(_base64, _forceOcrPages, _toTesseractLang(_ovr));
           const _reNums = Object.keys(_re);
           if (_reNums.length) {
-            _pm.forEach(pg => { if (pg && _re[pg.pageNum]) pg.text = _re[pg.pageNum]; });
+            let _adopted = 0;
+            _pm.forEach(pg => {
+              if (!pg || !_re[pg.pageNum]) return;
+              // Quality gate (2026-06-29): this splice previously overwrote page text UNCONDITIONALLY, so a
+              // re-scan that came back JUNKIER than the existing text silently replaced good content. Only
+              // adopt the re-OCR when it is no junkier than what's already there. Empty/near-empty old text
+              // → _ocrJunkRatio = 1 → always adopted (preserves the gap-page rescue case).
+              if (_ocrJunkRatio(_re[pg.pageNum]) <= _ocrJunkRatio(pg.text)) { pg.text = _re[pg.pageNum]; _adopted++; }
+              else warnLog('[Re-OCR] page ' + pg.pageNum + ' kept (re-scan came back junkier than the existing text)');
+            });
             const _merged = _pm.slice().sort((a, b) => a.pageNum - b.pageNum).map(pg => pg.text).filter(Boolean).join('\n\n');
             extractedText = _merged;
             window.__lastGroundTruthCharCount = _merged.length;
             window.__lastGroundTruthPageMap = _pm;
             window.__lastGroundTruthMethod = (window.__lastGroundTruthMethod || 'pdfjs') + '+reocr';
-            updateProgress(1, `Re-OCR'd ${_reNums.length} page(s)`);
-            warnLog(`[ForceOCR] Re-OCR'd ${_reNums.length}/${_forceOcrPages.length} page(s) → ${_merged.length} chars`);
-            if (typeof addToast === 'function') addToast(`🔄 Re-OCR'd ${_reNums.length} page${_reNums.length === 1 ? '' : 's'} — review the Diff to confirm the text is correct.`, 'info');
+            updateProgress(1, _adopted > 0 ? `Re-OCR'd ${_adopted} page(s)` : 'Re-OCR ran — kept the original text');
+            warnLog(`[ForceOCR] Re-OCR produced ${_reNums.length}/${_forceOcrPages.length} page(s); adopted ${_adopted} (the rest came back junkier and were kept) → ${_merged.length} chars`);
+            // Honest toast (2026-06-29): report ADOPTED pages, not merely produced — the quality gate above
+            // can keep the original on every page (common when the existing text was the cleaner winner and a
+            // scale-2.0 re-scan is junkier), in which case nothing actually changed.
+            if (typeof addToast === 'function') {
+              if (_adopted > 0) addToast(`🔄 Re-OCR'd ${_adopted} page${_adopted === 1 ? '' : 's'} — review the Diff to confirm the text is correct.`, 'info');
+              else addToast(`Re-OCR ran but the new scan was not cleaner than the existing text — kept the original.`, 'info');
+            }
           } else {
             warnLog('[ForceOCR] per-page re-OCR produced no text for the requested pages — keeping original');
           }
@@ -14296,12 +14367,22 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           const _seed = window.__resumeExtractedText;
           window.__resumeExtractedText = null;
           if ((!extractedText || extractedText.length <= 100) && !_forceFullOcr && _seed && _seed.fileName === _fileName && typeof _seed.text === 'string' && _seed.text.trim().length >= 50) {
-            extractedText = _seed.text;
-            warnLog('[Resume] Reusing cached extracted text (' + extractedText.length + ' chars) from a saved project — skipping re-extraction/OCR');
-            // Honesty (multisession-resume-2): the cache is the PRIOR pass's OCR text. If the teacher changed
-            // the OCR language since, this reuses the old language's text — so don't claim "no re-scanning
-            // needed" unconditionally; point them to "Re-scan with OCR" if the language changed.
-            if (typeof addToast === 'function') addToast(t('toasts.resume_reused_cached_text') || 'Reused your saved text from the unfinished session. If you changed the OCR language since, use "Re-scan with OCR" to redo it.', 'info');
+            if (_textLayerLooksGarbage(_seed.text)) {
+              // The banked text looks garbled (broken encoding) — don't silently reuse it; re-OCR for a
+              // clean copy. Falls through to the OCR path (extractedText stays empty) + force the flag.
+              // Keep the seed as the fallback so a false trip can't lose it (adopt OCR only if no junkier).
+              _forceFullOcr = true;
+              _garbledFallbackText = _seed.text || null;
+              warnLog('[Resume] Banked text looks garbled — re-OCRing instead of reusing it (with junk-ratio fallback).');
+              if (typeof addToast === 'function') addToast(t('toasts.resume_garbled_reocr') || 'Your saved text from the unfinished session looks garbled — re-scanning with OCR for a clean copy.', 'info');
+            } else {
+              extractedText = _seed.text;
+              warnLog('[Resume] Reusing cached extracted text (' + extractedText.length + ' chars) from a saved project — skipping re-extraction/OCR');
+              // Honesty (multisession-resume-2): the cache is the PRIOR pass's OCR text. If the teacher changed
+              // the OCR language since, this reuses the old language's text — so don't claim "no re-scanning
+              // needed" unconditionally; point them to "Re-scan with OCR" if the language changed.
+              if (typeof addToast === 'function') addToast(t('toasts.resume_reused_cached_text') || 'Reused your saved text from the unfinished session. If you changed the OCR language since, use "Re-scan with OCR" to redo it.', 'info');
+            }
           }
         }
       } catch (_seedErr) { /* seed reuse is best-effort — never block extraction */ }
@@ -14455,6 +14536,16 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         }
         const rec = reconcileOcrPages(_tessPagesForRec, visionResult.pages || []);
         extractedText = rec.fullText || tessResult.fullText || visionResult.fullText || '';
+        // Parity check (2026-06-29): when we forced OCR because a present text layer / banked seed looked
+        // garbled, only KEEP the OCR result if it is no junkier than that discarded original — otherwise
+        // restore the original. _textLayerLooksGarbage can false-positive (unmapped decorative-font glyphs
+        // emit U+FFFD on an otherwise-good page), and the forced-OCR path — unlike the manual splice — had
+        // no comparison back, so a false trip would replace correct text with worse OCR. This makes a false
+        // trip non-destructive (worst case: a wasted re-OCR). Empty OCR → ratio 1 → original wins (fail-safe).
+        if (_garbledFallbackText && _ocrJunkRatio(extractedText) > _ocrJunkRatio(_garbledFallbackText)) {
+          warnLog('[Extract] Forced OCR came back junkier than the original text layer/seed — keeping the original (false-positive guard).');
+          extractedText = _garbledFallbackText;
+        }
         // Stash both outputs + disagreement list on window globals for the fidelity panel.
         window.__lastOcrTesseractText = tessResult.fullText || '';
         window.__lastOcrVisionText = visionResult.fullText || '';
@@ -17392,6 +17483,20 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // SAME persistent notes the panel renders + that drive fidelityLimited, so the score carries the
       // amber asterisk and the panel lists the specific values — instead of it living only in a toast.
       if (_numericLossWarn) _structuralFidelityNotes.push({ kind: 'numeric', msg: _numericLossWarn });
+      // OCR confidence (2026-06-29): low-confidence OCR pages are ALREADY computed
+      // (window.__lastOcrLowConfidencePages, mean Tesseract conf <60) but were only surfaced as a transient
+      // toast/banner. Push a durable WARN into the same notes the panel renders so a likely-garbled scan
+      // carries the amber asterisk + drives needsExpertReview — instead of scoring green on faithfully-
+      // preserved gibberish (the downstream fidelity nets compare against the extracted text, so they can't
+      // catch bad OCR). WARN-only: clean digital docs never run OCR, so this list is empty and adds nothing.
+      try {
+        var _lowConf = (typeof window !== 'undefined' && Array.isArray(window.__lastOcrLowConfidencePages)) ? window.__lastOcrLowConfidencePages : [];
+        if (_lowConf.length > 0) {
+          var _lcPages = _lowConf.map(function (p) { return p && p.pageNum; }).filter(function (n) { return n != null; });
+          var _lcStr = _lcPages.length ? (' (page' + (_lcPages.length === 1 ? ' ' : 's ') + _lcPages.slice(0, 12).join(', ') + (_lcPages.length > 12 ? ', …' : '') + ')') : '';
+          _structuralFidelityNotes.push({ kind: 'lowOcrConfidence', msg: _lowConf.length + ' page(s) were OCR’d at low confidence (mean <60)' + _lcStr + ' — the recognized text may contain errors; verify against the original before distributing.' });
+        }
+      } catch (_lcErr) {}
 
       // ── Triage: flag documents that need expert remediation ──
       let axeViolations = axeResults ? axeResults.totalViolations : 0;       // let: re-audit after recovery mutations may reassign (recov-score-order)

@@ -218,3 +218,86 @@ describe('B4: manual "Re-run audit" recovery button for a throttle-degraded audi
     expect(vp).toMatch(/data-help-key="pdf_audit_reaudit_button"/);
   });
 });
+
+// ── Audit batch 5 (2026-06-29): OCR-quality (garbled-text-layer detect, re-OCR gates, low-conf WARN) ──
+
+describe('B5: OCR-quality fixes are wired with the high-precision (U+FFFD) detector', () => {
+  it('module-scope helpers exist', () => {
+    expect(dp).toMatch(/var _textLayerLooksGarbage = function/);
+    expect(dp).toMatch(/var _ocrJunkRatio = function/);
+  });
+  it('born-digital gate forces OCR over a garbled text layer (auto re-scan)', () => {
+    expect(dp).toMatch(/!det\.isScanned && !_forceFullOcr && det\.method !== 'transcript' && _textLayerLooksGarbage\(det\.fullText\)/);
+    expect(dp).toMatch(/_forceFullOcr = true;[\s\S]{0,400}?garbled \(broken encoding\)/);
+  });
+  it('resume-seed gate re-OCRs a garbled banked seed instead of reusing it', () => {
+    expect(dp).toMatch(/if \(_textLayerLooksGarbage\(_seed\.text\)\)/);
+  });
+  it('manual re-OCR splice only adopts a re-scan that is no junkier (no silent degrade)', () => {
+    expect(dp).toMatch(/_ocrJunkRatio\(_re\[pg\.pageNum\]\) <= _ocrJunkRatio\(pg\.text\)/);
+  });
+  it('low-confidence OCR pages are pushed as a durable fidelity WARN', () => {
+    expect(dp).toMatch(/window\.__lastOcrLowConfidencePages/);
+    expect(dp).toMatch(/kind: 'lowOcrConfidence'/);
+  });
+  // Review must-fix 1: a false trip of the garbled detector must NOT destroy good text.
+  it('forced-OCR is parity-checked — the discarded layer/seed is stashed and restored if OCR is junkier', () => {
+    expect(dp).toMatch(/_garbledFallbackText = det\.fullText/);   // born-digital stash
+    expect(dp).toMatch(/_garbledFallbackText = _seed\.text/);     // resume stash
+    expect(dp).toMatch(/if \(_garbledFallbackText && _ocrJunkRatio\(extractedText\) > _ocrJunkRatio\(_garbledFallbackText\)\)/);
+    expect(dp).toMatch(/extractedText = _garbledFallbackText;/);
+  });
+  // Review must-fix 2: the per-page re-OCR toast reports ADOPTED pages, not merely produced.
+  it('per-page re-OCR toast is honest about no-ops (counts adopted, not produced)', () => {
+    expect(dp).toMatch(/_adopted\+\+/);
+    expect(dp).toMatch(/Re-OCR ran but the new scan was not cleaner/);
+  });
+});
+
+describe('B5: garbled-text detector is high-precision (pure-logic mirror)', () => {
+  // exact mirror of _textLayerLooksGarbage (charCode form, no literal control chars in this test source)
+  const looksGarbage = (s) => {
+    const str = String(s == null ? '' : s);
+    let nonWs = 0, bad = 0;
+    for (let i = 0; i < str.length; i++) {
+      const c = str.charCodeAt(i);
+      if (c === 32 || c === 9 || c === 10 || c === 13) continue;
+      nonWs++;
+      if (c === 0xFFFD || (c >= 0 && c <= 8) || c === 11 || c === 12 || (c >= 14 && c <= 31) || (c >= 127 && c <= 159)) bad++;
+    }
+    if (nonWs < 120 || bad < 6) return false;
+    return (bad / nonWs) >= 0.10;
+  };
+  const R = String.fromCharCode(0xFFFD); // replacement char
+  it('clean text of every script → NOT garbage (no false re-OCR)', () => {
+    expect(looksGarbage('the quick brown fox jumps over the lazy dog. '.repeat(6))).toBe(false);
+    expect(looksGarbage('日本語のテキストです。これはテストです。'.repeat(8))).toBe(false); // CJK
+    expect(looksGarbage('E = mc^2 and ∫ f(x) dx = F(b) - F(a) for all x in [a,b]. '.repeat(5))).toBe(false); // math/symbols
+  });
+  it('a substantially-broken font layer (high U+FFFD density) → garbage', () => {
+    expect(looksGarbage(R.repeat(30) + 'a'.repeat(150))).toBe(true); // 30/180 = 16.7% density, 30 bad, 180 non-ws
+  });
+  it('REGRESSION (review FP): a clean page with a few unmapped ornament glyphs → NOT garbage', () => {
+    // the exact measured false-positive: ~6 U+FFFD in ~280 non-ws chars = 2.1% density → must NOT force OCR
+    expect(looksGarbage(R.repeat(6) + 'a'.repeat(280))).toBe(false);
+  });
+  it('too few replacement chars, too short, or too sparse → NOT garbage (conservative)', () => {
+    expect(looksGarbage(R.repeat(4) + 'a'.repeat(200))).toBe(false);   // only 4 bad (<6)
+    expect(looksGarbage(R.repeat(8) + 'a'.repeat(80))).toBe(false);    // <120 non-ws
+    expect(looksGarbage(R.repeat(8) + 'a'.repeat(300))).toBe(false);   // density 8/308 ≈ 2.6% < 10%
+  });
+});
+
+describe('B5: re-OCR splice gate only adopts non-junkier text (pure-logic mirror)', () => {
+  const junk = (s) => { const ns = String(s == null ? '' : s).replace(/\s+/g, ''); if (!ns.length) return 1; const tc = (ns.match(/[\p{L}\p{N}]/gu) || []).length; return 1 - tc / ns.length; };
+  const adopt = (newT, oldT) => junk(newT) <= junk(oldT);
+  it('adopts when old text is empty (gap-page rescue preserved)', () => {
+    expect(adopt('clean recovered text', '')).toBe(true);
+  });
+  it('keeps old when the re-scan is junkier (fixes the unconditional-overwrite bug)', () => {
+    expect(adopt('@#$%^&*@#$%^&*@#$%', 'clean recovered text here')).toBe(false);
+  });
+  it('adopts equal-or-better re-scans', () => {
+    expect(adopt('clean text', 'clean text')).toBe(true);
+  });
+});
