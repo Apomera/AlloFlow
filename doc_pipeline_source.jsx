@@ -2764,6 +2764,14 @@ var createDocPipeline = function(deps) {
       else if (firstAfter !== -1 && firstAfter <= i + size * 2) cut = firstAfter; // grow to finish a container whole
       else if (lastBefore > i) cut = lastBefore;                                  // a safe-but-early boundary beats an unsafe cut
       else { var lc = html.lastIndexOf('>', target); cut = (lc > i) ? lc + 1 : target; } // last resort: accept the cut
+      // Tag-integrity guard (B2, 2026-06-28): the last-resort cut (last '>' before target, or target itself
+      // when none is in reach) can land INSIDE an open tag — e.g. mid-attribute in `<img src="long-value`.
+      // If the chosen slice ends with an UNCLOSED '<' (its last '<' sits after its last '>'), pull the cut
+      // back to that '<' so the partial tag rides into the NEXT chunk instead of shipping malformed markup
+      // to the per-chunk fixer (which then hallucinates or drops content). Safe-boundary cuts already end
+      // just after a '>', so this only ever adjusts the fallback path.
+      var _lt = html.lastIndexOf('<', cut - 1), _gt = html.lastIndexOf('>', cut - 1);
+      if (_lt > _gt && _lt > i) cut = _lt;
       if (cut <= i) cut = Math.min(target, html.length);     // guarantee forward progress
       chunks.push(html.slice(i, cut));
       i = cut;
@@ -11261,7 +11269,9 @@ HTML section ${chunkNum}/${chunks.length}:
         try { return hexToRgb(s); } catch(e) { return null; }
       }
       const rgbMatch = s.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
-      if (rgbMatch) return [parseInt(rgbMatch[1]), parseInt(rgbMatch[2]), parseInt(rgbMatch[3])];
+      // B9 (2026-06-28): clamp channels to 0–255. CSS lets rgba(300,…) parse to 300, and 300/255≈1.18
+      // breaks the sRGB transfer function in luminance() → wrong contrast ratios (pass/fail flips).
+      if (rgbMatch) return [rgbMatch[1], rgbMatch[2], rgbMatch[3]].map((v) => Math.max(0, Math.min(255, parseInt(v, 10))));
       if (namedColorMap[s]) {
         try { return hexToRgb(namedColorMap[s]); } catch(e) { return null; }
       }
@@ -11364,7 +11374,7 @@ HTML section ${chunkNum}/${chunks.length}:
     // the rendered text is unreadable because of the alpha.
     fixed = fixed.replace(/color:\s*rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+)\s*)?\)/gi, (match, r, g, b, a, offset, fullStr) => {
       if (_hasLocalBg(fullStr, offset)) return match; // a local background governs this color
-      const rgb = [parseInt(r), parseInt(g), parseInt(b)];
+      const rgb = [r, g, b].map((v) => Math.max(0, Math.min(255, parseInt(v, 10)))); // B9: clamp 0–255 (sRGB transfer needs in-range channels)
       const alpha = a !== undefined ? parseFloat(a) : 1;
       let out = rgb;
       let changed = false;

@@ -70,4 +70,18 @@ describe('anti-drift: the container-aware split ships', () => {
     expect(dp).toContain('safe.push(m.index + m[0].length)');
     expect(dp).toContain('grow to finish a container whole');
   });
+  it('B2 (2026-06-28): a tag-integrity guard backs the last-resort cut off an open tag', () => {
+    expect(dp).toContain('Tag-integrity guard (B2');
+    expect(dp).toContain('if (_lt > _gt && _lt > i) cut = _lt;');
+  });
+});
+
+describe('B2: the last-resort cut never ends a chunk mid-tag (content preserved)', () => {
+  it('backs the cut up to the <img> start instead of slicing mid-attribute', () => {
+    const text = 'word '.repeat(16);
+    const html = '<body>' + text + '<img alt="' + 'y'.repeat(200) + '" src="z.png"></body>';
+    const chunks = splitHtmlOnTagBoundary(html, 100);
+    expect(chunks.join('')).toBe(html);                       // content preserved (the non-negotiable invariant)
+    expect(chunks.some((c) => c.endsWith(text))).toBe(true);  // a chunk ends exactly at the <img> boundary, not `…<img alt="yy`
+  });
 });
