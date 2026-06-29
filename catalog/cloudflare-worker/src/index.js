@@ -79,6 +79,15 @@ function slugify(s) {
     .slice(0, 48) || 'untitled';
 }
 
+// Constant-time string compare for admin tokens (avoids a length/prefix timing oracle).
+function timingSafeEq(a, b) {
+  a = String(a || ''); b = String(b || '');
+  if (a.length !== b.length) return false;
+  let r = 0;
+  for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return r === 0;
+}
+
 function scanForPii(text) {
   const findings = [];
   for (const p of PII_PATTERNS) {
@@ -461,7 +470,7 @@ function pluginStructureIssues(pl) {
   if (pl.target === 'sel') { if (!/window\.SelHub/.test(src)) issues.push('target is "sel" but source does not reference window.SelHub'); }
   else if (!/window\.StemLab/.test(src)) issues.push('target is "stem" but source does not reference window.StemLab');
   if (/\beval\s*\(/.test(src)) issues.push('source uses eval()');
-  if (/new\s+Function\s*\(/.test(src)) issues.push('source uses new Function()');
+  if (/(^|[^.\w])Function\s*\(/.test(src)) issues.push('source uses the Function constructor'); // catches `new Function(` AND bare `Function(`
   if (/document\.write\s*\(/.test(src)) issues.push('source uses document.write()');
   return issues;
 }
@@ -527,7 +536,7 @@ async function handlePluginList(request, env, url) {
   if (!env.ADMIN_TOKEN) return jsonResponse({ ok: false, error: 'Admin read disabled: set the ADMIN_TOKEN secret to enable GET /pluginSubmissions (or use `wrangler kv key list`).' }, 501);
   if (!env.PLUGIN_SUBMISSIONS) return jsonResponse({ ok: false, error: 'Missing PLUGIN_SUBMISSIONS KV binding.' }, 500);
   const token = url.searchParams.get('token') || (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
-  if (token !== env.ADMIN_TOKEN) return jsonResponse({ ok: false, error: 'Unauthorized.' }, 401);
+  if (!timingSafeEq(token, env.ADMIN_TOKEN)) return jsonResponse({ ok: false, error: 'Unauthorized.' }, 401);
   const limit = Math.min(parseInt(url.searchParams.get('limit') || '50', 10) || 50, 200);
   const includeSource = url.searchParams.get('source') === '1'; // omit the (large) source unless explicitly requested
   const listed = await env.PLUGIN_SUBMISSIONS.list({ prefix: 'plugin:', limit });

@@ -175,16 +175,28 @@ function scanFile(file) {
   if (!cfg) { res.errors.push('config (arg 2) is missing'); return res; }
   if (cfg.type === 'Identifier') { res.warns.push('config is a variable reference (fields not statically checked)'); return res; }
   if (cfg.type !== 'ObjectExpression') { res.errors.push('config (arg 2) is not an object literal or variable'); return res; }
-  const props = {};
-  for (const p of cfg.properties) { if (p.type === 'Property') { const k = objKey(p); if (k) props[k] = p.value; } }
+  const props = {}; const kinds = {}; let hasSpread = false;
+  for (const p of cfg.properties) {
+    if (p.type === 'SpreadElement' || p.type === 'ExperimentalSpreadProperty') { hasSpread = true; continue; }
+    if (p.type === 'Property') { const k = objKey(p); if (k) { props[k] = p.value; kinds[k] = p.kind || 'init'; } }
+  }
+  if (hasSpread) res.warns.push('config has spread properties (...) — fields not fully statically checked');
 
   // required fields
-  for (const f of REQUIRED_FIELDS) if (!(f in props)) res.warns.push(`missing config.${f}`);
+  for (const f of REQUIRED_FIELDS) {
+    if (!(f in props)) res.warns.push(`missing config.${f}`);
+    else if (kinds[f] !== 'init' && f !== 'render') res.warns.push(`config.${f} is a getter/setter (value not statically checked)`);
+  }
 
-  // render must be a function (or identifier ref)
+  // render must be a plain function property (getter/identifier can return a non-function)
   if (props.render) {
-    if (isFn(props.render)) {
+    if (kinds.render !== 'init') {
+      res.errors.push('config.render must be a plain function property, not a getter/setter');
+    } else if (isFn(props.render)) {
       const ctxParam = props.render.params[0];
+      if (ctxParam && ctxParam.type === 'ObjectPattern' && ctxParam.properties.some(pr => pr.type === 'RestElement' || pr.type === 'ExperimentalRestProperty')) {
+        res.warns.push('render destructures ctx with rest (...) — ctx surface not fully validated');
+      }
       let used = null;
       if (ctxParam && ctxParam.type === 'Identifier') {
         used = collectCtxMembersScoped(props.render, ctxParam.name, sm);
@@ -201,7 +213,7 @@ function scanFile(file) {
         if (unknown.length) res.warns.push('ctx members outside published surface: ' + unknown.join(', '));
       }
     } else if (props.render.type === 'Identifier') {
-      res.warns.push('render is an identifier reference (cannot statically verify it is a function)');
+      res.errors.push('config.render must be a function literal, not a variable reference (cannot statically verify)');
     } else {
       res.errors.push('config.render is not a function');
     }

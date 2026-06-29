@@ -200,17 +200,30 @@
       if (cfg.type === 'Identifier') { t.warns.push('config is a variable reference (fields not statically checked)'); out.tools.push(t); continue; }
       if (cfg.type !== 'ObjectExpression') { t.errors.push('config (arg 2) is not an object literal or variable'); out.tools.push(t); continue; }
 
-      var props = {};
-      for (var pi = 0; pi < cfg.properties.length; pi++) { var p = cfg.properties[pi]; if (p.type === 'Property') { var k = objKey(p); if (k) props[k] = p.value; } }
+      var props = {}, kinds = {}, hasSpread = false;
+      for (var pi = 0; pi < cfg.properties.length; pi++) {
+        var p = cfg.properties[pi];
+        if (p.type === 'SpreadElement' || p.type === 'ExperimentalSpreadProperty') { hasSpread = true; continue; }
+        if (p.type === 'Property') { var k = objKey(p); if (k) { props[k] = p.value; kinds[k] = p.kind || 'init'; } }
+      }
+      // spread can inject required fields the validator can't see — surface that honestly
+      if (hasSpread) t.warns.push('config has spread properties (...) — fields not fully statically checked');
 
       for (var fi = 0; fi < CONTRACT.requiredFields.length; fi++) {
         var f = CONTRACT.requiredFields[fi];
         if (!(f in props)) { t.missing.push(f); t.warns.push('missing config.' + f); }
+        else if (kinds[f] !== 'init' && f !== 'render') t.warns.push('config.' + f + ' is a getter/setter (value not statically checked)');
       }
 
       if (props.render) {
-        if (isFn(props.render)) {
+        if (kinds.render !== 'init') {
+          // a getter/setter can return a non-function at runtime — not statically verifiable
+          t.errors.push('config.render must be a plain function property, not a getter/setter');
+        } else if (isFn(props.render)) {
           var p0 = props.render.params && props.render.params[0];
+          if (p0 && p0.type === 'ObjectPattern' && p0.properties.some(function (pr) { return pr.type === 'RestElement' || pr.type === 'ExperimentalRestProperty'; })) {
+            t.warns.push('render destructures ctx with rest (...) — ctx surface not fully validated');
+          }
           var ctxName = (p0 && p0.type === 'Identifier') ? p0.name : null;
           var used = collectCtxMembers(props.render, ctxName);
           if (used === null && !(p0 && p0.type === 'ObjectPattern')) {
@@ -221,7 +234,8 @@
             if (t.ctxUnknown.length) t.warns.push('ctx members outside host surface: ' + t.ctxUnknown.join(', '));
           }
         } else if (props.render.type === 'Identifier') {
-          t.warns.push('render is an identifier reference (cannot statically verify it is a function)');
+          // a variable could hold a non-function — "conformant by construction" needs a literal
+          t.errors.push('config.render must be a function literal, not a variable reference (cannot statically verify)');
         } else {
           t.errors.push('config.render is not a function');
         }
@@ -397,11 +411,27 @@
     ].join('\n');
   }
 
-  // ── the sandboxed render-smoke document (no same-origin: the FERPA/key firewall) ──
+  // ── the sandboxed render-smoke document ──
+  // Two layers contain the untrusted candidate: (1) sandbox="allow-scripts" with NO
+  // allow-same-origin gives the iframe an opaque origin, so candidate code cannot read
+  // the parent window, its keys (callGemini), storage, or cookies. (2) the CSP below
+  // sets connect-src 'none', which blocks fetch/XHR/WebSocket/sendBeacon — so candidate
+  // code cannot exfiltrate over the network either (sandbox alone does NOT block egress).
+  // script-src is pinned to jsDelivr (for React) + inline (the harness). Together these
+  // are the author-time data/key firewall. Tier-2 (Node) remains the gate of record.
   function buildSmokeDoc(src) {
+    // Neutralize a literal "</script" so the candidate cannot close the harness <script>.
+    // "<\/script" is NOT recognized as an end tag by the HTML parser (the byte after "<"
+    // is "\", not "/"), and "<\/" is a valid escaped "/" inside JS strings/regex/comments
+    // — the only places "</script" can legally appear in conforming JS. (Verified: an
+    // injected </script><img onerror> does NOT execute. We deliberately do NOT entity-
+    // escape "<"/">", which would corrupt valid code like `for(i=0;i<n;i++)`.)
     var safe = String(src == null ? '' : src).replace(/<\/(script)/gi, '<\\/$1');
+    var CSP = "default-src 'none'; script-src 'unsafe-inline' https://cdn.jsdelivr.net; "
+      + "style-src 'unsafe-inline'; img-src data:; connect-src 'none'; base-uri 'none'; form-action 'none'";
     var head = [
       '<!doctype html><html><head><meta charset="utf-8">',
+      '<meta http-equiv="Content-Security-Policy" content="' + CSP + '">',
       '<style>html,body{margin:0}body{font:14px system-ui,-apple-system,sans-serif;padding:12px;background:#fff;color:#111}',
       '#root{min-height:40px}.forge-fatal{color:#b91c1c;font:12px ui-monospace,SFMono-Regular,Menlo,monospace;',
       'white-space:pre-wrap;padding:10px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px}</style></head>',
@@ -521,7 +551,12 @@
       function onMsg(e) {
         var d = e && e.data;
         if (!d || !d.__forge || d.type !== 'smoke') return;
-        setSmoke({ ok: !!d.ok, error: d.error || null, ids: d.ids || [] });
+        // only trust our own sandbox iframe — reject forged results from other frames/extensions
+        var fr = iframeRef.current;
+        if (fr && fr.contentWindow && e.source !== fr.contentWindow) return;
+        // cap the error string so a hostile candidate cannot DoS the parent UI with a huge payload
+        var err = (d.error == null) ? null : String(d.error).slice(0, 10000);
+        setSmoke({ ok: !!d.ok, error: err, ids: Array.isArray(d.ids) ? d.ids.slice(0, 50) : [] });
       }
       window.addEventListener('message', onMsg);
       return function () { window.removeEventListener('message', onMsg); };

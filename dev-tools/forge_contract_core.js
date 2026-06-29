@@ -194,17 +194,30 @@
       if (cfg.type === 'Identifier') { t.warns.push('config is a variable reference (fields not statically checked)'); out.tools.push(t); continue; }
       if (cfg.type !== 'ObjectExpression') { t.errors.push('config (arg 2) is not an object literal or variable'); out.tools.push(t); continue; }
 
-      var props = {};
-      for (var pi = 0; pi < cfg.properties.length; pi++) { var p = cfg.properties[pi]; if (p.type === 'Property') { var k = objKey(p); if (k) props[k] = p.value; } }
+      var props = {}, kinds = {}, hasSpread = false;
+      for (var pi = 0; pi < cfg.properties.length; pi++) {
+        var p = cfg.properties[pi];
+        if (p.type === 'SpreadElement' || p.type === 'ExperimentalSpreadProperty') { hasSpread = true; continue; }
+        if (p.type === 'Property') { var k = objKey(p); if (k) { props[k] = p.value; kinds[k] = p.kind || 'init'; } }
+      }
+      // spread can inject required fields the validator can't see — surface that honestly
+      if (hasSpread) t.warns.push('config has spread properties (...) — fields not fully statically checked');
 
       for (var fi = 0; fi < CONTRACT.requiredFields.length; fi++) {
         var f = CONTRACT.requiredFields[fi];
         if (!(f in props)) { t.missing.push(f); t.warns.push('missing config.' + f); }
+        else if (kinds[f] !== 'init' && f !== 'render') t.warns.push('config.' + f + ' is a getter/setter (value not statically checked)');
       }
 
       if (props.render) {
-        if (isFn(props.render)) {
+        if (kinds.render !== 'init') {
+          // a getter/setter can return a non-function at runtime — not statically verifiable
+          t.errors.push('config.render must be a plain function property, not a getter/setter');
+        } else if (isFn(props.render)) {
           var p0 = props.render.params && props.render.params[0];
+          if (p0 && p0.type === 'ObjectPattern' && p0.properties.some(function (pr) { return pr.type === 'RestElement' || pr.type === 'ExperimentalRestProperty'; })) {
+            t.warns.push('render destructures ctx with rest (...) — ctx surface not fully validated');
+          }
           var ctxName = (p0 && p0.type === 'Identifier') ? p0.name : null;
           var used = collectCtxMembers(props.render, ctxName);
           if (used === null && !(p0 && p0.type === 'ObjectPattern')) {
@@ -215,7 +228,8 @@
             if (t.ctxUnknown.length) t.warns.push('ctx members outside host surface: ' + t.ctxUnknown.join(', '));
           }
         } else if (props.render.type === 'Identifier') {
-          t.warns.push('render is an identifier reference (cannot statically verify it is a function)');
+          // a variable could hold a non-function — "conformant by construction" needs a literal
+          t.errors.push('config.render must be a function literal, not a variable reference (cannot statically verify)');
         } else {
           t.errors.push('config.render is not a function');
         }

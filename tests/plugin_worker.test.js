@@ -136,6 +136,16 @@ describe('worker /submitPlugin structural sanity (non-blocking)', () => {
     expect(issues).toMatch(/eval/);
   });
 
+  it('flags the bare Function() constructor, not just new Function()', async () => {
+    const env = { PLUGIN_SUBMISSIONS: fakeKv() };
+    const p = validPayload();
+    p.plugin.source = CONFORMING_SRC + "\n;var f = Function('return 1')();"; // bare, no `new`
+    const res = await postPlugin(p, env);
+    expect(res.status).toBe(201);
+    const rec = JSON.parse(env.PLUGIN_SUBMISSIONS.store[Object.keys(env.PLUGIN_SUBMISSIONS.store)[0]].v);
+    expect(rec.structure_check.issues.join(' ')).toMatch(/Function constructor/);
+  });
+
   it('flags a source that never calls registerTool', async () => {
     const env = { PLUGIN_SUBMISSIONS: fakeKv() };
     const p = validPayload();
