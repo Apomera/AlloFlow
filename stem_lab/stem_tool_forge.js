@@ -261,6 +261,9 @@
   var ForgeContract = window.ForgeContract;
   var CONTRACT = (ForgeContract && ForgeContract.CONTRACT) || { version: '1.0', requiredFields: [], ctxSurface: [], themeColors: [], categories: [] };
 
+  // submission spine (the same Worker the catalog/PD/bug forms use)
+  var WORKER_BASE = 'https://alloflow-catalog-submit.aaron-pomeranz.workers.dev';
+
   // CDN assets the harness lazy-loads (Aaron-only dev tool — runtime CDN is fine)
   var ACORN_URL = 'https://cdn.jsdelivr.net/npm/acorn@8.16.0/dist/acorn.js';
   var REACT_URL = 'https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js';
@@ -328,6 +331,47 @@
     if (m) return m[1].trim();
     return s.trim();
   }
+
+  // Pull the metadata field VALUES (id/label/desc/category/color/icon/target) out of
+  // the first registerTool config — needed for the submission payload. Browser-only
+  // (uses window.acorn, already loaded for the validator).
+  function extractMeta(src) {
+    var meta = { id: '', target: 'stem', label: '', desc: '', category: '', color: '', icon: '' };
+    if (!window.acorn) return meta;
+    var ast;
+    try { ast = window.acorn.parse(src, { ecmaVersion: 2022, sourceType: 'script', allowReturnOutsideFunction: true, allowAwaitOutsideFunction: true }); } catch (e) { return meta; }
+    var call = null;
+    (function walk(n) {
+      if (!n || typeof n.type !== 'string' || call) return;
+      if (n.type === 'CallExpression' && n.callee.type === 'MemberExpression' && n.callee.property && n.callee.property.name === 'registerTool') { call = n; return; }
+      for (var k in n) { if (k === 'parent' || k === 'loc' || k === 'range') continue; var v = n[k]; if (Array.isArray(v)) v.forEach(function (c) { if (c && typeof c.type === 'string') walk(c); }); else if (v && typeof v.type === 'string') walk(v); }
+    })(ast);
+    if (!call) return meta;
+    var obj = call.callee.object, chain = [];
+    while (obj) { if (obj.type === 'Identifier') { chain.push(obj.name); break; } if (obj.type === 'MemberExpression') { if (obj.property && obj.property.name) chain.push(obj.property.name); obj = obj.object; } else break; }
+    meta.target = chain.indexOf('SelHub') >= 0 ? 'sel' : 'stem';
+    var idArg = call.arguments[0];
+    if (idArg && idArg.type === 'Literal' && typeof idArg.value === 'string') meta.id = idArg.value;
+    var cfg = call.arguments[1];
+    if (cfg && cfg.type === 'ObjectExpression') {
+      cfg.properties.forEach(function (p) {
+        if (p.type !== 'Property') return;
+        var key = p.key && (p.key.name || p.key.value);
+        if (['label', 'desc', 'category', 'color', 'icon'].indexOf(key) >= 0 && p.value.type === 'Literal' && typeof p.value.value === 'string') meta[key] = p.value.value;
+      });
+    }
+    return meta;
+  }
+
+  var AFFIRMATIONS = [
+    { key: 'author_or_authorized', label: 'I am the author or am authorized to submit this tool.' },
+    { key: 'accuracy_attested', label: 'Its academic content is accurate to the best of my knowledge.' },
+    { key: 'no_pii', label: 'It contains no student PII or confidential data.' },
+    { key: 'passes_validation', label: 'It passes the contract validator and renders in the preview.' },
+    { key: 'license_agreed', label: 'I agree to release it under the selected license.' },
+    { key: 'age_eligible', label: 'I am 18+ or submitting on behalf of an institution.' }
+  ];
+  var LICENSES = ['CC-BY-SA-4.0', 'CC-BY-4.0', 'CC0', 'MIT', 'Apache-2.0'];
 
   // ── the contract, as a compact prompt block for the generator ──
   function contractPrompt() {
@@ -458,6 +502,10 @@
     var s_smoke = useState(null); var smoke = s_smoke[0], setSmoke = s_smoke[1];
     var s_doc = useState(''); var smokeDoc = s_doc[0], setSmokeDoc = s_doc[1];
     var s_acorn = useState(false); var acornReady = s_acorn[0], setAcornReady = s_acorn[1];
+    var s_aff = useState({}); var affirm = s_aff[0], setAffirm = s_aff[1];
+    var s_author = useState(ctx.studentNickname || ''); var author = s_author[0], setAuthor = s_author[1];
+    var s_license = useState('CC-BY-SA-4.0'); var license = s_license[0], setLicense = s_license[1];
+    var s_submitting = useState(false); var submitting = s_submitting[0], setSubmitting = s_submitting[1];
 
     var iframeRef = useRef(null);
 
@@ -547,6 +595,36 @@
         });
       })();
     }, [ctx, desc, target, t, runStatic]);
+
+    var allAffirmed = AFFIRMATIONS.every(function (a) { return affirm[a.key] === true; });
+    var canSubmit = !!(report && report.ok && smoke && smoke.ok && allAffirmed && !submitting && window.acorn);
+
+    var submitPlugin = useCallback(function () {
+      if (!report || !report.ok) { ctx.addToast && ctx.addToast(t('stem.forge.fix_first', 'Fix the structural problems before submitting.'), 'error'); return; }
+      if (!smoke || !smoke.ok) { ctx.addToast && ctx.addToast(t('stem.forge.preview_first', 'Run “Validate + preview” — it must render without crashing.'), 'error'); return; }
+      var meta = extractMeta(src);
+      if (!meta.id) { ctx.addToast && ctx.addToast(t('stem.forge.no_id', 'Could not read the tool id from the source.'), 'error'); return; }
+      setSubmitting(true);
+      var payload = {
+        plugin: { id: meta.id, label: meta.label || meta.id, desc: meta.desc, target: meta.target, category: meta.category, color: meta.color, icon: meta.icon, source: src },
+        metadata: { author: (author || '').slice(0, 80), license: license },
+        validator_report: { tier1: report, render_smoke: { ok: !!(smoke && smoke.ok) } },
+        affirmations: AFFIRMATIONS.reduce(function (o, a) { o[a.key] = affirm[a.key] === true; return o; }, {})
+      };
+      fetch(WORKER_BASE + '/submitPlugin', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+        .then(function (r) { return r.json().then(function (j) { return { status: r.status, j: j }; }); })
+        .then(function (o) {
+          setSubmitting(false);
+          if (o.status === 201 && o.j && o.j.ok) {
+            ctx.addToast && ctx.addToast(t('stem.forge.submitted', 'Submitted for maintainer review ✓'), 'success');
+            ctx.announceToSR && ctx.announceToSR('Plugin submitted for review.');
+            setAffirm({});
+          } else {
+            ctx.addToast && ctx.addToast(t('stem.forge.submit_failed', 'Submit failed: ') + ((o.j && o.j.error) || ('HTTP ' + o.status)), 'error');
+          }
+        })
+        .catch(function (e) { setSubmitting(false); ctx.addToast && ctx.addToast(t('stem.forge.submit_failed', 'Submit failed: ') + (e && e.message || e), 'error'); });
+    }, [ctx, report, smoke, src, author, license, affirm, t]);
 
     // ── styling helpers ──
     var fg = dark ? '#e5e7eb' : '#0f172a';
@@ -672,16 +750,35 @@
               ? h('iframe', { ref: iframeRef, srcDoc: smokeDoc, sandbox: 'allow-scripts', title: t('stem.forge.preview', 'Plugin preview (sandboxed)'), style: { width: '100%', height: 280, border: 0, background: '#fff' } })
               : h('div', { style: { padding: 16, color: sub, fontSize: 12.5 } }, t('stem.forge.preview_hint', 'Press “Validate + preview” to render this plugin in an isolated sandbox.'))
           ),
-          // submit (Phase B — wired to /submitPlugin when the Worker is deployed)
-          h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
-            h('button', {
-              onClick: function () {
-                ctx.update && ctx.update('forge', 'src', src);
-                ctx.addToast && ctx.addToast(t('stem.forge.saved_draft', 'Draft saved. Submission opens once the review pipeline is enabled.'), 'info');
-              },
-              style: btn(false)
-            }, '💾 ' + t('stem.forge.save_draft', 'Save draft')),
-            h('span', { style: { fontSize: 11.5, color: sub } }, t('stem.forge.submit_soon', 'Submission → maintainer review is human-gated (Phase B).'))
+          // submit → /submitPlugin (private KV; human-gated publish)
+          h('details', { style: { border: '1px solid ' + border, borderRadius: 10, background: panelBg } },
+            h('summary', { style: { cursor: 'pointer', padding: 10, fontSize: 13, fontWeight: 600 } },
+              '📤 ' + t('stem.forge.submit_section', 'Submit for review')),
+            h('div', { style: { padding: '0 10px 10px', display: 'flex', flexDirection: 'column', gap: 8 } },
+              h('p', { style: { fontSize: 11.5, color: sub, margin: '4px 0', lineHeight: 1.5 } },
+                t('stem.forge.submit_note', 'Submitting stages this tool in a private review queue — it never goes live until a maintainer reviews the source + validator report + preview and publishes it. Requires a green validator and a clean render.')),
+              h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                h('input', { value: author, onChange: function (e) { setAuthor(e.target.value); }, placeholder: t('stem.forge.author', 'Your name / credit (optional)'), style: { flex: '1 1 180px', padding: '6px 8px', borderRadius: 6, border: '1px solid ' + border, background: panelBg, color: fg } }),
+                h('select', { value: license, onChange: function (e) { setLicense(e.target.value); }, 'aria-label': t('stem.forge.license', 'License'), style: { padding: '6px 8px', borderRadius: 6, border: '1px solid ' + border, background: panelBg, color: fg } },
+                  LICENSES.map(function (l) { return h('option', { key: l, value: l }, l); }))
+              ),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+                AFFIRMATIONS.map(function (a) {
+                  return h('label', { key: a.key, style: { fontSize: 12, display: 'flex', gap: 6, alignItems: 'flex-start', cursor: 'pointer' } },
+                    h('input', { type: 'checkbox', checked: affirm[a.key] === true, onChange: function (e) { var nx = Object.assign({}, affirm); nx[a.key] = e.target.checked; setAffirm(nx); }, style: { marginTop: 2 } }),
+                    h('span', null, a.label));
+                })
+              ),
+              h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
+                h('button', { onClick: submitPlugin, disabled: !canSubmit, style: Object.assign({}, btn(true), canSubmit ? {} : { opacity: 0.5, cursor: 'not-allowed' }) },
+                  submitting ? t('stem.forge.submitting', 'Submitting…') : '📤 ' + t('stem.forge.submit', 'Submit')),
+                !canSubmit ? h('span', { style: { fontSize: 11, color: sub } },
+                  (!(report && report.ok)) ? t('stem.forge.gate_struct', 'needs a green validator')
+                    : (!(smoke && smoke.ok)) ? t('stem.forge.gate_render', 'run preview first')
+                    : (!allAffirmed) ? t('stem.forge.gate_affirm', 'confirm all statements')
+                    : '') : null
+              )
+            )
           )
         )
       )
