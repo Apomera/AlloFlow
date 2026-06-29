@@ -125,6 +125,8 @@ if [[ "${SKIP_RENDER_CHECK:-0}" != "1" ]]; then
   echo "  ✓ no group-level t() calls (an i18n group OBJECT rendered as a React child = fatal crash; the pdf_audit.fidelity regression)."
   node dev-tools/check_plugin_files.cjs --quiet
   echo "  ✓ PLUGIN_FILES ↔ git in sync (no stale-CDN plugins, duplicate entries, or casing 404s — audit B4/B5)."
+  node dev-tools/check_tool_contract.cjs --quiet || true
+  echo "  ✓ plugin contract audited (ADVISORY: registerTool shape + required fields + ctx-surface conformance; Tool Forge gate, never blocks)."
 fi
 
 # ── Step 1: Source commit ──────────────────────────────────────────
