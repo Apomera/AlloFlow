@@ -45,6 +45,9 @@ const fs = require('fs');
 const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const acorn = require(path.join(ROOT, 'node_modules', 'acorn'));
+// The contract manifest is the single source of truth, shared with the browser
+// Tier-1 validator (stem_tool_forge.js). This gate adds eslint-scope precision on top.
+const { CONTRACT } = require('./forge_contract_core.js');
 // eslint-scope (same as check_render_refs) — used to resolve which `ctx` is the
 // render param vs. a shadowing local (e.g. `const ctx = canvas.getContext('2d')`),
 // so the ctx-surface check counts only the real plugin ctx.
@@ -59,28 +62,13 @@ const JSON_OUT = args.includes('--json');
 const QUIET = args.includes('--quiet');
 const fileArgs = args.filter(a => !a.startsWith('--'));
 
-// ── The contract manifest (the schema). Derived from the live ctx injection in
-// stem_lab_module.js / sel_hub host. Generous union; advisory only flags members
-// outside it, and the discovered-union summary lets us tighten this over time. ──
-const CTX_SURFACE = new Set([
-  // STEM + shared
-  'React', 'toolData', 'update', 'updateMulti', 'setToolData', 'setStemLabTool', 'setStemLabTab',
-  'setToolSnapshots', 'toolSnapshots', 'addToast', 'awardXP', 'getXP', 'announceToSR', 'celebrate',
-  't', 'icons', 'saveSnapshot', 'isDark', 'isContrast', 'reduceMotion', 'markQuest', 'theme',
-  'gradeLevel', 'gradeBand',
-  // host-confirmed via stem_lab_module.js ctx + empirical tool audit
-  'getHint', 'callGeminiImageEdit', 'setLabToolData', 'labToolData', 'stemLabTab', 'stemLabTool',
-  'isTeacherMode', 'studentNickname', 'sourceText', 'sourceTopic', 'beep', 'canvasNarrate',
-  'canvasA11yDesc', 'renderTutorial', 'aiChat', 'aiHintsEnabled', 'props',
-  // SEL adds
-  'callGemini', 'callTTS', 'callImagen', 'callGeminiVision', 'onSafetyFlag', 'studentCodename',
-  'selectedVoice', 'activeSessionCode', 'setSelHubTool', 'setSelHubTab', 'selHubTab', 'selHubTool',
-  'srOnly', 'a11yClick',
-]);
-const REQUIRED_FIELDS = ['label', 'desc', 'color', 'category', 'icon', 'render'];
-const THEME_COLORS = new Set(['slate', 'gray', 'zinc', 'neutral', 'stone', 'red', 'orange', 'amber',
-  'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple',
-  'fuchsia', 'pink', 'rose', 'white', 'black']);
+// ── The contract manifest (the schema) — imported from forge_contract_core.js, the
+// single source of truth shared with the in-browser Tier-1 validator. The ctx surface
+// is the EXACT host injection (the check_stem_render/check_sel_render stub union), so a
+// member outside it is genuinely something the host does not provide. ──
+const CTX_SURFACE = new Set(CONTRACT.ctxSurface);
+const REQUIRED_FIELDS = CONTRACT.requiredFields;
+const THEME_COLORS = new Set(CONTRACT.themeColors);
 
 function gatherFiles() {
   if (fileArgs.length) return fileArgs.map(f => path.resolve(ROOT, f));
