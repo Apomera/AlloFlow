@@ -301,3 +301,80 @@ describe('B5: re-OCR splice gate only adopts non-junkier text (pure-logic mirror
     expect(adopt('clean text', 'clean text')).toBe(true);
   });
 });
+
+describe('B6: large-document page-slice audit (chunk-first router + reactive fallback)', () => {
+  // ── Source-pins: the design is present and the safety net is preserved ──
+  it('defines the _auditPdfInSlices helper + tunable threshold constants', () => {
+    expect(dp).toMatch(/const _auditPdfInSlices = async \(base64Data, auditPromptBase\)/);
+    expect(dp).toMatch(/_AUDIT_SLICE_BYTES_KB = 9000/);
+    expect(dp).toMatch(/_AUDIT_SLICE_PAGES\b\s*=\s*20/);
+    expect(dp).toMatch(/_AUDIT_SLICE_MAX\s*=\s*40/);
+  });
+  it('routes large docs to slices FROM THE START (chunk-first), gating the whole-doc fan-out', () => {
+    expect(dp).toMatch(/if \(_chunkFirst\)/);
+    expect(dp).toMatch(/if \(!_auditedViaSlices\) \{/);
+  });
+  it('keeps a reactive slice fallback for docs UNDER the threshold that still fail', () => {
+    expect(dp).toMatch(/Reactive fallback: whole-document audit produced nothing/);
+    expect(dp).toMatch(/parsedAudits\.length === 0 && !_auditedViaSlices && _sliceCapable/);
+  });
+  it('is strictly additive — the original hard-fail throw is still the final guard', () => {
+    expect(dp).toMatch(/if \(parsedAudits\.length === 0\) throw new Error\('All audit attempts failed'\)/);
+  });
+  it('merges slices to ONE audit object (n=1 → honest n/a reliability, no fabricated agreement)', () => {
+    expect(dp).toMatch(/_slicedAudit: true/);
+    expect(dp).toMatch(/parsedAudits = \[_slicedFirst\]/);
+    expect(dp).toMatch(/parsedAudits = \[_slicedFallback\]/);
+  });
+  it('page-prefixes slice findings so the existing dedupe keeps page-level issues distinct', () => {
+    expect(dp).toMatch(/SLICE CONTEXT/);
+    expect(dp).toMatch(/Begin every issue/);
+  });
+  it('does NOT cache a sliced (lower-fidelity) result', () => {
+    expect(dp).toMatch(/if \(_cacheKey && !_auditedViaSlices\)/);
+  });
+
+  // ── Pure-logic mirror: slice-range computation (per grows to cap total calls) ──
+  const sliceRanges = (totalPages, per0 = 4, max = 40) => {
+    let per = per0;
+    if (Math.ceil(totalPages / per) > max) per = Math.ceil(totalPages / max);
+    const ranges = [];
+    for (let sp = 0; sp < totalPages; sp += per) ranges.push([sp, Math.min(sp + per, totalPages)]);
+    return ranges;
+  };
+  it('a small doc is one slice; a 10-page doc is three 4-page slices', () => {
+    expect(sliceRanges(4)).toEqual([[0, 4]]);
+    expect(sliceRanges(10)).toEqual([[0, 4], [4, 8], [8, 10]]);
+  });
+  it('a huge doc never exceeds the slice cap (per-slice page count grows instead)', () => {
+    const r = sliceRanges(1000);
+    expect(r.length).toBeLessThanOrEqual(40);
+    expect(r[0]).toEqual([0, 25]);          // per = ceil(1000/40) = 25
+    expect(r[r.length - 1][1]).toBe(1000);  // covers the last page
+  });
+  it('ranges always cover every page exactly once, contiguous with no gaps/overlap', () => {
+    for (const n of [1, 3, 7, 40, 161, 999]) {
+      const r = sliceRanges(n);
+      expect(r[0][0]).toBe(0);
+      expect(r[r.length - 1][1]).toBe(n);
+      for (let i = 1; i < r.length; i++) expect(r[i][0]).toBe(r[i - 1][1]);
+    }
+  });
+
+  // ── Pure-logic mirror: the chunk-first threshold decision ──
+  const chunkFirst = (kb, pages, BYTES = 9000, PROBE = 1500, PAGES = 20) => {
+    if (kb > BYTES) return true;                            // near the inline API limit → certain whole-doc failure
+    if (kb > PROBE) return pages != null && pages > PAGES;  // ambiguous band → consult page count
+    return false;                                           // small doc → always whole-doc (no fidelity loss)
+  };
+  it('chunks clearly-large docs by bytes alone (no page probe needed)', () => {
+    expect(chunkFirst(12000, null)).toBe(true);
+  });
+  it('never chunks small docs, even with many pages (preserves whole-doc fidelity)', () => {
+    expect(chunkFirst(800, 999)).toBe(false);
+  });
+  it('chunks mid-band docs only when the page count is high', () => {
+    expect(chunkFirst(3000, 25)).toBe(true);
+    expect(chunkFirst(3000, 10)).toBe(false);
+  });
+});

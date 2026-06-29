@@ -7856,6 +7856,104 @@ var createDocPipeline = function(deps) {
   };
 
   // ── PDF Accessibility Audit ──
+  // ── Page-slice PDF audit (large-document path) ────────────────────────────
+  // The whole-PDF Vision audit sends the ENTIRE document inline to the Vision
+  // model. Above a certain size the preview model returns a truncated/empty 200
+  // body (surfaced as the misleading "document may be too large" error) and
+  // every auditor fails. For large docs we split the PDF into small page-range
+  // sub-documents (pdf-lib), audit each slice independently, and merge the
+  // findings into ONE audit object. n=1 so the downstream triangulation honestly
+  // reports reliability as n/a — slices are different PAGES, not independent
+  // passes of the same content, so treating them as "auditors" would fabricate
+  // an agreement band. Returns a single audit object (same shape as parseAudit)
+  // or null (caller then keeps the original 'All audit attempts failed' throw).
+  const _AUDIT_SLICE_BYTES_KB = 9000;   // > ~9MB raw (~12MB base64): near Gemini's inline limit — whole-doc WILL fail → chunk-first
+  const _AUDIT_SLICE_PROBE_KB = 1500;   // below this, skip the page-count probe entirely (no pdf-lib cost on small docs)
+  const _AUDIT_SLICE_PAGES   = 20;      // page-count threshold: above this, chunk-first even if bytes are modest (output-truncation risk)
+  const _AUDIT_SLICE_PAGES_PER = 4;     // pages per slice — small enough to fit the model reliably
+  const _AUDIT_SLICE_MAX     = 40;      // cap total slices (throttle/cost guard); pages-per-slice grows past this
+  const _auditB64ToBytes = (b64) => {
+    const bin = atob(b64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return bytes;
+  };
+  const _pdfAuditPageCount = async (base64Data) => {
+    try {
+      const NS = (typeof window !== 'undefined' && window.PDFLib) || null;
+      if (!NS || !NS.PDFDocument) return null;
+      const doc = await NS.PDFDocument.load(_auditB64ToBytes(base64Data), { ignoreEncryption: true, updateMetadata: false });
+      return doc.getPageCount();
+    } catch (_) { return null; }
+  };
+  const _auditPdfInSlices = async (base64Data, auditPromptBase) => {
+    const NS = (typeof window !== 'undefined' && window.PDFLib) || null;
+    if (!NS || !NS.PDFDocument) return null;
+    let srcDoc;
+    try { srcDoc = await NS.PDFDocument.load(_auditB64ToBytes(base64Data), { ignoreEncryption: true, updateMetadata: false }); }
+    catch (e) { warnLog('[PDF Audit/slices] pdf-lib load failed: ' + (e && e.message)); return null; }
+    const totalPages = srcDoc.getPageCount();
+    if (!totalPages || totalPages < 1) return null;
+    // Grow pages-per-slice if the doc is huge so we never exceed _AUDIT_SLICE_MAX calls.
+    let per = _AUDIT_SLICE_PAGES_PER;
+    if (Math.ceil(totalPages / per) > _AUDIT_SLICE_MAX) per = Math.ceil(totalPages / _AUDIT_SLICE_MAX);
+    const ranges = [];
+    for (let sp = 0; sp < totalPages; sp += per) ranges.push([sp, Math.min(sp + per, totalPages)]); // [startIdx, endExclusive)
+    const _sliceB64 = async (startIdx, endEx) => {
+      const sub = await NS.PDFDocument.create();
+      const idxs = []; for (let i = startIdx; i < endEx; i++) idxs.push(i);
+      const copied = await sub.copyPages(srcDoc, idxs);
+      copied.forEach((p) => sub.addPage(p));
+      const outBytes = await sub.save();
+      let bin = ''; const CH = 0x8000;
+      for (let i = 0; i < outBytes.length; i += CH) bin += String.fromCharCode.apply(null, outBytes.subarray(i, i + CH));
+      return btoa(bin);
+    };
+    const _parseSlice = (raw) => {
+      if (!raw) return null;
+      try { return JSON.parse(String(raw).trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim()); }
+      catch (_) { return null; }
+    };
+    const sliceAudits = [];
+    const BATCH = 3; // keep the gate queue short; callGeminiVision is already wrapped by _GEMINI_MAX_CONCURRENT
+    for (let b = 0; b < ranges.length; b += BATCH) {
+      const group = ranges.slice(b, b + BATCH);
+      const results = await Promise.all(group.map(async ([s, e]) => {
+        let sb;
+        try { sb = await _sliceB64(s, e); }
+        catch (se) { warnLog('[PDF Audit/slices] slice ' + (s + 1) + '-' + e + ' build failed: ' + (se && se.message)); return null; }
+        const slicePrompt = auditPromptBase
+          + `\n\nIMPORTANT — SLICE CONTEXT: This file contains ONLY pages ${s + 1}–${e} of a larger ${totalPages}-page document. Audit just these pages. Begin every issue's text with "Pages ${s + 1}–${e}: " so page-specific findings stay distinct — EXCEPT document-wide issues (missing document language, missing document title, missing document metadata) which you must word generically with NO page prefix. Report pageCount as ${totalPages}.`;
+        const resp = await callGeminiVision(slicePrompt, sb, 'application/pdf').catch(() => null);
+        return _parseSlice(resp);
+      }));
+      results.forEach((r) => { if (r) sliceAudits.push(r); });
+      if (b + BATCH < ranges.length) await new Promise((r) => setTimeout(r, 400));
+    }
+    if (sliceAudits.length === 0) { warnLog('[PDF Audit/slices] no slice returned a parseable audit'); return null; }
+    const _cat = (k) => sliceAudits.flatMap((a) => Array.isArray(a[k]) ? a[k] : (k === 'serious' && Array.isArray(a.major) ? a.major : []));
+    const _firstStr = (k) => { for (const a of sliceAudits) { if (a && typeof a[k] === 'string' && a[k]) return a[k]; } return null; };
+    warnLog('[PDF Audit/slices] merged ' + sliceAudits.length + '/' + ranges.length + ' slices for a ' + totalPages + '-page document');
+    return {
+      score: 0, // recomputed downstream from the consolidated (deduped) issue list
+      confidence: 'medium',
+      summary: `Audited in ${ranges.length} page-slices (this ${totalPages}-page document was too large for a single whole-document pass). Findings are merged across slices; cross-page checks (reading order, heading continuity) are approximate.`,
+      critical: _cat('critical'),
+      serious: _cat('serious'),
+      moderate: _cat('moderate'),
+      minor: _cat('minor'),
+      passes: Array.from(new Set(sliceAudits.flatMap((a) => Array.isArray(a.passes) ? a.passes : []))).slice(0, 12),
+      pageCount: totalPages,
+      hasSearchableText: sliceAudits.some((a) => a.hasSearchableText === true) ? true : (sliceAudits.some((a) => a.hasSearchableText === false) ? false : undefined),
+      hasImages: sliceAudits.some((a) => a.hasImages),
+      hasTables: sliceAudits.some((a) => a.hasTables),
+      hasForms: sliceAudits.some((a) => a.hasForms),
+      documentLanguage: _firstStr('documentLanguage') || undefined,
+      _slicedAudit: true,
+      _sliceCount: ranges.length,
+    };
+  };
+
   const runPdfAccessibilityAudit = async (base64Data, options) => {
     // options: { skipUiUpdates?: boolean, skipCache?: boolean, fileName?: string }
     //   skipUiUpdates — when true, skips setPdfAuditResult/setPdfAuditLoading/addToast
@@ -8156,8 +8254,33 @@ Return ONLY valid JSON:
       ];
       const numAuditors = Math.min(pdfAuditorCount, allVariants.length);
       const auditVariants = allVariants.slice(0, numAuditors);
+      // ── Size-aware routing: chunk-first for large docs, whole-document otherwise ──
+      // A document big enough to break the whole-PDF Vision pass is audited in page
+      // slices FROM THE START (skipping the doomed whole-doc fan-out). Smaller docs
+      // take the whole-doc path, with slicing kept as a reactive fallback if every
+      // auditor fails anyway. _auditPdfInSlices merges to ONE audit (n=1) so the
+      // reliability band below honestly reports n/a rather than fabricating
+      // cross-auditor agreement from what are really different pages.
+      let parsedAudits = [];
+      let _auditedViaSlices = false;
+      const _sliceCapable = !!(typeof window !== 'undefined' && window.PDFLib && window.PDFLib.PDFDocument);
+      let _chunkFirst = false;
+      if (_sliceCapable) {
+        if (dataSizeKB > _AUDIT_SLICE_BYTES_KB) _chunkFirst = true;
+        else if (dataSizeKB > _AUDIT_SLICE_PROBE_KB) {
+          const _pc = await _pdfAuditPageCount(base64Data);
+          if (_pc && _pc > _AUDIT_SLICE_PAGES) _chunkFirst = true;
+        }
+      }
+      if (_chunkFirst) {
+        warnLog(`[PDF Audit] Large document (~${dataSizeKB}KB) — auditing in page slices from the start (a whole-document pass would exceed the Vision model).`);
+        if (!_skipUi) addToast && addToast('📄 Large PDF — auditing in page slices…', 'info');
+        const _slicedFirst = await _auditPdfInSlices(base64Data, auditPrompt).catch((e) => { warnLog('[PDF Audit] Sliced audit failed: ' + (e && e.message)); return null; });
+        if (_slicedFirst) { parsedAudits = [_slicedFirst]; _auditedViaSlices = true; }
+      }
+      if (!_auditedViaSlices) {
       const auditResults = await Promise.all(auditVariants.map((p, i) => callGeminiVision(p, base64Data, 'application/pdf').catch(e => { console.warn(`[PDF Audit] Auditor ${i + 1} failed:`, e?.message); return null; })));
-      const parsedAudits = auditResults.filter(Boolean).map((r, i) => { try { return parseAudit(r); } catch(pe) { console.warn(`[PDF Audit] Parse auditor ${i + 1} failed:`, pe?.message, 'Raw:', r?.substring?.(0, 200)); return null; } }).filter(Boolean);
+      parsedAudits = auditResults.filter(Boolean).map((r, i) => { try { return parseAudit(r); } catch(pe) { console.warn(`[PDF Audit] Parse auditor ${i + 1} failed:`, pe?.message, 'Raw:', r?.substring?.(0, 200)); return null; } }).filter(Boolean);
 
       // ── Retry backfill: keep retrying until we hit the target count or exhaust attempts ──
       const MAX_RETRY_ROUNDS = 3;
@@ -8187,6 +8310,17 @@ Return ONLY valid JSON:
       }
       if (parsedAudits.length < numAuditors && parsedAudits.length > 0) {
         addToast(`⚠️ ${parsedAudits.length}/${numAuditors} audit passes completed after ${MAX_RETRY_ROUNDS} retry rounds`, 'info');
+      }
+      } // ── end whole-document audit path ──
+
+      // ── Reactive fallback: whole-document audit produced nothing → try slices ──
+      // Catches a doc UNDER the chunk-first threshold that still fails wholesale
+      // (transient truncation / mid-size truncation). No-op if we already sliced.
+      if (parsedAudits.length === 0 && !_auditedViaSlices && _sliceCapable) {
+        warnLog('[PDF Audit] Whole-document audit returned nothing — falling back to a page-slice audit.');
+        if (!_skipUi) addToast && addToast('📄 Switching to a page-slice audit…', 'info');
+        const _slicedFallback = await _auditPdfInSlices(base64Data, auditPrompt).catch(() => null);
+        if (_slicedFallback) { parsedAudits = [_slicedFallback]; _auditedViaSlices = true; }
       }
 
       if (parsedAudits.length === 0) throw new Error('All audit attempts failed');
@@ -8427,13 +8561,18 @@ Return ONLY valid JSON:
           altTextMissing: _structTree.altTextMissing,
           pageCount: _structTree.pageCount,
         } : { hasTags: false },
+        _slicedAudit: _auditedViaSlices,
+        _sliceCount: (_auditedViaSlices && parsedAudits[0]) ? parsedAudits[0]._sliceCount : undefined,
         timestamp: new Date().toISOString(),
       };
       if (!_skipUi) setPdfAuditResult(triangulated);
       // Write to content-hash cache (Tier 5). Only triangulated result — no
       // intermediate model state — so the cache hit replays the same final
       // findings without any model behavior change.
-      if (_cacheKey) { try { _writeAuditCache(_cacheKey, triangulated); } catch (_) {} }
+      // Sliced-fallback audits are NOT cached: they are lower-fidelity than a whole-
+      // document pass, so a later un-throttled run should be free to earn the better
+      // whole-document score instead of being permanently masked by a cached slice result.
+      if (_cacheKey && !_auditedViaSlices) { try { _writeAuditCache(_cacheKey, triangulated); } catch (_) {} }
 
       // ── Quick axe-core baseline: extract text deterministically, build minimal HTML, run axe-core ──
       // Uses the shared extractPdfTextDeterministic helper (reading-order sorted, no truncation).
