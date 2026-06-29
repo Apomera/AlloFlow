@@ -10222,23 +10222,34 @@ HTML section ${chunkNum}/${chunks.length}:
         const results = await Promise.all(batch.map((chunk, idx) => _auditOneChunk(chunk, b + idx + 1)));
         results.forEach((res, idx) => { if (res) chunkResults.push(res); else _failedIdx.push(b + idx); });
       }
-      // Throttle self-heal (2026-06-28): a chunk that returned null is almost always a TRANSIENT Canvas throttle
-      // (empty body / rate-limit), not a permanent failure — and the old code silently DROPPED it, capping
-      // coverage at "N of M sections audited" and shipping an artificially-high partial score. Instead, RETURN TO
-      // THE FAILED SECTIONS: re-audit ONLY those indices once, after a brief settle so the GeminiGate storm
-      // cooldown can elapse (callGemini itself also waits out the cooldown, so this never hammers). Recovered
-      // sections fold straight into the merge + the coverage math below, so a transient throttle no longer
-      // silently caps the score. Skip when NOTHING returned (a total outage — retrying won't help); single pass.
-      if (_failedIdx.length > 0 && chunkResults.length > 0) {
-        await new Promise((res) => setTimeout(res, Math.min(8000, 1200 * _failedIdx.length)));
-        let _recovered = 0;
-        for (let b = 0; b < _failedIdx.length; b += batchSize) {
-          const slice = _failedIdx.slice(b, b + batchSize);
+      // Throttle self-heal (2026-06-28, hardened for SUSTAINED throttling): a chunk that returned null is almost
+      // always a TRANSIENT Canvas throttle (empty body / rate-limit), not a permanent failure — and the old code
+      // silently DROPPED it, capping coverage at "N of M sections audited" and shipping an artificially-high
+      // partial score. RETURN TO THE FAILED SECTIONS and re-audit them. A SINGLE retry pass is not enough when the
+      // rate-limit persists — the storm outlasts one pass — so loop a few ROUNDS, re-trying only the still-failed
+      // sections each time. callGemini waits out the GeminiGate cooldown per call, and that cooldown DECAYS over
+      // time (each elapsed cooldown restores a concurrency step), so successive rounds get more headroom and
+      // recover sections a one-shot retry left behind. Early-out only when a whole round recovers NOTHING while we
+      // are NOT in a cooldown (a genuine content/parse failure, not a rate-limit — more rounds can't help). Bounded
+      // to 3 rounds so a true outage can't spin. Skip entirely when NOTHING returned (a total stall won't recover).
+      let _stillFailed = _failedIdx.slice();
+      const _SELFHEAL_MAX_ROUNDS = 3;
+      for (let _round = 0; _round < _SELFHEAL_MAX_ROUNDS && _stillFailed.length > 0 && chunkResults.length > 0; _round++) {
+        await new Promise((res) => setTimeout(res, _round === 0 ? Math.min(8000, 1200 * _stillFailed.length) : 2500));
+        const _beforeLen = _stillFailed.length;
+        const _next = [];
+        for (let b = 0; b < _stillFailed.length; b += batchSize) {
+          const slice = _stillFailed.slice(b, b + batchSize);
           const rr = await Promise.all(slice.map((ci) => _auditOneChunk(chunks[ci], ci + 1)));
-          rr.forEach((res) => { if (res) { chunkResults.push(res); _recovered++; } });
+          rr.forEach((res, k) => { if (res) chunkResults.push(res); else _next.push(slice[k]); });
         }
-        if (_recovered > 0) warnLog(`[Output Audit] Throttle self-heal: recovered ${_recovered}/${_failedIdx.length} previously-failed section(s) on retry`);
+        _stillFailed = _next;
+        // genuine-failure early-out: a full round recovered nothing AND no rate-limit cooldown is active →
+        // it's not a throttle, so further rounds won't help. (A still-active cooldown ⇒ keep trying.)
+        if (_stillFailed.length === _beforeLen && !(typeof _geminiCooldownUntil === 'number' && _geminiCooldownUntil > Date.now())) break;
       }
+      const _recovered = _failedIdx.length - _stillFailed.length;
+      if (_recovered > 0) warnLog(`[Output Audit] Throttle self-heal: recovered ${_recovered}/${_failedIdx.length} previously-failed section(s) across retry rounds`);
       if (chunkResults.length === 0) return null;
       // Merge: deduplicate issues across chunks using WCAG code + violation category
       // This prevents length-penalty: "missing alt on page 5" and "missing alt on page 20" count as ONE issue type.
