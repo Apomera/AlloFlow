@@ -25,6 +25,10 @@ function LearningHubModal(props) {
     setShowStoryForge,
     setStemLabTab,
     showLearningHub,
+    // Family Bridge launcher (2026-06-28): opens live two-way translation. Optional
+    // default so a host that hasn't wired the setter still renders the hub.
+    // BridgeSendModal is teacher-gated, so the card is only shown in teacher mode
+    // (default false) to avoid a dead button for student/family entry points.
     setBridgeSendOpen = (() => {
     }),
     isTeacherMode = false,
@@ -39,7 +43,7 @@ function LearningHubModal(props) {
     setShowLearningHub(false);
     setShowStemLab(true);
     setStemLabTab("explore");
-  }, className: "flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-blue-50 to-indigo-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl" }, "\u{1F52C}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-indigo-800" }, t("learning_hub.stem_title") || "STEM Lab"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-indigo-600 mt-1" }, t("learning_hub.stem_desc") || "40+ interactive math & science explorations"))), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+  }, className: "flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-blue-50 to-indigo-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl" }, "\u{1F52C}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-indigo-800" }, t("learning_hub.stem_title") || "STEM Lab"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-indigo-600 mt-1" }, t("learning_hub.stem_desc") || "100+ interactive math & science explorations"))), /* @__PURE__ */ React.createElement("button", { onClick: () => {
     setShowLearningHub(false);
     setShowStoryForge(true);
   }, className: "flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-rose-50 to-pink-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl" }, "\u{1F4D6}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-rose-800" }, t("learning_hub.storyforge_title") || "StoryForge"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-rose-600 mt-1" }, t("learning_hub.storyforge_desc") || "Create illustrated stories with AI writing tools"))), /* @__PURE__ */ React.createElement("button", { onClick: () => {

@@ -309,7 +309,7 @@
           "div",
           {
             role: "region",
-            "aria-label": `Anchor: letter ${primaryGrapheme} says ${anchor.ipa}, like ${anchor.keyWord}`,
+            "aria-label": (ts("word_sounds.anchor_compact_letter") || "Anchor: letter ") + primaryGrapheme + (ts("word_sounds.anchor_compact_says") || " says ") + anchor.ipa + (ts("word_sounds.anchor_compact_like") || ", like ") + anchor.keyWord,
             className: "mx-auto mb-3 flex items-center gap-3 px-4 py-2 rounded-full bg-amber-50 border-2 border-amber-300 shadow-sm max-w-md",
           },
           React.createElement(
@@ -320,13 +320,13 @@
             primaryGrapheme,
           ),
           React.createElement("span", { className: "text-amber-800 font-mono text-sm", "aria-hidden": "true" }, "/" + anchor.ipa + "/"),
-          React.createElement("span", { className: "text-slate-700 text-sm font-semibold" }, "like " + anchor.keyWord),
+          React.createElement("span", { className: "text-slate-700 text-sm font-semibold" }, (ts("word_sounds.anchor_like") || "like ") + anchor.keyWord),
           React.createElement(
             "button",
             {
               type: "button",
               onClick: handlePlay,
-              "aria-label": "Hear the sound " + anchor.ipa,
+              "aria-label": (ts("word_sounds.anchor_hear_sound") || "Hear the sound ") + anchor.ipa,
               className: "ml-auto p-1.5 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400",
             },
             "🔊",
@@ -336,7 +336,7 @@
             {
               type: "button",
               onClick: handleModeToggle,
-              "aria-label": "Expand anchor",
+              "aria-label": ts("word_sounds.anchor_expand") || "Expand anchor",
               className: "p-1.5 rounded-full hover:bg-amber-100 text-amber-600 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400",
             },
             "⇲",
@@ -346,7 +346,7 @@
             {
               type: "button",
               onClick: handleHide,
-              "aria-label": "Hide anchor",
+              "aria-label": ts("word_sounds.anchor_hide") || "Hide anchor",
               className: "p-1.5 rounded-full hover:bg-slate-100 text-slate-700 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400",
             },
             "×",
@@ -372,7 +372,7 @@
         "div",
         {
           role: "region",
-          "aria-label": `Anchor card for the sound ${anchor.ipa}, spelled ${primaryGrapheme}, like the word ${anchor.keyWord}` + (errorFlash ? ". Reviewing this letter sound." : ""),
+          "aria-label": (ts("word_sounds.anchor_card_for_sound") || "Anchor card for the sound ") + anchor.ipa + (ts("word_sounds.anchor_card_spelled") || ", spelled ") + primaryGrapheme + (ts("word_sounds.anchor_card_like_word") || ", like the word ") + anchor.keyWord + (errorFlash ? (ts("word_sounds.anchor_reviewing") || ". Reviewing this letter sound.") : ""),
           "aria-live": errorFlash ? "polite" : undefined,
           className: "mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all" + flashClasses,
         },
@@ -383,7 +383,7 @@
           React.createElement(
             "span",
             { className: "text-[11px] font-bold text-amber-800 uppercase tracking-wider" },
-            "Anchor",
+            ts("word_sounds.anchor_badge") || "Anchor",
           ),
           React.createElement(
             "div",
@@ -393,20 +393,20 @@
               {
                 type: "button",
                 onClick: handleModeToggle,
-                "aria-label": "Switch to compact anchor view",
+                "aria-label": ts("word_sounds.anchor_switch_compact") || "Switch to compact anchor view",
                 className: "px-2 py-0.5 rounded text-[10px] font-bold text-amber-700 hover:bg-amber-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400",
               },
-              "Compact",
+              ts("word_sounds.anchor_compact_btn") || "Compact",
             ),
             React.createElement(
               "button",
               {
                 type: "button",
                 onClick: handleHide,
-                "aria-label": "Hide anchor",
+                "aria-label": ts("word_sounds.anchor_hide") || "Hide anchor",
                 className: "px-2 py-0.5 rounded text-[10px] font-bold text-slate-700 hover:bg-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400",
               },
-              "Hide",
+              ts("word_sounds.anchor_hide_btn") || "Hide",
             ),
           ),
         ),
@@ -432,14 +432,14 @@
             React.createElement(
               "div",
               { className: "flex items-center gap-2 flex-wrap" },
-              React.createElement("span", { className: "text-[11px] font-bold text-slate-700 uppercase" }, "Key word:"),
+              React.createElement("span", { className: "text-[11px] font-bold text-slate-700 uppercase" }, ts("word_sounds.anchor_key_word") || "Key word:"),
               React.createElement("span", { className: "text-base font-bold text-slate-800" }, anchor.keyWord),
               React.createElement(
                 "button",
                 {
                   type: "button",
                   onClick: handlePlay,
-                  "aria-label": "Hear the sound " + anchor.ipa + " in the word " + anchor.keyWord,
+                  "aria-label": (ts("word_sounds.anchor_hear_sound") || "Hear the sound ") + anchor.ipa + (ts("word_sounds.anchor_in_the_word") || " in the word ") + anchor.keyWord,
                   className: "ml-1 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-200 hover:bg-amber-300 text-amber-800 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500",
                 },
                 "🔊 ",
@@ -454,7 +454,7 @@
                 "strong",
                 {
                   className: "px-1 py-0.5 rounded bg-amber-200 text-amber-900 font-black",
-                  "aria-label": "highlighted: " + sampleHi,
+                  "aria-label": (ts("word_sounds.anchor_highlighted") || "highlighted: ") + sampleHi,
                 },
                 sampleHi,
               ),
@@ -472,7 +472,7 @@
               ? React.createElement(
                   "div",
                   { className: "flex flex-wrap items-center gap-1 mt-1" },
-                  React.createElement("span", { className: "text-[10px] font-bold text-slate-700 uppercase mr-1" }, "Other spellings:"),
+                  React.createElement("span", { className: "text-[10px] font-bold text-slate-700 uppercase mr-1" }, ts("word_sounds.anchor_other_spellings") || "Other spellings:"),
                   ...anchor.graphemes.slice(1).map((g, i) =>
                     React.createElement(
                       "span",
@@ -488,7 +488,7 @@
           ? React.createElement(
               "div",
               { className: "px-4 py-2 bg-amber-100/60 border-t border-amber-200 text-[11px] text-slate-700" },
-              React.createElement("span", { className: "font-bold mr-1" }, "Teacher note:"),
+              React.createElement("span", { className: "font-bold mr-1" }, ts("word_sounds.anchor_teacher_note") || "Teacher note:"),
               anchor.note,
             )
           : null,
@@ -3361,7 +3361,7 @@
               /*#__PURE__*/ React.createElement(
                 "button",
                 {
-                  "aria-label": "Listen to instruction",
+                  "aria-label": ts("word_sounds.sr_listen_instruction") || "Listen to instruction",
                   onClick: () => onPlayAudio(data.instruction, true),
                   className:
                     "mt-3 inline-flex items-center gap-2 px-4 py-2 bg-violet-100 hover:bg-violet-200 text-violet-700 rounded-full text-sm font-medium transition-colors",
@@ -3653,7 +3653,7 @@
                                     },
                                     className:
                                       "text-sky-700 hover:text-sky-600 text-sm ml-1",
-                                    "aria-label": `Hear ${opt}`,
+                                    "aria-label": (ts("word_sounds.sr_hear") || "Hear ") + opt,
                                   },
                                   "\ud83d\udd0a",
                                 ),
@@ -3744,7 +3744,7 @@
                 onClick: onTap,
                 className:
                   "w-32 h-32 rounded-full bg-amber-700 hover:bg-amber-700 active:scale-90 text-white text-5xl shadow-lg transition-all select-none",
-                "aria-label": "Tap to count syllables",
+                "aria-label": ts("word_sounds.sr_tap_count_syllables") || "Tap to count syllables",
               },
               "\ud83d\udc4f",
             ),
@@ -4540,7 +4540,7 @@
                         },
                         className:
                           "p-2 rounded-full text-violet-700 hover:text-violet-600 hover:bg-violet-50 transition-colors",
-                        "aria-label": `Hear ${soundOnlyMode ? "option" : item.text}`,
+                        "aria-label": (ts("word_sounds.sr_hear") || "Hear ") + (soundOnlyMode ? (ts("word_sounds.sr_option") || "option") : item.text),
                         title: t("common.hear_this_word"),
                       },
                       /*#__PURE__*/ React.createElement(Volume2, { size: 18 }),
@@ -11515,7 +11515,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               height: 320,
               tabIndex: 0,
               role: "img",
-              "aria-label": "Letter tracing canvas. Use mouse or touch to trace the letter shape. Use the surrounding controls to skip, get a hint, or hear the letter sound.",
+              "aria-label": ts("word_sounds.sr_tracing_canvas") || "Letter tracing canvas. Use mouse or touch to trace the letter shape. Use the surrounding controls to skip, get a hint, or hear the letter sound.",
               onMouseDown: startDraw,
               onMouseMove: draw,
               onMouseUp: endDraw,
@@ -12112,7 +12112,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                             onClick: () => handleAudio(chip.phoneme),
                             className:
                               "w-full h-full flex items-center justify-center cursor-grab active:cursor-grabbing hover:scale-105 transition-transform",
-                            "aria-label": `Phoneme ${chip.phoneme}. Press Space to hear, Enter to remove.`,
+                            "aria-label": (ts("word_sounds.sr_phoneme") || "Phoneme ") + chip.phoneme + (ts("word_sounds.sr_phoneme_keys") || ". Press Space to hear, Enter to remove."),
                           },
                           showLetterHints
                             ? chip.phoneme
@@ -13596,7 +13596,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     onClick: () => checkAnswer(num, expectedCount),
                     className:
                       "w-16 h-16 rounded-2xl bg-white border-b-4 border-violet-200 text-violet-700 font-black text-2xl flex items-center justify-center shadow-sm hover:shadow-md hover:scale-110 hover:bg-violet-50 hover:border-violet-400 transition-all cursor-grab active:cursor-grabbing",
-                    "aria-label": `Number ${num}`,
+                    "aria-label": (ts("word_sounds.sr_number") || "Number ") + num,
                   },
                   num,
                 ),
@@ -14319,7 +14319,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             "fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in",
           role: "dialog",
           "aria-modal": "true",
-          "aria-label": "Welcome to Word Sounds!",
+          "aria-label": ts("word_sounds.sr_welcome") || "Welcome to Word Sounds!",
         },
         /*#__PURE__*/ React.createElement(
           "div",
@@ -14957,7 +14957,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 React.createElement("button", {
                   onClick: function () { setShowGardenBanner(false); },
                   className: "text-emerald-700 hover:text-emerald-600 text-lg",
-                  "aria-label": "Dismiss"
+                  "aria-label": ts("word_sounds.sr_dismiss") || "Dismiss"
                 }, "\u00D7"))),
           !isStudentLocked &&
           !isProbeMode &&

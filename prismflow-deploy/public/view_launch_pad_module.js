@@ -52,7 +52,8 @@
   var langMenuOpen = _langMenu[0];
   var setLangMenuOpen = _langMenu[1];
   // Dynamically loaded from the language pack manifest so the list stays in
-  // sync with what's actually deployed. Falls back to a curated default.
+  // sync with what's actually deployed. Falls back to a curated default if the
+  // manifest is unreachable. Mirrors the pattern in ui_language_selector_module.js.
   var _deployedLangs = useState(['English', 'Spanish (Latin America)', 'French', 'Arabic', 'Chinese (Simplified)', 'Hebrew', 'Portuguese (Brazil)', 'Somali', 'Vietnamese', 'Haitian Creole']);
   var LAUNCH_PAD_LANGS = _deployedLangs[0];
   var setLaunchPadLangs = _deployedLangs[1];
@@ -62,19 +63,30 @@
     (async function () {
       for (var i = 0; i < urls.length; i++) {
         try {
-          var r = await fetch(urls[i], { cache: 'no-cache' });
+          var r = await fetch(urls[i], {
+            cache: 'no-cache'
+          });
           if (!r.ok) continue;
           var m = await r.json();
           if (m && Array.isArray(m.available)) {
-            var displays = m.available.map(function (e) { return e && e.display; }).filter(Boolean).sort(function (a, b) { return a.localeCompare(b); });
-            var ordered = ['English'].concat(displays.filter(function (d) { return d !== 'English'; }));
+            var displays = m.available.map(function (e) {
+              return e && e.display;
+            }).filter(Boolean).sort(function (a, b) {
+              return a.localeCompare(b);
+            });
+            // English first, then alphabetical
+            var ordered = ['English'].concat(displays.filter(function (d) {
+              return d !== 'English';
+            }));
             if (!cancelled) setLaunchPadLangs(ordered);
             return;
           }
-        } catch (_) {}
+        } catch (_) {/* try next URL */}
       }
     })();
-    return function () { cancelled = true; };
+    return function () {
+      cancelled = true;
+    };
   }, []);
   return /*#__PURE__*/React.createElement("div", {
     role: "region",
@@ -467,7 +479,7 @@
     },
     role: "button",
     tabIndex: 0,
-    "aria-label": (t('launch_pad.learning_tools_title') || 'Learning Tools') + '. ' + (t('launch_pad.learning_tools_desc') || 'STEM Lab, StoryForge & SEL Hub'),
+    "aria-label": (t('launch_pad.learning_tools_title') || 'Learning Tools') + '. ' + (t('launch_pad.learning_tools_desc') || 'STEM Lab, StoryForge, SEL Hub, Research Hub & more'),
     onClick: () => {
       setShowLearningHub(true);
       setIsTeacherMode(false);
@@ -492,7 +504,7 @@
     style: {
       background: 'linear-gradient(135deg, #34d399, #059669)'
     }
-  }, t('launch_pad.badge_3_tools') || '3 Tools')), /*#__PURE__*/React.createElement("div", {
+  }, t('launch_pad.badge_3_tools') || '8 Tools')), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: '40px',
       marginBottom: '16px',
@@ -514,7 +526,7 @@
       lineHeight: '1.6',
       margin: 0
     }
-  }, t('launch_pad.learning_tools_desc') || 'STEM Lab, StoryForge & SEL Hub \u2014 explore, create, and grow')), /*#__PURE__*/React.createElement("div", {
+  }, t('launch_pad.learning_tools_desc') || 'STEM Lab, StoryForge, SEL Hub, Research Hub & more \u2014 explore, create, investigate, and grow')), /*#__PURE__*/React.createElement("div", {
     className: "lp-card",
     style: {
       animationDelay: '0.4s'
