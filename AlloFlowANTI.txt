@@ -6848,6 +6848,19 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   useFocusTrap(sessionModalRef, showSessionModal && !!activeSessionCode, () => setShowSessionModal(false));
   const aiBackendModalRef = useRef(null);
   useFocusTrap(aiBackendModalRef, showAIBackendModal, () => setShowAIBackendModal(false));
+  // Focus traps for 5 more student-facing modals (a11y D1, 2026-06-28): same proven pattern as above —
+  // traps Tab inside the modal while open + restores focus to the trigger on close (WCAG 2.4.3). Inline-arrow
+  // close handlers use the setters (declared above); the handleSet* wrappers are defined later so can't be used here.
+  const visualSupportsModalRef = useRef(null);
+  useFocusTrap(visualSupportsModalRef, showVisualSupports, () => setShowVisualSupports(false));
+  const saveModalRef = useRef(null);
+  useFocusTrap(saveModalRef, showSaveModal, () => setShowSaveModal(false));
+  const translateModalRef = useRef(null);
+  useFocusTrap(translateModalRef, isTranslateModalOpen, () => setIsTranslateModalOpen(false));
+  const cloudWarningModalRef = useRef(null);
+  useFocusTrap(cloudWarningModalRef, showCloudWarning, () => setShowCloudWarning(false));
+  const adventureConfirmModalRef = useRef(null);
+  useFocusTrap(adventureConfirmModalRef, showAdventureConfirmation, () => setShowAdventureConfirmation(false));
 
   // ── SR announcement helper (SR-review batch 2026-06-07) ──
   // Single source for all aria-live announcements via two persistent regions
@@ -16293,7 +16306,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
             : (t('toasts.project_saved') || '💾 Project saved — load it later to continue editing'));
       addToast(msg, 'success');
       return true;
-    } catch (e) { return false; }
+    } catch (e) {
+      // B1 (2026-06-28): a Blob-creation / download failure (OOM, storage quota) used to return false SILENTLY —
+      // no toast, no log — so a teacher believed their work was saved and lost it on close. Tell them instead.
+      try { addToast((t('toasts.save_failed') || 'Could not save the project backup — your device may be low on memory or storage. Your work is NOT saved; close other tabs or save a smaller page range and try again.'), 'error'); } catch (_) {}
+      return false;
+    }
   }, [pendingPdfFile, pdfMultiSession, addToast, pdfAuditorCount, pdfPolishPasses, pdfAutoFixPasses, pdfTargetScore]);
   const _rawFixAndVerifyPdf = _docPipeline ? _docPipeline.fixAndVerifyPdf : async () => {};
   // Reliability telemetry (2026-06-13): wrap the pipeline so a FAILED run is
@@ -27554,7 +27572,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           currentNickname={studentNickname || studentProjectSettings.nickname}
       />
       {showSaveModal && (
-        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={handleSetShowSaveModalToFalse}>
+        <div ref={saveModalRef} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={handleSetShowSaveModalToFalse}>
             <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-indigo-100 transition-all animate-in zoom-in-95 duration-200" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
                 <button
                     aria-label={t('common.close_save_dialog')}
@@ -27600,7 +27618,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         </div>
       )}
       {isTranslateModalOpen && (
-        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetIsTranslateModalOpenToFalse}>
+        <div ref={translateModalRef} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetIsTranslateModalOpenToFalse}>
             <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full relative border-4 border-indigo-100 transition-all animate-in zoom-in-95 duration-200" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
                 <button onClick={handleSetIsTranslateModalOpenToFalse} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 transition-colors" aria-label={t('common.close')}><X size={20}/></button>
                 <h3 className="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">
@@ -27640,7 +27658,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         </div>
       )}
       {showCloudWarning && (
-        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={handleSetShowCloudWarningToFalse}>
+        <div ref={cloudWarningModalRef} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={handleSetShowCloudWarningToFalse}>
             <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full border-4 border-amber-300 overflow-hidden transition-all animate-in zoom-in-95" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
                 <div className="p-6 text-center">
                     <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 text-amber-600 shadow-sm">
@@ -27868,7 +27886,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           })}</div>
         )}
       {showStudyTimerModal && <StudyTimerModal ConfettiExplosion={ConfettiExplosion} customTimerMinutes={customTimerMinutes} formatTime={formatTime} handleSetShowStudyTimerModalToFalse={handleSetShowStudyTimerModalToFalse} isStudyTimerRunning={isStudyTimerRunning} setCustomTimerMinutes={setCustomTimerMinutes} setIsStudyTimerRunning={setIsStudyTimerRunning} setStudyDuration={setStudyDuration} setStudyTaskLabel={setStudyTaskLabel} setStudyTimeLeft={setStudyTimeLeft} showStudyTimerModal={showStudyTimerModal} showTimerConfetti={showTimerConfetti} studyDuration={studyDuration} studyTaskLabel={studyTaskLabel} studyTimeLeft={studyTimeLeft} studyTimerRef={studyTimerRef} t={t} />}
-      {showVisualSupports && <VisualSupportsModal setShowVisualSupports={setShowVisualSupports} setVsTab={setVsTab} showVisualSupports={showVisualSupports} vsTab={vsTab} />}
+      {showVisualSupports && <div ref={visualSupportsModalRef}><VisualSupportsModal setShowVisualSupports={setShowVisualSupports} setVsTab={setVsTab} showVisualSupports={showVisualSupports} vsTab={vsTab} /></div>}
       {isTeacherMode && (<ErrorBoundary fallbackMessage="Student analytics encountered an error. Please close and reopen.">
           <StudentAnalyticsPanel
               isOpen={showClassAnalytics}
@@ -27943,7 +27961,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       </ErrorBoundary>
       )}
       {showAdventureConfirmation && (
-        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetShowAdventureConfirmationToFalse}>
+        <div ref={adventureConfirmModalRef} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetShowAdventureConfirmationToFalse}>
             <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full border-4 border-indigo-100 text-center" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
                 <div className="w-16 h-16 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-yellow-200">
                     <AlertCircle size={32} />
