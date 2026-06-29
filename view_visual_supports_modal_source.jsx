@@ -145,7 +145,7 @@ function VisualSupportsModal(props) {
                     <span aria-hidden="true">{pauseAnim ? '▶' : '⏸'}</span>
                     <span>{pauseAnim ? 'Resume' : 'Pause'} animations</span>
                   </button>
-                  <button onClick={() => setShowVisualSupports(false)} className="text-white/70 hover:text-white text-2xl font-bold w-8 h-8 flex items-center justify-center">×</button>
+                  <button onClick={() => setShowVisualSupports(false)} aria-label="Close Visual Supports" className="text-white/70 hover:text-white text-2xl font-bold w-8 h-8 flex items-center justify-center">×</button>
                 </div>
               </div>
               <div className="flex border-b border-slate-200 bg-slate-50 flex-shrink-0">
