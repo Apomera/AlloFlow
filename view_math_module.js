@@ -192,10 +192,26 @@
   }, problem.manipulativeSupport && /*#__PURE__*/React.createElement("button", {
     onClick: () => {
       setStemLabTool(problem.manipulativeSupport.tool);
+      // Scaffold seeding: support is a worked example (NOT the student's answer),
+      // so seed the FULL target state — unlike manipulativeResponse below, which
+      // seeds NEUTRAL so the student must configure it themselves.
       if (problem.manipulativeSupport.tool === 'coordinate' && problem.manipulativeSupport.state?.points) {
         setGridPoints(problem.manipulativeSupport.state.points);
       } else if (problem.manipulativeSupport.tool === 'base10' && problem.manipulativeSupport.state) {
         setBase10Value(problem.manipulativeSupport.state);
+      } else if (problem.manipulativeSupport.tool === 'numberline' && problem.manipulativeSupport.state?.range) {
+        setNumberLineRange(problem.manipulativeSupport.state.range);
+      } else if (problem.manipulativeSupport.tool === 'fractions' && problem.manipulativeSupport.state) {
+        setFractionPieces({
+          numerator: problem.manipulativeSupport.state.numerator || 0,
+          denominator: problem.manipulativeSupport.state.denominator || 8
+        });
+      } else if (problem.manipulativeSupport.tool === 'volume' && problem.manipulativeSupport.state?.dims) {
+        setCubeDims({
+          l: problem.manipulativeSupport.state.dims.l || 1,
+          w: problem.manipulativeSupport.state.dims.w || 1,
+          h: problem.manipulativeSupport.state.dims.h || 1
+        });
       }
       setShowStemLab(true);
       setStemLabTab('explore');

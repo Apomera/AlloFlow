@@ -25724,7 +25724,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           setCubeNotch, setCubeRotation, setCubeScale, setCubeShape, setCubeShowLayers,
           setExploreDifficulty, setGeneratedContent, setHistory, setIsMathGraphEnabled, setMathInput,
           setMathMode, setMathQuantity, setMathSubject, setUseMathSourceContext, storageDB,
-          t, useMathSourceContext
+          t, useMathSourceContext, autoAttachManipulatives, setAutoAttachManipulatives
                 })}
             </div>
             <div style={{display: isGuidedToolVisible('adventure') ? undefined : 'none'}} id="tour-tool-adventure" data-help-key="tool_adventure" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden

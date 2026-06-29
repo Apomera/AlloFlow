@@ -72,7 +72,7 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
                 - "cell": for biology cell diagrams, organelle identification. State: {"type":"animal","selectedOrganelle":"nucleus"}
                 "manipulativeSupport" pre-loads the tool as a visual scaffold alongside the problem.
                 "manipulativeResponse" replaces the text input — the student must configure the manipulative correctly to answer.
-                ` : 'Optionally, you can enable STEM Lab manipulatives by returning objects in "manipulativeSupport" (to pre-load scaffolding) or "manipulativeResponse" (to grade the student\'s physical configuration instead of typed text). Supported tools are "coordinate", "base10", "numberline", "fractions", "volume", and "protractor".'}
+                ` : 'Optionally, you can enable STEM Lab manipulatives by returning objects in "manipulativeSupport" (to pre-load scaffolding) or "manipulativeResponse" (to grade the student\'s physical configuration instead of typed text). Supported tools are "base10", "coordinate", "numberline", "fractions", "volume", "protractor", "funcGrapher", "physics", "chemBalance", "punnett", "circuit", "dataPlot", "inequality", "molecule", "calculus", "wave", and "cell" — the same set the renderer grades.'}
                 You may include ANY type of math problem: computation, word problems, geometry/volume, missing number, algebraic equations, fractions, measurement, data/graphing, etc.
                 Follow the teacher's instructions precisely regarding:
                 - Number and types of problems

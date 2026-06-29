@@ -26,7 +26,7 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
       }
       mathContextPrompt += `Grade Level: ${gradeLevel}\n`;
       if (!problemToSolve.trim()) {
-          console.log('[MATH] Empty input — nothing to generate');
+          console.error('[MATH] Empty input — nothing to generate');
           addToast('Please enter a topic or problem first', 'error');
           return;
       }
@@ -75,7 +75,7 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
                 - "cell": for biology cell diagrams, organelle identification. State: {"type":"animal","selectedOrganelle":"nucleus"}
                 "manipulativeSupport" pre-loads the tool as a visual scaffold alongside the problem.
                 "manipulativeResponse" replaces the text input — the student must configure the manipulative correctly to answer.
-                ` : 'Optionally, you can enable STEM Lab manipulatives by returning objects in "manipulativeSupport" (to pre-load scaffolding) or "manipulativeResponse" (to grade the student\'s physical configuration instead of typed text). Supported tools are "coordinate", "base10", "numberline", "fractions", "volume", and "protractor".'}
+                ` : 'Optionally, you can enable STEM Lab manipulatives by returning objects in "manipulativeSupport" (to pre-load scaffolding) or "manipulativeResponse" (to grade the student\'s physical configuration instead of typed text). Supported tools are "base10", "coordinate", "numberline", "fractions", "volume", "protractor", "funcGrapher", "physics", "chemBalance", "punnett", "circuit", "dataPlot", "inequality", "molecule", "calculus", "wave", and "cell" — the same set the renderer grades.'}
                 You may include ANY type of math problem: computation, word problems, geometry/volume, missing number, algebraic equations, fractions, measurement, data/graphing, etc.
                 Follow the teacher's instructions precisely regarding:
                 - Number and types of problems
@@ -172,9 +172,9 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
                 }
               `;
           }
-          console.log('[MATH] Sending prompt to Gemini, mode:', effectiveMode, 'subject:', mathSubject);
+          console.error('[MATH] Sending prompt to Gemini, mode:', effectiveMode, 'subject:', mathSubject);
           const result = await callGemini(prompt, true);
-          console.log('[MATH] Raw Gemini result length:', result?.length, 'first 200 chars:', result?.substring(0, 200));
+          console.error('[MATH] Raw Gemini result length:', result?.length, 'first 200 chars:', result?.substring(0, 200));
           let rawContent;
           let cleaned;
           try {
@@ -244,7 +244,7 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
             warnLog(`Math verification: ${mismatchCount} answer(s) auto-corrected via expression evaluation`);
           }
           if (verifiedCount > 0) {
-            console.log('[MATH] ' +`Math verification: ${verifiedCount}/${normalizedContent.problems.length} answers computationally verified ✓`);
+            console.error('[MATH] ' +`Math verification: ${verifiedCount}/${normalizedContent.problems.length} answers computationally verified ✓`);
           }
           const newItem = {
               id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
@@ -277,7 +277,7 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
               addToast('📸 Auto-captured ' + newSnaps.length + ' manipulative snapshot(s)', 'info');
             }
           }
-          console.log('[MATH] Success! Problems generated:', normalizedContent.problems?.length);
+          console.error('[MATH] Success! Problems generated:', normalizedContent.problems?.length);
           addToast(t('math.success_toast'), "success");
           flyToElement('tour-tool-math');
       } catch (e) {

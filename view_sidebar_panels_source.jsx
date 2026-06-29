@@ -885,6 +885,7 @@ function MathPanel(props) {
     cubeRotation, cubeScale, cubeShape, cubeShowLayers,
     expandedTools, exploreDifficulty, getAdaptiveDifficulty, gradeLevel,
     handleGenerateMath, handleScoreUpdate, hasSourceOrAnalysis, isMathGraphEnabled,
+    autoAttachManipulatives, setAutoAttachManipulatives,
     isProcessing, mathInput, mathMode, mathQuantity,
     mathSubject, setActiveView, setCubeAnswer, setCubeChallenge,
     setCubeDims, setCubeFeedback, setCubeNotch, setCubeRotation,
@@ -1062,6 +1063,19 @@ function MathPanel(props) {
                             />
                             <label htmlFor="mathGraph" className="text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1">
                                 <ImageIcon size={12} className="text-blue-500"/> {t('math.graph_label')}
+                            </label>
+                        </div>
+                        {/* Manipulatives off-switch — default ON (the bridge was silently always-on with no control). English-hardcoded pending i18n. */}
+                        <div className="flex items-center gap-2" data-help-key="math_manipulatives">
+                            <input aria-label="Attach STEM Lab manipulatives to generated problems"
+                                id="mathManipulatives"
+                                type="checkbox"
+                                checked={autoAttachManipulatives !== false}
+                                onChange={(e) => setAutoAttachManipulatives && setAutoAttachManipulatives(e.target.checked)}
+                                className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+                            />
+                            <label htmlFor="mathManipulatives" className="text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1">
+                                🧩 Attach manipulatives
                             </label>
                         </div>
                         <div className="flex items-center gap-2" data-help-key="math_context">

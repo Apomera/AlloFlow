@@ -786,6 +786,8 @@ function MathPanel(props) {
     handleScoreUpdate,
     hasSourceOrAnalysis,
     isMathGraphEnabled,
+    autoAttachManipulatives,
+    setAutoAttachManipulatives,
     isProcessing,
     mathInput,
     mathMode,
@@ -944,7 +946,17 @@ function MathPanel(props) {
       onChange: (e) => setIsMathGraphEnabled(e.target.checked),
       className: "w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
     }
-  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "mathGraph", className: "text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 12, className: "text-blue-500" }), " ", t("math.graph_label"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2", "data-help-key": "math_context" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "mathGraph", className: "text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 12, className: "text-blue-500" }), " ", t("math.graph_label"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2", "data-help-key": "math_manipulatives" }, /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      "aria-label": "Attach STEM Lab manipulatives to generated problems",
+      id: "mathManipulatives",
+      type: "checkbox",
+      checked: autoAttachManipulatives !== false,
+      onChange: (e) => setAutoAttachManipulatives && setAutoAttachManipulatives(e.target.checked),
+      className: "w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+    }
+  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "mathManipulatives", className: "text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1" }, "\u{1F9E9} Attach manipulatives")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2", "data-help-key": "math_context" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.toggle_use_math_source_context"),
