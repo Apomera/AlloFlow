@@ -12,6 +12,33 @@ var Fragment = React.Fragment;
 var warnLog = (typeof window !== 'undefined' && window.warnLog) || console.warn.bind(console);
 var debugLog = (typeof window !== 'undefined' && (window.__alloDebugLog || window.debugLog)) || function(){};
 // Bridge UI uses inline styles + Unicode glyphs (no Lucide icon components).
+// ── Quick phrases: common educator→family phrases for instant one-tap translation.
+// Generic + FERPA-safe (no student-identifying content), warm, em-dash-free. Tapping
+// one runs it through the SAME translate + read-aloud path as a typed message. ──
+var BRIDGE_PHRASES = [
+  { id: 'welcome', icon: '👋', label: 'Welcome', phrases: ['Hello, thank you for coming.', 'It is good to meet you.', 'Please have a seat.', 'I am glad we can talk today.'] },
+  { id: 'reassure', icon: '💚', label: 'Reassure', phrases: ['Your child is doing well.', 'There is nothing to worry about.', 'We are a team, and we are here to help.', 'Your child is safe and cared for here.'] },
+  { id: 'update', icon: '📈', label: 'Share an update', phrases: ['I would like to share an update.', 'Your child is making good progress.', 'Here is something your child did well today.', 'Let us work on this together.'] },
+  { id: 'ask', icon: '❓', label: 'Ask', phrases: ['Do you have any questions?', 'Is there anything you would like to share?', 'What works best for your family?', 'How can we support you?'] },
+  { id: 'plan', icon: '🗓️', label: 'Plan together', phrases: ['Can we set up a time to meet?', 'What time works for you?', 'Please bring this form back when you can.', 'I will send this home with your child.'] },
+  { id: 'close', icon: '🙏', label: 'Close', phrases: ['Thank you for your time.', 'Please reach out anytime.', 'We appreciate you.', 'Goodbye, and take care.'] }
+];
+function _bridgePhrasesPanel(onPick, translating, t) {
+  return React.createElement('details', { open: true, style: { marginBottom: '12px' } },
+    React.createElement('summary', { style: { cursor: 'pointer', fontSize: '12px', fontWeight: 700, color: '#5eead4', padding: '6px 0' } },
+      '💬 ' + ((t && t('roster.bridge_phrases_title')) || 'Quick phrases'),
+      React.createElement('span', { style: { color: '#64748b', fontWeight: 500 } }, ' ' + ((t && t('roster.bridge_phrases_hint')) || '(tap to send and speak instantly)'))),
+    React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' } },
+      BRIDGE_PHRASES.map(function (cat, gi) {
+        return React.createElement('div', { key: gi },
+          React.createElement('div', { style: { fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' } }, cat.icon + ' ' + cat.label),
+          React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
+            cat.phrases.map(function (ph, pi) {
+              return React.createElement('button', { key: pi, disabled: translating, onClick: function () { onPick(ph); }, style: { background: 'rgba(20,184,166,0.08)', border: '1px solid rgba(20,184,166,0.2)', color: '#99f6e4', padding: '6px 10px', borderRadius: '10px', fontSize: '12px', cursor: translating ? 'default' : 'pointer', opacity: translating ? 0.5 : 1, textAlign: 'left' } }, ph);
+            })));
+      })));
+}
+try { window.__alloBridgePure = { BRIDGE_PHRASES: BRIDGE_PHRASES }; } catch (e) {}
 function BridgeSendModal(props) {
   const {
     activeSessionCode,
@@ -1115,7 +1142,7 @@ Concept: ${bridgeSendText}`;
             placeholder: t("roster.bridge_f2f_custom_placeholder") || "e.g. Yoruba, Tigrinya...",
             style: { width: "100%", boxSizing: "border-box", marginTop: "6px", background: typeof _bt !== "undefined" ? _bt.inputBg : "rgba(255,255,255,0.04)", border: typeof _bt !== "undefined" ? _bt.inputBorder : "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", padding: "8px 10px", color: typeof _bt !== "undefined" ? _bt.inputText : "#e2e8f0", fontSize: "12px", outline: "none" }
           }
-        ))), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: typeof _bt !== "undefined" ? _bt.textMuted : "#64748b", marginBottom: "12px", textAlign: "center", fontStyle: "italic" } }, "\u{1F512} ", t("roster.bridge_f2f_ferpa") || "FERPA-Safe \u2014 No student data leaves this device", " \u2022 ", t("roster.bridge_f2f_both_speak") || "Both sides speak or type in their own language"), /* @__PURE__ */ React.createElement("div", { id: "bridge-f2f-messages", style: {
+        ))), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: typeof _bt !== "undefined" ? _bt.textMuted : "#64748b", marginBottom: "12px", textAlign: "center", fontStyle: "italic" } }, "\u{1F512} ", t("roster.bridge_f2f_ferpa") || "FERPA-Safe \u2014 No student data leaves this device", " \u2022 ", t("roster.bridge_f2f_both_speak") || "Both sides speak or type in their own language"), _bridgePhrasesPanel((ph) => _sendMessage("personA", ph, _personALang, _personBLang), bridgeF2FTranslating, t), /* @__PURE__ */ React.createElement("div", { id: "bridge-f2f-messages", style: {
           background: "rgba(0,0,0,0.15)",
           border: "1px solid rgba(255,255,255,0.04)",
           borderRadius: "16px",
