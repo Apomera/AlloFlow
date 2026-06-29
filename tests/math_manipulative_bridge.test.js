@@ -55,9 +55,10 @@ describe('math<->manipulative bridge step 1b: toggle control + tool-list parity 
   });
 });
 
-describe('step 2: inline parametric diagram renderer (_renderDiagramSvg) — accessible SVG', () => {
-  // Extract the REAL pure function from source and run it (no external deps).
-  const m = vm.match(/function _renderDiagramSvg\(tool, state, titleText\) \{[\s\S]*?\n  return null;\n\}/);
+describe('step 2/3: inline parametric diagram renderer (_renderDiagramSvg, canonical in utils_pure) — accessible SVG', () => {
+  // Canonical impl now lives in utils_pure (shared with QuizView / future surfaces). Extract + run the REAL fn.
+  const up = readFileSync(resolve(process.cwd(), 'utils_pure_source.jsx'), 'utf8');
+  const m = up.match(/function _renderDiagramSvg\(tool, state, titleText\) \{[\s\S]*?\r?\n  return null;\r?\n\}/);
   const render = m ? new Function('return (' + m[0] + ')')() : null;
 
   it('the renderer exists in source', () => {
@@ -86,6 +87,11 @@ describe('step 2: inline parametric diagram renderer (_renderDiagramSvg) — acc
     expect(render('volume', { dims: { l: 2, w: 2, h: 2 } })).toBeNull();
     expect(render('numberline', null)).toBeNull();
     expect(render(null, {})).toBeNull();
+  });
+  it('utils_pure exports the canonical renderer; view_math DELEGATES to it (single source, no drift)', () => {
+    expect(up).toMatch(/window\.AlloModules\.UtilsPure = \{[\s\S]*?_renderDiagramSvg,/);
+    expect(vm).toMatch(/window\.AlloModules && window\.AlloModules\.UtilsPure/);
+    expect(vm).toMatch(/_U\._renderDiagramSvg\(tool, state, titleText\)/);
   });
   it('is wired inline in the math view + graphData has a text alternative', () => {
     expect(vm).toMatch(/_renderDiagramSvg\(problem\.manipulativeSupport\.tool, problem\.manipulativeSupport\.state/);
