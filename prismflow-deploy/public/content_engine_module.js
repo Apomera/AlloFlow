@@ -233,7 +233,12 @@ var createContentEngine = function(deps) {
     var decodeSuperscript = function(str) { return parseInt(str.split('').map(function(c){return reverseMap[c];}).join(''), 10); };
     var usedCitations = new Set();
     var repairedText = text.replace(/(\[)?⁽([⁰¹²³⁴⁵⁶⁷⁸⁹]+)⁾(\]\([^)]+\))?/g, function(match, bracket, digits, linkPart) {
-      var citNum = decodeSuperscript(digits); usedCitations.add(citNum);
+      var citNum = decodeSuperscript(digits);
+      // B7 (2026-06-28): an unmapped superscript → decodeSuperscript = NaN; without this guard
+      // groundingChunks[NaN - 1] = groundingChunks[-1] (the LAST source) silently repairs the citation
+      // to the WRONG source, and usedCitations.add(NaN) pollutes tracking. Fail safe: leave it untouched.
+      if (!Number.isInteger(citNum) || citNum < 1) return match;
+      usedCitations.add(citNum);
       if (bracket && linkPart) return match;
       var chunk = groundingChunks[citNum - 1];
       return (chunk && chunk.web && chunk.web.uri) ? '[⁽' + digits + '⁾](' + chunk.web.uri + ')' : '⁽' + digits + '⁾';
@@ -1245,7 +1250,10 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
           for (const line of dialogueData.dialogue) {
             const speakerName = line.speaker === 'learner' ? learnerName.toUpperCase() : guideName.toUpperCase();
             const action = line.action ? ` ${line.action}` : '';
-            formattedScript += `**${speakerName}:**${action} ${line.line}\n\n`;
+            // B8 (2026-06-28): guard line.line the same way as line.action — a dialogue object missing
+            // its `line` field otherwise interpolates the literal string "undefined" into the script.
+            const lineText = line.line ? ` ${line.line}` : '';
+            formattedScript += `**${speakerName}:**${action}${lineText}\n\n`;
           }
           text = formattedScript.trim();
         } else {
