@@ -18,8 +18,10 @@
  *   POST /submitTranslation accept a translation correction (-> public GitHub pending/)
  *   POST /submitBug         accept a bug report (-> PRIVATE BUG_REPORTS KV)
  *   POST /submitPd          accept a PD module (-> PRIVATE PD_SUBMISSIONS KV)
+ *   POST /submitPlugin      accept a Tool Forge plugin (-> PRIVATE PLUGIN_SUBMISSIONS KV)
  *   GET  /bugs              token-gated bug-report reader
  *   GET  /pdSubmissions     token-gated PD-submission reader
+ *   GET  /pluginSubmissions token-gated plugin-submission reader (?source=1 to include code)
  *   POST /issuePd           issue an Ed25519-signed PD completion attestation (opt-in)
  *   GET  /pdIssuerKey       the issuer's Ed25519 public key (for client-side verify)
  *   POST /verifyPd          verify a PD credential against the issuer key
@@ -411,6 +413,133 @@ async function handlePdList(request, env, url) {
   return jsonResponse({ ok: true, count: submissions.length, submissions });
 }
 
+// ── Tool Forge plugin submissions → Cloudflare KV (PRIVATE, not GitHub) ──
+// A plugin submission is one self-registering stem_tool_<id>.js / sel_tool_<id>.js
+// file plus metadata + the client's validator report. Like PD modules and bug
+// reports, it is staged in PRIVATE KV (PLUGIN_SUBMISSIONS), NEVER auto-committed to
+// the public repo and NEVER run server-side — the maintainer reviews the source +
+// the validator report + a sandboxed preview, then manually drops the file into
+// PLUGIN_FILES and deploys (the human gate). Executable submissions especially must
+// never bypass that gate. Shallow validation + a light structural sanity check +
+// defense-in-depth PII scan only; the gate of record is Tier-2 CI (check_stem_render,
+// check_tool_contract, check_free_vars, golden) re-run on the submitted file.
+const PLUGIN_LICENSES = new Set(['CC-BY-SA-4.0', 'CC-BY-4.0', 'CC0', 'MIT', 'Apache-2.0']);
+
+function validatePlugin(p) {
+  if (!p || typeof p !== 'object') return 'Body must be a JSON object.';
+  const pl = p.plugin;
+  if (!pl || typeof pl !== 'object') return 'plugin missing or not an object.';
+  if (!pl.id || typeof pl.id !== 'string' || !/^[a-zA-Z][a-zA-Z0-9_]*$/.test(pl.id)) return 'plugin.id required (letters/digits/underscore, starts with a letter).';
+  if (pl.id.length > 40) return 'plugin.id too long (max 40 chars).';
+  if (!pl.label || typeof pl.label !== 'string' || !pl.label.trim()) return 'plugin.label required.';
+  if (pl.label.length > 80) return 'plugin.label too long (max 80 chars).';
+  if (pl.desc != null && (typeof pl.desc !== 'string' || pl.desc.length > 1000)) return 'plugin.desc must be a string up to 1000 chars.';
+  if (pl.target !== 'stem' && pl.target !== 'sel') return 'plugin.target must be "stem" or "sel".';
+  if (!pl.source || typeof pl.source !== 'string' || !pl.source.trim()) return 'plugin.source (the .js file text) required.';
+  if (pl.source.length > 500000) return 'plugin.source too long (max 500000 chars).';
+  for (const f of ['category', 'color', 'icon']) {
+    if (pl[f] != null && (typeof pl[f] !== 'string' || pl[f].length > 60)) return `plugin.${f} must be a string up to 60 chars.`;
+  }
+  const m = p.metadata || {};
+  if (m.author != null && (typeof m.author !== 'string' || m.author.length > 80)) return 'metadata.author must be a string up to 80 chars.';
+  if (m.license != null && !PLUGIN_LICENSES.has(m.license)) return 'metadata.license must be one of: ' + [...PLUGIN_LICENSES].join(', ') + '.';
+  if (!p.affirmations || typeof p.affirmations !== 'object') return 'affirmations missing or not an object.';
+  for (const key of ['author_or_authorized', 'no_pii', 'license_agreed', 'age_eligible', 'passes_validation', 'accuracy_attested']) {
+    if (p.affirmations[key] !== true) return `affirmation "${key}" must be true.`;
+  }
+  return null;
+}
+
+// Light, non-blocking server-side sanity check on the source (the real gate is Tier-2
+// CI). Confirms the file actually looks like a conforming plugin and flags obvious
+// red flags for the reviewer; it does NOT execute the code.
+function pluginStructureIssues(pl) {
+  const issues = [];
+  const src = typeof pl.source === 'string' ? pl.source : '';
+  if (!/registerTool\s*\(/.test(src)) issues.push('source does not call registerTool()');
+  if (pl.id && src.indexOf(pl.id) === -1) issues.push('declared id "' + pl.id + '" not found in source');
+  if (pl.target === 'sel') { if (!/window\.SelHub/.test(src)) issues.push('target is "sel" but source does not reference window.SelHub'); }
+  else if (!/window\.StemLab/.test(src)) issues.push('target is "stem" but source does not reference window.StemLab');
+  if (/\beval\s*\(/.test(src)) issues.push('source uses eval()');
+  if (/new\s+Function\s*\(/.test(src)) issues.push('source uses new Function()');
+  if (/document\.write\s*\(/.test(src)) issues.push('source uses document.write()');
+  return issues;
+}
+
+async function handlePluginSubmit(request, env) {
+  if (!env.PLUGIN_SUBMISSIONS) return jsonResponse({ ok: false, error: 'Server misconfigured: missing PLUGIN_SUBMISSIONS KV binding.' }, 500);
+  const contentType = request.headers.get('Content-Type') || '';
+  if (!contentType.toLowerCase().includes('application/json')) return jsonResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
+  const rawBody = await request.text();
+  if (bodyTooLarge(rawBody)) return jsonResponse({ ok: false, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` }, 413);
+  let p;
+  try { p = JSON.parse(rawBody); } catch (err) { return jsonResponse({ ok: false, error: 'Invalid JSON: ' + err.message }, 400); }
+  const err = validatePlugin(p);
+  if (err) return jsonResponse({ ok: false, error: err }, 400);
+
+  const pl = p.plugin;
+  const m = p.metadata || {};
+  // Defense-in-depth PII scan over metadata + source. Source is code, so expect few
+  // (and possibly false) hits — these are flagged for the reviewer, never auto-reject.
+  const piiFindings = scanForPii([m.author || '', JSON.stringify(m), pl.source].join('\n'));
+  const structIssues = pluginStructureIssues(pl);
+  const submittedAt = new Date().toISOString();
+  const slug = slugify(pl.id);
+  const record = {
+    schema_version: 'plugin-1.0',
+    kind: 'plugin_submission',
+    submitted_at: submittedAt,
+    metadata: {
+      id: pl.id,
+      label: pl.label.trim(),
+      desc: (pl.desc || '').slice(0, 1000),
+      category: (pl.category || '').slice(0, 60),
+      color: (pl.color || '').slice(0, 60),
+      icon: (pl.icon || '').slice(0, 60),
+      target: pl.target,
+      author: (m.author || '').slice(0, 80),
+      license: m.license || 'CC-BY-SA-4.0',
+      subject: (m.subject || '').slice(0, 60),
+      grade_band: (m.grade_band || '').slice(0, 20),
+    },
+    affirmations: p.affirmations,
+    validator_report: (p.validator_report && typeof p.validator_report === 'object') ? p.validator_report : null,
+    pii_scan: { ran_server_side: true, findings: piiFindings },
+    structure_check: { ok: structIssues.length === 0, issues: structIssues.slice(0, 50) },
+    submitter: {
+      ip_country: request.cf?.country || null,
+      user_agent: (request.headers.get('User-Agent') || '').slice(0, 200),
+    },
+    source: pl.source,
+  };
+  const id = `plugin:${Date.now()}:${slug}:${(crypto.randomUUID && crypto.randomUUID().slice(0, 8)) || Math.floor(Math.random() * 1e9).toString(36)}`;
+  try {
+    await env.PLUGIN_SUBMISSIONS.put(id, JSON.stringify(record), {
+      metadata: { submitted_at: submittedAt, id: pl.id, label: record.metadata.label, target: pl.target, pii: piiFindings.length > 0, country: record.submitter.ip_country },
+    });
+  } catch (e) {
+    return jsonResponse({ ok: false, error: 'Could not store submission: ' + e.message }, 502);
+  }
+  return jsonResponse({ ok: true, id, slug, pii_findings_count: piiFindings.length, structure_ok: structIssues.length === 0 }, 201);
+}
+
+async function handlePluginList(request, env, url) {
+  if (!env.ADMIN_TOKEN) return jsonResponse({ ok: false, error: 'Admin read disabled: set the ADMIN_TOKEN secret to enable GET /pluginSubmissions (or use `wrangler kv key list`).' }, 501);
+  if (!env.PLUGIN_SUBMISSIONS) return jsonResponse({ ok: false, error: 'Missing PLUGIN_SUBMISSIONS KV binding.' }, 500);
+  const token = url.searchParams.get('token') || (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+  if (token !== env.ADMIN_TOKEN) return jsonResponse({ ok: false, error: 'Unauthorized.' }, 401);
+  const limit = Math.min(parseInt(url.searchParams.get('limit') || '50', 10) || 50, 200);
+  const includeSource = url.searchParams.get('source') === '1'; // omit the (large) source unless explicitly requested
+  const listed = await env.PLUGIN_SUBMISSIONS.list({ prefix: 'plugin:', limit });
+  const keys = listed.keys.map(k => k.name).sort().reverse().slice(0, limit); // newest first
+  const submissions = [];
+  for (const k of keys) {
+    const v = await env.PLUGIN_SUBMISSIONS.get(k);
+    if (v) { try { const rec = JSON.parse(v); if (!includeSource) delete rec.source; submissions.push({ id: k, ...rec }); } catch (_) {} }
+  }
+  return jsonResponse({ ok: true, count: submissions.length, submissions });
+}
+
 // ── PD completion credentials (Tier-2, OPTIONAL): Ed25519-signed attestations ──
 // MUST stay byte-identical to pd_core_module.js canonicalize/buildCredentialPayload
 // so a credential signed here verifies client-side. The signature proves issuance +
@@ -546,6 +675,14 @@ export default {
       return handlePdList(request, env, url);
     }
 
+    if (request.method === 'POST' && url.pathname === '/submitPlugin') {
+      return handlePluginSubmit(request, env);
+    }
+
+    if (request.method === 'GET' && url.pathname === '/pluginSubmissions') {
+      return handlePluginList(request, env, url);
+    }
+
     if (request.method === 'POST' && url.pathname === '/issuePd') {
       return handlePdIssue(request, env);
     }
@@ -559,7 +696,7 @@ export default {
     }
 
     if (request.method !== 'POST' || url.pathname !== '/submit') {
-      return jsonResponse({ ok: false, error: 'Use POST /submit, /submitTranslation, /submitBug, /submitPd, or /issuePd' }, 405);
+      return jsonResponse({ ok: false, error: 'Use POST /submit, /submitTranslation, /submitBug, /submitPd, /submitPlugin, or /issuePd' }, 405);
     }
 
     if (!env.GITHUB_PAT) {

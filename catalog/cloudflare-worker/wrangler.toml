@@ -41,6 +41,18 @@ id = "REPLACE_WITH_KV_NAMESPACE_ID"
 binding = "PD_SUBMISSIONS"
 id = "REPLACE_WITH_PD_KV_NAMESPACE_ID"
 
+# Private KV store for Tool Forge plugin submissions (POST /submitPlugin). A submission
+# is one self-registering plugin .js file + metadata + the client validator report,
+# staged here for MANUAL review — never auto-committed and never run server-side. The
+# maintainer reviews source + report + a sandboxed preview, then drops the file into
+# PLUGIN_FILES and deploys (the human gate). One-time setup:
+#   npx wrangler kv namespace create PLUGIN_SUBMISSIONS
+# then paste the printed id below. Until then, /submitPlugin returns 500 (fail-closed).
+# Read the queue with the ADMIN_TOKEN-gated GET /pluginSubmissions (?source=1 for code).
+[[kv_namespaces]]
+binding = "PLUGIN_SUBMISSIONS"
+id = "REPLACE_WITH_PLUGIN_KV_NAMESPACE_ID"
+
 # Limits applied at the Worker level. Submission max size is also enforced
 # inside the handler; this is a backstop.
 [limits]
