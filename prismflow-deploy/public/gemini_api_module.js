@@ -182,7 +182,10 @@ const createGeminiAPI = (deps) => {
           closeBtn.setAttribute('aria-label', 'Dismiss quota notice');
           closeBtn.style.cssText = 'background:rgba(255,255,255,0.18);color:#fff;border:0;padding:6px 12px;border-radius:6px;cursor:pointer;font:600 13px system-ui,sans-serif';
           closeBtn.onclick = () => {
-            try { if (window.sessionStorage) sessionStorage.setItem('__alloflowQuotaBannerDismissed', '1'); } catch (_) {}
+            // A3 (2026-06-28): don't swallow a sessionStorage QuotaExceededError silently — on a storage-full
+            // device the dismissal can't persist and the banner re-appears each load; a warn makes it diagnosable.
+            try { if (window.sessionStorage) sessionStorage.setItem('__alloflowQuotaBannerDismissed', '1'); }
+            catch (e) { try { console.warn('[AlloFlow] could not persist quota-banner dismissal (sessionStorage full/blocked):', e && e.message); } catch (_) {} }
             banner.remove();
           };
           banner.appendChild(msgEl);
