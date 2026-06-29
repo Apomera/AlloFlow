@@ -26166,7 +26166,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     minimal: {
       name: 'Minimalist', emoji: '✨', wcagLevel: 'AA',
       promptInstructions: 'STYLE PREFERENCE: Minimalist — lots of whitespace, thin sans-serif font, muted grays, one accent color (#6366f1), hairline borders, understated elegance.',
-      cssVars: { bodyFont: "'Georgia', serif", headingColor: '#111827', accentColor: '#6b7280', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: 'transparent', headerBg: '#ffffff', headerText: '#111827', extraCSS: 'h1 { font-size: 2rem; font-weight: 300; letter-spacing: -0.02em; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; } .section { border: none; padding-bottom: 3rem; } .resource-header { background: none; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: #9ca3af; }' },
+      cssVars: { bodyFont: "'Georgia', serif", headingColor: '#111827', accentColor: '#6b7280', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: 'transparent', headerBg: '#ffffff', headerText: '#111827', extraCSS: 'h1 { font-size: 2rem; font-weight: 300; letter-spacing: -0.02em; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; } .section { border: none; padding-bottom: 3rem; } .resource-header { background: none; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: #6b7280; }' },
     },
     highContrast: {
       name: 'High Contrast', emoji: '◼️', wcagLevel: 'AAA',
@@ -26186,7 +26186,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     dark: {
       name: 'Dark Mode', emoji: '🌙', wcagLevel: 'AA',
       promptInstructions: 'STYLE PREFERENCE: Dark mode — dark charcoal background (#1e1e2e), white text (#ffffff), indigo accents (#818cf8), subtle borders, excellent contrast. All text must be light on dark.',
-      cssVars: { bodyFont: "'Inter', system-ui, sans-serif", headingColor: '#ffffff', accentColor: '#818cf8', bgColor: '#1e1e2e', cardBg: '#2a2a3e', cardBorder: '#3f3f5e', headerBg: 'linear-gradient(135deg, #1e1e2e, #2d2b55)', headerText: '#ffffff', extraCSS: 'body { color: #ffffff; } a { color: #818cf8; } table { border-color: #3f3f5e; } th { background: #2a2a3e; color: #ffffff; } td { color: #ffffff; }' },
+      cssVars: { bodyFont: "'Inter', system-ui, sans-serif", headingColor: '#ffffff', accentColor: '#818cf8', bgColor: '#1e1e2e', cardBg: '#2a2a3e', cardBorder: '#3f3f5e', headerBg: 'linear-gradient(135deg, #1e1e2e, #2d2b55)', headerText: '#ffffff', extraCSS: 'body { color: #ffffff; } a { color: #818cf8; } table { border-color: #3f3f5e; } th { background: #2a2a3e; color: #ffffff; } td { color: #ffffff; } tbody tr:nth-child(even) { background: #2a2a3e; } tbody tr:hover { background: #334155; } .resource-header { color: #cbd5e1; } .meta { color: #a1aab8; }' },
     },
     magazine: {
       name: 'Magazine', emoji: '📰', wcagLevel: 'AA',
@@ -26742,7 +26742,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
              override). Print rule hides the toolbar on paper output. */
           .alloflow-reading-tools { position: sticky; top: 0; z-index: 9999; background: rgba(255,255,255,0.96); border-bottom: 1px solid #e2e8f0; padding: 8px 12px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); font-family: system-ui, -apple-system, sans-serif; font-size: 13px; }
           .alloflow-reading-tools-group { display: inline-flex; gap: 0; align-items: stretch; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden; }
-          .alloflow-reading-tools-label { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; padding: 0 10px; align-self: center; background: #f1f5f9; border-right: 1px solid #cbd5e1; }
+          .alloflow-reading-tools-label { font-size: 10px; font-weight: 700; color: #556070; text-transform: uppercase; letter-spacing: 0.06em; padding: 0 10px; align-self: center; background: #f1f5f9; border-right: 1px solid #cbd5e1; }
           .alloflow-rt-btn { padding: 6px 12px; font-size: 12px; font-weight: 600; background: transparent; color: #334155; border: 0; border-left: 1px solid #cbd5e1; cursor: pointer; transition: background 0.15s, color 0.15s; font-family: inherit; }
           .alloflow-rt-btn:first-of-type { border-left: 0; }
           .alloflow-rt-btn:hover { background: #e2e8f0; }
@@ -26776,7 +26776,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           .alloflow-anno-sb { position: fixed; top: 64px; right: 12px; width: 300px; max-height: calc(100vh - 100px); background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; box-shadow: 0 8px 24px rgba(15,23,42,0.18); display: flex; flex-direction: column; z-index: 9998; font-family: system-ui, -apple-system, sans-serif; font-size: 13px; color: #1e293b; }
           .alloflow-anno-sb-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; border-radius: 12px 12px 0 0; }
           .alloflow-anno-sb-title { font-size: 12px; font-weight: 700; color: #334155; }
-          .alloflow-anno-sb-count { font-weight: 400; color: #94a3b8; }
+          .alloflow-anno-sb-count { font-weight: 400; color: #6b7280; }
           .alloflow-anno-sb-close { background: transparent; border: 0; cursor: pointer; padding: 4px 6px; border-radius: 50%; color: #64748b; font-size: 12px; }
           .alloflow-anno-sb-close:hover { color: #dc2626; background: #ffffff; }
           .alloflow-anno-sb-pills { display: flex; gap: 4px; padding: 8px 12px; border-bottom: 1px solid #e2e8f0; }
@@ -26784,7 +26784,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           .alloflow-anno-pill:hover { background: #e2e8f0; }
           .alloflow-anno-pill.active { background: #4f46e5; color: white; }
           .alloflow-anno-sb-list { overflow-y: auto; flex: 1; padding: 4px; }
-          .alloflow-anno-empty { padding: 20px 12px; text-align: center; font-size: 11px; color: #94a3b8; font-style: italic; }
+          .alloflow-anno-empty { padding: 20px 12px; text-align: center; font-size: 11px; color: #6b7280; font-style: italic; }
           .alloflow-anno-item { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; padding: 6px 8px; margin-bottom: 2px; border-radius: 6px; cursor: pointer; transition: background 0.12s; border-left: 2px solid transparent; }
           .alloflow-anno-item.teacher { background: rgba(238,242,255,0.6); border-left-color: #818cf8; }
           .alloflow-anno-item.teacher:hover { background: #e0e7ff; }
@@ -26793,7 +26793,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           .alloflow-anno-item-body { flex: 1; min-width: 0; }
           .alloflow-anno-item-text { font-weight: 500; color: #1e293b; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
           .alloflow-anno-item-meta { font-size: 10px; color: #64748b; margin-top: 2px; }
-          .alloflow-anno-item-del { opacity: 0; background: transparent; border: 0; color: #94a3b8; cursor: pointer; padding: 2px 4px; border-radius: 4px; font-size: 11px; }
+          .alloflow-anno-item-del { opacity: 0; background: transparent; border: 0; color: #6b7280; cursor: pointer; padding: 2px 4px; border-radius: 4px; font-size: 11px; }
           .alloflow-anno-item:hover .alloflow-anno-item-del, .alloflow-anno-item-del:focus { opacity: 1; }
           .alloflow-anno-item-del:hover { color: #dc2626; background: #ffffff; }
           @media print { .alloflow-anno-sb { display: none !important; } }
@@ -26843,7 +26843,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           html[data-alloflow-theme="dark"] .alloflow-reading-tools-label { background: #0f172a; color: #94a3b8; border-right-color: #475569; }
           .allo-ka-passage .ka-s { transition: background-color 0.12s ease, box-shadow 0.12s ease; border-radius: 3px; }
           .allo-ka-passage .ka-s.ka-on { background-color: #fde047; color: #1e293b; box-shadow: 0 0 0 3px #fde047; }
-          html[data-alloflow-theme="dark"] .allo-ka-passage .ka-s.ka-on { background-color: #ca8a04; color: #ffffff; box-shadow: 0 0 0 3px #ca8a04; }
+          html[data-alloflow-theme="dark"] .allo-ka-passage .ka-s.ka-on { background-color: #ca8a04; color: #1e293b; box-shadow: 0 0 0 3px #ca8a04; }
           .allo-ka-play:hover { filter: brightness(1.08); }
           @media print { .allo-ka-bar { display: none !important; } }
           html[data-alloflow-theme="dark"] .alloflow-rt-btn { color: #cbd5e1; border-left-color: #475569; }
@@ -26920,10 +26920,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           html[data-alloflow-theme="sepia"] .interactive-textarea { background: #fdf6e3 !important; color: #5b4636 !important; }
           html[data-alloflow-theme="sepia"] .alloflow-reading-tools { background: rgba(245,236,217,0.96); border-bottom-color: #d4c5a0; }
           html[data-alloflow-theme="sepia"] .alloflow-reading-tools-group { background: #fdf6e3; border-color: #d4c5a0; }
-          html[data-alloflow-theme="sepia"] .alloflow-reading-tools-label { background: #ede0c4; color: #8b6f4a; border-right-color: #d4c5a0; }
+          html[data-alloflow-theme="sepia"] .alloflow-reading-tools-label { background: #ede0c4; color: #6b5334; border-right-color: #d4c5a0; }
           html[data-alloflow-theme="sepia"] .alloflow-rt-btn { color: #5b4636; border-left-color: #d4c5a0; }
           html[data-alloflow-theme="sepia"] .alloflow-rt-btn:hover { background: #ede0c4; }
-          html[data-alloflow-theme="sepia"] .alloflow-rt-btn[aria-pressed="true"] { background: #8b6f4a; color: #fdf6e3; }
+          html[data-alloflow-theme="sepia"] .alloflow-rt-btn[aria-pressed="true"] { background: #6e5636; color: #fdf6e3; }
 
           /* ─── Custom UDL Blocks Sepia Mode Overrides ─── */
           html[data-alloflow-theme="sepia"] .alloflow-glossary-card { background: #fdf6e3 !important; border-color: #d4c5a0 !important; }
@@ -26944,7 +26944,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           html[data-alloflow-theme="sepia"] .alloflow-glossary-section tbody tr:nth-child(even) { background-color: #f5ecd9 !important; }
           html[data-alloflow-theme="sepia"] .alloflow-glossary-section tbody tr:hover { background-color: #ede0c4 !important; }
           html[data-alloflow-theme="sepia"] .alloflow-glossary-section tbody td { color: #5b4636 !important; }
-          html[data-alloflow-theme="sepia"] .alloflow-glossary-section tbody .gloss-term { color: #8b6f4a !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-glossary-section tbody .gloss-term { color: #6b5334 !important; }
           html[data-alloflow-theme="sepia"] .alloflow-glossary-section tbody .gloss-img-cell { background: #fdf6e3 !important; }
           html[data-alloflow-theme="sepia"] .alloflow-glossary-section tbody .gloss-img-cell img { background: #fdf6e3 !important; border-color: #d4c5a0 !important; }
           html[data-alloflow-theme="sepia"] .alloflow-faq-expand { background: #ede0c4 !important; color: #5b4636 !important; border-color: #d4c5a0 !important; }
