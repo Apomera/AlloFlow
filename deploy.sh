@@ -202,6 +202,12 @@ git add AlloFlowANTI.txt prismflow-deploy/src/AlloFlowANTI.txt prismflow-deploy/
 # mirrors during Step 3; without this line those deterministic copies linger
 # as a dirty tree after every deploy.
 git add prismflow-deploy/public/ 2>/dev/null || true
+# The Cloudflare CDN (alloflow-cdn.pages.dev) serves the REPO-ROOT compiled
+# modules. build.js (Step 3) recompiles the COMPILE_PAIRS each deploy but they
+# were never staged here — so doc_pipeline_module.js etc. lagged a deploy behind
+# on the CDN (only committed sporadically by other sessions). Stage them so the
+# served root module is fresh every deploy.
+git add doc_pipeline_module.js persona_ui_module.js gemini_api_module.js tts_module.js personas_module.js export_module.js brand_profile_editor_module.js 2>/dev/null || true
 POST_COMMITTED=0
 if git diff --cached --quiet; then
   echo "  No post-deploy changes. (Hash refs were already current.)"
