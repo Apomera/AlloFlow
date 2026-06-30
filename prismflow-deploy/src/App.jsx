@@ -28212,6 +28212,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             onToggleMute={handleToggleMute}
             isListening={isDictationMode}
             isIdleDisabled={showUDLGuide}
+            disableAnimations={disableAnimations}
             soundEnabled={soundEnabled}
             selectedVoice={selectedVoice}
             voiceSpeed={voiceSpeed}
