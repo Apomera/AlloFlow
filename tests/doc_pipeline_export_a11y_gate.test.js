@@ -13,17 +13,37 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import axe from 'axe-core';
 import { JSDOM } from 'jsdom';
+import { createRequire } from 'node:module';
 import { loadAlloModule } from './setup.js';
 
-// Rule IDs axe currently reports on the export that are NOT yet fixed (the live "remaining
-// work" scorecard). The gate FAILS if a violation appears that is NOT in this set (a
-// regression). Shrink this list as Phase A fixes land; goal is [].
+// Second, INDEPENDENT engine: IBM Equal Access (accessibility-checker-engine) — the same engine
+// the PDF-remediation pipeline runs for "two-engine consensus" with axe. ace-node is its headless
+// build. Loading a second engine catches issues axe's ruleset misses (and vice versa).
+const require = createRequire(import.meta.url);
+const aceMod = require('accessibility-checker-engine/ace-node');
+const aceEngine = aceMod.ace || aceMod;
+
+// Rule IDs each engine currently reports on the export that are NOT yet fixed (the live "remaining
+// work" scorecard). The gate FAILS if a violation appears that is NOT in the engine's baseline (a
+// regression). Shrink toward []. Two engines = two baselines.
 const BASELINE = new Set([
-  // (filled in from the first run — see console output)
+  // axe (filled in from the first run — see console output)
+]);
+const ACE_BASELINE = new Set([
+  // IBM Equal Access VIOLATION-level rule IDs that are known/accepted. Currently EMPTY — the export
+  // has 0 VIOLATION-level failures (matches axe's 0). ace does report 2 RECOMMENDATION-level (advisory,
+  // not gated) `aria_content_in_landmark` items, both ACCEPTED, NOT regressions:
+  //   1. body > a.sr-only  — the skip link. Correct-by-design: a skip link MUST precede the landmarks
+  //      (WCAG 2.4.1 / technique G1), so it cannot itself live inside one. Known ace false-positive.
+  //   2. body > div#alloflow-savejson-cta — the "Save as JSON" CTA between </main> and <footer>.
+  //      The "all content in a landmark" rule is an ARIA authoring best-practice mapped to a
+  //      RECOMMENDATION, not an A/AA Success Criterion. Minor polish, tracked; does not block AA.
 ]);
 
 let html;
 let results;
+let aceResults;
+let aceViolations;
 
 beforeAll(async () => {
   loadAlloModule('doc_pipeline_module.js');
@@ -61,6 +81,14 @@ beforeAll(async () => {
   results = await dom.window.axe.run(dom.window.document, {
     runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
   });
+
+  // Second engine — IBM Equal Access, WCAG_2_1 ruleset, over the same export DOM (fresh JSDOM so
+  // axe and ace don't interfere). A real violation = outcome FAIL with VIOLATION severity (ace also
+  // reports RECOMMENDATION / POTENTIAL / MANUAL outcomes, which are advisory and excluded here).
+  const aceDom = new JSDOM(html, { pretendToBeVisual: true });
+  const aceReport = await new aceEngine.Checker().check(aceDom.window.document, ['WCAG_2_1']);
+  aceResults = (aceReport && aceReport.results) || [];
+  aceViolations = aceResults.filter((r) => r.value && r.value[1] === 'FAIL' && r.value[0] === 'VIOLATION');
 });
 
 describe('HTML export · axe-core WCAG 2.1 A+AA self-audit gate', () => {
@@ -107,6 +135,26 @@ describe('HTML export · axe-core WCAG 2.1 A+AA self-audit gate', () => {
   });
 });
 
+describe('HTML export · IBM Equal Access (ace) WCAG_2_1 self-audit gate — second engine', () => {
+  it('ace actually evaluated rules (so its result is meaningful, not a no-op)', () => {
+    expect(aceResults.length).toBeGreaterThan(8);
+  });
+
+  it('SCORECARD: log ace pass/fail/violation counts + every FAIL (violation + recommendation)', () => {
+    const fails = aceResults.filter((r) => r.value && r.value[1] === 'FAIL');
+    const lines = fails.map((v) => `  [${v.value[0]}] ${v.ruleId} — ${v.path && v.path.dom}`);
+    // eslint-disable-next-line no-console
+    console.log(`\n=== IBM Equal Access (WCAG_2_1) on the export: ${aceResults.length} checks, ${fails.length} FAIL (${aceViolations.length} VIOLATION-level) ===\n${lines.join('\n') || '  (no failures)'}\n`);
+    expect(Array.isArray(aceResults)).toBe(true);
+  });
+
+  it('REGRESSION GATE: no ace VIOLATION outside the documented baseline', () => {
+    const ids = aceViolations.map((v) => v.ruleId);
+    const unexpected = ids.filter((id) => !ACE_BASELINE.has(id));
+    expect(unexpected, `New ace violations not in ACE_BASELINE: ${unexpected.join(', ')}`).toEqual([]);
+  });
+});
+
 // Self-check: prove the axe-in-jsdom integration actually FLAGS known failures, so a
 // 0-violation result on the real export is trustworthy rather than a silent no-op.
 describe('axe-in-jsdom self-check (must flag known failures)', () => {
@@ -121,5 +169,13 @@ describe('axe-in-jsdom self-check (must flag known failures)', () => {
     const ids = r.violations.map(v => v.id);
     expect(ids).toContain('image-alt');
     expect(ids.some(id => /label|aria-input-field-name/.test(id))).toBe(true);
+  });
+
+  it('ace flags a known failure too (so its 0-violations is also trustworthy)', async () => {
+    const bad = `<!DOCTYPE html><html lang="en"><head><title>x</title></head><body><main><img src="x.png"></main></body></html>`;
+    const dom = new JSDOM(bad, { pretendToBeVisual: true });
+    const report = await new aceEngine.Checker().check(dom.window.document, ['WCAG_2_1']);
+    const fails = (report.results || []).filter((r) => r.value && r.value[1] === 'FAIL');
+    expect(fails.some((r) => /img|alt/i.test(r.ruleId))).toBe(true);
   });
 });
