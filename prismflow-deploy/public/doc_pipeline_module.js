@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -9020,6 +9020,31 @@ Return ONLY valid JSON (no markdown, no backticks): {"score":N,"summary":"1-2 se
       batchDocStyle = { ...batchDocStyle, headingColor: '#1e3a5f', accentColor: '#2563eb', headerBg: '#1e3a5f', headerText: '#ffffff', tableBg: '#f1f5f9', tableBorder: '#cbd5e1' };
       warnLog('[Style] Overrode boring palette with professional defaults for transform prompt');
     }
+
+    // ── WCAG AA contrast clamp (2026-06-30) ── Single chokepoint after ALL palette branches
+    // (AI brand-extraction / upload / boring-beautify / defaults) and BEFORE the palette reaches the
+    // header/CSS. The extracted-or-chosen colors are the design INTENT — never trusted to be accessible.
+    // Route batchDocStyle through the SAME engine that already guarantees the curated PALETTE_PRESETS
+    // (clampPaletteContrast), mapping batchDocStyle's token names to fg/bg pairs so every theme is AA by
+    // construction (this is the wiring that was missing — the curated-preset path clamps, this one didn't,
+    // so an AI-extracted header text like #737373 on a dark-blue band shipped at ~2.5:1). Nudges only the
+    // INK that fails (hue-preserving); surfaces/anchors untouched. Fail-soft: any error keeps the palette.
+    try {
+      const _bdsPairs = [
+        { fg: 'headerText', bg: 'headerBg', target: 4.5 },     // header title/text on the header band (the pair that failed)
+        { fg: 'headingColor', bg: 'bgColor', target: 3.0 },    // headings = large text (1.4.3)
+        { fg: 'accentColor', bg: 'bgColor', target: 3.0 },     // accent = non-text UI (1.4.11)
+        { fg: 'tableBorder', bg: 'bgColor', target: 3.0 },     // table borders = non-text UI (1.4.11)
+      ];
+      const _bdsClamp = clampPaletteContrast(batchDocStyle, { pairs: _bdsPairs });
+      if (_bdsClamp && _bdsClamp.palette) {
+        if (!_bdsClamp.allPass) {
+          const _adj = (_bdsClamp.report || []).filter((r) => r.clamped).map((r) => r.token + ' ' + r.from + '→' + r.color + ' (' + r.before + '→' + r.after + ':1 vs ' + r.against + ')');
+          if (_adj.length) warnLog('[Style] WCAG AA contrast clamp adjusted ' + _adj.length + ' palette color(s): ' + _adj.join('; '));
+        }
+        batchDocStyle = { ...batchDocStyle, ..._bdsClamp.palette };
+      }
+    } catch (_clampErr) { warnLog('[Style] palette contrast clamp failed (keeping palette): ' + (_clampErr && _clampErr.message)); }
 
     // Deterministic prescan of the source — feed structured hints into the prompt
     const _sourceHints = scanSourceHints(extractedText);
@@ -29255,11 +29280,6 @@ window.AlloModules.createDocPipeline.ocrBlockLayout = _alloOcrBlockLayout; // st
 window.AlloModules.createDocPipeline.structuralFoundations = _alloStructuralFoundations; // static: exposed for tests
 window.AlloModules.createDocPipeline.weightedDeductions = _alloWeightedDeductions; // static: exposed for tests (#5)
 window.AlloModules.createDocPipeline.contrastFixPair = _alloContrastFixPair; // static: exposed for tests (contrast pair-fixer)
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 })();
