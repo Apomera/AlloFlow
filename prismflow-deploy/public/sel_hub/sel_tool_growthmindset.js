@@ -282,11 +282,42 @@ window.SelHub = window.SelHub || {
       var totalStories  = Object.keys(storiesRead || {}).length;
       var totalFacts    = Object.keys(brainExplored || {}).length;
 
+      // ── Host theme remap (consumes ctx.theme) — pilot for SEL tool theming ──
+      // Growth Mindset is light-base. _gmC('#hex') returns the ORIGINAL hex on a light
+      // host (so light rendering stays byte-identical), a same-hue DARK value on a
+      // .theme-dark host, and the WCAG yellow/black scheme on high-contrast — so the
+      // tool FOLLOWS the SEL Hub theme toggle instead of staying a light island. Generic
+      // chrome (card/text/border) + the tinted growth(green)/fixed(red)/amber/blue
+      // surfaces each get a dark variant; vivid accent FILLS (EMERALD buttons, per-tab
+      // hero hues) intentionally stay constant. Tinted text + its tinted surface are
+      // remapped together so neither goes dark-on-dark. Pattern reusable by other tools.
+      var _gmTheme = (ctx && ctx.theme) || {};
+      var _gmHC = !!_gmTheme.isContrast, _gmDark = !_gmHC && !!_gmTheme.isDark;
+      var _GM_DARK = {
+        '#1f2937':'#e2e8f0','#374151':'#cbd5e1','#475569':'#cbd5e1',
+        '#fff':'#1e293b','#ffffff':'#1e293b','#e5e7eb':'#334155','#e2e8f0':'#334155',
+        '#f0fdf4':'#0b2e22','#ecfdf5':'#0e3326','#d1fae5':'#14463a','#a7f3d0':'#1c5e4a',
+        '#065f46':'#6ee7b7','#064e3b':'#6ee7b7',
+        '#fef2f2':'#2e1414','#fee2e2':'#3a1a1a','#991b1b':'#fca5a5','#7f1d1d':'#fca5a5','#dc2626':'#f87171',
+        '#fffbeb':'#2e2410','#fef3c7':'#3a2e12','#fef9c3':'#3a3410','#92400e':'#fde68a','#78350f':'#fcd34d',
+        '#eff6ff':'#0e1f3a','#2563eb':'#93c5fd','#1e3a8a':'#93c5fd'
+      };
+      var _GM_HC = {
+        '#1f2937':'#ffff00','#374151':'#ffff00','#475569':'#ffff00','#94a3b8':'#ffff00',
+        '#fff':'#000000','#ffffff':'#000000','#e5e7eb':'#ffff00','#e2e8f0':'#333300',
+        '#f0fdf4':'#000000','#ecfdf5':'#000000','#d1fae5':'#000000','#a7f3d0':'#000000',
+        '#065f46':'#ffff00','#064e3b':'#ffff00',
+        '#fef2f2':'#000000','#fee2e2':'#000000','#991b1b':'#ffff00','#7f1d1d':'#ffff00','#dc2626':'#ffff00',
+        '#fffbeb':'#000000','#fef3c7':'#000000','#fef9c3':'#000000','#92400e':'#ffff00','#78350f':'#ffff00',
+        '#eff6ff':'#000000','#2563eb':'#ffff00','#1e3a8a':'#ffff00'
+      };
+      var _gmC = function(hex) { return _gmHC ? (_GM_HC[hex] || hex) : (_gmDark ? (_GM_DARK[hex] || hex) : hex); };
+
       // Colors
-      var EMERALD = '#059669';
-      var EMERALD_LIGHT = '#ecfdf5';
-      var EMERALD_DARK = '#064e3b';
-      var AMBER = '#d97706';
+      var EMERALD = '#059669';              // accent FILL — semantic, constant across themes
+      var EMERALD_LIGHT = _gmC('#ecfdf5');  // tinted surface — themes its 5 background usages
+      var EMERALD_DARK = _gmC('#064e3b');   // tinted text — themes its 12 color usages
+      var AMBER = '#d97706';                // accent text — readable on light + dark, kept
 
       // ══════════════════════════════════════════════════════════
       // ── Tab Bar ──
@@ -311,10 +342,10 @@ window.SelHub = window.SelHub || {
       var exploredCount = Object.keys(exploredTabs).length;
 
       var tabBar = h('div', {
-        style: { display: 'flex', flexDirection: 'column', borderBottom: '2px solid #d1fae5', background: 'linear-gradient(180deg, #f0fdf4, #ecfdf5)', flexShrink: 0 }
+        style: { display: 'flex', flexDirection: 'column', borderBottom: '2px solid ' + _gmC('#d1fae5'), background: 'linear-gradient(180deg, ' + _gmC('#f0fdf4') + ', ' + _gmC('#ecfdf5') + ')', flexShrink: 0 }
       },
         // Progress bar
-        h('div', { style: { height: '3px', background: '#e2e8f0', position: 'relative', overflow: 'hidden' } },
+        h('div', { style: { height: '3px', background: _gmC('#e2e8f0'), position: 'relative', overflow: 'hidden' } },
           h('div', { style: { height: '100%', width: Math.round((exploredCount / TABS.length) * 100) + '%', background: 'linear-gradient(90deg, ' + EMERALD + ', #34d399)', transition: 'width 0.5s ease', borderRadius: '0 2px 2px 0', animation: 'selGrowBar 0.6s ease-out' } })
         ),
         h('div', {
@@ -346,7 +377,7 @@ window.SelHub = window.SelHub || {
             );
           }),
           // Progress badge
-          h('span', { className: 'sel-badge', style: { marginLeft: '8px', fontSize: '10px', color: EMERALD, fontWeight: 700, whiteSpace: 'nowrap', background: '#d1fae5', padding: '2px 8px', borderRadius: '10px', flexShrink: 0 } },
+          h('span', { className: 'sel-badge', style: { marginLeft: '8px', fontSize: '10px', color: EMERALD, fontWeight: 700, whiteSpace: 'nowrap', background: _gmC('#d1fae5'), padding: '2px 8px', borderRadius: '10px', flexShrink: 0 } },
             exploredCount + '/' + TABS.length
           ),
           // Sound toggle
@@ -385,7 +416,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
           h('div', { style: { flex: 1, minWidth: 220 } },
             h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-            h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            h('p', { style: { margin: '3px 0 0', color: _gmC('#475569'), fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
           )
         );
       })();
@@ -417,7 +448,7 @@ window.SelHub = window.SelHub || {
             ),
             h('div', { className: 'sel-hero-icon', style: { fontSize: '56px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(5,150,105,0.3))' } }, '\uD83E\uDDE0'),
             h('h3', { style: { fontSize: '20px', fontWeight: 800, color: EMERALD_DARK, margin: '0 0 6px', letterSpacing: '-0.3px' } }, 'Your Brain is Amazing'),
-            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0, maxWidth: '400px', marginLeft: 'auto', marginRight: 'auto' } },
+            h('p', { style: { fontSize: '13px', color: _gmC('#94a3b8'), margin: 0, maxWidth: '400px', marginLeft: 'auto', marginRight: 'auto' } },
               band === 'elementary' ? 'Discover how your brain grows stronger every day!'
               : band === 'middle' ? 'The neuroscience behind why effort changes your brain.'
               : 'How mindset research is reshaping our understanding of human potential.')
@@ -427,7 +458,7 @@ window.SelHub = window.SelHub || {
             className: 'sel-card',
             key: 'fact-' + brainFactIdx, // Re-triggers animation on change
             style: {
-              background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 50%, #a7f3d0 100%)',
+              background: 'linear-gradient(135deg, ' + _gmC('#ecfdf5') + ' 0%, ' + _gmC('#d1fae5') + ' 50%, ' + _gmC('#a7f3d0') + ' 100%)',
               borderRadius: '20px', padding: '28px', border: '2px solid #6ee7b7',
               boxShadow: '0 8px 32px rgba(5,150,105,0.12), 0 2px 8px rgba(5,150,105,0.08)',
               marginBottom: '16px', position: 'relative', overflow: 'hidden'
@@ -443,7 +474,7 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { fontSize: '10px', color: EMERALD, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' } }, 'Fact ' + (brainFactIdx % facts.length + 1) + ' of ' + facts.length)
                 )
               ),
-              h('p', { style: { fontSize: '14px', lineHeight: 1.8, color: '#1f2937', margin: 0 } }, currentFact.text)
+              h('p', { style: { fontSize: '14px', lineHeight: 1.8, color: _gmC('#1f2937'), margin: 0 } }, currentFact.text)
             )
           ),
           // Navigation
@@ -455,9 +486,9 @@ window.SelHub = window.SelHub || {
                 upd({ brainFactIdx: prev, brainExplored: Object.assign({}, brainExplored, (function() { var o = {}; o[prev] = true; return o; })()) });
                 if (soundEnabled) sfxNeuron();
               },
-              style: { padding: '10px 20px', background: '#fff', border: '2px solid #a7f3d0', borderRadius: '12px', cursor: 'pointer', fontWeight: 700, fontSize: '13px', color: EMERALD, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }
+              style: { padding: '10px 20px', background: _gmC('#fff'), border: '2px solid #a7f3d0', borderRadius: '12px', cursor: 'pointer', fontWeight: 700, fontSize: '13px', color: EMERALD, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }
             }, '\u2190 Previous'),
-            h('span', { style: { display: 'flex', alignItems: 'center', fontSize: '12px', color: '#475569', fontWeight: 600, background: '#f0fdf4', padding: '4px 12px', borderRadius: '8px' } },
+            h('span', { style: { display: 'flex', alignItems: 'center', fontSize: '12px', color: _gmC('#475569'), fontWeight: 600, background: _gmC('#f0fdf4'), padding: '4px 12px', borderRadius: '8px' } },
               (brainFactIdx % facts.length + 1) + ' / ' + facts.length
             ),
             h('button', {
@@ -508,18 +539,18 @@ window.SelHub = window.SelHub || {
           h('div', { style: { textAlign: 'center', marginBottom: '20px' } },
             h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(5,150,105,0.3))' } }, '\uD83D\uDD04'),
             h('h3', { style: { fontSize: '20px', fontWeight: 800, color: EMERALD_DARK, margin: '0 0 6px', letterSpacing: '-0.3px' } }, 'The Reframe Engine'),
-            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Transform fixed mindset thoughts into growth mindset power.')
+            h('p', { style: { fontSize: '13px', color: _gmC('#94a3b8'), margin: 0 } }, 'Transform fixed mindset thoughts into growth mindset power.')
           ),
           // Score with visual progress ring
           reframeTotal > 0 && h('div', { className: 'sel-card', style: { display: 'flex', justifyContent: 'center', gap: '16px', marginBottom: '20px' } },
-            h('div', { style: { background: 'linear-gradient(135deg, #ecfdf5, #d1fae5)', borderRadius: '14px', padding: '10px 20px', textAlign: 'center', boxShadow: '0 2px 8px rgba(5,150,105,0.1)' } },
+            h('div', { style: { background: 'linear-gradient(135deg, ' + _gmC('#ecfdf5') + ', ' + _gmC('#d1fae5') + ')', borderRadius: '14px', padding: '10px 20px', textAlign: 'center', boxShadow: '0 2px 8px rgba(5,150,105,0.1)' } },
               h('div', { style: { fontSize: '24px', fontWeight: 800, color: EMERALD } }, reframeScore),
-              h('div', { style: { fontSize: '9px', color: '#065f46', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' } }, 'reframed')
+              h('div', { style: { fontSize: '9px', color: _gmC('#065f46'), fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' } }, 'reframed')
             ),
             h('div', { style: { display: 'flex', alignItems: 'center', fontSize: '24px', color: '#d1d5db' } }, '/'),
-            h('div', { style: { background: 'linear-gradient(135deg, #fffbeb, #fef3c7)', borderRadius: '14px', padding: '10px 20px', textAlign: 'center', boxShadow: '0 2px 8px rgba(217,119,6,0.1)' } },
+            h('div', { style: { background: 'linear-gradient(135deg, ' + _gmC('#fffbeb') + ', ' + _gmC('#fef3c7') + ')', borderRadius: '14px', padding: '10px 20px', textAlign: 'center', boxShadow: '0 2px 8px rgba(217,119,6,0.1)' } },
               h('div', { style: { fontSize: '24px', fontWeight: 800, color: AMBER } }, reframeTotal),
-              h('div', { style: { fontSize: '9px', color: '#92400e', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' } }, 'attempted')
+              h('div', { style: { fontSize: '9px', color: _gmC('#92400e'), fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' } }, 'attempted')
             )
           ),
           // Fixed mindset thought — dramatic red card with visual weight
@@ -527,21 +558,21 @@ window.SelHub = window.SelHub || {
             className: 'sel-card',
             key: 'fixed-' + reframeIdx,
             style: {
-              background: 'linear-gradient(135deg, #fef2f2, #fee2e2)', border: '2px solid #fca5a5',
+              background: 'linear-gradient(135deg, ' + _gmC('#fef2f2') + ', ' + _gmC('#fee2e2') + ')', border: '2px solid #fca5a5',
               borderRadius: '20px', padding: '24px', marginBottom: '14px', position: 'relative',
               boxShadow: '0 4px 16px rgba(220,38,38,0.1)'
             }
           },
             // Visual "thought cloud" connector
             h('div', { style: { position: 'absolute', top: '-10px', left: '24px' } },
-              h('div', { style: { width: '20px', height: '20px', borderRadius: '50%', background: '#fef2f2', border: '2px solid #fca5a5' } }),
-              h('div', { style: { width: '10px', height: '10px', borderRadius: '50%', background: '#fef2f2', border: '1.5px solid #fca5a5', position: 'absolute', top: '-8px', left: '6px' } })
+              h('div', { style: { width: '20px', height: '20px', borderRadius: '50%', background: _gmC('#fef2f2'), border: '2px solid #fca5a5' } }),
+              h('div', { style: { width: '10px', height: '10px', borderRadius: '50%', background: _gmC('#fef2f2'), border: '1.5px solid #fca5a5', position: 'absolute', top: '-8px', left: '6px' } })
             ),
             h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' } },
               h('div', { style: { fontSize: '20px', background: 'rgba(220,38,38,0.1)', borderRadius: '8px', padding: '4px 8px' } }, '\uD83D\uDED1'),
-              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#dc2626', textTransform: 'uppercase', letterSpacing: '0.1em' } }, 'Fixed Mindset Thought')
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: _gmC('#dc2626'), textTransform: 'uppercase', letterSpacing: '0.1em' } }, 'Fixed Mindset Thought')
             ),
-            h('p', { style: { fontSize: '17px', fontWeight: 700, color: '#7f1d1d', margin: 0, fontStyle: 'italic', lineHeight: 1.5 } }, '\u201C' + current.fixed + '\u201D')
+            h('p', { style: { fontSize: '17px', fontWeight: 700, color: _gmC('#7f1d1d'), margin: 0, fontStyle: 'italic', lineHeight: 1.5 } }, '\u201C' + current.fixed + '\u201D')
           ),
           // Transformation arrow
           !reframeRevealed && h('div', { style: { textAlign: 'center', margin: '4px 0', fontSize: '24px', color: '#d1d5db' } }, '\u2193'),
@@ -553,7 +584,7 @@ window.SelHub = window.SelHub || {
               onChange: function(ev) { upd('reframeInput', ev.target.value); },
               placeholder: 'Type your growth mindset version...',
               'aria-label': 'Reframe the fixed mindset thought',
-              style: { width: '100%', border: '2px solid #6ee7b7', borderRadius: '14px', padding: '14px', fontSize: '14px', fontFamily: 'inherit', resize: 'vertical', minHeight: '70px', boxSizing: 'border-box', background: '#f0fdf4', transition: 'border-color 0.2s, box-shadow 0.2s' }
+              style: { width: '100%', border: '2px solid #6ee7b7', borderRadius: '14px', padding: '14px', fontSize: '14px', fontFamily: 'inherit', resize: 'vertical', minHeight: '70px', boxSizing: 'border-box', background: _gmC('#f0fdf4'), transition: 'border-color 0.2s, box-shadow 0.2s' }
             }),
             h('div', { style: { display: 'flex', gap: '8px', marginTop: '10px', alignItems: 'center' } },
               h('button', {
@@ -566,14 +597,14 @@ window.SelHub = window.SelHub || {
                 },
                 style: { padding: '10px 24px', background: 'linear-gradient(135deg, ' + EMERALD + ', #047857)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 700, fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 16px rgba(5,150,105,0.3)' }
               }, '\u2728 Show Growth Version'),
-              h('p', { style: { fontSize: '11px', color: '#94a3b8', margin: 0, display: 'flex', alignItems: 'center', gap: '4px' } }, '\uD83D\uDCA1 ', h('em', null, current.hint))
+              h('p', { style: { fontSize: '11px', color: _gmC('#94a3b8'), margin: 0, display: 'flex', alignItems: 'center', gap: '4px' } }, '\uD83D\uDCA1 ', h('em', null, current.hint))
             )
           ),
           // Revealed growth mindset version
           reframeRevealed && h('div', null,
-            reframeInput.trim() && h('div', { style: { background: '#eff6ff', border: '2px solid #93c5fd', borderRadius: '12px', padding: '14px', marginBottom: '10px' } },
-              h('div', { style: { fontSize: '10px', fontWeight: 600, color: '#2563eb', marginBottom: '4px' } }, '\uD83D\uDCAD Your reframe:'),
-              h('p', { style: { fontSize: '14px', color: '#1e3a8a', margin: 0, fontStyle: 'italic' } }, '"' + reframeInput + '"')
+            reframeInput.trim() && h('div', { style: { background: _gmC('#eff6ff'), border: '2px solid #93c5fd', borderRadius: '12px', padding: '14px', marginBottom: '10px' } },
+              h('div', { style: { fontSize: '10px', fontWeight: 600, color: _gmC('#2563eb'), marginBottom: '4px' } }, '\uD83D\uDCAD Your reframe:'),
+              h('p', { style: { fontSize: '14px', color: _gmC('#1e3a8a'), margin: 0, fontStyle: 'italic' } }, '"' + reframeInput + '"')
             ),
             h('div', { style: { background: EMERALD_LIGHT, border: '2px solid #6ee7b7', borderRadius: '16px', padding: '20px', marginBottom: '12px', position: 'relative' } },
               h('div', { style: { position: 'absolute', top: '-12px', left: '20px', background: EMERALD_LIGHT, borderTop: '2px solid #6ee7b7', borderRight: '2px solid #6ee7b7', borderLeft: '2px solid #6ee7b7', borderBottom: 'none', borderRight: 'none', borderRadius: '8px 0 0 0', width: '20px', height: '12px', transform: 'rotate(45deg)' } }),
@@ -603,20 +634,20 @@ window.SelHub = window.SelHub || {
           h('div', { style: { textAlign: 'center', marginBottom: '20px' } },
             h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '\uD83C\uDF1F'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: EMERALD_DARK, margin: '0 0 4px' } }, 'The Power of Yet'),
-            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Real people who didn\u2019t give up \u2014 and changed the world.')
+            h('p', { style: { fontSize: '13px', color: _gmC('#94a3b8'), margin: 0 } }, 'Real people who didn\u2019t give up \u2014 and changed the world.')
           ),
           // Story card
-          h('div', { style: { background: '#fff', borderRadius: '16px', padding: '24px', border: '1px solid #e5e7eb', boxShadow: '0 4px 20px rgba(0,0,0,0.06)', marginBottom: '16px' } },
+          h('div', { style: { background: _gmC('#fff'), borderRadius: '16px', padding: '24px', border: '1px solid ' + _gmC('#e5e7eb'), boxShadow: '0 4px 20px rgba(0,0,0,0.06)', marginBottom: '16px' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' } },
               h('div', { style: { fontSize: '36px' } }, currentStory.emoji),
               h('div', null,
-                h('h4', { style: { fontSize: '16px', fontWeight: 800, color: '#1f2937', margin: 0 } }, currentStory.name),
+                h('h4', { style: { fontSize: '16px', fontWeight: 800, color: _gmC('#1f2937'), margin: 0 } }, currentStory.name),
                 h('div', { style: { fontSize: '11px', color: EMERALD, fontWeight: 600 } }, currentStory.area)
               )
             ),
-            h('p', { style: { fontSize: '14px', lineHeight: 1.7, color: '#374151', margin: '0 0 14px' } }, currentStory.story),
-            h('div', { style: { background: '#fef9c3', borderRadius: '10px', padding: '12px', borderLeft: '4px solid #f59e0b' } },
-              h('p', { style: { fontSize: '13px', fontWeight: 600, color: '#92400e', margin: 0 } }, '\uD83D\uDCA1 ' + currentStory.lesson)
+            h('p', { style: { fontSize: '14px', lineHeight: 1.7, color: _gmC('#374151'), margin: '0 0 14px' } }, currentStory.story),
+            h('div', { style: { background: _gmC('#fef9c3'), borderRadius: '10px', padding: '12px', borderLeft: '4px solid #f59e0b' } },
+              h('p', { style: { fontSize: '13px', fontWeight: 600, color: _gmC('#92400e'), margin: 0 } }, '\uD83D\uDCA1 ' + currentStory.lesson)
             )
           ),
           // Navigation
@@ -627,9 +658,9 @@ window.SelHub = window.SelHub || {
                 upd({ storyIdx: prev, storiesRead: Object.assign({}, storiesRead, (function() { var o = {}; o[prev] = true; return o; })()) });
                 if (soundEnabled) sfxGrow();
               },
-              style: { padding: '8px 16px', background: '#fff', border: '2px solid #e5e7eb', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: '#374151' }
+              style: { padding: '8px 16px', background: _gmC('#fff'), border: '2px solid ' + _gmC('#e5e7eb'), borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: _gmC('#374151') }
             }, '\u2190 Previous'), // a11y: label set via visible text
-            h('span', { style: { display: 'flex', alignItems: 'center', fontSize: '12px', color: '#94a3b8' } },
+            h('span', { style: { display: 'flex', alignItems: 'center', fontSize: '12px', color: _gmC('#94a3b8') } },
               (storyIdx % stories.length + 1) + ' / ' + stories.length +
               ' \u00b7 ' + totalStories + ' read'
             ),
@@ -657,12 +688,12 @@ window.SelHub = window.SelHub || {
           h('div', { style: { textAlign: 'center', marginBottom: '20px' } },
             h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '\uD83D\uDDFA\uFE0F'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: EMERALD_DARK, margin: '0 0 4px' } }, 'My Growth Map'),
-            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Set goals using "I can\u2019t... YET" framing. Track your growth journey.')
+            h('p', { style: { fontSize: '13px', color: _gmC('#94a3b8'), margin: 0 } }, 'Set goals using "I can\u2019t... YET" framing. Track your growth journey.')
           ),
           // Add goal form
           h('div', { style: { display: 'flex', gap: '8px', marginBottom: '16px' } },
             h('div', { style: { flex: 1 } },
-              h('div', { style: { fontSize: '11px', fontWeight: 600, color: '#94a3b8', marginBottom: '3px' } }, 'I can\u2019t __________ YET.'),
+              h('div', { style: { fontSize: '11px', fontWeight: 600, color: _gmC('#94a3b8'), marginBottom: '3px' } }, 'I can\u2019t __________ YET.'),
               h('input', {
                 type: 'text', value: newGoalText,
                 onChange: function(ev) { upd('newGoalText', ev.target.value); },
@@ -693,7 +724,7 @@ window.SelHub = window.SelHub || {
           ),
           // Goal list
           growthGoals.length === 0
-            ? h('div', { style: { textAlign: 'center', padding: '30px', color: '#94a3b8' } },
+            ? h('div', { style: { textAlign: 'center', padding: '30px', color: _gmC('#94a3b8') } },
                 h('div', { style: { fontSize: '32px', marginBottom: '8px' } }, '\uD83C\uDF3F'),
                 h('p', { style: { fontSize: '13px' } }, 'No goals planted yet. What can\u2019t you do YET?')
               )
@@ -703,29 +734,29 @@ window.SelHub = window.SelHub || {
                   var stepsCount = (goal.steps || []).length;
                   return h('div', {
                     key: goal.id,
-                    style: { background: '#fff', border: '2px solid #d1fae5', borderRadius: '14px', padding: '16px', transition: 'border-color 0.15s' }
+                    style: { background: _gmC('#fff'), border: '2px solid ' + _gmC('#d1fae5'), borderRadius: '14px', padding: '16px', transition: 'border-color 0.15s' }
                   },
                     h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' } },
                       h('div', null,
-                        h('span', { style: { fontSize: '14px', fontWeight: 700, color: '#1f2937' } }, 'I can\u2019t '),
+                        h('span', { style: { fontSize: '14px', fontWeight: 700, color: _gmC('#1f2937') } }, 'I can\u2019t '),
                         h('span', { style: { fontSize: '14px', fontWeight: 700, color: EMERALD, textDecoration: 'underline', textDecorationColor: '#a7f3d0' } }, goal.text),
-                        h('span', { style: { fontSize: '14px', fontWeight: 700, color: '#1f2937' } }, ' '),
-                        h('span', { style: { fontSize: '14px', fontWeight: 800, color: AMBER, background: '#fef3c7', padding: '1px 6px', borderRadius: '4px' } }, 'YET')
+                        h('span', { style: { fontSize: '14px', fontWeight: 700, color: _gmC('#1f2937') } }, ' '),
+                        h('span', { style: { fontSize: '14px', fontWeight: 800, color: AMBER, background: _gmC('#fef3c7'), padding: '1px 6px', borderRadius: '4px' } }, 'YET')
                       ),
                       h('div', { style: { display: 'flex', gap: '4px', alignItems: 'center' } },
-                        h('span', { style: { fontSize: '10px', color: '#94a3b8' } }, daysSince === 0 ? 'today' : daysSince + 'd ago'),
+                        h('span', { style: { fontSize: '10px', color: _gmC('#94a3b8') } }, daysSince === 0 ? 'today' : daysSince + 'd ago'),
                         h('button', {
                           onClick: function() { upd('growthGoals', growthGoals.filter(function(g) { return g.id !== goal.id; })); },
-                          'aria-label': 'Remove goal', style: { background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: '4px', cursor: 'pointer', color: '#991b1b', fontSize: '12px', padding: '2px 4px' }
+                          'aria-label': 'Remove goal', style: { background: _gmC('#fee2e2'), border: '1px solid #fca5a5', borderRadius: '4px', cursor: 'pointer', color: _gmC('#991b1b'), fontSize: '12px', padding: '2px 4px' }
                         }, '\u2715')
                       )
                     ),
                     // Steps I've taken
-                    h('div', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '4px' } },
+                    h('div', { style: { fontSize: '11px', color: _gmC('#94a3b8'), marginBottom: '4px' } },
                       '\uD83D\uDC63 Steps I\u2019ve taken (' + stepsCount + '):'
                     ),
                     (goal.steps || []).map(function(step, si) {
-                      return h('div', { key: si, style: { fontSize: '12px', color: '#374151', padding: '2px 0 2px 16px', borderLeft: '2px solid #a7f3d0' } },
+                      return h('div', { key: si, style: { fontSize: '12px', color: _gmC('#374151'), padding: '2px 0 2px 16px', borderLeft: '2px solid #a7f3d0' } },
                         '\u2713 ' + step
                       );
                     }),
@@ -772,7 +803,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { textAlign: 'center', marginBottom: '20px' } },
             h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '\uD83E\uDD16'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: EMERALD_DARK, margin: '0 0 4px' } }, 'AI Growth Coach'),
-            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Share a struggle or a fixed mindset thought. Your coach will help you reframe it.'),
+            h('p', { style: { fontSize: '13px', color: _gmC('#94a3b8'), margin: 0 } }, 'Share a struggle or a fixed mindset thought. Your coach will help you reframe it.'),
             window.SelHub && window.SelHub.renderSafetyDisclosure && window.SelHub.renderSafetyDisclosure(h, band, ctx.activeSessionCode)
           ),
           // Surface 988 / Crisis Text Line block when last turn was tier-3.
@@ -786,7 +817,7 @@ window.SelHub = window.SelHub || {
                   maxWidth: '80%', padding: '10px 14px', borderRadius: isUser ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
                   background: isUser ? '#eff6ff' : EMERALD_LIGHT,
                   border: '1px solid ' + (isUser ? '#bfdbfe' : '#a7f3d0'),
-                  fontSize: '13px', lineHeight: 1.6, color: '#1f2937'
+                  fontSize: '13px', lineHeight: 1.6, color: _gmC('#1f2937')
                 } },
                   !isUser && h('div', { style: { fontSize: '10px', fontWeight: 700, color: EMERALD, marginBottom: '4px' } }, '\uD83C\uDF31 Growth Coach'),
                   msg.text
@@ -907,7 +938,7 @@ window.SelHub = window.SelHub || {
           ),
           // Starter prompts
           coachHistory.length === 0 && h('div', { style: { marginTop: '16px' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 600, color: '#94a3b8', marginBottom: '6px' } }, 'Try saying:'),
+            h('div', { style: { fontSize: '11px', fontWeight: 600, color: _gmC('#94a3b8'), marginBottom: '6px' } }, 'Try saying:'),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
               [
                 band === 'elementary' ? 'I\u2019m bad at math' : band === 'middle' ? 'I\u2019ll never be good at writing' : 'I\u2019m not smart enough for this class',
@@ -918,7 +949,7 @@ window.SelHub = window.SelHub || {
                   key: prompt,
                   'aria-label': 'Use starter prompt: ' + prompt,
                   onClick: function() { upd('coachInput', prompt); },
-                  style: { padding: '5px 10px', background: '#f0fdf4', border: '1px solid #a7f3d0', borderRadius: '20px', fontSize: '11px', cursor: 'pointer', color: EMERALD_DARK, fontWeight: 500 }
+                  style: { padding: '5px 10px', background: _gmC('#f0fdf4'), border: '1px solid #a7f3d0', borderRadius: '20px', fontSize: '11px', cursor: 'pointer', color: EMERALD_DARK, fontWeight: 500 }
                 }, prompt);
               })
             )
@@ -940,14 +971,14 @@ window.SelHub = window.SelHub || {
           h('div', { style: { textAlign: 'center', marginBottom: '20px' } },
             h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '\u2709\uFE0F'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: EMERALD_DARK, margin: '0 0 4px' } }, 'Letter to Future Me'),
-            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } },
+            h('p', { style: { fontSize: '13px', color: _gmC('#94a3b8'), margin: 0 } },
               band === 'elementary' ? 'Write a letter to yourself. One day you\u2019ll read it and see how much you\u2019ve grown!'
               : 'Document where you are right now. Your future self will read this and see the distance traveled.')
           ),
           // Writing area
-          h('div', { style: { background: '#fffbeb', borderRadius: '16px', padding: '20px', border: '2px solid #fde68a', marginBottom: '16px' } },
-            h('div', { style: { fontSize: '12px', color: '#92400e', fontWeight: 600, marginBottom: '4px' } }, dateStr),
-            h('div', { style: { fontSize: '13px', color: '#92400e', fontStyle: 'italic', marginBottom: '12px' } }, 'Dear Future Me,'),
+          h('div', { style: { background: _gmC('#fffbeb'), borderRadius: '16px', padding: '20px', border: '2px solid #fde68a', marginBottom: '16px' } },
+            h('div', { style: { fontSize: '12px', color: _gmC('#92400e'), fontWeight: 600, marginBottom: '4px' } }, dateStr),
+            h('div', { style: { fontSize: '13px', color: _gmC('#92400e'), fontStyle: 'italic', marginBottom: '12px' } }, 'Dear Future Me,'),
             h('textarea', {
               value: letterDraft,
               onChange: function(ev) { upd('letterDraft', ev.target.value); },
@@ -957,7 +988,7 @@ window.SelHub = window.SelHub || {
                 ? 'Here\u2019s what I\u2019m working on right now... What\u2019s hard for me is... What I want you (future me) to remember is...'
                 : 'Where I am right now... What I\u2019m struggling with... What I\u2019m choosing to believe about my ability to grow...',
               'aria-label': 'Write a letter to your future self',
-              style: { width: '100%', border: 'none', background: 'transparent', fontSize: '14px', fontFamily: 'Georgia, serif', lineHeight: 1.8, color: '#78350f', resize: 'vertical', minHeight: '120px', boxSizing: 'border-box', outline: 'none' }
+              style: { width: '100%', border: 'none', background: 'transparent', fontSize: '14px', fontFamily: 'Georgia, serif', lineHeight: 1.8, color: _gmC('#78350f'), resize: 'vertical', minHeight: '120px', boxSizing: 'border-box', outline: 'none' }
             }),
             h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: '8px' } },
               h('button', {
@@ -977,7 +1008,7 @@ window.SelHub = window.SelHub || {
           ),
           // Saved letters
           savedLetters.length > 0 && h('div', null,
-            h('div', { style: { fontSize: '12px', fontWeight: 700, color: '#374151', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' } },
+            h('div', { style: { fontSize: '12px', fontWeight: 700, color: _gmC('#374151'), marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' } },
               '\uD83D\uDCEC Letters From Past Me (' + savedLetters.length + ')'
             ),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
@@ -986,22 +1017,22 @@ window.SelHub = window.SelHub || {
                 var timeLabel = daysAgo === 0 ? 'Written today' : daysAgo === 1 ? 'Written yesterday' : 'Written ' + daysAgo + ' days ago';
                 return h('div', {
                   key: letter.id,
-                  style: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '14px', padding: '16px', position: 'relative' }
+                  style: { background: _gmC('#fff'), border: '1px solid ' + _gmC('#e5e7eb'), borderRadius: '14px', padding: '16px', position: 'relative' }
                 },
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
-                    h('div', { style: { fontSize: '11px', color: '#94a3b8' } }, letter.date + ' \u00b7 ' + timeLabel),
+                    h('div', { style: { fontSize: '11px', color: _gmC('#94a3b8') } }, letter.date + ' \u00b7 ' + timeLabel),
                     h('button', {
                       onClick: function() { upd('savedLetters', savedLetters.filter(function(l) { return l.id !== letter.id; })); },
                       'aria-label': 'Delete this letter',
-                      style: { background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: '4px', cursor: 'pointer', color: '#991b1b', fontSize: '10px', padding: '2px 6px' }
+                      style: { background: _gmC('#fee2e2'), border: '1px solid #fca5a5', borderRadius: '4px', cursor: 'pointer', color: _gmC('#991b1b'), fontSize: '10px', padding: '2px 6px' }
                     }, '\u2715')
                   ),
-                  h('div', { style: { fontSize: '13px', color: '#92400e', fontStyle: 'italic', marginBottom: '4px' } }, 'Dear Future Me,'),
-                  h('p', { style: { fontSize: '13px', lineHeight: 1.7, color: '#374151', margin: 0, fontFamily: 'Georgia, serif', whiteSpace: 'pre-wrap' } }, letter.text),
+                  h('div', { style: { fontSize: '13px', color: _gmC('#92400e'), fontStyle: 'italic', marginBottom: '4px' } }, 'Dear Future Me,'),
+                  h('p', { style: { fontSize: '13px', lineHeight: 1.7, color: _gmC('#374151'), margin: 0, fontFamily: 'Georgia, serif', whiteSpace: 'pre-wrap' } }, letter.text),
                   // Growth reflection prompt (shows after 7+ days)
                   daysAgo >= 7 && h('div', { style: { marginTop: '12px', background: EMERALD_LIGHT, borderRadius: '10px', padding: '10px 12px', borderLeft: '4px solid ' + EMERALD } },
                     h('div', { style: { fontSize: '11px', fontWeight: 700, color: EMERALD, marginBottom: '4px' } }, '\uD83C\uDF31 Reflection moment'),
-                    h('p', { style: { fontSize: '12px', color: '#374151', margin: 0 } },
+                    h('p', { style: { fontSize: '12px', color: _gmC('#374151'), margin: 0 } },
                       'You wrote this ' + daysAgo + ' days ago. Has anything changed? What would past-you think about where you are now?')
                   )
                 );
@@ -1009,7 +1040,7 @@ window.SelHub = window.SelHub || {
             )
           ),
           // Empty state
-          savedLetters.length === 0 && h('div', { style: { textAlign: 'center', padding: '20px', color: '#94a3b8' } },
+          savedLetters.length === 0 && h('div', { style: { textAlign: 'center', padding: '20px', color: _gmC('#94a3b8') } },
             h('p', { style: { fontSize: '13px', fontStyle: 'italic' } },
               band === 'elementary' ? 'When you write a letter, it gets sealed and saved here. One day you\u2019ll open it and be amazed at how far you\u2019ve come!'
               : 'Your letters create a time capsule of your growth journey. The most powerful evidence of growth is your own words looking back at where you started.')
@@ -1048,29 +1079,29 @@ window.SelHub = window.SelHub || {
           h('div', { style: { textAlign: 'center', marginBottom: '20px' } },
             h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '\uD83C\uDFEB'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: EMERALD_DARK, margin: '0 0 4px' } }, 'Educator Lens'),
-            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Growth mindset isn\u2019t just for students. The language adults use shapes the mindset culture of the classroom.')
+            h('p', { style: { fontSize: '13px', color: _gmC('#94a3b8'), margin: 0 } }, 'Growth mindset isn\u2019t just for students. The language adults use shapes the mindset culture of the classroom.')
           ),
           // Teacher reframe card
           h('div', { style: { marginBottom: '20px' } },
-            h('div', { style: { fontSize: '13px', fontWeight: 700, color: '#374151', marginBottom: '10px' } }, '\uD83D\uDD04 Reframe: What We Say About Students'),
-            h('div', { style: { background: '#fef2f2', border: '2px solid #fca5a5', borderRadius: '12px', padding: '14px', marginBottom: '8px' } },
-              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#dc2626', textTransform: 'uppercase', marginBottom: '4px' } }, 'Fixed mindset language'),
-              h('p', { style: { fontSize: '14px', fontWeight: 600, color: '#7f1d1d', margin: 0, fontStyle: 'italic' } }, '"' + currentTR.fixed + '"')
+            h('div', { style: { fontSize: '13px', fontWeight: 700, color: _gmC('#374151'), marginBottom: '10px' } }, '\uD83D\uDD04 Reframe: What We Say About Students'),
+            h('div', { style: { background: _gmC('#fef2f2'), border: '2px solid #fca5a5', borderRadius: '12px', padding: '14px', marginBottom: '8px' } },
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: _gmC('#dc2626'), textTransform: 'uppercase', marginBottom: '4px' } }, 'Fixed mindset language'),
+              h('p', { style: { fontSize: '14px', fontWeight: 600, color: _gmC('#7f1d1d'), margin: 0, fontStyle: 'italic' } }, '"' + currentTR.fixed + '"')
             ),
             h('div', { style: { background: EMERALD_LIGHT, border: '2px solid #6ee7b7', borderRadius: '12px', padding: '14px', marginBottom: '8px' } },
               h('div', { style: { fontSize: '10px', fontWeight: 700, color: EMERALD, textTransform: 'uppercase', marginBottom: '4px' } }, 'Growth mindset reframe'),
               h('p', { style: { fontSize: '14px', fontWeight: 600, color: EMERALD_DARK, margin: 0 } }, '"' + currentTR.growth + '"')
             ),
-            h('div', { style: { background: '#eff6ff', borderRadius: '10px', padding: '10px 12px', borderLeft: '4px solid #3b82f6', marginBottom: '10px' } },
-              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#2563eb', marginBottom: '2px' } }, '\uD83D\uDCDA Research'),
-              h('p', { style: { fontSize: '12px', color: '#374151', margin: 0, lineHeight: 1.5 } }, currentTR.research)
+            h('div', { style: { background: _gmC('#eff6ff'), borderRadius: '10px', padding: '10px 12px', borderLeft: '4px solid #3b82f6', marginBottom: '10px' } },
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: _gmC('#2563eb'), marginBottom: '2px' } }, '\uD83D\uDCDA Research'),
+              h('p', { style: { fontSize: '12px', color: _gmC('#374151'), margin: 0, lineHeight: 1.5 } }, currentTR.research)
             ),
             h('div', { style: { display: 'flex', justifyContent: 'center', gap: '8px' } },
               h('button', {
                 onClick: function() { upd('tReframeIdx', (tReframeIdx - 1 + TEACHER_REFRAMES.length) % TEACHER_REFRAMES.length); },
-                style: { padding: '6px 14px', background: '#fff', border: '2px solid #e5e7eb', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: 600, color: '#374151' }
+                style: { padding: '6px 14px', background: _gmC('#fff'), border: '2px solid ' + _gmC('#e5e7eb'), borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: 600, color: _gmC('#374151') }
               }, '\u2190 Prev'),
-              h('span', { style: { display: 'flex', alignItems: 'center', fontSize: '11px', color: '#94a3b8' } }, (tReframeIdx % TEACHER_REFRAMES.length + 1) + ' / ' + TEACHER_REFRAMES.length),
+              h('span', { style: { display: 'flex', alignItems: 'center', fontSize: '11px', color: _gmC('#94a3b8') } }, (tReframeIdx % TEACHER_REFRAMES.length + 1) + ' / ' + TEACHER_REFRAMES.length),
               h('button', {
                 onClick: function() { upd('tReframeIdx', (tReframeIdx + 1) % TEACHER_REFRAMES.length); },
                 style: { padding: '6px 14px', background: EMERALD, border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: 600, color: '#fff' }
@@ -1079,20 +1110,20 @@ window.SelHub = window.SelHub || {
           ),
           // Feedback phrase guide
           h('div', null,
-            h('div', { style: { fontSize: '13px', fontWeight: 700, color: '#374151', marginBottom: '10px' } }, '\uD83D\uDCAC Growth-Oriented Feedback Phrases'),
+            h('div', { style: { fontSize: '13px', fontWeight: 700, color: _gmC('#374151'), marginBottom: '10px' } }, '\uD83D\uDCAC Growth-Oriented Feedback Phrases'),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
               FEEDBACK_PHRASES.map(function(fp, i) {
-                return h('div', { key: i, style: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '10px', padding: '12px', display: 'flex', gap: '12px', alignItems: 'flex-start' } },
+                return h('div', { key: i, style: { background: _gmC('#fff'), border: '1px solid ' + _gmC('#e5e7eb'), borderRadius: '10px', padding: '12px', display: 'flex', gap: '12px', alignItems: 'flex-start' } },
                   h('div', { style: { flex: 1 } },
                     h('div', { style: { display: 'flex', gap: '6px', alignItems: 'center', marginBottom: '4px' } },
-                      h('span', { style: { fontSize: '10px', background: '#fef2f2', color: '#dc2626', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 } }, 'Instead of'),
-                      h('span', { style: { fontSize: '12px', color: '#94a3b8', fontStyle: 'italic' } }, '"' + fp.instead + '"')
+                      h('span', { style: { fontSize: '10px', background: _gmC('#fef2f2'), color: _gmC('#dc2626'), padding: '1px 6px', borderRadius: '4px', fontWeight: 600 } }, 'Instead of'),
+                      h('span', { style: { fontSize: '12px', color: _gmC('#94a3b8'), fontStyle: 'italic' } }, '"' + fp.instead + '"')
                     ),
                     h('div', { style: { display: 'flex', gap: '6px', alignItems: 'center', marginBottom: '4px' } },
                       h('span', { style: { fontSize: '10px', background: EMERALD_LIGHT, color: EMERALD, padding: '1px 6px', borderRadius: '4px', fontWeight: 600 } }, 'Try'),
-                      h('span', { style: { fontSize: '12px', color: '#1f2937', fontWeight: 600 } }, '"' + fp.try + '"')
+                      h('span', { style: { fontSize: '12px', color: _gmC('#1f2937'), fontWeight: 600 } }, '"' + fp.try + '"')
                     ),
-                    h('p', { style: { fontSize: '11px', color: '#94a3b8', margin: '2px 0 0', lineHeight: 1.4 } }, fp.why)
+                    h('p', { style: { fontSize: '11px', color: _gmC('#94a3b8'), margin: '2px 0 0', lineHeight: 1.4 } }, fp.why)
                   )
                 );
               })
@@ -1105,7 +1136,7 @@ window.SelHub = window.SelHub || {
       // ── Progress Summary (shown at bottom of every tab) ──
       // ══════════════════════════════════════════════════════════
       var progressBar = (totalFacts + totalReframes + totalStories) > 0
-        ? h('div', { style: { padding: '8px 16px', borderTop: '1px solid #d1fae5', background: '#f0fdf4', display: 'flex', gap: '16px', alignItems: 'center', fontSize: '10px', color: '#94a3b8', flexShrink: 0 } },
+        ? h('div', { style: { padding: '8px 16px', borderTop: '1px solid ' + _gmC('#d1fae5'), background: _gmC('#f0fdf4'), display: 'flex', gap: '16px', alignItems: 'center', fontSize: '10px', color: _gmC('#94a3b8'), flexShrink: 0 } },
             h('span', null, '\uD83E\uDDE0 ' + totalFacts + ' facts'),
             h('span', null, '\uD83D\uDD04 ' + totalReframes + ' reframed'),
             h('span', null, '\uD83C\uDF1F ' + totalStories + ' stories'),
