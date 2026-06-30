@@ -113,6 +113,125 @@
     return 'g912';
   }
 
+
+  /* ============ Deterministic CAS engine (ground-truth math; NEVER the LLM) ============ */
+  // CSP-safe: a tiny tokenizer + recursive-descent evaluator over + - * / ^, parens, unary
+  // minus, sqrt/abs and a single variable x. NO eval()/Function. gradeAnswer is the
+  // AUTHORITATIVE practice grader (root-multiset match, else sample-point equivalence);
+  // verifySolution substitutes a proposed root back into the equation. Exposed on
+  // window.__alloCASPure for unit tests.
+  var __alloCASPure = (function () {
+    var TOL = 1e-6;
+    function normalize(s) {
+      if (s == null) return '';
+      return String(s)
+        .replace(/²/g, '^2').replace(/³/g, '^3')
+        .replace(/×/g, '*').replace(/÷/g, '/')
+        .replace(/√/g, 'sqrt').replace(/−/g, '-')
+        .replace(/\s+/g, '');
+    }
+    var FUNCS = { sqrt: 1, abs: 1 };
+    function tokenize(s) {
+      var toks = [], i = 0;
+      while (i < s.length) {
+        var c = s[i];
+        if ((c >= '0' && c <= '9') || c === '.') {
+          var num = '';
+          while (i < s.length && ((s[i] >= '0' && s[i] <= '9') || s[i] === '.')) { num += s[i]; i++; }
+          toks.push({ t: 'num', v: parseFloat(num) });
+        } else if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) {
+          var id = '';
+          while (i < s.length && ((s[i] >= 'a' && s[i] <= 'z') || (s[i] >= 'A' && s[i] <= 'Z'))) { id += s[i]; i++; }
+          var low = id.toLowerCase();
+          if (FUNCS[low]) toks.push({ t: 'func', v: low }); else toks.push({ t: 'var', v: low });
+        } else if ('+-*/^()'.indexOf(c) >= 0) { toks.push({ t: 'op', v: c }); i++; }
+        else return null;
+      }
+      var out = [];
+      for (var k = 0; k < toks.length; k++) {
+        if (k > 0) {
+          var p = toks[k - 1], q = toks[k];
+          var pEnd = (p.t === 'num' || p.t === 'var' || (p.t === 'op' && p.v === ')'));
+          var qStart = (q.t === 'num' || q.t === 'var' || q.t === 'func' || (q.t === 'op' && q.v === '('));
+          if (pEnd && qStart) out.push({ t: 'op', v: '*' });
+        }
+        out.push(toks[k]);
+      }
+      return out;
+    }
+    function evalTokens(toks, xval) {
+      var pos = 0;
+      function peek() { return toks[pos]; }
+      function next() { return toks[pos++]; }
+      function pExpr() { var v = pTerm(); while (peek() && peek().t === 'op' && (peek().v === '+' || peek().v === '-')) { var op = next().v; var r = pTerm(); v = op === '+' ? v + r : v - r; } return v; }
+      function pTerm() { var v = pFactor(); while (peek() && peek().t === 'op' && (peek().v === '*' || peek().v === '/')) { var op = next().v; var r = pFactor(); v = op === '*' ? v * r : v / r; } return v; }
+      function pFactor() { var v = pBase(); if (peek() && peek().t === 'op' && peek().v === '^') { next(); var r = pFactor(); v = Math.pow(v, r); } return v; }
+      function pBase() {
+        var tk = peek();
+        if (!tk) throw 0;
+        if (tk.t === 'op' && tk.v === '-') { next(); return -pBase(); }
+        if (tk.t === 'op' && tk.v === '+') { next(); return pBase(); }
+        if (tk.t === 'num') { next(); return tk.v; }
+        if (tk.t === 'var') { next(); return xval; }
+        if (tk.t === 'func') { next(); if (!peek() || peek().v !== '(') throw 0; next(); var a = pExpr(); if (!peek() || peek().v !== ')') throw 0; next(); return tk.v === 'sqrt' ? Math.sqrt(a) : Math.abs(a); }
+        if (tk.t === 'op' && tk.v === '(') { next(); var e = pExpr(); if (!peek() || peek().v !== ')') throw 0; next(); return e; }
+        throw 0;
+      }
+      var result = pExpr();
+      if (pos !== toks.length) throw 0;
+      return result;
+    }
+    function evalAt(exprStr, xval) {
+      try { var toks = tokenize(normalize(exprStr)); if (!toks || !toks.length) return NaN; var v = evalTokens(toks, xval); return (typeof v === 'number' && isFinite(v)) ? v : NaN; } catch (e) { return NaN; }
+    }
+    function parseEquation(str) { var s = normalize(str); var parts = s.split('='); if (parts.length === 1) return { lhs: parts[0], rhs: '0' }; if (parts.length === 2) return { lhs: parts[0], rhs: parts[1] }; return null; }
+    function _constValue(p) { var a = evalAt(p, 0), b = evalAt(p, 1.7); if (isNaN(a)) return NaN; if (Math.abs(a - b) < 1e-9) return a; return NaN; }
+    function extractRoots(answerStr) {
+      if (answerStr == null) return [];
+      var parts = String(answerStr).split(/,|;|\bor\b|\band\b/i), roots = [];
+      for (var i = 0; i < parts.length; i++) {
+        var p = parts[i].replace(/[a-zA-Z]\s*=\s*/, '').replace(/[{}\[\]]/g, '').trim();
+        if (!p) continue;
+        var v = _constValue(p);
+        if (!isNaN(v)) roots.push(v);
+      }
+      return roots;
+    }
+    function _sameMultiset(a, b) { if (a.length !== b.length) return false; var x = a.slice().sort(function (p, q) { return p - q; }), y = b.slice().sort(function (p, q) { return p - q; }); for (var i = 0; i < x.length; i++) if (Math.abs(x[i] - y[i]) > 1e-6 * Math.max(1, Math.abs(x[i]))) return false; return true; }
+    function _fmt(n) { var r = Math.round(n * 1e6) / 1e6; return String(r); }
+    function verifySolution(exprOrEq, answerStr) {
+      var eq = parseEquation(exprOrEq), roots = extractRoots(answerStr);
+      if (!eq || !roots.length) return { decidable: false, verified: null, roots: [], residuals: [], detail: 'Not auto-verifiable' };
+      var residuals = [], allOk = true, details = [];
+      for (var i = 0; i < roots.length; i++) {
+        var L = evalAt(eq.lhs, roots[i]), R = evalAt(eq.rhs, roots[i]);
+        if (isNaN(L) || isNaN(R)) return { decidable: false, verified: null, roots: roots, residuals: [], detail: 'Not auto-verifiable' };
+        var res = L - R; residuals.push(res);
+        var tol = TOL * Math.max(1, Math.abs(L), Math.abs(R));
+        if (Math.abs(res) > tol) allOk = false;
+        details.push('x=' + _fmt(roots[i]) + ': LHS=' + _fmt(L) + ', RHS=' + _fmt(R));
+      }
+      return { decidable: true, verified: allOk, roots: roots, residuals: residuals, detail: details.join('; ') };
+    }
+    function gradeAnswer(studentStr, correctStr) {
+      var rS = extractRoots(studentStr), rC = extractRoots(correctStr);
+      if (rS.length && rC.length) { var ok = _sameMultiset(rS, rC); return { decidable: true, correct: ok, method: 'roots', detail: ok ? 'Both give x = ' + rC.map(_fmt).join(', ') : 'Roots differ' }; }
+      var sN = normalize(studentStr), cN = normalize(correctStr);
+      if (!sN || !cN) return { decidable: false, correct: false, method: 'na', detail: 'Could not auto-check' };
+      var samples = [-3, -2, -1, 0.5, 2, 3, 5], valid = 0, allEq = true;
+      for (var i = 0; i < samples.length; i++) {
+        var a = evalAt(sN, samples[i]), b = evalAt(cN, samples[i]);
+        if (isNaN(a) || isNaN(b)) continue;
+        valid++;
+        if (Math.abs(a - b) > TOL * Math.max(1, Math.abs(a), Math.abs(b))) allEq = false;
+      }
+      if (valid >= 3) return { decidable: true, correct: allEq, method: 'sample', detail: allEq ? 'Equivalent at ' + valid + ' test points' : 'Not equivalent' };
+      return { decidable: false, correct: false, method: 'na', detail: 'Could not auto-check' };
+    }
+    return { normalize: normalize, evalAt: evalAt, parseEquation: parseEquation, extractRoots: extractRoots, verifySolution: verifySolution, gradeAnswer: gradeAnswer };
+  })();
+  try { window.__alloCASPure = __alloCASPure; } catch (_e) {}
+
   /* ============ TTS Helper (Kokoro-first) ============ */
   function speakText(text, callTTS) {
     SOUNDS.tts();
@@ -339,13 +458,14 @@
           callGemini(prompt).then(function(res) {
             upd('isLoading', false);
             if (res) {
-              var isRight = /CORRECT:\s*yes/i.test(res);
+              var _det = __alloCASPure.gradeAnswer(practiceAnswer.trim(), practiceQ.answer);
+              var isRight = _det.decidable ? _det.correct : /CORRECT:\s*yes/i.test(res);
               var newStreak = isRight ? practiceStreak + 1 : 0;
               var maxSt = Math.max(d._maxStreak || 0, newStreak);
               if (isRight) { SOUNDS.correct(); if (awardStemXP) awardStemXP('algebraCAS', 10, 'Practice correct'); }
               else { SOUNDS.wrong(); }
               if (isRight && stemCelebrate && newStreak % 3 === 0) stemCelebrate();
-              updMulti({ practiceFeedback: { correct: isRight, text: res }, practiceScore: practiceScore + (isRight ? 1 : 0), practiceStreak: newStreak, _maxStreak: maxSt, showSolution: !isRight });
+              updMulti({ practiceFeedback: { correct: isRight, text: res, gradeSource: _det.decidable ? 'verified' : 'ai', gradeDetail: _det.decidable ? _det.detail : '' }, practiceScore: practiceScore + (isRight ? 1 : 0), practiceStreak: newStreak, _maxStreak: maxSt, showSolution: !isRight });
               checkBadges(Object.assign({}, d, { _maxStreak: maxSt }));
             }
           }).catch(function() { upd('isLoading', false); });
@@ -556,6 +676,7 @@
               ) : null,
               practiceFeedback ? h('div', { style: { padding: '10px', borderRadius: '12px', background: practiceFeedback.correct ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', border: '1px solid ' + (practiceFeedback.correct ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'), marginBottom: '8px' } },
                 h('div', { style: { fontSize: '13px', fontWeight: '700', marginBottom: '6px' } }, practiceFeedback.correct ? '\uD83C\uDF89 Correct!' : '\u274C Not quite...'),
+                practiceFeedback.gradeSource === 'verified' ? h('div', { style: { fontSize: '10px', fontWeight: '700', color: '#34d399', marginBottom: '6px' } }, '\u2713 ' + t('stem.algebraCAS.checked_by_engine', 'Checked by the math engine') + (practiceFeedback.gradeDetail ? ' \u2014 ' + practiceFeedback.gradeDetail : '')) : null,
                 h('div', { style: { fontSize: '11px', marginBottom: '6px' } }, (function() { var fb = practiceFeedback.text.match(/FEEDBACK:\s*(.+)/i); return fb ? fb[1].trim() : ''; })()),
                 h('button', { 'aria-label': t('stem.algebraCAS.no_solution_available', 'No solution available.'), onClick: function() { upd('showSolution', !showSolution); },
                   style: { fontSize: '11px', fontWeight: '700', padding: '4px 10px', borderRadius: '8px', background: showSolution ? 'rgba(99,102,241,0.15)' : CARD, color: showSolution ? '#a5b4fc' : MUTED, border: '1px solid ' + BORDER, cursor: 'pointer', marginBottom: '6px' }
