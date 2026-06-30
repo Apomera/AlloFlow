@@ -522,11 +522,11 @@ function HighlightOverlay({ a, onDelete }) {
         background: "transparent"
       },
       onMouseEnter: function(e) {
-        const btn = e.currentTarget.querySelector('button[aria-label={t("a11y.delete_highlight")}]');
+        const btn = e.currentTarget.querySelector("button");
         if (btn) btn.style.opacity = "1";
       },
       onMouseLeave: function(e) {
-        const btn = e.currentTarget.querySelector('button[aria-label={t("a11y.delete_highlight")}]');
+        const btn = e.currentTarget.querySelector("button");
         if (btn) btn.style.opacity = "0";
       }
     },

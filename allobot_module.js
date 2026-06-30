@@ -1937,7 +1937,562 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
             strokeLinecap: "round",
             transform: "rotate(-10 50 20)"
           }
-        )), effectiveAccessory === "hard-hat" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center" }, /* @__PURE__ */ React.createElement("path", { d: "M25 26 Q25 6 50 4 Q75 6 75 26 Z", fill: "#F59E0B", stroke: "#D97706", strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("path", { d: "M18 26 Q50 32 82 26 Q80 28 50 33 Q20 28 18 26 Z", fill: "#D97706", stroke: "#B45309", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M38 8 Q50 5 62 8", stroke: "#FCD34D", strokeWidth: "2", fill: "none", opacity: "0.6" }), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "18", r: "5", fill: "#374151", stroke: "#1F2937", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "18", r: "3", fill: "#FEF3C7", opacity: "0.9" }), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "18", r: "7", fill: "#FEF3C7", opacity: "0.15" })), effectiveAccessory === "sleep-cap" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center" }, /* @__PURE__ */ React.createElement("path", { d: "M30 24 Q28 12 40 6 Q55 0 70 10 Q85 22 80 40 Q78 48 74 52", fill: "#6366F1", stroke: "#4F46E5", strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("path", { d: "M35 18 Q50 12 65 18", stroke: "#818CF8", strokeWidth: "2.5", fill: "none", opacity: "0.5" }), /* @__PURE__ */ React.createElement("path", { d: "M40 12 Q52 7 64 14", stroke: "#818CF8", strokeWidth: "2", fill: "none", opacity: "0.4" }), /* @__PURE__ */ React.createElement("circle", { cx: "74", cy: "52", r: "6", fill: "#C4B5FD", stroke: "#A78BFA", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "72", cy: "50", r: "2", fill: "white", opacity: "0.4" }), /* @__PURE__ */ React.createElement("path", { d: "M28 24 Q50 28 72 22", stroke: "#4338CA", strokeWidth: "2.5", fill: "none" })), effectiveAccessory === "microscope" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-28, 8)" }, /* @__PURE__ */ React.createElement("ellipse", { cx: "8", cy: "82", rx: "14", ry: "4", fill: "#334155" }), /* @__PURE__ */ React.createElement("rect", { x: "2", y: "78", width: "12", height: "4", rx: "1", fill: "#475569" }), /* @__PURE__ */ React.createElement("rect", { x: "6", y: "38", width: "4", height: "42", rx: "1", fill: "#64748B" }), /* @__PURE__ */ React.createElement("path", { d: "M8 40 Q8 32 16 28", stroke: "#64748B", strokeWidth: "4", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("rect", { x: "13", y: "22", width: "6", height: "18", rx: "2", fill: "#94A3B8", stroke: "#475569", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "11", y: "18", width: "10", height: "6", rx: "2", fill: "#334155" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "16", cy: "18", rx: "5", ry: "2", fill: "#1e293b" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "15", cy: "17", rx: "2", ry: "1", fill: "white", opacity: "0.3" }), /* @__PURE__ */ React.createElement("rect", { x: "14", y: "40", width: "4", height: "5", rx: "1", fill: "#334155" }), /* @__PURE__ */ React.createElement("circle", { cx: "16", cy: "46", r: "3", fill: "#93c5fd", opacity: "0.5", stroke: "#475569", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "4", y: "48", width: "22", height: "3", rx: "1", fill: "#475569" }), /* @__PURE__ */ React.createElement("rect", { x: "8", y: "47", width: "12", height: "2", rx: "0.5", fill: "rgba(219, 234, 254, 0.6)", stroke: "#93c5fd", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "2", cy: "52", r: "3", fill: "#64748B", stroke: "#475569", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "2", cy: "52", r: "1.5", fill: "#94a3b8" }), /* @__PURE__ */ React.createElement("circle", { cx: "16", cy: "46", r: "6", fill: "rgba(147, 197, 253, 0.15)" }, /* @__PURE__ */ React.createElement("animate", { attributeName: "opacity", values: "0.1;0.25;0.1", dur: "3s", repeatCount: "indefinite" }))), effectiveAccessory === "historian" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-22, 38)" }, /* @__PURE__ */ React.createElement("ellipse", { cx: "14", cy: "48", rx: "18", ry: "3", fill: "#7C2D12", opacity: "0.25" }), /* @__PURE__ */ React.createElement("g", { transform: "rotate(-14 6 32)" }, /* @__PURE__ */ React.createElement("rect", { x: "-4", y: "14", width: "20", height: "26", rx: "1", fill: "#FEF3C7", stroke: "#92400E", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "20", x2: "12", y2: "20", stroke: "#78350F", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "24", x2: "12", y2: "24", stroke: "#78350F", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "28", x2: "10", y2: "28", stroke: "#78350F", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "32", x2: "12", y2: "32", stroke: "#78350F", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "36", x2: "9", y2: "36", stroke: "#78350F", strokeWidth: "0.6" })), /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("rect", { x: "4", y: "12", width: "20", height: "26", rx: "1", fill: "#FFFBEB", stroke: "#7C2D12", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "20", cy: "16", r: "2", fill: "#DC2626", stroke: "#7F1D1D", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("path", { d: "M19 15 L21 15 M20 14 L20 16", stroke: "#FECACA", strokeWidth: "0.4" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "22", x2: "17", y2: "22", stroke: "#7C2D12", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "26", x2: "18", y2: "26", stroke: "#7C2D12", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "30", x2: "15", y2: "30", stroke: "#7C2D12", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "34", x2: "17", y2: "34", stroke: "#7C2D12", strokeWidth: "0.6" })), /* @__PURE__ */ React.createElement("g", { transform: "rotate(14 22 32)" }, /* @__PURE__ */ React.createElement("rect", { x: "12", y: "14", width: "20", height: "26", rx: "1", fill: "#FED7AA", stroke: "#9A3412", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("line", { x1: "16", y1: "20", x2: "28", y2: "20", stroke: "#9A3412", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "16", y1: "24", x2: "28", y2: "24", stroke: "#9A3412", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "16", y1: "28", x2: "26", y2: "28", stroke: "#9A3412", strokeWidth: "0.6" })), /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("path", { d: "M 22 8 Q 30 -2 34 -10", stroke: "#1F2937", strokeWidth: "1.2", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M 20 10 Q 28 0 34 -10 Q 32 -2 28 6 Q 24 10 20 10 Z", fill: "#0F172A", stroke: "#1F2937", strokeWidth: "0.5", opacity: "0.85" }, /* @__PURE__ */ React.createElement("animateTransform", { attributeName: "transform", type: "rotate", values: "0 22 8;3 22 8;0 22 8;-3 22 8;0 22 8", dur: "6s", repeatCount: "indefinite" })), /* @__PURE__ */ React.createElement("circle", { cx: "22", cy: "9", r: "1.4", fill: "#1E40AF" }))), effectiveAccessory === "teacher-stack" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-20, 34)" }, /* @__PURE__ */ React.createElement("ellipse", { cx: "16", cy: "52", rx: "18", ry: "3", fill: "#1F2937", opacity: "0.18" }), /* @__PURE__ */ React.createElement("rect", { x: "0", y: "40", width: "34", height: "11", rx: "1.5", fill: "#FCD34D", stroke: "#B45309", strokeWidth: "1.2", transform: "rotate(-3 17 45)" }), /* @__PURE__ */ React.createElement("line", { x1: "5", y1: "45", x2: "24", y2: "45", stroke: "#B45309", strokeWidth: "0.7", transform: "rotate(-3 17 45)" }), /* @__PURE__ */ React.createElement("rect", { x: "2", y: "30", width: "32", height: "11", rx: "1.5", fill: "#34D399", stroke: "#047857", strokeWidth: "1.2", transform: "rotate(2 18 35)" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "35", x2: "26", y2: "35", stroke: "#047857", strokeWidth: "0.7", transform: "rotate(2 18 35)" }), /* @__PURE__ */ React.createElement("rect", { x: "1", y: "20", width: "32", height: "11", rx: "1.5", fill: "#60A5FA", stroke: "#1D4ED8", strokeWidth: "1.2", transform: "rotate(-2 17 25)" }), /* @__PURE__ */ React.createElement("line", { x1: "6", y1: "25", x2: "25", y2: "25", stroke: "#1D4ED8", strokeWidth: "0.7", transform: "rotate(-2 17 25)" }), /* @__PURE__ */ React.createElement("g", { transform: "translate(17, 9)" }, /* @__PURE__ */ React.createElement("path", { d: "M 0 3 C -7 3 -9 9 -6 14 C -4 17 -2 18 0 17 C 2 18 4 17 6 14 C 9 9 7 3 0 3 Z", fill: "#EF4444", stroke: "#991B1B", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M 0 4 Q -1 6 0 7 Q 1 6 0 4 Z", fill: "#B91C1C", opacity: "0.6" }), /* @__PURE__ */ React.createElement("path", { d: "M 0 4 L 0 -2", stroke: "#7C2D12", strokeWidth: "1.6", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M 0 -1 Q 6 -4 8 1 Q 3 2 0 -1 Z", fill: "#22C55E", stroke: "#15803D", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "-2.5", cy: "8", rx: "1.8", ry: "3", fill: "#fff", opacity: "0.45", transform: "rotate(-20 -2.5 8)" }))), effectiveAccessory === "scholar-specs" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-500 origin-center" }, /* @__PURE__ */ React.createElement("circle", { cx: "38", cy: "48", r: "9", fill: "rgba(219, 234, 254, 0.25)", stroke: "#1F2937", strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "62", cy: "48", r: "9", fill: "rgba(219, 234, 254, 0.25)", stroke: "#1F2937", strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("path", { d: "M 47 48 Q 50 45 53 48", stroke: "#1F2937", strokeWidth: "1.5", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M 29 47 Q 24 45 22 47", stroke: "#1F2937", strokeWidth: "1.2", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M 71 47 Q 76 45 78 47", stroke: "#1F2937", strokeWidth: "1.2", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "35", cy: "46", rx: "2.5", ry: "1.4", fill: "white", opacity: "0.55" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "59", cy: "46", rx: "2.5", ry: "1.4", fill: "white", opacity: "0.55" }), /* @__PURE__ */ React.createElement("g", { transform: "translate(-26, 56)" }, /* @__PURE__ */ React.createElement("path", { d: "M 0 0 L 28 0 L 28 18 L 0 18 Z", fill: "#FFFBEB", stroke: "#78350F", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M 14 0 L 14 18", stroke: "#78350F", strokeWidth: "0.8" }), /* @__PURE__ */ React.createElement("line", { x1: "3", y1: "4", x2: "11", y2: "4", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "3", y1: "7", x2: "12", y2: "7", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "3", y1: "10", x2: "10", y2: "10", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "3", y1: "13", x2: "11", y2: "13", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "17", y1: "4", x2: "25", y2: "4", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "17", y1: "7", x2: "24", y2: "7", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "17", y1: "10", x2: "25", y2: "10", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "17", y1: "13", x2: "23", y2: "13", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("path", { d: "M -2 0 L 30 0 L 30 -2 L -2 -2 Z", fill: "#7C2D12", stroke: "#451A03", strokeWidth: "0.8" }))), effectiveAccessory === "thinking-cap" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center" }, /* @__PURE__ */ React.createElement("path", { d: "M 28 26 Q 25 8 50 6 Q 75 8 72 26 Z", fill: "#7C3AED", stroke: "#5B21B6", strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("path", { d: "M 28 26 Q 50 30 72 26", stroke: "#4C1D95", strokeWidth: "2", fill: "none" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "50", cy: "6", rx: "4", ry: "2", fill: "#A78BFA", opacity: "0.5" }), /* @__PURE__ */ React.createElement("g", { transform: "translate(50, 0)" }, /* @__PURE__ */ React.createElement("ellipse", { cx: "0", cy: "-4", rx: "5", ry: "6", fill: "#FEF08A", stroke: "#CA8A04", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "-1.5", cy: "-6", rx: "1.5", ry: "2", fill: "#FFFBEB", opacity: "0.7" }), /* @__PURE__ */ React.createElement("rect", { x: "-2.5", y: "1", width: "5", height: "2", rx: "0.5", fill: "#94A3B8" }), /* @__PURE__ */ React.createElement("rect", { x: "-2", y: "3", width: "4", height: "1.5", rx: "0.5", fill: "#64748B" }), /* @__PURE__ */ React.createElement("circle", { cx: "0", cy: "-4", r: "9", fill: "#FEF08A", opacity: "0.18" }, /* @__PURE__ */ React.createElement("animate", { attributeName: "opacity", values: "0.1;0.32;0.1", dur: "2.4s", repeatCount: "indefinite" }), /* @__PURE__ */ React.createElement("animate", { attributeName: "r", values: "8;11;8", dur: "2.4s", repeatCount: "indefinite" }))), /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("path", { d: "M 0 -2 L 0.6 -0.6 L 2 0 L 0.6 0.6 L 0 2 L -0.6 0.6 L -2 0 L -0.6 -0.6 Z", fill: "#FBBF24", stroke: "#D97706", strokeWidth: "0.4", transform: "translate(70 -8)" })), /* @__PURE__ */ React.createElement("animateTransform", { attributeName: "transform", type: "rotate", from: "0 50 -2", to: "360 50 -2", dur: "9s", repeatCount: "indefinite" })), /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("path", { d: "M 0 -1.6 L 0.5 -0.5 L 1.6 0 L 0.5 0.5 L 0 1.6 L -0.5 0.5 L -1.6 0 L -0.5 -0.5 Z", fill: "#F472B6", stroke: "#BE185D", strokeWidth: "0.4", transform: "translate(74 -2)" })), /* @__PURE__ */ React.createElement("animateTransform", { attributeName: "transform", type: "rotate", from: "120 50 -2", to: "480 50 -2", dur: "11s", repeatCount: "indefinite" })), /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("path", { d: "M 0 -1.4 L 0.45 -0.45 L 1.4 0 L 0.45 0.45 L 0 1.4 L -0.45 0.45 L -1.4 0 L -0.45 -0.45 Z", fill: "#60A5FA", stroke: "#1E40AF", strokeWidth: "0.4", transform: "translate(72 4)" })), /* @__PURE__ */ React.createElement("animateTransform", { attributeName: "transform", type: "rotate", from: "240 50 -2", to: "600 50 -2", dur: "8s", repeatCount: "indefinite" }))), effectiveAccessory === "sorting-cubes" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center" }, /* @__PURE__ */ React.createElement("ellipse", { cx: "50", cy: "32", rx: "22", ry: "3", fill: "#1F2937", opacity: "0.18" }), /* @__PURE__ */ React.createElement("g", { transform: "translate(38 18) rotate(-6)" }, /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "14", height: "14", rx: "1.5", fill: "#3B82F6", stroke: "#1E3A8A", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M 0 0 L 14 0 L 14 14", stroke: "#60A5FA", strokeWidth: "1", fill: "none", opacity: "0.6" }), /* @__PURE__ */ React.createElement("circle", { cx: "4", cy: "4", r: "1", fill: "#DBEAFE", opacity: "0.7" })), /* @__PURE__ */ React.createElement("g", { transform: "translate(46 6) rotate(8)" }, /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "14", height: "14", rx: "1.5", fill: "#22C55E", stroke: "#14532D", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M 0 0 L 14 0 L 14 14", stroke: "#4ADE80", strokeWidth: "1", fill: "none", opacity: "0.6" }), /* @__PURE__ */ React.createElement("path", { d: "M 3 7 L 6 10 L 11 4", stroke: "#DCFCE7", strokeWidth: "1.5", fill: "none", strokeLinecap: "round", strokeLinejoin: "round" })), /* @__PURE__ */ React.createElement("g", { transform: "translate(54 -4) rotate(-4)" }, /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "13", height: "13", rx: "1.5", fill: "#EF4444", stroke: "#7F1D1D", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M 0 0 L 13 0 L 13 13", stroke: "#FCA5A5", strokeWidth: "1", fill: "none", opacity: "0.6" }), /* @__PURE__ */ React.createElement("path", { d: "M 4 4 L 9 9 M 9 4 L 4 9", stroke: "#FEE2E2", strokeWidth: "1.4", strokeLinecap: "round" }))), effectiveAccessory === "clarity-crown" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center" }, /* @__PURE__ */ React.createElement("path", { d: "M 22 28 L 28 12 L 35 22 L 42 8 L 50 20 L 58 8 L 65 22 L 72 12 L 78 28 Z", fill: "#FCD34D", stroke: "#B45309", strokeWidth: "1.4" }), /* @__PURE__ */ React.createElement("path", { d: "M 22 28 Q 50 32 78 28", stroke: "#92400E", strokeWidth: "1.6", fill: "none" }), /* @__PURE__ */ React.createElement("circle", { cx: "28", cy: "13", r: "2.4", fill: "#FDE68A", stroke: "#92400E", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("g", { transform: "translate(35 17)" }, /* @__PURE__ */ React.createElement("circle", { cx: "0", cy: "0", r: "2.2", fill: "#FBBF24", stroke: "#92400E", strokeWidth: "0.4" }), /* @__PURE__ */ React.createElement("line", { x1: "-3", y1: "0", x2: "-2", y2: "0", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "3", y1: "0", x2: "2", y2: "0", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "-3", x2: "0", y2: "-2", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "3", x2: "0", y2: "2", stroke: "#92400E", strokeWidth: "0.5" })), /* @__PURE__ */ React.createElement("path", { d: "M 42 8 Q 40 12 42 18 Q 44 12 42 8 Z", fill: "#60A5FA", stroke: "#1E40AF", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "50", cy: "15", rx: "2.5", ry: "3.5", fill: "#22C55E", stroke: "#14532D", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "50", y1: "11", x2: "50", y2: "18", stroke: "#14532D", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("path", { d: "M 58 8 Q 56 12 58 18 Q 60 12 58 8 Z", fill: "#F472B6", stroke: "#BE185D", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("circle", { cx: "65", cy: "17", r: "2.2", fill: "#A78BFA", stroke: "#5B21B6", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "72", cy: "13", r: "2.4", fill: "#FDE68A", stroke: "#92400E", strokeWidth: "0.6" }))), /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement("radialGradient", { id: `bodyGradient-${effectiveMood}`, cx: "35%", cy: "35%", r: "65%", fx: "30%", fy: "30%" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: colors.gradFrom }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: colors.gradTo })), /* @__PURE__ */ React.createElement("radialGradient", { id: "rimLightGradient", cx: "70%", cy: "70%", r: "70%" }, /* @__PURE__ */ React.createElement("stop", { offset: "82%", stopColor: "#fff", stopOpacity: "0" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "#fff", stopOpacity: "0.4" })), /* @__PURE__ */ React.createElement("linearGradient", { id: "hologram-gradient", x1: "0", y1: "0", x2: "0", y2: "1" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "#22D3EE", stopOpacity: "0" }), /* @__PURE__ */ React.createElement("stop", { offset: "20%", stopColor: "#22D3EE", stopOpacity: "0.1" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "#22D3EE", stopOpacity: "0.6" })), /* @__PURE__ */ React.createElement("linearGradient", { id: "visorReflect", x1: "0%", y1: "0%", x2: "100%", y2: "100%" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "white", stopOpacity: "0.4" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "white", stopOpacity: "0" })), /* @__PURE__ */ React.createElement("linearGradient", { id: "hologram-beam", x1: "0%", y1: "100%", x2: "0%", y2: "0%" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "#06B6D4", stopOpacity: "0.6" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "#06B6D4", stopOpacity: "0" }))))
+        )), effectiveAccessory === "hard-hat" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center" }, /* @__PURE__ */ React.createElement("path", { d: "M25 26 Q25 6 50 4 Q75 6 75 26 Z", fill: "#F59E0B", stroke: "#D97706", strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("path", { d: "M18 26 Q50 32 82 26 Q80 28 50 33 Q20 28 18 26 Z", fill: "#D97706", stroke: "#B45309", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M38 8 Q50 5 62 8", stroke: "#FCD34D", strokeWidth: "2", fill: "none", opacity: "0.6" }), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "18", r: "5", fill: "#374151", stroke: "#1F2937", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "18", r: "3", fill: "#FEF3C7", opacity: "0.9" }), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "18", r: "7", fill: "#FEF3C7", opacity: "0.15" })), effectiveAccessory === "sleep-cap" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center" }, /* @__PURE__ */ React.createElement("path", { d: "M30 24 Q28 12 40 6 Q55 0 70 10 Q85 22 80 40 Q78 48 74 52", fill: "#6366F1", stroke: "#4F46E5", strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("path", { d: "M35 18 Q50 12 65 18", stroke: "#818CF8", strokeWidth: "2.5", fill: "none", opacity: "0.5" }), /* @__PURE__ */ React.createElement("path", { d: "M40 12 Q52 7 64 14", stroke: "#818CF8", strokeWidth: "2", fill: "none", opacity: "0.4" }), /* @__PURE__ */ React.createElement("circle", { cx: "74", cy: "52", r: "6", fill: "#C4B5FD", stroke: "#A78BFA", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "72", cy: "50", r: "2", fill: "white", opacity: "0.4" }), /* @__PURE__ */ React.createElement("path", { d: "M28 24 Q50 28 72 22", stroke: "#4338CA", strokeWidth: "2.5", fill: "none" })), effectiveAccessory === "microscope" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-28, 8)" }, /* @__PURE__ */ React.createElement("ellipse", { cx: "8", cy: "82", rx: "14", ry: "4", fill: "#334155" }), /* @__PURE__ */ React.createElement("rect", { x: "2", y: "78", width: "12", height: "4", rx: "1", fill: "#475569" }), /* @__PURE__ */ React.createElement("rect", { x: "6", y: "38", width: "4", height: "42", rx: "1", fill: "#64748B" }), /* @__PURE__ */ React.createElement("path", { d: "M8 40 Q8 32 16 28", stroke: "#64748B", strokeWidth: "4", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("rect", { x: "13", y: "22", width: "6", height: "18", rx: "2", fill: "#94A3B8", stroke: "#475569", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "11", y: "18", width: "10", height: "6", rx: "2", fill: "#334155" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "16", cy: "18", rx: "5", ry: "2", fill: "#1e293b" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "15", cy: "17", rx: "2", ry: "1", fill: "white", opacity: "0.3" }), /* @__PURE__ */ React.createElement("rect", { x: "14", y: "40", width: "4", height: "5", rx: "1", fill: "#334155" }), /* @__PURE__ */ React.createElement("circle", { cx: "16", cy: "46", r: "3", fill: "#93c5fd", opacity: "0.5", stroke: "#475569", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "4", y: "48", width: "22", height: "3", rx: "1", fill: "#475569" }), /* @__PURE__ */ React.createElement("rect", { x: "8", y: "47", width: "12", height: "2", rx: "0.5", fill: "rgba(219, 234, 254, 0.6)", stroke: "#93c5fd", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "2", cy: "52", r: "3", fill: "#64748B", stroke: "#475569", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "2", cy: "52", r: "1.5", fill: "#94a3b8" }), /* @__PURE__ */ React.createElement("circle", { cx: "16", cy: "46", r: "6", fill: "rgba(147, 197, 253, 0.15)" }, /* @__PURE__ */ React.createElement("animate", { attributeName: "opacity", values: "0.1;0.25;0.1", dur: "3s", repeatCount: "indefinite" }))), effectiveAccessory === "historian" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-22, 38)" }, /* @__PURE__ */ React.createElement("ellipse", { cx: "14", cy: "48", rx: "18", ry: "3", fill: "#7C2D12", opacity: "0.25" }), /* @__PURE__ */ React.createElement("g", { transform: "rotate(-14 6 32)" }, /* @__PURE__ */ React.createElement("rect", { x: "-4", y: "14", width: "20", height: "26", rx: "1", fill: "#FEF3C7", stroke: "#92400E", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "20", x2: "12", y2: "20", stroke: "#78350F", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "24", x2: "12", y2: "24", stroke: "#78350F", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "28", x2: "10", y2: "28", stroke: "#78350F", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "32", x2: "12", y2: "32", stroke: "#78350F", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "36", x2: "9", y2: "36", stroke: "#78350F", strokeWidth: "0.6" })), /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("rect", { x: "4", y: "12", width: "20", height: "26", rx: "1", fill: "#FFFBEB", stroke: "#7C2D12", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "20", cy: "16", r: "2", fill: "#DC2626", stroke: "#7F1D1D", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("path", { d: "M19 15 L21 15 M20 14 L20 16", stroke: "#FECACA", strokeWidth: "0.4" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "22", x2: "17", y2: "22", stroke: "#7C2D12", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "26", x2: "18", y2: "26", stroke: "#7C2D12", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "30", x2: "15", y2: "30", stroke: "#7C2D12", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "34", x2: "17", y2: "34", stroke: "#7C2D12", strokeWidth: "0.6" })), /* @__PURE__ */ React.createElement("g", { transform: "rotate(14 22 32)" }, /* @__PURE__ */ React.createElement("rect", { x: "12", y: "14", width: "20", height: "26", rx: "1", fill: "#FED7AA", stroke: "#9A3412", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("line", { x1: "16", y1: "20", x2: "28", y2: "20", stroke: "#9A3412", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "16", y1: "24", x2: "28", y2: "24", stroke: "#9A3412", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "16", y1: "28", x2: "26", y2: "28", stroke: "#9A3412", strokeWidth: "0.6" })), /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("path", { d: "M 22 8 Q 30 -2 34 -10", stroke: "#1F2937", strokeWidth: "1.2", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M 20 10 Q 28 0 34 -10 Q 32 -2 28 6 Q 24 10 20 10 Z", fill: "#0F172A", stroke: "#1F2937", strokeWidth: "0.5", opacity: "0.85" }, /* @__PURE__ */ React.createElement("animateTransform", { attributeName: "transform", type: "rotate", values: "0 22 8;3 22 8;0 22 8;-3 22 8;0 22 8", dur: "6s", repeatCount: "indefinite" })), /* @__PURE__ */ React.createElement("circle", { cx: "22", cy: "9", r: "1.4", fill: "#1E40AF" }))), effectiveAccessory === "teacher-stack" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-20, 34)" }, /* @__PURE__ */ React.createElement("ellipse", { cx: "16", cy: "52", rx: "18", ry: "3", fill: "#1F2937", opacity: "0.18" }), /* @__PURE__ */ React.createElement("rect", { x: "0", y: "40", width: "34", height: "11", rx: "1.5", fill: "#FCD34D", stroke: "#B45309", strokeWidth: "1.2", transform: "rotate(-3 17 45)" }), /* @__PURE__ */ React.createElement("line", { x1: "5", y1: "45", x2: "24", y2: "45", stroke: "#B45309", strokeWidth: "0.7", transform: "rotate(-3 17 45)" }), /* @__PURE__ */ React.createElement("rect", { x: "2", y: "30", width: "32", height: "11", rx: "1.5", fill: "#34D399", stroke: "#047857", strokeWidth: "1.2", transform: "rotate(2 18 35)" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "35", x2: "26", y2: "35", stroke: "#047857", strokeWidth: "0.7", transform: "rotate(2 18 35)" }), /* @__PURE__ */ React.createElement("rect", { x: "1", y: "20", width: "32", height: "11", rx: "1.5", fill: "#60A5FA", stroke: "#1D4ED8", strokeWidth: "1.2", transform: "rotate(-2 17 25)" }), /* @__PURE__ */ React.createElement("line", { x1: "6", y1: "25", x2: "25", y2: "25", stroke: "#1D4ED8", strokeWidth: "0.7", transform: "rotate(-2 17 25)" }), /* @__PURE__ */ React.createElement("g", { transform: "translate(17, 9)" }, /* @__PURE__ */ React.createElement("path", { d: "M 0 3 C -7 3 -9 9 -6 14 C -4 17 -2 18 0 17 C 2 18 4 17 6 14 C 9 9 7 3 0 3 Z", fill: "#EF4444", stroke: "#991B1B", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M 0 4 Q -1 6 0 7 Q 1 6 0 4 Z", fill: "#B91C1C", opacity: "0.6" }), /* @__PURE__ */ React.createElement("path", { d: "M 0 4 L 0 -2", stroke: "#7C2D12", strokeWidth: "1.6", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M 0 -1 Q 6 -4 8 1 Q 3 2 0 -1 Z", fill: "#22C55E", stroke: "#15803D", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "-2.5", cy: "8", rx: "1.8", ry: "3", fill: "#fff", opacity: "0.45", transform: "rotate(-20 -2.5 8)" }))), effectiveAccessory === "scholar-specs" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-500 origin-center" }, /* @__PURE__ */ React.createElement("circle", { cx: "38", cy: "48", r: "9", fill: "rgba(219, 234, 254, 0.25)", stroke: "#1F2937", strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "62", cy: "48", r: "9", fill: "rgba(219, 234, 254, 0.25)", stroke: "#1F2937", strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("path", { d: "M 47 48 Q 50 45 53 48", stroke: "#1F2937", strokeWidth: "1.5", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M 29 47 Q 24 45 22 47", stroke: "#1F2937", strokeWidth: "1.2", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M 71 47 Q 76 45 78 47", stroke: "#1F2937", strokeWidth: "1.2", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "35", cy: "46", rx: "2.5", ry: "1.4", fill: "white", opacity: "0.55" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "59", cy: "46", rx: "2.5", ry: "1.4", fill: "white", opacity: "0.55" }), /* @__PURE__ */ React.createElement("g", { transform: "translate(-26, 56)" }, /* @__PURE__ */ React.createElement("path", { d: "M 0 0 L 28 0 L 28 18 L 0 18 Z", fill: "#FFFBEB", stroke: "#78350F", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M 14 0 L 14 18", stroke: "#78350F", strokeWidth: "0.8" }), /* @__PURE__ */ React.createElement("line", { x1: "3", y1: "4", x2: "11", y2: "4", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "3", y1: "7", x2: "12", y2: "7", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "3", y1: "10", x2: "10", y2: "10", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "3", y1: "13", x2: "11", y2: "13", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "17", y1: "4", x2: "25", y2: "4", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "17", y1: "7", x2: "24", y2: "7", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "17", y1: "10", x2: "25", y2: "10", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "17", y1: "13", x2: "23", y2: "13", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("path", { d: "M -2 0 L 30 0 L 30 -2 L -2 -2 Z", fill: "#7C2D12", stroke: "#451A03", strokeWidth: "0.8" }))), effectiveAccessory === "thinking-cap" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center" }, /* @__PURE__ */ React.createElement("path", { d: "M 28 26 Q 25 8 50 6 Q 75 8 72 26 Z", fill: "#7C3AED", stroke: "#5B21B6", strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("path", { d: "M 28 26 Q 50 30 72 26", stroke: "#4C1D95", strokeWidth: "2", fill: "none" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "50", cy: "6", rx: "4", ry: "2", fill: "#A78BFA", opacity: "0.5" }), /* @__PURE__ */ React.createElement("g", { transform: "translate(50, 0)" }, /* @__PURE__ */ React.createElement("ellipse", { cx: "0", cy: "-4", rx: "5", ry: "6", fill: "#FEF08A", stroke: "#CA8A04", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "-1.5", cy: "-6", rx: "1.5", ry: "2", fill: "#FFFBEB", opacity: "0.7" }), /* @__PURE__ */ React.createElement("rect", { x: "-2.5", y: "1", width: "5", height: "2", rx: "0.5", fill: "#94A3B8" }), /* @__PURE__ */ React.createElement("rect", { x: "-2", y: "3", width: "4", height: "1.5", rx: "0.5", fill: "#64748B" }), /* @__PURE__ */ React.createElement("circle", { cx: "0", cy: "-4", r: "9", fill: "#FEF08A", opacity: "0.18" }, /* @__PURE__ */ React.createElement("animate", { attributeName: "opacity", values: "0.1;0.32;0.1", dur: "2.4s", repeatCount: "indefinite" }), /* @__PURE__ */ React.createElement("animate", { attributeName: "r", values: "8;11;8", dur: "2.4s", repeatCount: "indefinite" }))), /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("path", { d: "M 0 -2 L 0.6 -0.6 L 2 0 L 0.6 0.6 L 0 2 L -0.6 0.6 L -2 0 L -0.6 -0.6 Z", fill: "#FBBF24", stroke: "#D97706", strokeWidth: "0.4", transform: "translate(70 -8)" })), /* @__PURE__ */ React.createElement("animateTransform", { attributeName: "transform", type: "rotate", from: "0 50 -2", to: "360 50 -2", dur: "9s", repeatCount: "indefinite" })), /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("path", { d: "M 0 -1.6 L 0.5 -0.5 L 1.6 0 L 0.5 0.5 L 0 1.6 L -0.5 0.5 L -1.6 0 L -0.5 -0.5 Z", fill: "#F472B6", stroke: "#BE185D", strokeWidth: "0.4", transform: "translate(74 -2)" })), /* @__PURE__ */ React.createElement("animateTransform", { attributeName: "transform", type: "rotate", from: "120 50 -2", to: "480 50 -2", dur: "11s", repeatCount: "indefinite" })), /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("path", { d: "M 0 -1.4 L 0.45 -0.45 L 1.4 0 L 0.45 0.45 L 0 1.4 L -0.45 0.45 L -1.4 0 L -0.45 -0.45 Z", fill: "#60A5FA", stroke: "#1E40AF", strokeWidth: "0.4", transform: "translate(72 4)" })), /* @__PURE__ */ React.createElement("animateTransform", { attributeName: "transform", type: "rotate", from: "240 50 -2", to: "600 50 -2", dur: "8s", repeatCount: "indefinite" }))), effectiveAccessory === "sorting-cubes" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center" }, /* @__PURE__ */ React.createElement("ellipse", { cx: "50", cy: "32", rx: "22", ry: "3", fill: "#1F2937", opacity: "0.18" }), /* @__PURE__ */ React.createElement("g", { transform: "translate(38 18) rotate(-6)" }, /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "14", height: "14", rx: "1.5", fill: "#3B82F6", stroke: "#1E3A8A", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M 0 0 L 14 0 L 14 14", stroke: "#60A5FA", strokeWidth: "1", fill: "none", opacity: "0.6" }), /* @__PURE__ */ React.createElement("circle", { cx: "4", cy: "4", r: "1", fill: "#DBEAFE", opacity: "0.7" })), /* @__PURE__ */ React.createElement("g", { transform: "translate(46 6) rotate(8)" }, /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "14", height: "14", rx: "1.5", fill: "#22C55E", stroke: "#14532D", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M 0 0 L 14 0 L 14 14", stroke: "#4ADE80", strokeWidth: "1", fill: "none", opacity: "0.6" }), /* @__PURE__ */ React.createElement("path", { d: "M 3 7 L 6 10 L 11 4", stroke: "#DCFCE7", strokeWidth: "1.5", fill: "none", strokeLinecap: "round", strokeLinejoin: "round" })), /* @__PURE__ */ React.createElement("g", { transform: "translate(54 -4) rotate(-4)" }, /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "13", height: "13", rx: "1.5", fill: "#EF4444", stroke: "#7F1D1D", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M 0 0 L 13 0 L 13 13", stroke: "#FCA5A5", strokeWidth: "1", fill: "none", opacity: "0.6" }), /* @__PURE__ */ React.createElement("path", { d: "M 4 4 L 9 9 M 9 4 L 4 9", stroke: "#FEE2E2", strokeWidth: "1.4", strokeLinecap: "round" }))), effectiveAccessory === "clarity-crown" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center" }, /* @__PURE__ */ React.createElement("path", { d: "M 22 28 L 28 12 L 35 22 L 42 8 L 50 20 L 58 8 L 65 22 L 72 12 L 78 28 Z", fill: "#FCD34D", stroke: "#B45309", strokeWidth: "1.4" }), /* @__PURE__ */ React.createElement("path", { d: "M 22 28 Q 50 32 78 28", stroke: "#92400E", strokeWidth: "1.6", fill: "none" }), /* @__PURE__ */ React.createElement("circle", { cx: "28", cy: "13", r: "2.4", fill: "#FDE68A", stroke: "#92400E", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("g", { transform: "translate(35 17)" }, /* @__PURE__ */ React.createElement("circle", { cx: "0", cy: "0", r: "2.2", fill: "#FBBF24", stroke: "#92400E", strokeWidth: "0.4" }), /* @__PURE__ */ React.createElement("line", { x1: "-3", y1: "0", x2: "-2", y2: "0", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "3", y1: "0", x2: "2", y2: "0", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "-3", x2: "0", y2: "-2", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "3", x2: "0", y2: "2", stroke: "#92400E", strokeWidth: "0.5" })), /* @__PURE__ */ React.createElement("path", { d: "M 42 8 Q 40 12 42 18 Q 44 12 42 8 Z", fill: "#60A5FA", stroke: "#1E40AF", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "50", cy: "15", rx: "2.5", ry: "3.5", fill: "#22C55E", stroke: "#14532D", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "50", y1: "11", x2: "50", y2: "18", stroke: "#14532D", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("path", { d: "M 58 8 Q 56 12 58 18 Q 60 12 58 8 Z", fill: "#F472B6", stroke: "#BE185D", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("circle", { cx: "65", cy: "17", r: "2.2", fill: "#A78BFA", stroke: "#5B21B6", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "72", cy: "13", r: "2.4", fill: "#FDE68A", stroke: "#92400E", strokeWidth: "0.6" })), effectiveAccessory === "deerstalker" && /* @__PURE__ */ React.createElement("g", {
+    className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center"
+  }, /* @__PURE__ */ React.createElement("ellipse", {
+    cx: "50",
+    cy: "25",
+    rx: "33",
+    ry: "6.5",
+    fill: "#8C7A6B",
+    stroke: "#5C4D40",
+    strokeWidth: "1.2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M19 23 Q11 25 14 35 Q21 35 25 28 Z",
+    fill: "#8C7A6B",
+    stroke: "#5C4D40",
+    strokeWidth: "1.1"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M81 23 Q89 25 86 35 Q79 35 75 28 Z",
+    fill: "#8C7A6B",
+    stroke: "#5C4D40",
+    strokeWidth: "1.1"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M25 25 Q23 5 50 4 Q77 5 75 25 Z",
+    fill: "#A6968A",
+    stroke: "#5C4D40",
+    strokeWidth: "1.4"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M50 4 L50 25",
+    stroke: "#5C4D40",
+    strokeWidth: "0.8",
+    opacity: "0.45"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M40 25 Q50 31 60 25 L58 22 Q50 25 42 22 Z",
+    fill: "#7A6B5D",
+    stroke: "#5C4D40",
+    strokeWidth: "1"
+  }), /* @__PURE__ */ React.createElement("g", {
+    fill: "#5C4D40",
+    opacity: "0.5"
+  }, /* @__PURE__ */ React.createElement("circle", {
+    cx: "42",
+    cy: "14",
+    r: "1"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "50",
+    cy: "10",
+    r: "1"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "58",
+    cy: "14",
+    r: "1"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "46",
+    cy: "19",
+    r: "1"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "54",
+    cy: "19",
+    r: "1"
+  }))), effectiveAccessory === "persona-masks" && /* @__PURE__ */ React.createElement("g", {
+    className: "animate-in fade-in slide-in-from-left-3 duration-500",
+    transform: "translate(-24, 40)"
+  }, /* @__PURE__ */ React.createElement("ellipse", {
+    cx: "14",
+    cy: "46",
+    rx: "16",
+    ry: "3",
+    fill: "#1F2937",
+    opacity: "0.16"
+  }), /* @__PURE__ */ React.createElement("g", {
+    transform: "rotate(-8 8 26)"
+  }, /* @__PURE__ */ React.createElement("path", {
+    d: "M-2 18 Q-2 40 12 40 Q26 40 26 18 Q26 6 12 6 Q-2 6 -2 18 Z",
+    fill: "#FCD34D",
+    stroke: "#B45309",
+    strokeWidth: "1.3"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M3 16 Q6 13 9 16 M15 16 Q18 13 21 16",
+    stroke: "#7C2D12",
+    strokeWidth: "1.2",
+    fill: "none",
+    strokeLinecap: "round"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M6 27 Q12 33 18 27",
+    stroke: "#7C2D12",
+    strokeWidth: "1.6",
+    fill: "none",
+    strokeLinecap: "round"
+  })), /* @__PURE__ */ React.createElement("g", {
+    transform: "translate(16, 2) rotate(8 12 26)"
+  }, /* @__PURE__ */ React.createElement("path", {
+    d: "M-2 18 Q-2 40 12 40 Q26 40 26 18 Q26 6 12 6 Q-2 6 -2 18 Z",
+    fill: "#60A5FA",
+    stroke: "#1D4ED8",
+    strokeWidth: "1.3"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M3 17 Q6 20 9 17 M15 17 Q18 20 21 17",
+    stroke: "#1E3A8A",
+    strokeWidth: "1.2",
+    fill: "none",
+    strokeLinecap: "round"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M6 32 Q12 27 18 32",
+    stroke: "#1E3A8A",
+    strokeWidth: "1.6",
+    fill: "none",
+    strokeLinecap: "round"
+  }))), effectiveAccessory === "sentence-frames" && /* @__PURE__ */ React.createElement("g", {
+    className: "animate-in fade-in slide-in-from-top-2 duration-500",
+    transform: "translate(76, 36)"
+  }, /* @__PURE__ */ React.createElement("rect", {
+    x: "0",
+    y: "0",
+    width: "40",
+    height: "30",
+    rx: "2.5",
+    fill: "#FFFBEB",
+    stroke: "#7C2D12",
+    strokeWidth: "2"
+  }), /* @__PURE__ */ React.createElement("rect", {
+    x: "4",
+    y: "4",
+    width: "32",
+    height: "22",
+    rx: "1",
+    fill: "#fff",
+    stroke: "#E7C9A9",
+    strokeWidth: "0.8"
+  }), /* @__PURE__ */ React.createElement("rect", {
+    x: "7",
+    y: "8",
+    width: "9",
+    height: "5",
+    rx: "1",
+    fill: "#60A5FA"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "18",
+    y1: "13",
+    x2: "27",
+    y2: "13",
+    stroke: "#94A3B8",
+    strokeWidth: "1.4"
+  }), /* @__PURE__ */ React.createElement("rect", {
+    x: "29",
+    y: "8",
+    width: "5",
+    height: "5",
+    rx: "1",
+    fill: "#34D399"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "7",
+    y1: "20",
+    x2: "14",
+    y2: "20",
+    stroke: "#94A3B8",
+    strokeWidth: "1.4"
+  }), /* @__PURE__ */ React.createElement("rect", {
+    x: "16",
+    y: "16",
+    width: "9",
+    height: "5",
+    rx: "1",
+    fill: "#F472B6"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "27",
+    y1: "20",
+    x2: "34",
+    y2: "20",
+    stroke: "#94A3B8",
+    strokeWidth: "1.4"
+  })), effectiveAccessory === "outline-doc" && /* @__PURE__ */ React.createElement("g", {
+    className: "animate-in fade-in slide-in-from-left-3 duration-500",
+    transform: "translate(-31, 32)"
+  }, /* @__PURE__ */ React.createElement("ellipse", {
+    cx: "18",
+    cy: "50",
+    rx: "16",
+    ry: "3",
+    fill: "#1F2937",
+    opacity: "0.16"
+  }), /* @__PURE__ */ React.createElement("rect", {
+    x: "2",
+    y: "6",
+    width: "34",
+    height: "42",
+    rx: "2",
+    fill: "#FFFFFF",
+    stroke: "#475569",
+    strokeWidth: "1.5"
+  }), /* @__PURE__ */ React.createElement("text", {
+    x: "6",
+    y: "15",
+    fontFamily: "Arial",
+    fontSize: "6",
+    fontWeight: "bold",
+    fill: "#4338CA"
+  }, "I."), /* @__PURE__ */ React.createElement("line", {
+    x1: "13",
+    y1: "13",
+    x2: "32",
+    y2: "13",
+    stroke: "#1D4ED8",
+    strokeWidth: "1.6"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "20",
+    r: "1.1",
+    fill: "#64748B"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "16",
+    y1: "20",
+    x2: "31",
+    y2: "20",
+    stroke: "#CBD5E1",
+    strokeWidth: "1.2"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "26",
+    r: "1.1",
+    fill: "#64748B"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "16",
+    y1: "26",
+    x2: "29",
+    y2: "26",
+    stroke: "#CBD5E1",
+    strokeWidth: "1.2"
+  }), /* @__PURE__ */ React.createElement("text", {
+    x: "6",
+    y: "36",
+    fontFamily: "Arial",
+    fontSize: "6",
+    fontWeight: "bold",
+    fill: "#4338CA"
+  }, "II."), /* @__PURE__ */ React.createElement("line", {
+    x1: "13",
+    y1: "34",
+    x2: "32",
+    y2: "34",
+    stroke: "#1D4ED8",
+    strokeWidth: "1.6"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "41",
+    r: "1.1",
+    fill: "#64748B"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "16",
+    y1: "41",
+    x2: "30",
+    y2: "41",
+    stroke: "#CBD5E1",
+    strokeWidth: "1.2"
+  })), effectiveAccessory === "sticky-notes" && /* @__PURE__ */ React.createElement("g", {
+    className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center"
+  }, /* @__PURE__ */ React.createElement("g", {
+    transform: "rotate(-8 34 18)"
+  }, /* @__PURE__ */ React.createElement("rect", {
+    x: "22",
+    y: "8",
+    width: "22",
+    height: "20",
+    rx: "1",
+    fill: "#FDE047",
+    stroke: "#CA8A04",
+    strokeWidth: "1"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M38 28 L44 28 L44 22 Z",
+    fill: "#FACC15"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "26",
+    y1: "14",
+    x2: "40",
+    y2: "14",
+    stroke: "#A16207",
+    strokeWidth: "1"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "26",
+    y1: "18",
+    x2: "37",
+    y2: "18",
+    stroke: "#A16207",
+    strokeWidth: "1"
+  })), /* @__PURE__ */ React.createElement("g", {
+    transform: "rotate(7 64 18)"
+  }, /* @__PURE__ */ React.createElement("rect", {
+    x: "54",
+    y: "6",
+    width: "22",
+    height: "20",
+    rx: "1",
+    fill: "#5EEAD4",
+    stroke: "#0D9488",
+    strokeWidth: "1"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M70 26 L76 26 L76 20 Z",
+    fill: "#2DD4BF"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "58",
+    y1: "12",
+    x2: "72",
+    y2: "12",
+    stroke: "#0F766E",
+    strokeWidth: "1"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "58",
+    y1: "16",
+    x2: "69",
+    y2: "16",
+    stroke: "#0F766E",
+    strokeWidth: "1"
+  })), /* @__PURE__ */ React.createElement("g", {
+    transform: "rotate(-3 50 12)"
+  }, /* @__PURE__ */ React.createElement("rect", {
+    x: "40",
+    y: "0",
+    width: "22",
+    height: "20",
+    rx: "1",
+    fill: "#FDA4AF",
+    stroke: "#E11D48",
+    strokeWidth: "1"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M56 20 L62 20 L62 14 Z",
+    fill: "#FB7185"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "44",
+    y1: "6",
+    x2: "58",
+    y2: "6",
+    stroke: "#BE123C",
+    strokeWidth: "1"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "44",
+    y1: "10",
+    x2: "55",
+    y2: "10",
+    stroke: "#BE123C",
+    strokeWidth: "1"
+  }))), effectiveAccessory === "anchor-easel" && /* @__PURE__ */ React.createElement("g", {
+    className: "animate-in fade-in slide-in-from-left-3 duration-500",
+    transform: "translate(-30, 18)"
+  }, /* @__PURE__ */ React.createElement("line", {
+    x1: "6",
+    y1: "20",
+    x2: "-2",
+    y2: "62",
+    stroke: "#92400E",
+    strokeWidth: "2.4",
+    strokeLinecap: "round"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "30",
+    y1: "20",
+    x2: "38",
+    y2: "62",
+    stroke: "#92400E",
+    strokeWidth: "2.4",
+    strokeLinecap: "round"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "22",
+    y1: "22",
+    x2: "26",
+    y2: "62",
+    stroke: "#78350F",
+    strokeWidth: "2",
+    strokeLinecap: "round"
+  }), /* @__PURE__ */ React.createElement("rect", {
+    x: "0",
+    y: "6",
+    width: "36",
+    height: "32",
+    rx: "1.5",
+    fill: "#FFFFFF",
+    stroke: "#475569",
+    strokeWidth: "1.5"
+  }), /* @__PURE__ */ React.createElement("rect", {
+    x: "0",
+    y: "6",
+    width: "36",
+    height: "8",
+    rx: "1.5",
+    fill: "#4338CA"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "5",
+    y1: "20",
+    x2: "31",
+    y2: "20",
+    stroke: "#CBD5E1",
+    strokeWidth: "1.4"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "5",
+    y1: "25",
+    x2: "28",
+    y2: "25",
+    stroke: "#CBD5E1",
+    strokeWidth: "1.4"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M5 31 L9 34 L15 28",
+    stroke: "#22C55E",
+    strokeWidth: "1.8",
+    fill: "none",
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "19",
+    y1: "31",
+    x2: "31",
+    y2: "31",
+    stroke: "#CBD5E1",
+    strokeWidth: "1.4"
+  })), effectiveAccessory === "behavior-watch" && /* @__PURE__ */ React.createElement("g", {
+    className: "animate-in fade-in slide-in-from-left-3 duration-500",
+    transform: "translate(-28, 42)"
+  }, /* @__PURE__ */ React.createElement("ellipse", {
+    cx: "15",
+    cy: "42",
+    rx: "15",
+    ry: "3",
+    fill: "#1F2937",
+    opacity: "0.16"
+  }), /* @__PURE__ */ React.createElement("g", {
+    transform: "translate(15, 24)"
+  }, /* @__PURE__ */ React.createElement("rect", {
+    x: "-2.5",
+    y: "-15",
+    width: "5",
+    height: "5",
+    rx: "1.2",
+    fill: "#475569"
+  }), /* @__PURE__ */ React.createElement("rect", {
+    x: "-5",
+    y: "-17.5",
+    width: "10",
+    height: "3",
+    rx: "1",
+    fill: "#64748B"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "0",
+    cy: "0",
+    r: "13",
+    fill: "#E2E8F0",
+    stroke: "#334155",
+    strokeWidth: "2.2"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "0",
+    cy: "0",
+    r: "10",
+    fill: "#F8FAFC",
+    stroke: "#94A3B8",
+    strokeWidth: "0.8"
+  }), /* @__PURE__ */ React.createElement("g", {
+    stroke: "#94A3B8",
+    strokeWidth: "0.8"
+  }, /* @__PURE__ */ React.createElement("line", {
+    x1: "0",
+    y1: "-9",
+    x2: "0",
+    y2: "-7.5"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "9",
+    y1: "0",
+    x2: "7.5",
+    y2: "0"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "0",
+    y1: "9",
+    x2: "0",
+    y2: "7.5"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "-9",
+    y1: "0",
+    x2: "-7.5",
+    y2: "0"
+  })), /* @__PURE__ */ React.createElement("line", {
+    x1: "0",
+    y1: "0",
+    x2: "0",
+    y2: "-7",
+    stroke: "#DC2626",
+    strokeWidth: "1.5",
+    strokeLinecap: "round"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "0",
+    y1: "0",
+    x2: "4.5",
+    y2: "3",
+    stroke: "#334155",
+    strokeWidth: "1.4",
+    strokeLinecap: "round"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "0",
+    cy: "0",
+    r: "1.3",
+    fill: "#334155"
+  })), /* @__PURE__ */ React.createElement("g", {
+    transform: "translate(26, 30)",
+    stroke: "#16A34A",
+    strokeWidth: "1.4",
+    strokeLinecap: "round"
+  }, /* @__PURE__ */ React.createElement("line", {
+    x1: "0",
+    y1: "0",
+    x2: "0",
+    y2: "8"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "3",
+    y1: "0",
+    x2: "3",
+    y2: "8"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "6",
+    y1: "0",
+    x2: "6",
+    y2: "8"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "-2",
+    y1: "6",
+    x2: "8",
+    y2: "2"
+  }))), effectiveAccessory === "bard-cap" && /* @__PURE__ */ React.createElement("g", {
+    className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center"
+  }, /* @__PURE__ */ React.createElement("path", {
+    d: "M22 26 Q20 12 50 8 Q80 12 78 26 Q50 30 22 26 Z",
+    fill: "#0D9488",
+    stroke: "#0F766E",
+    strokeWidth: "1.4"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M22 24 Q50 30 78 24",
+    stroke: "#FCD34D",
+    strokeWidth: "3",
+    fill: "none"
+  }), /* @__PURE__ */ React.createElement("ellipse", {
+    cx: "50",
+    cy: "13",
+    rx: "4",
+    ry: "2",
+    fill: "#2DD4BF",
+    opacity: "0.5"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "38",
+    cy: "21",
+    r: "2.6",
+    fill: "#FCD34D",
+    stroke: "#A16207",
+    strokeWidth: "0.7"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M38 19 Q29 3 23 -12 Q34 0 41 12 Q41 16 38 19 Z",
+    fill: "#F472B6",
+    stroke: "#BE185D",
+    strokeWidth: "1"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M34 11 Q29 1 25 -8",
+    stroke: "#FBCFE8",
+    strokeWidth: "1",
+    fill: "none",
+    opacity: "0.85"
+  }))), /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement("radialGradient", { id: `bodyGradient-${effectiveMood}`, cx: "35%", cy: "35%", r: "65%", fx: "30%", fy: "30%" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: colors.gradFrom }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: colors.gradTo })), /* @__PURE__ */ React.createElement("radialGradient", { id: "rimLightGradient", cx: "70%", cy: "70%", r: "70%" }, /* @__PURE__ */ React.createElement("stop", { offset: "82%", stopColor: "#fff", stopOpacity: "0" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "#fff", stopOpacity: "0.4" })), /* @__PURE__ */ React.createElement("linearGradient", { id: "hologram-gradient", x1: "0", y1: "0", x2: "0", y2: "1" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "#22D3EE", stopOpacity: "0" }), /* @__PURE__ */ React.createElement("stop", { offset: "20%", stopColor: "#22D3EE", stopOpacity: "0.1" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "#22D3EE", stopOpacity: "0.6" })), /* @__PURE__ */ React.createElement("linearGradient", { id: "visorReflect", x1: "0%", y1: "0%", x2: "100%", y2: "100%" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "white", stopOpacity: "0.4" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "white", stopOpacity: "0" })), /* @__PURE__ */ React.createElement("linearGradient", { id: "hologram-beam", x1: "0%", y1: "100%", x2: "0%", y2: "0%" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "#06B6D4", stopOpacity: "0.6" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "#06B6D4", stopOpacity: "0" }))))
       )
     )
   ));

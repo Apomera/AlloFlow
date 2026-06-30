@@ -604,11 +604,11 @@ function HighlightOverlay({ a, onDelete }) {
           background: 'transparent',
         }}
         onMouseEnter={function (e) {
-          const btn = e.currentTarget.querySelector('button[aria-label={t("a11y.delete_highlight")}]');
+          const btn = e.currentTarget.querySelector('button'); // the wrapper's only button is the delete (✕) control; was a broken JSX-in-selector string
           if (btn) btn.style.opacity = '1';
         }}
         onMouseLeave={function (e) {
-          const btn = e.currentTarget.querySelector('button[aria-label={t("a11y.delete_highlight")}]');
+          const btn = e.currentTarget.querySelector('button'); // the wrapper's only button is the delete (✕) control; was a broken JSX-in-selector string
           if (btn) btn.style.opacity = '0';
         }}
       >

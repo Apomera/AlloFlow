@@ -24129,10 +24129,23 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             return 'sorting-cubes';
         case 'simplified':
             return 'clarity-crown';
-        case 'persona':
-            return null;
         case 'analysis':
-             return null;
+            return 'deerstalker';
+        case 'persona':
+            return 'persona-masks';
+        case 'sentence-frames':
+            return 'sentence-frames';
+        case 'outline':
+            return 'outline-doc';
+        case 'note-taking':
+            return 'sticky-notes';
+        case 'anchor-chart':
+            return 'anchor-easel';
+        case 'behavior-lens':
+            return 'behavior-watch';
+        case 'storyforge-config':
+        case 'storyforge-submission':
+            return 'bard-cap';
         default:
             return null;
     }

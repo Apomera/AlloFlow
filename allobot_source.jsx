@@ -2312,6 +2312,103 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                                 <circle cx="72" cy="13" r="2.4" fill="#FDE68A" stroke="#92400E" strokeWidth="0.6" />
                             </g>
                         )}
+                        {effectiveAccessory === 'deerstalker' && (
+                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                                <ellipse cx="50" cy="25" rx="33" ry="6.5" fill="#8C7A6B" stroke="#5C4D40" strokeWidth="1.2" />
+                                <path d="M19 23 Q11 25 14 35 Q21 35 25 28 Z" fill="#8C7A6B" stroke="#5C4D40" strokeWidth="1.1" />
+                                <path d="M81 23 Q89 25 86 35 Q79 35 75 28 Z" fill="#8C7A6B" stroke="#5C4D40" strokeWidth="1.1" />
+                                <path d="M25 25 Q23 5 50 4 Q77 5 75 25 Z" fill="#A6968A" stroke="#5C4D40" strokeWidth="1.4" />
+                                <path d="M50 4 L50 25" stroke="#5C4D40" strokeWidth="0.8" opacity="0.45" />
+                                <path d="M40 25 Q50 31 60 25 L58 22 Q50 25 42 22 Z" fill="#7A6B5D" stroke="#5C4D40" strokeWidth="1" />
+                                <g fill="#5C4D40" opacity="0.5"><circle cx="42" cy="14" r="1" /><circle cx="50" cy="10" r="1" /><circle cx="58" cy="14" r="1" /><circle cx="46" cy="19" r="1" /><circle cx="54" cy="19" r="1" /></g>
+                            </g>
+                        )}
+                        {effectiveAccessory === 'persona-masks' && (
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-24, 40)">
+                                <ellipse cx="14" cy="46" rx="16" ry="3" fill="#1F2937" opacity="0.16" />
+                                <g transform="rotate(-8 8 26)">
+                                    <path d="M-2 18 Q-2 40 12 40 Q26 40 26 18 Q26 6 12 6 Q-2 6 -2 18 Z" fill="#FCD34D" stroke="#B45309" strokeWidth="1.3" />
+                                    <path d="M3 16 Q6 13 9 16 M15 16 Q18 13 21 16" stroke="#7C2D12" strokeWidth="1.2" fill="none" strokeLinecap="round" />
+                                    <path d="M6 27 Q12 33 18 27" stroke="#7C2D12" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+                                </g>
+                                <g transform="translate(16, 2) rotate(8 12 26)">
+                                    <path d="M-2 18 Q-2 40 12 40 Q26 40 26 18 Q26 6 12 6 Q-2 6 -2 18 Z" fill="#60A5FA" stroke="#1D4ED8" strokeWidth="1.3" />
+                                    <path d="M3 17 Q6 20 9 17 M15 17 Q18 20 21 17" stroke="#1E3A8A" strokeWidth="1.2" fill="none" strokeLinecap="round" />
+                                    <path d="M6 32 Q12 27 18 32" stroke="#1E3A8A" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+                                </g>
+                            </g>
+                        )}
+                        {effectiveAccessory === 'sentence-frames' && (
+                            <g className="animate-in fade-in slide-in-from-top-2 duration-500" transform="translate(76, 36)">
+                                <rect x="0" y="0" width="40" height="30" rx="2.5" fill="#FFFBEB" stroke="#7C2D12" strokeWidth="2" />
+                                <rect x="4" y="4" width="32" height="22" rx="1" fill="#fff" stroke="#E7C9A9" strokeWidth="0.8" />
+                                <rect x="7" y="8" width="9" height="5" rx="1" fill="#60A5FA" />
+                                <line x1="18" y1="13" x2="27" y2="13" stroke="#94A3B8" strokeWidth="1.4" />
+                                <rect x="29" y="8" width="5" height="5" rx="1" fill="#34D399" />
+                                <line x1="7" y1="20" x2="14" y2="20" stroke="#94A3B8" strokeWidth="1.4" />
+                                <rect x="16" y="16" width="9" height="5" rx="1" fill="#F472B6" />
+                                <line x1="27" y1="20" x2="34" y2="20" stroke="#94A3B8" strokeWidth="1.4" />
+                            </g>
+                        )}
+                        {effectiveAccessory === 'outline-doc' && (
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 32)">
+                                <ellipse cx="18" cy="50" rx="16" ry="3" fill="#1F2937" opacity="0.16" />
+                                <rect x="2" y="6" width="34" height="42" rx="2" fill="#FFFFFF" stroke="#475569" strokeWidth="1.5" />
+                                <text x="6" y="15" fontFamily="Arial" fontSize="6" fontWeight="bold" fill="#4338CA">I.</text>
+                                <line x1="13" y1="13" x2="32" y2="13" stroke="#1D4ED8" strokeWidth="1.6" />
+                                <circle cx="12" cy="20" r="1.1" fill="#64748B" /><line x1="16" y1="20" x2="31" y2="20" stroke="#CBD5E1" strokeWidth="1.2" />
+                                <circle cx="12" cy="26" r="1.1" fill="#64748B" /><line x1="16" y1="26" x2="29" y2="26" stroke="#CBD5E1" strokeWidth="1.2" />
+                                <text x="6" y="36" fontFamily="Arial" fontSize="6" fontWeight="bold" fill="#4338CA">II.</text>
+                                <line x1="13" y1="34" x2="32" y2="34" stroke="#1D4ED8" strokeWidth="1.6" />
+                                <circle cx="12" cy="41" r="1.1" fill="#64748B" /><line x1="16" y1="41" x2="30" y2="41" stroke="#CBD5E1" strokeWidth="1.2" />
+                            </g>
+                        )}
+                        {effectiveAccessory === 'sticky-notes' && (
+                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                                <g transform="rotate(-8 34 18)"><rect x="22" y="8" width="22" height="20" rx="1" fill="#FDE047" stroke="#CA8A04" strokeWidth="1" /><path d="M38 28 L44 28 L44 22 Z" fill="#FACC15" /><line x1="26" y1="14" x2="40" y2="14" stroke="#A16207" strokeWidth="1" /><line x1="26" y1="18" x2="37" y2="18" stroke="#A16207" strokeWidth="1" /></g>
+                                <g transform="rotate(7 64 18)"><rect x="54" y="6" width="22" height="20" rx="1" fill="#5EEAD4" stroke="#0D9488" strokeWidth="1" /><path d="M70 26 L76 26 L76 20 Z" fill="#2DD4BF" /><line x1="58" y1="12" x2="72" y2="12" stroke="#0F766E" strokeWidth="1" /><line x1="58" y1="16" x2="69" y2="16" stroke="#0F766E" strokeWidth="1" /></g>
+                                <g transform="rotate(-3 50 12)"><rect x="40" y="0" width="22" height="20" rx="1" fill="#FDA4AF" stroke="#E11D48" strokeWidth="1" /><path d="M56 20 L62 20 L62 14 Z" fill="#FB7185" /><line x1="44" y1="6" x2="58" y2="6" stroke="#BE123C" strokeWidth="1" /><line x1="44" y1="10" x2="55" y2="10" stroke="#BE123C" strokeWidth="1" /></g>
+                            </g>
+                        )}
+                        {effectiveAccessory === 'anchor-easel' && (
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-30, 18)">
+                                <line x1="6" y1="20" x2="-2" y2="62" stroke="#92400E" strokeWidth="2.4" strokeLinecap="round" />
+                                <line x1="30" y1="20" x2="38" y2="62" stroke="#92400E" strokeWidth="2.4" strokeLinecap="round" />
+                                <line x1="22" y1="22" x2="26" y2="62" stroke="#78350F" strokeWidth="2" strokeLinecap="round" />
+                                <rect x="0" y="6" width="36" height="32" rx="1.5" fill="#FFFFFF" stroke="#475569" strokeWidth="1.5" />
+                                <rect x="0" y="6" width="36" height="8" rx="1.5" fill="#4338CA" />
+                                <line x1="5" y1="20" x2="31" y2="20" stroke="#CBD5E1" strokeWidth="1.4" />
+                                <line x1="5" y1="25" x2="28" y2="25" stroke="#CBD5E1" strokeWidth="1.4" />
+                                <path d="M5 31 L9 34 L15 28" stroke="#22C55E" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                                <line x1="19" y1="31" x2="31" y2="31" stroke="#CBD5E1" strokeWidth="1.4" />
+                            </g>
+                        )}
+                        {effectiveAccessory === 'behavior-watch' && (
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-28, 42)">
+                                <ellipse cx="15" cy="42" rx="15" ry="3" fill="#1F2937" opacity="0.16" />
+                                <g transform="translate(15, 24)">
+                                    <rect x="-2.5" y="-15" width="5" height="5" rx="1.2" fill="#475569" />
+                                    <rect x="-5" y="-17.5" width="10" height="3" rx="1" fill="#64748B" />
+                                    <circle cx="0" cy="0" r="13" fill="#E2E8F0" stroke="#334155" strokeWidth="2.2" />
+                                    <circle cx="0" cy="0" r="10" fill="#F8FAFC" stroke="#94A3B8" strokeWidth="0.8" />
+                                    <g stroke="#94A3B8" strokeWidth="0.8"><line x1="0" y1="-9" x2="0" y2="-7.5" /><line x1="9" y1="0" x2="7.5" y2="0" /><line x1="0" y1="9" x2="0" y2="7.5" /><line x1="-9" y1="0" x2="-7.5" y2="0" /></g>
+                                    <line x1="0" y1="0" x2="0" y2="-7" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" />
+                                    <line x1="0" y1="0" x2="4.5" y2="3" stroke="#334155" strokeWidth="1.4" strokeLinecap="round" />
+                                    <circle cx="0" cy="0" r="1.3" fill="#334155" />
+                                </g>
+                                <g transform="translate(26, 30)" stroke="#16A34A" strokeWidth="1.4" strokeLinecap="round"><line x1="0" y1="0" x2="0" y2="8" /><line x1="3" y1="0" x2="3" y2="8" /><line x1="6" y1="0" x2="6" y2="8" /><line x1="-2" y1="6" x2="8" y2="2" /></g>
+                            </g>
+                        )}
+                        {effectiveAccessory === 'bard-cap' && (
+                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                                <path d="M22 26 Q20 12 50 8 Q80 12 78 26 Q50 30 22 26 Z" fill="#0D9488" stroke="#0F766E" strokeWidth="1.4" />
+                                <path d="M22 24 Q50 30 78 24" stroke="#FCD34D" strokeWidth="3" fill="none" />
+                                <ellipse cx="50" cy="13" rx="4" ry="2" fill="#2DD4BF" opacity="0.5" />
+                                <circle cx="38" cy="21" r="2.6" fill="#FCD34D" stroke="#A16207" strokeWidth="0.7" />
+                                <path d="M38 19 Q29 3 23 -12 Q34 0 41 12 Q41 16 38 19 Z" fill="#F472B6" stroke="#BE185D" strokeWidth="1" />
+                                <path d="M34 11 Q29 1 25 -8" stroke="#FBCFE8" strokeWidth="1" fill="none" opacity="0.85" />
+                            </g>
+                        )}
                     </g>
                 )}
                 <defs>
