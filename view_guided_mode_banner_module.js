@@ -12,6 +12,7 @@
   var React = window.React;
   if (!React) { console.error('[GuidedModeBanner] React not found on window'); return; }
 
+const GUIDED_SAMPLE_TEXT = "Photosynthesis is the process that plants, algae, and some bacteria use to turn sunlight into food. Inside a plant's leaves, a green pigment called chlorophyll captures energy from the sun. The plant takes in carbon dioxide from the air through tiny openings called stomata, and it absorbs water from the soil through its roots. Using the sun's energy, the plant combines the carbon dioxide and water to make glucose, a kind of sugar that stores energy for later. As a by-product, the plant releases oxygen back into the air \u2014 the same oxygen that animals and people need to breathe. Without photosynthesis, most life on Earth could not survive.";
 function GuidedModeBanner({
   GUIDED_STEPS,
   allGuidedSteps,
@@ -30,11 +31,93 @@ function GuidedModeBanner({
   t,
   tourSteps,
   history,
-  getDefaultTitle
+  getDefaultTitle,
+  inputText,
+  setInputText
 }) {
   const step = GUIDED_STEPS[guidedStep] || {};
   const isLast = guidedStep >= GUIDED_STEPS.length - 1;
   const [showPicker, setShowPicker] = React.useState(false);
+  const GUIDED_CLICK_STEPS = ["ui-tool-wordsounds", "math", "adventure", "_final"];
+  const _histLen = Array.isArray(history) ? history.length : 0;
+  const _stepBaseRef = React.useRef(_histLen);
+  const _prevStepRef = React.useRef(guidedStep);
+  if (_prevStepRef.current !== guidedStep) {
+    _prevStepRef.current = guidedStep;
+    _stepBaseRef.current = _histLen;
+  }
+  const stepDone = step.id === "source-input" ? (inputText || "").trim().length > 20 : GUIDED_CLICK_STEPS.indexOf(step.id) !== -1 ? !!guidedEngaged : _histLen > _stepBaseRef.current;
+  const [ttsState, setTtsState] = React.useState("idle");
+  const _ttsAudioRef = React.useRef(null);
+  const _ttsUrlRef = React.useRef(null);
+  const _ttsGenRef = React.useRef(0);
+  const _stopTts = React.useCallback(() => {
+    _ttsGenRef.current++;
+    const a = _ttsAudioRef.current;
+    _ttsAudioRef.current = null;
+    if (a) {
+      try {
+        a.pause();
+        a.src = "";
+      } catch (_) {
+      }
+    }
+    const u = _ttsUrlRef.current;
+    _ttsUrlRef.current = null;
+    if (u) {
+      try {
+        URL.revokeObjectURL(u);
+      } catch (_) {
+      }
+    }
+    setTtsState("idle");
+  }, []);
+  React.useEffect(() => _stopTts, [_stopTts]);
+  React.useEffect(() => {
+    _stopTts();
+  }, [guidedStep, showGuidedTip, _stopTts]);
+  const playAbout = async (rawText) => {
+    if (ttsState !== "idle") {
+      _stopTts();
+      return;
+    }
+    if (typeof window === "undefined" || typeof window.callTTS !== "function") return;
+    const plain = String(rawText || "").replace(/[#*`_>]/g, "").replace(/\s+/g, " ").trim();
+    if (!plain) return;
+    const myGen = ++_ttsGenRef.current;
+    setTtsState("loading");
+    let url = null;
+    try {
+      url = await window.callTTS(plain, window.__alloSelectedVoice || "Puck", window.__alloPlaybackRate || 1, { maxRetries: 2 });
+    } catch (_) {
+      url = null;
+    }
+    if (myGen !== _ttsGenRef.current) {
+      if (url) {
+        try {
+          URL.revokeObjectURL(url);
+        } catch (_) {
+        }
+      }
+      return;
+    }
+    if (!url) {
+      setTtsState("idle");
+      return;
+    }
+    _ttsUrlRef.current = url;
+    const audio = new Audio(url);
+    _ttsAudioRef.current = audio;
+    audio.onended = _stopTts;
+    audio.onerror = _stopTts;
+    try {
+      await audio.play();
+      if (myGen === _ttsGenRef.current) setTtsState("playing");
+      else _stopTts();
+    } catch (_) {
+      _stopTts();
+    }
+  };
   const allSteps = allGuidedSteps || GUIDED_STEPS;
   const isStepOn = (id) => !guidedSelectedIds || id === "source-input" || guidedSelectedIds.indexOf(id) !== -1;
   const humanize = (type) => getDefaultTitle ? getDefaultTitle(type) : String(type || "").replace(/[-_]/g, " ");
@@ -50,7 +133,7 @@ function GuidedModeBanner({
     zIndex: 9e3,
     boxShadow: "0 0 0 2px rgba(99,102,241,.7), 0 0 22px rgba(99,102,241,.45)",
     animation: "alloGuidedRingPulse 2s ease-in-out infinite"
-  } }), /* @__PURE__ */ React.createElement("div", { style: { background: "linear-gradient(135deg, #312e81, #1e3a5f)", borderRadius: "20px", padding: "16px", marginBottom: "16px", border: "1px solid rgba(99,102,241,0.3)", flexShrink: 0 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "13px", fontWeight: 800, color: "white", display: "flex", alignItems: "center", gap: "6px" } }, t("guided.indicator_title")), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "11px", color: "#c7d2fe", fontWeight: 600 } }, t("guided.step_of").replace("{current}", Math.min(guidedStep + 1, GUIDED_STEPS.length)).replace("{total}", GUIDED_STEPS.length))), /* @__PURE__ */ React.createElement("p", { style: { fontSize: "11px", color: "#c7d2fe", margin: "0 0 10px", fontWeight: 600 } }, step.label || "Complete!"), /* @__PURE__ */ React.createElement("div", { style: { width: "100%", height: "4px", borderRadius: "2px", background: "rgba(255,255,255,0.1)", overflow: "hidden", marginBottom: "12px" } }, /* @__PURE__ */ React.createElement("div", { style: { height: "100%", borderRadius: "2px", background: "linear-gradient(90deg, #818cf8, #6366f1)", transition: "width 0.4s ease-out", width: guidedStep / GUIDED_STEPS.length * 100 + "%" } })), step.action && /* @__PURE__ */ React.createElement("div", { role: "status", style: { display: "flex", gap: "8px", alignItems: "flex-start", background: guidedEngaged ? "rgba(34,197,94,0.14)" : "rgba(99,102,241,0.18)", border: "1px solid " + (guidedEngaged ? "rgba(74,222,128,0.4)" : "rgba(129,140,248,0.35)"), borderRadius: "12px", padding: "10px 12px", marginBottom: "10px" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "14px", lineHeight: "1.4" } }, guidedEngaged ? "\u2705" : "\u{1F449}"), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "11.5px", color: "white", fontWeight: 600, lineHeight: "1.5" } }, guidedEngaged ? step.success || step.action : step.action)), isLast && /* @__PURE__ */ React.createElement("div", { role: "status", style: { marginBottom: "10px", padding: "11px 13px", background: "rgba(34,197,94,0.12)", border: "1px solid rgba(74,222,128,0.35)", borderRadius: "12px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 800, color: "white", marginBottom: "6px" } }, "\u{1F389} ", t("guided.recap_title") || "Your lesson is built"), recapItems.length > 0 ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "rgba(203,213,225,0.9)", marginBottom: "6px" } }, (t("guided.recap_count") || "You created {n} resources:").replace("{n}", recapItems.length)), /* @__PURE__ */ React.createElement("div", { style: { maxHeight: "120px", overflowY: "auto" } }, recapItems.slice(0, 12).map((title, i) => /* @__PURE__ */ React.createElement("div", { key: i, style: { fontSize: "11px", color: "white", display: "flex", gap: "6px", marginBottom: "2px", alignItems: "flex-start" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { color: "#4ade80" } }, "\u2713"), /* @__PURE__ */ React.createElement("span", null, title))), recapItems.length > 12 && /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "rgba(203,213,225,0.7)" } }, "+", recapItems.length - 12, " ", t("guided.recap_more") || "more"))) : /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "rgba(203,213,225,0.9)" } }, t("guided.recap_empty") || "Generate resources from the tools, then download your full pack below."), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "rgba(203,213,225,0.8)", marginTop: "8px", fontStyle: "italic" } }, t("guided.recap_hub") || "Looking for more? The Learning Hub has StoryForge, PoetTree, and LitLab.")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "8px" } }, guidedStep === 0 && !guidedEngaged && /* @__PURE__ */ React.createElement("span", { style: { flex: 1, padding: "6px 12px", fontSize: "11px", fontWeight: 700, color: "rgba(199,210,254,0.85)", fontStyle: "italic", textAlign: "center" } }, t("guided.source_prompt")), (guidedStep > 0 || guidedEngaged) && !isLast && /* @__PURE__ */ React.createElement("button", { onClick: handleGuidedSkip, style: { flex: 1, padding: "6px 12px", fontSize: "11px", fontWeight: 800, color: "white", background: guidedEngaged ? "linear-gradient(135deg, #818cf8, #6366f1)" : "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "10px", cursor: "pointer", transition: "all 0.2s" } }, guidedEngaged ? t("guided.next_step") || "Next step \u2192" : t("guided.skip_step") || t("guided.skip")), isLast && /* @__PURE__ */ React.createElement("button", { onClick: () => {
+  } }), /* @__PURE__ */ React.createElement("div", { style: { background: "linear-gradient(135deg, #312e81, #1e3a5f)", borderRadius: "20px", padding: "16px", marginBottom: "16px", border: "1px solid rgba(99,102,241,0.3)", flexShrink: 0 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "13px", fontWeight: 800, color: "white", display: "flex", alignItems: "center", gap: "6px" } }, t("guided.indicator_title")), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "11px", color: "#c7d2fe", fontWeight: 600 } }, t("guided.step_of").replace("{current}", Math.min(guidedStep + 1, GUIDED_STEPS.length)).replace("{total}", GUIDED_STEPS.length))), /* @__PURE__ */ React.createElement("p", { style: { fontSize: "11px", color: "#c7d2fe", margin: "0 0 10px", fontWeight: 600 } }, step.label || "Complete!"), /* @__PURE__ */ React.createElement("div", { style: { width: "100%", height: "4px", borderRadius: "2px", background: "rgba(255,255,255,0.1)", overflow: "hidden", marginBottom: "12px" } }, /* @__PURE__ */ React.createElement("div", { style: { height: "100%", borderRadius: "2px", background: "linear-gradient(90deg, #818cf8, #6366f1)", transition: "width 0.4s ease-out", width: guidedStep / GUIDED_STEPS.length * 100 + "%" } })), step.action && /* @__PURE__ */ React.createElement("div", { role: "status", style: { display: "flex", gap: "8px", alignItems: "flex-start", background: stepDone ? "rgba(34,197,94,0.14)" : "rgba(99,102,241,0.18)", border: "1px solid " + (stepDone ? "rgba(74,222,128,0.4)" : "rgba(129,140,248,0.35)"), borderRadius: "12px", padding: "10px 12px", marginBottom: "10px" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "14px", lineHeight: "1.4" } }, stepDone ? "\u2705" : "\u{1F449}"), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "11.5px", color: "white", fontWeight: 600, lineHeight: "1.5" } }, stepDone ? step.success || step.action : step.action)), step.id === "source-input" && !stepDone && typeof setInputText === "function" && /* @__PURE__ */ React.createElement("button", { onClick: () => setInputText(GUIDED_SAMPLE_TEXT), style: { display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", width: "100%", padding: "8px 12px", marginBottom: "10px", fontSize: "11px", fontWeight: 700, color: "#e0e7ff", background: "rgba(255,255,255,0.06)", border: "1px dashed rgba(165,180,252,0.5)", borderRadius: "10px", cursor: "pointer", transition: "all 0.2s" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2728"), t("guided.try_example") || "New here? Try it with an example passage"), isLast && /* @__PURE__ */ React.createElement("div", { role: "status", style: { marginBottom: "10px", padding: "11px 13px", background: "rgba(34,197,94,0.12)", border: "1px solid rgba(74,222,128,0.35)", borderRadius: "12px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 800, color: "white", marginBottom: "6px" } }, "\u{1F389} ", t("guided.recap_title") || "Your lesson is built"), recapItems.length > 0 ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "rgba(203,213,225,0.9)", marginBottom: "6px" } }, (t("guided.recap_count") || "You created {n} resources:").replace("{n}", recapItems.length)), /* @__PURE__ */ React.createElement("div", { style: { maxHeight: "120px", overflowY: "auto" } }, recapItems.slice(0, 12).map((title, i) => /* @__PURE__ */ React.createElement("div", { key: i, style: { fontSize: "11px", color: "white", display: "flex", gap: "6px", marginBottom: "2px", alignItems: "flex-start" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { color: "#4ade80" } }, "\u2713"), /* @__PURE__ */ React.createElement("span", null, title))), recapItems.length > 12 && /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "rgba(203,213,225,0.7)" } }, "+", recapItems.length - 12, " ", t("guided.recap_more") || "more"))) : /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "rgba(203,213,225,0.9)" } }, t("guided.recap_empty") || "Generate resources from the tools, then download your full pack below."), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "rgba(203,213,225,0.8)", marginTop: "8px", fontStyle: "italic" } }, t("guided.recap_hub") || "Looking for more? The Learning Hub has StoryForge, PoetTree, and LitLab.")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "8px" } }, guidedStep === 0 && !guidedEngaged && /* @__PURE__ */ React.createElement("span", { style: { flex: 1, padding: "6px 12px", fontSize: "11px", fontWeight: 700, color: "rgba(199,210,254,0.85)", fontStyle: "italic", textAlign: "center" } }, t("guided.source_prompt")), (guidedStep > 0 || guidedEngaged) && !isLast && /* @__PURE__ */ React.createElement("button", { onClick: handleGuidedSkip, style: { flex: 1, padding: "6px 12px", fontSize: "11px", fontWeight: 800, color: "white", background: guidedEngaged ? "linear-gradient(135deg, #818cf8, #6366f1)" : "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "10px", cursor: "pointer", transition: "all 0.2s" } }, guidedEngaged ? t("guided.next_step") || "Next step \u2192" : t("guided.skip_step") || t("guided.skip")), isLast && /* @__PURE__ */ React.createElement("button", { onClick: () => {
     setGuidedStep(0);
     handleExitGuidedMode();
   }, style: { flex: 1, padding: "6px 12px", fontSize: "11px", fontWeight: 700, color: "white", background: "linear-gradient(135deg, #818cf8, #6366f1)", border: "none", borderRadius: "10px", cursor: "pointer", transition: "all 0.2s" } }, t("guided.all_done")), toggleGuidedStepId && /* @__PURE__ */ React.createElement("button", { onClick: () => setShowPicker((p) => !p), "aria-label": t("guided.customize") || "Choose which steps to include", "aria-expanded": showPicker, title: t("guided.customize") || "Choose which steps to include", style: { padding: "6px 10px", fontSize: "11px", fontWeight: 700, color: showPicker ? "white" : "#c7d2fe", background: showPicker ? "rgba(99,102,241,0.4)" : "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "10px", cursor: "pointer", transition: "all 0.2s" } }, "\u2699"), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowGuidedTip((p) => !p), style: { padding: "6px 12px", fontSize: "11px", fontWeight: 700, color: showGuidedTip ? "white" : "#c7d2fe", background: showGuidedTip ? "rgba(99,102,241,0.4)" : "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "10px", cursor: "pointer", transition: "all 0.2s" } }, showGuidedTip ? "\u2715" : "\u2139\uFE0F", " ", t("guided.about")), /* @__PURE__ */ React.createElement("button", { onClick: handleExitGuidedMode, style: { padding: "6px 12px", fontSize: "11px", fontWeight: 700, color: "rgba(248,113,113,0.9)", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(248,113,113,0.3)", borderRadius: "10px", cursor: "pointer", transition: "all 0.2s" } }, t("guided.exit") || "Exit")), showPicker && toggleGuidedStepId && /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": t("guided.choose_steps") || "Choose which steps to include", style: { marginTop: "10px", padding: "10px 12px", background: "rgba(255,255,255,0.06)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.1)", maxHeight: "220px", overflowY: "auto", animation: "fadeIn 0.3s ease-out" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", fontWeight: 800, color: "rgba(165,180,252,0.95)", marginBottom: "8px" } }, t("guided.choose_steps") || "Choose which steps to include", " (", allSteps.filter((s) => isStepOn(s.id)).length, "/", allSteps.length, ")"), allSteps.map((s) => {
@@ -63,7 +146,18 @@ function GuidedModeBanner({
     const stepId = GUIDED_STEPS[guidedStep]?.id;
     const tourId = stepId ? GUIDED_TOUR_MAP[stepId] : null;
     const tourEntry = tourId ? tourSteps.find((s) => s.id === tourId) : null;
-    return tourEntry ? /* @__PURE__ */ React.createElement("div", { style: { marginTop: "10px", padding: "12px 14px", background: "rgba(255,255,255,0.06)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.1)", animation: "fadeIn 0.3s ease-out" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 800, color: "rgba(165,180,252,0.95)", marginBottom: "6px", display: "flex", alignItems: "center", gap: "6px" } }, t("guided.about_prefix"), " ", tourEntry.title), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "rgba(203,213,225,0.85)", lineHeight: "1.6", margin: 0 } }, (tourEntry.text || "").split(/\r?\n/).map((line, i) => {
+    return tourEntry ? /* @__PURE__ */ React.createElement("div", { style: { marginTop: "10px", padding: "12px 14px", background: "rgba(255,255,255,0.06)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.1)", animation: "fadeIn 0.3s ease-out" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 800, color: "rgba(165,180,252,0.95)", marginBottom: "6px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" } }, /* @__PURE__ */ React.createElement("span", { style: { display: "flex", alignItems: "center", gap: "6px" } }, t("guided.about_prefix"), " ", tourEntry.title), typeof window !== "undefined" && typeof window.callTTS === "function" && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => playAbout((tourEntry.title || "") + ". " + (tourEntry.text || "")),
+        disabled: ttsState === "loading",
+        "aria-label": ttsState === "playing" ? t("guided.stop_listening") || "Stop reading aloud" : t("guided.listen") || "Read this aloud",
+        title: ttsState === "playing" ? t("guided.stop_listening") || "Stop reading aloud" : t("guided.listen") || "Read this aloud",
+        style: { flexShrink: 0, display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 9px", fontSize: "10px", fontWeight: 700, color: ttsState === "playing" ? "white" : "#c7d2fe", background: ttsState === "playing" ? "rgba(99,102,241,0.45)" : "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: "8px", cursor: ttsState === "loading" ? "wait" : "pointer", opacity: ttsState === "loading" ? 0.7 : 1 }
+      },
+      /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, ttsState === "loading" ? "\u23F3" : ttsState === "playing" ? "\u23F9" : "\u{1F50A}"),
+      ttsState === "playing" ? t("guided.stop") || "Stop" : t("guided.listen_short") || "Listen"
+    )), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "rgba(203,213,225,0.85)", lineHeight: "1.6", margin: 0 } }, (tourEntry.text || "").split(/\r?\n/).map((line, i) => {
       const cleanLine = line.trim();
       if (!cleanLine) return /* @__PURE__ */ React.createElement("div", { key: i, className: "h-1.5" });
       const formatText = (text) => {

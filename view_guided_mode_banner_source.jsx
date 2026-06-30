@@ -6,21 +6,36 @@
  *   - Tier 1 (anchor + explain): a per-step "do this now" instruction plus a
  *     pulsing highlight ring drawn over the active tool (the monolith scrolls it
  *     into view and passes its screen rect as guidedRect).
- *   - Tier 2 (do-it-with-me): when the teacher actually engages the highlighted
- *     tool (guidedEngaged), the instruction flips to an encouraging success note
- *     and the passive "Skip" becomes a primary "Next step" button.
- * Plus the existing expandable "About this step" markdown panel and Exit.
+ *   - Tier 2 (do-it-with-me): clicking the highlighted tool flips guidedEngaged,
+ *     which surfaces the primary "Next step" button. The encouraging success note
+ *     (✅), however, only appears once the step's work has *actually happened* — a
+ *     new history item was produced (generate steps), real source text was entered
+ *     (source step), or the tool was opened (the few interaction-only steps). This
+ *     keeps "Analysis done" honest: it no longer flashes on the click that merely
+ *     starts the (async) run.
+ * Plus the expandable "About this step" markdown panel (now with a read-aloud
+ * button reusing window.callTTS) and, on the source step, a "Try this example"
+ * affordance that loads a real starter passage to run the genuine tools on.
  *
- * Extracted from AlloFlowANTI.txt (May 2026); hands-on tutorial pass (Jun 2026).
+ * Extracted from AlloFlowANTI.txt (May 2026); hands-on tutorial pass (Jun 2026);
+ * completion-gating + About TTS + example passage (Jun 2026).
  *
  * Required props:
  *   GUIDED_STEPS, GUIDED_TOUR_MAP, guidedStep, guidedRect, guidedEngaged,
  *   handleExitGuidedMode, handleGuidedSkip, setGuidedStep, setShowGuidedTip,
- *   showGuidedTip, t, tourSteps
+ *   showGuidedTip, t, tourSteps, history
+ * Optional props:
+ *   inputText, setInputText (enable the source-step "Try this example" button)
  *
  * The highlight ring is pointer-events-none (the teacher can still click the real
  * control) and aria-hidden, and it goes static under prefers-reduced-motion.
  */
+// A real starter passage for the source step's "Try this example" affordance — a teacher exploring
+// Guided Mode gets concrete text to run the *actual* tools on (no canned/faked tool output is ever
+// shown; everything downstream is genuinely generated from this). Content-rich + structured so the
+// analysis, glossary, organizer, etc. each have something meaningful to work with.
+const GUIDED_SAMPLE_TEXT = "Photosynthesis is the process that plants, algae, and some bacteria use to turn sunlight into food. Inside a plant's leaves, a green pigment called chlorophyll captures energy from the sun. The plant takes in carbon dioxide from the air through tiny openings called stomata, and it absorbs water from the soil through its roots. Using the sun's energy, the plant combines the carbon dioxide and water to make glucose, a kind of sugar that stores energy for later. As a by-product, the plant releases oxygen back into the air — the same oxygen that animals and people need to breathe. Without photosynthesis, most life on Earth could not survive.";
+
 function GuidedModeBanner({
   GUIDED_STEPS,
   allGuidedSteps,
@@ -40,10 +55,70 @@ function GuidedModeBanner({
   tourSteps,
   history,
   getDefaultTitle,
+  inputText,
+  setInputText,
 }) {
   const step = GUIDED_STEPS[guidedStep] || {};
   const isLast = guidedStep >= GUIDED_STEPS.length - 1;
   const [showPicker, setShowPicker] = React.useState(false);
+
+  // --- "Done" must mean the step's tool actually produced output, not merely that the teacher
+  // clicked the ringed tool. The monolith flips `guidedEngaged` on the first *click* of the
+  // highlighted control (so the "Next step" affordance can appear), but the ✅ success note has to
+  // wait for the real, often-async result — otherwise "Analysis done" flashed the instant the
+  // panel was clicked, before Analyze had even run. Completion signal = a new history item appeared
+  // since we arrived at this step. (2026-06-30)
+  // Interaction-only steps create no generated history item, so they keep a real-but-coarse signal:
+  // the source step keys on actual entered text; Word Sounds / STEM Lab / Adventure / the final
+  // download fall back to the click (`guidedEngaged`) — the best signal available for those.
+  const GUIDED_CLICK_STEPS = ['ui-tool-wordsounds', 'math', 'adventure', '_final'];
+  const _histLen = Array.isArray(history) ? history.length : 0;
+  const _stepBaseRef = React.useRef(_histLen);
+  const _prevStepRef = React.useRef(guidedStep);
+  if (_prevStepRef.current !== guidedStep) {
+    _prevStepRef.current = guidedStep;          // re-baseline synchronously on step change so a
+    _stepBaseRef.current = _histLen;            // prior step's output can't flash this one "done"
+  }
+  const stepDone =
+    step.id === 'source-input' ? ((inputText || '').trim().length > 20) :
+    GUIDED_CLICK_STEPS.indexOf(step.id) !== -1 ? !!guidedEngaged :
+    (_histLen > _stepBaseRef.current);
+
+  // --- About-panel read-aloud: reuse the app's TTS (window.callTTS, the teacher's selected voice)
+  // so a step explanation can be listened to instead of read. Leak-safe: the blob URL is revoked
+  // when playback ends, the step changes, the panel closes, or the banner unmounts. A generation
+  // token cancels an in-flight synth cleanly if the teacher stops or navigates mid-load. (2026-06-30)
+  const [ttsState, setTtsState] = React.useState('idle'); // 'idle' | 'loading' | 'playing'
+  const _ttsAudioRef = React.useRef(null);
+  const _ttsUrlRef = React.useRef(null);
+  const _ttsGenRef = React.useRef(0);
+  const _stopTts = React.useCallback(() => {
+    _ttsGenRef.current++;
+    const a = _ttsAudioRef.current; _ttsAudioRef.current = null;
+    if (a) { try { a.pause(); a.src = ''; } catch (_) {} }
+    const u = _ttsUrlRef.current; _ttsUrlRef.current = null;
+    if (u) { try { URL.revokeObjectURL(u); } catch (_) {} }
+    setTtsState('idle');
+  }, []);
+  React.useEffect(() => _stopTts, [_stopTts]);                         // stop on unmount
+  React.useEffect(() => { _stopTts(); }, [guidedStep, showGuidedTip, _stopTts]); // ...and on step/panel change
+  const playAbout = async (rawText) => {
+    if (ttsState !== 'idle') { _stopTts(); return; }                  // toggle: a second click stops
+    if (typeof window === 'undefined' || typeof window.callTTS !== 'function') return;
+    const plain = String(rawText || '').replace(/[#*`_>]/g, '').replace(/\s+/g, ' ').trim();
+    if (!plain) return;
+    const myGen = ++_ttsGenRef.current;
+    setTtsState('loading');
+    let url = null;
+    try { url = await window.callTTS(plain, (window.__alloSelectedVoice || 'Puck'), (window.__alloPlaybackRate || 1), { maxRetries: 2 }); } catch (_) { url = null; }
+    if (myGen !== _ttsGenRef.current) { if (url) { try { URL.revokeObjectURL(url); } catch (_) {} } return; } // superseded
+    if (!url) { setTtsState('idle'); return; }
+    _ttsUrlRef.current = url;
+    const audio = new Audio(url); _ttsAudioRef.current = audio;
+    audio.onended = _stopTts; audio.onerror = _stopTts;
+    try { await audio.play(); if (myGen === _ttsGenRef.current) setTtsState('playing'); else _stopTts(); }
+    catch (_) { _stopTts(); }
+  };
   const allSteps = allGuidedSteps || GUIDED_STEPS;
   // null selection = every step on; source-input is always on (the pipeline needs it).
   const isStepOn = (id) => !guidedSelectedIds || id === 'source-input' || guidedSelectedIds.indexOf(id) !== -1;
@@ -72,10 +147,15 @@ function GuidedModeBanner({
           <div style={{ height: '100%', borderRadius: '2px', background: 'linear-gradient(90deg, #818cf8, #6366f1)', transition: 'width 0.4s ease-out', width: ((guidedStep / GUIDED_STEPS.length) * 100) + '%' }} />
         </div>
         {step.action && (
-          <div role="status" style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', background: guidedEngaged ? 'rgba(34,197,94,0.14)' : 'rgba(99,102,241,0.18)', border: '1px solid ' + (guidedEngaged ? 'rgba(74,222,128,0.4)' : 'rgba(129,140,248,0.35)'), borderRadius: '12px', padding: '10px 12px', marginBottom: '10px' }}>
-            <span aria-hidden="true" style={{ fontSize: '14px', lineHeight: '1.4' }}>{guidedEngaged ? '✅' : '👉'}</span>
-            <span style={{ fontSize: '11.5px', color: 'white', fontWeight: 600, lineHeight: '1.5' }}>{guidedEngaged ? (step.success || step.action) : step.action}</span>
+          <div role="status" style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', background: stepDone ? 'rgba(34,197,94,0.14)' : 'rgba(99,102,241,0.18)', border: '1px solid ' + (stepDone ? 'rgba(74,222,128,0.4)' : 'rgba(129,140,248,0.35)'), borderRadius: '12px', padding: '10px 12px', marginBottom: '10px' }}>
+            <span aria-hidden="true" style={{ fontSize: '14px', lineHeight: '1.4' }}>{stepDone ? '✅' : '👉'}</span>
+            <span style={{ fontSize: '11.5px', color: 'white', fontWeight: 600, lineHeight: '1.5' }}>{stepDone ? (step.success || step.action) : step.action}</span>
           </div>
+        )}
+        {step.id === 'source-input' && !stepDone && typeof setInputText === 'function' && (
+          <button onClick={() => setInputText(GUIDED_SAMPLE_TEXT)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', width: '100%', padding: '8px 12px', marginBottom: '10px', fontSize: '11px', fontWeight: 700, color: '#e0e7ff', background: 'rgba(255,255,255,0.06)', border: '1px dashed rgba(165,180,252,0.5)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>
+            <span aria-hidden="true">✨</span>{t('guided.try_example') || 'New here? Try it with an example passage'}
+          </button>
         )}
         {isLast && (
           <div role="status" style={{ marginBottom: '10px', padding: '11px 13px', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(74,222,128,0.35)', borderRadius: '12px' }}>
@@ -127,7 +207,21 @@ function GuidedModeBanner({
           const tourEntry = tourId ? tourSteps.find(s => s.id === tourId) : null;
           return tourEntry ? (
             <div style={{ marginTop: '10px', padding: '12px 14px', background: 'rgba(255,255,255,0.06)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', animation: 'fadeIn 0.3s ease-out' }}>
-              <div style={{ fontSize: '12px', fontWeight: 800, color: 'rgba(165,180,252,0.95)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>{t('guided.about_prefix')} {tourEntry.title}</div>
+              <div style={{ fontSize: '12px', fontWeight: 800, color: 'rgba(165,180,252,0.95)', marginBottom: '6px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>{t('guided.about_prefix')} {tourEntry.title}</span>
+                {typeof window !== 'undefined' && typeof window.callTTS === 'function' && (
+                  <button
+                    onClick={() => playAbout((tourEntry.title || '') + '. ' + (tourEntry.text || ''))}
+                    disabled={ttsState === 'loading'}
+                    aria-label={ttsState === 'playing' ? (t('guided.stop_listening') || 'Stop reading aloud') : (t('guided.listen') || 'Read this aloud')}
+                    title={ttsState === 'playing' ? (t('guided.stop_listening') || 'Stop reading aloud') : (t('guided.listen') || 'Read this aloud')}
+                    style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 9px', fontSize: '10px', fontWeight: 700, color: ttsState === 'playing' ? 'white' : '#c7d2fe', background: ttsState === 'playing' ? 'rgba(99,102,241,0.45)' : 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: '8px', cursor: ttsState === 'loading' ? 'wait' : 'pointer', opacity: ttsState === 'loading' ? 0.7 : 1 }}
+                  >
+                    <span aria-hidden="true">{ttsState === 'loading' ? '⏳' : ttsState === 'playing' ? '⏹' : '🔊'}</span>
+                    {ttsState === 'playing' ? (t('guided.stop') || 'Stop') : (t('guided.listen_short') || 'Listen')}
+                  </button>
+                )}
+              </div>
               <div style={{ fontSize: '11px', color: 'rgba(203,213,225,0.85)', lineHeight: '1.6', margin: 0 }}>
                 {(tourEntry.text || '').split(/\r?\n/).map((line, i) => {
                   const cleanLine = line.trim();
