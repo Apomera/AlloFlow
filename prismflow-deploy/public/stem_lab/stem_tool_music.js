@@ -2165,12 +2165,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 React.createElement("div", { className: "grid grid-cols-2 gap-3" },
                   React.createElement("div", null,
                     React.createElement("label", { className: "text-[11px] font-bold text-amber-700" }, "Mod Ratio: " + (d.fmRatio || 2) + ":1"),
-                    React.createElement("input", { type: "range", min: "0.5", max: "8", step: "0.5", value: d.fmRatio || 2, onChange: function(e) { upd('fmRatio', parseFloat(e.target.value)); }, className: "w-full accent-amber-600" }),
+                    React.createElement("input", { type: "range", 'aria-valuetext': ((d.fmRatio || 2) + ' to 1 ratio'), min: "0.5", max: "8", step: "0.5", value: d.fmRatio || 2, onChange: function(e) { upd('fmRatio', parseFloat(e.target.value)); }, className: "w-full accent-amber-600" }),
                     React.createElement("div", { className: "flex justify-between text-[11px] text-amber-500" }, React.createElement("span", null, "Sub-harmonic"), React.createElement("span", null, __alloT('stem.music.bright', "Bright")))
                   ),
                   React.createElement("div", null,
                     React.createElement("label", { className: "text-[11px] font-bold text-amber-700" }, "Mod Depth: " + (d.fmDepth || 1.5)),
-                    React.createElement("input", { type: "range", min: "0", max: "10", step: "0.1", value: d.fmDepth || 1.5, onChange: function(e) { upd('fmDepth', parseFloat(e.target.value)); }, className: "w-full accent-amber-600" }),
+                    React.createElement("input", { type: "range", 'aria-valuetext': ('depth ' + (d.fmDepth || 1.5)), min: "0", max: "10", step: "0.1", value: d.fmDepth || 1.5, onChange: function(e) { upd('fmDepth', parseFloat(e.target.value)); }, className: "w-full accent-amber-600" }),
                     React.createElement("div", { className: "flex justify-between text-[11px] text-amber-500" }, React.createElement("span", null, __alloT('stem.music.pure', "Pure")), React.createElement("span", null, __alloT('stem.music.metallic', "Metallic")))
                   )
                 )
@@ -2183,12 +2183,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 React.createElement("div", { className: "grid grid-cols-2 gap-3" },
                   React.createElement("div", null,
                     React.createElement("label", { className: "text-[11px] font-bold text-indigo-700" }, "Voices: " + (d.superVoices || 5)),
-                    React.createElement("input", { type: "range", min: "2", max: "9", step: "1", value: d.superVoices || 5, onChange: function(e) { upd('superVoices', parseInt(e.target.value)); }, className: "w-full accent-indigo-600" }),
+                    React.createElement("input", { type: "range", 'aria-valuetext': ((d.superVoices || 5) + ' voices'), min: "2", max: "9", step: "1", value: d.superVoices || 5, onChange: function(e) { upd('superVoices', parseInt(e.target.value)); }, className: "w-full accent-indigo-600" }),
                     React.createElement("div", { className: "flex justify-between text-[11px] text-indigo-500" }, React.createElement("span", null, __alloT('stem.music.thin_2', "Thin (2)")), React.createElement("span", null, __alloT('stem.music.massive_9', "Massive (9)")))
                   ),
                   React.createElement("div", null,
                     React.createElement("label", { className: "text-[11px] font-bold text-indigo-700" }, "Detune: " + (d.superDetune || 15) + " cents"),
-                    React.createElement("input", { type: "range", min: "2", max: "50", step: "1", value: d.superDetune || 15, onChange: function(e) { upd('superDetune', parseInt(e.target.value)); }, className: "w-full accent-indigo-600" }),
+                    React.createElement("input", { type: "range", 'aria-valuetext': ((d.superDetune || 15) + ' cents'), min: "2", max: "50", step: "1", value: d.superDetune || 15, onChange: function(e) { upd('superDetune', parseInt(e.target.value)); }, className: "w-full accent-indigo-600" }),
                     React.createElement("div", { className: "flex justify-between text-[11px] text-indigo-500" }, React.createElement("span", null, __alloT('stem.music.tight', "Tight")), React.createElement("span", null, __alloT('stem.music.wide', "Wide")))
                   )
                 )
@@ -2225,7 +2225,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   { k: 'release', label: t('stem.synth.release'), min: 0.01, max: 3, step: 0.01, unit: 's' }].map(function (param) {
                     return React.createElement("div", { key: param.k, className: "flex items-center gap-2 mb-0.5" },
                       React.createElement("span", { className: "text-[11px] font-bold text-slate-600 w-12" }, param.label),
-                      React.createElement("input", { type: "range", min: param.min, max: param.max, step: param.step, value: d[param.k] || param.min, onChange: function (e) { upd(param.k, parseFloat(e.target.value)); }, className: "flex-1 accent-purple-600 h-1.5" }),
+                      React.createElement("input", { type: "range", 'aria-valuetext': ((d[param.k] != null ? d[param.k] : param.min).toFixed(2) + (param.unit || '')), min: param.min, max: param.max, step: param.step, value: d[param.k] || param.min, onChange: function (e) { upd(param.k, parseFloat(e.target.value)); }, className: "flex-1 accent-purple-600 h-1.5" }),
                       React.createElement("span", { className: "text-[11px] text-slate-600 w-10 text-right" }, (d[param.k] || param.min).toFixed(2) + param.unit)
                     );
                   })
@@ -2255,7 +2255,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     { k: 'ksDamping', label: t('stem.synth.damping'), min: 0.99, max: 0.9999, step: 0.0001 }].map(function (p) {
                       return React.createElement("div", { key: p.k, className: "flex items-center gap-2" },
                         React.createElement("span", { className: "text-[11px] font-bold text-slate-600 w-16" }, p.label),
-                        React.createElement("input", { type: "range", min: p.min, max: p.max, step: p.step, value: d[p.k] || (p.k === 'ksBrightness' ? 0.8 : 0.996), onChange: function (e) { upd(p.k, parseFloat(e.target.value)); }, className: "flex-1 accent-amber-500 h-1.5" }),
+                        React.createElement("input", { type: "range", 'aria-valuetext': (String(d[p.k] != null ? d[p.k] : (p.k === 'ksBrightness' ? 0.8 : 0.996))), min: p.min, max: p.max, step: p.step, value: d[p.k] || (p.k === 'ksBrightness' ? 0.8 : 0.996), onChange: function (e) { upd(p.k, parseFloat(e.target.value)); }, className: "flex-1 accent-amber-500 h-1.5" }),
                         React.createElement("span", { className: "text-[11px] text-slate-600 w-10 text-right" }, (d[p.k] || (p.k === 'ksBrightness' ? 0.8 : 0.996)).toFixed(p.k === 'ksDamping' ? 4 : 2))
                       );
                     })
@@ -2265,7 +2265,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   { k: 'reverbMix', label: __alloT('stem.music.reverb', '\uD83C\uDFDB Reverb'), min: 0, max: 1, step: 0.01 }].map(function (p) {
                     return React.createElement("div", { key: p.k, className: "flex items-center gap-2 mb-0.5" },
                       React.createElement("span", { className: "text-[11px] font-bold text-slate-600 w-16" }, p.label),
-                      React.createElement("input", { type: "range", min: p.min, max: p.max, step: p.step, value: d[p.k] != null ? d[p.k] : (p.k === 'volume' ? 0.5 : 0), onChange: function (e) { upd(p.k, parseFloat(e.target.value)); }, className: "flex-1 accent-purple-600 h-1.5" }),
+                      React.createElement("input", { type: "range", 'aria-valuetext': (((d[p.k] != null ? d[p.k] : (p.k === 'volume' ? 0.5 : 0)) * 100).toFixed(0) + '%'), min: p.min, max: p.max, step: p.step, value: d[p.k] != null ? d[p.k] : (p.k === 'volume' ? 0.5 : 0), onChange: function (e) { upd(p.k, parseFloat(e.target.value)); }, className: "flex-1 accent-purple-600 h-1.5" }),
                       React.createElement("span", { className: "text-[11px] text-slate-600 w-8 text-right" }, ((d[p.k] != null ? d[p.k] : (p.k === 'volume' ? 0.5 : 0)) * 100).toFixed(0) + '%')
                     );
                   }),
@@ -2285,7 +2285,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     { k: 'filterQ', label: 'Q', min: 0.1, max: 20, step: 0.1, fmt: function (v) { return (v || 1).toFixed(1); } }].map(function (p) {
                       return React.createElement("div", { key: p.k, className: "flex items-center gap-2 mb-0.5" },
                         React.createElement("span", { className: "text-[11px] font-bold text-slate-600 w-10" }, p.label),
-                        React.createElement("input", { type: "range", min: p.min, max: p.max, step: p.step, value: d[p.k] || (p.k === 'filterCutoff' ? 8000 : 1), onChange: function (e) { upd(p.k, parseFloat(e.target.value)); }, className: "flex-1 accent-cyan-500 h-1.5" }),
+                        React.createElement("input", { type: "range", 'aria-valuetext': ((p.fmt ? p.fmt(d[p.k]) : String(d[p.k]))), min: p.min, max: p.max, step: p.step, value: d[p.k] || (p.k === 'filterCutoff' ? 8000 : 1), onChange: function (e) { upd(p.k, parseFloat(e.target.value)); }, className: "flex-1 accent-cyan-500 h-1.5" }),
                         React.createElement("span", { className: "text-[11px] text-slate-600 w-10 text-right" }, p.fmt(d[p.k]))
                       );
                     })
@@ -2302,7 +2302,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     { k: 'vibratoRate', label: t('stem.synth.vib_rate'), min: 0.5, max: 12, step: 0.5 }].map(function (p) {
                       return React.createElement("div", { key: p.k, className: "flex items-center gap-2 mb-0.5" },
                         React.createElement("span", { className: "text-[11px] font-bold text-slate-600 w-14" }, p.label),
-                        React.createElement("input", { type: "range", min: p.min, max: p.max, step: p.step, value: d[p.k] || 0, onChange: function (e) { upd(p.k, parseFloat(e.target.value)); }, className: "flex-1 accent-pink-500 h-1.5" }),
+                        React.createElement("input", { type: "range", 'aria-valuetext': ((d[p.k] || 0).toFixed(1) + (/Rate/.test(p.k) ? ' Hz' : '')), min: p.min, max: p.max, step: p.step, value: d[p.k] || 0, onChange: function (e) { upd(p.k, parseFloat(e.target.value)); }, className: "flex-1 accent-pink-500 h-1.5" }),
                         React.createElement("span", { className: "text-[11px] text-slate-600 w-8 text-right" }, (d[p.k] || 0).toFixed(1))
                       );
                     })
@@ -2355,13 +2355,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     }, oc);
                   }),
                   React.createElement("span", { className: "text-[11px] font-bold text-slate-600 ml-2" }, __alloT('stem.music.rate', "Rate")),
-                  React.createElement("input", { type: "range", min: "50", max: "500", step: "10", value: d.arpRate || 150,
+                  React.createElement("input", { type: "range", 'aria-valuetext': ((d.arpRate || 150) + ' ms per step'), min: "50", max: "500", step: "10", value: d.arpRate || 150,
                     onChange: function(e) { upd('arpRate', parseInt(e.target.value)); if (arpOn) { stopArpeggiator(); setTimeout(startArpeggiator, 50); } },
                     className: "w-16 accent-indigo-600", title: (d.arpRate || 150) + 'ms'
                   }),
                   React.createElement("span", { className: "text-[11px] font-mono text-indigo-500 w-10" }, (d.arpRate || 150) + 'ms'),
                   React.createElement("span", { className: "text-[11px] font-bold text-slate-600 ml-1" }, __alloT('stem.music.gate', "Gate")),
-                  React.createElement("input", { type: "range", min: "10", max: "100", step: "5", value: d.arpGate || 80,
+                  React.createElement("input", { type: "range", 'aria-valuetext': ((d.arpGate || 80) + '% gate'), min: "10", max: "100", step: "5", value: d.arpGate || 80,
                     onChange: function(e) { upd('arpGate', parseInt(e.target.value)); },
                     className: "w-12 accent-indigo-600", title: 'Gate: ' + (d.arpGate || 80) + '%'
                   }),
@@ -2488,7 +2488,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   ),
                   d.micMonitor && React.createElement("div", { className: "flex items-center gap-1" },
                     React.createElement("span", { className: "text-[11px] text-rose-500" }, "Vol"),
-                    React.createElement("input", { type: "range", min: "0", max: "1", step: "0.05", value: d.micVolume || 0.5,
+                    React.createElement("input", { type: "range", 'aria-valuetext': (Math.round((d.micVolume || 0.5) * 100) + '%'), min: "0", max: "1", step: "0.05", value: d.micVolume || 0.5,
                       onChange: function(e) { var v = parseFloat(e.target.value); upd('micVolume', v); if (window._alloMicGain) window._alloMicGain.gain.value = v; },
                       className: "w-16 accent-rose-600"
                     })
@@ -2962,7 +2962,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 // BPM
                 React.createElement("div", { className: "flex items-center gap-1" },
                   React.createElement("span", { className: "text-[11px] font-bold text-slate-600" }, "BPM"),
-                  React.createElement("input", { type: "range", min: 60, max: 200, step: 1, value: d.seqBPM || 120, onChange: function (e) { upd('seqBPM', parseInt(e.target.value)); }, className: "w-20 accent-purple-600" }),
+                  React.createElement("input", { type: "range", 'aria-valuetext': ((d.seqBPM || 120) + ' BPM'), min: 60, max: 200, step: 1, value: d.seqBPM || 120, onChange: function (e) { upd('seqBPM', parseInt(e.target.value)); }, className: "w-20 accent-purple-600" }),
                   React.createElement("span", { className: "text-xs font-bold text-purple-700 w-8 text-center" }, d.seqBPM || 120)
                 ),
                 // Tap Tempo
@@ -3046,7 +3046,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     var soloed = d.chSolo === row;
                     return React.createElement("div", { key: sound.type, className: "flex items-center gap-2 py-0.5" },
                       React.createElement("span", { className: "text-[11px] font-bold w-12 text-right truncate", style: { color: sound.color } }, sound.label),
-                      React.createElement("input", { type: "range", min: 0, max: 100, value: Math.round(vol * 100),
+                      React.createElement("input", { type: "range", 'aria-valuetext': (Math.round(vol * 100) + '%'), min: 0, max: 100, value: Math.round(vol * 100),
                         onChange: function (e) { var v = Object.assign({}, d.chVolumes || {}); v[row] = parseInt(e.target.value) / 100; upd('chVolumes', v); },
                         className: "flex-1 h-1.5 accent-purple-500", style: { maxWidth: '120px' }
                       }),
@@ -3079,7 +3079,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   ].map(function (fx) {
                     return React.createElement("div", { key: fx.key, className: "text-center" },
                       React.createElement("div", { className: "text-[11px] font-bold text-violet-700 mb-1" }, fx.icon + ' ' + fx.label),
-                      React.createElement("input", { type: "range", min: fx.key === 'bpFilterCut' ? 200 : 0, max: fx.max, value: fx.val,
+                      React.createElement("input", { type: "range", 'aria-valuetext': ((fx.key === 'bpFilterCut' ? (fx.val >= 19000 ? 'open' : Math.round(fx.val) + ' Hz') : fx.val + '%')), min: fx.key === 'bpFilterCut' ? 200 : 0, max: fx.max, value: fx.val,
                         onChange: function (e) { upd(fx.key, parseInt(e.target.value)); },
                         className: "w-full accent-violet-500"
                       }),
@@ -4297,7 +4297,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 { k: 'ksDamping', label: t('stem.synth.sustaindamping'), min: 0.99, max: 0.9999, step: 0.0001 }].map(function (p) {
                   return React.createElement("div", { key: p.k, className: "flex items-center gap-2 mb-1" },
                     React.createElement("span", { className: "text-[11px] font-bold text-amber-700 w-24" }, p.label),
-                    React.createElement("input", { type: "range", min: p.min, max: p.max, step: p.step, value: d[p.k] || (p.k === 'ksBrightness' ? 0.8 : 0.996), onChange: function (e) { upd(p.k, parseFloat(e.target.value)); }, className: "flex-1 accent-amber-500" }),
+                    React.createElement("input", { type: "range", 'aria-valuetext': (String(d[p.k] != null ? d[p.k] : (p.k === 'ksBrightness' ? 0.8 : 0.996))), min: p.min, max: p.max, step: p.step, value: d[p.k] || (p.k === 'ksBrightness' ? 0.8 : 0.996), onChange: function (e) { upd(p.k, parseFloat(e.target.value)); }, className: "flex-1 accent-amber-500" }),
                     React.createElement("span", { className: "text-[11px] text-amber-600 w-14 text-right font-mono" }, (d[p.k] || (p.k === 'ksBrightness' ? 0.8 : 0.996)).toFixed(p.k === 'ksDamping' ? 4 : 2))
                   );
                 }),
@@ -4513,7 +4513,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     return h('div', { key: s.key },
                       h('label', { htmlFor: 'th-' + s.key, className: 'block text-[11px] font-bold text-slate-700' },
                         s.label + ': ', h('span', { className: 'font-mono text-purple-700' }, s.val)),
-                      h('input', { id: 'th-' + s.key, type: 'range', min: 0, max: 100, step: 1, value: s.val,
+                      h('input', { id: 'th-' + s.key, type: 'range', 'aria-valuetext': (s.val + ' percent'), min: 0, max: 100, step: 1, value: s.val,
                         onChange: function(e) { var p = {}; p[s.key] = parseInt(e.target.value, 10); setIQ(p); },
                         className: 'w-full', 'aria-label': s.label }));
                   })
