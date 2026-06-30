@@ -89,7 +89,7 @@ describe('OCR accuracy — pipeline wiring', () => {
   it('the fix flow computes the estimate ONLY for scanned docs (gated on _heavyScanned) and is fail-soft', () => {
     expect(dp).toMatch(/if \(_heavyScanned && extractedText && extractedText\.length > 60\) \{\s*\n\s*ocrAccuracy = _alloOcrAccuracy\(extractedText\)/);
     expect(dp).toMatch(/let ocrAccuracy = null;/);
-    expect(dp).toMatch(/catch \(_\) \{ ocrAccuracy = null; \}/);
+    expect(dp).toMatch(/catch \(_oaErr\) \{ ocrAccuracy = null; \}/);
   });
   it('the fix result carries the ocrAccuracy field', () => {
     expect(dp).toMatch(/integrityWarning,\s*\n\s*\/\/[\s\S]*?\n\s*ocrAccuracy,/);
@@ -99,5 +99,33 @@ describe('OCR accuracy — pipeline wiring', () => {
     expect(vp).toMatch(/ocr_quality_title/);
     expect(vp).toMatch(/NOT a measured accuracy/);
     expect(vp).toMatch(/OCR quality/);
+  });
+});
+
+describe('OCR accuracy — recovery + verification fold-ins', () => {
+  // ① reconcileOcrPages: accuracy is a SELECTION signal — flip to a substantial, clearly-cleaner alt.
+  it('reconcileOcrPages flips OCR variant on accuracy (closes the letter-shaped-garble blind spot), guarded', () => {
+    expect(dp).toMatch(/const _accT = _alloOcrAccuracy\(tText\), _accV = _alloOcrAccuracy\(vText\)/);
+    // only flips to a SUBSTANTIAL, clearly-cleaner alternative — never trades down
+    expect(dp).toMatch(/_lowAccuracy = _substantialAlt && [\s\S]*?_winAcc\.band === 'poor' && _altAcc\.band !== 'poor'[\s\S]*?\(_altAcc\.score - _winAcc\.score\) >= 15/);
+    expect(dp).toMatch(/if \(_extremeGarbage \|\| _clearlyWorse \|\| _lowConfTess \|\| _lowAccuracy\)/);
+  });
+  // ①B reconcileOcrPages: accuracy also FLAGS a chosen page that confidence + junk-ratio both miss.
+  it('reconcileOcrPages flags a chosen page whose text estimates "poor" (review-banner net)', () => {
+    expect(dp).toMatch(/\} else if \(chosen\.text\) \{[\s\S]*?const _chAcc = _alloOcrAccuracy\(chosen\.text\);[\s\S]*?_chAcc\.band === 'poor'[\s\S]*?lowConfidence\.push/);
+  });
+  // ② verification verdict: a "poor" estimate pushes a fidelity note BEFORE the triage, so it drives
+  //    BOTH needsExpertReview (_contentFidelityConcern reads notes.length) AND the fidelityLimited banner.
+  it('a "poor" OCR estimate pushes a fidelity note before the triage (drives needsExpertReview + banner)', () => {
+    expect(dp).toMatch(/kind: 'lowOcrAccuracy'/);
+    const noteIdx = dp.indexOf("kind: 'lowOcrAccuracy'");
+    const triageIdx = dp.indexOf('Triage: flag documents that need expert remediation');
+    const concernIdx = dp.indexOf('const _contentFidelityConcern = !!integrityWarning || _structuralFidelityNotes.length > 0');
+    expect(noteIdx).toBeGreaterThan(0);
+    expect(triageIdx).toBeGreaterThan(noteIdx);     // note pushed before triage
+    expect(concernIdx).toBeGreaterThan(noteIdx);    // ...so _contentFidelityConcern sees it -> needsExpertReview
+  });
+  it('coverage measures quantity; the note explains accuracy is the quality dimension', () => {
+    expect(dp).toMatch(/Coverage measures how much text was kept, not whether it is correct/);
   });
 });

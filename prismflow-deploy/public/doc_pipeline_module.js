@@ -7331,7 +7331,23 @@ var createDocPipeline = function(deps) {
         // worse/shorter page. (Won't help when Vision is empty/short for the page — that's the
         // separate Vision per-page-coverage issue.)
         const _lowConfTess = _winner === 'tesseract' && _tConf != null && _tConf < 60 && _vJ <= _tJ && _substantialAlt;
-        if (_extremeGarbage || _clearlyWorse || _lowConfTess) _winner = _winner === 'tesseract' ? 'vision' : 'tesseract';
+        // Accuracy override (2026-06-30): closes the letter-shaped-garble blind spot noted above —
+        // "lke"/"ae"/"rnodern" has LOW junk-ratio so _extremeGarbage/_clearlyWorse miss it, and Tesseract
+        // confidence only exists for the Tesseract side. _alloOcrAccuracy (dictionary hit-rate + vowel/
+        // fragment plausibility) catches it. CONSERVATIVE, mirrors the guards: only flip to a SUBSTANTIAL
+        // (>=50% length) alternative that is clearly cleaner (winner band 'poor', alt not 'poor', score
+        // gap >=15) — never trades down. Fail-soft: any error leaves the length/junk/confidence decision.
+        let _lowAccuracy = false;
+        try {
+          const _accT = _alloOcrAccuracy(tText), _accV = _alloOcrAccuracy(vText);
+          const _winAcc = _winner === 'tesseract' ? _accT : _accV;
+          const _altAcc = _winner === 'tesseract' ? _accV : _accT;
+          _lowAccuracy = _substantialAlt && !!_winAcc && !!_altAcc && _winAcc.band === 'poor' && _altAcc.band !== 'poor' && typeof _winAcc.score === 'number' && typeof _altAcc.score === 'number' && (_altAcc.score - _winAcc.score) >= 15;
+        } catch (_) { _lowAccuracy = false; }
+        if (_extremeGarbage || _clearlyWorse || _lowConfTess || _lowAccuracy) {
+          _winner = _winner === 'tesseract' ? 'vision' : 'tesseract';
+          if (_lowAccuracy && !(_extremeGarbage || _clearlyWorse || _lowConfTess)) warnLog('[OCR Reconcile] page ' + _pn + ': flipped to ' + _winner + ' on OCR-accuracy estimate (letter-shaped garble the junk/confidence nets missed)');
+        }
       }
       const chosen = _winner === 'tesseract' ? { source: 'tesseract', text: tText } : { source: 'vision', text: vText };
       // Carry the Tesseract word boxes + page dims through reconciliation (Vision has
@@ -7355,6 +7371,15 @@ var createDocPipeline = function(deps) {
         // Conservative 0.6 floor (clean prose ~0.05-0.15; even symbol-heavy math rarely >0.5) avoids
         // STEM false-positives; pseudo-confidence keeps the {pageNum,confidence} shape the banner reads.
         lowConfidence.push({ pageNum: _pn, confidence: Math.round((1 - _ocrJunkRatio(chosen.text)) * 100) });
+      } else if (chosen.text) {
+        // Accuracy net (2026-06-30): letter-shaped garble ("lke"/"rnodern"/"tlie") that BOTH the
+        // confidence net (Tesseract-only) and the junk-ratio net (symbol density) miss — flag a page
+        // whose CHOSEN text estimates as POOR OCR quality so it surfaces in the review banner.
+        // Pseudo-confidence = the accuracy score, keeping the {pageNum,confidence} shape. Fail-soft.
+        try {
+          const _chAcc = _alloOcrAccuracy(chosen.text);
+          if (_chAcc && _chAcc.band === 'poor' && typeof _chAcc.score === 'number') lowConfidence.push({ pageNum: _pn, confidence: _chAcc.score });
+        } catch (_) {}
       }
       // Flag disagreement if length gap > 10% or > 20 chars absolute — but ONLY when BOTH
       // engines produced text for this page. An empty side is a pagination artifact (single-pass
@@ -17765,6 +17790,25 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         }
       } catch (_lcErr) {}
 
+      // ── Estimated OCR accuracy (2026-06-30) ── Closes the gap the comment above names: the
+      // low-confidence net only sees TESSERACT per-word confidence, so LETTER-SHAPED garble that won on
+      // a Vision page (or a confident-but-wrong Tesseract page) still scores green on faithfully-preserved
+      // gibberish. _alloOcrAccuracy (English common-word hit-rate + language-robust plausibility) estimates
+      // the EMBEDDED text's quality directly. OCR'd (scanned) docs only — born-digital text is verbatim, so
+      // null/skip. A 'poor' estimate pushes a durable note that drives needsExpertReview + the amber
+      // "verify content" banner (coverage measures QUANTITY kept, not whether it's CORRECT). Fail-soft.
+      let ocrAccuracy = null;
+      try {
+        if (_heavyScanned && extractedText && extractedText.length > 60) {
+          ocrAccuracy = _alloOcrAccuracy(extractedText);
+          if (ocrAccuracy) warnLog('[OCR Accuracy] estimate: ' + (ocrAccuracy.score == null ? 'n/a' : (ocrAccuracy.score + '% (' + ocrAccuracy.band + ', ' + ocrAccuracy.confidence + ' confidence; ' + ocrAccuracy.basis + ')')));
+          if (ocrAccuracy && ocrAccuracy.band === 'poor' && typeof ocrAccuracy.score === 'number') {
+            var _oaSusp = (Array.isArray(ocrAccuracy.suspectSamples) && ocrAccuracy.suspectSamples.length) ? (' e.g. "' + ocrAccuracy.suspectSamples.slice(0, 5).join('", "') + '"') : '';
+            _structuralFidelityNotes.push({ kind: 'lowOcrAccuracy', msg: 'Estimated OCR quality is POOR (~' + ocrAccuracy.score + '%) — the embedded searchable text may be garbled' + _oaSusp + '. Coverage measures how much text was kept, not whether it is correct; verify against the original before distributing.' });
+          }
+        }
+      } catch (_oaErr) { ocrAccuracy = null; }
+
       // ── Triage: flag documents that need expert remediation ──
       let axeViolations = axeResults ? axeResults.totalViolations : 0;       // let: re-audit after recovery mutations may reassign (recov-score-order)
       let axeCritical = axeResults ? axeResults.critical.length : 0;
@@ -17951,19 +17995,6 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       let _issueResolution = (_auditResult && verification && Array.isArray(verification.issues))
         ? _diffIssueResolution(_flattenAuditIssues(_auditResult), verification)
         : null;
-
-      // ── Estimated OCR accuracy (2026-06-30) ── Only meaningful when the source was OCR'd (a scanned
-      // doc). For a born-digital text layer the extracted text is verbatim, so this is N/A and stays null.
-      // A heuristic ESTIMATE (English common-word hit-rate + language-robust plausibility), surfaced as
-      // such — it answers "is the searchable text we embedded faithful, or garbled?", the open question
-      // for scanned docs that confidence numbers don't. Fail-soft: any error → null.
-      let ocrAccuracy = null;
-      try {
-        if (_heavyScanned && extractedText && extractedText.length > 60) {
-          ocrAccuracy = _alloOcrAccuracy(extractedText);
-          warnLog('[OCR Accuracy] estimate: ' + (ocrAccuracy.score == null ? 'n/a' : (ocrAccuracy.score + '% (' + ocrAccuracy.band + ', ' + ocrAccuracy.confidence + ' confidence; ' + ocrAccuracy.basis + ')')));
-        }
-      } catch (_) { ocrAccuracy = null; }
 
       // ── Store results ──
       // sourceText + finalText feed the "Diff view" button in the remediation UI so
