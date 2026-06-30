@@ -820,7 +820,7 @@ window.StemLab = window.StemLab || {
 
           // Slider
           h('div', { className: 'bg-white rounded-xl p-3 border border-purple-100' },
-            h('input', { type: 'range', min: 0, max: 360, value: angleValue, onChange: function(e) { setAngleValue(snapAngle(parseInt(e.target.value))); setAngleFeedback(null); }, 'aria-label': t('stem.angles.angle_value_slider', 'Angle value slider'), className: 'w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer accent-purple-600' }),
+            h('input', { type: 'range', min: 0, max: 360, value: angleValue, onChange: function(e) { setAngleValue(snapAngle(parseInt(e.target.value))); setAngleFeedback(null); }, 'aria-valuetext': convertedAngle, 'aria-label': t('stem.angles.angle_value_slider', 'Angle value slider'), className: 'w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer accent-purple-600' }),
             h('div', { className: 'flex justify-between mt-1' },
               h('span', { className: 'text-[11px] text-slate-600' }, '0\u00B0'),
               h('div', { className: 'flex gap-2' },
@@ -1107,12 +1107,12 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
               h('div', null,
                 h('div', { className: 'text-[11px] font-bold text-emerald-600 mb-1' }, '\u2220A'),
-                h('input', { type: 'range', min: 5, max: 170, value: triAngle1, onChange: function(e) { upd('triAngle1', parseInt(e.target.value)); }, className: 'w-full accent-emerald-500', 'aria-label': 'Angle A: ' + triAngle1 + ' degrees' }),
+                h('input', { type: 'range', min: 5, max: 170, value: triAngle1, onChange: function(e) { upd('triAngle1', parseInt(e.target.value)); }, className: 'w-full accent-emerald-500', 'aria-valuetext': triAngle1 + '°', 'aria-label': 'Angle A: ' + triAngle1 + ' degrees' }),
                 h('div', { className: 'text-center text-sm font-bold text-emerald-800' }, triAngle1 + '\u00B0')
               ),
               h('div', null,
                 h('div', { className: 'text-[11px] font-bold text-emerald-600 mb-1' }, '\u2220B'),
-                h('input', { type: 'range', min: 5, max: 170, value: triAngle2, onChange: function(e) { upd('triAngle2', parseInt(e.target.value)); }, className: 'w-full accent-emerald-500', 'aria-label': 'Angle B: ' + triAngle2 + ' degrees' }),
+                h('input', { type: 'range', min: 5, max: 170, value: triAngle2, onChange: function(e) { upd('triAngle2', parseInt(e.target.value)); }, className: 'w-full accent-emerald-500', 'aria-valuetext': triAngle2 + '°', 'aria-label': 'Angle B: ' + triAngle2 + ' degrees' }),
                 h('div', { className: 'text-center text-sm font-bold text-emerald-800' }, triAngle2 + '\u00B0')
               ),
               h('div', null,
@@ -1837,9 +1837,9 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: 'p-3 rounded-lg bg-slate-50 border border-slate-200 mb-3' },
             h('label', { htmlFor: 'pisaAngle', className: 'block text-[11px] font-bold text-slate-700' }, 'Tilt angle θ: ' + theta.toFixed(1) + '°'),
-            h('input', { id: 'pisaAngle', type: 'range', min: 0, max: 30, step: 0.1, value: theta, onChange: function(e) { setPC({ angleDeg: parseFloat(e.target.value) }); }, className: 'w-full', 'aria-label': t('stem.angles.tilt_angle_in_degrees', 'Tilt angle in degrees') }),
+            h('input', { id: 'pisaAngle', type: 'range', min: 0, max: 30, step: 0.1, value: theta, onChange: function(e) { setPC({ angleDeg: parseFloat(e.target.value) }); }, className: 'w-full', 'aria-valuetext': theta.toFixed(1) + '°', 'aria-label': t('stem.angles.tilt_angle_in_degrees', 'Tilt angle in degrees') }),
             h('label', { htmlFor: 'pisaHeight', className: 'block text-[11px] font-bold text-slate-700 mt-2' }, 'Tower height: ' + towerH + ' m'),
-            h('input', { id: 'pisaHeight', type: 'range', min: 20, max: 100, step: 1, value: towerH, onChange: function(e) { setPC({ towerHeight: parseInt(e.target.value, 10) }); }, className: 'w-full', 'aria-label': t('stem.angles.tower_height_in_meters', 'Tower height in meters') }),
+            h('input', { id: 'pisaHeight', type: 'range', min: 20, max: 100, step: 1, value: towerH, onChange: function(e) { setPC({ towerHeight: parseInt(e.target.value, 10) }); }, className: 'w-full', 'aria-valuetext': towerH + ' m', 'aria-label': t('stem.angles.tower_height_in_meters', 'Tower height in meters') }),
             h('p', { className: 'text-[10px] text-slate-500 italic mt-1' }, t('stem.angles.pisa_is_roughly_56_m_tall_leaning_4_to', '(Pisa is roughly 56 m tall, leaning ≈ 4° today)'))
           ),
           h('div', { className: 'p-3 rounded-lg bg-amber-50 border border-amber-200' },

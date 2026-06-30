@@ -6662,7 +6662,7 @@
                     el('label', { htmlFor: 'tr-' + k, style: { fontSize: 10, fontWeight: 'bold' } }, conf.l + ': ', el('span', { style: { fontFamily: 'monospace', color: '#a78bfa' } }, iq[k])),
                     el('input', { id: 'tr-' + k, type: 'range', min: conf.mn, max: conf.mx, step: conf.st, value: iq[k],
                       onChange: function(e) { var p = {}; p[k] = parseFloat(e.target.value); setIQ(p); },
-                      style: { width: '100%' }, 'aria-label': conf.l }));
+                      style: { width: '100%' }, 'aria-valuetext': (k === 'scale' ? (iq[k] + 'x scale') : (iq[k] + '°')), 'aria-label': conf.l }));
                 }),
                 el('div', { style: { display: 'flex', gap: 4, marginTop: 6 } },
                   el('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ r: iq.rot, s: iq.scale, sh: iq.shear, st: state }]).slice(-8) }); }, style: { padding: '2px 6px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 10, cursor: 'pointer' } }, '📋'),

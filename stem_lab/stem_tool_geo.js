@@ -2616,7 +2616,7 @@ var d = labToolData || {};
                         h2('label', { htmlFor: 'ds-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h2('span', { className: 'font-mono text-cyan-700' }, iq[s.k])),
                         h2('input', { id: 'ds-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
                           onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
-                          className: 'w-full', 'aria-label': s.l }));
+                          className: 'w-full', 'aria-valuetext': (s.k === 'confidence' ? (iq[s.k] + ' percent confidence') : (iq[s.k] + ' kilometers')), 'aria-label': s.l }));
                     })
                   ),
                   h2('div', { className: 'flex gap-2 items-center flex-wrap' },

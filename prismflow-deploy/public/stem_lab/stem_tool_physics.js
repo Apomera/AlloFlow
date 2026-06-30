@@ -2195,7 +2195,7 @@ const d = labToolData.physics;
 
                   React.createElement("span", { className: "text-sm font-bold block " + (isLocked ? 'text-red-700' : 'text-slate-700') }, d[s.k]),
 
-                  React.createElement("input", { type: "range", "aria-label": s.label, min: s.min, max: s.max, step: s.step, value: d[s.k], disabled: isLocked, onChange: function (e) {
+                  React.createElement("input", { type: "range", "aria-valuetext": (d[s.k] + " " + ((s.label.match(/\(([^)]+)\)/) || ["", ""])[1])), "aria-label": s.label, min: s.min, max: s.max, step: s.step, value: d[s.k], disabled: isLocked, onChange: function (e) {
                     if (!isLocked) {
                       var newVal = parseFloat(e.target.value);
                       upd(s.k, newVal);
@@ -2874,7 +2874,7 @@ const d = labToolData.physics;
                         s.label + ': ', h('span', { className: 'font-mono text-indigo-700' }, s.val)),
                       h('input', { id: 'gh-' + s.key, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val,
                         onChange: function(e) { var p = {}; p[s.key] = parseFloat(e.target.value); setIQ(p); },
-                        className: 'w-full', 'aria-label': s.label }));
+                        className: 'w-full', 'aria-valuetext': (s.val + ' ' + ((s.label.match(/\(([^)]+)\)/) || ['', ''])[1])), 'aria-label': s.label }));
                   })
                 ),
                 h('div', { className: 'flex gap-2 items-center mb-3 flex-wrap' },
