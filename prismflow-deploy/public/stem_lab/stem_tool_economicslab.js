@@ -1998,7 +1998,7 @@ var d = labToolData || {};
                   ),
                   React.createElement('div', null,
                     React.createElement('label', { className: 'text-[11px] font-bold text-red-600 block mb-0.5' }, t('stem.economicslab.inflation_rate', 'Inflation Rate (%)')),
-                    React.createElement('input', { type: 'range', 'aria-label': t('stem.economicslab.inflation_rate_percent', 'Inflation rate, percent'), min: 0.5, max: 15, step: 0.5, value: d.inflationRate || 3,
+                    React.createElement('input', { type: 'range', 'aria-valuetext': (d.inflationRate || 3) + '%', 'aria-label': t('stem.economicslab.inflation_rate_percent', 'Inflation rate, percent'), min: 0.5, max: 15, step: 0.5, value: d.inflationRate || 3,
                       onChange: function(e) { upd('inflationRate', parseFloat(e.target.value)); },
                       className: 'w-full accent-red-500'
                     }),
@@ -2006,7 +2006,7 @@ var d = labToolData || {};
                   ),
                   React.createElement('div', null,
                     React.createElement('label', { className: 'text-[11px] font-bold text-red-600 block mb-0.5' }, t('stem.economicslab.years', 'Years')),
-                    React.createElement('input', { type: 'range', 'aria-label': t('stem.economicslab.years_2', 'Years'), min: 1, max: 50, value: d.inflationYears || 20,
+                    React.createElement('input', { type: 'range', 'aria-valuetext': (d.inflationYears || 20) + ' years', 'aria-label': t('stem.economicslab.years_2', 'Years'), min: 1, max: 50, value: d.inflationYears || 20,
                       onChange: function(e) { upd('inflationYears', parseInt(e.target.value)); },
                       className: 'w-full accent-red-500'
                     }),
@@ -2100,21 +2100,21 @@ var d = labToolData || {};
                 React.createElement('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
                   React.createElement('div', null,
                     React.createElement('label', { className: 'text-[11px] font-bold text-emerald-600 block mb-0.5' }, 'Starting Amount: $' + (d.pfPrincipal || 1000).toLocaleString()),
-                    React.createElement('input', { type: 'range', 'aria-label': t('stem.economicslab.starting_amount_in_dollars', 'Starting amount in dollars'), min: 100, max: 50000, step: 100, value: d.pfPrincipal || 1000,
+                    React.createElement('input', { type: 'range', 'aria-valuetext': '$' + (d.pfPrincipal || 1000).toLocaleString(), 'aria-label': t('stem.economicslab.starting_amount_in_dollars', 'Starting amount in dollars'), min: 100, max: 50000, step: 100, value: d.pfPrincipal || 1000,
                       onChange: function(e) { upd('pfPrincipal', parseInt(e.target.value)); },
                       className: 'w-full accent-emerald-500'
                     })
                   ),
                   React.createElement('div', null,
                     React.createElement('label', { className: 'text-[11px] font-bold text-emerald-600 block mb-0.5' }, 'Annual Return: ' + (d.pfRate || 7) + '%'),
-                    React.createElement('input', { type: 'range', 'aria-label': t('stem.economicslab.annual_return_percent', 'Annual return, percent'), min: 1, max: 15, step: 0.5, value: d.pfRate || 7,
+                    React.createElement('input', { type: 'range', 'aria-valuetext': (d.pfRate || 7) + '%', 'aria-label': t('stem.economicslab.annual_return_percent', 'Annual return, percent'), min: 1, max: 15, step: 0.5, value: d.pfRate || 7,
                       onChange: function(e) { upd('pfRate', parseFloat(e.target.value)); },
                       className: 'w-full accent-emerald-500'
                     })
                   ),
                   React.createElement('div', null,
                     React.createElement('label', { className: 'text-[11px] font-bold text-emerald-600 block mb-0.5' }, 'Years: ' + (d.pfYears || 30)),
-                    React.createElement('input', { type: 'range', 'aria-label': t('stem.economicslab.years_3', 'Years'), min: 1, max: 50, value: d.pfYears || 30,
+                    React.createElement('input', { type: 'range', 'aria-valuetext': (d.pfYears || 30) + ' years', 'aria-label': t('stem.economicslab.years_3', 'Years'), min: 1, max: 50, value: d.pfYears || 30,
                       onChange: function(e) { upd('pfYears', parseInt(e.target.value)); },
                       className: 'w-full accent-emerald-500'
                     })
@@ -2584,7 +2584,7 @@ var d = labToolData || {};
 
                   React.createElement('input', {
 
-                    type: 'range', 'aria-label': t('stem.economicslab.sd_demand_shift', 'sd demand shift'), min: -5, max: 5, value: sdDemandShift,
+                    type: 'range', 'aria-valuetext': (sdDemandShift === 0 ? 'no shift' : sdDemandShift > 0 ? ('shifted right ' + sdDemandShift) : ('shifted left ' + Math.abs(sdDemandShift))), 'aria-label': t('stem.economicslab.sd_demand_shift', 'sd demand shift'), min: -5, max: 5, value: sdDemandShift,
 
                     onChange: function (e) { upd('sdDemandShift', parseInt(e.target.value)); },
 
@@ -2596,7 +2596,7 @@ var d = labToolData || {};
 
                   React.createElement('input', {
 
-                    type: 'range', 'aria-label': t('stem.economicslab.sd_supply_shift', 'sd supply shift'), min: -5, max: 5, value: sdSupplyShift,
+                    type: 'range', 'aria-valuetext': (sdSupplyShift === 0 ? 'no shift' : sdSupplyShift > 0 ? ('shifted right ' + sdSupplyShift) : ('shifted left ' + Math.abs(sdSupplyShift))), 'aria-label': t('stem.economicslab.sd_supply_shift', 'sd supply shift'), min: -5, max: 5, value: sdSupplyShift,
 
                     onChange: function (e) { upd('sdSupplyShift', parseInt(e.target.value)); },
 
@@ -2614,7 +2614,7 @@ var d = labToolData || {};
 
                   React.createElement('input', {
 
-                    type: 'range', 'aria-label': t('stem.economicslab.sd_price_floor', 'sd price floor'), min: 0, max: 90, value: sdPriceFloor,
+                    type: 'range', 'aria-valuetext': (sdPriceFloor === 0 ? 'no price floor' : '$' + sdPriceFloor + ' price floor'), 'aria-label': t('stem.economicslab.sd_price_floor', 'sd price floor'), min: 0, max: 90, value: sdPriceFloor,
 
                     onChange: function (e) { upd('sdPriceFloor', parseInt(e.target.value)); },
 
@@ -2626,7 +2626,7 @@ var d = labToolData || {};
 
                   React.createElement('input', {
 
-                    type: 'range', 'aria-label': t('stem.economicslab.sd_price_ceiling', 'sd price ceiling'), min: 0, max: 90, value: sdPriceCeiling,
+                    type: 'range', 'aria-valuetext': (sdPriceCeiling === 0 ? 'no price ceiling' : '$' + sdPriceCeiling + ' price ceiling'), 'aria-label': t('stem.economicslab.sd_price_ceiling', 'sd price ceiling'), min: 0, max: 90, value: sdPriceCeiling,
 
                     onChange: function (e) { upd('sdPriceCeiling', parseInt(e.target.value)); },
 
@@ -2638,7 +2638,7 @@ var d = labToolData || {};
 
                   React.createElement('input', {
 
-                    type: 'range', 'aria-label': t('stem.economicslab.sd_tax', 'sd tax'), min: 0, max: 30, value: sdTax,
+                    type: 'range', 'aria-valuetext': (sdTax === 0 ? 'no tax' : '$' + sdTax + ' per-unit tax'), 'aria-label': t('stem.economicslab.sd_tax', 'sd tax'), min: 0, max: 30, value: sdTax,
 
                     onChange: function (e) { upd('sdTax', parseInt(e.target.value)); },
 
@@ -3111,7 +3111,7 @@ var d = labToolData || {};
 
                   React.createElement('input', {
 
-                    type: 'range', 'aria-label': t('stem.economicslab.investment_percent_of_salary', 'Investment percent of salary'), min: 0, max: 50, value: d.pfInvestPct || 0,
+                    type: 'range', 'aria-valuetext': (d.pfInvestPct || 0) + '% of salary', 'aria-label': t('stem.economicslab.investment_percent_of_salary', 'Investment percent of salary'), min: 0, max: 50, value: d.pfInvestPct || 0,
 
                     onChange: function (e) { upd('pfInvestPct', parseInt(e.target.value)); },
 
@@ -3786,7 +3786,7 @@ var d = labToolData || {};
 
                       React.createElement('input', {
 
-                        type: 'range', 'aria-label': t('stem.economicslab.economicslab_slider', 'Economicslab slider'), min: 1, max: (d.enBusiness.suggestedPrice || 10) * 3, step: 0.5,
+                        type: 'range', 'aria-valuetext': '$' + (d.enBizPrice || (d.enBusiness && d.enBusiness.suggestedPrice) || 10) + ' per unit', 'aria-label': t('stem.economicslab.price_per_unit', 'Price per unit, dollars'), min: 1, max: (d.enBusiness.suggestedPrice || 10) * 3, step: 0.5,
 
                         value: d.enBizPrice || d.enBusiness.suggestedPrice || 10,
 
@@ -4070,19 +4070,19 @@ var d = labToolData || {};
                 React.createElement('div', { className: 'grid grid-cols-2 gap-2 mb-2' },
                   React.createElement('label', { className: 'text-[10px]' },
                     React.createElement('div', { className: 'flex justify-between mb-0.5' }, React.createElement('span', null, t('stem.economicslab.tax_cut', 'Tax cut (%)')), React.createElement('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.taxCut.toFixed(1))),
-                    React.createElement('input', { type: 'range', min: -5, max: 5, step: 0.5, value: iq.taxCut, onChange: function(e) { setKey('taxCut', parseFloat(e.target.value)); }, className: 'w-full' })
+                    React.createElement('input', { type: 'range', 'aria-label': t('stem.economicslab.tax_cut_lever', 'Tax cut, percent'), 'aria-valuetext': iq.taxCut.toFixed(1) + '%', min: -5, max: 5, step: 0.5, value: iq.taxCut, onChange: function(e) { setKey('taxCut', parseFloat(e.target.value)); }, className: 'w-full' })
                   ),
                   React.createElement('label', { className: 'text-[10px]' },
                     React.createElement('div', { className: 'flex justify-between mb-0.5' }, React.createElement('span', null, t('stem.economicslab.govt_spending', 'Govt spending (%)')), React.createElement('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.govSpend.toFixed(1))),
-                    React.createElement('input', { type: 'range', min: -5, max: 5, step: 0.5, value: iq.govSpend, onChange: function(e) { setKey('govSpend', parseFloat(e.target.value)); }, className: 'w-full' })
+                    React.createElement('input', { type: 'range', 'aria-label': t('stem.economicslab.govt_spending_lever', 'Government spending, percent'), 'aria-valuetext': iq.govSpend.toFixed(1) + '%', min: -5, max: 5, step: 0.5, value: iq.govSpend, onChange: function(e) { setKey('govSpend', parseFloat(e.target.value)); }, className: 'w-full' })
                   ),
                   React.createElement('label', { className: 'text-[10px]' },
                     React.createElement('div', { className: 'flex justify-between mb-0.5' }, React.createElement('span', null, t('stem.economicslab.interest_rate_2', 'Interest rate \u0394')), React.createElement('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.rateChange.toFixed(1) + 'pp')),
-                    React.createElement('input', { type: 'range', min: -3, max: 3, step: 0.25, value: iq.rateChange, onChange: function(e) { setKey('rateChange', parseFloat(e.target.value)); }, className: 'w-full' })
+                    React.createElement('input', { type: 'range', 'aria-label': t('stem.economicslab.interest_rate_lever', 'Interest rate change'), 'aria-valuetext': iq.rateChange.toFixed(2) + ' percentage points', min: -3, max: 3, step: 0.25, value: iq.rateChange, onChange: function(e) { setKey('rateChange', parseFloat(e.target.value)); }, className: 'w-full' })
                   ),
                   React.createElement('label', { className: 'text-[10px]' },
                     React.createElement('div', { className: 'flex justify-between mb-0.5' }, React.createElement('span', null, t('stem.economicslab.tariff', 'Tariff (%)')), React.createElement('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.tariff.toFixed(1))),
-                    React.createElement('input', { type: 'range', min: 0, max: 25, step: 1, value: iq.tariff, onChange: function(e) { setKey('tariff', parseFloat(e.target.value)); }, className: 'w-full' })
+                    React.createElement('input', { type: 'range', 'aria-label': t('stem.economicslab.tariff_lever', 'Tariff, percent'), 'aria-valuetext': iq.tariff.toFixed(1) + '%', min: 0, max: 25, step: 1, value: iq.tariff, onChange: function(e) { setKey('tariff', parseFloat(e.target.value)); }, className: 'w-full' })
                   )
                 ),
                 React.createElement('div', { className: 'flex gap-2 mb-2' },
