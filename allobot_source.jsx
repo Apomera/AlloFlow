@@ -223,7 +223,7 @@ const spokenEventIds = new Set();
 const lastGlobalSpeech = { text: '', time: 0 };
 let introFiredGlobal = false;
 // @section ALLOBOT — Embodied pedagogical tour agent
-const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onMicClick, onToggleMute, isListening, isIdleDisabled = false, soundEnabled = false, selectedVoice, voiceSpeed = 1, voiceVolume = 1, onGenerateAudio, theme = 'light', colorOverlay = 'none', onSpeechEnd, onSpeechStart, activeView, isFlying = false, isSystemAudioActive = false, history = [], isParentMode = false, hasSeenBotIntro = true, onBotIntroSeen, topic, canPlayIntro = true }, ref) => {
+const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onMicClick, onToggleMute, isListening, isIdleDisabled = false, disableAnimations = false, soundEnabled = false, selectedVoice, voiceSpeed = 1, voiceVolume = 1, onGenerateAudio, theme = 'light', colorOverlay = 'none', onSpeechEnd, onSpeechStart, activeView, isFlying = false, isSystemAudioActive = false, history = [], isParentMode = false, hasSeenBotIntro = true, onBotIntroSeen, topic, canPlayIntro = true }, ref) => { useEffect(() => { try { var _bot = containerRef.current; var _svg = _bot && _bot.querySelector("svg"); if (!_svg || typeof _svg.pauseAnimations !== "function") return; var _mq = (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)")) || null; var _apply = function () { var _r = disableAnimations || (_mq && _mq.matches); try { if (_r) { _svg.pauseAnimations(); _svg.setCurrentTime(0); } else { _svg.unpauseAnimations(); } } catch (e) {} }; _apply(); if (_mq && _mq.addEventListener) { _mq.addEventListener("change", _apply); return function () { _mq.removeEventListener("change", _apply); }; } } catch (e) {} }, [disableAnimations]);
   const { t } = useContext(LanguageContext);
   const [position, setPosition] = useState(() => {
       try {
@@ -2091,17 +2091,21 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                     <g id="accessories">
                          {effectiveAccessory === 'grad-cap' && (
                             <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                            <g className="animate-allobot-perk" style={{ animationDelay: '1.2s' }}>
                                 <path d="M32 30 Q50 36 68 30 V 22 H 32 V 30 Z" fill="#1F2937" />
                                 <path d="M15 22 L50 8 L85 22 L50 36 Z" fill="#111827" stroke="#374151" strokeWidth="2" />
                                 <path d="M50 22 L82 22 L82 42" stroke="#F59E0B" strokeWidth="2" fill="none" className="drop-shadow-sm"/>
                                 <circle cx="82" cy="42" r="2.5" fill="#F59E0B" />
                             </g>
+                            </g>
                         )}
                         {effectiveAccessory === 'explorer-hat' && (
                             <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                            <g className="animate-allobot-perk" style={{ animationDelay: '3.3s' }}>
                                 <ellipse cx="50" cy="22" rx="38" ry="10" fill="#D2B48C" stroke="#8B4513" strokeWidth="1.5" transform="rotate(-5 50 22)" />
                                 <path d="M32 22 L35 4 Q50 0 65 4 L68 22 Z" fill="#D2B48C" stroke="#8B4513" strokeWidth="1.5" transform="rotate(-5 50 22)" />
                                 <path d="M32 19 Q50 23 68 19" stroke="#3E2723" strokeWidth="4" fill="none" transform="rotate(-5 50 22)" />
+                            </g>
                             </g>
                         )}
                         {effectiveAccessory === 'magnifying-glass' && (
@@ -2114,6 +2118,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                         )}
                         {effectiveAccessory === 'artist' && (
                             <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                            <g className="animate-allobot-perk" style={{ animationDelay: '5.1s' }}>
                                 <path
                                     d="M 25 28 Q 15 28 15 20 Q 15 5 45 2 Q 85 -2 90 10 Q 95 22 80 26 Q 70 29 55 27"
                                     fill="#374151"
@@ -2128,6 +2133,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                                     strokeLinecap="round"
                                     transform="rotate(-10 50 20)"
                                 />
+                            </g>
                             </g>
                         )}
                         {effectiveAccessory === 'hard-hat' && (
@@ -2228,6 +2234,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                         )}
                         {effectiveAccessory === 'scholar-specs' && (
                             <g className="animate-in fade-in slide-in-from-top-2 duration-500 origin-center">
+                            <g className="animate-allobot-float" style={{ animationDelay: '1.0s' }}>
                                 <circle cx="38" cy="48" r="9" fill="rgba(219, 234, 254, 0.25)" stroke="#1F2937" strokeWidth="1.5" />
                                 <circle cx="62" cy="48" r="9" fill="rgba(219, 234, 254, 0.25)" stroke="#1F2937" strokeWidth="1.5" />
                                 <path d="M 47 48 Q 50 45 53 48" stroke="#1F2937" strokeWidth="1.5" fill="none" strokeLinecap="round" />
@@ -2248,6 +2255,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                                     <line x1="17" y1="13" x2="23" y2="13" stroke="#92400E" strokeWidth="0.5" />
                                     <path d="M -2 0 L 30 0 L 30 -2 L -2 -2 Z" fill="#7C2D12" stroke="#451A03" strokeWidth="0.8" />
                                 </g>
+                            </g>
                             </g>
                         )}
                         {effectiveAccessory === 'thinking-cap' && (
@@ -2287,6 +2295,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                         )}
                         {effectiveAccessory === 'sorting-cubes' && (
                             <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                            <g className="animate-allobot-perk" style={{ animationDelay: '2.4s' }}>
                                 <ellipse cx="50" cy="32" rx="22" ry="3" fill="#1F2937" opacity="0.18" />
                                 <g transform="translate(38 18) rotate(-6)">
                                     <rect x="0" y="0" width="14" height="14" rx="1.5" fill="#3B82F6" stroke="#1E3A8A" strokeWidth="1" />
@@ -2304,9 +2313,11 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                                     <path d="M 4 4 L 9 9 M 9 4 L 4 9" stroke="#FEE2E2" strokeWidth="1.4" strokeLinecap="round" />
                                 </g>
                             </g>
+                            </g>
                         )}
                         {effectiveAccessory === 'clarity-crown' && (
                             <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                            <g className="animate-allobot-perk" style={{ animationDelay: '4.2s' }}>
                                 <path d="M 22 28 L 28 12 L 35 22 L 42 8 L 50 20 L 58 8 L 65 22 L 72 12 L 78 28 Z" fill="#FCD34D" stroke="#B45309" strokeWidth="1.4" />
                                 <path d="M 22 28 Q 50 32 78 28" stroke="#92400E" strokeWidth="1.6" fill="none" />
                                 <circle cx="28" cy="13" r="2.4" fill="#FDE68A" stroke="#92400E" strokeWidth="0.6" />
@@ -2323,6 +2334,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                                 <path d="M 58 8 Q 56 12 58 18 Q 60 12 58 8 Z" fill="#F472B6" stroke="#BE185D" strokeWidth="0.6" />
                                 <circle cx="65" cy="17" r="2.2" fill="#A78BFA" stroke="#5B21B6" strokeWidth="0.5" />
                                 <circle cx="72" cy="13" r="2.4" fill="#FDE68A" stroke="#92400E" strokeWidth="0.6" />
+                            </g>
                             </g>
                         )}
                         {effectiveAccessory === 'deerstalker' && (
