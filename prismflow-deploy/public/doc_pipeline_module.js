@@ -23760,6 +23760,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       processedText = processedText.replace(/\[[A-Z0-9-]+\]\s*"([^"]+)"[\s\S]*?\(resource:([a-zA-Z0-9]+)\)/g, '[$1](resource:$2)');
       const isRtl = isRtlLang(leveledTextLanguage);
       const align = isRtl ? 'right' : 'left';
+      // Restrict markdown-link hrefs to safe schemes (blocks javascript:/data: etc.) and escape
+      // the quote, since this HTML is written into a self-contained file a student opens locally.
+      // 'resource:' is kept for internal links. Link TEXT is left intact (it already carries
+      // <strong>/<em> from the inline-markdown passes above).
+      const _safeMdUrl = (u) => { const v = String(u == null ? '' : u).trim(); return /^(https?:|mailto:|tel:|resource:|#|\/|\.)/i.test(v) ? v.replace(/"/g, '&quot;') : '#'; };
       const lines = processedText.split('\n');
       let html = '';
       let inList = false;
@@ -23772,7 +23777,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           content = content.replace(/\[(.*?)\]\((.*?)\)/g, (match, txt, url) => {
               const isCitation = txt.startsWith('⁽') && txt.endsWith('⁾');
               const style = isCitation ? "text-decoration: none; color: #2563eb;" : "color: #2563eb; text-decoration: underline;";
-              return `<a href="${url}" style="${style}" target="_blank">${txt}</a>`;
+              return `<a href="${_safeMdUrl(url)}" style="${style}" target="_blank" rel="noopener noreferrer">${txt}</a>`;
           });
           content = content.replace(/(^|\s)(https?:\/\/[^\s<]+)/g, (match, prefix, url) => {
               const cleanUrl = url.replace(/[.,;)]$/, '');
