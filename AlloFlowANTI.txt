@@ -4678,6 +4678,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=a9675a03');
     loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=a9675a03');
     loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=a9675a03');
+    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=a9675a03');
     loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=a9675a03');
     loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=a9675a03');
     loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=a9675a03');
@@ -6937,6 +6938,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     alloAnnounce(msg, 'assertive');
   }, [showGlobalLevelUp, alloAnnounce, t]);
   const [saveFileName, setSaveFileName] = useState('');
+  const [saveEncryptPassword, setSaveEncryptPassword] = useState(''); // optional educator-save encryption password (transient, never persisted)
   const [saveType, setSaveType] = useState(null);
   const [isStudentLinkMode, setIsStudentLinkMode] = useState(false);
   const [showNewGameSetup, setShowNewGameSetup] = useState(false);
@@ -17499,6 +17501,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     const _m = window.AlloModules && window.AlloModules.PhaseKHelpers;
     if (_m && typeof _m.executeSaveFile === "function") return _m.executeSaveFile({
         guidedTourProgress: guidedMode ? { version: 1, guidedStep, selectedIds: guidedSelectedIds, completedSteps: guidedActiveSteps.slice(0, guidedStep).map(s => s.id) } : null,
+        saveEncryptPassword,
         isPlaying,
         isPaused,
         isMuted,
@@ -17710,12 +17713,14 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   const initiateSaveTeacherProject = () => {
     if (history.length === 0) return;
     setSaveType('teacher');
+    setSaveEncryptPassword('');
     setSaveFileName(`${t('export.filenames.project_teacher')}-${new Date().toISOString().split('T')[0]}`);
     setShowSaveModal(true);
   };
   const initiateSaveStudentProject = () => {
       if (history.length === 0) return;
       setSaveType('student');
+      setSaveEncryptPassword('');
       let filenamePrefix = t('export.filenames.project_student');
       if (studentNickname && studentNickname.trim()) {
           const sanitizedNickname = studentNickname.replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -27649,6 +27654,21 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     />
                     <p className="text-xs text-slate-600 mt-2 italic text-end">{t('modals.save_project.extension_note')}</p>
                 </div>
+                {saveType === 'teacher' && (
+                <div className="mb-6">
+                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">{t('modals.save_project.encrypt_label') || 'Encrypt with a password (optional)'}</label>
+                    <input aria-label={t('modals.save_project.encrypt_label') || 'Encrypt with a password (optional)'}
+                        type="password"
+                        value={saveEncryptPassword}
+                        onChange={(e) => setSaveEncryptPassword(e.target.value)}
+                        placeholder={t('modals.save_project.encrypt_placeholder') || 'Leave blank for no encryption'}
+                        className="w-full text-base p-3 border-2 border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 outline-none text-slate-700"
+                    />
+                    {saveEncryptPassword
+                        ? <p className="text-xs text-amber-700 mt-2 font-semibold">{t('modals.save_project.encrypt_warning') || 'Keep this password safe. If you forget it, this file cannot be recovered.'}</p>
+                        : <p className="text-xs text-slate-500 mt-2 italic">{t('modals.save_project.encrypt_hint') || 'Encrypts the whole file so only someone with the password can open it. There is no recovery.'}</p>}
+                </div>
+                )}
                 <div className="flex gap-3 justify-end">
                     <button
                         aria-label={t('common.save')}

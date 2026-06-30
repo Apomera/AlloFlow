@@ -267,9 +267,20 @@ const handleLoadProject = (e, deps) => {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
         try {
-            const rawData = JSON.parse(event.target.result);
+            let rawData = JSON.parse(event.target.result);
+            // Encrypted educator project: ask for the password and decrypt before anything else.
+            // Without it the file is just ciphertext; a wrong password or tampering fails the
+            // authenticated GCM check and we stop rather than load garbage.
+            if (window.AlloModules && window.AlloModules.AlloCrypto && window.AlloModules.AlloCrypto.isEncryptedEnvelope(rawData)) {
+                const _pw = (window.AlloFlowUX && window.AlloFlowUX.prompt)
+                    ? await window.AlloFlowUX.prompt(t('save.enter_password') || 'This project is password-protected. Enter the password to open it.', '', { inputType: 'password', title: t('save.encrypted_title') || 'Encrypted project' })
+                    : ((typeof window !== 'undefined' && window.prompt) ? window.prompt(t('save.enter_password') || 'Enter the password:') : null);
+                if (!_pw) { return; }
+                try { rawData = await window.AlloModules.AlloCrypto.decryptJSON(rawData, _pw); }
+                catch (_e) { if (addToast) addToast(t('save.decrypt_failed') || 'Wrong password, or the file is corrupt.', 'error'); return; }
+            }
             if (rawData.progressLog && Array.isArray(rawData.progressLog)) {
                 setStudentProgressLog(rawData.progressLog);
             }
