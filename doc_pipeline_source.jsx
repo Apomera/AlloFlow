@@ -25726,7 +25726,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       } else if (item.type === 'gemini-bridge') {
           return `
               <div class="section" id="${item.id}">
-                  <div class="resource-header">${title} (${item.meta})</div>
+                  <h2 class="resource-header" role="heading" aria-level="2">${title} (${item.meta})</h2>
                   <div style="background: #1e293b; color: #cbd5e1; padding: 15px; border-radius: 6px; font-family: monospace; font-size: 0.9em; white-space: pre-wrap;">${item.data}</div>
                   <p style="font-size: 0.8em; color: #666; margin-top: 5px; font-style: italic;">${t('bridge.generated_desc')}</p>
               </div>
@@ -25742,7 +25742,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         }).join('');
         return `
             <div class="section" id="${item.id}">
-                <div class="resource-header">${title} (${item.meta})</div>
+                <h2 class="resource-header" role="heading" aria-level="2">${title} (${item.meta})</h2>
                 <!-- Metrics Grid -->
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
                     <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; border: 1px solid #bbf7d0; text-align: center;">
@@ -26106,7 +26106,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           })();
           return `
               <div class="section" id="${item.id}">
-                  <div class="resource-header">${title} (${item.meta})</div>
+                  <h2 class="resource-header" role="heading" aria-level="2">${title} (${item.meta})</h2>
                   ${reports.map(report => `
                       <div style="margin-bottom: 30px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; page-break-inside: avoid;">
                           <div style="background: ${report.overallDetermination === 'Pass' ? '#f0fdf4' : '#fef2f2'}; padding: 15px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
@@ -26247,7 +26247,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               : '';
           return `
               <div class="section" id="${item.id}">
-                  <div class="resource-header" style="border-left:4px solid ${ttColor};">${ttIcon} ${title} <span style="font-size:0.75em; font-weight:normal; color:#64748b; margin-left:8px;">(${ttLabel})</span></div>
+                  <h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid ${ttColor};">${ttIcon} ${title} <span style="font-size:0.75em; font-weight:normal; color:#64748b; margin-left:8px;">(${ttLabel})</span></h2>
                   ${renderRows()}
                   ${connectionsBlock}
                   ${feedbackBadge}
@@ -26314,7 +26314,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           return `
               <style>@import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Patrick+Hand&family=Caveat:wght@400;600&display=swap');</style>
               <div class="section" id="${item.id}" style="background:#fffdf7;border:1px solid #f0e6d2;border-radius:10px;padding:8px 14px 14px;">
-                  <div class="resource-header" style="border-left:4px solid #f59e0b;font-family:${_acTF};color:#7a4a1e;font-size:1.5em;">&#128203; ${title} <span style="font-size:0.6em;font-weight:normal;color:#a1887f;margin-left:8px;font-family:system-ui,sans-serif;">(Anchor Chart &#8212; ${typeLabel})</span></div>
+                  <h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid #f59e0b;font-family:${_acTF};color:#7a4a1e;font-size:1.5em;">&#128203; ${title} <span style="font-size:0.6em;font-weight:normal;color:#a1887f;margin-left:8px;font-family:system-ui,sans-serif;">(Anchor Chart &#8212; ${typeLabel})</span></h2>
                   ${_acCaptionHtml}
                   ${sectionsHtml}
                   ${annotationsHtml}
