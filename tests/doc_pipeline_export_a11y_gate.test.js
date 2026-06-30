@@ -90,6 +90,16 @@ describe('HTML export · axe-core WCAG 2.1 A+AA self-audit gate', () => {
     expect(Array.isArray(results.violations)).toBe(true);
   });
 
+  it('2.1.1 keyboard path shipped: annotation can be created without a mouse', () => {
+    // The annotation runtime is mouse-based (click→note, mouseup+selection→highlight). The keyboard
+    // path makes the content area focusable while annotating and adds an Enter handler that mirrors
+    // both. Assert that path is present in the exported runtime (a regression guard — the actual
+    // keyboard INTERACTION still needs a real-browser smoke; jsdom can't drive it).
+    expect(html).toContain("host.addEventListener('keydown'");
+    expect(html).toContain("Press Enter here to add a note");
+    expect(html).toContain("host.setAttribute('tabindex', '0')");
+  });
+
   it('REGRESSION GATE: no violation outside the documented baseline', () => {
     const ids = results.violations.map(v => v.id);
     const unexpected = ids.filter(id => !BASELINE.has(id));
