@@ -116,6 +116,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
     color: 'slate',
     category: 'self-regulation',
     render: function(ctx) {
+      // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
+      var _subT = (ctx && ctx.theme) || {};
+      var _subHC = !!_subT.isContrast, _subL = !_subHC && !_subT.isDark;
+      var _sub_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _sub_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#ffffff':'#000000','#fef2f2':'#000000','#f1f5f9':'#000000'};
+      var _sub_FGL = {'#cbd5e1':'#334155','#94a3b8':'#64748b','#fecaca':'#b91c1c','#fca5a5':'#991b1b','#e2e8f0':'#1e293b','#fee2e2':'#991b1b','#e9d5ff':'#581c87','#c4b5fd':'#5b21b6','#fde68a':'#92400e','#7dd3fc':'#075985','#fcd34d':'#78350f'}, _sub_FGH = {'#cbd5e1':'#ffff00','#94a3b8':'#ffff00','#fecaca':'#ffff00','#fca5a5':'#ffff00','#e2e8f0':'#ffff00','#bbf7d0':'#ffff00','#dcfce7':'#ffff00','#fee2e2':'#ffff00','#e9d5ff':'#ffff00','#c4b5fd':'#ffff00','#fde68a':'#ffff00','#7dd3fc':'#ffff00','#bae6fd':'#ffff00','#fcd34d':'#ffff00','#fff':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#7f1d1d':'#ffff00'};
+      var _sub_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#64748b':'#94a3b8','#475569':'#cbd5e1','#0f172a':'#cbd5e1'}, _sub_BDH = {'#334155':'#ffff00','#ef4444':'#ffff00','#1e293b':'#ffff00','#64748b':'#ffff00','#a855f7':'#ffff00','#f59e0b':'#ffff00','#0ea5e9':'#ffff00','#22c55e':'#ffff00','#475569':'#ffff00','#94a3b8':'#ffff00','#e2e8f0':'#ffff00','#0f172a':'#ffff00','#fecaca':'#ffff00','#cbd5e1':'#ffff00'};
+      var _subBg = function(h){ return _subHC ? (_sub_BGH[h]||h) : (_subL ? (_sub_BGL[h]||h) : h); };
+      var _subFg = function(h){ return _subHC ? (_sub_FGH[h]||h) : (_subL ? (_sub_FGL[h]||h) : h); };
+      var _subBd = function(h){ return _subHC ? (_sub_BDH[h]||h) : (_subL ? (_sub_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -137,10 +146,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
       function header() {
         return h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: '#cbd5e1', fontSize: 14 } }, '← Back'),
+            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _subFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
-            h('h2', { style: { margin: 0, color: '#cbd5e1', fontSize: 22, fontWeight: 900 } }, '⚗️ Substance Use'),
-            h('div', { style: { fontSize: 12, color: '#94a3b8', marginTop: 4, lineHeight: 1.5 } }, 'Harm-reduction psychoeducation. Honest, not preachy.')
+            h('h2', { style: { margin: 0, color: _subFg('#cbd5e1'), fontSize: 22, fontWeight: 900 } }, '⚗️ Substance Use'),
+            h('div', { style: { fontSize: 12, color: _subFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'Harm-reduction psychoeducation. Honest, not preachy.')
           )
         );
       }
@@ -165,26 +174,26 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
             return h('button', { key: t.id, onClick: function() { goto(t.id); },
               role: 'tab', 'aria-selected': active,
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#64748b' : '#334155'),
-                background: active ? 'rgba(100,116,139,0.30)' : '#1e293b',
-                color: active ? '#e2e8f0' : '#cbd5e1', cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                background: active ? 'rgba(100,116,139,0.30)' : _subBg('#1e293b'),
+                color: active ? _subFg('#e2e8f0') : _subFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
         );
       }
 
       function safetyBanner() {
-        return h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginBottom: 12, fontSize: 12.5, color: '#fecaca', lineHeight: 1.65 } },
+        return h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginBottom: 12, fontSize: 12.5, color: _subFg('#fecaca'), lineHeight: 1.65 } },
           h('strong', null, '🆘 Overdose? Stop and read: '),
           'unresponsive, slow breathing, blue lips, vomiting while passed out — CALL 911. Give naloxone (Narcan) if available. Most states have Good Samaritan laws that protect callers from drug charges. ',
           h('a', { href: 'https://findtreatment.gov/', target: '_blank', rel: 'noopener noreferrer',
-            style: { color: '#fca5a5', textDecoration: 'underline', fontWeight: 800 } }, 'SAMHSA findtreatment.gov ↗'),
+            style: { color: _subFg('#fca5a5'), textDecoration: 'underline', fontWeight: 800 } }, 'SAMHSA findtreatment.gov ↗'),
           ' · 1-800-662-HELP (4357) — free, confidential, 24/7 treatment referral.'
         );
       }
 
       function softPointer() {
         return h('div', {
-          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: '#94a3b8', lineHeight: 1.5, fontStyle: 'italic' }
+          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _subFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
           'This tool is education. It is not therapy and not a screener. Crisis Text Line: text HOME to 741741. For substance use specifically: SAMHSA 1-800-662-HELP.'
         );
@@ -198,22 +207,22 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
           safetyBanner(),
 
           h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(100,116,139,0.20) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(100,116,139,0.4)', marginBottom: 14 } },
-            h('div', { style: { fontSize: 22, fontWeight: 900, color: '#e2e8f0', marginBottom: 4 } }, 'Honest information, not scare tactics.'),
-            h('p', { style: { margin: '0 0 10px', color: '#cbd5e1', fontSize: 13.5, lineHeight: 1.7 } },
+            h('div', { style: { fontSize: 22, fontWeight: 900, color: _subFg('#e2e8f0'), marginBottom: 4 } }, 'Honest information, not scare tactics.'),
+            h('p', { style: { margin: '0 0 10px', color: _subFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.7 } },
               'Decades of evaluation research are clear: "Just Say No" and DARE-style abstinence-only programs do not work, and sometimes make things worse. Adolescents are sophisticated consumers of information; when you exaggerate the risks of one substance, they (correctly) discount everything you say about all substances.'
             ),
-            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13.5, lineHeight: 1.7 } },
+            h('p', { style: { margin: 0, color: _subFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.7 } },
               'This tool is built differently. The frame: HONEST information about what substances are and what they do, ADOLESCENT-SPECIFIC information about brain development risks, HARM-REDUCTION strategies for people who are using or might, and CLEAR ROUTES to help when use becomes a problem. Your decisions are yours.'
             )
           ),
 
           // The frame
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #64748b', marginBottom: 10 } },
-            h('div', { style: { fontSize: 13, fontWeight: 800, color: '#e2e8f0', marginBottom: 10 } }, '🔍 What this tool offers (and does not)'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: _subBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #64748b', marginBottom: 10 } },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: _subFg('#e2e8f0'), marginBottom: 10 } }, '🔍 What this tool offers (and does not)'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 } },
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)' } },
-                h('div', { style: { fontSize: 11, color: '#bbf7d0', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, '✓ Offers'),
-                h('ul', { style: { margin: 0, padding: '0 0 0 18px', color: '#dcfce7', fontSize: 12, lineHeight: 1.65 } },
+                h('div', { style: { fontSize: 11, color: _subFg('#bbf7d0'), fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, '✓ Offers'),
+                h('ul', { style: { margin: 0, padding: '0 0 0 18px', color: _subFg('#dcfce7'), fontSize: 12, lineHeight: 1.65 } },
                   h('li', null, 'Honest facts about substances'),
                   h('li', null, 'Adolescent brain research'),
                   h('li', null, 'Harm reduction strategies'),
@@ -223,8 +232,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
                 )
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.3)' } },
-                h('div', { style: { fontSize: 11, color: '#fecaca', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, '✕ Does NOT'),
-                h('ul', { style: { margin: 0, padding: '0 0 0 18px', color: '#fee2e2', fontSize: 12, lineHeight: 1.65 } },
+                h('div', { style: { fontSize: 11, color: _subFg('#fecaca'), fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, '✕ Does NOT'),
+                h('ul', { style: { margin: 0, padding: '0 0 0 18px', color: _subFg('#fee2e2'), fontSize: 12, lineHeight: 1.65 } },
                   h('li', null, 'Screen for substance use disorder'),
                   h('li', null, 'Tell you whether to use'),
                   h('li', null, 'Replace therapy or treatment'),
@@ -237,7 +246,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
           ),
 
           // Roadmap
-          h('div', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, marginTop: 14 } }, 'Sections'),
+          h('div', { style: { fontSize: 11, color: _subFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, marginTop: 14 } }, 'Sections'),
           stepCard('🧠 The adolescent brain', 'Why adolescent substance use is different from adult use. The 25-year prefrontal cortex development story.', function() { goto('brain'); }, '#a855f7'),
           stepCard('📚 By substance', 'Honest information per substance: what it is, adolescent-specific risk, acute risks, harm reduction.', function() { goto('substances'); }, '#f59e0b'),
           stepCard('⚠️ When use becomes a problem', 'The line between use and substance use disorder. CRAFFT and the warning signs.', function() { goto('problem'); }, '#ef4444'),
@@ -250,9 +259,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
 
       function stepCard(title, blurb, onClick, color) {
         return h('button', { onClick: onClick, 'aria-label': title,
-          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: '#0f172a', cursor: 'pointer', marginBottom: 8, color: '#e2e8f0' } },
+          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: _subBg('#0f172a'), cursor: 'pointer', marginBottom: 8, color: _subFg('#e2e8f0') } },
           h('div', { style: { fontSize: 14, fontWeight: 800, color: color, marginBottom: 4 } }, title),
-          h('div', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.55 } }, blurb)
+          h('div', { style: { fontSize: 12, color: _subFg('#94a3b8'), lineHeight: 1.55 } }, blurb)
         );
       }
 
@@ -263,14 +272,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
         return h('div', null,
           safetyBanner(),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', marginBottom: 14, fontSize: 13, color: _subFg('#e9d5ff'), lineHeight: 1.7 } },
             h('strong', null, '🧠 The adolescent brain is still under construction until about age 25. '),
             'This is not a metaphor; it is measurable. The prefrontal cortex (decision-making, impulse control, evaluating long-term consequences) is the LAST region to develop. Adolescent substance use happens to a brain that is still forming its core architecture, and the substances can shape that architecture in lasting ways.'
           ),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
-            h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c4b5fd', marginBottom: 10 } }, 'What the adolescent-brain research has found'),
-            h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.85 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _subBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: _subFg('#c4b5fd'), marginBottom: 10 } }, 'What the adolescent-brain research has found'),
+            h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: _subFg('#e2e8f0'), fontSize: 13, lineHeight: 1.85 } },
               h('li', null, h('strong', null, 'Faster addiction. '), 'Adolescent brains form dependence faster than adult brains for nicotine, opioids, and other substances. Same exposure, faster transition to dependence.'),
               h('li', null, h('strong', null, 'Lasting effects on impulse control. '), 'Heavy adolescent use (especially alcohol and cannabis) shapes how the prefrontal cortex develops. Effects can persist into adulthood.'),
               h('li', null, h('strong', null, 'Memory and learning. '), 'Adolescent heavy users show measurable deficits in working memory and learning years later, compared to non-users — even controlling for other factors.'),
@@ -279,16 +288,16 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
             )
           ),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 10, fontSize: 13, color: '#fde68a', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 10, fontSize: 13, color: _subFg('#fde68a'), lineHeight: 1.7 } },
             h('strong', null, '⚖️ Honest about the research limits: '),
             'These are population-level findings. They do not predict individual outcomes perfectly. Many adolescents have used substances and are doing fine. AND: the population effects are real, the risks are real, and the brain biology matters. Both can be true.'
           ),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a855f7' } },
-            h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c4b5fd', marginBottom: 10 } }, '🎯 Why people use substances (the honest part)'),
-            h('p', { style: { margin: '0 0 8px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _subBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a855f7' } },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: _subFg('#c4b5fd'), marginBottom: 10 } }, '🎯 Why people use substances (the honest part)'),
+            h('p', { style: { margin: '0 0 8px', color: _subFg('#e2e8f0'), fontSize: 13, lineHeight: 1.7 } },
               'People use substances for reasons. The reasons are not stupid or bad. Recognizing them is more useful than pretending they don\'t exist:'),
-            h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: '#cbd5e1', fontSize: 13, lineHeight: 1.85 } },
+            h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: _subFg('#cbd5e1'), fontSize: 13, lineHeight: 1.85 } },
               h('li', null, 'To feel different (less anxious, less depressed, less in pain, more focused, more confident)'),
               h('li', null, 'To connect socially'),
               h('li', null, 'For fun, novelty, pleasure'),
@@ -296,7 +305,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
               h('li', null, 'To self-medicate untreated ADHD, anxiety, depression'),
               h('li', null, 'Because everyone around them is')
             ),
-            h('p', { style: { margin: '8px 0 0', color: '#cbd5e1', fontSize: 13, lineHeight: 1.7, fontStyle: 'italic' } },
+            h('p', { style: { margin: '8px 0 0', color: _subFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7, fontStyle: 'italic' } },
               'The harm-reduction insight: if a substance is meeting a real need (anxiety relief, social connection), abstinence campaigns ignore the need. Better questions: WHAT is the need? Can it be met another way? Can the use be safer?'
             )
           ),
@@ -312,38 +321,38 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
         return h('div', null,
           safetyBanner(),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: _subFg('#fde68a'), lineHeight: 1.65 } },
             h('strong', null, '📚 7 substances, honest information. '),
             'Per substance: what it is, adolescent-specific brain risk, the acute risks (the things that can kill you fast), and harm reduction (if you or someone you know is using). NOT a recommendation to use any of these.'
           ),
 
           SUBSTANCES.map(function(s) {
-            return h('div', { key: s.id, style: { padding: 16, borderRadius: 12, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + s.color, marginBottom: 12 } },
+            return h('div', { key: s.id, style: { padding: 16, borderRadius: 12, background: _subBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + s.color, marginBottom: 12 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
                 h('span', { style: { fontSize: 26 } }, s.icon),
                 h('span', { style: { fontSize: 16, fontWeight: 800, color: s.color } }, s.label)
               ),
 
-              h('div', { style: { padding: 10, borderRadius: 6, background: '#1e293b', marginBottom: 8 } },
-                h('div', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'What it is'),
-                h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } }, s.what)
+              h('div', { style: { padding: 10, borderRadius: 6, background: _subBg('#1e293b'), marginBottom: 8 } },
+                h('div', { style: { fontSize: 11, color: _subFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'What it is'),
+                h('p', { style: { margin: 0, color: _subFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } }, s.what)
               ),
 
               h('div', { style: { padding: 10, borderRadius: 6, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', marginBottom: 8 } },
-                h('div', { style: { fontSize: 11, color: '#c4b5fd', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, '🧠 Adolescent-specific risk'),
-                h('p', { style: { margin: 0, color: '#e9d5ff', fontSize: 13, lineHeight: 1.7 } }, s.adolescentRisk)
+                h('div', { style: { fontSize: 11, color: _subFg('#c4b5fd'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, '🧠 Adolescent-specific risk'),
+                h('p', { style: { margin: 0, color: _subFg('#e9d5ff'), fontSize: 13, lineHeight: 1.7 } }, s.adolescentRisk)
               ),
 
               h('div', { style: { padding: 10, borderRadius: 6, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.3)', marginBottom: 8 } },
-                h('div', { style: { fontSize: 11, color: '#fca5a5', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, '⚠️ Acute risks (the kill-fast ones)'),
-                h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fee2e2', fontSize: 12.5, lineHeight: 1.7 } },
+                h('div', { style: { fontSize: 11, color: _subFg('#fca5a5'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, '⚠️ Acute risks (the kill-fast ones)'),
+                h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: _subFg('#fee2e2'), fontSize: 12.5, lineHeight: 1.7 } },
                   s.acuteRisks.map(function(r, i) { return h('li', { key: i, style: { marginBottom: 2 } }, r); })
                 )
               ),
 
               h('div', { style: { padding: 10, borderRadius: 6, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)' } },
-                h('div', { style: { fontSize: 11, color: '#bbf7d0', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, '🛟 Harm reduction (if used)'),
-                h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#dcfce7', fontSize: 12.5, lineHeight: 1.7 } },
+                h('div', { style: { fontSize: 11, color: _subFg('#bbf7d0'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, '🛟 Harm reduction (if used)'),
+                h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: _subFg('#dcfce7'), fontSize: 12.5, lineHeight: 1.7 } },
                   s.harmReduction.map(function(r, i) { return h('li', { key: i, style: { marginBottom: 2 } }, r); })
                 )
               )
@@ -361,16 +370,16 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
         return h('div', null,
           safetyBanner(),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginBottom: 14, fontSize: 13, color: '#fecaca', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginBottom: 14, fontSize: 13, color: _subFg('#fecaca'), lineHeight: 1.7 } },
             h('strong', null, '⚠️ Not all use is a problem. '),
             'But some use is a real problem. Substance use disorder (SUD) is a clinical diagnosis with criteria. This section is psychoeducation, not a self-diagnosis tool. If any of this applies to you, please talk to a counselor or doctor.'
           ),
 
           // The criteria
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ef4444', marginBottom: 10 } },
-            h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fca5a5', marginBottom: 10 } }, '🚩 Signs use has become a problem'),
-            h('p', { style: { margin: '0 0 8px', color: '#cbd5e1', fontSize: 13, lineHeight: 1.7, fontStyle: 'italic' } }, 'These are simplified from the DSM-5 substance use disorder criteria:'),
-            h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.85 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _subBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ef4444', marginBottom: 10 } },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: _subFg('#fca5a5'), marginBottom: 10 } }, '🚩 Signs use has become a problem'),
+            h('p', { style: { margin: '0 0 8px', color: _subFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7, fontStyle: 'italic' } }, 'These are simplified from the DSM-5 substance use disorder criteria:'),
+            h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: _subFg('#e2e8f0'), fontSize: 13, lineHeight: 1.85 } },
               h('li', null, h('strong', null, 'Using more than intended. '), 'You meant to have one drink and had six. You meant to vape once and now you can\'t go a class period.'),
               h('li', null, h('strong', null, 'Trying to cut down and failing. '), 'You\'ve told yourself you\'ll stop or cut down, and it keeps not happening.'),
               h('li', null, h('strong', null, 'Spending a lot of time using or recovering. '), 'It takes up real chunks of your day or weekend.'),
@@ -383,18 +392,18 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
               h('li', null, h('strong', null, 'Tolerance. '), 'You need more to get the same effect.'),
               h('li', null, h('strong', null, 'Withdrawal. '), 'When you stop or cut back, you feel physically or mentally bad — and using fixes it.')
             ),
-            h('p', { style: { margin: '8px 0 0', color: '#fde68a', fontSize: 13, lineHeight: 1.7 } },
+            h('p', { style: { margin: '8px 0 0', color: _subFg('#fde68a'), fontSize: 13, lineHeight: 1.7 } },
               h('strong', null, 'Clinical thresholds (per DSM-5): '),
               '2-3 of these = mild SUD, 4-5 = moderate, 6+ = severe. You do not have to meet a threshold to want help; you can want help anytime.'
             )
           ),
 
           // CRAFFT
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
-            h('div', { style: { fontSize: 13, fontWeight: 800, color: '#7dd3fc', marginBottom: 10 } }, '🔍 CRAFFT screening (used by doctors)'),
-            h('p', { style: { margin: '0 0 8px', color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _subBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: _subFg('#7dd3fc'), marginBottom: 10 } }, '🔍 CRAFFT screening (used by doctors)'),
+            h('p', { style: { margin: '0 0 8px', color: _subFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } },
               'CRAFFT is the screening tool most US adolescent doctors use. The 6 questions, simplified:'),
-            h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.85 } },
+            h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: _subFg('#e2e8f0'), fontSize: 13, lineHeight: 1.85 } },
               h('li', null, h('strong', null, 'C'), ' — Have you ridden in a Car with a driver who was drunk or high?'),
               h('li', null, h('strong', null, 'R'), ' — Do you use substances to Relax, fit in, or feel better?'),
               h('li', null, h('strong', null, 'A'), ' — Do you use Alone?'),
@@ -402,7 +411,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
               h('li', null, h('strong', null, 'F'), ' — Do Family or Friends say you should cut down?'),
               h('li', null, h('strong', null, 'T'), ' — Have you gotten in Trouble while using?')
             ),
-            h('p', { style: { margin: '8px 0 0', color: '#bae6fd', fontSize: 13, lineHeight: 1.7 } },
+            h('p', { style: { margin: '8px 0 0', color: _subFg('#bae6fd'), fontSize: 13, lineHeight: 1.7 } },
               'Two or more yeses on CRAFFT is the threshold doctors use to recommend further conversation. Not a diagnosis; a conversation starter.'
             )
           ),
@@ -418,60 +427,60 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
         return h('div', null,
           safetyBanner(),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(14,165,233,0.10)', borderTop: '1px solid rgba(14,165,233,0.3)', borderRight: '1px solid rgba(14,165,233,0.3)', borderBottom: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 14, fontSize: 13, color: '#bae6fd', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(14,165,233,0.10)', borderTop: '1px solid rgba(14,165,233,0.3)', borderRight: '1px solid rgba(14,165,233,0.3)', borderBottom: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 14, fontSize: 13, color: _subFg('#bae6fd'), lineHeight: 1.7 } },
             h('strong', null, '🪞 Private space to think. '),
             'No one sees this. The frame is Motivational Interviewing: importance / confidence / readiness rulers. If you are considering changing something about your use, this is a space to think clearly. The MI tool in this SEL Hub has the full framework.'
           ),
 
           // What relationship
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
-            h('label', { htmlFor: 'su-rel', style: { display: 'block', fontSize: 12, color: '#7dd3fc', fontWeight: 800, marginBottom: 6 } }, 'My relationship with [substance] right now'),
-            h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6, fontStyle: 'italic', lineHeight: 1.5 } }, 'Just describe what is actually going on. No judgment, no future tense. What is your current relationship with whatever you\'re thinking about?'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: _subBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
+            h('label', { htmlFor: 'su-rel', style: { display: 'block', fontSize: 12, color: _subFg('#7dd3fc'), fontWeight: 800, marginBottom: 6 } }, 'My relationship with [substance] right now'),
+            h('div', { style: { fontSize: 11, color: _subFg('#94a3b8'), marginBottom: 6, fontStyle: 'italic', lineHeight: 1.5 } }, 'Just describe what is actually going on. No judgment, no future tense. What is your current relationship with whatever you\'re thinking about?'),
             h('textarea', { id: 'su-rel', value: d.myRelationship || '',
               placeholder: 'Right now I...',
               onChange: function(e) { setSU({ myRelationship: e.target.value }); },
-              style: { width: '100%', minHeight: 100, padding: 10, borderRadius: 6, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 13.5, fontFamily: 'inherit', lineHeight: 1.75, resize: 'vertical' } })
+              style: { width: '100%', minHeight: 100, padding: 10, borderRadius: 6, border: '1px solid #334155', background: _subBg('#1e293b'), color: _subFg('#e2e8f0'), fontSize: 13.5, fontFamily: 'inherit', lineHeight: 1.75, resize: 'vertical' } })
           ),
 
           // Three MI rulers
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
-            h('div', { style: { fontSize: 12, color: '#fde68a', fontWeight: 800, marginBottom: 8 } }, '⭐ Importance (0-10): how important is it to you to change something about your use?'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: _subBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
+            h('div', { style: { fontSize: 12, color: _subFg('#fde68a'), fontWeight: 800, marginBottom: 8 } }, '⭐ Importance (0-10): how important is it to you to change something about your use?'),
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
               h('input', { type: 'range', min: 0, max: 10, value: d.importance,
                 onChange: function(e) { setSU({ importance: parseInt(e.target.value, 10) }); },
                 style: { flex: 1 }, 'aria-label': 'Importance' }),
-              h('span', { style: { fontSize: 16, fontWeight: 800, color: '#fde68a', minWidth: 50, textAlign: 'right' } }, d.importance + ' / 10')
+              h('span', { style: { fontSize: 16, fontWeight: 800, color: _subFg('#fde68a'), minWidth: 50, textAlign: 'right' } }, d.importance + ' / 10')
             )
           ),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
-            h('div', { style: { fontSize: 12, color: '#bbf7d0', fontWeight: 800, marginBottom: 8 } }, '💪 Confidence (0-10): if you decided to change, how confident are you that you could?'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: _subBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
+            h('div', { style: { fontSize: 12, color: _subFg('#bbf7d0'), fontWeight: 800, marginBottom: 8 } }, '💪 Confidence (0-10): if you decided to change, how confident are you that you could?'),
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
               h('input', { type: 'range', min: 0, max: 10, value: d.confidence,
                 onChange: function(e) { setSU({ confidence: parseInt(e.target.value, 10) }); },
                 style: { flex: 1 }, 'aria-label': 'Confidence' }),
-              h('span', { style: { fontSize: 16, fontWeight: 800, color: '#bbf7d0', minWidth: 50, textAlign: 'right' } }, d.confidence + ' / 10')
+              h('span', { style: { fontSize: 16, fontWeight: 800, color: _subFg('#bbf7d0'), minWidth: 50, textAlign: 'right' } }, d.confidence + ' / 10')
             )
           ),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
-            h('div', { style: { fontSize: 12, color: '#e9d5ff', fontWeight: 800, marginBottom: 8 } }, '🚪 Readiness (0-10): how ready are you to actually try changing?'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: _subBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
+            h('div', { style: { fontSize: 12, color: _subFg('#e9d5ff'), fontWeight: 800, marginBottom: 8 } }, '🚪 Readiness (0-10): how ready are you to actually try changing?'),
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
               h('input', { type: 'range', min: 0, max: 10, value: d.readiness,
                 onChange: function(e) { setSU({ readiness: parseInt(e.target.value, 10) }); },
                 style: { flex: 1 }, 'aria-label': 'Readiness' }),
-              h('span', { style: { fontSize: 16, fontWeight: 800, color: '#e9d5ff', minWidth: 50, textAlign: 'right' } }, d.readiness + ' / 10')
+              h('span', { style: { fontSize: 16, fontWeight: 800, color: _subFg('#e9d5ff'), minWidth: 50, textAlign: 'right' } }, d.readiness + ' / 10')
             )
           ),
 
           // The MI move
           h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(14,165,233,0.10)', borderTop: '1px solid rgba(14,165,233,0.3)', borderRight: '1px solid rgba(14,165,233,0.3)', borderBottom: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
-            h('label', { htmlFor: 'su-why', style: { display: 'block', fontSize: 12, color: '#bae6fd', fontWeight: 800, marginBottom: 6 } }, 'Why a ' + d.importance + ' on importance and not a ' + Math.max(0, d.importance - 2) + '?'),
-            h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6, fontStyle: 'italic', lineHeight: 1.5 } }, 'The MI move: what is keeping importance at ' + d.importance + ' instead of lower? This surfaces the reasons FOR change. Those are the reasons that build motivation.'),
+            h('label', { htmlFor: 'su-why', style: { display: 'block', fontSize: 12, color: _subFg('#bae6fd'), fontWeight: 800, marginBottom: 6 } }, 'Why a ' + d.importance + ' on importance and not a ' + Math.max(0, d.importance - 2) + '?'),
+            h('div', { style: { fontSize: 11, color: _subFg('#94a3b8'), marginBottom: 6, fontStyle: 'italic', lineHeight: 1.5 } }, 'The MI move: what is keeping importance at ' + d.importance + ' instead of lower? This surfaces the reasons FOR change. Those are the reasons that build motivation.'),
             h('textarea', { id: 'su-why', value: d.whyChange || '',
               placeholder: 'It\'s a ' + d.importance + ' and not a ' + Math.max(0, d.importance - 2) + ' because...',
               onChange: function(e) { setSU({ whyChange: e.target.value }); },
-              style: { width: '100%', minHeight: 90, padding: 10, borderRadius: 6, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 13, fontFamily: 'inherit', lineHeight: 1.7, resize: 'vertical' } })
+              style: { width: '100%', minHeight: 90, padding: 10, borderRadius: 6, border: '1px solid #334155', background: _subBg('#1e293b'), color: _subFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.7, resize: 'vertical' } })
           ),
 
           softPointer()
@@ -486,15 +495,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
           safetyBanner(),
 
           h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(34,197,94,0.16) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(34,197,94,0.4)', marginBottom: 14 } },
-            h('div', { style: { fontSize: 22, fontWeight: 900, color: '#bbf7d0', marginBottom: 4 } }, 'Help works. It is not a last resort.'),
-            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13.5, lineHeight: 1.7 } },
+            h('div', { style: { fontSize: 22, fontWeight: 900, color: _subFg('#bbf7d0'), marginBottom: 4 } }, 'Help works. It is not a last resort.'),
+            h('p', { style: { margin: 0, color: _subFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.7 } },
               'You do not need to "hit rock bottom" before getting help. You do not need to be sure you want to stop. You can start with ONE conversation. Treatment for adolescent substance use works, and it works better the earlier it starts. The resources below are free or low-cost, confidential, and non-judgmental.'
             )
           ),
 
           // Helplines and resources
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
-            h('div', { style: { fontSize: 13, fontWeight: 800, color: '#bbf7d0', marginBottom: 10 } }, '📞 Free, 24/7, confidential'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: _subBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: _subFg('#bbf7d0'), marginBottom: 10 } }, '📞 Free, 24/7, confidential'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 8 } },
               resourceCard('SAMHSA National Helpline', 'Call 1-800-662-HELP (4357). Free, confidential, 24/7, English and Spanish. Treatment referral and information.', 'https://www.samhsa.gov/find-help/national-helpline'),
               resourceCard('SAMHSA Treatment Finder', 'findtreatment.gov — searchable directory of US treatment providers, free.', 'https://findtreatment.gov/'),
@@ -506,8 +515,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
           ),
 
           // Harm reduction orgs
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
-            h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fde68a', marginBottom: 10 } }, '🛟 Harm-reduction organizations'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: _subBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: _subFg('#fde68a'), marginBottom: 10 } }, '🛟 Harm-reduction organizations'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 8 } },
               resourceCard('National Harm Reduction Coalition', 'Naloxone, syringe access, drug-checking information. Network of local programs.', 'https://harmreduction.org/'),
               resourceCard('NEXT Distro', 'Mail-order Naloxone, syringes, and harm-reduction supplies. Confidential.', 'https://www.nextdistro.org/'),
@@ -517,17 +526,17 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
           ),
 
           // Naloxone specifically
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginBottom: 10, fontSize: 13, color: '#fecaca', lineHeight: 1.75 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginBottom: 10, fontSize: 13, color: _subFg('#fecaca'), lineHeight: 1.75 } },
             h('strong', null, '💉 Naloxone (Narcan) saves lives. '),
             'It reverses opioid overdose in 2-5 minutes. Most US states allow over-the-counter purchase. It works on fentanyl. It cannot hurt someone who is not overdosing. Carry it if you or anyone you know uses opioids — including people taking prescription painkillers, including people who use pills they got from friends (which are often fentanyl now). Free or low-cost from: many community pharmacies, public health departments, harm-reduction orgs, NEXT Distro by mail.'
           ),
 
           // Telehealth
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9' } },
-            h('div', { style: { fontSize: 13, fontWeight: 800, color: '#7dd3fc', marginBottom: 10 } }, '📱 Telehealth + apps'),
-            h('p', { style: { margin: '0 0 8px', color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _subBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9' } },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: _subFg('#7dd3fc'), marginBottom: 10 } }, '📱 Telehealth + apps'),
+            h('p', { style: { margin: '0 0 8px', color: _subFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } },
               'Telehealth has dramatically expanded access to addiction treatment. Buprenorphine (for opioid use disorder) can now be prescribed via telehealth in many states. SAMHSA can help locate options.'),
-            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
+            h('p', { style: { margin: 0, color: _subFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } },
               'School-based health centers and federally qualified health centers (FQHCs) provide substance use counseling regardless of insurance. Talk to your school counselor or school psych — they can connect you, often without parental notification depending on state law.')
           ),
 
@@ -536,10 +545,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
       }
 
       function resourceCard(name, blurb, url) {
-        return h('div', { style: { padding: 10, borderRadius: 8, background: '#1e293b' } },
+        return h('div', { style: { padding: 10, borderRadius: 8, background: _subBg('#1e293b') } },
           h('a', { href: url, target: '_blank', rel: 'noopener noreferrer',
-            style: { fontSize: 12.5, color: '#e2e8f0', fontWeight: 800, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, name + ' ↗'),
-          h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55 } }, blurb)
+            style: { fontSize: 12.5, color: _subFg('#e2e8f0'), fontWeight: 800, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, name + ' ↗'),
+          h('div', { style: { fontSize: 12, color: _subFg('#cbd5e1'), lineHeight: 1.55 } }, blurb)
         );
       }
 
@@ -550,18 +559,18 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
         return h('div', null,
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('substancePsychoed', h, ctx) : null),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#e2e8f0', fontSize: 16 } }, 'Why this tool is harm-reduction-framed'),
-            h('p', { style: { margin: '0 0 10px', color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: _subBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 10px', color: _subFg('#e2e8f0'), fontSize: 16 } }, 'Why this tool is harm-reduction-framed'),
+            h('p', { style: { margin: '0 0 10px', color: _subFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } },
               'The evidence is clear: abstinence-only and "Just Say No"-style adolescent drug education does not work, and in some cases makes things worse. DARE, which was the dominant US adolescent drug education for decades, was evaluated repeatedly and found to be ineffective or counterproductive. The Office of National Drug Control Policy stopped funding DARE in 2007 for this reason.'
             ),
-            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
+            h('p', { style: { margin: 0, color: _subFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } },
               'Harm-reduction approaches — honest information about substances, adolescent brain science, harm-reduction strategies for those using, and routes to help when use becomes a problem — are now considered best practice. This tool reflects that consensus. It does NOT promote substance use. It treats adolescents as people capable of making informed decisions about their own lives.'
             )
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#e2e8f0', fontSize: 16 } }, '📚 Sources and learn more'),
+          h('div', { style: { padding: 16, borderRadius: 12, background: _subBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 10px', color: _subFg('#e2e8f0'), fontSize: 16 } }, '📚 Sources and learn more'),
             sourceCard('SAMHSA', 'samhsa.gov', 'US federal substance use and mental health authority. Treatment finder, helpline, education.', 'https://www.samhsa.gov/'),
             sourceCard('NIDA (National Institute on Drug Abuse)', 'nida.nih.gov', 'Research-based drug education. NIDA for Teens is youth-specific.', 'https://nida.nih.gov/'),
             sourceCard('AAP (American Academy of Pediatrics)', 'Adolescent Substance Use Policy Statements', 'Evidence-based pediatric guidance on adolescent substance use screening and intervention.', 'https://www.aap.org/'),
@@ -573,8 +582,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
           ),
 
           h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
-            h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
+            h('h3', { style: { margin: '0 0 10px', color: _subFg('#fcd34d'), fontSize: 15 } }, '⚖️ Honest limits'),
+            h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: _subFg('#fde68a'), fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'This tool is psychoeducation. It is NOT diagnosis, not therapy, and not a substitute for professional substance use treatment when SUD has developed.'),
               h('li', null, 'Some substances are not covered in detail (inhalants, MDMA-adjacent club drugs, kratom, designer drugs). The 7 covered are the most common in US adolescents. SAMHSA has more.'),
               h('li', null, 'Adolescent substance use disorder treatment is genuinely effective. It is also genuinely underutilized — about 1 in 10 adolescents who meet criteria get any treatment. Stigma and access are real barriers; talk to a counselor or doctor.'),
@@ -583,7 +592,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(100,116,139,0.10)', borderTop: '1px solid rgba(100,116,139,0.3)', borderRight: '1px solid rgba(100,116,139,0.3)', borderBottom: '1px solid rgba(100,116,139,0.3)', borderLeft: '3px solid #64748b', fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(100,116,139,0.10)', borderTop: '1px solid rgba(100,116,139,0.3)', borderRight: '1px solid rgba(100,116,139,0.3)', borderBottom: '1px solid rgba(100,116,139,0.3)', borderLeft: '3px solid #64748b', fontSize: 12.5, color: _subFg('#e2e8f0'), lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'Harm reduction is the evidence-based stance. If your district mandates abstinence-only messaging, your students still benefit from honest information — they will get it from peers and the internet, often inaccurately. For students with active substance use: do not lead with consequences (suspensions, calling parents); lead with care, then connect them with a counselor or school psych who can connect them to treatment. SBIRT (Screening, Brief Intervention, Referral to Treatment) is the evidence-based model for adolescent substance use intervention in schools.'
           ),
@@ -593,26 +602,26 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
       }
 
       function sourceCard(authorYear, title, blurb, url) {
-        return h('div', { style: { padding: 10, borderRadius: 8, background: '#1e293b', border: '1px solid #334155', marginBottom: 8 } },
-          h('div', { style: { fontSize: 11, color: '#cbd5e1', fontWeight: 700, marginBottom: 2 } }, authorYear),
+        return h('div', { style: { padding: 10, borderRadius: 8, background: _subBg('#1e293b'), border: '1px solid #334155', marginBottom: 8 } },
+          h('div', { style: { fontSize: 11, color: _subFg('#cbd5e1'), fontWeight: 700, marginBottom: 2 } }, authorYear),
           url
             ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer',
-                style: { fontSize: 13, color: '#e2e8f0', fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
-            : h('div', { style: { fontSize: 13, color: '#e2e8f0', fontWeight: 700, marginBottom: 4 } }, title),
-          h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55 } }, blurb)
+                style: { fontSize: 13, color: _subFg('#e2e8f0'), fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
+            : h('div', { style: { fontSize: 13, color: _subFg('#e2e8f0'), fontWeight: 700, marginBottom: 4 } }, title),
+          h('div', { style: { fontSize: 12, color: _subFg('#cbd5e1'), lineHeight: 1.55 } }, blurb)
         );
       }
 
       // ── Print: harm-reduction handout ──
       function renderPrintView() {
         return h('div', null,
-          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #475569', borderRight: '1px solid #475569', borderBottom: '1px solid #475569', borderLeft: '3px solid #94a3b8', marginBottom: 12, fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65 } },
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: _subBg('#0f172a'), borderTop: '1px solid #475569', borderRight: '1px solid #475569', borderBottom: '1px solid #475569', borderLeft: '3px solid #94a3b8', marginBottom: 12, fontSize: 12.5, color: _subFg('#cbd5e1'), lineHeight: 1.65 } },
             h('strong', null, '🖨 Harm-reduction handout. '),
             'A one-page reference for staff, families, peer educators, or yourself. The framework is honest (use exists on a spectrum, not abstinence-or-failure), the safety information is real (overdose response, naloxone, Good Samaritan laws), and the help pathways are open. Not a substitute for clinical assessment.'
           ),
           h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
             h('button', { onClick: printNow, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #475569 0%, #94a3b8 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
+              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #475569 0%, #94a3b8 100%)', color: _subFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
           ),
           h('style', null,
             '@media print { body * { visibility: hidden !important; } ' +
@@ -621,20 +630,20 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
             '#sub-print-region * { background: transparent !important; color: #0f172a !important; border-color: #888 !important; } ' +
             '.no-print { display: none !important; } }'
           ),
-          h('div', { id: 'sub-print-region', style: { padding: 18, borderRadius: 12, background: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0' } },
+          h('div', { id: 'sub-print-region', style: { padding: 18, borderRadius: 12, background: _subBg('#ffffff'), color: _subFg('#0f172a'), border: '1px solid #e2e8f0' } },
             h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', borderBottom: '2px solid #0f172a', paddingBottom: 8, marginBottom: 14 } },
-              h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: '#0f172a' } }, 'Substance Use · Harm-Reduction Handout'),
-              h('div', { style: { fontSize: 11, color: '#475569' } }, 'SAMHSA · NIDA · Drug Policy Alliance')
+              h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: _subFg('#0f172a') } }, 'Substance Use · Harm-Reduction Handout'),
+              h('div', { style: { fontSize: 11, color: _subFg('#475569') } }, 'SAMHSA · NIDA · Drug Policy Alliance')
             ),
 
-            h('div', { style: { padding: 10, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, marginBottom: 14, fontSize: 12, lineHeight: 1.55, color: '#7f1d1d' } },
+            h('div', { style: { padding: 10, background: _subBg('#fef2f2'), border: '1px solid #fecaca', borderRadius: 8, marginBottom: 14, fontSize: 12, lineHeight: 1.55, color: _subFg('#7f1d1d') } },
               h('strong', null, 'OVERDOSE EMERGENCY: '),
               'Unresponsive · slow or stopped breathing · blue lips · vomiting while passed out. Call 911. Give naloxone (Narcan) if available. Stay with the person. Most states have Good Samaritan laws protecting callers from drug charges.'
             ),
 
             h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
-              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, 'The framework: honest information, not scare tactics'),
-              h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12, color: '#0f172a', lineHeight: 1.65 } },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: _subFg('#0f172a'), marginBottom: 8 } }, 'The framework: honest information, not scare tactics'),
+              h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12, color: _subFg('#0f172a'), lineHeight: 1.65 } },
                 h('li', { style: { marginBottom: 4 } }, 'Substance use exists on a spectrum: no use, experimental use, occasional use, regular use, risky use, dependence. The shape of the spectrum is more useful than a binary "use vs. abstain."'),
                 h('li', { style: { marginBottom: 4 } }, 'Harm reduction recognizes that people use substances for reasons (stress, pain, social connection, curiosity, regulation, trauma). Reducing harm is possible even when use continues.'),
                 h('li', { style: { marginBottom: 4 } }, 'The adolescent brain is still developing the prefrontal cortex (planning, impulse control, long-term thinking) into the mid-twenties. Early use during this window has different risks than adult use.'),
@@ -644,8 +653,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
             ),
 
             h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
-              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, 'Concrete harm-reduction practices'),
-              h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12, color: '#0f172a', lineHeight: 1.65 } },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: _subFg('#0f172a'), marginBottom: 8 } }, 'Concrete harm-reduction practices'),
+              h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12, color: _subFg('#0f172a'), lineHeight: 1.65 } },
                 h('li', { style: { marginBottom: 3 } }, 'Never use alone if any drug is involved that could cause overdose (opioids, benzos, alcohol, fentanyl-contaminated anything). Use the Never Use Alone hotline 1-800-484-3731 if needed.'),
                 h('li', { style: { marginBottom: 3 } }, 'Test drugs with fentanyl test strips (legal and free from many harm-reduction orgs).'),
                 h('li', { style: { marginBottom: 3 } }, 'Carry naloxone (Narcan) if you or your friends use opioids OR any street drugs (fentanyl contamination is widespread). Free in many states.'),
@@ -656,8 +665,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
             ),
 
             h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
-              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, 'When use is a problem'),
-              h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12, color: '#0f172a', lineHeight: 1.65 } },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: _subFg('#0f172a'), marginBottom: 8 } }, 'When use is a problem'),
+              h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12, color: _subFg('#0f172a'), lineHeight: 1.65 } },
                 h('li', { style: { marginBottom: 3 } }, 'Using more than intended, more often than intended.'),
                 h('li', { style: { marginBottom: 3 } }, 'Trying to cut down and not being able to.'),
                 h('li', { style: { marginBottom: 3 } }, 'A lot of time spent obtaining, using, or recovering.'),
@@ -667,12 +676,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
                 h('li', { style: { marginBottom: 3 } }, 'Tolerance going up (needing more for the same effect).'),
                 h('li', null, 'Withdrawal symptoms when stopping.')
               ),
-              h('div', { style: { marginTop: 8, fontSize: 11.5, color: '#475569', fontStyle: 'italic', lineHeight: 1.55 } }, 'DSM-5 substance use disorder is diagnosed when several of these are present over a 12-month period. A clinician makes that call; this list is for self-reflection.')
+              h('div', { style: { marginTop: 8, fontSize: 11.5, color: _subFg('#475569'), fontStyle: 'italic', lineHeight: 1.55 } }, 'DSM-5 substance use disorder is diagnosed when several of these are present over a 12-month period. A clinician makes that call; this list is for self-reflection.')
             ),
 
             h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
-              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, 'Help, available 24/7, confidential, free'),
-              h('div', { style: { fontSize: 12, color: '#0f172a', lineHeight: 1.75 } },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: _subFg('#0f172a'), marginBottom: 8 } }, 'Help, available 24/7, confidential, free'),
+              h('div', { style: { fontSize: 12, color: _subFg('#0f172a'), lineHeight: 1.75 } },
                 'SAMHSA National Helpline: 1-800-662-HELP (4357) — treatment referral, mental health and substance use, in English and Spanish', h('br'),
                 'SAMHSA findtreatment.gov — search treatment centers near you', h('br'),
                 'Never Use Alone: 1-800-484-3731 — peer on the line while you use; calls 911 if you stop responding', h('br'),
@@ -683,12 +692,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
               )
             ),
 
-            h('div', { style: { padding: 10, background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: 8, marginBottom: 12, fontSize: 11.5, color: '#0f172a', lineHeight: 1.6 } },
+            h('div', { style: { padding: 10, background: _subBg('#f1f5f9'), border: '1px solid #cbd5e1', borderRadius: 8, marginBottom: 12, fontSize: 11.5, color: _subFg('#0f172a'), lineHeight: 1.6 } },
               h('strong', null, 'For families and educators: '),
               'A teen disclosing substance use is doing something hard. Punitive responses tend to drive use underground. Curiosity, listening, accurate information, and connection to clinical support produce better outcomes. Motivational Interviewing (Miller and Rollnick) is the evidence-based approach.'
             ),
 
-            h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: '#475569', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: _subFg('#475569'), lineHeight: 1.5 } },
               'Sources: NIDA (nida.nih.gov) · SAMHSA (samhsa.gov) · Drug Policy Alliance (drugpolicy.org) · Harm Reduction Coalition · Miller, W. R. & Rollnick, S. (2013), Motivational Interviewing (3rd ed.). Printed from AlloFlow SEL Hub.'
             )
           )

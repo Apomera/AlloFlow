@@ -99,6 +99,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
     color: 'amber',
     category: 'care-of-self',
     render: function(ctx) {
+      // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
+      var _souT = (ctx && ctx.theme) || {};
+      var _souHC = !!_souT.isContrast, _souL = !_souHC && !_souT.isDark;
+      var _sou_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _sou_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#fff':'#000000','#f8fafc':'#000000'};
+      var _sou_FGL = {'#cbd5e1':'#334155','#fcd34d':'#78350f','#94a3b8':'#64748b','#fde68a':'#92400e','#e2e8f0':'#1e293b'}, _sou_FGH = {'#cbd5e1':'#ffff00','#fcd34d':'#ffff00','#94a3b8':'#ffff00','#fde68a':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#bbf7d0':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00'};
+      var _sou_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _sou_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#475569':'#ffff00','#f59e0b':'#ffff00','#fcd34d':'#ffff00','#22c55e':'#ffff00','#cbd5e1':'#ffff00','#d97706':'#ffff00'};
+      var _souBg = function(h){ return _souHC ? (_sou_BGH[h]||h) : (_souL ? (_sou_BGL[h]||h) : h); };
+      var _souFg = function(h){ return _souHC ? (_sou_FGH[h]||h) : (_souL ? (_sou_FGL[h]||h) : h); };
+      var _souBd = function(h){ return _souHC ? (_sou_BDH[h]||h) : (_souL ? (_sou_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -121,10 +130,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: '#cbd5e1', fontSize: 14 } }, '← Back'),
+            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _souFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
-            h('h2', { style: { margin: 0, color: '#fcd34d', fontSize: 22, fontWeight: 900 } }, '🌟 Sources of Strength'),
-            h('div', { style: { fontSize: 12, color: '#94a3b8', marginTop: 4, lineHeight: 1.5 } }, 'The protective factors that hold you up.')
+            h('h2', { style: { margin: 0, color: _souFg('#fcd34d'), fontSize: 22, fontWeight: 900 } }, '🌟 Sources of Strength'),
+            h('div', { style: { fontSize: 12, color: _souFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'The protective factors that hold you up.')
           )
         );
       }
@@ -144,8 +153,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
             return h('button', { key: t.id, onClick: function() { goto(t.id); },
               role: 'tab', 'aria-selected': active,
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#f59e0b' : '#334155'),
-                background: active ? 'rgba(245,158,11,0.18)' : '#1e293b',
-                color: active ? '#fde68a' : '#cbd5e1', cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                background: active ? 'rgba(245,158,11,0.18)' : _souBg('#1e293b'),
+                color: active ? _souFg('#fde68a') : _souFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
         );
@@ -153,7 +162,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
 
       function softPointer() {
         return h('div', { className: 'no-print',
-          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: '#94a3b8', lineHeight: 1.5, fontStyle: 'italic' }
+          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _souFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
           'For acute crisis or thoughts of suicide: call 988 (Suicide and Crisis Lifeline), text HOME to 741741 (Crisis Text Line), or open the Crisis Companion in this SEL Hub. Sources of Strength is for BUILDING the protective side; Crisis Companion is for the moment of crisis.'
         );
@@ -165,35 +174,35 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
       function renderHome() {
         return h('div', null,
           h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(245,158,11,0.16) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(245,158,11,0.4)', marginBottom: 14 } },
-            h('div', { style: { fontSize: 22, fontWeight: 900, color: '#fde68a', marginBottom: 4 } }, 'Strength is built upstream, not at the cliff.'),
-            h('p', { style: { margin: '0 0 10px', color: '#cbd5e1', fontSize: 13.5, lineHeight: 1.7 } },
+            h('div', { style: { fontSize: 22, fontWeight: 900, color: _souFg('#fde68a'), marginBottom: 4 } }, 'Strength is built upstream, not at the cliff.'),
+            h('p', { style: { margin: '0 0 10px', color: _souFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.7 } },
               'Sources of Strength is the strongest evidence-based youth suicide prevention model in US schools. Its insight: most suicide prevention happens DOWNSTREAM, after a student is already in crisis. Sources of Strength moves the work UPSTREAM — building eight protective factors over time, before crisis hits.'
             ),
-            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13.5, lineHeight: 1.7 } },
+            h('p', { style: { margin: 0, color: _souFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.7 } },
               'The model is not a screener. It is a MAP. The 8 sources are the supports that hold you up. Most people have some strong sources and some thin ones; the work is to know which is which, and to build the thin ones over time.'
             )
           ),
 
-          h('div', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 } }, 'The 8 sources'),
+          h('div', { style: { fontSize: 11, color: _souFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 } }, 'The 8 sources'),
 
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 } },
             SOURCES.map(function(s) {
-              return h('div', { key: s.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + s.color } },
+              return h('div', { key: s.id, style: { padding: 14, borderRadius: 10, background: _souBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + s.color } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                   h('span', { style: { fontSize: 22 } }, s.icon),
                   h('span', { style: { fontSize: 14, fontWeight: 800, color: s.color } }, s.label)
                 ),
-                h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 12.5, lineHeight: 1.65 } }, s.what)
+                h('p', { style: { margin: 0, color: _souFg('#cbd5e1'), fontSize: 12.5, lineHeight: 1.65 } }, s.what)
               );
             })
           ),
 
           h('div', { style: { display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' } },
             h('button', { onClick: function() { goto('map'); }, 'aria-label': 'Map my sources',
-              style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)', color: '#fff', fontWeight: 800, fontSize: 14 } },
+              style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)', color: _souFg('#fff'), fontWeight: 800, fontSize: 14 } },
               '🗺️ Map my sources'),
             h('button', { onClick: function() { goto('build'); }, 'aria-label': 'Build a source',
-              style: { padding: '10px 22px', borderRadius: 10, border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🌱 Build a source')
+              style: { padding: '10px 22px', borderRadius: 10, border: '1px solid #475569', background: _souBg('#1e293b'), color: _souFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🌱 Build a source')
           ),
 
           softPointer()
@@ -221,7 +230,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
         var lowSources = SOURCES.filter(function(s) { return ratings[s.id] && ratings[s.id] <= 2; });
 
         return h('div', null,
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 13, color: '#fde68a', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 13, color: _souFg('#fde68a'), lineHeight: 1.7 } },
             h('strong', null, '🗺️ Rate each source on 1-5. '),
             '1 = "I don\'t really have this," 5 = "this is strong and reliable." Be honest, not aspirational. The point is to see clearly, not to look good on paper.'
           ),
@@ -229,7 +238,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
           SOURCES.map(function(s) {
             var v = ratings[s.id];
             var details = (d.details || {})[s.id] || {};
-            return h('div', { key: s.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + s.color, marginBottom: 10 } },
+            return h('div', { key: s.id, style: { padding: 14, borderRadius: 10, background: _souBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + s.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
                 h('span', { style: { fontSize: 20 } }, s.icon),
                 h('span', { style: { fontSize: 14, fontWeight: 800, color: s.color, flex: 1, minWidth: 140 } }, s.label),
@@ -238,15 +247,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
                   [1, 2, 3, 4, 5].map(function(n) {
                     var active = v === n;
                     return h('button', { key: n, onClick: function() { setRating(s.id, n); }, role: 'radio', 'aria-checked': active, 'aria-label': 'Rate ' + n,
-                      style: { padding: '4px 10px', borderRadius: 4, border: '1px solid ' + (active ? s.color : '#475569'), background: active ? s.color : 'transparent', color: active ? '#fff' : s.color, cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, n);
+                      style: { padding: '4px 10px', borderRadius: 4, border: '1px solid ' + (active ? s.color : _souFg('#475569')), background: active ? s.color : 'transparent', color: active ? '#fff' : s.color, cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, n);
                   })
                 )
               ),
 
               // Examples
               h('details', { style: { marginBottom: 8 } },
-                h('summary', { style: { cursor: 'pointer', fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, 'Examples of this source'),
-                h('ul', { style: { margin: '6px 0 0', padding: '0 0 0 20px', color: '#cbd5e1', fontSize: 12, lineHeight: 1.7 } },
+                h('summary', { style: { cursor: 'pointer', fontSize: 11, color: _souFg('#94a3b8'), fontStyle: 'italic' } }, 'Examples of this source'),
+                h('ul', { style: { margin: '6px 0 0', padding: '0 0 0 20px', color: _souFg('#cbd5e1'), fontSize: 12, lineHeight: 1.7 } },
                   s.examples.map(function(ex, i) { return h('li', { key: i }, ex); })
                 )
               ),
@@ -254,32 +263,32 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
               // Who / notes
               v ? h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, marginTop: 4 } },
                 h('div', null,
-                  h('label', { htmlFor: 'sos-who-' + s.id, style: { display: 'block', fontSize: 10, color: '#94a3b8', fontWeight: 700, marginBottom: 2 } }, 'Who / what (specific)'),
+                  h('label', { htmlFor: 'sos-who-' + s.id, style: { display: 'block', fontSize: 10, color: _souFg('#94a3b8'), fontWeight: 700, marginBottom: 2 } }, 'Who / what (specific)'),
                   h('input', { id: 'sos-who-' + s.id, type: 'text', value: details.who || '',
                     placeholder: v >= 3 ? 'Name names' : 'Or leave blank',
                     onChange: function(e) { setDetails(s.id, 'who', e.target.value); },
-                    style: { width: '100%', padding: 6, borderRadius: 4, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 12 } })
+                    style: { width: '100%', padding: 6, borderRadius: 4, border: '1px solid #334155', background: _souBg('#1e293b'), color: _souFg('#e2e8f0'), fontSize: 12 } })
                 )
               ) : null,
 
               // If low — guidance
-              v && v <= 2 ? h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', marginTop: 8, fontSize: 11.5, color: '#fde68a', lineHeight: 1.6, fontStyle: 'italic' } },
+              v && v <= 2 ? h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', marginTop: 8, fontSize: 11.5, color: _souFg('#fde68a'), lineHeight: 1.6, fontStyle: 'italic' } },
                 h('strong', null, '💡 If this is thin right now: '), s.ifLow
               ) : null
             );
           }),
 
           // Summary
-          rated > 0 ? h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #fcd34d', marginTop: 14 } },
-            h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fcd34d', marginBottom: 8 } }, '📊 Your map'),
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 6, lineHeight: 1.65 } }, rated + ' of 8 sources rated.'),
-            lowSources.length > 0 ? h('div', { style: { fontSize: 12, color: '#fde68a', lineHeight: 1.7 } },
+          rated > 0 ? h('div', { style: { padding: 14, borderRadius: 10, background: _souBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #fcd34d', marginTop: 14 } },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: _souFg('#fcd34d'), marginBottom: 8 } }, '📊 Your map'),
+            h('div', { style: { fontSize: 12, color: _souFg('#cbd5e1'), marginBottom: 6, lineHeight: 1.65 } }, rated + ' of 8 sources rated.'),
+            lowSources.length > 0 ? h('div', { style: { fontSize: 12, color: _souFg('#fde68a'), lineHeight: 1.7 } },
               h('strong', null, lowSources.length + ' source' + (lowSources.length === 1 ? '' : 's') + ' rated 1-2 (thin): '),
               lowSources.map(function(s) { return s.label; }).join(', '),
               '. These are the work. ',
               h('button', { onClick: function() { goto('build'); }, 'aria-label': 'Build these',
-                style: { background: 'transparent', border: 'none', color: '#fcd34d', textDecoration: 'underline', cursor: 'pointer', fontSize: 12, fontWeight: 700, padding: 0 } }, 'Pick one to build →')
-            ) : h('div', { style: { fontSize: 12, color: '#bbf7d0' } }, 'No sources rated 1-2. That is a strong protective profile.')
+                style: { background: 'transparent', border: 'none', color: _souFg('#fcd34d'), textDecoration: 'underline', cursor: 'pointer', fontSize: 12, fontWeight: 700, padding: 0 } }, 'Pick one to build →')
+            ) : h('div', { style: { fontSize: 12, color: _souFg('#bbf7d0') } }, 'No sources rated 1-2. That is a strong protective profile.')
           ) : null,
 
           softPointer()
@@ -297,30 +306,30 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
         }
 
         return h('div', null,
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.10)', borderTop: '1px solid rgba(34,197,94,0.3)', borderRight: '1px solid rgba(34,197,94,0.3)', borderBottom: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 14, fontSize: 13, color: '#bbf7d0', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.10)', borderTop: '1px solid rgba(34,197,94,0.3)', borderRight: '1px solid rgba(34,197,94,0.3)', borderBottom: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 14, fontSize: 13, color: _souFg('#bbf7d0'), lineHeight: 1.7 } },
             h('strong', null, '🌱 Pick ONE source to build. '),
             'Not all 8. ONE. Sources of Strength research is clear: small, sustained moves to strengthen one or two protective factors build the whole structure over time. Trying to build all 8 at once is not how it works.'
           ),
 
           SOURCES.map(function(s) {
             var plan = (d.buildPlan || {})[s.id] || '';
-            return h('div', { key: s.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + s.color, marginBottom: 10 } },
+            return h('div', { key: s.id, style: { padding: 14, borderRadius: 10, background: _souBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + s.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
                 h('span', { style: { fontSize: 22 } }, s.icon),
                 h('span', { style: { fontSize: 14, fontWeight: 800, color: s.color } }, s.label)
               ),
-              h('div', { style: { padding: 10, borderRadius: 6, background: '#1e293b', marginBottom: 8, fontSize: 12, color: '#cbd5e1', lineHeight: 1.65, fontStyle: 'italic' } },
+              h('div', { style: { padding: 10, borderRadius: 6, background: _souBg('#1e293b'), marginBottom: 8, fontSize: 12, color: _souFg('#cbd5e1'), lineHeight: 1.65, fontStyle: 'italic' } },
                 h('strong', { style: { color: s.color } }, 'How to build this: '), s.ifLow
               ),
-              h('label', { htmlFor: 'sos-plan-' + s.id, style: { display: 'block', fontSize: 11, color: '#94a3b8', fontWeight: 700, marginBottom: 4 } }, 'My specific move (one small action I will take)'),
+              h('label', { htmlFor: 'sos-plan-' + s.id, style: { display: 'block', fontSize: 11, color: _souFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'My specific move (one small action I will take)'),
               h('textarea', { id: 'sos-plan-' + s.id, value: plan,
                 placeholder: 'e.g. "I will ask Coach if I can talk for 15 minutes after practice on Friday." Not vague; specific.',
                 onChange: function(e) { setPlan(s.id, e.target.value); },
-                style: { width: '100%', minHeight: 60, padding: 8, borderRadius: 6, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 13, fontFamily: 'inherit', lineHeight: 1.65, resize: 'vertical' } })
+                style: { width: '100%', minHeight: 60, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _souBg('#1e293b'), color: _souFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.65, resize: 'vertical' } })
             );
           }),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginTop: 14, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginTop: 14, fontSize: 12.5, color: _souFg('#fde68a'), lineHeight: 1.65 } },
             h('strong', null, '🎯 The key is follow-through. '),
             'A specific move you do beats a perfect plan you don\'t. Pick the smallest version of the move that you would actually do. If you commit to a 15-minute walk and do it, you have done MORE than committing to a "wellness routine" and doing nothing.'
           ),
@@ -336,17 +345,17 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
         var ratings = d.ratings || {};
         return h('div', null,
           h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: 'rgba(245,158,11,0.10)', borderRadius: 8, border: '1px solid rgba(245,158,11,0.3)' } },
-            h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: '#fde68a', lineHeight: 1.55 } },
+            h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _souFg('#fde68a'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print my Sources map. ')),
             h('button', { onClick: printNow, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)', color: _souFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('map'); }, 'aria-label': 'Back',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _souBg('#1e293b'), color: _souFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
             id: 'sos-print-region',
-            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: '#fff', color: '#0f172a', borderRadius: 8, border: '1px solid #cbd5e1', fontFamily: '"Helvetica Neue", Arial, sans-serif' }
+            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: _souBg('#fff'), color: _souFg('#0f172a'), borderRadius: 8, border: '1px solid #cbd5e1', fontFamily: '"Helvetica Neue", Arial, sans-serif' }
           },
             h('style', null,
               '@media print { body * { visibility: hidden !important; } ' +
@@ -357,26 +366,26 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
             ),
 
             h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid #d97706' } },
-              h('div', { style: { fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'Sources of Strength'),
+              h('div', { style: { fontSize: 10, color: _souFg('#64748b'), textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'Sources of Strength'),
               h('h1', { style: { margin: 0, fontSize: 22, fontWeight: 900 } }, 'My 8 sources of strength'),
-              d.lastUpdated ? h('div', { style: { fontSize: 12, color: '#475569', marginTop: 4 } }, 'Updated ' + d.lastUpdated) : null
+              d.lastUpdated ? h('div', { style: { fontSize: 12, color: _souFg('#475569'), marginTop: 4 } }, 'Updated ' + d.lastUpdated) : null
             ),
 
             SOURCES.map(function(s) {
               var v = ratings[s.id];
               var details = (d.details || {})[s.id] || {};
               var plan = (d.buildPlan || {})[s.id];
-              return h('div', { key: s.id, style: { marginBottom: 14, pageBreakInside: 'avoid', padding: 10, borderLeft: '3px solid ' + s.color, background: '#f8fafc' } },
+              return h('div', { key: s.id, style: { marginBottom: 14, pageBreakInside: 'avoid', padding: 10, borderLeft: '3px solid ' + s.color, background: _souBg('#f8fafc') } },
                 h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 } },
-                  h('strong', { style: { fontSize: 13, color: '#0f172a' } }, s.icon + ' ' + s.label),
-                  v ? h('span', { style: { fontSize: 13, fontWeight: 800, color: s.color } }, v + ' / 5') : h('span', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, '(not rated)')
+                  h('strong', { style: { fontSize: 13, color: _souFg('#0f172a') } }, s.icon + ' ' + s.label),
+                  v ? h('span', { style: { fontSize: 13, fontWeight: 800, color: s.color } }, v + ' / 5') : h('span', { style: { fontSize: 11, color: _souFg('#94a3b8'), fontStyle: 'italic' } }, '(not rated)')
                 ),
-                details.who ? h('div', { style: { fontSize: 12, color: '#0f172a', marginBottom: 4 } }, h('strong', null, 'Who/what: '), details.who) : null,
-                plan ? h('div', { style: { fontSize: 12, color: '#0f172a', fontStyle: 'italic' } }, h('strong', null, 'My move: '), plan) : null
+                details.who ? h('div', { style: { fontSize: 12, color: _souFg('#0f172a'), marginBottom: 4 } }, h('strong', null, 'Who/what: '), details.who) : null,
+                plan ? h('div', { style: { fontSize: 12, color: _souFg('#0f172a'), fontStyle: 'italic' } }, h('strong', null, 'My move: '), plan) : null
               );
             }),
 
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: '#94a3b8', textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _souFg('#94a3b8'), textAlign: 'center', lineHeight: 1.5 } },
               'Sources of Strength framework (Wyman et al., University of Rochester). ',
               'For acute crisis: 988 Suicide and Crisis Lifeline · 741741 Crisis Text Line (text HOME). ',
               'Created with AlloFlow SEL Hub.'
@@ -394,25 +403,25 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
         return h('div', null,
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('sourcesOfStrength', h, ctx) : null),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 16 } }, 'What Sources of Strength is'),
-            h('p', { style: { margin: '0 0 10px', color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.7 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: _souBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 10px', color: _souFg('#fcd34d'), fontSize: 16 } }, 'What Sources of Strength is'),
+            h('p', { style: { margin: '0 0 10px', color: _souFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
               'Sources of Strength is an upstream youth suicide prevention model developed at the University of Rochester (Peter Wyman, Mark LoMurray, and colleagues) starting in the 1990s. The premise: rather than waiting for a student to be in crisis and then intervening, build the eight protective factors that prevent crisis in the first place. The full program uses peer leaders (students trained to spread protective-factor messaging) plus adult advisors. This tool is the self-mapping version, designed for individual students or use in advisory.'
             ),
-            h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.7 } },
+            h('p', { style: { margin: 0, color: _souFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
               'Sources of Strength has been evaluated in randomized trials and has the strongest evidence base of any school-based youth suicide prevention program. The Wyman et al. (2010) trial in 18 New York high schools showed it changed student attitudes about seeking help, increased the likelihood that students reported referring a suicidal friend to an adult, and shifted school-wide norms.'
             )
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 16 } }, 'How this complements Crisis Companion'),
-            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: _souBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 10px', color: _souFg('#fcd34d'), fontSize: 16 } }, 'How this complements Crisis Companion'),
+            h('p', { style: { margin: 0, color: _souFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } },
               'Crisis Companion is for the moment of crisis: a student who is currently struggling, who needs to know what to do RIGHT NOW. Sources of Strength is the upstream side: building the protective factors that mean fewer students reach that moment in the first place. Schools that have both are doing the work on both sides. Use them together.'
             )
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 16 } }, '📚 Sources and learn more'),
+          h('div', { style: { padding: 16, borderRadius: 12, background: _souBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 10px', color: _souFg('#fcd34d'), fontSize: 16 } }, '📚 Sources and learn more'),
             sourceCard('Sources of Strength (official program)', 'sourcesofstrength.org', 'The official program. School-based training, peer leader curriculum, evidence base. Districts can contract for training.', 'https://sourcesofstrength.org/'),
             sourceCard('Wyman, P. A. et al. (2010)', '"An Outcome Evaluation of the Sources of Strength Suicide Prevention Program Delivered by Adolescent Peer Leaders in High Schools," American Journal of Public Health, 100(9), 1653-1661', 'Landmark RCT of the full program in 18 NY high schools.', null),
             sourceCard('AFSP (American Foundation for Suicide Prevention)', 'afsp.org', 'Major US suicide prevention organization. Resources for youth, schools, families.', 'https://afsp.org/'),
@@ -422,8 +431,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
           ),
 
           h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
-            h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
+            h('h3', { style: { margin: '0 0 10px', color: _souFg('#fcd34d'), fontSize: 15 } }, '⚖️ Honest limits'),
+            h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: _souFg('#fde68a'), fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'This tool is the SELF-MAPPING version of the framework. The full Sources of Strength program (with peer leaders, adult advisors, school-wide media campaigns) is far more powerful and is what has the strongest evidence base. If your school is interested, the official program (sourcesofstrength.org) offers training.'),
               h('li', null, 'Building protective factors is sustained work. It is not a 1-session intervention. The shift in protective factors is typically measured over months, not days.'),
               h('li', null, 'Some sources are structural — medical access, mental health access, family support, friend networks are all shaped by where you live, what your family\'s resources are, and who you can reach. Building them is not always about individual effort; sometimes the work is on the structure (school health centers, public mental health services).'),
@@ -432,7 +441,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', fontSize: 12.5, color: '#fde68a', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', fontSize: 12.5, color: _souFg('#fde68a'), lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'For schools serious about adolescent suicide prevention, the OFFICIAL Sources of Strength program is what has the evidence. It is a peer-leader model with adult advisors, school-wide media campaigns, and a multi-year structure. The investment is real but the outcomes are real. Districts can contract through sourcesofstrength.org. This SEL Hub tool is the self-mapping companion, useful between sessions or in advisory, NOT a replacement for the full program.'
           ),
@@ -442,13 +451,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
       }
 
       function sourceCard(authorYear, title, blurb, url) {
-        return h('div', { style: { padding: 10, borderRadius: 8, background: '#1e293b', border: '1px solid #334155', marginBottom: 8 } },
-          h('div', { style: { fontSize: 11, color: '#fcd34d', fontWeight: 700, marginBottom: 2 } }, authorYear),
+        return h('div', { style: { padding: 10, borderRadius: 8, background: _souBg('#1e293b'), border: '1px solid #334155', marginBottom: 8 } },
+          h('div', { style: { fontSize: 11, color: _souFg('#fcd34d'), fontWeight: 700, marginBottom: 2 } }, authorYear),
           url
             ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer',
-                style: { fontSize: 13, color: '#fde68a', fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
-            : h('div', { style: { fontSize: 13, color: '#fde68a', fontWeight: 700, marginBottom: 4 } }, title),
-          h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55 } }, blurb)
+                style: { fontSize: 13, color: _souFg('#fde68a'), fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
+            : h('div', { style: { fontSize: 13, color: _souFg('#fde68a'), fontWeight: 700, marginBottom: 4 } }, title),
+          h('div', { style: { fontSize: 12, color: _souFg('#cbd5e1'), lineHeight: 1.55 } }, blurb)
         );
       }
 

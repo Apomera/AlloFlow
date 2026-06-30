@@ -126,6 +126,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
     color: 'orange',
     category: 'self-regulation',
     render: function(ctx) {
+      // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
+      var _senT = (ctx && ctx.theme) || {};
+      var _senHC = !!_senT.isContrast, _senL = !_senHC && !_senT.isDark;
+      var _sen_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _sen_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#15803d':'#000000','#6366f1':'#000000','#fff':'#000000','#f8fafc':'#000000','#4f46e5':'#000000'};
+      var _sen_FGL = {'#cbd5e1':'#334155','#fdba74':'#9a3412','#94a3b8':'#64748b','#e2e8f0':'#1e293b','#fecaca':'#b91c1c','#fee2e2':'#991b1b','#a5b4fc':'#3730a3','#fca5a5':'#991b1b','#86efac':'#166534','#6ee7b7':'#065f46','#c7d2fe':'#312e81','#fcd34d':'#78350f','#fde68a':'#92400e'}, _sen_FGH = {'#cbd5e1':'#ffff00','#fdba74':'#ffff00','#94a3b8':'#ffff00','#fed7aa':'#ffff00','#e2e8f0':'#ffff00','#bbf7d0':'#ffff00','#dcfce7':'#ffff00','#fecaca':'#ffff00','#fee2e2':'#ffff00','#a5b4fc':'#ffff00','#fca5a5':'#ffff00','#86efac':'#ffff00','#6ee7b7':'#ffff00','#fff':'#ffff00','#c7d2fe':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
+      var _sen_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _sen_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#f97316':'#ffff00','#22c55e':'#ffff00','#6366f1':'#ffff00','#dc2626':'#ffff00','#10b981':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#ea580c':'#ffff00','#f59e0b':'#ffff00'};
+      var _senBg = function(h){ return _senHC ? (_sen_BGH[h]||h) : (_senL ? (_sen_BGL[h]||h) : h); };
+      var _senFg = function(h){ return _senHC ? (_sen_FGH[h]||h) : (_senL ? (_sen_FGL[h]||h) : h); };
+      var _senBd = function(h){ return _senHC ? (_sen_BDH[h]||h) : (_senL ? (_sen_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -149,10 +158,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: '#cbd5e1', fontSize: 14 } }, '← Back'),
+            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _senFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
-            h('h2', { style: { margin: 0, color: '#fdba74', fontSize: 22, fontWeight: 900 } }, '🌈 Sensory Regulation'),
-            h('div', { style: { fontSize: 12, color: '#94a3b8', marginTop: 4, lineHeight: 1.5 } }, 'Understanding your sensory processing. Identity-first, neurodiversity-affirming.')
+            h('h2', { style: { margin: 0, color: _senFg('#fdba74'), fontSize: 22, fontWeight: 900 } }, '🌈 Sensory Regulation'),
+            h('div', { style: { fontSize: 12, color: _senFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'Understanding your sensory processing. Identity-first, neurodiversity-affirming.')
           )
         );
       }
@@ -173,8 +182,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
             return h('button', { key: t.id, onClick: function() { goto(t.id); },
               role: 'tab', 'aria-selected': active,
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#f97316' : '#334155'),
-                background: active ? 'rgba(249,115,22,0.18)' : '#1e293b',
-                color: active ? '#fed7aa' : '#cbd5e1', cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                background: active ? 'rgba(249,115,22,0.18)' : _senBg('#1e293b'),
+                color: active ? _senFg('#fed7aa') : _senFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
         );
@@ -182,7 +191,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
 
       function softPointer() {
         return h('div', { className: 'no-print',
-          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: '#94a3b8', lineHeight: 1.5, fontStyle: 'italic' }
+          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _senFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
           'This is descriptive self-understanding, not diagnostic assessment. For formal sensory evaluation, an occupational therapist (OT) is the right professional. Crisis Text Line: text HOME to 741741.'
         );
@@ -194,36 +203,36 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
       function renderHome() {
         return h('div', null,
           h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(249,115,22,0.16) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(249,115,22,0.4)', marginBottom: 14 } },
-            h('div', { style: { fontSize: 22, fontWeight: 900, color: '#fed7aa', marginBottom: 4 } }, 'Sensory difference is identity, not deficit.'),
-            h('p', { style: { margin: '0 0 8px', color: '#cbd5e1', fontSize: 13.5, lineHeight: 1.7 } },
+            h('div', { style: { fontSize: 22, fontWeight: 900, color: _senFg('#fed7aa'), marginBottom: 4 } }, 'Sensory difference is identity, not deficit.'),
+            h('p', { style: { margin: '0 0 8px', color: _senFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.7 } },
               'Every brain processes sensory information differently. For some people, the differences are subtle. For autistic people, ADHD people, sensory processing disorder people, and many others, the differences are dramatic — and they shape every part of daily life: school, food, clothes, friendships, sleep, focus, regulation.'
             ),
-            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13.5, lineHeight: 1.7 } },
+            h('p', { style: { margin: 0, color: _senFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.7 } },
               'This tool helps you map your own sensory landscape so you can advocate for what you need, plan a sensory diet that regulates you, and understand WHY school sometimes feels impossible. It is descriptive (this is how I am), not pathological (something is wrong with me).'
             )
           ),
 
           // Seeker vs avoider basics
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f97316', marginBottom: 10 } },
-            h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fdba74', marginBottom: 10 } }, '🔍 The basic vocabulary'),
-            h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.85 } },
-              h('li', null, h('strong', { style: { color: '#fdba74' } }, 'Seeking'), ': you want MORE of this input. Heavy hugs. Loud music. Spicy food. Spinning. You feel BETTER when you get enough of it.'),
-              h('li', null, h('strong', { style: { color: '#fdba74' } }, 'Avoiding'), ': you want LESS of this input. Fluorescents hurt. Tags itch. Smells are too much. You shut down when you get too much.'),
-              h('li', null, h('strong', { style: { color: '#fdba74' } }, 'Mixed'), ': you seek some kinds and avoid others within the same system (loves heavy hugs, hates light touch).'),
-              h('li', null, h('strong', { style: { color: '#fdba74' } }, 'Most people'), ' are seekers in some systems and avoiders in others. There is no "right" profile.')
+          h('div', { style: { padding: 14, borderRadius: 10, background: _senBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f97316', marginBottom: 10 } },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: _senFg('#fdba74'), marginBottom: 10 } }, '🔍 The basic vocabulary'),
+            h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: _senFg('#e2e8f0'), fontSize: 13, lineHeight: 1.85 } },
+              h('li', null, h('strong', { style: { color: _senFg('#fdba74') } }, 'Seeking'), ': you want MORE of this input. Heavy hugs. Loud music. Spicy food. Spinning. You feel BETTER when you get enough of it.'),
+              h('li', null, h('strong', { style: { color: _senFg('#fdba74') } }, 'Avoiding'), ': you want LESS of this input. Fluorescents hurt. Tags itch. Smells are too much. You shut down when you get too much.'),
+              h('li', null, h('strong', { style: { color: _senFg('#fdba74') } }, 'Mixed'), ': you seek some kinds and avoid others within the same system (loves heavy hugs, hates light touch).'),
+              h('li', null, h('strong', { style: { color: _senFg('#fdba74') } }, 'Most people'), ' are seekers in some systems and avoiders in others. There is no "right" profile.')
             )
           ),
 
           // The 8 systems overview
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f97316', marginBottom: 14 } },
-            h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fdba74', marginBottom: 10 } }, '🧠 The 8 sensory systems'),
-            h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 10, lineHeight: 1.55, fontStyle: 'italic' } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _senBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f97316', marginBottom: 14 } },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: _senFg('#fdba74'), marginBottom: 10 } }, '🧠 The 8 sensory systems'),
+            h('div', { style: { fontSize: 12, color: _senFg('#94a3b8'), marginBottom: 10, lineHeight: 1.55, fontStyle: 'italic' } },
               'Most people know 5 senses. There are actually 8 sensory systems, and the three less-known ones (proprioceptive, vestibular, interoceptive) are often the most important for regulation.'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 6 } },
               SYSTEMS.map(function(s) {
-                return h('div', { key: s.id, style: { padding: 8, borderRadius: 6, background: '#1e293b', borderLeft: '2px solid ' + s.color } },
+                return h('div', { key: s.id, style: { padding: 8, borderRadius: 6, background: _senBg('#1e293b'), borderLeft: '2px solid ' + s.color } },
                   h('div', { style: { fontSize: 12.5, fontWeight: 700, color: s.color, marginBottom: 2 } }, s.icon + ' ' + s.label),
-                  h('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.5 } }, s.what)
+                  h('div', { style: { fontSize: 11, color: _senFg('#94a3b8'), lineHeight: 1.5 } }, s.what)
                 );
               })
             )
@@ -232,7 +241,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
           // Roadmap
           stepCard('🗺️ Build my sensory profile', 'Go through each of the 8 systems and mark whether you tend to seek, avoid, both, or fall in the typical range.', function() { goto('profile'); }, '#f97316'),
           stepCard('🥗 Plan a sensory diet', 'Sensory diet = planned regulating activities throughout the day. Especially helpful for autistic and ADHD people.', function() { goto('diet'); }, '#22c55e'),
-          stepCard('📝 Identify school accommodations', 'Concrete accommodations that follow from your sensory profile. Useful for IEP/504 meetings or for self-advocacy conversations.', function() { goto('accommodations'); }, '#6366f1'),
+          stepCard('📝 Identify school accommodations', 'Concrete accommodations that follow from your sensory profile. Useful for IEP/504 meetings or for self-advocacy conversations.', function() { goto('accommodations'); }, _senBg('#6366f1')),
 
           softPointer()
         );
@@ -240,9 +249,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
 
       function stepCard(title, blurb, onClick, color) {
         return h('button', { onClick: onClick, 'aria-label': title,
-          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: '#0f172a', cursor: 'pointer', marginBottom: 8, color: '#e2e8f0' } },
+          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: _senBg('#0f172a'), cursor: 'pointer', marginBottom: 8, color: _senFg('#e2e8f0') } },
           h('div', { style: { fontSize: 14, fontWeight: 800, color: color, marginBottom: 4 } }, title),
-          h('div', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.55 } }, blurb)
+          h('div', { style: { fontSize: 12, color: _senFg('#94a3b8'), lineHeight: 1.55 } }, blurb)
         );
       }
 
@@ -262,7 +271,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
         }
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(249,115,22,0.10)', borderTop: '1px solid rgba(249,115,22,0.3)', borderRight: '1px solid rgba(249,115,22,0.3)', borderBottom: '1px solid rgba(249,115,22,0.3)', borderLeft: '3px solid #f97316', marginBottom: 14, fontSize: 12.5, color: '#fed7aa', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(249,115,22,0.10)', borderTop: '1px solid rgba(249,115,22,0.3)', borderRight: '1px solid rgba(249,115,22,0.3)', borderBottom: '1px solid rgba(249,115,22,0.3)', borderLeft: '3px solid #f97316', marginBottom: 14, fontSize: 12.5, color: _senFg('#fed7aa'), lineHeight: 1.65 } },
             h('strong', null, '🗺️ Map your profile, one system at a time. '),
             'Don\'t overthink. Pick the answer that fits MOST of the time. You can add notes for the details.'
           ),
@@ -270,23 +279,23 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
           SYSTEMS.map(function(s) {
             var current = (d.profile || {})[s.id];
             var notes = (d.profileNotes || {})[s.id] || '';
-            return h('div', { key: s.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + s.color, marginBottom: 10 } },
+            return h('div', { key: s.id, style: { padding: 14, borderRadius: 10, background: _senBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + s.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
                 h('span', { style: { fontSize: 22 } }, s.icon),
                 h('span', { style: { fontSize: 14, fontWeight: 800, color: s.color } }, s.label)
               ),
-              h('div', { style: { fontSize: 11.5, color: '#94a3b8', marginBottom: 10, lineHeight: 1.55, fontStyle: 'italic' } }, s.what),
+              h('div', { style: { fontSize: 11.5, color: _senFg('#94a3b8'), marginBottom: 10, lineHeight: 1.55, fontStyle: 'italic' } }, s.what),
 
               // Seeker vs Avoider example panels
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 10 } },
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)' } },
-                  h('div', { style: { fontSize: 11, color: '#bbf7d0', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, '+ Seeking signs'),
-                  h('ul', { style: { margin: 0, padding: '0 0 0 18px', color: '#dcfce7', fontSize: 11.5, lineHeight: 1.6 } },
+                  h('div', { style: { fontSize: 11, color: _senFg('#bbf7d0'), fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, '+ Seeking signs'),
+                  h('ul', { style: { margin: 0, padding: '0 0 0 18px', color: _senFg('#dcfce7'), fontSize: 11.5, lineHeight: 1.6 } },
                     s.seeking.map(function(item, i) { return h('li', { key: i }, item); }))
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.3)' } },
-                  h('div', { style: { fontSize: 11, color: '#fecaca', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, '✕ Avoiding signs'),
-                  h('ul', { style: { margin: 0, padding: '0 0 0 18px', color: '#fee2e2', fontSize: 11.5, lineHeight: 1.6 } },
+                  h('div', { style: { fontSize: 11, color: _senFg('#fecaca'), fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, '✕ Avoiding signs'),
+                  h('ul', { style: { margin: 0, padding: '0 0 0 18px', color: _senFg('#fee2e2'), fontSize: 11.5, lineHeight: 1.6 } },
                     s.avoiding.map(function(item, i) { return h('li', { key: i }, item); }))
                 )
               ),
@@ -294,20 +303,20 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
               // Mode picker
               h('div', { style: { display: 'flex', gap: 4, marginBottom: 8, flexWrap: 'wrap' }, role: 'radiogroup', 'aria-label': s.label + ' profile' },
                 h('button', { onClick: function() { setSystem(s.id, 'seek'); }, role: 'radio', 'aria-checked': current === 'seek',
-                  style: { flex: 1, minWidth: 100, padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (current === 'seek' ? '#22c55e' : '#475569'), background: current === 'seek' ? 'rgba(34,197,94,0.18)' : 'transparent', color: current === 'seek' ? '#bbf7d0' : '#cbd5e1', cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '+ Seeker'),
+                  style: { flex: 1, minWidth: 100, padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (current === 'seek' ? '#22c55e' : _senFg('#475569')), background: current === 'seek' ? 'rgba(34,197,94,0.18)' : 'transparent', color: current === 'seek' ? _senFg('#bbf7d0') : _senFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '+ Seeker'),
                 h('button', { onClick: function() { setSystem(s.id, 'avoid'); }, role: 'radio', 'aria-checked': current === 'avoid',
-                  style: { flex: 1, minWidth: 100, padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (current === 'avoid' ? '#ef4444' : '#475569'), background: current === 'avoid' ? 'rgba(239,68,68,0.18)' : 'transparent', color: current === 'avoid' ? '#fecaca' : '#cbd5e1', cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '✕ Avoider'),
+                  style: { flex: 1, minWidth: 100, padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (current === 'avoid' ? '#ef4444' : _senFg('#475569')), background: current === 'avoid' ? 'rgba(239,68,68,0.18)' : 'transparent', color: current === 'avoid' ? _senFg('#fecaca') : _senFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '✕ Avoider'),
                 h('button', { onClick: function() { setSystem(s.id, 'mixed'); }, role: 'radio', 'aria-checked': current === 'mixed',
-                  style: { flex: 1, minWidth: 100, padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (current === 'mixed' ? '#a855f7' : '#475569'), background: current === 'mixed' ? 'rgba(168,85,247,0.18)' : 'transparent', color: current === 'mixed' ? '#e9d5ff' : '#cbd5e1', cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '↕ Mixed'),
+                  style: { flex: 1, minWidth: 100, padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (current === 'mixed' ? '#a855f7' : _senFg('#475569')), background: current === 'mixed' ? 'rgba(168,85,247,0.18)' : 'transparent', color: current === 'mixed' ? '#e9d5ff' : _senFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '↕ Mixed'),
                 h('button', { onClick: function() { setSystem(s.id, 'typical'); }, role: 'radio', 'aria-checked': current === 'typical',
-                  style: { flex: 1, minWidth: 100, padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (current === 'typical' ? '#94a3b8' : '#475569'), background: current === 'typical' ? '#475569' : 'transparent', color: '#cbd5e1', cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '~ Typical')
+                  style: { flex: 1, minWidth: 100, padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (current === 'typical' ? _senFg('#94a3b8') : _senFg('#475569')), background: current === 'typical' ? _senFg('#475569') : 'transparent', color: _senFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '~ Typical')
               ),
 
-              h('label', { htmlFor: 'sens-notes-' + s.id, style: { display: 'block', fontSize: 11, color: '#94a3b8', fontWeight: 700, marginBottom: 4 } }, 'My specific notes (optional)'),
+              h('label', { htmlFor: 'sens-notes-' + s.id, style: { display: 'block', fontSize: 11, color: _senFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'My specific notes (optional)'),
               h('textarea', { id: 'sens-notes-' + s.id, value: notes,
                 placeholder: 'Be specific. What helps, what hurts, what you need.',
                 onChange: function(e) { setNotes(s.id, e.target.value); },
-                style: { width: '100%', minHeight: 50, padding: 8, borderRadius: 6, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.6, resize: 'vertical' } })
+                style: { width: '100%', minHeight: 50, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _senBg('#1e293b'), color: _senFg('#e2e8f0'), fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.6, resize: 'vertical' } })
             );
           }),
 
@@ -338,69 +347,69 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
         var activities = d.regulatingActivities || [];
 
         return h('div', null,
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.10)', borderTop: '1px solid rgba(34,197,94,0.3)', borderRight: '1px solid rgba(34,197,94,0.3)', borderBottom: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 14, fontSize: 13, color: '#bbf7d0', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.10)', borderTop: '1px solid rgba(34,197,94,0.3)', borderRight: '1px solid rgba(34,197,94,0.3)', borderBottom: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 14, fontSize: 13, color: _senFg('#bbf7d0'), lineHeight: 1.7 } },
             h('strong', null, '🥗 A "sensory diet" '),
             'is a planned schedule of regulating sensory activities throughout the day — not food. The term was coined by OT Patricia Wilbarger. The idea: for many sensory-different people, regulation is not automatic. You PLAN regulating input the way some people plan meals.'
           ),
 
           // Suggestions by system based on profile
-          h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 10 } },
-            h('div', { style: { fontSize: 12, color: '#bbf7d0', fontWeight: 800, marginBottom: 8 } }, '💡 Common regulating activities by system'),
+          h('div', { style: { padding: 12, borderRadius: 10, background: _senBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 10 } },
+            h('div', { style: { fontSize: 12, color: _senFg('#bbf7d0'), fontWeight: 800, marginBottom: 8 } }, '💡 Common regulating activities by system'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 } },
-              h('div', { style: { padding: 8, borderRadius: 6, background: '#1e293b', borderLeft: '2px solid #6366f1' } },
-                h('div', { style: { fontSize: 12, color: '#a5b4fc', fontWeight: 700, marginBottom: 4 } }, '🤸 Proprioceptive (heavy work, calming)'),
-                h('div', { style: { fontSize: 11.5, color: '#e2e8f0', lineHeight: 1.6 } }, 'Pushing against a wall · carrying a heavy backpack · weighted blanket · deep pressure hugs · chewing gum · jumping · climbing')
+              h('div', { style: { padding: 8, borderRadius: 6, background: _senBg('#1e293b'), borderLeft: '2px solid #6366f1' } },
+                h('div', { style: { fontSize: 12, color: _senFg('#a5b4fc'), fontWeight: 700, marginBottom: 4 } }, '🤸 Proprioceptive (heavy work, calming)'),
+                h('div', { style: { fontSize: 11.5, color: _senFg('#e2e8f0'), lineHeight: 1.6 } }, 'Pushing against a wall · carrying a heavy backpack · weighted blanket · deep pressure hugs · chewing gum · jumping · climbing')
               ),
-              h('div', { style: { padding: 8, borderRadius: 6, background: '#1e293b', borderLeft: '2px solid #dc2626' } },
-                h('div', { style: { fontSize: 12, color: '#fca5a5', fontWeight: 700, marginBottom: 4 } }, '🎢 Vestibular (movement, alerting or calming)'),
-                h('div', { style: { fontSize: 11.5, color: '#e2e8f0', lineHeight: 1.6 } }, 'Swinging · spinning · rocking · jumping on a trampoline · doing a cartwheel · being upside down')
+              h('div', { style: { padding: 8, borderRadius: 6, background: _senBg('#1e293b'), borderLeft: '2px solid #dc2626' } },
+                h('div', { style: { fontSize: 12, color: _senFg('#fca5a5'), fontWeight: 700, marginBottom: 4 } }, '🎢 Vestibular (movement, alerting or calming)'),
+                h('div', { style: { fontSize: 11.5, color: _senFg('#e2e8f0'), lineHeight: 1.6 } }, 'Swinging · spinning · rocking · jumping on a trampoline · doing a cartwheel · being upside down')
               ),
-              h('div', { style: { padding: 8, borderRadius: 6, background: '#1e293b', borderLeft: '2px solid #22c55e' } },
-                h('div', { style: { fontSize: 12, color: '#86efac', fontWeight: 700, marginBottom: 4 } }, '✋ Tactile (calming if right kind)'),
-                h('div', { style: { fontSize: 11.5, color: '#e2e8f0', lineHeight: 1.6 } }, 'Fidget cube · stress ball · soft blanket · play-doh · sensory bins · warm bath · cool water on hands')
+              h('div', { style: { padding: 8, borderRadius: 6, background: _senBg('#1e293b'), borderLeft: '2px solid #22c55e' } },
+                h('div', { style: { fontSize: 12, color: _senFg('#86efac'), fontWeight: 700, marginBottom: 4 } }, '✋ Tactile (calming if right kind)'),
+                h('div', { style: { fontSize: 11.5, color: _senFg('#e2e8f0'), lineHeight: 1.6 } }, 'Fidget cube · stress ball · soft blanket · play-doh · sensory bins · warm bath · cool water on hands')
               ),
-              h('div', { style: { padding: 8, borderRadius: 6, background: '#1e293b', borderLeft: '2px solid #10b981' } },
-                h('div', { style: { fontSize: 12, color: '#6ee7b7', fontWeight: 700, marginBottom: 4 } }, '🫀 Interoceptive (body-awareness)'),
-                h('div', { style: { fontSize: 11.5, color: '#e2e8f0', lineHeight: 1.6 } }, 'Set water/food alarms · paced breathing · body scan · scheduled bathroom breaks · check in on physical state on the hour')
+              h('div', { style: { padding: 8, borderRadius: 6, background: _senBg('#1e293b'), borderLeft: '2px solid #10b981' } },
+                h('div', { style: { fontSize: 12, color: _senFg('#6ee7b7'), fontWeight: 700, marginBottom: 4 } }, '🫀 Interoceptive (body-awareness)'),
+                h('div', { style: { fontSize: 11.5, color: _senFg('#e2e8f0'), lineHeight: 1.6 } }, 'Set water/food alarms · paced breathing · body scan · scheduled bathroom breaks · check in on physical state on the hour')
               )
             )
           ),
 
           // Add activity
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
-            h('div', { style: { fontSize: 13, fontWeight: 800, color: '#bbf7d0', marginBottom: 10 } }, '+ Add a regulating activity to my plan'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: _senBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: _senFg('#bbf7d0'), marginBottom: 10 } }, '+ Add a regulating activity to my plan'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 8 } },
               h('div', null,
-                h('label', { htmlFor: 'sens-act-label', style: { display: 'block', fontSize: 11, color: '#94a3b8', fontWeight: 700, marginBottom: 2 } }, 'What'),
+                h('label', { htmlFor: 'sens-act-label', style: { display: 'block', fontSize: 11, color: _senFg('#94a3b8'), fontWeight: 700, marginBottom: 2 } }, 'What'),
                 h('input', { id: 'sens-act-label', type: 'text', placeholder: 'e.g. Push against wall for 30 sec',
-                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 13 } })
+                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', background: _senBg('#1e293b'), color: _senFg('#e2e8f0'), fontSize: 13 } })
               ),
               h('div', null,
-                h('label', { htmlFor: 'sens-act-system', style: { display: 'block', fontSize: 11, color: '#94a3b8', fontWeight: 700, marginBottom: 2 } }, 'System'),
+                h('label', { htmlFor: 'sens-act-system', style: { display: 'block', fontSize: 11, color: _senFg('#94a3b8'), fontWeight: 700, marginBottom: 2 } }, 'System'),
                 h('select', { id: 'sens-act-system',
-                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 13 } },
+                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', background: _senBg('#1e293b'), color: _senFg('#e2e8f0'), fontSize: 13 } },
                   SYSTEMS.map(function(s) { return h('option', { key: s.id, value: s.id }, s.icon + ' ' + s.label); }))
               ),
               h('div', null,
-                h('label', { htmlFor: 'sens-act-when', style: { display: 'block', fontSize: 11, color: '#94a3b8', fontWeight: 700, marginBottom: 2 } }, 'When'),
+                h('label', { htmlFor: 'sens-act-when', style: { display: 'block', fontSize: 11, color: _senFg('#94a3b8'), fontWeight: 700, marginBottom: 2 } }, 'When'),
                 h('input', { id: 'sens-act-when', type: 'text', placeholder: 'e.g. Between classes',
-                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 13 } })
+                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', background: _senBg('#1e293b'), color: _senFg('#e2e8f0'), fontSize: 13 } })
               )
             ),
             h('button', { onClick: addActivity, 'aria-label': 'Add to sensory diet',
-              style: { padding: '8px 16px', borderRadius: 6, border: 'none', cursor: 'pointer', background: '#15803d', color: '#fff', fontWeight: 700, fontSize: 13 } }, '+ Add')
+              style: { padding: '8px 16px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _senBg('#15803d'), color: _senFg('#fff'), fontWeight: 700, fontSize: 13 } }, '+ Add')
           ),
 
-          activities.length > 0 ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b' } },
-            h('div', { style: { fontSize: 12, color: '#bbf7d0', fontWeight: 800, marginBottom: 8 } }, 'My sensory diet (' + activities.length + ')'),
+          activities.length > 0 ? h('div', { style: { padding: 12, borderRadius: 10, background: _senBg('#0f172a'), border: '1px solid #1e293b' } },
+            h('div', { style: { fontSize: 12, color: _senFg('#bbf7d0'), fontWeight: 800, marginBottom: 8 } }, 'My sensory diet (' + activities.length + ')'),
             activities.map(function(a, i) {
               var sys = SYSTEMS.find(function(s) { return s.id === a.system; });
-              return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: '#1e293b', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8, borderLeft: '3px solid ' + (sys ? sys.color : '#64748b') } },
+              return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: _senBg('#1e293b'), marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8, borderLeft: '3px solid ' + (sys ? sys.color : _senFg('#64748b')) } },
                 h('span', { style: { fontSize: 16 } }, sys ? sys.icon : '◆'),
-                h('span', { style: { flex: 1, fontSize: 13, color: '#e2e8f0' } }, a.label,
-                  h('span', { style: { fontSize: 11, color: '#94a3b8', marginLeft: 6 } }, '· ' + a.when)),
+                h('span', { style: { flex: 1, fontSize: 13, color: _senFg('#e2e8f0') } }, a.label,
+                  h('span', { style: { fontSize: 11, color: _senFg('#94a3b8'), marginLeft: 6 } }, '· ' + a.when)),
                 h('button', { onClick: function() { removeActivity(i); }, 'aria-label': 'Remove activity',
-                  style: { background: 'transparent', border: '1px solid #475569', color: '#94a3b8', borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')
+                  style: { background: 'transparent', border: '1px solid #475569', color: _senFg('#94a3b8'), borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')
               );
             })
           ) : null,
@@ -432,44 +441,44 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
         }
 
         return h('div', null,
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(99,102,241,0.10)', borderTop: '1px solid rgba(99,102,241,0.3)', borderRight: '1px solid rgba(99,102,241,0.3)', borderBottom: '1px solid rgba(99,102,241,0.3)', borderLeft: '3px solid #6366f1', marginBottom: 14, fontSize: 13, color: '#c7d2fe', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(99,102,241,0.10)', borderTop: '1px solid rgba(99,102,241,0.3)', borderRight: '1px solid rgba(99,102,241,0.3)', borderBottom: '1px solid rgba(99,102,241,0.3)', borderLeft: '3px solid #6366f1', marginBottom: 14, fontSize: 13, color: _senFg('#c7d2fe'), lineHeight: 1.7 } },
             h('strong', null, '📝 Concrete accommodations '),
             'follow from your sensory profile. Build this list before your next IEP meeting, 504 conversation, or self-advocacy chat with a teacher. The Self-Advocacy and DEAR MAN tools in this SEL Hub help you actually ASK for these.'
           ),
 
           // Selected accommodations
-          (d.myAccommodations || []).length > 0 ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #6366f1', marginBottom: 10 } },
-            h('div', { style: { fontSize: 12, color: '#c7d2fe', fontWeight: 800, marginBottom: 8 } }, 'My accommodations list (' + d.myAccommodations.length + ')'),
+          (d.myAccommodations || []).length > 0 ? h('div', { style: { padding: 12, borderRadius: 10, background: _senBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #6366f1', marginBottom: 10 } },
+            h('div', { style: { fontSize: 12, color: _senFg('#c7d2fe'), fontWeight: 800, marginBottom: 8 } }, 'My accommodations list (' + d.myAccommodations.length + ')'),
             d.myAccommodations.map(function(a, i) {
-              return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: '#1e293b', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 } },
-                h('span', { style: { flex: 1, fontSize: 13, color: '#e2e8f0' } }, '✓ ' + a),
+              return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: _senBg('#1e293b'), marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 } },
+                h('span', { style: { flex: 1, fontSize: 13, color: _senFg('#e2e8f0') } }, '✓ ' + a),
                 h('button', { onClick: function() { removeAccommodation(i); }, 'aria-label': 'Remove accommodation',
-                  style: { background: 'transparent', border: '1px solid #475569', color: '#94a3b8', borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')
+                  style: { background: 'transparent', border: '1px solid #475569', color: _senFg('#94a3b8'), borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')
               );
             })
           ) : null,
 
           // Add
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #6366f1', marginBottom: 10 } },
-            h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c7d2fe', marginBottom: 8 } }, '+ Add an accommodation'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: _senBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #6366f1', marginBottom: 10 } },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: _senFg('#c7d2fe'), marginBottom: 8 } }, '+ Add an accommodation'),
             h('div', { style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
               h('label', { htmlFor: 'sens-acc-input', className: 'sr-only', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 } }, 'Add accommodation'),
               h('input', { id: 'sens-acc-input', type: 'text', placeholder: 'A specific accommodation you need',
                 onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); submitInput(); } },
-                style: { flex: 1, minWidth: 200, padding: 8, borderRadius: 6, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 13 } }),
+                style: { flex: 1, minWidth: 200, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _senBg('#1e293b'), color: _senFg('#e2e8f0'), fontSize: 13 } }),
               h('button', { onClick: submitInput, 'aria-label': 'Add',
-                style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: '#6366f1', color: '#fff', fontWeight: 700, fontSize: 12 } }, '+ Add')
+                style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _senBg('#6366f1'), color: _senFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
             )
           ),
 
           // Starters
-          h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b' } },
-            h('div', { style: { fontSize: 12, color: '#94a3b8', fontWeight: 700, marginBottom: 10 } }, 'Common school accommodations (tap to add)'),
+          h('div', { style: { padding: 12, borderRadius: 10, background: _senBg('#0f172a'), border: '1px solid #1e293b' } },
+            h('div', { style: { fontSize: 12, color: _senFg('#94a3b8'), fontWeight: 700, marginBottom: 10 } }, 'Common school accommodations (tap to add)'),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
               ACCOMMODATION_STARTERS.map(function(a, i) {
                 var already = (d.myAccommodations || []).indexOf(a) !== -1;
                 return h('button', { key: i, onClick: function() { addAccommodation(a); }, disabled: already, 'aria-label': 'Add: ' + a,
-                  style: { padding: '4px 10px', borderRadius: 14, border: '1px solid #6366f166', background: already ? '#1e293b' : 'rgba(15,23,42,0.6)', color: already ? '#64748b' : '#cbd5e1', cursor: already ? 'not-allowed' : 'pointer', fontSize: 11, opacity: already ? 0.5 : 1 } },
+                  style: { padding: '4px 10px', borderRadius: 14, border: '1px solid #6366f166', background: already ? _senBg('#1e293b') : 'rgba(15,23,42,0.6)', color: already ? _senFg('#64748b') : _senFg('#cbd5e1'), cursor: already ? 'not-allowed' : 'pointer', fontSize: 11, opacity: already ? 0.5 : 1 } },
                   (already ? '✓ ' : '+ ') + a);
               })
             )
@@ -485,19 +494,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
       function renderPrintView() {
         return h('div', null,
           h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: 'rgba(249,115,22,0.10)', borderRadius: 8, border: '1px solid rgba(249,115,22,0.3)' } },
-            h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: '#fed7aa', lineHeight: 1.55 } },
+            h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _senFg('#fed7aa'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print my sensory profile + accommodations. '),
               'Useful for IEP/504 meetings or self-advocacy conversations.'
             ),
             h('button', { onClick: printNow, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #ea580c 0%, #f97316 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #ea580c 0%, #f97316 100%)', color: _senFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('home'); }, 'aria-label': 'Back',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _senBg('#1e293b'), color: _senFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
             id: 'sens-print-region',
-            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: '#fff', color: '#0f172a', borderRadius: 8, border: '1px solid #cbd5e1', fontFamily: '"Helvetica Neue", Arial, sans-serif' }
+            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: _senBg('#fff'), color: _senFg('#0f172a'), borderRadius: 8, border: '1px solid #cbd5e1', fontFamily: '"Helvetica Neue", Arial, sans-serif' }
           },
             h('style', null,
               '@media print { body * { visibility: hidden !important; } ' +
@@ -508,9 +517,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
             ),
 
             h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid #ea580c' } },
-              h('div', { style: { fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'Sensory Profile + Accommodations'),
+              h('div', { style: { fontSize: 10, color: _senFg('#64748b'), textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'Sensory Profile + Accommodations'),
               h('h1', { style: { margin: 0, fontSize: 22, fontWeight: 900 } }, 'My sensory profile'),
-              d.lastUpdated ? h('div', { style: { fontSize: 12, color: '#475569', marginTop: 4 } }, 'Updated ' + d.lastUpdated) : null
+              d.lastUpdated ? h('div', { style: { fontSize: 12, color: _senFg('#475569'), marginTop: 4 } }, 'Updated ' + d.lastUpdated) : null
             ),
 
             // Profile by system
@@ -519,27 +528,27 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
               var notes = (d.profileNotes || {})[s.id];
               if (!prof) return null;
               var profLabel = prof === 'seek' ? 'Seeker' : prof === 'avoid' ? 'Avoider' : prof === 'mixed' ? 'Mixed' : 'Typical';
-              return h('div', { key: s.id, style: { marginBottom: 12, pageBreakInside: 'avoid', padding: 10, borderLeft: '3px solid ' + s.color, background: '#f8fafc' } },
+              return h('div', { key: s.id, style: { marginBottom: 12, pageBreakInside: 'avoid', padding: 10, borderLeft: '3px solid ' + s.color, background: _senBg('#f8fafc') } },
                 h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 } },
-                  h('strong', { style: { fontSize: 13, color: '#0f172a' } }, s.icon + ' ' + s.label),
+                  h('strong', { style: { fontSize: 13, color: _senFg('#0f172a') } }, s.icon + ' ' + s.label),
                   h('span', { style: { fontSize: 12, fontWeight: 800, color: s.color } }, profLabel)
                 ),
-                notes ? h('div', { style: { fontSize: 12, color: '#0f172a', fontStyle: 'italic', lineHeight: 1.6 } }, notes) : null
+                notes ? h('div', { style: { fontSize: 12, color: _senFg('#0f172a'), fontStyle: 'italic', lineHeight: 1.6 } }, notes) : null
               );
             }),
 
             // Accommodations
             (d.myAccommodations || []).length > 0 ? h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
-              h('div', { style: { background: '#4f46e5', color: '#fff', padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '📝 Accommodations I need'),
-              h('ul', { style: { margin: 0, padding: '0 0 0 24px', color: '#0f172a', fontSize: 13, lineHeight: 1.85 } },
+              h('div', { style: { background: _senBg('#4f46e5'), color: _senFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '📝 Accommodations I need'),
+              h('ul', { style: { margin: 0, padding: '0 0 0 24px', color: _senFg('#0f172a'), fontSize: 13, lineHeight: 1.85 } },
                 d.myAccommodations.map(function(a, i) { return h('li', { key: i }, a); })
               )
             ) : null,
 
             // Sensory diet
             (d.regulatingActivities || []).length > 0 ? h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
-              h('div', { style: { background: '#15803d', color: '#fff', padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '🥗 My sensory diet'),
-              h('ul', { style: { margin: 0, padding: '0 0 0 24px', color: '#0f172a', fontSize: 13, lineHeight: 1.85 } },
+              h('div', { style: { background: _senBg('#15803d'), color: _senFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '🥗 My sensory diet'),
+              h('ul', { style: { margin: 0, padding: '0 0 0 24px', color: _senFg('#0f172a'), fontSize: 13, lineHeight: 1.85 } },
                 d.regulatingActivities.map(function(a, i) {
                   var sys = SYSTEMS.find(function(s) { return s.id === a.system; });
                   return h('li', { key: i }, a.label + (a.when ? ' (' + a.when + ')' : '') + (sys ? ' — ' + sys.label : ''));
@@ -547,7 +556,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
               )
             ) : null,
 
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: '#94a3b8', textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _senFg('#94a3b8'), textAlign: 'center', lineHeight: 1.5 } },
               'Sensory framework: Ayres (1972), Dunn (1997). For formal sensory evaluation, see an occupational therapist (OT). ',
               'Created with AlloFlow SEL Hub.'
             )
@@ -564,25 +573,25 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
         return h('div', null,
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('sensoryRegulation', h, ctx) : null),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#fdba74', fontSize: 16 } }, 'What this tool is'),
-            h('p', { style: { margin: '0 0 10px', color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.7 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: _senBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 10px', color: _senFg('#fdba74'), fontSize: 16 } }, 'What this tool is'),
+            h('p', { style: { margin: '0 0 10px', color: _senFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
               'A descriptive tool for mapping your own sensory processing. It is NOT a diagnostic instrument; it is a structured way to put words to experiences that many sensory-different people have always had but never had vocabulary for. The hope is that naming the pattern lets you advocate for what you need, plan a sensory diet that regulates you, and stop blaming yourself for the things that overwhelm you.'
             ),
-            h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.7 } },
+            h('p', { style: { margin: 0, color: _senFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
               'This tool deliberately uses identity-first language ("autistic peer," not "peer with autism") because that is what most autistic adults prefer (Kenny et al. 2016; Bury et al. 2020). When students or families have a different preference, honor it; when you do not know, identity-first is the more autistic-affirming default.'
             )
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#fdba74', fontSize: 16 } }, 'Where the framework comes from'),
-            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: _senBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 10px', color: _senFg('#fdba74'), fontSize: 16 } }, 'Where the framework comes from'),
+            h('p', { style: { margin: 0, color: _senFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } },
               'The 8-systems sensory model comes from occupational therapy, originally A. Jean Ayres\' work in the 1960s-70s on Sensory Integration. Winnie Dunn formalized the seeker/avoider/sensitive/registration model in the 1990s. The neurodiversity movement (Judy Singer, Nick Walker, others) has reframed these differences as identity rather than disorder. Autistic-led scholars like Olga Bogdashina, Judy Endow, and Damian Milton have deepened the conversation: sensory difference is real and shapes life, AND the disabling part is usually the environment\'s failure to accommodate, not the sensory profile itself.'
             )
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#fdba74', fontSize: 16 } }, '📚 Sources and learn more'),
+          h('div', { style: { padding: 16, borderRadius: 12, background: _senBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 10px', color: _senFg('#fdba74'), fontSize: 16 } }, '📚 Sources and learn more'),
             sourceCard('Ayres, A. J. (1972)', 'Sensory Integration and Learning Disorders, Western Psychological Services', 'Foundational text. Established the field of sensory integration therapy in OT.', null),
             sourceCard('Dunn, W. (2007)', '"Supporting Children to Participate Successfully in Everyday Life by Using Sensory Processing Knowledge," Infants & Young Children, 20(2)', 'Dunn\'s framework: seeker, avoider, sensitive, registration.', null),
             sourceCard('Bogdashina, O. (2016)', 'Sensory Perceptual Issues in Autism and Asperger Syndrome (2nd ed.), Jessica Kingsley', 'Autistic-led scholarship on sensory differences. Highly recommended.', null),
@@ -593,8 +602,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
           ),
 
           h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
-            h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
+            h('h3', { style: { margin: '0 0 10px', color: _senFg('#fcd34d'), fontSize: 15 } }, '⚖️ Honest limits'),
+            h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: _senFg('#fde68a'), fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'Sensory Processing Disorder (SPD) as a standalone diagnosis is contested. It is in the OT framework but not in the DSM-5. This does not mean sensory differences are not real; it means clinical categories are still being worked out.'),
               h('li', null, 'Sensory differences exist across many neurotypes, not just autism. ADHD people, traumatized people, anxious people, and many "neurotypical" people have sensory profiles. This tool is useful for anyone.'),
               h('li', null, 'A formal sensory evaluation by an OT is the right next step if you want to pursue clinical accommodations (in an IEP, 504, or workplace). This self-tool is a starting point.'),
@@ -603,7 +612,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(249,115,22,0.10)', borderTop: '1px solid rgba(249,115,22,0.3)', borderRight: '1px solid rgba(249,115,22,0.3)', borderBottom: '1px solid rgba(249,115,22,0.3)', borderLeft: '3px solid #f97316', fontSize: 12.5, color: '#fed7aa', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(249,115,22,0.10)', borderTop: '1px solid rgba(249,115,22,0.3)', borderRight: '1px solid rgba(249,115,22,0.3)', borderBottom: '1px solid rgba(249,115,22,0.3)', borderLeft: '3px solid #f97316', fontSize: 12.5, color: _senFg('#fed7aa'), lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'Pair with Self-Advocacy and One-Page Profile for the IEP / 504 use case. For a class introduction (not a screening), simply teaching the 8 systems and the seeker/avoider vocabulary is enormously useful — many students discover language for experiences they have always had. Listen to autistic-led voices on what affirming practice looks like; ASAN is the best entry point.'
           ),
@@ -613,13 +622,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
       }
 
       function sourceCard(authorYear, title, blurb, url) {
-        return h('div', { style: { padding: 10, borderRadius: 8, background: '#1e293b', border: '1px solid #334155', marginBottom: 8 } },
-          h('div', { style: { fontSize: 11, color: '#fdba74', fontWeight: 700, marginBottom: 2 } }, authorYear),
+        return h('div', { style: { padding: 10, borderRadius: 8, background: _senBg('#1e293b'), border: '1px solid #334155', marginBottom: 8 } },
+          h('div', { style: { fontSize: 11, color: _senFg('#fdba74'), fontWeight: 700, marginBottom: 2 } }, authorYear),
           url
             ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer',
-                style: { fontSize: 13, color: '#fed7aa', fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
-            : h('div', { style: { fontSize: 13, color: '#fed7aa', fontWeight: 700, marginBottom: 4 } }, title),
-          h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55 } }, blurb)
+                style: { fontSize: 13, color: _senFg('#fed7aa'), fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
+            : h('div', { style: { fontSize: 13, color: _senFg('#fed7aa'), fontWeight: 700, marginBottom: 4 } }, title),
+          h('div', { style: { fontSize: 12, color: _senFg('#cbd5e1'), lineHeight: 1.55 } }, blurb)
         );
       }
 

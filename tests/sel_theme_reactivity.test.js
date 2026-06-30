@@ -59,6 +59,18 @@ const CASES = [
   { id: 'traumapsychoed', base: 'dark', bg: '_traBg', reg: 'traumaPsychoed' },
   { id: 'identitysupport', base: 'dark', bg: '_ideBg', reg: 'identitySupport' },
   { id: 'circlesofsupport', base: 'dark', bg: '_cirBg', reg: 'circlesOfSupport' },
+  { id: 'safety', base: 'dark', bg: '_safBg' },
+  { id: 'sourcesofstrength', base: 'dark', bg: '_souBg', reg: 'sourcesOfStrength' },
+  { id: 'substancepsychoed', base: 'dark', bg: '_subBg', reg: 'substancePsychoed' },
+  { id: 'sensoryregulation', base: 'dark', bg: '_senBg', reg: 'sensoryRegulation' },
+  { id: 'careconstellations', base: 'dark', bg: '_cnsBg', reg: 'careConstellations' },
+  { id: 'behavioralactivation', base: 'dark', bg: '_beaBg', reg: 'behavioralActivation' },
+  { id: 'healthyrelationships', base: 'dark', bg: '_hreBg', reg: 'healthyRelationships' },
+  { id: 'valuescommittedaction', base: 'dark', bg: '_vcaBg', reg: 'valuesCommittedAction' },
+  { id: 'motivationalinterviewing', base: 'dark', bg: '_moiBg', reg: 'motivationalInterviewing' },
+  { id: 'anxietytoolkit', base: 'dark', bg: '_anxBg', reg: 'anxietyToolkit' },
+  { id: 'costbenefit', base: 'dark', bg: '_cobBg', reg: 'costBenefit' },
+  { id: 'bigfeelings', base: 'dark', bg: '_bigBg', reg: 'bigFeelings' },
 ];
 
 // dark SURFACE hexes that, in a dark-base tool, MUST be wrapped in _xxBg() (else they stay dark
