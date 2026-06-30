@@ -32,6 +32,8 @@ const CASES = [
   { id: 'transitions',    helper: '_trC' },
   { id: 'sociallab',      helper: '_slC' },
   { id: 'execfunction',   helper: '_efC' },
+  { id: 'digitalwellbeing', helper: '_dwC', reg: 'digitalWellbeing' }, // registers camelCase
+  { id: 'upstander',      helper: '_upC' },
 ];
 
 // Tinted light SURFACE hexes that, if present in a migrated tool's render body, MUST be
@@ -92,23 +94,24 @@ beforeAll(() => {
 
 describe.skipIf(!depsOk)('SEL Hub · tools render differently per ctx.theme (reactivity)', () => {
   for (const c of CASES) {
+    const rid = c.reg || c.id; // registry id (camelCase for some) vs c.id (filename stem)
     describe(c.id, () => {
       it('registers and renders', () => {
-        expect(typeof window.SelHub._registry[c.id]?.render).toBe('function');
-        expect(render(c.id, {}).length).toBeGreaterThan(500);
+        expect(typeof window.SelHub._registry[rid]?.render).toBe('function');
+        expect(render(rid, {}).length).toBeGreaterThan(500);
       });
 
       it('light / dark / high-contrast produce three different renders', () => {
-        const light = render(c.id, {});
-        const dark = render(c.id, { isDark: true });
-        const hc = render(c.id, { isContrast: true });
+        const light = render(rid, {});
+        const dark = render(rid, { isDark: true });
+        const hc = render(rid, { isContrast: true });
         expect(light, `${c.id}: light vs dark identical → tool ignores ctx.theme`).not.toBe(dark);
         expect(dark, `${c.id}: dark vs high-contrast identical`).not.toBe(hc);
         expect(light).not.toBe(hc);
       });
 
       it('high-contrast engages the WCAG yellow/black scheme', () => {
-        const hc = render(c.id, { isContrast: true });
+        const hc = render(rid, { isContrast: true });
         expect(hc).toContain('#000000');
         expect(hc).toContain('#ffff00');
       });

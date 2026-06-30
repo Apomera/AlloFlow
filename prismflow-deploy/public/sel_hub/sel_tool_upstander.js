@@ -16787,6 +16787,12 @@ window.SelHub = window.SelHub || {
     color: 'blue',
     category: 'social-awareness',
     render: function(ctx) {
+      // ── Host theme remap (consumes ctx.theme) — canonical SEL light-base pattern ──
+      var _upCTheme = (ctx && ctx.theme) || {};
+      var _upCHC = !!_upCTheme.isContrast, _upCDark = !_upCHC && !!_upCTheme.isDark;
+      var _UPC_DARK = {'#fff':'#1e293b','#f8fafc':'#0f172a','#fafafa':'#1e293b','#f1f5f9':'#1e293b','#fef3c7':'#3a2e12','#fffbeb':'#2e2410','#fef9c3':'#3a3410','#fefce8':'#2e2a10','#fff7ed':'#2e2410','#fef2f2':'#2e1414','#fee2e2':'#3a1a1a','#fff1f2':'#2e1418','#f0fdf4':'#0b2e22','#ecfdf5':'#0e3326','#eff6ff':'#0e1f3a','#dbeafe':'#16315e','#f0f9ff':'#0c2840','#faf5ff':'#2e1b4d','#ede9fe':'#2a1a45','#f3e8ff':'#2e1b4d','#fdf4ff':'#2e1b4d','#0f172a':'#f1f5f9','#1f2937':'#e2e8f0','#334155':'#cbd5e1','#374151':'#cbd5e1','#475569':'#cbd5e1','#64748b':'#94a3b8','#94a3b8':'#94a3b8','#e5e7eb':'#334155','#e2e8f0':'#334155','#d1d5db':'#475569','#cbd5e1':'#475569','#92400e':'#fde68a','#78350f':'#fcd34d','#854d0e':'#fde68a','#a16207':'#fde047','#991b1b':'#fca5a5','#dc2626':'#f87171','#166534':'#86efac','#1e3a8a':'#93c5fd','#1e40af':'#93c5fd','#1d4ed8':'#93c5fd','#6b21a8':'#d8b4fe','#ecfeff':'#0c2e30','#0e7490':'#67e8f9','#9d174d':'#fbcfe8','#9a3412':'#fdba74'};
+      var _UPC_HC = {'#fff':'#000000','#f8fafc':'#000000','#fafafa':'#000000','#f1f5f9':'#000000','#fef3c7':'#000000','#fffbeb':'#000000','#fef9c3':'#000000','#fefce8':'#000000','#fff7ed':'#000000','#fef2f2':'#000000','#fee2e2':'#000000','#fff1f2':'#000000','#f0fdf4':'#000000','#ecfdf5':'#000000','#eff6ff':'#000000','#dbeafe':'#000000','#f0f9ff':'#000000','#faf5ff':'#000000','#ede9fe':'#000000','#f3e8ff':'#000000','#fdf4ff':'#000000','#0f172a':'#ffff00','#1f2937':'#ffff00','#334155':'#ffff00','#374151':'#ffff00','#475569':'#ffff00','#64748b':'#ffff00','#94a3b8':'#ffff00','#e5e7eb':'#ffff00','#e2e8f0':'#ffff00','#d1d5db':'#ffff00','#cbd5e1':'#ffff00','#92400e':'#ffff00','#78350f':'#ffff00','#854d0e':'#ffff00','#a16207':'#ffff00','#991b1b':'#ffff00','#dc2626':'#ffff00','#166534':'#ffff00','#1e3a8a':'#ffff00','#1e40af':'#ffff00','#1d4ed8':'#ffff00','#6b21a8':'#ffff00','#ecfeff':'#000000','#0e7490':'#ffff00','#9d174d':'#ffff00','#9a3412':'#ffff00'};
+      var _upC = function(hex){ return _upCHC ? (_UPC_HC[hex]||hex) : (_upCDark ? (_UPC_DARK[hex]||hex) : hex); };
       var React = ctx.React;
       var h = React.createElement;
       var addToast = ctx.addToast;
@@ -16917,7 +16923,7 @@ window.SelHub = window.SelHub || {
       var refSection  = d.refSection || 'sources';
       var refExpanded = d.refExpanded || null;
 
-      var BLUE = '#2563eb'; var BL = '#eff6ff'; var BD = '#1e3a8a';
+      var BLUE = '#2563eb'; var BL = _upC('#eff6ff'); var BD = _upC('#1e3a8a');
 
       var TABS = [
         { id: 'roles',    icon: '\uD83D\uDC65',  label: 'Three Roles' },
@@ -16936,7 +16942,7 @@ window.SelHub = window.SelHub || {
       var tabBar = h('div', {
         style: { display: 'flex', flexDirection: 'column', borderBottom: '2px solid #bfdbfe', background: 'linear-gradient(180deg, #eff6ff, #dbeafe)', flexShrink: 0 }
       },
-        h('div', { style: { height: '3px', background: '#e2e8f0', position: 'relative', overflow: 'hidden' } },
+        h('div', { style: { height: '3px', background: _upC('#e2e8f0'), position: 'relative', overflow: 'hidden' } },
           h('div', { style: { height: '100%', width: Math.round((exploredCount / TABS.length) * 100) + '%', background: 'linear-gradient(90deg, ' + BLUE + ', #3b82f6)', transition: 'width 0.5s ease', borderRadius: '0 2px 2px 0' } })
         ),
         h('div', {
@@ -16947,12 +16953,12 @@ window.SelHub = window.SelHub || {
             var a = activeTab === t.id;
             var explored = !!exploredTabs[t.id];
             return h('button', { key: t.id, role: 'tab', className: 'sel-tab' + (a ? ' sel-tab-active' : ''), 'aria-selected': a ? 'true' : 'false', onClick: function() { upd('activeTab', t.id); if (soundOn) sfxClick(); },
-              style: { padding: '6px 14px', borderRadius: '10px', border: a ? 'none' : '1px solid ' + (explored ? '#bfdbfe' : 'transparent'), background: a ? 'linear-gradient(135deg, ' + BLUE + ', #1d4ed8)' : explored ? 'rgba(37,99,235,0.06)' : 'transparent', color: a ? '#fff' : explored ? '#1e3a8a' : '#94a3b8', fontWeight: a ? 700 : 500, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap', boxShadow: a ? '0 3px 12px rgba(37,99,235,0.35), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none' }
+              style: { padding: '6px 14px', borderRadius: '10px', border: a ? 'none' : '1px solid ' + (explored ? '#bfdbfe' : 'transparent'), background: a ? 'linear-gradient(135deg, ' + BLUE + ', #1d4ed8)' : explored ? 'rgba(37,99,235,0.06)' : 'transparent', color: a ? '#fff' : explored ? _upC('#1e3a8a') : _upC('#94a3b8'), fontWeight: a ? 700 : 500, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap', boxShadow: a ? '0 3px 12px rgba(37,99,235,0.35), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none' }
             }, h('span', { className: a ? 'sel-hero-icon' : '', 'aria-hidden': 'true' }, t.icon), t.label,
               explored && !a ? h('span', { style: { width: '5px', height: '5px', borderRadius: '50%', background: '#60a5fa', marginLeft: '2px' } }) : null
             );
           }),
-          h('span', { className: 'sel-badge', style: { marginLeft: '8px', fontSize: '10px', color: BLUE, fontWeight: 700, whiteSpace: 'nowrap', background: '#dbeafe', padding: '2px 8px', borderRadius: '10px', flexShrink: 0 } }, exploredCount + '/' + TABS.length),
+          h('span', { className: 'sel-badge', style: { marginLeft: '8px', fontSize: '10px', color: BLUE, fontWeight: 700, whiteSpace: 'nowrap', background: _upC('#dbeafe'), padding: '2px 8px', borderRadius: '10px', flexShrink: 0 } }, exploredCount + '/' + TABS.length),
           h('button', { onClick: function() { upd('soundOn', !soundOn); }, className: 'sel-btn', 'aria-label': soundOn ? 'Mute' : 'Unmute', style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', opacity: 0.8, flexShrink: 0 } }, soundOn ? '\uD83D\uDD0A' : '\uD83D\uDD07')
         )
       );
@@ -16979,14 +16985,14 @@ window.SelHub = window.SelHub || {
             } }, '\uD83E\uDDF1'),
             h('div', { style: { flex: 1, minWidth: 0 } },
               h('h2', { style: { margin: '0 0 2px', color: BD, fontSize: 20, lineHeight: 1.2 } }, 'Upstander Workshop'),
-              h('p', { style: { margin: 0, color: '#334155', fontSize: 13, lineHeight: 1.5 } },
+              h('p', { style: { margin: 0, color: _upC('#334155'), fontSize: 13, lineHeight: 1.5 } },
                 'Understand bullying from all sides \u2014 target, bystander, and the one doing the hurting \u2014 and build the courage to break the cycle.')
             )
           ),
           // \u2500\u2500 Cross-link to Digital Wellbeing for cyberbullying \u2500\u2500
           h('div', { role: 'note', style: {
             padding: 12, marginBottom: 16,
-            background: '#ecfeff', border: '1px solid #67e8f9', borderRadius: 10,
+            background: _upC('#ecfeff'), border: '1px solid #67e8f9', borderRadius: 10,
             display: 'flex', gap: 10, alignItems: 'center'
           } },
             h('span', { 'aria-hidden': 'true', style: {
@@ -16995,10 +17001,10 @@ window.SelHub = window.SelHub || {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 18, color: '#fff'
             } }, '\uD83D\uDCF1'),
-            h('div', { style: { flex: 1, minWidth: 0, fontSize: 13, color: '#0f172a', lineHeight: 1.5 } },
+            h('div', { style: { flex: 1, minWidth: 0, fontSize: 13, color: _upC('#0f172a'), lineHeight: 1.5 } },
               h('strong', null, 'For online bullying \u2014 '),
               'screenshots, group chats, pile-ons, photo-without-consent \u2014 open the ',
-              h('strong', { style: { color: '#0e7490' } }, 'Digital Wellbeing Studio'),
+              h('strong', { style: { color: _upC('#0e7490') } }, 'Digital Wellbeing Studio'),
               ' \u2192 Cyberbullying tab. The dynamics are different enough to need their own playbook.')
           ),
           // \u2500\u2500 Self-Check (collapsible role-pattern assessment) \u2500\u2500
@@ -17018,7 +17024,7 @@ window.SelHub = window.SelHub || {
             };
             var roleLabel = { target: 'The target', bully: 'The one doing the hurting', bystander: 'The bystander' };
             var roleColor = { target: '#93c5fd', bully: '#fca5a5', bystander: '#fde68a' };
-            var roleAccent = { target: '#1e40af', bully: '#991b1b', bystander: '#92400e' };
+            var roleAccent = { target: _upC('#1e40af'), bully: _upC('#991b1b'), bystander: _upC('#92400e') };
 
             return h('div', { style: { marginBottom: 18 } },
               h('button', {
@@ -17027,7 +17033,7 @@ window.SelHub = window.SelHub || {
                 style: {
                   width: '100%', padding: '12px 14px', textAlign: 'left',
                   border: '2px solid ' + (scOpen ? '#a78bfa' : '#d8b4fe'),
-                  background: scOpen ? '#faf5ff' : '#fdf4ff',
+                  background: scOpen ? _upC('#faf5ff') : _upC('#fdf4ff'),
                   borderRadius: 12, cursor: 'pointer',
                   display: 'flex', alignItems: 'center', gap: 12,
                   font: 'inherit', color: 'inherit'
@@ -17041,17 +17047,17 @@ window.SelHub = window.SelHub || {
                   boxShadow: '0 3px 8px rgba(124, 58, 237, 0.22)'
                 } }, '\uD83E\uDE9E'),
                 h('div', { style: { flex: 1, minWidth: 0 } },
-                  h('div', { style: { fontWeight: 800, fontSize: 14, color: '#6b21a8', marginBottom: 2 } },
+                  h('div', { style: { fontWeight: 800, fontSize: 14, color: _upC('#6b21a8'), marginBottom: 2 } },
                     scShowResults ? 'Your role-pattern result' : 'Quick self-check \u2014 which roles do I find myself in?'),
-                  h('div', { style: { fontSize: 12, color: '#475569', lineHeight: 1.4 } },
+                  h('div', { style: { fontSize: 12, color: _upC('#475569'), lineHeight: 1.4 } },
                     scShowResults ? 'Most people are in more than one role. Tap to revisit.' : '6 questions. Honest answers only. No single \"right\" role.')
                 ),
                 h('span', { 'aria-hidden': 'true', style: { color: '#7c3aed', fontSize: 18 } }, scOpen ? '\u25BE' : '\u25B8')
               ),
               scOpen && (scShowResults
                 ? // Results view
-                  h('div', { 'aria-live': 'polite', style: { marginTop: 12, padding: 16, background: '#fff', border: '1px solid #d8b4fe', borderRadius: 12 } },
-                    h('p', { style: { margin: '0 0 12px', fontSize: 13, lineHeight: 1.55, color: '#0f172a' } },
+                  h('div', { 'aria-live': 'polite', style: { marginTop: 12, padding: 16, background: _upC('#fff'), border: '1px solid #d8b4fe', borderRadius: 12 } },
+                    h('p', { style: { margin: '0 0 12px', fontSize: 13, lineHeight: 1.55, color: _upC('#0f172a') } },
                       h('strong', null, 'Most people are in more than one role at different times. '),
                       'Your higher-scoring roles are the ones you might look at first \u2014 but reading all three is the whole point.'),
                     h('div', { style: { display: 'grid', gap: 8, marginBottom: 14 } },
@@ -17059,13 +17065,13 @@ window.SelHub = window.SelHub || {
                         var pct = Math.round(rolePct[r] * 100);
                         return h('div', { key: r, style: { display: 'flex', alignItems: 'center', gap: 10, fontSize: 13 } },
                           h('div', { style: { width: 180, color: roleAccent[r], fontWeight: 700, flexShrink: 0 } }, roleLabel[r]),
-                          h('div', { style: { flex: 1, background: '#e2e8f0', height: 18, borderRadius: 4, overflow: 'hidden', position: 'relative' } },
+                          h('div', { style: { flex: 1, background: _upC('#e2e8f0'), height: 18, borderRadius: 4, overflow: 'hidden', position: 'relative' } },
                             h('div', { style: {
                               background: 'linear-gradient(90deg, ' + roleColor[r] + ' 0%, ' + roleAccent[r] + ' 100%)',
                               height: '100%', width: pct + '%',
                               transition: 'width 0.6s ease'
                             } }),
-                            h('span', { style: { position: 'absolute', right: 6, top: 0, lineHeight: '18px', fontSize: 11, fontWeight: 700, color: '#0f172a' } }, pct + '%')
+                            h('span', { style: { position: 'absolute', right: 6, top: 0, lineHeight: '18px', fontSize: 11, fontWeight: 700, color: _upC('#0f172a') } }, pct + '%')
                           ),
                           h('button', {
                             onClick: function() {
@@ -17080,28 +17086,28 @@ window.SelHub = window.SelHub || {
                     ),
                     // If they scored high on both target AND bully, surface bully-victim signpost
                     (rolePct.target >= 0.5 && rolePct.bully >= 0.5) && h('div', { style: {
-                      padding: 12, background: '#fef3c7', border: '1px solid #fcd34d', borderRadius: 8, marginBottom: 10
+                      padding: 12, background: _upC('#fef3c7'), border: '1px solid #fcd34d', borderRadius: 8, marginBottom: 10
                     } },
-                      h('div', { style: { fontWeight: 800, fontSize: 13, color: '#92400e', marginBottom: 4 } },
+                      h('div', { style: { fontWeight: 800, fontSize: 13, color: _upC('#92400e'), marginBottom: 4 } },
                         '\u26A0\uFE0F You flagged both target and perpetrator patterns'),
-                      h('p', { style: { margin: 0, fontSize: 12, lineHeight: 1.55, color: '#0f172a' } },
+                      h('p', { style: { margin: 0, fontSize: 12, lineHeight: 1.55, color: _upC('#0f172a') } },
                         'This combination has a specific name in the research \u2014 "bully-victim." It is also the group with the hardest outcomes AND the one schools usually serve worst. There is a Bully-Victim section in the role detail below \u2014 it is for you. Please read it.')
                     ),
                     h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
                       h('button', {
                         onClick: function() { upd({ scAnswers: {}, scShowResults: false }); if (soundOn) sfxClick(); },
-                        style: { padding: '8px 14px', background: '#fff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 13 }
+                        style: { padding: '8px 14px', background: _upC('#fff'), color: _upC('#0f172a'), border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 13 }
                       }, 'Retake check-in')
                     )
                   )
                 : // Question view
-                  h('div', { style: { marginTop: 12, padding: 16, background: '#fff', border: '1px solid #d8b4fe', borderRadius: 12 } },
-                    h('p', { style: { margin: '0 0 10px', fontSize: 12, color: '#475569', lineHeight: 1.5 } },
+                  h('div', { style: { marginTop: 12, padding: 16, background: _upC('#fff'), border: '1px solid #d8b4fe', borderRadius: 12 } },
+                    h('p', { style: { margin: '0 0 10px', fontSize: 12, color: _upC('#475569'), lineHeight: 1.5 } },
                       'For each one: how often is this true for you?'),
                     h('div', { style: { display: 'grid', gap: 10 } },
                       SELF_CHECK_ITEMS.map(function(q) {
-                        return h('div', { key: q.id, style: { padding: 10, background: '#faf5ff', borderRadius: 8 } },
-                          h('div', { style: { fontSize: 13, color: '#0f172a', marginBottom: 8, lineHeight: 1.5 } }, q.text),
+                        return h('div', { key: q.id, style: { padding: 10, background: _upC('#faf5ff'), borderRadius: 8 } },
+                          h('div', { style: { fontSize: 13, color: _upC('#0f172a'), marginBottom: 8, lineHeight: 1.5 } }, q.text),
                           h('div', { role: 'radiogroup', 'aria-label': q.text, style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
                             ['Never', 'Sometimes', 'Often', 'Always'].map(function(lbl, idx) {
                               var selected = scAnswers[q.id] === idx;
@@ -17115,9 +17121,9 @@ window.SelHub = window.SelHub || {
                                 style: {
                                   flex: '1 1 70px', minWidth: 60,
                                   padding: '6px 8px',
-                                  background: selected ? '#7c3aed' : '#fff',
-                                  color: selected ? '#fff' : '#475569',
-                                  border: '1px solid ' + (selected ? '#7c3aed' : '#cbd5e1'),
+                                  background: selected ? '#7c3aed' : _upC('#fff'),
+                                  color: selected ? '#fff' : _upC('#475569'),
+                                  border: '1px solid ' + (selected ? '#7c3aed' : _upC('#cbd5e1')),
                                   borderRadius: 6, fontWeight: selected ? 700 : 500,
                                   fontSize: 12, cursor: 'pointer', font: 'inherit'
                                 }
@@ -17137,7 +17143,7 @@ window.SelHub = window.SelHub || {
                         },
                         style: {
                           padding: '8px 16px',
-                          background: totalAnswered < SELF_CHECK_ITEMS.length ? '#cbd5e1' : '#7c3aed',
+                          background: totalAnswered < SELF_CHECK_ITEMS.length ? _upC('#cbd5e1') : '#7c3aed',
                           color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700,
                           cursor: totalAnswered < SELF_CHECK_ITEMS.length ? 'not-allowed' : 'pointer', fontSize: 13
                         }
@@ -17152,7 +17158,7 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
             h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(37,99,235,0.3))' } }, '\uD83D\uDC65'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: BD, margin: '0 0 4px' } }, 'Understanding the Three Roles'),
-            h('p', { style: { fontSize: '13px', color: '#64748b', margin: 0 } }, 'Every bullying situation has three roles. Understanding all three is how we break the pattern.')
+            h('p', { style: { fontSize: '13px', color: _upC('#64748b'), margin: 0 } }, 'Every bullying situation has three roles. Understanding all three is how we break the pattern.')
           ),
           // Role selector — icon-circle cards
           h('div', { role: 'tablist', 'aria-label': 'Select a role to learn about', style: { display: 'grid', gap: 10, gridTemplateColumns: 'repeat(3, 1fr)', marginBottom: 16 } },
@@ -17164,8 +17170,8 @@ window.SelHub = window.SelHub || {
                 style: {
                   padding: '14px 8px',
                   borderRadius: 14,
-                  border: '2px solid ' + (active ? r.color : '#e5e7eb'),
-                  background: active ? r.color + '18' : '#fff',
+                  border: '2px solid ' + (active ? r.color : _upC('#e5e7eb')),
+                  background: active ? r.color + '18' : _upC('#fff'),
                   cursor: 'pointer', textAlign: 'center',
                   font: 'inherit', color: 'inherit',
                   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
@@ -17179,11 +17185,11 @@ window.SelHub = window.SelHub || {
                     ? 'linear-gradient(135deg, ' + r.color + ' 0%, ' + r.color + 'cc 100%)'
                     : 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 26, color: active ? '#fff' : '#475569',
+                  fontSize: 26, color: active ? '#fff' : _upC('#475569'),
                   boxShadow: active ? 'inset 0 1px 0 rgba(255, 255, 255, 0.3)' : 'none',
                   transition: 'all 0.2s ease'
                 } }, r.icon),
-                h('div', { style: { fontSize: 12, fontWeight: 700, color: active ? BD : '#374151', lineHeight: 1.25 } }, r.title)
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: active ? BD : _upC('#374151'), lineHeight: 1.25 } }, r.title)
               );
             })
           ),
@@ -17195,21 +17201,21 @@ window.SelHub = window.SelHub || {
             ),
             // What they feel
             h('div', { style: { marginBottom: '12px' } },
-              h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '6px' } }, 'What they might feel:'),
+              h('div', { style: { fontSize: '11px', fontWeight: 700, color: _upC('#94a3b8'), marginBottom: '6px' } }, 'What they might feel:'),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px' } },
                 cur.feels.map(function(f) {
-                  return h('span', { key: f, style: { padding: '3px 10px', background: '#fff', border: '1px solid ' + cur.color + '66', borderRadius: '20px', fontSize: '11px', color: '#374151' } }, f);
+                  return h('span', { key: f, style: { padding: '3px 10px', background: _upC('#fff'), border: '1px solid ' + cur.color + '66', borderRadius: '20px', fontSize: '11px', color: _upC('#374151') } }, f);
                 })
               )
             ),
             // The truth
-            h('div', { style: { background: '#fff', borderRadius: '10px', padding: '12px', borderLeft: '4px solid ' + BLUE, marginBottom: '10px' } },
+            h('div', { style: { background: _upC('#fff'), borderRadius: '10px', padding: '12px', borderLeft: '4px solid ' + BLUE, marginBottom: '10px' } },
               h('div', { style: { fontSize: '10px', fontWeight: 700, color: BLUE, marginBottom: '2px' } }, 'The truth:'),
-              h('p', { style: { fontSize: '13px', color: '#374151', margin: 0, lineHeight: 1.6 } }, cur.truth)
+              h('p', { style: { fontSize: '13px', color: _upC('#374151'), margin: 0, lineHeight: 1.6 } }, cur.truth)
             ),
             // Myth vs truth
-            h('div', { style: { background: '#fef3c7', borderRadius: '10px', padding: '12px', borderLeft: '4px solid #f59e0b' } },
-              h('p', { style: { fontSize: '12px', color: '#92400e', margin: 0, lineHeight: 1.6 } }, cur.myth)
+            h('div', { style: { background: _upC('#fef3c7'), borderRadius: '10px', padding: '12px', borderLeft: '4px solid #f59e0b' } },
+              h('p', { style: { fontSize: '12px', color: _upC('#92400e'), margin: 0, lineHeight: 1.6 } }, cur.myth)
             ),
             // ── Have I been here? reflection ──
             h('div', { style: { marginTop: 14 } },
@@ -17218,7 +17224,7 @@ window.SelHub = window.SelHub || {
                 'aria-expanded': roleReflectOpen ? 'true' : 'false',
                 style: {
                   width: '100%', padding: '10px 12px', textAlign: 'left',
-                  background: roleReflectOpen ? '#fff' : 'transparent',
+                  background: roleReflectOpen ? _upC('#fff') : 'transparent',
                   border: '1px dashed ' + cur.color,
                   borderRadius: 10, cursor: 'pointer',
                   display: 'flex', alignItems: 'center', gap: 8,
@@ -17228,12 +17234,12 @@ window.SelHub = window.SelHub || {
                 h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, '🪞'),
                 h('span', { style: { flex: 1, fontSize: 13, fontWeight: 700, color: BD } },
                   'Have I been here? — a quiet reflection'),
-                h('span', { 'aria-hidden': 'true', style: { color: '#64748b', fontSize: 14 } }, roleReflectOpen ? '▾' : '▸')
+                h('span', { 'aria-hidden': 'true', style: { color: _upC('#64748b'), fontSize: 14 } }, roleReflectOpen ? '▾' : '▸')
               ),
-              roleReflectOpen && h('div', { style: { marginTop: 10, padding: 14, background: '#fff', border: '1px solid ' + cur.color + '66', borderRadius: 10 } },
-                h('p', { style: { margin: '0 0 10px', fontSize: 12, color: '#475569', lineHeight: 1.55 } },
+              roleReflectOpen && h('div', { style: { marginTop: 10, padding: 14, background: _upC('#fff'), border: '1px solid ' + cur.color + '66', borderRadius: 10 } },
+                h('p', { style: { margin: '0 0 10px', fontSize: 12, color: _upC('#475569'), lineHeight: 1.55 } },
                   'Nobody is going to read this except you. Whatever you write stays on your device. The point is honesty — with yourself.'),
-                h('label', { htmlFor: 'us-rr-' + cur.id, style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } },
+                h('label', { htmlFor: 'us-rr-' + cur.id, style: { display: 'block', fontSize: 11, fontWeight: 700, color: _upC('#475569'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } },
                   band === 'elementary'
                     ? 'A time I felt like ' + cur.title.toLowerCase() + ' — or someone I know did'
                     : 'A time I have been in this role — what was happening, what I felt, what I did or did not do'),
@@ -17267,7 +17273,7 @@ window.SelHub = window.SelHub || {
                 style: {
                   width: '100%', padding: '14px 16px', textAlign: 'left',
                   border: '2px solid ' + (ihOpen ? '#a78bfa' : '#d8b4fe'),
-                  background: ihOpen ? '#faf5ff' : '#fdf4ff',
+                  background: ihOpen ? _upC('#faf5ff') : _upC('#fdf4ff'),
                   borderRadius: 14, cursor: 'pointer',
                   display: 'flex', alignItems: 'center', gap: 12,
                   font: 'inherit', color: 'inherit'
@@ -17281,21 +17287,21 @@ window.SelHub = window.SelHub || {
                   boxShadow: '0 4px 10px rgba(124, 58, 237, 0.22)'
                 } }, '🏳️‍🌈'),
                 h('div', { style: { flex: 1, minWidth: 0 } },
-                  h('div', { style: { fontWeight: 800, fontSize: 15, color: '#6b21a8', marginBottom: 2 } },
+                  h('div', { style: { fontWeight: 800, fontSize: 15, color: _upC('#6b21a8'), marginBottom: 2 } },
                     'Identity-based harassment — when the targeting is about who you ARE'),
-                  h('div', { style: { fontSize: 12, color: '#475569', lineHeight: 1.4 } },
+                  h('div', { style: { fontSize: 12, color: _upC('#475569'), lineHeight: 1.4 } },
                     'Race, gender, sexuality, religion, disability, language. Different harms. Specific federal protections.')
                 ),
                 h('span', { 'aria-hidden': 'true', style: { color: '#7c3aed', fontSize: 18 } }, ihOpen ? '▾' : '▸')
               ),
-              ihOpen && h('div', { style: { marginTop: 12, padding: 18, background: '#fff', border: '1px solid #d8b4fe', borderRadius: 14 } },
-                h('p', { style: { margin: '0 0 14px', fontSize: 13, lineHeight: 1.6, color: '#475569' } },
-                  h('strong', { style: { color: '#6b21a8' } }, 'Why this gets its own section: '),
+              ihOpen && h('div', { style: { marginTop: 12, padding: 18, background: _upC('#fff'), border: '1px solid #d8b4fe', borderRadius: 14 } },
+                h('p', { style: { margin: '0 0 14px', fontSize: 13, lineHeight: 1.6, color: _upC('#475569') } },
+                  h('strong', { style: { color: _upC('#6b21a8') } }, 'Why this gets its own section: '),
                   'identity-based bullying hits differently AND has different legal/practical recourse. Most students do not know what protections they actually have.'),
                 h('div', { style: { display: 'grid', gap: 10 } },
                   ihContent.map(function(c, idx) {
                     return h('div', { key: idx, className: 'us-card', style: {
-                      display: 'flex', gap: 12, padding: 14, background: '#faf5ff', border: '1px solid #d8b4fe', borderRadius: 12
+                      display: 'flex', gap: 12, padding: 14, background: _upC('#faf5ff'), border: '1px solid #d8b4fe', borderRadius: 12
                     } },
                       h('div', { 'aria-hidden': 'true', style: {
                         width: 40, height: 40, borderRadius: 12, flexShrink: 0,
@@ -17304,8 +17310,8 @@ window.SelHub = window.SelHub || {
                         fontSize: 20, color: '#fff'
                       } }, c.icon),
                       h('div', { style: { flex: 1, minWidth: 0 } },
-                        h('div', { style: { fontWeight: 700, fontSize: 14, color: '#6b21a8', marginBottom: 4 } }, c.title),
-                        h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.6, color: '#1f2937' } }, c.body)
+                        h('div', { style: { fontWeight: 700, fontSize: 14, color: _upC('#6b21a8'), marginBottom: 4 } }, c.title),
+                        h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.6, color: _upC('#1f2937') } }, c.body)
                       )
                     );
                   })
@@ -17323,7 +17329,7 @@ window.SelHub = window.SelHub || {
                 style: {
                   width: '100%', padding: '14px 16px', textAlign: 'left',
                   border: '2px solid ' + (pdOpen ? '#0891b2' : '#67e8f9'),
-                  background: pdOpen ? '#ecfeff' : '#f0f9ff',
+                  background: pdOpen ? _upC('#ecfeff') : _upC('#f0f9ff'),
                   borderRadius: 14, cursor: 'pointer',
                   display: 'flex', alignItems: 'center', gap: 12,
                   font: 'inherit', color: 'inherit'
@@ -17337,21 +17343,21 @@ window.SelHub = window.SelHub || {
                   boxShadow: '0 4px 10px rgba(8, 145, 178, 0.22)'
                 } }, '⚖️'),
                 h('div', { style: { flex: 1, minWidth: 0 } },
-                  h('div', { style: { fontWeight: 800, fontSize: 15, color: '#0e7490', marginBottom: 2 } },
+                  h('div', { style: { fontWeight: 800, fontSize: 15, color: _upC('#0e7490'), marginBottom: 2 } },
                     'Power dynamics — not everyone has equal room to intervene'),
-                  h('div', { style: { fontSize: 12, color: '#475569', lineHeight: 1.4 } },
+                  h('div', { style: { fontSize: 12, color: _upC('#475569'), lineHeight: 1.4 } },
                     'Honest read on why some upstander moves are safer for some students than others. The Courage Hierarchy is calibrated this way for a reason.')
                 ),
                 h('span', { 'aria-hidden': 'true', style: { color: '#0891b2', fontSize: 18 } }, pdOpen ? '▾' : '▸')
               ),
-              pdOpen && h('div', { style: { marginTop: 12, padding: 18, background: '#fff', border: '1px solid #67e8f9', borderRadius: 14 } },
-                h('p', { style: { margin: '0 0 14px', fontSize: 13, lineHeight: 1.6, color: '#475569' } },
-                  h('strong', { style: { color: '#0e7490' } }, 'Why this section exists: '),
+              pdOpen && h('div', { style: { marginTop: 12, padding: 18, background: _upC('#fff'), border: '1px solid #67e8f9', borderRadius: 14 } },
+                h('p', { style: { margin: '0 0 14px', fontSize: 13, lineHeight: 1.6, color: _upC('#475569') } },
+                  h('strong', { style: { color: _upC('#0e7490') } }, 'Why this section exists: '),
                   'most anti-bullying programs pretend every student has equal power to act. That puts the heaviest cost on the kids who can least afford it. Naming the math honestly is the first step.'),
                 h('div', { style: { display: 'grid', gap: 10 } },
                   pdContent.map(function(c, idx) {
                     return h('div', { key: idx, className: 'us-card', style: {
-                      display: 'flex', gap: 12, padding: 14, background: '#ecfeff', border: '1px solid #67e8f9', borderRadius: 12
+                      display: 'flex', gap: 12, padding: 14, background: _upC('#ecfeff'), border: '1px solid #67e8f9', borderRadius: 12
                     } },
                       h('div', { 'aria-hidden': 'true', style: {
                         width: 40, height: 40, borderRadius: 12, flexShrink: 0,
@@ -17360,8 +17366,8 @@ window.SelHub = window.SelHub || {
                         fontSize: 20, color: '#fff'
                       } }, c.icon),
                       h('div', { style: { flex: 1, minWidth: 0 } },
-                        h('div', { style: { fontWeight: 700, fontSize: 14, color: '#0e7490', marginBottom: 4 } }, c.title),
-                        h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.6, color: '#1f2937' } }, c.body)
+                        h('div', { style: { fontWeight: 700, fontSize: 14, color: _upC('#0e7490'), marginBottom: 4 } }, c.title),
+                        h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.6, color: _upC('#1f2937') } }, c.body)
                       )
                     );
                   })
@@ -17379,7 +17385,7 @@ window.SelHub = window.SelHub || {
                 style: {
                   width: '100%', padding: '14px 16px', textAlign: 'left',
                   border: '2px solid ' + (bvOpen ? '#fb923c' : '#fed7aa'),
-                  background: bvOpen ? '#fff7ed' : '#fffaf0',
+                  background: bvOpen ? _upC('#fff7ed') : '#fffaf0',
                   borderRadius: 14, cursor: 'pointer',
                   display: 'flex', alignItems: 'center', gap: 12,
                   font: 'inherit', color: 'inherit'
@@ -17393,21 +17399,21 @@ window.SelHub = window.SelHub || {
                   boxShadow: '0 4px 10px rgba(234, 88, 12, 0.22)'
                 } }, '⚖️'),
                 h('div', { style: { flex: 1, minWidth: 0 } },
-                  h('div', { style: { fontWeight: 800, fontSize: 15, color: '#9a3412', marginBottom: 2 } },
+                  h('div', { style: { fontWeight: 800, fontSize: 15, color: _upC('#9a3412'), marginBottom: 2 } },
                     'If you have been BOTH — the bully-victim section'),
-                  h('div', { style: { fontSize: 12, color: '#475569', lineHeight: 1.4 } },
+                  h('div', { style: { fontSize: 12, color: _upC('#475569'), lineHeight: 1.4 } },
                     'When you have been targeted AND have caused harm. The clinically most-vulnerable group — and often the least well-served.')
                 ),
                 h('span', { 'aria-hidden': 'true', style: { color: '#ea580c', fontSize: 18 } }, bvOpen ? '▾' : '▸')
               ),
-              bvOpen && h('div', { style: { marginTop: 12, padding: 18, background: '#fff', border: '1px solid #fed7aa', borderRadius: 14 } },
-                h('p', { style: { margin: '0 0 14px', fontSize: 13, lineHeight: 1.6, color: '#475569' } },
-                  h('strong', { style: { color: '#9a3412' } }, 'Why this section exists: '),
+              bvOpen && h('div', { style: { marginTop: 12, padding: 18, background: _upC('#fff'), border: '1px solid #fed7aa', borderRadius: 14 } },
+                h('p', { style: { margin: '0 0 14px', fontSize: 13, lineHeight: 1.6, color: _upC('#475569') } },
+                  h('strong', { style: { color: _upC('#9a3412') } }, 'Why this section exists: '),
                   'a real fraction of students are in both roles. The research on this group is unambiguous — they have the worst mental health outcomes — and the systems around them are usually worst at recognizing it. If this is you, this section is for you. If it is someone you know, it might help you understand them.'),
                 h('div', { style: { display: 'grid', gap: 10 } },
                   bvContent.map(function(c, idx) {
                     return h('div', { key: idx, className: 'us-card', style: {
-                      display: 'flex', gap: 12, padding: 14, background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 12
+                      display: 'flex', gap: 12, padding: 14, background: _upC('#fff7ed'), border: '1px solid #fed7aa', borderRadius: 12
                     } },
                       h('div', { 'aria-hidden': 'true', style: {
                         width: 40, height: 40, borderRadius: 12, flexShrink: 0,
@@ -17416,17 +17422,17 @@ window.SelHub = window.SelHub || {
                         fontSize: 20, color: '#fff'
                       } }, c.icon),
                       h('div', { style: { flex: 1, minWidth: 0 } },
-                        h('div', { style: { fontWeight: 700, fontSize: 14, color: '#9a3412', marginBottom: 4 } }, c.title),
-                        h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.6, color: '#1f2937' } }, c.body)
+                        h('div', { style: { fontWeight: 700, fontSize: 14, color: _upC('#9a3412'), marginBottom: 4 } }, c.title),
+                        h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.6, color: _upC('#1f2937') } }, c.body)
                       )
                     );
                   })
                 ),
                 h('div', { style: {
-                  marginTop: 16, padding: 12, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10,
-                  fontSize: 12, color: '#0f172a', lineHeight: 1.55
+                  marginTop: 16, padding: 12, background: _upC('#fef2f2'), border: '1px solid #fecaca', borderRadius: 10,
+                  fontSize: 12, color: _upC('#0f172a'), lineHeight: 1.55
                 } },
-                  h('strong', { style: { color: '#991b1b' } }, 'If anything in this section is bringing up thoughts of self-harm: '),
+                  h('strong', { style: { color: _upC('#991b1b') } }, 'If anything in this section is bringing up thoughts of self-harm: '),
                   '988 (call or text), Crisis Text Line (text HOME to 741741), or talk to ',
                   'a school counselor or psychologist today. You are not alone.')
               )
@@ -17442,9 +17448,9 @@ window.SelHub = window.SelHub || {
         var byRisk = { low: [], medium: [], high: [] };
         moves.forEach(function(m, i) { (byRisk[m.risk] || byRisk.low).push({ m: m, i: i }); });
         var riskTiers = [
-          { id: 'low',    label: 'Lower-risk moves',  sub: 'Almost everyone can do these. No public confrontation required.', tone: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0' },
-          { id: 'medium', label: 'Moderate-risk moves', sub: 'Require some willingness to break the social spell.',           tone: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
-          { id: 'high',   label: 'Higher-risk moves',  sub: 'These cost you something. The impact is also bigger.',         tone: '#dc2626', bg: '#fef2f2', border: '#fecaca' }
+          { id: 'low',    label: 'Lower-risk moves',  sub: 'Almost everyone can do these. No public confrontation required.', tone: '#16a34a', bg: _upC('#f0fdf4'), border: '#bbf7d0' },
+          { id: 'medium', label: 'Moderate-risk moves', sub: 'Require some willingness to break the social spell.',           tone: '#d97706', bg: _upC('#fffbeb'), border: '#fcd34d' },
+          { id: 'high',   label: 'Higher-risk moves',  sub: 'These cost you something. The impact is also bigger.',         tone: _upC('#dc2626'), bg: _upC('#fef2f2'), border: '#fecaca' }
         ];
         movesContent = h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto' } },
           // Hero card
@@ -17463,7 +17469,7 @@ window.SelHub = window.SelHub || {
             } }, '\uD83E\uDDF1'),
             h('div', { style: { flex: 1, minWidth: 0 } },
               h('h2', { style: { margin: '0 0 2px', color: BD, fontSize: 20, lineHeight: 1.2 } }, 'Upstander Moves'),
-              h('p', { style: { margin: 0, color: '#334155', fontSize: 13, lineHeight: 1.5 } },
+              h('p', { style: { margin: 0, color: _upC('#334155'), fontSize: 13, lineHeight: 1.5 } },
                 'Concrete actions, sorted by social risk. Start where you feel safe. Doing ANY of these makes you part of the answer.')
             )
           ),
@@ -17473,7 +17479,7 @@ window.SelHub = window.SelHub || {
             background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 30%, #eff6ff 70%, #faf5ff 100%)',
             border: '1px solid #bbf7d0'
           } },
-            h('div', { style: { fontSize: 12, color: '#166534', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10, textAlign: 'center' } },
+            h('div', { style: { fontSize: 12, color: _upC('#166534'), fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10, textAlign: 'center' } },
               'The Courage Hierarchy — every level matters, start where you are'),
             h('div', { style: { display: 'grid', gap: 4 } },
               COURAGE_LADDER.map(function(rung, idx) {
@@ -17496,17 +17502,17 @@ window.SelHub = window.SelHub || {
                   h('div', { style: {
                     flex: 1, minWidth: 0,
                     padding: '8px 12px',
-                    background: '#fff', borderRadius: 8,
+                    background: _upC('#fff'), borderRadius: 8,
                     borderLeft: '3px solid ' + rung.color,
                     boxShadow: '0 1px 2px rgba(15, 23, 42, 0.04)'
                   } },
-                    h('div', { style: { fontWeight: 700, fontSize: 13, color: '#0f172a', marginBottom: 1 } }, rung.label),
-                    h('div', { style: { fontSize: 12, color: '#475569', lineHeight: 1.5 } }, rung.desc)
+                    h('div', { style: { fontWeight: 700, fontSize: 13, color: _upC('#0f172a'), marginBottom: 1 } }, rung.label),
+                    h('div', { style: { fontSize: 12, color: _upC('#475569'), lineHeight: 1.5 } }, rung.desc)
                   )
                 );
               })
             ),
-            h('p', { style: { margin: '12px 0 0', fontSize: 12, color: '#0f172a', lineHeight: 1.55, textAlign: 'center', fontStyle: 'italic' } },
+            h('p', { style: { margin: '12px 0 0', fontSize: 12, color: _upC('#0f172a'), lineHeight: 1.55, textAlign: 'center', fontStyle: 'italic' } },
               'Climbing one rung at a time is the work. You do not have to skip to the top.')
           ),
           riskTiers.map(function(tier) {
@@ -17526,7 +17532,7 @@ window.SelHub = window.SelHub || {
                 } }, tier.id === 'low' ? '1' : tier.id === 'medium' ? '2' : '3'),
                 h('div', { style: { flex: 1, minWidth: 0 } },
                   h('div', { style: { fontWeight: 800, fontSize: 14, color: tier.tone } }, tier.label),
-                  h('div', { style: { fontSize: 12, color: '#475569' } }, tier.sub)
+                  h('div', { style: { fontSize: 12, color: _upC('#475569') } }, tier.sub)
                 )
               ),
               h('div', { style: { display: 'grid', gap: 8, gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' } },
@@ -17539,8 +17545,8 @@ window.SelHub = window.SelHub || {
                     className: 'us-card',
                     style: {
                       padding: 14, textAlign: 'left', width: '100%',
-                      background: active ? tier.bg : '#fff',
-                      border: '2px solid ' + (active ? tier.tone : '#e5e7eb'),
+                      background: active ? tier.bg : _upC('#fff'),
+                      border: '2px solid ' + (active ? tier.tone : _upC('#e5e7eb')),
                       borderRadius: 12, cursor: 'pointer',
                       font: 'inherit', color: 'inherit',
                       display: 'flex', gap: 10
@@ -17553,8 +17559,8 @@ window.SelHub = window.SelHub || {
                       fontSize: 20, color: '#fff'
                     } }, m.icon),
                     h('div', { style: { flex: 1, minWidth: 0 } },
-                      h('div', { style: { fontWeight: 700, fontSize: 14, color: '#0f172a', marginBottom: 2 } }, m.move),
-                      h('div', { style: { fontSize: 12, color: '#475569', lineHeight: 1.5,
+                      h('div', { style: { fontWeight: 700, fontSize: 14, color: _upC('#0f172a'), marginBottom: 2 } }, m.move),
+                      h('div', { style: { fontSize: 12, color: _upC('#475569'), lineHeight: 1.5,
                         display: '-webkit-box', WebkitLineClamp: active ? 'unset' : 2, WebkitBoxOrient: 'vertical',
                         overflow: active ? 'visible' : 'hidden'
                       } }, m.desc)
@@ -17564,7 +17570,7 @@ window.SelHub = window.SelHub || {
               )
             );
           }),
-          h('p', { style: { textAlign: 'center', marginTop: 14, fontSize: 12, color: '#64748b', fontStyle: 'italic' } },
+          h('p', { style: { textAlign: 'center', marginTop: 14, fontSize: 12, color: _upC('#64748b'), fontStyle: 'italic' } },
             'Tap a card to expand and read the full description.'),
 
           // ── AI Rehearsal — practice what you would actually say ──
@@ -17575,7 +17581,7 @@ window.SelHub = window.SelHub || {
               style: {
                 width: '100%', padding: '14px 16px', textAlign: 'left',
                 border: '2px solid ' + (rhShown ? '#a855f7' : '#d8b4fe'),
-                background: rhShown ? '#faf5ff' : '#fdf4ff',
+                background: rhShown ? _upC('#faf5ff') : _upC('#fdf4ff'),
                 borderRadius: 14, cursor: 'pointer',
                 display: 'flex', alignItems: 'center', gap: 12,
                 font: 'inherit', color: 'inherit'
@@ -17589,25 +17595,25 @@ window.SelHub = window.SelHub || {
                 boxShadow: '0 4px 10px rgba(168, 85, 247, 0.25)'
               } }, '🎤'),
               h('div', { style: { flex: 1, minWidth: 0 } },
-                h('div', { style: { fontWeight: 800, fontSize: 15, color: '#6b21a8', marginBottom: 2 } },
+                h('div', { style: { fontWeight: 800, fontSize: 15, color: _upC('#6b21a8'), marginBottom: 2 } },
                   'Rehearse what you would actually say'),
-                h('div', { style: { fontSize: 12, color: '#475569', lineHeight: 1.4 } },
+                h('div', { style: { fontSize: 12, color: _upC('#475569'), lineHeight: 1.4 } },
                   'Type a situation + your draft response. An AI coach gives you specific feedback on how it might land.')
               ),
               h('span', { 'aria-hidden': 'true', style: { color: '#a855f7', fontSize: 18 } }, rhShown ? '▾' : '▸')
             ),
-            rhShown && h('div', { style: { marginTop: 12, padding: 18, background: '#fff', border: '1px solid #d8b4fe', borderRadius: 14 } },
-              h('p', { style: { margin: '0 0 14px', fontSize: 13, lineHeight: 1.55, color: '#475569' } },
-                h('strong', { style: { color: '#6b21a8' } }, 'How this works: '),
+            rhShown && h('div', { style: { marginTop: 12, padding: 18, background: _upC('#fff'), border: '1px solid #d8b4fe', borderRadius: 14 } },
+              h('p', { style: { margin: '0 0 14px', fontSize: 13, lineHeight: 1.55, color: _upC('#475569') } },
+                h('strong', { style: { color: _upC('#6b21a8') } }, 'How this works: '),
                 'tell the bot the situation, then write what you would say in that moment. The bot gives you 3 things: what would probably land well, what might land badly, and one tweak you could make. It is rehearsal, not script.'),
-              h('label', { htmlFor: 'us-rh-sit', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'The situation'),
+              h('label', { htmlFor: 'us-rh-sit', style: { display: 'block', fontSize: 11, fontWeight: 700, color: _upC('#475569'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'The situation'),
               h('textarea', { id: 'us-rh-sit', value: rhSituation,
                 onChange: function(e) { upd('rhSituation', e.target.value); },
                 placeholder: 'Example: My friend group is making fun of someone behind their back. I want to say something but I don’t want to start a fight.',
                 rows: 3,
                 style: { width: '100%', padding: 10, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', marginBottom: 10 }
               }),
-              h('label', { htmlFor: 'us-rh-att', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Your draft — what you would say out loud'),
+              h('label', { htmlFor: 'us-rh-att', style: { display: 'block', fontSize: 11, fontWeight: 700, color: _upC('#475569'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Your draft — what you would say out loud'),
               h('textarea', { id: 'us-rh-att', value: rhAttempt,
                 onChange: function(e) { upd('rhAttempt', e.target.value); },
                 placeholder: 'Type the exact words you would actually say...',
@@ -17654,7 +17660,7 @@ window.SelHub = window.SelHub || {
                   },
                   style: {
                     padding: '10px 16px',
-                    background: (rhLoading || !rhSituation.trim() || !rhAttempt.trim() || !callGemini) ? '#cbd5e1' : '#7c3aed',
+                    background: (rhLoading || !rhSituation.trim() || !rhAttempt.trim() || !callGemini) ? _upC('#cbd5e1') : '#7c3aed',
                     color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700,
                     cursor: (rhLoading || !rhSituation.trim() || !rhAttempt.trim() || !callGemini) ? 'not-allowed' : 'pointer',
                     fontSize: 13
@@ -17662,19 +17668,19 @@ window.SelHub = window.SelHub || {
                 }, rhLoading ? 'Thinking…' : (callGemini ? 'Get coach feedback' : 'AI not available')),
                 rhFeedback && h('button', {
                   onClick: function() { upd({ rhSituation: '', rhAttempt: '', rhFeedback: '' }); },
-                  style: { padding: '10px 16px', background: '#fff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 13 }
+                  style: { padding: '10px 16px', background: _upC('#fff'), color: _upC('#0f172a'), border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 13 }
                 }, 'Try another')
               ),
-              !callGemini && h('p', { style: { margin: '8px 0 0', fontSize: 11, color: '#6b21a8' } },
+              !callGemini && h('p', { style: { margin: '8px 0 0', fontSize: 11, color: _upC('#6b21a8') } },
                 'AI features need a connection. While offline, try reading your draft out loud.'),
               // Surface 988 / Crisis Text Line block on tier-3 (set by the
               // safety pre-check above the callGemini call in this section).
               (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, band),
               rhFeedback && h('div', { 'aria-live': 'polite', className: 'us-pop', style: {
-                marginTop: 14, padding: 14, background: '#faf5ff', border: '1px dashed #c084fc',
-                borderRadius: 10, fontSize: 14, lineHeight: 1.6, color: '#0f172a', whiteSpace: 'pre-wrap'
+                marginTop: 14, padding: 14, background: _upC('#faf5ff'), border: '1px dashed #c084fc',
+                borderRadius: 10, fontSize: 14, lineHeight: 1.6, color: _upC('#0f172a'), whiteSpace: 'pre-wrap'
               } }, rhFeedback),
-              rhFeedback && h('p', { style: { margin: '8px 0 0', fontSize: 11, color: '#6b21a8', fontStyle: 'italic' } },
+              rhFeedback && h('p', { style: { margin: '8px 0 0', fontSize: 11, color: _upC('#6b21a8'), fontStyle: 'italic' } },
                 'AI-generated. Take what is useful, leave the rest. The point is your voice in the room — not a script.')
             )
           ),
@@ -17687,7 +17693,7 @@ window.SelHub = window.SelHub || {
               style: {
                 width: '100%', padding: '14px 16px', textAlign: 'left',
                 border: '2px solid ' + (hfOpen ? '#34d399' : '#86efac'),
-                background: hfOpen ? '#ecfdf5' : '#f0fdf4',
+                background: hfOpen ? _upC('#ecfdf5') : _upC('#f0fdf4'),
                 borderRadius: 14, cursor: 'pointer',
                 display: 'flex', alignItems: 'center', gap: 12,
                 font: 'inherit', color: 'inherit'
@@ -17701,24 +17707,24 @@ window.SelHub = window.SelHub || {
                 boxShadow: '0 4px 10px rgba(5, 150, 105, 0.22)'
               } }, '🤝'),
               h('div', { style: { flex: 1, minWidth: 0 } },
-                h('div', { style: { fontWeight: 800, fontSize: 15, color: '#166534', marginBottom: 2 } },
+                h('div', { style: { fontWeight: 800, fontSize: 15, color: _upC('#166534'), marginBottom: 2 } },
                   'If a friend is the one being targeted'),
-                h('div', { style: { fontSize: 12, color: '#475569', lineHeight: 1.4 } },
+                h('div', { style: { fontSize: 12, color: _upC('#475569'), lineHeight: 1.4 } },
                   'Different from upstander-in-the-moment. This is about presence over time. Scripts + what to avoid.')
               ),
               h('span', { 'aria-hidden': 'true', style: { color: '#059669', fontSize: 18 } }, hfOpen ? '▾' : '▸')
             ),
-            hfOpen && h('div', { style: { marginTop: 12, padding: 18, background: '#fff', border: '1px solid #86efac', borderRadius: 14 } },
-              h('p', { style: { margin: '0 0 14px', fontSize: 13, lineHeight: 1.55, color: '#475569' } },
-                h('strong', { style: { color: '#166534' } }, 'You do not have to be a counselor. '),
+            hfOpen && h('div', { style: { marginTop: 12, padding: 18, background: _upC('#fff'), border: '1px solid #86efac', borderRadius: 14 } },
+              h('p', { style: { margin: '0 0 14px', fontSize: 13, lineHeight: 1.55, color: _upC('#475569') } },
+                h('strong', { style: { color: _upC('#166534') } }, 'You do not have to be a counselor. '),
                 'You have to be present. The single most protective thing a peer can do is not look away. Tap a moment below to see what to say and why it works.'),
               // Scripts
               h('div', { style: { display: 'grid', gap: 8, marginBottom: 16 } },
                 HELPING_FRIEND.scripts.map(function(s, idx) {
                   var open = hfScriptIdx === idx;
                   return h('div', { key: idx, className: 'us-card', style: {
-                    border: '1px solid ' + (open ? '#34d399' : '#d1d5db'),
-                    borderRadius: 10, background: open ? '#f0fdf4' : '#fff', overflow: 'hidden'
+                    border: '1px solid ' + (open ? '#34d399' : _upC('#d1d5db')),
+                    borderRadius: 10, background: open ? _upC('#f0fdf4') : _upC('#fff'), overflow: 'hidden'
                   } },
                     h('button', {
                       onClick: function() { upd('hfScriptIdx', open ? null : idx); if (soundOn) sfxClick(); },
@@ -17726,35 +17732,35 @@ window.SelHub = window.SelHub || {
                       style: {
                         width: '100%', padding: '10px 12px', textAlign: 'left',
                         background: 'transparent', border: 'none', cursor: 'pointer',
-                        fontSize: 14, fontWeight: 700, color: '#0f172a',
+                        fontSize: 14, fontWeight: 700, color: _upC('#0f172a'),
                         display: 'flex', alignItems: 'center', gap: 8,
                         font: 'inherit'
                       }
                     },
                       h('span', { style: { flex: 1, fontWeight: 600 } }, s.situation),
-                      h('span', { 'aria-hidden': 'true', style: { color: '#64748b', fontSize: 16 } }, open ? '▾' : '▸')
+                      h('span', { 'aria-hidden': 'true', style: { color: _upC('#64748b'), fontSize: 16 } }, open ? '▾' : '▸')
                     ),
                     open && h('div', { style: { padding: '0 12px 12px' } },
-                      h('div', { style: { padding: 12, background: '#ecfdf5', border: '1px solid #5eead4', borderRadius: 8, marginBottom: 10 } },
-                        h('div', { style: { fontSize: 11, color: '#0e7490', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Try this'),
-                        h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.55, color: '#0f172a', fontStyle: 'italic' } }, s.say)
+                      h('div', { style: { padding: 12, background: _upC('#ecfdf5'), border: '1px solid #5eead4', borderRadius: 8, marginBottom: 10 } },
+                        h('div', { style: { fontSize: 11, color: _upC('#0e7490'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Try this'),
+                        h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.55, color: _upC('#0f172a'), fontStyle: 'italic' } }, s.say)
                       ),
-                      h('div', { style: { fontSize: 11, color: '#64748b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Why it works'),
-                      h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.55, color: '#334155' } }, s.why)
+                      h('div', { style: { fontSize: 11, color: _upC('#64748b'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Why it works'),
+                      h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.55, color: _upC('#334155') } }, s.why)
                     )
                   );
                 })
               ),
               // Don'ts
-              h('div', { style: { padding: 14, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10 } },
-                h('div', { style: { fontWeight: 800, color: '#991b1b', marginBottom: 10, fontSize: 14 } },
+              h('div', { style: { padding: 14, background: _upC('#fef2f2'), border: '1px solid #fecaca', borderRadius: 10 } },
+                h('div', { style: { fontWeight: 800, color: _upC('#991b1b'), marginBottom: 10, fontSize: 14 } },
                   h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, '⛔'),
                   'And what to avoid'),
                 h('div', { style: { display: 'grid', gap: 10 } },
                   HELPING_FRIEND.donts.map(function(d, idx) {
                     return h('div', { key: idx },
-                      h('div', { style: { fontSize: 13, fontWeight: 700, color: '#0f172a', marginBottom: 2 } }, '✗ ' + d.what),
-                      h('div', { style: { fontSize: 12, color: '#475569', lineHeight: 1.5 } }, d.why)
+                      h('div', { style: { fontSize: 13, fontWeight: 700, color: _upC('#0f172a'), marginBottom: 2 } }, '✗ ' + d.what),
+                      h('div', { style: { fontSize: 12, color: _upC('#475569'), lineHeight: 1.5 } }, d.why)
                     );
                   })
                 )
@@ -17770,7 +17776,7 @@ window.SelHub = window.SelHub || {
               style: {
                 width: '100%', padding: '14px 16px', textAlign: 'left',
                 border: '2px solid ' + (cbOpen ? '#f59e0b' : '#fcd34d'),
-                background: cbOpen ? '#fffbeb' : '#fef9c3',
+                background: cbOpen ? _upC('#fffbeb') : _upC('#fef9c3'),
                 borderRadius: 14, cursor: 'pointer',
                 display: 'flex', alignItems: 'center', gap: 12,
                 font: 'inherit', color: 'inherit'
@@ -17784,21 +17790,21 @@ window.SelHub = window.SelHub || {
                 boxShadow: '0 4px 10px rgba(217, 119, 6, 0.22)'
               } }, '🧑‍🤝‍🧑'),
               h('div', { style: { flex: 1, minWidth: 0 } },
-                h('div', { style: { fontWeight: 800, fontSize: 15, color: '#92400e', marginBottom: 2 } },
+                h('div', { style: { fontWeight: 800, fontSize: 15, color: _upC('#92400e'), marginBottom: 2 } },
                   'Coalition Building — the move that makes the other moves possible'),
-                h('div', { style: { fontSize: 12, color: '#475569', lineHeight: 1.4 } },
+                h('div', { style: { fontSize: 12, color: _upC('#475569'), lineHeight: 1.4 } },
                   'Three peers committed to backing each other change what any one of them can safely do. ' + COALITION_STEPS.length + ' concrete steps.')
               ),
               h('span', { 'aria-hidden': 'true', style: { color: '#d97706', fontSize: 18 } }, cbOpen ? '▾' : '▸')
             ),
-            cbOpen && h('div', { style: { marginTop: 12, padding: 18, background: '#fff', border: '1px solid #fcd34d', borderRadius: 14 } },
-              h('p', { style: { margin: '0 0 14px', fontSize: 13, lineHeight: 1.6, color: '#475569' } },
-                h('strong', { style: { color: '#92400e' } }, 'Why this matters: '),
+            cbOpen && h('div', { style: { marginTop: 12, padding: 18, background: _upC('#fff'), border: '1px solid #fcd34d', borderRadius: 14 } },
+              h('p', { style: { margin: '0 0 14px', fontSize: 13, lineHeight: 1.6, color: _upC('#475569') } },
+                h('strong', { style: { color: _upC('#92400e') } }, 'Why this matters: '),
                 'one person speaking up in a hostile room is risky. Three people saying "this is not okay" together is different math. Most lasting change at schools comes from coalitions, not solo heroes. Coalition building is also one of the only moves that lets lower-power students participate safely in higher-impact intervention.'),
               h('div', { style: { display: 'grid', gap: 10 } },
                 COALITION_STEPS.map(function(s) {
                   return h('div', { key: s.n, className: 'us-card', style: {
-                    display: 'flex', gap: 12, padding: 14, background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 12
+                    display: 'flex', gap: 12, padding: 14, background: _upC('#fffbeb'), border: '1px solid #fcd34d', borderRadius: 12
                   } },
                     h('div', { 'aria-hidden': 'true', style: {
                       width: 40, height: 40, borderRadius: 10, flexShrink: 0,
@@ -17807,18 +17813,18 @@ window.SelHub = window.SelHub || {
                       fontSize: 18, color: '#fff'
                     } }, s.icon),
                     h('div', { style: { flex: 1, minWidth: 0 } },
-                      h('div', { style: { fontSize: 11, color: '#92400e', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Step ' + s.n),
-                      h('div', { style: { fontWeight: 700, fontSize: 14, color: '#0f172a', marginBottom: 6 } }, s.title),
-                      h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.6, color: '#334155' } }, s.body)
+                      h('div', { style: { fontSize: 11, color: _upC('#92400e'), fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Step ' + s.n),
+                      h('div', { style: { fontWeight: 700, fontSize: 14, color: _upC('#0f172a'), marginBottom: 6 } }, s.title),
+                      h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.6, color: _upC('#334155') } }, s.body)
                     )
                   );
                 })
               ),
               h('div', { style: {
-                marginTop: 14, padding: 12, background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 10
+                marginTop: 14, padding: 12, background: _upC('#f0fdf4'), border: '1px solid #86efac', borderRadius: 10
               } },
-                h('p', { style: { margin: 0, fontSize: 12, lineHeight: 1.6, color: '#0f172a' } },
-                  h('strong', { style: { color: '#166534' } }, 'The math, plainly: '),
+                h('p', { style: { margin: 0, fontSize: 12, lineHeight: 1.6, color: _upC('#0f172a') } },
+                  h('strong', { style: { color: _upC('#166534') } }, 'The math, plainly: '),
                   '1 student = brave but isolated. 2 students = unusual. 3 students = a movement. 5 students = a norm shift. Most school cultures change because of small coalitions of students who decided to back each other.'))
             )
           ),
@@ -17831,7 +17837,7 @@ window.SelHub = window.SelHub || {
               style: {
                 width: '100%', padding: '14px 16px', textAlign: 'left',
                 border: '2px solid ' + (deOpen ? '#ef4444' : '#fca5a5'),
-                background: deOpen ? '#fef2f2' : '#fff1f2',
+                background: deOpen ? _upC('#fef2f2') : _upC('#fff1f2'),
                 borderRadius: 14, cursor: 'pointer',
                 display: 'flex', alignItems: 'center', gap: 12,
                 font: 'inherit', color: 'inherit'
@@ -17845,16 +17851,16 @@ window.SelHub = window.SelHub || {
                 boxShadow: '0 4px 10px rgba(220, 38, 38, 0.22)'
               } }, '🧯'),
               h('div', { style: { flex: 1, minWidth: 0 } },
-                h('div', { style: { fontWeight: 800, fontSize: 15, color: '#991b1b', marginBottom: 2 } },
+                h('div', { style: { fontWeight: 800, fontSize: 15, color: _upC('#991b1b'), marginBottom: 2 } },
                   'De-escalation — when your move starts making it hotter'),
-                h('div', { style: { fontSize: 12, color: '#475569', lineHeight: 1.4 } },
+                h('div', { style: { fontSize: 12, color: _upC('#475569'), lineHeight: 1.4 } },
                   'Signals to read, words to use, body to position. Plus: when to extract instead of engage.')
               ),
-              h('span', { 'aria-hidden': 'true', style: { color: '#dc2626', fontSize: 18 } }, deOpen ? '▾' : '▸')
+              h('span', { 'aria-hidden': 'true', style: { color: _upC('#dc2626'), fontSize: 18 } }, deOpen ? '▾' : '▸')
             ),
-            deOpen && h('div', { style: { marginTop: 12, padding: 18, background: '#fff', border: '1px solid #fca5a5', borderRadius: 14 } },
-              h('p', { style: { margin: '0 0 14px', fontSize: 13, lineHeight: 1.6, color: '#475569' } },
-                h('strong', { style: { color: '#991b1b' } }, 'Sometimes intervention escalates. '),
+            deOpen && h('div', { style: { marginTop: 12, padding: 18, background: _upC('#fff'), border: '1px solid #fca5a5', borderRadius: 14 } },
+              h('p', { style: { margin: '0 0 14px', fontSize: 13, lineHeight: 1.6, color: _upC('#475569') } },
+                h('strong', { style: { color: _upC('#991b1b') } }, 'Sometimes intervention escalates. '),
                 'Knowing how to bring the temperature down — and when to step out entirely — is the part of upstander work most students never learn. The most important rule: ',
                 h('strong', null, 'you are not required to put your body at risk. '),
                 'Adults are. You are not.'),
@@ -17872,9 +17878,9 @@ window.SelHub = window.SelHub || {
                     onClick: function() { upd('deSection', s.id); if (soundOn) sfxClick(); },
                     style: {
                       padding: '6px 12px',
-                      background: active ? '#dc2626' : '#fff',
-                      color: active ? '#fff' : '#991b1b',
-                      border: '1px solid ' + (active ? '#dc2626' : '#fecaca'),
+                      background: active ? _upC('#dc2626') : _upC('#fff'),
+                      color: active ? '#fff' : _upC('#991b1b'),
+                      border: '1px solid ' + (active ? _upC('#dc2626') : '#fecaca'),
                       borderRadius: 999, fontWeight: active ? 700 : 500, cursor: 'pointer', fontSize: 12
                     }
                   }, h('span', { 'aria-hidden': 'true', style: { marginRight: 4 } }, s.icon), s.label);
@@ -17884,16 +17890,16 @@ window.SelHub = window.SelHub || {
               (function() {
                 if (deSection === 'signals') {
                   return h('div', null,
-                    h('p', { style: { margin: '0 0 10px', fontSize: 13, color: '#475569', lineHeight: 1.5 } },
+                    h('p', { style: { margin: '0 0 10px', fontSize: 13, color: _upC('#475569'), lineHeight: 1.5 } },
                       'If you see any of these stacking up, the situation is escalating. The earlier you read them, the more options you have.'),
                     h('div', { style: { display: 'grid', gap: 8 } },
                       DEESCALATION.signals.map(function(s, idx) {
                         return h('div', { key: idx, className: 'us-card', style: {
                           display: 'flex', gap: 10, padding: 10,
-                          background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8
+                          background: _upC('#fef2f2'), border: '1px solid #fecaca', borderRadius: 8
                         } },
                           h('span', { 'aria-hidden': 'true', style: { fontSize: 22, flexShrink: 0 } }, s.icon),
-                          h('div', { style: { fontSize: 13, color: '#0f172a', lineHeight: 1.5 } }, s.label)
+                          h('div', { style: { fontSize: 13, color: _upC('#0f172a'), lineHeight: 1.5 } }, s.label)
                         );
                       })
                     )
@@ -17905,22 +17911,22 @@ window.SelHub = window.SelHub || {
                 return h('div', { style: { display: 'grid', gap: 10 } },
                   rows.map(function(r, idx) {
                     return h('div', { key: idx, className: 'us-card', style: {
-                      padding: 12, background: '#fff', border: '1px solid #fecaca', borderRadius: 10
+                      padding: 12, background: _upC('#fff'), border: '1px solid #fecaca', borderRadius: 10
                     } },
-                      h('div', { style: { fontWeight: 700, fontSize: 14, color: '#0f172a', marginBottom: 4 } },
+                      h('div', { style: { fontWeight: 700, fontSize: 14, color: _upC('#0f172a'), marginBottom: 4 } },
                         h('span', { style: { color: '#16a34a', marginRight: 6 } }, '✓'),
                         r.do
                       ),
-                      h('div', { style: { fontSize: 12, color: '#475569', lineHeight: 1.55, paddingLeft: 20 } }, r.why)
+                      h('div', { style: { fontSize: 12, color: _upC('#475569'), lineHeight: 1.55, paddingLeft: 20 } }, r.why)
                     );
                   })
                 );
               })(),
               h('div', { style: {
-                marginTop: 14, padding: 12, background: '#fffbeb', border: '1px dashed #fcd34d', borderRadius: 10
+                marginTop: 14, padding: 12, background: _upC('#fffbeb'), border: '1px dashed #fcd34d', borderRadius: 10
               } },
-                h('p', { style: { margin: 0, fontSize: 12, color: '#0f172a', lineHeight: 1.6 } },
-                  h('strong', { style: { color: '#92400e' } }, 'Floor rule: '),
+                h('p', { style: { margin: 0, fontSize: 12, color: _upC('#0f172a'), lineHeight: 1.6 } },
+                  h('strong', { style: { color: _upC('#92400e') } }, 'Floor rule: '),
                   'if it crosses into weapons, credible threats of violence, or any moment where your gut says \"I am not safe\" — extract first, intervene later through adults. The most important upstander move you can ever make is staying alive and able to help next time.'))
             )
           )
@@ -17947,8 +17953,8 @@ window.SelHub = window.SelHub || {
               boxShadow: '0 5px 12px rgba(15, 23, 42, 0.18), inset 0 1px 0 rgba(255,255,255,0.30)'
             } }, '\uD83D\uDD17'),
             h('div', { style: { flex: 1, minWidth: 0 } },
-              h('h2', { style: { margin: '0 0 2px', color: '#0f172a', fontSize: 20, lineHeight: 1.2 } }, 'Breaking the Cycle'),
-              h('p', { style: { margin: 0, color: '#334155', fontSize: 13, lineHeight: 1.5 } },
+              h('h2', { style: { margin: '0 0 2px', color: _upC('#0f172a'), fontSize: 20, lineHeight: 1.2 } }, 'Breaking the Cycle'),
+              h('p', { style: { margin: 0, color: _upC('#334155'), fontSize: 13, lineHeight: 1.5 } },
                 'How harm flows, why punishment fails, and what actually works \u2014 for targets, perpetrators, and witnesses alike.')
             )
           ),
@@ -17958,7 +17964,7 @@ window.SelHub = window.SelHub || {
             background: 'linear-gradient(135deg, #fef2f2 0%, #fefce8 50%, #f0fdf4 100%)',
             border: '1px solid #fcd34d'
           } },
-            h('div', { style: { fontSize: 12, color: '#92400e', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, textAlign: 'center' } },
+            h('div', { style: { fontSize: 12, color: _upC('#92400e'), fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, textAlign: 'center' } },
               'How harm flows \u2014 and where it stops'),
             h('svg', {
               viewBox: '0 0 460 220',
@@ -17969,50 +17975,50 @@ window.SelHub = window.SelHub || {
               // Arrows between nodes
               h('defs', null,
                 h('marker', { id: 'us-arrowhead', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto' },
-                  h('path', { d: 'M0,0 L10,5 L0,10 Z', fill: '#dc2626' })
+                  h('path', { d: 'M0,0 L10,5 L0,10 Z', fill: _upC('#dc2626') })
                 ),
                 h('marker', { id: 'us-arrowhead-green', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto' },
                   h('path', { d: 'M0,0 L10,5 L0,10 Z', fill: '#16a34a' })
                 )
               ),
               // Curved arrows showing harm flowing
-              h('path', { d: 'M 80,70 Q 130,40 175,70', stroke: '#dc2626', strokeWidth: 2.5, fill: 'none', 'marker-end': 'url(#us-arrowhead)' }),
-              h('path', { d: 'M 215,70 Q 265,40 310,70', stroke: '#dc2626', strokeWidth: 2.5, fill: 'none', 'marker-end': 'url(#us-arrowhead)' }),
+              h('path', { d: 'M 80,70 Q 130,40 175,70', stroke: _upC('#dc2626'), strokeWidth: 2.5, fill: 'none', 'marker-end': 'url(#us-arrowhead)' }),
+              h('path', { d: 'M 215,70 Q 265,40 310,70', stroke: _upC('#dc2626'), strokeWidth: 2.5, fill: 'none', 'marker-end': 'url(#us-arrowhead)' }),
               // The cycle-breaker absorbs (no arrow leaving them \u2014 shown by a stop sign)
               h('path', { d: 'M 350,160 L 350,190', stroke: '#16a34a', strokeWidth: 3, fill: 'none', strokeDasharray: '4 3' }),
               // Node 1: Adult hurts child
               h('g', null,
-                h('circle', { cx: 60, cy: 90, r: 32, fill: '#fecaca', stroke: '#dc2626', strokeWidth: 2 }),
+                h('circle', { cx: 60, cy: 90, r: 32, fill: '#fecaca', stroke: _upC('#dc2626'), strokeWidth: 2 }),
                 h('text', { x: 60, y: 96, textAnchor: 'middle', fontSize: 24 }, '\uD83D\uDC64'),
-                h('text', { x: 60, y: 140, textAnchor: 'middle', fontSize: 11, fill: '#991b1b', fontWeight: 700 }, 'Hurt'),
-                h('text', { x: 60, y: 155, textAnchor: 'middle', fontSize: 10, fill: '#475569' }, 'at home')
+                h('text', { x: 60, y: 140, textAnchor: 'middle', fontSize: 11, fill: _upC('#991b1b'), fontWeight: 700 }, 'Hurt'),
+                h('text', { x: 60, y: 155, textAnchor: 'middle', fontSize: 10, fill: _upC('#475569') }, 'at home')
               ),
               // Node 2: Child hurts smaller child
               h('g', null,
                 h('circle', { cx: 195, cy: 90, r: 32, fill: '#fed7aa', stroke: '#ea580c', strokeWidth: 2 }),
                 h('text', { x: 195, y: 96, textAnchor: 'middle', fontSize: 24 }, '\uD83D\uDE1E'),
-                h('text', { x: 195, y: 140, textAnchor: 'middle', fontSize: 11, fill: '#9a3412', fontWeight: 700 }, 'Hurts'),
-                h('text', { x: 195, y: 155, textAnchor: 'middle', fontSize: 10, fill: '#475569' }, 'at school')
+                h('text', { x: 195, y: 140, textAnchor: 'middle', fontSize: 11, fill: _upC('#9a3412'), fontWeight: 700 }, 'Hurts'),
+                h('text', { x: 195, y: 155, textAnchor: 'middle', fontSize: 10, fill: _upC('#475569') }, 'at school')
               ),
               // Node 3: Smaller child hurts someone smaller
               h('g', null,
                 h('circle', { cx: 330, cy: 90, r: 32, fill: '#fde68a', stroke: '#ca8a04', strokeWidth: 2 }),
                 h('text', { x: 330, y: 96, textAnchor: 'middle', fontSize: 24 }, '\uD83D\uDE22'),
-                h('text', { x: 330, y: 140, textAnchor: 'middle', fontSize: 11, fill: '#92400e', fontWeight: 700 }, 'Could pass'),
-                h('text', { x: 330, y: 155, textAnchor: 'middle', fontSize: 10, fill: '#475569' }, 'it on')
+                h('text', { x: 330, y: 140, textAnchor: 'middle', fontSize: 11, fill: _upC('#92400e'), fontWeight: 700 }, 'Could pass'),
+                h('text', { x: 330, y: 155, textAnchor: 'middle', fontSize: 10, fill: _upC('#475569') }, 'it on')
               ),
               // The cycle-breaker \u2014 distinct, green, with shield
               h('g', null,
                 h('circle', { cx: 405, cy: 90, r: 36, fill: '#bbf7d0', stroke: '#16a34a', strokeWidth: 3 }),
                 h('text', { x: 405, y: 98, textAnchor: 'middle', fontSize: 28 }, '\uD83D\uDEE1\uFE0F'),
-                h('text', { x: 405, y: 145, textAnchor: 'middle', fontSize: 11, fill: '#166534', fontWeight: 800 }, 'The cycle'),
-                h('text', { x: 405, y: 158, textAnchor: 'middle', fontSize: 11, fill: '#166534', fontWeight: 800 }, 'breaker')
+                h('text', { x: 405, y: 145, textAnchor: 'middle', fontSize: 11, fill: _upC('#166534'), fontWeight: 800 }, 'The cycle'),
+                h('text', { x: 405, y: 158, textAnchor: 'middle', fontSize: 11, fill: _upC('#166534'), fontWeight: 800 }, 'breaker')
               ),
               // STOPS HERE label under cycle breaker
               h('rect', { x: 360, y: 188, width: 90, height: 20, rx: 10, fill: '#16a34a' }),
               h('text', { x: 405, y: 202, textAnchor: 'middle', fontSize: 11, fill: '#fff', fontWeight: 800 }, 'STOPS HERE')
             ),
-            h('p', { style: { margin: '12px 0 0', fontSize: 12, color: '#0f172a', lineHeight: 1.55, textAlign: 'center' } },
+            h('p', { style: { margin: '12px 0 0', fontSize: 12, color: _upC('#0f172a'), lineHeight: 1.55, textAlign: 'center' } },
               h('strong', null, 'Hurt people hurt people \u2014 '),
               'until one person absorbs the harm instead of passing it on. That person is the cycle breaker. ',
               h('em', null, 'It can be you.'))
@@ -18023,7 +18029,7 @@ window.SelHub = window.SelHub || {
               return h('button', { key: i, className: 'us-card', 'aria-pressed': active ? 'true' : 'false', 'aria-label': b.title,
                 onClick: function() { upd('cycleIdx', i); if (soundOn) sfxClick(); },
                 style: {
-                  background: active ? BL : '#fff',
+                  background: active ? BL : _upC('#fff'),
                   border: active ? '2px solid #93c5fd' : '1px solid #e5e7eb',
                   borderRadius: '14px', padding: '14px', cursor: 'pointer',
                   textAlign: 'left', width: '100%', font: 'inherit', color: 'inherit'
@@ -18040,9 +18046,9 @@ window.SelHub = window.SelHub || {
                     boxShadow: active ? '0 3px 8px rgba(37, 99, 235, 0.22)' : 'none',
                     transition: 'all 0.18s ease'
                   } }, b.icon),
-                  h('h4', { style: { fontSize: 14, fontWeight: 700, color: active ? BD : '#374151', margin: 0, flex: 1 } }, b.title)
+                  h('h4', { style: { fontSize: 14, fontWeight: 700, color: active ? BD : _upC('#374151'), margin: 0, flex: 1 } }, b.title)
                 ),
-                active && h('p', { style: { fontSize: 13, lineHeight: 1.7, color: '#374151', margin: 0, paddingLeft: 52 } }, b.text)
+                active && h('p', { style: { fontSize: 13, lineHeight: 1.7, color: _upC('#374151'), margin: 0, paddingLeft: 52 } }, b.text)
               );
             })
           ),
@@ -18058,7 +18064,7 @@ window.SelHub = window.SelHub || {
                 style: {
                   width: '100%', padding: '14px 16px', textAlign: 'left',
                   border: '2px solid ' + (repairOpen ? '#fca5a5' : '#fecaca'),
-                  background: repairOpen ? '#fff1f2' : '#fef2f2',
+                  background: repairOpen ? _upC('#fff1f2') : _upC('#fef2f2'),
                   borderRadius: 14, cursor: 'pointer',
                   display: 'flex', alignItems: 'center', gap: 12, font: 'inherit', color: 'inherit'
                 }
@@ -18071,28 +18077,28 @@ window.SelHub = window.SelHub || {
                   boxShadow: '0 4px 10px rgba(220, 38, 38, 0.22)'
                 } }, '🔧'),
                 h('div', { style: { flex: 1, minWidth: 0 } },
-                  h('div', { style: { fontWeight: 800, fontSize: 15, color: '#991b1b', marginBottom: 2 } },
+                  h('div', { style: { fontWeight: 800, fontSize: 15, color: _upC('#991b1b'), marginBottom: 2 } },
                     'If you have been the one doing the hurting'),
-                  h('div', { style: { fontSize: 12, color: '#475569', lineHeight: 1.4 } },
+                  h('div', { style: { fontSize: 12, color: _upC('#475569'), lineHeight: 1.4 } },
                     'The hardest tab in this tool. Real repair, not performative apology. ' + steps.length + ' steps.')
                 ),
-                h('span', { 'aria-hidden': 'true', style: { color: '#dc2626', fontSize: 18 } }, repairOpen ? '▾' : '▸')
+                h('span', { 'aria-hidden': 'true', style: { color: _upC('#dc2626'), fontSize: 18 } }, repairOpen ? '▾' : '▸')
               ),
-              repairOpen && h('div', { style: { marginTop: 12, padding: 18, background: '#fff', border: '1px solid #fecaca', borderRadius: 14 } },
-                h('p', { style: { margin: '0 0 14px', fontSize: 13, lineHeight: 1.6, color: '#475569' } },
-                  h('strong', { style: { color: '#991b1b' } }, 'One thing first: '),
+              repairOpen && h('div', { style: { marginTop: 12, padding: 18, background: _upC('#fff'), border: '1px solid #fecaca', borderRadius: 14 } },
+                h('p', { style: { margin: '0 0 14px', fontSize: 13, lineHeight: 1.6, color: _upC('#475569') } },
+                  h('strong', { style: { color: _upC('#991b1b') } }, 'One thing first: '),
                   'recognizing you have hurt someone is a really hard thing to do, and it is what people who can change actually do. This section assumes you are here in good faith. None of these steps are about getting forgiven — they are about doing the work whether or not forgiveness comes.'),
                 // Step indicator
                 h('div', { style: { display: 'flex', gap: 6, marginBottom: 14 } },
                   steps.map(function(s, i) {
                     return h('div', { key: i, 'aria-hidden': 'true', style: {
                       flex: 1, height: 6, borderRadius: 3,
-                      background: i <= repairStep ? 'linear-gradient(90deg, #dc2626, #b91c1c)' : '#fee2e2'
+                      background: i <= repairStep ? 'linear-gradient(90deg, #dc2626, #b91c1c)' : _upC('#fee2e2')
                     } });
                   })
                 ),
                 h('div', { 'aria-live': 'polite', className: 'us-pop us-card', style: {
-                  padding: 16, borderRadius: 12, background: '#fff1f2', border: '1px solid #fca5a5'
+                  padding: 16, borderRadius: 12, background: _upC('#fff1f2'), border: '1px solid #fca5a5'
                 } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 } },
                     h('div', { 'aria-hidden': 'true', style: {
@@ -18102,24 +18108,24 @@ window.SelHub = window.SelHub || {
                       fontSize: 20, color: '#fff'
                     } }, curStep.icon),
                     h('div', { style: { flex: 1, minWidth: 0 } },
-                      h('div', { style: { fontSize: 11, color: '#991b1b', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Step ' + curStep.n + ' of ' + steps.length),
-                      h('div', { style: { fontSize: 15, fontWeight: 700, color: '#0f172a' } }, curStep.title)
+                      h('div', { style: { fontSize: 11, color: _upC('#991b1b'), fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Step ' + curStep.n + ' of ' + steps.length),
+                      h('div', { style: { fontSize: 15, fontWeight: 700, color: _upC('#0f172a') } }, curStep.title)
                     )
                   ),
-                  h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.6, color: '#1f2937' } }, curStep.body)
+                  h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.6, color: _upC('#1f2937') } }, curStep.body)
                 ),
                 h('div', { style: { display: 'flex', gap: 8, marginTop: 12, justifyContent: 'space-between' } },
                   h('button', {
                     onClick: function() { if (repairStep > 0) upd('repairStep', repairStep - 1); },
                     disabled: repairStep === 0,
-                    style: { padding: '8px 14px', background: '#fff', color: repairStep === 0 ? '#94a3b8' : '#0f172a',
+                    style: { padding: '8px 14px', background: _upC('#fff'), color: repairStep === 0 ? _upC('#94a3b8') : _upC('#0f172a'),
                       border: '1px solid #fecaca', borderRadius: 8, fontWeight: 600,
                       cursor: repairStep === 0 ? 'not-allowed' : 'pointer', fontSize: 13 }
                   }, '← Back'),
                   repairStep < steps.length - 1
                     ? h('button', {
                         onClick: function() { upd('repairStep', repairStep + 1); if (soundOn) sfxClick(); },
-                        style: { padding: '8px 14px', background: '#dc2626', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
+                        style: { padding: '8px 14px', background: _upC('#dc2626'), color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
                       }, 'Next step →')
                     : h('button', {
                         onClick: function() {
@@ -18138,7 +18144,7 @@ window.SelHub = window.SelHub || {
                     style: {
                       width: '100%', padding: '12px 14px', textAlign: 'left',
                       border: '1px dashed #fca5a5',
-                      background: apOpen ? '#fff1f2' : 'transparent',
+                      background: apOpen ? _upC('#fff1f2') : 'transparent',
                       borderRadius: 12, cursor: 'pointer',
                       display: 'flex', alignItems: 'center', gap: 10,
                       font: 'inherit', color: 'inherit'
@@ -18146,17 +18152,17 @@ window.SelHub = window.SelHub || {
                   },
                     h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, '🎤'),
                     h('div', { style: { flex: 1, minWidth: 0 } },
-                      h('div', { style: { fontWeight: 800, fontSize: 13, color: '#991b1b', marginBottom: 2 } },
+                      h('div', { style: { fontWeight: 800, fontSize: 13, color: _upC('#991b1b'), marginBottom: 2 } },
                         'Rehearse your apology with AI feedback'),
-                      h('div', { style: { fontSize: 11, color: '#64748b', lineHeight: 1.4 } },
+                      h('div', { style: { fontSize: 11, color: _upC('#64748b'), lineHeight: 1.4 } },
                         'Type who you hurt + your draft. Coach tells you what would land, what might backfire, one tweak.')
                     ),
-                    h('span', { 'aria-hidden': 'true', style: { color: '#dc2626', fontSize: 16 } }, apOpen ? '▾' : '▸')
+                    h('span', { 'aria-hidden': 'true', style: { color: _upC('#dc2626'), fontSize: 16 } }, apOpen ? '▾' : '▸')
                   ),
-                  apOpen && h('div', { style: { marginTop: 10, padding: 14, background: '#fff', border: '1px solid #fecaca', borderRadius: 12 } },
-                    h('p', { style: { margin: '0 0 12px', fontSize: 12, lineHeight: 1.55, color: '#475569' } },
+                  apOpen && h('div', { style: { marginTop: 10, padding: 14, background: _upC('#fff'), border: '1px solid #fecaca', borderRadius: 12 } },
+                    h('p', { style: { margin: '0 0 12px', fontSize: 12, lineHeight: 1.55, color: _upC('#475569') } },
                       'A real apology has no "but," no "if you felt that way." Practice here, then have the conversation for real. The AI cannot make this easier than it is, but it can help you notice what you are actually saying.'),
-                    h('label', { htmlFor: 'us-ap-hurt', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } },
+                    h('label', { htmlFor: 'us-ap-hurt', style: { display: 'block', fontSize: 11, fontWeight: 700, color: _upC('#475569'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } },
                       'Who you hurt and what happened (brief)'),
                     h('textarea', { id: 'us-ap-hurt', value: apHurt,
                       onChange: function(e) { upd('apHurt', e.target.value); },
@@ -18164,7 +18170,7 @@ window.SelHub = window.SelHub || {
                       rows: 2,
                       style: { width: '100%', padding: 10, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', marginBottom: 10 }
                     }),
-                    h('label', { htmlFor: 'us-ap-draft', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } },
+                    h('label', { htmlFor: 'us-ap-draft', style: { display: 'block', fontSize: 11, fontWeight: 700, color: _upC('#475569'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } },
                       'Your draft apology — the exact words you would say'),
                     h('textarea', { id: 'us-ap-draft', value: apDraft,
                       onChange: function(e) { upd('apDraft', e.target.value); },
@@ -18213,7 +18219,7 @@ window.SelHub = window.SelHub || {
                         },
                         style: {
                           padding: '8px 14px',
-                          background: (apLoading || !apHurt.trim() || !apDraft.trim() || !callGemini) ? '#cbd5e1' : '#dc2626',
+                          background: (apLoading || !apHurt.trim() || !apDraft.trim() || !callGemini) ? _upC('#cbd5e1') : _upC('#dc2626'),
                           color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700,
                           cursor: (apLoading || !apHurt.trim() || !apDraft.trim() || !callGemini) ? 'not-allowed' : 'pointer',
                           fontSize: 13
@@ -18221,18 +18227,18 @@ window.SelHub = window.SelHub || {
                       }, apLoading ? 'Thinking…' : (callGemini ? 'Get coach feedback' : 'AI not available')),
                       apFeedback && h('button', {
                         onClick: function() { upd({ apHurt: '', apDraft: '', apFeedback: '' }); },
-                        style: { padding: '8px 14px', background: '#fff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 13 }
+                        style: { padding: '8px 14px', background: _upC('#fff'), color: _upC('#0f172a'), border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 13 }
                       }, 'Try another')
                     ),
-                    !callGemini && h('p', { style: { margin: '8px 0 0', fontSize: 11, color: '#991b1b' } },
+                    !callGemini && h('p', { style: { margin: '8px 0 0', fontSize: 11, color: _upC('#991b1b') } },
                       'AI features need a connection. While offline: read your draft out loud and listen for any \"but.\"'),
                     // Surface 988 / Crisis Text Line block on tier-3.
                     (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, band),
                     apFeedback && h('div', { 'aria-live': 'polite', className: 'us-pop', style: {
-                      marginTop: 12, padding: 12, background: '#fff1f2', border: '1px dashed #fca5a5',
-                      borderRadius: 8, fontSize: 13, lineHeight: 1.6, color: '#0f172a', whiteSpace: 'pre-wrap'
+                      marginTop: 12, padding: 12, background: _upC('#fff1f2'), border: '1px dashed #fca5a5',
+                      borderRadius: 8, fontSize: 13, lineHeight: 1.6, color: _upC('#0f172a'), whiteSpace: 'pre-wrap'
                     } }, apFeedback),
-                    apFeedback && h('p', { style: { margin: '8px 0 0', fontSize: 11, color: '#991b1b', fontStyle: 'italic' } },
+                    apFeedback && h('p', { style: { margin: '8px 0 0', fontSize: 11, color: _upC('#991b1b'), fontStyle: 'italic' } },
                       'AI-generated. The rehearsal is not the apology — the conversation with the real person is.')
                   )
                 )
@@ -18251,7 +18257,7 @@ window.SelHub = window.SelHub || {
                 style: {
                   width: '100%', padding: '14px 16px', textAlign: 'left',
                   border: '2px solid ' + (afterOpen ? '#93c5fd' : '#bfdbfe'),
-                  background: afterOpen ? '#eff6ff' : '#f0f9ff',
+                  background: afterOpen ? _upC('#eff6ff') : _upC('#f0f9ff'),
                   borderRadius: 14, cursor: 'pointer',
                   display: 'flex', alignItems: 'center', gap: 12,
                   font: 'inherit', color: 'inherit'
@@ -18267,13 +18273,13 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { flex: 1, minWidth: 0 } },
                   h('div', { style: { fontWeight: 800, fontSize: 15, color: BD, marginBottom: 2 } },
                     'Right after — if you were just targeted'),
-                  h('div', { style: { fontSize: 12, color: '#475569', lineHeight: 1.4 } },
+                  h('div', { style: { fontSize: 12, color: _upC('#475569'), lineHeight: 1.4 } },
                     'A ' + steps.length + '-step grounding sequence for the moments right after. Built for your body, not just your brain.')
                 ),
                 h('span', { 'aria-hidden': 'true', style: { color: BLUE, fontSize: 18 } }, afterOpen ? '▾' : '▸')
               ),
-              afterOpen && h('div', { style: { marginTop: 12, padding: 18, background: '#fff', border: '1px solid #bfdbfe', borderRadius: 14 } },
-                h('p', { style: { margin: '0 0 14px', fontSize: 13, lineHeight: 1.6, color: '#475569' } },
+              afterOpen && h('div', { style: { marginTop: 12, padding: 18, background: _upC('#fff'), border: '1px solid #bfdbfe', borderRadius: 14 } },
+                h('p', { style: { margin: '0 0 14px', fontSize: 13, lineHeight: 1.6, color: _upC('#475569') } },
                   h('strong', { style: { color: BD } }, 'Take it one step at a time. '),
                   'You do not have to read all of these now. Just do the next one. Your job in the next few minutes is not to figure out the whole situation — it is to take care of your body.'),
                 // Step indicator
@@ -18281,12 +18287,12 @@ window.SelHub = window.SelHub || {
                   steps.map(function(s, i) {
                     return h('div', { key: i, 'aria-hidden': 'true', style: {
                       flex: 1, height: 6, borderRadius: 3,
-                      background: i <= afterStep ? 'linear-gradient(90deg, ' + BLUE + ', #1d4ed8)' : '#dbeafe'
+                      background: i <= afterStep ? 'linear-gradient(90deg, ' + BLUE + ', #1d4ed8)' : _upC('#dbeafe')
                     } });
                   })
                 ),
                 h('div', { 'aria-live': 'polite', className: 'us-pop us-card', style: {
-                  padding: 16, borderRadius: 12, background: '#f0f9ff', border: '1px solid #93c5fd'
+                  padding: 16, borderRadius: 12, background: _upC('#f0f9ff'), border: '1px solid #93c5fd'
                 } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 } },
                     h('div', { 'aria-hidden': 'true', style: {
@@ -18297,17 +18303,17 @@ window.SelHub = window.SelHub || {
                     } }, curStep.icon),
                     h('div', { style: { flex: 1, minWidth: 0 } },
                       h('div', { style: { fontSize: 11, color: BD, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Step ' + curStep.n + ' of ' + steps.length),
-                      h('div', { style: { fontSize: 15, fontWeight: 700, color: '#0f172a' } }, curStep.title)
+                      h('div', { style: { fontSize: 15, fontWeight: 700, color: _upC('#0f172a') } }, curStep.title)
                     )
                   ),
-                  h('p', { style: { margin: '0 0 6px', fontSize: 14, lineHeight: 1.6, color: '#1f2937' } }, curStep.body),
-                  h('div', { style: { fontSize: 12, color: '#64748b', fontStyle: 'italic' } }, curStep.sec)
+                  h('p', { style: { margin: '0 0 6px', fontSize: 14, lineHeight: 1.6, color: _upC('#1f2937') } }, curStep.body),
+                  h('div', { style: { fontSize: 12, color: _upC('#64748b'), fontStyle: 'italic' } }, curStep.sec)
                 ),
                 h('div', { style: { display: 'flex', gap: 8, marginTop: 12, justifyContent: 'space-between' } },
                   h('button', {
                     onClick: function() { if (afterStep > 0) upd('afterStep', afterStep - 1); },
                     disabled: afterStep === 0,
-                    style: { padding: '8px 14px', background: '#fff', color: afterStep === 0 ? '#94a3b8' : '#0f172a',
+                    style: { padding: '8px 14px', background: _upC('#fff'), color: afterStep === 0 ? _upC('#94a3b8') : _upC('#0f172a'),
                       border: '1px solid #bfdbfe', borderRadius: 8, fontWeight: 600,
                       cursor: afterStep === 0 ? 'not-allowed' : 'pointer', fontSize: 13 }
                   }, '← Back'),
@@ -18340,7 +18346,7 @@ window.SelHub = window.SelHub || {
                 style: {
                   width: '100%', padding: '14px 16px', textAlign: 'left',
                   border: '2px solid ' + (whOpen ? '#c084fc' : '#d8b4fe'),
-                  background: whOpen ? '#faf5ff' : '#fdf4ff',
+                  background: whOpen ? _upC('#faf5ff') : _upC('#fdf4ff'),
                   borderRadius: 14, cursor: 'pointer',
                   display: 'flex', alignItems: 'center', gap: 12,
                   font: 'inherit', color: 'inherit'
@@ -18354,28 +18360,28 @@ window.SelHub = window.SelHub || {
                   boxShadow: '0 4px 10px rgba(147, 51, 234, 0.22)'
                 } }, '✨'),
                 h('div', { style: { flex: 1, minWidth: 0 } },
-                  h('div', { style: { fontWeight: 800, fontSize: 15, color: '#6b21a8', marginBottom: 2 } },
+                  h('div', { style: { fontWeight: 800, fontSize: 15, color: _upC('#6b21a8'), marginBottom: 2 } },
                     'For the witness who froze — healing the shame'),
-                  h('div', { style: { fontSize: 12, color: '#475569', lineHeight: 1.4 } },
+                  h('div', { style: { fontSize: 12, color: _upC('#475569'), lineHeight: 1.4 } },
                     'If you carry a memory of NOT acting when you should have — this section is for you. ' + steps.length + ' steps.')
                 ),
                 h('span', { 'aria-hidden': 'true', style: { color: '#9333ea', fontSize: 18 } }, whOpen ? '▾' : '▸')
               ),
-              whOpen && h('div', { style: { marginTop: 12, padding: 18, background: '#fff', border: '1px solid #d8b4fe', borderRadius: 14 } },
-                h('p', { style: { margin: '0 0 14px', fontSize: 13, lineHeight: 1.6, color: '#475569' } },
-                  h('strong', { style: { color: '#6b21a8' } }, 'Most people have one. '),
+              whOpen && h('div', { style: { marginTop: 12, padding: 18, background: _upC('#fff'), border: '1px solid #d8b4fe', borderRadius: 14 } },
+                h('p', { style: { margin: '0 0 14px', fontSize: 13, lineHeight: 1.6, color: _upC('#475569') } },
+                  h('strong', { style: { color: _upC('#6b21a8') } }, 'Most people have one. '),
                   'A memory of when they should have said something and did not. The shame is real, and the path forward is real too. This is not about absolving you — it is about helping you become someone you can trust to show up next time.'),
                 // Step indicator
                 h('div', { style: { display: 'flex', gap: 6, marginBottom: 14 } },
                   steps.map(function(s, i) {
                     return h('div', { key: i, 'aria-hidden': 'true', style: {
                       flex: 1, height: 6, borderRadius: 3,
-                      background: i <= whStep ? 'linear-gradient(90deg, #9333ea, #6b21a8)' : '#ede9fe'
+                      background: i <= whStep ? 'linear-gradient(90deg, #9333ea, #6b21a8)' : _upC('#ede9fe')
                     } });
                   })
                 ),
                 h('div', { 'aria-live': 'polite', className: 'us-pop us-card', style: {
-                  padding: 16, borderRadius: 12, background: '#faf5ff', border: '1px solid #c084fc'
+                  padding: 16, borderRadius: 12, background: _upC('#faf5ff'), border: '1px solid #c084fc'
                 } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 } },
                     h('div', { 'aria-hidden': 'true', style: {
@@ -18385,17 +18391,17 @@ window.SelHub = window.SelHub || {
                       fontSize: 20, color: '#fff'
                     } }, curStep.icon),
                     h('div', { style: { flex: 1, minWidth: 0 } },
-                      h('div', { style: { fontSize: 11, color: '#6b21a8', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Step ' + curStep.n + ' of ' + steps.length),
-                      h('div', { style: { fontSize: 15, fontWeight: 700, color: '#0f172a' } }, curStep.title)
+                      h('div', { style: { fontSize: 11, color: _upC('#6b21a8'), fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Step ' + curStep.n + ' of ' + steps.length),
+                      h('div', { style: { fontSize: 15, fontWeight: 700, color: _upC('#0f172a') } }, curStep.title)
                     )
                   ),
-                  h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.6, color: '#1f2937' } }, curStep.body)
+                  h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.6, color: _upC('#1f2937') } }, curStep.body)
                 ),
                 h('div', { style: { display: 'flex', gap: 8, marginTop: 12, justifyContent: 'space-between' } },
                   h('button', {
                     onClick: function() { if (whStep > 0) upd('whStep', whStep - 1); },
                     disabled: whStep === 0,
-                    style: { padding: '8px 14px', background: '#fff', color: whStep === 0 ? '#94a3b8' : '#0f172a',
+                    style: { padding: '8px 14px', background: _upC('#fff'), color: whStep === 0 ? _upC('#94a3b8') : _upC('#0f172a'),
                       border: '1px solid #d8b4fe', borderRadius: 8, fontWeight: 600,
                       cursor: whStep === 0 ? 'not-allowed' : 'pointer', fontSize: 13 }
                   }, '← Back'),
@@ -18436,16 +18442,16 @@ window.SelHub = window.SelHub || {
               background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)',
               border: '1px solid #fcd34d', borderRadius: 10
             } },
-              h('p', { style: { margin: '0 0 8px', fontSize: 13, lineHeight: 1.55, color: '#0f172a' } },
-                h('strong', { style: { color: '#92400e' } }, 'Reporting is a real thing that has real steps. '),
+              h('p', { style: { margin: '0 0 8px', fontSize: 13, lineHeight: 1.55, color: _upC('#0f172a') } },
+                h('strong', { style: { color: _upC('#92400e') } }, 'Reporting is a real thing that has real steps. '),
                 'Most students do not know what actually happens after they tell an adult — which is one reason they hesitate. Below is what the process looks like, what you should expect, and what to do if the system stalls.'),
-              h('p', { style: { margin: 0, fontSize: 12, color: '#475569', lineHeight: 1.55, fontStyle: 'italic' } },
+              h('p', { style: { margin: 0, fontSize: 12, color: _upC('#475569'), lineHeight: 1.55, fontStyle: 'italic' } },
                 'Note: specifics vary by state and district. Use StopBullying.gov to look up your state\'s laws and your school\'s posted policy.')
             ),
             h('div', { style: { display: 'grid', gap: 10 } },
               US_REPORT_STEPS.map(function(s, idx) {
                 return h('div', { key: idx, className: 'us-card', style: {
-                  display: 'flex', gap: 14, padding: 14, border: '1px solid #cbd5e1', borderRadius: 12, background: '#fff'
+                  display: 'flex', gap: 14, padding: 14, border: '1px solid #cbd5e1', borderRadius: 12, background: _upC('#fff')
                 } },
                   h('div', { 'aria-hidden': 'true', style: {
                     width: 44, height: 44, borderRadius: 12, flexShrink: 0,
@@ -18456,23 +18462,23 @@ window.SelHub = window.SelHub || {
                   } }, s.icon),
                   h('div', { style: { flex: 1, minWidth: 0 } },
                     h('div', { style: { fontSize: 11, color: BD, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Step ' + (idx + 1)),
-                    h('div', { style: { fontWeight: 700, fontSize: 15, color: '#0f172a', marginBottom: 6 } }, s.title),
-                    h('p', { style: { margin: '0 0 8px', fontSize: 13, lineHeight: 1.6, color: '#334155' } }, s.body),
-                    h('div', { style: { padding: 10, background: '#f0f9ff', borderLeft: '3px solid ' + BLUE, borderRadius: 6 } },
+                    h('div', { style: { fontWeight: 700, fontSize: 15, color: _upC('#0f172a'), marginBottom: 6 } }, s.title),
+                    h('p', { style: { margin: '0 0 8px', fontSize: 13, lineHeight: 1.6, color: _upC('#334155') } }, s.body),
+                    h('div', { style: { padding: 10, background: _upC('#f0f9ff'), borderLeft: '3px solid ' + BLUE, borderRadius: 6 } },
                       h('div', { style: { fontSize: 10, color: BD, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 } }, 'Tip'),
-                      h('div', { style: { fontSize: 12, color: '#1f2937', lineHeight: 1.5 } }, s.tip)
+                      h('div', { style: { fontSize: 12, color: _upC('#1f2937'), lineHeight: 1.5 } }, s.tip)
                     )
                   )
                 );
               })
             ),
             h('div', { style: {
-              marginTop: 16, padding: 14, background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 10
+              marginTop: 16, padding: 14, background: _upC('#f0fdf4'), border: '1px solid #86efac', borderRadius: 10
             } },
-              h('div', { style: { fontWeight: 800, color: '#166534', marginBottom: 6, fontSize: 14 } },
+              h('div', { style: { fontWeight: 800, color: _upC('#166534'), marginBottom: 6, fontSize: 14 } },
                 h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, '✊'),
                 'You have rights'),
-              h('ul', { style: { margin: 0, paddingLeft: 20, fontSize: 13, lineHeight: 1.7, color: '#0f172a' } },
+              h('ul', { style: { margin: 0, paddingLeft: 20, fontSize: 13, lineHeight: 1.7, color: _upC('#0f172a') } },
                 h('li', null, 'You cannot be punished for reporting in good faith.'),
                 h('li', null, 'You should be told what action the school took (specific outcomes may be private, but the existence of a response should not be).'),
                 h('li', null, 'You can request that you not be brought into the same room as the person who caused harm without your consent.'),
@@ -18485,14 +18491,14 @@ window.SelHub = window.SelHub || {
               h('h4', { style: { margin: '0 0 6px', fontSize: 15, color: BD, fontWeight: 800 } },
                 h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, '🤝'),
                 'What a restorative conference actually looks like'),
-              h('p', { style: { fontSize: 12, color: '#475569', marginBottom: 12, lineHeight: 1.55 } },
+              h('p', { style: { fontSize: 12, color: _upC('#475569'), marginBottom: 12, lineHeight: 1.55 } },
                 'If the school offers restorative conferencing, you should know what you are agreeing to. The phases below are typical of well-run conferences using International Institute for Restorative Practices (IIRP) frameworks. Quality of facilitation varies — ask questions about training and follow-through.'),
               h('div', { style: { display: 'grid', gap: 8 } },
                 RESTORATIVE_WALKTHROUGH.map(function(step, idx) {
                   var phaseColor = step.phase === 'Before' ? '#0891b2' : step.phase === 'During' ? '#7c3aed' : '#059669';
-                  var phaseBg    = step.phase === 'Before' ? '#ecfeff' : step.phase === 'During' ? '#faf5ff' : '#f0fdf4';
+                  var phaseBg    = step.phase === 'Before' ? _upC('#ecfeff') : step.phase === 'During' ? _upC('#faf5ff') : _upC('#f0fdf4');
                   return h('div', { key: idx, className: 'us-card', style: {
-                    padding: 12, background: '#fff', border: '1px solid #cbd5e1', borderRadius: 10,
+                    padding: 12, background: _upC('#fff'), border: '1px solid #cbd5e1', borderRadius: 10,
                     display: 'flex', gap: 12
                   } },
                     h('div', { 'aria-hidden': 'true', style: {
@@ -18506,40 +18512,40 @@ window.SelHub = window.SelHub || {
                       h('div', { style: { fontSize: 18, color: phaseColor, fontWeight: 800, marginTop: 2 } }, idx + 1)
                     ),
                     h('div', { style: { flex: 1, minWidth: 0 } },
-                      h('div', { style: { fontWeight: 700, fontSize: 14, color: '#0f172a', marginBottom: 4 } }, step.title),
-                      h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.55, color: '#334155' } }, step.body)
+                      h('div', { style: { fontWeight: 700, fontSize: 14, color: _upC('#0f172a'), marginBottom: 4 } }, step.title),
+                      h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.55, color: _upC('#334155') } }, step.body)
                     )
                   );
                 })
               ),
-              h('p', { style: { margin: '12px 0 0', fontSize: 12, color: '#64748b', lineHeight: 1.55, fontStyle: 'italic' } },
+              h('p', { style: { margin: '12px 0 0', fontSize: 12, color: _upC('#64748b'), lineHeight: 1.55, fontStyle: 'italic' } },
                 'Restorative practice works when it is real. It re-harms when it is performative. You can say no. You can say "not yet." You can stop the process at any point.')
             )
           );
         } else if (refSection === 'educators') {
           refBody = h('div', null,
             h('div', { className: 'us-card', style: {
-              padding: 14, marginBottom: 14, background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 10
+              padding: 14, marginBottom: 14, background: _upC('#eff6ff'), border: '1px solid #bfdbfe', borderRadius: 10
             } },
-              h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.55, color: '#0f172a' } },
+              h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.55, color: _upC('#0f172a') } },
                 h('strong', { style: { color: BLUE } }, 'For teachers, school psychologists, counselors, administrators. '),
                 'Students may show you this tool. The seven items below are the ones most often misunderstood about bullying — backed by the research in the Sources tab.')
             ),
             h('div', { style: { display: 'grid', gap: 10 } },
               (function() {
                 var palettes = [
-                  { from: '#60a5fa', to: '#2563eb', accent: '#1e40af' },
-                  { from: '#a78bfa', to: '#7c3aed', accent: '#6b21a8' },
-                  { from: '#fb923c', to: '#ea580c', accent: '#9a3412' },
-                  { from: '#34d399', to: '#059669', accent: '#166534' },
-                  { from: '#f87171', to: '#dc2626', accent: '#991b1b' },
-                  { from: '#22d3ee', to: '#0891b2', accent: '#0e7490' },
-                  { from: '#f472b6', to: '#db2777', accent: '#9d174d' }
+                  { from: '#60a5fa', to: '#2563eb', accent: _upC('#1e40af') },
+                  { from: '#a78bfa', to: '#7c3aed', accent: _upC('#6b21a8') },
+                  { from: '#fb923c', to: '#ea580c', accent: _upC('#9a3412') },
+                  { from: '#34d399', to: '#059669', accent: _upC('#166534') },
+                  { from: '#f87171', to: _upC('#dc2626'), accent: _upC('#991b1b') },
+                  { from: '#22d3ee', to: '#0891b2', accent: _upC('#0e7490') },
+                  { from: '#f472b6', to: '#db2777', accent: _upC('#9d174d') }
                 ];
                 return US_EDUCATORS.map(function(tip, idx) {
                   var p = palettes[idx % palettes.length];
                   return h('div', { key: idx, className: 'us-card', style: {
-                    display: 'flex', gap: 14, padding: 14, border: '1px solid #cbd5e1', borderRadius: 12, background: '#fff'
+                    display: 'flex', gap: 14, padding: 14, border: '1px solid #cbd5e1', borderRadius: 12, background: _upC('#fff')
                   } },
                     h('div', { 'aria-hidden': 'true', style: {
                       width: 48, height: 48, borderRadius: 14, flexShrink: 0,
@@ -18550,7 +18556,7 @@ window.SelHub = window.SelHub || {
                     } }, tip.icon),
                     h('div', { style: { flex: 1, minWidth: 0 } },
                       h('div', { style: { fontWeight: 700, fontSize: 15, color: p.accent, marginBottom: 4 } }, tip.title),
-                      h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.6, color: '#334155' } }, tip.body)
+                      h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.6, color: _upC('#334155') } }, tip.body)
                     )
                   );
                 });
@@ -18564,28 +18570,28 @@ window.SelHub = window.SelHub || {
               background: 'linear-gradient(135deg, #fef3c7 0%, #fef9c3 100%)',
               border: '1px solid #fcd34d', borderRadius: 10
             } },
-              h('p', { style: { margin: '0 0 6px', fontSize: 13, lineHeight: 1.55, color: '#0f172a' } },
-                h('strong', { style: { color: '#92400e' } }, 'For parents and caregivers specifically. '),
+              h('p', { style: { margin: '0 0 6px', fontSize: 13, lineHeight: 1.55, color: _upC('#0f172a') } },
+                h('strong', { style: { color: _upC('#92400e') } }, 'For parents and caregivers specifically. '),
                 'The things that are usually missing from parent-facing bullying guidance: how to talk so your kid keeps talking, how to handle suspecting your kid is the one bullying, how to advocate at the school without becoming the adversary, and how to read warning signs.'),
-              h('p', { style: { margin: 0, fontSize: 12, color: '#475569', lineHeight: 1.55, fontStyle: 'italic' } },
+              h('p', { style: { margin: 0, fontSize: 12, color: _upC('#475569'), lineHeight: 1.55, fontStyle: 'italic' } },
                 'Note: cyberbullying has its own toolkit in Digital Wellbeing Studio (also in the SEL Hub). Read both if your kid spends time online.')
             ),
             h('div', { style: { display: 'grid', gap: 10 } },
               (function() {
                 var palettes = [
-                  { from: '#fb923c', to: '#ea580c', accent: '#9a3412' },
-                  { from: '#f87171', to: '#dc2626', accent: '#991b1b' },
-                  { from: '#60a5fa', to: '#2563eb', accent: '#1e40af' },
-                  { from: '#a78bfa', to: '#7c3aed', accent: '#6b21a8' },
-                  { from: '#34d399', to: '#059669', accent: '#166534' },
-                  { from: '#22d3ee', to: '#0891b2', accent: '#0e7490' },
-                  { from: '#f472b6', to: '#db2777', accent: '#9d174d' },
-                  { from: '#facc15', to: '#ca8a04', accent: '#854d0e' }
+                  { from: '#fb923c', to: '#ea580c', accent: _upC('#9a3412') },
+                  { from: '#f87171', to: _upC('#dc2626'), accent: _upC('#991b1b') },
+                  { from: '#60a5fa', to: '#2563eb', accent: _upC('#1e40af') },
+                  { from: '#a78bfa', to: '#7c3aed', accent: _upC('#6b21a8') },
+                  { from: '#34d399', to: '#059669', accent: _upC('#166534') },
+                  { from: '#22d3ee', to: '#0891b2', accent: _upC('#0e7490') },
+                  { from: '#f472b6', to: '#db2777', accent: _upC('#9d174d') },
+                  { from: '#facc15', to: '#ca8a04', accent: _upC('#854d0e') }
                 ];
                 return US_PARENTS.map(function(tip, idx) {
                   var p = palettes[idx % palettes.length];
                   return h('div', { key: idx, className: 'us-card', style: {
-                    display: 'flex', gap: 14, padding: 14, border: '1px solid #cbd5e1', borderRadius: 12, background: '#fff'
+                    display: 'flex', gap: 14, padding: 14, border: '1px solid #cbd5e1', borderRadius: 12, background: _upC('#fff')
                   } },
                     h('div', { 'aria-hidden': 'true', style: {
                       width: 48, height: 48, borderRadius: 14, flexShrink: 0,
@@ -18596,32 +18602,32 @@ window.SelHub = window.SelHub || {
                     } }, tip.icon),
                     h('div', { style: { flex: 1, minWidth: 0 } },
                       h('div', { style: { fontWeight: 700, fontSize: 15, color: p.accent, marginBottom: 4 } }, tip.title),
-                      h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.6, color: '#334155' } }, tip.body)
+                      h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.6, color: _upC('#334155') } }, tip.body)
                     )
                   );
                 });
               })()
             ),
             h('div', { style: {
-              marginTop: 16, padding: 14, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10
+              marginTop: 16, padding: 14, background: _upC('#fef2f2'), border: '1px solid #fecaca', borderRadius: 10
             } },
-              h('div', { style: { fontWeight: 800, color: '#991b1b', marginBottom: 6, fontSize: 14 } },
+              h('div', { style: { fontWeight: 800, color: _upC('#991b1b'), marginBottom: 6, fontSize: 14 } },
                 h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, '📞'),
                 'When in crisis'),
-              h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.6, color: '#0f172a' } },
+              h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.6, color: _upC('#0f172a') } },
                 'If your kid says anything that worries you about self-harm: 988 (call or text), Crisis Text Line (text HOME to 741741), or your local ER. Asking directly about suicide does not plant the idea — but staying silent can be the thing that lets it harden. Trust your gut.')
             )
           );
         } else if (refSection === 'glossary') {
           refBody = h('div', null,
-            h('p', { style: { fontSize: 13, color: '#475569', marginBottom: 10, lineHeight: 1.5 } },
+            h('p', { style: { fontSize: 13, color: _upC('#475569'), marginBottom: 10, lineHeight: 1.5 } },
               'Tap any term to expand. Useful for parent conversations, IEP meetings, and getting precise about what we mean by words that get used loosely.'),
             h('div', { style: { display: 'grid', gap: 6 } },
               US_GLOSSARY.map(function(g) {
                 var open = refExpanded === g.term;
                 return h('div', { key: g.term, style: {
-                  border: '1px solid ' + (open ? '#93c5fd' : '#e2e8f0'),
-                  borderRadius: 8, background: open ? '#eff6ff' : '#fff', overflow: 'hidden'
+                  border: '1px solid ' + (open ? '#93c5fd' : _upC('#e2e8f0')),
+                  borderRadius: 8, background: open ? _upC('#eff6ff') : _upC('#fff'), overflow: 'hidden'
                 } },
                   h('button', {
                     onClick: function() { upd('refExpanded', open ? null : g.term); if (soundOn) sfxClick(); },
@@ -18629,30 +18635,30 @@ window.SelHub = window.SelHub || {
                     style: {
                       width: '100%', padding: '10px 12px', textAlign: 'left',
                       background: 'transparent', border: 'none', cursor: 'pointer',
-                      fontSize: 14, fontWeight: 700, color: '#0f172a',
+                      fontSize: 14, fontWeight: 700, color: _upC('#0f172a'),
                       display: 'flex', alignItems: 'center', gap: 8
                     }
                   },
                     h('span', { style: { flex: 1 } }, g.term),
-                    h('span', { 'aria-hidden': 'true', style: { color: '#64748b', fontSize: 16 } }, open ? '▾' : '▸')
+                    h('span', { 'aria-hidden': 'true', style: { color: _upC('#64748b'), fontSize: 16 } }, open ? '▾' : '▸')
                   ),
-                  open && h('p', { style: { margin: 0, padding: '0 12px 12px', fontSize: 13, lineHeight: 1.55, color: '#334155' } }, g.def)
+                  open && h('p', { style: { margin: 0, padding: '0 12px 12px', fontSize: 13, lineHeight: 1.55, color: _upC('#334155') } }, g.def)
                 );
               })
             )
           );
         } else {
           refBody = h('div', null,
-            h('p', { style: { fontSize: 13, color: '#475569', marginBottom: 12, lineHeight: 1.5 } },
+            h('p', { style: { fontSize: 13, color: _upC('#475569'), marginBottom: 12, lineHeight: 1.5 } },
               'Where the claims in this tool come from. Use these to verify, deepen, or share with parents and educators who want documentation.'),
             h('div', { style: { display: 'grid', gap: 10 } },
               US_SOURCES.map(function(s, idx) {
                 return h('div', { key: idx, className: 'us-card', style: {
-                  padding: 12, border: '1px solid #bfdbfe', borderRadius: 10, background: '#f8fafc'
+                  padding: 12, border: '1px solid #bfdbfe', borderRadius: 10, background: _upC('#f8fafc')
                 } },
-                  h('div', { style: { fontWeight: 700, fontSize: 14, color: '#0f172a', lineHeight: 1.4 } }, s.name),
-                  h('div', { style: { fontSize: 12, color: '#64748b', fontStyle: 'italic', marginTop: 4 } }, s.who),
-                  h('div', { style: { fontSize: 13, color: '#334155', lineHeight: 1.55, marginTop: 6 } }, s.what)
+                  h('div', { style: { fontWeight: 700, fontSize: 14, color: _upC('#0f172a'), lineHeight: 1.4 } }, s.name),
+                  h('div', { style: { fontSize: 12, color: _upC('#64748b'), fontStyle: 'italic', marginTop: 4 } }, s.who),
+                  h('div', { style: { fontSize: 13, color: _upC('#334155'), lineHeight: 1.55, marginTop: 6 } }, s.what)
                 );
               })
             )
@@ -18662,7 +18668,7 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '16px' } },
             h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(37,99,235,0.3))' } }, '📚'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: BD, margin: '0 0 4px' } }, 'Reference'),
-            h('p', { style: { fontSize: '13px', color: '#64748b', margin: 0 } }, 'Sources cited, guidance for educators, and a glossary of key terms.')
+            h('p', { style: { fontSize: '13px', color: _upC('#64748b'), margin: 0 } }, 'Sources cited, guidance for educators, and a glossary of key terms.')
           ),
           h('div', { role: 'tablist', 'aria-label': 'Reference sections', style: { display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap', justifyContent: 'center' } },
             refSections.map(function(s) {
@@ -18672,9 +18678,9 @@ window.SelHub = window.SelHub || {
                 onClick: function() { upd({ refSection: s.id, refExpanded: null }); if (soundOn) sfxClick(); },
                 style: {
                   padding: '6px 12px',
-                  background: active ? BLUE : '#fff',
-                  color: active ? '#fff' : '#0f172a',
-                  border: '1px solid ' + (active ? BLUE : '#cbd5e1'),
+                  background: active ? BLUE : _upC('#fff'),
+                  color: active ? '#fff' : _upC('#0f172a'),
+                  border: '1px solid ' + (active ? BLUE : _upC('#cbd5e1')),
                   borderRadius: 999, fontWeight: active ? 700 : 500, cursor: 'pointer', fontSize: 13
                 }
               }, h('span', { 'aria-hidden': 'true', style: { marginRight: 4 } }, s.icon), s.label);
@@ -18703,8 +18709,8 @@ window.SelHub = window.SelHub || {
               boxShadow: '0 5px 12px rgba(202, 138, 4, 0.32), inset 0 1px 0 rgba(255,255,255,0.30)'
             } }, '\u270D\uFE0F'),
             h('div', { style: { flex: 1, minWidth: 0 } },
-              h('h2', { style: { margin: '0 0 2px', color: '#854d0e', fontSize: 20, lineHeight: 1.2 } }, 'My Upstander Pledge'),
-              h('p', { style: { margin: 0, color: '#78350f', fontSize: 13, lineHeight: 1.5 } },
+              h('h2', { style: { margin: '0 0 2px', color: _upC('#854d0e'), fontSize: 20, lineHeight: 1.2 } }, 'My Upstander Pledge'),
+              h('p', { style: { margin: 0, color: _upC('#78350f'), fontSize: 13, lineHeight: 1.5 } },
                 band === 'elementary' ? 'Write a promise to yourself about how you\u2019ll act when you see bullying.'
                 : 'Define who you want to be in the face of cruelty. Not who you think you should be \u2014 who you choose to be.')
             )
@@ -18714,11 +18720,11 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { fontSize: '13px', color: BD, fontStyle: 'italic', marginBottom: '10px' } }, 'I pledge to...'),
                 h('textarea', { value: pledge, onChange: function(ev) { upd('pledge', ev.target.value); }, 'aria-label': 'Write your upstander pledge',
                   placeholder: band === 'elementary' ? 'When I see someone being bullied, I will...' : 'The kind of person I choose to be when I witness harm...',
-                  style: { width: '100%', border: 'none', background: 'transparent', fontSize: '14px', fontFamily: 'Georgia, serif', lineHeight: 1.8, color: '#1f2937', resize: 'vertical', minHeight: '100px', boxSizing: 'border-box', outline: 'none' }
+                  style: { width: '100%', border: 'none', background: 'transparent', fontSize: '14px', fontFamily: 'Georgia, serif', lineHeight: 1.8, color: _upC('#1f2937'), resize: 'vertical', minHeight: '100px', boxSizing: 'border-box', outline: 'none' }
                 }),
                 h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: '8px' } },
                   h('button', { onClick: function() { if (pledge.trim()) { upd('pledgeSaved', true); tryAwardBadge('pledge_sealed', 20); } }, disabled: !pledge.trim(),
-                    style: { padding: '10px 24px', background: pledge.trim() ? BLUE : '#d1d5db', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '14px', cursor: pledge.trim() ? 'pointer' : 'not-allowed' }
+                    style: { padding: '10px 24px', background: pledge.trim() ? BLUE : _upC('#d1d5db'), color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '14px', cursor: pledge.trim() ? 'pointer' : 'not-allowed' }
                   }, '\uD83E\uDDF1 Seal My Pledge')
                 )
               )
@@ -18745,11 +18751,11 @@ window.SelHub = window.SelHub || {
                   boxShadow: '0 4px 12px rgba(202, 138, 4, 0.35), inset 0 1px 2px rgba(255, 255, 255, 0.4)',
                   border: '2px solid #fef3c7'
                 } }, '\uD83E\uDDF1'),
-                h('div', { style: { fontSize: 11, color: '#92400e', textTransform: 'uppercase', letterSpacing: 2, fontWeight: 800, marginBottom: 4 } }, 'Certificate of Pledge'),
-                h('div', { style: { fontSize: 13, fontStyle: 'italic', color: '#a16207', marginBottom: 14 } }, '\u2014 Upstander Workshop \u2014'),
-                h('div', { style: { fontSize: 12, color: '#78350f', marginBottom: 6 } }, 'I, the undersigned, pledge to:'),
+                h('div', { style: { fontSize: 11, color: _upC('#92400e'), textTransform: 'uppercase', letterSpacing: 2, fontWeight: 800, marginBottom: 4 } }, 'Certificate of Pledge'),
+                h('div', { style: { fontSize: 13, fontStyle: 'italic', color: _upC('#a16207'), marginBottom: 14 } }, '\u2014 Upstander Workshop \u2014'),
+                h('div', { style: { fontSize: 12, color: _upC('#78350f'), marginBottom: 6 } }, 'I, the undersigned, pledge to:'),
                 h('p', { style: {
-                  fontSize: 17, fontWeight: 600, color: '#1f2937', lineHeight: 1.6,
+                  fontSize: 17, fontWeight: 600, color: _upC('#1f2937'), lineHeight: 1.6,
                   fontFamily: 'Georgia, "Times New Roman", serif',
                   margin: '0 auto 18px', maxWidth: 480,
                   padding: '14px 18px',
@@ -18758,7 +18764,7 @@ window.SelHub = window.SelHub || {
                   borderLeft: '3px solid #ca8a04',
                   borderRight: '3px solid #ca8a04'
                 } }, '\u201C' + pledge + '\u201D'),
-                h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 16, fontSize: 11, color: '#78350f', maxWidth: 480, margin: '0 auto', paddingTop: 4 } },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 16, fontSize: 11, color: _upC('#78350f'), maxWidth: 480, margin: '0 auto', paddingTop: 4 } },
                   h('div', { style: { flex: 1, borderTop: '1px solid #ca8a04', paddingTop: 4 } },
                     h('div', { style: { fontStyle: 'italic', fontWeight: 600, fontFamily: 'Georgia, serif' } }, 'Signed by you'),
                     h('div', { style: { fontSize: 10, marginTop: 2, opacity: 0.7 } }, 'Witnessed by your courage')
@@ -18775,7 +18781,7 @@ window.SelHub = window.SelHub || {
                     style: { padding: '8px 14px', background: '#ca8a04', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 12 }
                   }, '\uD83D\uDDA8\uFE0F Print certificate'),
                   h('button', { onClick: function() { upd('pledgeSaved', false); },
-                    style: { padding: '8px 14px', background: 'transparent', color: '#78350f', border: '1px solid #ca8a04', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 12 }
+                    style: { padding: '8px 14px', background: 'transparent', color: _upC('#78350f'), border: '1px solid #ca8a04', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 12 }
                   }, '\u270F\uFE0F Edit pledge')
                 )
               ),
@@ -18784,14 +18790,14 @@ window.SelHub = window.SelHub || {
             h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: 12 } },
               h('div', { className: 'sel-hero-icon', style: { fontSize: 36, marginBottom: 4 } }, '\uD83D\uDC65'),
               h('h3', { style: { fontSize: 16, fontWeight: 800, color: BD, margin: '0 0 4px' } }, 'My Trusted Adults'),
-              h('p', { style: { fontSize: 12, color: '#64748b', margin: 0, lineHeight: 1.5, maxWidth: 480, marginLeft: 'auto', marginRight: 'auto' } },
+              h('p', { style: { fontSize: 12, color: _upC('#64748b'), margin: 0, lineHeight: 1.5, maxWidth: 480, marginLeft: 'auto', marginRight: 'auto' } },
                 'A small list of adults you trust enough to bring something hard to. Aim for 3 \u2014 ideally from different parts of your life (home, school, community). Knowing the names BEFORE you need them is half the battle.')
             ),
             trustedAdults.length > 0 && h('div', { style: { display: 'grid', gap: 8, marginBottom: 12 } },
               trustedAdults.map(function(a, idx) {
                 return h('div', { key: idx, className: 'us-card', style: {
                   display: 'flex', alignItems: 'center', gap: 12,
-                  padding: '10px 12px', background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 10
+                  padding: '10px 12px', background: _upC('#f0fdf4'), border: '1px solid #86efac', borderRadius: 10
                 } },
                   h('div', { 'aria-hidden': 'true', style: {
                     width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
@@ -18800,8 +18806,8 @@ window.SelHub = window.SelHub || {
                     fontSize: 14, fontWeight: 800
                   } }, (a.name || '?').charAt(0).toUpperCase()),
                   h('div', { style: { flex: 1, minWidth: 0 } },
-                    h('div', { style: { fontWeight: 700, fontSize: 14, color: '#166534' } }, a.name),
-                    h('div', { style: { fontSize: 12, color: '#475569' } }, a.role || 'trusted adult')
+                    h('div', { style: { fontWeight: 700, fontSize: 14, color: _upC('#166534') } }, a.name),
+                    h('div', { style: { fontSize: 12, color: _upC('#475569') } }, a.role || 'trusted adult')
                   ),
                   h('button', {
                     'aria-label': 'Remove ' + a.name,
@@ -18809,27 +18815,27 @@ window.SelHub = window.SelHub || {
                       var na = trustedAdults.slice(); na.splice(idx, 1);
                       upd('trustedAdults', na);
                     },
-                    style: { background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 20, fontWeight: 700, lineHeight: 1, padding: 0 }
+                    style: { background: 'transparent', border: 'none', color: _upC('#94a3b8'), cursor: 'pointer', fontSize: 20, fontWeight: 700, lineHeight: 1, padding: 0 }
                   }, '\u00D7')
                 );
               })
             ),
-            h('div', { className: 'us-card', style: { padding: 12, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10 } },
+            h('div', { className: 'us-card', style: { padding: 12, background: _upC('#fff'), border: '1px solid #e5e7eb', borderRadius: 10 } },
               h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end' } },
-                h('label', { style: { flex: '1 1 140px', display: 'flex', flexDirection: 'column', fontSize: 11, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } },
+                h('label', { style: { flex: '1 1 140px', display: 'flex', flexDirection: 'column', fontSize: 11, color: _upC('#475569'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } },
                   'Name',
                   h('input', { type: 'text', value: newAdultName,
                     onChange: function(e) { upd('newAdultName', e.target.value); },
                     placeholder: 'Ms. Rodriguez',
-                    style: { marginTop: 4, padding: '8px 10px', fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 6, fontFamily: 'inherit', fontWeight: 400, textTransform: 'none', letterSpacing: 0, color: '#0f172a' }
+                    style: { marginTop: 4, padding: '8px 10px', fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 6, fontFamily: 'inherit', fontWeight: 400, textTransform: 'none', letterSpacing: 0, color: _upC('#0f172a') }
                   })
                 ),
-                h('label', { style: { flex: '1 1 140px', display: 'flex', flexDirection: 'column', fontSize: 11, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } },
+                h('label', { style: { flex: '1 1 140px', display: 'flex', flexDirection: 'column', fontSize: 11, color: _upC('#475569'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } },
                   'How you know them',
                   h('input', { type: 'text', value: newAdultRole,
                     onChange: function(e) { upd('newAdultRole', e.target.value); },
                     placeholder: 'School counselor',
-                    style: { marginTop: 4, padding: '8px 10px', fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 6, fontFamily: 'inherit', fontWeight: 400, textTransform: 'none', letterSpacing: 0, color: '#0f172a' }
+                    style: { marginTop: 4, padding: '8px 10px', fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 6, fontFamily: 'inherit', fontWeight: 400, textTransform: 'none', letterSpacing: 0, color: _upC('#0f172a') }
                   })
                 ),
                 h('button', {
@@ -18841,10 +18847,10 @@ window.SelHub = window.SelHub || {
                     if (soundOn) sfxClick();
                     if (na.length >= 3) tryAwardBadge('trusted_circle', 15);
                   },
-                  style: { padding: '8px 14px', background: newAdultName.trim() ? BLUE : '#cbd5e1', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 700, cursor: newAdultName.trim() ? 'pointer' : 'not-allowed', fontSize: 13 }
+                  style: { padding: '8px 14px', background: newAdultName.trim() ? BLUE : _upC('#cbd5e1'), color: '#fff', border: 'none', borderRadius: 6, fontWeight: 700, cursor: newAdultName.trim() ? 'pointer' : 'not-allowed', fontSize: 13 }
                 }, 'Add to circle')
               ),
-              h('p', { style: { margin: '8px 0 0', fontSize: 11, color: '#64748b', fontStyle: 'italic' } },
+              h('p', { style: { margin: '8px 0 0', fontSize: 11, color: _upC('#64748b'), fontStyle: 'italic' } },
                 'No accounts, no sharing \u2014 this lives only on your device unless you save the packet.')
             )
           ),
@@ -18853,24 +18859,24 @@ window.SelHub = window.SelHub || {
             h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: 12 } },
               h('div', { className: 'sel-hero-icon', style: { fontSize: 36, marginBottom: 4 } }, '\uD83D\uDCD3'),
               h('h3', { style: { fontSize: 16, fontWeight: 800, color: BD, margin: '0 0 4px' } }, 'Witness Log'),
-              h('p', { style: { fontSize: 12, color: '#64748b', margin: 0, lineHeight: 1.5, maxWidth: 480, marginLeft: 'auto', marginRight: 'auto' } },
+              h('p', { style: { fontSize: 12, color: _upC('#64748b'), margin: 0, lineHeight: 1.5, maxWidth: 480, marginLeft: 'auto', marginRight: 'auto' } },
                 'A private record of what you have seen \u2014 and what you did or did not do about it. Not for anyone else. The act of writing it down is the work.')
             ),
             // Log form
-            h('div', { className: 'us-card', style: { padding: 14, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, marginBottom: 14 } },
-              h('label', { htmlFor: 'us-wl-saw', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'What I saw'),
+            h('div', { className: 'us-card', style: { padding: 14, background: _upC('#fff'), border: '1px solid #e5e7eb', borderRadius: 12, marginBottom: 14 } },
+              h('label', { htmlFor: 'us-wl-saw', style: { display: 'block', fontSize: 11, fontWeight: 700, color: _upC('#475569'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'What I saw'),
               h('textarea', { id: 'us-wl-saw', value: wlSaw, onChange: function(e) { upd('wlSaw', e.target.value); },
                 placeholder: 'A short description of what happened...',
                 rows: 2,
                 style: { width: '100%', padding: 10, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', marginBottom: 10 }
               }),
-              h('label', { htmlFor: 'us-wl-did', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'What I did \u2014 or did not do'),
+              h('label', { htmlFor: 'us-wl-did', style: { display: 'block', fontSize: 11, fontWeight: 700, color: _upC('#475569'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'What I did \u2014 or did not do'),
               h('textarea', { id: 'us-wl-did', value: wlDid, onChange: function(e) { upd('wlDid', e.target.value); },
                 placeholder: 'Honesty over performance. "I froze" is a valid answer.',
                 rows: 2,
                 style: { width: '100%', padding: 10, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', marginBottom: 10 }
               }),
-              h('label', { htmlFor: 'us-wl-next', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'What I would do next time'),
+              h('label', { htmlFor: 'us-wl-next', style: { display: 'block', fontSize: 11, fontWeight: 700, color: _upC('#475569'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'What I would do next time'),
               h('textarea', { id: 'us-wl-next', value: wlNext, onChange: function(e) { upd('wlNext', e.target.value); },
                 placeholder: 'One specific thing. Even small counts.',
                 rows: 2,
@@ -18893,19 +18899,19 @@ window.SelHub = window.SelHub || {
                   tryAwardBadge('witness_logged', 10);
                 },
                 style: { padding: '8px 16px',
-                  background: (wlSaw.trim() || wlDid.trim() || wlNext.trim()) ? BLUE : '#cbd5e1',
+                  background: (wlSaw.trim() || wlDid.trim() || wlNext.trim()) ? BLUE : _upC('#cbd5e1'),
                   color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700,
                   cursor: (wlSaw.trim() || wlDid.trim() || wlNext.trim()) ? 'pointer' : 'not-allowed', fontSize: 13 }
               }, '\uD83D\uDCDD Save entry')
             ),
             // Past entries
             witnessLog.length > 0 && h('div', null,
-              h('div', { style: { fontSize: 12, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } },
+              h('div', { style: { fontSize: 12, fontWeight: 700, color: _upC('#64748b'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } },
                 'Past entries (' + witnessLog.length + ')'),
               h('div', { style: { display: 'grid', gap: 8 } },
                 witnessLog.map(function(e, idx) {
                   return h('div', { key: e.ts || idx, className: 'us-card', style: {
-                    padding: 12, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10
+                    padding: 12, background: _upC('#f8fafc'), border: '1px solid #e2e8f0', borderRadius: 10
                   } },
                     h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 } },
                       h('div', { style: { fontSize: 11, fontWeight: 700, color: BD } }, e.date),
@@ -18915,18 +18921,18 @@ window.SelHub = window.SelHub || {
                           var na = witnessLog.slice(); na.splice(idx, 1);
                           upd('witnessLog', na);
                         },
-                        style: { background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 16, padding: 0, lineHeight: 1 }
+                        style: { background: 'transparent', border: 'none', color: _upC('#94a3b8'), cursor: 'pointer', fontSize: 16, padding: 0, lineHeight: 1 }
                       }, '\u00D7')
                     ),
                     e.saw && h('div', { style: { fontSize: 12, marginBottom: 4 } },
-                      h('span', { style: { fontWeight: 700, color: '#475569' } }, 'Saw: '),
-                      h('span', { style: { color: '#0f172a' } }, e.saw)),
+                      h('span', { style: { fontWeight: 700, color: _upC('#475569') } }, 'Saw: '),
+                      h('span', { style: { color: _upC('#0f172a') } }, e.saw)),
                     e.did && h('div', { style: { fontSize: 12, marginBottom: 4 } },
-                      h('span', { style: { fontWeight: 700, color: '#475569' } }, 'Did: '),
-                      h('span', { style: { color: '#0f172a' } }, e.did)),
+                      h('span', { style: { fontWeight: 700, color: _upC('#475569') } }, 'Did: '),
+                      h('span', { style: { color: _upC('#0f172a') } }, e.did)),
                     e.next && h('div', { style: { fontSize: 12 } },
-                      h('span', { style: { fontWeight: 700, color: '#475569' } }, 'Next time: '),
-                      h('span', { style: { color: '#0f172a' } }, e.next))
+                      h('span', { style: { fontWeight: 700, color: _upC('#475569') } }, 'Next time: '),
+                      h('span', { style: { color: _upC('#0f172a') } }, e.next))
                   );
                 })
               )
@@ -18946,9 +18952,9 @@ window.SelHub = window.SelHub || {
                 fontSize: 22, color: '#fff'
               } }, '🖨️'),
               h('div', { style: { flex: 1, minWidth: 200 } },
-                h('div', { style: { fontWeight: 800, fontSize: 14, color: '#0e7490', marginBottom: 2 } },
+                h('div', { style: { fontWeight: 800, fontSize: 14, color: _upC('#0e7490'), marginBottom: 2 } },
                   'Counselor / parent handoff packet'),
-                h('div', { style: { fontSize: 12, color: '#334155', lineHeight: 1.5 } },
+                h('div', { style: { fontSize: 12, color: _upC('#334155'), lineHeight: 1.5 } },
                   'A clean, printable summary of your pledge, your trusted-adult circle, and your witness log. You decide who sees it.')
               ),
               h('button', {
@@ -19017,7 +19023,7 @@ window.SelHub = window.SelHub || {
                     if (addToast) addToast('Could not open packet window: ' + (e.message || e), 'error');
                   }
                 },
-                style: { padding: '10px 16px', background: '#0e7490', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
+                style: { padding: '10px 16px', background: _upC('#0e7490'), color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
               }, '🖨️ Generate packet')
             )
           ),
@@ -19031,7 +19037,7 @@ window.SelHub = window.SelHub || {
               h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: 12 } },
                 h('div', { className: 'sel-hero-icon', style: { fontSize: 36, marginBottom: 4 } }, '🏅'),
                 h('h3', { style: { fontSize: 16, fontWeight: 800, color: BD, margin: '0 0 4px' } }, 'My Badges'),
-                h('p', { style: { fontSize: 12, color: '#64748b', margin: 0, lineHeight: 1.5 } },
+                h('p', { style: { fontSize: 12, color: _upC('#64748b'), margin: 0, lineHeight: 1.5 } },
                   earnedCount + ' of ' + totalCount + ' earned. Each one marks a moment you showed up.')
               ),
               h('div', { style: { display: 'grid', gap: 8, gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))' } },
@@ -19041,21 +19047,21 @@ window.SelHub = window.SelHub || {
                   var earnedInfo = earnedBadges[bid] || {};
                   return h('div', { key: bid, className: earned ? 'us-card us-pop' : 'us-card', style: {
                     padding: 12, borderRadius: 12,
-                    border: '2px solid ' + (earned ? b.color : '#e5e7eb'),
-                    background: earned ? '#fff' : '#f8fafc',
+                    border: '2px solid ' + (earned ? b.color : _upC('#e5e7eb')),
+                    background: earned ? _upC('#fff') : _upC('#f8fafc'),
                     opacity: earned ? 1 : 0.55,
                     textAlign: 'center',
                     filter: earned ? 'none' : 'grayscale(40%)'
                   } },
                     h('div', { 'aria-hidden': 'true', style: {
                       width: 44, height: 44, borderRadius: '50%',
-                      background: earned ? 'linear-gradient(135deg, ' + b.color + ' 0%, ' + b.color + 'cc 100%)' : '#cbd5e1',
+                      background: earned ? 'linear-gradient(135deg, ' + b.color + ' 0%, ' + b.color + 'cc 100%)' : _upC('#cbd5e1'),
                       color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: 22, margin: '0 auto 6px',
                       boxShadow: earned ? '0 3px 8px ' + b.color + '44, inset 0 1px 0 rgba(255, 255, 255, 0.3)' : 'none'
                     } }, b.icon),
-                    h('div', { style: { fontWeight: 700, fontSize: 12, color: earned ? b.color : '#475569', lineHeight: 1.3, marginBottom: 2 } }, b.label),
-                    h('div', { style: { fontSize: 10, color: '#64748b', lineHeight: 1.35 } }, b.desc),
+                    h('div', { style: { fontWeight: 700, fontSize: 12, color: earned ? b.color : _upC('#475569'), lineHeight: 1.3, marginBottom: 2 } }, b.label),
+                    h('div', { style: { fontSize: 10, color: _upC('#64748b'), lineHeight: 1.35 } }, b.desc),
                     earned && earnedInfo.date && h('div', { style: { fontSize: 9, color: b.color, fontWeight: 700, marginTop: 4, textTransform: 'uppercase', letterSpacing: 0.5 } }, '✓ ' + earnedInfo.date)
                   );
                 })
@@ -19116,9 +19122,9 @@ window.SelHub = window.SelHub || {
             h('div', { style: { textAlign: 'center', marginBottom: '16px' } },
               h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(37,99,235,0.3))' } }, '\uD83E\uDD16'),
               h('h3', { style: { fontSize: '18px', fontWeight: 800, color: BD, margin: '0 0 4px' } }, 'Talk it through'),
-              h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Talk about a bullying experience from any role.'),
+              h('p', { style: { fontSize: '13px', color: _upC('#94a3b8'), margin: 0 } }, 'Talk about a bullying experience from any role.'),
               window.SelHub && window.SelHub.renderSafetyDisclosure && window.SelHub.renderSafetyDisclosure(h, band, ctx.activeSessionCode),
-              h('p', { style: { fontSize: '11px', color: '#dc2626', margin: '6px 0 0', fontWeight: 600 } }, '\u26A0\uFE0F If you are in danger, please talk to a trusted adult or call 988.')
+              h('p', { style: { fontSize: '11px', color: _upC('#dc2626'), margin: '6px 0 0', fontWeight: 600 } }, '\u26A0\uFE0F If you are in danger, please talk to a trusted adult or call 988.')
             ),
             // Show crisis resources if last message was flagged Tier 3
             (d._lastTier >= 3 && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, band),
@@ -19126,7 +19132,7 @@ window.SelHub = window.SelHub || {
               style: {
                 maxHeight: 320, overflowY: 'auto', marginBottom: 12,
                 padding: 14, borderRadius: 14,
-                background: '#f8fafc', boxShadow: 'inset 0 0 0 1px #e2e8f0',
+                background: _upC('#f8fafc'), boxShadow: 'inset 0 0 0 1px #e2e8f0',
                 display: 'flex', flexDirection: 'column', gap: 10
               }
             },
@@ -19135,7 +19141,7 @@ window.SelHub = window.SelHub || {
                 if (u) {
                   return h('div', { key: i, style: { display: 'flex', justifyContent: 'flex-end' } },
                     h('div', { style: { maxWidth: '78%', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3 } },
-                      h('div', { style: { fontSize: 10, color: '#64748b', fontWeight: 700, paddingRight: 4 } }, 'YOU'),
+                      h('div', { style: { fontSize: 10, color: _upC('#64748b'), fontWeight: 700, paddingRight: 4 } }, 'YOU'),
                       h('div', { className: 'us-pop', style: {
                         padding: '10px 14px',
                         background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
@@ -19158,7 +19164,7 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { maxWidth: '78%', display: 'flex', flexDirection: 'column', gap: 3 } },
                     h('div', { style: { fontSize: 10, color: BD, fontWeight: 700, paddingLeft: 4 } }, 'SAFE SPACE'),
                     h('div', { className: 'us-pop', style: {
-                      padding: '10px 14px', background: BL, color: '#0f172a',
+                      padding: '10px 14px', background: BL, color: _upC('#0f172a'),
                       fontSize: 14, lineHeight: 1.5,
                       borderRadius: '18px 18px 18px 4px',
                       border: '1px solid #bfdbfe',
@@ -19175,7 +19181,7 @@ window.SelHub = window.SelHub || {
                   fontSize: 14, color: '#fff'
                 } }, '\uD83E\uDDF1'),
                 h('div', { style: {
-                  padding: '10px 14px', background: BL, color: '#475569',
+                  padding: '10px 14px', background: BL, color: _upC('#475569'),
                   fontSize: 14, fontStyle: 'italic',
                   borderRadius: '18px 18px 18px 4px', border: '1px solid #bfdbfe'
                 } }, 'listening\u2026')
@@ -19192,11 +19198,11 @@ window.SelHub = window.SelHub || {
               h('button', {
                 onClick: function() { if (coachInput.trim() && !coachLoad && callGemini) sendSafeMessage(coachInput.trim()); },
                 disabled: coachLoad || !coachInput.trim() || !callGemini,
-                style: { padding: '10px 16px', background: coachInput.trim() && !coachLoad ? BLUE : '#d1d5db', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: coachInput.trim() && !coachLoad ? 'pointer' : 'not-allowed', fontSize: '13px' }
+                style: { padding: '10px 16px', background: coachInput.trim() && !coachLoad ? BLUE : _upC('#d1d5db'), color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: coachInput.trim() && !coachLoad ? 'pointer' : 'not-allowed', fontSize: '13px' }
               }, coachLoad ? '\u23F3' : '\uD83E\uDDF1')
             ),
             coachHist.length === 0 && h('div', { style: { marginTop: '16px' } },
-              h('div', { style: { fontSize: '11px', fontWeight: 600, color: '#94a3b8', marginBottom: '6px' } }, 'You might share:'),
+              h('div', { style: { fontSize: '11px', fontWeight: 600, color: _upC('#94a3b8'), marginBottom: '6px' } }, 'You might share:'),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
                 ['Someone is being mean to me at school', 'I watched it happen and didn\u2019t do anything', 'I think I might have been the bully', 'I don\u2019t know what role I played but it still hurts'].map(function(p) {
                   return h('button', { key: p, 'aria-label': 'Use prompt: ' + p, onClick: function() { upd('coachInput', p); },
@@ -19233,16 +19239,16 @@ window.SelHub = window.SelHub || {
               boxShadow: '0 5px 12px rgba(124, 58, 237, 0.30), inset 0 1px 0 rgba(255,255,255,0.30)'
             } }, '🎭'),
             h('div', { style: { flex: 1, minWidth: 0 } },
-              h('h2', { style: { margin: '0 0 2px', color: '#6b21a8', fontSize: 20, lineHeight: 1.2 } }, 'Practice — what would you actually do?'),
-              h('p', { style: { margin: 0, color: '#334155', fontSize: 13, lineHeight: 1.5 } },
+              h('h2', { style: { margin: '0 0 2px', color: _upC('#6b21a8'), fontSize: 20, lineHeight: 1.2 } }, 'Practice — what would you actually do?'),
+              h('p', { style: { margin: 0, color: _upC('#334155'), fontSize: 13, lineHeight: 1.5 } },
                 'Real scenarios. Pick a response. See how it lands. There are no perfect answers, but some choices help and some make things worse.')
             )
           ),
-          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', fontSize: '12px', color: '#64748b' } },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', fontSize: '12px', color: _upC('#64748b') } },
             h('span', null, 'Scenario ' + (pracIdx + 1) + ' of ' + scenList.length),
             totalDone > 0 && h('span', { style: { fontWeight: 700, color: BLUE } }, totalDone + ' answered · ' + topRated + ' strong response' + (topRated === 1 ? '' : 's'))
           ),
-          h('div', { className: 'us-card', style: { background: '#fff', borderRadius: 14, padding: 18, border: '1px solid #e5e7eb', marginBottom: 14 } },
+          h('div', { className: 'us-card', style: { background: _upC('#fff'), borderRadius: 14, padding: 18, border: '1px solid #e5e7eb', marginBottom: 14 } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
               h('span', { 'aria-hidden': 'true', style: {
                 width: 44, height: 44, borderRadius: 12, flexShrink: 0,
@@ -19253,7 +19259,7 @@ window.SelHub = window.SelHub || {
               } }, scen.icon),
               h('h4', { style: { margin: 0, fontSize: 16, fontWeight: 800, color: BD } }, scen.title)
             ),
-            h('p', { 'aria-live': 'polite', style: { margin: '0 0 14px', fontSize: 14, lineHeight: 1.6, color: '#1f2937' } }, scen.setup),
+            h('p', { 'aria-live': 'polite', style: { margin: '0 0 14px', fontSize: 14, lineHeight: 1.6, color: _upC('#1f2937') } }, scen.setup),
             h('div', { role: 'radiogroup', 'aria-label': 'What would you do?', style: { display: 'grid', gap: 8 } },
               scen.choices.map(function(c, idx) {
                 var picked = pracChoice === idx;
@@ -19262,17 +19268,17 @@ window.SelHub = window.SelHub || {
                   onClick: function() { upd('pracChoice', idx); if (soundOn) sfxClick(); },
                   style: {
                     padding: '12px 14px', textAlign: 'left',
-                    background: picked ? '#eff6ff' : '#fff',
-                    border: '2px solid ' + (picked ? BLUE : '#cbd5e1'),
+                    background: picked ? _upC('#eff6ff') : _upC('#fff'),
+                    border: '2px solid ' + (picked ? BLUE : _upC('#cbd5e1')),
                     borderRadius: 10, fontSize: 14, fontWeight: picked ? 700 : 500,
-                    color: '#0f172a', cursor: 'pointer',
+                    color: _upC('#0f172a'), cursor: 'pointer',
                     display: 'flex', alignItems: 'flex-start', gap: 10
                   }
                 },
                   h('span', { 'aria-hidden': 'true', style: {
                     width: 22, height: 22, borderRadius: '50%', flexShrink: 0, marginTop: 1,
-                    border: '2px solid ' + (picked ? BLUE : '#cbd5e1'),
-                    background: picked ? BLUE : '#fff',
+                    border: '2px solid ' + (picked ? BLUE : _upC('#cbd5e1')),
+                    background: picked ? BLUE : _upC('#fff'),
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     color: '#fff', fontSize: 13, fontWeight: 800, lineHeight: 1,
                     transition: 'all 0.18s ease'
@@ -19283,20 +19289,20 @@ window.SelHub = window.SelHub || {
             ),
             pracChoice != null && h('div', { 'aria-live': 'polite', className: 'us-pop', style: {
               marginTop: 12, padding: 12, borderRadius: 10,
-              background: scen.choices[pracChoice].rating >= 3 ? '#f0fdf4' : (scen.choices[pracChoice].rating === 2 ? '#fefce8' : '#fef2f2'),
+              background: scen.choices[pracChoice].rating >= 3 ? _upC('#f0fdf4') : (scen.choices[pracChoice].rating === 2 ? _upC('#fefce8') : _upC('#fef2f2')),
               border: '1px solid ' + (scen.choices[pracChoice].rating >= 3 ? '#bbf7d0' : (scen.choices[pracChoice].rating === 2 ? '#fde68a' : '#fecaca'))
             } },
               h('div', { style: { fontSize: 12, fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5,
-                color: scen.choices[pracChoice].rating >= 3 ? '#166534' : (scen.choices[pracChoice].rating === 2 ? '#854d0e' : '#991b1b') } },
+                color: scen.choices[pracChoice].rating >= 3 ? _upC('#166534') : (scen.choices[pracChoice].rating === 2 ? _upC('#854d0e') : _upC('#991b1b')) } },
                 scen.choices[pracChoice].rating >= 3 ? 'Strong response' : (scen.choices[pracChoice].rating === 2 ? 'Partial — worth thinking about' : 'Risky — think this through')),
-              h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.55, color: '#0f172a' } }, scen.choices[pracChoice].feedback)
+              h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.55, color: _upC('#0f172a') } }, scen.choices[pracChoice].feedback)
             )
           ),
           h('div', { style: { display: 'flex', gap: 8, justifyContent: 'space-between', flexWrap: 'wrap' } },
             h('button', {
               onClick: function() { if (pracIdx > 0) upd({ pracIdx: pracIdx - 1, pracChoice: null }); },
               disabled: pracIdx === 0,
-              style: { padding: '8px 14px', background: '#fff', color: pracIdx === 0 ? '#94a3b8' : '#0f172a',
+              style: { padding: '8px 14px', background: _upC('#fff'), color: pracIdx === 0 ? _upC('#94a3b8') : _upC('#0f172a'),
                        border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600,
                        cursor: pracIdx === 0 ? 'not-allowed' : 'pointer', fontSize: 13 }
             }, '← Previous'),
@@ -19320,7 +19326,7 @@ window.SelHub = window.SelHub || {
               },
               style: {
                 padding: '8px 14px',
-                background: pracChoice == null ? '#94a3b8' : BLUE,
+                background: pracChoice == null ? _upC('#94a3b8') : BLUE,
                 color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700,
                 cursor: pracChoice == null ? 'not-allowed' : 'pointer', fontSize: 13
               }
@@ -19337,7 +19343,7 @@ window.SelHub = window.SelHub || {
               style: {
                 width: '100%', padding: '14px 16px', textAlign: 'left',
                 border: '2px solid ' + (genShown ? '#a855f7' : '#d8b4fe'),
-                background: genShown ? '#faf5ff' : '#fdf4ff',
+                background: genShown ? _upC('#faf5ff') : _upC('#fdf4ff'),
                 borderRadius: 14, cursor: 'pointer',
                 display: 'flex', alignItems: 'center', gap: 12,
                 font: 'inherit', color: 'inherit'
@@ -19351,23 +19357,23 @@ window.SelHub = window.SelHub || {
                 boxShadow: '0 4px 10px rgba(168, 85, 247, 0.25)'
               } }, '🎲'),
               h('div', { style: { flex: 1, minWidth: 0 } },
-                h('div', { style: { fontWeight: 800, fontSize: 15, color: '#6b21a8', marginBottom: 2 } },
+                h('div', { style: { fontWeight: 800, fontSize: 15, color: _upC('#6b21a8'), marginBottom: 2 } },
                   'Generate a scenario for your situation'),
-                h('div', { style: { fontSize: 12, color: '#475569', lineHeight: 1.4 } },
+                h('div', { style: { fontSize: 12, color: _upC('#475569'), lineHeight: 1.4 } },
                   'Pick a setting and what kind of harm. AI writes a fresh scenario in the same format. Useful when the 9 above do not match your real life.')
               ),
               h('span', { 'aria-hidden': 'true', style: { color: '#a855f7', fontSize: 18 } }, genShown ? '▾' : '▸')
             ),
-            genShown && h('div', { style: { marginTop: 12, padding: 18, background: '#fff', border: '1px solid #d8b4fe', borderRadius: 14 } },
+            genShown && h('div', { style: { marginTop: 12, padding: 18, background: _upC('#fff'), border: '1px solid #d8b4fe', borderRadius: 14 } },
               !genScenario && h('div', null,
-                h('p', { style: { margin: '0 0 14px', fontSize: 13, lineHeight: 1.55, color: '#475569' } },
+                h('p', { style: { margin: '0 0 14px', fontSize: 13, lineHeight: 1.55, color: _upC('#475569') } },
                   'Fill in any 2 or 3 fields. The AI uses what you give it and improvises the rest. Output is always 4 rated choices, just like the hand-written ones above.'),
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 10 } },
                   h('div', null,
-                    h('label', { htmlFor: 'us-gen-setting', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Setting'),
+                    h('label', { htmlFor: 'us-gen-setting', style: { display: 'block', fontSize: 11, fontWeight: 700, color: _upC('#475569'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Setting'),
                     h('select', { id: 'us-gen-setting', value: genSetting,
                       onChange: function(e) { upd('genSetting', e.target.value); },
-                      style: { width: '100%', padding: 8, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', background: '#fff' }
+                      style: { width: '100%', padding: 8, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', background: _upC('#fff') }
                     },
                       h('option', { value: '' }, '— pick one —'),
                       h('option', { value: 'cafeteria or lunch table' }, 'Cafeteria / lunch'),
@@ -19383,10 +19389,10 @@ window.SelHub = window.SelHub || {
                     )
                   ),
                   h('div', null,
-                    h('label', { htmlFor: 'us-gen-rel', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Who is involved'),
+                    h('label', { htmlFor: 'us-gen-rel', style: { display: 'block', fontSize: 11, fontWeight: 700, color: _upC('#475569'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Who is involved'),
                     h('select', { id: 'us-gen-rel', value: genRelation,
                       onChange: function(e) { upd('genRelation', e.target.value); },
-                      style: { width: '100%', padding: 8, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', background: '#fff' }
+                      style: { width: '100%', padding: 8, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', background: _upC('#fff') }
                     },
                       h('option', { value: '' }, '— pick one —'),
                       h('option', { value: 'a close friend of mine' }, 'A close friend'),
@@ -19400,10 +19406,10 @@ window.SelHub = window.SelHub || {
                     )
                   ),
                   h('div', null,
-                    h('label', { htmlFor: 'us-gen-harm', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Kind of harm'),
+                    h('label', { htmlFor: 'us-gen-harm', style: { display: 'block', fontSize: 11, fontWeight: 700, color: _upC('#475569'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Kind of harm'),
                     h('select', { id: 'us-gen-harm', value: genHarmType,
                       onChange: function(e) { upd('genHarmType', e.target.value); },
-                      style: { width: '100%', padding: 8, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', background: '#fff' }
+                      style: { width: '100%', padding: 8, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', background: _upC('#fff') }
                     },
                       h('option', { value: '' }, '— pick one —'),
                       h('option', { value: 'social exclusion or freeze-out' }, 'Social exclusion / freeze-out'),
@@ -19418,7 +19424,7 @@ window.SelHub = window.SelHub || {
                     )
                   )
                 ),
-                h('label', { htmlFor: 'us-gen-focus', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Optional: anything specific about your situation'),
+                h('label', { htmlFor: 'us-gen-focus', style: { display: 'block', fontSize: 11, fontWeight: 700, color: _upC('#475569'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Optional: anything specific about your situation'),
                 h('textarea', { id: 'us-gen-focus', value: genFocus,
                   onChange: function(e) { upd('genFocus', e.target.value); },
                   placeholder: 'e.g. "this is between two friends I have known since elementary school" — or leave blank',
@@ -19485,22 +19491,22 @@ window.SelHub = window.SelHub || {
                     },
                     style: {
                       padding: '10px 16px',
-                      background: (genLoading || !callGemini || (!genSetting && !genRelation && !genHarmType && !genFocus.trim())) ? '#cbd5e1' : '#7c3aed',
+                      background: (genLoading || !callGemini || (!genSetting && !genRelation && !genHarmType && !genFocus.trim())) ? _upC('#cbd5e1') : '#7c3aed',
                       color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700,
                       cursor: (genLoading || !callGemini || (!genSetting && !genRelation && !genHarmType && !genFocus.trim())) ? 'not-allowed' : 'pointer',
                       fontSize: 13
                     }
                   }, genLoading ? 'Writing scenario…' : (callGemini ? 'Generate scenario' : 'AI not available'))
                 ),
-                !callGemini && h('p', { style: { margin: '8px 0 0', fontSize: 11, color: '#6b21a8' } },
+                !callGemini && h('p', { style: { margin: '8px 0 0', fontSize: 11, color: _upC('#6b21a8') } },
                   'AI features need a connection. Try the 9 hand-written scenarios above while offline.'),
                 genError && h('div', { 'aria-live': 'polite', style: {
-                  marginTop: 10, padding: 10, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, fontSize: 13, color: '#991b1b'
+                  marginTop: 10, padding: 10, background: _upC('#fef2f2'), border: '1px solid #fecaca', borderRadius: 8, fontSize: 13, color: _upC('#991b1b')
                 } }, genError)
               ),
               // ── Render the generated scenario in the same 4-choice UI shape ──
               genScenario && h('div', null,
-                h('div', { className: 'us-card', style: { background: '#fff', borderRadius: 14, padding: 18, border: '1px dashed #c084fc', marginBottom: 14, background: '#faf5ff' } },
+                h('div', { className: 'us-card', style: { background: _upC('#fff'), borderRadius: 14, padding: 18, border: '1px dashed #c084fc', marginBottom: 14, background: _upC('#faf5ff') } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
                     h('span', { 'aria-hidden': 'true', style: {
                       width: 44, height: 44, borderRadius: 12, flexShrink: 0,
@@ -19509,11 +19515,11 @@ window.SelHub = window.SelHub || {
                       fontSize: 24, color: '#fff'
                     } }, genScenario.icon || '🎭'),
                     h('div', { style: { flex: 1 } },
-                      h('h4', { style: { margin: 0, fontSize: 16, fontWeight: 800, color: '#6b21a8' } }, genScenario.title || 'Your scenario'),
-                      h('div', { style: { fontSize: 11, color: '#6b21a8', fontStyle: 'italic', marginTop: 2 } }, 'AI-generated practice')
+                      h('h4', { style: { margin: 0, fontSize: 16, fontWeight: 800, color: _upC('#6b21a8') } }, genScenario.title || 'Your scenario'),
+                      h('div', { style: { fontSize: 11, color: _upC('#6b21a8'), fontStyle: 'italic', marginTop: 2 } }, 'AI-generated practice')
                     )
                   ),
-                  h('p', { 'aria-live': 'polite', style: { margin: '0 0 14px', fontSize: 14, lineHeight: 1.6, color: '#1f2937' } }, genScenario.setup),
+                  h('p', { 'aria-live': 'polite', style: { margin: '0 0 14px', fontSize: 14, lineHeight: 1.6, color: _upC('#1f2937') } }, genScenario.setup),
                   h('div', { role: 'radiogroup', 'aria-label': 'What would you do?', style: { display: 'grid', gap: 8 } },
                     (genScenario.choices || []).map(function(c, idx) {
                       var picked = genChoice === idx;
@@ -19522,17 +19528,17 @@ window.SelHub = window.SelHub || {
                         onClick: function() { upd('genChoice', idx); if (soundOn) sfxClick(); },
                         style: {
                           padding: '12px 14px', textAlign: 'left',
-                          background: picked ? '#eff6ff' : '#fff',
-                          border: '2px solid ' + (picked ? BLUE : '#cbd5e1'),
+                          background: picked ? _upC('#eff6ff') : _upC('#fff'),
+                          border: '2px solid ' + (picked ? BLUE : _upC('#cbd5e1')),
                           borderRadius: 10, fontSize: 14, fontWeight: picked ? 700 : 500,
-                          color: '#0f172a', cursor: 'pointer',
+                          color: _upC('#0f172a'), cursor: 'pointer',
                           display: 'flex', alignItems: 'flex-start', gap: 10
                         }
                       },
                         h('span', { 'aria-hidden': 'true', style: {
                           width: 22, height: 22, borderRadius: '50%', flexShrink: 0, marginTop: 1,
-                          border: '2px solid ' + (picked ? BLUE : '#cbd5e1'),
-                          background: picked ? BLUE : '#fff',
+                          border: '2px solid ' + (picked ? BLUE : _upC('#cbd5e1')),
+                          background: picked ? BLUE : _upC('#fff'),
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           color: '#fff', fontSize: 13, fontWeight: 800, lineHeight: 1
                         } }, picked ? '✓' : ''),
@@ -19542,13 +19548,13 @@ window.SelHub = window.SelHub || {
                   ),
                   genChoice != null && genScenario.choices && genScenario.choices[genChoice] && h('div', { 'aria-live': 'polite', className: 'us-pop', style: {
                     marginTop: 12, padding: 12, borderRadius: 10,
-                    background: genScenario.choices[genChoice].rating >= 3 ? '#f0fdf4' : (genScenario.choices[genChoice].rating === 2 ? '#fefce8' : '#fef2f2'),
+                    background: genScenario.choices[genChoice].rating >= 3 ? _upC('#f0fdf4') : (genScenario.choices[genChoice].rating === 2 ? _upC('#fefce8') : _upC('#fef2f2')),
                     border: '1px solid ' + (genScenario.choices[genChoice].rating >= 3 ? '#bbf7d0' : (genScenario.choices[genChoice].rating === 2 ? '#fde68a' : '#fecaca'))
                   } },
                     h('div', { style: { fontSize: 12, fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5,
-                      color: genScenario.choices[genChoice].rating >= 3 ? '#166534' : (genScenario.choices[genChoice].rating === 2 ? '#854d0e' : '#991b1b') } },
+                      color: genScenario.choices[genChoice].rating >= 3 ? _upC('#166534') : (genScenario.choices[genChoice].rating === 2 ? _upC('#854d0e') : _upC('#991b1b')) } },
                       genScenario.choices[genChoice].rating >= 3 ? 'Strong response' : (genScenario.choices[genChoice].rating === 2 ? 'Partial — worth thinking about' : 'Risky — think this through')),
-                    h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.55, color: '#0f172a' } }, genScenario.choices[genChoice].feedback)
+                    h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.55, color: _upC('#0f172a') } }, genScenario.choices[genChoice].feedback)
                   )
                 ),
                 h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
@@ -19575,14 +19581,14 @@ window.SelHub = window.SelHub || {
                       if (soundOn) sfxClick();
                       if (announceToSR) announceToSR('Role-play opened with this scene. Pick which role to practice.');
                     },
-                    style: { padding: '8px 14px', background: '#fff', color: '#6b21a8', border: '2px solid #a855f7', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
+                    style: { padding: '8px 14px', background: _upC('#fff'), color: _upC('#6b21a8'), border: '2px solid #a855f7', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
                   }, 'Try this as a role-play →'),
                   h('button', {
                     onClick: function() { upd({ genShown: false, genScenario: null, genChoice: null, genError: '' }); },
-                    style: { padding: '8px 14px', background: '#fff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 13 }
+                    style: { padding: '8px 14px', background: _upC('#fff'), color: _upC('#0f172a'), border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 13 }
                   }, 'Done')
                 ),
-                h('p', { style: { margin: '8px 0 0', fontSize: 11, color: '#6b21a8', fontStyle: 'italic' } },
+                h('p', { style: { margin: '8px 0 0', fontSize: 11, color: _upC('#6b21a8'), fontStyle: 'italic' } },
                   'AI-generated. Treat the feedback as one perspective, not the final word.')
               )
             )
@@ -19693,7 +19699,7 @@ window.SelHub = window.SelHub || {
                 style: {
                   width: '100%', padding: '14px 16px', textAlign: 'left',
                   border: '2px solid ' + (rpShown ? '#a855f7' : '#d8b4fe'),
-                  background: rpShown ? '#faf5ff' : '#fdf4ff',
+                  background: rpShown ? _upC('#faf5ff') : _upC('#fdf4ff'),
                   borderRadius: 14, cursor: 'pointer',
                   display: 'flex', alignItems: 'center', gap: 12,
                   font: 'inherit', color: 'inherit'
@@ -19707,28 +19713,28 @@ window.SelHub = window.SelHub || {
                   boxShadow: '0 4px 10px rgba(168, 85, 247, 0.25)'
                 } }, '🎭'),
                 h('div', { style: { flex: 1, minWidth: 0 } },
-                  h('div', { style: { fontWeight: 800, fontSize: 15, color: '#6b21a8', marginBottom: 2 } },
+                  h('div', { style: { fontWeight: 800, fontSize: 15, color: _upC('#6b21a8'), marginBottom: 2 } },
                     'Practice the conversation (role-play)'),
-                  h('div', { style: { fontSize: 12, color: '#475569', lineHeight: 1.4 } },
+                  h('div', { style: { fontSize: 12, color: _upC('#475569'), lineHeight: 1.4 } },
                     'AI plays a peer. You practice what you would actually say. Up to ~5 turns. You can break character anytime for coaching.')
                 ),
                 h('span', { 'aria-hidden': 'true', style: { color: '#a855f7', fontSize: 18 } }, rpShown ? '▾' : '▸')
               ),
-              rpShown && h('div', { style: { marginTop: 12, padding: 18, background: '#fff', border: '1px solid #d8b4fe', borderRadius: 14 } },
+              rpShown && h('div', { style: { marginTop: 12, padding: 18, background: _upC('#fff'), border: '1px solid #d8b4fe', borderRadius: 14 } },
                 // STEP 1: pick a role to practice
                 !rpRole && h('div', null,
                   // Scene-carried-over banner (if the student came in via the
                   // "Try this as a role-play →" bridge on a generated scenario)
                   rpScene && h('div', { style: {
-                    padding: '10px 12px', marginBottom: 12, background: '#fafafa',
+                    padding: '10px 12px', marginBottom: 12, background: _upC('#fafafa'),
                     borderTop: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb', borderBottom: '1px solid #e5e7eb', borderLeft: '3px solid #a855f7', borderRadius: 8,
-                    fontSize: 13, lineHeight: 1.5, color: '#475569', fontStyle: 'italic'
+                    fontSize: 13, lineHeight: 1.5, color: _upC('#475569'), fontStyle: 'italic'
                   } },
-                    h('span', { style: { fontStyle: 'normal', fontWeight: 700, color: '#6b21a8', fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, marginRight: 6 } }, 'Scene loaded:'),
+                    h('span', { style: { fontStyle: 'normal', fontWeight: 700, color: _upC('#6b21a8'), fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, marginRight: 6 } }, 'Scene loaded:'),
                     rpScene
                   ),
-                  h('p', { style: { margin: '0 0 14px', fontSize: 13, lineHeight: 1.55, color: '#475569' } },
-                    h('strong', { style: { color: '#6b21a8' } }, 'Pick what you want to practice. '),
+                  h('p', { style: { margin: '0 0 14px', fontSize: 13, lineHeight: 1.55, color: _upC('#475569') } },
+                    h('strong', { style: { color: _upC('#6b21a8') } }, 'Pick what you want to practice. '),
                     rpScene
                       ? 'The scene above is the setting. The AI will play the OTHER person inside that scene. You play yourself.'
                       : 'The AI will play the OTHER person. You play yourself. Keep responses short and real — the way you would actually talk.'),
@@ -19741,8 +19747,8 @@ window.SelHub = window.SelHub || {
                         disabled: !callGemini || rpStarting,
                         style: {
                           padding: '12px 14px', textAlign: 'left',
-                          background: '#fff', border: '2px solid #cbd5e1', borderRadius: 10,
-                          fontSize: 14, color: '#0f172a', cursor: (callGemini && !rpStarting) ? 'pointer' : 'not-allowed',
+                          background: _upC('#fff'), border: '2px solid #cbd5e1', borderRadius: 10,
+                          fontSize: 14, color: _upC('#0f172a'), cursor: (callGemini && !rpStarting) ? 'pointer' : 'not-allowed',
                           display: 'flex', alignItems: 'flex-start', gap: 10,
                           opacity: rpStarting ? 0.6 : 1
                         }
@@ -19750,34 +19756,34 @@ window.SelHub = window.SelHub || {
                         h('span', { 'aria-hidden': 'true', style: { fontSize: 22, marginTop: 2 } }, cfg.icon),
                         h('div', { style: { flex: 1 } },
                           h('div', { style: { fontWeight: 700, marginBottom: 4 } }, cfg.label),
-                          h('div', { style: { fontSize: 12, color: '#64748b', lineHeight: 1.45 } }, cfg.desc)
+                          h('div', { style: { fontSize: 12, color: _upC('#64748b'), lineHeight: 1.45 } }, cfg.desc)
                         )
                       );
                     })
                   ),
-                  rpStarting && h('p', { 'aria-live': 'polite', style: { margin: '10px 0 0', fontSize: 12, color: '#6b21a8', fontStyle: 'italic' } },
+                  rpStarting && h('p', { 'aria-live': 'polite', style: { margin: '10px 0 0', fontSize: 12, color: _upC('#6b21a8'), fontStyle: 'italic' } },
                     'Generating a fresh scene…'),
-                  !callGemini && h('p', { style: { margin: '12px 0 0', fontSize: 11, color: '#6b21a8' } },
+                  !callGemini && h('p', { style: { margin: '12px 0 0', fontSize: 11, color: _upC('#6b21a8') } },
                     'AI features need a connection. Try the hand-written scenarios above while offline.')
                 ),
                 // STEP 2: conversation in progress
                 rpRole && charCfg && h('div', null,
                   h('div', { style: {
-                    padding: '8px 12px', marginBottom: 12, background: '#f3e8ff', borderRadius: 8,
-                    fontSize: 12, color: '#6b21a8', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap'
+                    padding: '8px 12px', marginBottom: 12, background: _upC('#f3e8ff'), borderRadius: 8,
+                    fontSize: 12, color: _upC('#6b21a8'), display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap'
                   } },
                     h('span', { style: { fontWeight: 700 } }, charCfg.icon + ' ' + charCfg.label),
                     h('button', {
                       onClick: function() { upd({ rpRole: '', rpScene: '', rpHistory: [], rpInput: '', rpEnded: false, rpReflection: '', rpStarting: false }); if (soundOn) sfxClick(); },
-                      style: { padding: '4px 10px', background: '#fff', color: '#6b21a8', border: '1px solid #d8b4fe', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer' }
+                      style: { padding: '4px 10px', background: _upC('#fff'), color: _upC('#6b21a8'), border: '1px solid #d8b4fe', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer' }
                     }, '← Different role')
                   ),
                   // Scene-setter (italic, neutral observer voice) above the conversation
                   rpScene && h('div', { style: {
-                    padding: '10px 12px', marginBottom: 10, background: '#fafafa', borderTop: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb', borderBottom: '1px solid #e5e7eb', borderLeft: '3px solid #a855f7', borderRadius: 8,
-                    fontSize: 13, lineHeight: 1.5, color: '#475569', fontStyle: 'italic'
+                    padding: '10px 12px', marginBottom: 10, background: _upC('#fafafa'), borderTop: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb', borderBottom: '1px solid #e5e7eb', borderLeft: '3px solid #a855f7', borderRadius: 8,
+                    fontSize: 13, lineHeight: 1.5, color: _upC('#475569'), fontStyle: 'italic'
                   } },
-                    h('span', { style: { fontStyle: 'normal', fontWeight: 700, color: '#6b21a8', fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, marginRight: 6 } }, 'Scene:'),
+                    h('span', { style: { fontStyle: 'normal', fontWeight: 700, color: _upC('#6b21a8'), fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, marginRight: 6 } }, 'Scene:'),
                     rpScene
                   ),
                   // Conversation log
@@ -19801,12 +19807,12 @@ window.SelHub = window.SelHub || {
                           padding: '10px 13px',
                           borderRadius: 12,
                           fontSize: 14, lineHeight: 1.5, whiteSpace: 'pre-wrap',
-                          background: isStudent ? '#dbeafe' : (isCoach ? '#fef3c7' : '#f1f5f9'),
-                          border: '1px solid ' + (isStudent ? '#93c5fd' : (isCoach ? '#fcd34d' : '#cbd5e1')),
-                          color: '#0f172a'
+                          background: isStudent ? _upC('#dbeafe') : (isCoach ? _upC('#fef3c7') : _upC('#f1f5f9')),
+                          border: '1px solid ' + (isStudent ? '#93c5fd' : (isCoach ? '#fcd34d' : _upC('#cbd5e1'))),
+                          color: _upC('#0f172a')
                         }
                       },
-                        h('div', { style: { fontSize: 10, fontWeight: 700, color: isStudent ? '#1d4ed8' : (isCoach ? '#92400e' : '#475569'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } },
+                        h('div', { style: { fontSize: 10, fontWeight: 700, color: isStudent ? _upC('#1d4ed8') : (isCoach ? _upC('#92400e') : _upC('#475569')), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } },
                           isStudent ? 'You' : (isCoach ? '🪶 Coach (out of character)' : '🎭 ' + (rpRole === 'bully' ? 'Mean peer' : rpRole === 'target' ? 'Peer who was hurt' : 'Friend going along'))),
                         h('div', null, turn.text)
                       );
@@ -19884,7 +19890,7 @@ window.SelHub = window.SelHub || {
                         },
                         style: {
                           padding: '10px 16px',
-                          background: (rpLoading || !rpInput.trim() || !callGemini) ? '#cbd5e1' : '#7c3aed',
+                          background: (rpLoading || !rpInput.trim() || !callGemini) ? _upC('#cbd5e1') : '#7c3aed',
                           color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700,
                           cursor: (rpLoading || !rpInput.trim() || !callGemini) ? 'not-allowed' : 'pointer',
                           fontSize: 13
@@ -19920,7 +19926,7 @@ window.SelHub = window.SelHub || {
                         },
                         style: {
                           padding: '10px 14px',
-                          background: '#fff', color: '#92400e', border: '1px solid #fcd34d', borderRadius: 8, fontWeight: 600,
+                          background: _upC('#fff'), color: _upC('#92400e'), border: '1px solid #fcd34d', borderRadius: 8, fontWeight: 600,
                           cursor: (rpLoading || !callGemini || rpHistory.length === 0) ? 'not-allowed' : 'pointer',
                           fontSize: 13
                         }
@@ -19957,7 +19963,7 @@ window.SelHub = window.SelHub || {
                         },
                         style: {
                           padding: '10px 14px',
-                          background: '#fff', color: '#475569', border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600,
+                          background: _upC('#fff'), color: _upC('#475569'), border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600,
                           cursor: (rpLoading || !callGemini) ? 'not-allowed' : 'pointer',
                           fontSize: 13
                         }
@@ -19966,11 +19972,11 @@ window.SelHub = window.SelHub || {
                   ),
                   // STEP 3: end-of-practice reflection
                   rpEnded && rpReflection && h('div', { className: 'us-pop', style: {
-                    marginTop: 8, padding: 14, background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10
+                    marginTop: 8, padding: 14, background: _upC('#f0fdf4'), border: '1px solid #bbf7d0', borderRadius: 10
                   } },
-                    h('div', { style: { fontSize: 12, fontWeight: 700, color: '#166534', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } },
+                    h('div', { style: { fontSize: 12, fontWeight: 700, color: _upC('#166534'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } },
                       'How that went'),
-                    h('p', { style: { margin: '0 0 12px', fontSize: 14, lineHeight: 1.55, color: '#0f172a', whiteSpace: 'pre-wrap' } }, rpReflection),
+                    h('p', { style: { margin: '0 0 12px', fontSize: 14, lineHeight: 1.55, color: _upC('#0f172a'), whiteSpace: 'pre-wrap' } }, rpReflection),
                     h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
                       h('button', {
                         onClick: function() { upd({ rpRole: '', rpScene: '', rpHistory: [], rpInput: '', rpEnded: false, rpReflection: '', rpStarting: false }); if (soundOn) sfxClick(); },
@@ -19978,11 +19984,11 @@ window.SelHub = window.SelHub || {
                       }, 'Practice again'),
                       h('button', {
                         onClick: function() { upd({ rpShown: false, rpRole: '', rpScene: '', rpHistory: [], rpInput: '', rpEnded: false, rpReflection: '', rpStarting: false }); },
-                        style: { padding: '8px 14px', background: '#fff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 13 }
+                        style: { padding: '8px 14px', background: _upC('#fff'), color: _upC('#0f172a'), border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 13 }
                       }, 'Done')
                     )
                   ),
-                  rpRole && h('p', { style: { margin: '8px 0 0', fontSize: 11, color: '#6b21a8', fontStyle: 'italic' } },
+                  rpRole && h('p', { style: { margin: '8px 0 0', fontSize: 11, color: _upC('#6b21a8'), fontStyle: 'italic' } },
                     'AI-generated peer responses. No real student is being depicted. Treat coach feedback as one perspective.'),
                   // Always-on help strip — visible in both solo and live-session
                   // modes. The Rehearse layer makes safety-keyword checks but
