@@ -408,9 +408,18 @@ const TeacherGate = React.memo(({ isOpen, onClose, onUnlock }) => {
   const [passwordInput, setPasswordInput] = useState('');
   const [error, setError] = useState(false);
   if (!isOpen) return null;
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (passwordInput === APP_CONFIG._cfg_validation_key) {
+    // Verify against a stored PBKDF2 hash envelope (the password itself is never kept in
+    // the clear). Legacy console-set plaintext keys still work via the string branch.
+    const _key = APP_CONFIG._cfg_validation_key;
+    let _ok = false;
+    if (_key && typeof _key === 'object' && _key.kind === 'pwhash' && window.AlloModules && window.AlloModules.AlloCrypto) {
+      try { _ok = await window.AlloModules.AlloCrypto.verifyPassword(passwordInput, _key); } catch (_) { _ok = false; }
+    } else if (typeof _key === 'string') {
+      _ok = passwordInput === _key;
+    }
+    if (_ok) {
       onUnlock();
       onClose();
       setPasswordInput('');
