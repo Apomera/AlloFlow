@@ -3881,7 +3881,7 @@ tr:hover{background:#1e293b50}
 <div class="grid">
   <div class="card"><div class="card-title">Documents Processed</div><div class="card-value" style="color:#a5b4fc">${queue.length}</div><div class="card-sub">${done.length} succeeded · ${failed.length} failed</div></div>
   <div class="card"><div class="card-title">Average Score</div><div class="card-value" style="color:${(summary?.avgAfter||0) >= 80 ? '#4ade80' : (summary?.avgAfter||0) >= 50 ? '#fbbf24' : '#f87171'}">${summary?.avgAfter || 0}</div><div class="card-sub">Before: ${summary?.avgBefore || 0} · Improvement: +${summary?.avgImprovement || 0}</div></div>
-  <div class="card"><div class="card-title">Compliance Rate</div><div class="card-value" style="color:${excellent.length === done.length ? '#4ade80' : '#fbbf24'}">${done.length > 0 ? Math.round(excellent.length / done.length * 100) : 0}%</div><div class="card-sub">${excellent.length} of ${done.length} scored 90+</div></div>
+  <div class="card"><div class="card-title">Docs Scoring 90+ (content audit)</div><div class="card-value" style="color:${excellent.length === done.length ? '#4ade80' : '#fbbf24'}">${done.length > 0 ? Math.round(excellent.length / done.length * 100) : 0}%</div><div class="card-sub">${excellent.length} of ${done.length} scored 90+ on the content audit (not PDF/UA conformance)</div></div>
   <div class="card"><div class="card-title">Need Expert Review</div><div class="card-value" style="color:${(summary?.needsExpert||0) > 0 ? '#f87171' : '#4ade80'}">${summary?.needsExpert || 0}</div><div class="card-sub">${needsWork.length} below 70 · ${good.length} between 70-89</div></div>
 </div>
 
@@ -5095,6 +5095,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     const axeAudit = pdfAuditResult._baselineAxeAudit;
                     const isBlended = pdfAuditResult._scoreIsBlended && axeScore !== undefined;
                     const displayedScore = pdfAuditResult.score;
+                    // Image-only scan: axe/EA ran on an EMPTY text reconstruction, so their ~100 is
+                    // by-construction (not earned). Mirror the score-badge's "n/a (no text layer)" guard here
+                    // in the Score Breakdown so the SAME modal doesn't show a real-looking axe 100. (audit #7)
+                    const _noText = pdfAuditResult.hasSearchableText === false;
                     // The blend's deterministic operand is min(axe, EqualAccess)
                     // when both ran — the equation must show THE NUMBER USED
                     // (user report 2026-06-12: it printed axe 80 while the total
@@ -5153,7 +5157,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         {isBlended && axeAudit && (
                         <div className="bg-blue-100 rounded-lg border-2 border-blue-300 p-2.5">
                           <div className="flex justify-between items-baseline mb-1">
-                            <span className="font-black text-blue-900 text-sm">{axeScore}<span className="text-[11px] font-bold text-blue-500">/100</span></span>
+                            <span className="font-black text-blue-900 text-sm">{_noText ? <span className="text-[11px] font-bold text-blue-700" title="No searchable text layer — axe-core audited an empty reconstruction, so this number is by-construction, not an earned score.">n/a (no text layer)</span> : <>{axeScore}<span className="text-[11px] font-bold text-blue-500">/100</span></>}</span>
                             <span className="text-[11px] font-black text-blue-600 uppercase">axe-core</span>
                           </div>
                           <div className="text-[11px] text-blue-800 space-y-0.5">
@@ -5242,7 +5246,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <span className="text-slate-600 font-bold">{t('pdf_audit.score.lower_of') || 'lower of'}{' '}</span>
                             <span className="text-purple-800 font-black" title={t('pdf_audit.score.content_short') || 'content'}>{aiScore}</span>
                             <span className="text-slate-600 mx-1">{t('pdf_audit.score.and_word') || 'and'}</span>
-                            <span className="text-blue-800 font-black" title={t('pdf_audit.score.automated_short') || 'automated'}>{deterministicShown}</span>
+                            <span className="text-blue-800 font-black" title={t('pdf_audit.score.automated_short') || 'automated'}>{_noText ? 'n/a' : deterministicShown}</span>
                             <span className="text-slate-600 mx-2">=</span>
                             <span className="font-black text-slate-900 text-lg">{displayedScore}</span>
                             <span className="text-slate-600 text-xs">/100</span>
@@ -9745,7 +9749,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             })()}
                             <button onClick={() => {
                               const _rptAi = pdfFixResult.afterScore; const _rptAxe = pdfFixResult.axeAudit?.score ?? null; const _rptBlended = (_rptAi != null ? _rptAi : _rptAxe) /* canonical engine blend; no re-blend (audit 2026-06-13) */;
-                              const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _rptBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null, secondEngineAudit: pdfFixResult.secondEngineAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _rptBlended, summary: pdfAuditResult?.summary || '', _aiVerificationIncomplete: !!pdfFixResult._aiVerificationIncomplete, _slicedAudit: !!(pdfAuditResult && pdfAuditResult._slicedAudit), _beforeWasSliced: !!pdfFixResult._beforeWasSliced };
+                              const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _rptBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null, secondEngineAudit: pdfFixResult.secondEngineAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _rptBlended, summary: pdfAuditResult?.summary || '', integrityCoverage: pdfFixResult.integrityCoverage ?? null, _aiVerificationIncomplete: !!pdfFixResult._aiVerificationIncomplete, _slicedAudit: !!(pdfAuditResult && pdfAuditResult._slicedAudit), _beforeWasSliced: !!pdfFixResult._beforeWasSliced };
                               const html = generateAuditReportHtml(full, pendingPdfFile?.name || 'document.pdf', true);
                               const w = window.open('', '_blank');
                               if (w) {
@@ -9761,7 +9765,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             </button>
                             <button onClick={() => {
                               const _dlAi = pdfFixResult.afterScore; const _dlAxe = pdfFixResult.axeAudit?.score ?? null; const _dlBlended = (_dlAi != null ? _dlAi : _dlAxe);
-                              const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _dlBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null, secondEngineAudit: pdfFixResult.secondEngineAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _dlBlended, summary: pdfAuditResult?.summary || '', _aiVerificationIncomplete: !!pdfFixResult._aiVerificationIncomplete, _slicedAudit: !!(pdfAuditResult && pdfAuditResult._slicedAudit), _beforeWasSliced: !!pdfFixResult._beforeWasSliced };
+                              const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _dlBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null, secondEngineAudit: pdfFixResult.secondEngineAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _dlBlended, summary: pdfAuditResult?.summary || '', integrityCoverage: pdfFixResult.integrityCoverage ?? null, _aiVerificationIncomplete: !!pdfFixResult._aiVerificationIncomplete, _slicedAudit: !!(pdfAuditResult && pdfAuditResult._slicedAudit), _beforeWasSliced: !!pdfFixResult._beforeWasSliced };
                               const html = generateAuditReportHtml(full, pendingPdfFile?.name || 'document.pdf', true);
                               const blob = new Blob([html], { type: 'text/html' });
                               const url = URL.createObjectURL(blob);
@@ -9773,7 +9777,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             </button>
                             <button onClick={() => {
                               const _jsonAi = pdfFixResult.afterScore; const _jsonAxe = pdfFixResult.axeAudit?.score ?? null; const _jsonBlended = (_jsonAi != null ? _jsonAi : _jsonAxe);
-                              const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _jsonBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null, secondEngineAudit: pdfFixResult.secondEngineAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _jsonBlended, afterScoreVerified: !pdfFixResult._aiVerificationIncomplete, afterScoreBasis: pdfFixResult._aiVerificationIncomplete ? 'deterministic-only (AI semantic audit incomplete — not a verified content score)' : 'min(content,automated) — weakest-layer governing score, NOT an average', _aiVerificationIncomplete: !!pdfFixResult._aiVerificationIncomplete, _slicedAudit: !!(pdfAuditResult && pdfAuditResult._slicedAudit), _beforeWasSliced: !!pdfFixResult._beforeWasSliced, fileName: pendingPdfFile?.name, date: new Date().toISOString(), tool: 'AlloFlow', standard: 'WCAG 2.1 AA', engines: ['AI (Gemini, 5-pass self-consistency)', 'axe-core (Deque WCAG 2.1 AA)'].concat(pdfFixResult.secondEngineAudit ? ['IBM Equal Access (WCAG 2.1 AA)'] : []) };
+                              const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _jsonBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null, secondEngineAudit: pdfFixResult.secondEngineAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _jsonBlended, afterScoreVerified: !pdfFixResult._aiVerificationIncomplete, afterScoreBasis: pdfFixResult._aiVerificationIncomplete ? 'deterministic-only (AI semantic audit incomplete — not a verified content score)' : 'min(content,automated) — weakest-layer governing score, NOT an average', integrityCoverage: pdfFixResult.integrityCoverage ?? null, _aiVerificationIncomplete: !!pdfFixResult._aiVerificationIncomplete, _slicedAudit: !!(pdfAuditResult && pdfAuditResult._slicedAudit), _beforeWasSliced: !!pdfFixResult._beforeWasSliced, fileName: pendingPdfFile?.name, date: new Date().toISOString(), tool: 'AlloFlow', standard: 'WCAG 2.1 AA', engines: (() => { const _p = pdfAuditResult && (pdfAuditResult.auditorCount || (pdfAuditResult.scores && pdfAuditResult.scores.length)); return ['AI (Gemini' + (_p ? ', ' + _p + '-pass self-consistency' : '') + ')'].concat((pdfFixResult.axeAudit && typeof pdfFixResult.axeAudit.score === 'number') ? ['axe-core (Deque WCAG 2.1 AA)'] : []).concat(pdfFixResult.secondEngineAudit ? ['IBM Equal Access (WCAG 2.1 AA)'] : []); })() };
                               const blob = new Blob([JSON.stringify(full, null, 2)], { type: 'application/json' });
                               const url = URL.createObjectURL(blob);
                               const a = document.createElement('a'); a.href = url; a.download = `a11y-before-after-${new Date().toISOString().split('T')[0]}.json`;
@@ -9861,7 +9865,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   },
                                   remediation: {
                                     standard: 'WCAG 2.1 AA',
-                                    engines: ['AI (Gemini, 5-pass self-consistency)', 'axe-core (Deque WCAG 2.1 AA)'],
+                                    engines: (() => { const _p = pdfAuditResult && (pdfAuditResult.auditorCount || (pdfAuditResult.scores && pdfAuditResult.scores.length)); return ['AI (Gemini' + (_p ? ', ' + _p + '-pass self-consistency' : '') + ')'].concat((pdfFixResult.axeAudit && typeof pdfFixResult.axeAudit.score === 'number') ? ['axe-core (Deque WCAG 2.1 AA)'] : []).concat(pdfFixResult.secondEngineAudit ? ['IBM Equal Access (WCAG 2.1 AA)'] : []); })(),
                                     beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore,
                                     afterScore: blended,
                                     aiAudit: pdfFixResult.verificationAudit || null,

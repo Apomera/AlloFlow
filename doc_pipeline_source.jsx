@@ -18345,7 +18345,10 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // min(axe, Equal Access), so when EA is the lower one it GOVERNS the headline. Showing
       // it here is what makes a "60" headline self-explaining next to axe 100 / AI 98 (without
       // this tile, the governing number is invisible and the report looks internally inconsistent).
-      const _eaGoverns = (typeof secondEngine === 'number') && secondEngine < Math.min(structural, semantic) - 10;
+      // Align with the on-screen predicate (afterEa < afterAxe): EA governs when it is below the axe layer,
+      // any margin. The old `< min(structural,semantic) - 10` made the report go SILENT when EA governed by a
+      // small margin while the screen showed the note — same disclosure, two thresholds (audit wo72lu4mh #6).
+      const _eaGoverns = (typeof secondEngine === 'number') && (typeof structural === 'number') && secondEngine < structural;
       const eaTile = (typeof secondEngine === 'number')
         ? `<div style="flex:1;min-width:150px;text-align:center;background:${_eaGoverns ? '#fffbeb' : '#f8fafc'};border:1px solid ${_eaGoverns ? '#fcd34d' : '#e2e8f0'};border-radius:8px;padding:12px"><div style="font-size:1.25rem;font-weight:800;color:${_eaGoverns ? '#b45309' : '#1e3a5f'}">${secondEngine}</div><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;font-weight:600">2nd engine (Equal Access)</div></div>`
         : '';
@@ -18457,11 +18460,14 @@ tr { page-break-inside: avoid; }
     html += `</div>`;
 
     // Honest structural-vs-semantic split + content-integrity coverage
-    const _structScore = isBeforeAfter ? (d.after?.axeCoreAudit?.score ?? d.after?.axeScore) : (d.axeCoreAudit?.score ?? d.axeScore);
-    const _semScore = isBeforeAfter ? (d.after?.aiAudit?.score ?? d.after?.verificationAudit?.score) : (d.aiAudit?.score ?? d.verificationAudit?.score);
-    // 2nd-engine (IBM Equal Access) score: the deterministic half of the headline is min(axe, EA),
-    // so when EA is lower it GOVERNS — surface it so a low headline next to a high axe/AI is explained.
-    const _eaScore = isBeforeAfter ? (d.after?.secondEngineAudit?.score) : (d.secondEngineAudit?.score);
+    // Pre-tag (standalone, isBeforeAfter=false) `d` is the triangulated AUDIT object — it carries
+    // _baselineAxeScore / _aiOnlyScore / _baselineSecondEngineAudit, NOT the fix-result's
+    // axeCoreAudit/aiAudit/secondEngineAudit. Fall through to those so the standalone report actually
+    // renders the axe-core + AI data its header/footer claim (audit wo72lu4mh #4).
+    const _structScore = isBeforeAfter ? (d.after?.axeCoreAudit?.score ?? d.after?.axeScore) : (d.axeCoreAudit?.score ?? d.axeScore ?? d._baselineAxeScore);
+    const _semScore = isBeforeAfter ? (d.after?.aiAudit?.score ?? d.after?.verificationAudit?.score) : (d.aiAudit?.score ?? d.verificationAudit?.score ?? d._aiOnlyScore);
+    // 2nd-engine (IBM Equal Access): when it is the lower deterministic engine it GOVERNS the headline.
+    const _eaScore = isBeforeAfter ? (d.after?.secondEngineAudit?.score) : (d.secondEngineAudit?.score ?? (d._baselineSecondEngineAudit && d._baselineSecondEngineAudit.score));
     html += _honestReportBlocks(_structScore, _semScore, d.integrityCoverage, undefined, (typeof _eaScore === 'number' ? _eaScore : undefined));
 
     // Reliability metrics

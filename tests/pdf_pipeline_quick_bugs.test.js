@@ -562,3 +562,34 @@ describe('B11: audit #1 — null AI score no longer coerced to 0 (no fabricated 
     expect(ch(0, 88)).toBe(0);       // a REAL 0 is still preserved (not confused with null)
   });
 });
+
+describe('B12: audit honesty cluster #3-#7,#9 (export ↔ screen consistency)', () => {
+  const dpx = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+  const vpx = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
+
+  it('#3: the export payloads carry integrityCoverage (so the report renders Content Integrity)', () => {
+    expect((vpx.match(/integrityCoverage: pdfFixResult\.integrityCoverage \?\? null/g) || []).length).toBeGreaterThanOrEqual(3);
+  });
+  it('#4: the pre-tag (standalone) report falls through to triangulated audit fields', () => {
+    expect(dpx).toMatch(/d\.axeCoreAudit\?\.score \?\? d\.axeScore \?\? d\._baselineAxeScore/);
+    expect(dpx).toMatch(/d\.aiAudit\?\.score \?\? d\.verificationAudit\?\.score \?\? d\._aiOnlyScore/);
+  });
+  it('#5: engines[] is built dynamically (real pass count, axe gated on whether it ran) — no hardcoded literal', () => {
+    expect(vpx).not.toMatch(/engines: \['AI \(Gemini, 5-pass self-consistency\)', 'axe-core \(Deque WCAG 2\.1 AA\)'\]/);
+    expect((vpx.match(/'AI \(Gemini' \+ \(_p \? ', ' \+ _p \+ '-pass self-consistency'/g) || []).length).toBeGreaterThanOrEqual(2);
+    expect((vpx.match(/pdfFixResult\.axeAudit && typeof pdfFixResult\.axeAudit\.score === 'number'\) \? \['axe-core/g) || []).length).toBeGreaterThanOrEqual(2);
+  });
+  it('#6: the report EA-governs predicate matches the screen (secondEngine < structural, no -10)', () => {
+    expect(dpx).toMatch(/_eaGoverns = \(typeof secondEngine === 'number'\) && \(typeof structural === 'number'\) && secondEngine < structural;/);
+    expect(dpx).not.toMatch(/secondEngine < Math\.min\(structural, semantic\) - 10/);
+  });
+  it('#7: the Score Breakdown panel shows axe/EA as n/a on a no-text scan (mirrors the badge)', () => {
+    expect(vpx).toMatch(/const _noText = pdfAuditResult\.hasSearchableText === false;/);
+    expect(vpx).toMatch(/_noText \? <span[^>]*>n\/a \(no text layer\)<\/span> : <>\{axeScore\}/);
+    expect(vpx).toMatch(/\{_noText \? 'n\/a' : deterministicShown\}/);
+  });
+  it('#9: the batch card no longer calls the ≥90 content rate "Compliance Rate"', () => {
+    expect(vpx).not.toMatch(/card-title">Compliance Rate</);
+    expect(vpx).toMatch(/Docs Scoring 90\+ \(content audit\)/);
+  });
+});
