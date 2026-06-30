@@ -45,7 +45,8 @@ beforeAll(async () => {
         { type: 'short-answer', question: 'Explain one cause of an eruption.', expectedAnswer: 'Pressure.' },
       ] } },
     { type: 'glossary', id: 'g1', title: 'Key Terms', meta: 'Vocabulary',
-      data: [{ term: 'Magma', definition: 'Molten rock below ground.' },
+      // The first term carries < & > " to prove the glossary escaping (text + alt attr).
+      data: [{ term: 'Magma & "lava" <hot>', definition: 'Molten rock below ground.' },
              { term: 'Vent', definition: 'An opening lava flows through.' }] },
     { type: 'note-taking', id: 'n1', title: 'Notes', meta: 'Double-entry',
       data: { templateType: 'double-entry', rows: [{ left: 'Quote', right: 'Reaction' }] } },
@@ -71,6 +72,14 @@ describe('HTML export · axe-core WCAG 2.1 A+AA self-audit gate', () => {
   it('axe actually evaluated rules (so a 0-violation result is meaningful, not a no-op)', () => {
     // passes = WCAG rules that ran and found no problem. If axe ran on a real DOM this is large.
     expect(results.passes.length).toBeGreaterThan(8);
+  });
+
+  it('escapes raw text content (4.1.1) — special chars become entities, never raw markup', () => {
+    // The seeded glossary term "Magma & \"lava\" <hot>" must appear entity-encoded, not raw.
+    expect(html).toContain('Magma &amp; &quot;lava&quot; &lt;hot&gt;');
+    expect(html).not.toContain('<hot>');
+    // and the lesson topic / quiz option special chars too
+    expect(html).toContain('Yes &amp; true');
   });
 
   it('SCORECARD: log axe pass/incomplete/violation counts + every violation', () => {

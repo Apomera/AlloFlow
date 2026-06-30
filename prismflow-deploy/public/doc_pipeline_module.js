@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -23917,7 +23917,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       // Escape raw AI/teacher text before it goes into the document body, so a stray < & >
       // displays as text instead of garbling or injecting markup (WCAG 4.1.1). Use ONLY for
       // plain-text fields interpolated directly — never for fields rendered via parseMarkdownToHTML.
-      const _escTxt = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const _escTxt = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
       // ── Worksheet (paper) mode helpers ──
       // When cfg.isWorksheet is true, the export is being rendered for paper
       // (cut, write by hand). Replace interactive inputs with handwriting
@@ -24033,7 +24033,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               ? Object.entries(gItem.translations).map(([k, v]) => `<div style="margin-top:4px;font-size:0.85em;"><strong>${k}:</strong> ${v}</div>`).join('')
                               : '';
                           const imageHtml = gItem.image
-                              ? `<img loading="lazy" src="${gItem.image}" alt="${gItem.term}" style="max-width: 100%; max-height: 80px; object-fit: contain; border-radius: 6px; margin-bottom: 8px;"/>`
+                              ? `<img loading="lazy" src="${gItem.image}" alt="${_escTxt(gItem.term)}" style="max-width: 100%; max-height: 80px; object-fit: contain; border-radius: 6px; margin-bottom: 8px;"/>`
                               : '';
                           // For language-cards mode, the "back" emphasizes translations; the def is collapsed beneath.
                           const backContent = showTranslations
@@ -24043,8 +24043,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               <div role="listitem" class="alloflow-glossary-card" data-card-idx="${idx}" style="border:2px dashed #94a3b8; border-radius:12px; overflow:hidden; background:white; break-inside:avoid; page-break-inside:avoid;">
                                   <div class="alloflow-glossary-card-front" style="padding:16px 14px; text-align:center; min-height:110px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
                                       ${imageHtml}
-                                      <strong style="font-size:1.15em; color:#1e293b; line-height:1.3;">${gItem.term}</strong>
-                                      ${gItem.term_en && gItem.term_en !== gItem.term ? `<div style="font-size:0.8em; color:#64748b; margin-top:4px;">(${gItem.term_en})</div>` : ''}
+                                      <strong style="font-size:1.15em; color:#1e293b; line-height:1.3;">${_escTxt(gItem.term)}</strong>
+                                      ${gItem.term_en && gItem.term_en !== gItem.term ? `<div style="font-size:0.8em; color:#64748b; margin-top:4px;">(${_escTxt(gItem.term_en)})</div>` : ''}
                                   </div>
                                   <div class="alloflow-glossary-card-fold" aria-hidden="true" style="border-top:2px dashed #cbd5e1; padding:3px 0; text-align:center; font-family:monospace; font-size:0.65em; color:#64748b; letter-spacing:0.1em; background:#f8fafc;">▼ fold here / click to flip ▼</div>
                                   <div class="alloflow-glossary-card-back" style="padding:14px; background:#f8fafc; min-height:90px;">
@@ -24130,9 +24130,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   <tbody>
                       ${item.data.map(gItem => `
                       <tr>
-                          ${hasAnyImages ? `<td class="gloss-img-cell" style="text-align: center; vertical-align: middle;">${gItem.image ? `<img loading="lazy" src="${gItem.image}" alt="${gItem.term}" />` : ''}</td>` : ''}
+                          ${hasAnyImages ? `<td class="gloss-img-cell" style="text-align: center; vertical-align: middle;">${gItem.image ? `<img loading="lazy" src="${gItem.image}" alt="${_escTxt(gItem.term)}" />` : ''}</td>` : ''}
                           <td style="text-align: ${align}">
-                            <strong class="gloss-term">${gItem.term}</strong>
+                            <strong class="gloss-term">${_escTxt(gItem.term)}</strong>
                           </td>
                           <td style="text-align: ${align}">${_hideCell(gItem.def)}</td>
                           ${hasAnyTranslations ? `<td style="text-align: ${align}">${_hideCell(Object.entries(gItem.translations || {}).map(([k, v]) => `<strong>${k}:</strong> ${v}`).join('<br><br>'))}</td>` : ''}
@@ -26450,7 +26450,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       const cfg = { ...(config || exportConfig), isWorksheet };
       // Escape raw text (e.g. the lesson topic) before interpolating into the document body, so a
       // stray < & > displays as text rather than garbling/injecting markup (WCAG 4.1.1).
-      const _escTxt = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const _escTxt = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
       // ── Tier 1 visual structure (May 13 2026): cover TOC + numbered section
       // markers + decorative terminators. Mirrors the visibility logic in
       // generateResourceHTML so we only TOC items that will actually render.
@@ -29101,6 +29101,11 @@ window.AlloModules.createDocPipeline.ocrBlockLayout = _alloOcrBlockLayout; // st
 window.AlloModules.createDocPipeline.structuralFoundations = _alloStructuralFoundations; // static: exposed for tests
 window.AlloModules.createDocPipeline.weightedDeductions = _alloWeightedDeductions; // static: exposed for tests (#5)
 window.AlloModules.createDocPipeline.contrastFixPair = _alloContrastFixPair; // static: exposed for tests (contrast pair-fixer)
+window.AlloModules.DocPipelineModule = true;
+console.log('[DocPipelineModule] Pipeline factory registered');
+
+window.AlloModules = window.AlloModules || {};
+window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 })();
