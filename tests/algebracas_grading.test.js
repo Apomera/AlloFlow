@@ -50,6 +50,17 @@ describe('algebraCAS — verifySolution substitutes the root back in', () => {
   });
 });
 
+describe('algebraCAS — solve-answer verify badge', () => {
+  it('renders "Verified by the math engine" when the solved answer checks out', () => {
+    const chk = cas().verifySolution('2x + 5 = 13', 'x = 4');
+    expect(chk.verified).toBe(true);
+    const html = renderTool('algebraCAS', {
+      algebraCAS: { mode: 'solve', expression: '2x + 5 = 13', result: 'STEP 1: subtract 5\nANSWER: x = 4', verify: chk }
+    });
+    expect(html).toContain('Verified by the math engine');
+  });
+});
+
 describe('algebraCAS — verdict chip is shown for verified grades', () => {
   it('renders "Checked by the math engine" distinctly from the AI feedback', () => {
     const html = renderTool('algebraCAS', {

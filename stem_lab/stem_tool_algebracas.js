@@ -319,6 +319,7 @@
         var expression = d.expression || '';
         var mode = d.mode || 'solve';
         var result = d.result || null;
+        var verify = d.verify || null;
         var isLoading = d.isLoading || false;
         var history = d.history || [];
         var difficulty = d.difficulty || 'elementary';
@@ -415,12 +416,14 @@
             'Be rigorous. Show every step. Keep explanations concise but educational.';
           callGemini(prompt).then(function(res) {
             if (res) {
+              var _aM = res.match(/ANSWER:s*(.+)/i);
+              var _chk = (_aM && _aM[1].trim()) ? __alloCASPure.verifySolution(expression, _aM[1].trim()) : { decidable: false };
               var newH = history.slice(-9);
               newH.push({ expr: expression, mode: mode, result: res, ts: Date.now() });
               var sc = (d._solveCount || 0) + 1;
               var fc = (d._factorCount || 0) + (mode === 'factor' ? 1 : 0);
               var mu = Object.assign({}, d._modesUsed || {}); mu[mode] = true;
-              updMulti({ isLoading: false, result: res, history: newH, _solveCount: sc, _factorCount: fc, _modesUsed: mu });
+              updMulti({ isLoading: false, result: res, verify: _chk, history: newH, _solveCount: sc, _factorCount: fc, _modesUsed: mu });
               if (awardStemXP) awardStemXP('algebraCAS', 5, 'CAS solve');
               checkBadges(Object.assign({}, d, { _solveCount: sc, _factorCount: fc, _modesUsed: mu, history: newH }));
             } else { upd('isLoading', false); }
@@ -613,7 +616,8 @@
             ),
             result ? h('div', { style: Object.assign({}, cardStyle, { marginBottom: '10px' }) },
               h('div', { style: { fontSize: '11px', fontWeight: '700', color: ACCENT, marginBottom: '8px' } }, t('stem.algebraCAS.step_by_step_solution_2', '\uD83D\uDCCB Step-by-Step Solution')),
-              h('div', { style: { fontSize: '12px', fontFamily: 'monospace', whiteSpace: 'pre-wrap', lineHeight: '1.6' } }, renderSteps(typeof result === 'string' ? result : ''))
+              h('div', { style: { fontSize: '12px', fontFamily: 'monospace', whiteSpace: 'pre-wrap', lineHeight: '1.6' } }, renderSteps(typeof result === 'string' ? result : '')),
+              verify && verify.decidable ? h('div', { style: { marginTop: '8px', padding: '6px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: '700', background: verify.verified ? 'rgba(34,197,94,0.12)' : 'rgba(245,158,11,0.12)', color: verify.verified ? '#34d399' : '#f59e0b', border: '1px solid ' + (verify.verified ? 'rgba(34,197,94,0.3)' : 'rgba(245,158,11,0.3)') } }, verify.verified ? ('✓ ' + t('stem.algebraCAS.verified_check', 'Verified by the math engine') + (verify.detail ? ' — ' + verify.detail : '')) : ('⚠ ' + t('stem.algebraCAS.verify_warning', 'This answer does not check out') + (verify.detail ? ' — ' + verify.detail : ''))) : null
             ) : null,
             history.length > 0 ? h('div', null,
               h('div', { style: { fontSize: '10px', fontWeight: '700', color: MUTED, marginBottom: '6px' } }, '\uD83D\uDCDC Recent (' + history.length + ')'),
