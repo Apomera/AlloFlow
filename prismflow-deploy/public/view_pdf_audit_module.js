@@ -7408,6 +7408,13 @@ Return ONLY JSON:
             if (ocrTextLayer && typeof ocrTextLayer.coveragePct === "number" && (ocrTextLayer.coveragePct < 100 || ocrTextLayer.nonLatinDropped)) {
               _rpt.push({ tone: "error", text: "Searchable text layer covers " + ocrTextLayer.coveragePct + "% of the scanned text \u2014 " + (ocrTextLayer.droppedChars || 0) + " character(s) in a non-Latin script could not be embedded, so those passages will not be searchable or read aloud." });
             }
+            if (ocrTextLayer && ((ocrTextLayer.pagesEmpty || 0) > 0 || (ocrTextLayer.pagesIncomplete || 0) > 0)) {
+              const _pw = ocrTextLayer.pagesWithText || (ocrTextLayer.pagesCovered || 0) + (ocrTextLayer.pagesIncomplete || 0) + (ocrTextLayer.pagesEmpty || 0);
+              const _bits = [];
+              if ((ocrTextLayer.pagesEmpty || 0) > 0) _bits.push(ocrTextLayer.pagesEmpty + " got NO searchable text");
+              if ((ocrTextLayer.pagesIncomplete || 0) > 0) _bits.push(ocrTextLayer.pagesIncomplete + " got only partial text");
+              _rpt.push({ tone: "warn", text: "Per-page OCR: of " + _pw + " scanned page(s), " + _bits.join(" and ") + " \u2014 those page(s) will not be fully searchable or read aloud; verify them against the original." });
+            }
             if (roundTrip && roundTrip.ok !== false && Array.isArray(roundTrip.warnings) && roundTrip.warnings.length) {
               _rpt.push({ tone: "warn", text: "Structure self-check notes: " + roundTrip.warnings.join("; ") });
             }
