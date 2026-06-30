@@ -74,6 +74,7 @@
     "@babel/plugin-transform-react-jsx": "^7.28.6",
     "@playwright/test": "^1.60.0",
     "@vitest/coverage-v8": "^4.1.5",
+    "axe-core": "^4.12.1",
     "diff": "^9.0.0",
     "eslint-scope": "^9.1.2",
     "jsdom": "^29.1.0",
