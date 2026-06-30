@@ -10161,7 +10161,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     zip.file('telemetry.json', JSON.stringify(telemetry, null, 2));
 
     const done = pdfBatchQueue.filter(q => q.status === 'done');
-    const rptHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Batch Accessibility Report</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem;color:#1e293b}h1{color:#1e3a5f;border-bottom:3px solid #2563eb;padding-bottom:.5rem}table{width:100%;border-collapse:collapse;margin:1rem 0}th,td{border:1px solid #cbd5e1;padding:8px 12px;text-align:left}th{background:#f1f5f9}.pass{color:#16a34a;font-weight:bold}.warn{color:#d97706;font-weight:bold}.fail{color:#dc2626;font-weight:bold}.stat{display:inline-block;padding:8px 16px;margin:4px;border-radius:8px;background:#f1f5f9;font-weight:bold}</style></head><body><h1>\u267f AlloFlow Batch Accessibility Report</h1><p>Generated: ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</p><div><span class="stat">${pdfBatchQueue.length} PDFs</span><span class="stat">\u2705 ${done.length} Succeeded</span><span class="stat">Avg: ${pdfBatchSummary?.avgBefore||'?'}\u2192${pdfBatchSummary?.avgAfter||'?'}</span><span class="stat">${pdfBatchSummary?.above90||0} scored 90+</span></div><table><thead><tr><th>#</th><th>File</th><th>Before</th><th>After</th><th>Gain</th><th>Passes</th><th>Time</th><th>Tagged PDF</th><th>Status</th></tr></thead><tbody>${pdfBatchQueue.map((f,i)=>{const r=f.result;const s=r?.afterScore||0;const c=s>=90?'pass':s>=70?'warn':'fail';const tg=_taggedNotes.get(f.id)||'\u2014';const tc=tg.indexOf('yes')===0?'pass':(tg.indexOf('EXCLUDED')===0||tg.indexOf('failed')===0)?'fail':'';return '<tr><td>'+(i+1)+'</td><td>'+_escRpt(f.fileName)+'</td><td>'+(r?.beforeScore??'\u2014')+'</td><td class="'+c+'">'+(r?.afterScore??'\u2014')+'</td><td>'+(r && r.afterScore!=null && r.beforeScore!=null ? '+'+(r.afterScore-r.beforeScore) : '\u2014')+'</td><td>'+(r?.autoFixPasses??'\u2014')+'</td><td>'+(r?.elapsed?r.elapsed+'s':'\u2014')+'</td><td class="'+tc+'">'+_escRpt(tg)+'</td><td>'+(f.status==='done'?'\u2705':f.status==='failed'?'\u274c '+_escRpt(f.error||''):'\u23f8 Not processed')+'</td></tr>';}).join('')}</tbody></table></body></html>`;
+    const rptHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Batch Accessibility Report</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem;color:#1e293b}h1{color:#1e3a5f;border-bottom:3px solid #2563eb;padding-bottom:.5rem}table{width:100%;border-collapse:collapse;margin:1rem 0}th,td{border:1px solid #cbd5e1;padding:8px 12px;text-align:left}th{background:#f1f5f9}.pass{color:#16a34a;font-weight:bold}.warn{color:#d97706;font-weight:bold}.fail{color:#dc2626;font-weight:bold}.stat{display:inline-block;padding:8px 16px;margin:4px;border-radius:8px;background:#f1f5f9;font-weight:bold}</style></head><body><h1>\u267f AlloFlow Batch Accessibility Report</h1><p>Generated: ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</p><div><span class="stat">${pdfBatchQueue.length} PDFs</span><span class="stat">\u2705 ${done.length} Succeeded</span><span class="stat">Avg: ${pdfBatchSummary?.avgBefore||'?'}\u2192${pdfBatchSummary?.avgAfter||'?'}</span><span class="stat">${pdfBatchSummary?.above90||0} scored 90+</span></div><table><thead><tr><th>#</th><th>File</th><th>Before</th><th>After</th><th>Gain</th><th>2nd engine (Equal Access)</th><th>Passes</th><th>Time</th><th>Tagged PDF</th><th>Status</th></tr></thead><tbody>${pdfBatchQueue.map((f,i)=>{const r=f.result;const s=r?.afterScore||0;const c=s>=90?'pass':s>=70?'warn':'fail';const tg=_taggedNotes.get(f.id)||'\u2014';const tc=tg.indexOf('yes')===0?'pass':(tg.indexOf('EXCLUDED')===0||tg.indexOf('failed')===0)?'fail':'';return '<tr><td>'+(i+1)+'</td><td>'+_escRpt(f.fileName)+'</td><td>'+(r?.beforeScore??'\u2014')+'</td><td class="'+c+'">'+(r?.afterScore??'\u2014')+'</td><td>'+(r && r.afterScore!=null && r.beforeScore!=null ? '+'+(r.afterScore-r.beforeScore) : '\u2014')+'</td><td>'+(r?.secondEngineAudit && typeof r.secondEngineAudit.score==='number' ? (r.secondEngineAudit.score+' ('+(r.secondEngineAudit.failViolations||0)+' fail'+((r.secondEngineAudit.failViolations||0)===1?'':'s')+')') : '\u2014')+'</td><td>'+(r?.autoFixPasses??'\u2014')+'</td><td>'+(r?.elapsed?r.elapsed+'s':'\u2014')+'</td><td class="'+tc+'">'+_escRpt(tg)+'</td><td>'+(f.status==='done'?'\u2705':f.status==='failed'?'\u274c '+_escRpt(f.error||''):'\u23f8 Not processed')+'</td></tr>';}).join('')}</tbody></table></body></html>`;
     zip.file('batch_report.html', rptHtml);
 
     const blob = await zip.generateAsync({ type: 'blob' });
@@ -27841,6 +27841,19 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               }
               // Cursor hint on host
               host.style.cursor = (mode === 'note' || mode === 'voice') ? 'crosshair' : (mode === 'highlight' ? 'text' : '');
+              // WCAG 2.1.1 keyboard path: while an annotate mode is active, make the content area
+              // focusable so a keyboard user can Tab to it and press Enter to create a note (or, with
+              // a text selection, a highlight) — the keydown handler below mirrors click/mouseup. The
+              // note editor auto-focuses its textarea, so the rest of the flow is already keyboard-usable.
+              if (mode === 'note' || mode === 'highlight') {
+                host.setAttribute('tabindex', '0');
+                host.setAttribute('aria-label', mode === 'note'
+                  ? 'Note tool active. Press Enter here to add a note.'
+                  : 'Highlight tool active. Select text, then press Enter to highlight it.');
+              } else {
+                host.removeAttribute('tabindex');
+                host.removeAttribute('aria-label');
+              }
             }
 
             // ── Voice recording (Phase 6b: export-side) ──
@@ -28134,6 +28147,29 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               }
               if (mode !== 'note') return;
               openInlineNoteEditor(x, y);
+            });
+
+            // WCAG 2.1.1 — keyboard equivalent of click-to-note / select-to-highlight. host is made
+            // focusable in setMode while an annotate mode is active; Enter on it creates the
+            // annotation. A plain focusable <div> does not synthesize a click on Enter, so this does
+            // not double-fire with the click handler above.
+            host.addEventListener('keydown', function (e) {
+              if (e.target !== host || e.key !== 'Enter') return;
+              if (mode === 'note') {
+                e.preventDefault();
+                var hr = host.getBoundingClientRect(), nx, ny;
+                var s = window.getSelection && window.getSelection();
+                if (s && !s.isCollapsed && s.rangeCount > 0) {
+                  var rr = s.getRangeAt(0).getClientRects()[0];
+                  if (rr) { nx = Math.round(rr.left - hr.left + (host.scrollLeft || 0)); ny = Math.round(rr.top - hr.top + (host.scrollTop || 0)); }
+                }
+                if (nx == null) { nx = Math.round((host.clientWidth || 400) / 2); ny = Math.round((host.scrollTop || 0) + 60); }
+                openInlineNoteEditor(nx, ny);
+              } else if (mode === 'highlight') {
+                // Reuse the selection-based highlight handler (it reads getSelection, not mouse coords).
+                e.preventDefault();
+                host.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+              }
             });
 
             // Mouseup-on-selection handler for highlight mode.

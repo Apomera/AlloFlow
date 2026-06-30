@@ -4934,7 +4934,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                 {(!pdfFixResult || pdfAuditTab === 'original') && (
                 <div data-help-key="pdf_audit_results_score_badge" className={`p-6 text-center ${pdfAuditResult.score >= 80 ? 'bg-gradient-to-r from-green-500 to-emerald-600' : pdfAuditResult.score >= 50 ? 'bg-gradient-to-r from-amber-500 to-orange-600' : 'bg-gradient-to-r from-red-500 to-rose-600'} text-white rounded-t-2xl`}>
                   <div className="text-5xl font-black mb-1" aria-label={`Score: ${pdfAuditResult.score >= 0 ? pdfAuditResult.score : 'unknown'} out of 100`}>{pdfAuditResult.score >= 0 ? pdfAuditResult.score : '?'}<span className="text-2xl opacity-80" aria-hidden="true">/100</span></div>
-                  <h3 className="text-lg font-bold" id="pdf-audit-title">{pdfAuditResult._officeInput ? 'Document Accessibility Score' : 'PDF Accessibility Score'} {pdfAuditResult._scoreIsBlended ? <span className="text-xs font-normal opacity-70">(lower of AI &amp; axe-core)</span> : pdfAuditResult._officeInput ? <span className="text-xs font-normal opacity-70">(axe-core on extracted text)</span> : <span className="text-xs font-normal opacity-70">(AI Rubric)</span>}</h3>
+                  <h3 className="text-lg font-bold" id="pdf-audit-title">{pdfAuditResult._officeInput ? 'Document Accessibility Score' : 'PDF Accessibility Score'} {pdfAuditResult._scoreIsBlended ? <span className="text-xs font-normal opacity-70">(lower of AI &amp; automated)</span> : pdfAuditResult._officeInput ? <span className="text-xs font-normal opacity-70">(axe-core on extracted text)</span> : <span className="text-xs font-normal opacity-70">(AI Rubric)</span>}</h3>
                   {pdfAuditResult._slicedAudit && <p className="text-[11px] mt-1 bg-white/20 inline-block px-2 py-0.5 rounded-full font-bold" title="Merged from page-slices because a single whole-document pass exceeded the model; cross-page checks (reading order, heading continuity) are approximate. Not cached.">🧩 Approximate — audited in {pdfAuditResult._sliceCount || 'multiple'} page-slices</p>}
                   {pdfAuditResult._slicedAudit
                     ? <p className="text-xs opacity-70 mt-0.5">One pass per page-slice (same model) · approximate cross-page coverage</p>
@@ -4950,7 +4950,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   })()}
                   {pdfAuditResult._scoreIsBlended ? (
                     <>
-                      <p className="text-[11px] opacity-70 mt-0.5">AI Rubric: {pdfAuditResult._aiOnlyScore} | axe-core: {pdfAuditResult._baselineAxeScore} | Governing: {pdfAuditResult.score} (the lower of the two — never averaged)</p>
+                      <p className="text-[11px] opacity-70 mt-0.5">AI Rubric: {pdfAuditResult._aiOnlyScore} | axe-core: {pdfAuditResult._baselineAxeScore}{pdfAuditResult._baselineSecondEngineAudit && typeof pdfAuditResult._baselineSecondEngineAudit.score === 'number' ? ' | Equal Access: ' + pdfAuditResult._baselineSecondEngineAudit.score : ''} | Governing: {pdfAuditResult.score} (the lower of the engines — never averaged)</p>
                       {(() => {
                         const ai = pdfAuditResult._aiOnlyScore;
                         const axe = pdfAuditResult._baselineAxeScore;
@@ -7304,6 +7304,19 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         };
                         const _vio = pdfFixResult.axeAudit ? (pdfFixResult.axeAudit.totalViolations || 0) : null;
                         const _chip = 'px-2 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 hover:bg-indigo-100 hover:text-indigo-700 transition-colors whitespace-nowrap';
+                        // Governing-layer tag for the compact header. The headline = min(content, automated[axe/EA]).
+                        // When the deterministic engines are the lower layer, the headline is "automated", NOT
+                        // "content" (the AI rubric may be far higher) — labeling an EA-governed 60 as "content" is
+                        // the collision that confused the score. Mirrors the breakdown below the score badge.
+                        const _hdrAi = pdfFixResult.verificationAudit?.score ?? null;
+                        const _hdrAxe = pdfFixResult.axeAudit?.score ?? null;
+                        const _hdrEa = pdfFixResult.secondEngineAudit?.score ?? null;
+                        const _hdrDet = (_hdrAxe != null && _hdrEa != null) ? Math.min(_hdrAxe, _hdrEa) : (_hdrAxe ?? _hdrEa);
+                        const _govTag = pdfFixResult._aiVerificationIncomplete
+                          ? (t('pdf_audit.dashboard.content_structural_tag') || 'structural only')
+                          : (pdfFixResult._scoreIsBlended && _hdrAi != null && _hdrDet != null && _hdrDet < _hdrAi)
+                            ? (t('pdf_audit.dashboard.automated_tag') || 'automated')
+                            : (t('pdf_audit.dashboard.content_tag') || 'content');
                         return (<>
                           {/* Unmissable running banner (2026-06-11, maintainer ask):
                               results render after round 1 while auto-continue keeps
@@ -7317,7 +7330,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           )}
                           <div data-help-key="pdf_audit_dashboard_bar" className="sticky -top-5 -mx-5 px-5 py-2 bg-white/95 backdrop-blur border-b border-emerald-200 rounded-t-2xl z-20 flex items-center gap-1.5 flex-wrap" role="navigation" aria-label={t('pdf_audit.dashboard.aria') || 'Remediation results overview and section navigation'}>
                             <span className={'text-xs font-black whitespace-nowrap ' + (pdfFixResult._aiVerificationIncomplete ? 'text-slate-500' : 'text-emerald-800')} title={(pdfFixResult._aiVerificationIncomplete ? ((t('pdf_audit.dashboard.score_incomplete_title') || 'Structural/automated checks only — the AI semantic audit was throttled and did not finish, so this is NOT a verified content score.') + ' ') : '') + (t('pdf_audit.dashboard.score_title') || 'Content audit score (HTML reconstruction: AI rubric + axe), before → after. This is NOT PDF/UA conformance of the exported PDF — see the PDF/UA chip.')}>
-                              {(pdfFixResult.beforeScore ?? pdfAuditResult?.score ?? '–')} → {pdfFixResult._aiVerificationIncomplete ? (<span className="text-slate-500">{'—'}</span>) : (<>{(pdfFixResult.afterScore ?? '–')}<span className="font-normal text-slate-500">/100</span></>)} <span className="font-normal text-slate-400 text-[9px] uppercase tracking-wide">{pdfFixResult._aiVerificationIncomplete ? (t('pdf_audit.dashboard.content_structural_tag') || 'structural only') : (t('pdf_audit.dashboard.content_tag') || 'content')}</span>{pdfFixResult.fidelityLimited ? <span className="text-amber-600 font-bold" aria-hidden="true">*</span> : null}
+                              {(pdfFixResult.beforeScore ?? pdfAuditResult?.score ?? '–')} → {pdfFixResult._aiVerificationIncomplete ? (<span className="text-slate-500">{'—'}</span>) : (<>{(pdfFixResult.afterScore ?? '–')}<span className="font-normal text-slate-500">/100</span></>)} <span className="font-normal text-slate-400 text-[9px] uppercase tracking-wide" title={_govTag === (t('pdf_audit.dashboard.automated_tag') || 'automated') ? (t('pdf_audit.dashboard.automated_tag_title') || 'Headline governed by the automated layer (axe-core / IBM Equal Access) — the lower of the engines. The AI content rubric may be higher; see the breakdown below.') : undefined}>{_govTag}</span>{pdfFixResult.fidelityLimited ? <span className="text-amber-600 font-bold" aria-hidden="true">*</span> : null}
                             </span>
                             {/* #1 score↔fidelity coupling — a high accessibility number must not read as
                                 "all good" when source content may not have carried over. */}
@@ -9729,7 +9742,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             </button>
                             <button onClick={() => {
                               const _jsonAi = pdfFixResult.afterScore; const _jsonAxe = pdfFixResult.axeAudit?.score ?? null; const _jsonBlended = (_jsonAi != null ? _jsonAi : _jsonAxe);
-                              const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _jsonBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null, secondEngineAudit: pdfFixResult.secondEngineAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _jsonBlended, afterScoreVerified: !pdfFixResult._aiVerificationIncomplete, afterScoreBasis: pdfFixResult._aiVerificationIncomplete ? 'deterministic-only (AI semantic audit incomplete — not a verified content score)' : 'min(content,automated) — weakest-layer governing score, NOT an average', _aiVerificationIncomplete: !!pdfFixResult._aiVerificationIncomplete, _slicedAudit: !!(pdfAuditResult && pdfAuditResult._slicedAudit), _beforeWasSliced: !!pdfFixResult._beforeWasSliced, fileName: pendingPdfFile?.name, date: new Date().toISOString(), tool: 'AlloFlow', standard: 'WCAG 2.1 AA', engines: ['AI (Gemini, 5-pass self-consistency)', 'axe-core (Deque WCAG 2.1 AA)'] };
+                              const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _jsonBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null, secondEngineAudit: pdfFixResult.secondEngineAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _jsonBlended, afterScoreVerified: !pdfFixResult._aiVerificationIncomplete, afterScoreBasis: pdfFixResult._aiVerificationIncomplete ? 'deterministic-only (AI semantic audit incomplete — not a verified content score)' : 'min(content,automated) — weakest-layer governing score, NOT an average', _aiVerificationIncomplete: !!pdfFixResult._aiVerificationIncomplete, _slicedAudit: !!(pdfAuditResult && pdfAuditResult._slicedAudit), _beforeWasSliced: !!pdfFixResult._beforeWasSliced, fileName: pendingPdfFile?.name, date: new Date().toISOString(), tool: 'AlloFlow', standard: 'WCAG 2.1 AA', engines: ['AI (Gemini, 5-pass self-consistency)', 'axe-core (Deque WCAG 2.1 AA)'].concat(pdfFixResult.secondEngineAudit ? ['IBM Equal Access (WCAG 2.1 AA)'] : []) };
                               const blob = new Blob([JSON.stringify(full, null, 2)], { type: 'application/json' });
                               const url = URL.createObjectURL(blob);
                               const a = document.createElement('a'); a.href = url; a.download = `a11y-before-after-${new Date().toISOString().split('T')[0]}.json`;

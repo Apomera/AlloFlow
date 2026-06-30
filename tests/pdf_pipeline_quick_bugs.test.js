@@ -506,3 +506,31 @@ describe('B9: 2026-06-30 multi-h1 outline fix + Equal Access shown in the export
     expect(vpx).toMatch(/pdfFixResult\.secondEngineAudit\.fails\.slice\(0, 12\)/);
   });
 });
+
+describe('B10: 2026-06-30 EA-consistency sweep (score labels name the governing engine everywhere)', () => {
+  const dpx = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+  const vpx = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
+
+  // #1 compact sticky header: tag reflects the GOVERNING layer ("automated" when EA/axe is lower), not always "content"
+  it('the compact header tag is governing-aware (shows "automated" when the deterministic layer is lower)', () => {
+    expect(vpx).toMatch(/const _govTag = pdfFixResult\._aiVerificationIncomplete/);
+    expect(vpx).toMatch(/_hdrDet < _hdrAi\)\s*\n?\s*\?\s*\(t\('pdf_audit\.dashboard\.automated_tag'\)/);
+    expect(vpx).toMatch(/uppercase tracking-wide" title=\{_govTag === \(t\('pdf_audit\.dashboard\.automated_tag'\)/);
+  });
+  // #2/#3 pre-fix audit badge + breakdown: name Equal Access, drop "lower of the two"
+  it('the pre-fix audit badge says "lower of AI & automated" and the breakdown shows the baseline Equal Access score', () => {
+    expect(vpx).toMatch(/\(lower of AI &amp; automated\)/);
+    expect(vpx).not.toMatch(/\(lower of AI &amp; axe-core\)/);
+    expect(vpx).toMatch(/_baselineSecondEngineAudit && typeof pdfAuditResult\._baselineSecondEngineAudit\.score === 'number' \? ' \| Equal Access: '/);
+    expect(vpx).toMatch(/the lower of the engines — never averaged/);
+  });
+  // #4 JSON export engines array includes IBM Equal Access when it ran
+  it('the JSON export engines array adds IBM Equal Access when the second engine ran', () => {
+    expect(vpx).toMatch(/\.concat\(pdfFixResult\.secondEngineAudit \? \['IBM Equal Access \(WCAG 2\.1 AA\)'\] : \[\]\)/);
+  });
+  // #5 batch HTML report has a per-doc Equal Access column (header + cell)
+  it('the batch HTML report has an Equal Access column (header + per-row score/fails cell)', () => {
+    expect(dpx).toMatch(/<th>2nd engine \(Equal Access\)<\/th>/);
+    expect(dpx).toMatch(/r\?\.secondEngineAudit && typeof r\.secondEngineAudit\.score==='number' \? \(r\.secondEngineAudit\.score/);
+  });
+});
