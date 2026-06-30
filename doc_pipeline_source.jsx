@@ -24925,7 +24925,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               <div class="question">
                                   ${stem}
                                   <div style="margin:0.5rem 0;">
-                                      <input type="text" placeholder="Type the missing word…" style="width:100%;max-width:300px;padding:6px 10px;border:1px solid #94a3b8;border-radius:6px;font-size:0.95rem"/>
+                                      <input type="text" aria-label="Answer for question ${i+1}" placeholder="Type the missing word…" style="width:100%;max-width:300px;padding:6px 10px;border:1px solid #94a3b8;border-radius:6px;font-size:0.95rem"/>
                                   </div>
                                   ${isTeacher && q.expectedFill ? `<p class="answer-key" style="color:#16a34a;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: ${q.expectedFill}${Array.isArray(q.acceptableAlternatives) && q.acceptableAlternatives.length > 0 ? ' <span style="font-weight:normal;font-style:italic">(also: ' + q.acceptableAlternatives.join(', ') + ')</span>' : ''}</p>` : ''}
                               </div>`;
@@ -24936,7 +24936,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                   ${stem}
                                   ${isWorksheet
                                       ? ruledLines(3)
-                                      : '<textarea placeholder="Type your 1-2 sentence response…" rows="3" style="width:100%;padding:8px;border:1px solid #94a3b8;border-radius:6px;font-size:0.95rem;resize:vertical"></textarea>'}
+                                      : `<textarea aria-label="Answer for question ${i+1}" placeholder="Type your 1-2 sentence response…" rows="3" style="width:100%;padding:8px;border:1px solid #94a3b8;border-radius:6px;font-size:0.95rem;resize:vertical"></textarea>`}
                                   ${isTeacher && q.expectedAnswer ? `<p class="answer-key" style="color:#16a34a;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: <span style="font-weight:normal">${q.expectedAnswer}</span></p>` : ''}
                               </div>`;
                           }
@@ -24946,7 +24946,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                   ${stem}
                                   ${isWorksheet
                                       ? ruledLines(5)
-                                      : '<textarea placeholder="Explain in your own words (3-5 sentences)…" rows="5" style="width:100%;padding:8px;border:1px solid #94a3b8;border-radius:6px;font-size:0.95rem;resize:vertical"></textarea>'}
+                                      : `<textarea aria-label="Answer for question ${i+1}" placeholder="Explain in your own words (3-5 sentences)…" rows="5" style="width:100%;padding:8px;border:1px solid #94a3b8;border-radius:6px;font-size:0.95rem;resize:vertical"></textarea>`}
                                   ${isTeacher && q.rubric ? `<p class="answer-key" style="color:#16a34a;font-weight:bold;margin-top:10px;">Rubric: <span style="font-weight:normal;font-style:italic">${q.rubric}</span></p>` : ''}
                               </div>`;
                           }
@@ -24999,7 +24999,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           <div class="question"${correctAttr}>
                               ${stem}
                               ${q.imageUrl ? `<img src="${q.imageUrl}" alt="${q.question || 'Question image'}" style="max-width:100%;max-height:300px;object-fit:contain;border-radius:8px;border:1px solid #e2e8f0;margin:0.5rem 0;background:#f8fafc"/>` : ''}
-                              <div class="options">
+                              <div class="options" role="radiogroup" aria-label="Answer choices for question ${i+1}">
                                   ${optsArr.map((opt, optIdx) => `
                                       <label class="mcq-label">
                                           ${isWorksheet
@@ -25270,7 +25270,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                    pIdx++;
                    return isWorksheet
                        ? fillableBlank(150)
-                       : `<input aria-label="___________" type="text" class="interactive-blank" placeholder="___________" value="${savedVal}">`;
+                       : `<input aria-label="Fill in the blank" type="text" class="interactive-blank" placeholder="___________" value="${savedVal}">`;
               });
               contentHtml = `
                   <div style="line-height: 2.5; border: 1px solid #ddd; padding: 20px; border-radius: 8px; background: #fafafa;">
