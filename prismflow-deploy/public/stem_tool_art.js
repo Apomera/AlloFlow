@@ -34,9 +34,9 @@ window.StemLab = window.StemLab || {
   'use strict';
 
   window.StemLab.registerTool('artStudio', {
-    icon: '🔬',
-    label: 'artStudio',
-    desc: '',
+    icon: "🎨",
+    label: "Art & Design Studio",
+    desc: "Explore the math behind art through color wheels, symmetry, spirographs, fractals, tessellations, op art, stereograms, and Game of Life.",
     color: 'slate',
     category: 'creative',
     render: function(ctx) {

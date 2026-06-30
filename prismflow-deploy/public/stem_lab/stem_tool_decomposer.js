@@ -411,9 +411,9 @@
      Register Tool
      ═══════════════════════════════════════════════════════════ */
   window.StemLab.registerTool('decomposer', {
-    icon: '\uD83D\uDD2C',
-    label: 'decomposer',
-    desc: '',
+    icon: "⚗️",
+    label: "Material Decomposer",
+    desc: "Break everyday compounds into their constituent elements and explore molecules, atoms, bonds, states of matter, and chemical reactions.",
     color: 'slate',
     category: 'science',
     questHooks: [

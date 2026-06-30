@@ -56,9 +56,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
 
   window.StemLab.registerTool('universe', {
-    icon: 'ðŸ”¬',
-    label: 'universe',
-    desc: '',
+    icon: "🌌",
+    label: "Universe Explorer",
+    desc: "Journey through cosmic time from the Big Bang to heat death, exploring epochs, distance scales, galaxies, exoplanets, and dark matter.",
     color: 'slate',
     category: 'science',
     questHooks: [

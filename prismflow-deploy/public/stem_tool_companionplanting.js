@@ -68,8 +68,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('companionPlant
 
   window.StemLab.registerTool('companionPlanting', {
     icon: '\uD83C\uDF31',
-    label: 'companionPlanting',
-    desc: '',
+    label: "Companion Planting Lab",
+    desc: "Grow a Three Sisters garden by season, manage soil and pests, and learn which plants help or harm each other.",
     color: 'slate',
     category: 'science',
     questHooks: [

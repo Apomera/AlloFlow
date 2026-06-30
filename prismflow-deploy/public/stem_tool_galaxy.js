@@ -45,9 +45,9 @@ window.StemLab = window.StemLab || {
 
   // ═══ 🔬 galaxy (galaxy) ═══
   window.StemLab.registerTool('galaxy', {
-    icon: '🔬',
-    label: 'galaxy',
-    desc: '',
+    icon: "🌌",
+    label: "Galaxy Explorer",
+    desc: "Explore galaxy types, stellar lifecycles, star classification, and metallicity in an interactive 3D Milky Way simulation.",
     color: 'slate',
     category: 'science',
     render: function(ctx) {

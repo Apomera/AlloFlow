@@ -193,7 +193,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
   // ═══ Register tool ═══
   window.StemLab.registerTool('anatomy', {
     icon: '\uD83E\uDEC0',
-    label: 'anatomy',
+    label: "Human Anatomy Explorer",
     desc: 'Explore 10 body systems with layered anatomical visualization',
     color: 'slate',
     category: 'science',

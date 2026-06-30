@@ -10789,8 +10789,8 @@ window.StemLab = window.StemLab || {
 
   window.StemLab.registerTool('aquarium', {
     icon: '\uD83D\uDC20',
-    label: 'aquarium',
-    desc: '',
+    label: "Aquarium Lab",
+    desc: "Build and run a virtual fish tank to learn the nitrogen cycle, water chemistry, fish anatomy, species care, and marine ecology.",
     color: 'slate',
     category: 'science',
     questHooks: [

@@ -67,9 +67,9 @@ window.StemLab = window.StemLab || {
 
   // ═══ 🔬 artStudio (artStudio) ═══
   window.StemLab.registerTool('artStudio', {
-    icon: '🔬',
-    label: 'artStudio',
-    desc: '',
+    icon: "🎨",
+    label: "Art & Design Studio",
+    desc: "Explore the math behind art: color theory, pixel art, symmetry, spirographs, fractals, generative design, and WCAG contrast.",
     color: 'slate',
     category: 'creative',
     questHooks: [

@@ -47,9 +47,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('solarSystem'))
 
 
   window.StemLab.registerTool('solarSystem', {
-    icon: '\uD83C\uDF0D',
-    label: 'solarSystem',
-    desc: '',
+    icon: "🪐",
+    label: "Solar System Explorer",
+    desc: "Explore a 3D model of the Sun, 8 planets, and dwarf planets — fly to surfaces, view interiors, run missions, and learn Kepler's laws.",
     color: 'slate',
     category: 'science',
     questHooks: [

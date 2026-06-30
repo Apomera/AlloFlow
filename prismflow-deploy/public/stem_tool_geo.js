@@ -48,9 +48,9 @@ window.StemLab = window.StemLab || {
 
   // ═══ 🔬 geoQuiz (geoQuiz) ═══
   window.StemLab.registerTool('geoQuiz', {
-    icon: '🔬',
-    label: 'geoQuiz',
-    desc: '',
+    icon: "🗺️",
+    label: "Geography Explorer",
+    desc: "Interactive maps and quizzes for countries, capitals, continents, landmarks, distances, a 3D globe, and an AI quiz builder.",
     color: 'slate',
     category: 'geo',
     render: function(ctx) {

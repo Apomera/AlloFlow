@@ -26,9 +26,9 @@
 
   console.log('[Dissection Plugin] Registering dissection tool...');
   window.StemLab.registerTool('dissection', {
-    icon: '\uD83D\uDD2C',
-    label: 'dissection',
-    desc: '',
+    icon: "🔪",
+    label: "Virtual Dissection Lab",
+    desc: "Peel anatomical layers and click organs across specimens (frog, fetal pig, earthworm, perch and more) with quizzes and flashcards.",
     color: 'slate',
     category: 'science',
     questHooks: [

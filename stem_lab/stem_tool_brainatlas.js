@@ -24,9 +24,9 @@ var prefersReducedMotion = (function() { try { return window.matchMedia('(prefer
   function sfxBrainSuccess() { brainTone(523, 0.08, "sine", 0.07); setTimeout(function() { brainTone(659, 0.08, "sine", 0.07); }, 70); setTimeout(function() { brainTone(784, 0.1, "sine", 0.08); }, 140); }
 
   window.StemLab.registerTool('brainAtlas', {
-    icon: '🔬',
-    label: 'brainAtlas',
-    desc: '',
+    icon: "🧠",
+    label: "Brain Atlas Explorer",
+    desc: "Explore an interactive brain model: regions, functions, neurotransmitter synapses, EEG waves, and a labeling quiz.",
     color: 'slate',
     category: 'science',
     questHooks: [

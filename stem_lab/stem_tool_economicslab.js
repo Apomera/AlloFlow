@@ -66,9 +66,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('economicsLab')
 
 
   window.StemLab.registerTool('economicsLab', {
-    icon: '\uD83D\uDCB9',
-    label: 'economicsLab',
-    desc: '',
+    icon: "💹",
+    label: "Economics Lab",
+    desc: "Explore economics through supply & demand curves, personal finance, stock-market, business, and macro-policy simulations.",
     color: 'slate',
     category: 'science',
     questHooks: [

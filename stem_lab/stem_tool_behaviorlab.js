@@ -57,8 +57,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
 
 
   window.StemLab.registerTool('behaviorLab', {
-    icon: '\uD83E\uDDEC',
-    label: 'BehaviorLab',
+    icon: "🐭",
+    label: "Behavior Lab",
     desc: 'Operant conditioning theory through a virtual Skinner box. 9 progressive levels: positive reinforcement, schedule effects (FR / VR / FI / VI), chained sequences, DRO timers, and classical conditioning (Pavlov). Plus a Schedule Sleuth (read cumulative-response curves) and Function Sleuth (FBA vignettes: attention / escape / tangible / sensory). Sister tool to PetsLab, which applies these mechanics to real-world pet training.',
     color: 'slate',
     category: 'science',
@@ -331,7 +331,7 @@ dataRef.current = d;
             { name: __alloT('stem.behaviorlab.b_f_skinner', 'B.F. Skinner'), year: '1904-1990', contribution: 'Developed operant conditioning and the Skinner box. Identified reinforcement schedules (FR, VR, FI, VI). Most influential behavioral psychologist ever.', icon: '\uD83D\uDC2D', field: 'Operant Conditioning' },
             { name: __alloT('stem.behaviorlab.albert_bandura', 'Albert Bandura'), year: '1925-2021', contribution: 'Social learning theory and the Bobo doll experiment. Showed learning occurs through observation (modeling), not just direct reinforcement. Self-efficacy theory.', icon: '\uD83E\uDDD1', field: 'Social Learning' },
             { name: __alloT('stem.behaviorlab.baer_wolf_risley', 'Baer, Wolf & Risley'), year: '1968', contribution: 'Published the founding article of Applied Behavior Analysis (ABA). Defined ABA as applied, behavioral, analytic, technological, conceptually systematic, effective, and generalizable.', icon: '\uD83D\uDCDA', field: 'Applied Behavior Analysis' },
-            { name: __alloT('stem.behaviorlab.o_ivar_lovaas', 'O. Ivar Lovaas'), year: '1927-2010', contribution: 'Pioneered the use of ABA for autism intervention. His 1987 study showed 47% of children receiving intensive ABA achieved normal functioning.', icon: '\u2764', field: 'Autism Intervention' },
+            { name: __alloT('stem.behaviorlab.o_ivar_lovaas', 'O. Ivar Lovaas'), year: '1927-2010', contribution: 'Pioneered the use of ABA for autism intervention. His influential 1987 study reported 47% of children reaching "normal functioning" — a contested result (small, non-random sample; not replicated at that rate).', icon: '\u2764', field: 'Autism Intervention' },
             { name: __alloT('stem.behaviorlab.murray_sidman', 'Murray Sidman'), year: '1923-2019', contribution: 'Developed stimulus equivalence theory and the coercion framework. Advocated for reinforcement over punishment in all applications.', icon: '\u2696', field: 'Stimulus Equivalence' }
           ];
 
