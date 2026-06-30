@@ -579,7 +579,7 @@ window.SelHub = window.SelHub || {
       var _goaT = (ctx && ctx.theme) || {};
       var _goaHC = !!_goaT.isContrast, _goaL = !_goaHC && !_goaT.isDark;
       var _goa_BGL = {'#0f172a':'#f8fafc'}, _goa_BGH = {'#0f172a':'#000000','#15803d':'#000000','#6366f1':'#000000'};
-      var _goa_FGL = {'#e2e8f0':'#1e293b','#c7d2fe':'#312e81','#fbbf24':'#854d0e','#a5b4fc':'#3730a3','#c4b5fd':'#5b21b6','#cbd5e1':'#334155','#34d399':'#047857','#f87171':'#dc2626','#94a3b8':'#64748b','#818cf8':'#4338ca','#6ee7b7':'#065f46'}, _goa_FGH = {'#e2e8f0':'#ffff00','#c7d2fe':'#ffff00','#fbbf24':'#ffff00','#a5b4fc':'#ffff00','#c4b5fd':'#ffff00','#cbd5e1':'#ffff00','#34d399':'#ffff00','#f87171':'#ffff00','#94a3b8':'#ffff00','#fff':'#ffff00','#818cf8':'#ffff00','#6366f1':'#ffff00','#a855f7':'#ffff00','#6ee7b7':'#ffff00','#ef4444':'#ffff00','#22c55e':'#ffff00','#f59e0b':'#ffff00'};
+      var _goa_FGL = {'#e2e8f0':'#1e293b','#c7d2fe':'#312e81','#fbbf24':'#854d0e','#a5b4fc':'#3730a3','#c4b5fd':'#5b21b6','#cbd5e1':'#334155','#34d399':'#047857','#f87171':'#b91c1c','#94a3b8':'#64748b','#818cf8':'#4338ca','#6ee7b7':'#065f46'}, _goa_FGH = {'#e2e8f0':'#ffff00','#c7d2fe':'#ffff00','#fbbf24':'#ffff00','#a5b4fc':'#ffff00','#c4b5fd':'#ffff00','#cbd5e1':'#ffff00','#34d399':'#ffff00','#f87171':'#ffff00','#94a3b8':'#ffff00','#fff':'#ffff00','#818cf8':'#ffff00','#6366f1':'#ffff00','#a855f7':'#ffff00','#6ee7b7':'#ffff00','#ef4444':'#ffff00','#22c55e':'#ffff00','#f59e0b':'#ffff00'};
       var _goa_BDL = {}, _goa_BDH = {};
       var _goaBg = function(h){ return _goaHC ? (_goa_BGH[h]||h) : (_goaL ? (_goa_BGL[h]||h) : h); };
       var _goaFg = function(h){ return _goaHC ? (_goa_FGH[h]||h) : (_goaL ? (_goa_FGL[h]||h) : h); };

@@ -223,3 +223,41 @@ describe('SEL Hub · migrated tools have no unwrapped tinted-surface literals (t
     });
   }
 });
+
+// WCAG AA contrast invariant — every themed TEXT-on-SURFACE pair the remaps produce (in the
+// mode where it's NEW: dark for light-base tools, light for dark-base tools, + high-contrast)
+// must meet 4.5:1 (normal text). Pure computation (no React), so it always runs and locks the
+// canonical map VALUES — a future edit that picks a low-contrast dark/light shade fails here.
+describe('SEL Hub · theme map color pairs meet WCAG AA contrast (≥4.5:1)', () => {
+  const _lum = (hex) => {
+    const h = hex.replace('#', '');
+    const f = h.length === 3 ? h.split('').map((c) => c + c).join('') : h;
+    const [r, g, b] = [0, 2, 4].map((i) => parseInt(f.substr(i, 2), 16) / 255);
+    const lin = (c) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+    return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+  };
+  const ratio = (a, b) => { const L1 = _lum(a), L2 = _lum(b); return (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05); };
+  // [text, surface, label] — themed pairs per semantic family.
+  const PAIRS = [
+    // light-base · DARK mode
+    ['#e2e8f0', '#1e293b', 'generic/card'], ['#cbd5e1', '#1e293b', 'secondary/card'], ['#94a3b8', '#1e293b', 'muted/card'],
+    ['#e2e8f0', '#0f172a', 'text/page'], ['#6ee7b7', '#0b2e22', 'green/green'], ['#86efac', '#0b2e22', 'green2/green'],
+    ['#fca5a5', '#2e1414', 'red/red'], ['#f87171', '#2e1414', 'red2/red'], ['#fde68a', '#2e2410', 'amber/amber'],
+    ['#fcd34d', '#2e2410', 'amber2/amber'], ['#93c5fd', '#0e1f3a', 'blue/blue'], ['#c4b5fd', '#2e1b4d', 'purple/purple'],
+    // dark-base · LIGHT mode (inverse)
+    ['#1e293b', '#f8fafc', 'text/page'], ['#0f172a', '#ffffff', 'text/card'], ['#334155', '#ffffff', 'secondary/card'],
+    ['#64748b', '#ffffff', 'muted/card'], ['#065f46', '#f0fdf4', 'green/green'], ['#166534', '#f0fdf4', 'green2/green'],
+    ['#991b1b', '#fef2f2', 'red/red'], ['#b91c1c', '#fef2f2', 'red2/red'], ['#b91c1c', '#fee2e2', 'red/red2'],
+    ['#92400e', '#fffbeb', 'amber/amber'], ['#78350f', '#fef3c7', 'amber2/amber'], ['#1e3a8a', '#eff6ff', 'blue/blue'],
+    ['#075985', '#ecfeff', 'sky/sky'], ['#155e75', '#cffafe', 'cyan/cyan'], ['#0f766e', '#f0fdfa', 'teal/teal'],
+    ['#5b21b6', '#faf5ff', 'purple/purple'], ['#9d174d', '#fdf2f8', 'pink/pink'], ['#3730a3', '#eef2ff', 'indigo/indigo'],
+    // high-contrast (both directions) + hub palette
+    ['#ffff00', '#000000', 'HC yellow/black'], ['#f1f5f9', '#1e293b', 'hub dark text/card'], ['#0f172a', '#f8fafc', 'hub light text/bg'],
+  ];
+  for (const [text, surf, label] of PAIRS) {
+    it(`${text} on ${surf} (${label}) ≥ 4.5:1`, () => {
+      const r = ratio(text, surf);
+      expect(r, `${text} on ${surf} = ${r.toFixed(2)}:1 (need ≥4.5 for normal text)`).toBeGreaterThanOrEqual(4.5);
+    });
+  }
+});
