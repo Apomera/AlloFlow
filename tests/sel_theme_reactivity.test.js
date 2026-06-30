@@ -17,6 +17,13 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { createRequire } from 'node:module';
 
+// Tinted light SURFACE hexes that, if present in a migrated tool's render body, MUST be
+// wrapped in the tool's _xxC() remap (else they stay light in dark mode → light island or
+// light-on-light). The exact-string migration missed these inside ternaries/concats; this
+// static invariant catches that whole class (any view, no render needed). #fff/#ffffff are
+// excluded — they're ambiguous (white-on-color text is legitimately constant).
+const SURFACE_HEXES = ['#f0fdf4', '#eff6ff', '#fef3c7', '#fffbeb', '#faf5ff', '#f5f3ff', '#fef2f2', '#fee2e2', '#ede9fe', '#f8fafc', '#fff8f0', '#d1fae5', '#ecfdf5'];
+
 const require = createRequire(import.meta.url);
 const MODULES = resolve(process.cwd(), 'prismflow-deploy', 'node_modules');
 let React, RDS, depsOk = true;
@@ -27,9 +34,11 @@ try {
 
 // id → a (light surface, its dark variant) pair that must appear/disappear on the flip.
 const CASES = [
-  { id: 'growthmindset', light: '#f0fdf4', dark: '#0b2e22' },
-  { id: 'friendship',    light: '#fffbeb', dark: '#2e2410' },
-  { id: 'compassion',    light: '#faf5ff', dark: '#2e1b4d' },
+  { id: 'growthmindset',  helper: '_gmC', light: '#f0fdf4', dark: '#0b2e22' },
+  { id: 'friendship',     helper: '_frC', light: '#fffbeb', dark: '#2e2410' },
+  { id: 'compassion',     helper: '_coC', light: '#faf5ff', dark: '#2e1b4d' },
+  // default tab is plain #fff cards (no tinted surface) → match the property-qualified form
+  { id: 'voicedetective', helper: '_vdC', light: 'background:#fff', dark: 'background:#1e293b' },
 ];
 
 const noop = () => {};
@@ -98,6 +107,29 @@ describe.skipIf(!depsOk)('SEL Hub · tools follow host ctx.theme (theme-reactivi
         expect(hc).toContain('#000000');
         expect(hc).not.toContain(c.light);
       });
+    });
+  }
+});
+
+// Static source invariant — catches the ternary/concat class the render test (default-view
+// only) can't see. Runs WITHOUT React (no skip), so it guards every migrated tool's full
+// source, every view. A bare tinted-surface literal not wrapped in the tool's _xxC() = a
+// dark-mode light island / light-on-light regression.
+describe('SEL Hub · migrated tools have no unwrapped tinted-surface literals (ternary-completeness)', () => {
+  const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  for (const c of CASES) {
+    it(`${c.id}: every tinted surface in the render body routes through ${c.helper}()`, () => {
+      const src = readFileSync(resolve(process.cwd(), 'sel_hub', `sel_tool_${c.id}.js`), 'utf8');
+      // render body = everything after the _xxC helper definition (skips the maps + module data)
+      const mark = ': hex); };';
+      const body = src.slice(src.indexOf(mark) + mark.length);
+      const leaks = [];
+      for (const hex of SURFACE_HEXES) {
+        const re = new RegExp(`(?<!${esc(c.helper)}\\()'${esc(hex)}'`, 'g');
+        const m = body.match(re);
+        if (m) leaks.push(`${hex} ×${m.length}`);
+      }
+      expect(leaks, `${c.id}: unwrapped tinted surfaces (must be ${c.helper}('#hex')): ${leaks.join(', ')}`).toEqual([]);
     });
   }
 });

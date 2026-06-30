@@ -224,7 +224,7 @@ window.SelHub = window.SelHub || {
         '#fffbeb':'#2e2410','#fef3c7':'#3a2e12','#78350f':'#fcd34d','#92400e':'#fde68a',
         '#f0fdf4':'#0b2e22','#166534':'#86efac','#16a34a':'#4ade80',
         '#fef2f2':'#2e1414','#7f1d1d':'#fca5a5','#dc2626':'#f87171','#eff6ff':'#0e1f3a',
-        '#2563eb':'#93c5fd','#1e3a8a':'#93c5fd','#e2e8f0':'#334155'
+        '#2563eb':'#93c5fd','#1e3a8a':'#93c5fd','#e2e8f0':'#334155','#fff8f0':'#2a1f12'
       };
       var _FR_HC = {
         '#1f2937':'#ffff00','#374151':'#ffff00','#475569':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#94a3b8':'#ffff00',
@@ -232,7 +232,7 @@ window.SelHub = window.SelHub || {
         '#fffbeb':'#000000','#fef3c7':'#000000','#78350f':'#ffff00','#92400e':'#ffff00',
         '#f0fdf4':'#000000','#166534':'#ffff00','#16a34a':'#ffff00',
         '#fef2f2':'#000000','#7f1d1d':'#ffff00','#dc2626':'#ffff00','#eff6ff':'#000000',
-        '#2563eb':'#ffff00','#1e3a8a':'#ffff00','#e2e8f0':'#333300'
+        '#2563eb':'#ffff00','#1e3a8a':'#ffff00','#e2e8f0':'#333300','#fff8f0':'#000000'
       };
       var _frC = function(hex) { return _frHC ? (_FR_HC[hex] || hex) : (_frDark ? (_FR_DARK[hex] || hex) : hex); };
 
@@ -269,7 +269,7 @@ window.SelHub = window.SelHub || {
             return h('button', {
               key: t.id, role: 'tab', className: 'sel-tab' + (active ? ' sel-tab-active' : ''), 'aria-selected': active ? 'true' : 'false',
               onClick: function() { upd('activeTab', t.id); if (soundEnabled) sfxClick(); },
-              style: { padding: '6px 14px', borderRadius: '10px', border: active ? 'none' : '1px solid ' + (explored ? '#fde68a' : 'transparent'), background: active ? 'linear-gradient(135deg, ' + AMBER + ', #b45309)' : explored ? 'rgba(217,119,6,0.06)' : 'transparent', color: active ? '#fff' : explored ? '#78350f' : '#94a3b8', fontWeight: active ? 700 : 500, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap', boxShadow: active ? '0 3px 12px rgba(217,119,6,0.35), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none' }
+              style: { padding: '6px 14px', borderRadius: '10px', border: active ? 'none' : '1px solid ' + (explored ? '#fde68a' : 'transparent'), background: active ? 'linear-gradient(135deg, ' + AMBER + ', #b45309)' : explored ? 'rgba(217,119,6,0.06)' : 'transparent', color: active ? '#fff' : explored ? _frC('#78350f') : _frC('#94a3b8'), fontWeight: active ? 700 : 500, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap', boxShadow: active ? '0 3px 12px rgba(217,119,6,0.35), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none' }
             }, h('span', { className: active ? 'sel-hero-icon' : '', 'aria-hidden': 'true' }, t.icon), t.label,
               explored && !active ? h('span', { style: { width: '5px', height: '5px', borderRadius: '50%', background: '#fbbf24', marginLeft: '2px' } }) : null
             );
@@ -326,10 +326,10 @@ window.SelHub = window.SelHub || {
                 key: fs.id, role: 'radio', 'aria-checked': selected ? 'true' : 'false',
                 'aria-label': fs.label + ': ' + fs.desc,
                 onClick: function() { upd('myStyle', fs.id); if (soundEnabled) sfxHeart(); if (awardXP) awardXP(10, 'Discovered your friendship style!'); if (announceToSR) announceToSR('Selected: ' + fs.label); },
-                style: { padding: '16px 12px', borderRadius: '14px', border: selected ? '3px solid ' + AMBER : '2px solid ' + _frC('#e5e7eb'), background: selected ? AMBER_LIGHT : '#fff', cursor: 'pointer', textAlign: 'center', transition: 'all 0.15s', boxShadow: selected ? '0 2px 12px rgba(217,119,6,0.15)' : 'none' }
+                style: { padding: '16px 12px', borderRadius: '14px', border: selected ? '3px solid ' + AMBER : '2px solid ' + _frC('#e5e7eb'), background: selected ? AMBER_LIGHT : _frC('#fff'), cursor: 'pointer', textAlign: 'center', transition: 'all 0.15s', boxShadow: selected ? '0 2px 12px rgba(217,119,6,0.15)' : 'none' }
               },
                 h('div', { style: { fontSize: '28px', marginBottom: '6px' } }, fs.icon),
-                h('div', { style: { fontSize: '13px', fontWeight: 700, color: selected ? AMBER : '#374151' } }, fs.label),
+                h('div', { style: { fontSize: '13px', fontWeight: 700, color: selected ? AMBER : _frC('#374151') } }, fs.label),
                 h('div', { style: { fontSize: '11px', color: _frC('#94a3b8'), marginTop: '4px', lineHeight: 1.4 } }, fs.desc)
               );
             })
@@ -453,7 +453,7 @@ window.SelHub = window.SelHub || {
                 key: i,
                 'aria-label': 'Step ' + (i + 1) + ': ' + s.step + (isCurrent ? ' (current)' : ''),
                 onClick: function() { upd('repairIdx', i); if (soundEnabled) sfxClick(); },
-                style: { width: '36px', height: '36px', borderRadius: '50%', border: isCurrent ? '3px solid ' + AMBER : '2px solid ' + _frC('#e5e7eb'), background: isCurrent ? AMBER : '#fff', color: isCurrent ? '#fff' : '#374151', fontWeight: 700, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }
+                style: { width: '36px', height: '36px', borderRadius: '50%', border: isCurrent ? '3px solid ' + AMBER : '2px solid ' + _frC('#e5e7eb'), background: isCurrent ? AMBER : _frC('#fff'), color: isCurrent ? '#fff' : _frC('#374151'), fontWeight: 700, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }
               }, i + 1);
             })
           ),
@@ -494,7 +494,7 @@ window.SelHub = window.SelHub || {
                 key: i,
                 'aria-label': truth,
                 'aria-pressed': i === endingIdx ? 'true' : 'false',
-                style: { background: i === endingIdx ? '#fff8f0' : '#fff', border: i === endingIdx ? '2px solid #fdba74' : '1px solid ' + _frC('#e5e7eb'), borderRadius: '14px', padding: '16px', cursor: 'pointer', transition: 'all 0.15s' }
+                style: { background: i === endingIdx ? _frC('#fff8f0') : _frC('#fff'), border: i === endingIdx ? '2px solid #fdba74' : '1px solid ' + _frC('#e5e7eb'), borderRadius: '14px', padding: '16px', cursor: 'pointer', transition: 'all 0.15s' }
               }, a11yClick(function() { upd('endingIdx', i); if (soundEnabled) sfxClick(); })),
                 h('p', { style: { fontSize: '14px', lineHeight: 1.7, color: _frC('#374151'), margin: 0, fontStyle: i === endingIdx ? 'normal' : 'italic' } }, truth)
               );
@@ -530,7 +530,7 @@ window.SelHub = window.SelHub || {
             coachHistory.map(function(msg, i) {
               var isUser = msg.role === 'user';
               return h('div', { key: i, style: { display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start' } },
-                h('div', { style: { maxWidth: '80%', padding: '10px 14px', borderRadius: isUser ? '14px 14px 4px 14px' : '14px 14px 14px 4px', background: isUser ? '#eff6ff' : AMBER_LIGHT, border: '1px solid ' + (isUser ? '#bfdbfe' : '#fde68a'), fontSize: '13px', lineHeight: 1.6, color: _frC('#1f2937') } },
+                h('div', { style: { maxWidth: '80%', padding: '10px 14px', borderRadius: isUser ? '14px 14px 4px 14px' : '14px 14px 14px 4px', background: isUser ? _frC('#eff6ff') : AMBER_LIGHT, border: '1px solid ' + (isUser ? '#bfdbfe' : '#fde68a'), fontSize: '13px', lineHeight: 1.6, color: _frC('#1f2937') } },
                   !isUser && h('div', { style: { fontSize: '10px', fontWeight: 700, color: AMBER, marginBottom: '4px' } }, '\uD83D\uDC9B Friend Coach'),
                   msg.text
                 )
@@ -915,7 +915,7 @@ window.SelHub = window.SelHub || {
                   style: {
                     alignSelf: isStudent ? 'flex-end' : 'flex-start', maxWidth: '85%',
                     padding: '10px 13px', borderRadius: 12, fontSize: 14, lineHeight: 1.5, whiteSpace: 'pre-wrap',
-                    background: isStudent ? '#eff6ff' : (isCoach ? '#fef3c7' : '#fffbeb'),
+                    background: isStudent ? _frC('#eff6ff') : (isCoach ? _frC('#fef3c7') : _frC('#fffbeb')),
                     border: '1px solid ' + (isStudent ? '#bfdbfe' : (isCoach ? '#fcd34d' : '#fde68a')),
                     color: _frC('#1f2937')
                   }
@@ -937,7 +937,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
                 h('button', {
                   onClick: fSendTurn, disabled: fRpLoading || !fRpInput.trim() || !callGemini, 'aria-busy': fRpLoading ? 'true' : 'false',
-                  style: { padding: '10px 16px', background: (fRpLoading || !fRpInput.trim() || !callGemini) ? '#cbd5e1' : '#f59e0b', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: (fRpLoading || !fRpInput.trim() || !callGemini) ? 'not-allowed' : 'pointer', fontSize: 13 }
+                  style: { padding: '10px 16px', background: (fRpLoading || !fRpInput.trim() || !callGemini) ? _frC('#cbd5e1') : '#f59e0b', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: (fRpLoading || !fRpInput.trim() || !callGemini) ? 'not-allowed' : 'pointer', fontSize: 13 }
                 }, fRpLoading ? 'Thinking…' : 'Send →'),
                 h('button', {
                   onClick: fCoachBreak, disabled: fRpLoading || !callGemini || fRpHistory.length === 0,
