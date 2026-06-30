@@ -17,6 +17,47 @@ function SpotlightTourView(props) {
       try { if (prevFocus && prevFocus.focus && document.contains(prevFocus)) prevFocus.focus(); } catch (e) {}
     };
   }, []);
+  // Read-aloud: reuse the app TTS (window.callTTS, the teacher's selected voice/rate) so help & tour-step
+  // text can be HEARD, not just read — this popup was previously silent except for a screen-reader announce.
+  // Mirrors the Guided banner's playAbout: leak-safe (blob URL revoked on end/close/unmount/message change),
+  // with a generation token that cleanly cancels an in-flight synth if the teacher stops or navigates. (2026-06-30)
+  var _ttsPair = React.useState('idle'); // 'idle' | 'loading' | 'playing'
+  var ttsState = _ttsPair[0], setTtsState = _ttsPair[1];
+  var _ttsAudioRef = React.useRef(null);
+  var _ttsUrlRef = React.useRef(null);
+  var _ttsGenRef = React.useRef(0);
+  var _stopTts = React.useCallback(function () {
+    _ttsGenRef.current++;
+    var a = _ttsAudioRef.current; _ttsAudioRef.current = null;
+    if (a) { try { a.pause(); a.src = ''; } catch (e) {} }
+    var u = _ttsUrlRef.current; _ttsUrlRef.current = null;
+    if (u) { try { URL.revokeObjectURL(u); } catch (e) {} }
+    setTtsState('idle');
+  }, []);
+  React.useEffect(function () { return _stopTts; }, [_stopTts]); // stop on unmount
+  var _msgTitle = (spotlightMessage && spotlightMessage.title) || '';
+  var _msgText = (spotlightMessage && spotlightMessage.text) || '';
+  React.useEffect(function () { _stopTts(); }, [_msgTitle, _msgText, _stopTts]); // stop when the message changes
+  var playAloud = function () {
+    if (ttsState !== 'idle') { _stopTts(); return; } // toggle: a second click stops
+    if (typeof window === 'undefined' || typeof window.callTTS !== 'function') return;
+    var plain = String((_msgTitle ? _msgTitle + '. ' : '') + _msgText).replace(/[#*`_>]/g, '').replace(/\s+/g, ' ').trim();
+    if (!plain) return;
+    var myGen = ++_ttsGenRef.current;
+    setTtsState('loading');
+    Promise.resolve(window.callTTS(plain, (window.__alloSelectedVoice || 'Puck'), (window.__alloPlaybackRate || 1), { maxRetries: 2 }))
+      .catch(function () { return null; })
+      .then(function (url) {
+        if (myGen !== _ttsGenRef.current) { if (url) { try { URL.revokeObjectURL(url); } catch (e) {} } return; } // superseded
+        if (!url) { setTtsState('idle'); return; }
+        _ttsUrlRef.current = url;
+        var audio = new Audio(url); _ttsAudioRef.current = audio;
+        audio.onended = _stopTts; audio.onerror = _stopTts;
+        Promise.resolve(audio.play())
+          .then(function () { if (myGen === _ttsGenRef.current) setTtsState('playing'); else _stopTts(); })
+          .catch(function () { _stopTts(); });
+      });
+  };
   return (
         <>
             <div
@@ -49,16 +90,30 @@ function SpotlightTourView(props) {
                             </div>
                             {spotlightMessage.title || 'Help'}
                          </h3>
-                         <button
-                             aria-label={t('common.close')}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setIsSpotlightMode(false);
-                            }}
-                            data-help-ignore="true" className="text-white/40 hover:text-white hover:bg-white/10 p-2 rounded-full transition-colors"
-                         >
-                            <X size={20} />
-                         </button>
+                         <div className="flex items-center gap-1 shrink-0">
+                           {typeof window !== 'undefined' && typeof window.callTTS === 'function' && (
+                             <button
+                                 onClick={(e) => { e.stopPropagation(); playAloud(); }}
+                                 disabled={ttsState === 'loading'}
+                                 data-help-ignore="true"
+                                 aria-label={ttsState === 'playing' ? t('common.stop_reading', { defaultValue: 'Stop reading aloud' }) : t('common.read_aloud', { defaultValue: 'Read this aloud' })}
+                                 title={ttsState === 'playing' ? t('common.stop_reading', { defaultValue: 'Stop reading aloud' }) : t('common.read_aloud', { defaultValue: 'Read this aloud' })}
+                                 className={`p-2 rounded-full transition-colors ${ttsState === 'playing' ? 'text-white bg-violet-600/40 hover:bg-violet-600/60' : 'text-white/50 hover:text-white hover:bg-white/10'} ${ttsState === 'loading' ? 'cursor-wait opacity-70' : ''}`}
+                             >
+                                <span aria-hidden="true" style={{ fontSize: '17px', lineHeight: 1, display: 'block', width: 20, height: 20 }}>{ttsState === 'loading' ? '⏳' : ttsState === 'playing' ? '⏹' : '🔊'}</span>
+                             </button>
+                           )}
+                           <button
+                               aria-label={t('common.close')}
+                              onClick={(e) => {
+                                  e.stopPropagation();
+                                  setIsSpotlightMode(false);
+                              }}
+                              data-help-ignore="true" className="text-white/40 hover:text-white hover:bg-white/10 p-2 rounded-full transition-colors"
+                           >
+                              <X size={20} />
+                           </button>
+                         </div>
                      </div>
                      <div className="text-slate-600 text-sm leading-relaxed space-y-3 relative z-10 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar-dark">
                           {(spotlightMessage.text || '').split(/\r?\n/).map((line, i) => {
