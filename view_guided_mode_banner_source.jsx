@@ -16,9 +16,8 @@
  * Plus the expandable "About this step" markdown panel (now with a read-aloud
  * button reusing window.callTTS); on the source step, a "Try this example"
  * affordance that loads a real starter passage to run the genuine tools on; and
- * on every other step, a "Show an example" toggle that asks the host to render a
- * badged, display-only example card in the panel (onShowGuidedExample) — that card
- * is never written to history, so examples can't reach the resource pack.
+ * on every other step, a tabbed info panel (How it works / Worked example, from the
+ * codebase-verified GUIDED_DETAIL) plus a "View the full worked lesson" showcase modal.
  *
  * Extracted from AlloFlowANTI.txt (May 2026); hands-on tutorial pass (Jun 2026);
  * completion-gating + About TTS + example passage + per-step examples (Jun 2026).
@@ -28,8 +27,7 @@
  *   handleExitGuidedMode, handleGuidedSkip, setGuidedStep, setShowGuidedTip,
  *   showGuidedTip, t, tourSteps, history
  * Optional props:
- *   inputText, setInputText (enable the source-step "Try this example" button),
- *   onShowGuidedExample, guidedExampleId (enable the per-step "Show an example" toggle)
+ *   inputText, setInputText (enable the source-step "Try this example" button)
  *
  * The highlight ring is pointer-events-none (the teacher can still click the real
  * control) and aria-hidden, and it goes static under prefers-reduced-motion.
@@ -484,14 +482,36 @@ function GuidedModeBanner({
   getDefaultTitle,
   inputText,
   setInputText,
-  onShowGuidedExample,
-  guidedExampleId,
 }) {
   const step = GUIDED_STEPS[guidedStep] || {};
   const isLast = guidedStep >= GUIDED_STEPS.length - 1;
   const [showPicker, setShowPicker] = React.useState(false);
   const [infoTab, setInfoTab] = React.useState(null); // null | 'how' | 'example'
   const [showFullLesson, setShowFullLesson] = React.useState(false);
+  const _modalRef = React.useRef(null);
+  const _modalReturnRef = React.useRef(null);
+  // Full-lesson modal a11y: trap focus inside the dialog, close on Escape, restore focus to the opener (dialog pattern).
+  React.useEffect(() => {
+    if (!showFullLesson) return;
+    _modalReturnRef.current = (typeof document !== 'undefined') ? document.activeElement : null;
+    const root = _modalRef.current;
+    try { if (root) { const f = root.querySelector('button, a[href], [tabindex]:not([tabindex="-1"])'); (f || root).focus(); } } catch (_) {}
+    const onKey = (e) => {
+      if (e.key === 'Escape') { e.stopPropagation(); setShowFullLesson(false); return; }
+      if (e.key === 'Tab' && root) {
+        const items = root.querySelectorAll('button, a[href], [tabindex]:not([tabindex="-1"])');
+        if (!items.length) return;
+        const first = items[0], last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); try { last.focus(); } catch (_) {} }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); try { first.focus(); } catch (_) {} }
+      }
+    };
+    document.addEventListener('keydown', onKey, true);
+    return () => {
+      document.removeEventListener('keydown', onKey, true);
+      try { const r = _modalReturnRef.current; if (r && r.focus && document.contains(r)) r.focus(); } catch (_) {}
+    };
+  }, [showFullLesson]);
 
   // --- "Done" must mean the step's tool actually produced output, not merely that the teacher
   // clicked the ringed tool. The monolith flips `guidedEngaged` on the first *click* of the
@@ -656,6 +676,7 @@ function GuidedModeBanner({
           </div>
         )}
         <div style={{ display: 'flex', gap: '8px' }}>
+          {guidedStep > 0 && <button onClick={() => setGuidedStep(s => Math.max(0, s - 1))} aria-label={t('guided.back') || 'Back'} title={t('guided.back') || 'Back'} style={{ padding: '6px 10px', fontSize: '11px', fontWeight: 800, color: '#c7d2fe', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s', flexShrink: 0 }}>← {t('guided.back') || 'Back'}</button>}
           {guidedStep === 0 && !guidedEngaged && <span style={{ flex: 1, padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: 'rgba(199,210,254,0.85)', fontStyle: 'italic', textAlign: 'center' }}>{t('guided.source_prompt')}</span>}
           {(guidedStep > 0 || guidedEngaged) && !isLast && <button onClick={handleGuidedSkip} style={{ flex: 1, padding: '6px 12px', fontSize: '11px', fontWeight: 800, color: 'white', background: guidedEngaged ? 'linear-gradient(135deg, #818cf8, #6366f1)' : 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>{guidedEngaged ? (t('guided.next_step') || 'Next step →') : (t('guided.skip_step') || t('guided.skip'))}</button>}
           {isLast && <button onClick={() => { setGuidedStep(0); handleExitGuidedMode(); }} style={{ flex: 1, padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: 'white', background: 'linear-gradient(135deg, #818cf8, #6366f1)', border: 'none', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>{t('guided.all_done')}</button>}
@@ -732,7 +753,7 @@ function GuidedModeBanner({
       </div>
       {showFullLesson && (
         <div role="dialog" aria-modal="true" aria-label={t('guided.full_lesson_title') || 'The full worked lesson'} onClick={() => setShowFullLesson(false)} style={{ position: 'fixed', inset: 0, zIndex: 100000, background: 'rgba(2,6,23,0.82)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ background: 'linear-gradient(150deg, #0f172a, #1e1b4b)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: '20px', width: '100%', maxWidth: '760px', maxHeight: '88vh', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 70px rgba(0,0,0,0.55)' }}>
+          <div ref={_modalRef} tabIndex={-1} onClick={(e) => e.stopPropagation()} style={{ background: 'linear-gradient(150deg, #0f172a, #1e1b4b)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: '20px', width: '100%', maxWidth: '760px', maxHeight: '88vh', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 70px rgba(0,0,0,0.55)', outline: 'none' }}>
             <div style={{ flexShrink: 0, padding: '18px 22px', borderBottom: '1px solid rgba(99,102,241,0.22)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
               <div>
                 <div style={{ fontSize: '16px', fontWeight: 800, color: 'white' }}>📖 {t('guided.full_lesson_title') || 'The full worked lesson'}</div>
@@ -740,7 +761,7 @@ function GuidedModeBanner({
               </div>
               <button onClick={() => setShowFullLesson(false)} aria-label={t('common.close') || 'Close'} style={{ flexShrink: 0, width: '32px', height: '32px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(255,255,255,0.08)', color: 'white', fontSize: '16px', cursor: 'pointer', lineHeight: 1 }}>✕</button>
             </div>
-            <div style={{ overflowY: 'auto', padding: '16px 22px' }}>
+            <div tabIndex={0} aria-label={t('guided.full_lesson_scroll') || 'Worked lesson steps'} style={{ overflowY: 'auto', padding: '16px 22px' }}>
               {(GUIDED_STEPS || []).map((s, i) => {
                 const d = (typeof GUIDED_DETAIL !== 'undefined' && GUIDED_DETAIL[s.id]) || null;
                 if (!d || !d.example) return null;
