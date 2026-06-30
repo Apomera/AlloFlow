@@ -748,7 +748,7 @@ window.StemLab = window.StemLab || {
         activeTab === 'explore' && h('div', { className: 'space-y-3' },
           // ── SVG Protractor ──
           h('div', { className: 'bg-white rounded-xl border-2 border-purple-200 p-3 flex justify-center relative' },
-            h('svg', { width: 400, height: 420, className: 'select-none', 'data-protractor-svg': true },
+            h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, convertedAngle + ', ' + angleClass + ' angle'), h('svg', { width: 400, height: 420, className: 'select-none', 'data-protractor-svg': true },
               // Outer circle + semi-circle fills
               h('circle', { cx: cx, cy: cy, r: r, fill: 'none', stroke: '#e9d5ff', strokeWidth: 1 }),
               // Filled angle wedge
@@ -1199,7 +1199,7 @@ window.StemLab = window.StemLab || {
             ),
             // Mini clock SVG
             h('div', { className: 'flex justify-center mb-3' },
-              h('svg', { width: 120, height: 120 },
+              h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, 'Clock ' + clockHour + ':' + (clockMinute < 10 ? '0' : '') + clockMinute + ', hands ' + clockAngle.toFixed(1) + ' degrees apart'), h('svg', { width: 120, height: 120 },
                 h('circle', { cx: 60, cy: 60, r: 55, fill: 'none', stroke: '#bae6fd', strokeWidth: 2 }),
                 // Hour numbers
                 [1,2,3,4,5,6,7,8,9,10,11,12].map(function(n) {
