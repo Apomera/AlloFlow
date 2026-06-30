@@ -852,9 +852,26 @@ function ExportPreviewView(props) {
                         const iframe = exportPreviewRef.current;
                         const doc = iframe?.contentDocument;
                         const html = doc ? doc.documentElement.outerHTML : getExportPreviewHTML();
-                        const [aiResult, axeResult] = await Promise.all([
+                        // IBM Equal Access — the SECOND deterministic engine, so the export audit gets the
+                        // same two-engine consensus the PDF-remediation pipeline uses (axe-core + IBM ace).
+                        // The audit engines only touch window/document/fetch (not the AI deps), so borrow
+                        // runEqualAccessAudit from the doc-pipeline factory with stub deps and cache the
+                        // instance. Fail-soft: if the engine can't load, the report degrades to axe-only.
+                        let _runEA = null;
+                        try {
+                          const _mk = window.AlloModules && window.AlloModules.createDocPipeline;
+                          if (_mk) {
+                            const _inst = window.__alloAuditPipeline || (window.__alloAuditPipeline = _mk({
+                              callGemini: async () => '{}', callGeminiVision: async () => '{}', callImagen: async () => null,
+                              addToast: () => {}, t: (k) => k, isRtlLang: () => false, updateExportPreview: () => {}, getDefaultTitle: () => '',
+                            }));
+                            if (_inst && typeof _inst.runEqualAccessAudit === 'function') _runEA = _inst.runEqualAccessAudit;
+                          }
+                        } catch (_) { /* no second engine available — axe + AI still run */ }
+                        const [aiResult, axeResult, eaResult] = await Promise.all([
                           auditOutputAccessibility(html),
-                          runAxeAudit(html).catch(() => null)
+                          runAxeAudit(html).catch(() => null),
+                          _runEA ? _runEA(html).catch(() => null) : Promise.resolve(null)
                         ]);
                         const combined = aiResult || { score: 0, summary: '', issues: [], passes: [] };
                         if (axeResult) {
@@ -862,6 +879,15 @@ function ExportPreviewView(props) {
                           combined.axePasses = axeResult.totalPasses;
                           combined.axeDetails = axeResult.critical.concat(axeResult.serious).concat(axeResult.moderate);
                           combined.summary = (combined.summary || '') + ` | axe-core: ${axeResult.totalViolations} violations, ${axeResult.totalPasses} passed`;
+                        }
+                        if (eaResult) {
+                          combined.eaViolations = eaResult.failViolations;
+                          combined.eaPotential = eaResult.potentialViolations;
+                          combined.summary = (combined.summary || '') + ` | IBM Equal Access: ${eaResult.failViolations} violations`;
+                        }
+                        // Two-engine deterministic consensus: both rule engines ran AND both found zero.
+                        if (axeResult && eaResult) {
+                          combined.deterministicConsensus = (axeResult.totalViolations === 0 && eaResult.failViolations === 0) ? 'clean' : 'issues';
                         }
                         setExportAuditResult(combined);
                       } catch (e) { setExportAuditResult({ score: -1, summary: 'Audit failed', issues: [], passes: [] }); }
@@ -881,6 +907,17 @@ function ExportPreviewView(props) {
                         <div className="text-[11px] font-bold text-slate-600 uppercase">WCAG 2.1 AA Score</div>
                       </div>
                       <p className="text-[11px] text-slate-600">{exportAuditResult.summary}</p>
+                      {(exportAuditResult.axeViolations != null && exportAuditResult.eaViolations != null) && (
+                        <div className={`rounded-lg border p-2 text-[11px] ${exportAuditResult.deterministicConsensus === 'clean' ? 'bg-green-50 border-green-200 text-green-800' : 'bg-amber-50 border-amber-200 text-amber-800'}`}>
+                          {exportAuditResult.deterministicConsensus === 'clean'
+                            ? '✓ Two independent rule engines agree (axe-core + IBM Equal Access): 0 violations.'
+                            : `Rule engines — axe-core: ${exportAuditResult.axeViolations}, IBM Equal Access: ${exportAuditResult.eaViolations} violation(s).`}
+                          {exportAuditResult.eaPotential > 0 && <span className="block mt-1 text-slate-500">IBM Equal Access also flags {exportAuditResult.eaPotential} item(s) for human review.</span>}
+                        </div>
+                      )}
+                      {(exportAuditResult.eaViolations == null && exportAuditResult.axeViolations != null) && (
+                        <div className="text-[10px] text-slate-500 italic">Second deterministic engine (IBM Equal Access) unavailable — showing axe-core only.</div>
+                      )}
                       {exportAuditResult.issues?.length > 0 && (
                         <div>
                           <div className="text-[11px] font-bold text-red-600 uppercase mb-1">Issues ({exportAuditResult.issues.length})</div>
@@ -902,6 +939,7 @@ function ExportPreviewView(props) {
                         </div>
                       )}
                       <p className="text-[11px] text-indigo-500 italic">Use the A11y Inspect toggle above to see and fix issues visually, then re-audit.</p>
+                      <p className="text-[11px] text-slate-500 italic">Automated checks (axe-core + IBM Equal Access) find many problems but can’t confirm full WCAG 2.1 AA conformance — a manual screen-reader + keyboard pass is still needed. The score above includes an AI review and is a guide, not a certification.</p>
                     </div>
                   )}
                 </div>
