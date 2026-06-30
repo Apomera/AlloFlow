@@ -176,6 +176,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
     color: 'indigo',
     category: 'self-direction',
     render: function(ctx) {
+      // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
+      var _carT = (ctx && ctx.theme) || {};
+      var _carHC = !!_carT.isContrast, _carL = !_carHC && !_carT.isDark;
+      var _car_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _car_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#fff':'#000000','#f8fafc':'#000000'};
+      var _car_FGL = {'#cbd5e1':'#334155','#a5b4fc':'#3730a3','#94a3b8':'#64748b','#e0e7ff':'#3730a3','#bfdbfe':'#1e40af','#e2e8f0':'#1e293b','#fde68a':'#92400e','#818cf8':'#4338ca','#fecaca':'#b91c1c','#86efac':'#166534','#fcd34d':'#78350f'}, _car_FGH = {'#cbd5e1':'#ffff00','#a5b4fc':'#ffff00','#94a3b8':'#ffff00','#e0e7ff':'#ffff00','#bfdbfe':'#ffff00','#e2e8f0':'#ffff00','#22c55e':'#ffff00','#ef4444':'#ffff00','#fff':'#ffff00','#fde68a':'#ffff00','#818cf8':'#ffff00','#fecaca':'#ffff00','#bbf7d0':'#ffff00','#86efac':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00'};
+      var _car_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _car_BDH = {'#334155':'#ffff00','#818cf8':'#ffff00','#1e293b':'#ffff00','#475569':'#ffff00','#f59e0b':'#ffff00','#ef4444':'#ffff00','#22c55e':'#ffff00','#cbd5e1':'#ffff00','#4f46e5':'#ffff00'};
+      var _carBg = function(h){ return _carHC ? (_car_BGH[h]||h) : (_carL ? (_car_BGL[h]||h) : h); };
+      var _carFg = function(h){ return _carHC ? (_car_FGH[h]||h) : (_carL ? (_car_FGL[h]||h) : h); };
+      var _carBd = function(h){ return _carHC ? (_car_BDH[h]||h) : (_carL ? (_car_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -205,10 +214,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: '#cbd5e1', fontSize: 14 } }, '← Back'),
+            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _carFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
-            h('h2', { style: { margin: 0, color: '#a5b4fc', fontSize: 22, fontWeight: 900 } }, '🧭 Career Compass'),
-            h('div', { style: { fontSize: 12, color: '#94a3b8', marginTop: 4, lineHeight: 1.5 } }, 'Explore careers through your interests. Holland\'s RIASEC framework.')
+            h('h2', { style: { margin: 0, color: _carFg('#a5b4fc'), fontSize: 22, fontWeight: 900 } }, '🧭 Career Compass'),
+            h('div', { style: { fontSize: 12, color: _carFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'Explore careers through your interests. Holland\'s RIASEC framework.')
           )
         );
       }
@@ -230,27 +239,27 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
             var active = view === t.id;
             return h('button', { key: t.id, onClick: function() { goto(t.id); },
               role: 'tab', 'aria-selected': active,
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#818cf8' : '#334155'),
-                background: active ? 'rgba(129,140,248,0.18)' : '#1e293b',
-                color: active ? '#e0e7ff' : '#cbd5e1', cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? _carFg('#818cf8') : '#334155'),
+                background: active ? 'rgba(129,140,248,0.18)' : _carBg('#1e293b'),
+                color: active ? _carFg('#e0e7ff') : _carFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
         );
       }
 
       function authoritativeBanner() {
-        return h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', borderTop: '1px solid rgba(129,140,248,0.4)', borderRight: '1px solid rgba(129,140,248,0.4)', borderBottom: '1px solid rgba(129,140,248,0.4)', borderLeft: '3px solid #818cf8', marginBottom: 12, fontSize: 12.5, color: '#e0e7ff', lineHeight: 1.65 } },
+        return h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', borderTop: '1px solid rgba(129,140,248,0.4)', borderRight: '1px solid rgba(129,140,248,0.4)', borderBottom: '1px solid rgba(129,140,248,0.4)', borderLeft: '3px solid #818cf8', marginBottom: 12, fontSize: 12.5, color: _carFg('#e0e7ff'), lineHeight: 1.65 } },
           h('strong', null, '🔗 The authoritative version: '),
           'the US Department of Labor\'s O*NET Interest Profiler at ',
           h('a', { href: 'https://www.mynextmove.org/explore/ip', target: '_blank', rel: 'noopener noreferrer',
-            style: { color: '#bfdbfe', textDecoration: 'underline', fontWeight: 800 } }, 'mynextmove.org/explore/ip ↗'),
+            style: { color: _carFg('#bfdbfe'), textDecoration: 'underline', fontWeight: 800 } }, 'mynextmove.org/explore/ip ↗'),
           ' is free, public-domain, and connected to live career data on ~1000 careers. This tool is a brief screener built on the same Holland RIASEC framework; take O*NET\'s version for depth.'
         );
       }
 
       function softPointer() {
         return h('div', { className: 'no-print',
-          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: '#94a3b8', lineHeight: 1.5, fontStyle: 'italic' }
+          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _carFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
           'A Holland code is a starting point, not a prediction. Many people thrive in careers that do not match their dominant type. If career conversations are stirring family pressure, financial worry, or identity questions, that is worth a counselor session. Crisis Text Line: text HOME to 741741.'
         );
@@ -264,8 +273,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
 
         return h('div', null,
           h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(129,140,248,0.16) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(129,140,248,0.4)', marginBottom: 14 } },
-            h('div', { style: { fontSize: 22, fontWeight: 900, color: '#e0e7ff', marginBottom: 4 } }, 'What kind of work fits me?'),
-            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13.5, lineHeight: 1.65 } },
+            h('div', { style: { fontSize: 22, fontWeight: 900, color: _carFg('#e0e7ff'), marginBottom: 4 } }, 'What kind of work fits me?'),
+            h('p', { style: { margin: 0, color: _carFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.65 } },
               'Career exploration starts with interests, not job titles. The Holland RIASEC framework asks "what activities would I enjoy?" rather than "what should I be?" Most people are a blend of three of the six types; that combination points toward careers where they thrive.'
             )
           ),
@@ -275,9 +284,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
           // Roadmap
           stepCard(1, '✏️ Take the self-check (36 items, ~5 minutes)', 'Mark each activity as "Like", "Not sure", or "Don\'t like." No right answers.', rated + ' / 36 rated', function() { goto('screener'); }, '#0ea5e9'),
           stepCard(2, '⭐ See your Holland code', 'Your top 3 types out of R-I-A-S-E-C, plus what each means about how you might work.', complete ? '✓ Ready' : 'Take the screener first', function() { complete ? goto('results') : goto('screener'); }, '#a855f7'),
-          stepCard(3, '💼 Browse careers by your code', '~15 careers per Holland type. Education paths, related work, places to look further.', complete ? 'Explore' : 'Take screener first', function() { complete ? goto('careers') : goto('screener'); }, '#22c55e'),
+          stepCard(3, '💼 Browse careers by your code', '~15 careers per Holland type. Education paths, related work, places to look further.', complete ? 'Explore' : 'Take screener first', function() { complete ? goto('careers') : goto('screener'); }, _carFg('#22c55e')),
           stepCard(4, '🗂️ Or browse by the 16 Career Clusters', 'Another way in: the US Department of Education\'s 16 career groups.', 'Browse', function() { goto('clusters'); }, '#f59e0b'),
-          stepCard(5, '🚶 Take a concrete next step', 'Shadow day, info interview, CTE program, apprenticeship, summer job. Small moves beat a perfect plan.', 'Explore', function() { goto('nextsteps'); }, '#ef4444'),
+          stepCard(5, '🚶 Take a concrete next step', 'Shadow day, info interview, CTE program, apprenticeship, summer job. Small moves beat a perfect plan.', 'Explore', function() { goto('nextsteps'); }, _carFg('#ef4444')),
 
           softPointer()
         );
@@ -285,12 +294,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
 
       function stepCard(stepNum, title, blurb, status, onClick, color) {
         return h('button', { onClick: onClick, 'aria-label': 'Step ' + stepNum + ': ' + title,
-          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: '#0f172a', cursor: 'pointer', marginBottom: 8, color: '#e2e8f0' } },
+          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: _carBg('#0f172a'), cursor: 'pointer', marginBottom: 8, color: _carFg('#e2e8f0') } },
           h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
             h('span', { style: { fontSize: 14, fontWeight: 800, color: color, flex: 1 } }, title),
             h('span', { style: { fontSize: 11, color: color, fontWeight: 700 } }, status)
           ),
-          h('div', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.55 } }, blurb)
+          h('div', { style: { fontSize: 12, color: _carFg('#94a3b8'), lineHeight: 1.55 } }, blurb)
         );
       }
 
@@ -319,23 +328,23 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
         });
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', borderTop: '1px solid rgba(129,140,248,0.3)', borderRight: '1px solid rgba(129,140,248,0.3)', borderBottom: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', marginBottom: 14, fontSize: 12.5, color: '#e0e7ff', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', borderTop: '1px solid rgba(129,140,248,0.3)', borderRight: '1px solid rgba(129,140,248,0.3)', borderBottom: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', marginBottom: 14, fontSize: 12.5, color: _carFg('#e0e7ff'), lineHeight: 1.65 } },
             h('strong', null, '✏️ How to do this: '),
             'For each statement, mark how you feel about doing the activity for work, not just trying it once. ',
-            h('span', { style: { color: '#22c55e', fontWeight: 700 } }, 'Like'), ', ',
-            h('span', { style: { color: '#94a3b8', fontWeight: 700 } }, 'Not sure'), ', or ',
-            h('span', { style: { color: '#ef4444', fontWeight: 700 } }, 'Don\'t like'),
+            h('span', { style: { color: _carFg('#22c55e'), fontWeight: 700 } }, 'Like'), ', ',
+            h('span', { style: { color: _carFg('#94a3b8'), fontWeight: 700 } }, 'Not sure'), ', or ',
+            h('span', { style: { color: _carFg('#ef4444'), fontWeight: 700 } }, 'Don\'t like'),
             '. Honest answers give a more useful result than answers based on what you "should" want.'
           ),
 
           // Progress
           h('div', { style: { marginBottom: 14 } },
             h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
-              h('span', { style: { fontSize: 12, color: '#94a3b8' } }, ratedCount + ' of ' + ITEMS.length + ' rated'),
+              h('span', { style: { fontSize: 12, color: _carFg('#94a3b8') } }, ratedCount + ' of ' + ITEMS.length + ' rated'),
               ratedCount > 0 ? h('button', { onClick: clearAll, 'aria-label': 'Clear all ratings',
-                style: { marginLeft: 'auto', background: 'transparent', border: '1px solid #475569', color: '#94a3b8', borderRadius: 6, padding: '2px 8px', cursor: 'pointer', fontSize: 11 } }, 'Clear all') : null
+                style: { marginLeft: 'auto', background: 'transparent', border: '1px solid #475569', color: _carFg('#94a3b8'), borderRadius: 6, padding: '2px 8px', cursor: 'pointer', fontSize: 11 } }, 'Clear all') : null
             ),
-            h('div', { style: { height: 6, borderRadius: 3, background: '#1e293b', overflow: 'hidden' }, role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': pct, 'aria-label': 'Self-check progress' },
+            h('div', { style: { height: 6, borderRadius: 3, background: _carBg('#1e293b'), overflow: 'hidden' }, role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': pct, 'aria-label': 'Self-check progress' },
               h('div', { style: { height: '100%', width: pct + '%', background: 'linear-gradient(90deg, #4f46e5, #818cf8)', transition: 'width 240ms ease' } })
             )
           ),
@@ -344,22 +353,22 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
           ['R', 'I', 'A', 'S', 'E', 'C'].map(function(typeId) {
             var type = TYPES[typeId];
             var items = typed[typeId] || [];
-            return h('div', { key: typeId, style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + type.color, marginBottom: 10 } },
+            return h('div', { key: typeId, style: { padding: 12, borderRadius: 10, background: _carBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + type.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
                 h('span', { style: { fontSize: 18 } }, type.icon),
                 h('span', { style: { fontSize: 11, color: type.color, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, type.label + ' · ' + type.shortName)
               ),
               items.map(function(item) {
                 var current = (d.ratings || {})[item.id];
-                return h('div', { key: item.id, style: { padding: 8, borderRadius: 6, background: '#1e293b', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
-                  h('div', { style: { flex: 1, minWidth: 200, fontSize: 13, color: '#e2e8f0', lineHeight: 1.5 } }, item.text),
+                return h('div', { key: item.id, style: { padding: 8, borderRadius: 6, background: _carBg('#1e293b'), marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
+                  h('div', { style: { flex: 1, minWidth: 200, fontSize: 13, color: _carFg('#e2e8f0'), lineHeight: 1.5 } }, item.text),
                   h('div', { style: { display: 'flex', gap: 4 }, role: 'radiogroup', 'aria-label': 'Rate: ' + item.text },
                     h('button', { onClick: function() { setRating(item.id, -1); }, role: 'radio', 'aria-checked': current === -1, 'aria-label': 'Don\'t like',
-                      style: { padding: '4px 10px', borderRadius: 4, border: '1px solid ' + (current === -1 ? '#ef4444' : '#475569'), background: current === -1 ? '#ef4444' : 'transparent', color: current === -1 ? '#fff' : '#ef4444', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '✕'),
+                      style: { padding: '4px 10px', borderRadius: 4, border: '1px solid ' + (current === -1 ? _carFg('#ef4444') : _carFg('#475569')), background: current === -1 ? _carFg('#ef4444') : 'transparent', color: current === -1 ? '#fff' : _carFg('#ef4444'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '✕'),
                     h('button', { onClick: function() { setRating(item.id, 0); }, role: 'radio', 'aria-checked': current === 0, 'aria-label': 'Not sure',
-                      style: { padding: '4px 10px', borderRadius: 4, border: '1px solid ' + (current === 0 ? '#94a3b8' : '#475569'), background: current === 0 ? '#475569' : 'transparent', color: '#cbd5e1', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '?'),
+                      style: { padding: '4px 10px', borderRadius: 4, border: '1px solid ' + (current === 0 ? _carFg('#94a3b8') : _carFg('#475569')), background: current === 0 ? _carFg('#475569') : 'transparent', color: _carFg('#cbd5e1'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '?'),
                     h('button', { onClick: function() { setRating(item.id, 1); }, role: 'radio', 'aria-checked': current === 1, 'aria-label': 'Like',
-                      style: { padding: '4px 10px', borderRadius: 4, border: '1px solid ' + (current === 1 ? '#22c55e' : '#475569'), background: current === 1 ? '#22c55e' : 'transparent', color: current === 1 ? '#fff' : '#22c55e', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '✓')
+                      style: { padding: '4px 10px', borderRadius: 4, border: '1px solid ' + (current === 1 ? _carFg('#22c55e') : _carFg('#475569')), background: current === 1 ? _carFg('#22c55e') : 'transparent', color: current === 1 ? '#fff' : _carFg('#22c55e'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '✓')
                   )
                 );
               })
@@ -369,7 +378,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
           // See results button when complete
           complete ? h('div', { style: { display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' } },
             h('button', { onClick: function() { goto('results'); }, 'aria-label': 'See my Holland code',
-              style: { padding: '12px 24px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)', color: '#fff', fontWeight: 800, fontSize: 14 } },
+              style: { padding: '12px 24px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)', color: _carFg('#fff'), fontWeight: 800, fontSize: 14 } },
               '⭐ See my Holland code')
           ) : null,
 
@@ -383,12 +392,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
       function renderResults() {
         if (!complete) {
           return h('div', null,
-            h('div', { style: { padding: 20, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', textAlign: 'center' } },
+            h('div', { style: { padding: 20, borderRadius: 12, background: _carBg('#0f172a'), border: '1px solid #1e293b', textAlign: 'center' } },
               h('div', { style: { fontSize: 36, marginBottom: 8 } }, '✏️'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 14, marginBottom: 4 } }, 'Take the self-check first'),
-              h('div', { style: { color: '#94a3b8', fontSize: 12, marginBottom: 12 } }, 'Rate all 36 items to see your Holland code.'),
+              h('div', { style: { color: _carFg('#cbd5e1'), fontSize: 14, marginBottom: 4 } }, 'Take the self-check first'),
+              h('div', { style: { color: _carFg('#94a3b8'), fontSize: 12, marginBottom: 12 } }, 'Rate all 36 items to see your Holland code.'),
               h('button', { onClick: function() { goto('screener'); }, 'aria-label': 'Go to self-check',
-                style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #818cf8', background: 'rgba(129,140,248,0.18)', color: '#e0e7ff', cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Take the self-check')
+                style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #818cf8', background: 'rgba(129,140,248,0.18)', color: _carFg('#e0e7ff'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Take the self-check')
             )
           );
         }
@@ -398,67 +407,67 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
         return h('div', null,
           // The code
           h('div', { style: { padding: 24, borderRadius: 14, background: 'linear-gradient(135deg, rgba(129,140,248,0.20) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(129,140,248,0.4)', textAlign: 'center', marginBottom: 14 } },
-            h('div', { style: { fontSize: 12, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 6 } }, 'Your Holland code'),
+            h('div', { style: { fontSize: 12, color: _carFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 6 } }, 'Your Holland code'),
             h('div', { style: { display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
               topThree.map(function(t, i) {
                 var type = TYPES[t];
                 return h('div', { key: t, style: { padding: 14, borderRadius: 12, background: type.color + '22', border: '2px solid ' + type.color, minWidth: 100 } },
-                  h('div', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 700, marginBottom: 2 } }, '#' + (i + 1)),
+                  h('div', { style: { fontSize: 10, color: _carFg('#94a3b8'), fontWeight: 700, marginBottom: 2 } }, '#' + (i + 1)),
                   h('div', { style: { fontSize: 36, marginBottom: 2 } }, type.icon),
                   h('div', { style: { fontSize: 24, fontWeight: 900, color: type.color, fontFamily: 'ui-monospace, monospace' } }, t),
-                  h('div', { style: { fontSize: 11, color: '#e2e8f0', fontWeight: 700 } }, type.label),
-                  h('div', { style: { fontSize: 10, color: '#94a3b8' } }, type.shortName)
+                  h('div', { style: { fontSize: 11, color: _carFg('#e2e8f0'), fontWeight: 700 } }, type.label),
+                  h('div', { style: { fontSize: 10, color: _carFg('#94a3b8') } }, type.shortName)
                 );
               })
             ),
-            h('div', { style: { fontSize: 32, fontWeight: 900, color: '#e0e7ff', fontFamily: 'ui-monospace, monospace', letterSpacing: 4 } }, codeString),
-            h('div', { style: { fontSize: 12, color: '#94a3b8', marginTop: 6 } }, 'Read this on O*NET as: ',
-              h('a', { href: 'https://www.mynextmove.org/explore/ip', target: '_blank', rel: 'noopener noreferrer', style: { color: '#bfdbfe', textDecoration: 'underline' } }, codeString + ' on My Next Move ↗')
+            h('div', { style: { fontSize: 32, fontWeight: 900, color: _carFg('#e0e7ff'), fontFamily: 'ui-monospace, monospace', letterSpacing: 4 } }, codeString),
+            h('div', { style: { fontSize: 12, color: _carFg('#94a3b8'), marginTop: 6 } }, 'Read this on O*NET as: ',
+              h('a', { href: 'https://www.mynextmove.org/explore/ip', target: '_blank', rel: 'noopener noreferrer', style: { color: _carFg('#bfdbfe'), textDecoration: 'underline' } }, codeString + ' on My Next Move ↗')
             )
           ),
 
           // Per-type descriptions
           topThree.map(function(t, i) {
             var type = TYPES[t];
-            return h('div', { key: t, style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + type.color, marginBottom: 10 } },
+            return h('div', { key: t, style: { padding: 14, borderRadius: 10, background: _carBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + type.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
                 h('span', { style: { fontSize: 30 } }, type.icon),
                 h('div', null,
-                  h('div', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, '#' + (i + 1) + ' · ' + t),
+                  h('div', { style: { fontSize: 10, color: _carFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, '#' + (i + 1) + ' · ' + t),
                   h('div', { style: { fontSize: 18, fontWeight: 800, color: type.color } }, type.label + ' — ' + type.shortName)
                 )
               ),
-              h('p', { style: { margin: '0 0 8px', color: '#cbd5e1', fontSize: 13, lineHeight: 1.65 } }, type.summary),
-              h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13, lineHeight: 1.65, fontStyle: 'italic' } }, type.atWork)
+              h('p', { style: { margin: '0 0 8px', color: _carFg('#cbd5e1'), fontSize: 13, lineHeight: 1.65 } }, type.summary),
+              h('p', { style: { margin: 0, color: _carFg('#e2e8f0'), fontSize: 13, lineHeight: 1.65, fontStyle: 'italic' } }, type.atWork)
             );
           }),
 
           // All 6 scores (so the student can see the full picture)
-          h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 10 } },
-            h('div', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, 'All six types, ranked'),
+          h('div', { style: { padding: 12, borderRadius: 10, background: _carBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 10 } },
+            h('div', { style: { fontSize: 11, color: _carFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, 'All six types, ranked'),
             ranking.map(function(t, i) {
               var type = TYPES[t];
               var s = scores[t];
               var pct = Math.round(((s + 6) / 12) * 100);  // map -6..+6 to 0..100
               return h('div', { key: t, style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                 h('span', { style: { fontSize: 14, fontWeight: 800, color: type.color, fontFamily: 'ui-monospace, monospace', minWidth: 20 } }, t),
-                h('span', { style: { fontSize: 12, color: '#cbd5e1', minWidth: 100 } }, type.label),
-                h('div', { style: { flex: 1, height: 8, borderRadius: 4, background: '#1e293b', overflow: 'hidden' }, role: 'meter', 'aria-valuenow': pct, 'aria-label': type.label + ' score' },
+                h('span', { style: { fontSize: 12, color: _carFg('#cbd5e1'), minWidth: 100 } }, type.label),
+                h('div', { style: { flex: 1, height: 8, borderRadius: 4, background: _carBg('#1e293b'), overflow: 'hidden' }, role: 'meter', 'aria-valuenow': pct, 'aria-label': type.label + ' score' },
                   h('div', { style: { height: '100%', width: pct + '%', background: type.color } })
                 ),
-                h('span', { style: { fontSize: 11, color: '#94a3b8', minWidth: 30, textAlign: 'right' } }, (s > 0 ? '+' : '') + s)
+                h('span', { style: { fontSize: 11, color: _carFg('#94a3b8'), minWidth: 30, textAlign: 'right' } }, (s > 0 ? '+' : '') + s)
               );
             })
           ),
 
           h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
             h('button', { onClick: function() { goto('careers'); }, 'aria-label': 'Browse careers',
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)', color: '#fff', fontWeight: 800, fontSize: 14 } },
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)', color: _carFg('#fff'), fontWeight: 800, fontSize: 14 } },
               '💼 Browse careers'),
             h('button', { onClick: function() { goto('nextsteps'); }, 'aria-label': 'Next steps',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🚶 Next steps'),
+              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid #475569', background: _carBg('#1e293b'), color: _carFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🚶 Next steps'),
             h('button', { onClick: function() { goto('print'); }, 'aria-label': 'Print',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print')
+              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid #475569', background: _carBg('#1e293b'), color: _carFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print')
           ),
 
           softPointer()
@@ -473,7 +482,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
         var orderedTypes = complete ? topThree.concat(ranking.slice(3)) : ['R', 'I', 'A', 'S', 'E', 'C'];
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', borderTop: '1px solid rgba(129,140,248,0.3)', borderRight: '1px solid rgba(129,140,248,0.3)', borderBottom: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', marginBottom: 14, fontSize: 12.5, color: '#e0e7ff', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', borderTop: '1px solid rgba(129,140,248,0.3)', borderRight: '1px solid rgba(129,140,248,0.3)', borderBottom: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', marginBottom: 14, fontSize: 12.5, color: _carFg('#e0e7ff'), lineHeight: 1.65 } },
             h('strong', null, '💼 Careers by Holland type. '),
             complete ? 'Your top three are listed first. ' : '',
             'These are sample careers, not complete lists. For depth + salary + education paths, check the linked O*NET pages for each.'
@@ -482,22 +491,22 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
           orderedTypes.map(function(t, idx) {
             var type = TYPES[t];
             var isTop = complete && topThree.indexOf(t) !== -1;
-            return h('div', { key: t, style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid ' + (isTop ? type.color : '#1e293b'), borderLeft: '4px solid ' + type.color, marginBottom: 10 } },
+            return h('div', { key: t, style: { padding: 14, borderRadius: 10, background: _carBg('#0f172a'), border: '1px solid ' + (isTop ? type.color : _carBg('#1e293b')), borderLeft: '4px solid ' + type.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
                 h('span', { style: { fontSize: 22 } }, type.icon),
                 h('span', { style: { fontSize: 15, fontWeight: 800, color: type.color, flex: 1 } }, type.label + ' (' + t + ') — ' + type.shortName),
-                isTop ? h('span', { style: { fontSize: 10, padding: '2px 8px', borderRadius: 4, background: type.color, color: '#fff', fontWeight: 800, letterSpacing: 0.5 } }, '★ YOUR CODE') : null,
+                isTop ? h('span', { style: { fontSize: 10, padding: '2px 8px', borderRadius: 4, background: type.color, color: _carFg('#fff'), fontWeight: 800, letterSpacing: 0.5 } }, '★ YOUR CODE') : null,
                 h('a', { href: 'https://www.onetonline.org/find/quick?s=' + t, target: '_blank', rel: 'noopener noreferrer',
                   style: { fontSize: 11, color: type.color, textDecoration: 'underline', fontWeight: 700 } }, 'O*NET careers ↗')
               ),
-              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8, fontStyle: 'italic', lineHeight: 1.55 } }, type.summary),
+              h('div', { style: { fontSize: 11, color: _carFg('#94a3b8'), marginBottom: 8, fontStyle: 'italic', lineHeight: 1.55 } }, type.summary),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
                 type.careers.map(function(c, ci) {
                   return h('a', { key: ci,
                     href: 'https://www.onetonline.org/find/quick?s=' + encodeURIComponent(c),
                     target: '_blank', rel: 'noopener noreferrer',
                     'aria-label': 'Look up ' + c + ' on O*NET',
-                    style: { padding: '4px 10px', borderRadius: 14, border: '1px solid ' + type.color + '66', background: 'rgba(15,23,42,0.6)', color: '#cbd5e1', textDecoration: 'none', fontSize: 12 } }, c + ' ↗');
+                    style: { padding: '4px 10px', borderRadius: 14, border: '1px solid ' + type.color + '66', background: 'rgba(15,23,42,0.6)', color: _carFg('#cbd5e1'), textDecoration: 'none', fontSize: 12 } }, c + ' ↗');
                 })
               )
             );
@@ -512,35 +521,35 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
       // ═══════════════════════════════════════════════════════════
       function renderClusters() {
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: _carFg('#fde68a'), lineHeight: 1.65 } },
             h('strong', null, '🗂️ The 16 Career Clusters '),
             'are a federal framework from the US Department of Education. They group careers by industry rather than by personality type, and they connect directly to Career and Technical Education (CTE) pathways. Many high schools organize their CTE programs around these clusters.'
           ),
 
           // Filter clusters that match top Holland types
-          complete ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #818cf8', marginBottom: 14 } },
-            h('div', { style: { fontSize: 12, color: '#e0e7ff', fontWeight: 800, marginBottom: 8 } }, '⭐ Clusters that connect to your Holland code (' + topThree.join('') + ')'),
+          complete ? h('div', { style: { padding: 12, borderRadius: 10, background: _carBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #818cf8', marginBottom: 14 } },
+            h('div', { style: { fontSize: 12, color: _carFg('#e0e7ff'), fontWeight: 800, marginBottom: 8 } }, '⭐ Clusters that connect to your Holland code (' + topThree.join('') + ')'),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
               CLUSTERS.filter(function(c) {
                 return c.codes.some(function(code) { return topThree.indexOf(code) !== -1; });
               }).map(function(c) {
-                return h('span', { key: c.id, style: { padding: '4px 10px', borderRadius: 14, background: 'rgba(129,140,248,0.18)', color: '#e0e7ff', fontSize: 11.5, fontWeight: 700 } }, c.icon + ' ' + c.label);
+                return h('span', { key: c.id, style: { padding: '4px 10px', borderRadius: 14, background: 'rgba(129,140,248,0.18)', color: _carFg('#e0e7ff'), fontSize: 11.5, fontWeight: 700 } }, c.icon + ' ' + c.label);
               })
             )
           ) : null,
 
-          h('div', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, 'All 16 clusters'),
+          h('div', { style: { fontSize: 11, color: _carFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, 'All 16 clusters'),
 
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 8 } },
             CLUSTERS.map(function(c) {
               var matchesTop = complete && c.codes.some(function(code) { return topThree.indexOf(code) !== -1; });
-              return h('div', { key: c.id, style: { padding: 12, borderRadius: 8, background: '#0f172a', border: '1px solid ' + (matchesTop ? '#818cf8' : '#1e293b') } },
+              return h('div', { key: c.id, style: { padding: 12, borderRadius: 8, background: _carBg('#0f172a'), border: '1px solid ' + (matchesTop ? _carFg('#818cf8') : _carBg('#1e293b')) } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                   h('span', { style: { fontSize: 20 } }, c.icon),
-                  h('span', { style: { fontSize: 13, fontWeight: 700, color: matchesTop ? '#e0e7ff' : '#e2e8f0', flex: 1 } }, c.label),
-                  matchesTop ? h('span', { style: { fontSize: 9, color: '#818cf8', fontWeight: 800 } }, '★') : null
+                  h('span', { style: { fontSize: 13, fontWeight: 700, color: matchesTop ? _carFg('#e0e7ff') : _carFg('#e2e8f0'), flex: 1 } }, c.label),
+                  matchesTop ? h('span', { style: { fontSize: 9, color: _carFg('#818cf8'), fontWeight: 800 } }, '★') : null
                 ),
-                h('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.55, marginBottom: 6 } }, c.blurb),
+                h('div', { style: { fontSize: 11, color: _carFg('#94a3b8'), lineHeight: 1.55, marginBottom: 6 } }, c.blurb),
                 h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
                   c.codes.map(function(code) {
                     var type = TYPES[code];
@@ -560,12 +569,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
       // ═══════════════════════════════════════════════════════════
       function renderNextSteps() {
         return h('div', null,
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.3)', borderRight: '1px solid rgba(239,68,68,0.3)', borderBottom: '1px solid rgba(239,68,68,0.3)', borderLeft: '3px solid #ef4444', marginBottom: 14, fontSize: 13, color: '#fecaca', lineHeight: 1.65 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.3)', borderRight: '1px solid rgba(239,68,68,0.3)', borderBottom: '1px solid rgba(239,68,68,0.3)', borderLeft: '3px solid #ef4444', marginBottom: 14, fontSize: 13, color: _carFg('#fecaca'), lineHeight: 1.65 } },
             h('strong', null, '🚶 Small moves beat a perfect plan. '),
             'You do not need to pick a career today. You need ONE small move that gets you closer to knowing.'
           ),
 
-          stepGroup('Within the next 2 weeks (no money needed)', '#22c55e', [
+          stepGroup('Within the next 2 weeks (no money needed)', _carFg('#22c55e'), [
             'Search "[a career you are curious about]" + day in the life on YouTube. Watch one video.',
             'Ask one adult what they do all day at work. Just listen.',
             'Look up the career on O*NET (onetonline.org) and write down two things that surprised you.',
@@ -590,17 +599,17 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
           ]),
 
           // Maine-specific note (Aaron is in Portland ME)
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(34,197,94,0.10)', borderTop: '1px solid rgba(34,197,94,0.3)', borderRight: '1px solid rgba(34,197,94,0.3)', borderBottom: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 12, fontSize: 12.5, color: '#bbf7d0', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(34,197,94,0.10)', borderTop: '1px solid rgba(34,197,94,0.3)', borderRight: '1px solid rgba(34,197,94,0.3)', borderBottom: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 12, fontSize: 12.5, color: _carFg('#bbf7d0'), lineHeight: 1.65 } },
             h('strong', null, '🏔 If you are in Maine: '),
             'check out ',
-            h('a', { href: 'https://www.maine.gov/doe/cte', target: '_blank', rel: 'noopener noreferrer', style: { color: '#86efac', textDecoration: 'underline', fontWeight: 700 } }, 'Maine DOE Career and Technical Education ↗'),
+            h('a', { href: 'https://www.maine.gov/doe/cte', target: '_blank', rel: 'noopener noreferrer', style: { color: _carFg('#86efac'), textDecoration: 'underline', fontWeight: 700 } }, 'Maine DOE Career and Technical Education ↗'),
             ' for the 27 CTE regional centers and high school programs across the state, including Portland Arts and Technology High School (PATHS) for the Greater Portland area. Maine has strong apprenticeship pipelines in skilled trades, healthcare, and IT.'
           ),
 
           // Cross-links to other AlloFlow tools
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #818cf8', marginBottom: 10 } },
-            h('div', { style: { fontSize: 13, fontWeight: 800, color: '#e0e7ff', marginBottom: 8 } }, '🔗 Pair this with other SEL Hub tools'),
-            h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#cbd5e1', fontSize: 13, lineHeight: 1.75 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _carBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #818cf8', marginBottom: 10 } },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: _carFg('#e0e7ff'), marginBottom: 8 } }, '🔗 Pair this with other SEL Hub tools'),
+            h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: _carFg('#cbd5e1'), fontSize: 13, lineHeight: 1.75 } },
               h('li', null, h('strong', null, 'VIA Strengths'), ' — your signature character strengths point toward careers where you would thrive (a Social-type with the strength of "Honesty" might be drawn to teaching ethics; with "Bravery", firefighting or social work).'),
               h('li', null, h('strong', null, 'Values & Committed Action'), ' — values and interests are different. You can be Investigative AND value family closeness, which shapes which Investigative careers fit your life.'),
               h('li', null, h('strong', null, 'PATH'), ' — once you have a career direction, PATH walks you backward from the North Star to first steps.'),
@@ -613,9 +622,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
       }
 
       function stepGroup(title, color, items) {
-        return h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + color, marginBottom: 10 } },
+        return h('div', { style: { padding: 14, borderRadius: 10, background: _carBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + color, marginBottom: 10 } },
           h('div', { style: { fontSize: 13, fontWeight: 800, color: color, marginBottom: 8 } }, title),
-          h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.7 } },
+          h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: _carFg('#e2e8f0'), fontSize: 13, lineHeight: 1.7 } },
             items.map(function(it, i) { return h('li', { key: i, style: { marginBottom: 4 } }, it); })
           )
         );
@@ -627,18 +636,18 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
       function renderPrintView() {
         return h('div', null,
           h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: 'rgba(129,140,248,0.10)', borderRadius: 8, border: '1px solid rgba(129,140,248,0.3)' } },
-            h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: '#e0e7ff', lineHeight: 1.55 } },
+            h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _carFg('#e0e7ff'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'Use your browser\'s print dialog to print or save as PDF.'),
             h('button', { onClick: printNow, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)', color: _carFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('home'); }, 'aria-label': 'Back',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _carBg('#1e293b'), color: _carFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
             id: 'cc-print-region',
-            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: '#fff', color: '#0f172a', borderRadius: 8, border: '1px solid #cbd5e1', fontFamily: '"Helvetica Neue", Arial, sans-serif' }
+            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: _carBg('#fff'), color: _carFg('#0f172a'), borderRadius: 8, border: '1px solid #cbd5e1', fontFamily: '"Helvetica Neue", Arial, sans-serif' }
           },
             h('style', null,
               '@media print { body * { visibility: hidden !important; } ' +
@@ -649,41 +658,41 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
             ),
 
             h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid #4f46e5' } },
-              h('div', { style: { fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'Career Compass · Holland RIASEC'),
+              h('div', { style: { fontSize: 10, color: _carFg('#64748b'), textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'Career Compass · Holland RIASEC'),
               h('h1', { style: { margin: 0, fontSize: 26, fontWeight: 900 } }, complete ? 'My Holland code: ' + topThree.join('') : 'My Career Compass'),
-              d.lastUpdated ? h('div', { style: { fontSize: 12, color: '#475569', marginTop: 4 } }, 'Updated ' + d.lastUpdated) : null
+              d.lastUpdated ? h('div', { style: { fontSize: 12, color: _carFg('#475569'), marginTop: 4 } }, 'Updated ' + d.lastUpdated) : null
             ),
 
             complete ? h('div', null,
               // Top 3 with descriptions
               h('div', { style: { marginBottom: 18 } },
-                h('div', { style: { fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 800, marginBottom: 6 } }, 'My top three Holland types'),
+                h('div', { style: { fontSize: 10, color: _carFg('#64748b'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 800, marginBottom: 6 } }, 'My top three Holland types'),
                 topThree.map(function(t, i) {
                   var type = TYPES[t];
-                  return h('div', { key: t, style: { marginBottom: 10, padding: 10, borderLeft: '3px solid ' + type.color, background: '#f8fafc' } },
-                    h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 4 } }, '#' + (i + 1) + '  ' + type.label + ' (' + t + ') — ' + type.shortName),
-                    h('div', { style: { fontSize: 12, color: '#0f172a', lineHeight: 1.6, marginBottom: 4 } }, type.summary),
-                    h('div', { style: { fontSize: 12, color: '#475569', lineHeight: 1.6, fontStyle: 'italic' } }, type.atWork)
+                  return h('div', { key: t, style: { marginBottom: 10, padding: 10, borderLeft: '3px solid ' + type.color, background: _carBg('#f8fafc') } },
+                    h('div', { style: { fontSize: 13, fontWeight: 800, color: _carFg('#0f172a'), marginBottom: 4 } }, '#' + (i + 1) + '  ' + type.label + ' (' + t + ') — ' + type.shortName),
+                    h('div', { style: { fontSize: 12, color: _carFg('#0f172a'), lineHeight: 1.6, marginBottom: 4 } }, type.summary),
+                    h('div', { style: { fontSize: 12, color: _carFg('#475569'), lineHeight: 1.6, fontStyle: 'italic' } }, type.atWork)
                   );
                 })
               ),
 
               // Sample careers
               h('div', { style: { marginBottom: 18, pageBreakInside: 'avoid' } },
-                h('div', { style: { fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 800, marginBottom: 6 } }, 'Sample careers in my top three types'),
+                h('div', { style: { fontSize: 10, color: _carFg('#64748b'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 800, marginBottom: 6 } }, 'Sample careers in my top three types'),
                 topThree.map(function(t) {
                   var type = TYPES[t];
                   return h('div', { key: t, style: { marginBottom: 10 } },
                     h('div', { style: { fontSize: 12, fontWeight: 800, color: type.color, marginBottom: 4 } }, type.label + ' (' + t + ')'),
-                    h('div', { style: { fontSize: 12, color: '#0f172a', lineHeight: 1.7 } }, type.careers.slice(0, 10).join('  ·  '))
+                    h('div', { style: { fontSize: 12, color: _carFg('#0f172a'), lineHeight: 1.7 } }, type.careers.slice(0, 10).join('  ·  '))
                   );
                 })
               ),
 
               // All six scores
               h('div', { style: { marginBottom: 18 } },
-                h('div', { style: { fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 800, marginBottom: 6 } }, 'All six type scores'),
-                h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#0f172a', fontSize: 13, lineHeight: 1.7 } },
+                h('div', { style: { fontSize: 10, color: _carFg('#64748b'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 800, marginBottom: 6 } }, 'All six type scores'),
+                h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: _carFg('#0f172a'), fontSize: 13, lineHeight: 1.7 } },
                   ranking.map(function(t) {
                     var type = TYPES[t];
                     return h('li', { key: t },
@@ -693,9 +702,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
                   })
                 )
               )
-            ) : h('div', { style: { padding: 14, fontSize: 12, color: '#94a3b8', fontStyle: 'italic' } }, 'Self-check not complete yet.'),
+            ) : h('div', { style: { padding: 14, fontSize: 12, color: _carFg('#94a3b8'), fontStyle: 'italic' } }, 'Self-check not complete yet.'),
 
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: '#94a3b8', textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _carFg('#94a3b8'), textAlign: 'center', lineHeight: 1.5 } },
               'Holland\'s RIASEC framework. Career data: take the official O*NET Interest Profiler at mynextmove.org/explore/ip for the validated version. ',
               'Created with AlloFlow SEL Hub.'
             )
@@ -714,35 +723,35 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
 
           // Authoritative pointer
           h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(129,140,248,0.10)', borderTop: '1px solid rgba(129,140,248,0.4)', borderRight: '1px solid rgba(129,140,248,0.4)', borderBottom: '1px solid rgba(129,140,248,0.4)', borderLeft: '4px solid #818cf8', marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 8px', color: '#e0e7ff', fontSize: 16 } }, '🔗 The authoritative version'),
-            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13.5, lineHeight: 1.7 } },
+            h('h3', { style: { margin: '0 0 8px', color: _carFg('#e0e7ff'), fontSize: 16 } }, '🔗 The authoritative version'),
+            h('p', { style: { margin: 0, color: _carFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.7 } },
               'The US Department of Labor publishes the ',
               h('a', { href: 'https://www.mynextmove.org/explore/ip', target: '_blank', rel: 'noopener noreferrer',
-                style: { color: '#bfdbfe', textDecoration: 'underline', fontWeight: 800 } }, 'O*NET Interest Profiler at mynextmove.org ↗'),
+                style: { color: _carFg('#bfdbfe'), textDecoration: 'underline', fontWeight: 800 } }, 'O*NET Interest Profiler at mynextmove.org ↗'),
               ', a validated 60-item Holland RIASEC assessment connected to the O*NET database of ~1000 careers (with education paths, salary, and growth projections). It is free, public-domain, and the gold standard. This Career Compass tool is a 36-item screener built on the same Holland framework as an entry point; for depth, go to O*NET.'
             )
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#a5b4fc', fontSize: 16 } }, 'What this tool is'),
-            h('p', { style: { margin: '0 0 10px', color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.7 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: _carBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 10px', color: _carFg('#a5b4fc'), fontSize: 16 } }, 'What this tool is'),
+            h('p', { style: { margin: '0 0 10px', color: _carFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
               'Career Compass uses Holland\'s RIASEC framework: a system that organizes work interests into six types (Realistic, Investigative, Artistic, Social, Enterprising, Conventional). The 36-item self-check gives you a top-three Holland code, the standard format for matching to careers in the O*NET database and most US career-counseling practice.'
             ),
-            h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.7 } },
+            h('p', { style: { margin: 0, color: _carFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
               'The premise: career exploration starts with what activities you would enjoy, not with job titles. Two people with the same Holland code can end up in very different careers, but they tend to share something about HOW they like to work.'
             )
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#a5b4fc', fontSize: 16 } }, 'Where Holland\'s framework comes from'),
-            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: _carBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 10px', color: _carFg('#a5b4fc'), fontSize: 16 } }, 'Where Holland\'s framework comes from'),
+            h('p', { style: { margin: 0, color: _carFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } },
               'John L. Holland was a psychologist and US Army personnel officer who, between the 1950s and 1990s, developed what became the most widely used vocational interest framework in the world. His core claim: people are happier and more successful in work environments that match their interests, and both people and work environments can be described using the same six types. The framework has been validated across decades of research, multiple cultures, and millions of people taking interest inventories. It is the basis of nearly every modern career-interest assessment, including the US Department of Labor\'s official O*NET Interest Profiler.'
             )
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#a5b4fc', fontSize: 16 } }, '📚 Sources and learn more'),
-            h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 10, lineHeight: 1.55 } }, 'Authoritative resources for career exploration.'),
+          h('div', { style: { padding: 16, borderRadius: 12, background: _carBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 10px', color: _carFg('#a5b4fc'), fontSize: 16 } }, '📚 Sources and learn more'),
+            h('div', { style: { fontSize: 12, color: _carFg('#94a3b8'), marginBottom: 10, lineHeight: 1.55 } }, 'Authoritative resources for career exploration.'),
             sourceCard('O*NET Online (US Department of Labor)', 'onetonline.org', 'The definitive US career database. ~1000 careers, all linked to Holland codes, education paths, salary, growth. Public domain.', 'https://www.onetonline.org/'),
             sourceCard('My Next Move (O*NET Interest Profiler)', 'mynextmove.org/explore/ip', 'The free, validated 60-item Interest Profiler. Take this for your authoritative Holland code.', 'https://www.mynextmove.org/explore/ip'),
             sourceCard('Holland, J. L. (1997)', 'Making Vocational Choices: A Theory of Vocational Personalities and Work Environments (3rd ed.), Psychological Assessment Resources', 'The standard text on Holland\'s framework. Foundational.', null),
@@ -753,8 +762,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
           ),
 
           h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
-            h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
+            h('h3', { style: { margin: '0 0 10px', color: _carFg('#fcd34d'), fontSize: 15 } }, '⚖️ Honest limits'),
+            h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: _carFg('#fde68a'), fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'A Holland code is a starting point, not a destiny. Many people thrive in careers outside their top three types; many switch careers in their 20s, 30s, and beyond.'),
               h('li', null, 'Interests are one input. Other huge factors: access to education, family financial situation, the local job market, family expectations, identity-based discrimination, energy and health. Career outcomes are shaped by structures, not just interests.'),
               h('li', null, 'The RIASEC framework was developed in mid-20th-century US labor market. Some categories (Conventional in particular) have shifted with technology; some careers do not map cleanly onto any single type.'),
@@ -765,7 +774,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', borderTop: '1px solid rgba(129,140,248,0.3)', borderRight: '1px solid rgba(129,140,248,0.3)', borderBottom: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', fontSize: 12.5, color: '#e0e7ff', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', borderTop: '1px solid rgba(129,140,248,0.3)', borderRight: '1px solid rgba(129,140,248,0.3)', borderBottom: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', fontSize: 12.5, color: _carFg('#e0e7ff'), lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'Career Compass works well as a Crew-time or advisory activity over 1-2 sessions: students take the screener individually, then pair-share their Holland code and one career they want to learn more about. Pair with the official O*NET Interest Profiler for students who want depth. For high school, connect to your CTE counselor and dual-enrollment options. For middle school, the goal is exposure, not commitment.'
           ),
@@ -775,13 +784,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
       }
 
       function sourceCard(authorYear, title, blurb, url) {
-        return h('div', { style: { padding: 10, borderRadius: 8, background: '#1e293b', border: '1px solid #334155', marginBottom: 8 } },
-          h('div', { style: { fontSize: 11, color: '#a5b4fc', fontWeight: 700, marginBottom: 2 } }, authorYear),
+        return h('div', { style: { padding: 10, borderRadius: 8, background: _carBg('#1e293b'), border: '1px solid #334155', marginBottom: 8 } },
+          h('div', { style: { fontSize: 11, color: _carFg('#a5b4fc'), fontWeight: 700, marginBottom: 2 } }, authorYear),
           url
             ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer',
-                style: { fontSize: 13, color: '#e0e7ff', fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
-            : h('div', { style: { fontSize: 13, color: '#e0e7ff', fontWeight: 700, marginBottom: 4 } }, title),
-          h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55 } }, blurb)
+                style: { fontSize: 13, color: _carFg('#e0e7ff'), fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
+            : h('div', { style: { fontSize: 13, color: _carFg('#e0e7ff'), fontWeight: 700, marginBottom: 4 } }, title),
+          h('div', { style: { fontSize: 12, color: _carFg('#cbd5e1'), lineHeight: 1.55 } }, blurb)
         );
       }
 

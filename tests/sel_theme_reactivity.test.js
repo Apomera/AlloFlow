@@ -47,6 +47,18 @@ const CASES = [
   { id: 'crewprotocols', base: 'dark', bg: '_cpBg', reg: 'crewProtocols' },
   { id: 'windowoftolerance', base: 'dark', bg: '_wtBg', reg: 'windowOfTolerance' },
   { id: 'onepageprofile', base: 'dark', bg: '_opBg', reg: 'onePageProfile' },
+  { id: 'sleep', base: 'dark', bg: '_sleBg' },
+  { id: 'perma', base: 'dark', bg: '_perBg' },
+  { id: 'ecomap', base: 'dark', bg: '_ecoBg' },
+  { id: 'genogram', base: 'dark', bg: '_genBg' },
+  { id: 'landplace', base: 'dark', bg: '_lanBg', reg: 'landPlace' },
+  { id: 'bodystory', base: 'dark', bg: '_bodBg', reg: 'bodyStory' },
+  { id: 'orientations', base: 'dark', bg: '_oriBg' },
+  { id: 'viastrengths', base: 'dark', bg: '_viaBg', reg: 'viaStrengths' },
+  { id: 'careercompass', base: 'dark', bg: '_carBg', reg: 'careerCompass' },
+  { id: 'traumapsychoed', base: 'dark', bg: '_traBg', reg: 'traumaPsychoed' },
+  { id: 'identitysupport', base: 'dark', bg: '_ideBg', reg: 'identitySupport' },
+  { id: 'circlesofsupport', base: 'dark', bg: '_cirBg', reg: 'circlesOfSupport' },
 ];
 
 // dark SURFACE hexes that, in a dark-base tool, MUST be wrapped in _xxBg() (else they stay dark

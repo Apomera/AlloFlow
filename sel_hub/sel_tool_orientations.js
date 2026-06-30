@@ -301,6 +301,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
     color: 'purple',
     category: 'inner-work',
     render: function(ctx) {
+      // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
+      var _oriT = (ctx && ctx.theme) || {};
+      var _oriHC = !!_oriT.isContrast, _oriL = !_oriHC && !_oriT.isDark;
+      var _ori_BGL = {'#0f172a':'#f8fafc','#0b1220':'#f1f5f9'}, _ori_BGH = {'#0f172a':'#000000','#0b1220':'#000000'};
+      var _ori_FGL = {'#cbd5e1':'#334155','#c4b5fd':'#5b21b6','#94a3b8':'#64748b','#e9d5ff':'#581c87','#e2e8f0':'#1e293b','#fbbf24':'#854d0e','#86efac':'#166534','#7dd3fc':'#075985','#fca5a5':'#991b1b','#fecaca':'#b91c1c'}, _ori_FGH = {'#cbd5e1':'#ffff00','#c4b5fd':'#ffff00','#94a3b8':'#ffff00','#e9d5ff':'#ffff00','#e2e8f0':'#ffff00','#fbbf24':'#ffff00','#86efac':'#ffff00','#7dd3fc':'#ffff00','#fca5a5':'#ffff00','#fecaca':'#ffff00','#bbf7d0':'#ffff00'};
+      var _ori_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb'}, _ori_BDH = {'#334155':'#ffff00','#a78bfa':'#ffff00','#1e293b':'#ffff00','#ef4444':'#ffff00','#86efac':'#ffff00','#a855f7':'#ffff00'};
+      var _oriBg = function(h){ return _oriHC ? (_ori_BGH[h]||h) : (_oriL ? (_ori_BGL[h]||h) : h); };
+      var _oriFg = function(h){ return _oriHC ? (_ori_FGH[h]||h) : (_oriL ? (_ori_FGL[h]||h) : h); };
+      var _oriBd = function(h){ return _oriHC ? (_ori_BDH[h]||h) : (_oriL ? (_ori_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -323,10 +332,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
       function header() {
         return h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: '#cbd5e1', fontSize: 14 } }, '← Back'),
+            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _oriFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
-            h('h2', { style: { margin: 0, color: '#c4b5fd', fontSize: 22, fontWeight: 900 } }, '🧭 Orientations'),
-            h('div', { style: { fontSize: 12, color: '#94a3b8', marginTop: 4, lineHeight: 1.5 } }, 'Ways of living, compared. Eight traditions, big questions, honest limits.')
+            h('h2', { style: { margin: 0, color: _oriFg('#c4b5fd'), fontSize: 22, fontWeight: 900 } }, '🧭 Orientations'),
+            h('div', { style: { fontSize: 12, color: _oriFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'Ways of living, compared. Eight traditions, big questions, honest limits.')
           )
         );
       }
@@ -346,7 +355,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
               role: 'tab', 'aria-selected': active,
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#a78bfa' : '#334155'),
                 background: active ? 'rgba(167,139,250,0.18)' : '#1e293b',
-                color: active ? '#e9d5ff' : '#cbd5e1', cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                color: active ? _oriFg('#e9d5ff') : _oriFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
         );
@@ -354,7 +363,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
 
       function softPointer() {
         return h('div', {
-          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: '#94a3b8', lineHeight: 1.55, fontStyle: 'italic' }
+          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _oriFg('#94a3b8'), lineHeight: 1.55, fontStyle: 'italic' }
         },
           'This tool offers honest summary. It is not authoritative on any of these traditions. Each is lived in real communities by real practitioners; if you find yourself drawn to one, follow that to its actual teachers and texts.'
         );
@@ -368,18 +377,18 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
           return renderDetail(d.detailId);
         }
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(167,139,250,0.10)', borderTop: '1px solid rgba(167,139,250,0.3)', borderRight: '1px solid rgba(167,139,250,0.3)', borderBottom: '1px solid rgba(167,139,250,0.3)', borderLeft: '3px solid #a78bfa', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(167,139,250,0.10)', borderTop: '1px solid rgba(167,139,250,0.3)', borderRight: '1px solid rgba(167,139,250,0.3)', borderBottom: '1px solid rgba(167,139,250,0.3)', borderLeft: '3px solid #a78bfa', marginBottom: 14, fontSize: 13, color: _oriFg('#e9d5ff'), lineHeight: 1.6 } },
             '📚 Eight traditions, each with substantive content. The point is not to pick a winner; the point is to know what is available, see what disagrees with what, and notice what each can\'t do well.'
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 } },
             TRADITIONS.map(function(t) {
               return h('button', { key: t.id, onClick: function() { setOR({ view: 'detail', detailId: t.id }); },
-                style: { padding: 14, borderRadius: 10, border: '1.5px solid ' + t.color + '66', background: '#0f172a', cursor: 'pointer', textAlign: 'left' } },
+                style: { padding: 14, borderRadius: 10, border: '1.5px solid ' + t.color + '66', background: _oriBg('#0f172a'), cursor: 'pointer', textAlign: 'left' } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                   h('span', { style: { fontSize: 24 } }, t.icon),
                   h('strong', { style: { color: t.color, fontSize: 14 } }, t.name)
                 ),
-                h('div', { style: { fontSize: 11.5, color: '#94a3b8', lineHeight: 1.5, marginBottom: 6 } }, t.origin.split('.')[0] + '.'),
+                h('div', { style: { fontSize: 11.5, color: _oriFg('#94a3b8'), lineHeight: 1.5, marginBottom: 6 } }, t.origin.split('.')[0] + '.'),
                 h('div', { style: { fontSize: 11, color: t.color, fontStyle: 'italic' } }, 'Read full → ')
               );
             })
@@ -396,7 +405,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
         if (!t) return renderLibrary();
         return h('div', null,
           h('button', { onClick: function() { setOR({ view: 'library', detailId: null }); }, 'aria-label': 'Back to traditions',
-            style: { marginBottom: 12, background: 'transparent', border: '1px solid #334155', color: '#cbd5e1', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 12 } }, '← Traditions'),
+            style: { marginBottom: 12, background: 'transparent', border: '1px solid #334155', color: _oriFg('#cbd5e1'), borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 12 } }, '← Traditions'),
 
           // Hero
           h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, ' + t.color + '24 0%, rgba(15,23,42,0.4) 100%)', border: '1px solid ' + t.color + '66', borderLeft: '4px solid ' + t.color, marginBottom: 14 } },
@@ -404,49 +413,49 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
               h('span', { style: { fontSize: 38 } }, t.icon),
               h('h3', { style: { margin: 0, color: t.color, fontSize: 22, fontWeight: 800 } }, t.name)
             ),
-            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 12.5, lineHeight: 1.7, fontStyle: 'italic' } }, t.origin)
+            h('p', { style: { margin: 0, color: _oriFg('#cbd5e1'), fontSize: 12.5, lineHeight: 1.7, fontStyle: 'italic' } }, t.origin)
           ),
 
           // Core
-          h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: _oriBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
             h('div', { style: { fontSize: 11, color: t.color, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, 'Core orientation'),
-            h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.75 } }, t.core)
+            h('p', { style: { margin: 0, color: _oriFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.75 } }, t.core)
           ),
 
           // Practices
-          h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: _oriBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
             h('div', { style: { fontSize: 11, color: t.color, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, 'Practices that follow'),
-            h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#cbd5e1', fontSize: 12.5, lineHeight: 1.8 } },
+            h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: _oriFg('#cbd5e1'), fontSize: 12.5, lineHeight: 1.8 } },
               t.practices.map(function(p, i) { return h('li', { key: i }, p); })
             )
           ),
 
           // Big questions
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10, marginBottom: 12 } },
-            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b' } },
-              h('div', { style: { fontSize: 11, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, '🌊 On suffering'),
-              h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 12.5, lineHeight: 1.6 } }, t.onSuffering)
+            h('div', { style: { padding: 12, borderRadius: 10, background: _oriBg('#0f172a'), border: '1px solid #1e293b' } },
+              h('div', { style: { fontSize: 11, color: _oriFg('#fbbf24'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, '🌊 On suffering'),
+              h('p', { style: { margin: 0, color: _oriFg('#cbd5e1'), fontSize: 12.5, lineHeight: 1.6 } }, t.onSuffering)
             ),
-            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b' } },
-              h('div', { style: { fontSize: 11, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, '🌟 On the good life'),
-              h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 12.5, lineHeight: 1.6 } }, t.onGoodLife)
+            h('div', { style: { padding: 12, borderRadius: 10, background: _oriBg('#0f172a'), border: '1px solid #1e293b' } },
+              h('div', { style: { fontSize: 11, color: _oriFg('#86efac'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, '🌟 On the good life'),
+              h('p', { style: { margin: 0, color: _oriFg('#cbd5e1'), fontSize: 12.5, lineHeight: 1.6 } }, t.onGoodLife)
             ),
-            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b' } },
-              h('div', { style: { fontSize: 11, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, '🚶 On action'),
-              h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 12.5, lineHeight: 1.6 } }, t.onAction)
+            h('div', { style: { padding: 12, borderRadius: 10, background: _oriBg('#0f172a'), border: '1px solid #1e293b' } },
+              h('div', { style: { fontSize: 11, color: _oriFg('#7dd3fc'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, '🚶 On action'),
+              h('p', { style: { margin: 0, color: _oriFg('#cbd5e1'), fontSize: 12.5, lineHeight: 1.6 } }, t.onAction)
             )
           ),
 
           // Cannot do well · the honest limits
           h('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(239,68,68,0.08)', borderTop: '1px solid rgba(239,68,68,0.3)', borderRight: '1px solid rgba(239,68,68,0.3)', borderBottom: '1px solid rgba(239,68,68,0.3)', borderLeft: '4px solid #ef4444', marginBottom: 12 } },
-            h('div', { style: { fontSize: 11, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, '⚠ What this tradition cannot do well'),
-            h('p', { style: { margin: 0, color: '#fecaca', fontSize: 13, lineHeight: 1.7 } }, t.cannotDoWell)
+            h('div', { style: { fontSize: 11, color: _oriFg('#fca5a5'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, '⚠ What this tradition cannot do well'),
+            h('p', { style: { margin: 0, color: _oriFg('#fecaca'), fontSize: 13, lineHeight: 1.7 } }, t.cannotDoWell)
           ),
 
           // Learn from
           h('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(134,239,172,0.08)', borderTop: '1px solid rgba(134,239,172,0.3)', borderRight: '1px solid rgba(134,239,172,0.3)', borderBottom: '1px solid rgba(134,239,172,0.3)', borderLeft: '4px solid #86efac', marginBottom: 12 } },
-            h('div', { style: { fontSize: 11, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, '📖 Where to learn more from authoritative voices'),
-            h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#bbf7d0', fontSize: 12.5, lineHeight: 1.8 } },
+            h('div', { style: { fontSize: 11, color: _oriFg('#86efac'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, '📖 Where to learn more from authoritative voices'),
+            h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: _oriFg('#bbf7d0'), fontSize: 12.5, lineHeight: 1.8 } },
               t.learnFrom.map(function(s, i) { return h('li', { key: i }, s); })
             )
           ),
@@ -469,7 +478,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
         }
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(167,139,250,0.10)', borderTop: '1px solid rgba(167,139,250,0.3)', borderRight: '1px solid rgba(167,139,250,0.3)', borderBottom: '1px solid rgba(167,139,250,0.3)', borderLeft: '3px solid #a78bfa', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.55 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(167,139,250,0.10)', borderTop: '1px solid rgba(167,139,250,0.3)', borderRight: '1px solid rgba(167,139,250,0.3)', borderBottom: '1px solid rgba(167,139,250,0.3)', borderLeft: '3px solid #a78bfa', marginBottom: 14, fontSize: 13, color: _oriFg('#e9d5ff'), lineHeight: 1.55 } },
             h('strong', null, '⚖ Comparison view. '),
             'Pick a question. See how the eight traditions answer it differently. The point is to notice the disagreements; they are real.'
           ),
@@ -481,7 +490,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
               return h('button', { key: qq.id, onClick: function() { pickQ(qq.id); }, 'aria-pressed': picked,
                 style: { padding: '10px 12px', borderRadius: 8, border: '1.5px solid ' + (picked ? '#a78bfa' : '#334155'),
                   background: picked ? 'rgba(167,139,250,0.18)' : '#1e293b',
-                  color: picked ? '#e9d5ff' : '#cbd5e1', cursor: 'pointer', fontSize: 12.5, fontWeight: 700, textAlign: 'left' } },
+                  color: picked ? _oriFg('#e9d5ff') : _oriFg('#cbd5e1'), cursor: 'pointer', fontSize: 12.5, fontWeight: 700, textAlign: 'left' } },
                 qq.icon + ' ' + qq.label);
             })
           ),
@@ -489,13 +498,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
           // Eight answers
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr', gap: 10 } },
             TRADITIONS.map(function(t) {
-              return h('div', { key: t.id, style: { padding: 12, borderRadius: 10, background: '#0f172a', borderLeft: '3px solid ' + t.color } },
+              return h('div', { key: t.id, style: { padding: 12, borderRadius: 10, background: _oriBg('#0f172a'), borderLeft: '3px solid ' + t.color } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                   h('span', { style: { fontSize: 18 } }, t.icon),
                   h('strong', { style: { color: t.color, fontSize: 13 } }, t.name),
                   h('button', { onClick: function() { setOR({ view: 'detail', detailId: t.id }); }, style: { marginLeft: 'auto', background: 'transparent', border: '1px solid ' + t.color + '66', color: t.color, borderRadius: 6, padding: '2px 8px', cursor: 'pointer', fontSize: 10.5, fontWeight: 700 } }, 'Full →')
                 ),
-                h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 12.5, lineHeight: 1.65 } }, answerFor(t))
+                h('p', { style: { margin: 0, color: _oriFg('#cbd5e1'), fontSize: 12.5, lineHeight: 1.65 } }, answerFor(t))
               );
             })
           ),
@@ -510,36 +519,36 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
       function renderAbout() {
         return h('div', null,
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('orientations', h, ctx) : null),
-          h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 8px', color: '#c4b5fd', fontSize: 16 } }, 'What this tool is for'),
-            h('p', { style: { margin: '0 0 10px', color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.75 } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: _oriBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 8px', color: _oriFg('#c4b5fd'), fontSize: 16 } }, 'What this tool is for'),
+            h('p', { style: { margin: '0 0 10px', color: _oriFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.75 } },
               'Most people grow up inside one philosophical orientation, often unnamed. The values you absorbed from your family, your culture, your school, your media · those are a philosophy. They have premises. They could have been otherwise. People in other times and places have answered the same big questions very differently and lived rich lives within those answers.'
             ),
-            h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.75 } },
+            h('p', { style: { margin: 0, color: _oriFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.75 } },
               'This tool exists to make the unnamed philosophy you already have visible by comparison. Not to convert you to anything. Not even to claim there is a single "right" tradition. The point is to widen what is thinkable, so the values you live by are values you actually chose rather than just absorbed.'
             )
           ),
 
           h('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(239,68,68,0.08)', borderTop: '1px solid rgba(239,68,68,0.3)', borderRight: '1px solid rgba(239,68,68,0.3)', borderBottom: '1px solid rgba(239,68,68,0.3)', borderLeft: '4px solid #ef4444', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 8px', color: '#fca5a5', fontSize: 16 } }, 'The trap to avoid: buffet spirituality'),
-            h('p', { style: { margin: '0 0 8px', color: '#fecaca', fontSize: 13, lineHeight: 1.7 } },
+            h('h3', { style: { margin: '0 0 8px', color: _oriFg('#fca5a5'), fontSize: 16 } }, 'The trap to avoid: buffet spirituality'),
+            h('p', { style: { margin: '0 0 8px', color: _oriFg('#fecaca'), fontSize: 13, lineHeight: 1.7 } },
               'A real risk in comparative philosophy is that you take a vibe from each tradition without understanding any of them deeply. "I like the Zen idea of letting go and the Stoic idea of control and the Indigenous idea of relationship!" · but those three claims actually disagree with each other in important ways, and treating them as compatible flattens what each is actually saying.'
             ),
-            h('p', { style: { margin: 0, color: '#fecaca', fontSize: 13, lineHeight: 1.7 } },
+            h('p', { style: { margin: 0, color: _oriFg('#fecaca'), fontSize: 13, lineHeight: 1.7 } },
               'A better practice: read deeply in one tradition before judging it against another. If a tradition draws you, follow it to its actual teachers and texts. The "Where to learn more" sections in each detail page are a starting point.'
             )
           ),
 
           h('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(168,85,247,0.08)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '4px solid #a855f7', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 8px', color: '#c4b5fd', fontSize: 16 } }, 'On Indigenous traditions specifically'),
-            h('p', { style: { margin: 0, color: '#e9d5ff', fontSize: 13, lineHeight: 1.75 } },
+            h('h3', { style: { margin: '0 0 8px', color: _oriFg('#c4b5fd'), fontSize: 16 } }, 'On Indigenous traditions specifically'),
+            h('p', { style: { margin: 0, color: _oriFg('#e9d5ff'), fontSize: 13, lineHeight: 1.75 } },
               'The "Indigenous relationality" entry in this tool is summary, not authority. Indigenous philosophies are alive in specific communities and are taught person-to-person through ceremony, story, and relationship. Treating them as a generic product is a real and ongoing harm called extraction. The right move is to read Indigenous scholars (Robin Wall Kimmerer, Vine Deloria Jr., Linda Tuhiwai Smith, Glen Coulthard), to follow Indigenous-led organizations, and · for Wabanaki specifically · to learn from Wabanaki Public Health and Wellness, the Penobscot Nation Cultural and Historic Preservation Department, the Passamaquoddy Cultural Heritage Museum, and First Light Learning Journey.'
             )
           ),
 
-          h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 8px', color: '#c4b5fd', fontSize: 16 } }, 'Why each tradition has a "what it cannot do well" panel'),
-            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: _oriBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 8px', color: _oriFg('#c4b5fd'), fontSize: 16 } }, 'Why each tradition has a "what it cannot do well" panel'),
+            h('p', { style: { margin: 0, color: _oriFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } },
               'Every philosophical tradition can be misused. Stoicism has been weaponized to blame victims. Zen has been misused for spiritual bypassing. Wuwei has been used to justify quietism. Existentialism has erased structural conditions. Confucianism has protected patriarchal hierarchy. Every tradition has internal critics and contemporary scholars working on its blind spots. Honest comparison names those blind spots rather than pretending they do not exist.'
             )
           ),
@@ -560,12 +569,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
         function band(v, ax) { return v < 0.36 ? ax.left : v > 0.64 ? ax.right : 'in between'; }
         function axisRow(side, current) {
           return h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 6 } },
-            h('span', { style: { fontSize: 11, fontWeight: 800, color: '#94a3b8', width: 64 } }, side + ' axis'),
+            h('span', { style: { fontSize: 11, fontWeight: 800, color: _oriFg('#94a3b8'), width: 64 } }, side + ' axis'),
             AXES.map(function (ax) {
               var active = ax.id === current;
               return h('button', { key: ax.id, onClick: function () { var patch = {}; patch[side === 'X' ? 'compassX' : 'compassY'] = ax.id; setOR(patch); },
                 'aria-pressed': active,
-                style: { padding: '4px 9px', borderRadius: 7, border: '1px solid ' + (active ? '#a78bfa' : '#334155'), background: active ? 'rgba(167,139,250,0.18)' : '#1e293b', color: active ? '#e9d5ff' : '#cbd5e1', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, ax.label);
+                style: { padding: '4px 9px', borderRadius: 7, border: '1px solid ' + (active ? '#a78bfa' : '#334155'), background: active ? 'rgba(167,139,250,0.18)' : '#1e293b', color: active ? _oriFg('#e9d5ff') : _oriFg('#cbd5e1'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, ax.label);
             })
           );
         }
@@ -575,39 +584,39 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
           return h('g', { key: t.id, style: { cursor: 'pointer' }, onClick: function () { setOR({ view: 'detail', detailId: t.id }); } },
             h('ellipse', { cx: px(vx), cy: py(vy), rx: Math.max(10, hx * pw), ry: Math.max(10, hy * ph), fill: t.color + '26', stroke: t.color, strokeWidth: 1.5 }),
             h('text', { x: px(vx), y: py(vy) + 5, textAnchor: 'middle', fontSize: 16 }, t.icon),
-            h('text', { x: px(vx), y: py(vy) + 22, textAnchor: 'middle', fontSize: 9, fill: '#cbd5e1', fontWeight: 700 }, t.name.split(' (')[0].split(' ')[0])
+            h('text', { x: px(vx), y: py(vy) + 22, textAnchor: 'middle', fontSize: 9, fill: _oriFg('#cbd5e1'), fontWeight: 700 }, t.name.split(' (')[0].split(' ')[0])
           );
         }).filter(Boolean);
-        var svg = h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', style: { background: '#0b1220', borderRadius: 12, border: '1px solid #1e293b', maxWidth: 620, display: 'block' },
+        var svg = h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', style: { background: _oriBg('#0b1220'), borderRadius: 12, border: '1px solid #1e293b', maxWidth: 620, display: 'block' },
           role: 'img', 'aria-label': 'Scatter of eight traditions. Horizontal axis: ' + aX.left + ' to ' + aX.right + '. Vertical axis: ' + aY.left + ' to ' + aY.right + '. Placements are interpretive; full positions are listed in text below the chart.' },
           h('line', { x1: mL, y1: mT + ph, x2: mL + pw, y2: mT + ph, stroke: '#334155' }),
           h('line', { x1: mL, y1: mT, x2: mL, y2: mT + ph, stroke: '#334155' }),
-          h('text', { x: mL, y: H - 30, fontSize: 11, fill: '#94a3b8' }, '◀ ' + aX.left),
-          h('text', { x: mL + pw, y: H - 30, textAnchor: 'end', fontSize: 11, fill: '#94a3b8' }, aX.right + ' ▶'),
-          h('text', { x: mL - 8, y: mT + 6, textAnchor: 'end', fontSize: 11, fill: '#94a3b8' }, aY.right + ' ▲'),
-          h('text', { x: mL - 8, y: mT + ph, textAnchor: 'end', fontSize: 11, fill: '#94a3b8' }, '▼ ' + aY.left),
+          h('text', { x: mL, y: H - 30, fontSize: 11, fill: _oriFg('#94a3b8') }, '◀ ' + aX.left),
+          h('text', { x: mL + pw, y: H - 30, textAnchor: 'end', fontSize: 11, fill: _oriFg('#94a3b8') }, aX.right + ' ▶'),
+          h('text', { x: mL - 8, y: mT + 6, textAnchor: 'end', fontSize: 11, fill: _oriFg('#94a3b8') }, aY.right + ' ▲'),
+          h('text', { x: mL - 8, y: mT + ph, textAnchor: 'end', fontSize: 11, fill: _oriFg('#94a3b8') }, '▼ ' + aY.left),
           nodes
         );
         function caveat(ax) {
-          return h('div', { style: { padding: '8px 11px', borderRadius: 8, background: 'rgba(15,23,42,0.6)', border: '1px solid #334155', fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 8 } },
-            h('b', { style: { color: '#c4b5fd' } }, ax.label + ': '), ax.left + ' ↔ ' + ax.right + '. ', h('span', { style: { fontStyle: 'italic', color: '#94a3b8' } }, ax.caveat));
+          return h('div', { style: { padding: '8px 11px', borderRadius: 8, background: 'rgba(15,23,42,0.6)', border: '1px solid #334155', fontSize: 11.5, color: _oriFg('#cbd5e1'), lineHeight: 1.55, marginBottom: 8 } },
+            h('b', { style: { color: _oriFg('#c4b5fd') } }, ax.label + ': '), ax.left + ' ↔ ' + ax.right + '. ', h('span', { style: { fontStyle: 'italic', color: _oriFg('#94a3b8') } }, ax.caveat));
         }
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(167,139,250,0.10)', borderLeft: '3px solid #a78bfa', marginBottom: 14, fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(167,139,250,0.10)', borderLeft: '3px solid #a78bfa', marginBottom: 14, fontSize: 12.5, color: _oriFg('#e9d5ff'), lineHeight: 1.6 } },
             '🧭 These placements are one interpretation, not measurements. Reasonable people place them differently, and some traditions resist an axis entirely. A wide blur is honest uncertainty, not vagueness. Use this to start an argument, not to settle one — and notice where YOU would move things.'),
           axisRow('X', cx),
           axisRow('Y', cy),
           h('div', { style: { margin: '10px 0' } }, svg),
           caveat(aX), caveat(aY),
           h('div', { style: { marginTop: 6 } },
-            h('div', { style: { fontSize: 11, fontWeight: 800, color: '#94a3b8', marginBottom: 6 } }, 'Where each tradition sits (open any for its full card + what it cannot do well):'),
+            h('div', { style: { fontSize: 11, fontWeight: 800, color: _oriFg('#94a3b8'), marginBottom: 6 } }, 'Where each tradition sits (open any for its full card + what it cannot do well):'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 6 } },
               TRADITIONS.map(function (t) {
                 var p = PLACEMENTS[t.id]; if (!p) return null;
                 return h('button', { key: t.id, onClick: function () { setOR({ view: 'detail', detailId: t.id }); },
-                  style: { textAlign: 'left', padding: '7px 10px', borderRadius: 8, border: '1px solid ' + t.color + '55', background: '#0f172a', cursor: 'pointer', color: '#e2e8f0' } },
+                  style: { textAlign: 'left', padding: '7px 10px', borderRadius: 8, border: '1px solid ' + t.color + '55', background: _oriBg('#0f172a'), cursor: 'pointer', color: _oriFg('#e2e8f0') } },
                   h('div', { style: { fontSize: 12.5, fontWeight: 700 } }, t.icon + ' ' + t.name),
-                  h('div', { style: { fontSize: 10.5, color: '#94a3b8', marginTop: 2 } }, aX.label + ': ' + band(p[cx][0], aX) + '  ·  ' + aY.label + ': ' + band(p[cy][0], aY)));
+                  h('div', { style: { fontSize: 10.5, color: _oriFg('#94a3b8'), marginTop: 2 } }, aX.label + ': ' + band(p[cx][0], aX) + '  ·  ' + aY.label + ': ' + band(p[cy][0], aY)));
               }).filter(Boolean)
             )
           ),

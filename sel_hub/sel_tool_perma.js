@@ -151,6 +151,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
     color: 'amber',
     category: 'self-awareness',
     render: function(ctx) {
+      // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
+      var _perT = (ctx && ctx.theme) || {};
+      var _perHC = !!_perT.isContrast, _perL = !_perHC && !_perT.isDark;
+      var _per_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff','#0b1220':'#f1f5f9'}, _per_BGH = {'#0f172a':'#000000','#15803d':'#000000','#1e293b':'#000000','#0b1220':'#000000','#fff':'#000000'};
+      var _per_FGL = {'#cbd5e1':'#334155','#fcd34d':'#78350f','#94a3b8':'#64748b','#fde68a':'#92400e','#e2e8f0':'#1e293b','#e0e7ff':'#3730a3'}, _per_FGH = {'#cbd5e1':'#ffff00','#fcd34d':'#ffff00','#94a3b8':'#ffff00','#fde68a':'#ffff00','#fff':'#ffff00','#bbf7d0':'#ffff00','#e2e8f0':'#ffff00','#e0e7ff':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00'};
+      var _per_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _per_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#f59e0b':'#ffff00','#22c55e':'#ffff00','#475569':'#ffff00','#818cf8':'#ffff00','#cbd5e1':'#ffff00','#d97706':'#ffff00'};
+      var _perBg = function(h){ return _perHC ? (_per_BGH[h]||h) : (_perL ? (_per_BGL[h]||h) : h); };
+      var _perFg = function(h){ return _perHC ? (_per_FGH[h]||h) : (_perL ? (_per_FGL[h]||h) : h); };
+      var _perBd = function(h){ return _perHC ? (_per_BDH[h]||h) : (_perL ? (_per_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -177,10 +186,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: '#cbd5e1', fontSize: 14 } }, '← Back'),
+            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _perFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
-            h('h2', { style: { margin: 0, color: '#fcd34d', fontSize: 22, fontWeight: 900 } }, '🌻 PERMA Wellbeing'),
-            h('div', { style: { fontSize: 12, color: '#94a3b8', marginTop: 4, lineHeight: 1.5 } }, 'Six domains of human flourishing. A snapshot of where life is full and where it is thin.')
+            h('h2', { style: { margin: 0, color: _perFg('#fcd34d'), fontSize: 22, fontWeight: 900 } }, '🌻 PERMA Wellbeing'),
+            h('div', { style: { fontSize: 12, color: _perFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'Six domains of human flourishing. A snapshot of where life is full and where it is thin.')
           )
         );
       }
@@ -201,8 +210,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
             return h('button', { key: t.id, onClick: function() { goto(t.id); },
               role: 'tab', 'aria-selected': active,
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#f59e0b' : '#334155'),
-                background: active ? 'rgba(245,158,11,0.18)' : '#1e293b',
-                color: active ? '#fde68a' : '#cbd5e1', cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                background: active ? 'rgba(245,158,11,0.18)' : _perBg('#1e293b'),
+                color: active ? _perFg('#fde68a') : _perFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
         );
@@ -210,7 +219,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
 
       function softPointer() {
         return h('div', { className: 'no-print',
-          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: '#94a3b8', lineHeight: 1.5, fontStyle: 'italic' }
+          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _perFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
           'PERMA is a wellbeing model, not a diagnostic tool. Persistent low scores across multiple domains can be a signal worth bringing to a counselor or therapist. Crisis Text Line: text HOME to 741741.'
         );
@@ -224,8 +233,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
 
         return h('div', null,
           h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(245,158,11,0.16) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(245,158,11,0.4)', marginBottom: 14 } },
-            h('div', { style: { fontSize: 22, fontWeight: 900, color: '#fde68a', marginBottom: 4 } }, 'PERMA: how full is the picture right now?'),
-            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13.5, lineHeight: 1.65 } },
+            h('div', { style: { fontSize: 22, fontWeight: 900, color: _perFg('#fde68a'), marginBottom: 4 } }, 'PERMA: how full is the picture right now?'),
+            h('p', { style: { margin: 0, color: _perFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.65 } },
               'PERMA is Martin Seligman\'s model of human flourishing. Five domains (plus one): Positive emotion, Engagement, Relationships, Meaning, Accomplishment, and Health. The point is NOT to score high on all of them; people are typically richer in some and thinner in others. The point is honesty about what is true right now.'
             )
           ),
@@ -234,25 +243,25 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8, marginBottom: 12 } },
             statCard('Items rated', rated + ' / ' + ITEMS.length, '#f59e0b'),
             complete ? statCard('Average', (averageScore(d.ratings)).toFixed(1) + ' / 10', '#22c55e') : null,
-            d.lastUpdated ? statCard('Updated', d.lastUpdated, '#94a3b8') : null
+            d.lastUpdated ? statCard('Updated', d.lastUpdated, _perFg('#94a3b8')) : null
           ),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
-            h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fde68a', marginBottom: 8 } }, '✏️ Take the self-check'),
-            h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 8, lineHeight: 1.5 } }, '24 items, 0-10 scale, ~5 minutes. You can stop and come back.'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: _perBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: _perFg('#fde68a'), marginBottom: 8 } }, '✏️ Take the self-check'),
+            h('div', { style: { fontSize: 12, color: _perFg('#94a3b8'), marginBottom: 8, lineHeight: 1.5 } }, '24 items, 0-10 scale, ~5 minutes. You can stop and come back.'),
             h('button', { onClick: function() { goto('check'); }, 'aria-label': 'Take self-check',
-              style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } },
+              style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)', color: _perFg('#fff'), fontWeight: 800, fontSize: 13 } },
               complete ? '✏️ Re-take' : '+ Start')
           ),
 
-          complete ? h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
-            h('div', { style: { fontSize: 13, fontWeight: 800, color: '#bbf7d0', marginBottom: 8 } }, '📊 See your profile'),
+          complete ? h('div', { style: { padding: 14, borderRadius: 10, background: _perBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: _perFg('#bbf7d0'), marginBottom: 8 } }, '📊 See your profile'),
             h('button', { onClick: function() { goto('profile'); }, 'aria-label': 'See profile',
-              style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#15803d', color: '#fff', fontWeight: 800, fontSize: 13 } }, '→ My profile')
+              style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: _perBg('#15803d'), color: _perFg('#fff'), fontWeight: 800, fontSize: 13 } }, '→ My profile')
           ) : null,
 
           // Cross-link to VIA Strengths
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', fontSize: 12.5, color: _perFg('#fde68a'), lineHeight: 1.65 } },
             h('strong', null, '🔗 Pair this with VIA Strengths. '),
             'PERMA and VIA were developed by the same author (Martin Seligman). Using your signature strengths in new ways tends to raise PERMA scores across domains. Both tools are in the SEL Hub.'
           ),
@@ -268,8 +277,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
       }
 
       function statCard(label, value, color) {
-        return h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + color } },
-          h('div', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, label),
+        return h('div', { style: { padding: 10, borderRadius: 8, background: _perBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + color } },
+          h('div', { style: { fontSize: 10, color: _perFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, label),
           h('div', { style: { fontSize: 18, color: color, fontWeight: 900 } }, value)
         );
       }
@@ -288,15 +297,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
         var pct = Math.round((rated / ITEMS.length) * 100);
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: _perFg('#fde68a'), lineHeight: 1.65 } },
             h('strong', null, '✏️ Rate each on 0-10. '),
             '0 = "not at all true for me right now," 10 = "very true for me right now." Use your honest first impression; do not overthink it.'
           ),
 
           // Progress
           h('div', { style: { marginBottom: 14 } },
-            h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 4 } }, rated + ' of ' + ITEMS.length + ' rated'),
-            h('div', { style: { height: 6, borderRadius: 3, background: '#1e293b', overflow: 'hidden' }, role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': pct },
+            h('div', { style: { fontSize: 12, color: _perFg('#94a3b8'), marginBottom: 4 } }, rated + ' of ' + ITEMS.length + ' rated'),
+            h('div', { style: { height: 6, borderRadius: 3, background: _perBg('#1e293b'), overflow: 'hidden' }, role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': pct },
               h('div', { style: { height: '100%', width: pct + '%', background: 'linear-gradient(90deg, #d97706, #f59e0b)' } })
             )
           ),
@@ -305,7 +314,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
           ['P', 'E', 'R', 'M', 'A', 'H'].map(function(domainId) {
             var dom = DOMAINS[domainId];
             var items = ITEMS.filter(function(i) { return i.domain === domainId; });
-            return h('div', { key: domainId, style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + dom.color, marginBottom: 10 } },
+            return h('div', { key: domainId, style: { padding: 12, borderRadius: 10, background: _perBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + dom.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
                 h('span', { style: { fontSize: 20 } }, dom.icon),
                 h('span', { style: { fontSize: 13, fontWeight: 800, color: dom.color } }, dom.label)
@@ -313,14 +322,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
               items.map(function(item) {
                 var v = (d.ratings || {})[item.id];
                 var hasRating = v !== undefined && v !== null;
-                return h('div', { key: item.id, style: { padding: 10, borderRadius: 6, background: '#1e293b', marginBottom: 6 } },
-                  h('div', { style: { fontSize: 13, color: '#e2e8f0', marginBottom: 8, lineHeight: 1.5 } }, item.text),
+                return h('div', { key: item.id, style: { padding: 10, borderRadius: 6, background: _perBg('#1e293b'), marginBottom: 6 } },
+                  h('div', { style: { fontSize: 13, color: _perFg('#e2e8f0'), marginBottom: 8, lineHeight: 1.5 } }, item.text),
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
                     h('input', { type: 'range', min: 0, max: 10, value: hasRating ? v : 5,
                       onChange: function(e) { setRating(item.id, parseInt(e.target.value, 10)); },
                       style: { flex: 1, minWidth: 180 },
                       'aria-label': 'Rate: ' + item.text }),
-                    h('span', { style: { fontSize: 14, fontWeight: 800, color: hasRating ? dom.color : '#475569', minWidth: 40, textAlign: 'right' } }, hasRating ? v + '/10' : '–'),
+                    h('span', { style: { fontSize: 14, fontWeight: 800, color: hasRating ? dom.color : _perFg('#475569'), minWidth: 40, textAlign: 'right' } }, hasRating ? v + '/10' : '–'),
                     !hasRating ? h('button', { onClick: function() { setRating(item.id, 5); }, 'aria-label': 'Set this rating',
                       style: { padding: '4px 8px', borderRadius: 4, border: '1px solid ' + dom.color, background: 'transparent', color: dom.color, cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'Set') : null
                   )
@@ -331,7 +340,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
 
           complete ? h('div', { style: { display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' } },
             h('button', { onClick: function() { goto('profile'); }, 'aria-label': 'See profile',
-              style: { padding: '12px 24px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #15803d 0%, #22c55e 100%)', color: '#fff', fontWeight: 800, fontSize: 14 } },
+              style: { padding: '12px 24px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #15803d 0%, #22c55e 100%)', color: _perFg('#fff'), fontWeight: 800, fontSize: 14 } },
               '📊 See my profile')
           ) : null,
 
@@ -345,12 +354,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
       function renderProfile() {
         if (ratedItemCount(d.ratings) < 6) {
           return h('div', null,
-            h('div', { style: { padding: 20, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', textAlign: 'center' } },
+            h('div', { style: { padding: 20, borderRadius: 12, background: _perBg('#0f172a'), border: '1px solid #1e293b', textAlign: 'center' } },
               h('div', { style: { fontSize: 36, marginBottom: 8 } }, '📊'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 14, marginBottom: 4 } }, 'Need more items rated first'),
-              h('div', { style: { color: '#94a3b8', fontSize: 12 } }, 'Rate at least 6 items (1 per domain) to see your profile.'),
+              h('div', { style: { color: _perFg('#cbd5e1'), fontSize: 14, marginBottom: 4 } }, 'Need more items rated first'),
+              h('div', { style: { color: _perFg('#94a3b8'), fontSize: 12 } }, 'Rate at least 6 items (1 per domain) to see your profile.'),
               h('button', { onClick: function() { goto('check'); }, 'aria-label': 'Self-check',
-                style: { marginTop: 12, padding: '8px 16px', borderRadius: 8, border: '1px solid #f59e0b', background: 'rgba(245,158,11,0.18)', color: '#fde68a', cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Self-check')
+                style: { marginTop: 12, padding: '8px 16px', borderRadius: 8, border: '1px solid #f59e0b', background: 'rgba(245,158,11,0.18)', color: _perFg('#fde68a'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Self-check')
             )
           );
         }
@@ -370,8 +379,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
         return h('div', null,
           // Summary card
           h('div', { style: { padding: 16, borderRadius: 12, background: 'linear-gradient(135deg, rgba(245,158,11,0.16) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(245,158,11,0.4)', marginBottom: 14 } },
-            h('div', { style: { fontSize: 22, fontWeight: 900, color: '#fde68a', marginBottom: 4 } }, 'Overall ' + avg.toFixed(1) + ' / 10'),
-            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.65 } },
+            h('div', { style: { fontSize: 22, fontWeight: 900, color: _perFg('#fde68a'), marginBottom: 4 } }, 'Overall ' + avg.toFixed(1) + ' / 10'),
+            h('p', { style: { margin: 0, color: _perFg('#cbd5e1'), fontSize: 13, lineHeight: 1.65 } },
               'Strongest: ',
               h('strong', { style: { color: DOMAINS[highest].color } }, DOMAINS[highest].label + ' (' + scores[highest] + ')'),
               '  ·  Thinnest: ',
@@ -381,7 +390,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
           ),
 
           // SVG bar chart with accessibility
-          h('div', { style: { padding: 14, borderRadius: 12, background: '#0b1220', border: '1px solid #1e293b', marginBottom: 12, overflowX: 'auto' } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: _perBg('#0b1220'), border: '1px solid #1e293b', marginBottom: 12, overflowX: 'auto' } },
             h('svg', { width: '100%', viewBox: '0 0 720 360', style: { maxWidth: 720 }, 'aria-labelledby': 'perma-title perma-desc', role: 'img' },
               h('title', { id: 'perma-title' }, 'PERMA wellbeing bar chart'),
               h('desc', { id: 'perma-desc' }, svgDesc),
@@ -393,23 +402,23 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
                 var y = 30 + i * 52;
                 return h('g', { key: domainId },
                   h('text', { x: 16, y: y + 16, fontSize: 13, fill: dom.color, style: { fontWeight: 800 } }, dom.icon + ' ' + dom.label),
-                  h('rect', { x: 160, y: y, width: 540, height: 24, fill: '#1e293b', stroke: '#334155', strokeWidth: 1, rx: 4 }),
+                  h('rect', { x: 160, y: y, width: 540, height: 24, fill: _perBg('#1e293b'), stroke: '#334155', strokeWidth: 1, rx: 4 }),
                   h('rect', { x: 160, y: y, width: barW, height: 24, fill: dom.color, opacity: 0.85, rx: 4 }),
                   h('text', { x: 170 + barW, y: y + 16, fontSize: 13, fill: '#fff', style: { fontWeight: 800 } }, s.toFixed(1))
                 );
               }),
               // 10 scale markers
-              h('text', { x: 160, y: 350, fontSize: 9, fill: '#64748b' }, '0'),
-              h('text', { x: 430, y: 350, fontSize: 9, fill: '#64748b' }, '5'),
-              h('text', { x: 690, y: 350, fontSize: 9, fill: '#64748b' }, '10')
+              h('text', { x: 160, y: 350, fontSize: 9, fill: _perFg('#64748b') }, '0'),
+              h('text', { x: 430, y: 350, fontSize: 9, fill: _perFg('#64748b') }, '5'),
+              h('text', { x: 690, y: 350, fontSize: 9, fill: _perFg('#64748b') }, '10')
             )
           ),
 
           // Text-equivalent
           h('details', { style: { marginBottom: 12 } },
-            h('summary', { style: { cursor: 'pointer', fontSize: 12, color: '#fcd34d', fontWeight: 700, padding: '6px 10px', borderRadius: 6, background: '#0f172a', border: '1px solid #1e293b' } }, '🔤 Read this chart as text'),
-            h('div', { style: { marginTop: 6, padding: 12, borderRadius: 8, background: '#0f172a', border: '1px solid #1e293b' } },
-              h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.7 } },
+            h('summary', { style: { cursor: 'pointer', fontSize: 12, color: _perFg('#fcd34d'), fontWeight: 700, padding: '6px 10px', borderRadius: 6, background: _perBg('#0f172a'), border: '1px solid #1e293b' } }, '🔤 Read this chart as text'),
+            h('div', { style: { marginTop: 6, padding: 12, borderRadius: 8, background: _perBg('#0f172a'), border: '1px solid #1e293b' } },
+              h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: _perFg('#e2e8f0'), fontSize: 13, lineHeight: 1.7 } },
                 ranked.map(function(k) {
                   var dom = DOMAINS[k];
                   return h('li', { key: k },
@@ -422,28 +431,28 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
           ),
 
           // Per-domain interpretation cards
-          h('div', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'What each domain is telling you'),
+          h('div', { style: { fontSize: 11, color: _perFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'What each domain is telling you'),
           ranked.map(function(k) {
             var dom = DOMAINS[k];
             var s = scores[k];
             var note = s >= 7 ? dom.atHigh : s <= 4 ? dom.atLow : null;
-            return h('div', { key: k, style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + dom.color, marginBottom: 8 } },
+            return h('div', { key: k, style: { padding: 12, borderRadius: 10, background: _perBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + dom.color, marginBottom: 8 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 } },
                 h('span', { style: { fontSize: 18 } }, dom.icon),
                 h('span', { style: { fontSize: 13, fontWeight: 800, color: dom.color, flex: 1 } }, dom.label),
                 h('span', { style: { fontSize: 14, color: dom.color, fontWeight: 900 } }, s + '/10')
               ),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, marginBottom: note ? 6 : 0 } }, dom.summary),
-              note ? h('div', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.6, fontStyle: 'italic', paddingTop: 6, borderTop: '1px solid #1e293b' } }, note) : null
+              h('div', { style: { fontSize: 12, color: _perFg('#cbd5e1'), lineHeight: 1.6, marginBottom: note ? 6 : 0 } }, dom.summary),
+              note ? h('div', { style: { fontSize: 12, color: _perFg('#94a3b8'), lineHeight: 1.6, fontStyle: 'italic', paddingTop: 6, borderTop: '1px solid #1e293b' } }, note) : null
             );
           }),
 
           h('div', { style: { display: 'flex', gap: 10, marginTop: 8, flexWrap: 'wrap' } },
             h('button', { onClick: function() { goto('reflect'); }, 'aria-label': 'Reflect on this',
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)', color: '#fff', fontWeight: 800, fontSize: 14 } },
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)', color: _perFg('#fff'), fontWeight: 800, fontSize: 14 } },
               '💭 Reflect'),
             h('button', { onClick: function() { goto('print'); }, 'aria-label': 'Print',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print')
+              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid #475569', background: _perBg('#1e293b'), color: _perFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print')
           ),
 
           softPointer()
@@ -461,16 +470,16 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
 
         if (ranked.length === 0) {
           return h('div', null,
-            h('div', { style: { padding: 20, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', textAlign: 'center' } },
-              h('div', { style: { color: '#cbd5e1', fontSize: 14, marginBottom: 4 } }, 'Take the self-check first'),
+            h('div', { style: { padding: 20, borderRadius: 12, background: _perBg('#0f172a'), border: '1px solid #1e293b', textAlign: 'center' } },
+              h('div', { style: { color: _perFg('#cbd5e1'), fontSize: 14, marginBottom: 4 } }, 'Take the self-check first'),
               h('button', { onClick: function() { goto('check'); }, 'aria-label': 'Self-check',
-                style: { marginTop: 12, padding: '8px 16px', borderRadius: 8, border: '1px solid #f59e0b', background: 'rgba(245,158,11,0.18)', color: '#fde68a', cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Self-check')
+                style: { marginTop: 12, padding: '8px 16px', borderRadius: 8, border: '1px solid #f59e0b', background: 'rgba(245,158,11,0.18)', color: _perFg('#fde68a'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Self-check')
             )
           );
         }
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 13, color: '#fde68a', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 13, color: _perFg('#fde68a'), lineHeight: 1.65 } },
             h('strong', null, '💭 One domain at a time. '),
             'Below are reflection prompts for each PERMA domain. Pick one. Sit with it. You are not trying to "raise your score"; you are trying to see clearly.'
           ),
@@ -478,19 +487,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
           ranked.map(function(k) {
             var dom = DOMAINS[k];
             var s = scores[k];
-            return h('div', { key: k, style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + dom.color, marginBottom: 10 } },
+            return h('div', { key: k, style: { padding: 14, borderRadius: 10, background: _perBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + dom.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 } },
                 h('span', { style: { fontSize: 22 } }, dom.icon),
                 h('span', { style: { fontSize: 14, fontWeight: 800, color: dom.color, flex: 1 } }, dom.label + ' · ' + s + '/10')
               ),
-              h('p', { style: { margin: '0 0 8px', color: '#cbd5e1', fontSize: 13, lineHeight: 1.65, fontStyle: 'italic' } }, dom.reflection)
+              h('p', { style: { margin: '0 0 8px', color: _perFg('#cbd5e1'), fontSize: 13, lineHeight: 1.65, fontStyle: 'italic' } }, dom.reflection)
             );
           }),
 
           // Cross-tool pointers
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #818cf8', marginBottom: 10 } },
-            h('div', { style: { fontSize: 13, fontWeight: 800, color: '#e0e7ff', marginBottom: 8 } }, '🔗 Tools that work directly on each PERMA domain'),
-            h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#cbd5e1', fontSize: 13, lineHeight: 1.75 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _perBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #818cf8', marginBottom: 10 } },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: _perFg('#e0e7ff'), marginBottom: 8 } }, '🔗 Tools that work directly on each PERMA domain'),
+            h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: _perFg('#cbd5e1'), fontSize: 13, lineHeight: 1.75 } },
               h('li', null, h('strong', null, 'Positive Emotion / Engagement'), ' — Behavioral Activation, Mindfulness Corner'),
               h('li', null, h('strong', null, 'Relationships'), ' — Care Constellations, Circles of Support, DEAR MAN'),
               h('li', null, h('strong', null, 'Meaning'), ' — Values & Committed Action, Orientations, Quiet Questions'),
@@ -512,17 +521,17 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
         var ranked = ['P', 'E', 'R', 'M', 'A', 'H'].filter(function(k) { return scores[k] !== null; }).sort(function(a, b) { return scores[b] - scores[a]; });
         return h('div', null,
           h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: 'rgba(245,158,11,0.10)', borderRadius: 8, border: '1px solid rgba(245,158,11,0.3)' } },
-            h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: '#fde68a', lineHeight: 1.55 } },
+            h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _perFg('#fde68a'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview.')),
             h('button', { onClick: printNow, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)', color: _perFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('home'); }, 'aria-label': 'Back',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _perBg('#1e293b'), color: _perFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
             id: 'perma-print-region',
-            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: '#fff', color: '#0f172a', borderRadius: 8, border: '1px solid #cbd5e1', fontFamily: '"Helvetica Neue", Arial, sans-serif' }
+            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: _perBg('#fff'), color: _perFg('#0f172a'), borderRadius: 8, border: '1px solid #cbd5e1', fontFamily: '"Helvetica Neue", Arial, sans-serif' }
           },
             h('style', null,
               '@media print { body * { visibility: hidden !important; } ' +
@@ -533,13 +542,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
             ),
 
             h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid #d97706' } },
-              h('div', { style: { fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'PERMA Wellbeing Profile'),
+              h('div', { style: { fontSize: 10, color: _perFg('#64748b'), textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'PERMA Wellbeing Profile'),
               h('h1', { style: { margin: 0, fontSize: 26, fontWeight: 900 } }, 'My PERMA snapshot'),
-              d.lastUpdated ? h('div', { style: { fontSize: 12, color: '#475569', marginTop: 4 } }, 'Updated ' + d.lastUpdated) : null
+              d.lastUpdated ? h('div', { style: { fontSize: 12, color: _perFg('#475569'), marginTop: 4 } }, 'Updated ' + d.lastUpdated) : null
             ),
 
             // Domain scores
-            ranked.length > 0 ? h('ul', { style: { margin: '0 0 18px', padding: '0 0 0 24px', color: '#0f172a', fontSize: 13, lineHeight: 1.85 } },
+            ranked.length > 0 ? h('ul', { style: { margin: '0 0 18px', padding: '0 0 0 24px', color: _perFg('#0f172a'), fontSize: 13, lineHeight: 1.85 } },
               ranked.map(function(k) {
                 var dom = DOMAINS[k];
                 return h('li', { key: k },
@@ -547,9 +556,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
                   ': ', scores[k] + ' / 10  — ', dom.summary
                 );
               })
-            ) : h('div', { style: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic' } }, 'Self-check not complete yet.'),
+            ) : h('div', { style: { fontSize: 12, color: _perFg('#94a3b8'), fontStyle: 'italic' } }, 'Self-check not complete yet.'),
 
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: '#94a3b8', textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _perFg('#94a3b8'), textAlign: 'center', lineHeight: 1.5 } },
               'PERMA wellbeing model from Seligman, M. (2011), Flourish. ',
               'Created with AlloFlow SEL Hub.'
             )
@@ -566,25 +575,25 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
         return h('div', null,
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('perma', h, ctx) : null),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 16 } }, 'What PERMA is'),
-            h('p', { style: { margin: '0 0 10px', color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.7 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: _perBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 10px', color: _perFg('#fcd34d'), fontSize: 16 } }, 'What PERMA is'),
+            h('p', { style: { margin: '0 0 10px', color: _perFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
               'PERMA is a model of human flourishing developed by Martin Seligman, the founder of Positive Psychology. The acronym stands for Positive emotion, Engagement, Relationships, Meaning, and Accomplishment. The PERMA-H version adds Health. The five (or six) domains together describe what wellbeing actually is in concrete terms.'
             ),
-            h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.7 } },
+            h('p', { style: { margin: 0, color: _perFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
               'The point of PERMA is that wellbeing is NOT just feeling good. Engagement (flow), Relationships, Meaning, and Accomplishment are real dimensions of a good life that are not captured by mood alone. A person can be high on Meaning and low on Positive Emotion (a hospice worker on a hard day) and still be doing well. The profile shows where life is rich and where it is thin.'
             )
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 16 } }, 'Where PERMA comes from'),
-            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: _perBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 10px', color: _perFg('#fcd34d'), fontSize: 16 } }, 'Where PERMA comes from'),
+            h('p', { style: { margin: 0, color: _perFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } },
               'Martin Seligman published PERMA in 2011 (in his book Flourish) as a revision of his earlier "Authentic Happiness" model. Seligman is also the co-developer (with Christopher Peterson) of the VIA Character Strengths classification. PERMA and VIA Strengths are sister frameworks: PERMA describes the domains of wellbeing, VIA describes the character traits people use to inhabit those domains. The PERMA-Profiler (Butler & Kern, 2016) is the most-cited measurement tool; this Career Compass tool uses a similar item structure adapted for school context.'
             )
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 16 } }, '📚 Sources and learn more'),
+          h('div', { style: { padding: 16, borderRadius: 12, background: _perBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 10px', color: _perFg('#fcd34d'), fontSize: 16 } }, '📚 Sources and learn more'),
             sourceCard('Seligman, M. E. P. (2011)', 'Flourish: A Visionary New Understanding of Happiness and Well-being, Free Press', 'The foundational book that introduced PERMA.', null),
             sourceCard('Butler, J. and Kern, M. L. (2016)', '"The PERMA-Profiler: A brief multidimensional measure of flourishing," International Journal of Wellbeing, 6(3), 1-48', 'The 23-item validated wellbeing measure widely used in research.', 'https://www.internationaljournalofwellbeing.org/index.php/ijow/article/view/526'),
             sourceCard('University of Pennsylvania Positive Psychology Center', 'ppc.sas.upenn.edu', 'Seligman\'s home institution. Free resources, research, and assessment links.', 'https://ppc.sas.upenn.edu/'),
@@ -592,8 +601,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
           ),
 
           h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
-            h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
+            h('h3', { style: { margin: '0 0 10px', color: _perFg('#fcd34d'), fontSize: 15 } }, '⚖️ Honest limits'),
+            h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: _perFg('#fde68a'), fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'PERMA is a snapshot of right now. Scores will shift across weeks, months, and seasons. A low score is information about a season, not a permanent state.'),
               h('li', null, 'PERMA reflects mostly Western individualist wellbeing thinking. Some traditions (especially Buddhist, Indigenous, and African) frame wellbeing in more relational and less self-oriented ways. Use PERMA alongside, not instead of, other ways of understanding what a good life is.'),
               h('li', null, 'Positive psychology has been critiqued (Ehrenreich, Cabanas, Illouz) for sometimes obscuring structural causes of suffering with individualizing language. PERMA can be used badly to imply that wellbeing is just a personal mindset choice. It is not.'),
@@ -602,7 +611,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', fontSize: 12.5, color: '#fde68a', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', fontSize: 12.5, color: _perFg('#fde68a'), lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'PERMA works well as a beginning-of-quarter / mid-quarter / end-of-quarter check-in to see how a class is doing as a group (or how an individual student is shifting). Pair with VIA Strengths to add the "what traits am I using" lens. For Crew, a lighter version: each student names one PERMA domain that is going well and one that is going thin this week.'
           ),
@@ -612,13 +621,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
       }
 
       function sourceCard(authorYear, title, blurb, url) {
-        return h('div', { style: { padding: 10, borderRadius: 8, background: '#1e293b', border: '1px solid #334155', marginBottom: 8 } },
-          h('div', { style: { fontSize: 11, color: '#fcd34d', fontWeight: 700, marginBottom: 2 } }, authorYear),
+        return h('div', { style: { padding: 10, borderRadius: 8, background: _perBg('#1e293b'), border: '1px solid #334155', marginBottom: 8 } },
+          h('div', { style: { fontSize: 11, color: _perFg('#fcd34d'), fontWeight: 700, marginBottom: 2 } }, authorYear),
           url
             ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer',
-                style: { fontSize: 13, color: '#fde68a', fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
-            : h('div', { style: { fontSize: 13, color: '#fde68a', fontWeight: 700, marginBottom: 4 } }, title),
-          h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55 } }, blurb)
+                style: { fontSize: 13, color: _perFg('#fde68a'), fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
+            : h('div', { style: { fontSize: 13, color: _perFg('#fde68a'), fontWeight: 700, marginBottom: 4 } }, title),
+          h('div', { style: { fontSize: 12, color: _perFg('#cbd5e1'), lineHeight: 1.55 } }, blurb)
         );
       }
 
