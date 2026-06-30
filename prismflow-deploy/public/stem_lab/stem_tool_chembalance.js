@@ -270,6 +270,125 @@
     return stack[0];
   };
 
+
+  // ── Deterministic equation balancer + stoichiometry (ground-truth math; NEVER via the LLM) ──
+  // Reuses parseFormula (per-element atom counts) + ELEMENTS (molar masses). The balancer
+  // builds the element-conservation matrix M and solves M·c = 0 for the smallest positive
+  // integer coefficient vector using EXACT rational (fraction) Gaussian elimination, so there
+  // is zero floating-point drift. Exposed on window.__alloChemPure for unit tests.
+  function _chemGcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { var t = b; b = a % b; a = t; } return a || 1; }
+  function _chemLcm(a, b) { if (!a || !b) return Math.abs(a || b) || 1; return Math.abs(a / _chemGcd(a, b) * b); }
+  function _rat(n, d) { if (d === undefined) d = 1; if (d === 0) return [0, 1]; if (d < 0) { n = -n; d = -d; } var g = _chemGcd(n, d); return [n / g, d / g]; }
+  function _rAdd(a, b) { return _rat(a[0] * b[1] + b[0] * a[1], a[1] * b[1]); }
+  function _rSub(a, b) { return _rat(a[0] * b[1] - b[0] * a[1], a[1] * b[1]); }
+  function _rMul(a, b) { return _rat(a[0] * b[0], a[1] * b[1]); }
+  function _rDiv(a, b) { return _rat(a[0] * b[1], a[1] * b[0]); }
+  function _rZero(a) { return a[0] === 0; }
+  function _scanElementSymbols(formula) { var out = [], m, re = /[A-Z][a-z]?/g; while ((m = re.exec(formula)) !== null) out.push(m[0]); return out; }
+
+  // parseSpecies('2H2O') -> { coef, formula, elems, mass, ok, unknown[] }
+  function parseSpecies(token) {
+    token = String(token == null ? '' : token).trim();
+    var coef = 1;
+    var cm = token.match(/^\s*(\d+)\s*/);
+    var formula = token;
+    if (cm) { coef = parseInt(cm[1], 10); formula = token.slice(cm[0].length); }
+    formula = formula.trim().replace(/\((?:s|l|g|aq)\)/gi, ''); // drop state labels (s),(l),(g),(aq)
+    var unknown = [];
+    var syms = _scanElementSymbols(formula);
+    for (var i = 0; i < syms.length; i++) { if (!ELEMENTS[syms[i]] && unknown.indexOf(syms[i]) < 0) unknown.push(syms[i]); }
+    var pf = parseFormula(formula);
+    return { coef: coef, formula: formula, elems: pf.elems, mass: pf.mass, ok: formula.length > 0 && unknown.length === 0, unknown: unknown };
+  }
+
+  // parseEquation('H2 + O2 -> H2O') -> { ok, reactants[], products[], elements[], error? }
+  function parseEquation(str) {
+    if (!str || typeof str !== 'string') return { ok: false, error: 'Type an equation, e.g. H2 + O2 -> H2O' };
+    var norm = str.replace(/\u2192|\u27f6|\u21d2|=>|->/g, '=').replace(/\s+/g, ' ').trim();
+    var sides = norm.split('=');
+    if (sides.length !== 2) return { ok: false, error: 'Use exactly one arrow (→ or ->) between reactants and products' };
+    function parseSide(s) { return s.split('+').map(function (t) { return t.trim(); }).filter(Boolean).map(parseSpecies); }
+    var reactants = parseSide(sides[0]), products = parseSide(sides[1]);
+    if (!reactants.length || !products.length) return { ok: false, error: 'Both sides need at least one compound' };
+    var all = reactants.concat(products), unknown = [];
+    for (var i = 0; i < all.length; i++) { for (var u = 0; u < all[i].unknown.length; u++) { if (unknown.indexOf(all[i].unknown[u]) < 0) unknown.push(all[i].unknown[u]); } }
+    if (unknown.length) return { ok: false, error: 'Unsupported element(s): ' + unknown.join(', ') + ' — this tool knows 26 common elements' };
+    var elements = [];
+    for (var j = 0; j < all.length; j++) { var ek = Object.keys(all[j].elems); for (var k = 0; k < ek.length; k++) if (elements.indexOf(ek[k]) < 0) elements.push(ek[k]); }
+    return { ok: true, reactants: reactants, products: products, elements: elements };
+  }
+
+  // balanceEquation('H2 + O2 -> H2O') -> { ok, coefficients[], balancedString, alreadyBalanced, error? }
+  function balanceEquation(str) {
+    var pe = parseEquation(str);
+    if (!pe.ok) return { ok: false, error: pe.error };
+    var species = pe.reactants.concat(pe.products), nR = pe.reactants.length, nS = species.length, elements = pe.elements;
+    for (var e = 0; e < elements.length; e++) {
+      var el = elements[e], inR = false, inP = false;
+      for (var s = 0; s < nS; s++) { if (species[s].elems[el]) { if (s < nR) inR = true; else inP = true; } }
+      if (!inR || !inP) return { ok: false, error: 'Element ' + el + ' is only on one side — this cannot be balanced' };
+    }
+    var M = [];
+    for (var er = 0; er < elements.length; er++) { var row = []; for (var sc = 0; sc < nS; sc++) { var cnt = species[sc].elems[elements[er]] || 0; row.push(_rat(sc < nR ? cnt : -cnt, 1)); } M.push(row); }
+    var rows = M.length, cols = nS, pivotCols = [], r = 0;
+    for (var c = 0; c < cols && r < rows; c++) {
+      var piv = -1; for (var rr = r; rr < rows; rr++) { if (!_rZero(M[rr][c])) { piv = rr; break; } }
+      if (piv < 0) continue;
+      var tmp = M[r]; M[r] = M[piv]; M[piv] = tmp;
+      var pv = M[r][c]; for (var cc = 0; cc < cols; cc++) M[r][cc] = _rDiv(M[r][cc], pv);
+      for (var rr2 = 0; rr2 < rows; rr2++) { if (rr2 === r) continue; var factor = M[rr2][c]; if (_rZero(factor)) continue; for (var cc2 = 0; cc2 < cols; cc2++) M[rr2][cc2] = _rSub(M[rr2][cc2], _rMul(factor, M[r][cc2])); }
+      pivotCols.push(c); r++;
+    }
+    var rank = pivotCols.length, freeCols = [];
+    for (var cf = 0; cf < cols; cf++) if (pivotCols.indexOf(cf) < 0) freeCols.push(cf);
+    if (freeCols.length === 0) return { ok: false, error: 'No whole-number balance exists for this equation' };
+    if (freeCols.length > 1) return { ok: false, error: 'Ambiguous — this looks like several independent reactions; balance them one at a time' };
+    var freeCol = freeCols[0], sol = new Array(cols);
+    for (var z = 0; z < cols; z++) sol[z] = _rat(0, 1);
+    sol[freeCol] = _rat(1, 1);
+    for (var pr = 0; pr < rank; pr++) { var pc = pivotCols[pr]; sol[pc] = _rSub(_rat(0, 1), M[pr][freeCol]); }
+    var denomLcm = 1; for (var d = 0; d < cols; d++) denomLcm = _chemLcm(denomLcm, sol[d][1]);
+    var ints = sol.map(function (x) { return Math.round(x[0] * denomLcm / x[1]); });
+    if (ints[0] < 0) ints = ints.map(function (v) { return -v; });
+    if (ints.some(function (v) { return v <= 0; })) return { ok: false, error: 'This equation cannot be balanced with positive whole numbers' };
+    var g = ints.reduce(function (a, b) { return _chemGcd(a, b); }, 0); if (g > 1) ints = ints.map(function (v) { return v / g; });
+    for (var ve = 0; ve < elements.length; ve++) { var sum = 0; for (var vs = 0; vs < nS; vs++) sum += (species[vs].elems[elements[ve]] || 0) * (vs < nR ? 1 : -1) * ints[vs]; if (sum !== 0) return { ok: false, error: 'Could not verify a balance for this equation' }; }
+    function fmtSide(list, start) { return list.map(function (sp, idx) { var k = ints[start + idx]; return (k === 1 ? '' : k) + sp.formula; }).join(' + '); }
+    var balancedString = fmtSide(pe.reactants, 0) + ' → ' + fmtSide(pe.products, nR);
+    var alreadyBalanced = species.every(function (sp, idx) { return sp.coef === ints[idx]; });
+    return { ok: true, coefficients: ints, balancedString: balancedString, alreadyBalanced: alreadyBalanced, reactantCount: nR, species: species, elements: elements };
+  }
+
+  // stoichiometry — limiting reagent + theoretical/percent yield from balanced coefficients.
+  function stoichiometry(opts) {
+    if (!opts || !opts.coefficients || !opts.species) return { error: 'Balance the equation first' };
+    var coefs = opts.coefficients, species = opts.species;
+    function molar(idx) { return parseFormula(species[idx].formula).mass; }
+    var ratios = [];
+    var given = opts.given || [];
+    for (var i = 0; i < given.length; i++) {
+      var gv = given[i], idx = gv.index, mm = molar(idx);
+      if (!(mm > 0)) return { error: 'Unknown molar mass for ' + species[idx].formula };
+      var moles = (gv.moles != null) ? gv.moles : (gv.grams != null ? gv.grams / mm : null);
+      if (moles == null || isNaN(moles) || moles < 0) return { error: 'Enter a valid amount for ' + species[idx].formula };
+      var coef = coefs[idx]; if (!coef) return { error: 'Zero coefficient for ' + species[idx].formula };
+      ratios.push({ index: idx, moles: moles, perCoef: moles / coef });
+    }
+    if (!ratios.length) return { error: 'Enter how much of each reactant you have' };
+    var lim = ratios[0]; for (var rr = 1; rr < ratios.length; rr++) if (ratios[rr].perCoef < lim.perCoef) lim = ratios[rr];
+    var pIdx = opts.productIndex, pCoef = coefs[pIdx], pMM = molar(pIdx);
+    if (!(pMM > 0)) return { error: 'Unknown molar mass for the product' };
+    var molesProduct = lim.perCoef * pCoef, theoreticalGrams = molesProduct * pMM;
+    var out = { limitingIndex: lim.index, limitingFormula: species[lim.index].formula, molesProduct: molesProduct, theoreticalGrams: theoreticalGrams, productFormula: species[pIdx].formula };
+    if (opts.actualGrams != null && opts.actualGrams !== '' && !isNaN(opts.actualGrams)) {
+      out.actualGrams = Number(opts.actualGrams);
+      out.percentYield = theoreticalGrams > 0 ? (out.actualGrams / theoreticalGrams) * 100 : null;
+    }
+    return out;
+  }
+
+  try { window.__alloChemPure = { parseFormula: parseFormula, parseSpecies: parseSpecies, parseEquation: parseEquation, balanceEquation: balanceEquation, stoichiometry: stoichiometry, ELEMENTS: ELEMENTS }; } catch (_e) {}
+
   // ── Molecule data for viewer ──
   var MOLECULES = [
     { name: 'Water', formula: 'H\u2082O', shape: 'Bent', angle: '104.5\u00B0', polarity: 'Polar',
@@ -18544,6 +18663,9 @@
 
         // ═══ STOICH STATE ═══
         var stoichFormula = d._stoichFormula || 'H2O';
+        // Deterministic auto-balancer state (ground-truth math; never the LLM tutor).
+        var runAutoBalance = function() { var inp = (d._balanceInput || '').trim(); upd('_balanceResult', inp ? balanceEquation(inp) : null); };
+        var _balRes = d._balanceResult || null;
         var stoichGrams = d._stoichGrams != null ? d._stoichGrams : '';
         var stoichMoles = d._stoichMoles != null ? d._stoichMoles : '';
 
@@ -18849,6 +18971,24 @@
                 h('button', { 'aria-label': __alloT('stem.chembalance.hints', 'Hints'), onClick: function() { upd('showHints', !showHints); }, className: 'px-3 py-2 rounded-lg font-bold text-xs transition-colors ' + (showHints ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600 hover:bg-blue-50') }, __alloT('stem.chembalance.hints_2', '\uD83D\uDCA1 Hints')),
                 h('button', { 'aria-label': __alloT('stem.chembalance.reset', 'Reset'), onClick: function() { var arr = []; for (var ri = 0; ri < numSlots; ri++) arr.push(1); updMulti({ coefficients: arr, feedback: null }); }, className: 'transition-colors px-3 py-2 bg-slate-100 text-slate-600 rounded-lg font-bold text-xs hover:bg-slate-200' }, __alloT('stem.chembalance.reset_2', '\uD83D\uDD04 Reset')),
                 h('button', { 'aria-label': __alloT('stem.chembalance.random', 'Random'), onClick: function() { var pick = filtered[Math.floor(Math.random() * filtered.length)]; switchPreset(pick.name); addToast('\uD83C\uDFB2 ' + pick.name, 'info'); }, className: 'transition-colors px-3 py-2 bg-purple-100 text-purple-700 rounded-lg font-bold text-xs hover:bg-purple-200 border border-purple-600' }, __alloT('stem.chembalance.random_2', '\uD83C\uDFB2 Random'))
+              ),
+              h('div', { className: 'mt-4 bg-gradient-to-br from-indigo-50 to-slate-50 rounded-xl p-4 border-2 border-indigo-200 text-left' },
+                h('div', { className: 'flex items-center gap-2 mb-1 flex-wrap' },
+                  h('span', { 'aria-hidden': 'true', className: 'text-lg' }, '🧮'),
+                  h('h4', { className: 'font-bold text-slate-800 text-sm' }, __alloT('stem.chembalance.autobalance_title', 'Balance any equation')),
+                  h('span', { className: 'ml-auto text-[10px] font-bold uppercase tracking-wide text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full' }, __alloT('stem.chembalance.calc_badge', 'Calculated · not AI'))
+                ),
+                h('p', { className: 'text-xs text-slate-500 mb-2' }, __alloT('stem.chembalance.autobalance_hint', 'Type your own reactants and products. Solved exactly by atom-conservation math — the AI tutor is never the authority on coefficients.')),
+                h('div', { className: 'flex gap-2' },
+                  h('input', { type: 'text', value: d._balanceInput || '', onChange: function(e) { upd('_balanceInput', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') runAutoBalance(); }, placeholder: 'H2 + O2 -> H2O', 'aria-label': __alloT('stem.chembalance.equation_to_balance', 'Equation to balance'), className: 'flex-1 px-3 py-2 text-sm font-mono border border-indigo-300 rounded-lg focus:border-indigo-500 focus:outline-none' }),
+                  h('button', { onClick: runAutoBalance, className: 'px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors text-sm whitespace-nowrap' }, __alloT('stem.chembalance.balance_it', 'Balance'))
+                ),
+                _balRes && _balRes.ok && h('div', { className: 'mt-3 bg-white rounded-lg p-3 border border-emerald-300' },
+                  h('div', { className: 'text-[11px] font-bold uppercase tracking-wide text-emerald-700 mb-1' }, '✓ ' + __alloT('stem.chembalance.balanced_result', 'Balanced')),
+                  h('div', { dir: 'auto', className: 'text-base font-mono font-bold text-slate-800 break-words' }, _balRes.balancedString),
+                  _balRes.alreadyBalanced && h('div', { className: 'text-xs text-slate-500 mt-1' }, __alloT('stem.chembalance.already_balanced_note', 'You typed it already balanced — nice.'))
+                ),
+                _balRes && !_balRes.ok && h('div', { className: 'mt-3 bg-rose-50 rounded-lg p-3 border border-rose-200 text-sm text-rose-700' }, '⚠ ' + _balRes.error)
               ),
               showHints && h('div', { className: 'mt-3 bg-blue-50 rounded-lg p-3 border border-blue-200 text-left' },
                 h('p', { className: 'text-xs font-bold text-blue-700 mb-1' }, '\uD83D\uDCA1 ' + preset.hint),

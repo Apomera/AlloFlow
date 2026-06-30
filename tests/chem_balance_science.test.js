@@ -35,3 +35,89 @@ describe('chemBalance — molar mass (parseFormula)', () => {
     expect(stoich('CuSO4.5H2O')).toContain('Molar Mass: 249.682 g/mol');
   });
 });
+
+// The general balancer is deterministic ground truth (exact rational Gaussian
+// elimination on the element-conservation matrix) — never the LLM. Exposed on
+// window.__alloChemPure by the tool IIFE for direct unit testing.
+const chem = () => window.__alloChemPure;
+
+describe('chemBalance — general equation balancer (deterministic)', () => {
+  it('H2 + O2 → H2O = 2,1,2', () => {
+    const r = chem().balanceEquation('H2 + O2 -> H2O');
+    expect(r.ok).toBe(true);
+    expect(r.coefficients).toEqual([2, 1, 2]);
+    expect(r.balancedString).toBe('2H2 + O2 → 2H2O');
+  });
+  it('methane combustion CH4 + O2 → CO2 + H2O = 1,2,1,2', () => {
+    expect(chem().balanceEquation('CH4 + O2 -> CO2 + H2O').coefficients).toEqual([1, 2, 1, 2]);
+  });
+  it('octane combustion needs 25 O2 (NO coefficient cap)', () => {
+    expect(chem().balanceEquation('C8H18 + O2 -> CO2 + H2O').coefficients).toEqual([2, 25, 16, 18]);
+  });
+  it('rusting Fe + O2 → Fe2O3 = 4,3,2', () => {
+    expect(chem().balanceEquation('Fe + O2 -> Fe2O3').coefficients).toEqual([4, 3, 2]);
+  });
+  it('Al + HCl → AlCl3 + H2 = 2,6,2,3', () => {
+    expect(chem().balanceEquation('Al + HCl -> AlCl3 + H2').coefficients).toEqual([2, 6, 2, 3]);
+  });
+  it('Haber process N2 + H2 → NH3 = 1,3,2', () => {
+    expect(chem().balanceEquation('N2 + H2 -> NH3').coefficients).toEqual([1, 3, 2]);
+  });
+  it('parentheses: Ca(OH)2 + HCl → CaCl2 + H2O = 1,2,1,2', () => {
+    expect(chem().balanceEquation('Ca(OH)2 + HCl -> CaCl2 + H2O').coefficients).toEqual([1, 2, 1, 2]);
+  });
+  it('flags an already-balanced equation', () => {
+    const r = chem().balanceEquation('C + O2 -> CO2');
+    expect(r.coefficients).toEqual([1, 1, 1]);
+    expect(r.alreadyBalanced).toBe(true);
+  });
+  it('accepts the unicode arrow →', () => {
+    expect(chem().balanceEquation('H2 + O2 → H2O').coefficients).toEqual([2, 1, 2]);
+  });
+  it('ignores state labels (s)/(g)/(aq)', () => {
+    expect(chem().balanceEquation('H2(g) + O2(g) -> H2O(l)').coefficients).toEqual([2, 1, 2]);
+  });
+  it('rejects an unsupported element', () => {
+    const r = chem().balanceEquation('U + O2 -> UO2');
+    expect(r.ok).toBe(false);
+    expect(r.error).toMatch(/Unsupported|element/i);
+  });
+  it('rejects an element appearing on only one side', () => {
+    const r = chem().balanceEquation('H2 -> H2O');
+    expect(r.ok).toBe(false);
+    expect(r.error).toMatch(/one side/i);
+  });
+  it('rejects input with no arrow', () => {
+    expect(chem().balanceEquation('H2 + O2').ok).toBe(false);
+  });
+  it('renders the balanced result in a "Calculated · not AI" panel (UI surface)', () => {
+    const r = chem().balanceEquation('H2 + O2 -> H2O');
+    const html = renderTool('chemBalance', {
+      chemBalance: { subtool: 'balance', _balanceInput: 'H2 + O2 -> H2O', _balanceResult: r }
+    });
+    expect(html).toContain('2H2 + O2 → 2H2O'); // the computed equation is shown
+    expect(html).toContain('not AI');           // distinctness badge — measured, not model judgment
+  });
+});
+
+describe('chemBalance — stoichiometry (limiting reagent + yield)', () => {
+  it('identifies the limiting reagent and moles of product', () => {
+    const b = chem().balanceEquation('N2 + H2 -> NH3'); // 1,3,2
+    const s = chem().stoichiometry({
+      coefficients: b.coefficients, species: b.species,
+      given: [{ index: 0, moles: 1 }, { index: 1, moles: 2 }], productIndex: 2
+    });
+    expect(s.limitingFormula).toBe('H2');          // 2/3 < 1/1 → H2 limits
+    expect(s.molesProduct).toBeCloseTo(4 / 3, 5);  // (2/3) * 2
+  });
+  it('computes theoretical grams and percent yield', () => {
+    const b = chem().balanceEquation('N2 + H2 -> NH3');
+    const s = chem().stoichiometry({
+      coefficients: b.coefficients, species: b.species,
+      given: [{ index: 0, moles: 1 }, { index: 1, moles: 3 }], productIndex: 2, actualGrams: 17.031
+    });
+    expect(s.molesProduct).toBeCloseTo(2, 5);        // exact stoichiometric → 2 mol NH3
+    expect(s.theoreticalGrams).toBeCloseTo(34.062, 2); // 2 × 17.031
+    expect(s.percentYield).toBeCloseTo(50, 1);       // 17.031 / 34.062
+  });
+});
