@@ -73,6 +73,88 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
     { id: 'knowbility_ally', icon: '\u267F', name: 'Knowbility Ally', desc: 'Explore all Knowbility programs', check: function(s) { return s.knowbilityExplored >= 3; } },
   ];
 
+  /* ============ Deterministic a11y linter (MEASURED ground truth; separate from the AI passes) ============ */
+  // Parses the pasted HTML with DOMParser and counts objectively-checkable WCAG failures
+  // (missing alt, heading-order skips, unlabeled form fields, missing lang, empty links/
+  // buttons, and inline-style contrast via the WCAG luminance formula). CSP-safe, no eval.
+  // Exposed on window.__alloA11yPure for unit tests. Automated checks cover only part of
+  // WCAG — the AI passes add judgement on the rest; the two are shown distinctly in the UI.
+  var __alloA11yPure = (function () {
+    var NAMED = { black:[0,0,0], white:[255,255,255], red:[255,0,0], green:[0,128,0], lime:[0,255,0], blue:[0,0,255], navy:[0,0,128], yellow:[255,255,0], orange:[255,165,0], purple:[128,0,128], gray:[128,128,128], grey:[128,128,128], silver:[192,192,192], maroon:[128,0,0], olive:[128,128,0], teal:[0,128,128], aqua:[0,255,255], fuchsia:[255,0,255], lightgray:[211,211,211], lightgrey:[211,211,211], darkgray:[169,169,169], darkgrey:[169,169,169] };
+    function parseColor(s) {
+      if (!s) return null; s = String(s).trim().toLowerCase();
+      if (NAMED[s]) return NAMED[s];
+      var m = s.match(/^#([0-9a-f]{3})$/); if (m) { var a = m[1]; return [parseInt(a[0] + a[0], 16), parseInt(a[1] + a[1], 16), parseInt(a[2] + a[2], 16)]; }
+      m = s.match(/^#([0-9a-f]{6})$/); if (m) { var b = m[1]; return [parseInt(b.slice(0, 2), 16), parseInt(b.slice(2, 4), 16), parseInt(b.slice(4, 6), 16)]; }
+      m = s.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i); if (m) return [parseInt(m[1], 10), parseInt(m[2], 10), parseInt(m[3], 10)];
+      return null;
+    }
+    function _lin(c) { c = c / 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }
+    function relLum(rgb) { if (!rgb) return null; return 0.2126 * _lin(rgb[0]) + 0.7152 * _lin(rgb[1]) + 0.0722 * _lin(rgb[2]); }
+    function contrastRatio(fg, bg) { var l1 = relLum(fg), l2 = relLum(bg); if (l1 == null || l2 == null) return null; var hi = Math.max(l1, l2), lo = Math.min(l1, l2); return (hi + 0.05) / (lo + 0.05); }
+    function _all(doc, sel) { try { return [].slice.call(doc.querySelectorAll(sel)); } catch (e) { return []; } }
+    function deterministicAudit(html) {
+      var findings = [], passed = [], doc;
+      if (typeof DOMParser === 'undefined') return { ok: false, findings: [], passed: [], error: 'DOMParser unavailable' };
+      try { doc = new DOMParser().parseFromString(String(html || ''), 'text/html'); } catch (e) { return { ok: false, findings: [], passed: [], error: 'Could not parse HTML' }; }
+      if (!doc || !doc.body) return { ok: false, findings: [], passed: [] };
+      function add(criterion, wcag, severity, detail) { findings.push({ criterion: criterion, wcag: wcag, severity: severity, detail: detail }); }
+      // 1.1.1 images missing alt
+      var imgs = _all(doc, 'img'), noAlt = imgs.filter(function (im) { return !im.hasAttribute('alt'); });
+      if (noAlt.length) add('Images missing alt text', '1.1.1', 'serious', noAlt.length + ' of ' + imgs.length + ' <img> have no alt attribute');
+      else if (imgs.length) passed.push('All ' + imgs.length + ' images have an alt attribute');
+      // 1.3.1 heading order
+      var headings = _all(doc, 'h1,h2,h3,h4,h5,h6'), levels = headings.map(function (hd) { return parseInt(hd.tagName.charAt(1), 10); });
+      var skips = [];
+      for (var i = 1; i < levels.length; i++) { if (levels[i] - levels[i - 1] > 1) skips.push('h' + levels[i - 1] + ' \u2192 h' + levels[i]); }
+      var h1count = levels.filter(function (l) { return l === 1; }).length;
+      if (skips.length) add('Heading level skipped', '1.3.1', 'moderate', 'Jumps: ' + skips.join(', '));
+      if (headings.length && h1count === 0) add('No h1 heading', '1.3.1', 'moderate', 'Headings exist but there is no <h1>');
+      if (h1count > 1) add('Multiple h1 headings', '1.3.1', 'minor', h1count + ' <h1> elements (expected one)');
+      if (headings.length && !skips.length && h1count === 1) passed.push('Heading order is sequential under a single h1');
+      // 3.3.2 / 4.1.2 unlabeled form controls
+      var controls = _all(doc, 'input,select,textarea'), unlabeled = 0;
+      controls.forEach(function (c) {
+        var type = (c.getAttribute('type') || '').toLowerCase();
+        if (c.tagName === 'INPUT' && ['hidden', 'submit', 'button', 'reset', 'image'].indexOf(type) >= 0) return;
+        if (c.getAttribute('aria-label') || c.getAttribute('aria-labelledby') || c.getAttribute('title')) return;
+        var id = c.getAttribute('id');
+        if (id) { var lbl = _all(doc, 'label').some(function (l) { return l.getAttribute('for') === id; }); if (lbl) return; }
+        var pn = c.parentNode, wrapped = false;
+        while (pn && pn.tagName) { if (pn.tagName === 'LABEL') { wrapped = true; break; } pn = pn.parentNode; }
+        if (wrapped) return;
+        unlabeled++;
+      });
+      if (unlabeled) add('Form fields without labels', '3.3.2', 'serious', unlabeled + ' control(s) with no <label>, aria-label, or title');
+      else if (controls.length) passed.push('All ' + controls.length + ' form controls have an accessible label');
+      // 3.1.1 language (only when the pasted input actually contains an <html> element)
+      if (/<html[\s>]/i.test(String(html || ''))) {
+        var htmlEl = doc.documentElement;
+        if (htmlEl && !htmlEl.getAttribute('lang')) add('Missing lang attribute', '3.1.1', 'serious', '<html> has no lang attribute');
+        else if (htmlEl && htmlEl.getAttribute('lang')) passed.push('Page language is declared (lang="' + htmlEl.getAttribute('lang') + '")');
+      }
+      // 2.4.4 / 4.1.2 empty links + buttons
+      var emptyLinks = _all(doc, 'a').filter(function (a) { return !(a.textContent || '').trim() && !a.getAttribute('aria-label') && !_all(a, 'img').some(function (im) { return (im.getAttribute('alt') || '').trim(); }); }).length;
+      var emptyBtns = _all(doc, 'button').filter(function (b) { return !(b.textContent || '').trim() && !b.getAttribute('aria-label'); }).length;
+      if (emptyLinks) add('Links with no text', '2.4.4', 'serious', emptyLinks + ' link(s) with no discernible text');
+      if (emptyBtns) add('Buttons with no accessible name', '4.1.2', 'serious', emptyBtns + ' button(s) with no text or aria-label');
+      // 1.4.3 inline-style contrast
+      var worst = null, fails = 0;
+      _all(doc, '[style]').forEach(function (el) {
+        var st = el.getAttribute('style') || '';
+        var fgM = st.match(/(?:^|;)\s*color\s*:\s*([^;]+)/i), bgM = st.match(/background(?:-color)?\s*:\s*([^;]+)/i);
+        if (fgM && bgM) {
+          var r = contrastRatio(parseColor(fgM[1]), parseColor(bgM[1]));
+          if (r != null && r < 4.5) { fails++; if (worst == null || r < worst) worst = r; }
+        }
+      });
+      if (fails) add('Low text contrast (inline styles)', '1.4.3', 'serious', fails + ' element(s) below 4.5:1 \u2014 worst ' + (Math.round(worst * 100) / 100) + ':1');
+      return { ok: true, findings: findings, passed: passed, checked: { images: imgs.length, headings: headings.length, controls: controls.length } };
+    }
+    return { deterministicAudit: deterministicAudit, contrastRatio: contrastRatio, parseColor: parseColor };
+  })();
+  try { window.__alloA11yPure = __alloA11yPure; } catch (_e) {}
+
   window.StemLab.registerTool('a11yAuditor', {
     icon: '♿',
     label: 'Digital Accessibility Lab',
@@ -112,6 +194,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
       var auditHtml = d.auditHtml || '';
       var auditResult = d.auditResult || null;
       var auditLoading = d.auditLoading || false;
+      var deterministicAudit = d.deterministicAudit || null;
       var auditInputMode = d.auditInputMode || 'url'; // 'url' | 'html' | 'pdf' | 'screenshot'
       var auditHistory = d.auditHistory || [];
       var selectedCriterion = d.selectedCriterion || null;
@@ -316,7 +399,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
 
       var runAudit = function(input, inputType) {
         if (!callGemini) return;
-        upd('auditLoading', true);
+        var _detAudit = (inputType === 'html') ? __alloA11yPure.deterministicAudit(input) : null;
+        updMulti({ auditLoading: true, deterministicAudit: _detAudit });
         var target = inputType === 'url' ? 'a website at URL: ' + input + '. Use your training knowledge of this website\u2019s structure, layout, and common patterns.' : 'the following HTML content';
         var htmlCtx = inputType === 'html' ? 'HTML:\n"""\n' + input.substring(0, 8000) + '\n"""\n\n' : '';
         var audience = 'Target audience: ' + (gradeLevel || '8th grade') + ' students learning about digital accessibility.\nExplain each issue in plain language. For each, explain WHO is affected and WHY.\n\n';
@@ -675,6 +759,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             ),
 
             // Score breakdown radar
+            deterministicAudit && deterministicAudit.ok && h('div', { className: 'bg-indigo-50 rounded-2xl border-2 border-indigo-300 p-4' },
+              h('div', { className: 'flex items-center gap-2 mb-2 flex-wrap' },
+                h('span', { 'aria-hidden': 'true' }, '\uD83D\uDD2C'),
+                h('h4', { className: 'text-xs font-bold text-indigo-800 uppercase tracking-widest' }, t('stem.a11yauditor.measured_checks', 'Measured checks')),
+                h('span', { className: 'ml-auto text-[10px] font-bold uppercase tracking-wide text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full' }, t('stem.a11yauditor.deterministic_badge', 'Deterministic \u00B7 not AI'))
+              ),
+              h('p', { className: 'text-[11px] text-slate-500 mb-2' }, t('stem.a11yauditor.measured_hint', 'Counted directly from your HTML by code (DOMParser + WCAG contrast math) \u2014 ground truth, separate from the AI passes.')),
+              deterministicAudit.findings.length === 0
+                ? h('div', { className: 'text-sm font-bold text-emerald-700' }, '\u2713 ' + t('stem.a11yauditor.no_measured_issues', 'No problems in the automatically-checkable criteria.'))
+                : h('ul', { className: 'space-y-1.5' }, deterministicAudit.findings.map(function(_fi, _i) {
+                    return h('li', { key: _i, className: 'text-sm text-slate-700 flex items-start gap-2' },
+                      h('span', { className: 'text-[10px] font-bold px-1.5 py-0.5 rounded ' + (_fi.severity === 'serious' ? 'bg-red-100 text-red-700' : _fi.severity === 'moderate' ? 'bg-amber-100 text-amber-700' : 'bg-slate-200 text-slate-600') }, _fi.wcag),
+                      h('span', null, h('strong', null, _fi.criterion), ' \u2014 ' + _fi.detail)
+                    );
+                  })),
+              h('p', { className: 'text-[10px] text-slate-400 mt-2' }, t('stem.a11yauditor.measured_scope', 'Automated checks cover only part of WCAG; the AI passes add judgement on the rest.'))
+            ),
             auditResult.score_breakdown && h('div', { className: 'bg-white rounded-2xl border border-slate-400 p-4' },
               h('h4', { className: 'text-xs font-bold text-slate-600 uppercase tracking-widest mb-3' }, t('stem.a11yauditor.score_breakdown', 'Score Breakdown')),
               h('div', { className: 'grid grid-cols-2 sm:grid-cols-5 gap-2' },
