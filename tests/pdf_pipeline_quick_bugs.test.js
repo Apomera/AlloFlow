@@ -519,9 +519,9 @@ describe('B10: 2026-06-30 EA-consistency sweep (score labels name the governing 
   });
   // #2/#3 pre-fix audit badge + breakdown: name Equal Access, drop "lower of the two"
   it('the pre-fix audit badge says "lower of AI & automated" and the breakdown shows the baseline Equal Access score', () => {
-    expect(vpx).toMatch(/\(lower of AI &amp; automated\)/);
+    expect(vpx).toMatch(/\(lower of AI & automated\)/);
     expect(vpx).not.toMatch(/\(lower of AI &amp; axe-core\)/);
-    expect(vpx).toMatch(/_baselineSecondEngineAudit && typeof pdfAuditResult\._baselineSecondEngineAudit\.score === 'number' \? ' \| Equal Access: '/);
+    expect(vpx).toMatch(/' \| Equal Access: ' \+ pdfAuditResult\._baselineSecondEngineAudit\.score/);
     expect(vpx).toMatch(/the lower of the engines — never averaged/);
   });
   // #4 JSON export engines array includes IBM Equal Access when it ran
@@ -532,5 +532,12 @@ describe('B10: 2026-06-30 EA-consistency sweep (score labels name the governing 
   it('the batch HTML report has an Equal Access column (header + per-row score/fails cell)', () => {
     expect(dpx).toMatch(/<th>2nd engine \(Equal Access\)<\/th>/);
     expect(dpx).toMatch(/r\?\.secondEngineAudit && typeof r\.secondEngineAudit\.score==='number' \? \(r\.secondEngineAudit\.score/);
+  });
+  // No-text-layer honesty: the by-construction automated ~100 is shown as "n/a", not a misleading number
+  it('an image-only scan (no text layer) shows the automated engines as "n/a", never a by-construction 100', () => {
+    expect(vpx).toMatch(/axe-core: \{pdfAuditResult\.hasSearchableText === false \? 'n\/a \(no text layer\)'/);
+    expect(vpx).toMatch(/' \| Equal Access: n\/a'/);
+    expect(vpx).toMatch(/automated checks ran on an empty text reconstruction — not meaningful; the AI rubric governs/);
+    expect(vpx).toMatch(/AI rubric — automated checks N\/A, no text layer/);
   });
 });
