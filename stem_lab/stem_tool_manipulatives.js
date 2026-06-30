@@ -2621,11 +2621,11 @@ window.StemLab = window.StemLab || {
             // Controls
             nbMode === 'explore' && h('div', { className: 'mt-4 space-y-2' },
               h('label', { className: 'block text-xs font-bold text-pink-700' }, 'Whole: ' + nbWhole),
-              h('input', { type: 'range', min: 2, max: 20, value: nbWhole,
+              h('input', { type: 'range', 'aria-label': 'Whole number', 'aria-valuetext': String(nbWhole), min: 2, max: 20, value: nbWhole,
                 onChange: function(e) { var v = parseInt(e.target.value); upd({ nbWhole: v, nbPart1: Math.min(nbPart1, v) }); },
                 className: 'w-full accent-pink-600' }),
               h('label', { className: 'block text-xs font-bold text-pink-700' }, 'Part 1: ' + nbPart1 + ' (Part 2 = ' + nbPart2 + ')'),
-              h('input', { type: 'range', min: 0, max: nbWhole, value: nbPart1,
+              h('input', { type: 'range', 'aria-label': 'First part', 'aria-valuetext': String(nbPart1), min: 0, max: nbWhole, value: nbPart1,
                 onChange: function(e) { upd({ nbPart1: parseInt(e.target.value) }); },
                 className: 'w-full accent-pink-600' })
             ),
@@ -3281,19 +3281,19 @@ window.StemLab = window.StemLab || {
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
               h('label', { style: { fontSize: 11 } },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.manipulatives.grade_level_k_0_to_8', 'Grade level (K=0 to 8)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.gradeLevel)),
-                h('input', { type: 'range', min: 0, max: 8, step: 1, value: iq.gradeLevel, onChange: function(e) { setKey('gradeLevel', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+                h('input', { type: 'range', 'aria-label': 'Grade level', 'aria-valuetext': (iq.gradeLevel === 0 ? 'Kindergarten' : 'grade ' + iq.gradeLevel), min: 0, max: 8, step: 1, value: iq.gradeLevel, onChange: function(e) { setKey('gradeLevel', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
               ),
               h('label', { style: { fontSize: 11 } },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.manipulatives.abstractness_concrete_1_symbolic_5', 'Abstractness (concrete 1 → symbolic 5)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.abstractness)),
-                h('input', { type: 'range', min: 1, max: 5, step: 1, value: iq.abstractness, onChange: function(e) { setKey('abstractness', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+                h('input', { type: 'range', 'aria-label': 'Abstractness', 'aria-valuetext': iq.abstractness + ' of 5, concrete to symbolic', min: 1, max: 5, step: 1, value: iq.abstractness, onChange: function(e) { setKey('abstractness', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
               ),
               h('label', { style: { fontSize: 11 } },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.manipulatives.scaffold_density_1_10', 'Scaffold density (1-10)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.scaffoldDensity)),
-                h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.scaffoldDensity, onChange: function(e) { setKey('scaffoldDensity', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+                h('input', { type: 'range', 'aria-label': 'Scaffold density', 'aria-valuetext': iq.scaffoldDensity + ' of 10', min: 1, max: 10, step: 1, value: iq.scaffoldDensity, onChange: function(e) { setKey('scaffoldDensity', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
               ),
               h('label', { style: { fontSize: 11 } },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.manipulatives.error_tolerance_1_10', 'Error tolerance (1-10)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.errorTolerance)),
-                h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.errorTolerance, onChange: function(e) { setKey('errorTolerance', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+                h('input', { type: 'range', 'aria-label': 'Error tolerance', 'aria-valuetext': iq.errorTolerance + ' of 10', min: 1, max: 10, step: 1, value: iq.errorTolerance, onChange: function(e) { setKey('errorTolerance', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
               )
             ),
             h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },

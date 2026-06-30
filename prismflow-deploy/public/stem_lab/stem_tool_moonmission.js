@@ -3617,7 +3617,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 return h('div', { key: s.key },
                   h('label', { htmlFor: 'dv-' + s.key, className: 'block text-[10px] font-bold text-slate-700 mb-0.5' },
                     s.label + ': ', h('span', { className: 'font-mono text-indigo-700' }, s.val)),
-                  h('input', { id: 'dv-' + s.key, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val,
+                  h('input', { id: 'dv-' + s.key, type: 'range', 'aria-valuetext': (s.key === 'massRatio' ? (s.val + ' to 1 mass ratio') : s.key === 'isp' ? (s.val + ' seconds specific impulse') : (s.val + ' seconds')), min: s.min, max: s.max, step: s.step, value: s.val,
                     onChange: function(e) { var p = {}; p[s.key] = parseFloat(e.target.value); setIQ(p); },
                     className: 'w-full', 'aria-label': s.label }));
               })

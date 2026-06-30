@@ -4278,7 +4278,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 h('div', { className: 'flex items-center gap-2 ml-auto' },
                   h('label', { className: subTextClass }, 'Tempo:'),
                   h('input', {
-                    type: 'range', 'aria-label': t('stem.singing.singing_slider', 'Singing slider'),
+                    type: 'range', 'aria-valuetext': srTempo + ' BPM', 'aria-label': t('stem.singing.singing_slider', 'Singing slider'),
                     min: 40,
                     max: 120,
                     value: srTempo,
@@ -4570,7 +4570,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   [{ k: 'throat', l: 'Throat openness (%)' }, { k: 'palate', l: 'Soft palate lift (%)' }].map(function(s) {
                     return h('div', { key: s.k },
                       h('label', { htmlFor: 'rh-' + s.k, className: 'block text-[11px] font-bold' }, s.l + ': ', h('span', { className: 'font-mono' }, iq[s.k])),
-                      h('input', { id: 'rh-' + s.k, type: 'range', min: 0, max: 100, step: 5, value: iq[s.k],
+                      h('input', { id: 'rh-' + s.k, type: 'range', 'aria-valuetext': iq[s.k] + '%', min: 0, max: 100, step: 5, value: iq[s.k],
                         onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
                         className: 'w-full', 'aria-label': s.l }));
                   })

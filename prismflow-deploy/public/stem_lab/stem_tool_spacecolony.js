@@ -3148,7 +3148,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                    { k: 'radiation', l: 'Radiation shielding %' }].map(function(s) {
                     return React.createElement('div', { key: s.k },
                       React.createElement('label', { htmlFor: 'ls-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: '#cbd5e1', marginBottom: 4 } }, s.l + ': ', React.createElement('span', { style: { color: '#a78bfa', fontFamily: 'monospace' } }, iq[s.k])),
-                      React.createElement('input', { id: 'ls-' + s.k, type: 'range', min: 0, max: 100, step: 5, value: iq[s.k],
+                      React.createElement('input', { id: 'ls-' + s.k, type: 'range', 'aria-valuetext': iq[s.k] + '%', min: 0, max: 100, step: 5, value: iq[s.k],
                         onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
                         style: { width: '100%' }, 'aria-label': s.l }));
                   })

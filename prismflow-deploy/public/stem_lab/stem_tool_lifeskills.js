@@ -803,7 +803,7 @@ window.StemLab = window.StemLab || {
             h('span', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wide' }, label),
             h('span', { className: 'text-xs font-mono font-bold text-slate-700' }, fmt ? fmt(value) : value)
           ),
-          h('input', { type: 'range', min: min, max: max, step: step, value: value, onChange: function(e) { upd(key, parseFloat(e.target.value)); }, className: 'w-full h-1.5 rounded-full appearance-none cursor-pointer', style: { accentColor: '#0d9488' }, 'aria-label': label })
+          h('input', { type: 'range', min: min, max: max, step: step, value: value, onChange: function(e) { upd(key, parseFloat(e.target.value)); }, className: 'w-full h-1.5 rounded-full appearance-none cursor-pointer', style: { accentColor: '#0d9488' }, 'aria-valuetext': (fmt ? fmt(value) : String(value)), 'aria-label': label })
         );
       }
 
@@ -1044,7 +1044,7 @@ window.StemLab = window.StemLab || {
                     dmOptions.map(function(opt, oi) {
                       var key = oi + '-' + ci;
                       return h('td', { key: oi, className: 'px-2 py-1 text-center' },
-                        h('input', { type: 'range', 'aria-label': __alloT('stem.lifeskills.dm_scores', 'dm scores'), min: 1, max: 5, value: dmScores[key] || 3, onChange: function(e) {
+                        h('input', { type: 'range', 'aria-label': __alloT('stem.lifeskills.dm_scores', 'dm scores'), 'aria-valuetext': (dmScores[key] || 3) + ' of 5', min: 1, max: 5, value: dmScores[key] || 3, onChange: function(e) {
                           var s = Object.assign({}, dmScores); s[key] = parseInt(e.target.value); upd('dmScores', s); checkBadge('decisionPro');
                         }, className: 'w-full', 'aria-label': opt + ' ' + c.name }),
                         h('span', { className: 'text-[11px] font-mono' }, dmScores[key] || 3)
@@ -1408,7 +1408,7 @@ window.StemLab = window.StemLab || {
                       h('span', { className: typeColor }, cat.name),
                       h('span', { className: 'font-mono text-slate-600' }, fmtMoney(amt))
                     ),
-                    h('input', { type: 'range', min: 0, max: Math.max(Math.round(budgetIncome * 0.5), 1), step: 10, value: amt, 'aria-label': cat.name + ' budget: ' + fmtMoney(amt), onChange: function(e) {
+                    h('input', { type: 'range', min: 0, max: Math.max(Math.round(budgetIncome * 0.5), 1), step: 10, value: amt, 'aria-valuetext': fmtMoney(amt), 'aria-label': cat.name + ' budget: ' + fmtMoney(amt), onChange: function(e) {
                       var exp = Object.assign({}, budgetExp); exp[cat.name] = parseInt(e.target.value); upd('budgetExp', exp);
                     }, className: 'w-full h-1 rounded-full appearance-none cursor-pointer', style: { accentColor: cat.type === 'need' ? '#3b82f6' : cat.type === 'want' ? '#8b5cf6' : '#059669' } })
                   )
@@ -1482,7 +1482,7 @@ window.StemLab = window.StemLab || {
                  { k: 'monthlySave', l: 'Auto-save $', mn: 0, mx: 3000, st: 50 }].map(function(s) {
                   return h('div', { key: s.k },
                     h('label', { htmlFor: 'bd-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-emerald-700' }, iq[s.k])),
-                    h('input', { id: 'bd-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
+                    h('input', { id: 'bd-' + s.k, type: 'range', 'aria-valuetext': (iq[s.k] + ' ' + ((String(s.l).match(/\(([^)]+)\)/) || ['', ''])[1])), min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
                       onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
                       className: 'w-full', 'aria-label': s.l }));
                 })
@@ -1526,7 +1526,7 @@ window.StemLab = window.StemLab || {
                   h('span', { className: 'text-[11px] font-bold text-slate-700' }, f.icon + ' ' + f.name + ' (' + f.weight + '%)'),
                   h('span', { className: 'text-[11px] font-bold px-1.5 py-0.5 rounded ' + (rating >= 4 ? 'bg-emerald-100 text-emerald-700' : rating >= 3 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700') }, labels[rating - 1])
                 ),
-                h('input', { type: 'range', min: 1, max: 5, value: rating, 'aria-label': f.name + ' credit rating: ' + labels[rating - 1], onChange: function(e) {
+                h('input', { type: 'range', min: 1, max: 5, value: rating, 'aria-valuetext': (labels[rating - 1] || ('rating ' + rating)), 'aria-label': f.name + ' credit rating: ' + labels[rating - 1], onChange: function(e) {
                   var r = Object.assign({}, creditRatings); r[f.name] = parseInt(e.target.value); upd('creditRatings', r);
                   var explored = Object.keys(r).length;
                   upd('creditExplored', explored);
