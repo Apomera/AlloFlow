@@ -284,6 +284,77 @@ var _ocrJunkRatio = function (s) {
     return 1 - textChars / ns.length;
   } catch (_) { return 0; }
 };
+// ── Estimated OCR accuracy (2026-06-30) ──
+// An HONEST quality estimate for OCR'd text, with NO ground truth. The existing detectors catch
+// symbol-soup (_ocrJunkRatio) and broken-encoding (U+FFFD, _textLayerLooksGarbage); this catches the
+// harder case OCR fails at — text that LOOKS like text but is mis-recognized ("rnodern"->modern,
+// "tlie"->the, "0f"->of). Two complementary signals: (1) language-robust PLAUSIBILITY (replacement
+// chars, symbol density, long vowel-less tokens, 1-char fragments, letter/digit mashes) flags garble
+// in any script; (2) an English common-word HIT-RATE catches subtle letter swaps plausibility can't —
+// a corrupted function word drops out of the dictionary. ENGLISH-GATED: a clean non-English doc is NOT
+// scored "poor" — it falls back to plausibility-only at a disclosed lower confidence (we never penalize
+// a doc for failing an English dictionary). Returns a band + a heuristic %; it is an ESTIMATE, surfaced
+// as such, never a measured accuracy. KNOWN LIMIT (disclosed): subtle swaps that yield REAL words
+// (modern->modem) or that leave function words intact are not detectable without ground truth — this
+// reliably flags BADLY-garbled OCR, not every single-character error. Pure + unit-tested.
+var _ALLO_OCR_COMMON_EN = ('the of and to a in is that it for was as with his he be on at by i this had not are but from or have an they which you were her all she there would their we him been has when who will more no if out so said what up its about into than them can only other new some could time these two may then do first any my now such like our over me even most made after also did many before must through back years where much your way well down should because each just people how too little good very make see own work long here between both life being under never day same know while last might us great old year off come since against go came right used take three say each she may these so people them other than then now look only come its over think also back after use two how our work first well way even new want because any these give day most us').split(' ').filter(Boolean);
+var _alloOcrAccuracy = function (text) {
+  var s = String(text == null ? '' : text);
+  var rawTokens = s.split(/[^\p{L}\p{N}']+/u).filter(Boolean);
+  var alphaTokens = rawTokens.filter(function (t) { return /[\p{L}]/u.test(t); });
+  var nAlpha = alphaTokens.length;
+  if (nAlpha < 30) {
+    var _insufficient = { score: null, band: 'unknown', confidence: 'low', basis: 'insufficient text to estimate (need ~30+ words)', metrics: { alphaTokens: nAlpha, dictHitRate: 0, junkRatio: 0, noVowelRatio: 0, fragmentRatio: 0, replacementRatio: 0 }, suspectSamples: [] };
+    return _insufficient;
+  }
+  var fffd = (s.match(/�/g) || []).length;
+  var nonWs = (s.replace(/\s+/g, '')).length || 1;
+  var replacementRatio = fffd / nonWs;
+  var junkRatio = _ocrJunkRatio(s);
+  var noVowel = 0, frag = 0, mash = 0, dictHits = 0, latinTokens = 0;
+  var suspect = [];
+  var _commonSet = Object.create(null);
+  for (var w = 0; w < _ALLO_OCR_COMMON_EN.length; w++) _commonSet[_ALLO_OCR_COMMON_EN[w]] = 1;
+  for (var i = 0; i < alphaTokens.length; i++) {
+    var tok = alphaTokens[i];
+    var low = tok.toLowerCase();
+    if (/[a-z]/i.test(tok) && /[0-9]/.test(tok)) { mash++; if (suspect.length < 8) suspect.push(tok); }
+    if (low.replace(/[^a-z]/g, '').length === 1 && low !== 'a' && low !== 'i') frag++;
+    var isLatin = /^[a-z']+$/.test(low.replace(/[0-9]/g, ''));
+    if (isLatin) {
+      latinTokens++;
+      var letters = low.replace(/[^a-z]/g, '');
+      if (letters.length >= 4 && !/[aeiouy]/.test(letters)) { noVowel++; if (suspect.length < 8) suspect.push(tok); }
+      if (_commonSet[low.replace(/[^a-z']/g, '')] === 1) dictHits++;
+    }
+  }
+  var dictHitRate = latinTokens > 0 ? dictHits / latinTokens : 0;
+  var noVowelRatio = noVowel / nAlpha;
+  var fragmentRatio = frag / nAlpha;
+  var mashRatio = mash / nAlpha;
+  var garble = Math.min(1, 1.4 * replacementRatio + 0.9 * junkRatio + 0.7 * noVowelRatio + 0.5 * fragmentRatio + 0.8 * mashRatio);
+  var plausibility = 1 - garble;
+  var EN_TARGET = 0.33;                 // clean English running text hits ~0.33-0.55 of the common set
+  var looksEnglish = dictHitRate >= 0.18;
+  var score, confidence, basis;
+  if (looksEnglish) {
+    var dictComponent = Math.min(1, dictHitRate / EN_TARGET);
+    // plausibility is the CEILING — garble can't score high even when dictionary words survive (a
+    // U+FFFD-riddled page that happens to repeat "more" is still broken). The dictionary refines WITHIN
+    // plausible text, catching subtle letter swaps that drop function words out of the common set.
+    score = Math.round(100 * plausibility * (0.5 + 0.5 * dictComponent));
+    confidence = 'high';
+    basis = 'English common-word hit-rate + text plausibility';
+  } else {
+    score = Math.round(100 * plausibility);
+    confidence = (garble > 0.25) ? 'high' : 'medium';
+    basis = 'text plausibility only (non-English or unrecognized — not dictionary-verified)';
+  }
+  score = Math.max(0, Math.min(100, score));
+  var band = score >= 90 ? 'good' : score >= 70 ? 'fair' : 'poor';
+  var _result = { score: score, band: band, confidence: confidence, basis: basis, metrics: { alphaTokens: nAlpha, dictHitRate: Math.round(dictHitRate * 100) / 100, junkRatio: Math.round(junkRatio * 100) / 100, noVowelRatio: Math.round(noVowelRatio * 100) / 100, fragmentRatio: Math.round(fragmentRatio * 100) / 100, replacementRatio: Math.round(replacementRatio * 1000) / 1000 }, suspectSamples: suspect.slice(0, 8) };
+  return _result;
+};
 // _textLayerLooksGarbage: HIGH-PRECISION "broken text layer" detector. Fires ONLY on replacement-char
 // (U+FFFD) + C0/C1 control-char density >= 2% AND an absolute count >= 3 — the unambiguous broken-encoding
 // tell. Deliberately NO junk-ratio branch: reconcile's 0.45 is a RELATIVE (winner-vs-alt) threshold and,
@@ -17879,6 +17950,19 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         ? _diffIssueResolution(_flattenAuditIssues(_auditResult), verification)
         : null;
 
+      // ── Estimated OCR accuracy (2026-06-30) ── Only meaningful when the source was OCR'd (a scanned
+      // doc). For a born-digital text layer the extracted text is verbatim, so this is N/A and stays null.
+      // A heuristic ESTIMATE (English common-word hit-rate + language-robust plausibility), surfaced as
+      // such — it answers "is the searchable text we embedded faithful, or garbled?", the open question
+      // for scanned docs that confidence numbers don't. Fail-soft: any error → null.
+      let ocrAccuracy = null;
+      try {
+        if (_heavyScanned && extractedText && extractedText.length > 60) {
+          ocrAccuracy = _alloOcrAccuracy(extractedText);
+          warnLog('[OCR Accuracy] estimate: ' + (ocrAccuracy.score == null ? 'n/a' : (ocrAccuracy.score + '% (' + ocrAccuracy.band + ', ' + ocrAccuracy.confidence + ' confidence; ' + ocrAccuracy.basis + ')')));
+        }
+      } catch (_) { ocrAccuracy = null; }
+
       // ── Store results ──
       // sourceText + finalText feed the "Diff view" button in the remediation UI so
       // the user can audit verbatim-fidelity word-by-word. They cost some memory
@@ -17888,6 +17972,9 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         accessibleHtml,
         integrityCoverage,
         integrityWarning,
+        // Estimated OCR-quality of the embedded searchable text (scanned docs only; null otherwise).
+        // { score, band, confidence, basis, metrics, suspectSamples } — see _alloOcrAccuracy.
+        ocrAccuracy,
         // Structural fidelity nets (links/tables/refusal) — [{kind,msg}], drives the review banner.
         fidelityNotes: _structuralFidelityNotes,
         // #1 score↔fidelity coupling: when content fidelity is in question, the displayed

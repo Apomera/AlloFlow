@@ -7558,6 +7558,19 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <span className="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">📝 {(pdfFixResult.extractedChars || 0).toLocaleString()} chars extracted</span>
                           <span className="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">🌐 {(pdfFixResult.htmlChars || 0).toLocaleString()} chars HTML</span>
                           {pdfFixResult.imageCount > 0 && <span className="text-[11px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full font-bold">🖼️ {pdfFixResult.imageCount} images identified</span>}
+                          {/* Estimated OCR quality (scanned docs only) — answers "is the searchable text we
+                              embedded faithful, or garbled?". Heuristic + disclosed; never a measured accuracy. */}
+                          {pdfFixResult.ocrAccuracy && typeof pdfFixResult.ocrAccuracy.score === 'number' && (() => {
+                            const _oa = pdfFixResult.ocrAccuracy;
+                            const _cls = _oa.band === 'good' ? 'bg-emerald-100 text-emerald-700' : (_oa.band === 'fair' ? 'bg-amber-50 text-amber-700' : 'bg-amber-100 text-amber-800');
+                            const _lbl = _oa.band === 'good' ? (t('pdf_audit.dashboard.ocr_good') || 'Good') : (_oa.band === 'fair' ? (t('pdf_audit.dashboard.ocr_fair') || 'Fair') : (t('pdf_audit.dashboard.ocr_poor') || 'Poor'));
+                            return (
+                              <span className={'text-[11px] px-2 py-0.5 rounded-full font-bold ' + _cls}
+                                title={(t('pdf_audit.dashboard.ocr_quality_title') || 'ESTIMATED quality of the OCR text embedded as this scanned document’s searchable layer. Heuristic (' + _oa.basis + '; ' + _oa.confidence + ' confidence) — NOT a measured accuracy: it reliably flags badly-garbled OCR but cannot catch every single-character error. Review the Diff for the final word.') + (Array.isArray(_oa.suspectSamples) && _oa.suspectSamples.length ? ('  Suspect tokens: ' + _oa.suspectSamples.join(', ')) : '')}>
+                                {(_oa.band === 'poor' ? '⚠️ ' : '🔎 ') + (t('pdf_audit.dashboard.ocr_quality') || 'OCR quality') + ': ' + _lbl + ' (~' + _oa.score + '%)'}
+                              </span>
+                            );
+                          })()}
                         </div>
                       )}
 
