@@ -543,3 +543,22 @@ describe('B10: 2026-06-30 EA-consistency sweep (score labels name the governing 
     expect(vpx).toMatch(/\(pdfAuditResult\?\.hasSearchableText === false\) \? 'n\/a' : \(initialAxe \?\? '\?'\)/);
   });
 });
+
+describe('B11: audit #1 — null AI score no longer coerced to 0 (no fabricated 0/100)', () => {
+  const dpx = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+  const vpx = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
+
+  it('the headline derivations pass null PER-OPERAND, never the `(finalAi.score || 0)` object-truthiness coercion', () => {
+    expect(vpx).not.toMatch(/_computeHeadline\(\(finalAi\.score \|\| 0\), \(finalAxe\.score \|\| 0\)\)/);
+    expect(vpx).not.toMatch(/reAxe \? _computeHeadline\(\(reAi\.score \|\| 0\), \(reAxe\.score \|\| 0\)\)/);
+    expect(vpx).toMatch(/_computeHeadline\(\(finalAi && typeof finalAi\.score === 'number'\) \? finalAi\.score : null/);
+    expect(vpx).toMatch(/_computeHeadline\(\(typeof reAi\.score === 'number'\) \? reAi\.score : null/);
+  });
+  it('_alloComputeHeadline falls through to the surviving layer (null AI + good axe → axe, not 0)', () => {
+    const m = dpx.match(/var _alloComputeHeadline = function[\s\S]*?\n\};/);
+    const ch = new Function(m[0] + '\nreturn _alloComputeHeadline;')();
+    expect(ch(null, 88)).toBe(88);   // degraded AI → surviving axe score, NOT 0
+    expect(ch(98, 100)).toBe(98);    // both present → min (governing)
+    expect(ch(0, 88)).toBe(0);       // a REAL 0 is still preserved (not confused with null)
+  });
+});

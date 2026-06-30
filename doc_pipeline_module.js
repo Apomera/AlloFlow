@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -9021,30 +9021,8 @@ Return ONLY valid JSON (no markdown, no backticks): {"score":N,"summary":"1-2 se
       warnLog('[Style] Overrode boring palette with professional defaults for transform prompt');
     }
 
-    // ── WCAG AA contrast clamp (2026-06-30) ── Single chokepoint after ALL palette branches
-    // (AI brand-extraction / upload / boring-beautify / defaults) and BEFORE the palette reaches the
-    // header/CSS. The extracted-or-chosen colors are the design INTENT — never trusted to be accessible.
-    // Route batchDocStyle through the SAME engine that already guarantees the curated PALETTE_PRESETS
-    // (clampPaletteContrast), mapping batchDocStyle's token names to fg/bg pairs so every theme is AA by
-    // construction (this is the wiring that was missing — the curated-preset path clamps, this one didn't,
-    // so an AI-extracted header text like #737373 on a dark-blue band shipped at ~2.5:1). Nudges only the
-    // INK that fails (hue-preserving); surfaces/anchors untouched. Fail-soft: any error keeps the palette.
-    try {
-      const _bdsPairs = [
-        { fg: 'headerText', bg: 'headerBg', target: 4.5 },     // header title/text on the header band (the pair that failed)
-        { fg: 'headingColor', bg: 'bgColor', target: 3.0 },    // headings = large text (1.4.3)
-        { fg: 'accentColor', bg: 'bgColor', target: 3.0 },     // accent = non-text UI (1.4.11)
-        { fg: 'tableBorder', bg: 'bgColor', target: 3.0 },     // table borders = non-text UI (1.4.11)
-      ];
-      const _bdsClamp = clampPaletteContrast(batchDocStyle, { pairs: _bdsPairs });
-      if (_bdsClamp && _bdsClamp.palette) {
-        if (!_bdsClamp.allPass) {
-          const _adj = (_bdsClamp.report || []).filter((r) => r.clamped).map((r) => r.token + ' ' + r.from + '→' + r.color + ' (' + r.before + '→' + r.after + ':1 vs ' + r.against + ')');
-          if (_adj.length) warnLog('[Style] WCAG AA contrast clamp adjusted ' + _adj.length + ' palette color(s): ' + _adj.join('; '));
-        }
-        batchDocStyle = { ...batchDocStyle, ..._bdsClamp.palette };
-      }
-    } catch (_clampErr) { warnLog('[Style] palette contrast clamp failed (keeping palette): ' + (_clampErr && _clampErr.message)); }
+    // (WCAG AA contrast clamp relocated to the LIVE fixAndVerifyPdf path — see ~15428. This
+    // processSinglePdfForBatch loop is legacy/never-awaited, so clamping here did nothing. Audit wo72lu4mh #2.)
 
     // Deterministic prescan of the source — feed structured hints into the prompt
     const _sourceHints = scanSourceHints(extractedText);
@@ -15427,6 +15405,31 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         _pipeLog('Style', 'Using preset theme: ' + _selectedSeed.name + ' (skipped Vision extraction)');
         updateProgress(2, 'Using ' + _selectedSeed.name + ' theme...');
       }
+
+      // ── WCAG AA contrast clamp (2026-06-30, audit wo72lu4mh #2) ── LIVE PATH. The docStyle palette above
+      // (preset CSS vars / AI brand-extraction / uploaded brand / defaults) is the design INTENT — never
+      // trusted to be accessible. Route it through clampPaletteContrast (the same engine that already
+      // guarantees the curated PALETTE_PRESETS) so every theme is AA by construction BEFORE its colors bake
+      // into the inline header/heading/border CSS in the renderer below. (The earlier clamp on batchDocStyle
+      // lived in the DEAD processSinglePdfForBatch loop — this is the version on the SHIPPED path.) Maps
+      // docStyle token names to fg/bg pairs; hue-preserving (only the failing ink nudges); non-hex/gradient
+      // bg skipped; fail-soft (any error keeps the palette).
+      try {
+        const _dsPairs = [
+          { fg: 'headerText', bg: 'headerBg', target: 4.5 },     // header text on the header band (the #737373 case)
+          { fg: 'headingColor', bg: 'bgColor', target: 3.0 },    // headings = large text (1.4.3)
+          { fg: 'accentColor', bg: 'bgColor', target: 3.0 },     // accent/heading-rule = non-text UI (1.4.11)
+          { fg: 'tableBorder', bg: 'bgColor', target: 3.0 },     // table borders = non-text UI (1.4.11)
+        ];
+        const _dsClamp = clampPaletteContrast(docStyle, { pairs: _dsPairs });
+        if (_dsClamp && _dsClamp.palette) {
+          if (!_dsClamp.allPass) {
+            const _adj = (_dsClamp.report || []).filter((r) => r.clamped).map((r) => r.token + ' ' + r.from + '→' + r.color + ' (' + r.before + '→' + r.after + ':1 vs ' + r.against + ')');
+            if (_adj.length) warnLog('[PDF Fix] WCAG AA contrast clamp adjusted ' + _adj.length + ' docStyle color(s): ' + _adj.join('; '));
+          }
+          docStyle = { ...docStyle, ..._dsClamp.palette };
+        }
+      } catch (_dsClampErr) { warnLog('[PDF Fix] docStyle contrast clamp failed (keeping palette): ' + (_dsClampErr && _dsClampErr.message)); }
 
       // ── Deterministic HTML renderer from JSON content blocks ──
       const renderJsonToHtml = (blocks) => {
@@ -29280,11 +29283,6 @@ window.AlloModules.createDocPipeline.ocrBlockLayout = _alloOcrBlockLayout; // st
 window.AlloModules.createDocPipeline.structuralFoundations = _alloStructuralFoundations; // static: exposed for tests
 window.AlloModules.createDocPipeline.weightedDeductions = _alloWeightedDeductions; // static: exposed for tests (#5)
 window.AlloModules.createDocPipeline.contrastFixPair = _alloContrastFixPair; // static: exposed for tests (contrast pair-fixer)
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 })();

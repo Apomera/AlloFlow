@@ -74,17 +74,19 @@ describe('batchDocStyle AA clamp — the exact failure + general guarantee', () 
   });
 });
 
-describe('batchDocStyle AA clamp — pipeline wiring', () => {
-  it('the remediation path routes batchDocStyle through clampPaletteContrast at a single post-branch chokepoint', () => {
-    expect(dp).toMatch(/const _bdsClamp = clampPaletteContrast\(batchDocStyle, \{ pairs: _bdsPairs \}\)/);
+describe('docStyle AA clamp — LIVE pipeline wiring (fixAndVerifyPdf)', () => {
+  it('the LIVE fix path routes docStyle through clampPaletteContrast, after it is finalized, before the renderer', () => {
+    expect(dp).toMatch(/const _dsClamp = clampPaletteContrast\(docStyle, \{ pairs: _dsPairs \}\)/);
     expect(dp).toMatch(/\{ fg: 'headerText', bg: 'headerBg', target: 4\.5 \}/);
-    expect(dp).toMatch(/batchDocStyle = \{ \.\.\.batchDocStyle, \.\.\._bdsClamp\.palette \}/);
-    // fail-soft + runs AFTER the boring-beautify override, BEFORE the prescan that builds the prompt
-    expect(dp).toMatch(/catch \(_clampErr\) \{ warnLog\('\[Style\] palette contrast clamp failed/);
-    const clampIdx = dp.indexOf('clampPaletteContrast(batchDocStyle');
-    const beautifyIdx = dp.indexOf('Overrode boring palette with professional defaults');
-    const prescanIdx = dp.indexOf('Deterministic prescan of the source');
-    expect(clampIdx).toBeGreaterThan(beautifyIdx);
-    expect(prescanIdx).toBeGreaterThan(clampIdx);
+    expect(dp).toMatch(/docStyle = \{ \.\.\.docStyle, \.\.\._dsClamp\.palette \}/);
+    expect(dp).toMatch(/catch \(_dsClampErr\) \{ warnLog\('\[PDF Fix\] docStyle contrast clamp failed/);
+    const clampIdx = dp.indexOf('clampPaletteContrast(docStyle');
+    const presetIdx = dp.indexOf('Using preset theme:');                 // a live-path docStyle branch
+    const rendererIdx = dp.indexOf('Deterministic HTML renderer from JSON content blocks');
+    expect(clampIdx).toBeGreaterThan(presetIdx);                          // after docStyle is finalized
+    expect(rendererIdx).toBeGreaterThan(clampIdx);                        // before colors bake into the HTML
+  });
+  it('the dead processSinglePdfForBatch loop no longer clamps (relocated, not duplicated)', () => {
+    expect(dp).not.toMatch(/clampPaletteContrast\(batchDocStyle/);
   });
 });

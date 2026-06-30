@@ -3889,7 +3889,7 @@ function PdfAuditView(props) {
         const autoFix = await autoFixAxeViolations(fixed, await runAxeAudit(fixed), pdfAutoFixPasses);
         if (autoFix?.html) fixed = autoFix.html;
         const [finalAi, finalAxe] = await Promise.all([auditOutputAccessibility(fixed), runAxeAudit(fixed)]);
-        const finalScore = finalAi && finalAxe ? _computeHeadline(finalAi.score || 0, finalAxe.score || 0) : finalAi?.score || 0;
+        const finalScore = _computeHeadline(finalAi && typeof finalAi.score === "number" ? finalAi.score : null, finalAxe && typeof finalAxe.score === "number" ? finalAxe.score : null);
         setPdfFixResult({
           accessibleHtml: fixed,
           beforeScore,
@@ -6079,7 +6079,7 @@ Return ONLY JSON:
                   warnLog("[Re-fix] AI re-verification returned null for section " + (chunk.index + 1) + "; not committing new HTML.");
                   addToast(t("toasts.re_fix_verification_unavailable_kept"), "warning");
                 } else {
-                  const newScore = reAxe ? _computeHeadline(reAi.score || 0, reAxe.score || 0) : reAi.score;
+                  const newScore = _computeHeadline(typeof reAi.score === "number" ? reAi.score : null, reAxe && typeof reAxe.score === "number" ? reAxe.score : null);
                   setPdfFixResult((prev) => ({
                     ...prev,
                     accessibleHtml: result.html,

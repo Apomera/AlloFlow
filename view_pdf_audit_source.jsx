@@ -3505,7 +3505,11 @@ function PdfAuditView(props) {
                           const autoFix = await autoFixAxeViolations(fixed, await runAxeAudit(fixed), pdfAutoFixPasses);
                           if (autoFix?.html) fixed = autoFix.html;
                           const [finalAi, finalAxe] = await Promise.all([auditOutputAccessibility(fixed), runAxeAudit(fixed)]);
-                          const finalScore = (finalAi && finalAxe) ? _computeHeadline((finalAi.score || 0), (finalAxe.score || 0)) : (finalAi?.score || 0); // weakest-layer-governs (shared)
+                          // Pass null PER-OPERAND (not `|| 0`): auditOutputAccessibility returns a truthy object with
+                          // score:null on a degraded AI audit, so the old `(finalAi && finalAxe)` guard passed and
+                          // `null || 0` fabricated a 0/100 (+ a huge negative delta + poisoned run-history). _computeHeadline
+                          // falls through to the surviving layer when one operand is null. Matches the sibling at ~3454.
+                          const finalScore = _computeHeadline((finalAi && typeof finalAi.score === 'number') ? finalAi.score : null, (finalAxe && typeof finalAxe.score === 'number') ? finalAxe.score : null);
                           setPdfFixResult({
                             accessibleHtml: fixed,
                             beforeScore,
@@ -7165,7 +7169,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                               warnLog('[Re-fix] AI re-verification returned null for section ' + (chunk.index + 1) + '; not committing new HTML.');
                                               addToast(t('toasts.re_fix_verification_unavailable_kept'), 'warning');
                                             } else {
-                                              const newScore = reAxe ? _computeHeadline((reAi.score || 0), (reAxe.score || 0)) : reAi.score; // weakest-layer-governs (shared)
+                                              // Per-operand null (not `|| 0`): reAi is non-null here but reAi.score can be null on a
+                                              // degraded re-audit — `null || 0` would fabricate a 0. Let _computeHeadline fall through.
+                                              const newScore = _computeHeadline((typeof reAi.score === 'number') ? reAi.score : null, (reAxe && typeof reAxe.score === 'number') ? reAxe.score : null);
                                               setPdfFixResult(prev => ({
                                                 ...prev,
                                                 accessibleHtml: result.html,
