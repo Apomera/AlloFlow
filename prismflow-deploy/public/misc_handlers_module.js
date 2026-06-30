@@ -286,11 +286,25 @@ const handleLoadProject = (e, deps) => {
             }
             // Guided-tour resume: a teacher who saved mid-tutorial drops back in at their
             // step (Canvas has no cross-session storage, so progress rides the project file).
-            if (rawData.guidedTourProgress && typeof rawData.guidedTourProgress.guidedStep === 'number') {
-                if (deps.setGuidedSelectedIds && Array.isArray(rawData.guidedTourProgress.selectedIds)) deps.setGuidedSelectedIds(rawData.guidedTourProgress.selectedIds);
-                if (deps.setGuidedStep) deps.setGuidedStep(rawData.guidedTourProgress.guidedStep);
-                if (deps.setGuidedMode) deps.setGuidedMode(true);
-                if (addToast) addToast(t('guided.resumed') || 'Resumed your guided tutorial.', 'success');
+            // Hardened restore: (1) restore selectedIds UNCONDITIONALLY — null is the valid
+            // "all steps" default that Array.isArray would wrongly skip, leaving the restored
+            // step index applied against whatever tool set the session already had (lands the
+            // teacher on the wrong tool / an out-of-range step); (2) clamp the step into range;
+            // (3) gate on the saved schema version so a newer file doesn't restore garbage.
+            const _gtp = rawData.guidedTourProgress;
+            if (_gtp && typeof _gtp.guidedStep === 'number') {
+                if (_gtp.version == null || _gtp.version === 1) {
+                    if (deps.setGuidedSelectedIds) deps.setGuidedSelectedIds(Array.isArray(_gtp.selectedIds) ? _gtp.selectedIds : null);
+                    const _sel = _gtp.selectedIds;
+                    // source-input is always an active step; estimate the active-step count to clamp against.
+                    const _activeLen = Array.isArray(_sel) ? (_sel.indexOf('source-input') === -1 ? _sel.length + 1 : _sel.length) : 22;
+                    const _step = Math.max(0, Math.min(_gtp.guidedStep, Math.max(0, _activeLen - 1)));
+                    if (deps.setGuidedStep) deps.setGuidedStep(_step);
+                    if (deps.setGuidedMode) deps.setGuidedMode(true);
+                    if (addToast) addToast(t('guided.resumed') || 'Resumed your guided tutorial.', 'success');
+                } else if (addToast) {
+                    addToast(t('guided.resume_version_skip') || 'This saved tutorial progress is from a newer version and was not restored.', 'info');
+                }
             }
             let loadedHistory = [];
             let isStudentSave = false;

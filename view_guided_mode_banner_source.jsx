@@ -580,8 +580,15 @@ function GuidedModeBanner({
           <span style={{ fontSize: '11px', color: '#c7d2fe', fontWeight: 600 }}>{t('guided.step_of').replace('{current}', Math.min(guidedStep + 1, GUIDED_STEPS.length)).replace('{total}', GUIDED_STEPS.length)}</span>
         </div>
         <p style={{ fontSize: '11px', color: '#c7d2fe', margin: '0 0 10px', fontWeight: 600 }}>{step.label || 'Complete!'}</p>
-        <div style={{ width: '100%', height: '4px', borderRadius: '2px', background: 'rgba(255,255,255,0.1)', overflow: 'hidden', marginBottom: '12px' }}>
-          <div style={{ height: '100%', borderRadius: '2px', background: 'linear-gradient(90deg, #818cf8, #6366f1)', transition: 'width 0.4s ease-out', width: ((guidedStep / GUIDED_STEPS.length) * 100) + '%' }} />
+        {/* Segmented progress: one tick per active step — completed (green) / current (glowing indigo) /
+            upcoming (dim). Makes "you've finished N steps" visible, especially after resuming a saved tour
+            (mirrors the persisted completedSteps = steps before the current index). */}
+        <div role="progressbar" aria-valuenow={Math.min(guidedStep, GUIDED_STEPS.length)} aria-valuemin={0} aria-valuemax={GUIDED_STEPS.length} aria-label={(t('guided.progress_label') || 'Guided tour progress') + ': ' + Math.min(guidedStep, GUIDED_STEPS.length) + '/' + GUIDED_STEPS.length} style={{ display: 'flex', gap: GUIDED_STEPS.length > 14 ? '2px' : '3px', marginBottom: '12px' }}>
+          {GUIDED_STEPS.map((s, i) => {
+            const done = i < guidedStep;
+            const current = i === guidedStep;
+            return <div key={s.id || i} aria-hidden="true" title={s.label} style={{ flex: 1, height: '5px', borderRadius: '3px', background: done ? 'linear-gradient(90deg, #34d399, #10b981)' : current ? 'linear-gradient(90deg, #818cf8, #6366f1)' : 'rgba(255,255,255,0.12)', boxShadow: current ? '0 0 8px rgba(99,102,241,0.6)' : 'none', transition: 'background 0.3s ease-out' }} />;
+          })}
         </div>
         {step.action && (
           <div role="status" style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', background: stepDone ? 'rgba(34,197,94,0.14)' : 'rgba(99,102,241,0.18)', border: '1px solid ' + (stepDone ? 'rgba(74,222,128,0.4)' : 'rgba(129,140,248,0.35)'), borderRadius: '12px', padding: '10px 12px', marginBottom: '10px' }}>
