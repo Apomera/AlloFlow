@@ -28139,7 +28139,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       {isBotVisible && (
           <AlloBot
             ref={alloBotRef}
-            canPlayIntro={canPlayBotIntro}
+            canPlayIntro={canPlayBotIntro && isBotVisible && hasSelectedRole}
             topic={sourceTopic || inputText || t('common.this_topic')}
             mood={isProcessing || isChatProcessing ? 'thinking' : 'idle'}
             accessory={botAccessory}

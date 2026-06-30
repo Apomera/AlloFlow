@@ -533,7 +533,7 @@
     },
     role: "button",
     tabIndex: 0,
-    "aria-label": (t('launch_pad.educator_tools_title') || 'Educator Tools') + '. ' + (t('launch_pad.educator_tools_desc') || 'BehaviorLens, Report Writer') + (APP_CONFIG._cfg_validation_key ? ' (password protected)' : ''),
+    "aria-label": (t('launch_pad.educator_tools_title') || 'Educator Tools') + '. ' + (t('launch_pad.educator_tools_desc_open') || 'BehaviorLens, Report Writer, and other professional educator tools.'),
     onClick: () => {
       setHasSelectedMode(true);
       setHasSelectedRole(true);
@@ -585,7 +585,7 @@
       lineHeight: '1.6',
       margin: 0
     }
-  }, t('launch_pad.educator_tools_desc') || 'BehaviorLens, Report Writer, and professional clinical tools — password protected'))), /*#__PURE__*/React.createElement("p", {
+  }, t('launch_pad.educator_tools_desc_open') || 'BehaviorLens, Report Writer, and other professional educator tools.'))), /*#__PURE__*/React.createElement("p", {
     style: {
       marginTop: '48px',
       fontSize: '11px',
