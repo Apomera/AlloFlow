@@ -4001,6 +4001,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     "Audit & Remediate" below, but with the recommended defaults
                     applied: auto post-fix mode + auto-continue-to-target forced on. */}
                 <div className="mb-4 bg-gradient-to-br from-indigo-50 to-violet-50 border-2 border-indigo-300 rounded-2xl p-4">
+                  {/* A1 (2026-06-28): FERPA/privacy egress disclosure. The document's text + images are sent to
+                      Google Gemini for the AI portions of the audit; surfaced ABOVE the primary CTA so a teacher
+                      sees it before any audit runs. The automated WCAG checks (axe / Equal Access) run locally.
+                      Note: PDFs always use Gemini Vision today — there is no AI-free PDF audit mode (Office /
+                      transcript inputs already run axe-only). */}
+                  <p className="text-[11px] leading-snug text-slate-700 mb-3 pb-2 border-b border-indigo-200">🔒 {t('pdf_audit.gemini_disclosure') || 'Privacy: this document’s text and images are sent to Google Gemini (a third-party AI service) for the AI parts of the audit. The automated WCAG checks run locally in your browser. Don’t upload documents containing student personal information you aren’t permitted to share with a third-party AI service.'}</p>
                   <button data-help-key="pdf_audit_view_make_accessible_btn" onClick={async () => {
                     if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; }
                     // B1 (2026-06-28): a PRIOR run's Stop left pdfAutoContinueAbortRef.current = true and it is

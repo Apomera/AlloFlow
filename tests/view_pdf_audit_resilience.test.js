@@ -29,3 +29,15 @@ describe('C1 + C2: blob URLs are revoked (no leak)', () => {
     expect(view).toContain('setTimeout(revoke, 120000);');
   });
 });
+
+describe('A1: FERPA egress disclosure shows above the audit CTA (audit, 2026-06-28)', () => {
+  it('the Make-Accessible box discloses that document content is sent to Google Gemini', () => {
+    expect(view).toContain("t('pdf_audit.gemini_disclosure')");
+    expect(view).toMatch(/sent to Google Gemini/);
+    // it sits inside the gradient CTA box, before the Make-Accessible button (so it's seen first)
+    const discIdx = view.indexOf("t('pdf_audit.gemini_disclosure')");
+    const btnIdx = view.indexOf('pdf_audit_view_make_accessible_btn');
+    expect(discIdx).toBeGreaterThan(-1);
+    expect(discIdx).toBeLessThan(btnIdx);
+  });
+});
