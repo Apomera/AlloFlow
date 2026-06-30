@@ -593,3 +593,25 @@ describe('B12: audit honesty cluster #3-#7,#9 (export ↔ screen consistency)', 
     expect(vpx).toMatch(/Docs Scoring 90\+ \(content audit\)/);
   });
 });
+
+describe('B13: audit logic fixes #10, #11, #12, #8', () => {
+  const dpx = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+  const vpx = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
+
+  it('#10: reconcileOcrPages _extremeGarbage requires a SUBSTANTIAL alt (never flips to a near-empty page)', () => {
+    expect(dpx).toMatch(/const _extremeGarbage = _winJ >= 0\.45 && _altJ < _winJ && _substantialAlt;/);
+  });
+  it('#11: a selective-refix pass runs the full deterministic WCAG pass on the reassembled doc', () => {
+    expect(dpx).toMatch(/currentHtml = runDeterministicWcagFixes\(currentHtml\)/);
+    expect(dpx).toMatch(/Full deterministic WCAG pass on the REASSEMBLED doc \(audit wo72lu4mh #11\)/);
+  });
+  it('#12: the AAA contrast pass has a local-background guard (no darkened white-on-colored)', () => {
+    expect(dpx).toMatch(/const _aaaHasLocalBg = \(fullStr, offset\) =>/);
+    expect(dpx).toMatch(/\(match, prefix, hex, offset, fullStr\) => \{\s*\n\s*try \{\s*\n\s*if \(_aaaHasLocalBg\(fullStr, offset\)\) return match;/);
+  });
+  it('#8: the OCR report surfaces a per-page warning when some scanned pages got no/partial text', () => {
+    expect(vpx).toMatch(/\(\(ocrTextLayer\.pagesEmpty \|\| 0\) > 0\) \|\| \(\(ocrTextLayer\.pagesIncomplete \|\| 0\) > 0\)/);
+    expect(vpx).toMatch(/got NO searchable text/);
+    expect(vpx).toMatch(/got only partial text/);
+  });
+});

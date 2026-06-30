@@ -9254,6 +9254,16 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               if (ocrTextLayer && typeof ocrTextLayer.coveragePct === 'number' && (ocrTextLayer.coveragePct < 100 || ocrTextLayer.nonLatinDropped)) {
                                 _rpt.push({ tone: 'error', text: 'Searchable text layer covers ' + ocrTextLayer.coveragePct + '% of the scanned text — ' + (ocrTextLayer.droppedChars || 0) + ' character(s) in a non-Latin script could not be embedded, so those passages will not be searchable or read aloud.' });
                               }
+                              // Per-page OCR coverage (audit wo72lu4mh #8): the whole-doc char % can look fine while
+                              // SPECIFIC scanned pages got no / only partial searchable text. createTaggedPdf computes
+                              // these per-page counts "so the UI can warn" — surface them instead of only warnLog'ing.
+                              if (ocrTextLayer && (((ocrTextLayer.pagesEmpty || 0) > 0) || ((ocrTextLayer.pagesIncomplete || 0) > 0))) {
+                                const _pw = ocrTextLayer.pagesWithText || ((ocrTextLayer.pagesCovered || 0) + (ocrTextLayer.pagesIncomplete || 0) + (ocrTextLayer.pagesEmpty || 0));
+                                const _bits = [];
+                                if ((ocrTextLayer.pagesEmpty || 0) > 0) _bits.push(ocrTextLayer.pagesEmpty + ' got NO searchable text');
+                                if ((ocrTextLayer.pagesIncomplete || 0) > 0) _bits.push(ocrTextLayer.pagesIncomplete + ' got only partial text');
+                                _rpt.push({ tone: 'warn', text: 'Per-page OCR: of ' + _pw + ' scanned page(s), ' + _bits.join(' and ') + ' — those page(s) will not be fully searchable or read aloud; verify them against the original.' });
+                              }
                               if (roundTrip && roundTrip.ok !== false && Array.isArray(roundTrip.warnings) && roundTrip.warnings.length) {
                                 _rpt.push({ tone: 'warn', text: 'Structure self-check notes: ' + roundTrip.warnings.join('; ') });
                               }

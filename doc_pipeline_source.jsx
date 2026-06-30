@@ -7319,7 +7319,7 @@ var createDocPipeline = function(deps) {
         const _altLen = _winner === 'tesseract' ? vLen : tLen;
         const _substantialAlt = _altLen >= _winLen * 0.5;       // don't drop >half the captured content
         const _tConf = _meanConf(tPage);
-        const _extremeGarbage = _winJ >= 0.45 && _altJ < _winJ; // winner is mostly non-text → garbage even if longer
+        const _extremeGarbage = _winJ >= 0.45 && _altJ < _winJ && _substantialAlt; // winner is mostly non-text → garbage even if longer — but only flip when the alt has SUBSTANTIAL content (≥50% len), else we'd drop a page's text to a near-empty "cleaner" alt (audit wo72lu4mh #10; mirrors _clearlyWorse's guard)
         const _clearlyWorse = _winJ >= 0.18 && _winJ >= _altJ * 1.6 && _substantialAlt; // absolutely + relatively junkier
         // Low-confidence Tesseract → prefer a cleaner, substantial Vision. Threshold raised 50→60
         // (2026-06-20) to match the B5 low-confidence banner: garbled-but-letter-shaped OCR (e.g. a
@@ -11937,11 +11937,38 @@ HTML section ${chunkNum}/${chunks.length}:
       if (bodyBgM) { try { const p = hexToRgb(bodyBgM[1].trim()); if (p) aaaBg = p; } catch(e) {} }
       else if (styleBgM) { try { const p = hexToRgb(styleBgM[1].trim()); if (p) aaaBg = p; } catch(e) {} }
 
+      // Local-background guard (audit wo72lu4mh #12): the AA pass (fixContrastViolations._hasLocalBg) skips
+      // a color that sits on its OWN local background — never darken white-on-colored against the body bg.
+      // That helper is out of scope here, so mirror it: without it the AAA pass re-introduced the "darkened
+      // white-on-colored" regression (e.g. the High-Contrast theme's white text on a colored band).
+      const _aaaHasLocalBg = (fullStr, offset) => {
+        const back = fullStr.substring(Math.max(0, offset - 600), offset);
+        const lastStyleOpen = back.lastIndexOf('style="');
+        if (lastStyleOpen !== -1) {
+          const afterStyleOpen = back.substring(lastStyleOpen + 7);
+          if (!afterStyleOpen.includes('"')) {
+            const fwd = fullStr.substring(offset, Math.min(fullStr.length, offset + 600));
+            const cq = fwd.indexOf('"');
+            const frag = afterStyleOpen + (cq >= 0 ? fwd.substring(0, cq) : fwd);
+            if (/background(?:-color)?\s*:/i.test(frag)) return true;
+          }
+        }
+        const lastBrace = back.lastIndexOf('{'), lastClose = back.lastIndexOf('}');
+        if (lastBrace !== -1 && lastBrace > lastClose) {
+          const fwd = fullStr.substring(offset, Math.min(fullStr.length, offset + 600));
+          const ci = fwd.indexOf('}');
+          const frag = back.substring(lastBrace + 1) + (ci >= 0 ? fwd.substring(0, ci) : fwd);
+          if (/background(?:-color)?\s*:/i.test(frag)) return true;
+        }
+        return false;
+      };
+
       // Same JS-safety as fixContrastViolations: never darken a color:#hex inside <script> source.
       const _aaaScripts = [];
       html = html.replace(/<script[\s\S]*?<\/script>/gi, function (m) { _aaaScripts.push(m); return '<!--alloflow:script-stash:' + (_aaaScripts.length - 1) + '-->'; });
-      html = html.replace(/([;"\s])color:\s*(#[0-9a-fA-F]{3,6})\b/g, (match, prefix, hex) => {
+      html = html.replace(/([;"\s])color:\s*(#[0-9a-fA-F]{3,6})\b/g, (match, prefix, hex, offset, fullStr) => {
         try {
+          if (_aaaHasLocalBg(fullStr, offset)) return match; // a local background governs — don't darken against the body bg (#12)
           const rgb = hexToRgb(hex);
           if (cr(rgb, aaaBg) < 7.0) {
             const [fr, fg, fb] = fixAAA(rgb, aaaBg);
@@ -13037,6 +13064,12 @@ HTML section ${chunkNum}/${chunks.length}:
               if (fullSan.fixCount > 0) { currentHtml = fullSan.html; warnLog(`[AutoFix] Post-selective-refix sanitizer: ${fullSan.fixCount} fixes`); }
               const fullList = fixListViolations(currentHtml);
               if (fullList.fixCount > 0) { currentHtml = fullList.html; }
+              // Full deterministic WCAG pass on the REASSEMBLED doc (audit wo72lu4mh #11): a selective-refix
+              // pass otherwise leaves the re-fixed doc a weaker deterministic safety net than the main loop
+              // (missing table-header scope / lang-spans / form-labels / decorative-image alt / heading
+              // hierarchy). Run it HERE at full-doc level (landmark-safe + idempotent), never inside
+              // refixChunk where fixLandmarkFoundations would inject a duplicate <main>/<title> per chunk.
+              currentHtml = runDeterministicWcagFixes(currentHtml);
             } catch(e) { /* non-blocking */ }
             // Force a fresh full-doc axe read so the NEXT loop iteration sees
             // the reassembled document's actual violation set, not stale per-chunk
