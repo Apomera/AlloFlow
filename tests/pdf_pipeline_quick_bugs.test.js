@@ -539,5 +539,7 @@ describe('B10: 2026-06-30 EA-consistency sweep (score labels name the governing 
     expect(vpx).toMatch(/' \| Equal Access: n\/a'/);
     expect(vpx).toMatch(/automated checks ran on an empty text reconstruction — not meaningful; the AI rubric governs/);
     expect(vpx).toMatch(/AI rubric — automated checks N\/A, no text layer/);
+    // the fix-modal before→after breakdown also neutralizes the by-construction automated "before" operand
+    expect(vpx).toMatch(/\(pdfAuditResult\?\.hasSearchableText === false\) \? 'n\/a' : \(initialAxe \?\? '\?'\)/);
   });
 });
