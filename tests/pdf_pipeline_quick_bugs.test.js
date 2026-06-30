@@ -455,3 +455,52 @@ describe('B8: 2026-06-29 scorecard fixes (export honesty + OCR/foundations/basel
     expect(vpx).toMatch(/catch \(_\) \{ beforeScore = null; \}/);
   });
 });
+
+describe('B9: 2026-06-30 multi-h1 outline fix + Equal Access shown in the exported report', () => {
+  const dpx = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+  const vpx = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
+
+  // Extract the pure helper and exercise it (the riskiest logic — the regex demote).
+  const m = dpx.match(/var _alloEnsureSingleH1 = function \(html\) \{[\s\S]*?\n\};/);
+  const ensureSingleH1 = m ? new Function(m[0] + '\nreturn _alloEnsureSingleH1;')() : null;
+
+  it('the helper collapses a multi-h1 doc to a single h1 (keeps the FIRST, demotes the rest to h2)', () => {
+    expect(typeof ensureSingleH1).toBe('function');
+    const doc = '<html><body><h1 class="cover">Title</h1><h2>Sec</h2><h1 id="apx">APPENDIX E</h1></body></html>';
+    const out = ensureSingleH1(doc);
+    expect((out.match(/<h1[\s>]/gi) || []).length).toBe(1);
+    expect(out).toMatch(/<h1 class="cover">Title<\/h1>/);   // title kept as h1
+    expect(out).toMatch(/<h2 id="apx">APPENDIX E<\/h2>/);   // 2nd h1 demoted, attrs preserved
+  });
+  it('the helper is idempotent and a no-op on 0- or 1-h1 documents', () => {
+    const once = ensureSingleH1('<h1>a</h1><h1>b</h1><h1>c</h1>');
+    expect((once.match(/<h1[\s>]/gi) || []).length).toBe(1);
+    expect(ensureSingleH1(once)).toBe(once);                // idempotent
+    expect(ensureSingleH1('<h1>only</h1>')).toBe('<h1>only</h1>');
+    expect(ensureSingleH1('<h2>x</h2>')).toBe('<h2>x</h2>');
+  });
+  it('the dedup runs on the final HTML BEFORE the deterministic engines score it (axe + Equal Access)', () => {
+    expect(dpx).toMatch(/accessibleHtml = _alloEnsureSingleH1\(accessibleHtml\)/);
+    const dedupIdx = dpx.indexOf('accessibleHtml = _alloEnsureSingleH1(accessibleHtml)');
+    const eaIdx = dpx.indexOf('eaResults = await runEqualAccessAudit(_scoreHtml)');
+    expect(dedupIdx).toBeGreaterThan(0);
+    expect(eaIdx).toBeGreaterThan(dedupIdx);                // dedup happens first → EA sees one h1
+  });
+
+  it('_honestReportBlocks accepts a secondEngine arg + renders an Equal Access tile and a "governs" note', () => {
+    expect(dpx).toMatch(/_honestReportBlocks = \(structural, semantic, coverage, pdfua, secondEngine\)/);
+    expect(dpx).toMatch(/2nd engine \(Equal Access\)/);
+    expect(dpx).toMatch(/headline is governed by the IBM Equal Access engine/);
+  });
+  it('both report generators pass the EA score, and all export after-objects carry secondEngineAudit', () => {
+    expect(dpx).toMatch(/_eaScore = isBeforeAfter \? \(d\.after\?\.secondEngineAudit\?\.score\)/);
+    expect(dpx).toMatch(/fr\.secondEngineAudit && typeof fr\.secondEngineAudit\.score === 'number'/);
+    expect((vpx.match(/secondEngineAudit: pdfFixResult\.secondEngineAudit \|\| null/g) || []).length).toBeGreaterThanOrEqual(4);
+  });
+  it('the on-screen fix modal explains WHY the automated layer is low (names Equal Access + lists its fails) only when EA governs', () => {
+    expect(vpx).toMatch(/typeof afterEa === 'number' && typeof afterAxe === 'number' && afterEa < afterAxe/);
+    expect(vpx).toMatch(/ea_governs_lead/);
+    expect(vpx).toMatch(/second independent WCAG engine, IBM Equal Access/);
+    expect(vpx).toMatch(/pdfFixResult\.secondEngineAudit\.fails\.slice\(0, 12\)/);
+  });
+});

@@ -67,6 +67,28 @@ var _alloOcrBlockLayout = function (text, pageH) {
   var _result = { lines: out, lineHeight: lh, size: size };
   return _result;
 };
+// ── Whole-document <h1> normalization (2026-06-30) ──
+// A correct document outline has exactly ONE <h1> (the title). Multi-page / chunked
+// remediation can emit one <h1> per fragment (each chunk keeps its own title heading),
+// so the MERGED document ships several — a real WCAG 1.3.1 finding that axe-core rates
+// "minor" but the IBM Equal Access engine penalizes heavily, dragging the weakest-layer
+// headline far below the axe/AI scores (the "score is 60 but the layers are 100/98"
+// report). This collapses to a single <h1> by KEEPING THE FIRST (the document title) and
+// demoting every later one to <h2> (a top-level section) — never introduces a level SKIP
+// (the direction validators flag), since h1→h2 keeps the outline contiguous. Idempotent:
+// a 0- or 1-<h1> document is returned byte-for-byte unchanged. Matches the operands-in-a-var
+// idiom so the pre-commit integrity check never mistakes a 2-space `return {` for the
+// factory export block. Headings never nest, so the non-greedy block match is safe.
+var _alloEnsureSingleH1 = function (html) {
+  var s = String(html || '');
+  if ((s.match(/<h1[\s>]/gi) || []).length <= 1) return s;
+  var n = 0;
+  var out = s.replace(/<h1(\b[^>]*)>([\s\S]*?)<\/h1>/gi, function (m, attrs, inner) {
+    n++;
+    return (n === 1) ? m : ('<h2' + attrs + '>' + inner + '</h2>');
+  });
+  return out;
+};
 // ── Structural foundations: the length-INDEPENDENT, deterministic accessibility checks (2026-06-21) ──
 // These are document-level pass/fail features (lang/title/landmarks/headings/list-semantics/table-headers/
 // labels/ARIA-roles) that don't scale with document length — so a long doc that gets the bones right
@@ -17376,6 +17398,16 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // REGRESS (e.g. 74→58). First repair any leaked-handler placeholders in the STORED html (fixes the
       // JS-in-the-PDF bug in preview + export), then re-score axe + EA on a chrome-stripped copy so
       // before/after is apples-to-apples.
+      // Outline fix (2026-06-30): collapse a multi-<h1> merged document to a single h1 BEFORE the
+      // deterministic engines score it below. A chunked scanned doc can keep one <h1> per fragment
+      // (e.g. the cover title + "APPENDIX E:"); axe rates that minor but IBM Equal Access penalizes it
+      // hard, so it governed the weakest-layer headline (the "60 vs 100/98" report). Deduping here means
+      // the final axe re-audit, the Equal Access audit, AND the exported tagged PDF all see one h1.
+      const _h1Before = (accessibleHtml.match(/<h1[\s>]/gi) || []).length;
+      if (_h1Before > 1) {
+        accessibleHtml = _alloEnsureSingleH1(accessibleHtml);
+        warnLog('[PDF Fix] Outline fix: collapsed ' + _h1Before + ' <h1> → 1 (kept the document title, demoted ' + (_h1Before - 1) + ' to <h2>) before deterministic scoring.');
+      }
       accessibleHtml = _repairLeakedImagePlaceholders(accessibleHtml);
       const _scoreHtml = _stripChromeForAudit(accessibleHtml);
       try { const _cleanAxe = await runAxeAudit(_scoreHtml); if (_cleanAxe) axeResults = _cleanAxe; } catch (_) {}
@@ -18127,7 +18159,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
   // Surfaces the structural-vs-semantic SPLIT (axe-core passes ≠ the document is
   // usable) + a content-integrity coverage line — so a high automated score never
   // reads as "fully accessible" when the AI rubric or text-coverage says otherwise.
-  const _honestReportBlocks = (structural, semantic, coverage, pdfua) => {
+  const _honestReportBlocks = (structural, semantic, coverage, pdfua, secondEngine) => {
     // pdfua: optional PdfValidator summary { pass, fail, overall } — when
     // present, renders a 3rd score tile labelled "PDF/UA-1 (self-check)"
     // alongside the existing Structural (axe-core) and Semantic (AI rubric)
@@ -18159,12 +18191,22 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       const pdfuaTile = (hasPdfUa && pdfuaPct !== null)
         ? `<div style="flex:1;min-width:150px;text-align:center;background:${_pdfuaHasWarn ? '#fffbeb' : '#f8fafc'};border:1px solid ${_pdfuaHasWarn ? '#fcd34d' : '#e2e8f0'};border-radius:8px;padding:12px"><div style="font-size:1.25rem;font-weight:800;color:${_pdfuaHasWarn ? '#b45309' : '#1e3a5f'}">${pdfuaPct}<span style="font-size:0.75rem;color:#64748b">%</span></div><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;font-weight:600">PDF/UA-1 (self-check)</div><div style="font-size:10px;color:#94a3b8;margin-top:2px">${pdfua.pass}/${_pdfuaDenom} rules${_pdfuaHasWarn ? ` &middot; &#9888; ${pdfua.warn} warn` : ''}</div></div>`
         : '';
+      // 2nd-engine (IBM Equal Access) tile — the deterministic half of the headline is
+      // min(axe, Equal Access), so when EA is the lower one it GOVERNS the headline. Showing
+      // it here is what makes a "60" headline self-explaining next to axe 100 / AI 98 (without
+      // this tile, the governing number is invisible and the report looks internally inconsistent).
+      const _eaGoverns = (typeof secondEngine === 'number') && secondEngine < Math.min(structural, semantic) - 10;
+      const eaTile = (typeof secondEngine === 'number')
+        ? `<div style="flex:1;min-width:150px;text-align:center;background:${_eaGoverns ? '#fffbeb' : '#f8fafc'};border:1px solid ${_eaGoverns ? '#fcd34d' : '#e2e8f0'};border-radius:8px;padding:12px"><div style="font-size:1.25rem;font-weight:800;color:${_eaGoverns ? '#b45309' : '#1e3a5f'}">${secondEngine}</div><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;font-weight:600">2nd engine (Equal Access)</div></div>`
+        : '';
       h += `<div style="display:flex;gap:12px;margin:12px 0;flex-wrap:wrap">
         <div style="flex:1;min-width:150px;text-align:center;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px"><div style="font-size:1.25rem;font-weight:800;color:#1e3a5f">${structural}</div><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;font-weight:600">Structural (axe-core)</div></div>
         <div style="flex:1;min-width:150px;text-align:center;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px"><div style="font-size:1.25rem;font-weight:800;color:#1e3a5f">${semantic}</div><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;font-weight:600">Semantic (AI rubric)</div></div>
+        ${eaTile}
         ${pdfuaTile}
       </div>`;
       if (div >= 15) h += `<p style="font-size:12px;color:#b45309;margin:0 0 12px"><strong>&#9888; Structural and semantic scores diverge by ${div} points.</strong> Automated structural checks (axe-core) can pass while the AI rubric flags meaning/usability gaps. Treat the lower score as the honest ceiling and have a human verify the experience.</p>`;
+      if (_eaGoverns) h += `<p style="font-size:12px;color:#b45309;margin:0 0 12px"><strong>&#9888; The headline is governed by the IBM Equal Access engine (${secondEngine}).</strong> This second independent WCAG engine flagged issues axe-core weighted lightly (most often multiple &lt;h1&gt; elements or landmark/region rules). The headline is the <em>weakest</em> of the engines, never an average &mdash; so it reflects Equal Access here, not the higher structural/semantic numbers. See the on-screen &ldquo;What Equal Access flagged&rdquo; detail for the specific rules.</p>`;
       if (hasPdfUa && pdfuaPct !== null && pdfuaPct < 80 && (structural >= 80 || semantic >= 80)) {
         h += `<p style="font-size:12px;color:#b45309;margin:0 0 12px"><strong>&#9888; PDF/UA-1 self-check (${pdfuaPct}%) is meaningfully lower than the WCAG / semantic scores.</strong> The HTML representation passes WCAG but the exported PDF bytes have structural gaps — a PDF/UA-1 validator (PAC 2024, veraPDF, Acrobat Pro Accessibility Checker) would flag what's missing. See the "Independent Self-Check" section below for the specific rules that failed.</p>`;
       }
@@ -18267,7 +18309,10 @@ tr { page-break-inside: avoid; }
     // Honest structural-vs-semantic split + content-integrity coverage
     const _structScore = isBeforeAfter ? (d.after?.axeCoreAudit?.score ?? d.after?.axeScore) : (d.axeCoreAudit?.score ?? d.axeScore);
     const _semScore = isBeforeAfter ? (d.after?.aiAudit?.score ?? d.after?.verificationAudit?.score) : (d.aiAudit?.score ?? d.verificationAudit?.score);
-    html += _honestReportBlocks(_structScore, _semScore, d.integrityCoverage);
+    // 2nd-engine (IBM Equal Access) score: the deterministic half of the headline is min(axe, EA),
+    // so when EA is lower it GOVERNS — surface it so a low headline next to a high axe/AI is explained.
+    const _eaScore = isBeforeAfter ? (d.after?.secondEngineAudit?.score) : (d.secondEngineAudit?.score);
+    html += _honestReportBlocks(_structScore, _semScore, d.integrityCoverage, undefined, (typeof _eaScore === 'number' ? _eaScore : undefined));
 
     // Reliability metrics
     const audit = isBeforeAfter ? (d.before?.audit || d) : d;
@@ -18710,7 +18755,8 @@ tr { page-break-inside: avoid; }
     (fr.axeScore != null ? fr.axeScore : (fr.axeAudit && fr.axeAudit.score != null ? fr.axeAudit.score : ar._baselineAxeScore)),
     (fr.verificationAudit && fr.verificationAudit.score != null ? fr.verificationAudit.score : (fr.aiAudit && fr.aiAudit.score != null ? fr.aiAudit.score : ar._aiOnlyScore)),
     fr.integrityCoverage,
-    opts.postExportValidator && opts.postExportValidator.summary
+    opts.postExportValidator && opts.postExportValidator.summary,
+    (fr.secondEngineAudit && typeof fr.secondEngineAudit.score === 'number' ? fr.secondEngineAudit.score : undefined)
   )}
 
   ${_veraBlock}
