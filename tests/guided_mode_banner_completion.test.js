@@ -184,3 +184,28 @@ describe('Guided banner — About-panel read-aloud reuses window.callTTS', () =>
     b.cleanup();
   });
 });
+
+describe('Guided banner — per-step "Show an example" toggle', () => {
+  it('offers "Show an example" on a generate step and reports the step id to the host', () => {
+    const onShowGuidedExample = vi.fn();
+    const b = mountBanner(baseProps({ guidedStep: 1, onShowGuidedExample, guidedExampleId: null }));
+    const btn = b.button('Show an example');
+    expect(btn).toBeTruthy();
+    act(() => { btn.click(); });
+    expect(onShowGuidedExample).toHaveBeenCalledWith('analysis');
+    b.cleanup();
+  });
+
+  it('reflects the showing state — the label flips to "Hide"', () => {
+    const b = mountBanner(baseProps({ guidedStep: 1, onShowGuidedExample: () => {}, guidedExampleId: 'analysis' }));
+    expect(b.button('Hide the example')).toBeTruthy();
+    expect(b.button('Show an example')).toBeFalsy();
+    b.cleanup();
+  });
+
+  it('does NOT offer "Show an example" on the source step (it has the load-text example instead)', () => {
+    const b = mountBanner(baseProps({ guidedStep: 0, onShowGuidedExample: () => {}, guidedExampleId: null }));
+    expect(b.button('Show an example')).toBeFalsy();
+    b.cleanup();
+  });
+});

@@ -14,18 +14,22 @@
  *     keeps "Analysis done" honest: it no longer flashes on the click that merely
  *     starts the (async) run.
  * Plus the expandable "About this step" markdown panel (now with a read-aloud
- * button reusing window.callTTS) and, on the source step, a "Try this example"
- * affordance that loads a real starter passage to run the genuine tools on.
+ * button reusing window.callTTS); on the source step, a "Try this example"
+ * affordance that loads a real starter passage to run the genuine tools on; and
+ * on every other step, a "Show an example" toggle that asks the host to render a
+ * badged, display-only example card in the panel (onShowGuidedExample) — that card
+ * is never written to history, so examples can't reach the resource pack.
  *
  * Extracted from AlloFlowANTI.txt (May 2026); hands-on tutorial pass (Jun 2026);
- * completion-gating + About TTS + example passage (Jun 2026).
+ * completion-gating + About TTS + example passage + per-step examples (Jun 2026).
  *
  * Required props:
  *   GUIDED_STEPS, GUIDED_TOUR_MAP, guidedStep, guidedRect, guidedEngaged,
  *   handleExitGuidedMode, handleGuidedSkip, setGuidedStep, setShowGuidedTip,
  *   showGuidedTip, t, tourSteps, history
  * Optional props:
- *   inputText, setInputText (enable the source-step "Try this example" button)
+ *   inputText, setInputText (enable the source-step "Try this example" button),
+ *   onShowGuidedExample, guidedExampleId (enable the per-step "Show an example" toggle)
  *
  * The highlight ring is pointer-events-none (the teacher can still click the real
  * control) and aria-hidden, and it goes static under prefers-reduced-motion.
@@ -57,6 +61,8 @@ function GuidedModeBanner({
   getDefaultTitle,
   inputText,
   setInputText,
+  onShowGuidedExample,
+  guidedExampleId,
 }) {
   const step = GUIDED_STEPS[guidedStep] || {};
   const isLast = guidedStep >= GUIDED_STEPS.length - 1;
@@ -155,6 +161,11 @@ function GuidedModeBanner({
         {step.id === 'source-input' && !stepDone && typeof setInputText === 'function' && (
           <button onClick={() => setInputText(GUIDED_SAMPLE_TEXT)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', width: '100%', padding: '8px 12px', marginBottom: '10px', fontSize: '11px', fontWeight: 700, color: '#e0e7ff', background: 'rgba(255,255,255,0.06)', border: '1px dashed rgba(165,180,252,0.5)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>
             <span aria-hidden="true">✨</span>{t('guided.try_example') || 'New here? Try it with an example passage'}
+          </button>
+        )}
+        {step.id !== 'source-input' && typeof onShowGuidedExample === 'function' && (
+          <button onClick={() => onShowGuidedExample(step.id)} aria-pressed={guidedExampleId === step.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', width: '100%', padding: '8px 12px', marginBottom: '10px', fontSize: '11px', fontWeight: 700, color: guidedExampleId === step.id ? '#fde68a' : '#e0e7ff', background: guidedExampleId === step.id ? 'rgba(251,191,36,0.14)' : 'rgba(255,255,255,0.06)', border: '1px dashed ' + (guidedExampleId === step.id ? 'rgba(251,191,36,0.6)' : 'rgba(165,180,252,0.5)'), borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>
+            <span aria-hidden="true">👁</span>{guidedExampleId === step.id ? (t('guided.example_hide') || 'Hide the example') : (t('guided.example_show') || 'Show an example in the panel')}
           </button>
         )}
         {isLast && (

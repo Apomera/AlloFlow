@@ -3596,6 +3596,34 @@ const AlloFlowContent = () => {
     { id: 'lesson-plan', label: 'Lesson Plan', action: 'Generate a Lesson Plan that ties the pieces together.', success: 'Lesson plan ready.' },
     { id: '_final', label: 'Full Resource Pack & Standards Report', action: 'Download the full Resource Pack and Standards Report whenever you are happy with it.', success: 'All set. Nice work building this lesson.' },
   ];
+  // Static, illustrative examples for the guided "Show an example" button. DISPLAY-ONLY: each is
+  // rendered into a clearly-badged "Example" card that is NEVER written to history/generatedContent,
+  // so by construction it cannot reach the resource pack, the full-pack download, the project save,
+  // or the end-of-tour recap. Built from the same photosynthesis passage the source step offers, so
+  // the whole tour reads as one coherent worked example. English-only like GUIDED_STEPS above. (2026-06-30)
+  const GUIDED_EXAMPLES = {
+    'analysis': { title: 'Example analysis', lines: ['Reading level: Grade 8 (frustrational for Grade 5)', 'Key concepts: energy transfer, photosynthesis, gas exchange', 'Tricky vocabulary: chlorophyll, stomata, glucose, by-product'] },
+    'glossary': { title: 'Example glossary', lines: ['chlorophyll — the green pigment in leaves that captures sunlight', 'stomata — tiny openings on a leaf that let gases in and out', 'glucose — the sugar a plant makes to store energy'] },
+    'simplified': { title: 'Example simplified text', lines: ['Plants make their own food using sunlight. Their leaves have a green color called chlorophyll that catches the sun’s energy. The plant takes in air and water and turns them into sugar. It also gives off oxygen, which we breathe.'] },
+    'ui-tool-wordsounds': { title: 'Example Word Sounds set', lines: ['photosynthesis → pho·to·syn·the·sis (5 syllables)', 'Target sounds: /f/ spelled “ph”, short “o”', 'Word family: photo- (light) — photograph, photon'] },
+    'outline': { title: 'Example visual organizer', lines: ['Center: How plants make food', '└ Sunlight → captured by chlorophyll', '└ Air + water → turned into glucose', '└ Oxygen → released for us to breathe'] },
+    'anchor-chart': { title: 'Example anchor chart', lines: ['BIG IDEA: Plants turn sunlight into food', '• Chlorophyll catches the light', '• Carbon dioxide + water → glucose (energy)', '• Oxygen is given off'] },
+    'image': { title: 'Example visual support', lines: ['A labeled diagram of a leaf: sunlight reaching chlorophyll, roots drawing up water, and stomata releasing oxygen.', '(A real image is generated when you run this tool.)'] },
+    'faq': { title: 'Example FAQ', lines: ['Q: Why do plants need sunlight?', 'A: Sunlight is the energy chlorophyll uses to make sugar.', 'Q: Where does the oxygen come from?', 'A: It is given off when the plant makes glucose.'] },
+    'sentence-frames': { title: 'Example writing scaffolds', lines: ['Plants make food by ____________.', 'First, chlorophyll ________. Then, the plant ________.', 'One by-product of photosynthesis is ____________.'] },
+    'note-taking': { title: 'Example note-taking template', lines: ['Main idea: __________________________', 'Key term: chlorophyll → ______________', 'Steps: 1) ________ 2) ________ 3) ________', 'My summary: _______________________'] },
+    'brainstorm': { title: 'Example activity ideas', lines: ['• Act it out: students play sunlight, CO₂, and water becoming sugar + oxygen', '• Label-a-leaf station with vocabulary cards', '• “What if there were no sunlight?” quick-write'] },
+    'persona': { title: 'Example interview persona', lines: ['Interview “a chloroplast”: students ask how it captures light and makes sugar.', 'Sample question: “What happens to you at night when there is no sun?”'] },
+    'timeline': { title: 'Example sequence', lines: ['1. Sunlight hits the leaf', '2. Chlorophyll captures the energy', '3. Carbon dioxide + water combine into glucose', '4. Oxygen is released'] },
+    'concept-sort': { title: 'Example concept sort', lines: ['Sort into “Goes In” vs “Comes Out”:', 'Goes in: sunlight, carbon dioxide, water', 'Comes out: glucose (sugar), oxygen'] },
+    'dbq': { title: 'Example document-based question', lines: ['Using the diagram and the text, explain how a plant turns sunlight into stored energy.', 'Cite two pieces of evidence (e.g., the role of chlorophyll and the production of glucose).'] },
+    'math': { title: 'Example STEM connection', lines: ['Balance the photosynthesis equation:', '6 CO₂ + 6 H₂O + light → C₆H₁₂O₆ + 6 O₂', 'Count the atoms on each side to check it balances.'] },
+    'adventure': { title: 'Example adventure', lines: ['You are a water molecule pulled up from the roots…', 'Choice: ➤ Travel to a leaf cell   ➤ Wait in the stem', 'Each choice teaches a step of photosynthesis.'] },
+    'quiz': { title: 'Example exit ticket', lines: ['1. What does chlorophyll do? (a) stores water (b) captures sunlight ✓', '2. Name one thing a plant makes during photosynthesis. ____', '3. Where does the oxygen go? ____'] },
+    'alignment': { title: 'Example standards & UDL check', lines: ['NGSS MS-LS1-6: explain photosynthesis’s role in energy flow — aligned', 'UDL: multiple means of representation (text + diagram + glossary) — met'] },
+    'lesson-plan': { title: 'Example lesson plan', lines: ['Objective: Students explain how plants make food.', 'Open: leaf observation · Teach: diagram + simplified text', 'Practice: sequence cards · Check: 3-question exit ticket'] },
+    '_final': { title: 'Example resource pack', lines: ['Your pack bundles everything you built — analysis, glossary, simplified text, organizer, FAQ, exit ticket — plus a standards report.', '(This example itself is not part of your pack.)'] },
+  };
   // Right-sizing: a teacher can pick a subset of steps; the tour runs over the
   // selected steps only (source-input is always included). null = the full 22.
   const guidedActiveSteps = guidedSelectedIds ? GUIDED_STEPS.filter(s => s.id === 'source-input' || guidedSelectedIds.includes(s.id)) : GUIDED_STEPS;
@@ -3615,11 +3643,16 @@ const AlloFlowContent = () => {
     return toolId === currentStep.id;
   };
   const handleGuidedSkip = () => { if (guidedStep < guidedActiveSteps.length - 1) setGuidedStep(s => s + 1); };
-  const handleExitGuidedMode = () => { setGuidedMode(false); };
+  const handleExitGuidedMode = () => { setGuidedMode(false); setGuidedExampleId(null); };
   const [showGuidedTip, setShowGuidedTip] = useState(false);
   const [guidedRect, setGuidedRect] = useState(null);        // active tool's screen rect, for the highlight ring
   const [guidedEngaged, setGuidedEngaged] = useState(false); // has the teacher interacted with the current step's tool?
-  useEffect(() => { setShowGuidedTip(false); }, [guidedStep]);
+  // Which step's illustrative example is showing in the panel. Display-only id; the card reads
+  // GUIDED_EXAMPLES and is NEVER persisted (no setHistory/setGeneratedContent), so examples can't
+  // leak into the resource pack. Cleared whenever the step changes or guided mode exits. (2026-06-30)
+  const [guidedExampleId, setGuidedExampleId] = useState(null);
+  const onShowGuidedExample = (stepId) => setGuidedExampleId(prev => (prev === stepId ? null : stepId));
+  useEffect(() => { setShowGuidedTip(false); setGuidedExampleId(null); }, [guidedStep]);
   useEffect(() => {
     if (guidedMode && guidedStep === 0 && inputText && inputText.trim().length > 20 && guidedActiveSteps.length > 1) {
       const advanceTimer = setTimeout(() => setGuidedStep(1), 1500);
@@ -25243,7 +25276,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             style={{ width: window.innerWidth >= 768 ? `${leftWidth}%` : '100%', height: '100%' }}
         >
           {isTeacherMode && <SidebarTabsNav activeSidebarTab={activeSidebarTab} handleSetActiveSidebarTabToCreate={handleSetActiveSidebarTabToCreate} isHistoryPulsing={isHistoryPulsing} setActiveSidebarTab={setActiveSidebarTab} setIsHistoryPulsing={setIsHistoryPulsing} t={t} />}
-          {guidedMode && <GuidedModeBanner GUIDED_STEPS={guidedActiveSteps} allGuidedSteps={GUIDED_STEPS} guidedSelectedIds={guidedSelectedIds} toggleGuidedStepId={toggleGuidedStepId} GUIDED_TOUR_MAP={GUIDED_TOUR_MAP} guidedStep={guidedStep} guidedRect={guidedRect} guidedEngaged={guidedEngaged} wizardOpen={showWizard && hasSelectedRole && isTeacherMode} handleExitGuidedMode={handleExitGuidedMode} handleGuidedSkip={handleGuidedSkip} setGuidedStep={setGuidedStep} setShowGuidedTip={setShowGuidedTip} showGuidedTip={showGuidedTip} t={t} tourSteps={tourSteps} history={history} getDefaultTitle={getDefaultTitle} inputText={inputText} setInputText={setInputText} />}
+          {guidedMode && <GuidedModeBanner GUIDED_STEPS={guidedActiveSteps} allGuidedSteps={GUIDED_STEPS} guidedSelectedIds={guidedSelectedIds} toggleGuidedStepId={toggleGuidedStepId} GUIDED_TOUR_MAP={GUIDED_TOUR_MAP} guidedStep={guidedStep} guidedRect={guidedRect} guidedEngaged={guidedEngaged} wizardOpen={showWizard && hasSelectedRole && isTeacherMode} handleExitGuidedMode={handleExitGuidedMode} handleGuidedSkip={handleGuidedSkip} setGuidedStep={setGuidedStep} setShowGuidedTip={setShowGuidedTip} showGuidedTip={showGuidedTip} t={t} tourSteps={tourSteps} history={history} getDefaultTitle={getDefaultTitle} inputText={inputText} setInputText={setInputText} onShowGuidedExample={onShowGuidedExample} guidedExampleId={guidedExampleId} />}
           {isTeacherMode && <UDLGuideButton handleToggleShowUDLGuide={handleToggleShowUDLGuide} showUDLGuide={showUDLGuide} t={t} />}
           {isTeacherMode && activeSidebarTab === 'create' && (
           <div style={{display: isGuidedToolVisible('source-input') ? undefined : 'none'}} id="tour-input-panel" data-help-key="source_input" className={`bg-white rounded-3xl shadow-indigo-500/10 border transition-all overflow-hidden shrink-0 ${activeView === 'input' ? 'border-indigo-600 shadow-indigo-500/20' : 'border-slate-200 hover:border-indigo-200'}`}>
@@ -25391,6 +25424,21 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     {expandedTools.length >= 16 ? t('sidebar.collapse_all') : t('sidebar.expand_all')}
                 </button>
             </div>
+            {guidedMode && guidedExampleId && GUIDED_EXAMPLES[guidedExampleId] && (
+              <div role="note" aria-label="Example preview, not saved to your pack" className="rounded-3xl border-2 border-dashed border-amber-400 bg-amber-50 overflow-hidden">
+                <div className="flex items-center justify-between gap-2 px-4 py-2.5 bg-amber-100 border-b border-amber-200">
+                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-amber-800 flex items-center gap-1.5"><span aria-hidden="true">👁</span> {t('guided.example_badge') || 'Example · not saved to your pack'}</span>
+                  <button onClick={() => setGuidedExampleId(null)} className="text-[11px] font-bold text-amber-800 hover:text-amber-950 bg-white/70 hover:bg-white px-2.5 py-1 rounded-full transition-colors">{t('guided.example_clear') || 'Clear'}</button>
+                </div>
+                <div className="p-4">
+                  <div className="text-sm font-bold text-slate-800 mb-2">{GUIDED_EXAMPLES[guidedExampleId].title}</div>
+                  <div className="space-y-1">
+                    {GUIDED_EXAMPLES[guidedExampleId].lines.map((line, i) => <p key={i} className="text-[13px] text-slate-700 leading-relaxed">{line}</p>)}
+                  </div>
+                  <p className="text-[11px] text-amber-700 mt-3 italic">{t('guided.example_hint') || 'This is just an example. Use the tool below to make your own — only what you create is saved to your pack.'}</p>
+                </div>
+              </div>
+            )}
             <div style={{display: isGuidedToolVisible('analysis') ? undefined : 'none'}} id="tour-tool-analysis" data-help-key="tool_analysis" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
                 ${activeView === 'analysis' ? 'border-violet-600 shadow-xl shadow-violet-500/20' : 'border-slate-200 hover:border-violet-200 shadow-lg shadow-violet-500/10'}
               `}>
