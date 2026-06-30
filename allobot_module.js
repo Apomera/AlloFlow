@@ -70,6 +70,7 @@
   // ═══════════════════════════════════════════════════════════════
 
 // @section SPEECH_BUBBLE — Allobot speech bubble component
+// @section SPEECH_BUBBLE — Allobot speech bubble component
 const SpeechBubble = React.memo(({
   text,
   isVisible,
@@ -438,6 +439,8 @@ const AlloBot = React.memo(React.forwardRef(({
   const [viseme, setViseme] = useState('neutral');
   const [blinkScale, setBlinkScale] = useState(1);
   const [accPop, setAccPop] = useState(false);
+  const [displayedAccessory, setDisplayedAccessory] = useState(null);
+  const [accExiting, setAccExiting] = useState(false);
   const prevMoodRef = useRef('idle');
   const [isSquashed, setIsSquashed] = useState(false);
   const [isSleeping, setIsSleeping] = useState(false);
@@ -1434,7 +1437,9 @@ const AlloBot = React.memo(React.forwardRef(({
         screenBg: '#000000',
         antenna: '#FACC15',
         jetpackFill: '#000000',
-        jetpackStroke: '#FACC15'
+        jetpackStroke: '#FACC15',
+        accPaper: '#000000',
+        accInk: '#FACC15'
       };
     }
     let c = {
@@ -1442,7 +1447,9 @@ const AlloBot = React.memo(React.forwardRef(({
       screenBg: '#1E1B4B',
       antenna: base.gradTo,
       jetpackFill: '#94A3B8',
-      jetpackStroke: '#475569'
+      jetpackStroke: '#475569',
+      accPaper: '#FFFFFF',
+      accInk: '#475569'
     };
     if (colorOverlay === 'blue') {
       c = {
@@ -1480,6 +1487,8 @@ const AlloBot = React.memo(React.forwardRef(({
       c.jetpackFill = '#334155';
       c.jetpackStroke = '#64748B';
       c.glow = '#A5B4FC';
+      c.accPaper = '#1E293B';
+      c.accInk = '#94A3B8';
       if (effectiveMood === 'idle') {
         c.gradFrom = '#6366F1';
         c.gradTo = '#312E81';
@@ -1491,7 +1500,26 @@ const AlloBot = React.memo(React.forwardRef(({
     return c;
   };
   const colors = getColors();
-  const effectiveAccessory = isSleeping ? 'sleep-cap' : accessory;
+  const targetAccessory = isSleeping ? 'sleep-cap' : accessory;
+  // Exit transition: render the *displayed* (delayed) accessory so a view switch
+  // briefly keeps the old one mounted to animate it out before the new enters.
+  const effectiveAccessory = displayedAccessory;
+  useEffect(() => {
+    if (targetAccessory === displayedAccessory) return;
+    const mq = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
+    const instant = !displayedAccessory || disableAnimations || mq && mq.matches || isSleeping;
+    if (instant) {
+      setDisplayedAccessory(targetAccessory);
+      setAccExiting(false);
+      return;
+    }
+    setAccExiting(true);
+    const t = setTimeout(() => {
+      setDisplayedAccessory(targetAccessory);
+      setAccExiting(false);
+    }, 200);
+    return () => clearTimeout(t);
+  }, [targetAccessory, displayedAccessory, disableAnimations, isSleeping]);
   const getEyeDimensions = () => {
     switch (effectiveMood) {
       case 'happy':
@@ -2032,6 +2060,9 @@ const AlloBot = React.memo(React.forwardRef(({
 @keyframes allobotPop { 0% { transform: translateY(0); } 35% { transform: translateY(-6px); } 70% { transform: translateY(-1px); } 100% { transform: translateY(0); } }
 .allobot-thinking .animate-allobot-float, .allobot-thinking .animate-allobot-perk { animation: allobotWorking 0.85s ease-in-out infinite; }
 .allobot-pop .animate-allobot-float, .allobot-pop .animate-allobot-perk { animation: allobotPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 1; }
+/* Exit transition: the outgoing accessory fades up briefly before the new enters. */
+@keyframes allobotExit { to { opacity: 0; transform: translateY(-3px); } }
+.allobot-exiting > * { animation: allobotExit 0.2s ease-in forwards; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -3156,7 +3187,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
     strokeLinecap: "round"
   }))), effectiveAccessory && /*#__PURE__*/React.createElement("g", {
     id: "accessories",
-    className: effectiveMood === 'thinking' ? 'allobot-thinking' : accPop ? 'allobot-pop' : undefined
+    className: `${accExiting ? 'allobot-exiting ' : ''}${effectiveMood === 'thinking' ? 'allobot-thinking' : accPop ? 'allobot-pop' : ''}`.trim() || undefined
   }, effectiveAccessory === 'grad-cap' && /*#__PURE__*/React.createElement("g", {
     className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center"
   }, /*#__PURE__*/React.createElement("g", {
@@ -4240,8 +4271,8 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
     width: "40",
     height: "30",
     rx: "2.5",
-    fill: "#FFFBEB",
-    stroke: "#7C2D12",
+    fill: colors.accPaper,
+    stroke: colors.accInk,
     strokeWidth: "2"
   }), /*#__PURE__*/React.createElement("rect", {
     x: "4",
@@ -4249,9 +4280,10 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
     width: "32",
     height: "22",
     rx: "1",
-    fill: "#fff",
-    stroke: "#E7C9A9",
-    strokeWidth: "0.8"
+    fill: colors.accPaper,
+    stroke: colors.accInk,
+    strokeWidth: "0.8",
+    opacity: "0.6"
   }), /*#__PURE__*/React.createElement("rect", {
     x: "7",
     y: "8",
@@ -4264,8 +4296,9 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
     y1: "13",
     x2: "27",
     y2: "13",
-    stroke: "#94A3B8",
-    strokeWidth: "1.4"
+    stroke: colors.accInk,
+    strokeWidth: "1.4",
+    opacity: "0.7"
   }), /*#__PURE__*/React.createElement("rect", {
     x: "29",
     y: "8",
@@ -4278,8 +4311,9 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
     y1: "20",
     x2: "14",
     y2: "20",
-    stroke: "#94A3B8",
-    strokeWidth: "1.4"
+    stroke: colors.accInk,
+    strokeWidth: "1.4",
+    opacity: "0.7"
   }), /*#__PURE__*/React.createElement("rect", {
     x: "16",
     y: "16",
@@ -4292,8 +4326,9 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
     y1: "20",
     x2: "34",
     y2: "20",
-    stroke: "#94A3B8",
-    strokeWidth: "1.4"
+    stroke: colors.accInk,
+    strokeWidth: "1.4",
+    opacity: "0.7"
   }))), effectiveAccessory === 'outline-doc' && /*#__PURE__*/React.createElement("g", {
     className: "animate-in fade-in slide-in-from-left-3 duration-500",
     transform: "translate(-31, 32)"
@@ -4315,8 +4350,8 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
     width: "34",
     height: "42",
     rx: "2",
-    fill: "#FFFFFF",
-    stroke: "#475569",
+    fill: colors.accPaper,
+    stroke: colors.accInk,
     strokeWidth: "1.5"
   }), /*#__PURE__*/React.createElement("text", {
     x: "6",
@@ -4324,64 +4359,70 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
     fontFamily: "Arial",
     fontSize: "6",
     fontWeight: "bold",
-    fill: "#4338CA"
+    fill: colors.accInk
   }, "I."), /*#__PURE__*/React.createElement("line", {
     x1: "13",
     y1: "13",
     x2: "32",
     y2: "13",
-    stroke: "#1D4ED8",
+    stroke: colors.accInk,
     strokeWidth: "1.6"
   }), /*#__PURE__*/React.createElement("circle", {
     cx: "12",
     cy: "20",
     r: "1.1",
-    fill: "#64748B"
+    fill: colors.accInk,
+    opacity: "0.7"
   }), /*#__PURE__*/React.createElement("line", {
     x1: "16",
     y1: "20",
     x2: "31",
     y2: "20",
-    stroke: "#CBD5E1",
-    strokeWidth: "1.2"
+    stroke: colors.accInk,
+    strokeWidth: "1.2",
+    opacity: "0.45"
   }), /*#__PURE__*/React.createElement("circle", {
     cx: "12",
     cy: "26",
     r: "1.1",
-    fill: "#64748B"
+    fill: colors.accInk,
+    opacity: "0.7"
   }), /*#__PURE__*/React.createElement("line", {
     x1: "16",
     y1: "26",
     x2: "29",
     y2: "26",
-    stroke: "#CBD5E1",
-    strokeWidth: "1.2"
+    stroke: colors.accInk,
+    strokeWidth: "1.2",
+    opacity: "0.45"
   }), /*#__PURE__*/React.createElement("text", {
     x: "6",
     y: "36",
     fontFamily: "Arial",
     fontSize: "6",
     fontWeight: "bold",
-    fill: "#4338CA"
+    fill: colors.accInk
   }, "II."), /*#__PURE__*/React.createElement("line", {
     x1: "13",
     y1: "34",
     x2: "32",
     y2: "34",
-    stroke: "#1D4ED8",
+    stroke: colors.accInk,
     strokeWidth: "1.6"
   }), /*#__PURE__*/React.createElement("circle", {
     cx: "12",
     cy: "41",
     r: "1.1",
-    fill: "#64748B"
+    fill: colors.accInk,
+    opacity: "0.7"
   }), /*#__PURE__*/React.createElement("line", {
     x1: "16",
     y1: "41",
     x2: "30",
     y2: "41",
-    stroke: "#CBD5E1",
-    strokeWidth: "1.2"
+    stroke: colors.accInk,
+    strokeWidth: "1.2",
+    opacity: "0.45"
   }))), effectiveAccessory === 'sticky-notes' && /*#__PURE__*/React.createElement("g", {
     className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center"
   }, /*#__PURE__*/React.createElement("g", {
@@ -4511,8 +4552,8 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
     width: "36",
     height: "32",
     rx: "1.5",
-    fill: "#FFFFFF",
-    stroke: "#475569",
+    fill: colors.accPaper,
+    stroke: colors.accInk,
     strokeWidth: "1.5"
   }), /*#__PURE__*/React.createElement("rect", {
     x: "0",
@@ -4526,15 +4567,17 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
     y1: "20",
     x2: "31",
     y2: "20",
-    stroke: "#CBD5E1",
-    strokeWidth: "1.4"
+    stroke: colors.accInk,
+    strokeWidth: "1.4",
+    opacity: "0.5"
   }), /*#__PURE__*/React.createElement("line", {
     x1: "5",
     y1: "25",
     x2: "28",
     y2: "25",
-    stroke: "#CBD5E1",
-    strokeWidth: "1.4"
+    stroke: colors.accInk,
+    strokeWidth: "1.4",
+    opacity: "0.5"
   }), /*#__PURE__*/React.createElement("path", {
     d: "M5 31 L9 34 L15 28",
     stroke: "#22C55E",
@@ -4547,8 +4590,9 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
     y1: "31",
     x2: "31",
     y2: "31",
-    stroke: "#CBD5E1",
-    strokeWidth: "1.4"
+    stroke: colors.accInk,
+    strokeWidth: "1.4",
+    opacity: "0.5"
   }))), effectiveAccessory === 'behavior-watch' && /*#__PURE__*/React.createElement("g", {
     className: "animate-in fade-in slide-in-from-left-3 duration-500",
     transform: "translate(-28, 42)"

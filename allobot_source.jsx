@@ -283,6 +283,8 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
   const [viseme, setViseme] = useState('neutral');
   const [blinkScale, setBlinkScale] = useState(1);
   const [accPop, setAccPop] = useState(false);
+  const [displayedAccessory, setDisplayedAccessory] = useState(null);
+  const [accExiting, setAccExiting] = useState(false);
   const prevMoodRef = useRef('idle');
   const [isSquashed, setIsSquashed] = useState(false);
   const [isSleeping, setIsSleeping] = useState(false);
@@ -1158,9 +1160,11 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
              antenna: '#FACC15',
              jetpackFill: '#000000',
              jetpackStroke: '#FACC15',
+             accPaper: '#000000',
+             accInk: '#FACC15',
           };
       }
-      let c = { ...base, screenBg: '#1E1B4B', antenna: base.gradTo, jetpackFill: '#94A3B8', jetpackStroke: '#475569' };
+      let c = { ...base, screenBg: '#1E1B4B', antenna: base.gradTo, jetpackFill: '#94A3B8', jetpackStroke: '#475569', accPaper: '#FFFFFF', accInk: '#475569' };
       if (colorOverlay === 'blue') {
           c = { ...c, gradFrom: '#60A5FA', gradTo: '#2563EB', glow: '#93C5FD', screenBg: '#172554', antenna: '#2563EB', jetpackFill: '#60A5FA' };
       } else if (colorOverlay === 'peach') {
@@ -1173,6 +1177,8 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
           c.jetpackFill = '#334155';
           c.jetpackStroke = '#64748B';
           c.glow = '#A5B4FC';
+          c.accPaper = '#1E293B';
+          c.accInk = '#94A3B8';
           if (effectiveMood === 'idle') {
               c.gradFrom = '#6366F1';
               c.gradTo = '#312E81';
@@ -1184,7 +1190,19 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       return c;
   };
   const colors = getColors();
-  const effectiveAccessory = isSleeping ? 'sleep-cap' : accessory;
+  const targetAccessory = isSleeping ? 'sleep-cap' : accessory;
+  // Exit transition: render the *displayed* (delayed) accessory so a view switch
+  // briefly keeps the old one mounted to animate it out before the new enters.
+  const effectiveAccessory = displayedAccessory;
+  useEffect(() => {
+      if (targetAccessory === displayedAccessory) return;
+      const mq = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
+      const instant = !displayedAccessory || disableAnimations || (mq && mq.matches) || isSleeping;
+      if (instant) { setDisplayedAccessory(targetAccessory); setAccExiting(false); return; }
+      setAccExiting(true);
+      const t = setTimeout(() => { setDisplayedAccessory(targetAccessory); setAccExiting(false); }, 200);
+      return () => clearTimeout(t);
+  }, [targetAccessory, displayedAccessory, disableAnimations, isSleeping]);
   const getEyeDimensions = () => {
     switch (effectiveMood) {
       case 'happy':
@@ -1576,6 +1594,9 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
 @keyframes allobotPop { 0% { transform: translateY(0); } 35% { transform: translateY(-6px); } 70% { transform: translateY(-1px); } 100% { transform: translateY(0); } }
 .allobot-thinking .animate-allobot-float, .allobot-thinking .animate-allobot-perk { animation: allobotWorking 0.85s ease-in-out infinite; }
 .allobot-pop .animate-allobot-float, .allobot-pop .animate-allobot-perk { animation: allobotPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 1; }
+/* Exit transition: the outgoing accessory fades up briefly before the new enters. */
+@keyframes allobotExit { to { opacity: 0; transform: translateY(-3px); } }
+.allobot-exiting > * { animation: allobotExit 0.2s ease-in forwards; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -2121,7 +2142,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                     )}
                 </g>
                 {effectiveAccessory && (
-                    <g id="accessories" className={effectiveMood === 'thinking' ? 'allobot-thinking' : (accPop ? 'allobot-pop' : undefined)}>
+                    <g id="accessories" className={`${accExiting ? 'allobot-exiting ' : ''}${effectiveMood === 'thinking' ? 'allobot-thinking' : (accPop ? 'allobot-pop' : '')}`.trim() || undefined}>
                          {effectiveAccessory === 'grad-cap' && (
                             <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
                             <g className="animate-allobot-perk" style={{ animationDelay: '1.2s' }}>
@@ -2403,14 +2424,14 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                         {effectiveAccessory === 'sentence-frames' && (
                             <g className="animate-in fade-in slide-in-from-top-2 duration-500" transform="translate(76, 36)">
                             <g className="animate-allobot-float" style={{ animationDelay: '0.7s' }}>
-                                <rect x="0" y="0" width="40" height="30" rx="2.5" fill="#FFFBEB" stroke="#7C2D12" strokeWidth="2" />
-                                <rect x="4" y="4" width="32" height="22" rx="1" fill="#fff" stroke="#E7C9A9" strokeWidth="0.8" />
+                                <rect x="0" y="0" width="40" height="30" rx="2.5" fill={colors.accPaper} stroke={colors.accInk} strokeWidth="2" />
+                                <rect x="4" y="4" width="32" height="22" rx="1" fill={colors.accPaper} stroke={colors.accInk} strokeWidth="0.8" opacity="0.6" />
                                 <rect x="7" y="8" width="9" height="5" rx="1" fill="#60A5FA" />
-                                <line x1="18" y1="13" x2="27" y2="13" stroke="#94A3B8" strokeWidth="1.4" />
+                                <line x1="18" y1="13" x2="27" y2="13" stroke={colors.accInk} strokeWidth="1.4" opacity="0.7" />
                                 <rect x="29" y="8" width="5" height="5" rx="1" fill="#34D399" />
-                                <line x1="7" y1="20" x2="14" y2="20" stroke="#94A3B8" strokeWidth="1.4" />
+                                <line x1="7" y1="20" x2="14" y2="20" stroke={colors.accInk} strokeWidth="1.4" opacity="0.7" />
                                 <rect x="16" y="16" width="9" height="5" rx="1" fill="#F472B6" />
-                                <line x1="27" y1="20" x2="34" y2="20" stroke="#94A3B8" strokeWidth="1.4" />
+                                <line x1="27" y1="20" x2="34" y2="20" stroke={colors.accInk} strokeWidth="1.4" opacity="0.7" />
                             </g>
                             </g>
                         )}
@@ -2418,14 +2439,14 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                             <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 32)">
                             <g className="animate-allobot-float" style={{ animationDelay: '1.4s' }}>
                                 <ellipse cx="18" cy="50" rx="16" ry="3" fill="#1F2937" opacity="0.16" />
-                                <rect x="2" y="6" width="34" height="42" rx="2" fill="#FFFFFF" stroke="#475569" strokeWidth="1.5" />
-                                <text x="6" y="15" fontFamily="Arial" fontSize="6" fontWeight="bold" fill="#4338CA">I.</text>
-                                <line x1="13" y1="13" x2="32" y2="13" stroke="#1D4ED8" strokeWidth="1.6" />
-                                <circle cx="12" cy="20" r="1.1" fill="#64748B" /><line x1="16" y1="20" x2="31" y2="20" stroke="#CBD5E1" strokeWidth="1.2" />
-                                <circle cx="12" cy="26" r="1.1" fill="#64748B" /><line x1="16" y1="26" x2="29" y2="26" stroke="#CBD5E1" strokeWidth="1.2" />
-                                <text x="6" y="36" fontFamily="Arial" fontSize="6" fontWeight="bold" fill="#4338CA">II.</text>
-                                <line x1="13" y1="34" x2="32" y2="34" stroke="#1D4ED8" strokeWidth="1.6" />
-                                <circle cx="12" cy="41" r="1.1" fill="#64748B" /><line x1="16" y1="41" x2="30" y2="41" stroke="#CBD5E1" strokeWidth="1.2" />
+                                <rect x="2" y="6" width="34" height="42" rx="2" fill={colors.accPaper} stroke={colors.accInk} strokeWidth="1.5" />
+                                <text x="6" y="15" fontFamily="Arial" fontSize="6" fontWeight="bold" fill={colors.accInk}>I.</text>
+                                <line x1="13" y1="13" x2="32" y2="13" stroke={colors.accInk} strokeWidth="1.6" />
+                                <circle cx="12" cy="20" r="1.1" fill={colors.accInk} opacity="0.7" /><line x1="16" y1="20" x2="31" y2="20" stroke={colors.accInk} strokeWidth="1.2" opacity="0.45" />
+                                <circle cx="12" cy="26" r="1.1" fill={colors.accInk} opacity="0.7" /><line x1="16" y1="26" x2="29" y2="26" stroke={colors.accInk} strokeWidth="1.2" opacity="0.45" />
+                                <text x="6" y="36" fontFamily="Arial" fontSize="6" fontWeight="bold" fill={colors.accInk}>II.</text>
+                                <line x1="13" y1="34" x2="32" y2="34" stroke={colors.accInk} strokeWidth="1.6" />
+                                <circle cx="12" cy="41" r="1.1" fill={colors.accInk} opacity="0.7" /><line x1="16" y1="41" x2="30" y2="41" stroke={colors.accInk} strokeWidth="1.2" opacity="0.45" />
                             </g>
                             </g>
                         )}
@@ -2444,12 +2465,12 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                                 <line x1="6" y1="20" x2="-2" y2="62" stroke="#92400E" strokeWidth="2.4" strokeLinecap="round" />
                                 <line x1="30" y1="20" x2="38" y2="62" stroke="#92400E" strokeWidth="2.4" strokeLinecap="round" />
                                 <line x1="22" y1="22" x2="26" y2="62" stroke="#78350F" strokeWidth="2" strokeLinecap="round" />
-                                <rect x="0" y="6" width="36" height="32" rx="1.5" fill="#FFFFFF" stroke="#475569" strokeWidth="1.5" />
+                                <rect x="0" y="6" width="36" height="32" rx="1.5" fill={colors.accPaper} stroke={colors.accInk} strokeWidth="1.5" />
                                 <rect x="0" y="6" width="36" height="8" rx="1.5" fill="#4338CA" />
-                                <line x1="5" y1="20" x2="31" y2="20" stroke="#CBD5E1" strokeWidth="1.4" />
-                                <line x1="5" y1="25" x2="28" y2="25" stroke="#CBD5E1" strokeWidth="1.4" />
+                                <line x1="5" y1="20" x2="31" y2="20" stroke={colors.accInk} strokeWidth="1.4" opacity="0.5" />
+                                <line x1="5" y1="25" x2="28" y2="25" stroke={colors.accInk} strokeWidth="1.4" opacity="0.5" />
                                 <path d="M5 31 L9 34 L15 28" stroke="#22C55E" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-                                <line x1="19" y1="31" x2="31" y2="31" stroke="#CBD5E1" strokeWidth="1.4" />
+                                <line x1="19" y1="31" x2="31" y2="31" stroke={colors.accInk} strokeWidth="1.4" opacity="0.5" />
                             </g>
                             </g>
                         )}
