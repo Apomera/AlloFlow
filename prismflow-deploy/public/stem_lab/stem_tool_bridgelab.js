@@ -1146,7 +1146,7 @@
                     h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, __alloT('stem.bridgelab.target_safety_factor', 'Target safety factor')),
                     h('span', { style: { fontSize: 13, color: AMBER, fontWeight: 800 } }, targetSF.toFixed(1))
                   ),
-                  h('input', { type: 'range', min: 1.5, max: 6, step: 0.5, value: targetSF,
+                  h('input', { type: 'range', 'aria-valuetext': targetSF.toFixed(1) + ' safety factor', min: 1.5, max: 6, step: 0.5, value: targetSF,
                     onChange: function(e) { upd({ optTargetSF: parseFloat(e.target.value) }); },
                     'aria-label': __alloT('stem.bridgelab.target_safety_factor_2', 'Target safety factor'),
                     style: { width: '100%', accentColor: AMBER }
@@ -1361,7 +1361,7 @@
                     h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, s.label),
                     h('span', { style: { fontSize: 13, color: AMBER, fontWeight: 800 } }, s.value)
                   ),
-                  h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.value,
+                  h('input', { type: 'range', 'aria-valuetext': (s.value + ' ' + ((String(s.label).match(/\(([^)]+)\)/) || ['', ''])[1])), min: s.min, max: s.max, step: s.step, value: s.value,
                     onChange: (function(key) { return function(e) { var p = {}; p[key] = parseFloat(e.target.value); upd(p); }; })(s.key),
                     'aria-label': s.label,
                     style: { width: '100%', accentColor: AMBER }
@@ -1503,7 +1503,7 @@
                         h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, s.label),
                         h('span', { style: { fontSize: 13, color: AMBER, fontWeight: 800 } }, s.value)
                       ),
-                      h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.value,
+                      h('input', { type: 'range', 'aria-valuetext': (s.value + ' ' + ((String(s.label).match(/\(([^)]+)\)/) || ['', ''])[1])), min: s.min, max: s.max, step: s.step, value: s.value,
                         onChange: (function(key) { return function(e) { var p = {}; p[key] = parseFloat(e.target.value); upd(p); }; })(s.key),
                         'aria-label': s.label,
                         style: { width: '100%', accentColor: AMBER }
@@ -1659,7 +1659,7 @@
                         h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, s.label),
                         h('span', { style: { fontSize: 13, color: AMBER, fontWeight: 800 } }, typeof s.value === 'number' && s.step < 1 ? s.value.toFixed(2) : s.value)
                       ),
-                      h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.value,
+                      h('input', { type: 'range', 'aria-valuetext': (s.value + ' ' + ((String(s.label).match(/\(([^)]+)\)/) || ['', ''])[1])), min: s.min, max: s.max, step: s.step, value: s.value,
                         onChange: (function(key) { return function(e) { var p = {}; p[key] = parseFloat(e.target.value); upd(p); }; })(s.key),
                         'aria-label': s.label,
                         style: { width: '100%', accentColor: AMBER }
@@ -1812,7 +1812,7 @@
                         h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, s.label),
                         h('span', { style: { fontSize: 13, color: AMBER, fontWeight: 800 } }, s.value)
                       ),
-                      h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.value,
+                      h('input', { type: 'range', 'aria-valuetext': (s.value + ' ' + ((String(s.label).match(/\(([^)]+)\)/) || ['', ''])[1])), min: s.min, max: s.max, step: s.step, value: s.value,
                         onChange: (function(key) { return function(e) { var p = {}; p[key] = parseFloat(e.target.value); upd(p); }; })(s.key),
                         'aria-label': s.label,
                         style: { width: '100%', accentColor: AMBER }
@@ -2409,7 +2409,7 @@
                         h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, s.label),
                         h('span', { style: { fontSize: 13, color: AMBER, fontWeight: 800 } }, s.value)
                       ),
-                      h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.value,
+                      h('input', { type: 'range', 'aria-valuetext': (s.value + ' ' + ((String(s.label).match(/\(([^)]+)\)/) || ['', ''])[1])), min: s.min, max: s.max, step: s.step, value: s.value,
                         onChange: (function(key) { return function(e) { var p = {}; p[key] = parseFloat(e.target.value); upd(p); }; })(s.key),
                         'aria-label': s.label,
                         style: { width: '100%', accentColor: AMBER }
@@ -2718,7 +2718,7 @@
                         h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, s.label),
                         h('span', { style: { fontSize: 13, color: AMBER, fontWeight: 800 } }, s.value.toLocaleString())
                       ),
-                      h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.value,
+                      h('input', { type: 'range', 'aria-valuetext': (s.value + ' ' + ((String(s.label).match(/\(([^)]+)\)/) || ['', ''])[1])), min: s.min, max: s.max, step: s.step, value: s.value,
                         onChange: (function(key) { return function(e) { var p = {}; p[key] = parseFloat(e.target.value); upd(p); }; })(s.key),
                         'aria-label': s.label,
                         style: { width: '100%', accentColor: AMBER }
@@ -3073,7 +3073,7 @@
                         h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, s.label),
                         h('span', { style: { fontSize: 13, color: AMBER, fontWeight: 800 } }, s.value)
                       ),
-                      h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.value,
+                      h('input', { type: 'range', 'aria-valuetext': (s.value + ' ' + ((String(s.label).match(/\(([^)]+)\)/) || ['', ''])[1])), min: s.min, max: s.max, step: s.step, value: s.value,
                         onChange: (function(key) { return function(e) { var p = {}; p[key] = parseFloat(e.target.value); upd(p); }; })(s.key),
                         'aria-label': s.label,
                         style: { width: '100%', accentColor: AMBER }
@@ -3549,7 +3549,7 @@
               h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, __alloT('stem.bridgelab.wind_speed', 'Wind speed')),
               h('span', { style: { fontSize: 13, color: failing ? '#fca5a5' : resonance ? '#fbbf24' : '#86efac', fontWeight: 800 } }, windSpeed + ' mph')
             ),
-            h('input', { type: 'range', min: 0, max: 80, step: 1, value: windSpeed,
+            h('input', { type: 'range', 'aria-valuetext': windSpeed + ' mph', min: 0, max: 80, step: 1, value: windSpeed,
               onChange: function(e) { upd({ windSpeedMph: parseInt(e.target.value, 10) }); },
               'aria-label': __alloT('stem.bridgelab.wind_speed_in_miles_per_hour', 'Wind speed in miles per hour'),
               style: { width: '100%', accentColor: '#ef4444' }
@@ -3641,7 +3641,7 @@
               h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, __alloT('stem.bridgelab.pedestrians_on_the_bridge', 'Pedestrians on the bridge')),
               h('span', { style: { fontSize: 13, color: status === 'locked' ? '#fca5a5' : status === 'synchronizing' ? '#fbbf24' : '#86efac', fontWeight: 800 } }, nPeds + ' people · ' + amplMm.toFixed(0) + ' mm amplitude · ' + (syncFrac * 100).toFixed(0) + '% synchronized')
             ),
-            h('input', { type: 'range', min: 0, max: 600, step: 10, value: nPeds,
+            h('input', { type: 'range', 'aria-valuetext': nPeds + ' pedestrians', min: 0, max: 600, step: 10, value: nPeds,
               onChange: function(e) { upd({ millenniumPeds: parseInt(e.target.value, 10) }); },
               'aria-label': __alloT('stem.bridgelab.number_of_pedestrians', 'Number of pedestrians'),
               style: { width: '100%', accentColor: '#ef4444' }
@@ -4278,12 +4278,12 @@
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 } },
               h('div', null,
                 h('label', { htmlFor: 'iq-span', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 4 } }, __alloT('stem.bridgelab.span_length', 'Span length: '), h('span', { style: { color: '#fbbf24', fontFamily: 'monospace' } }, iq.spanM + ' m')),
-                h('input', { id: 'iq-span', type: 'range', min: 6, max: 60, step: 1, value: iq.spanM,
+                h('input', { id: 'iq-span', type: 'range', 'aria-valuetext': iq.spanM + ' meters', min: 6, max: 60, step: 1, value: iq.spanM,
                   onChange: function(e) { setIQ({ spanM: parseInt(e.target.value, 10) }); },
                   style: { width: '100%' }, 'aria-label': __alloT('stem.bridgelab.span_length_in_meters', 'Span length in meters') })),
               h('div', null,
                 h('label', { htmlFor: 'iq-area', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 4 } }, __alloT('stem.bridgelab.cross_section_area', 'Cross-section area: '), h('span', { style: { color: '#fbbf24', fontFamily: 'monospace' } }, iq.areaMm2 + ' mm²')),
-                h('input', { id: 'iq-area', type: 'range', min: 200, max: 8000, step: 100, value: iq.areaMm2,
+                h('input', { id: 'iq-area', type: 'range', 'aria-valuetext': iq.areaMm2 + ' square millimeters', min: 200, max: 8000, step: 100, value: iq.areaMm2,
                   onChange: function(e) { setIQ({ areaMm2: parseInt(e.target.value, 10) }); },
                   style: { width: '100%' }, 'aria-label': __alloT('stem.bridgelab.cross_section_area_in_square_millimete', 'Cross-section area in square millimeters') }))
             ),
