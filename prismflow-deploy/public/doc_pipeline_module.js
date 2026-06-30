@@ -23864,6 +23864,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
   };
   const generateResourceHTML = (item, isTeacher, responses = {}, config = null) => {
       const cfg = config || exportConfig;
+      // Escape raw AI/teacher text before it goes into the document body, so a stray < & >
+      // displays as text instead of garbling or injecting markup (WCAG 4.1.1). Use ONLY for
+      // plain-text fields interpolated directly — never for fields rendered via parseMarkdownToHTML.
+      const _escTxt = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       // ── Worksheet (paper) mode helpers ──
       // When cfg.isWorksheet is true, the export is being rendered for paper
       // (cut, write by hand). Replace interactive inputs with handwriting
@@ -24926,7 +24930,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           // Plan S Slice 5+: type-aware export rendering. Each item type
                           // gets a printable form. Teacher view shows answer keys/rubrics;
                           // student view shows blank space for response.
-                          const stem = `<p><strong>${i+1}. ${q.question || ''}</strong>${q.question_en ? `<br><span style="font-weight:normal; font-style:italic; color:#666">(${q.question_en})</span>` : ''}</p>`;
+                          const stem = `<p><strong>${i+1}. ${_escTxt(q.question)}</strong>${q.question_en ? `<br><span style="font-weight:normal; font-style:italic; color:#666">(${_escTxt(q.question_en)})</span>` : ''}</p>`;
                           if (itemType === 'fill-blank') {
                               return `
                               <div class="question">
@@ -25013,7 +25017,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                               ? fillableCircle()
                                               : `<input type="radio" name="q_${item.id}_${i}" value="${optIdx}">`}
                                           ${Array.isArray(q.optionImageUrls) && q.optionImageUrls[optIdx] ? `<img src="${q.optionImageUrls[optIdx]}" alt="${opt}" style="display:block;max-width:140px;max-height:80px;object-fit:contain;border-radius:4px;border:1px solid #e2e8f0;margin-bottom:4px;background:#fff"/>` : ''}
-                                          <span>${opt} ${q.options_en && q.options_en[optIdx] ? `<span style="color:#888; font-size:0.9em;">(${q.options_en[optIdx]})</span>` : ''}</span>
+                                          <span>${_escTxt(opt)} ${q.options_en && q.options_en[optIdx] ? `<span style="color:#888; font-size:0.9em;">(${_escTxt(q.options_en[optIdx])})</span>` : ''}</span>
                                       </label>
                                   `).join('')}
                               </div>
@@ -26394,6 +26398,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
   const generateFullPackHTML = (historyItems, topic, isWorksheet = false, responses = {}, config = null) => {
       if (historyItems.length === 0) return `<p>${t('export_status.no_content')}</p>`;
       const cfg = { ...(config || exportConfig), isWorksheet };
+      // Escape raw text (e.g. the lesson topic) before interpolating into the document body, so a
+      // stray < & > displays as text rather than garbling/injecting markup (WCAG 4.1.1).
+      const _escTxt = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       // ── Tier 1 visual structure (May 13 2026): cover TOC + numbered section
       // markers + decorative terminators. Mirrors the visibility logic in
       // generateResourceHTML so we only TOC items that will actually render.
@@ -28380,8 +28387,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         </script>
         <main id="main-export-content" role="main">
         <div class="export-header" style="background:${theme.headerBg};color:${(_accessibleHeaderColors(theme.headerBg) || {}).fg || theme.headerText};padding:28px 36px;border-radius:${theme.borderRadius || '14px'};margin-bottom:28px;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
-          <h1 style="color:${(_accessibleHeaderColors(theme.headerBg) || {}).fg || theme.headerText};margin:0 0 6px 0;font-size:1.85rem;letter-spacing:-0.02em;">${studentTitlePrefix}${lessonTopic}</h1>
-          ${!isWorksheet ? `<p style="opacity:0.85;font-size:0.9rem;margin:0;"><strong>${topicLabel}:</strong> ${lessonTopic} &bull; ${dateLabel} ${new Date().toLocaleDateString()}</p>` : ''}
+          <h1 style="color:${(_accessibleHeaderColors(theme.headerBg) || {}).fg || theme.headerText};margin:0 0 6px 0;font-size:1.85rem;letter-spacing:-0.02em;">${studentTitlePrefix}${_escTxt(lessonTopic)}</h1>
+          ${!isWorksheet ? `<p style="opacity:0.85;font-size:0.9rem;margin:0;"><strong>${topicLabel}:</strong> ${_escTxt(lessonTopic)} &bull; ${dateLabel} ${new Date().toLocaleDateString()}</p>` : ''}
         </div>
         ${worksheetHeader}
         ${studentTOC}
