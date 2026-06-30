@@ -26932,6 +26932,23 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           @media print { .alloflow-reading-tools { display: none !important; } }
           /* Hide the interactive "Save my answers" CTAs on paper (they are dead buttons in print). */
           @media print { #alloflow-save-cta, #alloflow-savejson-cta { display: none !important; } }
+          /* Print neutralizes a Dark / Sepia / High-Contrast reading theme. Those modes otherwise
+             print as invisible text (light ink on the browser's stripped-white page background) or
+             as an ink-wasting dark block — and they are exactly the modes light-sensitive and
+             dyslexic students keep on, so printing in them is a common path. Force an ink-friendly
+             light page for print only (scoped to the non-light themes, so default/light print is
+             untouched). The runtime switcher sets data-alloflow-theme on <html> for dark/sepia/hc. */
+          @media print {
+            html[data-alloflow-theme="dark"] body, html[data-alloflow-theme="sepia"] body, html[data-alloflow-theme="hc"] body { background: #ffffff !important; color: #1a1a1a !important; }
+            html[data-alloflow-theme="dark"] h1, html[data-alloflow-theme="dark"] h2, html[data-alloflow-theme="dark"] h3, html[data-alloflow-theme="dark"] h4, html[data-alloflow-theme="dark"] h5, html[data-alloflow-theme="dark"] h6,
+            html[data-alloflow-theme="sepia"] h1, html[data-alloflow-theme="sepia"] h2, html[data-alloflow-theme="sepia"] h3, html[data-alloflow-theme="sepia"] h4, html[data-alloflow-theme="sepia"] h5, html[data-alloflow-theme="sepia"] h6,
+            html[data-alloflow-theme="hc"] h1, html[data-alloflow-theme="hc"] h2, html[data-alloflow-theme="hc"] h3, html[data-alloflow-theme="hc"] h4, html[data-alloflow-theme="hc"] h5, html[data-alloflow-theme="hc"] h6 { color: #000000 !important; }
+            html[data-alloflow-theme="dark"] p, html[data-alloflow-theme="dark"] li, html[data-alloflow-theme="dark"] td, html[data-alloflow-theme="dark"] th, html[data-alloflow-theme="dark"] blockquote, html[data-alloflow-theme="dark"] dd, html[data-alloflow-theme="dark"] dt,
+            html[data-alloflow-theme="sepia"] p, html[data-alloflow-theme="sepia"] li, html[data-alloflow-theme="sepia"] td, html[data-alloflow-theme="sepia"] th, html[data-alloflow-theme="sepia"] blockquote, html[data-alloflow-theme="sepia"] dd, html[data-alloflow-theme="sepia"] dt,
+            html[data-alloflow-theme="hc"] p, html[data-alloflow-theme="hc"] li, html[data-alloflow-theme="hc"] td, html[data-alloflow-theme="hc"] th, html[data-alloflow-theme="hc"] blockquote, html[data-alloflow-theme="hc"] dd, html[data-alloflow-theme="hc"] dt { color: #1a1a1a !important; }
+            html[data-alloflow-theme="dark"] a, html[data-alloflow-theme="sepia"] a, html[data-alloflow-theme="hc"] a { color: #0000a8 !important; }
+            html[data-alloflow-theme="dark"] th, html[data-alloflow-theme="sepia"] th, html[data-alloflow-theme="hc"] th { background: #f1f5f9 !important; }
+          }
           /* Zero the browser-default page box margin so it does not stack with the body's 0.5in print padding (~1in combined otherwise). */
           @page { margin: 0; }
           /* Skip-to-content link: reveal it when keyboard-focused. The link is hidden via an inline left:-9999px, so this override needs !important to beat the inline style. */
