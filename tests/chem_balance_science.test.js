@@ -110,6 +110,18 @@ describe('chemBalance — stoichiometry (limiting reagent + yield)', () => {
     expect(s.limitingFormula).toBe('H2');          // 2/3 < 1/1 → H2 limits
     expect(s.molesProduct).toBeCloseTo(4 / 3, 5);  // (2/3) * 2
   });
+  it('yield calculator UI shows the limiting reagent (stoich tab render)', () => {
+    const b = chem().balanceEquation('N2 + H2 -> NH3'); // 1,3,2
+    const html = renderTool('chemBalance', {
+      chemBalance: {
+        subtool: 'stoich', _stoichFormula: 'H2O',
+        _yieldInput: 'N2 + H2 -> NH3', _yieldResult: b,
+        _yieldGrams: { 0: '28', 1: '2' } // N2 ~1 mol, H2 ~1 mol -> H2 limits
+      }
+    });
+    expect(html).toContain('Limiting reagent');
+    expect(html).toContain('Calculated'); // deterministic badge
+  });
   it('computes theoretical grams and percent yield', () => {
     const b = chem().balanceEquation('N2 + H2 -> NH3');
     const s = chem().stoichiometry({
