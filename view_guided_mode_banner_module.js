@@ -13,6 +13,671 @@
   if (!React) { console.error('[GuidedModeBanner] React not found on window'); return; }
 
 const GUIDED_SAMPLE_TEXT = "Photosynthesis is the process that plants, algae, and some bacteria use to turn sunlight into food. Inside a plant's leaves, a green pigment called chlorophyll captures energy from the sun. The plant takes in carbon dioxide from the air through tiny openings called stomata, and it absorbs water from the soil through its roots. Using the sun's energy, the plant combines the carbon dioxide and water to make glucose, a kind of sugar that stores energy for later. As a by-product, the plant releases oxygen back into the air \u2014 the same oxygen that animals and people need to breathe. Without photosynthesis, most life on Earth could not survive.";
+const GUIDED_DETAIL = {
+  "source-input": {
+    "headline": "Capture the lesson text every tool reads",
+    "inputs": [
+      "Pasted or typed lesson text (inputText)",
+      "File upload (PDF / DOCX / image OCR via handleFileUpload)",
+      "URL fetch (handleUrlFetch / urlToFetch)",
+      "AI-generated source (sourceTopic, sourceLevel, sourceTone, sourceLength, includeSourceCitations)"
+    ],
+    "outputs": [
+      "The source text itself, held in the single inputText string",
+      "Optional inline citation markers + a Source Text References block",
+      "Bilingual sources split on the '--- ENGLISH TRANSLATION ---' delimiter",
+      "Persisted to project save (sourceText) and the _final resource pack"
+    ],
+    "how": "This is the entry point: paste, type, upload a file, fetch a URL, or AI-generate from a topic, and all four paths converge on the one inputText string. It has no transform step of its own; every later tool reads this text as its textToProcess.",
+    "example": `SOURCE MATERIAL (captured into inputText)
+
+[Pasted by the teacher]
+
+Photosynthesis is the process that plants, algae, and some bacteria use to turn sunlight into food. Inside a plant's leaves, a green pigment called chlorophyll captures energy from the sun. The plant takes in carbon dioxide from the air through tiny openings called stomata, and it absorbs water from the soil through its roots. Using the sun's energy, the plant combines the carbon dioxide and water to make glucose, a kind of sugar that stores energy for later. As a by-product, the plant releases oxygen back into the air \u2014 the same oxygen that animals and people need to breathe. Without photosynthesis, most life on Earth could not survive.
+
+\u2014 \u2014 \u2014 \u2014 \u2014
+Word count: 118  \xB7  Status: Source captured
+Guided banner: "Source captured. Now let's find what students will struggle with."
+
+If instead generated with the AI "Generate" button:
+Topic: "How plants make food (photosynthesis)"  \xB7  Reading level: Grade 5  \xB7  Length: ~250 words  \xB7  Tone: Engaging Narrative  \xB7  Citations: ON
+
+Have you ever wondered how a plant feeds itself without ever taking a bite? The answer is photosynthesis [\xB9].
+
+Deep inside every leaf is a green pigment called chlorophyll, which catches energy from sunlight like a solar panel. At the same time the plant breathes in carbon dioxide through tiny openings called stomata, and drinks up water from the soil through its roots. Using the sun's energy, the plant mixes the carbon dioxide and water to build glucose \u2014 a sugar it stores for later \u2014 and gives off oxygen as a by-product [\xB2].
+
+Without photosynthesis, most life on Earth could not survive.
+
+Source Text References
+1. Britannica Kids \u2014 Photosynthesis
+2. National Geographic \u2014 Photosynthesis`
+  },
+  "analysis": {
+    "headline": "Read the passage for level, concepts, accuracy",
+    "inputs": [
+      "Source text (textToProcess, English block)",
+      "Verify accuracy with Google Search toggle (checkAccuracyWithSearch, default on)",
+      "UI language (currentUiLanguage) \u2014 adds translatedText when non-English",
+      "Differentiation/standards context (differentiationContext)"
+    ],
+    "outputs": [
+      "readingLevel { range (grade band), explanation }",
+      "concepts: string[] of key-concept chips",
+      "accuracy { rating, reason, verifiedFacts[], discrepancies[], citations }",
+      "grammar: string[] of issues (or 'None detected')",
+      "localStats: deterministic Flesch-Kincaid { score, words, sentences, syllables }"
+    ],
+    "how": "The handler resolves the English source, optionally runs Google-Search-grounded fact-checking, then asks Gemini for one JSON object (reading level, concepts, accuracy, grammar). It computes the Flesch-Kincaid score locally in code \u2014 not from the model \u2014 and rehydrates citation markers into clickable superscript links.",
+    "example": 'READING LEVEL\nRange: 6th\u20138th Grade\nWhy: Sentences are moderate with embedded clauses, and domain terms (chlorophyll, carbon dioxide, stomata, glucose) raise vocabulary load \u2014 though inline glosses like "glucose, a kind of sugar" keep it out of the high-school band.\n\nKEY CONCEPTS\n\u2022 Photosynthesis\n\u2022 Chlorophyll captures sunlight\n\u2022 Carbon dioxide intake via stomata\n\u2022 Water absorption through roots\n\u2022 Glucose as stored energy\n\u2022 Oxygen as a by-product\n\nACCURACY: High\nReason: Core claims align with established biology \u2014 chlorophyll as the light-capturing pigment, stomata as the gas-exchange openings, glucose and oxygen as products.\nVerified facts:\n  \u2713 Chlorophyll is the green pigment that absorbs light energy. [\xB9]\n  \u2713 Stomata are the pores for taking in CO\u2082 and releasing O\u2082. [\xB2]\n  \u2713 Photosynthesis combines CO\u2082 and water using light to make glucose and release oxygen. [\xB9]\nDiscrepancies:\n  \u26A0 "Turns sunlight into food" is a reasonable simplification, but light energy is converted and stored as chemical energy in glucose. [\xB3]\n\nGRAMMAR: None detected\n\nREADABILITY (computed in code)\nFlesch-Kincaid grade: 8.7  \xB7  words: 109  \xB7  sentences: 6  \xB7  syllables: 168'
+  },
+  "glossary": {
+    "headline": "Build tiered vocabulary cards with translations",
+    "inputs": [
+      "Source text (latest analysis originalText, else inputText)",
+      "Tier-2 & Tier-3 term counts (glossaryTier2Count / glossaryTier3Count)",
+      "Definition level (glossaryDefinitionLevel)",
+      "Target languages (selectedLanguages / leveledTextLanguage)",
+      "includeEtymology, useEmojis, glossaryImageStyle"
+    ],
+    "outputs": [
+      "A JSON array of term objects",
+      "Each: { term, def, tier ('Academic'/'Domain-Specific') }",
+      "translations keyed by language name ('Term: Definition')",
+      "Optional etymology, etymologyByLang, roots[]",
+      "Optional AI icon per term (image base64)"
+    ],
+    "how": "The handler finds exactly the requested counts of Academic (Tier 2) and Domain-Specific (Tier 3) terms, defines each at the chosen level, and optionally adds translations, emojis, and word roots. Each term is then enriched with an AI-drawn icon via callImagen in batches.",
+    "example": "[ 2 Tier-2 / 4 Tier-3 Terms \u2014 Spanish, Haitian Creole ]\n\nTERM: Photosynthesis  [Tier 3 \xB7 Domain-Specific]\n  Def: The process plants, algae, and some bacteria use to turn sunlight, carbon dioxide, and water into food (glucose), releasing oxygen as a by-product.\n  Spanish: Fotos\xEDntesis: El proceso que usan las plantas para convertir la luz solar, el di\xF3xido de carbono y el agua en alimento (glucosa).\n  Haitian Creole: Fotosent\xE8z: Pwosesis plant yo itilize pou transf\xF2me limy\xE8 sol\xE8y, gaz kabonik ak dlo an manje (glikoz).\n  Roots: photo (Greek, 'light') + synthesis (Greek, 'putting together') \u2192 related: photograph, photon\n  [AI icon: flat-vector leaf-and-sun]\n\nTERM: Chlorophyll  [Tier 3 \xB7 Domain-Specific]\n  Def: The green pigment inside a plant's leaves that captures energy from the sun so photosynthesis can happen.\n  Spanish: Clorofila: El pigmento verde dentro de las hojas que captura la energ\xEDa del sol.\n  Roots: chloro (Greek, 'pale green') + phyll (Greek, 'leaf')\n\nTERM: Stomata  [Tier 3 \xB7 Domain-Specific]\n  Def: Tiny openings on a leaf that let the plant take in carbon dioxide and let oxygen out.\n\nTERM: Glucose  [Tier 3 \xB7 Domain-Specific]\n  Def: A kind of sugar the plant makes during photosynthesis and uses to store energy for later.\n\nTERM: Absorb  [Tier 2 \xB7 Academic]\n  Def: To take in or soak up something, such as the way a plant's roots absorb water from the soil.\n\nTERM: Combine  [Tier 2 \xB7 Academic]\n  Def: To join two or more things together, like the way a plant combines carbon dioxide and water to make glucose."
+  },
+  "simplified": {
+    "headline": "Rewrite the passage at a target reading level",
+    "inputs": [
+      "Source text (textToProcess, chunked at ~9000 chars)",
+      "Reading grade level (effectiveGrade, ~9 complexity bands)",
+      "Target language (effectiveLanguage) \u2014 adds a bilingual block",
+      "Length target (leveledTextLength) + textFormat",
+      "useEmojis, keepCitations, includeCharts, studentInterests"
+    ],
+    "outputs": [
+      "A plain markdown/text STRING (not a JSON object)",
+      "The passage rewritten at the chosen grade band",
+      "Optional [[CHART: {...}]] blocks and markdown tables",
+      "Non-English runs append '--- ENGLISH TRANSLATION ---' + the English version"
+    ],
+    "how": "For each ~9000-char chunk the tool picks a grade-band complexity guide and rewrites the text, then runs a deterministic word-count check and condenses or expands (tagging '(Refined)') if it lands out of range. The result is stored as a plain markdown string, not parsed JSON.",
+    "example": `Leveled Text (5th Grade) \u2014 meta: "5th Grade - English"
+
+How Plants Make Their Own Food
+
+Have you ever wondered how a plant eats? Plants don't eat food the way you do. Instead, they make their own food using sunlight. This amazing process is called photosynthesis, and plants, algae, and even some tiny bacteria all use it.
+
+The work happens inside a plant's leaves, which are full of a green coloring called chlorophyll. Chlorophyll acts like a tiny solar panel \u2014 it captures energy from the sun and traps it for the plant to use.
+
+To build food, a plant needs two main ingredients. First, it pulls in a gas called carbon dioxide from the air through tiny openings on the leaves called stomata. Second, it soaks up water from the soil through its roots, almost like sipping through a straw.
+
+Now the plant puts it all together. Using the sun's trapped energy, it combines the carbon dioxide and water to make glucose \u2014 a kind of sugar that stores energy for later, like packing a lunch for the day.
+
+There's also a helpful by-product. As the plant makes glucose, it releases oxygen back into the air \u2014 the very same oxygen that animals and people breathe!
+
+Without photosynthesis, plants couldn't make food and the air would run low on oxygen. Most life on Earth depends on this quiet, green process happening in leaves every single day.
+
+[[CHART: { "type": "bar", "title": "What Goes In and What Comes Out", "data": [{"label": "Carbon Dioxide (in)", "value": 6}, {"label": "Water (in)", "value": 6}, {"label": "Glucose (out)", "value": 1}, {"label": "Oxygen (out)", "value": 6}] }]]`
+  },
+  "ui-tool-wordsounds": {
+    "headline": "Build phonics drills from the lesson's words",
+    "inputs": [
+      "A word list (not the prose) from sourceVocabulary / glossary terms",
+      "Reading grade level (gradeLevel, default 'Early Readers (K-2)')",
+      "Per-activity {enabled, count} over 17 phonics activities",
+      "masteryThreshold (3 consecutive correct)",
+      "wordSoundsLanguage, optional imageTheme"
+    ],
+    "outputs": [
+      "A processed[] array of per-word phonics objects",
+      "Each: { term, phonemes[], syllables[], rhymes[], familyMembers[], manipulationTask }",
+      "A lessonPlanConfig + activity sequence[] driving the game",
+      "Probe CSV export (accuracy, items/min, easy/medium/hard bands)"
+    ],
+    "how": "In Guided Mode this step launches the standalone Word Sounds generator. The teacher assembles a word list and toggles which phonics activities to include; each word is sent to Gemini for a strict phoneme analysis, and the result drives self-grading drills with per-phoneme mastery tracking.",
+    "example": `WORD LIST pulled from the photosynthesis vocabulary: sunlight, leaf, root, stomata, glucose, oxygen
+Grade: Early Readers (K-2)  \xB7  Mastery: 3 consecutive correct
+Activities: Find Sounds (5) \u2192 Break It Down (5) \u2192 Sound Mapping (5) \u2192 Rhyme Time (5) \u2192 Word Families (5) \u2192 Sound Swap (5)
+totalItems: 30  \xB7  estimatedMinutes: 15
+
+PER-WORD PHONICS OBJECTS
+
+1) "sun" (from sunlight)
+   phonemes: [s][u][n]  \xB7  rhymes with: fun
+   word family -un: fun, run, bun, nun, pun
+   manipulationTask: "Say 'sun'. Change the /s/ to /f/. What word?" \u2192 fun
+
+2) "leaf"
+   phonemes: [l][\u0113][f]  (ea = long e)
+   rhymes with: beef
+   manipulationTask: "Say 'leaf'. Now say it without the /f/." \u2192 lea
+
+3) "root"
+   phonemes: [r][\u016B][t]  (oo = long u)
+   word family -oot: boot, hoot, loot, toot, shoot
+   manipulationTask: "Say 'root'. Change the /r/ to /b/." \u2192 boot
+
+4) "stomata"  [_fallbackUsed: true]
+   7 phonemes, 3+ syllables \u2014 flagged as outside the K-2 decodable range, routed to the 'older readers' bucket rather than the phoneme drills.
+
+TEACHER EXPORT (Probe CSV)
+Date,Grade,Activity,Items Attempted,Items Correct,Accuracy %,Items/Min,Duration
+6/30/2026,K,segmentation,5,4,80,9.2,33s`
+  },
+  "outline": {
+    "headline": "Generate a graphic organizer from the text",
+    "inputs": [
+      "Source text (textToProcess)",
+      "Organizer type (outlineType) \u2014 one of 13 (Venn, Flow Chart, Frayer, etc.)",
+      "Reading grade level (gradeLevel)",
+      "Target language (effectiveLanguage), standards, useEmojis",
+      "Custom instructions (outlineCustomInstructions)"
+    ],
+    "outputs": [
+      "A JSON object { main, branches: [...] }",
+      "Each branch: { title, items: string[], connectsTo? }",
+      "structureType stamped with the chosen organizer",
+      "Non-English runs add main_en / title_en / items_en"
+    ],
+    "how": "The handler picks the chosen organizer type, builds a type-specific prompt (e.g. Venn demands exactly 3 branches ending in 'Shared'), and asks Gemini for a { main, branches } JSON object. The renderer switches on structureType to draw the matching diagram, with an optional sorting game when there are enough items.",
+    "example": "Type: Key Concept Map  \xB7  Grade: 5  \xB7  Language: English\n\nMAIN: Photosynthesis: How Plants Make Food\n\nBranch \u2014 Who Does It\n  \u2022 Plants\n  \u2022 Algae\n  \u2022 Some bacteria\n\nBranch \u2014 What Goes In\n  \u2022 Sunlight (energy)\n  \u2022 Carbon dioxide from air\n  \u2022 Water from soil\n\nBranch \u2014 Where It Happens\n  \u2022 Inside the leaves\n  \u2022 Chlorophyll captures sunlight\n  \u2022 Stomata let in carbon dioxide\n  \u2022 Roots absorb water\n\nBranch \u2014 What Comes Out\n  \u2022 Glucose (stored sugar energy)\n  \u2022 Oxygen released to the air\n\nBranch \u2014 Why It Matters\n  \u2022 Animals and people breathe the oxygen\n  \u2022 Most life on Earth depends on it\n\nOn screen: a central node radiates five branch cards (alternating indigo/teal borders). Because there are 15 items across 5 branches, a 'practice sorting game' button also appears, and Edit mode lets the teacher rename the center, titles, or any item.\n\nSame passage as a Flow Chart would instead yield a numbered vertical spine: Capture Energy \u2192 Take In Materials \u2192 Combine Ingredients \u2192 Make Glucose \u2192 Release Oxygen \u2192 END."
+  },
+  "anchor-chart": {
+    "headline": "Make a classroom anchor chart poster",
+    "inputs": [
+      "Source text (up to 2500 chars for context)",
+      "Topic label (sourceTopic)",
+      "Chart type (chartType / anchorChartType: reference / process / concept-map / comparison)",
+      "Reading grade level (effectiveGrade)"
+    ],
+    "outputs": [
+      "content { title, chartType, sections[] }",
+      "Each section: { id, label, bullets[], iconPrompt, iconUrl }",
+      "Hand-drawn marker icon filled per section on mount (callImagen)",
+      "annotations[] (added later by Critique mode) + lessonRef"
+    ],
+    "how": "The handler builds a type-specific prompt (process = sequential steps, comparison = categories) asking for a { title, sections } object, capping at 6 sections. On render the chart lays out by chart type and draws a hand-drawn marker icon per section; teachers can edit inline, arm Interactive mode, and export PNG.",
+    "example": "TITLE: HOW PLANTS MAKE FOOD\nChart type: process \u2192 5 numbered steps with \u2193 connectors, each with a marker icon.\n\n\u2460 CATCH THE LIGHT\n   \u2022 Chlorophyll is the green pigment\n   \u2022 Lives inside the leaves\n   \u2022 Grabs energy from sunlight\n   [icon: a green leaf with a small sun]\n   \u2193\n\u2461 BREATHE IN CO\u2082\n   \u2022 Air enters tiny holes = stomata\n   \u2022 Takes in carbon dioxide\n   [icon: tiny pores on a leaf surface]\n   \u2193\n\u2462 DRINK WATER\n   \u2022 Roots pull water from soil\n   \u2022 Water travels up the stem to the leaves\n   [icon: roots soaking up water drops]\n   \u2193\n\u2463 MAKE GLUCOSE\n   \u2022 Sun energy mixes CO\u2082 + water\n   \u2022 Builds glucose, a sugar\n   \u2022 Stores energy for later\n   [icon: a sugar cube glowing with energy]\n   \u2193\n\u2464 RELEASE OXYGEN\n   \u2022 Oxygen leaves as a by-product\n   \u2022 Goes back into the air\n   \u2022 The air we breathe!\n   [icon: an oxygen bubble floating up]\n\nOn screen: a paper-textured poster, Permanent Marker title, five marker-colored blocks (red/blue/green/orange/purple) with step badges. If Interactive mode is armed, students fill blank rows and the AI grader returns a 'What you did well' card, a 'One thing to try next' card, and a '+80 XP' pill."
+  },
+  "image": {
+    "headline": "Generate a labeled diagram of the concept",
+    "inputs": [
+      "Source text (full text analyzed; first 500 chars for multi-panel)",
+      "Visual style (effectiveVisualStyle)",
+      "Layout mode (visualLayoutMode: single / auto / forced template)",
+      "Reading grade level + target language (label/altText language)",
+      "Toggles: noText, fillInTheBlank, creativeMode, useLowQualityVisuals"
+    ],
+    "outputs": [
+      "Single path: { prompt, style, imageUrl (base64), altText }",
+      "Multi-panel path: visualPlan { layout, title, panels[] }",
+      "Each panel: { imagenPrompt, caption, imageUrl, labels[] }",
+      "Each label: { text, position, anchorX, anchorY }"
+    ],
+    "how": "The handler first asks Gemini for the visual elements and alt text, then builds an Imagen prompt. For multi-panel mode an art-director plans 2\u20134 panels and runs them through callImagen, stripping stray text; otherwise it renders a single labeled image with alt text and a label challenge.",
+    "example": `SINGLE-IMAGE RESULT
+prompt: "Educational diagram: green leaf cross-section, glowing sun with energy rays, chlorophyll inside leaf cells, blue CO\u2082 molecules entering through stomata, water rising from roots, glucose forming inside the leaf, oxygen bubbles released, arrows showing inputs and outputs. Clean educational vector art. White background, high contrast."
+altText: "A diagram of a plant leaf showing how sunlight, carbon dioxide entering through stomata, and water from the roots combine to make glucose and release oxygen during photosynthesis."
+
+MULTI-PANEL RESULT (layout 'sequence', title 'How Photosynthesis Works')
+
+Panel 1 \u2014 Capturing Sunlight
+  Caption: Chlorophyll inside the leaf captures energy from the sun.
+  Labels: Sunlight (top-right), Chlorophyll (center)
+
+Panel 2 \u2014 Taking In Materials
+  Caption: The plant takes in carbon dioxide through stomata and water through its roots.
+  Labels: Carbon dioxide (top-left), Stomata (bottom-center), Water from roots (bottom-left)
+
+Panel 3 \u2014 Making Food
+  Caption: The plant combines them into glucose for energy and releases oxygen back into the air.
+  Labels: Glucose (center-left), Oxygen released (top-right)
+
+Envelope meta: "Multi-Panel (3 panels)"`
+  },
+  "faq": {
+    "headline": "Answer the questions students will ask",
+    "inputs": [
+      "Source text (textToProcess)",
+      "Number of questions (faqCount: 3 / 5 / 8 / 10, default 5)",
+      "Reading grade level (gradeLevel)",
+      "Target language (effectiveLanguage) \u2014 adds _en fields",
+      "studentInterests, useEmojis, custom instructions"
+    ],
+    "outputs": [
+      "A flat JSON array of FAQ objects",
+      "Each: { question, answer }",
+      "Non-English adds { question_en, answer_en }",
+      "No category / difficulty / misconception fields \u2014 only Q/A (+ _en)"
+    ],
+    "how": "A single Gemini call asks for faqCount question/answer pairs at the given grade and language, optionally weaving in interests and emojis. The result is parsed straight into a card array \u2014 there is no two-pass analysis \u2014 and rendered as expandable accordion cards with read-aloud.",
+    "example": "[\n  Q: What is photosynthesis and why does it matter?\n  A: It's the process plants, algae, and some bacteria use to turn sunlight into food. It matters because the glucose it makes feeds the plant and the oxygen it releases is what animals and people breathe. Without photosynthesis, most life on Earth could not survive.\n\n  Q: What does chlorophyll actually do?\n  A: Chlorophyll is the green pigment inside a plant's leaves, and its job is to capture energy from the sun. That captured sunlight is the energy the plant uses to combine carbon dioxide and water.\n\n  Q: Where do the carbon dioxide and water come from?\n  A: The plant takes in carbon dioxide from the air through tiny openings called stomata, and absorbs water from the soil through its roots \u2014 one ingredient from above ground, one from below.\n\n  Q: What is glucose, and what happens to it?\n  A: Glucose is a sugar the plant makes by combining carbon dioxide and water using the sun's energy. It stores energy so the plant can use it later \u2014 like the plant's packed lunch.\n\n  Q: Is oxygen the goal of photosynthesis, or a by-product?\n  A: A common mix-up is thinking plants make oxygen on purpose for us. Oxygen is actually a by-product, released while the plant makes its own food (glucose). It just happens to be the oxygen animals and people need to breathe.\n]\n\n(Spanish run adds question_en / answer_en translation fields to each card.)"
+  },
+  "sentence-frames": {
+    "headline": "Scaffold student writing with frames and a rubric",
+    "inputs": [
+      "Source text (textToProcess)",
+      "Frame type (frameType: Sentence Starters / Paragraph Frame / Discussion Prompts)",
+      "Reading grade level (gradeLevel)",
+      "Target language (effectiveLanguage), standards, useEmojis",
+      "Custom instructions (frameCustomInstructions)"
+    ],
+    "outputs": [
+      "A JSON object with mode 'list' or 'paragraph'",
+      "List mode: items[] of { text } (+ text_en when non-English)",
+      "Paragraph mode: text with [bracketed] fill-in tokens",
+      "Always a rubric (markdown table, Criteria \xD7 Levels 1\u20135)"
+    ],
+    "how": "The handler builds a prompt from the text, frame type, grade and language, then asks Gemini for a JSON object whose shape it defensively repairs after parsing. List mode renders numbered starter cards with response boxes; paragraph mode turns [tokens] into fill-in inputs; both always show the markdown rubric.",
+    "example": `mode: list
+
+SENTENCE STARTERS
+1. Photosynthesis is the process that plants, algae, and some bacteria use to...
+2. Inside a plant's leaves, the green pigment called chlorophyll is important because it...
+3. The plant takes in carbon dioxide through tiny openings called stomata, and it absorbs water from the soil through its...
+4. Using the sun's energy, the plant combines carbon dioxide and water in order to make...
+5. One reason photosynthesis matters to animals and people is that, as a by-product, the plant releases...
+6. If there were no photosynthesis, most life on Earth could not survive because...
+
+RUBRIC
+| Criteria | L1 Beginning | L3 Proficient | L5 Mastery |
+| --- | --- | --- | --- |
+| Content | Confuses inputs and outputs (e.g. plants breathe in oxygen). | Explains chlorophyll captures sunlight and the plant combines CO\u2082 and water to make glucose. | Precisely explains stomata, chlorophyll, glucose as stored energy, and oxygen as a by-product animals breathe. |
+| Use of Scaffolds | Starter copied with no added content. | Completes 3\u20134 starters with accurate endings. | Integrates every starter into a complete explanation. |
+| Mechanics | Errors obscure meaning. | Some errors, meaning stays clear. | Clean, correctly punctuated sentences. |
+
+(Choosing 'Paragraph Frame' instead returns mode 'paragraph': "...combines these to make [glucose], a sugar that stores energy, and releases [oxygen] back into the air.")`
+  },
+  "note-taking": {
+    "headline": "Pre-seed a fillable note-taking template",
+    "inputs": [
+      "Source text (textToProcess, capped at 3000 chars)",
+      "Template type (templateType: cornell-notes default, lab-report, reading-response, double-entry, guided-notes, q-and-a)",
+      "Reading grade level (effectiveGrade)",
+      "Topic (sourceTopic) for the title fallback"
+    ],
+    "outputs": [
+      "A templateType-specific content object",
+      "Cornell: { cues[], notes[] (empty rows), summary, connections }",
+      "Guided-notes / Q-and-A / double-entry: blanks[], pairs[], or entries[]",
+      "lessonRef metadata; the 'Get AI Feedback' loop returns a separate rubric \u2192 XP"
+    ],
+    "how": "This step only PRE-POPULATES a scaffold: one Gemini call seeds a few fields (Cornell cues, lab question, guided-notes blanks, Q&A pairs) and leaves the rest empty for the student. The student fills it in, and a separate strengths-first feedback loop scores the work into XP.",
+    "example": `TEMPLATE: cornell-notes \u2014 5th Grade
+Title: How Photosynthesis Works
+
+What the AI seeds (left cue column only; right notes start empty):
+Cues / Questions
+  1. What is chlorophyll?
+  2. Where does CO\u2082 enter?
+  3. Role of stomata
+  4. Where does water come from?
+  5. What is glucose for?
+  6. By-product released?
+  7. Why does it matter for life?
+
+After the student fills it in:
+  1. What is chlorophyll?    | Green pigment inside leaves; captures the sun's energy.
+  2. Where does CO\u2082 enter?   | From the air, taken in through the leaves.
+  3. Role of stomata         | Tiny openings that let carbon dioxide in.
+  4. Where does water come?  | Pulled up from the soil through the roots.
+  5. What is glucose for?    | A sugar the plant makes that stores energy for later.
+  6. By-product released?    | Oxygen goes back into the air.
+  7. Why does it matter?     | Animals and people breathe that oxygen.
+
+SUMMARY: Plants use chlorophyll to catch sunlight, mix carbon dioxide (through stomata) with water from the roots to make glucose, and release the oxygen other living things need.
+
+Get AI Feedback returns:
+  Strength: "Your cues are real retrieval questions, not just headings."
+  Growth nudge: "In your summary, explain WHY the plant releases oxygen \u2014 it's a leftover from making glucose."
+  Rubric: completion 3, quality 13, alignment 5  \u2192  26 XP`
+  },
+  "brainstorm": {
+    "headline": "Generate hands-on activity ideas for the lesson",
+    "inputs": [
+      "Source text (textToProcess)",
+      "Reading grade level (gradeLevel)",
+      "Independent-vs-class mode (isIndependentMode)",
+      "studentInterests, standards, lesson DNA",
+      "Prior resources in history (steer the ideas)"
+    ],
+    "outputs": [
+      "A JSON array of activity objects",
+      "Each exactly: { title, description, connection }",
+      "Lazily added per card: idea.guide (teacher guide markdown)",
+      "Lazily added: idea.worksheet (student worksheet) + idea.coverImage"
+    ],
+    "how": "The handler builds one creative-pedagogy prompt from the source, grade, interests, standards and prior resources, then returns an array of { title, description, connection } ideas. Per-card buttons then lazily generate a teacher guide, a printable student worksheet, and an optional cover illustration.",
+    "example": "[\n  TITLE: Backyard Sunlight Detectives\n  Description: In pairs, students cover one leaf of a living plant with foil and leave a matching leaf uncovered. Over four days they observe both, predict what happens when chlorophyll can't capture sunlight, and compare the pale, energy-starved leaf to its green neighbor.\n  Connection: Demonstrates that chlorophyll needs sunlight to make glucose \u2014 the foil blocks the sun's energy, so the covered leaf can't run photosynthesis.\n\n  TITLE: The Stomata Breathing Game\n  Description: Students become a leaf's gas-exchange system. Half are 'carbon dioxide' molecules entering through hula-hoop stomata; the other half are 'oxygen' molecules exiting. Players only swap when the 'sunlight' caller says the sun is shining.\n  Connection: Brings the stomata, CO\u2082 intake, and oxygen release to life, reinforcing that gas exchange is powered by the sun.\n\n  TITLE: Recipe Card for Glucose\n  Description: Students design a cookbook 'recipe card' for plant food: ingredients (carbon dioxide, water), energy source (sunlight via chlorophyll), the kitchen (the leaf), the dish (glucose), and leftover scraps (oxygen).\n  Connection: Reframes CO\u2082 + water + sunlight \u2192 glucose + oxygen as a familiar recipe.\n\n  TITLE: Soil-to-Leaf Water Relay\n  Description: An outdoor relay passing water from a 'soil' bucket up through 'roots' and a 'stem' to a 'leaf' station where it meets carbon dioxide and a sunlight flashlight. Only when all three arrive can the team flip a 'GLUCOSE MADE!' card and release an oxygen balloon.\n  Connection: Models how the plant absorbs water and combines it with CO\u2082 using the sun's energy \u2014 all three inputs must be present.\n]\n\n(Clicking 'Generate Teacher Guide' on a card adds idea.guide with Materials Needed / Preparation Steps / Step-by-Step Instructions in markdown.)"
+  },
+  "persona": {
+    "headline": "Interview historical figures and experts about the topic",
+    "inputs": [
+      "Source text (latest analysis originalText, capped at 3000 chars)",
+      "Topic label (sourceTopic)",
+      "Reading grade level (gradeLevel)",
+      "Target language (leveledTextLanguage)",
+      "Custom instructions (personaCustomInstructions)"
+    ],
+    "outputs": [
+      "A JSON array of exactly 6 persona objects",
+      "Each: { name, role, year, nationality, context, greeting }",
+      "voice + voiceProfile, artStyle, visualDescription",
+      "quests[] (3 hidden objectives) + suggestedQuestions[] (3)"
+    ],
+    "how": "A single Google-Search-grounded Gemini call identifies 6 interviewable figures or expert archetypes from the source, verifies each one's era and look, assigns an art style and TTS voice, and returns profiles with a greeting, three quests, and three suggested questions. Selecting a card generates a portrait and opens an in-character chat.",
+    "example": `[
+  NAME: Dr. Jan Ingenhousz  (1779, Dutch)
+  Role: 18th-century physiologist who discovered photosynthesis
+  Context: Ingenhousz proved that the green parts of plants release oxygen only in sunlight \u2014 the discovery behind the lesson's claim that plants release oxygen using the sun's energy.
+  Voice: Charon (refined Dutch accent, measured, scholarly)
+  Greeting: "Good day, young scholar. I have spent many summer afternoons watching bubbles rise from leaves held under water in the sun. Ask, and I shall tell you what those bubbles mean."
+  Quests:
+    \u2022 (20) Get him to explain why his pondweed only bubbled in sunlight, not shade.
+    \u2022 (50) Uncover that the bubbles were oxygen, the gas animals need to breathe.
+    \u2022 (75) Coax him to admit he didn't yet know about chlorophyll or glucose.
+
+  NAME: A Chloroplast  (Present day)
+  Role: The sunlight-capturing organelle inside a leaf cell
+  Context: Speaking AS the chloroplast lets students hear photosynthesis from the inside \u2014 how chlorophyll grabs light and how CO\u2082 and water become glucose while oxygen is set free.
+  Voice: Aoede (bright, friendly, uses kitchen and factory metaphors)
+  Greeting: "Hi! I'm a chloroplast, and I live inside one of this leaf's cells. My green chlorophyll is soaking up sunlight right now. Want to know what I'm building in here?"
+  Quests:
+    \u2022 (20) Find out which raw materials it pulls in (CO\u2082 from stomata, water from roots).
+    \u2022 (50) Get it to name the food it makes (glucose) and why a plant stores it.
+    \u2022 (75) Discover what it releases (oxygen) and why animals depend on it.
+
+  ...4 more figures (e.g. Joseph Priestley, Melvin Calvin, A Water Molecule, A Stoma) for 6 total.
+]`
+  },
+  "timeline": {
+    "headline": "Order the process into a sortable sequence",
+    "inputs": [
+      "Source text (textToProcess)",
+      "Item count (timelineItemCount, clamped 4\u201310)",
+      "Sequence mode (timelineMode: auto / chronological / procedural / cause-effect / ...)",
+      "Reading grade level + target language",
+      "includeTimelineVisuals (per-item icon)"
+    ],
+    "outputs": [
+      "A JSON object { progressionLabel, items[], mode, autoDetected }",
+      "Each item: { date, event } (+ _en, + image when visuals on)",
+      "Optional validationIssues[] flagging duplicate/out-of-order steps",
+      "Renderer shows an axis label + a 'Detected/locked' mode chip"
+    ],
+    "how": "A 'Sequence Validation Expert' prompt hard-codes the grade, language, ordering mode, and an item-count rule, then returns a JSON sequence. The code tolerantly parses items, resolves the final mode, and runs structural validation (duplicate positions, non-monotonic dates) before rendering a drag-to-order card per item.",
+    "example": `Order by: Causal Chain \u2014 Initial cause (sunlight captured) \u2192 Final effect (oxygen released)
+[Mode chip: "Detected: Cause \u2192 Effect"]
+
+Step 1 \u2014 Chlorophyll, the green pigment inside a leaf's cells, captures energy from sunlight.
+   [icon: a green leaf with sun rays striking it]
+Step 2 \u2014 Tiny openings called stomata open and let carbon dioxide from the air move into the leaf.
+   [icon: leaf surface with stomata pores and CO\u2082 arrows]
+Step 3 \u2014 The plant's roots absorb water from the soil, which travels up the stem to the leaves.
+   [icon: roots drawing water upward]
+Step 4 \u2014 Using the captured sunlight energy, the leaf combines the carbon dioxide and water.
+   [icon: two molecules merging with a spark of light]
+Step 5 \u2014 This reaction produces glucose, a sugar the plant stores to use as energy later.
+   [icon: a glucose molecule / energy-storage symbol]
+Step 6 \u2014 Oxygen is released back into the air as a by-product \u2014 the same oxygen animals and people breathe.
+   [icon: a leaf releasing O\u2082 bubbles]
+
+Teacher-only structural-issues panel: empty here \u2014 all 6 positions are unique and the causal chain is monotonic, so validation returns OK with no issues.`
+  },
+  "concept-sort": {
+    "headline": "Sort key terms into the right categories",
+    "inputs": [
+      "Source text (first 10,000 chars of textToProcess)",
+      "Reading grade level (gradeLevel) \u2014 drives short cards for K\u20135",
+      "Item count (conceptItemCount, blank = auto 6\u201330)",
+      "Locked categories (selectedConcepts, max 5) \u2014 else AI picks 2\u20133",
+      "Image mode (conceptImageMode) + style"
+    ],
+    "outputs": [
+      "A JSON object { categories[], items[] }",
+      "categories: { id, label, color }",
+      "items: { id, content, categoryId } (+ image when generated)",
+      "The 'answer key' is each item's categoryId \u2014 no separate key field"
+    ],
+    "how": "The handler asks Gemini for 2\u20133 contrasting categories (or the teacher's locked ones) plus a grade-tuned set of cards, parses { categories, items }, and optionally draws a vector icon per short card. Students drag cards in the sort game and are scored against each item's categoryId.",
+    "example": '{\n  categories:\n    c1 \u2014 Inputs (Raw Materials & Energy Taken In)   [bg-indigo-500]\n    c2 \u2014 Outputs (Made or Released)                 [bg-emerald-500]\n    c3 \u2014 Structures (Where It Happens)              [bg-pink-500]\n\n  items:\n    i1 \u2014 "Sunlight energy captured by the leaf"              \u2192 c1  [icon: sun]\n    i2 \u2014 "Carbon dioxide taken in from the air"             \u2192 c1  [icon: CO\u2082 molecule]\n    i3 \u2014 "Water absorbed from the soil through the roots"   \u2192 c1  [icon: water drop + roots]\n    i4 \u2014 "Glucose, a sugar that stores energy for later"    \u2192 c2  [icon: sugar/energy]\n    i5 \u2014 "Oxygen released back into the air"                \u2192 c2  [icon: O\u2082 bubbles]\n    i6 \u2014 "Chlorophyll, the green pigment in the leaf"       \u2192 c3  [icon: green pigment]\n    i7 \u2014 "Stomata, the tiny openings on the leaf"           \u2192 c3  [icon: leaf pore]\n    i8 \u2014 "Roots that pull water from the soil"              \u2192 c3  [icon: roots]\n}\n\nBecause item count was left blank, the auto rule produced 8 short cards; every card is \u2264 6 words, so each also got a generated vector icon. The implicit answer key: i5 (Oxygen) \u2192 c2 (Outputs), and so on.'
+  },
+  "dbq": {
+    "headline": "Build a document-based question investigation",
+    "inputs": [
+      "Source text (truncated by grade band: 6000/10000/15000 chars)",
+      "Reading grade level (gradeLevel) \u2014 scales doc count, excerpt length, rigor",
+      "Target language (effectiveLanguage)",
+      "DBQ mode (_dbqMode: standard / perspectives / search / links / custom)",
+      "Custom instructions + optional web-searched primary-source URLs"
+    ],
+    "outputs": [
+      "A JSON object { title, historicalContext, documents[] }",
+      "Each doc: { id, documentType, source, excerpt, happPrompts, sourcingQuestions[], analysisQuestions[] }",
+      "corroborationClaims[], synthesisPrompt, thesisStarter",
+      "rubric[] (Thesis / Evidence / Analysis / Organization) + teacherNotes"
+    ],
+    "how": "The handler reads grade-scaled flags and the DBQ mode, optionally web-searches real primary-source URLs, then builds one large inline prompt for a JSON document set. The renderer turns it into a four-tab student workspace (Docs / Corroborate / Essay / Rubric) with HAPP analysis, reliability checks, and AI essay grading.",
+    "example": `TITLE: How Do Plants Make Their Own Food? A Photosynthesis Investigation
+Historical context: For most of history people believed plants 'ate' soil. Over centuries, scientists discovered that plants build their own food from air, water, and sunlight.
+
+Document A (secondary \u2014 life-science textbook, 2021)
+  Excerpt: "...chlorophyll captures energy from the sun. The plant takes in carbon dioxide through stomata and water through its roots, combining them to make glucose and releasing oxygen."
+  Analysis Q: According to Document A, what THREE ingredients does a plant combine, and what does it produce?
+
+Document B (data \u2014 leaf gas-exchange experiment, 2022)
+  Excerpt: "In the dark: 0 oxygen bubbles/min. Dim light: 6/min. Bright light: 22/min. When the lamp switched off, production stopped almost immediately."
+  Analysis Q: What relationship do the numbers show between light and oxygen released?
+
+Document C (secondary \u2014 environmental science article, 2020)
+  Excerpt: "The oxygen released during photosynthesis is the same oxygen animals and people breathe... without it, most life on Earth could not survive."
+  Analysis Q: What TWO things does Document C say animals get from plants?
+
+Corroboration claim: "Sunlight is the energy source that powers photosynthesis."
+  Supporting: A, B  \u2014  Guide: How does Document B (bubbles stopping in the dark) confirm what Document A states in words?
+
+Synthesis prompt: Using evidence from at least two documents, explain how plants make their own food and why that process matters for life on Earth.
+Thesis starter: "I believe that plants make their own food by ___ because Document A shows ___ and Document B shows ___."
+
+Rubric: Thesis / Evidence Use / Analysis / Organization, each scored 1\u20134.`
+  },
+  "math": {
+    "headline": "Generate a themed STEM problem set",
+    "inputs": [
+      "Source text (first 1500 chars as Source Context)",
+      "Topic/skill box (mathInput)",
+      "Math mode (mathMode, default 'Problem Set Generator')",
+      "Subject (mathSubject, e.g. Biology)",
+      "Reading grade level + studentInterests + isMathGraphEnabled"
+    ],
+    "outputs": [
+      "A JSON object { title, problems[], graphData }",
+      "Each problem: { question, answer, steps[], realWorld }",
+      "Each step: { explanation, latex }",
+      "graphData null unless an SVG was requested/generated"
+    ],
+    "how": "In Problem Set mode the handler builds a 'Math Curriculum Designer' prompt that themes word problems with characters and settings from the source, tuned to grade and interests. The result is parsed through a repair cascade and normalized into uniform problem cards with reveal-able steps, answers, and real-world connections.",
+    "example": "Title: Problem Set: Photosynthesis Rates & Gas Exchange   [Subject: BIOLOGY]\n\nProblem 1\n  A maple leaf produces 12 glucose molecules every 5 minutes. At this rate, how many does it make in 1 hour?\n  Step 1 \u2014 Rate per minute: 12 \xF7 5 = 2.4 glucose/min\n  Step 2 \u2014 Per hour: 2.4 \xD7 60 = 144\n  Answer: 144 glucose molecules\n  Real-World: Botanists measure photosynthesis rates to compare which crop varieties grow fastest.\n\nProblem 2\n  A bean plant takes in 6 CO\u2082 molecules through its stomata for every 1 glucose it makes. If it builds 35 glucose, how many CO\u2082 molecules did it absorb?\n  Step 1 \u2014 Ratio CO\u2082 : glucose = 6 : 1\n  Step 2 \u2014 35 \xD7 6 = 210\n  Answer: 210 carbon dioxide molecules\n  Real-World: Climate researchers track CO\u2082 uptake by forests to estimate carbon pulled from the atmosphere.\n\nProblem 3\n  A water lily releases 8 oxygen bubbles every 2 minutes. How many in 15 minutes?\n  Step 1 \u2014 Proportion: 8/2 = x/15\n  Step 2 \u2014 2x = 120 \u2192 x = 60\n  Answer: 60 oxygen bubbles\n  Real-World: Aquarium techs watch oxygen bubble rates to make sure fish have enough to breathe.\n\nProblem 4\n  To make 9 glucose, a plant uses 54 water molecules. How many per glucose, and how many for 20 glucose?\n  Step 1 \u2014 54 \xF7 9 = 6 water per glucose\n  Step 2 \u2014 6 \xD7 20 = 120\n  Answer: 6 water per glucose; 120 water for 20 glucose\n\ngraphData: null"
+  },
+  "adventure": {
+    "headline": "Turn the lesson into a choose-your-path story",
+    "inputs": [
+      "Source text (first 3000 chars of textToProcess)",
+      "Reading grade level (gradeLevel)",
+      "Target language (effectiveLanguage)",
+      "Story-vs-standard tone (isAdventureStoryMode)",
+      "studentInterests + custom/lesson-DNA context"
+    ],
+    "outputs": [
+      "An opening-scene JSON object",
+      "{ text (scene), options (exactly 4 strings) }",
+      "inventoryUpdate, voices map, soundParams { atmosphere, element }",
+      "Per-turn fields (XP, energy, gold, next scene) come on later turns"
+    ],
+    "how": "A 'dungeon master' prompt embeds the lesson plus grade, tone, and interests and returns one opening scene: descriptive text, exactly 4 choice options, a voices map, and sound parameters. From there each clicked choice calls Gemini again for a turn object that updates XP, energy, and the next scene.",
+    "example": `{
+  text: "You are Dr. Mira Solano, a botanist shrunk to the size of a pollen grain to find out why the greenhouse maples have stopped growing. You land on a broad green leaf where sunlight pours down in golden shafts and the surface glows emerald where chlorophyll packs the cells beneath your feet.
+
+  A low hiss draws your eye to a pair of guard cells flexing open and shut like tiny mouths \u2014 the stomata \u2014 with carbon dioxide streaming in. Far below, you feel a cool pull of water rising from the roots. The factory is running... but one patch of leaf has gone pale and still, its chlorophyll faded, and no oxygen bubbles rise from it.
+
+  Your wrist-scanner blinks: GLUCOSE OUTPUT FALLING. Where do you begin?",
+
+  options: [
+    "Climb toward a glowing chloroplast to watch chlorophyll capture sunlight",
+    "Slip through an open stoma to track the incoming carbon dioxide",
+    "Follow a vein down toward the roots to check the water supply",
+    "Investigate the pale patch where no oxygen is bubbling out"
+  ],
+  inventoryUpdate: { add: { name: "Botanist's Wrist-Scanner", type: "permanent" } },
+  voices: { "Dr. Mira Solano": "Leda", "Guard Cell": "Zephyr" },
+  soundParams: { atmosphere: "Ethereal", element: "Nature" }
+}
+
+metaInfo: "Opening Scene". A separate Imagen call fills the scene image; the three paragraphs split into tap-to-read-aloud sentences. The first choice returns a turn object, e.g. { evaluation: "Smart \u2014 chlorophyll is exactly where light energy is captured.", xpAwarded: 15, energyChange: -5, scene: {...} }.`
+  },
+  "quiz": {
+    "headline": "Build an exit ticket to check understanding",
+    "inputs": [
+      "Source text (textToProcess)",
+      "MCQ count (quizMcqCount) + reflection count (quizReflectionCount)",
+      "Depth of Knowledge (dokLevel: 'Mixed' or a Webb level)",
+      "Reading grade level + target language",
+      "passAnalysisToQuiz (pulls concepts from the analysis artifact)"
+    ],
+    "outputs": [
+      "A quiz object { questions[], reflections[], mode 'exit-ticket' }",
+      "Default mix: 3 MCQ + 1 fill-blank + 1 short-answer",
+      "MCQ: { question, options[4], correctAnswer, factCheck }",
+      "fill-blank: { expectedFill, acceptableAlternatives[] }; short-answer: { expectedAnswer }"
+    ],
+    "how": "The handler resolves the exit-ticket strategy (3 MCQ + 1 fill-blank + 1 short-answer by default), builds one prompt with the DOK instruction and source, then normalizes each item by type. A second per-MCQ Gemini pass adds a fact-check that verifies the keyed answer and debunks each distractor.",
+    "example": "Exit Ticket  \u{1F4DD}\n\nQ1 (MCQ) \u2014 What is the main job of photosynthesis for a plant?\n  A) To turn sunlight into food (glucose) for energy  \u2713\n  B) To pull nitrogen out of the soil to build new leaves\n  C) To keep the plant cool on hot, sunny days\n  D) To help the plant move toward the sun\n  Fact-check: Verified \u2014 chlorophyll captures light to combine CO\u2082 and water into glucose. Nitrogen, cooling (transpiration), and bending toward light (phototropism) are different processes.\n\nQ2 (MCQ) \u2014 What does the green pigment chlorophyll do inside a leaf?\n  A) It captures energy from sunlight  \u2713\n  B) It absorbs water from the soil\n  C) It releases oxygen into the air\n  D) It stores glucose for winter\n\nQ3 (MCQ) \u2014 Through which tiny leaf openings does a plant take in carbon dioxide?\n  A) Stomata  \u2713   B) Roots   C) Chlorophyll   D) Veins\n\nQ4 (fill-blank) \u2014 Using the sun's energy, a plant combines carbon dioxide and ___ to make glucose.\n  expectedFill: water   (also accepts: H2O, water from the soil)\n\nQ5 (short-answer) \u2014 Why is the oxygen a plant releases important for animals and people?\n  Reference answer: Oxygen is released as a by-product of photosynthesis, and animals and people need it to breathe and survive.\n\nReflection: In your own words, explain what would happen to most life on Earth if photosynthesis suddenly stopped."
+  },
+  "alignment": {
+    "headline": "Audit the whole lesson for standards and UDL",
+    "inputs": [
+      "All prior artifacts in history (not the raw passage)",
+      "Target standards (targetStandards / standardsPromptString)",
+      "Reading grade level (gradeLevel)",
+      "DOK-tagged quiz items from history"
+    ],
+    "outputs": [
+      "reports[]: per-standard text/activity/assessment alignment + Pass/Revise",
+      "comprehensive{}: 9 dimensions (standards, vocabulary, engagement, accessibility, udl, accuracy, differentiation, cognitiveLoad, culturalResponsiveness)",
+      "udl pillars: representation / engagement / actionExpression (CAST v3.0)",
+      "overall: readiness score 0\u2013100 + status + blockingIssues[]"
+    ],
+    "how": "This step audits the artifacts already generated rather than re-reading the passage. It optionally calls Gemini per target standard, then runs deterministic computes plus parallel specialist reviews across nine dimensions and rolls everything into an equal-weighted 0\u2013100 readiness score where any 'Not Aligned' dimension blocks a Pass.",
+    "example": `CURRICULUM AUDIT \u2014 Score 78 / 100  \xB7  Pass with notes
+8 of 9 dimensions evaluated (Cultural responsiveness: Not applicable)
+
+Top suggested fixes:
+  [Engagement \u2193] DOK skews recall-heavy (80% L1); add 2 application items.
+  [Accessibility \u2193] The leaf diagram has no alt text \u2014 a screen-reader user misses the chlorophyll/stomata labels.
+  [Vocabulary \u2193] Add the Tier-2 word "convert" to bridge "combines ... to make glucose."
+
+STANDARDS ALIGNMENT (NGSS MS-LS1-6) \u2014 Revise
+  Text \xB7 Aligned: simplified text states chlorophyll captures the sun's energy and the plant combines CO\u2082 and water to make glucose.
+  Activities \xB7 Partially Aligned: the Concept Sort practices inputs vs. outputs but doesn't require explaining WHY energy is stored.
+  Assessment \xB7 Partially Aligned: exit-ticket items check recall; none ask students to construct an explanation of energy flow.
+  Recommendation: add a constructed-response item \u2014 "Explain how a plant turns sunlight into stored food, using chlorophyll, glucose, and oxygen."
+
+UDL PRINCIPLES (CAST v3.0)
+  Representation \xB7 Partially Aligned \u2014 add a labeled diagram and a read-aloud.
+  Engagement \xB7 Partially Aligned \u2014 offer a choice of task.
+  Action & Expression \xB7 Not Aligned \u2014 only multiple-choice recall; let students diagram or record a spoken explanation.
+
+ACCESSIBILITY \xB7 Partially Aligned
+  1 image, 0 with alt text; 1 color-only reference ("the green pigment"); longest unbroken passage 96 words.
+
+CULTURAL RESPONSIVENESS \xB7 Not applicable (pure-science process lesson; excluded from the score).`
+  },
+  "lesson-plan": {
+    "headline": "Synthesize a scripted plan linking every resource",
+    "inputs": [
+      "Lesson context assembled from history (getLessonContext)",
+      "Asset manifest of deep-linkable artifacts (getAssetManifest)",
+      "Reading grade level (effectiveGrade) + topic (sourceTopic)",
+      "Target language + custom additions (lessonCustomAdditions)",
+      "STEM tool registry (for recommendations)"
+    ],
+    "outputs": [
+      "A JSON object with materialsNeeded[], objectives[], essentialQuestion",
+      "hook, directInstruction, guidedPractice, independentPractice, closure",
+      "extensions[] of { title, description }",
+      "Optional recommendedStemTools[] of { id, rationale, suggestedActivity }"
+    ],
+    "how": "The handler builds a CONTEXT from the run history plus a deep-link inventory, then asks an 'expert UDL Curriculum Designer' to write a scripted plan that names and [Title](resource:ID)-links the previously generated assets. The plan is placed last so it can cite everything already created.",
+    "example": `ESSENTIAL QUESTION
+How does a plant turn sunlight, air, and water into the food it needs \u2014 and why does that matter for us?
+
+OBJECTIVES
+\u2022 SWBAT explain that plants use sunlight to make their own food through photosynthesis.
+\u2022 SWBAT identify the inputs (sunlight, carbon dioxide, water) and outputs (glucose, oxygen).
+\u2022 SWBAT describe the roles of chlorophyll, stomata, and roots.
+
+HOOK (2\u20133 min)
+Display the [Inside a Leaf Diagram](resource:img-9912). Teacher says: "Every bite of food you've ever eaten started with a leaf catching sunlight. Where do you think the plant's food gets made?" Take a few predictions.
+
+DIRECT INSTRUCTION (12\u201315 min)
+Read the [Leveled Text](resource:lt-3481). Step 1 \u2014 chlorophyll captures the sun's energy. Step 2 \u2014 the plant takes in carbon dioxide through stomata and water through its roots (CFU: which gas comes IN, and where does water come from?). Step 3 \u2014 it combines them into glucose, "a charged battery the plant saves." Step 4 \u2014 it releases oxygen, the same oxygen we breathe (CFU: why should an animal be glad a plant is doing photosynthesis?).
+
+GUIDED PRACTICE (10 min)
+As a class, work the [Inputs vs. Outputs Concept Sort](resource:cs-5530), pausing on 'chlorophyll' \u2014 a tool, not an input.
+
+INDEPENDENT PRACTICE (8 min)
+Students draw a labeled leaf with arrows for CO\u2082, water, sunlight, and oxygen, then finish: "A plant makes glucose by ______."
+
+CLOSURE (5 min)
+Assign the [Exit Ticket Quiz](resource:qz-7741), then discuss: "Without photosynthesis, most life on Earth could not survive \u2014 explain why in one sentence."
+
+RECOMMENDED STEM LAB TOOLS
+\u2022 cellInterior \u2014 see the chloroplasts where chlorophyll captures light.
+\u2022 moleculeBuilder \u2014 assemble CO\u2082 and H\u2082O and watch glucose and O\u2082 form.`
+  },
+  "_final": {
+    "headline": "Export the full pack with a readiness report",
+    "inputs": [
+      "The entire history[] of kept artifacts (serialized to a ~30K-char audit context)",
+      "Target standards / standardsPromptString + gradeLevel",
+      "DOK-tagged quiz items",
+      "Export config (getExportableHistory, isWorksheet, isTeacher answer-key gating)"
+    ],
+    "outputs": [
+      "A Standards & Readiness Report (reports[] + comprehensive{} across 9 dimensions)",
+      "comprehensive.overall: readiness score 0\u2013100, status, blockingIssues[]",
+      "Status points: Aligned=20, Partially=12, Not Aligned=0 (a Not-Aligned dimension blocks auto-Pass)",
+      "A single self-contained .html file bundling every kept artifact"
+    ],
+    "how": "Two things happen at the final step. The Standards Report runs a holistic audit \u2014 serializing every prior artifact, optionally checking each target standard, then scoring nine comprehensive dimensions into a 0\u2013100 readiness roll-up. Separately, the teacher downloads the Full Resource Pack: one offline HTML file bundling every kept artifact.",
+    "example": `STANDARDS & READINESS REPORT \u2014 "How Plants Make Food: Photosynthesis" (Grade 5)
+
+CURRICULUM READINESS SCORE: 78 / 100 \u2014 Pass with notes
+Dimensions evaluated: 8 of 9 (Cultural responsiveness: Not applicable)
+
+STANDARDS ALIGNMENT (NGSS 5-LS1-1 / 5-PS3-1) \u2014 Revise
+  Text \xB7 Aligned: the Simplified Text and Glossary teach that chlorophyll captures the sun's energy and the plant combines CO\u2082 and water to make glucose.
+  Activities \xB7 Partially Aligned: the Visual Organizer maps sunlight \u2192 glucose \u2192 oxygen, but no artifact asks students to MODEL the matter-and-energy transfer.
+  Assessment \xB7 Partially Aligned: exit-ticket items check recall; none trace energy from the Sun.
+  Recommendation: add a diagram/constructed-response item tracing energy from sunlight to stored glucose.
+
+VOCABULARY FIT \xB7 Partially Aligned \u2014 Tier 3 strong (chlorophyll, stomata, glucose, photosynthesis); add Tier-2 words (absorb, release, convert).
+ENGAGEMENT VARIETY \xB7 Aligned \u2014 6 artifact types, diversity 0.81; mix skews recall-heavy.
+ACCESSIBILITY \xB7 Partially Aligned \u2014 1 image with no alt text; 1 color-only reference ("green pigment").
+CONTENT ACCURACY \xB7 Aligned \u2014 7 verified facts, 0 discrepancies.
+UDL \xB7 Partially Aligned \u2014 most pressing pillar: Action & Expression (only multiple-choice available).
+DIFFERENTIATION \xB7 Partially Aligned \u2014 add sentence frames for ELLs.
+COGNITIVE LOAD \xB7 Aligned \u2014 claimed 45 min, estimated 41 min.
+CULTURAL RESPONSIVENESS \xB7 Not applicable.
+
+FULL RESOURCE PACK DOWNLOAD
+One self-contained .html file bundling every kept artifact (Analysis, Glossary, Simplified Text, Visual Organizer, Exit Ticket, Lesson Plan) + this report, ready to open offline or re-import. (Answer key included only in Teacher mode.)`
+  }
+};
 function GuidedModeBanner({
   GUIDED_STEPS,
   allGuidedSteps,
@@ -40,6 +705,8 @@ function GuidedModeBanner({
   const step = GUIDED_STEPS[guidedStep] || {};
   const isLast = guidedStep >= GUIDED_STEPS.length - 1;
   const [showPicker, setShowPicker] = React.useState(false);
+  const [infoTab, setInfoTab] = React.useState(null);
+  const [showFullLesson, setShowFullLesson] = React.useState(false);
   const GUIDED_CLICK_STEPS = ["ui-tool-wordsounds", "math", "adventure", "_final"];
   const _histLen = Array.isArray(history) ? history.length : 0;
   const _stepBaseRef = React.useRef(_histLen);
@@ -124,6 +791,12 @@ function GuidedModeBanner({
   const isStepOn = (id) => !guidedSelectedIds || id === "source-input" || guidedSelectedIds.indexOf(id) !== -1;
   const humanize = (type) => getDefaultTitle ? getDefaultTitle(type) : String(type || "").replace(/[-_]/g, " ");
   const recapItems = isLast ? (history || []).filter((h) => h && h.type && h.type !== "udl-advice" && h.type !== "guided").map((h) => h.title || humanize(h.type)) : [];
+  const detailEntry = typeof GUIDED_DETAIL !== "undefined" && GUIDED_DETAIL[step.id] || null;
+  const _gdTab = (on) => ({ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "5px", padding: "7px 8px", fontSize: "11px", fontWeight: 700, color: on ? "#fde68a" : "#c7d2fe", background: on ? "rgba(251,191,36,0.16)" : "rgba(255,255,255,0.06)", border: "1px solid " + (on ? "rgba(251,191,36,0.55)" : "rgba(165,180,252,0.3)"), borderRadius: "10px", cursor: "pointer", transition: "all 0.2s" });
+  const _gdPanel = { marginBottom: "10px", padding: "11px 13px", background: "rgba(255,255,255,0.05)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.1)" };
+  const _gdIo = { fontSize: "10px", fontWeight: 800, color: "rgba(129,140,248,0.95)", textTransform: "uppercase", letterSpacing: "0.08em", margin: "8px 0 4px" };
+  const _gdLi = { fontSize: "11px", color: "rgba(203,213,225,0.92)", lineHeight: "1.5", marginBottom: "3px", display: "flex", gap: "6px" };
+  const _gdPre = { margin: "6px 0 0", whiteSpace: "pre-wrap", wordBreak: "break-word", fontSize: "11px", lineHeight: "1.6", color: "rgba(226,232,240,0.92)", fontFamily: "inherit", background: "rgba(15,23,42,0.55)", borderRadius: "8px", padding: "10px 12px", border: "1px solid rgba(255,255,255,0.06)" };
   return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("style", null, `@keyframes alloGuidedRingPulse{0%,100%{box-shadow:0 0 0 2px rgba(99,102,241,.7),0 0 22px rgba(99,102,241,.45)}50%{box-shadow:0 0 0 3px rgba(129,140,248,.95),0 0 36px rgba(99,102,241,.65)}}@media (prefers-reduced-motion: reduce){.allo-guided-ring{animation:none !important}}`), guidedRect && guidedRect.width > 0 && !wizardOpen && /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "allo-guided-ring", style: {
     position: "fixed",
     top: guidedRect.top - 6,
@@ -135,7 +808,7 @@ function GuidedModeBanner({
     zIndex: 9e3,
     boxShadow: "0 0 0 2px rgba(99,102,241,.7), 0 0 22px rgba(99,102,241,.45)",
     animation: "alloGuidedRingPulse 2s ease-in-out infinite"
-  } }), /* @__PURE__ */ React.createElement("div", { style: { background: "linear-gradient(135deg, #312e81, #1e3a5f)", borderRadius: "20px", padding: "16px", marginBottom: "16px", border: "1px solid rgba(99,102,241,0.3)", flexShrink: 0 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "13px", fontWeight: 800, color: "white", display: "flex", alignItems: "center", gap: "6px" } }, t("guided.indicator_title")), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "11px", color: "#c7d2fe", fontWeight: 600 } }, t("guided.step_of").replace("{current}", Math.min(guidedStep + 1, GUIDED_STEPS.length)).replace("{total}", GUIDED_STEPS.length))), /* @__PURE__ */ React.createElement("p", { style: { fontSize: "11px", color: "#c7d2fe", margin: "0 0 10px", fontWeight: 600 } }, step.label || "Complete!"), /* @__PURE__ */ React.createElement("div", { style: { width: "100%", height: "4px", borderRadius: "2px", background: "rgba(255,255,255,0.1)", overflow: "hidden", marginBottom: "12px" } }, /* @__PURE__ */ React.createElement("div", { style: { height: "100%", borderRadius: "2px", background: "linear-gradient(90deg, #818cf8, #6366f1)", transition: "width 0.4s ease-out", width: guidedStep / GUIDED_STEPS.length * 100 + "%" } })), step.action && /* @__PURE__ */ React.createElement("div", { role: "status", style: { display: "flex", gap: "8px", alignItems: "flex-start", background: stepDone ? "rgba(34,197,94,0.14)" : "rgba(99,102,241,0.18)", border: "1px solid " + (stepDone ? "rgba(74,222,128,0.4)" : "rgba(129,140,248,0.35)"), borderRadius: "12px", padding: "10px 12px", marginBottom: "10px" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "14px", lineHeight: "1.4" } }, stepDone ? "\u2705" : "\u{1F449}"), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "11.5px", color: "white", fontWeight: 600, lineHeight: "1.5" } }, stepDone ? step.success || step.action : step.action)), step.id === "source-input" && !stepDone && typeof setInputText === "function" && /* @__PURE__ */ React.createElement("button", { onClick: () => setInputText(GUIDED_SAMPLE_TEXT), style: { display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", width: "100%", padding: "8px 12px", marginBottom: "10px", fontSize: "11px", fontWeight: 700, color: "#e0e7ff", background: "rgba(255,255,255,0.06)", border: "1px dashed rgba(165,180,252,0.5)", borderRadius: "10px", cursor: "pointer", transition: "all 0.2s" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2728"), t("guided.try_example") || "New here? Try it with an example passage"), step.id !== "source-input" && typeof onShowGuidedExample === "function" && /* @__PURE__ */ React.createElement("button", { onClick: () => onShowGuidedExample(step.id), "aria-pressed": guidedExampleId === step.id, style: { display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", width: "100%", padding: "8px 12px", marginBottom: "10px", fontSize: "11px", fontWeight: 700, color: guidedExampleId === step.id ? "#fde68a" : "#e0e7ff", background: guidedExampleId === step.id ? "rgba(251,191,36,0.14)" : "rgba(255,255,255,0.06)", border: "1px dashed " + (guidedExampleId === step.id ? "rgba(251,191,36,0.6)" : "rgba(165,180,252,0.5)"), borderRadius: "10px", cursor: "pointer", transition: "all 0.2s" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F441}"), guidedExampleId === step.id ? t("guided.example_hide") || "Hide the example" : t("guided.example_show") || "Show an example in the panel"), isLast && /* @__PURE__ */ React.createElement("div", { role: "status", style: { marginBottom: "10px", padding: "11px 13px", background: "rgba(34,197,94,0.12)", border: "1px solid rgba(74,222,128,0.35)", borderRadius: "12px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 800, color: "white", marginBottom: "6px" } }, "\u{1F389} ", t("guided.recap_title") || "Your lesson is built"), recapItems.length > 0 ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "rgba(203,213,225,0.9)", marginBottom: "6px" } }, (t("guided.recap_count") || "You created {n} resources:").replace("{n}", recapItems.length)), /* @__PURE__ */ React.createElement("div", { style: { maxHeight: "120px", overflowY: "auto" } }, recapItems.slice(0, 12).map((title, i) => /* @__PURE__ */ React.createElement("div", { key: i, style: { fontSize: "11px", color: "white", display: "flex", gap: "6px", marginBottom: "2px", alignItems: "flex-start" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { color: "#4ade80" } }, "\u2713"), /* @__PURE__ */ React.createElement("span", null, title))), recapItems.length > 12 && /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "rgba(203,213,225,0.7)" } }, "+", recapItems.length - 12, " ", t("guided.recap_more") || "more"))) : /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "rgba(203,213,225,0.9)" } }, t("guided.recap_empty") || "Generate resources from the tools, then download your full pack below."), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "rgba(203,213,225,0.8)", marginTop: "8px", fontStyle: "italic" } }, t("guided.recap_hub") || "Looking for more? The Learning Hub has StoryForge, PoetTree, and LitLab.")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "8px" } }, guidedStep === 0 && !guidedEngaged && /* @__PURE__ */ React.createElement("span", { style: { flex: 1, padding: "6px 12px", fontSize: "11px", fontWeight: 700, color: "rgba(199,210,254,0.85)", fontStyle: "italic", textAlign: "center" } }, t("guided.source_prompt")), (guidedStep > 0 || guidedEngaged) && !isLast && /* @__PURE__ */ React.createElement("button", { onClick: handleGuidedSkip, style: { flex: 1, padding: "6px 12px", fontSize: "11px", fontWeight: 800, color: "white", background: guidedEngaged ? "linear-gradient(135deg, #818cf8, #6366f1)" : "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "10px", cursor: "pointer", transition: "all 0.2s" } }, guidedEngaged ? t("guided.next_step") || "Next step \u2192" : t("guided.skip_step") || t("guided.skip")), isLast && /* @__PURE__ */ React.createElement("button", { onClick: () => {
+  } }), /* @__PURE__ */ React.createElement("div", { style: { background: "linear-gradient(135deg, #312e81, #1e3a5f)", borderRadius: "20px", padding: "16px", marginBottom: "16px", border: "1px solid rgba(99,102,241,0.3)", flexShrink: 0 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "13px", fontWeight: 800, color: "white", display: "flex", alignItems: "center", gap: "6px" } }, t("guided.indicator_title")), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "11px", color: "#c7d2fe", fontWeight: 600 } }, t("guided.step_of").replace("{current}", Math.min(guidedStep + 1, GUIDED_STEPS.length)).replace("{total}", GUIDED_STEPS.length))), /* @__PURE__ */ React.createElement("p", { style: { fontSize: "11px", color: "#c7d2fe", margin: "0 0 10px", fontWeight: 600 } }, step.label || "Complete!"), /* @__PURE__ */ React.createElement("div", { style: { width: "100%", height: "4px", borderRadius: "2px", background: "rgba(255,255,255,0.1)", overflow: "hidden", marginBottom: "12px" } }, /* @__PURE__ */ React.createElement("div", { style: { height: "100%", borderRadius: "2px", background: "linear-gradient(90deg, #818cf8, #6366f1)", transition: "width 0.4s ease-out", width: guidedStep / GUIDED_STEPS.length * 100 + "%" } })), step.action && /* @__PURE__ */ React.createElement("div", { role: "status", style: { display: "flex", gap: "8px", alignItems: "flex-start", background: stepDone ? "rgba(34,197,94,0.14)" : "rgba(99,102,241,0.18)", border: "1px solid " + (stepDone ? "rgba(74,222,128,0.4)" : "rgba(129,140,248,0.35)"), borderRadius: "12px", padding: "10px 12px", marginBottom: "10px" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "14px", lineHeight: "1.4" } }, stepDone ? "\u2705" : "\u{1F449}"), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "11.5px", color: "white", fontWeight: 600, lineHeight: "1.5" } }, stepDone ? step.success || step.action : step.action)), step.id === "source-input" && !stepDone && typeof setInputText === "function" && /* @__PURE__ */ React.createElement("button", { onClick: () => setInputText(GUIDED_SAMPLE_TEXT), style: { display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", width: "100%", padding: "8px 12px", marginBottom: "10px", fontSize: "11px", fontWeight: 700, color: "#e0e7ff", background: "rgba(255,255,255,0.06)", border: "1px dashed rgba(165,180,252,0.5)", borderRadius: "10px", cursor: "pointer", transition: "all 0.2s" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2728"), t("guided.try_example") || "New here? Try it with an example passage"), detailEntry && step.id !== "source-input" && /* @__PURE__ */ React.createElement("div", { style: { marginBottom: "10px" } }, /* @__PURE__ */ React.createElement("div", { role: "tablist", "aria-label": t("guided.detail_tablist") || "Section detail", style: { display: "flex", gap: "6px", marginBottom: infoTab ? "8px" : "0" } }, /* @__PURE__ */ React.createElement("button", { role: "tab", id: "gd-tab-how", "aria-selected": infoTab === "how", "aria-controls": "gd-panel-how", onClick: () => setInfoTab(infoTab === "how" ? null : "how"), style: _gdTab(infoTab === "how") }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2699\uFE0F"), t("guided.tab_how") || "How it works"), /* @__PURE__ */ React.createElement("button", { role: "tab", id: "gd-tab-example", "aria-selected": infoTab === "example", "aria-controls": "gd-panel-example", onClick: () => setInfoTab(infoTab === "example" ? null : "example"), style: _gdTab(infoTab === "example") }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4A1}"), t("guided.tab_example") || "Worked example")), infoTab === "how" && /* @__PURE__ */ React.createElement("div", { role: "tabpanel", id: "gd-panel-how", "aria-labelledby": "gd-tab-how", style: _gdPanel }, detailEntry.headline && /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 800, color: "rgba(199,210,254,0.96)", marginBottom: "2px" } }, detailEntry.headline), /* @__PURE__ */ React.createElement("div", { style: _gdIo }, t("guided.io_inputs") || "Inputs"), (detailEntry.inputs || []).map((x, i) => /* @__PURE__ */ React.createElement("div", { key: "in" + i, style: _gdLi }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { color: "#818cf8" } }, "\u25B8"), /* @__PURE__ */ React.createElement("span", null, x))), /* @__PURE__ */ React.createElement("div", { style: _gdIo }, t("guided.io_outputs") || "Outputs"), (detailEntry.outputs || []).map((x, i) => /* @__PURE__ */ React.createElement("div", { key: "out" + i, style: _gdLi }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { color: "#34d399" } }, "\u25B8"), /* @__PURE__ */ React.createElement("span", null, x))), detailEntry.how && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { style: _gdIo }, t("guided.io_how") || "How it works"), /* @__PURE__ */ React.createElement("p", { style: { fontSize: "11px", color: "rgba(203,213,225,0.92)", lineHeight: "1.6", margin: "0" } }, detailEntry.how)), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "10px", color: "rgba(148,163,184,0.75)", marginTop: "8px", fontStyle: "italic" } }, t("guided.io_verified") || "Verified against the actual tool behavior in AlloFlow.")), infoTab === "example" && /* @__PURE__ */ React.createElement("div", { role: "tabpanel", id: "gd-panel-example", "aria-labelledby": "gd-tab-example", style: _gdPanel }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", fontWeight: 800, color: "#fde68a", marginBottom: "2px" } }, "\u{1F4A1} ", t("guided.example_heading") || "Example output", " \xB7 ", t("guided.example_lesson") || "Photosynthesis"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "10px", color: "rgba(148,163,184,0.8)", marginBottom: "2px" } }, t("guided.example_consistent") || "The same lesson runs through every step."), /* @__PURE__ */ React.createElement("pre", { style: _gdPre }, detailEntry.example), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowFullLesson(true), style: { display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", width: "100%", marginTop: "8px", padding: "8px 12px", fontSize: "11px", fontWeight: 700, color: "#e0e7ff", background: "rgba(99,102,241,0.18)", border: "1px solid rgba(129,140,248,0.45)", borderRadius: "10px", cursor: "pointer" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4D6}"), t("guided.view_full_lesson") || "View the full worked lesson"))), isLast && /* @__PURE__ */ React.createElement("div", { role: "status", style: { marginBottom: "10px", padding: "11px 13px", background: "rgba(34,197,94,0.12)", border: "1px solid rgba(74,222,128,0.35)", borderRadius: "12px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 800, color: "white", marginBottom: "6px" } }, "\u{1F389} ", t("guided.recap_title") || "Your lesson is built"), recapItems.length > 0 ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "rgba(203,213,225,0.9)", marginBottom: "6px" } }, (t("guided.recap_count") || "You created {n} resources:").replace("{n}", recapItems.length)), /* @__PURE__ */ React.createElement("div", { style: { maxHeight: "120px", overflowY: "auto" } }, recapItems.slice(0, 12).map((title, i) => /* @__PURE__ */ React.createElement("div", { key: i, style: { fontSize: "11px", color: "white", display: "flex", gap: "6px", marginBottom: "2px", alignItems: "flex-start" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { color: "#4ade80" } }, "\u2713"), /* @__PURE__ */ React.createElement("span", null, title))), recapItems.length > 12 && /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "rgba(203,213,225,0.7)" } }, "+", recapItems.length - 12, " ", t("guided.recap_more") || "more"))) : /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "rgba(203,213,225,0.9)" } }, t("guided.recap_empty") || "Generate resources from the tools, then download your full pack below."), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "rgba(203,213,225,0.8)", marginTop: "8px", fontStyle: "italic" } }, t("guided.recap_hub") || "Looking for more? The Learning Hub has StoryForge, PoetTree, and LitLab.")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "8px" } }, guidedStep === 0 && !guidedEngaged && /* @__PURE__ */ React.createElement("span", { style: { flex: 1, padding: "6px 12px", fontSize: "11px", fontWeight: 700, color: "rgba(199,210,254,0.85)", fontStyle: "italic", textAlign: "center" } }, t("guided.source_prompt")), (guidedStep > 0 || guidedEngaged) && !isLast && /* @__PURE__ */ React.createElement("button", { onClick: handleGuidedSkip, style: { flex: 1, padding: "6px 12px", fontSize: "11px", fontWeight: 800, color: "white", background: guidedEngaged ? "linear-gradient(135deg, #818cf8, #6366f1)" : "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "10px", cursor: "pointer", transition: "all 0.2s" } }, guidedEngaged ? t("guided.next_step") || "Next step \u2192" : t("guided.skip_step") || t("guided.skip")), isLast && /* @__PURE__ */ React.createElement("button", { onClick: () => {
     setGuidedStep(0);
     handleExitGuidedMode();
   }, style: { flex: 1, padding: "6px 12px", fontSize: "11px", fontWeight: 700, color: "white", background: "linear-gradient(135deg, #818cf8, #6366f1)", border: "none", borderRadius: "10px", cursor: "pointer", transition: "all 0.2s" } }, t("guided.all_done")), toggleGuidedStepId && /* @__PURE__ */ React.createElement("button", { onClick: () => setShowPicker((p) => !p), "aria-label": t("guided.customize") || "Choose which steps to include", "aria-expanded": showPicker, title: t("guided.customize") || "Choose which steps to include", style: { padding: "6px 10px", fontSize: "11px", fontWeight: 700, color: showPicker ? "white" : "#c7d2fe", background: showPicker ? "rgba(99,102,241,0.4)" : "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "10px", cursor: "pointer", transition: "all 0.2s" } }, "\u2699"), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowGuidedTip((p) => !p), style: { padding: "6px 12px", fontSize: "11px", fontWeight: 700, color: showGuidedTip ? "white" : "#c7d2fe", background: showGuidedTip ? "rgba(99,102,241,0.4)" : "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "10px", cursor: "pointer", transition: "all 0.2s" } }, showGuidedTip ? "\u2715" : "\u2139\uFE0F", " ", t("guided.about")), /* @__PURE__ */ React.createElement("button", { onClick: handleExitGuidedMode, style: { padding: "6px 12px", fontSize: "11px", fontWeight: 700, color: "rgba(248,113,113,0.9)", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(248,113,113,0.3)", borderRadius: "10px", cursor: "pointer", transition: "all 0.2s" } }, t("guided.exit") || "Exit")), showPicker && toggleGuidedStepId && /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": t("guided.choose_steps") || "Choose which steps to include", style: { marginTop: "10px", padding: "10px 12px", background: "rgba(255,255,255,0.06)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.1)", maxHeight: "220px", overflowY: "auto", animation: "fadeIn 0.3s ease-out" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", fontWeight: 800, color: "rgba(165,180,252,0.95)", marginBottom: "8px" } }, t("guided.choose_steps") || "Choose which steps to include", " (", allSteps.filter((s) => isStepOn(s.id)).length, "/", allSteps.length, ")"), allSteps.map((s) => {
@@ -184,7 +857,11 @@ function GuidedModeBanner({
       }
       return /* @__PURE__ */ React.createElement("p", { key: i, style: { color: "rgba(203,213,225,0.85)", margin: "0 0 4px", lineHeight: "1.6" } }, formatText(cleanLine));
     }))) : null;
-  })()));
+  })()), showFullLesson && /* @__PURE__ */ React.createElement("div", { role: "dialog", "aria-modal": "true", "aria-label": t("guided.full_lesson_title") || "The full worked lesson", onClick: () => setShowFullLesson(false), style: { position: "fixed", inset: 0, zIndex: 1e5, background: "rgba(2,6,23,0.82)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" } }, /* @__PURE__ */ React.createElement("div", { onClick: (e) => e.stopPropagation(), style: { background: "linear-gradient(150deg, #0f172a, #1e1b4b)", border: "1px solid rgba(99,102,241,0.3)", borderRadius: "20px", width: "100%", maxWidth: "760px", maxHeight: "88vh", display: "flex", flexDirection: "column", boxShadow: "0 25px 70px rgba(0,0,0,0.55)" } }, /* @__PURE__ */ React.createElement("div", { style: { flexShrink: 0, padding: "18px 22px", borderBottom: "1px solid rgba(99,102,241,0.22)", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px" } }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "16px", fontWeight: 800, color: "white" } }, "\u{1F4D6} ", t("guided.full_lesson_title") || "The full worked lesson"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "#c7d2fe", marginTop: "3px", lineHeight: "1.5" } }, t("guided.full_lesson_sub") || "One consistent example \u2014 a photosynthesis passage \u2014 carried through every Guided step, end to end.")), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowFullLesson(false), "aria-label": t("common.close") || "Close", style: { flexShrink: 0, width: "32px", height: "32px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.18)", background: "rgba(255,255,255,0.08)", color: "white", fontSize: "16px", cursor: "pointer", lineHeight: 1 } }, "\u2715")), /* @__PURE__ */ React.createElement("div", { style: { overflowY: "auto", padding: "16px 22px" } }, (GUIDED_STEPS || []).map((s, i) => {
+    const d = typeof GUIDED_DETAIL !== "undefined" && GUIDED_DETAIL[s.id] || null;
+    if (!d || !d.example) return null;
+    return /* @__PURE__ */ React.createElement("div", { key: s.id, style: { marginBottom: "16px", paddingBottom: "14px", borderBottom: "1px solid rgba(255,255,255,0.06)" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "baseline", gap: "7px", marginBottom: "2px" } }, /* @__PURE__ */ React.createElement("span", { style: { flexShrink: 0, fontSize: "10px", fontWeight: 800, color: "#a5b4fc", background: "rgba(99,102,241,0.18)", borderRadius: "6px", padding: "1px 6px" } }, i + 1), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "13px", fontWeight: 800, color: "rgba(199,210,254,0.97)" } }, s.label)), d.headline && /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "rgba(148,163,184,0.85)", marginBottom: "6px", marginLeft: "26px" } }, d.headline), /* @__PURE__ */ React.createElement("pre", { style: { margin: "0 0 0 26px", whiteSpace: "pre-wrap", wordBreak: "break-word", fontSize: "11px", lineHeight: "1.6", color: "rgba(226,232,240,0.92)", fontFamily: "inherit", background: "rgba(15,23,42,0.55)", borderRadius: "8px", padding: "10px 12px", border: "1px solid rgba(255,255,255,0.06)" } }, d.example));
+  })))));
 }
 
   window.AlloModules = window.AlloModules || {};
