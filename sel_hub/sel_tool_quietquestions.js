@@ -115,6 +115,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
     color: 'purple',
     category: 'inner-work',
     render: function(ctx) {
+      // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
+      var _qqT = (ctx && ctx.theme) || {};
+      var _qqHC = !!_qqT.isContrast, _qqL = !_qqHC && !_qqT.isDark;
+      var _qq_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _qq_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#7c3aed':'#000000'};
+      var _qq_FGL = {'#cbd5e1':'#334155','#c4b5fd':'#5b21b6','#94a3b8':'#64748b','#a78bfa':'#6d28d9','#e9d5ff':'#581c87','#e2e8f0':'#1e293b'}, _qq_FGH = {'#cbd5e1':'#ffff00','#c4b5fd':'#ffff00','#94a3b8':'#ffff00','#fff':'#ffff00','#a78bfa':'#ffff00','#e9d5ff':'#ffff00','#64748b':'#ffff00','#e2e8f0':'#ffff00','#bbf7d0':'#ffff00','#22c55e':'#ffff00'};
+      var _qq_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _qq_BDH = {'#334155':'#ffff00','#a78bfa':'#ffff00','#1e293b':'#ffff00','#22c55e':'#ffff00','#475569':'#ffff00','#a855f7':'#ffff00'};
+      var _qqBg = function(h){ return _qqHC ? (_qq_BGH[h]||h) : (_qqL ? (_qq_BGL[h]||h) : h); };
+      var _qqFg = function(h){ return _qqHC ? (_qq_FGH[h]||h) : (_qqL ? (_qq_FGL[h]||h) : h); };
+      var _qqBd = function(h){ return _qqHC ? (_qq_BDH[h]||h) : (_qqL ? (_qq_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -141,10 +150,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
       function header() {
         return h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: '#cbd5e1', fontSize: 14 } }, '← Back'),
+            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _qqFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
-            h('h2', { style: { margin: 0, color: '#c4b5fd', fontSize: 22, fontWeight: 900 } }, '🌒 Quiet Questions'),
-            h('div', { style: { fontSize: 12, color: '#94a3b8', marginTop: 4, lineHeight: 1.5 } }, 'A weekly inner inquiry practice. One question, seven days.')
+            h('h2', { style: { margin: 0, color: _qqFg('#c4b5fd'), fontSize: 22, fontWeight: 900 } }, '🌒 Quiet Questions'),
+            h('div', { style: { fontSize: 12, color: _qqFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'A weekly inner inquiry practice. One question, seven days.')
           )
         );
       }
@@ -162,9 +171,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
             var active = view === t.id;
             return h('button', { key: t.id, onClick: function() { goto(t.id); },
               role: 'tab', 'aria-selected': active,
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#a78bfa' : '#334155'),
-                background: active ? 'rgba(167,139,250,0.18)' : '#1e293b',
-                color: active ? '#e9d5ff' : '#cbd5e1', cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? _qqFg('#a78bfa') : '#334155'),
+                background: active ? 'rgba(167,139,250,0.18)' : _qqBg('#1e293b'),
+                color: active ? _qqFg('#e9d5ff') : _qqFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
         );
@@ -172,7 +181,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
 
       function softPointer() {
         return h('div', {
-          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: '#94a3b8', lineHeight: 1.5, fontStyle: 'italic' }
+          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _qqFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
           'This is a reflective practice, not therapy. If a question stirs something heavy, that is information; bring it to a counselor, school psych, or trusted adult. Crisis Text Line: text HOME to 741741. Crisis Companion is in this same SEL Hub.'
         );
@@ -218,58 +227,58 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
           // The query itself, big
           h('div', { style: { padding: 28, borderRadius: 14, marginBottom: 16, background: 'linear-gradient(135deg, ' + q.themeColor + '20 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid ' + q.themeColor + '88', borderLeft: '4px solid ' + q.themeColor, textAlign: 'center' } },
             h('div', { style: { fontSize: 11, color: q.themeColor, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 12 } }, q.themeLabel),
-            h('p', { style: { margin: 0, color: '#fff', fontSize: 22, lineHeight: 1.6, fontWeight: 500, fontStyle: 'italic' } }, q.text),
-            h('div', { style: { marginTop: 14, fontSize: 11, color: '#94a3b8' } },
+            h('p', { style: { margin: 0, color: _qqFg('#fff'), fontSize: 22, lineHeight: 1.6, fontWeight: 500, fontStyle: 'italic' } }, q.text),
+            h('div', { style: { marginTop: 14, fontSize: 11, color: _qqFg('#94a3b8') } },
               'Question ' + (currentIdx + 1) + ' of ' + QUERIES.length,
               d.manualOverride != null ? h('span', null, ' · ',
-                h('button', { onClick: resetAuto, style: { background: 'transparent', border: 'none', color: '#a78bfa', cursor: 'pointer', fontSize: 11, textDecoration: 'underline' } }, 'reset to this week\'s automatic')
+                h('button', { onClick: resetAuto, style: { background: 'transparent', border: 'none', color: _qqFg('#a78bfa'), cursor: 'pointer', fontSize: 11, textDecoration: 'underline' } }, 'reset to this week\'s automatic')
               ) : h('span', null, ' · ',
-                h('button', { onClick: tryDifferent, style: { background: 'transparent', border: 'none', color: '#a78bfa', cursor: 'pointer', fontSize: 11, textDecoration: 'underline' } }, 'try a different question')
+                h('button', { onClick: tryDifferent, style: { background: 'transparent', border: 'none', color: _qqFg('#a78bfa'), cursor: 'pointer', fontSize: 11, textDecoration: 'underline' } }, 'try a different question')
               )
             )
           ),
 
           // Guidance about the practice
-          h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(167,139,250,0.10)', borderTop: '1px solid rgba(167,139,250,0.3)', borderRight: '1px solid rgba(167,139,250,0.3)', borderBottom: '1px solid rgba(167,139,250,0.3)', borderLeft: '3px solid #a78bfa', marginBottom: 14, fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.6 } },
+          h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(167,139,250,0.10)', borderTop: '1px solid rgba(167,139,250,0.3)', borderRight: '1px solid rgba(167,139,250,0.3)', borderBottom: '1px solid rgba(167,139,250,0.3)', borderLeft: '3px solid #a78bfa', marginBottom: 14, fontSize: 12.5, color: _qqFg('#e9d5ff'), lineHeight: 1.6 } },
             h('strong', null, '🌒 How this practice works: '),
             'sit with this question for a week. No need to answer it. You can write what comes up at any point: once, three times, every day, or not at all. The point is to let the question work on you, not to dispatch it.'
           ),
 
           // Response area
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 14 } },
-            h('label', { htmlFor: draftId, style: { display: 'block', fontSize: 12, color: '#94a3b8', fontWeight: 700, marginBottom: 6 } }, 'Write what comes up (optional)'),
-            h('div', { style: { fontSize: 11, color: '#64748b', marginBottom: 8, fontStyle: 'italic' } }, 'Try a starter if it helps: "' + RESPONSE_PROMPTS[currentIdx % RESPONSE_PROMPTS.length] + '"'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: _qqBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 14 } },
+            h('label', { htmlFor: draftId, style: { display: 'block', fontSize: 12, color: _qqFg('#94a3b8'), fontWeight: 700, marginBottom: 6 } }, 'Write what comes up (optional)'),
+            h('div', { style: { fontSize: 11, color: _qqFg('#64748b'), marginBottom: 8, fontStyle: 'italic' } }, 'Try a starter if it helps: "' + RESPONSE_PROMPTS[currentIdx % RESPONSE_PROMPTS.length] + '"'),
             h('textarea', { id: draftId,
               placeholder: 'What is here?',
-              style: { width: '100%', minHeight: 130, padding: 10, borderRadius: 6, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 14, fontFamily: 'inherit', lineHeight: 1.7, resize: 'vertical' }
+              style: { width: '100%', minHeight: 130, padding: 10, borderRadius: 6, border: '1px solid #334155', background: _qqBg('#1e293b'), color: _qqFg('#e2e8f0'), fontSize: 14, fontFamily: 'inherit', lineHeight: 1.7, resize: 'vertical' }
             }),
 
             // Crew share opt-in
             h('div', { style: { marginTop: 12, padding: 10, borderRadius: 6, background: 'rgba(22,163,74,0.06)', border: '1px solid rgba(22,163,74,0.2)' } },
-              h('label', { style: { display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 12.5, color: '#bbf7d0' } },
+              h('label', { style: { display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 12.5, color: _qqFg('#bbf7d0') } },
                 h('input', { type: 'checkbox', id: 'qq-share-crew', 'aria-label': 'I want to share a version of this with my Crew' }),
                 h('span', null, 'I want to share a shorter version of this with my Crew')
               ),
               h('textarea', { id: 'qq-crew-version',
                 placeholder: 'A shorter version, only what you would actually want shared. Saved separately from your private response.',
-                style: { width: '100%', minHeight: 60, padding: 8, borderRadius: 6, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.6, resize: 'vertical', marginTop: 8 }
+                style: { width: '100%', minHeight: 60, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _qqBg('#1e293b'), color: _qqFg('#e2e8f0'), fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.6, resize: 'vertical', marginTop: 8 }
               })
             ),
 
             h('button', { onClick: saveResponse, 'aria-label': 'Save response',
-              style: { marginTop: 12, padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#7c3aed', color: '#fff', fontWeight: 700, fontSize: 13 } }, '+ Save'),
-            h('span', { style: { marginLeft: 8, fontSize: 11, color: '#64748b' } }, 'Your responses are private to this device unless you choose to share.')
+              style: { marginTop: 12, padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: _qqBg('#7c3aed'), color: _qqFg('#fff'), fontWeight: 700, fontSize: 13 } }, '+ Save'),
+            h('span', { style: { marginLeft: 8, fontSize: 11, color: _qqFg('#64748b') } }, 'Your responses are private to this device unless you choose to share.')
           ),
 
           // Existing responses for this query
-          existing.length > 0 ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b' } },
-            h('div', { style: { fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, existing.length + ' previous response' + (existing.length === 1 ? '' : 's') + ' to this question'),
+          existing.length > 0 ? h('div', { style: { padding: 12, borderRadius: 10, background: _qqBg('#0f172a'), border: '1px solid #1e293b' } },
+            h('div', { style: { fontSize: 11, color: _qqFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, existing.length + ' previous response' + (existing.length === 1 ? '' : 's') + ' to this question'),
             existing.slice().reverse().map(function(r, ri) {
-              return h('div', { key: ri, style: { padding: 10, borderRadius: 6, background: '#1e293b', marginBottom: 6, borderLeft: '2px solid ' + q.themeColor + '88' } },
-                h('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, monospace', marginBottom: 4 } }, r.date),
-                h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, r.text),
-                r.shareWithCrew && r.crewVersion ? h('div', { style: { marginTop: 8, padding: 6, background: 'rgba(22,163,74,0.10)', borderLeft: '2px solid #22c55e', borderRadius: 4, fontSize: 11.5, color: '#bbf7d0' } },
-                  h('strong', { style: { color: '#22c55e' } }, '🤝 Crew version: '), r.crewVersion
+              return h('div', { key: ri, style: { padding: 10, borderRadius: 6, background: _qqBg('#1e293b'), marginBottom: 6, borderLeft: '2px solid ' + q.themeColor + '88' } },
+                h('div', { style: { fontSize: 10, color: _qqFg('#94a3b8'), fontFamily: 'ui-monospace, monospace', marginBottom: 4 } }, r.date),
+                h('p', { style: { margin: 0, color: _qqFg('#cbd5e1'), fontSize: 13, lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, r.text),
+                r.shareWithCrew && r.crewVersion ? h('div', { style: { marginTop: 8, padding: 6, background: 'rgba(22,163,74,0.10)', borderLeft: '2px solid #22c55e', borderRadius: 4, fontSize: 11.5, color: _qqFg('#bbf7d0') } },
+                  h('strong', { style: { color: _qqFg('#22c55e') } }, '🤝 Crew version: '), r.crewVersion
                 ) : null
               );
             })
@@ -291,25 +300,25 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
           var responses = (d.responses || []).filter(function(r) { return r.queryId === browsed.id; });
           return h('div', null,
             h('button', { onClick: function() { setQQ({ browseId: null }); }, 'aria-label': 'Back to all questions',
-              style: { marginBottom: 12, background: 'transparent', border: '1px solid #334155', color: '#cbd5e1', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 12 } }, '← All questions'),
+              style: { marginBottom: 12, background: 'transparent', border: '1px solid #334155', color: _qqFg('#cbd5e1'), borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 12 } }, '← All questions'),
             h('div', { style: { padding: 24, borderRadius: 14, background: 'linear-gradient(135deg, ' + browsed.themeColor + '20 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid ' + browsed.themeColor + '88', borderLeft: '4px solid ' + browsed.themeColor, marginBottom: 14 } },
               h('div', { style: { fontSize: 11, color: browsed.themeColor, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 10 } }, browsed.themeLabel),
-              h('p', { style: { margin: 0, color: '#fff', fontSize: 18, lineHeight: 1.6, fontStyle: 'italic' } }, browsed.text)
+              h('p', { style: { margin: 0, color: _qqFg('#fff'), fontSize: 18, lineHeight: 1.6, fontStyle: 'italic' } }, browsed.text)
             ),
             h('button', { onClick: function() {
               var idx = QUERIES.findIndex(function(q) { return q.id === browsed.id; });
               setQQ({ manualOverride: idx, browseId: null, view: 'this-week' });
             }, 'aria-label': 'Make this my current question',
-              style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #a78bfa', background: 'rgba(167,139,250,0.18)', color: '#e9d5ff', cursor: 'pointer', fontWeight: 700, fontSize: 13, marginBottom: 14 } }, '→ Make this my current question'),
-            responses.length > 0 ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b' } },
-              h('div', { style: { fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, 'Your past responses to this question'),
+              style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #a78bfa', background: 'rgba(167,139,250,0.18)', color: _qqFg('#e9d5ff'), cursor: 'pointer', fontWeight: 700, fontSize: 13, marginBottom: 14 } }, '→ Make this my current question'),
+            responses.length > 0 ? h('div', { style: { padding: 12, borderRadius: 10, background: _qqBg('#0f172a'), border: '1px solid #1e293b' } },
+              h('div', { style: { fontSize: 11, color: _qqFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, 'Your past responses to this question'),
               responses.slice().reverse().map(function(r, ri) {
-                return h('div', { key: ri, style: { padding: 10, borderRadius: 6, background: '#1e293b', marginBottom: 6 } },
-                  h('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, monospace', marginBottom: 4 } }, r.date),
-                  h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, r.text)
+                return h('div', { key: ri, style: { padding: 10, borderRadius: 6, background: _qqBg('#1e293b'), marginBottom: 6 } },
+                  h('div', { style: { fontSize: 10, color: _qqFg('#94a3b8'), fontFamily: 'ui-monospace, monospace', marginBottom: 4 } }, r.date),
+                  h('p', { style: { margin: 0, color: _qqFg('#cbd5e1'), fontSize: 13, lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, r.text)
                 );
               })
-            ) : h('div', { style: { padding: 10, fontSize: 12, color: '#64748b', fontStyle: 'italic' } }, 'No past responses to this question yet.'),
+            ) : h('div', { style: { padding: 10, fontSize: 12, color: _qqFg('#64748b'), fontStyle: 'italic' } }, 'No past responses to this question yet.'),
             softPointer()
           );
         }
@@ -322,7 +331,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
         });
 
         return h('div', null,
-          h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(167,139,250,0.08)', borderTop: '1px solid rgba(167,139,250,0.2)', borderRight: '1px solid rgba(167,139,250,0.2)', borderBottom: '1px solid rgba(167,139,250,0.2)', borderLeft: '3px solid #a78bfa', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.55 } },
+          h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(167,139,250,0.08)', borderTop: '1px solid rgba(167,139,250,0.2)', borderRight: '1px solid rgba(167,139,250,0.2)', borderBottom: '1px solid rgba(167,139,250,0.2)', borderLeft: '3px solid #a78bfa', marginBottom: 14, fontSize: 13, color: _qqFg('#e9d5ff'), lineHeight: 1.55 } },
             '📚 All 20 questions. Browse by theme. Click any question to read it or make it your current week\'s focus.'
           ),
           Object.keys(themes).map(function(tkey) {
@@ -333,7 +342,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
                 t.queries.map(function(q) {
                   var hasResponse = (d.responses || []).some(function(r) { return r.queryId === q.id; });
                   return h('button', { key: q.id, onClick: function() { setQQ({ browseId: q.id }); },
-                    style: { padding: 12, borderRadius: 8, border: '1px solid ' + t.color + '44', background: '#0f172a', cursor: 'pointer', textAlign: 'left', color: '#e2e8f0' } },
+                    style: { padding: 12, borderRadius: 8, border: '1px solid ' + t.color + '44', background: _qqBg('#0f172a'), cursor: 'pointer', textAlign: 'left', color: _qqFg('#e2e8f0') } },
                     h('div', { style: { fontSize: 10, color: t.color, fontWeight: 700, marginBottom: 4 } }, hasResponse ? '✓ Visited' : 'Unvisited'),
                     h('div', { style: { fontSize: 12.5, lineHeight: 1.55, fontStyle: 'italic' } }, q.text)
                   );
@@ -351,10 +360,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
         var responses = (d.responses || []).slice();
         if (responses.length === 0) {
           return h('div', null,
-            h('div', { style: { padding: 24, borderRadius: 10, background: '#0f172a', textAlign: 'center' } },
+            h('div', { style: { padding: 24, borderRadius: 10, background: _qqBg('#0f172a'), textAlign: 'center' } },
               h('div', { style: { fontSize: 36, marginBottom: 8 } }, '🌒'),
-              h('div', { style: { color: '#94a3b8', fontSize: 14, marginBottom: 4 } }, 'No saved responses yet.'),
-              h('div', { style: { color: '#64748b', fontSize: 12 } }, 'Sit with this week\'s question. Write when something arrives.')
+              h('div', { style: { color: _qqFg('#94a3b8'), fontSize: 14, marginBottom: 4 } }, 'No saved responses yet.'),
+              h('div', { style: { color: _qqFg('#64748b'), fontSize: 12 } }, 'Sit with this week\'s question. Write when something arrives.')
             )
           );
         }
@@ -371,20 +380,20 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
         }
 
         return h('div', null,
-          h('div', { style: { fontSize: 12, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, responses.length + ' response' + (responses.length === 1 ? '' : 's')),
+          h('div', { style: { fontSize: 12, color: _qqFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, responses.length + ' response' + (responses.length === 1 ? '' : 's')),
           responses.map(function(r, ri) {
-            var q = QUERIES.find(function(qq) { return qq.id === r.queryId; }) || { themeLabel: '', themeColor: '#64748b', text: '(question not found)' };
-            return h('div', { key: ri, style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + q.themeColor, marginBottom: 10 } },
+            var q = QUERIES.find(function(qq) { return qq.id === r.queryId; }) || { themeLabel: '', themeColor: _qqFg('#64748b'), text: '(question not found)' };
+            return h('div', { key: ri, style: { padding: 12, borderRadius: 10, background: _qqBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + q.themeColor, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' } },
                 h('div', { style: { fontSize: 10, color: q.themeColor, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, q.themeLabel),
-                h('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, monospace' } }, r.date),
+                h('div', { style: { fontSize: 10, color: _qqFg('#94a3b8'), fontFamily: 'ui-monospace, monospace' } }, r.date),
                 h('button', { onClick: function() { deleteResp(ri); }, 'aria-label': 'Delete response',
-                  style: { marginLeft: 'auto', background: 'transparent', border: '1px solid #475569', color: '#94a3b8', borderRadius: 6, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')
+                  style: { marginLeft: 'auto', background: 'transparent', border: '1px solid #475569', color: _qqFg('#94a3b8'), borderRadius: 6, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')
               ),
-              h('p', { style: { margin: '0 0 8px', color: '#e9d5ff', fontSize: 12.5, fontStyle: 'italic', lineHeight: 1.5 } }, '“' + q.text + '”'),
-              h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.65, whiteSpace: 'pre-wrap' } }, r.text),
-              r.shareWithCrew && r.crewVersion ? h('div', { style: { marginTop: 8, padding: 6, background: 'rgba(22,163,74,0.10)', borderLeft: '2px solid #22c55e', borderRadius: 4, fontSize: 11.5, color: '#bbf7d0' } },
-                h('strong', { style: { color: '#22c55e' } }, '🤝 Crew version: '), r.crewVersion
+              h('p', { style: { margin: '0 0 8px', color: _qqFg('#e9d5ff'), fontSize: 12.5, fontStyle: 'italic', lineHeight: 1.5 } }, '“' + q.text + '”'),
+              h('p', { style: { margin: 0, color: _qqFg('#cbd5e1'), fontSize: 13, lineHeight: 1.65, whiteSpace: 'pre-wrap' } }, r.text),
+              r.shareWithCrew && r.crewVersion ? h('div', { style: { marginTop: 8, padding: 6, background: 'rgba(22,163,74,0.10)', borderLeft: '2px solid #22c55e', borderRadius: 4, fontSize: 11.5, color: _qqFg('#bbf7d0') } },
+                h('strong', { style: { color: _qqFg('#22c55e') } }, '🤝 Crew version: '), r.crewVersion
               ) : null
             );
           })
@@ -397,19 +406,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
       function renderAbout() {
         return h('div', null,
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('quietQuestions', h, ctx) : null),
-          h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#c4b5fd', fontSize: 16 } }, 'What this practice is'),
-            h('p', { style: { margin: '0 0 8px', color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.7 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: _qqBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 10px', color: _qqFg('#c4b5fd'), fontSize: 16 } }, 'What this practice is'),
+            h('p', { style: { margin: '0 0 8px', color: _qqFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
               'A single open-ended question, sat with for a week. You can write about it. You can talk to a friend about it. You can let it follow you around without doing anything in particular with it. The point is that good questions work on us slowly. Trying to answer them quickly is the opposite of the practice.'
             ),
-            h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.7 } },
+            h('p', { style: { margin: 0, color: _qqFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
               'There are no right answers. You will probably notice that the same question lands differently in different weeks, depending on what is going on in your life. That is the practice working.'
             )
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#c4b5fd', fontSize: 16 } }, 'What this practice is NOT'),
-            h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#cbd5e1', fontSize: 13, lineHeight: 1.8 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: _qqBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 10px', color: _qqFg('#c4b5fd'), fontSize: 16 } }, 'What this practice is NOT'),
+            h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: _qqFg('#cbd5e1'), fontSize: 13, lineHeight: 1.8 } },
               h('li', null, 'It is not a journaling assignment. You can skip writing entirely if you want.'),
               h('li', null, 'It is not therapy. If a question stirs something heavy, that is information; bring it to a counselor or trusted adult.'),
               h('li', null, 'It is not religious. The lineage of "queries" is Quaker, but the practice has been adapted across many secular traditions.'),
@@ -417,14 +426,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
             )
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#c4b5fd', fontSize: 16 } }, 'Lineage of the practice'),
-            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: _qqBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 10px', color: _qqFg('#c4b5fd'), fontSize: 16 } }, 'Lineage of the practice'),
+            h('p', { style: { margin: 0, color: _qqFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } },
               'The "query" form comes from the Religious Society of Friends (Quakers), where queries are open-ended questions read aloud in worship as prompts for reflection rather than as items to be answered. The practice of sitting with one question across a stretch of time appears across many wisdom traditions: Zen koans, Sufi questioning, Indigenous storywork, secular contemplative inquiry (Mary Oliver, Rilke, Wendell Berry, bell hooks). This tool draws on the FORM of the practice without claiming a specific religious or cultural authority.'
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', fontSize: 12.5, color: _qqFg('#e9d5ff'), lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'Quaker queries are typically used in Crew-time and faculty meetings as conversation prompts. A simple Crew protocol: read the week\'s query aloud, three minutes of silent reflection, then pair-share for 90 seconds, then opening to the full Crew with a "no fixing, no judging" norm. Students who shared a Crew-version of their response in the tool can offer it; students who did not should not be asked to.'
           ),

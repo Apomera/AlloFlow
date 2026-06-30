@@ -35,7 +35,24 @@ const CASES = [
   { id: 'digitalwellbeing', helper: '_dwC', reg: 'digitalWellbeing' }, // registers camelCase
   { id: 'upstander',      helper: '_upC' },
   { id: 'crisiscompanion', helper: '_ccC' },
+  // ── dark-base (INVERSE migration): dark = identity, +light/contrast. bg helper = _xxBg. ──
+  { id: 'tipp', base: 'dark', bg: '_tpBg' },
+  { id: 'maps', base: 'dark', bg: '_mpBg' },
+  { id: 'path', base: 'dark', bg: '_paBg' },
+  { id: 'sfbt', base: 'dark', bg: '_sfBg' },
+  { id: 'dearman', base: 'dark', bg: '_deBg', reg: 'dearMan' },
+  { id: 'thoughtrecord', base: 'dark', bg: '_thBg', reg: 'thoughtRecord' },
+  { id: 'wheeloflife', base: 'dark', bg: '_wlBg', reg: 'wheelOfLife' },
+  { id: 'quietquestions', base: 'dark', bg: '_qqBg', reg: 'quietQuestions' },
+  { id: 'crewprotocols', base: 'dark', bg: '_cpBg', reg: 'crewProtocols' },
+  { id: 'windowoftolerance', base: 'dark', bg: '_wtBg', reg: 'windowOfTolerance' },
+  { id: 'onepageprofile', base: 'dark', bg: '_opBg', reg: 'onePageProfile' },
 ];
+
+// dark SURFACE hexes that, in a dark-base tool, MUST be wrapped in _xxBg() (else they stay dark
+// in LIGHT mode → a dark island). Checked as raw `background: '#hex'` (the wrapped form is
+// `background: _xxBg('#hex')`, and map entries have no `background:` prefix, so neither false-matches).
+const DARK_SURFACE_HEXES = ['#0f172a', '#1e293b', '#111827', '#0b1220', '#020617', '#18181b', '#171717', '#0d1117'];
 
 // Tinted light SURFACE hexes that, if present in a migrated tool's render body, MUST be
 // wrapped in the tool's _xxC() remap (else they stay light in dark mode → light island or
@@ -124,6 +141,17 @@ describe.skipIf(!depsOk)('SEL Hub · tools render differently per ctx.theme (rea
 describe('SEL Hub · migrated tools have no unwrapped tinted-surface literals (ternary-completeness)', () => {
   const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   for (const c of CASES) {
+    if (c.base === 'dark') {
+      it(`${c.id}: dark surfaces route through ${c.bg}() (no dark island in light mode)`, () => {
+        const src = readFileSync(resolve(process.cwd(), 'sel_hub', `sel_tool_${c.id}.js`), 'utf8');
+        const leaks = [];
+        for (const hex of DARK_SURFACE_HEXES) {
+          if (src.includes(`background: '${hex}'`) || src.includes(`backgroundColor: '${hex}'`)) leaks.push(hex);
+        }
+        expect(leaks, `${c.id}: unwrapped dark backgrounds (must be ${c.bg}('#hex')): ${leaks.join(', ')}`).toEqual([]);
+      });
+      continue;
+    }
     it(`${c.id}: every tinted surface in the render body routes through ${c.helper}()`, () => {
       const src = readFileSync(resolve(process.cwd(), 'sel_hub', `sel_tool_${c.id}.js`), 'utf8');
       const mark = ': hex); };'; // end of the _xxC = function(hex){...} helper definition
