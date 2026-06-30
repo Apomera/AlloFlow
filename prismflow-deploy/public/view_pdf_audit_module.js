@@ -6236,6 +6236,20 @@ Return ONLY JSON:
           },
           (fail ? "\u274C " : warnOnly ? "\u26A0\uFE0F " : "\u2705 ") + label
         );
+      })(), (() => {
+        const _td = lastTaggedValidation && lastTaggedValidation.roundTrip && lastTaggedValidation.roundTrip.textDiff;
+        const _ro = _td && typeof _td.readingOrderRatio === "number" ? _td.readingOrderRatio : null;
+        if (_ro === null) return null;
+        const _low = _ro < 80;
+        const _mid = !_low && _ro < 90;
+        return /* @__PURE__ */ React.createElement(
+          "span",
+          {
+            className: "px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap " + (_low ? "bg-amber-100 text-amber-700" : _mid ? "bg-amber-50 text-amber-600" : "bg-slate-100 text-slate-600"),
+            title: t("pdf_audit.dashboard.reading_order_title") || "Reading-order match between the SOURCE document and the EXPORTED tagged PDF (round-trip token order, longest-common-subsequence). 100% = identical order. Lower values can indicate multi-column or table reflow that a screen reader will read out of sequence. Informational \u2014 being calibrated, does not yet block conformance."
+          },
+          (_low ? "\u26A0\uFE0F " : "") + (t("pdf_audit.dashboard.reading_order") || "Reading order") + ": " + Math.round(_ro * 10) / 10 + "%"
+        );
       })(), /* @__PURE__ */ React.createElement("span", { className: "h-4 w-px bg-slate-300 mx-0.5", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("button", { className: _chip, onClick: () => _jump("allo-sec-verify") }, "\u2705 ", t("pdf_audit.dashboard.verify") || "Verification"), /* @__PURE__ */ React.createElement("button", { className: _chip, onClick: () => _jump("allo-sec-recovery") }, "\u{1FA79} ", t("pdf_audit.dashboard.recovery") || "Recovery"), /* @__PURE__ */ React.createElement("button", { className: _chip, onClick: () => _jump("allo-sec-axe") }, "\u{1FA93} ", t("pdf_audit.dashboard.axe") || "Issues (axe)"), /* @__PURE__ */ React.createElement("button", { className: _chip, onClick: () => _jump("allo-sec-downloads") }, "\u{1F4E5} ", t("pdf_audit.dashboard.downloads") || "Downloads"), /* @__PURE__ */ React.createElement("button", { className: _chip, onClick: () => _jump("allo-sec-taginspect") }, "\u{1F50D} ", t("pdf_audit.dashboard.tags") || "Tag inspector"), /* @__PURE__ */ React.createElement("button", { className: _chip, onClick: () => _jump("allo-sec-workbench") }, "\u{1F6E0} ", t("pdf_audit.dashboard.workbench") || "Workbench"), /* @__PURE__ */ React.createElement("button", { className: _chip, onClick: () => _jump("allo-sec-changed") }, "\u{1F4CB} ", t("pdf_audit.dashboard.changed") || "What changed"), typeof startPipelineTour === "function" && /* @__PURE__ */ React.createElement("button", { className: _chip, onClick: () => startPipelineTour("results"), "data-help-ignore": "true", title: t("pdf_audit.tour.results_title") || "A 60-second guided walk through this screen \u2014 what to download, what the score means, where the reports live." }, "\u2728 ", t("pdf_audit.tour.results_cta") || "Tour")));
     })(), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, (() => {
       const _stillWorking = pdfAutoContinueRunning || pdfFixLoading;

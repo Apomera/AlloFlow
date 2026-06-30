@@ -7379,6 +7379,25 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 </span>
                               );
                             })()}
+                            {(() => {
+                              // H-5 Phase-A instrument: always-visible reading-order readout for the
+                              // EXPORTED tagged PDF. The ratio is the LCS monotonic-match between the
+                              // source token order and the round-tripped tagged-PDF order (100% = identical
+                              // order). Low values flag multi-column / table reflow a screen reader would
+                              // read out of sequence. Informational only — calibration corpus pending
+                              // before this gates conformance (see doc_pipeline readingOrderSequenceRatio).
+                              const _td = lastTaggedValidation && lastTaggedValidation.roundTrip && lastTaggedValidation.roundTrip.textDiff;
+                              const _ro = _td && typeof _td.readingOrderRatio === 'number' ? _td.readingOrderRatio : null;
+                              if (_ro === null) return null;
+                              const _low = _ro < 80;
+                              const _mid = !_low && _ro < 90;
+                              return (
+                                <span className={'px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap ' + (_low ? 'bg-amber-100 text-amber-700' : (_mid ? 'bg-amber-50 text-amber-600' : 'bg-slate-100 text-slate-600'))}
+                                  title={t('pdf_audit.dashboard.reading_order_title') || 'Reading-order match between the SOURCE document and the EXPORTED tagged PDF (round-trip token order, longest-common-subsequence). 100% = identical order. Lower values can indicate multi-column or table reflow that a screen reader will read out of sequence. Informational — being calibrated, does not yet block conformance.'}>
+                                  {(_low ? '⚠️ ' : '') + (t('pdf_audit.dashboard.reading_order') || 'Reading order') + ': ' + (Math.round(_ro * 10) / 10) + '%'}
+                                </span>
+                              );
+                            })()}
                             <span className="h-4 w-px bg-slate-300 mx-0.5" aria-hidden="true"></span>
                             <button className={_chip} onClick={() => _jump('allo-sec-verify')}>✅ {t('pdf_audit.dashboard.verify') || 'Verification'}</button>
                             <button className={_chip} onClick={() => _jump('allo-sec-recovery')}>🩹 {t('pdf_audit.dashboard.recovery') || 'Recovery'}</button>
