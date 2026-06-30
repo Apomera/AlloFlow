@@ -585,14 +585,16 @@ const AnchorChartView = React.memo((props) => {
             console.warn('[AnchorChart] auto-strip failed', stripErr);
           }
         }
-        handleNoteUpdate('sections', (data.sections || []).map((sec, i) => i === idx ? { ...sec, iconUrl: finalUrl } : sec));
-      }).catch(() => { /* swallow — section renders placeholder */ });
+        // Functional update so the parallel per-section icon writes merge against the LATEST
+        // sections instead of a stale snapshot — otherwise the last callImagen to resolve wins and
+        // clobbers the other sections' icons (only one would ever show).
+        handleNoteUpdate('sections', (prevSections) => (Array.isArray(prevSections) ? prevSections : (data.sections || [])).map((sec, i) => i === idx ? { ...sec, iconUrl: finalUrl } : sec));
+      }).catch((e) => { console.warn('[AnchorChart] auto icon-gen failed', e && (e.message || e)); });
     });
   }, [generatedContent && generatedContent.id, sections.length, callImagen, callGeminiImageEdit]);
 
   const updateSection = (idx, nextSection) => {
-    const next = sections.map((s, i) => i === idx ? nextSection : s);
-    handleNoteUpdate('sections', next);
+    handleNoteUpdate('sections', (prevSections) => (Array.isArray(prevSections) ? prevSections : sections).map((s, i) => i === idx ? nextSection : s));
   };
   const handleRegenIcon = async (idx) => {
     if (!callImagen) return;
@@ -614,7 +616,7 @@ const AnchorChartView = React.memo((props) => {
         }
       }
       if (url) updateSection(idx, { ...s, iconUrl: url });
-    } catch (_) { /* ignore */ }
+    } catch (e) { console.warn('[AnchorChart] icon regen failed', e && (e.message || e)); }
     finally { setRegenIdx(-1); }
   };
   const handleTitleChange = (e) => handleNoteUpdate('title', e.target.value);

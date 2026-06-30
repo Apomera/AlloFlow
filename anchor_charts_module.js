@@ -515,14 +515,14 @@ ${bulletText}`;
             console.warn("[AnchorChart] auto-strip failed", stripErr);
           }
         }
-        handleNoteUpdate("sections", (data.sections || []).map((sec, i) => i === idx ? { ...sec, iconUrl: finalUrl } : sec));
-      }).catch(() => {
+        handleNoteUpdate("sections", (prevSections) => (Array.isArray(prevSections) ? prevSections : data.sections || []).map((sec, i) => i === idx ? { ...sec, iconUrl: finalUrl } : sec));
+      }).catch((e) => {
+        console.warn("[AnchorChart] auto icon-gen failed", e && (e.message || e));
       });
     });
   }, [generatedContent && generatedContent.id, sections.length, callImagen, callGeminiImageEdit]);
   const updateSection = (idx, nextSection) => {
-    const next = sections.map((s, i) => i === idx ? nextSection : s);
-    handleNoteUpdate("sections", next);
+    handleNoteUpdate("sections", (prevSections) => (Array.isArray(prevSections) ? prevSections : sections).map((s, i) => i === idx ? nextSection : s));
   };
   const handleRegenIcon = async (idx) => {
     if (!callImagen) return;
@@ -544,7 +544,8 @@ ${bulletText}`;
         }
       }
       if (url) updateSection(idx, { ...s, iconUrl: url });
-    } catch (_) {
+    } catch (e) {
+      console.warn("[AnchorChart] icon regen failed", e && (e.message || e));
     } finally {
       setRegenIdx(-1);
     }

@@ -11079,8 +11079,16 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [showNotebook, setShowNotebook] = useState(false);
   const handleNoteUpdate = useCallback((key, value) => {
     setGeneratedContent(prev => {
-      if (!prev || prev.type !== 'note-taking') return prev;
-      const updated = { ...prev, data: { ...(prev.data || {}), [key]: value } };
+      // Shared by note-taking AND anchor charts: the anchor module persists its sections — including
+      // the icon URLs it generates with callImagen — through this handler. Without 'anchor-chart'
+      // here, every anchor update hit `return prev` and was silently dropped, so generated icons
+      // never stuck (the slot kept showing the prompt text). (2026-06-30)
+      if (!prev || (prev.type !== 'note-taking' && prev.type !== 'anchor-chart')) return prev;
+      // Accept a functional updater so concurrent writes merge against the LATEST value instead of a
+      // stale snapshot — the anchor auto-gen fires one callImagen per section in parallel, and a
+      // plain-value write would let the last one to resolve clobber the others' icons.
+      const nextVal = typeof value === 'function' ? value(prev.data ? prev.data[key] : undefined) : value;
+      const updated = { ...prev, data: { ...(prev.data || {}), [key]: nextVal } };
       setHistory(h => h.map(item => item.id === prev.id ? updated : item));
       return updated;
     });
