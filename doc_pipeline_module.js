@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -94,7 +94,13 @@ var _alloStructuralFoundations = function (html) {
   if (/<table[\s>]/.test(lc) && /<th[\s>]/.test(lc)) present.push('Table headers (th) are used for data tables');
   if (/<th[^>]*scope=/.test(lc)) present.push('Table header scope attributes define data relationships');
   if (/skip.*content|skip.*nav/i.test(htmlContent)) present.push('Skip-to-content link is provided for keyboard navigation');
-  if (/<img[^>]*alt="[^"]+"/i.test(htmlContent)) present.push('All images have a non-empty alt attribute (description quality not verified)');
+  // Count-aware, not a single-match test: only claim "All images have alt" when EVERY <img> has a
+  // non-empty alt — otherwise state the honest fraction, so this card can't contradict the per-image
+  // self-check (a doc with one alt'd image + five missing was wrongly claiming universal alt coverage).
+  var _fImgTotal = (htmlContent.match(/<img\b/gi) || []).length;
+  var _fImgAlt = (htmlContent.match(/<img\b[^>]*\balt="[^"]+"/gi) || []).length;
+  if (_fImgTotal > 0 && _fImgAlt === _fImgTotal) present.push('All images have a non-empty alt attribute (description quality not verified)');
+  else if (_fImgAlt > 0) present.push(_fImgAlt + ' of ' + _fImgTotal + ' images have a non-empty alt attribute (the rest may be missing it)');
   if (/<figcaption[\s>]/.test(lc)) present.push('Figure captions provide image descriptions');
   if (/<label[\s>]/.test(lc) || /aria-label/.test(lc)) present.push('Form elements have associated labels');
   if (/role="(main|navigation|banner|contentinfo|complementary)"/.test(lc)) present.push('ARIA landmark roles are used for page structure');
@@ -7250,6 +7256,12 @@ var createDocPipeline = function(deps) {
       const _winConf = _winner === 'tesseract' ? _meanConf(tPage) : null;
       if (chosen.text && _winConf != null && _winConf < 60) {
         lowConfidence.push({ pageNum: _pn, confidence: Math.round(_winConf) });
+      } else if (chosen.text && _ocrJunkRatio(chosen.text) >= 0.6) {
+        // Engine-AGNOSTIC net: Vision-won / all-Vision pages have no per-word confidence, so a page
+        // whose CHOSEN text is mostly non-alphanumeric (symbol-soup OCR) would escape the check above.
+        // Conservative 0.6 floor (clean prose ~0.05-0.15; even symbol-heavy math rarely >0.5) avoids
+        // STEM false-positives; pseudo-confidence keeps the {pageNum,confidence} shape the banner reads.
+        lowConfidence.push({ pageNum: _pn, confidence: Math.round((1 - _ocrJunkRatio(chosen.text)) * 100) });
       }
       // Flag disagreement if length gap > 10% or > 20 chars absolute — but ONLY when BOTH
       // engines produced text for this page. An empty side is a pagination artifact (single-pass
@@ -18231,18 +18243,28 @@ tr { page-break-inside: avoid; }
     // Score
     const score = isBeforeAfter ? (d.after?.score ?? d.afterScore ?? '?') : (d.score ?? '?');
     const beforeScore = isBeforeAfter ? (d.before?.score ?? d.beforeScore ?? null) : null;
-    html += `<div class="score-box" style="background:${typeof score === 'number' ? scoreColor(score) + '15' : '#f8fafc'}">`;
+    // Honesty: mirror the on-screen suppression in this EXPORTED report (the district-ingestible
+    // artifact) so it never shows a green "+gain" the app itself refused to display. Flags ride on `d`.
+    const _rptIncomplete = !!d._aiVerificationIncomplete;          // AI semantic audit throttled → after = structural-only, not verified
+    const _rptSliced = !!(d._slicedAudit || d._beforeWasSliced);   // before audit was a page-slice approximation → delta is not apples-to-apples
+    html += `<div class="score-box" style="background:${(typeof score === 'number' && !_rptIncomplete) ? scoreColor(score) + '15' : '#f8fafc'}">`;
     if (beforeScore !== null) {
+      const _afterCell = _rptIncomplete
+        ? '<div class="score-num" style="color:#64748b">&mdash;</div><div class="meta-label">After (structural only)</div>'
+        : '<div class="score-num" style="color:' + (typeof score === 'number' ? scoreColor(score) : '#64748b') + '">' + score + '</div><div class="meta-label">After</div>';
       html += `<div style="display:flex;align-items:center;justify-content:center;gap:24px">
-        <div><div class="score-num" style="color:${scoreColor(beforeScore)}">${beforeScore}</div><div class="meta-label">Before</div></div>
+        <div><div class="score-num" style="color:${scoreColor(beforeScore)}">${beforeScore}</div><div class="meta-label">Before${_rptSliced ? ' (approx.)' : ''}</div></div>
         <div style="font-size:2rem;color:#64748b">&rarr;</div>
-        <div><div class="score-num" style="color:${typeof score === 'number' ? scoreColor(score) : '#64748b'}">${score}</div><div class="meta-label">After</div></div>
-        ${typeof score === 'number' && score > beforeScore ? '<div style="background:#dcfce7;color:#16a34a;padding:4px 12px;border-radius:20px;font-weight:bold;font-size:14px">+' + (score - beforeScore) + '</div>' : ''}
+        <div>${_afterCell}</div>
+        ${(typeof score === 'number' && score > beforeScore && !_rptIncomplete && !_rptSliced) ? '<div style="background:#dcfce7;color:#16a34a;padding:4px 12px;border-radius:20px;font-weight:bold;font-size:14px">+' + (score - beforeScore) + '</div>' : ''}
       </div>`;
     } else {
-      html += `<div class="score-num" style="color:${typeof score === 'number' ? scoreColor(score) : '#64748b'}">${score}<span style="font-size:1.2rem;opacity:0.6">/100</span></div>`;
+      html += `<div class="score-num" style="color:${(typeof score === 'number' && !_rptIncomplete) ? scoreColor(score) : '#64748b'}">${_rptIncomplete ? '&mdash;' : score}<span style="font-size:1.2rem;opacity:0.6">/100</span></div>`;
     }
-    html += `<div style="font-size:14px;margin-top:8px;color:#475569">${esc(d.summary || d.before?.audit?.summary || '')}</div></div>`;
+    html += `<div style="font-size:14px;margin-top:8px;color:#475569">${esc(d.summary || d.before?.audit?.summary || '')}</div>`;
+    if (_rptIncomplete) html += `<p style="font-size:12px;color:#92400e;padding:6px 10px;margin:10px auto 0;max-width:560px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px">&#9888; The AI semantic audit was throttled and did not finish &mdash; the &ldquo;after&rdquo; figure is an automated/structural-only check, NOT a verified content score. Re-run for a full score.</p>`;
+    else if (_rptSliced) html += `<p style="font-size:12px;color:#92400e;padding:6px 10px;margin:10px auto 0;max-width:560px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px">&#9888; The &ldquo;before&rdquo; audit was a page-slice approximation (the document was too large for a single pass), so this change is approximate &mdash; not an exact apples-to-apples delta.</p>`;
+    html += `</div>`;
 
     // Honest structural-vs-semantic split + content-integrity coverage
     const _structScore = isBeforeAfter ? (d.after?.axeCoreAudit?.score ?? d.after?.axeScore) : (d.axeCoreAudit?.score ?? d.axeScore);
@@ -28993,11 +29015,6 @@ window.AlloModules.createDocPipeline.ocrBlockLayout = _alloOcrBlockLayout; // st
 window.AlloModules.createDocPipeline.structuralFoundations = _alloStructuralFoundations; // static: exposed for tests
 window.AlloModules.createDocPipeline.weightedDeductions = _alloWeightedDeductions; // static: exposed for tests (#5)
 window.AlloModules.createDocPipeline.contrastFixPair = _alloContrastFixPair; // static: exposed for tests (contrast pair-fixer)
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 })();

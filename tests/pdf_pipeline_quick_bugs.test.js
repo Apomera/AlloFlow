@@ -422,3 +422,36 @@ describe('B7: sliced-audit UI honesty (the score/info surfaces disclose the appr
     expect(vps).toMatch(/gain > 0 && !_aiIncomplete && _beforeSliced &&/);
   });
 });
+
+describe('B8: 2026-06-29 scorecard fixes (export honesty + OCR/foundations/baseline nets)', () => {
+  const dpx = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+  const vpx = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
+
+  // #1/#2 HIGH: the EXPORTED report mirrors the on-screen honesty (no green +gain on incomplete/sliced runs)
+  it('exported audit report neutralizes the after + suppresses +gain for throttle-incomplete / sliced runs', () => {
+    expect(dpx).toMatch(/const _rptIncomplete = !!d\._aiVerificationIncomplete/);
+    expect(dpx).toMatch(/const _rptSliced = !!\(d\._slicedAudit \|\| d\._beforeWasSliced\)/);
+    expect(dpx).toMatch(/score > beforeScore && !_rptIncomplete && !_rptSliced/);
+    expect(dpx).toMatch(/NOT a verified content score/);
+  });
+  it('all three export payloads carry the honesty flags; JSON adds afterScoreVerified + basis', () => {
+    expect((vpx.match(/_aiVerificationIncomplete: !!pdfFixResult\._aiVerificationIncomplete, _slicedAudit:/g) || []).length).toBeGreaterThanOrEqual(3);
+    expect(vpx).toMatch(/afterScoreVerified: !pdfFixResult\._aiVerificationIncomplete/);
+    expect(vpx).toMatch(/afterScoreBasis: pdfFixResult\._aiVerificationIncomplete \?/);
+  });
+  // #4: foundations "All images have alt" is count-aware, not a single-match overclaim
+  it('foundations card claims "All images have alt" ONLY when every image has it (else honest fraction)', () => {
+    expect(dpx).toMatch(/_fImgAlt === _fImgTotal\) present\.push\('All images have a non-empty alt/);
+    expect(dpx).toMatch(/of ' \+ _fImgTotal \+ ' images have a non-empty alt/);
+  });
+  // #3: OCR low-confidence net is engine-agnostic (catches garbled Vision-won / all-Vision pages)
+  it('OCR low-confidence flag also fires on garbled Vision pages via an absolute junk-ratio gate', () => {
+    expect(dpx).toMatch(/else if \(chosen\.text && _ocrJunkRatio\(chosen\.text\) >= 0\.6\)/);
+  });
+  // #5: web/HTML-paste unmeasured baseline = null (not 0) → excluded from history avg-gain
+  it('web/HTML-paste baseline failure sets beforeScore=null (not a fake 0 → N gain)', () => {
+    expect(vpx).toMatch(/let beforeScore = null;/);
+    expect(vpx).toMatch(/_bAxe \?\? _bAi \?\? null\)/);
+    expect(vpx).toMatch(/catch \(_\) \{ beforeScore = null; \}/);
+  });
+});

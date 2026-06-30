@@ -3477,13 +3477,16 @@ function PdfAuditView(props) {
                           // anything, instead of hardcoding 0 — which fabricated a
                           // "0 -> N points" gain on already-accessible HTML. Mirrors the
                           // blended scoring the "Audit" button uses on the same input.
-                          let beforeScore = 0;
+                          // Unmeasured baseline must stay NULL (not 0): a 0 fabricates a "0→N" gain and
+                          // inflates the history average-gain. null is excluded by the avg-gain filter
+                          // (_gains.filter beforeScore != null) and suppresses the before→after delta. (audit 2026-06-29)
+                          let beforeScore = null;
                           try {
                             const [baseAi, baseAxe] = await Promise.all([auditOutputAccessibility(html), runAxeAudit(html)]);
                             const _bAi = baseAi?.score ?? null;
                             const _bAxe = baseAxe?.score ?? null;
-                            beforeScore = (_bAi !== null && _bAxe !== null) ? _computeHeadline(_bAi, _bAxe) : (_bAxe ?? _bAi ?? 0);
-                          } catch (_) { beforeScore = 0; }
+                            beforeScore = (_bAi !== null && _bAxe !== null) ? _computeHeadline(_bAi, _bAxe) : (_bAxe ?? _bAi ?? null);
+                          } catch (_) { beforeScore = null; }
                           setPdfFixStep('Applying deterministic fixes...');
                           let fixed = html;
                           const cf = fixContrastViolations(fixed);
@@ -9646,7 +9649,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             })()}
                             <button onClick={() => {
                               const _rptAi = pdfFixResult.afterScore; const _rptAxe = pdfFixResult.axeAudit?.score ?? null; const _rptBlended = (_rptAi != null ? _rptAi : _rptAxe) /* canonical engine blend; no re-blend (audit 2026-06-13) */;
-                              const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _rptBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _rptBlended, summary: pdfAuditResult?.summary || '' };
+                              const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _rptBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _rptBlended, summary: pdfAuditResult?.summary || '', _aiVerificationIncomplete: !!pdfFixResult._aiVerificationIncomplete, _slicedAudit: !!(pdfAuditResult && pdfAuditResult._slicedAudit), _beforeWasSliced: !!pdfFixResult._beforeWasSliced };
                               const html = generateAuditReportHtml(full, pendingPdfFile?.name || 'document.pdf', true);
                               const w = window.open('', '_blank');
                               if (w) {
@@ -9662,7 +9665,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             </button>
                             <button onClick={() => {
                               const _dlAi = pdfFixResult.afterScore; const _dlAxe = pdfFixResult.axeAudit?.score ?? null; const _dlBlended = (_dlAi != null ? _dlAi : _dlAxe);
-                              const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _dlBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _dlBlended, summary: pdfAuditResult?.summary || '' };
+                              const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _dlBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _dlBlended, summary: pdfAuditResult?.summary || '', _aiVerificationIncomplete: !!pdfFixResult._aiVerificationIncomplete, _slicedAudit: !!(pdfAuditResult && pdfAuditResult._slicedAudit), _beforeWasSliced: !!pdfFixResult._beforeWasSliced };
                               const html = generateAuditReportHtml(full, pendingPdfFile?.name || 'document.pdf', true);
                               const blob = new Blob([html], { type: 'text/html' });
                               const url = URL.createObjectURL(blob);
@@ -9674,7 +9677,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             </button>
                             <button onClick={() => {
                               const _jsonAi = pdfFixResult.afterScore; const _jsonAxe = pdfFixResult.axeAudit?.score ?? null; const _jsonBlended = (_jsonAi != null ? _jsonAi : _jsonAxe);
-                              const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _jsonBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _jsonBlended, fileName: pendingPdfFile?.name, date: new Date().toISOString(), tool: 'AlloFlow', standard: 'WCAG 2.1 AA', engines: ['AI (Gemini, 5-pass self-consistency)', 'axe-core (Deque WCAG 2.1 AA)'] };
+                              const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _jsonBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _jsonBlended, afterScoreVerified: !pdfFixResult._aiVerificationIncomplete, afterScoreBasis: pdfFixResult._aiVerificationIncomplete ? 'deterministic-only (AI semantic audit incomplete — not a verified content score)' : 'min(content,automated) — weakest-layer governing score, NOT an average', _aiVerificationIncomplete: !!pdfFixResult._aiVerificationIncomplete, _slicedAudit: !!(pdfAuditResult && pdfAuditResult._slicedAudit), _beforeWasSliced: !!pdfFixResult._beforeWasSliced, fileName: pendingPdfFile?.name, date: new Date().toISOString(), tool: 'AlloFlow', standard: 'WCAG 2.1 AA', engines: ['AI (Gemini, 5-pass self-consistency)', 'axe-core (Deque WCAG 2.1 AA)'] };
                               const blob = new Blob([JSON.stringify(full, null, 2)], { type: 'application/json' });
                               const url = URL.createObjectURL(blob);
                               const a = document.createElement('a'); a.href = url; a.download = `a11y-before-after-${new Date().toISOString().split('T')[0]}.json`;

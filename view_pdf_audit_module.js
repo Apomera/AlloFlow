@@ -3850,14 +3850,14 @@ function PdfAuditView(props) {
       setPdfFixLoading(true);
       setPdfFixStep("Auditing original (baseline)...");
       try {
-        let beforeScore = 0;
+        let beforeScore = null;
         try {
           const [baseAi, baseAxe] = await Promise.all([auditOutputAccessibility(html), runAxeAudit(html)]);
           const _bAi = baseAi?.score ?? null;
           const _bAxe = baseAxe?.score ?? null;
-          beforeScore = _bAi !== null && _bAxe !== null ? _computeHeadline(_bAi, _bAxe) : _bAxe ?? _bAi ?? 0;
+          beforeScore = _bAi !== null && _bAxe !== null ? _computeHeadline(_bAi, _bAxe) : _bAxe ?? _bAi ?? null;
         } catch (_) {
-          beforeScore = 0;
+          beforeScore = null;
         }
         setPdfFixStep("Applying deterministic fixes...");
         let fixed = html;
@@ -7805,7 +7805,7 @@ Return ONLY JSON:
       const _rptAi = pdfFixResult.afterScore;
       const _rptAxe = pdfFixResult.axeAudit?.score ?? null;
       const _rptBlended = _rptAi != null ? _rptAi : _rptAxe;
-      const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _rptBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _rptBlended, summary: pdfAuditResult?.summary || "" };
+      const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _rptBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _rptBlended, summary: pdfAuditResult?.summary || "", _aiVerificationIncomplete: !!pdfFixResult._aiVerificationIncomplete, _slicedAudit: !!(pdfAuditResult && pdfAuditResult._slicedAudit), _beforeWasSliced: !!pdfFixResult._beforeWasSliced };
       const html = generateAuditReportHtml(full, pendingPdfFile?.name || "document.pdf", true);
       const w = window.open("", "_blank");
       if (w) {
@@ -7824,7 +7824,7 @@ Return ONLY JSON:
       const _dlAi = pdfFixResult.afterScore;
       const _dlAxe = pdfFixResult.axeAudit?.score ?? null;
       const _dlBlended = _dlAi != null ? _dlAi : _dlAxe;
-      const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _dlBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _dlBlended, summary: pdfAuditResult?.summary || "" };
+      const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _dlBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _dlBlended, summary: pdfAuditResult?.summary || "", _aiVerificationIncomplete: !!pdfFixResult._aiVerificationIncomplete, _slicedAudit: !!(pdfAuditResult && pdfAuditResult._slicedAudit), _beforeWasSliced: !!pdfFixResult._beforeWasSliced };
       const html = generateAuditReportHtml(full, pendingPdfFile?.name || "document.pdf", true);
       const blob = new Blob([html], { type: "text/html" });
       const url = URL.createObjectURL(blob);
@@ -7840,7 +7840,7 @@ Return ONLY JSON:
       const _jsonAi = pdfFixResult.afterScore;
       const _jsonAxe = pdfFixResult.axeAudit?.score ?? null;
       const _jsonBlended = _jsonAi != null ? _jsonAi : _jsonAxe;
-      const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _jsonBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _jsonBlended, fileName: pendingPdfFile?.name, date: (/* @__PURE__ */ new Date()).toISOString(), tool: "AlloFlow", standard: "WCAG 2.1 AA", engines: ["AI (Gemini, 5-pass self-consistency)", "axe-core (Deque WCAG 2.1 AA)"] };
+      const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _jsonBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _jsonBlended, afterScoreVerified: !pdfFixResult._aiVerificationIncomplete, afterScoreBasis: pdfFixResult._aiVerificationIncomplete ? "deterministic-only (AI semantic audit incomplete \u2014 not a verified content score)" : "min(content,automated) \u2014 weakest-layer governing score, NOT an average", _aiVerificationIncomplete: !!pdfFixResult._aiVerificationIncomplete, _slicedAudit: !!(pdfAuditResult && pdfAuditResult._slicedAudit), _beforeWasSliced: !!pdfFixResult._beforeWasSliced, fileName: pendingPdfFile?.name, date: (/* @__PURE__ */ new Date()).toISOString(), tool: "AlloFlow", standard: "WCAG 2.1 AA", engines: ["AI (Gemini, 5-pass self-consistency)", "axe-core (Deque WCAG 2.1 AA)"] };
       const blob = new Blob([JSON.stringify(full, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
