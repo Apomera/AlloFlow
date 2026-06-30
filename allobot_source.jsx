@@ -1532,6 +1532,17 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
             clip: auto;
             white-space: normal;
         }
+/* AlloBot accessory idle "alive" motions. Pure translateY/opacity so there are
+   no transform-origin quirks and no clobbering of the positioning/entrance
+   transforms (these classes live on INNER wrapper groups). Named animate-* so
+   they are auto-disabled by the app reduce-motion toggle (.reduce-motion
+   [class*="animate-"]) and OS prefers-reduced-motion (block below). */
+@keyframes allobotFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.6px); } }
+@keyframes allobotPerk { 0%, 80%, 100% { transform: translateY(0); } 90% { transform: translateY(-2.5px); } }
+@keyframes allobotTwinkle { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+.animate-allobot-float { animation: allobotFloat 4s ease-in-out infinite; }
+.animate-allobot-perk { animation: allobotPerk 7s ease-in-out infinite; }
+.animate-allobot-twinkle { animation: allobotTwinkle 3s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -2197,6 +2208,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                         )}
                         {effectiveAccessory === 'teacher-stack' && (
                             <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-20, 34)">
+                            <g className="animate-allobot-float" style={{ animationDelay: '3.5s' }}>
                                 <ellipse cx="16" cy="52" rx="18" ry="3" fill="#1F2937" opacity="0.18" />
                                 <rect x="0" y="40" width="34" height="11" rx="1.5" fill="#FCD34D" stroke="#B45309" strokeWidth="1.2" transform="rotate(-3 17 45)" />
                                 <line x1="5" y1="45" x2="24" y2="45" stroke="#B45309" strokeWidth="0.7" transform="rotate(-3 17 45)" />
@@ -2211,6 +2223,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                                     <path d="M 0 -1 Q 6 -4 8 1 Q 3 2 0 -1 Z" fill="#22C55E" stroke="#15803D" strokeWidth="0.6" />
                                     <ellipse cx="-2.5" cy="8" rx="1.8" ry="3" fill="#fff" opacity="0.45" transform="rotate(-20 -2.5 8)" />
                                 </g>
+                            </g>
                             </g>
                         )}
                         {effectiveAccessory === 'scholar-specs' && (
@@ -2314,6 +2327,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                         )}
                         {effectiveAccessory === 'deerstalker' && (
                             <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                            <g className="animate-allobot-perk" style={{ animationDelay: '0s' }}>
                                 <ellipse cx="50" cy="25" rx="33" ry="6.5" fill="#8C7A6B" stroke="#5C4D40" strokeWidth="1.2" />
                                 <path d="M19 23 Q11 25 14 35 Q21 35 25 28 Z" fill="#8C7A6B" stroke="#5C4D40" strokeWidth="1.1" />
                                 <path d="M81 23 Q89 25 86 35 Q79 35 75 28 Z" fill="#8C7A6B" stroke="#5C4D40" strokeWidth="1.1" />
@@ -2322,9 +2336,11 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                                 <path d="M40 25 Q50 31 60 25 L58 22 Q50 25 42 22 Z" fill="#7A6B5D" stroke="#5C4D40" strokeWidth="1" />
                                 <g fill="#5C4D40" opacity="0.5"><circle cx="42" cy="14" r="1" /><circle cx="50" cy="10" r="1" /><circle cx="58" cy="14" r="1" /><circle cx="46" cy="19" r="1" /><circle cx="54" cy="19" r="1" /></g>
                             </g>
+                            </g>
                         )}
                         {effectiveAccessory === 'persona-masks' && (
                             <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-24, 40)">
+                            <g className="animate-allobot-float" style={{ animationDelay: '0s' }}>
                                 <ellipse cx="14" cy="46" rx="16" ry="3" fill="#1F2937" opacity="0.16" />
                                 <g transform="rotate(-8 8 26)">
                                     <path d="M-2 18 Q-2 40 12 40 Q26 40 26 18 Q26 6 12 6 Q-2 6 -2 18 Z" fill="#FCD34D" stroke="#B45309" strokeWidth="1.3" />
@@ -2337,9 +2353,11 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                                     <path d="M6 32 Q12 27 18 32" stroke="#1E3A8A" strokeWidth="1.6" fill="none" strokeLinecap="round" />
                                 </g>
                             </g>
+                            </g>
                         )}
                         {effectiveAccessory === 'sentence-frames' && (
                             <g className="animate-in fade-in slide-in-from-top-2 duration-500" transform="translate(76, 36)">
+                            <g className="animate-allobot-float" style={{ animationDelay: '0.7s' }}>
                                 <rect x="0" y="0" width="40" height="30" rx="2.5" fill="#FFFBEB" stroke="#7C2D12" strokeWidth="2" />
                                 <rect x="4" y="4" width="32" height="22" rx="1" fill="#fff" stroke="#E7C9A9" strokeWidth="0.8" />
                                 <rect x="7" y="8" width="9" height="5" rx="1" fill="#60A5FA" />
@@ -2349,9 +2367,11 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                                 <rect x="16" y="16" width="9" height="5" rx="1" fill="#F472B6" />
                                 <line x1="27" y1="20" x2="34" y2="20" stroke="#94A3B8" strokeWidth="1.4" />
                             </g>
+                            </g>
                         )}
                         {effectiveAccessory === 'outline-doc' && (
                             <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 32)">
+                            <g className="animate-allobot-float" style={{ animationDelay: '1.4s' }}>
                                 <ellipse cx="18" cy="50" rx="16" ry="3" fill="#1F2937" opacity="0.16" />
                                 <rect x="2" y="6" width="34" height="42" rx="2" fill="#FFFFFF" stroke="#475569" strokeWidth="1.5" />
                                 <text x="6" y="15" fontFamily="Arial" fontSize="6" fontWeight="bold" fill="#4338CA">I.</text>
@@ -2362,16 +2382,20 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                                 <line x1="13" y1="34" x2="32" y2="34" stroke="#1D4ED8" strokeWidth="1.6" />
                                 <circle cx="12" cy="41" r="1.1" fill="#64748B" /><line x1="16" y1="41" x2="30" y2="41" stroke="#CBD5E1" strokeWidth="1.2" />
                             </g>
+                            </g>
                         )}
                         {effectiveAccessory === 'sticky-notes' && (
                             <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                            <g className="animate-allobot-perk" style={{ animationDelay: '2.5s' }}>
                                 <g transform="rotate(-8 34 18)"><rect x="22" y="8" width="22" height="20" rx="1" fill="#FDE047" stroke="#CA8A04" strokeWidth="1" /><path d="M38 28 L44 28 L44 22 Z" fill="#FACC15" /><line x1="26" y1="14" x2="40" y2="14" stroke="#A16207" strokeWidth="1" /><line x1="26" y1="18" x2="37" y2="18" stroke="#A16207" strokeWidth="1" /></g>
                                 <g transform="rotate(7 64 18)"><rect x="54" y="6" width="22" height="20" rx="1" fill="#5EEAD4" stroke="#0D9488" strokeWidth="1" /><path d="M70 26 L76 26 L76 20 Z" fill="#2DD4BF" /><line x1="58" y1="12" x2="72" y2="12" stroke="#0F766E" strokeWidth="1" /><line x1="58" y1="16" x2="69" y2="16" stroke="#0F766E" strokeWidth="1" /></g>
                                 <g transform="rotate(-3 50 12)"><rect x="40" y="0" width="22" height="20" rx="1" fill="#FDA4AF" stroke="#E11D48" strokeWidth="1" /><path d="M56 20 L62 20 L62 14 Z" fill="#FB7185" /><line x1="44" y1="6" x2="58" y2="6" stroke="#BE123C" strokeWidth="1" /><line x1="44" y1="10" x2="55" y2="10" stroke="#BE123C" strokeWidth="1" /></g>
                             </g>
+                            </g>
                         )}
                         {effectiveAccessory === 'anchor-easel' && (
                             <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-30, 18)">
+                            <g className="animate-allobot-float" style={{ animationDelay: '2.1s' }}>
                                 <line x1="6" y1="20" x2="-2" y2="62" stroke="#92400E" strokeWidth="2.4" strokeLinecap="round" />
                                 <line x1="30" y1="20" x2="38" y2="62" stroke="#92400E" strokeWidth="2.4" strokeLinecap="round" />
                                 <line x1="22" y1="22" x2="26" y2="62" stroke="#78350F" strokeWidth="2" strokeLinecap="round" />
@@ -2382,9 +2406,11 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                                 <path d="M5 31 L9 34 L15 28" stroke="#22C55E" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
                                 <line x1="19" y1="31" x2="31" y2="31" stroke="#CBD5E1" strokeWidth="1.4" />
                             </g>
+                            </g>
                         )}
                         {effectiveAccessory === 'behavior-watch' && (
                             <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-28, 42)">
+                            <g className="animate-allobot-float" style={{ animationDelay: '2.8s' }}>
                                 <ellipse cx="15" cy="42" rx="15" ry="3" fill="#1F2937" opacity="0.16" />
                                 <g transform="translate(15, 24)">
                                     <rect x="-2.5" y="-15" width="5" height="5" rx="1.2" fill="#475569" />
@@ -2398,15 +2424,18 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                                 </g>
                                 <g transform="translate(26, 30)" stroke="#16A34A" strokeWidth="1.4" strokeLinecap="round"><line x1="0" y1="0" x2="0" y2="8" /><line x1="3" y1="0" x2="3" y2="8" /><line x1="6" y1="0" x2="6" y2="8" /><line x1="-2" y1="6" x2="8" y2="2" /></g>
                             </g>
+                            </g>
                         )}
                         {effectiveAccessory === 'bard-cap' && (
                             <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                            <g className="animate-allobot-perk" style={{ animationDelay: '4.5s' }}>
                                 <path d="M22 26 Q20 12 50 8 Q80 12 78 26 Q50 30 22 26 Z" fill="#0D9488" stroke="#0F766E" strokeWidth="1.4" />
                                 <path d="M22 24 Q50 30 78 24" stroke="#FCD34D" strokeWidth="3" fill="none" />
                                 <ellipse cx="50" cy="13" rx="4" ry="2" fill="#2DD4BF" opacity="0.5" />
                                 <circle cx="38" cy="21" r="2.6" fill="#FCD34D" stroke="#A16207" strokeWidth="0.7" />
                                 <path d="M38 19 Q29 3 23 -12 Q34 0 41 12 Q41 16 38 19 Z" fill="#F472B6" stroke="#BE185D" strokeWidth="1" />
                                 <path d="M34 11 Q29 1 25 -8" stroke="#FBCFE8" strokeWidth="1" fill="none" opacity="0.85" />
+                            </g>
                             </g>
                         )}
                     </g>
