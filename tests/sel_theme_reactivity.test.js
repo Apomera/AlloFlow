@@ -34,6 +34,7 @@ const CASES = [
   { id: 'execfunction',   helper: '_efC' },
   { id: 'digitalwellbeing', helper: '_dwC', reg: 'digitalWellbeing' }, // registers camelCase
   { id: 'upstander',      helper: '_upC' },
+  { id: 'crisiscompanion', helper: '_ccC' },
 ];
 
 // Tinted light SURFACE hexes that, if present in a migrated tool's render body, MUST be
