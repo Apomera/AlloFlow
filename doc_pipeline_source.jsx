@@ -23938,7 +23938,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           const wordSearchHtml = (item.gameData && item.gameData.grid) ? (() => {
               let html = '';
               if (item.gameData) {
-                  let gridHtml = `<div style="margin-top:20px; page-break-inside:avoid;"><h4>${t('glossary.word_search_key')}</h4><div style="display:inline-block; border:2px solid #333; padding:2px;">`;
+                  let gridHtml = `<div style="margin-top:20px; page-break-inside:avoid;"><h3>${t('glossary.word_search_key')}</h3><div style="display:inline-block; border:2px solid #333; padding:2px;">`;
                   item.gameData.grid.forEach((row, r) => {
                       gridHtml += '<div style="display:flex;">';
                       row.forEach((char, c) => {
@@ -26928,6 +26928,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           .alloflow-rt-btn[aria-pressed="true"] { background: #4f46e5; color: white; }
           .alloflow-rt-btn:focus-visible { outline: 2px solid #6366f1; outline-offset: -2px; }
           @media print { .alloflow-reading-tools { display: none !important; } }
+          /* Hide the interactive "Save my answers" CTAs on paper (they are dead buttons in print). */
+          @media print { #alloflow-save-cta, #alloflow-savejson-cta { display: none !important; } }
+          /* Zero the browser-default page box margin so it does not stack with the body's 0.5in print padding (~1in combined otherwise). */
+          @page { margin: 0; }
+          /* Skip-to-content link: reveal it when keyboard-focused. The link is hidden via an inline left:-9999px, so this override needs !important to beat the inline style. */
+          a.sr-only:focus { position: fixed !important; left: 8px !important; top: 8px !important; width: auto !important; height: auto !important; padding: 8px 14px !important; overflow: visible !important; background: #1e293b; color: #ffffff; border-radius: 6px; z-index: 100000; font: 600 14px/1.2 system-ui, -apple-system, sans-serif; }
 
           /* ─── Annotation color pickers (Tier 1 parity with in-app) ─── */
           .alloflow-anno-colors { display: none; align-items: center; gap: 6px; padding: 6px 12px 8px; border-bottom: 1px solid #e2e8f0; background: #fafbfc; }
@@ -27179,6 +27185,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       <body>
         <a href="#main-export-content" class="sr-only" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:100;">Skip to content</a>
         ${_brandHeaderHTML}
+        <noscript><style>.alloflow-reading-tools{display:none !important;}</style></noscript>
         <div class="alloflow-reading-tools" role="region" aria-label="Reading tools">
           <div class="alloflow-reading-tools-group" role="group" aria-label="Reading theme">
             <span class="alloflow-reading-tools-label">Theme</span>
