@@ -1860,10 +1860,23 @@ function PdfAuditView(props) {
   const [veraPdfResult, setVeraPdfResult] = useState(null);
   const [veraPdfBusy, setVeraPdfBusy] = useState(false);
   const [veraPdfFixing, setVeraPdfFixing] = useState(false);
+  const _VERA_STATS_KEY = "alloflow_verapdf_rule_stats";
+  const _emptyVeraStats = () => ({ taggedExports: 0, cleanExports: 0, failures: {}, repairRequests: {} });
+  const _loadVeraStats = () => {
+    try {
+      const s = localStorage.getItem(_VERA_STATS_KEY);
+      if (s) {
+        const p = JSON.parse(s);
+        if (p && typeof p === "object") return Object.assign(_emptyVeraStats(), p);
+      }
+    } catch (_) {
+    }
+    return _emptyVeraStats();
+  };
   const _recordVeraPdfRules = (verdict, source) => {
     try {
       if (!verdict || verdict.error) return;
-      const g2 = window.__alloVeraPdfRuleStats = window.__alloVeraPdfRuleStats || { taggedExports: 0, cleanExports: 0, failures: {}, repairRequests: {} };
+      const g2 = window.__alloVeraPdfRuleStats = window.__alloVeraPdfRuleStats || _loadVeraStats();
       const rules = Array.isArray(verdict.failedRules) ? verdict.failedRules : [];
       if (source === "export" || source === "validate") {
         g2.taggedExports++;
@@ -1873,6 +1886,10 @@ function PdfAuditView(props) {
       for (const r of rules) {
         const k = "\xA7" + (r.clause || "?") + " t" + (r.testNumber != null ? r.testNumber : "?");
         bucket[k] = (bucket[k] || 0) + (r.count || 1);
+      }
+      try {
+        localStorage.setItem(_VERA_STATS_KEY, JSON.stringify(g2));
+      } catch (_) {
       }
       warnLog && warnLog("[veraPDF-telemetry] " + source + ": " + (rules.length ? rules.map((r) => "\xA7" + r.clause + "t" + r.testNumber).join(", ") : "none") + " | cumulative " + (source === "repair" ? "repairRequests" : "failures") + "=" + JSON.stringify(bucket) + (source !== "repair" ? " | clean " + g2.cleanExports + "/" + g2.taggedExports + " exports" : ""));
     } catch (_) {

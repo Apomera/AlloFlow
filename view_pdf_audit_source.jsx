@@ -1857,14 +1857,22 @@ function PdfAuditView(props) {
   // FAILS, and which the closed-loop is asked to repair — to settle empirically whether the pdf-lib/PDFBox
   // repair loop is redundant with createTaggedPdf's native tagging (the consolidation question). Rule IDs
   // only — no document content, no PII. Read it any time from the console with: __alloVeraPdfRuleStats
+  // Persisted to localStorage (2026-06-30) so the failing-rule histogram ACCUMULATES across sessions,
+  // turning "which veraPDF rules do real docs actually fail?" into a durable, exportable repair-branch
+  // backlog (the data that drives the next batch of repair branches). Still rule IDs only (clause+test)
+  // — no document content, no PII — so persisting it carries nothing sensitive.
+  const _VERA_STATS_KEY = 'alloflow_verapdf_rule_stats';
+  const _emptyVeraStats = () => ({ taggedExports: 0, cleanExports: 0, failures: {}, repairRequests: {} });
+  const _loadVeraStats = () => { try { const s = localStorage.getItem(_VERA_STATS_KEY); if (s) { const p = JSON.parse(s); if (p && typeof p === 'object') return Object.assign(_emptyVeraStats(), p); } } catch (_) {} return _emptyVeraStats(); };
   const _recordVeraPdfRules = (verdict, source) => {
     try {
       if (!verdict || verdict.error) return;
-      const g = (window.__alloVeraPdfRuleStats = window.__alloVeraPdfRuleStats || { taggedExports: 0, cleanExports: 0, failures: {}, repairRequests: {} });
+      const g = (window.__alloVeraPdfRuleStats = window.__alloVeraPdfRuleStats || _loadVeraStats());
       const rules = Array.isArray(verdict.failedRules) ? verdict.failedRules : [];
       if (source === 'export' || source === 'validate') { g.taggedExports++; if (verdict.compliant && rules.length === 0) g.cleanExports++; }
       const bucket = source === 'repair' ? g.repairRequests : g.failures;
       for (const r of rules) { const k = '§' + (r.clause || '?') + ' t' + (r.testNumber != null ? r.testNumber : '?'); bucket[k] = (bucket[k] || 0) + (r.count || 1); }
+      try { localStorage.setItem(_VERA_STATS_KEY, JSON.stringify(g)); } catch (_) {}
       warnLog && warnLog('[veraPDF-telemetry] ' + source + ': ' + (rules.length ? rules.map(r => '§' + r.clause + 't' + r.testNumber).join(', ') : 'none') + ' | cumulative ' + (source === 'repair' ? 'repairRequests' : 'failures') + '=' + JSON.stringify(bucket) + (source !== 'repair' ? (' | clean ' + g.cleanExports + '/' + g.taggedExports + ' exports') : ''));
     } catch (_) {}
   };
