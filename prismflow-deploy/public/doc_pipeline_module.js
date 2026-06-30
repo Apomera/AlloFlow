@@ -17314,6 +17314,20 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         accessibleHtml = runDeterministicWcagFixes(accessibleHtml);
       } catch(finalFixErr) { warnLog('[Final Fix] Revalidation failed:', finalFixErr.message); }
 
+      // ── Outline fix: collapse a multi-<h1> merged document to a single h1 (2026-06-30) ──
+      // Done HERE — after the last AI mutation, before the final authoritative audit below — so the AI
+      // verification's remaining-issues list, BOTH deterministic engines (axe + IBM Equal Access), and the
+      // exported tagged PDF all reflect the corrected outline. A chunked scanned doc can keep one <h1> per
+      // fragment (e.g. the cover title + "APPENDIX E:"); the per-chunk pass can't see across fragments. axe
+      // rates multi-<h1> minor but Equal Access penalizes it hard, so it governed the weakest-layer headline
+      // (the "60 vs 100/98" report). Nothing downstream re-introduces an <h1> (the safety-net only ADDS one
+      // when zero exist). Keeps the FIRST h1 (the title), demotes the rest to <h2> — never a level skip.
+      const _h1Before = (accessibleHtml.match(/<h1[\s>]/gi) || []).length;
+      if (_h1Before > 1) {
+        accessibleHtml = _alloEnsureSingleH1(accessibleHtml);
+        warnLog('[PDF Fix] Outline fix: collapsed ' + _h1Before + ' <h1> → 1 (kept the document title, demoted ' + (_h1Before - 1) + ' to <h2>) before the final audit.');
+      }
+
       // ── Final authoritative audit: re-run ONE clean audit on the finished HTML ──
       // The verification from the fix loop may have stale issues from an earlier pass.
       // This ensures the issues list matches what the user actually gets.
@@ -17400,16 +17414,6 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // REGRESS (e.g. 74→58). First repair any leaked-handler placeholders in the STORED html (fixes the
       // JS-in-the-PDF bug in preview + export), then re-score axe + EA on a chrome-stripped copy so
       // before/after is apples-to-apples.
-      // Outline fix (2026-06-30): collapse a multi-<h1> merged document to a single h1 BEFORE the
-      // deterministic engines score it below. A chunked scanned doc can keep one <h1> per fragment
-      // (e.g. the cover title + "APPENDIX E:"); axe rates that minor but IBM Equal Access penalizes it
-      // hard, so it governed the weakest-layer headline (the "60 vs 100/98" report). Deduping here means
-      // the final axe re-audit, the Equal Access audit, AND the exported tagged PDF all see one h1.
-      const _h1Before = (accessibleHtml.match(/<h1[\s>]/gi) || []).length;
-      if (_h1Before > 1) {
-        accessibleHtml = _alloEnsureSingleH1(accessibleHtml);
-        warnLog('[PDF Fix] Outline fix: collapsed ' + _h1Before + ' <h1> → 1 (kept the document title, demoted ' + (_h1Before - 1) + ' to <h2>) before deterministic scoring.');
-      }
       accessibleHtml = _repairLeakedImagePlaceholders(accessibleHtml);
       const _scoreHtml = _stripChromeForAudit(accessibleHtml);
       try { const _cleanAxe = await runAxeAudit(_scoreHtml); if (_cleanAxe) axeResults = _cleanAxe; } catch (_) {}

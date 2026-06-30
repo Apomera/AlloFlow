@@ -479,12 +479,14 @@ describe('B9: 2026-06-30 multi-h1 outline fix + Equal Access shown in the export
     expect(ensureSingleH1('<h1>only</h1>')).toBe('<h1>only</h1>');
     expect(ensureSingleH1('<h2>x</h2>')).toBe('<h2>x</h2>');
   });
-  it('the dedup runs on the final HTML BEFORE the deterministic engines score it (axe + Equal Access)', () => {
+  it('the dedup runs BEFORE the final AI audit AND the deterministic engines (so all three see one h1)', () => {
     expect(dpx).toMatch(/accessibleHtml = _alloEnsureSingleH1\(accessibleHtml\)/);
     const dedupIdx = dpx.indexOf('accessibleHtml = _alloEnsureSingleH1(accessibleHtml)');
+    const finalAuditIdx = dpx.indexOf('Final authoritative audit: re-run ONE clean audit');
     const eaIdx = dpx.indexOf('eaResults = await runEqualAccessAudit(_scoreHtml)');
     expect(dedupIdx).toBeGreaterThan(0);
-    expect(eaIdx).toBeGreaterThan(dedupIdx);                // dedup happens first → EA sees one h1
+    expect(finalAuditIdx).toBeGreaterThan(dedupIdx);        // dedup precedes the final AI verification audit
+    expect(eaIdx).toBeGreaterThan(dedupIdx);                // and the Equal Access deterministic audit
   });
 
   it('_honestReportBlocks accepts a secondEngine arg + renders an Equal Access tile and a "governs" note', () => {
