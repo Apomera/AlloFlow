@@ -3467,6 +3467,7 @@ const AlloFlowContent = () => {
   const [studentProjectSettings, setStudentProjectSettings] = useState({
       allowDictation: true,
       allowSocraticTutor: true,
+      socraticCustomInstructions: '',
       allowFreeResponse: true,
       allowPersonaFreeResponse: true,
       adventureMinXP: 0,
@@ -27920,7 +27921,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       />
       </ErrorBoundary>
       {isProjectSettingsOpen && window.AlloModules && window.AlloModules.ProjectSettingsView && React.createElement(window.AlloModules.ProjectSettingsView, {
-          t, studentProjectSettings, setStudentProjectSettings,
+          t, studentProjectSettings, setStudentProjectSettings, isTeacherMode,
           handleSetIsProjectSettingsOpenToFalse
       })}
       {/* --- AI Backend: Canvas-Only Minimal Config --- */}

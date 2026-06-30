@@ -31,6 +31,7 @@
   var t = props.t;
   var studentProjectSettings = props.studentProjectSettings;
   var setStudentProjectSettings = props.setStudentProjectSettings;
+  var isTeacherMode = props.isTeacherMode;
   var handleSetIsProjectSettingsOpenToFalse = props.handleSetIsProjectSettingsOpenToFalse;
   return /*#__PURE__*/React.createElement("div", {
     role: "button",
@@ -96,7 +97,28 @@
     className: "text-sm font-bold text-indigo-900 cursor-pointer select-none"
   }, t('project_settings.enable_socratic'), /*#__PURE__*/React.createElement("span", {
     className: "block text-xs font-normal text-indigo-500 mt-0.5"
-  }, t('project_settings.socratic_desc')))), /*#__PURE__*/React.createElement("div", {
+  }, t('project_settings.socratic_desc')))), isTeacherMode && studentProjectSettings.allowSocraticTutor && /*#__PURE__*/React.createElement("div", {
+    className: "p-3 bg-indigo-50 rounded-xl border border-indigo-100"
+  }, /*#__PURE__*/React.createElement("label", {
+    htmlFor: "proj-socratic-instructions",
+    className: "block text-sm font-bold text-indigo-900 select-none"
+  }, t('project_settings.socratic_instructions_label'), /*#__PURE__*/React.createElement("span", {
+    className: "block text-xs font-normal text-indigo-500 mt-0.5 mb-2"
+  }, t('project_settings.socratic_instructions_desc'))), /*#__PURE__*/React.createElement("textarea", {
+    id: "proj-socratic-instructions",
+    "aria-label": t('project_settings.socratic_instructions_label'),
+    value: studentProjectSettings.socraticCustomInstructions || '',
+    onChange: e => setStudentProjectSettings(prev => ({
+      ...prev,
+      socraticCustomInstructions: e.target.value.slice(0, 600)
+    })),
+    maxLength: 600,
+    rows: 3,
+    placeholder: t('project_settings.socratic_instructions_placeholder'),
+    className: "w-full p-2 border border-indigo-200 rounded-lg text-sm resize-none focus:border-indigo-500 outline-none bg-white shadow-inner"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "text-[10px] text-indigo-400 text-right mt-0.5"
+  }, (studentProjectSettings.socraticCustomInstructions || '').length, "/600")), /*#__PURE__*/React.createElement("div", {
     className: "flex items-start gap-3 p-3 bg-indigo-50 rounded-xl border border-indigo-100 transition-colors hover:border-indigo-200"
   }, /*#__PURE__*/React.createElement("input", {
     "aria-label": t('common.toggle_allow_free_response'),

@@ -3,6 +3,7 @@ function ProjectSettingsView(props) {
   var t = props.t;
   var studentProjectSettings = props.studentProjectSettings;
   var setStudentProjectSettings = props.setStudentProjectSettings;
+  var isTeacherMode = props.isTeacherMode;
   var handleSetIsProjectSettingsOpenToFalse = props.handleSetIsProjectSettingsOpenToFalse;
   return (
         <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={handleSetIsProjectSettingsOpenToFalse}>
@@ -39,6 +40,25 @@ function ProjectSettingsView(props) {
                         <span className="block text-xs font-normal text-indigo-500 mt-0.5">{t('project_settings.socratic_desc')}</span>
                     </label>
                 </div>
+                {isTeacherMode && studentProjectSettings.allowSocraticTutor && (
+                <div className="p-3 bg-indigo-50 rounded-xl border border-indigo-100">
+                    <label htmlFor="proj-socratic-instructions" className="block text-sm font-bold text-indigo-900 select-none">
+                        {t('project_settings.socratic_instructions_label')}
+                        <span className="block text-xs font-normal text-indigo-500 mt-0.5 mb-2">{t('project_settings.socratic_instructions_desc')}</span>
+                    </label>
+                    <textarea
+                        id="proj-socratic-instructions"
+                        aria-label={t('project_settings.socratic_instructions_label')}
+                        value={studentProjectSettings.socraticCustomInstructions || ''}
+                        onChange={(e) => setStudentProjectSettings(prev => ({ ...prev, socraticCustomInstructions: e.target.value.slice(0, 600) }))}
+                        maxLength={600}
+                        rows={3}
+                        placeholder={t('project_settings.socratic_instructions_placeholder')}
+                        className="w-full p-2 border border-indigo-200 rounded-lg text-sm resize-none focus:border-indigo-500 outline-none bg-white shadow-inner"
+                    />
+                    <div className="text-[10px] text-indigo-400 text-right mt-0.5">{(studentProjectSettings.socraticCustomInstructions || '').length}/600</div>
+                </div>
+                )}
                 <div className="flex items-start gap-3 p-3 bg-indigo-50 rounded-xl border border-indigo-100 transition-colors hover:border-indigo-200">
                     <input aria-label={t('common.toggle_allow_free_response')}
                         data-help-key="settings_free_response"
