@@ -513,15 +513,15 @@
       hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 10 } },
         hh('label', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)' } },
           hh('div', { style: { marginBottom: 4 } }, 'Antibiotic dose: ', hh('strong', { style: { color: '#fbbf24' } }, dose + '%')),
-          hh('input', { type: 'range', min: 0, max: 100, step: 5, value: dose, disabled: day > 0, onChange: function(e) { setDose(parseInt(e.target.value, 10)); }, style: { width: '100%', accentColor: '#fbbf24', opacity: day > 0 ? 0.5 : 1 } })
+          hh('input', { type: 'range', 'aria-label': 'Antibiotic dose', 'aria-valuetext': dose + '%', min: 0, max: 100, step: 5, value: dose, disabled: day > 0, onChange: function(e) { setDose(parseInt(e.target.value, 10)); }, style: { width: '100%', accentColor: '#fbbf24', opacity: day > 0 ? 0.5 : 1 } })
         ),
         hh('label', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)' } },
           hh('div', { style: { marginBottom: 4 } }, 'Treatment duration: ', hh('strong', { style: { color: '#22d3ee' } }, duration + ' days')),
-          hh('input', { type: 'range', min: 3, max: 30, step: 1, value: duration, disabled: day > 0, onChange: function(e) { setDuration(parseInt(e.target.value, 10)); }, style: { width: '100%', accentColor: '#22d3ee', opacity: day > 0 ? 0.5 : 1 } })
+          hh('input', { type: 'range', 'aria-label': 'Treatment duration', 'aria-valuetext': duration + ' days', min: 3, max: 30, step: 1, value: duration, disabled: day > 0, onChange: function(e) { setDuration(parseInt(e.target.value, 10)); }, style: { width: '100%', accentColor: '#22d3ee', opacity: day > 0 ? 0.5 : 1 } })
         ),
         hh('label', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)' } },
           hh('div', { style: { marginBottom: 4 } }, 'Initial resistance: ', hh('strong', { style: { color: '#ef4444' } }, initRes + '%')),
-          hh('input', { type: 'range', min: 0, max: 15, step: 1, value: initRes, disabled: day > 0, onChange: function(e) { setInitRes(parseInt(e.target.value, 10)); }, style: { width: '100%', accentColor: '#ef4444', opacity: day > 0 ? 0.5 : 1 } })
+          hh('input', { type: 'range', 'aria-label': 'Initial resistance', 'aria-valuetext': initRes + '% initially resistant', min: 0, max: 15, step: 1, value: initRes, disabled: day > 0, onChange: function(e) { setInitRes(parseInt(e.target.value, 10)); }, style: { width: '100%', accentColor: '#ef4444', opacity: day > 0 ? 0.5 : 1 } })
         )
       ),
       hh('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 10, flexWrap: 'wrap' } },
@@ -787,7 +787,7 @@
       ),
       hh('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' } },
         hh('span', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', whiteSpace: 'nowrap' } }, w.label),
-        hh('input', { type: 'range', min: 0, max: WEEKS.length - 1, step: 1, value: week, 'aria-label': 'Outbreak week', onChange: function(e) { setWeek(parseInt(e.target.value, 10)); }, style: { flex: 1, minWidth: 120, accentColor: '#a855f7' } }),
+        hh('input', { type: 'range', min: 0, max: WEEKS.length - 1, step: 1, value: week, 'aria-valuetext': (WEEKS[week] && WEEKS[week].label ? WEEKS[week].label : ('week ' + week)), 'aria-label': 'Outbreak week', onChange: function(e) { setWeek(parseInt(e.target.value, 10)); }, style: { flex: 1, minWidth: 120, accentColor: '#a855f7' } }),
         hh('div', { style: { padding: '4px 10px', borderRadius: 999, background: 'rgba(220,38,38,0.18)', color: '#fca5a5', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', border: '1px solid rgba(220,38,38,0.40)' } }, w.deaths + ' deaths')
       ),
       hh('div', { style: { padding: '10px 12px', borderRadius: 8, marginBottom: 10, background: 'var(--allo-stem-deeper, rgba(2,6,23,0.5))', borderLeft: '3px solid #a855f7' } },
@@ -979,7 +979,7 @@
         hh('div', { style: { position: 'absolute', top: 10, right: 14, padding: '4px 10px', borderRadius: 999, background: 'rgba(16,185,129,0.20)', color: '#6ee7b7', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', border: '1px solid rgba(16,185,129,0.40)' } }, mag + '×')
       ),
       hh('div', { style: { padding: '0 4px', marginBottom: 10 } },
-        hh('input', { type: 'range', min: 10, max: 100000, step: 10, value: mag, 'aria-label': 'Magnification', onChange: function(e) { setMag(parseInt(e.target.value, 10)); }, style: { width: '100%', accentColor: '#10b981' } }),
+        hh('input', { type: 'range', min: 10, max: 100000, step: 10, value: mag, 'aria-valuetext': mag + 'x magnification', 'aria-label': 'Magnification', onChange: function(e) { setMag(parseInt(e.target.value, 10)); }, style: { width: '100%', accentColor: '#10b981' } }),
         hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--allo-stem-text-soft, #64748b)', marginTop: 2, fontFamily: 'ui-monospace, Menlo, monospace' } },
           hh('span', null, '10× (eye)'), hh('span', null, '400× (light)'), hh('span', null, '2000× (oil)'), hh('span', null, '100,000× (EM)')
         )
@@ -1000,7 +1000,7 @@
           max: 100,
           step: 1,
           value: focusVal,
-          'aria-label': 'Fine Focus',
+          'aria-valuetext': focusVal + ' percent focus', 'aria-label': 'Fine Focus',
           onChange: function(e) { upd({ microscopeFocus: parseInt(e.target.value, 10) }); },
           style: { width: '100%', accentColor: '#10b981' }
         })
@@ -2154,7 +2154,7 @@
           sectionCard('Scale: what can you see at different magnifications?',
             h('div', null,
               h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6 } }, 'Magnification: ', h('strong', { style: { color: EMERALD, fontSize: 14 } }, mag + 'x')),
-              h('input', { type: 'range', min: 1, max: 100000, step: 1, value: mag,
+              h('input', { type: 'range', 'aria-valuetext': mag + 'x', min: 1, max: 100000, step: 1, value: mag,
                 onChange: function(e) { upd({ magnification: parseInt(e.target.value, 10) }); },
                 'aria-label': __alloT('stem.microbiology.magnification', 'Magnification'),
                 style: { width: '100%', accentColor: EMERALD, marginBottom: 12 }
@@ -3452,7 +3452,7 @@
                   h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, __alloT('stem.microbiology.cell_density', 'Cell density')),
                   h('span', { style: { fontSize: 13, color: active ? '#86efac' : '#fbbf24', fontWeight: 800 } }, density + ' cells/area · ' + pctOfThreshold.toFixed(0) + '% of quorum')
                 ),
-                h('input', { type: 'range', min: 5, max: 200, step: 5, value: density,
+                h('input', { type: 'range', 'aria-valuetext': density + ' cells per area', min: 5, max: 200, step: 5, value: density,
                   onChange: function(e) { upd({ biofilmDensity: parseInt(e.target.value, 10) }); },
                   'aria-label': __alloT('stem.microbiology.cell_density_2', 'Cell density'),
                   style: { width: '100%', accentColor: EMERALD }
@@ -4610,7 +4610,7 @@
                  { k: 'oxygen', l: 'O₂ (%)', mn: 0, mx: 100, st: 5 }].map(function(s) {
                   return H('div', { key: s.k },
                     H('label', { htmlFor: 'gl-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: '#cbd5e1', marginBottom: 4 } }, s.l + ': ', H('span', { style: { color: '#34d399', fontFamily: 'monospace' } }, iq[s.k])),
-                    H('input', { id: 'gl-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
+                    H('input', { id: 'gl-' + s.k, type: 'range', 'aria-valuetext': (iq[s.k] + ' ' + ((String(s.l).match(/\(([^)]+)\)/) || ['', ''])[1])), min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
                       onChange: function(e) { var p = {}; p[s.k] = parseFloat(e.target.value); setIQ(p); },
                       style: { width: '100%' }, 'aria-label': s.l }));
                 })
