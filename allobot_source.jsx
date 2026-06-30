@@ -2196,18 +2196,21 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                             </g>
                         )}
                         {effectiveAccessory === 'teacher-stack' && (
-                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
-                                <rect x="22" y="22" width="56" height="10" rx="1.5" fill="#FCD34D" stroke="#B45309" strokeWidth="1" transform="rotate(-4 50 27)" />
-                                <line x1="28" y1="27" x2="44" y2="27" stroke="#B45309" strokeWidth="0.6" transform="rotate(-4 50 27)" />
-                                <line x1="58" y1="27" x2="72" y2="27" stroke="#B45309" strokeWidth="0.6" transform="rotate(-4 50 27)" />
-                                <rect x="20" y="14" width="56" height="10" rx="1.5" fill="#FDE68A" stroke="#92400E" strokeWidth="1" transform="rotate(3 50 19)" />
-                                <line x1="26" y1="19" x2="50" y2="19" stroke="#92400E" strokeWidth="0.6" transform="rotate(3 50 19)" />
-                                <rect x="24" y="6" width="52" height="10" rx="1.5" fill="#FFFBEB" stroke="#78350F" strokeWidth="1" transform="rotate(-2 50 11)" />
-                                <line x1="30" y1="11" x2="48" y2="11" stroke="#78350F" strokeWidth="0.5" transform="rotate(-2 50 11)" />
-                                <circle cx="68" cy="2" r="5" fill="#DC2626" stroke="#991B1B" strokeWidth="1" />
-                                <path d="M 67 -2 Q 70 -4 72 -1" stroke="#16A34A" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-                                <path d="M 66 -3 L 68 -2" stroke="#365314" strokeWidth="1" strokeLinecap="round" />
-                                <ellipse cx="66" cy="0" rx="1.5" ry="0.7" fill="#FECACA" opacity="0.7" />
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-20, 34)">
+                                <ellipse cx="16" cy="52" rx="18" ry="3" fill="#1F2937" opacity="0.18" />
+                                <rect x="0" y="40" width="34" height="11" rx="1.5" fill="#FCD34D" stroke="#B45309" strokeWidth="1.2" transform="rotate(-3 17 45)" />
+                                <line x1="5" y1="45" x2="24" y2="45" stroke="#B45309" strokeWidth="0.7" transform="rotate(-3 17 45)" />
+                                <rect x="2" y="30" width="32" height="11" rx="1.5" fill="#34D399" stroke="#047857" strokeWidth="1.2" transform="rotate(2 18 35)" />
+                                <line x1="7" y1="35" x2="26" y2="35" stroke="#047857" strokeWidth="0.7" transform="rotate(2 18 35)" />
+                                <rect x="1" y="20" width="32" height="11" rx="1.5" fill="#60A5FA" stroke="#1D4ED8" strokeWidth="1.2" transform="rotate(-2 17 25)" />
+                                <line x1="6" y1="25" x2="25" y2="25" stroke="#1D4ED8" strokeWidth="0.7" transform="rotate(-2 17 25)" />
+                                <g transform="translate(17, 9)">
+                                    <path d="M 0 3 C -7 3 -9 9 -6 14 C -4 17 -2 18 0 17 C 2 18 4 17 6 14 C 9 9 7 3 0 3 Z" fill="#EF4444" stroke="#991B1B" strokeWidth="1" />
+                                    <path d="M 0 4 Q -1 6 0 7 Q 1 6 0 4 Z" fill="#B91C1C" opacity="0.6" />
+                                    <path d="M 0 4 L 0 -2" stroke="#7C2D12" strokeWidth="1.6" strokeLinecap="round" />
+                                    <path d="M 0 -1 Q 6 -4 8 1 Q 3 2 0 -1 Z" fill="#22C55E" stroke="#15803D" strokeWidth="0.6" />
+                                    <ellipse cx="-2.5" cy="8" rx="1.8" ry="3" fill="#fff" opacity="0.45" transform="rotate(-20 -2.5 8)" />
+                                </g>
                             </g>
                         )}
                         {effectiveAccessory === 'scholar-specs' && (
